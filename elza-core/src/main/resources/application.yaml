@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: jdbc:hsqldb:mem:elza
+    driver-class-name: org.hsqldb.jdbc.JDBCDriver
+
+vax:
+  viewMain: FindingAid
+  viewError: Exception
+
+debug:
+  firstView: Test

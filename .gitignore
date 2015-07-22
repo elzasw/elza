@@ -1,0 +1,30 @@
+# Java classes
+*.class
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# Logs
+hs_err_pid*
+*.log
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# IntelliJ IDEA
+*.iml
+.idea
+atlassian-ide-plugin.xml
+
+# NetBeans
+nbproject/
+build/
+nbactions.xml
+nb-configuration.xml

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>cz.marbes</groupId>
+        <artifactId>project-parent</artifactId>
+        <version>3.5.3</version>
+    </parent>
+
+    <groupId>cz.tacr.elza</groupId>
+    <artifactId>elza</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>ELZA</name>
+    <url>http://www.marbes.cz</url>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <modules>
+        <module>elza-core</module>
+        <!--<module>elza-war</module>
+        <module>elza-dist</module>-->
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>cz.req.vax</groupId>
+                <artifactId>vax</artifactId>
+                <version>0.1-SNAPSHOT</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <developers>
+        <developer>
+            <id>burianek</id>
+            <name>Ondrej Burianek</name>
+            <email>ondrej.burianek@marbes.cz</email>
+            <organization>Marbes Consulting s.r.o.</organization>
+            <organizationUrl>http://www.marbes.cz</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:http://git.marbes.cz/r/INET/ELZA/elza.git</connection>
+    </scm>
+
+    <repositories>
+        <repository>
+            <id>releases</id>
+            <name>Release repository</name>
+            <url>http://nexus.marbes.cz/content/repositories/releases</url>
+        </repository>
+        <repository>
+            <id>snapshots</id>
+            <name>Marbes Snapshot Repository</name>
+            <url>http://nexus.marbes.cz/content/repositories/snapshots</url>
+        </repository>
+        <repository>
+            <id>spring-releases</id>
+            <url>http://repo.spring.io/release</url>
+        </repository>
+        <repository>
+            <id>vaadin-releases</id>
+            <url>https://oss.sonatype.org/content/repositories/vaadin-releases</url>
+        </repository>
+        <repository>
+            <id>vaadin-addons</id>
+            <url>http://maven.vaadin.com/vaadin-addons</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>vaadin-releases</id>
+            <url>https://oss.sonatype.org/content/repositories/vaadin-releases</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+</project>

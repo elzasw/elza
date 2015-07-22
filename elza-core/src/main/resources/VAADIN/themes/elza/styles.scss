@@ -1,0 +1,24 @@
+//TODO burianek presunout na spravne misto x
+@import "ax";
+//@import "../ax/ax";
+@import "../valo/valo";
+@import "../ax/valo-fix";
+
+body.v-generated-body {
+  overflow-y: scroll;
+  overflow-x: auto;
+}
+
+$v-focus-color: #408AA1;
+$ax-main-focus: #408AA1;
+$border-color: #b2b2b2;
+$text-color: #101010;
+$text-light: #202020;
+
+.usneseni {
+
+  @include ax;
+  @import "elza-layout";
+  @import "elza-common";
+
+}
