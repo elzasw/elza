@@ -1,55 +1,60 @@
 package cz.tacr.elza.domain;
 
-import org.hibernate.annotations.Type;
-
-import javax.persistence.*;
 import java.time.LocalDateTime;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+import org.hibernate.annotations.Type;
 
 /**
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
-@Entity
-public abstract class FindingAid extends EntityBase {
+@Entity(/*name = "FA_FINDING_AID"*/)
+public class FindingAid extends EntityBase {
 
     @Id
     @Column
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.TABLE)
+    private Integer findigAidId;
 
-    @Column
-    private String nazev;
+    @Column(length = 255, nullable = false)
+    private String name;
 
-    @Column
+    @Column(nullable = false)
     @Type(type = "org.jadira.usertype.dateandtime.threeten.PersistentLocalDateTime")
-    private LocalDateTime datum;
+    private LocalDateTime createDate;
 
-    public Integer getId() {
-        return id;
+    public Integer getFindigAidId() {
+        return findigAidId;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public void setFindigAidId(final Integer findigAidId) {
+        this.findigAidId = findigAidId;
     }
 
-    public String getNazev() {
-        return nazev;
+    public String getName() {
+        return name;
     }
 
-    public void setNazev(String nazev) {
-        this.nazev = nazev;
+    public void setName(final String name) {
+        this.name = name;
     }
 
-    public LocalDateTime getDatum() {
-        return datum;
+    public LocalDateTime getCreateDate() {
+        return createDate;
     }
 
-    public void setDatum(LocalDateTime datum) {
-        this.datum = datum;
+    public void setCreateDate(final LocalDateTime createDate) {
+        this.createDate = createDate;
     }
 
     @Override
     public String toString() {
-        return "FindingAid pk=" + id;
+        return "FindingAid pk=" + findigAidId;
     }
 }
