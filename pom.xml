@@ -35,6 +35,16 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+	        <dependency>
+	            <groupId>org.jadira.usertype</groupId>
+	            <artifactId>usertype.extended</artifactId>
+	            <version>3.2.0.GA</version>
+	        </dependency>            
+            <dependency>
+              <groupId>org.postgresql</groupId>
+              <artifactId>postgresql</artifactId>
+              <version>9.3-1102-jdbc4</version>
+            </dependency>            
         </dependencies>
     </dependencyManagement>
 

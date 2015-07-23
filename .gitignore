@@ -28,3 +28,11 @@ nbproject/
 build/
 nbactions.xml
 nb-configuration.xml
+
+# Eclipse
+.project
+org.eclipse.core.resources.prefs
+org.eclipse.m2e.core.prefs
+.classpath
+com.vaadin.integration.eclipse.prefs
+org.eclipse.jdt.core.prefs

@@ -1,5 +1,5 @@
 //TODO burianek presunout na spravne misto x
-@import "ax";
+//@import "ax";
 //@import "../ax/ax";
 @import "../valo/valo";
 @import "../ax/valo-fix";
@@ -17,7 +17,7 @@ $text-light: #202020;
 
 .usneseni {
 
-  @include ax;
+  //@include ax;
   @import "elza-layout";
   @import "elza-common";
 

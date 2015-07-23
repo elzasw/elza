@@ -1,8 +1,16 @@
 spring:
   datasource:
-    url: jdbc:hsqldb:mem:elza
-    driver-class-name: org.hsqldb.jdbc.JDBCDriver
-
+    url: jdbc:postgresql://10.0.1.236/elza
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: postgres
+  jpa:
+    # Logovani SQL dotazu
+    show-sql: true
+    # Upgrade DB
+    hibernate.ddl-auto: update    
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    
 vax:
   viewMain: FindingAid
   viewError: Exception
