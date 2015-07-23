@@ -1,16 +1,17 @@
 spring:
   datasource:
-    url: jdbc:postgresql://10.0.1.236/elza
+    url: jdbc:postgresql://vyv-inet/elza
     driver-class-name: org.postgresql.Driver
-    username: postgres
-    password: postgres
+    username: app
+    password: app
   jpa:
     # Logovani SQL dotazu
     show-sql: true
     # Upgrade DB
     hibernate.ddl-auto: update    
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-    
+    #hibernate.naming-strategy: cz.tacr.elza.hibernate.UppercaseImprovedNamingStrategy
+    hibernate.naming-strategy: org.hibernate.cfg.ImprovedNamingStrategy
 vax:
   viewMain: FindingAid
   viewError: Exception
