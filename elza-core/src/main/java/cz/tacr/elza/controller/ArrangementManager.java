@@ -32,7 +32,7 @@ public class ArrangementManager {
      */
     @RequestMapping(value = "/createFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, params = {"name"})
     public void createFindingAid(@RequestParam(value="name") final String name) {
-        //        Assert.notNull(name);
+        Assert.hasText(name);
 
         FindingAid findingAid = new FindingAid();
         findingAid.setCreateDate(LocalDateTime.now());
@@ -73,7 +73,7 @@ public class ArrangementManager {
     @RequestMapping(value = "/updateFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, params = {"findingAidId", "name"})
     public void updateFindingAid(@RequestParam(value="findingAidId") final Integer findingAidId, @RequestParam(value="name") final String name) {
         Assert.notNull(findingAidId);
-        Assert.notNull(name);
+        Assert.hasText(name);
 
         FindingAid findingAid = findingAidRepository.getOne(findingAidId);
         findingAid.setName(name);
