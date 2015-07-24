@@ -22,8 +22,9 @@ public class TableIdGenerator extends TableGenerator {
 
     @Override
     public void configure(Type type, Properties params, Dialect dialect) throws MappingException {
-//        params.setProperty(TABLE_PARAM, "hibernate_sequences");
+        params.setProperty(SEGMENT_VALUE_PARAM, params.getProperty("target_table") + "|" + params.getProperty("target_column"));
         params.setProperty(INCREMENT_PARAM, "1");
+        //params.setProperty(OPT_PARAM, "pooled");
         super.configure(type, params, dialect);
     }
 }
