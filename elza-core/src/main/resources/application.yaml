@@ -1,7 +1,6 @@
 spring:
   datasource:
     url: jdbc:postgresql://vyv-inet/elza
-#    driver-class-name: org.postgresql.Driver
     username: app
     password: app
   jpa:
