@@ -19,16 +19,13 @@ import org.hibernate.annotations.Type;
 public class FindingAid extends EntityBase {
 
     @Id
-    @Column
-    @TableGenerator(name = "idGenerator", table = "id_generator", allocationSize = 10)
-    @GeneratedValue(strategy = GenerationType.TABLE, generator = "idGenerator")
+    @GeneratedValue
     private Integer findigAidId;
 
     @Column(length = 255, nullable = false)
     private String name;
 
     @Column(nullable = false)
-    @Type(type = "org.jadira.usertype.dateandtime.threeten.PersistentLocalDateTime")
     private LocalDateTime createDate;
 
     public Integer getFindigAidId() {
