@@ -1,7 +1,7 @@
 spring:
   datasource:
     url: jdbc:postgresql://vyv-inet/elza
-    driver-class-name: org.postgresql.Driver
+#    driver-class-name: org.postgresql.Driver
     username: app
     password: app
   jpa:
@@ -9,9 +9,6 @@ spring:
     show-sql: true
     # Upgrade DB
     hibernate.ddl-auto: update    
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    #hibernate.naming-strategy: cz.tacr.elza.hibernate.UppercaseImprovedNamingStrategy
-    hibernate.naming-strategy: org.hibernate.cfg.ImprovedNamingStrategy
 vax:
   viewMain: FindingAidList
   viewError: Exception
