@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.TableGenerator;
 
 import org.hibernate.annotations.Type;
 
@@ -19,7 +20,8 @@ public class FindingAid extends EntityBase {
 
     @Id
     @Column
-    @GeneratedValue(strategy = GenerationType.TABLE)
+    @TableGenerator(name = "idGenerator", table = "id_generator", allocationSize = 10)
+    @GeneratedValue(strategy = GenerationType.TABLE, generator = "idGenerator")
     private Integer findigAidId;
 
     @Column(length = 255, nullable = false)

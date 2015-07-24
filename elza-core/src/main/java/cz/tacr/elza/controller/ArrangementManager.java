@@ -19,16 +19,11 @@ import cz.tacr.elza.repository.FindingAidRepository;
  * @since 22.7.15
  */
 @RestController
-@RequestMapping("/findingAid")
-public class FindingAidController {
+@RequestMapping("/arrangementManager")
+public class ArrangementManager {
 
     @Autowired
-    FindingAidRepository findingAidRepository;
-
-    @RequestMapping(value = "/list", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
-    List<FindingAid> list() {
-        return findingAidRepository.findAll();
-    }
+    private FindingAidRepository findingAidRepository;
 
     /**
      * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.
@@ -37,7 +32,7 @@ public class FindingAidController {
      */
     @RequestMapping(value = "/createFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, params = {"name"})
     public void createFindingAid(@RequestParam(value="name") final String name) {
-        Assert.notNull(name);
+        //        Assert.notNull(name);
 
         FindingAid findingAid = new FindingAid();
         findingAid.setCreateDate(LocalDateTime.now());
@@ -76,14 +71,12 @@ public class FindingAidController {
      * @return
      */
     @RequestMapping(value = "/updateFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, params = {"findingAidId", "name"})
-    public boolean updateFindingAid(@RequestParam(value="findingAidId") final Integer findingAidId, @RequestParam(value="name") final String name) {
+    public void updateFindingAid(@RequestParam(value="findingAidId") final Integer findingAidId, @RequestParam(value="name") final String name) {
         Assert.notNull(findingAidId);
         Assert.notNull(name);
 
         FindingAid findingAid = findingAidRepository.getOne(findingAidId);
         findingAid.setName(name);
         findingAidRepository.save(findingAid);
-
-        return true;
     }
 }

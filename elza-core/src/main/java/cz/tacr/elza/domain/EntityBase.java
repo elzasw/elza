@@ -1,7 +1,8 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.MappedSuperclass;
 import java.io.Serializable;
+
+import javax.persistence.MappedSuperclass;
 
 /**
  * @author by Ondřej Buriánek, burianek@marbes.cz.

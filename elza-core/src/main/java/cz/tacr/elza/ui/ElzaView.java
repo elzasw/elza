@@ -1,10 +1,8 @@
 package cz.tacr.elza.ui;
 
-import cz.req.ax.AxView;
-import cz.tacr.elza.ui.view.FindingAidView;
-import cz.tacr.elza.ui.view.TestView;
-
 import javax.annotation.PostConstruct;
+
+import cz.req.ax.AxView;
 
 /**
  * @author by Ondřej Buriánek, burianek@marbes.cz.
@@ -14,7 +12,7 @@ public abstract class ElzaView extends AxView {
 
     @PostConstruct
     public void init() {
-        menuActions(action(FindingAidView.class), action(TestView.class));
+        //        menuActions(action(FindingAidView.class), action(TestView.class));
     }
 
 }

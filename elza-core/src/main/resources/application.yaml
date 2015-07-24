@@ -13,8 +13,8 @@ spring:
     #hibernate.naming-strategy: cz.tacr.elza.hibernate.UppercaseImprovedNamingStrategy
     hibernate.naming-strategy: org.hibernate.cfg.ImprovedNamingStrategy
 vax:
-  viewMain: FindingAid
+  viewMain: FindingAidList
   viewError: Exception
 
 debug:
-  firstView: Test
+  firstView: FindingAidList
