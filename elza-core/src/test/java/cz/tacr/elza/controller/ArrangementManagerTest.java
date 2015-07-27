@@ -77,10 +77,9 @@ public class ArrangementManagerTest {
 
     @Test
     public void testDeleteFindingAid() throws Exception {
-        arrangementManager.createFindingAid("Test name");
-        List<FindingAid> findingAids = arrangementManager.getFindingAids();
+        FindingAid findingAid = arrangementManager.createFindingAid("Test name");
 
-        arrangementManager.deleteFindingAid(findingAids.get(0).getFindigAidId());
+        arrangementManager.deleteFindingAid(findingAid.getFindigAidId());
     }
 
     @Test
@@ -92,10 +91,9 @@ public class ArrangementManagerTest {
 
     @Test
     public void testUpdateFindingAid() throws Exception {
-        arrangementManager.createFindingAid("Test name");
-        List<FindingAid> findingAids = arrangementManager.getFindingAids();
+        FindingAid findingAid = arrangementManager.createFindingAid("Test name");
 
-        arrangementManager.updateFindingAid(findingAids.get(0).getFindigAidId(), "Update name");
+        arrangementManager.updateFindingAid(findingAid.getFindigAidId(), "Update name");
     }
 
     // ---- REST test ----
