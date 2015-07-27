@@ -114,10 +114,7 @@ public class ArrangementManagerTest {
 
     @Test
     public void testRestGetFindingAid() throws Exception {
-        FindingAid findingAid = new FindingAid();
-        findingAid.setCreateDate(LocalDateTime.now());
-        findingAid.setName(TEST_NAME);
-        findingAidRepository.save(findingAid);
+        FindingAid findingAid = arrangementManager.createFindingAid(TEST_NAME);
 
         Response response = given().header("content-type", "application/json")
                 .get("api/arrangementManager/getFindingAids");
@@ -131,15 +128,13 @@ public class ArrangementManagerTest {
 
     @Test
     public void testRestDeleteFindingAid() throws Exception {
-        FindingAid findingAid = new FindingAid();
-        findingAid.setCreateDate(LocalDateTime.now());
-        findingAid.setName(TEST_NAME);
-        findingAidRepository.save(findingAid);
+        FindingAid findingAid = arrangementManager.createFindingAid(TEST_NAME);
         Integer idFinfingAid = findingAid.getFindigAidId();
         long pocetStart = findingAidRepository.count();
 
         Response response = given().header("content-type", "application/json").parameter("findingAidId", idFinfingAid)
                 .get("api/arrangementManager/deleteFindingAid");
+        logger.info(response.asString());
         long pocetEnd = findingAidRepository.count();
 
         Assert.assertEquals(200, response.statusCode());
@@ -148,15 +143,13 @@ public class ArrangementManagerTest {
 
     @Test
     public void testRestUpdateFindingAid() throws Exception {
-        FindingAid findingAid = new FindingAid();
-        findingAid.setCreateDate(LocalDateTime.now());
-        findingAid.setName(TEST_NAME);
-        findingAidRepository.save(findingAid);
+        FindingAid findingAid = arrangementManager.createFindingAid(TEST_NAME);
         Integer idFinfingAid = findingAid.getFindigAidId();
 
         Response response = given().header("content-type", "application/json").parameter("findingAidId", idFinfingAid)
                 .parameter("name", TEST_UPDATE_NAME)
                 .get("api/arrangementManager/updateFindingAid");
+        logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
         boolean nalezeno = false;
