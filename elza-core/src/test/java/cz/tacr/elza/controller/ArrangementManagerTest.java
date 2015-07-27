@@ -1,8 +1,10 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.ElzaApp;
-import cz.tacr.elza.domain.FindingAid;
-import cz.tacr.elza.repository.FindingAidRepository;
+import static com.jayway.restassured.RestAssured.given;
+
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -19,26 +21,36 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
-import static com.jayway.restassured.RestAssured.given;
+import cz.tacr.elza.ElzaApp;
+import cz.tacr.elza.domain.FindingAid;
+import cz.tacr.elza.repository.FindingAidRepository;
 
 /**
  * Testy pro {@link ArrangementManager}.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = ElzaApp.class)
-@IntegrationTest("server.port:0") // zvoly volny port, lze spustit i aktivni Elzou
+@IntegrationTest("server.port:0") // zvoli volny port, lze spustit i s aktivni Elzou
 @WebAppConfiguration
 public class ArrangementManagerTest {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private static final String TEST_NAME = "TEST_X";
-    private static final String TEST_UPDATE_NAME = "TEST_X2";
+
+    private static final String TEST_NAME = "Test name";
+    private static final String TEST_UPDATE_NAME = "Update name";
+
+    private static final String CONTENT_TYPE_HEADER = "content-type";
+    private static final String JSON_CONTENT_TYPE = "application/json";
+
+    private static final String CREATE_FA_URL = "/api/arrangementManager/createFindingAid";
+    private static final String UPDATE_FA_URL = "/api/arrangementManager/updateFindingAid";
+    private static final String DELETE_FA_URL = "/api/arrangementManager/deleteFindingAid";
+    private static final String GET_FA_URL = "/api/arrangementManager/getFindingAids";
+
+    private static final String FA_NAME_ATT = "name";
+    private static final String FA_ID_ATT = "findingAidId";
 
     @Value("${local.server.port}")
     private int port;
@@ -47,7 +59,7 @@ public class ArrangementManagerTest {
     @Autowired
     private ArrangementManager arrangementManager;
     @Autowired
-    private FindingAidRepository findingAidRepository; 
+    private FindingAidRepository findingAidRepository;
 
     @Before
     public void setUp() {
@@ -77,63 +89,50 @@ public class ArrangementManagerTest {
 
     @Test
     public void testDeleteFindingAid() throws Exception {
-        FindingAid findingAid = arrangementManager.createFindingAid("Test name");
+        FindingAid findingAid = arrangementManager.createFindingAid(TEST_NAME);
 
         arrangementManager.deleteFindingAid(findingAid.getFindigAidId());
     }
 
     @Test
     public void testGetFindingAids() throws Exception {
-        arrangementManager.createFindingAid("Test name");
+        arrangementManager.createFindingAid(TEST_NAME);
 
         Assert.assertFalse(arrangementManager.getFindingAids().isEmpty());
     }
 
     @Test
     public void testUpdateFindingAid() throws Exception {
-        FindingAid findingAid = arrangementManager.createFindingAid("Test name");
+        FindingAid findingAid = arrangementManager.createFindingAid(TEST_NAME);
 
-        arrangementManager.updateFindingAid(findingAid.getFindigAidId(), "Update name");
+        arrangementManager.updateFindingAid(findingAid.getFindigAidId(), TEST_UPDATE_NAME);
     }
 
     // ---- REST test ----
     @Test
     public void testRestCreateFindingAid() throws Exception {
-        long countStart = findingAidRepository.count();
+        FindingAid findingAid = createFindingAid(TEST_NAME);
 
-        Response response =
-                given().header("content-type", "application/json").parameter("name", TEST_NAME).
-                get("/api/arrangementManager/createFindingAid");
-
-        long countEnd = findingAidRepository.count();
-        logger.info(response.asString());
-        // then
-        Assert.assertEquals(200, response.statusCode());
-        Assert.assertEquals(countStart + 1, countEnd);
+        Assert.assertNotNull(findingAid);
+        Assert.assertNotNull(findingAid.getFindigAidId());
     }
 
     @Test
-    public void testRestGetFindingAid() throws Exception {
-        FindingAid findingAid = arrangementManager.createFindingAid(TEST_NAME);
+    public void testRestGetFindingAids() throws Exception {
+        createFindingAid(TEST_NAME);
 
-        Response response = given().header("content-type", "application/json")
-                .get("api/arrangementManager/getFindingAids");
-        logger.info(response.asString());
-
-        Assert.assertEquals(200, response.statusCode());
-        JsonPath body = response.body().jsonPath();
-        List<String> nameList = body.getList("name");
-        Assert.assertTrue("Nenalezena polozka " + TEST_NAME, !nameList.isEmpty());
+        List<FindingAid> findingAids = getFindingAids();
+        Assert.assertTrue("Nenalezena polozka " + TEST_NAME, !findingAids.isEmpty());
     }
 
     @Test
     public void testRestDeleteFindingAid() throws Exception {
-        FindingAid findingAid = arrangementManager.createFindingAid(TEST_NAME);
-        Integer idFinfingAid = findingAid.getFindigAidId();
+        Integer idFinfingAid = createFindingAid(TEST_NAME).getFindigAidId();
+
         long countStart = findingAidRepository.count();
 
-        Response response = given().header("content-type", "application/json").parameter("findingAidId", idFinfingAid)
-                .get("api/arrangementManager/deleteFindingAid");
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(FA_ID_ATT, idFinfingAid)
+                .get(DELETE_FA_URL);
         logger.info(response.asString());
         long countEnd = findingAidRepository.count();
 
@@ -143,27 +142,60 @@ public class ArrangementManagerTest {
 
     @Test
     public void testRestUpdateFindingAid() throws Exception {
-        FindingAid findingAid = arrangementManager.createFindingAid(TEST_NAME);
-        Integer idFinfingAid = findingAid.getFindigAidId();
+        Integer idFinfingAid = createFindingAid(TEST_NAME).getFindigAidId();
 
-        Response response = given().header("content-type", "application/json").parameter("findingAidId", idFinfingAid)
-                .parameter("name", TEST_UPDATE_NAME)
-                .get("api/arrangementManager/updateFindingAid");
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(FA_ID_ATT, idFinfingAid)
+                .parameter(FA_NAME_ATT, TEST_UPDATE_NAME)
+                .get(UPDATE_FA_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        boolean finds = false;
-        List<FindingAid> findingAids = arrangementManager.getFindingAids();
-        for (FindingAid findingAidVo : findingAids) {
-            if (findingAidVo.getName().equals(TEST_UPDATE_NAME)
-                    && isAfterOrEqual(findingAidVo.getCreateDate(), initDate)) {
-                finds = true;
+        FindingAid updatedFindingAid = null;
+
+        List<FindingAid> findingAids = getFindingAids();
+        for (FindingAid findingAid : findingAids) {
+            if (findingAid.getFindigAidId().equals(idFinfingAid)) {
+                updatedFindingAid = findingAid;
+                break;
             }
         }
-        Assert.assertTrue("Nenalezena polozka " + TEST_UPDATE_NAME, finds);
-      }
+        Assert.assertNotNull(updatedFindingAid);
+        Assert.assertEquals(TEST_UPDATE_NAME, updatedFindingAid.getName());
+    }
 
-    private boolean isAfterOrEqual(LocalDateTime testDate, LocalDateTime initDate) {
+    /**
+     * Načte archivní pomůcky přes REST volání.
+     *
+     * @return archivní pomůcky
+     */
+    private List<FindingAid> getFindingAids() {
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).get(GET_FA_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        List<FindingAid> findingAids = Arrays.asList(response.getBody().as(FindingAid[].class));
+        return findingAids;
+    }
+
+    /**
+     * Vytvoří položku archivní pomůcky přes REST volání.
+     *
+     * @return vytvořená položka
+     */
+    private FindingAid createFindingAid(final String name) {
+        Response response =
+                given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(FA_NAME_ATT, name).
+                get(CREATE_FA_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        FindingAid findingAid = response.getBody().as(FindingAid.class);
+
+
+        return findingAid;
+    }
+
+    private boolean isAfterOrEqual(final LocalDateTime testDate, final LocalDateTime initDate) {
         if (testDate == null) {
             return false;
         }

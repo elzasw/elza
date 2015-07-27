@@ -3,9 +3,10 @@ package cz.tacr.elza.controller;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -33,7 +34,7 @@ public class ArrangementManager {
      *
      * @return nová archivní pomůcka
      */
-    @RequestMapping(value = "/createFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, params = {"name"})
+    @RequestMapping(value = "/createFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, params = {"name"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public FindingAid createFindingAid(@RequestParam(value="name") final String name) {
         Assert.hasText(name);
 
@@ -75,7 +76,7 @@ public class ArrangementManager {
      *
      * @return aktualizovaná archivní pomůcka
      */
-    @RequestMapping(value = "/updateFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, params = {"findingAidId", "name"})
+    @RequestMapping(value = "/updateFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, params = {"findingAidId", "name"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     public FindingAid updateFindingAid(@RequestParam(value="findingAidId") final Integer findingAidId, @RequestParam(value="name") final String name) {
         Assert.notNull(findingAidId);

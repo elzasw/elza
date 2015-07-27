@@ -5,11 +5,7 @@ import java.time.LocalDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.TableGenerator;
-
-import org.hibernate.annotations.Type;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -17,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
-@Entity(/*name = "FA_FINDING_AID"*/)
+@Entity
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class FindingAid extends EntityBase {
 
