@@ -30,15 +30,19 @@ public class ArrangementManager {
      * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.
      *
      * @param name název archivní pomůcky
+     *
+     * @return nová archivní pomůcka
      */
     @RequestMapping(value = "/createFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, params = {"name"})
-    public void createFindingAid(@RequestParam(value="name") final String name) {
+    public FindingAid createFindingAid(@RequestParam(value="name") final String name) {
         Assert.hasText(name);
 
         FindingAid findingAid = new FindingAid();
         findingAid.setCreateDate(LocalDateTime.now());
         findingAid.setName(name);
         findingAidRepository.save(findingAid);
+
+        return findingAid;
     }
 
     /**
@@ -69,16 +73,18 @@ public class ArrangementManager {
      * @param findingAidId id archivní pomůcky
      * @param name název arhivní pomůcky
      *
-     * @return
+     * @return aktualizovaná archivní pomůcka
      */
     @RequestMapping(value = "/updateFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, params = {"findingAidId", "name"})
     @Transactional
-    public void updateFindingAid(@RequestParam(value="findingAidId") final Integer findingAidId, @RequestParam(value="name") final String name) {
+    public FindingAid updateFindingAid(@RequestParam(value="findingAidId") final Integer findingAidId, @RequestParam(value="name") final String name) {
         Assert.notNull(findingAidId);
         Assert.hasText(name);
 
         FindingAid findingAid = findingAidRepository.getOne(findingAidId);
         findingAid.setName(name);
         findingAidRepository.save(findingAid);
+
+        return findingAid;
     }
 }

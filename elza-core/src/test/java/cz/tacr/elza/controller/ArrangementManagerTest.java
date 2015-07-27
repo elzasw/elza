@@ -1,19 +1,15 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.ElzaApp;
-import cz.tacr.elza.domain.FindingAid;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import java.util.List;
-
-import static org.junit.Assert.*;
+import cz.tacr.elza.ElzaApp;
+import cz.tacr.elza.domain.FindingAid;
 
 /**
  * Testy pro {@link ArrangementManager}.
@@ -33,10 +29,9 @@ public class ArrangementManagerTest {
 
     @Test
     public void testDeleteFindingAid() throws Exception {
-        arrangementManager.createFindingAid("Test name");
-        List<FindingAid> findingAids = arrangementManager.getFindingAids();
+        FindingAid findingAid = arrangementManager.createFindingAid("Test name");
 
-        arrangementManager.deleteFindingAid(findingAids.get(0).getFindigAidId());
+        arrangementManager.deleteFindingAid(findingAid.getFindigAidId());
     }
 
     @Test
@@ -48,9 +43,8 @@ public class ArrangementManagerTest {
 
     @Test
     public void testUpdateFindingAid() throws Exception {
-        arrangementManager.createFindingAid("Test name");
-        List<FindingAid> findingAids = arrangementManager.getFindingAids();
+        FindingAid findingAid = arrangementManager.createFindingAid("Test name");
 
-        arrangementManager.updateFindingAid(findingAids.get(0).getFindigAidId(), "Update name");
+        arrangementManager.updateFindingAid(findingAid.getFindigAidId(), "Update name");
     }
 }
