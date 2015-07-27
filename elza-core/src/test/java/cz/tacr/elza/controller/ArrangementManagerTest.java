@@ -99,17 +99,17 @@ public class ArrangementManagerTest {
     // ---- REST test ----
     @Test
     public void testRestCreateFindingAid() throws Exception {
-        long pocetStart = findingAidRepository.count();
+        long countStart = findingAidRepository.count();
 
         Response response =
                 given().header("content-type", "application/json").parameter("name", TEST_NAME).
                 get("/api/arrangementManager/createFindingAid");
 
-        long pocetEnd = findingAidRepository.count();
+        long countEnd = findingAidRepository.count();
         logger.info(response.asString());
         // then
         Assert.assertEquals(200, response.statusCode());
-        Assert.assertEquals(pocetStart + 1, pocetEnd);
+        Assert.assertEquals(countStart + 1, countEnd);
     }
 
     @Test
@@ -130,15 +130,15 @@ public class ArrangementManagerTest {
     public void testRestDeleteFindingAid() throws Exception {
         FindingAid findingAid = arrangementManager.createFindingAid(TEST_NAME);
         Integer idFinfingAid = findingAid.getFindigAidId();
-        long pocetStart = findingAidRepository.count();
+        long countStart = findingAidRepository.count();
 
         Response response = given().header("content-type", "application/json").parameter("findingAidId", idFinfingAid)
                 .get("api/arrangementManager/deleteFindingAid");
         logger.info(response.asString());
-        long pocetEnd = findingAidRepository.count();
+        long countEnd = findingAidRepository.count();
 
         Assert.assertEquals(200, response.statusCode());
-        Assert.assertEquals(pocetStart, pocetEnd + 1);
+        Assert.assertEquals(countStart, countEnd + 1);
     }
 
     @Test
@@ -152,15 +152,15 @@ public class ArrangementManagerTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        boolean nalezeno = false;
+        boolean finds = false;
         List<FindingAid> findingAids = arrangementManager.getFindingAids();
         for (FindingAid findingAidVo : findingAids) {
             if (findingAidVo.getName().equals(TEST_UPDATE_NAME)
                     && isAfterOrEqual(findingAidVo.getCreateDate(), initDate)) {
-                nalezeno = true;
+                finds = true;
             }
         }
-        Assert.assertTrue("Nenalezena polozka " + TEST_UPDATE_NAME, nalezeno);
+        Assert.assertTrue("Nenalezena polozka " + TEST_UPDATE_NAME, finds);
       }
 
     private boolean isAfterOrEqual(LocalDateTime testDate, LocalDateTime initDate) {
