@@ -3,9 +3,11 @@ package cz.tacr.elza.ui;
 import com.vaadin.annotations.Theme;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.JavaScript;
-import cz.req.ax.AxUI;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
+import cz.tacr.elza.ax.AxUI;
+
 
 /**
  * @author by Ondřej Buriánek, burianek@marbes.cz.
@@ -19,6 +21,7 @@ public class ElzaUI extends AxUI {
     @Override
     protected void init(VaadinRequest request) {
         getPage().setTitle("ELZA");
+        addStyleName("elza");
         super.init(request);
     }
 
