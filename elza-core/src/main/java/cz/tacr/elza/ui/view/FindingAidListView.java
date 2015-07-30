@@ -56,6 +56,7 @@ public class FindingAidListView extends ElzaView {
 //        table.setCaption("Archivní pomůcky");
         table.addContainerProperty("name", String.class, "", "Název", null, null);
         table.addContainerProperty("createDate", LocalDateTime.class, null, "Datum vytvoření", null, null);
+        table.setSortEnabled(false);
         table.addGeneratedColumn("createDate", new Table.ColumnGenerator() {
             @Override
             public Object generateCell(final Table source, final Object itemId, final Object columnId) {
