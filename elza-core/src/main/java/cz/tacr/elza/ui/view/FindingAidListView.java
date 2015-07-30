@@ -110,13 +110,17 @@ public class FindingAidListView extends ElzaView {
             }
         });
 
+        Label elza = new Label("ELZA");
+        elza.addStyleName("fa-header-elza");
+        CssLayout headerBar = new CssLayout(elza, button);
+        headerBar.addStyleName("fa-header");
+        addComponent(headerBar);
+
         Label title = new Label("<h1>Archivní pomůcky</h1>");
         title.setContentMode(ContentMode.HTML);
-
-        CssLayout headerBar = new CssLayout(title, button);
-        headerBar.addStyleName("fa-header");
-
-        addComponent(headerBar);
+        CssLayout titleBar = new CssLayout(title);
+        titleBar.addStyleName("fa-title");
+        addComponent(titleBar);
 
         addComponent(table);
 
