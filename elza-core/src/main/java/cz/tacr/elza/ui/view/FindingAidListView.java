@@ -142,7 +142,7 @@ public class FindingAidListView extends ElzaView {
     }
 
     private void novyFA(AxForm<FindingAid> form) {
-        new AxWindow().components(form).buttonClose()
+        new AxWindow().components(form)
                 .buttonPrimary(new AxAction<FindingAid>()
                                 .caption("Uložit")
                                 .primary()
@@ -151,12 +151,12 @@ public class FindingAidListView extends ElzaView {
                                 })
                                 .value(form::commit)
                                 .action(this::vytvoritFA)
-                ).modal().style("fa-window-detail").show();
+                ).buttonClose().modal().style("fa-window-detail").show();
     }
 
     private void upravitFA(AxForm<FindingAid> form, FindingAid findingAid) {
         form.setValue(findingAid);
-        new AxWindow().components(form).buttonClose()
+        new AxWindow().components(form)
                 .buttonPrimary(new AxAction<FindingAid>()
                                 .caption("Uložit")
                                 .exception(ex -> {
@@ -165,7 +165,7 @@ public class FindingAidListView extends ElzaView {
                                 .primary()
                                 .value(form::commit)
                                 .action(this::ulozitFA)
-                ).modal().style("fa-window-detail").show();
+                ).buttonClose().modal().style("fa-window-detail").show();
     }
 
     private void vytvoritFA(FindingAid findingAid) {
