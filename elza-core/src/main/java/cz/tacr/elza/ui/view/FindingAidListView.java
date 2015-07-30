@@ -14,8 +14,10 @@ import org.springframework.util.StringUtils;
 import com.vaadin.data.Validator;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.navigator.ViewChangeListener;
+import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CssLayout;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.Table;
 
 import cz.tacr.elza.ax.AxAction;
@@ -51,7 +53,7 @@ public class FindingAidListView extends ElzaView {
         formFA = formularFA();
 
         Table table = new Table();
-        table.setCaption("Archivní pomůcky");
+//        table.setCaption("Archivní pomůcky");
         table.addContainerProperty("name", String.class, "", "Název", null, null);
         table.addContainerProperty("createDate", LocalDateTime.class, null, "Datum vytvoření", null, null);
         table.addGeneratedColumn("createDate", new Table.ColumnGenerator() {
@@ -69,7 +71,7 @@ public class FindingAidListView extends ElzaView {
                 final FindingAid findingAid = (FindingAid) itemId;
 
                 Button buttonUpravit = new Button("Upravit");
-                buttonUpravit.addStyleName("button-edit");
+                buttonUpravit.addStyleName("fa-button-edit");
                 buttonUpravit.addClickListener(new Button.ClickListener() {
                     public void buttonClick(Button.ClickEvent event) {
                         upravitFA(formFA, findingAid);
@@ -77,7 +79,7 @@ public class FindingAidListView extends ElzaView {
                 });
 
                 Button buttonSmazat = new Button("Smazat");
-                buttonSmazat.addStyleName("button-remove");
+                buttonSmazat.addStyleName("fa-button-remove");
                 buttonSmazat.addClickListener(new Button.ClickListener() {
                     public void buttonClick(Button.ClickEvent event) {
                         smazatFA(findingAid);
@@ -99,17 +101,25 @@ public class FindingAidListView extends ElzaView {
         table.setContainerDataSource(container);
         table.setVisibleColumns("name", "createDate", "actions");
 
-        addComponent(table);
-
         Button button = new Button("Nový");
-        button.addStyleName("button-new");
+        button.addStyleName("fa-button-new");
         button.addClickListener(new Button.ClickListener() {
             public void buttonClick(Button.ClickEvent event) {
                 AxForm<FindingAid> form = formularFA();
                 novyFA(form);
             }
         });
-        addComponent(button);
+
+        Label title = new Label("<h1>Archivní pomůcky</h1>");
+        title.setContentMode(ContentMode.HTML);
+
+        CssLayout headerBar = new CssLayout(title, button);
+        headerBar.addStyleName("fa-header");
+
+        addComponent(headerBar);
+
+        addComponent(table);
+
 
     }
 
@@ -128,7 +138,7 @@ public class FindingAidListView extends ElzaView {
                                 })
                                 .value(form::commit)
                                 .action(this::vytvoritFA)
-                ).modal().style("fa-detail").show();
+                ).modal().style("fa-window-detail").show();
     }
 
     private void upravitFA(AxForm<FindingAid> form, FindingAid findingAid) {
@@ -142,7 +152,7 @@ public class FindingAidListView extends ElzaView {
                                 .primary()
                                 .value(form::commit)
                                 .action(this::ulozitFA)
-                ).modal().style("fa-detail").show();
+                ).modal().style("fa-window-detail").show();
     }
 
     private void vytvoritFA(FindingAid findingAid) {
