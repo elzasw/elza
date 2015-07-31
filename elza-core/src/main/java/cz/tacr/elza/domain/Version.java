@@ -79,24 +79,19 @@ public class Version extends EntityBase {
         return arrangementTypeId;
     }
 
-    public void setArrangementTypeId(final Integer arrangementTypeId) {
-        this.arrangementTypeId = arrangementTypeId;
-    }
-
     public ArrangementType getArrangementType() {
         return arrangementType;
     }
 
     public void setArrangementType(final ArrangementType arrangementType) {
         this.arrangementType = arrangementType;
+        if (arrangementType != null) {
+            arrangementTypeId = arrangementType.getArrangementTypeId();
+        }
     }
 
     public Integer getRuleSetId() {
         return ruleSetId;
-    }
-
-    public void setRuleSetId(final Integer ruleSetId) {
-        this.ruleSetId = ruleSetId;
     }
 
     public RuleSet getRuleSet() {
@@ -105,14 +100,13 @@ public class Version extends EntityBase {
 
     public void setRuleSet(final RuleSet ruleSet) {
         this.ruleSet = ruleSet;
+        if (ruleSet != null) {
+            ruleSetId = ruleSet.getRuleSetId();
+        }
     }
 
     public Integer getFindingAidId() {
         return findingAidId;
-    }
-
-    public void setFindingAidId(final Integer findingAidId) {
-        this.findingAidId = findingAidId;
     }
 
     public FindingAid getFindingAid() {
@@ -121,6 +115,9 @@ public class Version extends EntityBase {
 
     public void setFindingAid(final FindingAid findingAid) {
         this.findingAid = findingAid;
+        if (findingAid != null) {
+            findingAidId = findingAid.getFindigAidId();
+        }
     }
 
     @Override

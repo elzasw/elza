@@ -48,24 +48,19 @@ public class VersionLevel extends EntityBase {
         return levelId;
     }
 
-    public void setLevelId(final Integer levelId) {
-        this.levelId = levelId;
-    }
-
     public Level getLevel() {
         return level;
     }
 
     public void setLevel(final Level level) {
         this.level = level;
+        if (level != null) {
+            this.levelId = level.getLevelId();
+        }
     }
 
     public Integer getVersionId() {
         return versionId;
-    }
-
-    public void setVersionId(final Integer versionId) {
-        this.versionId = versionId;
     }
 
     public Version getVersion() {
@@ -74,6 +69,9 @@ public class VersionLevel extends EntityBase {
 
     public void setVersion(final Version version) {
         this.version = version;
+        if (version != null) {
+            this.versionId = version.getVersionId();
+        }
     }
 
     @Override

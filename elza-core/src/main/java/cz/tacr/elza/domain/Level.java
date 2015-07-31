@@ -7,6 +7,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -15,6 +17,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @since 22.7.15
  */
 @Entity(name = "arr_level")
+@Table(uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"treeId"})
+})
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Level extends EntityBase {
 
@@ -22,19 +27,15 @@ public class Level extends EntityBase {
     @GeneratedValue
     private Integer levelId;
 
-    @Column(updatable = false, insertable = false, nullable = false)
-    private Integer versionLevelId;
-
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = VersionLevel.class)
-    @JoinColumn(name = "versionLevelId", nullable = false)
-    private VersionLevel versionLevel;
+    @Column(nullable = false)
+    private Integer treeId;
 
     @Column(updatable = false, insertable = false, nullable = true)
-    private Integer parentVersionLevelId;
+    private Integer parentTreeId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = VersionLevel.class)
-    @JoinColumn(name = "parentVersionLevelId", nullable = false)
-    private VersionLevel parentVersionLevel;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = Level.class)
+    @JoinColumn(name = "parentTreeId", nullable = false)
+    private Level parent;
 
     @Column(nullable = false)
     private Integer position;
@@ -47,36 +48,27 @@ public class Level extends EntityBase {
         this.levelId = levelId;
     }
 
-    public Integer getVersionLevelId() {
-        return versionLevelId;
+    public Integer getTreeId() {
+        return treeId;
     }
 
-    public void setVersionLevelId(final Integer versionLevelId) {
-        this.versionLevelId = versionLevelId;
+    public void setTreeId(final Integer treeId) {
+        this.treeId = treeId;
     }
 
-    public VersionLevel getVersionLevel() {
-        return versionLevel;
+    public Integer getParentTreeId() {
+        return parentTreeId;
     }
 
-    public void setVersionLevel(final VersionLevel versionLevel) {
-        this.versionLevel = versionLevel;
+    public Level getParent() {
+        return parent;
     }
 
-    public Integer getParentVersionLevelId() {
-        return parentVersionLevelId;
-    }
-
-    public void setParentVersionLevelId(final Integer parentVersionLevelId) {
-        this.parentVersionLevelId = parentVersionLevelId;
-    }
-
-    public VersionLevel getParentVersionLevel() {
-        return parentVersionLevel;
-    }
-
-    public void setParentVersionLevel(final VersionLevel parentVersionLevel) {
-        this.parentVersionLevel = parentVersionLevel;
+    public void setParent(final Level parent) {
+        this.parent = parent;
+        if (parent != null) {
+            parentTreeId = parent.getTreeId();
+        }
     }
 
     public Integer getPosition() {
