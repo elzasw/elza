@@ -53,6 +53,7 @@ public class FindingAidListView extends ElzaView {
         formFA = formularFA();
 
         Table table = new Table();
+        table.setSizeUndefined();
 //        table.setCaption("Archivní pomůcky");
         table.addContainerProperty("name", String.class, "", "Název", null, null);
         table.addContainerProperty("createDate", LocalDateTime.class, null, "Datum vytvoření", null, null);

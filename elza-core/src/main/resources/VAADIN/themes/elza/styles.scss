@@ -9,11 +9,10 @@ body.v-generated-body {
   overflow-x: auto;
 }
 
-$v-focus-color: #408AA1;
-$ax-main-focus: #408AA1;
-$border-color: #b2b2b2;
-$text-color: #101010;
-$text-light: #202020;
+$color-app: #0095ba;
+$color-app-alt: #012e58;
+$color-gray1: #e7e7e7;
+$color-title: #606262;
 
 .elza {
 
@@ -21,4 +20,163 @@ $text-light: #202020;
   @import "elza-layout";
   @import "elza-common";
 
+  font-family: Segoe UI, Arial, Helvetica, Tahoma, Verdana, sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: normal;
+
+  a, img, a img, div {
+    outline : none;
+    border: none;
+  }
+
+  .page-root, .fa-header-main, .fa-title-main, .fa-content-main  {
+    width: 100%;
+  }
+
+  .fa-header-main {
+    background-color: $color-app;
+  }
+
+  .fa-header, .fa-title, .fa-table {
+    width: 80%;
+    min-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    padding-left: 50px;
+    padding-right: 50px;
+  }
+
+  .fa-header {
+    height: 50px;
+  }
+
+  .fa-header-elza {
+    display: inline-block;
+    height: 100%;
+    width: 200px !important;
+    line-height: 50px;
+    background-image: url("img/elza-logo.png");
+    background-repeat: no-repeat;
+    padding-left: 60px;
+    font-size: 26px;
+    color: white;
+  }
+
+  .fa-button-new {
+    color: white;
+    line-height: 50px;
+    background-image: url("img/add.png");
+    background-repeat: no-repeat;
+    background-position-y: center;
+    background-position-x: 10px;
+    padding-left: 40px;
+    padding-right: 10px;
+  }
+  .fa-button-new:hover {
+    background-color: $color-app-alt;
+    cursor: pointer;
+  }
+
+  .fa-title-main {
+    background-color: $color-gray1;
+  }
+
+  .fa-title {
+    height: 60px;
+  }
+
+  .fa-title h1 {
+    color: $color-title;
+    font-size: 32px;
+    font-weight: normal;
+    margin: 0;
+    line-height: 60px;
+  }
+
+  .fa-table {
+    margin-top: 30px;
+  }
+
+  .fa-table .v-table-header td, .fa-table .v-table-table td {
+    padding: 5px 10px 5px 10px;
+    height: 20px;
+    line-height: 20px;
+    border-right: 0;
+  }
+
+  .fa-table .v-table-header td {
+    background-color: $color-app-alt;
+    color: white;
+  }
+
+  .fa-table .v-table-table tr:nth-child(2n+1) {
+    background-color: #f0f0f0;
+  }
+
+  .fa-table .v-table-table tr:hover {
+    background-color: #d0d0d0;
+  }
+
+  .fa-table .v-table-header td:hover {
+    background-color: $color-app;
+  }
+
+  .fa-table .v-table-header td:not(:first-child) {
+    border-left: 3px solid white;
+  }
+
+  .fa-button-edit, .fa-button-remove  {
+    background-repeat: no-repeat;
+    width: 24px;
+    height: 24px;
+    margin: 0 3px;
+  }
+
+  .fa-button-edit>span, .fa-button-remove>span {
+    display: none;
+  }
+
+  .fa-button-edit {
+    background-image: url("img/edit-gray.png");
+  }
+
+  .fa-button-edit:hover {
+    background-image: url("img/edit-black.png");
+  }
+
+  .fa-button-remove {
+    background-image: url("img/delete-gray.png");
+  }
+
+  .fa-button-remove:hover {
+    background-image: url("img/delete-black.png");
+  }
+
+  .fa-window-detail {
+    min-height: 300px !important;
+    min-width: 500px !important;
+    box-shadow: 0 0 10px 1px $color-app-alt;
+    background-color: white;
+  }
+
+  .fa-window-detail .fa-form {
+    margin: 20px 0 0 20px;
+  }
+
+  .fa-window-detail .v-menubar-menuitem {
+    background-color: $color-app-alt;
+    padding: 5px 15px 5px 15px;
+    margin: 5px;
+    color: white;
+  }
+
+  .fa-window-detail .v-caption {
+    min-width: 200px;
+    color: gray;
+  }
+
 }
+
+
