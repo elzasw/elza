@@ -38,7 +38,7 @@ $color-title: #606262;
     background-color: $color-app;
   }
 
-  .fa-header, .fa-title, .fa-table {
+  .fa-header, .fa-title, .fa-content-main {
     width: 80%;
     min-width: 1100px;
     margin-left: auto;
@@ -99,7 +99,14 @@ $color-title: #606262;
     margin-top: 30px;
   }
 
-  .fa-table .v-table-header td, .fa-table .v-table-table td {
+  .fa-table .v-table-header div.v-table-caption-container {
+    margin:  5px 10px 5px 10px;
+    height: 20px;
+    line-height: 20px;
+    border-right: 0;
+  }
+
+  .fa-table .v-table-table td {
     padding: 5px 10px 5px 10px;
     height: 20px;
     line-height: 20px;
@@ -144,6 +151,7 @@ $color-title: #606262;
 
   .fa-button-edit:hover {
     background-image: url("img/edit-black.png");
+    cursor: pointer;
   }
 
   .fa-button-remove {
@@ -152,17 +160,17 @@ $color-title: #606262;
 
   .fa-button-remove:hover {
     background-image: url("img/delete-black.png");
+    cursor: pointer;
   }
 
   .fa-window-detail {
-    min-height: 300px !important;
-    min-width: 500px !important;
     box-shadow: 0 0 10px 1px $color-app-alt;
     background-color: white;
   }
 
   .fa-window-detail .fa-form {
     margin: 20px 0 0 20px;
+    display: block;
   }
 
   .fa-window-detail .v-menubar-menuitem {
@@ -172,9 +180,33 @@ $color-title: #606262;
     color: white;
   }
 
+  .fa-window-detail .v-menubar-menuitem:hover {
+    background-color: $color-app;
+    cursor: pointer;
+  }
+
   .fa-window-detail .v-caption {
     min-width: 200px;
     color: gray;
+  }
+
+  .fa-window-detail .v-captiontext {
+    display: block;
+    color: #606262;
+    font-size: 20px;
+    font-weight: normal;
+    margin: 20px;
+  }
+
+  .fa-window-detail .page-footer {
+    display: block;
+    margin-top: 50px;
+    margin-left: 240px;
+  }
+
+  .fa-window-detail .menu-bar {
+    margin-bottom: 25px;
+    margin-right: 13px;
   }
 
 }

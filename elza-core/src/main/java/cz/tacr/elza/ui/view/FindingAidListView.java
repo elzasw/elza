@@ -53,8 +53,7 @@ public class FindingAidListView extends ElzaView {
         formFA = formularFA();
 
         Table table = new Table();
-        table.setSizeUndefined();
-//        table.setCaption("Archivní pomůcky");
+        table.setWidth("100%");
         table.addContainerProperty("name", String.class, "", "Název", null, null);
         table.addContainerProperty("createDate", LocalDateTime.class, null, "Datum vytvoření", null, null);
         table.setSortEnabled(false);
@@ -133,8 +132,6 @@ public class FindingAidListView extends ElzaView {
         CssLayout contentBarMain = new CssLayout(table);
         contentBarMain.addStyleName("fa-content-main");
         addComponent(contentBarMain);
-
-
     }
 
     private void refresh() {
@@ -190,6 +187,7 @@ public class FindingAidListView extends ElzaView {
     AxForm<FindingAid> formularFA() {
         AxForm<FindingAid> form = AxForm.init(FindingAid.class);
         form.addStyleName("fa-form");
+        form.setCaption("Detail položky");
         form.addField("Název", "name").required().validator(value -> {
             String val = (String) value;
             if (StringUtils.isEmpty(val)) {
