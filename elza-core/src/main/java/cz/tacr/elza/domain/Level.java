@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
-@Entity(name = "ARR_LEVEL")
+@Entity(name = "arr_level")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Level extends EntityBase {
 
@@ -40,51 +40,51 @@ public class Level extends EntityBase {
     private Integer position;
 
     public Integer getLevelId() {
-      return levelId;
+        return levelId;
     }
 
-    public void setLevelId(Integer levelId) {
-      this.levelId = levelId;
+    public void setLevelId(final Integer levelId) {
+        this.levelId = levelId;
     }
 
     public Integer getVersionLevelId() {
-      return versionLevelId;
+        return versionLevelId;
     }
 
-    public void setVersionLevelId(Integer versionLevelId) {
-      this.versionLevelId = versionLevelId;
+    public void setVersionLevelId(final Integer versionLevelId) {
+        this.versionLevelId = versionLevelId;
     }
 
     public VersionLevel getVersionLevel() {
-      return versionLevel;
+        return versionLevel;
     }
 
-    public void setVersionLevel(VersionLevel versionLevel) {
-      this.versionLevel = versionLevel;
+    public void setVersionLevel(final VersionLevel versionLevel) {
+        this.versionLevel = versionLevel;
     }
 
     public Integer getParentVersionLevelId() {
-      return parentVersionLevelId;
+        return parentVersionLevelId;
     }
 
-    public void setParentVersionLevelId(Integer parentVersionLevelId) {
-      this.parentVersionLevelId = parentVersionLevelId;
+    public void setParentVersionLevelId(final Integer parentVersionLevelId) {
+        this.parentVersionLevelId = parentVersionLevelId;
     }
 
     public VersionLevel getParentVersionLevel() {
-      return parentVersionLevel;
+        return parentVersionLevel;
     }
 
-    public void setParentVersionLevel(VersionLevel parentVersionLevel) {
-      this.parentVersionLevel = parentVersionLevel;
+    public void setParentVersionLevel(final VersionLevel parentVersionLevel) {
+        this.parentVersionLevel = parentVersionLevel;
     }
 
     public Integer getPosition() {
-      return position;
+        return position;
     }
 
-    public void setPosition(Integer position) {
-      this.position = position;
+    public void setPosition(final Integer position) {
+        this.position = position;
     }
 
     @Override

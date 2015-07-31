@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
-@Entity(name = "ARR_FINDING_AID")
+@Entity(name = "arr_finding_aid")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class FindingAid extends EntityBase {
 

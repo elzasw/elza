@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
-@Entity(name = "ARR_VERSION_LEVEL")
+@Entity(name = "arr_version_level")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class VersionLevel extends EntityBase {
 
@@ -37,43 +37,43 @@ public class VersionLevel extends EntityBase {
     private Version version;
 
     public Integer getVersionLevelId() {
-      return versionLevelId;
+        return versionLevelId;
     }
 
-    public void setVersionLevelId(Integer versionLevelId) {
-      this.versionLevelId = versionLevelId;
+    public void setVersionLevelId(final Integer versionLevelId) {
+        this.versionLevelId = versionLevelId;
     }
 
     public Integer getLevelId() {
-      return levelId;
+        return levelId;
     }
 
-    public void setLevelId(Integer levelId) {
-      this.levelId = levelId;
+    public void setLevelId(final Integer levelId) {
+        this.levelId = levelId;
     }
 
     public Level getLevel() {
-      return level;
+        return level;
     }
 
-    public void setLevel(Level level) {
-      this.level = level;
+    public void setLevel(final Level level) {
+        this.level = level;
     }
 
     public Integer getVersionId() {
-      return versionId;
+        return versionId;
     }
 
-    public void setVersionId(Integer versionId) {
-      this.versionId = versionId;
+    public void setVersionId(final Integer versionId) {
+        this.versionId = versionId;
     }
 
     public Version getVersion() {
-      return version;
+        return version;
     }
 
-    public void setVersion(Version version) {
-      this.version = version;
+    public void setVersion(final Version version) {
+        this.version = version;
     }
 
     @Override

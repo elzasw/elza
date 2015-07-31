@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
-@Entity(name = "ARR_VERSION")
+@Entity(name = "arr_version")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Version extends EntityBase {
 
@@ -52,75 +52,75 @@ public class Version extends EntityBase {
     private FindingAid findingAid;
 
     public Integer getVersionId() {
-      return versionId;
+        return versionId;
     }
 
-    public void setVersionId(Integer versionId) {
-      this.versionId = versionId;
+    public void setVersionId(final Integer versionId) {
+        this.versionId = versionId;
     }
 
     public LocalDateTime getCreateDate() {
-      return createDate;
+        return createDate;
     }
 
-    public void setCreateDate(LocalDateTime createDate) {
-      this.createDate = createDate;
+    public void setCreateDate(final LocalDateTime createDate) {
+        this.createDate = createDate;
     }
 
     public LocalDateTime getApprovalDate() {
-      return approvalDate;
+        return approvalDate;
     }
 
-    public void setApprovalDate(LocalDateTime approvalDate) {
-      this.approvalDate = approvalDate;
+    public void setApprovalDate(final LocalDateTime approvalDate) {
+        this.approvalDate = approvalDate;
     }
 
     public Integer getArrangementTypeId() {
-      return arrangementTypeId;
+        return arrangementTypeId;
     }
 
-    public void setArrangementTypeId(Integer arrangementTypeId) {
-      this.arrangementTypeId = arrangementTypeId;
+    public void setArrangementTypeId(final Integer arrangementTypeId) {
+        this.arrangementTypeId = arrangementTypeId;
     }
 
     public ArrangementType getArrangementType() {
-      return arrangementType;
+        return arrangementType;
     }
 
-    public void setArrangementType(ArrangementType arrangementType) {
-      this.arrangementType = arrangementType;
+    public void setArrangementType(final ArrangementType arrangementType) {
+        this.arrangementType = arrangementType;
     }
 
     public Integer getRuleSetId() {
-      return ruleSetId;
+        return ruleSetId;
     }
 
-    public void setRuleSetId(Integer ruleSetId) {
-      this.ruleSetId = ruleSetId;
+    public void setRuleSetId(final Integer ruleSetId) {
+        this.ruleSetId = ruleSetId;
     }
 
     public RuleSet getRuleSet() {
-      return ruleSet;
+        return ruleSet;
     }
 
-    public void setRuleSet(RuleSet ruleSet) {
-      this.ruleSet = ruleSet;
+    public void setRuleSet(final RuleSet ruleSet) {
+        this.ruleSet = ruleSet;
     }
 
     public Integer getFindingAidId() {
-      return findingAidId;
+        return findingAidId;
     }
 
-    public void setFindingAidId(Integer findingAidId) {
-      this.findingAidId = findingAidId;
+    public void setFindingAidId(final Integer findingAidId) {
+        this.findingAidId = findingAidId;
     }
 
     public FindingAid getFindingAid() {
-      return findingAid;
+        return findingAid;
     }
 
-    public void setFindingAid(FindingAid findingAid) {
-      this.findingAid = findingAid;
+    public void setFindingAid(final FindingAid findingAid) {
+        this.findingAid = findingAid;
     }
 
     @Override

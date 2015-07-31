@@ -7,13 +7,15 @@ import javax.persistence.Id;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import cz.tacr.elza.ax.IdObject;
+
 /**
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
-@Entity(name = "RUL_ARRANGEMENT_TYPE")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrangementType extends EntityBase {
+@Entity(name = "rul_arrangement_type")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
+public class ArrangementType extends EntityBase implements IdObject<Integer> {
 
     @Id
     @GeneratedValue
@@ -23,23 +25,28 @@ public class ArrangementType extends EntityBase {
     private String name;
 
     public Integer getArrangementTypeId() {
-      return arrangementTypeId;
+        return arrangementTypeId;
     }
 
-    public void setArrangementTypeId(Integer arrangementTypeId) {
-      this.arrangementTypeId = arrangementTypeId;
+    public void setArrangementTypeId(final Integer arrangementTypeId) {
+        this.arrangementTypeId = arrangementTypeId;
     }
 
     public String getName() {
-      return name;
+        return name;
     }
 
-    public void setName(String name) {
-      this.name = name;
+    public void setName(final String name) {
+        this.name = name;
     }
 
     @Override
     public String toString() {
         return "ArrangementType pk=" + arrangementTypeId;
+    }
+
+    @Override
+    public Integer getId() {
+        return arrangementTypeId;
     }
 }

@@ -7,13 +7,15 @@ import javax.persistence.Id;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import cz.tacr.elza.ax.IdObject;
+
 /**
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
-@Entity(name = "RUL_RULE_SET")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RuleSet extends EntityBase {
+@Entity(name = "rul_rule_set")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
+public class RuleSet extends EntityBase implements IdObject<Integer> {
 
     @Id
     @GeneratedValue
@@ -23,23 +25,28 @@ public class RuleSet extends EntityBase {
     private String name;
 
     public Integer getRuleSetId() {
-      return ruleSetId;
+        return ruleSetId;
     }
 
-    public void setRuleSetId(Integer ruleSetId) {
-      this.ruleSetId = ruleSetId;
+    public void setRuleSetId(final Integer ruleSetId) {
+        this.ruleSetId = ruleSetId;
     }
 
     public String getName() {
-      return name;
+        return name;
     }
 
-    public void setName(String name) {
-      this.name = name;
+    public void setName(final String name) {
+        this.name = name;
     }
 
     @Override
     public String toString() {
         return "RuleSet pk=" + ruleSetId;
+    }
+
+    @Override
+    public Integer getId() {
+        return ruleSetId;
     }
 }
