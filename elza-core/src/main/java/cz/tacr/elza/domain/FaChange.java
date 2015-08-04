@@ -8,8 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.tacr.elza.ax.IdObject;
+import cz.req.ax.IdObject;
 
 /**
  * @author by Ondřej Buriánek, burianek@marbes.cz.
