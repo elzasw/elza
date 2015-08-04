@@ -23,10 +23,10 @@ import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Table;
 
-import cz.tacr.elza.ax.AxAction;
-import cz.tacr.elza.ax.AxContainer;
-import cz.tacr.elza.ax.AxForm;
-import cz.tacr.elza.ax.AxWindow;
+import cz.req.ax.AxAction;
+import cz.req.ax.AxContainer;
+import cz.req.ax.AxForm;
+import cz.req.ax.AxWindow;
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleSetManager;
 import cz.tacr.elza.domain.ArrangementType;

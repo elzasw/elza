@@ -37,3 +37,4 @@ public class ElzaUI extends AxUI {
         JavaScript.getCurrent().execute("window.scrollTo(0,0)");
     }
 }
+NexusPica1
