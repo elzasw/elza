@@ -21,6 +21,9 @@ public class ArrangementType extends EntityBase implements IdObject<Integer> {
     @GeneratedValue
     private Integer arrangementTypeId;
 
+    @Column(length = 5, nullable = false)
+    private String code;
+
     @Column(length = 50, nullable = false)
     private String name;
 
@@ -38,6 +41,14 @@ public class ArrangementType extends EntityBase implements IdObject<Integer> {
 
     public void setName(final String name) {
         this.name = name;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 
     @Override

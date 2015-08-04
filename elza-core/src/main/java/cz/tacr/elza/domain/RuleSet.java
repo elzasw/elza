@@ -21,6 +21,9 @@ public class RuleSet extends EntityBase implements IdObject<Integer> {
     @GeneratedValue
     private Integer ruleSetId;
 
+    @Column(length = 5, nullable = false)
+    private String code;
+
     @Column(length = 50, nullable = false)
     private String name;
 
@@ -30,6 +33,14 @@ public class RuleSet extends EntityBase implements IdObject<Integer> {
 
     public void setRuleSetId(final Integer ruleSetId) {
         this.ruleSetId = ruleSetId;
+    }
+
+    public String getCode() {
+      return code;
+    }
+
+    public void setCode(String code) {
+      this.code = code;
     }
 
     public String getName() {

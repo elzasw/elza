@@ -1,7 +1,6 @@
 package cz.tacr.elza.controller;
 
 import java.time.LocalDateTime;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -15,16 +14,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.domain.ArrangementType;
+import cz.tacr.elza.domain.FaChange;
+import cz.tacr.elza.domain.FaLevel;
+import cz.tacr.elza.domain.FaVersion;
+import cz.tacr.elza.domain.FaVersion;
 import cz.tacr.elza.domain.FindingAid;
-import cz.tacr.elza.domain.Level;
 import cz.tacr.elza.domain.RuleSet;
-import cz.tacr.elza.domain.Version;
-import cz.tacr.elza.domain.VersionLevel;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
+import cz.tacr.elza.repository.FaChangeRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
-import cz.tacr.elza.repository.VersionLevelRepository;
 import cz.tacr.elza.repository.VersionRepository;
 
 /**
@@ -53,7 +53,7 @@ public class ArrangementManager {
     private LevelRepository levelRepository;
 
     @Autowired
-    private VersionLevelRepository versionLevelRepository;
+    private FaChangeRepository faChangeRepository;
 
     /**
      * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.
@@ -97,39 +97,41 @@ public class ArrangementManager {
         ArrangementType arrangementType = arrangementTypeRepository.getOne(arrangementTypeId);
         RuleSet ruleSet = ruleSetRepository.getOne(ruleSetId);
 
-        Version version = createVersion(findingAid, arrangementType, ruleSet);
-        Level level = createLevel();
-        createVersionLevel(version, level);
+        FaChange change = createChange();
+
+        FaVersion version = createVersion(change, findingAid, arrangementType, ruleSet);
+        FaLevel level = createLevel(change);
 
         return findingAid;
     }
 
-    private VersionLevel createVersionLevel(final Version version, final Level level) {
-        VersionLevel versionLevel = new VersionLevel();
-        versionLevel.setLevel(level);
-        versionLevel.setVersion(version);
-        return versionLevelRepository.save(versionLevel);
-    }
-
-    private Level createLevel() {
-        Level level = new Level();
+    private FaLevel createLevel(final FaChange createChange) {
+        FaLevel level = new FaLevel();
         level.setPosition(1);
+        level.setCreateChange(createChange);
 
-        Integer maxTreeId = levelRepository.findMaxTreeId();
-        if (maxTreeId == null) {
-            maxTreeId = 0;
+        Integer maxNodeId = levelRepository.findMaxNodeId();
+        if (maxNodeId == null) {
+            maxNodeId = 0;
         }
-        level.setTreeId(maxTreeId + 1);
+        level.setNodeId(maxNodeId + 1);
         return levelRepository.save(level);
     }
 
-    private Version createVersion(final FindingAid findingAid, final ArrangementType arrangementType, final RuleSet ruleSet) {
-        Version version = new Version();
+    private FaVersion createVersion(final FaChange createChange, final FindingAid findingAid,
+                                    final ArrangementType arrangementType, final RuleSet ruleSet) {
+        FaVersion version = new FaVersion();
+        version.setCreateChange(createChange);
         version.setArrangementType(arrangementType);
-        version.setCreateDate(findingAid.getCreateDate());
         version.setFindingAid(findingAid);
         version.setRuleSet(ruleSet);
         return versionRepository.save(version);
+    }
+
+    private FaChange createChange() {
+        FaChange change = new FaChange();
+        change.setChangeDate(LocalDateTime.now());
+        return faChangeRepository.save(change);
     }
 
     /**
@@ -141,19 +143,16 @@ public class ArrangementManager {
     public void deleteFindingAid(@RequestParam(value="findingAidId") final Integer findingAidId) {
         Assert.notNull(findingAidId);
 
-        List<Version> versions = versionRepository.findByFindingAidId(findingAidId);
+        List<FaVersion> versions = versionRepository.findByFindingAidId(findingAidId);
 
-        List<VersionLevel> versionLevels = versionLevelRepository.findByVersion(versions);
+//        List<Integer> levelIds = new LinkedList<Integer>();
+//        for (FaVersion versionLevel : versions) {
+//            levelIds.add(versionLevel.getRootFaLevelId());
+//        }
+//        List<FaLevel> levels = levelRepository.findByFaLevelId(levelIds);
 
-        List<Integer> levelIds = new LinkedList<Integer>();
-        for (VersionLevel versionLevel : versionLevels) {
-            levelIds.add(versionLevel.getLevelId());
-        }
-        List<Level> levels = levelRepository.findByLevelId(levelIds);
-
-        versionLevelRepository.deleteInBatch(versionLevels);
         versionRepository.deleteInBatch(versions);
-        levelRepository.deleteInBatch(levels);
+//        levelRepository.deleteInBatch(levels);
 
         findingAidRepository.delete(findingAidId);
     }

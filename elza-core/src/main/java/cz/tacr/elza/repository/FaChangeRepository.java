@@ -1,19 +1,15 @@
 package cz.tacr.elza.repository;
 
-import java.util.List;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.FaVersion;
+import cz.tacr.elza.domain.FaChange;
 
 /**
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
 @Repository
-public interface VersionRepository extends JpaRepository<FaVersion, Integer> {
-
-    List<FaVersion> findByFindingAidId(Integer findingAidId);
+public interface FaChangeRepository extends JpaRepository<FaChange, Integer> {
 
 }

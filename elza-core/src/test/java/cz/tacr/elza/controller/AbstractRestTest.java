@@ -37,6 +37,7 @@ public abstract class AbstractRestTest {
     protected static final String ARRANGEMENT_MANAGER_URL = "/api/arrangementManager";
     protected static final String RULE_SET_MANAGER_URL = "/api/ruleSetManager";
 
+    protected static final String TEST_CODE = "Tcode";
     protected static final String TEST_NAME = "Test name";
     protected static final String TEST_UPDATE_NAME = "Update name";
 
@@ -103,6 +104,7 @@ public abstract class AbstractRestTest {
     protected ArrangementType createArrangementType() {
         ArrangementType arrangementType = new ArrangementType();
         arrangementType.setName(TEST_NAME);
+        arrangementType.setCode(TEST_CODE);
         arrangementTypeRepository.save(arrangementType);
         return arrangementType;
     }
@@ -110,6 +112,7 @@ public abstract class AbstractRestTest {
     protected RuleSet createRuleSet() {
         RuleSet ruleSet = new RuleSet();
         ruleSet.setName(TEST_NAME);
+        ruleSet.setCode(TEST_CODE);
         ruleSetRepository.save(ruleSet);
         return ruleSet;
     }

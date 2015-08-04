@@ -6,17 +6,17 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.Level;
+import cz.tacr.elza.domain.FaLevel;
 
 /**
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
 @Repository
-public interface LevelRepository extends JpaRepository<Level, Integer> {
+public interface LevelRepository extends JpaRepository<FaLevel, Integer> {
 
-    @Query(value = "SELECT max(l.treeId) FROM arr_level l")
-    Integer findMaxTreeId();
+    @Query(value = "SELECT max(l.nodeId) FROM arr_fa_level l")
+    Integer findMaxNodeId();
 
-    List<Level> findByLevelId(List<Integer> levelIds);
+    List<FaLevel> findByFaLevelId(List<Integer> levelIds);
 }

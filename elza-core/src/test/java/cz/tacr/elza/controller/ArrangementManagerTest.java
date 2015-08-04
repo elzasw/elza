@@ -136,6 +136,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
     public void testRestGetArrangementTypes () throws Exception {
         ArrangementType arrangementType = new ArrangementType();
         arrangementType.setName(TEST_NAME);
+        arrangementType.setCode(TEST_CODE);
         arrangementTypeRepository.save(arrangementType);
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).get(GET_ARRANGEMENT_TYPES_URL);
