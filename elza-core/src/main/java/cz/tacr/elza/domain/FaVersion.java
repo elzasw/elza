@@ -37,15 +37,15 @@ public class FaVersion extends EntityBase {
     private FaChange lockChange;
 
     @Column(updatable = false, insertable = false, nullable = true)
-    private Integer rootFaLevelId;
+    private Integer rootNodeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = FaLevel.class)
-    @JoinColumn(name = "rootFaLevelId", nullable = true)
-    private FaLevel rootFaLevel;
+    @JoinColumn(name = "rootNodeId", nullable = true, referencedColumnName = "nodeId")
+    private FaLevel rootNode;
 
     @Column(updatable = false, insertable = false, nullable = false)
     private Integer findingAidId;
- 
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = FindingAid.class)
     @JoinColumn(name = "findingAidId", nullable = false)
     private FindingAid findingAid;
@@ -68,7 +68,7 @@ public class FaVersion extends EntityBase {
         return faVersionId;
     }
 
-    public void setFaVersionId(Integer faVersionId) {
+    public void setFaVersionId(final Integer faVersionId) {
         this.faVersionId = faVersionId;
     }
 
@@ -76,7 +76,7 @@ public class FaVersion extends EntityBase {
         return createChangeId;
     }
 
-    public void setCreateChangeId(Integer createChangeId) {
+    public void setCreateChangeId(final Integer createChangeId) {
         this.createChangeId = createChangeId;
     }
 
@@ -84,7 +84,7 @@ public class FaVersion extends EntityBase {
         return createChange;
     }
 
-    public void setCreateChange(FaChange createChange) {
+    public void setCreateChange(final FaChange createChange) {
         this.createChange = createChange;
         if (createChange != null) {
             this.createChangeId = createChange.getChangeId();
@@ -95,7 +95,7 @@ public class FaVersion extends EntityBase {
         return lockChangeId;
     }
 
-    public void setLockChangeId(Integer lockChangeId) {
+    public void setLockChangeId(final Integer lockChangeId) {
         this.lockChangeId = lockChangeId;
     }
 
@@ -103,7 +103,7 @@ public class FaVersion extends EntityBase {
         return lockChange;
     }
 
-    public void setLockChange(FaChange lockChange) {
+    public void setLockChange(final FaChange lockChange) {
         this.lockChange = lockChange;
         if (lockChange != null) {
             this.lockChangeId = lockChange.getChangeId();
@@ -111,29 +111,32 @@ public class FaVersion extends EntityBase {
     }
 
     public Integer getRootFaLevelId() {
-        return rootFaLevelId;
+        return rootNodeId;
     }
 
-    public void setRootFaLevelId(Integer rootFaLevelId) {
-        this.rootFaLevelId = rootFaLevelId;
+    public void setRootFaLevelId(final Integer rootFaLevelId) {
+        this.rootNodeId = rootFaLevelId;
     }
 
-    public FaLevel getRootFaLevel() {
-        return rootFaLevel;
+    public FaLevel getRootNode() {
+        return rootNode;
     }
 
-    public void setRootFaLevel(FaLevel rootFaLevel) {
-        this.rootFaLevel = rootFaLevel;
+    public void setRootNode(final FaLevel rootNode) {
+        this.rootNode = rootNode;
+        if (rootNode != null) {
+            this.rootNodeId = rootNode.getNodeId();
+        }
     }
 
     public Integer getFindingAidId() {
         return findingAidId;
     }
- 
+
     public FindingAid getFindingAid() {
         return findingAid;
     }
- 
+
     public void setFindingAid(final FindingAid findingAid) {
         this.findingAid = findingAid;
         if (findingAid != null) {
@@ -174,5 +177,25 @@ public class FaVersion extends EntityBase {
     @Override
     public String toString() {
         return "FaVersion pk=" + faVersionId;
+    }
+
+    public Integer getRootNodeId() {
+        return rootNodeId;
+    }
+
+    public void setRootNodeId(final Integer rootNodeId) {
+        this.rootNodeId = rootNodeId;
+    }
+
+    public void setFindingAidId(final Integer findingAidId) {
+        this.findingAidId = findingAidId;
+    }
+
+    public void setArrangementTypeId(final Integer arrangementTypeId) {
+        this.arrangementTypeId = arrangementTypeId;
+    }
+
+    public void setRuleSetId(final Integer ruleSetId) {
+        this.ruleSetId = ruleSetId;
     }
 }

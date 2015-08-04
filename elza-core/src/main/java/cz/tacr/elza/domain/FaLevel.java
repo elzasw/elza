@@ -25,8 +25,12 @@ public class FaLevel extends EntityBase {
     @Column(nullable = false)
     private Integer nodeId;
 
-    @Column(nullable = true)
+    @Column(updatable = false, insertable = false, nullable = true)
     private Integer parentNodeId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parentNodeId", nullable = true, referencedColumnName = "nodeId")
+    private FaLevel parentNode;
 
     @Column(updatable = false, insertable = false, nullable = false)
     private Integer createChangeId;
@@ -49,7 +53,7 @@ public class FaLevel extends EntityBase {
         return faLevelId;
     }
 
-    public void setFaLevelId(Integer faLevelId) {
+    public void setFaLevelId(final Integer faLevelId) {
         this.faLevelId = faLevelId;
     }
 
@@ -57,7 +61,7 @@ public class FaLevel extends EntityBase {
         return nodeId;
     }
 
-    public void setNodeId(Integer nodeId) {
+    public void setNodeId(final Integer nodeId) {
         this.nodeId = nodeId;
     }
 
@@ -65,15 +69,26 @@ public class FaLevel extends EntityBase {
         return parentNodeId;
     }
 
-    public void setParentNodeId(Integer parentNodeId) {
+    public void setParentNodeId(final Integer parentNodeId) {
         this.parentNodeId = parentNodeId;
+    }
+
+    public FaLevel getParentNode() {
+        return parentNode;
+    }
+
+    public void setParentNode(final FaLevel parentNode) {
+        this.parentNode = parentNode;
+        if (parentNode != null) {
+            this.parentNodeId = parentNode.getNodeId();
+        }
     }
 
     public Integer getCreateChangeId() {
         return createChangeId;
     }
 
-    public void setCreateChangeId(Integer createChangeId) {
+    public void setCreateChangeId(final Integer createChangeId) {
         this.createChangeId = createChangeId;
     }
 
@@ -81,7 +96,7 @@ public class FaLevel extends EntityBase {
         return createChange;
     }
 
-    public void setCreateChange(FaChange createChange) {
+    public void setCreateChange(final FaChange createChange) {
         this.createChange = createChange;
         if (createChange != null) {
             this.createChangeId = createChange.getChangeId();
@@ -92,7 +107,7 @@ public class FaLevel extends EntityBase {
         return deleteChangeId;
     }
 
-    public void setDeleteChangeId(Integer deleteChangeId) {
+    public void setDeleteChangeId(final Integer deleteChangeId) {
         this.deleteChangeId = deleteChangeId;
     }
 
@@ -100,7 +115,7 @@ public class FaLevel extends EntityBase {
         return deleteChange;
     }
 
-    public void setDeleteChange(FaChange deleteChange) {
+    public void setDeleteChange(final FaChange deleteChange) {
         this.deleteChange = deleteChange;
         if (deleteChange != null) {
             this.deleteChangeId = deleteChange.getChangeId();
@@ -111,7 +126,7 @@ public class FaLevel extends EntityBase {
         return position;
     }
 
-    public void setPosition(Integer position) {
+    public void setPosition(final Integer position) {
         this.position = position;
     }
 
