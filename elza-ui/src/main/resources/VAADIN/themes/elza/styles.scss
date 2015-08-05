@@ -1,8 +1,5 @@
-//TODO burianek presunout na spravne misto x
-//@import "ax";
 @import "../ax/ax";
 @import "../valo/styles.scss";
-//@import "../valo/components/_treetable.scss";
 @import "../ax/valo-fix";
 
 body.v-generated-body {
@@ -17,7 +14,9 @@ $color-title: #606262;
 
 .elza {
 
-  @include ax;
+  //@include ax;
+  @include valo;
+
   @import "elza-layout";
   @import "elza-common";
 
