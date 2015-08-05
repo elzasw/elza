@@ -15,7 +15,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 
 import com.jayway.restassured.RestAssured;
 
-import cz.tacr.elza.ElzaApp;
+import cz.tacr.elza.ElzaCore;
 import cz.tacr.elza.domain.ArrangementType;
 import cz.tacr.elza.domain.FindingAid;
 import cz.tacr.elza.domain.RuleSet;
@@ -29,7 +29,7 @@ import cz.tacr.elza.repository.RuleSetRepository;
  * @since 31. 7. 2015
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = ElzaApp.class)
+@SpringApplicationConfiguration(classes = ElzaCore.class)
 @IntegrationTest("server.port:0") // zvoli volny port, lze spustit i s aktivni Elzou
 @WebAppConfiguration
 public abstract class AbstractRestTest {

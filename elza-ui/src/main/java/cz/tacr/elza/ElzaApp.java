@@ -1,13 +1,9 @@
 package cz.tacr.elza;
 
-import com.google.common.eventbus.EventBus;
 import com.vaadin.server.AxVaadinServlet;
 import cz.req.ax.AxAction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
 import org.springframework.boot.context.embedded.ServletRegistrationBean;
 import org.springframework.boot.orm.jpa.EntityScan;
@@ -25,19 +21,16 @@ import javax.servlet.ServletException;
 
 /**
  * @author by Ondřej Buriánek, burianek@marbes.cz.
- * @since 22.7.15
+ * @since 5.8.15
  */
 @Configuration
-@Import({ElzaConf.class})
-@EntityScan(basePackageClasses = {ElzaApp.class})
-@ComponentScan(basePackageClasses = {ElzaApp.class, AxAction.class})
-@EnableJpaRepositories(basePackageClasses = {ElzaApp.class})
+@Import({ElzaCore.class})
+@EntityScan(basePackageClasses = {ElzaCore.class})
+@ComponentScan(basePackageClasses = {ElzaCore.class, AxAction.class})
+@EnableJpaRepositories(basePackageClasses = {ElzaCore.class})
 @EnableAutoConfiguration
 @EnableWebMvc
-//@WebAppConfiguration
 public class ElzaApp {
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public static void main(String[] args) {
         SpringApplication.run(ElzaApp.class, args);
@@ -46,26 +39,12 @@ public class ElzaApp {
     @Bean
     public ServletRegistrationBean vaadinServlet() {
         AxVaadinServlet servlet = new AxVaadinServlet();
-        ServletRegistrationBean registration = new ServletRegistrationBean(servlet, "/ui/*","/VAADIN/*");
+        ServletRegistrationBean registration = new ServletRegistrationBean(servlet, "/ui/*", "/VAADIN/*");
         registration.addInitParameter("beanName", "elzaUI");
         registration.addInitParameter("widgetset", "com.vaadin.DefaultWidgetSet");
         registration.addInitParameter("systemMessagesBeanName", "DEFAULT");
         registration.addInitParameter("heartbeatInterval", "28");
         return registration;
-    }
-
-    @Bean
-    public ServerProperties servlet() {
-        ServerProperties properties = new ServerProperties();
-        properties.setServletPath("/api/*");
-        return properties;
-    }
-
-    @Bean
-    public EventBus eventBus() {
-        return new EventBus((exception, context) -> {
-            logger.error("Subscriber exception " + context.getSubscriberMethod(), exception);
-        });
     }
 
     @Bean
