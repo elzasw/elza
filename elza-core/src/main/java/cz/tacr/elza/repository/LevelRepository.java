@@ -19,4 +19,6 @@ public interface LevelRepository extends JpaRepository<FaLevel, Integer> {
     Integer findMaxNodeId();
 
     List<FaLevel> findByFaLevelId(List<Integer> levelIds);
+
+    List<FaLevel> findByFaLevelId(Integer levelId);
 }

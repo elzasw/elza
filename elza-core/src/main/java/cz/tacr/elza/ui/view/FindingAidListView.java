@@ -12,10 +12,12 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import cz.tacr.elza.repository.LevelRepository;
 import ru.xpoft.vaadin.VaadinView;
 
 import com.vaadin.data.Validator;
 import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.event.ItemClickEvent;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Button;
@@ -61,6 +63,8 @@ public class FindingAidListView extends ElzaView {
 
     @Override
     public void enter(final ViewChangeListener.ViewChangeEvent event) {
+        super.enter(event);
+
         formFA = formularFA();
 
         Table table = new Table();
@@ -107,6 +111,14 @@ public class FindingAidListView extends ElzaView {
 
         table.setColumnHeader("actions", "Akce");
 
+        table.addItemClickListener(new ItemClickEvent.ItemClickListener() {
+            @Override
+            public void itemClick(ItemClickEvent itemClickEvent) {
+                FindingAid findingAid = (FindingAid) itemClickEvent.getItemId();
+                navigate(FindingAidDetailView.class, findingAid.getFindigAidId());
+            }
+        });
+
         container = new BeanItemContainer<>(FindingAid.class);
 
         refresh();
@@ -125,32 +137,22 @@ public class FindingAidListView extends ElzaView {
             }
         });
 
-        Label elza = new Label("ELZA");
-        elza.addStyleName("fa-header-elza");
-        CssLayout headerBar = new CssLayout(elza, button);
-        headerBar.addStyleName("fa-header");
-
-        CssLayout headerBarMain = new CssLayout(headerBar);
-        headerBarMain.addStyleName("fa-header-main");
-        addComponent(headerBarMain);
-
-        Label title = new Label("<h1>Archivní pomůcky</h1>");
-        title.setContentMode(ContentMode.HTML);
-        CssLayout titleBar = new CssLayout(title);
-        titleBar.addStyleName("fa-title");
-
-        CssLayout titleBarMain = new CssLayout(titleBar);
-        titleBarMain.addStyleName("fa-title-main");
-        addComponent(titleBarMain);
-
-        CssLayout contentBarMain = new CssLayout(table);
-        contentBarMain.addStyleName("fa-content-main");
-        addComponent(contentBarMain);
+        actionsBar().addComponent(button);
+        addBodyHead();
+        bodyMain().addComponent(table);
     }
 
     private void refresh() {
         container.removeAllItems();
         container.addAll(arrangementManager.getFindingAids());
+    }
+
+    public void addBodyHead() {
+        Label title = new Label("<h1>Archivní pomůcky</h1>");
+        title.setContentMode(ContentMode.HTML);
+        CssLayout titleBar = new CssLayout(title);
+        titleBar.addStyleName("fa-title");
+        bodyHeadMain().addComponent(titleBar);
     }
 
     private void novyFA(final AxForm<VONewFindingAid> form) {
