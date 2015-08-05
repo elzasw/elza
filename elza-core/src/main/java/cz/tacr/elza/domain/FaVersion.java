@@ -86,7 +86,9 @@ public class FaVersion extends EntityBase {
 
     public void setCreateChange(final FaChange createChange) {
         this.createChange = createChange;
-        if (createChange != null) {
+        if (createChange == null) {
+            this.createChangeId = null;
+        } else {
             this.createChangeId = createChange.getChangeId();
         }
     }
@@ -105,7 +107,9 @@ public class FaVersion extends EntityBase {
 
     public void setLockChange(final FaChange lockChange) {
         this.lockChange = lockChange;
-        if (lockChange != null) {
+        if (lockChange == null) {
+            this.lockChangeId = null;
+        } else {
             this.lockChangeId = lockChange.getChangeId();
         }
     }
@@ -124,7 +128,9 @@ public class FaVersion extends EntityBase {
 
     public void setRootNode(final FaLevel rootNode) {
         this.rootNode = rootNode;
-        if (rootNode != null) {
+        if (rootNode == null) {
+            this.rootNodeId = null;
+        } else {
             this.rootNodeId = rootNode.getNodeId();
         }
     }
@@ -139,7 +145,9 @@ public class FaVersion extends EntityBase {
 
     public void setFindingAid(final FindingAid findingAid) {
         this.findingAid = findingAid;
-        if (findingAid != null) {
+        if (findingAid == null) {
+            findingAidId = null;
+        } else {
             findingAidId = findingAid.getFindigAidId();
         }
     }
@@ -154,7 +162,9 @@ public class FaVersion extends EntityBase {
 
     public void setArrangementType(final ArrangementType arrangementType) {
         this.arrangementType = arrangementType;
-        if (arrangementType != null) {
+        if (arrangementType == null) {
+            arrangementTypeId = null;
+        } else {
             arrangementTypeId = arrangementType.getArrangementTypeId();
         }
     }
@@ -169,7 +179,9 @@ public class FaVersion extends EntityBase {
 
     public void setRuleSet(final RuleSet ruleSet) {
         this.ruleSet = ruleSet;
-        if (ruleSet != null) {
+        if (ruleSet == null) {
+            ruleSetId = null;
+        } else {
             ruleSetId = ruleSet.getRuleSetId();
         }
     }

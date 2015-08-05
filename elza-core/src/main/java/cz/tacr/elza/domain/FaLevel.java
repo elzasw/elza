@@ -79,7 +79,9 @@ public class FaLevel extends EntityBase {
 
     public void setParentNode(final FaLevel parentNode) {
         this.parentNode = parentNode;
-        if (parentNode != null) {
+        if (parentNode == null) {
+            this.parentNodeId = null;
+        } else {
             this.parentNodeId = parentNode.getNodeId();
         }
     }
@@ -98,7 +100,9 @@ public class FaLevel extends EntityBase {
 
     public void setCreateChange(final FaChange createChange) {
         this.createChange = createChange;
-        if (createChange != null) {
+        if (createChange == null) {
+            this.createChangeId = null;
+        } else {
             this.createChangeId = createChange.getChangeId();
         }
     }
@@ -117,7 +121,9 @@ public class FaLevel extends EntityBase {
 
     public void setDeleteChange(final FaChange deleteChange) {
         this.deleteChange = deleteChange;
-        if (deleteChange != null) {
+        if (deleteChange == null) {
+            this.deleteChangeId = null;
+        } else {
             this.deleteChangeId = deleteChange.getChangeId();
         }
     }
