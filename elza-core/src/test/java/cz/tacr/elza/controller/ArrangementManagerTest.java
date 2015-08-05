@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.jayway.restassured.response.Response;
 
 import cz.tacr.elza.domain.ArrangementType;
+import cz.tacr.elza.domain.FaVersion;
 import cz.tacr.elza.domain.FindingAid;
 import cz.tacr.elza.domain.RuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
@@ -34,6 +35,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
     private static final String DELETE_FA_URL = ARRANGEMENT_MANAGER_URL + "/deleteFindingAid";
     private static final String GET_FA_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAids";
     private static final String GET_ARRANGEMENT_TYPES_URL = ARRANGEMENT_MANAGER_URL + "/getArrangementTypes";
+    private static final String GET_FINDING_AID_VERSIONS_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAidVersions";
 
     private static final String FA_NAME_ATT = "name";
     private static final String FA_ID_ATT = "findingAidId";
@@ -145,6 +147,36 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         List<ArrangementType> arrangementTypes = Arrays.asList(response.getBody().as(ArrangementType[].class));
         Assert.assertTrue("Nenalezena polozka " + TEST_NAME, !arrangementTypes.isEmpty());
+    }
+
+    @Test
+    public void testRestGetFindingAidVersions() throws Exception {
+        FindingAid findingAid = createFindingAid(TEST_NAME);
+
+        int versionCount = 10;
+        for (int i = 0; i < versionCount; i++) {
+            createFindingAidVersion(findingAid);
+        }
+
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
+                parameter(FA_ID_ATT, findingAid.getFindigAidId()).get(GET_FINDING_AID_VERSIONS_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        List<FaVersion> versions = Arrays.asList(response.getBody().as(FaVersion[].class));
+        Assert.assertTrue(versions.size() == versionCount + 1);
+
+        FaVersion prevVersion = null;
+        for (FaVersion version : versions) {
+            if (prevVersion == null) {
+                prevVersion = version;
+                continue;
+            }
+
+            if (prevVersion.getCreateChange().getChangeDate().isBefore(version.getCreateChange().getChangeDate())) {
+                Assert.fail();
+            }
+        }
     }
 
     /**

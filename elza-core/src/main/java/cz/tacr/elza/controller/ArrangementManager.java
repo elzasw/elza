@@ -20,7 +20,7 @@ import cz.tacr.elza.domain.FaVersion;
 import cz.tacr.elza.domain.FindingAid;
 import cz.tacr.elza.domain.RuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
-import cz.tacr.elza.repository.FaChangeRepository;
+import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
@@ -52,7 +52,7 @@ public class ArrangementManager {
     private LevelRepository levelRepository;
 
     @Autowired
-    private FaChangeRepository faChangeRepository;
+    private ChangeRepository faChangeRepository;
 
     /**
      * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.
@@ -112,6 +112,7 @@ public class ArrangementManager {
         if (parent != null) {
             level.setParentNode(parent);
         }
+
         Integer maxNodeId = levelRepository.findMaxNodeId();
         if (maxNodeId == null) {
             maxNodeId = 0;
@@ -146,7 +147,7 @@ public class ArrangementManager {
     public void deleteFindingAid(@RequestParam(value="findingAidId") final Integer findingAidId) {
         Assert.notNull(findingAidId);
 
-        List<FaVersion> versions = versionRepository.findByFindingAidId(findingAidId);
+        List<FaVersion> versions = versionRepository.findByFindingAidIdOrderByCreateDateAsc(findingAidId);
 
         //        List<Integer> levelIds = new LinkedList<Integer>();
         //        for (FaVersion versionLevel : versions) {
@@ -199,5 +200,19 @@ public class ArrangementManager {
     @RequestMapping(value = "/getArrangementTypes", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ArrangementType> getArrangementTypes() {
         return arrangementTypeRepository.findAll();
+    }
+
+    /**
+     * Vrátí seznam verzí pro danou archivní pomůcku seřazený od nejnovější k nejstarší.
+     *
+     * @param findingAidId id archivní pomůcky
+     *
+     * @return seznam verzí pro danou archivní pomůcku seřazený od nejnovější k nejstarší
+     */
+    @RequestMapping(value = "/getFindingAidVersions", method = RequestMethod.GET, params = {"findingAidId"}, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<FaVersion> getFindingAidVersions(@RequestParam(value="findingAidId") final Integer findingAidId) {
+        Assert.notNull(findingAidId);
+
+        return versionRepository.findByFindingAidIdOrderByCreateDateAsc(findingAidId);
     }
 }

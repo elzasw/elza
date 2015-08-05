@@ -17,10 +17,16 @@ import com.jayway.restassured.RestAssured;
 
 import cz.tacr.elza.ElzaCore;
 import cz.tacr.elza.domain.ArrangementType;
+import cz.tacr.elza.domain.FaChange;
+import cz.tacr.elza.domain.FaLevel;
+import cz.tacr.elza.domain.FaVersion;
 import cz.tacr.elza.domain.FindingAid;
 import cz.tacr.elza.domain.RuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
+import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.VersionRepository;
 
 /**
  * Abstraktní předek pro testy. Nastavuje REST prostředí.
@@ -54,6 +60,12 @@ public abstract class AbstractRestTest {
     private ArrangementTypeRepository arrangementTypeRepository;
     @Autowired
     private RuleSetRepository ruleSetRepository;
+    @Autowired
+    private VersionRepository versionRepository;
+    @Autowired
+    private ChangeRepository changeRepository;
+    @Autowired
+    private LevelRepository levelRepository;
 
     @Before
     public void setUp() {
@@ -122,5 +134,23 @@ public abstract class AbstractRestTest {
         ArrangementType arrangementType = createArrangementType();
 
         return arrangementManager.createFindingAid(name, arrangementType.getId(), ruleSet.getId());
+    }
+
+    protected FaVersion createFindingAidVersion(final FindingAid findingAid) {
+        RuleSet ruleSet = ruleSetRepository.findAll().iterator().next();
+        ArrangementType arrangementType = arrangementTypeRepository.findAll().iterator().next();
+        FaChange change = new FaChange();
+        change.setChangeDate(LocalDateTime.now());
+        changeRepository.save(change);
+        FaLevel root = levelRepository.findAll().iterator().next();
+
+        FaVersion version = new FaVersion();
+        version.setArrangementType(arrangementType);
+        version.setCreateChange(change);
+        version.setFindingAid(findingAid);
+        version.setRootNode(root);
+        version.setRuleSet(ruleSet);
+
+        return versionRepository.save(version);
     }
 }

@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.domain.FaChange;
 import cz.tacr.elza.domain.FaLevel;
-import cz.tacr.elza.repository.FaChangeRepository;
+import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.LevelRepository;
 
 /**
@@ -27,7 +27,7 @@ public class TreeTest extends AbstractRestTest {
     @Autowired
     LevelRepository levelRepository;
     @Autowired
-    FaChangeRepository changeRepository;
+    ChangeRepository changeRepository;
     @PersistenceContext
     EntityManager entityManager;
 

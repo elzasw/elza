@@ -7,11 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.vaadin.data.Item;
+import ru.xpoft.vaadin.VaadinView;
+
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Button;
-import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.TreeTable;
@@ -23,7 +23,6 @@ import cz.tacr.elza.domain.FindingAid;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.VersionRepository;
 import cz.tacr.elza.ui.ElzaView;
-import ru.xpoft.vaadin.VaadinView;
 
 
 /**
@@ -65,7 +64,7 @@ public class FindingAidDetailView extends ElzaView {
             }
         }
 
-//        bodyHead().addComponent(test);
+        //        bodyHead().addComponent(test);
 
         addBodyHead();
         addActionsButtons();
@@ -93,7 +92,7 @@ public class FindingAidDetailView extends ElzaView {
         container.setParent("b", "a");
         container.setParent("c", "b");*/
 
-        List<FaVersion> versions = versionRepository.findByFindingAidId(findingAidId);
+        List<FaVersion> versions = versionRepository.findByFindingAidIdOrderByCreateDateAsc(findingAidId);
 
         List<FaLevel> faLevelsAll = new LinkedList<FaLevel>();
 
@@ -117,6 +116,12 @@ public class FindingAidDetailView extends ElzaView {
         Button showHistory = new Button("Zobrazit historii");
         showHistory.addStyleName("fa-button");
         showHistory.addStyleName("fa-button-show");
+        showHistory.addClickListener(new Button.ClickListener() {
+            @Override
+            public void buttonClick(final Button.ClickEvent event) {
+                navigate(VersionListView.class, getParameterInteger());
+            }
+        });
         Button approveVersion = new Button("Schválit verzi");
         approveVersion.addStyleName("fa-button");
         approveVersion.addStyleName("fa-button-approve");

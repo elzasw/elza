@@ -114,14 +114,6 @@ public class FaVersion extends EntityBase {
         }
     }
 
-    public Integer getRootFaLevelId() {
-        return rootNodeId;
-    }
-
-    public void setRootFaLevelId(final Integer rootFaLevelId) {
-        this.rootNodeId = rootFaLevelId;
-    }
-
     public FaLevel getRootNode() {
         return rootNode;
     }

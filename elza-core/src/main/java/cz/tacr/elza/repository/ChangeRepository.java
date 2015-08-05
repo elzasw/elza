@@ -10,6 +10,6 @@ import cz.tacr.elza.domain.FaChange;
  * @since 22.7.15
  */
 @Repository
-public interface FaChangeRepository extends JpaRepository<FaChange, Integer> {
+public interface ChangeRepository extends JpaRepository<FaChange, Integer> {
 
 }
