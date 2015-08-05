@@ -140,7 +140,7 @@ public class ArrangementManager {
     /**
      * Smaže archivní pomůcku se zadaným id. Maže kompletní strukturu se všemi závislostmi.
      *
-     * @param idArchivniPomucka id archivní pomůcky
+     * @param findingAidId id archivní pomůcky
      */
     @RequestMapping(value = "/deleteFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, params = {"findingAidId"})
     public void deleteFindingAid(@RequestParam(value="findingAidId") final Integer findingAidId) {
