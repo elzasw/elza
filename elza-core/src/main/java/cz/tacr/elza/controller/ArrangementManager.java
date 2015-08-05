@@ -17,7 +17,6 @@ import cz.tacr.elza.domain.ArrangementType;
 import cz.tacr.elza.domain.FaChange;
 import cz.tacr.elza.domain.FaLevel;
 import cz.tacr.elza.domain.FaVersion;
-import cz.tacr.elza.domain.FaVersion;
 import cz.tacr.elza.domain.FindingAid;
 import cz.tacr.elza.domain.RuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
@@ -99,17 +98,20 @@ public class ArrangementManager {
 
         FaChange change = createChange();
 
-        FaVersion version = createVersion(change, findingAid, arrangementType, ruleSet);
-        FaLevel level = createLevel(change);
+        FaLevel rootNode = createLevel(change, null);
+        createVersion(change, findingAid, arrangementType, ruleSet, rootNode);
 
         return findingAid;
     }
 
-    private FaLevel createLevel(final FaChange createChange) {
+    private FaLevel createLevel(final FaChange createChange, final FaLevel parent) {
         FaLevel level = new FaLevel();
         level.setPosition(1);
         level.setCreateChange(createChange);
 
+        if (parent != null) {
+            level.setParentNode(parent);
+        }
         Integer maxNodeId = levelRepository.findMaxNodeId();
         if (maxNodeId == null) {
             maxNodeId = 0;
@@ -119,12 +121,13 @@ public class ArrangementManager {
     }
 
     private FaVersion createVersion(final FaChange createChange, final FindingAid findingAid,
-                                    final ArrangementType arrangementType, final RuleSet ruleSet) {
+            final ArrangementType arrangementType, final RuleSet ruleSet, final FaLevel rootNode) {
         FaVersion version = new FaVersion();
         version.setCreateChange(createChange);
         version.setArrangementType(arrangementType);
         version.setFindingAid(findingAid);
         version.setRuleSet(ruleSet);
+        version.setRootNode(rootNode);
         return versionRepository.save(version);
     }
 
@@ -145,14 +148,14 @@ public class ArrangementManager {
 
         List<FaVersion> versions = versionRepository.findByFindingAidId(findingAidId);
 
-//        List<Integer> levelIds = new LinkedList<Integer>();
-//        for (FaVersion versionLevel : versions) {
-//            levelIds.add(versionLevel.getRootFaLevelId());
-//        }
-//        List<FaLevel> levels = levelRepository.findByFaLevelId(levelIds);
+        //        List<Integer> levelIds = new LinkedList<Integer>();
+        //        for (FaVersion versionLevel : versions) {
+        //            levelIds.add(versionLevel.getRootFaLevelId());
+        //        }
+        //        List<FaLevel> levels = levelRepository.findByFaLevelId(levelIds);
 
         versionRepository.deleteInBatch(versions);
-//        levelRepository.deleteInBatch(levels);
+        //        levelRepository.deleteInBatch(levels);
 
         findingAidRepository.delete(findingAidId);
     }
