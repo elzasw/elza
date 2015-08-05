@@ -20,6 +20,7 @@ public class ElzaUI extends AxUI {
     protected void init(VaadinRequest request) {
         getPage().setTitle("ELZA");
         addStyleName("elza");
+        addStyleName("valo");
         super.init(request);
     }
 

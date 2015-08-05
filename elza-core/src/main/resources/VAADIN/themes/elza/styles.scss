@@ -1,7 +1,8 @@
 //TODO burianek presunout na spravne misto x
 //@import "ax";
 //@import "../ax/ax";
-@import "../valo/valo";
+@import "../valo/styles.scss";
+//@import "../valo/components/_treetable.scss";
 @import "../ax/valo-fix";
 
 body.v-generated-body {
@@ -30,7 +31,7 @@ $color-title: #606262;
     border: none;
   }
 
-  .page-root, .fa-header-main, .fa-title-main, .fa-content-main  {
+  .page-root, .fa-header-main, .page-header, .page-body, .fa-title-main, .fa-content-main  {
     width: 100%;
   }
 
@@ -64,17 +65,22 @@ $color-title: #606262;
     color: white;
   }
 
-  .fa-button-new {
+  .fa-button {
     color: white;
     line-height: 50px;
-    background-image: url("img/add.png");
     background-repeat: no-repeat;
     background-position-y: center;
     background-position-x: 10px;
-    padding-left: 40px;
+    padding-left: 10px;
     padding-right: 10px;
   }
-  .fa-button-new:hover {
+
+  .fa-button-add {
+      padding-left: 40px;
+      background-image: url("img/add.png");
+  }
+
+  .fa-button:hover {
     background-color: $color-app-alt;
     cursor: pointer;
   }
