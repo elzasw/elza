@@ -1,6 +1,6 @@
 //TODO burianek presunout na spravne misto x
 //@import "ax";
-//@import "../ax/ax";
+@import "../ax/ax";
 @import "../valo/styles.scss";
 //@import "../valo/components/_treetable.scss";
 @import "../ax/valo-fix";
@@ -17,7 +17,7 @@ $color-title: #606262;
 
 .elza {
 
-  //@include ax;
+  @include ax;
   @import "elza-layout";
   @import "elza-common";
 
