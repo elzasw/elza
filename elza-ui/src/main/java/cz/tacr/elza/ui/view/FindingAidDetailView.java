@@ -1,28 +1,39 @@
 package cz.tacr.elza.ui.view;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+import ru.xpoft.vaadin.VaadinView;
+
 import com.vaadin.data.Item;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.Tree;
 import com.vaadin.ui.TreeTable;
+
 import cz.req.ax.AxAction;
 import cz.req.ax.AxContainer;
 import cz.req.ax.AxForm;
 import cz.req.ax.AxWindow;
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleSetManager;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrangementType;
+import cz.tacr.elza.domain.FaLevel;
+import cz.tacr.elza.domain.FaVersion;
+import cz.tacr.elza.domain.FindingAid;
+import cz.tacr.elza.domain.RuleSet;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.VersionRepository;
 import cz.tacr.elza.ui.ElzaView;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import ru.xpoft.vaadin.VaadinView;
-
-import java.util.*;
 
 
 /**
@@ -184,7 +195,7 @@ public class FindingAidDetailView extends ElzaView {
                     throw new UnsupportedOperationException();
                 }),
                 new AxAction().caption("Zobrazit historii").icon(FontAwesome.HISTORY).run(() ->
-                        navigate(VersionListView.class, getParameterInteger())),
+                navigate(VersionListView.class, getParameterInteger())),
                 new AxAction().caption("Schválit verzi").icon(FontAwesome.HISTORY).run(() -> {
                     AxForm<VOApproveVersion> formularApproveVersion = formularApproveVersion();
                     FaVersion version = new FaVersion();
@@ -194,7 +205,7 @@ public class FindingAidDetailView extends ElzaView {
 
                     approveVersion(formularApproveVersion, appVersion);
                 })
-        );
+                );
     }
 
     private void approveVersion(final AxForm<VOApproveVersion> form, final VOApproveVersion appVersion) {
@@ -225,22 +236,14 @@ public class FindingAidDetailView extends ElzaView {
         form.addStyleName("fa-form");
         form.setCaption("Schválení verze archivní pomůcky");
 
-        arTypeContainer = new AxContainer<>(ArrangementType.class).supplier(this::getAllArrangementTypes);
+        arTypeContainer = new AxContainer<>(ArrangementType.class).supplier(arrangementManager::getArrangementTypes);
         arTypeContainer.setBeanIdProperty("arrangementTypeId");
         form.addCombo("Typ výstupu", "arrangementTypeId", arTypeContainer, ArrangementType::getName).required();
 
-        ruleSetContainer = new AxContainer<>(RuleSet.class).supplier(this::getAllRuleSets);
+        ruleSetContainer = new AxContainer<>(RuleSet.class).supplier(ruleSetManager::getRuleSets);
         ruleSetContainer.setBeanIdProperty("ruleSetId");
         form.addCombo("Pravidla tvorby", "ruleSetId", ruleSetContainer, RuleSet::getName).required();
         return form;
-    }
-
-    List<ArrangementType> getAllArrangementTypes() {
-        return arrangementManager.getArrangementTypes();
-    }
-
-    List<RuleSet> getAllRuleSets() {
-        return ruleSetManager.getRuleSets();
     }
 }
 

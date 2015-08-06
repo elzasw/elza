@@ -3,9 +3,7 @@ package cz.tacr.elza.ui.view;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.List;
 
-import com.vaadin.server.FontAwesome;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -19,6 +17,7 @@ import com.vaadin.data.Validator;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.event.ItemClickEvent;
 import com.vaadin.navigator.ViewChangeListener;
+import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.Table;
@@ -113,7 +112,7 @@ public class FindingAidListView extends ElzaView {
 
         table.addItemClickListener(new ItemClickEvent.ItemClickListener() {
             @Override
-            public void itemClick(ItemClickEvent itemClickEvent) {
+            public void itemClick(final ItemClickEvent itemClickEvent) {
                 FindingAid findingAid = (FindingAid) itemClickEvent.getItemId();
                 navigate(FindingAidDetailView.class, findingAid.getFindigAidId());
             }
@@ -207,23 +206,15 @@ public class FindingAidListView extends ElzaView {
             }
         });
 
-        arTypeContainer = new AxContainer<>(ArrangementType.class).supplier(this::getAllArrangementTypes);
+        arTypeContainer = new AxContainer<>(ArrangementType.class).supplier(arrangementManager::getArrangementTypes);
         arTypeContainer.setBeanIdProperty("arrangementTypeId");
         form.addCombo("Typ výstupu", "arrangementTypeId", arTypeContainer, ArrangementType::getName).required();
 
-        ruleSetContainer = new AxContainer<>(RuleSet.class).supplier(this::getAllRuleSets);
+        ruleSetContainer = new AxContainer<>(RuleSet.class).supplier(ruleSetManager::getRuleSets);
         ruleSetContainer.setBeanIdProperty("ruleSetId");
         form.addCombo("Pravidla tvorby", "ruleSetId", ruleSetContainer, RuleSet::getName).required();
 
         return form;
-    }
-
-    List<ArrangementType> getAllArrangementTypes() {
-        return arrangementManager.getArrangementTypes();
-    }
-
-    List<RuleSet> getAllRuleSets() {
-        return ruleSetManager.getRuleSets();
     }
 }
 
