@@ -13,17 +13,14 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import cz.tacr.elza.repository.LevelRepository;
 import ru.xpoft.vaadin.VaadinView;
 
 import com.vaadin.data.Validator;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.event.ItemClickEvent;
 import com.vaadin.navigator.ViewChangeListener;
-import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.CssLayout;
-import com.vaadin.ui.Label;
 import com.vaadin.ui.Table;
 
 import cz.req.ax.AxAction;
@@ -65,6 +62,8 @@ public class FindingAidListView extends ElzaView {
     @Override
     public void enter(final ViewChangeListener.ViewChangeEvent event) {
         super.enter(event);
+
+        pageTitle("Archivní pomůcky");
 
         formFA = formularFA();
 
@@ -130,21 +129,13 @@ public class FindingAidListView extends ElzaView {
 
         actions(new AxAction().caption("Nový").icon(FontAwesome.PLUS_CIRCLE)
                 .run(() -> novyFA(formularNewFA())));
-        addBodyHead();
-        bodyMain().addComponent(table);
+
+        components(table);
     }
 
     private void refresh() {
         container.removeAllItems();
         container.addAll(arrangementManager.getFindingAids());
-    }
-
-    public void addBodyHead() {
-        Label title = new Label("<h1>Archivní pomůcky</h1>");
-        title.setContentMode(ContentMode.HTML);
-        CssLayout titleBar = new CssLayout(title);
-        titleBar.addStyleName("title");
-        bodyHeadMain().addComponent(titleBar);
     }
 
     private void novyFA(final AxForm<VONewFindingAid> form) {

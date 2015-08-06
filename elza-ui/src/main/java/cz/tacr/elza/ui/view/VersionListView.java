@@ -13,9 +13,6 @@ import ru.xpoft.vaadin.VaadinView;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.event.ItemClickEvent;
 import com.vaadin.navigator.ViewChangeListener;
-import com.vaadin.shared.ui.label.ContentMode;
-import com.vaadin.ui.CssLayout;
-import com.vaadin.ui.Label;
 import com.vaadin.ui.Table;
 
 import cz.tacr.elza.controller.ArrangementManager;
@@ -51,6 +48,8 @@ public class VersionListView extends ElzaView {
             navigate(FindingAidListView.class);
             return;
         }
+
+        pageTitle("Verze");
 
         Table table = new Table();
         table.setWidth("100%");
@@ -93,15 +92,7 @@ public class VersionListView extends ElzaView {
         table.setContainerDataSource(container);
         table.setVisibleColumns("createChange", "lockChange");
 
-        addBodyHead();
-        bodyMain().addComponent(table);
+        components(table);
     }
 
-    public void addBodyHead() {
-        Label title = new Label("<h1>Verze</h1>");
-        title.setContentMode(ContentMode.HTML);
-        CssLayout titleBar = new CssLayout(title);
-        titleBar.addStyleName("title");
-        bodyHeadMain().addComponent(titleBar);
-    }
 }

@@ -15,54 +15,14 @@ $color-title: #606262;
 .elza {
 
   @include ax;
-  //@include valo;
-
-  @import "elza-layout";
-  @import "elza-common";
 
   font-family: Segoe UI, Arial, Helvetica, Tahoma, Verdana, sans-serif;
   font-size: 13px;
   font-style: normal;
   font-weight: normal;
 
-  a, img, a img, div {
-    outline : none;
-    border: none;
-  }
-
-  .page-root, .header-main, .page-header, .page-body, .title-main, .content-main  {
-    width: 100%;
-  }
-
-  .page-header {
-    background-color: $color-app;
-  }
-
-  .header, .title, .content-main {
-    width: 80%;
-    min-width: 1100px;
-    margin-left: auto;
-    margin-right: auto;
-    display: block;
-    padding-left: 50px;
-    padding-right: 50px;
-  }
-
-  .header {
-    height: 50px;
-  }
-
-  .header-elza {
-    display: inline-block;
-    height: 100%;
-    width: 200px !important;
-    line-height: 50px;
-    background-image: url("img/elza-logo.png");
-    background-repeat: no-repeat;
-    padding-left: 60px;
-    font-size: 26px;
-    color: white;
-  }
+  @import "elza-layout";
+  @import "elza-common";
 
   .button {
     color: white;
@@ -82,22 +42,6 @@ $color-title: #606262;
   .button:hover {
     background-color: $color-app-alt;
     cursor: pointer;
-  }
-
-  .title-main {
-    background-color: $color-gray1;
-  }
-
-  .title {
-    height: 60px;
-  }
-
-  .title h1 {
-    color: $color-title;
-    font-size: 32px;
-    font-weight: normal;
-    margin: 0;
-    line-height: 60px;
   }
 
   .table {
@@ -202,18 +146,6 @@ $color-title: #606262;
     font-weight: normal;
     margin: 20px;
   }
-
-  .window-detail .page-footer {
-    display: block;
-    margin-top: 50px;
-    margin-left: 240px;
-  }
-
-  .window-detail .menu-bar {
-    margin-bottom: 25px;
-    margin-right: 13px;
-  }
-
 }
 
 

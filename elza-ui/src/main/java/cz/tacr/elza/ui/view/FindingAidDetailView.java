@@ -1,24 +1,10 @@
 package cz.tacr.elza.ui.view;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
 import com.vaadin.data.Item;
 import com.vaadin.navigator.ViewChangeListener;
-import com.vaadin.shared.ui.label.ContentMode;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.CssLayout;
-import com.vaadin.ui.Label;
-import com.vaadin.ui.Tree;
-import com.vaadin.ui.TreeTable;
-
+import com.vaadin.server.FontAwesome;
+import com.vaadin.ui.*;
+import cz.req.ax.AxAction;
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.domain.FaLevel;
 import cz.tacr.elza.domain.FaVersion;
@@ -26,7 +12,12 @@ import cz.tacr.elza.domain.FindingAid;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.VersionRepository;
 import cz.tacr.elza.ui.ElzaView;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 import ru.xpoft.vaadin.VaadinView;
+
+import java.util.*;
 
 
 /**
@@ -67,7 +58,7 @@ public class FindingAidDetailView extends ElzaView {
 
         this.findingAid = arrangementManager.getFindingAid(findingAidId);
 
-        addBodyHead();
+        pageTitle(findingAid.getName());
         addActionsButtons();
 
         HierarchicalCollapsibleContainer container = new HierarchicalCollapsibleContainer();
@@ -128,7 +119,7 @@ public class FindingAidDetailView extends ElzaView {
         table.setContainerDataSource(container);
         table.setSortEnabled(false);
 
-        bodyMain().addComponent(table);
+        components(table);
     }
 
     private List<FaLevel> getChildByFaLevel(List<FaLevel> faLevels) {
@@ -168,34 +159,18 @@ public class FindingAidDetailView extends ElzaView {
     }
 
     private void addActionsButtons() {
-        Button addRecord = new Button("Přidat záznam");
-        addRecord.addStyleName("button");
-        addRecord.addStyleName("button-add");
-        Button showHistory = new Button("Zobrazit historii");
-        showHistory.addStyleName("button");
-        showHistory.addStyleName("button-show");
-        showHistory.addClickListener(new Button.ClickListener() {
-            @Override
-            public void buttonClick(final Button.ClickEvent event) {
-                navigate(VersionListView.class, getParameterInteger());
-            }
-        });
-        Button approveVersion = new Button("Schválit verzi");
-//        approveVersion.addStyleName("button");
-        approveVersion.addStyleName("button-approve");
-
-
-        actionsBar().addComponent(addRecord);
-        actionsBar().addComponent(showHistory);
-        actionsBar().addComponent(approveVersion);
-    }
-
-    public void addBodyHead() {
-        Label title = new Label("<h1>" + findingAid.getName() + "</h1>");
-        title.setContentMode(ContentMode.HTML);
-        CssLayout titleBar = new CssLayout(title);
-        titleBar.addStyleName("title");
-        bodyHeadMain().addComponent(titleBar);
+        actions(
+                new AxAction().caption("Přidat záznam").icon(FontAwesome.PLUS).run(() -> {
+                    //TODO Implementace
+                    throw new UnsupportedOperationException();
+                }),
+                new AxAction().caption("Zobrazit historii").icon(FontAwesome.HISTORY).run(() ->
+                        navigate(VersionListView.class, getParameterInteger())),
+                new AxAction().caption("Schválit verzi").icon(FontAwesome.HISTORY).run(() -> {
+                    //TODO Implementace
+                    throw new UnsupportedOperationException();
+                })
+        );
     }
 }
 

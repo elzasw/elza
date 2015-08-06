@@ -1,12 +1,12 @@
 package cz.tacr.elza.ui;
 
-import javax.annotation.PostConstruct;
-
 import com.vaadin.server.ThemeResource;
 import com.vaadin.ui.CssLayout;
-
 import cz.req.ax.AxView;
+import cz.tacr.elza.ui.view.FindingAidListView;
 import cz.tacr.elza.ui.view.FindingAidView;
+
+import javax.annotation.PostConstruct;
 
 /**
  * @author by Ondřej Buriánek, burianek@marbes.cz.
@@ -14,29 +14,22 @@ import cz.tacr.elza.ui.view.FindingAidView;
  */
 public abstract class ElzaView extends AxView {
 
+    public ElzaView() {
+        setWrap(true);
+    }
+
     @PostConstruct
     public void init() {
-        actions(action(FindingAidView.class).caption("ELZA").icon(new ThemeResource("img/elza-logo.png")));
+        actions(action(FindingAidListView.class).caption("ELZA").icon(new ThemeResource("img/elza-logo.png")));
     }
 
-    public CssLayout headerMain() {
-        return rootLayout(pageHeader(), "header-main", false);
+    public ElzaView pageTitle(String title) {
+        pageTitle().addComponent(newLabel(title, "h1"));
+        return this;
     }
 
-    public CssLayout header() {
-        return rootLayout(headerMain(), "header", false);
-    }
-
-    public CssLayout actionsBar() {
-        return rootLayout(header(), "action-bar", false);
-    }
-
-    public CssLayout bodyHeadMain() {
-        return bodyLayout("title-main");
-    }
-
-    public CssLayout bodyMain() {
-        return bodyLayout("content-main");
+    public CssLayout pageTitle() {
+        return rootLayout(this, "page-title");
     }
 
 }

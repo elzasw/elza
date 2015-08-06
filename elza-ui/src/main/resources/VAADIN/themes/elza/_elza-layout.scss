@@ -1,0 +1,47 @@
+
+.page-root, .page-header-wrap, .page-title-wrap, .page-body-wrap {
+  display: block;
+  width: 100%;
+}
+.page-header-wrap {
+  background-color: $color-app;
+}
+.page-title-wrap {
+  background-color: $color-gray1;
+}
+
+.page-header, .page-title, .page-body {
+  display: block;
+  width: 80%;
+  min-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.page-title, .page-body {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.page-header {
+  .menu-bar {
+    height: auto;
+    font-size: 26px;
+    line-height: 50px;
+    background: transparent;
+    > .v-menubar-menuitem {
+      background: transparent;
+    }
+    > .v-menubar-menuitem:first-child {
+      margin-right: 20px;
+    }
+  }
+}
+
+.page-title {
+  .h1 {
+    margin: 25px 0;
+    color: $color-title;
+    font-weight: normal;
+    letter-spacing: 2px;
+  }
+}
