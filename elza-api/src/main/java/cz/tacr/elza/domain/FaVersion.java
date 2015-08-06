@@ -1,6 +1,5 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -22,43 +21,25 @@ public class FaVersion extends EntityBase {
     @GeneratedValue
     private Integer faVersionId;
 
-    @Column(updatable = false, insertable = false, nullable = false)
-    private Integer createChangeId;
-
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = FaChange.class)
     @JoinColumn(name = "createChangeId", nullable = false)
     private FaChange createChange;
-
-    @Column(updatable = false, insertable = false, nullable = true)
-    private Integer lockChangeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = FaChange.class)
     @JoinColumn(name = "lockChangeId", nullable = true)
     private FaChange lockChange;
 
-    @Column(updatable = false, insertable = false, nullable = true)
-    private Integer rootNodeId;
-
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = FaLevel.class)
     @JoinColumn(name = "rootNodeId", nullable = true, referencedColumnName = "nodeId")
     private FaLevel rootNode;
-
-    @Column(updatable = false, insertable = false, nullable = false)
-    private Integer findingAidId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = FindingAid.class)
     @JoinColumn(name = "findingAidId", nullable = false)
     private FindingAid findingAid;
 
-    @Column(updatable = false, insertable = false, nullable = false)
-    private Integer arrangementTypeId;
-
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrangementType.class)
     @JoinColumn(name = "arrangementTypeId", nullable = false)
     private ArrangementType arrangementType;
-
-    @Column(updatable = false, insertable = false, nullable = false)
-    private Integer ruleSetId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RuleSet.class)
     @JoinColumn(name = "ruleSetId", nullable = false)
@@ -72,33 +53,12 @@ public class FaVersion extends EntityBase {
         this.faVersionId = faVersionId;
     }
 
-    public Integer getCreateChangeId() {
-        return createChangeId;
-    }
-
-    public void setCreateChangeId(final Integer createChangeId) {
-        this.createChangeId = createChangeId;
-    }
-
     public FaChange getCreateChange() {
         return createChange;
     }
 
     public void setCreateChange(final FaChange createChange) {
         this.createChange = createChange;
-        if (createChange == null) {
-            this.createChangeId = null;
-        } else {
-            this.createChangeId = createChange.getChangeId();
-        }
-    }
-
-    public Integer getLockChangeId() {
-        return lockChangeId;
-    }
-
-    public void setLockChangeId(final Integer lockChangeId) {
-        this.lockChangeId = lockChangeId;
     }
 
     public FaChange getLockChange() {
@@ -107,11 +67,6 @@ public class FaVersion extends EntityBase {
 
     public void setLockChange(final FaChange lockChange) {
         this.lockChange = lockChange;
-        if (lockChange == null) {
-            this.lockChangeId = null;
-        } else {
-            this.lockChangeId = lockChange.getChangeId();
-        }
     }
 
     public FaLevel getRootNode() {
@@ -120,15 +75,6 @@ public class FaVersion extends EntityBase {
 
     public void setRootNode(final FaLevel rootNode) {
         this.rootNode = rootNode;
-        if (rootNode == null) {
-            this.rootNodeId = null;
-        } else {
-            this.rootNodeId = rootNode.getNodeId();
-        }
-    }
-
-    public Integer getFindingAidId() {
-        return findingAidId;
     }
 
     public FindingAid getFindingAid() {
@@ -137,15 +83,6 @@ public class FaVersion extends EntityBase {
 
     public void setFindingAid(final FindingAid findingAid) {
         this.findingAid = findingAid;
-        if (findingAid == null) {
-            findingAidId = null;
-        } else {
-            findingAidId = findingAid.getFindigAidId();
-        }
-    }
-
-    public Integer getArrangementTypeId() {
-        return arrangementTypeId;
     }
 
     public ArrangementType getArrangementType() {
@@ -154,15 +91,6 @@ public class FaVersion extends EntityBase {
 
     public void setArrangementType(final ArrangementType arrangementType) {
         this.arrangementType = arrangementType;
-        if (arrangementType == null) {
-            arrangementTypeId = null;
-        } else {
-            arrangementTypeId = arrangementType.getArrangementTypeId();
-        }
-    }
-
-    public Integer getRuleSetId() {
-        return ruleSetId;
     }
 
     public RuleSet getRuleSet() {
@@ -171,35 +99,10 @@ public class FaVersion extends EntityBase {
 
     public void setRuleSet(final RuleSet ruleSet) {
         this.ruleSet = ruleSet;
-        if (ruleSet == null) {
-            ruleSetId = null;
-        } else {
-            ruleSetId = ruleSet.getRuleSetId();
-        }
     }
 
     @Override
     public String toString() {
         return "FaVersion pk=" + faVersionId;
-    }
-
-    public Integer getRootNodeId() {
-        return rootNodeId;
-    }
-
-    public void setRootNodeId(final Integer rootNodeId) {
-        this.rootNodeId = rootNodeId;
-    }
-
-    public void setFindingAidId(final Integer findingAidId) {
-        this.findingAidId = findingAidId;
-    }
-
-    public void setArrangementTypeId(final Integer arrangementTypeId) {
-        this.arrangementTypeId = arrangementTypeId;
-    }
-
-    public void setRuleSetId(final Integer ruleSetId) {
-        this.ruleSetId = ruleSetId;
     }
 }

@@ -67,7 +67,6 @@ public class TreeTest extends AbstractRestTest {
     @Transactional
     public void sqlTest1() throws Exception {
         FaLevel level = levelRepository.findOne(childId);
-        System.out.println(level.getParentNodeId());
         System.out.println(level.getParentNode());
         System.out.println(level.getCreateChange());
     }
@@ -76,7 +75,6 @@ public class TreeTest extends AbstractRestTest {
     @Transactional
     public void sqlTest2() throws Exception {
         FaLevel level = levelRepository.getOne(childId);
-        System.out.println(level.getParentNodeId());
         System.out.println(level.getParentNode());
         System.out.println(level.getCreateChange());
     }

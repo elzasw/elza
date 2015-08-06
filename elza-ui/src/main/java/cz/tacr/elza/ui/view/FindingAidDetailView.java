@@ -101,7 +101,7 @@ public class FindingAidDetailView extends ElzaView {
 
         List<FaLevel> faLevelsAll = new LinkedList<FaLevel>();
 
-        List<FaLevel> faLevels = levelRepository.findByParentNodeIdOrderByPositionAsc(lastVersions.getRootNodeId());
+        List<FaLevel> faLevels = levelRepository.findByParentNodeIdOrderByPositionAsc(lastVersions.getRootNode().getNodeId());
         faLevelsAll.addAll(faLevels);
         //faLevelsAll.addAll(getAllChildByFaLevel(faLevels));
 
@@ -110,7 +110,7 @@ public class FindingAidDetailView extends ElzaView {
             item.getItemProperty(LEVEL).setValue(faLevel.getNodeId());
             item.getItemProperty(LEVEL_POSITION).setValue(faLevel.getPosition());
             if (faLevel.getParentNode() != null) {
-                container.setParent(faLevel.getNodeId(), faLevel.getParentNodeId());
+                container.setParent(faLevel.getNodeId(), faLevel.getParentNode().getNodeId());
             }
             container.setChildrenAllowed(faLevel.getNodeId(), true);
             container.setCollapsed(faLevel.getNodeId(), true);
@@ -136,7 +136,7 @@ public class FindingAidDetailView extends ElzaView {
                     Item item = table.addItemAfter(itemIdLast, faLevel.getNodeId());
                     itemIdLast = faLevel.getNodeId();
                     if (faLevel.getParentNode() != null) {
-                        container.setParent(faLevel.getNodeId(), faLevel.getParentNodeId());
+                        container.setParent(faLevel.getNodeId(), faLevel.getParentNode().getNodeId());
                     }
                     item.getItemProperty(LEVEL).setValue(faLevel.getNodeId());
                     item.getItemProperty(LEVEL_POSITION).setValue(faLevel.getPosition());
@@ -200,8 +200,8 @@ public class FindingAidDetailView extends ElzaView {
                     AxForm<VOApproveVersion> formularApproveVersion = formularApproveVersion();
                     FaVersion version = new FaVersion();
                     VOApproveVersion appVersion = new VOApproveVersion();
-                    appVersion.setArrangementTypeId(version.getArrangementTypeId());
-                    appVersion.setRuleSetId(version.getRuleSetId());
+                    appVersion.setArrangementTypeId(version.getArrangementType().getArrangementTypeId());
+                    appVersion.setRuleSetId(version.getRuleSet().getRuleSetId());
 
                     approveVersion(formularApproveVersion, appVersion);
                 })
