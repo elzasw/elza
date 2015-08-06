@@ -84,8 +84,8 @@ public class ArrangementManager {
             params = {"name", "arrangementTypeId", "ruleSetId"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     public FindingAid createFindingAid(@RequestParam(value = "name") final String name,
-                                       @RequestParam(value = "arrangementTypeId") final Integer arrangementTypeId,
-                                       @RequestParam(value = "ruleSetId") final Integer ruleSetId) {
+            @RequestParam(value = "arrangementTypeId") final Integer arrangementTypeId,
+            @RequestParam(value = "ruleSetId") final Integer ruleSetId) {
         Assert.hasText(name);
         Assert.notNull(arrangementTypeId);
         Assert.notNull(ruleSetId);
@@ -121,7 +121,7 @@ public class ArrangementManager {
     }
 
     private FaVersion createVersion(final FaChange createChange, final FindingAid findingAid,
-                                    final ArrangementType arrangementType, final RuleSet ruleSet, final FaLevel rootNode) {
+            final ArrangementType arrangementType, final RuleSet ruleSet, final FaLevel rootNode) {
         FaVersion version = new FaVersion();
         version.setCreateChange(createChange);
         version.setArrangementType(arrangementType);
@@ -223,8 +223,36 @@ public class ArrangementManager {
      */
     @RequestMapping(value = "/getFindingAid", method = RequestMethod.GET, params = {"findingAidId"}, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public FindingAid getFindingAid(Integer findingAidId) {
+    public FindingAid getFindingAid(final Integer findingAidId) {
         Assert.notNull(findingAidId);
         return findingAidRepository.getOne(findingAidId);
+    }
+
+    /**
+     * Schválí otevřenou verzi archivní pomůcky a otevře novou verzi.
+     *
+     * @param findingAidId id archivní pomůcky
+     * @param arrangementTypeId id typu výstupu nové verze
+     * @param ruleSetId         id pravidel podle kterých se vytváří popis v nové verzi
+     * @return nová verze archivní pomůcky
+     */
+    @Transactional
+    @RequestMapping(value = "/approveVersion", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE,
+    params = {"findingAidId", "arrangementTypeId", "ruleSetId"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public FaVersion approveVersion(final Integer findingAidId, final Integer arrangementTypeId, final Integer ruleSetId) {
+        Assert.notNull(findingAidId);
+        Assert.notNull(arrangementTypeId);
+        Assert.notNull(ruleSetId);
+
+        FindingAid findingAid = findingAidRepository.findOne(findingAidId);
+        FaVersion version = versionRepository.findByFindingAidAndLockChange(findingAid, null);
+
+        FaChange change = createChange();
+        version.setLockChange(change);
+
+        ArrangementType arrangementType = arrangementTypeRepository.findOne(arrangementTypeId);
+        RuleSet ruleSet = ruleSetRepository.findOne(ruleSetId);
+
+        return createVersion(change, findingAid, arrangementType, ruleSet, version.getRootNode());
     }
 }
