@@ -30,15 +30,15 @@ $color-title: #606262;
     border: none;
   }
 
-  .page-root, .fa-header-main, .page-header, .page-body, .fa-title-main, .fa-content-main  {
+  .page-root, .header-main, .page-header, .page-body, .title-main, .content-main  {
     width: 100%;
   }
 
-  .fa-header-main {
+  .page-header {
     background-color: $color-app;
   }
 
-  .fa-header, .fa-title, .fa-content-main {
+  .header, .title, .content-main {
     width: 80%;
     min-width: 1100px;
     margin-left: auto;
@@ -48,11 +48,11 @@ $color-title: #606262;
     padding-right: 50px;
   }
 
-  .fa-header {
+  .header {
     height: 50px;
   }
 
-  .fa-header-elza {
+  .header-elza {
     display: inline-block;
     height: 100%;
     width: 200px !important;
@@ -64,7 +64,7 @@ $color-title: #606262;
     color: white;
   }
 
-  .fa-button {
+  .button {
     color: white;
     line-height: 50px;
     background-repeat: no-repeat;
@@ -74,25 +74,25 @@ $color-title: #606262;
     padding-right: 10px;
   }
 
-  .fa-button-add {
+  .button-add {
       padding-left: 40px;
       background-image: url("img/add.png");
   }
 
-  .fa-button:hover {
+  .button:hover {
     background-color: $color-app-alt;
     cursor: pointer;
   }
 
-  .fa-title-main {
+  .title-main {
     background-color: $color-gray1;
   }
 
-  .fa-title {
+  .title {
     height: 60px;
   }
 
-  .fa-title h1 {
+  .title h1 {
     color: $color-title;
     font-size: 32px;
     font-weight: normal;
@@ -100,102 +100,102 @@ $color-title: #606262;
     line-height: 60px;
   }
 
-  .fa-table {
+  .table {
     margin-top: 30px;
   }
 
-  .fa-table .v-table-header div.v-table-caption-container {
+  .table .v-table-header div.v-table-caption-container {
     margin:  5px 10px 5px 10px;
     height: 20px;
     line-height: 20px;
     border-right: 0;
   }
 
-  .fa-table .v-table-table td {
+  .table .v-table-table td {
     padding: 5px 10px 5px 10px;
     height: 20px;
     line-height: 20px;
     border-right: 0;
   }
 
-  .fa-table .v-table-header td {
+  .table .v-table-header td {
     background-color: $color-app-alt;
     color: white;
   }
 
-  .fa-table .v-table-table tr:nth-child(2n+1) {
+  .table .v-table-table tr:nth-child(2n+1) {
     background-color: #f0f0f0;
   }
 
-  .fa-table .v-table-table tr:hover {
+  .table .v-table-table tr:hover {
     background-color: #d0d0d0;
   }
 
-  .fa-table .v-table-header td:hover {
+  .table .v-table-header td:hover {
     background-color: $color-app;
   }
 
-  .fa-table .v-table-header td:not(:first-child) {
+  .table .v-table-header td:not(:first-child) {
     border-left: 3px solid white;
   }
 
-  .fa-button-edit, .fa-button-remove  {
+  .button-edit, .button-remove  {
     background-repeat: no-repeat;
     width: 24px;
     height: 24px;
     margin: 0 3px;
   }
 
-  .fa-button-edit>span, .fa-button-remove>span {
+  .button-edit>span, .button-remove>span {
     display: none;
   }
 
-  .fa-button-edit {
+  .button-edit {
     background-image: url("img/edit-gray.png");
   }
 
-  .fa-button-edit:hover {
+  .button-edit:hover {
     background-image: url("img/edit-black.png");
     cursor: pointer;
   }
 
-  .fa-button-remove {
+  .button-remove {
     background-image: url("img/delete-gray.png");
   }
 
-  .fa-button-remove:hover {
+  .button-remove:hover {
     background-image: url("img/delete-black.png");
     cursor: pointer;
   }
 
-  .fa-window-detail {
+  .window-detail {
     box-shadow: 0 0 10px 1px $color-app-alt;
     background-color: white;
   }
 
-  .fa-window-detail .fa-form {
+  .window-detail .form {
     margin: 20px 0 0 20px;
     display: block;
   }
 
-  .fa-window-detail .v-menubar-menuitem {
+  .window-detail .v-menubar-menuitem {
     background-color: $color-app-alt;
     padding: 5px 15px 5px 15px;
     margin: 5px;
     color: white;
   }
 
-  .fa-window-detail .v-menubar-menuitem:hover {
+  .window-detail .v-menubar-menuitem:hover {
     background-color: $color-app;
     cursor: pointer;
   }
 
-  .fa-window-detail .v-caption {
+  .window-detail .v-caption {
     min-width: 200px;
     color: gray;
   }
 
-  .fa-window-detail .v-captiontext {
+  .window-detail .v-captiontext {
     display: block;
     color: #606262;
     font-size: 20px;
@@ -203,13 +203,13 @@ $color-title: #606262;
     margin: 20px;
   }
 
-  .fa-window-detail .page-footer {
+  .window-detail .page-footer {
     display: block;
     margin-top: 50px;
     margin-left: 240px;
   }
 
-  .fa-window-detail .menu-bar {
+  .window-detail .menu-bar {
     margin-bottom: 25px;
     margin-right: 13px;
   }

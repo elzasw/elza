@@ -88,7 +88,7 @@ public class FindingAidListView extends ElzaView {
                 final FindingAid findingAid = (FindingAid) itemId;
 
                 Button buttonUpravit = new Button("Upravit");
-                buttonUpravit.addStyleName("fa-button-edit");
+                buttonUpravit.addStyleName("button-edit");
                 buttonUpravit.addClickListener(new Button.ClickListener() {
                     @Override
                     public void buttonClick(final Button.ClickEvent event) {
@@ -97,7 +97,7 @@ public class FindingAidListView extends ElzaView {
                 });
 
                 Button buttonSmazat = new Button("Smazat");
-                buttonSmazat.addStyleName("fa-button-remove");
+                buttonSmazat.addStyleName("button-remove");
                 buttonSmazat.addClickListener(new Button.ClickListener() {
                     @Override
                     public void buttonClick(final Button.ClickEvent event) {
@@ -124,7 +124,7 @@ public class FindingAidListView extends ElzaView {
 
         refresh();
 
-        table.addStyleName("fa-table");
+        table.addStyleName("table");
         table.setContainerDataSource(container);
         table.setVisibleColumns("name", "createDate", "actions");
 
@@ -143,7 +143,7 @@ public class FindingAidListView extends ElzaView {
         Label title = new Label("<h1>Archivní pomůcky</h1>");
         title.setContentMode(ContentMode.HTML);
         CssLayout titleBar = new CssLayout(title);
-        titleBar.addStyleName("fa-title");
+        titleBar.addStyleName("title");
         bodyHeadMain().addComponent(titleBar);
     }
 
@@ -157,7 +157,7 @@ public class FindingAidListView extends ElzaView {
                 })
                 .value(form::commit)
                 .action(this::vytvoritFA)
-                ).buttonClose().modal().style("fa-window-detail").show();
+                ).buttonClose().modal().style("window-detail").show();
     }
 
     private void upravitFA(final AxForm<FindingAid> form, final FindingAid findingAid) {
@@ -171,7 +171,7 @@ public class FindingAidListView extends ElzaView {
                 .primary()
                 .value(form::commit)
                 .action(this::ulozitFA)
-                ).buttonClose().modal().style("fa-window-detail").show();
+                ).buttonClose().modal().style("window-detail").show();
     }
 
     private void vytvoritFA(final VONewFindingAid findingAid) {
@@ -195,7 +195,7 @@ public class FindingAidListView extends ElzaView {
     @Qualifier("formularFA")
     AxForm<FindingAid> formularFA() {
         AxForm<FindingAid> form = AxForm.init(FindingAid.class);
-        form.addStyleName("fa-form");
+        form.addStyleName("form");
         form.setCaption("Úprava archivní pomůcky");
         form.addField("Název", "name").required();
         return form;
@@ -207,7 +207,7 @@ public class FindingAidListView extends ElzaView {
     @Qualifier("formularNewFA")
     AxForm<VONewFindingAid> formularNewFA() {
         AxForm<VONewFindingAid> form = AxForm.init(VONewFindingAid.class);
-        form.addStyleName("fa-form");
+        form.addStyleName("form");
         form.setCaption("Vytvoření archivní pomůcky");
         form.addField("Název", "name").required().validator(value -> {
             String val = (String) value;

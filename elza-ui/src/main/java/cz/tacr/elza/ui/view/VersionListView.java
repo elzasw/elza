@@ -89,7 +89,7 @@ public class VersionListView extends ElzaView {
 
         container.addAll(arrangementManager.getFindingAidVersions(findingAidId));
 
-        table.addStyleName("fa-table");
+        table.addStyleName("table");
         table.setContainerDataSource(container);
         table.setVisibleColumns("createChange", "lockChange");
 
@@ -101,7 +101,7 @@ public class VersionListView extends ElzaView {
         Label title = new Label("<h1>Verze</h1>");
         title.setContentMode(ContentMode.HTML);
         CssLayout titleBar = new CssLayout(title);
-        titleBar.addStyleName("fa-title");
+        titleBar.addStyleName("title");
         bodyHeadMain().addComponent(titleBar);
     }
 }

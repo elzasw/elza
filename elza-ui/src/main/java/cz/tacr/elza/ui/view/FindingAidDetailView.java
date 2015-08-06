@@ -169,11 +169,11 @@ public class FindingAidDetailView extends ElzaView {
 
     private void addActionsButtons() {
         Button addRecord = new Button("Přidat záznam");
-        addRecord.addStyleName("fa-button");
-        addRecord.addStyleName("fa-button-add");
+        addRecord.addStyleName("button");
+        addRecord.addStyleName("button-add");
         Button showHistory = new Button("Zobrazit historii");
-        showHistory.addStyleName("fa-button");
-        showHistory.addStyleName("fa-button-show");
+        showHistory.addStyleName("button");
+        showHistory.addStyleName("button-show");
         showHistory.addClickListener(new Button.ClickListener() {
             @Override
             public void buttonClick(final Button.ClickEvent event) {
@@ -181,8 +181,8 @@ public class FindingAidDetailView extends ElzaView {
             }
         });
         Button approveVersion = new Button("Schválit verzi");
-        approveVersion.addStyleName("fa-button");
-        approveVersion.addStyleName("fa-button-approve");
+//        approveVersion.addStyleName("button");
+        approveVersion.addStyleName("button-approve");
 
 
         actionsBar().addComponent(addRecord);
@@ -194,7 +194,7 @@ public class FindingAidDetailView extends ElzaView {
         Label title = new Label("<h1>" + findingAid.getName() + "</h1>");
         title.setContentMode(ContentMode.HTML);
         CssLayout titleBar = new CssLayout(title);
-        titleBar.addStyleName("fa-title");
+        titleBar.addStyleName("title");
         bodyHeadMain().addComponent(titleBar);
     }
 }

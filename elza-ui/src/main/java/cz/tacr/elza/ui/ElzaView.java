@@ -20,23 +20,23 @@ public abstract class ElzaView extends AxView {
     }
 
     public CssLayout headerMain() {
-        return rootLayout(pageHeader(), "fa-header-main", false);
+        return rootLayout(pageHeader(), "header-main", false);
     }
 
     public CssLayout header() {
-        return rootLayout(headerMain(), "fa-header", false);
+        return rootLayout(headerMain(), "header", false);
     }
 
     public CssLayout actionsBar() {
-        return rootLayout(header(), "fa-action-bar", false);
+        return rootLayout(header(), "action-bar", false);
     }
 
     public CssLayout bodyHeadMain() {
-        return bodyLayout("fa-title-main");
+        return bodyLayout("title-main");
     }
 
     public CssLayout bodyMain() {
-        return bodyLayout("fa-content-main");
+        return bodyLayout("content-main");
     }
 
 }
