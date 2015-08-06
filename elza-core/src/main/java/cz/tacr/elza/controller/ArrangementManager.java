@@ -34,7 +34,7 @@ import cz.tacr.elza.repository.VersionRepository;
  * @since 22.7.15
  */
 @RestController
-@RequestMapping("/arrangementManager")
+@RequestMapping("/api/arrangementManager")
 public class ArrangementManager {
 
     @Autowired

@@ -18,7 +18,7 @@ import cz.tacr.elza.repository.RuleSetRepository;
  * @since 30. 7. 2015
  */
 @RestController
-@RequestMapping("/ruleSetManager")
+@RequestMapping("/api/ruleSetManager")
 public class RuleSetManager {
 
     @Autowired

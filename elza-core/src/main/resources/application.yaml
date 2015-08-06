@@ -3,6 +3,9 @@ spring:
     url: jdbc:postgresql://vyv-inet/elza
     username: app
     password: app
+  data:
+    rest:
+      base-uri: /rest
   jpa:
     # Logovani SQL dotazu
     show-sql: true
