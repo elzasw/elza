@@ -1,14 +1,8 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import javax.persistence.*;
 
 /**
  * @author by Ondřej Buriánek, burianek@marbes.cz.
@@ -28,6 +22,9 @@ public class FaLevel extends EntityBase {
     @Column(updatable = false, insertable = false, nullable = true)
     private Integer parentNodeId;
 
+    //Zde je chyba hibernate, při použití "referencedColumnName" ignoruje LAZY a vždy načítá celý strom až ke kořenu.
+    //Vzhledem k malé hloubce stromu neřešíme.
+    //http://stackoverflow.com/questions/14732098/hibernate-fechtype-lazy-not-working-for-composite-manytoone-relationships
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parentNodeId", nullable = true, referencedColumnName = "nodeId")
     private FaLevel parentNode;
