@@ -34,6 +34,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
     private static final String UPDATE_FA_URL = ARRANGEMENT_MANAGER_URL + "/updateFindingAid";
     private static final String DELETE_FA_URL = ARRANGEMENT_MANAGER_URL + "/deleteFindingAid";
     private static final String GET_FA_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAids";
+    private static final String GET_FA_ONE_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAid";
     private static final String GET_ARRANGEMENT_TYPES_URL = ARRANGEMENT_MANAGER_URL + "/getArrangementTypes";
     private static final String GET_FINDING_AID_VERSIONS_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAidVersions";
 
@@ -86,6 +87,17 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         Assert.assertNotNull(findingAid);
         Assert.assertNotNull(findingAid.getFindigAidId());
+    }
+
+    @Test
+    public void testRestGetFindingAid() throws Exception {
+        FindingAid findingAid = createFindingAidRest(TEST_NAME);
+
+        FindingAid getFindingAid = getFindingAid(findingAid.getFindigAidId());
+
+        Assert.assertNotNull(getFindingAid);
+        Assert.assertEquals(TEST_NAME, getFindingAid.getName());
+        Assert.assertEquals(findingAid.getFindigAidId(), getFindingAid.getFindigAidId());
     }
 
     @Test
@@ -191,6 +203,18 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         List<FindingAid> findingAids = Arrays.asList(response.getBody().as(FindingAid[].class));
         return findingAids;
+    }
+
+    /**
+     * Načte archivní pomůcku přes REST volání.
+     *
+     * @return archivní pomůcka
+     */
+    private FindingAid getFindingAid(Integer findingAidId) {
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(FA_ID_ATT, findingAidId).get(GET_FA_ONE_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+        return response.getBody().as(FindingAid.class);
     }
 
     /**

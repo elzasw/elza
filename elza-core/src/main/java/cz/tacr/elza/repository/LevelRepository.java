@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.FaLevel;
 
+
 /**
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
@@ -18,7 +19,15 @@ public interface LevelRepository extends JpaRepository<FaLevel, Integer> {
     @Query(value = "SELECT max(l.nodeId) FROM arr_fa_level l")
     Integer findMaxNodeId();
 
-    List<FaLevel> findByFaLevelId(List<Integer> levelIds);
 
-    List<FaLevel> findByFaLevelId(Integer levelId);
+    List<FaLevel> findByParentNodeIdOrderByPositionAsc(Integer levelId);
+
+
+    List<FaLevel> findByNodeIdOrderByPositionAsc(Integer levelId);
+
+
+    List<FaLevel> findByParentNodeIdIn(List<Integer> faLevels);
+
+
+    List<FaLevel> findByParentNodeIdInOrderByPositionAsc(List<Integer> faLevels);
 }

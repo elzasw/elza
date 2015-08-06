@@ -14,8 +14,8 @@ $color-title: #606262;
 
 .elza {
 
-  //@include ax;
-  @include valo;
+  @include ax;
+  //@include valo;
 
   @import "elza-layout";
   @import "elza-common";

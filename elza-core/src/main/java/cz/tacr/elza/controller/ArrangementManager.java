@@ -26,6 +26,7 @@ import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VersionRepository;
 
+
 /**
  * API pro pořádání.
  *
@@ -58,10 +59,9 @@ public class ArrangementManager {
      * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.
      *
      * @param name název archivní pomůcky
-     *
      * @return nová archivní pomůcka
      */
-    private FindingAid createFindingAid(@RequestParam(value="name") final String name) {
+    private FindingAid createFindingAid(@RequestParam(value = "name") final String name) {
         Assert.hasText(name);
 
         FindingAid findingAid = new FindingAid();
@@ -75,18 +75,17 @@ public class ArrangementManager {
     /**
      * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.
      *
-     * @param name název archivní pomůcky
+     * @param name              název archivní pomůcky
      * @param arrangementTypeId id typu výstupu
-     * @param ruleSetId id pravidel podle kterých se vytváří popis
-     *
+     * @param ruleSetId         id pravidel podle kterých se vytváří popis
      * @return nová archivní pomůcka
      */
     @RequestMapping(value = "/createFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE,
             params = {"name", "arrangementTypeId", "ruleSetId"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
-    public FindingAid createFindingAid(@RequestParam(value="name") final String name,
-            @RequestParam(value="arrangementTypeId") final Integer arrangementTypeId,
-            @RequestParam(value="ruleSetId") final Integer ruleSetId) {
+    public FindingAid createFindingAid(@RequestParam(value = "name") final String name,
+                                       @RequestParam(value = "arrangementTypeId") final Integer arrangementTypeId,
+                                       @RequestParam(value = "ruleSetId") final Integer ruleSetId) {
         Assert.hasText(name);
         Assert.notNull(arrangementTypeId);
         Assert.notNull(ruleSetId);
@@ -122,7 +121,7 @@ public class ArrangementManager {
     }
 
     private FaVersion createVersion(final FaChange createChange, final FindingAid findingAid,
-            final ArrangementType arrangementType, final RuleSet ruleSet, final FaLevel rootNode) {
+                                    final ArrangementType arrangementType, final RuleSet ruleSet, final FaLevel rootNode) {
         FaVersion version = new FaVersion();
         version.setCreateChange(createChange);
         version.setArrangementType(arrangementType);
@@ -144,7 +143,7 @@ public class ArrangementManager {
      * @param findingAidId id archivní pomůcky
      */
     @RequestMapping(value = "/deleteFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, params = {"findingAidId"})
-    public void deleteFindingAid(@RequestParam(value="findingAidId") final Integer findingAidId) {
+    public void deleteFindingAid(@RequestParam(value = "findingAidId") final Integer findingAidId) {
         Assert.notNull(findingAidId);
 
         List<FaVersion> versions = versionRepository.findByFindingAidIdOrderByCreateDateAsc(findingAidId);
@@ -175,13 +174,13 @@ public class ArrangementManager {
      * Aktualizace názvu archivní pomůcky.
      *
      * @param findingAidId id archivní pomůcky
-     * @param name název arhivní pomůcky
-     *
+     * @param name         název arhivní pomůcky
      * @return aktualizovaná archivní pomůcka
      */
-    @RequestMapping(value = "/updateFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, params = {"findingAidId", "name"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/updateFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, params = {"findingAidId", "name"},
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
-    public FindingAid updateFindingAid(@RequestParam(value="findingAidId") final Integer findingAidId, @RequestParam(value="name") final String name) {
+    public FindingAid updateFindingAid(@RequestParam(value = "findingAidId") final Integer findingAidId, @RequestParam(value = "name") final String name) {
         Assert.notNull(findingAidId);
         Assert.hasText(name);
 
@@ -206,13 +205,26 @@ public class ArrangementManager {
      * Vrátí seznam verzí pro danou archivní pomůcku seřazený od nejnovější k nejstarší.
      *
      * @param findingAidId id archivní pomůcky
-     *
      * @return seznam verzí pro danou archivní pomůcku seřazený od nejnovější k nejstarší
      */
-    @RequestMapping(value = "/getFindingAidVersions", method = RequestMethod.GET, params = {"findingAidId"}, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<FaVersion> getFindingAidVersions(@RequestParam(value="findingAidId") final Integer findingAidId) {
+    @RequestMapping(value = "/getFindingAidVersions", method = RequestMethod.GET, params = {"findingAidId"}, consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<FaVersion> getFindingAidVersions(@RequestParam(value = "findingAidId") final Integer findingAidId) {
         Assert.notNull(findingAidId);
 
         return versionRepository.findByFindingAidIdOrderByCreateDateAsc(findingAidId);
+    }
+
+    /**
+     * Vrátí archivní pomůcku.
+     *
+     * @param findingAidId id archivní pomůcky
+     * @return archivní pomůcka
+     */
+    @RequestMapping(value = "/getFindingAid", method = RequestMethod.GET, params = {"findingAidId"}, consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public FindingAid getFindingAid(Integer findingAidId) {
+        Assert.notNull(findingAidId);
+        return findingAidRepository.getOne(findingAidId);
     }
 }

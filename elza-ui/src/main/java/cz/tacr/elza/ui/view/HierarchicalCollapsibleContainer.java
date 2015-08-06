@@ -1,29 +1,31 @@
 package cz.tacr.elza.ui.view;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.vaadin.data.Collapsible;
 import com.vaadin.data.util.HierarchicalContainer;
 
-import cz.tacr.elza.domain.FaLevel;
-
 
 /**
- * Created by slapa on 5.8.2015.
+ * @author Martin Šlapa, martin.slapa@marbes.cz.
+ * @since 5.6.2015
  */
 public class HierarchicalCollapsibleContainer extends HierarchicalContainer implements Collapsible {
 
-    public void add(List<FaLevel> list) {
-
-    }
+    Set<Integer> isCollapsedSet = new HashSet<>();
 
     @Override
     public void setCollapsed(Object itemId, boolean collapsed) {
-
+        if (collapsed) {
+            isCollapsedSet.remove(itemId);
+        } else {
+            isCollapsedSet.add((Integer) itemId);
+        }
     }
 
     @Override
     public boolean isCollapsed(Object itemId) {
-        return false;
+        return !isCollapsedSet.contains(itemId);
     }
 }
