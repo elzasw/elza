@@ -7,8 +7,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
+import ru.xpoft.vaadin.VaadinView;
 
 import com.vaadin.data.Item;
 import com.vaadin.navigator.ViewChangeListener;
@@ -19,14 +23,20 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.Tree;
 import com.vaadin.ui.TreeTable;
 
+import cz.req.ax.AxAction;
+import cz.req.ax.AxContainer;
+import cz.req.ax.AxForm;
+import cz.req.ax.AxWindow;
 import cz.tacr.elza.controller.ArrangementManager;
+import cz.tacr.elza.controller.RuleSetManager;
+import cz.tacr.elza.domain.ArrangementType;
 import cz.tacr.elza.domain.FaLevel;
 import cz.tacr.elza.domain.FaVersion;
 import cz.tacr.elza.domain.FindingAid;
+import cz.tacr.elza.domain.RuleSet;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.VersionRepository;
 import cz.tacr.elza.ui.ElzaView;
-import ru.xpoft.vaadin.VaadinView;
 
 
 /**
@@ -49,8 +59,16 @@ public class FindingAidDetailView extends ElzaView {
     @Autowired
     private VersionRepository versionRepository;
 
+    @Autowired
+    private RuleSetManager ruleSetManager;
+
+
     private Integer findingAidId;
+    private Integer versionId;
     private FindingAid findingAid;
+
+    AxContainer<ArrangementType> arTypeContainer;
+    AxContainer<RuleSet> ruleSetContainer;
 
     public static final String LEVEL = "Úroveň";
     public static final String LEVEL_POSITION = "Pozice";
@@ -59,10 +77,15 @@ public class FindingAidDetailView extends ElzaView {
     public void enter(final ViewChangeListener.ViewChangeEvent event) {
         super.enter(event);
 
-        findingAidId = getParameterInteger();
-        if (findingAidId == null) {
+        Integer[] params = getParameterIntegers();
+        if (params.length == 0) {
             navigate(FindingAidListView.class);
             return;
+        }
+        findingAidId = params[0];
+
+        if (params.length > 1) {
+            versionId = params[1];
         }
 
         this.findingAid = arrangementManager.getFindingAid(findingAidId);
@@ -98,7 +121,7 @@ public class FindingAidDetailView extends ElzaView {
 
         table.addCollapseListener(new Tree.CollapseListener() {
             @Override
-            public void nodeCollapse(Tree.CollapseEvent collapseEvent) {
+            public void nodeCollapse(final Tree.CollapseEvent collapseEvent) {
                 Integer itemId = (Integer) collapseEvent.getItemId();
                 removeAllChildren(table, itemId);
             }
@@ -106,7 +129,8 @@ public class FindingAidDetailView extends ElzaView {
 
         table.addExpandListener(new Tree.ExpandListener() {
 
-            public void nodeExpand(Tree.ExpandEvent expandEvent) {
+            @Override
+            public void nodeExpand(final Tree.ExpandEvent expandEvent) {
                 Integer itemId = (Integer) expandEvent.getItemId();
 
                 Integer itemIdLast = itemId;
@@ -131,7 +155,7 @@ public class FindingAidDetailView extends ElzaView {
         bodyMain().addComponent(table);
     }
 
-    private List<FaLevel> getChildByFaLevel(List<FaLevel> faLevels) {
+    private List<FaLevel> getChildByFaLevel(final List<FaLevel> faLevels) {
         List<Integer> faLevelsNodeIds = new LinkedList<>();
         for (FaLevel faLevel : faLevels) {
             faLevelsNodeIds.add(faLevel.getNodeId());
@@ -141,7 +165,7 @@ public class FindingAidDetailView extends ElzaView {
         return childs;
     }
 
-    private void removeAllChildren(TreeTable table, Integer itemId) {
+    private void removeAllChildren(final TreeTable table, final Integer itemId) {
         Collection<?> children = table.getChildren(itemId);
         if (children != null) {
             ArrayList tmpChildren = new ArrayList(children);
@@ -154,7 +178,7 @@ public class FindingAidDetailView extends ElzaView {
         }
     }
 
-    private List<FaLevel> getAllChildByFaLevel(List<FaLevel> faLevels) {
+    private List<FaLevel> getAllChildByFaLevel(final List<FaLevel> faLevels) {
         List<Integer> faLevelsNodeIds = new LinkedList<>();
         for (FaLevel faLevel : faLevels) {
             faLevelsNodeIds.add(faLevel.getNodeId());
@@ -183,7 +207,18 @@ public class FindingAidDetailView extends ElzaView {
         Button approveVersion = new Button("Schválit verzi");
         approveVersion.addStyleName("fa-button");
         approveVersion.addStyleName("fa-button-approve");
+        approveVersion.addClickListener(new Button.ClickListener() {
+            @Override
+            public void buttonClick(final Button.ClickEvent event) {
+                AxForm<VOApproveVersion> formularApproveVersion = formularApproveVersion();
+                FaVersion version = new FaVersion();
+                VOApproveVersion appVersion = new VOApproveVersion();
+                appVersion.setArrangementTypeId(version.getArrangementTypeId());
+                appVersion.setRuleSetId(version.getRuleSetId());
 
+                approveVersion(formularApproveVersion, appVersion);
+            }
+        });
 
         actionsBar().addComponent(addRecord);
         actionsBar().addComponent(showHistory);
@@ -196,6 +231,53 @@ public class FindingAidDetailView extends ElzaView {
         CssLayout titleBar = new CssLayout(title);
         titleBar.addStyleName("fa-title");
         bodyHeadMain().addComponent(titleBar);
+    }
+
+
+    private void approveVersion(final AxForm<VOApproveVersion> form, final VOApproveVersion appVersion) {
+        form.setValue(appVersion);
+        new AxWindow().components(form)
+        .buttonPrimary(new AxAction<VOApproveVersion>()
+                .caption("Uložit")
+                .exception(ex -> {
+                    ex.printStackTrace();
+                })
+                .primary()
+                .value(form::commit)
+                .action(this::approveVersion)
+                ).buttonClose().modal().style("fa-window-detail").show();
+
+    }
+
+    private void approveVersion(final VOApproveVersion voApproveVersion) {
+        versionId = arrangementManager.approveVersion(findingAidId, voApproveVersion.getArrangementTypeId(),
+                voApproveVersion.getRuleSetId()).getFaVersionId();
+    }
+
+    @Bean
+    @Scope("prototype")
+    @Qualifier("formularApproveVersion")
+    AxForm<VOApproveVersion> formularApproveVersion() {
+        AxForm<VOApproveVersion> form = AxForm.init(VOApproveVersion.class);
+        form.addStyleName("fa-form");
+        form.setCaption("Schválení verze archivní pomůcky");
+
+        arTypeContainer = new AxContainer<>(ArrangementType.class).supplier(this::getAllArrangementTypes);
+        arTypeContainer.setBeanIdProperty("arrangementTypeId");
+        form.addCombo("Typ výstupu", "arrangementTypeId", arTypeContainer, ArrangementType::getName).required();
+
+        ruleSetContainer = new AxContainer<>(RuleSet.class).supplier(this::getAllRuleSets);
+        ruleSetContainer.setBeanIdProperty("ruleSetId");
+        form.addCombo("Pravidla tvorby", "ruleSetId", ruleSetContainer, RuleSet::getName).required();
+        return form;
+    }
+
+    List<ArrangementType> getAllArrangementTypes() {
+        return arrangementManager.getArrangementTypes();
+    }
+
+    List<RuleSet> getAllRuleSets() {
+        return ruleSetManager.getRuleSets();
     }
 }
 

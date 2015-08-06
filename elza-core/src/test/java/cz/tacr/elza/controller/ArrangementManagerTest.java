@@ -37,9 +37,12 @@ public class ArrangementManagerTest extends AbstractRestTest {
     private static final String GET_FA_ONE_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAid";
     private static final String GET_ARRANGEMENT_TYPES_URL = ARRANGEMENT_MANAGER_URL + "/getArrangementTypes";
     private static final String GET_FINDING_AID_VERSIONS_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAidVersions";
+    private static final String APPROVE_VERSION_URL = ARRANGEMENT_MANAGER_URL + "/approveVersion";
 
     private static final String FA_NAME_ATT = "name";
     private static final String FA_ID_ATT = "findingAidId";
+    private static final String ARRANGEMENT_TYPE_ID_ATT = "arrangementTypeId";
+    private static final String RULE_SET_ID_ATT = "ruleSetId";
 
     @Autowired
     private ArrangementManager arrangementManager;
@@ -191,6 +194,35 @@ public class ArrangementManagerTest extends AbstractRestTest {
         }
     }
 
+    @Test
+    public void testRestApproveVersion() {
+        FindingAid findingAid = createFindingAid(TEST_NAME);
+
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
+                parameter(FA_ID_ATT, findingAid.getFindigAidId()).get(GET_FINDING_AID_VERSIONS_URL);
+
+        List<FaVersion> versions = Arrays.asList(response.getBody().as(FaVersion[].class));
+        FaVersion version = versions.iterator().next();
+
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
+                parameter(FA_ID_ATT, findingAid.getFindigAidId()).
+                parameter(ARRANGEMENT_TYPE_ID_ATT, version.getArrangementType().getArrangementTypeId()).
+                parameter(RULE_SET_ID_ATT, version.getRuleSet().getRuleSetId()).
+                get(APPROVE_VERSION_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        FaVersion newVersion = response.getBody().as(FaVersion.class);
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
+                parameter(FA_ID_ATT, findingAid.getFindigAidId()).get(GET_FINDING_AID_VERSIONS_URL);
+
+        versions = Arrays.asList(response.getBody().as(FaVersion[].class));
+
+        Assert.assertNotNull(newVersion);
+        Assert.assertTrue(newVersion.getLockChange() == null);
+        Assert.assertTrue(versions.size() == 2);
+    }
+
     /**
      * Načte archivní pomůcky přes REST volání.
      *
@@ -210,7 +242,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
      *
      * @return archivní pomůcka
      */
-    private FindingAid getFindingAid(Integer findingAidId) {
+    private FindingAid getFindingAid(final Integer findingAidId) {
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(FA_ID_ATT, findingAidId).get(GET_FA_ONE_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());

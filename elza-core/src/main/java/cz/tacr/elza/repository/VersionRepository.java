@@ -7,7 +7,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import cz.tacr.elza.domain.FaChange;
 import cz.tacr.elza.domain.FaVersion;
+import cz.tacr.elza.domain.FindingAid;
 
 
 /**
@@ -22,4 +24,7 @@ public interface VersionRepository extends JpaRepository<FaVersion, Integer> {
 
 
     FaVersion findTopByFindingAidId(Integer findingAidId);
+
+
+    FaVersion findByFindingAidAndLockChange(FindingAid findingAid, FaChange lockChange);
 }
