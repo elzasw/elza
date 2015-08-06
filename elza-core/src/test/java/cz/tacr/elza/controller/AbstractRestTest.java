@@ -84,7 +84,7 @@ public abstract class AbstractRestTest {
         for (FindingAid findingAid : findingAids) {
             if ((findingAid.getName().equals(TEST_NAME) || findingAid.getName().equals(TEST_UPDATE_NAME))
                     && isAfterOrEqual(findingAid.getCreateDate(), initDate)) {
-                arrangementManager.deleteFindingAid(findingAid.getFindigAidId());
+                arrangementManager.deleteFindingAid(findingAid.getFindingAidId());
             }
         }
 

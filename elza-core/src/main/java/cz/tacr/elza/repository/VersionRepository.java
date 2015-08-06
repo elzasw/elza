@@ -19,11 +19,11 @@ import cz.tacr.elza.domain.FindingAid;
 @Repository
 public interface VersionRepository extends JpaRepository<FaVersion, Integer> {
 
-    @Query(value = "select v from arr_fa_version v join v.createChange ch where v.findingAidId = :findingAidId order by ch.changeDate desc")
-    List<FaVersion> findByFindingAidIdOrderByCreateDateAsc(@Param(value = "findingAidId") Integer findingAidId);
+    @Query(value = "select v from arr_fa_version v join v.createChange ch join v.findingAid fa where fa.findingAidId = :findingAidId order by ch.changeDate desc")
+    List<FaVersion> findVersionsByFindingAidIdOrderByCreateDateAsc(@Param(value = "findingAidId") Integer findingAidId);
 
 
-    FaVersion findTopByFindingAidId(Integer findingAidId);
+    FaVersion findTopByFindingAid(FindingAid findingAid);
 
 
     FaVersion findByFindingAidAndLockChange(FindingAid findingAid, FaChange lockChange);

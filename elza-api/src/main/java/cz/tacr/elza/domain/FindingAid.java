@@ -19,7 +19,7 @@ public class FindingAid extends EntityBase {
 
     @Id
     @GeneratedValue
-    private Integer findigAidId;
+    private Integer findingAidId;
 
     @Column(length = 255, nullable = false)
     private String name;
@@ -27,12 +27,12 @@ public class FindingAid extends EntityBase {
     @Column(nullable = false)
     private LocalDateTime createDate;
 
-    public Integer getFindigAidId() {
-        return findigAidId;
+    public Integer getFindingAidId() {
+        return findingAidId;
     }
 
-    public void setFindigAidId(final Integer findigAidId) {
-        this.findigAidId = findigAidId;
+    public void setFindingAidId(final Integer findingAidId) {
+        this.findingAidId = findingAidId;
     }
 
     public String getName() {
@@ -53,6 +53,6 @@ public class FindingAid extends EntityBase {
 
     @Override
     public String toString() {
-        return "FindingAid pk=" + findigAidId;
+        return "FindingAid pk=" + findingAidId;
     }
 }

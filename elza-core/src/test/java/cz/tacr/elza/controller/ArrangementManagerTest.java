@@ -64,7 +64,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
     public void testDeleteFindingAid() throws Exception {
         FindingAid findingAid = createFindingAid(TEST_NAME);
 
-        arrangementManager.deleteFindingAid(findingAid.getFindigAidId());
+        arrangementManager.deleteFindingAid(findingAid.getFindingAidId());
     }
 
     @Test
@@ -80,7 +80,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
     public void testUpdateFindingAid() throws Exception {
         FindingAid findingAid = createFindingAid(TEST_NAME);
 
-        arrangementManager.updateFindingAid(findingAid.getFindigAidId(), TEST_UPDATE_NAME);
+        arrangementManager.updateFindingAid(findingAid.getFindingAidId(), TEST_UPDATE_NAME);
     }
 
     // ---- REST test ----
@@ -89,18 +89,18 @@ public class ArrangementManagerTest extends AbstractRestTest {
         FindingAid findingAid = createFindingAidRest(TEST_NAME);
 
         Assert.assertNotNull(findingAid);
-        Assert.assertNotNull(findingAid.getFindigAidId());
+        Assert.assertNotNull(findingAid.getFindingAidId());
     }
 
     @Test
     public void testRestGetFindingAid() throws Exception {
         FindingAid findingAid = createFindingAidRest(TEST_NAME);
 
-        FindingAid getFindingAid = getFindingAid(findingAid.getFindigAidId());
+        FindingAid getFindingAid = getFindingAid(findingAid.getFindingAidId());
 
         Assert.assertNotNull(getFindingAid);
         Assert.assertEquals(TEST_NAME, getFindingAid.getName());
-        Assert.assertEquals(findingAid.getFindigAidId(), getFindingAid.getFindigAidId());
+        Assert.assertEquals(findingAid.getFindingAidId(), getFindingAid.getFindingAidId());
     }
 
     @Test
@@ -113,7 +113,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
     @Test
     public void testRestDeleteFindingAid() throws Exception {
-        Integer idFinfingAid = createFindingAidRest(TEST_NAME).getFindigAidId();
+        Integer idFinfingAid = createFindingAidRest(TEST_NAME).getFindingAidId();
 
         long countStart = findingAidRepository.count();
 
@@ -128,7 +128,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
     @Test
     public void testRestUpdateFindingAid() throws Exception {
-        Integer idFinfingAid = createFindingAidRest(TEST_NAME).getFindigAidId();
+        Integer idFinfingAid = createFindingAidRest(TEST_NAME).getFindingAidId();
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(FA_ID_ATT, idFinfingAid)
                 .parameter(FA_NAME_ATT, TEST_UPDATE_NAME)
@@ -140,7 +140,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         List<FindingAid> findingAids = getFindingAids();
         for (FindingAid findingAid : findingAids) {
-            if (findingAid.getFindigAidId().equals(idFinfingAid)) {
+            if (findingAid.getFindingAidId().equals(idFinfingAid)) {
                 updatedFindingAid = findingAid;
                 break;
             }
@@ -174,7 +174,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         }
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
-                parameter(FA_ID_ATT, findingAid.getFindigAidId()).get(GET_FINDING_AID_VERSIONS_URL);
+                parameter(FA_ID_ATT, findingAid.getFindingAidId()).get(GET_FINDING_AID_VERSIONS_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
@@ -199,13 +199,13 @@ public class ArrangementManagerTest extends AbstractRestTest {
         FindingAid findingAid = createFindingAid(TEST_NAME);
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
-                parameter(FA_ID_ATT, findingAid.getFindigAidId()).get(GET_FINDING_AID_VERSIONS_URL);
+                parameter(FA_ID_ATT, findingAid.getFindingAidId()).get(GET_FINDING_AID_VERSIONS_URL);
 
         List<FaVersion> versions = Arrays.asList(response.getBody().as(FaVersion[].class));
         FaVersion version = versions.iterator().next();
 
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
-                parameter(FA_ID_ATT, findingAid.getFindigAidId()).
+                parameter(FA_ID_ATT, findingAid.getFindingAidId()).
                 parameter(ARRANGEMENT_TYPE_ID_ATT, version.getArrangementType().getArrangementTypeId()).
                 parameter(RULE_SET_ID_ATT, version.getRuleSet().getRuleSetId()).
                 get(APPROVE_VERSION_URL);
@@ -214,7 +214,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         FaVersion newVersion = response.getBody().as(FaVersion.class);
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
-                parameter(FA_ID_ATT, findingAid.getFindigAidId()).get(GET_FINDING_AID_VERSIONS_URL);
+                parameter(FA_ID_ATT, findingAid.getFindingAidId()).get(GET_FINDING_AID_VERSIONS_URL);
 
         versions = Arrays.asList(response.getBody().as(FaVersion[].class));
 

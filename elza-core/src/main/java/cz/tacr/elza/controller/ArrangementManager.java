@@ -146,7 +146,7 @@ public class ArrangementManager {
     public void deleteFindingAid(@RequestParam(value = "findingAidId") final Integer findingAidId) {
         Assert.notNull(findingAidId);
 
-        List<FaVersion> versions = versionRepository.findByFindingAidIdOrderByCreateDateAsc(findingAidId);
+        List<FaVersion> versions = versionRepository.findVersionsByFindingAidIdOrderByCreateDateAsc(findingAidId);
 
         //        List<Integer> levelIds = new LinkedList<Integer>();
         //        for (FaVersion versionLevel : versions) {
@@ -212,7 +212,7 @@ public class ArrangementManager {
     public List<FaVersion> getFindingAidVersions(@RequestParam(value = "findingAidId") final Integer findingAidId) {
         Assert.notNull(findingAidId);
 
-        return versionRepository.findByFindingAidIdOrderByCreateDateAsc(findingAidId);
+        return versionRepository.findVersionsByFindingAidIdOrderByCreateDateAsc(findingAidId);
     }
 
     /**

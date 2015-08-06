@@ -97,11 +97,11 @@ public class FindingAidDetailView extends ElzaView {
         final TreeTable table = new TreeTable();
         table.setWidth("100%");
 
-        FaVersion lastVersions = versionRepository.findTopByFindingAidId(findingAidId);
+        FaVersion lastVersions = versionRepository.findTopByFindingAid(findingAid);
 
         List<FaLevel> faLevelsAll = new LinkedList<FaLevel>();
 
-        List<FaLevel> faLevels = levelRepository.findByParentNodeIdOrderByPositionAsc(lastVersions.getRootNode().getNodeId());
+        List<FaLevel> faLevels = levelRepository.findByParentNodeOrderByPositionAsc(lastVersions.getRootNode());
         faLevelsAll.addAll(faLevels);
         //faLevelsAll.addAll(getAllChildByFaLevel(faLevels));
 
@@ -153,12 +153,7 @@ public class FindingAidDetailView extends ElzaView {
     }
 
     private List<FaLevel> getChildByFaLevel(final List<FaLevel> faLevels) {
-        List<Integer> faLevelsNodeIds = new LinkedList<>();
-        for (FaLevel faLevel : faLevels) {
-            faLevelsNodeIds.add(faLevel.getNodeId());
-        }
-
-        List<FaLevel> childs = levelRepository.findByParentNodeIdInOrderByPositionAsc(faLevelsNodeIds);
+        List<FaLevel> childs = levelRepository.findByParentNodeInOrderByPositionAsc(faLevels);
         return childs;
     }
 
@@ -176,12 +171,7 @@ public class FindingAidDetailView extends ElzaView {
     }
 
     private List<FaLevel> getAllChildByFaLevel(final List<FaLevel> faLevels) {
-        List<Integer> faLevelsNodeIds = new LinkedList<>();
-        for (FaLevel faLevel : faLevels) {
-            faLevelsNodeIds.add(faLevel.getNodeId());
-        }
-
-        List<FaLevel> childs = levelRepository.findByParentNodeIdIn(faLevelsNodeIds);
+        List<FaLevel> childs = levelRepository.findByParentNodeIn(faLevels);
         if (childs.size() > 0) {
             childs.addAll(getAllChildByFaLevel(childs));
         }

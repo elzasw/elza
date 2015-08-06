@@ -114,7 +114,7 @@ public class FindingAidListView extends ElzaView {
             @Override
             public void itemClick(final ItemClickEvent itemClickEvent) {
                 FindingAid findingAid = (FindingAid) itemClickEvent.getItemId();
-                navigate(FindingAidDetailView.class, findingAid.getFindigAidId());
+                navigate(FindingAidDetailView.class, findingAid.getFindingAidId());
             }
         });
 
@@ -171,12 +171,12 @@ public class FindingAidListView extends ElzaView {
     }
 
     private void ulozitFA(final FindingAid findingAid) {
-        arrangementManager.updateFindingAid(findingAid.getFindigAidId(), findingAid.getName());
+        arrangementManager.updateFindingAid(findingAid.getFindingAidId(), findingAid.getName());
         refresh();
     }
 
     private void smazatFA(final FindingAid findingAid) {
-        arrangementManager.deleteFindingAid(findingAid.getFindigAidId());
+        arrangementManager.deleteFindingAid(findingAid.getFindingAidId());
         refresh();
     }
 

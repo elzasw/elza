@@ -20,14 +20,14 @@ public interface LevelRepository extends JpaRepository<FaLevel, Integer> {
     Integer findMaxNodeId();
 
 
-    List<FaLevel> findByParentNodeIdOrderByPositionAsc(Integer levelId);
+    List<FaLevel> findByParentNodeOrderByPositionAsc(FaLevel level);
 
 
     List<FaLevel> findByNodeIdOrderByPositionAsc(Integer levelId);
 
 
-    List<FaLevel> findByParentNodeIdIn(List<Integer> faLevels);
+    List<FaLevel> findByParentNodeIn(List<FaLevel> faLevels);
 
 
-    List<FaLevel> findByParentNodeIdInOrderByPositionAsc(List<Integer> faLevels);
+    List<FaLevel> findByParentNodeInOrderByPositionAsc(List<FaLevel> faLevels);
 }
