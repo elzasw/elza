@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.List;
 
+import com.vaadin.server.FontAwesome;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -127,17 +128,8 @@ public class FindingAidListView extends ElzaView {
         table.setContainerDataSource(container);
         table.setVisibleColumns("name", "createDate", "actions");
 
-        Button button = new Button("Nový");
-        button.addStyleName("fa-button-new");
-        button.addClickListener(new Button.ClickListener() {
-            @Override
-            public void buttonClick(final Button.ClickEvent event) {
-                AxForm<VONewFindingAid> form = formularNewFA();
-                novyFA(form);
-            }
-        });
-
-        actionsBar().addComponent(button);
+        actions(new AxAction().caption("Nový").icon(FontAwesome.PLUS_CIRCLE)
+                .run(() -> novyFA(formularNewFA())));
         addBodyHead();
         bodyMain().addComponent(table);
     }
