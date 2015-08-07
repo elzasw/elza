@@ -221,7 +221,7 @@ public class FindingAidDetailView extends ElzaView {
     @Bean
     @Scope("prototype")
     @Qualifier("formularApproveVersion")
-    AxForm<VOApproveVersion> formularApproveVersion() {
+    private AxForm<VOApproveVersion> formularApproveVersion() {
         AxForm<VOApproveVersion> form = AxForm.init(VOApproveVersion.class);
         form.addStyleName("fa-form");
         form.setCaption("Schválení verze archivní pomůcky");

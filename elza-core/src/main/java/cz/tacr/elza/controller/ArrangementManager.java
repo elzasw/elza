@@ -143,21 +143,23 @@ public class ArrangementManager {
      * @param findingAidId id archivní pomůcky
      */
     @RequestMapping(value = "/deleteFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, params = {"findingAidId"})
+    @Transactional
     public void deleteFindingAid(@RequestParam(value = "findingAidId") final Integer findingAidId) {
         Assert.notNull(findingAidId);
 
-        List<FaVersion> versions = versionRepository.findVersionsByFindingAidIdOrderByCreateDateAsc(findingAidId);
-
-        //        List<Integer> levelIds = new LinkedList<Integer>();
-        //        for (FaVersion versionLevel : versions) {
-        //            levelIds.add(versionLevel.getRootFaLevelId());
-        //        }
-        //        List<FaLevel> levels = levelRepository.findByFaLevelId(levelIds);
-
-        versionRepository.deleteInBatch(versions);
-        //        levelRepository.deleteInBatch(levels);
+        versionRepository.findVersionsByFindingAidIdOrderByCreateDateAsc(findingAidId).forEach((version) -> {
+            FaLevel rootNode = version.getRootNode();
+            versionRepository.delete(version);
+            removeTree(rootNode);
+        });
 
         findingAidRepository.delete(findingAidId);
+    }
+
+    private void removeTree(FaLevel rootNode) {
+        levelRepository.findByParentNodeOrderByPositionAsc(rootNode).forEach((node) -> {removeTree(node);});
+
+        levelRepository.delete(rootNode);
     }
 
     /**
