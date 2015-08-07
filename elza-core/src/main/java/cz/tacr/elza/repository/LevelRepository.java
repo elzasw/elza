@@ -20,6 +20,7 @@ public interface LevelRepository extends JpaRepository<FaLevel, Integer> {
     Integer findMaxNodeId();
 
 
+    @Query("SELECT c FROM arr_fa_level c WHERE c.parentNode = ?1 order by c.position asc")
     List<FaLevel> findByParentNodeOrderByPositionAsc(FaLevel level);
 
 
