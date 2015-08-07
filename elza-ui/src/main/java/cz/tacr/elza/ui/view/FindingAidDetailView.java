@@ -32,11 +32,8 @@ import cz.tacr.elza.domain.FaLevel;
 import cz.tacr.elza.domain.FaVersion;
 import cz.tacr.elza.domain.FindingAid;
 import cz.tacr.elza.domain.RuleSet;
-import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.VersionRepository;
 import cz.tacr.elza.ui.ElzaView;
 import ru.xpoft.vaadin.VaadinView;
-import sun.plugin.dom.exception.InvalidStateException;
 
 
 /**
@@ -143,7 +140,7 @@ public class FindingAidDetailView extends ElzaView {
                                         faLevelVyjmout = null;
                                         // TODO: dopsat zařazení ve stromu stromu
                                     } else {
-                                        throw new InvalidStateException("Neplatný faLevelVyjmout");
+                                        throw new UnsupportedOperationException();
                                     }
                                 }),
                                 new AxAction().caption("Vložit pod").icon(FontAwesome.PASTE).run(() -> {
@@ -153,7 +150,7 @@ public class FindingAidDetailView extends ElzaView {
                                         faLevelVyjmout = null;
                                         // TODO: dopsat zařazení ve stromu stromu
                                     } else {
-                                        throw new InvalidStateException("Neplatný faLevelVyjmout");
+                                        throw new UnsupportedOperationException();
                                     }
                                 })
                         )
