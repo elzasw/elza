@@ -20,15 +20,19 @@ public interface LevelRepository extends JpaRepository<FaLevel, Integer> {
     Integer findMaxNodeId();
 
 
-    @Query("SELECT c FROM arr_fa_level c WHERE c.parentNode = ?1 order by c.position asc")
+    @Query("SELECT c FROM arr_fa_level c WHERE c.parentNode = ?1 and c.deleteChange is null order by c.position asc")
     List<FaLevel> findByParentNodeOrderByPositionAsc(FaLevel level);
 
 
-    List<FaLevel> findByNodeIdOrderByPositionAsc(Integer levelId);
+    List<FaLevel> findByNodeIdAndDeleteChangeIsNullOrderByPositionAsc(Integer levelId);
 
 
     List<FaLevel> findByParentNodeIn(List<FaLevel> faLevels);
 
 
+    @Query("SELECT c FROM arr_fa_level c WHERE c.parentNode in ?1  and c.deleteChange is null order by c.position asc")
     List<FaLevel> findByParentNodeInOrderByPositionAsc(List<FaLevel> faLevels);
+
+
+    FaLevel findTopByNodeIdAndDeleteChangeIsNull(Integer nodeId);
 }
