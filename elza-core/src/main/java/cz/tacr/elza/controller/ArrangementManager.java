@@ -8,6 +8,7 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -256,5 +257,140 @@ public class ArrangementManager {
         RuleSet ruleSet = ruleSetRepository.findOne(ruleSetId);
 
         return createVersion(change, findingAid, arrangementType, ruleSet, version.getRootNode());
+    }
+
+    /**
+     * Přidá záznam do poslední (otevřené) verze archivní položky
+     *
+     * @param findingAid    archivní pomůcka
+     * @return              nový záznam z archivný pomůcky
+     */
+    @RequestMapping(value = "/addFaLevel", method = RequestMethod.PUT)
+    public FaLevel addFaLevel(@RequestBody FindingAid findingAid) {
+        Assert.notNull(findingAid);
+        FaVersion lastVersion = versionRepository.findByFindingAidAndLockChange(findingAid, null);
+        FaChange change = createChange();
+        return createLevel(change, lastVersion.getRootNode());
+    }
+
+    // TODO: dopsat testy
+    @RequestMapping(value = "/addFaLevelChild", method = RequestMethod.PUT)
+    public FaLevel addFaLevelChild(@RequestBody FaLevel faLevel) {
+        Assert.notNull(faLevel);
+        FaChange change = createChange();
+        return createLevel(change, faLevel);
+    }
+
+    // TODO: dopsat testy
+    // TODO: otestovat, zda-li to vůbec funguje
+    @RequestMapping(value = "/moveFaLevelFor", method = RequestMethod.PUT)
+    public FaLevel moveFaLevelFor(@RequestBody FaLevel[] faLevels) {
+        Assert.notNull(faLevels);
+        Assert.isTrue(faLevels.length == 2);
+        for(int i = 0; i < faLevels.length; i++) {
+            Assert.notNull(faLevels[i]);
+        }
+        FaLevel faLevel = faLevels[0];
+        FaLevel faLevelFor = faLevels[1];
+        Assert.state(faLevel != faLevelFor, "Nelze vložit sama do sebe");
+
+        FaChange change = createChange();
+        faLevel.setDeleteChange(change);
+        levelRepository.save(faLevel);
+
+        return createLevel(change, faLevelFor);
+    }
+
+    // TODO: dopsat testy
+    // TODO: otestovat, zda-li to vůbec funguje
+    @RequestMapping(value = "/moveFaLevelUnder", method = RequestMethod.PUT)
+    public FaLevel moveFaLevelUnder(@RequestBody FaLevel[] faLevels) {
+        Assert.notNull(faLevels);
+        Assert.isTrue(faLevels.length == 2);
+        for(int i = 0; i < faLevels.length; i++) {
+            Assert.notNull(faLevels[i]);
+        }
+        FaLevel faLevel = faLevels[0];
+        FaLevel faLevelUnder = faLevels[1];
+        Assert.state(faLevel != faLevelUnder, "Nelze vložit sama za sebe");
+
+        FaChange change = createChange();
+        faLevel.setDeleteChange(change);
+        levelRepository.save(faLevel);
+
+        return createLevel(change, faLevelUnder.getParentNode());
+    }
+
+    // TODO: dopsat testy
+    @RequestMapping(value = "/deleteFaLevel", method = RequestMethod.DELETE)
+    public FaLevel deleteFaLevel(@RequestBody FaLevel faLevel) {
+        Assert.notNull(faLevel);
+        FaChange change = createChange();
+        deleteFaLevelTree(faLevel, change);
+        return faLevel;
+    }
+
+    /**
+     * Rekurzivně promaže podstrom
+     * @param faLevel   Záznam FA
+     * @param change    Provedená změna
+     *                  TODO: přepsat na while s jedním "update" nad listem
+     */
+    private void deleteFaLevelTree(FaLevel faLevel, FaChange change) {
+        List<FaLevel> childrens = levelRepository.findByParentNodeOrderByPositionAsc(faLevel);
+        for (FaLevel faLevelChildren : childrens) {
+            deleteFaLevelTree(faLevelChildren, change);
+        }
+        faLevel.setDeleteChange(change);
+        levelRepository.save(faLevel);
+    }
+
+    // TODO: přepsat, dopsat testy
+    @RequestMapping(value = "/getOneFaLevelByNodeIdAndDeleteChangeIsNull/{nodeId}", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public FaLevel getOneFaLevelByNodeIdAndDeleteChangeIsNull(@RequestParam("nodeId")Integer nodeId) {
+        Assert.notNull(nodeId);
+        return levelRepository.findTopByNodeIdAndDeleteChangeIsNull(nodeId);
+    }
+
+    // TODO: přepsat, dopsat testy
+    @RequestMapping(value = "/getOneFaVersionByFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public FaVersion getOneFaVersionByFindingAid(@RequestBody FindingAid findingAid) {
+        Assert.notNull(findingAid);
+        return versionRepository.findTopByFindingAid(findingAid);
+    }
+
+    // TODO: přepsat, dopsat testy
+    @RequestMapping(value = "/findFaLevelByParentNodeOrderByPositionAsc", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<FaLevel> findFaLevelByParentNodeOrderByPositionAsc(@RequestBody FaLevel faLevel) {
+        Assert.notNull(faLevel);
+        return levelRepository.findByParentNodeOrderByPositionAsc(faLevel);
+    }
+
+    // TODO: přepsat, dopsat testy
+    @RequestMapping(value = "/getOneFaLevelByNodeIdOrderByPositionAsc/{nodeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<FaLevel> getOneFaLevelByNodeIdOrderByPositionAsc(@RequestParam("nodeId")Integer nodeId) {
+        Assert.notNull(nodeId);
+        return levelRepository.findByNodeIdAndDeleteChangeIsNullOrderByPositionAsc(nodeId);
+    }
+
+    // TODO: přepsat, dopsat testy
+    @RequestMapping(value = "/findFaLevelByParentNodeInOrderByPositionAsc", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<FaLevel> findFaLevelByParentNodeInOrderByPositionAsc(@RequestBody List<FaLevel> faLevelList) {
+        Assert.notNull(faLevelList);
+        return levelRepository.findByParentNodeInDeleteChangeIsNullOrderByPositionAsc(faLevelList);
+    }
+
+    // TODO: přepsat, dopsat testy
+    @RequestMapping(value = "/findFaLevelByParentNodeIn", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<FaLevel> findFaLevelByParentNodeIn(@RequestBody List<FaLevel> faLevelList) {
+        Assert.notNull(faLevelList);
+        return levelRepository.findByParentNodeIn(faLevelList);
+    }
+
+    // TODO: přepsat, dopsat testy
+    @RequestMapping(value = "/findFaLevelsByNodeIdAndDeleteChangeIsNullOrderByPositionAsc{nodeId}", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<FaLevel> findFaLevelsByNodeIdAndDeleteChangeIsNullOrderByPositionAsc(@RequestParam("nodeId")Integer nodeId) {
+        Assert.notNull(nodeId);
+        return levelRepository.findByNodeIdAndDeleteChangeIsNullOrderByPositionAsc(nodeId);
     }
 }
