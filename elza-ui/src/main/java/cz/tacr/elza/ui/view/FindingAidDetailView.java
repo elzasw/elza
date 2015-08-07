@@ -54,14 +54,7 @@ public class FindingAidDetailView extends ElzaView {
     private ArrangementManager arrangementManager;
 
     @Autowired
-    private LevelRepository levelRepository;
-
-    @Autowired
-    private VersionRepository versionRepository;
-
-    @Autowired
     private RuleSetManager ruleSetManager;
-
 
     private Integer findingAidId;
     private Integer versionId;
@@ -103,11 +96,12 @@ public class FindingAidDetailView extends ElzaView {
         table = new TreeTable();
         table.setWidth("100%");
 
+        FaVersion lastVersions = arrangementManager.getOneFaVersionByFindingAid(findingAid);
         table.addGeneratedColumn("Akce", new Table.ColumnGenerator() {
             @Override
             public Object generateCell(final Table source, final Object itemId, final Object columnId) {
                 // TODO: změnit celou tabulku na Ax
-                FaLevel faLevel = levelRepository.findTopByNodeIdAndDeleteChangeIsNull((Integer) itemId);
+                FaLevel faLevel = arrangementManager.getOneFaLevelByNodeIdAndDeleteChangeIsNull((Integer) itemId);
                 AxMenuBar menu = new AxMenuBar().actions(
                         new AxAction().icon(FontAwesome.ALIGN_JUSTIFY).submenu(
                                 new AxAction().caption("Přidat záznam").icon(FontAwesome.PLUS).run(() -> {
@@ -168,11 +162,9 @@ public class FindingAidDetailView extends ElzaView {
             }
         });
 
-        FaVersion lastVersions = versionRepository.findTopByFindingAid(findingAid);
-
         List<FaLevel> faLevelsAll = new LinkedList<FaLevel>();
 
-        List<FaLevel> faLevels = levelRepository.findByParentNodeOrderByPositionAsc(lastVersions.getRootNode());
+        List<FaLevel> faLevels = arrangementManager.findFaLevelByParentNodeOrderByPositionAsc(lastVersions.getRootNode());
         faLevelsAll.addAll(faLevels);
         //faLevelsAll.addAll(getAllChildByFaLevel(faLevels));
 
@@ -203,7 +195,7 @@ public class FindingAidDetailView extends ElzaView {
 
                 Integer itemIdLast = itemId;
 
-                for (FaLevel faLevel : getChildByFaLevel(levelRepository.findByNodeIdAndDeleteChangeIsNullOrderByPositionAsc(itemId))) {
+                for (FaLevel faLevel : getChildByFaLevel(arrangementManager.findFaLevelsByNodeIdAndDeleteChangeIsNullOrderByPositionAsc(itemId))) {
                     Item item = table.addItemAfter(itemIdLast, faLevel.getNodeId());
                     itemIdLast = faLevel.getNodeId();
                     if (faLevel.getParentNode() != null) {
@@ -224,7 +216,7 @@ public class FindingAidDetailView extends ElzaView {
     }
 
     private List<FaLevel> getChildByFaLevel(final List<FaLevel> faLevels) {
-        List<FaLevel> childs = levelRepository.findByParentNodeInOrderByPositionAsc(faLevels);
+        List<FaLevel> childs = arrangementManager.findFaLevelByParentNodeInOrderByPositionAsc(faLevels);
         return childs;
     }
 
@@ -242,7 +234,7 @@ public class FindingAidDetailView extends ElzaView {
     }
 
     private List<FaLevel> getAllChildByFaLevel(final List<FaLevel> faLevels) {
-        List<FaLevel> childs = levelRepository.findByParentNodeIn(faLevels);
+        List<FaLevel> childs = arrangementManager.findFaLevelByParentNodeIn(faLevels);
         if (childs.size() > 0) {
             childs.addAll(getAllChildByFaLevel(childs));
         }

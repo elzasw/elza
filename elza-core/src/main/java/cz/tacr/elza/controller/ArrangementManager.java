@@ -342,4 +342,53 @@ public class ArrangementManager {
         faLevel.setDeleteChange(change);
         levelRepository.save(faLevel);
     }
+
+    // TODO: přepsat, dopsat testy
+    @RequestMapping(value = "/getOneFaLevelByNodeIdAndDeleteChangeIsNull/{nodeId}", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public FaLevel getOneFaLevelByNodeIdAndDeleteChangeIsNull(@RequestParam("nodeId")Integer nodeId) {
+        Assert.notNull(nodeId);
+        return levelRepository.findTopByNodeIdAndDeleteChangeIsNull(nodeId);
+    }
+
+    // TODO: přepsat, dopsat testy
+    @RequestMapping(value = "/getOneFaVersionByFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public FaVersion getOneFaVersionByFindingAid(@RequestBody FindingAid findingAid) {
+        Assert.notNull(findingAid);
+        return versionRepository.findTopByFindingAid(findingAid);
+    }
+
+    // TODO: přepsat, dopsat testy
+    @RequestMapping(value = "/findFaLevelByParentNodeOrderByPositionAsc", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<FaLevel> findFaLevelByParentNodeOrderByPositionAsc(@RequestBody FaLevel faLevel) {
+        Assert.notNull(faLevel);
+        return levelRepository.findByParentNodeOrderByPositionAsc(faLevel);
+    }
+
+    // TODO: přepsat, dopsat testy
+    @RequestMapping(value = "/getOneFaLevelByNodeIdOrderByPositionAsc/{nodeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<FaLevel> getOneFaLevelByNodeIdOrderByPositionAsc(@RequestParam("nodeId")Integer nodeId) {
+        Assert.notNull(nodeId);
+        return levelRepository.findByNodeIdAndDeleteChangeIsNullOrderByPositionAsc(nodeId);
+    }
+
+    // TODO: přepsat, dopsat testy
+    @RequestMapping(value = "/findFaLevelByParentNodeInOrderByPositionAsc", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<FaLevel> findFaLevelByParentNodeInOrderByPositionAsc(@RequestBody List<FaLevel> faLevelList) {
+        Assert.notNull(faLevelList);
+        return levelRepository.findByParentNodeInOrderByPositionAsc(faLevelList);
+    }
+
+    // TODO: přepsat, dopsat testy
+    @RequestMapping(value = "/findFaLevelByParentNodeIn", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<FaLevel> findFaLevelByParentNodeIn(@RequestBody List<FaLevel> faLevelList) {
+        Assert.notNull(faLevelList);
+        return levelRepository.findByParentNodeIn(faLevelList);
+    }
+
+    // TODO: přepsat, dopsat testy
+    @RequestMapping(value = "/findFaLevelsByNodeIdAndDeleteChangeIsNullOrderByPositionAsc{nodeId}", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<FaLevel> findFaLevelsByNodeIdAndDeleteChangeIsNullOrderByPositionAsc(@RequestParam("nodeId")Integer nodeId) {
+        Assert.notNull(nodeId);
+        return levelRepository.findByNodeIdAndDeleteChangeIsNullOrderByPositionAsc(nodeId);
+    }
 }
