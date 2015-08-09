@@ -1,7 +1,6 @@
 package cz.tacr.elza.controller;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
@@ -24,6 +23,7 @@ import cz.tacr.elza.domain.FindingAid;
 import cz.tacr.elza.domain.RuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VersionRepository;
@@ -52,7 +52,6 @@ public abstract class AbstractRestTest {
 
     @Value("${local.server.port}")
     private int port;
-    private LocalDateTime initDate = null;
 
     @Autowired
     private ArrangementManager arrangementManager;
@@ -66,6 +65,8 @@ public abstract class AbstractRestTest {
     private ChangeRepository changeRepository;
     @Autowired
     private LevelRepository levelRepository;
+    @Autowired
+    private FindingAidRepository findingAidRepository;
 
     @Before
     public void setUp() {
@@ -74,43 +75,16 @@ public abstract class AbstractRestTest {
 
         // nastavi default URI pro REST-assured. Nejcasteni localhost
         RestAssured.baseURI = RestAssured.DEFAULT_URI;
-
-        initDate = LocalDateTime.now();
     }
 
     @After
     public void setDown() {
-        List<FindingAid> findingAids = arrangementManager.getFindingAids();
-        for (FindingAid findingAid : findingAids) {
-            if ((findingAid.getName().equals(TEST_NAME) || findingAid.getName().equals(TEST_UPDATE_NAME))
-                    && isAfterOrEqual(findingAid.getCreateDate(), initDate)) {
-                arrangementManager.deleteFindingAid(findingAid.getFindingAidId());
-            }
-        }
-
-        List<ArrangementType> arrangementTypes = arrangementManager.getArrangementTypes();
-        for (ArrangementType arrangementType : arrangementTypes) {
-            if (arrangementType.getName().equals(TEST_NAME) || arrangementType.getName().equals(TEST_UPDATE_NAME)) {
-                arrangementTypeRepository.delete(arrangementType);
-            }
-        }
-
-        List<RuleSet> ruleSets = ruleSetRepository.findAll();
-        for (RuleSet ruleSet : ruleSets) {
-            if (ruleSet.getName().equals(TEST_NAME)|| ruleSet.getName().equals(TEST_UPDATE_NAME)) {
-                ruleSetRepository.delete(ruleSet);
-            }
-        }
-    }
-
-    private boolean isAfterOrEqual(final LocalDateTime testDate, final LocalDateTime initDate) {
-        if (testDate == null) {
-            return false;
-        }
-        if (initDate == null) {
-            return false;
-        }
-        return testDate.isAfter(initDate) || testDate.isEqual(initDate);
+        versionRepository.deleteAll();
+        arrangementTypeRepository.deleteAll();
+        ruleSetRepository.deleteAll();
+        findingAidRepository.deleteAll();
+        levelRepository.deleteAll();
+        changeRepository.deleteAll();
     }
 
     protected ArrangementType createArrangementType() {

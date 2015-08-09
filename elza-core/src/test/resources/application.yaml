@@ -1,14 +1,16 @@
 spring:
   datasource:
-#    url: jdbc:postgresql://vyv-inet/elza
-#    username: app
-#    password: app
-    url: jdbc:hsqldb:mem:scratchdb
+    url: jdbc:postgresql://vyv-inet/elza_test
+ #   url: jdbc:postgresql://vyv-inet/elza_test_data
+    username: app
+    password: app
+#    url: jdbc:hsqldb:mem:scratchdb
   jpa:
     # Logovani SQL dotazu
     show-sql: true
     # Upgrade DB
     hibernate.ddl-auto: update    
+
 vax:
   viewMain: FindingAidList
   viewError: Exception

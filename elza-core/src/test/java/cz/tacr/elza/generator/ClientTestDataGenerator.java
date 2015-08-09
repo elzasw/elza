@@ -1,7 +1,16 @@
 package cz.tacr.elza.generator;
 
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 import org.apache.commons.lang3.RandomUtils;
+import org.apache.commons.lang3.time.StopWatch;
+import org.hibernate.Session;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +20,7 @@ import org.springframework.test.context.transaction.TransactionConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 
 import cz.tacr.elza.ElzaCore;
+import cz.tacr.elza.configuration.hibernate.impl.TableIdGenerator;
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.domain.ArrangementType;
 import cz.tacr.elza.domain.FaChange;
@@ -26,6 +36,17 @@ import cz.tacr.elza.repository.VersionRepository;
 
 /**
  * Generuje data pro testování z klienta.
+ * Pro ychlejší generování je potřeba nastavit přidělování identifikátorů z db po větších počtech
+ * @see {@link TableIdGenerator}.
+ *
+ *  počet id / počet vložených záznamů po kterých se provede session flush a clean / čas v minutách
+ *  1000    500 40
+ *  1000    1   38
+ *  100     1   38
+ *  100     75  35
+ *  100     50  36
+ *  1000000 75  36
+ *  2000000 75  34
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 7. 8. 2015
@@ -38,11 +59,15 @@ public class ClientTestDataGenerator {
     private static final int FA_COUNT = 20;
     private static final int TREE_DEPTH = 20;
     private static final int NODE_COUNT = 100000;
-    private static final int MAX_NODES_IN_LEVEL = 10000;
+    private static final int MAX_LEVEL_NODES_COUNT = 10000;
+    private static final int NORMAL_LEVEL_NODES_COUNT = 100;
+    private static final int FLUSH_COUNT = 75;
 
     protected static final String TEST_CODE = "Tcode";
     protected static final String TEST_NAME = "Test name";
 
+    @PersistenceContext
+    private EntityManager entityManager;
     @Autowired
     private ArrangementManager arrangementManager;
     @Autowired
@@ -57,61 +82,105 @@ public class ClientTestDataGenerator {
     private RuleSetRepository ruleSetRepository;
 
     private int nodesCreated = 0;
-    private int maxNodeId = 0;
     private int nodeIdGenerator = 0;
 
     @Test
     @Transactional(noRollbackFor = IllegalStateException.class)
     public void generateTree() {
-        maxNodeId = levelRepository.findMaxNodeId();
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+
+        Integer maxNodeId = levelRepository.findMaxNodeId();
+        if (maxNodeId == null) {
+            maxNodeId = 0;
+        }
         nodeIdGenerator = maxNodeId;
 
-        for (int i = 0; i < FA_COUNT; i++) {
-            nodesCreated = maxNodeId;
-            FindingAid findingAid = createFindingAid(TEST_NAME + i);
-            FaVersion version = versionRepository.findByFindingAidAndLockChangeIsNull(findingAid);
+        RuleSet ruleSet = createRuleSet();
+        ArrangementType arrangementType = createArrangementType();
+
+        IntStream.range(0, FA_COUNT).forEach( i -> {
+            nodesCreated = 0;
+            FindingAid findingAid = createFindingAid(TEST_NAME + i, ruleSet, arrangementType);
             nodeIdGenerator++;
+            FaVersion version = versionRepository.findByFindingAidAndLockChangeIsNull(findingAid);
             try {
-                createTree(findingAid, version);
+                createTree(version.getRootNode(), version.getCreateChange());
             } catch (IllegalStateException ex) {}
-        }
+        });
+
+        stopWatch.stop();
+        System.out.println(stopWatch.getTime());
     }
 
-    private void createTree(final FindingAid findingAid, final FaVersion version) {
-        int nodesInLevel = RandomUtils.nextInt(1, 20);
-        for (int i = 0; i < nodesInLevel; i++) {
+    private void createTree(final FaLevel rootNode, final FaChange createChange) {
+        List<FaLevel> firstLevelNodes = IntStream.range(0, RandomUtils.nextInt(5, 20)).mapToObj( i -> {
             checkIfCreateMoreNodes();
-            FaLevel level = createLevel(findingAid, version.getRootNode(), i, version.getCreateChange());
-            createSubtree(findingAid, version.getCreateChange(), level, 0);
-        }
+            return createLevel(rootNode, i, createChange);
+        }).collect(Collectors.toList());
+
+        FaLevel firstNode = firstLevelNodes.get(0);
+        FaLevel secondNode = firstLevelNodes.get(1);
+
+        createMaxDepthLevel(firstNode, TREE_DEPTH - 1, createChange);
+        createMaxNodesLevel(secondNode, createChange);
+        IntStream.range(2, firstLevelNodes.size()).forEach( i -> {
+            checkIfCreateMoreNodes();
+            createSubtree(createChange, firstLevelNodes.get(i), 0);
+        });
     }
 
+    private void createMaxNodesLevel(FaLevel firstNode, FaChange createChange) {
+        IntStream.range(0, MAX_LEVEL_NODES_COUNT).forEach( i -> {
+            checkIfCreateMoreNodes();
+            createLevel(firstNode, i, createChange);
+        });
+    }
+
+    private void createMaxDepthLevel(FaLevel secondNode, int depth, FaChange createChange) {
+        if (depth == 0) {
+            return;
+        }
+
+        checkIfCreateMoreNodes();
+        FaLevel node = createLevel(secondNode, 0, createChange);
+        createMaxDepthLevel(node, depth - 1, createChange);
+    }
+
+    private void createSubtree(final FaChange createChange, final FaLevel parent, int depth) {
+        if (RandomUtils.nextInt(1, TREE_DEPTH + 1) < depth) {
+            return;
+        }
+
+        int nodesInLevel =  RandomUtils.nextInt(1, NORMAL_LEVEL_NODES_COUNT);
+        IntStream.range(0, nodesInLevel).mapToObj( i -> {
+            checkIfCreateMoreNodes();
+            return createLevel(parent, i, createChange);
+        }).collect(Collectors.toList()).forEach( node -> {
+            checkIfCreateMoreNodes();
+            createSubtree(createChange, node, depth + 1);
+        });
+    }
 
     private void checkIfCreateMoreNodes() {
-        if (nodesCreated - maxNodeId >= NODE_COUNT) {
+        if (nodesCreated % FLUSH_COUNT == 0) {
+            entityManager.unwrap(Session.class).flush();
+            entityManager.unwrap(Session.class).clear();
+        }
+
+        if (nodesCreated >= NODE_COUNT) {
+            entityManager.unwrap(Session.class).flush();
+            entityManager.unwrap(Session.class).clear();
             throw new IllegalStateException();
         }
     }
 
-    private void createSubtree(final FindingAid findingAid, final FaChange createChange, final FaLevel parent, int depth) {
-        if (RandomUtils.nextInt(1, TREE_DEPTH) < depth) {
-            return;
-        }
-
-        int nodesInLevel =  RandomUtils.nextInt(1, MAX_NODES_IN_LEVEL);
-        for (int i = 0; i < nodesInLevel; i++) {
-            checkIfCreateMoreNodes();
-            FaLevel level = createLevel(findingAid, parent, i, createChange);
-            createSubtree(findingAid, createChange, level, depth + 1);
-        }
-    }
-
-    private FaLevel createLevel(final FindingAid findingAid, final FaLevel parent, final int position, final FaChange change) {
+    private FaLevel createLevel(final FaLevel parent, final int position, final FaChange change) {
         FaLevel level = new FaLevel();
         level.setCreateChange(change);
         level.setNodeId(++nodeIdGenerator);
         level.setParentNode(parent);
-        level.setPosition(position);
+        level.setPosition(position + 1);
         nodesCreated++;
 
         return levelRepository.save(level);
@@ -133,10 +202,7 @@ public class ClientTestDataGenerator {
         return ruleSet;
     }
 
-    protected FindingAid createFindingAid(final String name) {
-        RuleSet ruleSet = createRuleSet();
-        ArrangementType arrangementType = createArrangementType();
-
+    protected FindingAid createFindingAid(final String name, RuleSet ruleSet, ArrangementType arrangementType) {
         return arrangementManager.createFindingAid(name, arrangementType.getId(), ruleSet.getId());
     }
 }
