@@ -22,6 +22,7 @@ import cz.tacr.elza.domain.RuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.VersionRepository;
 
 /**
  * Testy pro {@link ArrangementManager}.
@@ -52,6 +53,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
     private ArrangementTypeRepository arrangementTypeRepository;
     @Autowired
     private RuleSetRepository ruleSetRepository;
+    @Autowired
+    private VersionRepository versionRepository;
 
     @Test
     @Transactional
@@ -118,6 +121,33 @@ public class ArrangementManagerTest extends AbstractRestTest {
         long countStart = findingAidRepository.count();
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(FA_ID_ATT, idFinfingAid)
+                .get(DELETE_FA_URL);
+        logger.info(response.asString());
+        long countEnd = findingAidRepository.count();
+
+        Assert.assertEquals(200, response.statusCode());
+        Assert.assertEquals(countStart, countEnd + 1);
+    }
+
+    @Test
+    public void testRestDeleteFindingAidWithMoreVeresions() throws Exception {
+        FindingAid findingAid = createFindingAidRest(TEST_NAME);
+
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
+                parameter(FA_ID_ATT, findingAid.getFindingAidId()).get(GET_FINDING_AID_VERSIONS_URL);
+
+        List<FaVersion> versions = Arrays.asList(response.getBody().as(FaVersion[].class));
+        FaVersion version = versions.iterator().next();
+
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
+                parameter(FA_ID_ATT, findingAid.getFindingAidId()).
+                parameter(ARRANGEMENT_TYPE_ID_ATT, version.getArrangementType().getArrangementTypeId()).
+                parameter(RULE_SET_ID_ATT, version.getRuleSet().getRuleSetId()).
+                get(APPROVE_VERSION_URL);
+
+        long countStart = findingAidRepository.count();
+
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(FA_ID_ATT, findingAid.getFindingAidId())
                 .get(DELETE_FA_URL);
         logger.info(response.asString());
         long countEnd = findingAidRepository.count();
