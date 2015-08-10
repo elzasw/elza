@@ -12,7 +12,6 @@ spring:
     # Logovani SQL dotazu
     show-sql: true
     # Upgrade DB
-    hibernate.ddl-auto: update    
 vax:
   viewMain: FindingAidList
   viewError: Exception

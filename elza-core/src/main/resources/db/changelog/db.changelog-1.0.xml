@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <!--Verze 1.0 - prvotni vytvoreni schematu -->
+
+    <changeSet id="1" author="pubal">
+
+        <createTable tableName="hibernate_sequences">
+            <column name="sequence_name" type="varchar(255)">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="next_val" type="bigint"/>
+        </createTable>
+
+        <createTable tableName="arr_fa_change">
+            <column name="change_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="change_date" type="timestamp"/>
+        </createTable>
+
+        <createTable tableName="arr_fa_level">
+            <column name="fa_level_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+
+            <column name="create_change_id" type="int"/>
+            <column name="delete_change_id" type="int"/>
+            <column name="node_id" type="int">
+                <constraints unique="true"/>
+            </column>
+            <column name="parent_node_id" type="int"/>
+            <column name="position" type="int"/>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_arr_fa_level_1"
+                                 baseTableName="arr_fa_level"
+                                 baseColumnNames="parent_node_id"
+                                 referencedTableName="arr_fa_level"
+                                 referencedColumnNames="node_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_arr_fa_level_2"
+                                 baseTableName="arr_fa_level"
+                                 baseColumnNames="create_change_id"
+                                 referencedTableName="arr_fa_change"
+                                 referencedColumnNames="change_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_arr_fa_level_3"
+                                 baseTableName="arr_fa_level"
+                                 baseColumnNames="delete_change_id"
+                                 referencedTableName="arr_fa_change"
+                                 referencedColumnNames="change_id"
+                                 onDelete="NO ACTION"/>
+
+
+
+
+
+        <createTable tableName="arr_finding_aid">
+            <column name="finding_aid_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="create_date" type="timestamp"/>
+            <column name="name" type="varchar(255)"/>
+        </createTable>
+
+        <createTable tableName="rul_arrangement_type">
+            <column name="arrangement_type_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="code" type="varchar(5)"/>
+            <column name="name" type="varchar(50)"/>
+        </createTable>
+
+        <createTable tableName="rul_rule_set">
+            <column name="rule_set_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="code" type="varchar(5)"/>
+            <column name="name" type="varchar(50)"/>
+        </createTable>
+
+        <createTable tableName="arr_fa_version">
+            <column name="fa_version_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="arrangement_type_id" type="int"/>
+            <column name="create_change_id" type="int"/>
+            <column name="finding_aid_id" type="int"/>
+            <column name="lock_change_id" type="int"/>
+            <column name="root_node_id" type="int"/>
+            <column name="rule_set_id" type="int"/>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_arr_fa_version_1"
+                                 baseTableName="arr_fa_version"
+                                 baseColumnNames="lock_change_id"
+                                 referencedTableName="arr_fa_change"
+                                 referencedColumnNames="change_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_arr_fa_version_2"
+                                 baseTableName="arr_fa_version"
+                                 baseColumnNames="root_node_id"
+                                 referencedTableName="arr_fa_level"
+                                 referencedColumnNames="node_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_arr_fa_version_3"
+                                 baseTableName="arr_fa_version"
+                                 baseColumnNames="rule_set_id"
+                                 referencedTableName="rul_rule_set"
+                                 referencedColumnNames="rule_set_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_arr_fa_version_4"
+                                 baseTableName="arr_fa_version"
+                                 baseColumnNames="create_change_id"
+                                 referencedTableName="arr_fa_change"
+                                 referencedColumnNames="change_id"
+                                 onDelete="NO ACTION"/>
+
+
+        <addForeignKeyConstraint constraintName="fk_arr_fa_version_5"
+                                 baseTableName="arr_fa_version"
+                                 baseColumnNames="arrangement_type_id"
+                                 referencedTableName="rul_arrangement_type"
+                                 referencedColumnNames="arrangement_type_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_arr_fa_version_6"
+                                 baseTableName="arr_fa_version"
+                                 baseColumnNames="finding_aid_id"
+                                 referencedTableName="arr_finding_aid"
+                                 referencedColumnNames="finding_aid_id"
+                                 onDelete="NO ACTION"/>
+
+
+    </changeSet>
+
+</databaseChangeLog>
