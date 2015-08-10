@@ -519,13 +519,6 @@ public class ArrangementManager {
     }
 
     // TODO: přepsat, dopsat testy
-    @RequestMapping(value = "/findFaLevelByParentNodeIn", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<FaLevel> findFaLevelByParentNodeIn(@RequestBody List<FaLevel> faLevelList) {
-        Assert.notNull(faLevelList);
-        return levelRepository.findByParentNodeIn(faLevelList);
-    }
-
-    // TODO: přepsat, dopsat testy
     @RequestMapping(value = "/findFaLevelsByNodeIdAndDeleteChangeIsNullOrderByPositionAsc{nodeId}", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<FaLevel> findFaLevelsByNodeIdAndDeleteChangeIsNullOrderByPositionAsc(@RequestParam("nodeId")Integer nodeId) {
         Assert.notNull(nodeId);

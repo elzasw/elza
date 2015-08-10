@@ -280,14 +280,6 @@ public class FindingAidDetailView extends ElzaView {
         }
     }
 
-    private List<FaLevel> getAllChildByFaLevel(final List<FaLevel> faLevels) {
-        List<FaLevel> childs = arrangementManager.findFaLevelByParentNodeIn(faLevels);
-        if (childs.size() > 0) {
-            childs.addAll(getAllChildByFaLevel(childs));
-        }
-        return childs;
-    }
-
     private void addActionsButtons() {
         actions(
                 new AxAction().caption("Přidat záznam").icon(FontAwesome.PLUS).run(() -> {
