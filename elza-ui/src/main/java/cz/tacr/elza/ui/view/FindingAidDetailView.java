@@ -313,14 +313,14 @@ public class FindingAidDetailView extends ElzaView {
                 navigate(VersionListView.class, getParameterInteger())),
                 new AxAction().caption("Schválit verzi").icon(FontAwesome.HISTORY).run(() -> {
                     AxForm<VOApproveVersion> formularApproveVersion = formularApproveVersion();
-                    FaVersion version = arrangementManager.getOneFaVersionByFindingAid(findingAid);
+                    FaVersion version = arrangementManager.getOneFaVersionByFindingAid(findingAid.getFindingAidId());
                     VOApproveVersion appVersion = new VOApproveVersion();
                     appVersion.setArrangementTypeId(version.getArrangementType().getArrangementTypeId());
                     appVersion.setRuleSetId(version.getRuleSet().getRuleSetId());
 
                     approveVersion(formularApproveVersion, appVersion);
                 })
-                );
+            );
     }
 
     private void approveVersion(final AxForm<VOApproveVersion> form, final VOApproveVersion appVersion) {
