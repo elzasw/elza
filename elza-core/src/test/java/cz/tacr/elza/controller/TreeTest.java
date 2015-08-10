@@ -49,20 +49,6 @@ public class TreeTest extends AbstractRestTest {
         entityManager.unwrap(Session.class).clear();
     }
 
-    private FaLevel createLevel(final Integer position, final FaLevel parent, final FaChange change) {
-        FaLevel level = new FaLevel();
-        level.setPosition(position);
-        level.setParentNode(parent);
-        level.setCreateChange(change);
-        Integer maxNodeId = levelRepository.findMaxNodeId();
-        if (maxNodeId == null) {
-            maxNodeId = 0;
-        }
-        level.setNodeId(maxNodeId + 1);
-
-        return levelRepository.save(level);
-    }
-
     @Test
     @Transactional
     public void sqlTest1() throws Exception {

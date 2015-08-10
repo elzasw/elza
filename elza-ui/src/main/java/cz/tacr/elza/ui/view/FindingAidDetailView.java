@@ -79,12 +79,16 @@ public class FindingAidDetailView extends ElzaView {
 
         if (params.length > 1) {
             versionId = params[1];
+        } else {
+            versionId = null;
         }
 
         this.findingAid = arrangementManager.getFindingAid(findingAidId);
 
         pageTitle(findingAid.getName());
-        addActionsButtons();
+        if (versionId == null) {
+            addActionsButtons();
+        }
 
         HierarchicalCollapsibleContainer container = new HierarchicalCollapsibleContainer();
         container.addContainerProperty(LEVEL, Integer.class, 0);
@@ -93,7 +97,82 @@ public class FindingAidDetailView extends ElzaView {
         table = new TreeTable();
         table.setWidth("100%");
 
-        FaVersion lastVersions = arrangementManager.getOneFaVersionByFindingAid(findingAid);
+        FaVersion selectVersions = null;
+        if (versionId == null) {
+            selectVersions = arrangementManager.getOneFaVersionByFindingAid(findingAidId);
+            addActionMenu(container);
+        } else {
+            selectVersions = arrangementManager.getFaVersionById(versionId);
+            if (selectVersions.getFindingAid() == null
+                    || (!selectVersions.getFindingAid().getFindingAidId().equals(findingAidId))) {
+                selectVersions = null;
+            }
+        }
+        if (selectVersions == null) { // chyba nenalezena verze k FA
+            navigate(FindingAidListView.class);
+            return;
+        }
+
+        List<FaLevel> faLevelsAll = new LinkedList<FaLevel>();
+
+        Integer rootFaLevelId = selectVersions.getRootNode().getFaLevelId();
+        Integer lockChangeId = null;
+        if (selectVersions.getLockChange() != null) {
+            lockChangeId = selectVersions.getLockChange().getChangeId();
+        }
+        List<FaLevel> faLevels = arrangementManager.findFaLevelByParentNodeOrderByPositionAsc(rootFaLevelId,
+            lockChangeId);
+        faLevelsAll.addAll(faLevels);
+        //faLevelsAll.addAll(getAllChildByFaLevel(faLevels));
+
+        for (FaLevel faLevel : faLevelsAll) {
+            Item item = container.addItem(faLevel.getNodeId());
+            item.getItemProperty(LEVEL).setValue(faLevel.getNodeId());
+            item.getItemProperty(LEVEL_POSITION).setValue(faLevel.getPosition());
+            if (faLevel.getParentNode() != null) {
+                container.setParent(faLevel.getNodeId(), faLevel.getParentNode().getNodeId());
+            }
+            container.setChildrenAllowed(faLevel.getNodeId(), true);
+            container.setCollapsed(faLevel.getNodeId(), true);
+        }
+
+        table.addCollapseListener(new Tree.CollapseListener() {
+            @Override
+            public void nodeCollapse(final Tree.CollapseEvent collapseEvent) {
+                Integer itemId = (Integer) collapseEvent.getItemId();
+                removeAllChildren(table, itemId);
+            }
+        });
+
+        table.addExpandListener(new Tree.ExpandListener() {
+
+            @Override
+            public void nodeExpand(final Tree.ExpandEvent expandEvent) {
+                Integer itemId = (Integer) expandEvent.getItemId();
+
+                Integer itemIdLast = itemId;
+
+                for (FaLevel faLevel : getChildByFaLevel(arrangementManager.findFaLevelsByNodeIdAndDeleteChangeIsNullOrderByPositionAsc(itemId))) {
+                    Item item = table.addItemAfter(itemIdLast, faLevel.getNodeId());
+                    itemIdLast = faLevel.getNodeId();
+                    if (faLevel.getParentNode() != null) {
+                        container.setParent(faLevel.getNodeId(), faLevel.getParentNode().getNodeId());
+                    }
+                    item.getItemProperty(LEVEL).setValue(faLevel.getNodeId());
+                    item.getItemProperty(LEVEL_POSITION).setValue(faLevel.getPosition());
+                    container.setChildrenAllowed(faLevel.getNodeId(), true);
+                    container.setCollapsed(faLevel.getNodeId(), true);
+                }
+            }
+        });
+
+        table.setContainerDataSource(container);
+        table.setSortEnabled(false);
+
+        components(table);
+    }
+
+    private void addActionMenu(HierarchicalCollapsibleContainer container) {
         table.addGeneratedColumn("Akce", new Table.ColumnGenerator() {
             @Override
             public Object generateCell(final Table source, final Object itemId, final Object columnId) {
@@ -158,58 +237,6 @@ public class FindingAidDetailView extends ElzaView {
                 return menu;
             }
         });
-
-        List<FaLevel> faLevelsAll = new LinkedList<FaLevel>();
-
-        List<FaLevel> faLevels = arrangementManager.findFaLevelByParentNodeOrderByPositionAsc(lastVersions.getRootNode());
-        faLevelsAll.addAll(faLevels);
-        //faLevelsAll.addAll(getAllChildByFaLevel(faLevels));
-
-        for (FaLevel faLevel : faLevelsAll) {
-            Item item = container.addItem(faLevel.getNodeId());
-            item.getItemProperty(LEVEL).setValue(faLevel.getNodeId());
-            item.getItemProperty(LEVEL_POSITION).setValue(faLevel.getPosition());
-            if (faLevel.getParentNode() != null) {
-                container.setParent(faLevel.getNodeId(), faLevel.getParentNode().getNodeId());
-            }
-            container.setChildrenAllowed(faLevel.getNodeId(), true);
-            container.setCollapsed(faLevel.getNodeId(), true);
-        }
-
-        table.addCollapseListener(new Tree.CollapseListener() {
-            @Override
-            public void nodeCollapse(final Tree.CollapseEvent collapseEvent) {
-                Integer itemId = (Integer) collapseEvent.getItemId();
-                removeAllChildren(table, itemId);
-            }
-        });
-
-        table.addExpandListener(new Tree.ExpandListener() {
-
-            @Override
-            public void nodeExpand(final Tree.ExpandEvent expandEvent) {
-                Integer itemId = (Integer) expandEvent.getItemId();
-
-                Integer itemIdLast = itemId;
-
-                for (FaLevel faLevel : getChildByFaLevel(arrangementManager.findFaLevelsByNodeIdAndDeleteChangeIsNullOrderByPositionAsc(itemId))) {
-                    Item item = table.addItemAfter(itemIdLast, faLevel.getNodeId());
-                    itemIdLast = faLevel.getNodeId();
-                    if (faLevel.getParentNode() != null) {
-                        container.setParent(faLevel.getNodeId(), faLevel.getParentNode().getNodeId());
-                    }
-                    item.getItemProperty(LEVEL).setValue(faLevel.getNodeId());
-                    item.getItemProperty(LEVEL_POSITION).setValue(faLevel.getPosition());
-                    container.setChildrenAllowed(faLevel.getNodeId(), true);
-                    container.setCollapsed(faLevel.getNodeId(), true);
-                }
-            }
-        });
-
-        table.setContainerDataSource(container);
-        table.setSortEnabled(false);
-
-        components(table);
     }
 
     private List<FaLevel> getChildByFaLevel(final List<FaLevel> faLevels) {

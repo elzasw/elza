@@ -2,9 +2,12 @@ package cz.tacr.elza.controller;
 
 import static com.jayway.restassured.RestAssured.given;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 
 import org.junit.Assert;
@@ -16,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.jayway.restassured.response.Response;
 
 import cz.tacr.elza.domain.ArrangementType;
+import cz.tacr.elza.domain.FaChange;
+import cz.tacr.elza.domain.FaLevel;
 import cz.tacr.elza.domain.FaVersion;
 import cz.tacr.elza.domain.FindingAid;
 import cz.tacr.elza.domain.RuleSet;
@@ -39,6 +44,9 @@ public class ArrangementManagerTest extends AbstractRestTest {
     private static final String GET_ARRANGEMENT_TYPES_URL = ARRANGEMENT_MANAGER_URL + "/getArrangementTypes";
     private static final String GET_FINDING_AID_VERSIONS_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAidVersions";
     private static final String APPROVE_VERSION_URL = ARRANGEMENT_MANAGER_URL + "/approveVersion";
+    private static final String GET_VERSION_ID_URL = ARRANGEMENT_MANAGER_URL + "/getFaVersionById";
+    private static final String GET_VERSION_BY_FA_URL = ARRANGEMENT_MANAGER_URL + "/getOneFaVersionByFindingAid";
+    private static final String GET_LEVEL_BY_PARENT_NODE_URL = ARRANGEMENT_MANAGER_URL + "/findFaLevelByParentNodeOrderByPositionAsc";
 
     private static final String FA_NAME_ATT = "name";
     private static final String FA_ID_ATT = "findingAidId";
@@ -55,6 +63,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
     private RuleSetRepository ruleSetRepository;
     @Autowired
     private VersionRepository versionRepository;
+    @PersistenceContext
+    EntityManager entityManager;
 
     @Test
     @Transactional
@@ -200,7 +210,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         int versionCount = 10;
         for (int i = 0; i < versionCount; i++) {
-            createFindingAidVersion(findingAid);
+            createFindingAidVersion(findingAid, false);
         }
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
@@ -251,6 +261,72 @@ public class ArrangementManagerTest extends AbstractRestTest {
         Assert.assertNotNull(newVersion);
         Assert.assertTrue(newVersion.getLockChange() == null);
         Assert.assertTrue(versions.size() == 2);
+    }
+
+    @Test
+    public void testRestGetVersionByFa() throws Exception {
+        FindingAid findingAid = createFindingAid(TEST_NAME);
+
+        FaVersion version = createFindingAidVersion(findingAid, true);
+        // prvni version se vytvori pri zalozeni FA
+        Integer createVersionId = version.getFaVersionId() - 1;
+        FaVersion versionChange = createFindingAidVersion(findingAid, true);
+
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
+                parameter("versionId", version.getFaVersionId()).get(GET_VERSION_ID_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+        FaVersion resultVersion = response.getBody().as(FaVersion.class);
+        Assert.assertNotNull("Version nebylo nalezeno", resultVersion);
+        Assert.assertEquals(resultVersion.getFaVersionId(), version.getFaVersionId());
+
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
+                parameter(FA_ID_ATT, findingAid.getFindingAidId()).get(GET_VERSION_BY_FA_URL);
+        logger.info(response.asString());
+
+        Assert.assertEquals(200, response.statusCode());
+
+        resultVersion = response.getBody().as(FaVersion.class);
+        Assert.assertNotNull("Version nebylo nalezeno", resultVersion);
+        Assert.assertEquals(resultVersion.getFaVersionId(), createVersionId);
+        Assert.assertNull(resultVersion.getLockChange());
+    }
+
+    @Test
+    public void testRestGetLevelByParent() throws Exception {
+        FindingAid findingAid = createFindingAid(TEST_NAME);
+        
+        FaVersion version = createFindingAidVersion(findingAid, null, false);
+        FaLevel parent = createLevel(1, null, version.getCreateChange());
+        version.setRootNode(parent);
+        versionRepository.save(version);
+
+        FaLevel child = createLevel(2, parent, version.getCreateChange());
+
+        Integer idChange = null;
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
+                parameter("faLevelId", parent.getFaLevelId()).
+                parameter("faChangeId", idChange).get(GET_LEVEL_BY_PARENT_NODE_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+        List<FaLevel> levelList = Arrays.asList(response.getBody().as(FaLevel[].class));
+        if (levelList.size() != 1) {
+            Assert.fail();
+        }
+
+        FaChange lockChange = createFaChange(LocalDateTime.now());
+        version.setLockChange(lockChange);
+        versionRepository.save(version);
+
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
+                parameter("faLevelId", parent.getFaLevelId()).
+                parameter("faChangeId", lockChange.getChangeId()).get(GET_LEVEL_BY_PARENT_NODE_URL);
+        logger.info(response.asString());
+        levelList = Arrays.asList(response.getBody().as(FaLevel[].class));
+        if (levelList.size() != 1) {
+            Assert.fail();
+        }
+
     }
 
     /**

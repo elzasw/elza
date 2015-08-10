@@ -27,4 +27,7 @@ public interface VersionRepository extends JpaRepository<FaVersion, Integer> {
     FaVersion findByFindingAidAndLockChange(FindingAid findingAid, FaChange lockChange);
 
     FaVersion findByFindingAidAndLockChangeIsNull(FindingAid findingAid);
+
+    @Query(value = "select v from arr_fa_version v join v.findingAid fa where fa.findingAidId = :findingAidId and v.lockChange is null")
+    List<FaVersion> findByFindingAidIdAndLockChangeIsNull(@Param(value = "findingAidId") Integer findingAidId);
 }

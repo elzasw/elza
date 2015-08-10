@@ -110,21 +110,50 @@ public abstract class AbstractRestTest {
         return arrangementManager.createFindingAid(name, arrangementType.getId(), ruleSet.getId());
     }
 
-    protected FaVersion createFindingAidVersion(final FindingAid findingAid) {
+    protected FaVersion createFindingAidVersion(final FindingAid findingAid, boolean isLock) {
+        FaLevel root = levelRepository.findAll().iterator().next();
+        return createFindingAidVersion(findingAid, root, isLock);
+    }
+
+    protected FaChange createFaChange(final LocalDateTime changeDate) {
+        FaChange resultChange = new FaChange();
+        resultChange.setChangeDate(changeDate);
+        changeRepository.save(resultChange);
+        return resultChange;
+    }
+
+    protected FaVersion createFindingAidVersion(final FindingAid findingAid, final FaLevel root, boolean isLock) {
         RuleSet ruleSet = ruleSetRepository.findAll().iterator().next();
         ArrangementType arrangementType = arrangementTypeRepository.findAll().iterator().next();
-        FaChange change = new FaChange();
-        change.setChangeDate(LocalDateTime.now());
-        changeRepository.save(change);
-        FaLevel root = levelRepository.findAll().iterator().next();
+        FaChange createChange = createFaChange(LocalDateTime.now());
+
+        FaChange lockChange = null;
+        if (isLock) {
+            lockChange = createFaChange(LocalDateTime.now());
+        }
 
         FaVersion version = new FaVersion();
         version.setArrangementType(arrangementType);
-        version.setCreateChange(change);
+        version.setCreateChange(createChange);
+        version.setLockChange(lockChange);
         version.setFindingAid(findingAid);
         version.setRootNode(root);
         version.setRuleSet(ruleSet);
 
         return versionRepository.save(version);
+    }
+
+    protected FaLevel createLevel(final Integer position, final FaLevel parent, final FaChange change) {
+        FaLevel level = new FaLevel();
+        level.setPosition(position);
+        level.setParentNode(parent);
+        level.setCreateChange(change);
+        Integer maxNodeId = levelRepository.findMaxNodeId();
+        if (maxNodeId == null) {
+            maxNodeId = 0;
+        }
+        level.setNodeId(maxNodeId + 1);
+
+        return levelRepository.save(level);
     }
 }

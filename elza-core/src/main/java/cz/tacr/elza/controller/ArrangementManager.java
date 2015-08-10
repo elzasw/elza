@@ -26,6 +26,7 @@ import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VersionRepository;
+import javassist.tools.rmi.ObjectNotFoundException;
 
 
 /**
@@ -352,18 +353,32 @@ public class ArrangementManager {
         return levelRepository.findTopByNodeIdAndDeleteChangeIsNull(nodeId);
     }
 
-    // TODO: přepsat, dopsat testy
     @RequestMapping(value = "/getOneFaVersionByFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public FaVersion getOneFaVersionByFindingAid(@RequestBody FindingAid findingAid) {
-        Assert.notNull(findingAid);
-        return versionRepository.findTopByFindingAid(findingAid);
+    public FaVersion getOneFaVersionByFindingAid(@RequestParam(value = "findingAidId") Integer findingAidId) {
+        Assert.notNull(findingAidId);
+        List<FaVersion> resultList = versionRepository.findByFindingAidIdAndLockChangeIsNull(findingAidId);
+        if (resultList.size() != 1) {
+            throw new RuntimeException("Nenalezen jeden záznam. Nalezeno " + resultList.size());
+        }
+        return resultList.get(0);
     }
 
-    // TODO: přepsat, dopsat testy
+    @RequestMapping(value = "/getFaVersionById", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public FaVersion getFaVersionById(@RequestParam("versionId") final Integer versionId) {
+        Assert.notNull(versionId);
+        return versionRepository.getOne(versionId);
+    }
+
     @RequestMapping(value = "/findFaLevelByParentNodeOrderByPositionAsc", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<FaLevel> findFaLevelByParentNodeOrderByPositionAsc(@RequestBody FaLevel faLevel) {
-        Assert.notNull(faLevel);
-        return levelRepository.findByParentNodeOrderByPositionAsc(faLevel);
+    public List<FaLevel> findFaLevelByParentNodeOrderByPositionAsc(@RequestParam(value = "faLevelId") Integer faLevelId,
+                                                                   @RequestParam(value = "faChangeId")  Integer faChangeId) {
+        Assert.notNull(faLevelId);
+
+        if (faChangeId == null) {
+            return levelRepository.findByParentNodeOrderByPositionAsc(faLevelId);
+        }
+        FaChange faChange = faChangeRepository.getOne(faChangeId);
+        return levelRepository.findByParentNodeOrderByPositionAsc(faLevelId, faChange);
     }
 
     // TODO: přepsat, dopsat testy
