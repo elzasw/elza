@@ -122,6 +122,77 @@ public class ArrangementManager {
         return levelRepository.save(level);
     }
 
+
+    private FaLevel createAfterInLevel(FaChange change, FaLevel level) {
+        Assert.notNull(change);
+        Assert.notNull(level);
+
+        List<FaLevel> levelsToShift = levelRepository.findByParentNodeAndPositionGreaterThanOrderByPositionAsc(level.getParentNode(), level.getPosition());
+        for (FaLevel node : levelsToShift) {
+            FaLevel newNode = createNewLevelVersion(node, change);
+            newNode.setPosition(node.getPosition() + 1);
+            levelRepository.save(newNode);
+        }
+
+        return createLevel(change, level.getParentNode(), level.getPosition() + 1);
+    }
+
+    private FaLevel createNewLevelVersion(FaLevel node, FaChange change) {
+        Assert.notNull(node);
+        Assert.notNull(change);
+
+        FaLevel newNode = copyLevel(node);
+        newNode.setCreateChange(change);
+
+        node.setDeleteChange(change);
+        levelRepository.save(node);
+
+        return newNode;
+    }
+
+    private FaLevel copyLevel(FaLevel node) {
+        Assert.notNull(node);
+
+        FaLevel newNode = new FaLevel();
+        newNode.setNodeId(node.getNodeId());
+        newNode.setParentNode(node.getParentNode());
+        newNode.setPosition(node.getPosition());
+
+        return newNode;
+    }
+
+    private FaLevel createLastInLevel(FaChange createChange, FaLevel parent) {
+        Assert.notNull(createChange);
+        Assert.notNull(parent);
+
+        Integer maxPosition = levelRepository.findMaxPositionUnderParent(parent);
+        if (maxPosition == null) {
+            maxPosition = 0;
+        }
+
+        return createLevel(createChange, parent, maxPosition + 1);
+    }
+
+    private FaLevel createLevel(final FaChange createChange, final FaLevel parent, final Integer position) {
+        Assert.notNull(createChange);
+        Assert.notNull(parent);
+
+        FaLevel level = new FaLevel();
+        level.setPosition(position);
+        level.setCreateChange(createChange);
+
+        if (parent != null) {
+            level.setParentNode(parent);
+        }
+
+        Integer maxNodeId = levelRepository.findMaxNodeId();
+        if (maxNodeId == null) {
+            maxNodeId = 0;
+        }
+        level.setNodeId(maxNodeId + 1);
+        return levelRepository.save(level);
+    }
+
     private FaVersion createVersion(final FaChange createChange, final FindingAid findingAid,
             final ArrangementType arrangementType, final RuleSet ruleSet, final FaLevel rootNode) {
         FaVersion version = new FaVersion();
@@ -249,7 +320,7 @@ public class ArrangementManager {
         Assert.notNull(ruleSetId);
 
         FindingAid findingAid = findingAidRepository.findOne(findingAidId);
-        FaVersion version = versionRepository.findByFindingAidAndLockChange(findingAid, null);
+        FaVersion version = versionRepository.findByFindingAidAndLockChangeIsNull(findingAid);
 
         FaChange change = createChange();
         version.setLockChange(change);
@@ -266,44 +337,39 @@ public class ArrangementManager {
      * @param findingAid    archivní pomůcka
      * @return              nový záznam z archivný pomůcky
      */
+    @Transactional
     @RequestMapping(value = "/addFaLevel", method = RequestMethod.PUT)
     public FaLevel addFaLevel(@RequestBody FindingAid findingAid) {
         Assert.notNull(findingAid);
-        FaVersion lastVersion = versionRepository.findByFindingAidAndLockChange(findingAid, null);
+
+        FaVersion lastVersion = versionRepository.findByFindingAidAndLockChangeIsNull(findingAid);
         FaChange change = createChange();
-        return createLevel(change, lastVersion.getRootNode());
+        return createLastInLevel(change, lastVersion.getRootNode());
     }
 
     // TODO: dopsat testy
+    @Transactional
+    @RequestMapping(value = "/addFaLevelAfter", method = RequestMethod.PUT)
+    public FaLevel addFaLevelAfter(@RequestBody FaLevel faLevel) {
+        Assert.notNull(faLevel);
+
+        FaChange change = createChange();
+        return createAfterInLevel(change, faLevel);
+    }
+
+    // TODO: dopsat testy
+    @Transactional
     @RequestMapping(value = "/addFaLevelChild", method = RequestMethod.PUT)
     public FaLevel addFaLevelChild(@RequestBody FaLevel faLevel) {
         Assert.notNull(faLevel);
+
         FaChange change = createChange();
-        return createLevel(change, faLevel);
+        return createLastInLevel(change, faLevel);
     }
 
     // TODO: dopsat testy
     // TODO: otestovat, zda-li to vůbec funguje
-    @RequestMapping(value = "/moveFaLevelFor", method = RequestMethod.PUT)
-    public FaLevel moveFaLevelFor(@RequestBody FaLevel[] faLevels) {
-        Assert.notNull(faLevels);
-        Assert.isTrue(faLevels.length == 2);
-        for(int i = 0; i < faLevels.length; i++) {
-            Assert.notNull(faLevels[i]);
-        }
-        FaLevel faLevel = faLevels[0];
-        FaLevel faLevelFor = faLevels[1];
-        Assert.state(faLevel != faLevelFor, "Nelze vložit sama do sebe");
-
-        FaChange change = createChange();
-        faLevel.setDeleteChange(change);
-        levelRepository.save(faLevel);
-
-        return createLevel(change, faLevelFor);
-    }
-
-    // TODO: dopsat testy
-    // TODO: otestovat, zda-li to vůbec funguje
+    @Transactional
     @RequestMapping(value = "/moveFaLevelUnder", method = RequestMethod.PUT)
     public FaLevel moveFaLevelUnder(@RequestBody FaLevel[] faLevels) {
         Assert.notNull(faLevels);
@@ -311,39 +377,97 @@ public class ArrangementManager {
         for(int i = 0; i < faLevels.length; i++) {
             Assert.notNull(faLevels[i]);
         }
+
         FaLevel faLevel = faLevels[0];
-        FaLevel faLevelUnder = faLevels[1];
-        Assert.state(faLevel != faLevelUnder, "Nelze vložit sama za sebe");
+        FaLevel parent = faLevels[1];
+        Assert.state(faLevel != parent, "Nelze vložit sama do sebe");
+
 
         FaChange change = createChange();
-        faLevel.setDeleteChange(change);
-        levelRepository.save(faLevel);
+        shiftNodesUp(faLevel, change);
+        FaLevel newLevel = createNewLevelVersion(faLevel, change);
 
-        return createLevel(change, faLevelUnder.getParentNode());
+        return addLastInLevel(newLevel, parent);
+    }
+
+    private FaLevel addLastInLevel(FaLevel level, FaLevel parent) {
+        Assert.notNull(level);
+        Assert.notNull(parent);
+
+        Integer maxPosition = levelRepository.findMaxPositionUnderParent(parent);
+        if (maxPosition == null) {
+            maxPosition = 0;
+        }
+        level.setPosition(maxPosition + 1);
+        level.setParentNode(parent);
+
+        return levelRepository.save(level);
+    }
+
+    // TODO: dopsat testy
+    // TODO: otestovat, zda-li to vůbec funguje
+    @RequestMapping(value = "/moveFaLevelAfter", method = RequestMethod.PUT)
+    public FaLevel moveFaLevelAfter(@RequestBody FaLevel[] faLevels) {
+        Assert.notNull(faLevels);
+        Assert.isTrue(faLevels.length == 2);
+        for(int i = 0; i < faLevels.length; i++) {
+            Assert.notNull(faLevels[i]);
+        }
+
+        FaLevel faLevel = faLevels[0];
+        FaLevel predecessor = faLevels[1];
+        Assert.state(faLevel != predecessor, "Nelze vložit sama za sebe");
+
+        FaChange change = createChange();
+        shiftNodesUp(faLevel, change);
+        FaLevel newLevel = createNewLevelVersion(faLevel, change);
+
+        return addAfterInLevel(newLevel, predecessor, change);
+    }
+
+    private void shiftNodesDown(FaLevel movedLevel, FaChange change) {
+        Assert.notNull(movedLevel);
+        Assert.notNull(change);
+
+        List<FaLevel> levelsToShift = levelRepository.findByParentNodeAndPositionGreaterThanOrderByPositionAsc(movedLevel.getParentNode(), movedLevel.getPosition());
+        for (FaLevel node : levelsToShift) {
+            FaLevel newNode = createNewLevelVersion(node, change);
+            newNode.setPosition(node.getPosition() + 1);
+            levelRepository.save(newNode);
+        }
+    }
+
+    private void shiftNodesUp(FaLevel movedLevel, FaChange change) {
+        Assert.notNull(movedLevel);
+        Assert.notNull(change);
+
+        List<FaLevel> levelsToShift = levelRepository.findByParentNodeAndPositionGreaterThanOrderByPositionAsc(movedLevel.getParentNode(), movedLevel.getPosition());
+        for (FaLevel node : levelsToShift) {
+            FaLevel newNode = createNewLevelVersion(node, change);
+            newNode.setPosition(node.getPosition() - 1);
+            levelRepository.save(newNode);
+        }
+    }
+
+    private FaLevel addAfterInLevel(FaLevel level, FaLevel predecessor, FaChange change) {
+        Assert.notNull(level);
+        Assert.notNull(predecessor);
+
+        shiftNodesDown(predecessor, change);
+
+        level.setParentNode(predecessor.getParentNode());
+        level.setPosition(predecessor.getPosition() + 1);
+        return levelRepository.save(level);
     }
 
     // TODO: dopsat testy
     @RequestMapping(value = "/deleteFaLevel", method = RequestMethod.DELETE)
-    public FaLevel deleteFaLevel(@RequestBody FaLevel faLevel) {
-        Assert.notNull(faLevel);
-        FaChange change = createChange();
-        deleteFaLevelTree(faLevel, change);
-        return faLevel;
-    }
+    public FaLevel deleteFaLevel(@RequestBody FaLevel level) {
+        Assert.notNull(level);
 
-    /**
-     * Rekurzivně promaže podstrom
-     * @param faLevel   Záznam FA
-     * @param change    Provedená změna
-     *                  TODO: přepsat na while s jedním "update" nad listem
-     */
-    private void deleteFaLevelTree(FaLevel faLevel, FaChange change) {
-        List<FaLevel> childrens = levelRepository.findByParentNodeOrderByPositionAsc(faLevel);
-        for (FaLevel faLevelChildren : childrens) {
-            deleteFaLevelTree(faLevelChildren, change);
-        }
-        faLevel.setDeleteChange(change);
-        levelRepository.save(faLevel);
+        level.setDeleteChange(createChange());
+
+        return levelRepository.save(level);
     }
 
     // TODO: přepsat, dopsat testy

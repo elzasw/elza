@@ -12,6 +12,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import ru.xpoft.vaadin.VaadinView;
+
 import com.vaadin.data.Item;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.FontAwesome;
@@ -33,7 +35,6 @@ import cz.tacr.elza.domain.FaVersion;
 import cz.tacr.elza.domain.FindingAid;
 import cz.tacr.elza.domain.RuleSet;
 import cz.tacr.elza.ui.ElzaView;
-import ru.xpoft.vaadin.VaadinView;
 
 
 /**
@@ -180,7 +181,29 @@ public class FindingAidDetailView extends ElzaView {
                 FaLevel faLevel = arrangementManager.getOneFaLevelByNodeIdAndDeleteChangeIsNull((Integer) itemId);
                 AxMenuBar menu = new AxMenuBar().actions(
                         new AxAction().icon(FontAwesome.ALIGN_JUSTIFY).submenu(
-                                new AxAction().caption("Přidat záznam").icon(FontAwesome.PLUS).run(() -> {
+                                new AxAction().caption("Přidat záznam za").icon(FontAwesome.PLUS).run(() -> {
+
+                                    if (table.isCollapsed(itemId)) {
+                                        table.setCollapsed(itemId, false);
+                                    }
+
+                                    FaLevel newFaLevel = arrangementManager.addFaLevelAfter(faLevel);
+
+                                    Integer itemIdLast = faLevel.getNodeId();
+
+                                    Item item = table.addItemAfter(itemIdLast, newFaLevel.getNodeId());
+                                    itemIdLast = newFaLevel.getNodeId();
+                                    if (newFaLevel.getParentNode() != null) {
+                                        container.setParent(newFaLevel.getNodeId(), newFaLevel.getParentNode().getNodeId());
+                                    }
+                                    item.getItemProperty(LEVEL).setValue(newFaLevel.getNodeId());
+                                    item.getItemProperty(LEVEL_POSITION).setValue(newFaLevel.getPosition());
+                                    container.setChildrenAllowed(newFaLevel.getNodeId(), true);
+                                    container.setCollapsed(newFaLevel.getNodeId(), true);
+
+                                    Notification.show("Přidáno...");
+                                }),
+                                new AxAction().caption("Přidat záznam pod").icon(FontAwesome.PLUS).run(() -> {
 
                                     if (table.isCollapsed(itemId)) {
                                         table.setCollapsed(itemId, false);
@@ -215,7 +238,7 @@ public class FindingAidDetailView extends ElzaView {
                                 new AxAction().caption("Vložit za").icon(FontAwesome.PASTE).run(() -> {
                                     if (faLevelVyjmout != null) {
                                         FaLevel[] sendFaLevels = new FaLevel[] {faLevelVyjmout, faLevel};
-                                        arrangementManager.moveFaLevelUnder(sendFaLevels);
+                                        arrangementManager.moveFaLevelAfter(sendFaLevels);
                                         faLevelVyjmout = null;
                                         // TODO: dopsat zařazení ve stromu stromu
                                     } else {
@@ -225,15 +248,15 @@ public class FindingAidDetailView extends ElzaView {
                                 new AxAction().caption("Vložit pod").icon(FontAwesome.PASTE).run(() -> {
                                     if (faLevelVyjmout != null) {
                                         FaLevel[] sendFaLevels = new FaLevel[] {faLevelVyjmout, faLevel};
-                                        arrangementManager.moveFaLevelFor(sendFaLevels);
+                                        arrangementManager.moveFaLevelUnder(sendFaLevels);
                                         faLevelVyjmout = null;
                                         // TODO: dopsat zařazení ve stromu stromu
                                     } else {
                                         throw new UnsupportedOperationException();
                                     }
                                 })
-                        )
-                );
+                                )
+                        );
                 return menu;
             }
         });
@@ -287,30 +310,30 @@ public class FindingAidDetailView extends ElzaView {
 
                 }),
                 new AxAction().caption("Zobrazit historii").icon(FontAwesome.HISTORY).run(() ->
-                        navigate(VersionListView.class, getParameterInteger())),
+                navigate(VersionListView.class, getParameterInteger())),
                 new AxAction().caption("Schválit verzi").icon(FontAwesome.HISTORY).run(() -> {
                     AxForm<VOApproveVersion> formularApproveVersion = formularApproveVersion();
-                    FaVersion version = new FaVersion();
+                    FaVersion version = arrangementManager.getOneFaVersionByFindingAid(findingAid);
                     VOApproveVersion appVersion = new VOApproveVersion();
                     appVersion.setArrangementTypeId(version.getArrangementType().getArrangementTypeId());
                     appVersion.setRuleSetId(version.getRuleSet().getRuleSetId());
 
                     approveVersion(formularApproveVersion, appVersion);
                 })
-        );
+                );
     }
 
     private void approveVersion(final AxForm<VOApproveVersion> form, final VOApproveVersion appVersion) {
         form.setValue(appVersion);
         new AxWindow().components(form)
-                .buttonPrimary(new AxAction<VOApproveVersion>()
-                                .caption("Uložit")
-                                .exception(ex -> {
-                                    ex.printStackTrace();
-                                })
-                                .primary()
-                                .value(form::commit)
-                                .action(this::approveVersion)
+        .buttonPrimary(new AxAction<VOApproveVersion>()
+                .caption("Uložit")
+                .exception(ex -> {
+                    ex.printStackTrace();
+                })
+                .primary()
+                .value(form::commit)
+                .action(this::approveVersion)
                 ).buttonClose().modal().style("fa-window-detail").show();
 
     }

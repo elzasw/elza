@@ -42,4 +42,10 @@ public interface LevelRepository extends JpaRepository<FaLevel, Integer> {
 
 
     FaLevel findTopByNodeIdAndDeleteChangeIsNull(Integer nodeId);
+
+    @Query("SELECT max(l.position) FROM arr_fa_level l WHERE l.parentNode = ?1 and l.deleteChange is null")
+    Integer findMaxPositionUnderParent(FaLevel parent);
+
+    @Query("SELECT l FROM arr_fa_level l WHERE l.parentNode = ?1  and l.position > ?2 and l.deleteChange is null order by l.position asc")
+    List<FaLevel> findByParentNodeAndPositionGreaterThanOrderByPositionAsc(FaLevel parentNode, Integer position);
 }
