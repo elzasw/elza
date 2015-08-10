@@ -26,7 +26,6 @@ import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VersionRepository;
-import javassist.tools.rmi.ObjectNotFoundException;
 
 
 /**
@@ -513,7 +512,7 @@ public class ArrangementManager {
     }
 
     // TODO: přepsat, dopsat testy
-    @RequestMapping(value = "/findFaLevelByParentNodeInOrderByPositionAsc", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/findFaLevelByParentNodeInOrderByPositionAsc", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<FaLevel> findFaLevelByParentNodeInOrderByPositionAsc(@RequestBody List<FaLevel> faLevelList) {
         Assert.notNull(faLevelList);
         return levelRepository.findByParentNodeInDeleteChangeIsNullOrderByPositionAsc(faLevelList);

@@ -62,9 +62,9 @@ public abstract class AbstractRestTest {
     @Autowired
     private VersionRepository versionRepository;
     @Autowired
-    private ChangeRepository changeRepository;
+    protected ChangeRepository changeRepository;
     @Autowired
-    private LevelRepository levelRepository;
+    protected LevelRepository levelRepository;
     @Autowired
     private FindingAidRepository findingAidRepository;
 

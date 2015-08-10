@@ -3,8 +3,11 @@ package cz.tacr.elza.controller;
 import static com.jayway.restassured.RestAssured.given;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -16,6 +19,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.jayway.restassured.mapper.ObjectMapper;
+import com.jayway.restassured.mapper.ObjectMapperDeserializationContext;
+import com.jayway.restassured.mapper.ObjectMapperSerializationContext;
 import com.jayway.restassured.response.Response;
 
 import cz.tacr.elza.domain.ArrangementType;
@@ -47,6 +53,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
     private static final String GET_VERSION_ID_URL = ARRANGEMENT_MANAGER_URL + "/getFaVersionById";
     private static final String GET_VERSION_BY_FA_URL = ARRANGEMENT_MANAGER_URL + "/getOneFaVersionByFindingAid";
     private static final String GET_LEVEL_BY_PARENT_NODE_URL = ARRANGEMENT_MANAGER_URL + "/findFaLevelByParentNodeOrderByPositionAsc";
+    private static final String GET_LEVEL_BY_PARENT_NODE_IN_URL = ARRANGEMENT_MANAGER_URL + "/findFaLevelByParentNodeInOrderByPositionAsc";
 
     private static final String FA_NAME_ATT = "name";
     private static final String FA_ID_ATT = "findingAidId";
@@ -302,6 +309,10 @@ public class ArrangementManagerTest extends AbstractRestTest {
         versionRepository.save(version);
 
         FaLevel child = createLevel(2, parent, version.getCreateChange());
+        FaLevel child2 = createLevel(2, parent, version.getCreateChange());
+        FaChange change = createFaChange(LocalDateTime.now());
+        child2.setDeleteChange(change);
+        levelRepository.save(child2);
 
         Integer idChange = null;
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
@@ -310,6 +321,20 @@ public class ArrangementManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
         List<FaLevel> levelList = Arrays.asList(response.getBody().as(FaLevel[].class));
+        if (levelList.size() != 1) {
+            Assert.fail();
+        }
+
+        List<FaLevel> faLevelList = new ArrayList<FaLevel>();
+        faLevelList.add(parent);
+
+        String body = "[{\"faLevelId\":" + parent.getFaLevelId() + ",\"nodeId\":" + parent.getNodeId() + "}]";
+
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
+                body(body).put(GET_LEVEL_BY_PARENT_NODE_IN_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+        levelList = Arrays.asList(response.getBody().as(FaLevel[].class));
         if (levelList.size() != 1) {
             Assert.fail();
         }
