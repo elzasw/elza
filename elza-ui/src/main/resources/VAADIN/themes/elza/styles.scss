@@ -82,6 +82,11 @@ $color-title: #606262;
   .table .v-table-header td:not(:first-child) {
     border-left: 3px solid white;
   }
+    
+  .detail-table .v-table-body{
+      overflow: auto;
+      overflow-x: auto !important;
+  }
 
   .button-edit, .button-remove  {
     background-repeat: no-repeat;
