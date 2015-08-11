@@ -460,6 +460,7 @@ public class ArrangementManager {
     }
 
     // TODO: dopsat testy
+    @Transactional
     @RequestMapping(value = "/deleteFaLevel", method = RequestMethod.DELETE)
     public FaLevel deleteFaLevel(@RequestBody FaLevel level) {
         Assert.notNull(level);
@@ -494,7 +495,7 @@ public class ArrangementManager {
 
     @RequestMapping(value = "/findFaLevelByParentNodeOrderByPositionAsc", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<FaLevel> findFaLevelByParentNodeOrderByPositionAsc(@RequestParam(value = "faLevelId") Integer faLevelId,
-                                                                   @RequestParam(value = "faChangeId")  Integer faChangeId) {
+            @RequestParam(value = "faChangeId")  Integer faChangeId) {
         Assert.notNull(faLevelId);
 
         if (faChangeId == null) {
