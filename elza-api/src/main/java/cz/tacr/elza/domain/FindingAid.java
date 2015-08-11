@@ -8,6 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import cz.req.ax.IdObject;
 
 /**
  * @author by Ondřej Buriánek, burianek@marbes.cz.
@@ -15,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @Entity(name = "arr_finding_aid")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class FindingAid extends EntityBase {
+public class FindingAid extends EntityBase implements IdObject<Integer> {
 
     @Id
     @GeneratedValue
@@ -49,6 +50,11 @@ public class FindingAid extends EntityBase {
 
     public void setCreateDate(final LocalDateTime createDate) {
         this.createDate = createDate;
+    }
+
+    @Override
+    public Integer getId() {
+        return findingAidId;
     }
 
     @Override
