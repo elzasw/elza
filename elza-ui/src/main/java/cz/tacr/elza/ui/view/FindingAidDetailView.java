@@ -269,7 +269,7 @@ public class FindingAidDetailView extends ElzaView {
         item.getItemProperty(LEVEL).setValue(faLevel.getNodeId());
         item.getItemProperty(LEVEL_POSITION).setValue(faLevel.getPosition());
         if (faLevel.getParentNode() != null) {
-            container.setParent(faLevel.getNodeId(), faLevel.getParentNode().get(0).getNodeId());
+            container.setParent(faLevel.getNodeId(), faLevel.getParentNode().getNodeId());
         }
         container.setChildrenAllowed(faLevel.getNodeId(), true);
         container.setCollapsed(faLevel.getNodeId(), true);
@@ -326,7 +326,7 @@ public class FindingAidDetailView extends ElzaView {
                     HierarchicalCollapsibleContainer container = (HierarchicalCollapsibleContainer) table.getContainerDataSource();
 
                     if (newFaLevel.getParentNode() != null) {
-                        container.setParent(newFaLevel.getNodeId(), newFaLevel.getParentNode().get(0).getNodeId());
+                        container.setParent(newFaLevel.getNodeId(), newFaLevel.getParentNode().getNodeId());
                     }
                     item.getItemProperty(LEVEL).setValue(newFaLevel.getNodeId());
                     item.getItemProperty(LEVEL_POSITION).setValue(newFaLevel.getPosition());
