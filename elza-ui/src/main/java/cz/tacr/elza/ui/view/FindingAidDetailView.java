@@ -27,6 +27,7 @@ import cz.req.ax.AxAction;
 import cz.req.ax.AxContainer;
 import cz.req.ax.AxForm;
 import cz.req.ax.AxMenuBar;
+import cz.req.ax.AxView;
 import cz.req.ax.AxWindow;
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleSetManager;
@@ -88,9 +89,7 @@ public class FindingAidDetailView extends ElzaView {
         this.findingAid = arrangementManager.getFindingAid(findingAidId);
 
         pageTitle(findingAid.getName());
-        if (versionId == null) {
-            addActionsButtons();
-        }
+        addActionsButtons(versionId != null);
 
         HierarchicalCollapsibleContainer container = new HierarchicalCollapsibleContainer();
         container.addContainerProperty(LEVEL, Integer.class, 0);
@@ -317,8 +316,13 @@ public class FindingAidDetailView extends ElzaView {
         }
     }
 
-    private void addActionsButtons() {
-        actions(
+    private void addActionsButtons(boolean historiOnly) {
+        if (historiOnly) {
+            AxAction hist = new AxAction().caption("Zobrazit historii").icon(FontAwesome.HISTORY).run(() ->
+            navigate(VersionListView.class, getParameterInteger()));
+            actions(hist);
+        } else {
+            actions(
                 new AxAction().caption("Přidat záznam").icon(FontAwesome.PLUS).run(() -> {
 
                     FaLevel newFaLevel = arrangementManager.addFaLevel(findingAid);
@@ -350,6 +354,7 @@ public class FindingAidDetailView extends ElzaView {
                     approveVersion(formularApproveVersion, appVersion);
                 })
             );
+        }
     }
 
     private void approveVersion(final AxForm<VOApproveVersion> form, final VOApproveVersion appVersion) {
