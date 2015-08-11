@@ -79,7 +79,11 @@ public class VersionListView extends ElzaView {
             @Override
             public void itemClick(final ItemClickEvent itemClickEvent) {
                 FaVersion version = (FaVersion) itemClickEvent.getItemId();
-                VOFindingAidVersionParam params = new VOFindingAidVersionParam(findingAidId, version.getFaVersionId());
+                Integer versionId = null;
+                if (version.getLockChange() != null) {
+                    versionId = version.getFaVersionId();
+                }
+                VOFindingAidVersionParam params = new VOFindingAidVersionParam(findingAidId, versionId);
                 navigate(FindingAidDetailView.class, params);
             }
         });
