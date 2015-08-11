@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.FaChange;
 import cz.tacr.elza.domain.FaLevel;
-import cz.tacr.elza.domain.FaVersion;
 
 
 /**
@@ -47,4 +46,6 @@ public interface LevelRepository extends JpaRepository<FaLevel, Integer> {
 
     @Query("SELECT l FROM arr_fa_level l WHERE l.parentNode = ?1  and l.position > ?2 and l.deleteChange is null order by l.position asc")
     List<FaLevel> findByParentNodeAndPositionGreaterThanOrderByPositionAsc(FaLevel parentNode, Integer position);
+
+    FaLevel findByNodeIdAndDeleteChangeIsNull(Integer levelId);
 }

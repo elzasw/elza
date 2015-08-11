@@ -124,7 +124,7 @@ public class FindingAidDetailView extends ElzaView {
             lockChangeId = selectVersions.getLockChange().getChangeId();
         }
         List<FaLevel> faLevels = arrangementManager.findFaLevelByParentNodeOrderByPositionAsc(rootFaLevelId,
-            lockChangeId);
+                lockChangeId);
         faLevelsAll.addAll(faLevels);
         //faLevelsAll.addAll(getAllChildByFaLevel(faLevels));
 
@@ -233,25 +233,17 @@ public class FindingAidDetailView extends ElzaView {
                                     Notification.show("Ve schránce...");
                                 }),
                                 new AxAction().caption("Vložit za").icon(FontAwesome.PASTE).run(() -> {
-                                    FaLevel faLevel = arrangementManager
-                                            .getOneFaLevelByNodeIdAndDeleteChangeIsNull((Integer) itemId);
                                     if (faLevelVyjmout != null) {
-                                        FaLevel[] sendFaLevels = new FaLevel[] {faLevelVyjmout, faLevel};
-                                        arrangementManager.moveFaLevelAfter(sendFaLevels);
+                                        arrangementManager.moveFaLevelAfter(faLevelVyjmout.getNodeId(), (Integer) itemId);
                                         faLevelVyjmout = null;
-                                        // TODO: dopsat zařazení ve stromu stromu
                                     } else {
                                         throw new UnsupportedOperationException();
                                     }
                                 }),
                                 new AxAction().caption("Vložit pod").icon(FontAwesome.PASTE).run(() -> {
                                     if (faLevelVyjmout != null) {
-                                        FaLevel faLevel = arrangementManager
-                                                .getOneFaLevelByNodeIdAndDeleteChangeIsNull((Integer) itemId);
-                                        FaLevel[] sendFaLevels = new FaLevel[] {faLevelVyjmout, faLevel};
-                                        arrangementManager.moveFaLevelUnder(sendFaLevels);
+                                        arrangementManager.moveFaLevelUnder(faLevelVyjmout.getNodeId(), (Integer) itemId);
                                         faLevelVyjmout = null;
-                                        // TODO: dopsat zařazení ve stromu stromu
                                     } else {
                                         throw new UnsupportedOperationException();
                                     }
@@ -271,8 +263,8 @@ public class FindingAidDetailView extends ElzaView {
      * @param container kontejner
      */
     private void initNewItemInContainer(final Item item,
-                                        final FaLevel faLevel,
-                                        final HierarchicalCollapsibleContainer container) {
+            final FaLevel faLevel,
+            final HierarchicalCollapsibleContainer container) {
         item.getItemProperty(LEVEL).setValue(faLevel.getNodeId());
         item.getItemProperty(LEVEL_POSITION).setValue(faLevel.getPosition());
         if (faLevel.getParentNode() != null) {
@@ -297,7 +289,7 @@ public class FindingAidDetailView extends ElzaView {
             }
             for (FaLevel faLevel : childs) {
                 List<FaLevel> childsSubList = arrangementManager.findFaLevelByParentNodeOrderByPositionAsc(
-                    faLevel.getFaLevelId(), lockChangeId);
+                        faLevel.getFaLevelId(), lockChangeId);
                 childs.addAll(childsSubList);
             }
         }
@@ -349,21 +341,21 @@ public class FindingAidDetailView extends ElzaView {
 
                     approveVersion(formularApproveVersion, appVersion);
                 })
-            );
+                );
     }
 
     private void approveVersion(final AxForm<VOApproveVersion> form, final VOApproveVersion appVersion) {
         form.setValue(appVersion);
         new AxWindow().components(form)
         .buttonPrimary(new AxAction<VOApproveVersion>()
-                        .caption("Uložit")
-                        .exception(ex -> {
-                            ex.printStackTrace();
-                        })
-                        .primary()
-                        .value(form::commit)
-                        .action(this::approveVersion)
-        ).buttonClose().modal().style("fa-window-detail").show();
+                .caption("Uložit")
+                .exception(ex -> {
+                    ex.printStackTrace();
+                })
+                .primary()
+                .value(form::commit)
+                .action(this::approveVersion)
+                ).buttonClose().modal().style("fa-window-detail").show();
 
     }
 

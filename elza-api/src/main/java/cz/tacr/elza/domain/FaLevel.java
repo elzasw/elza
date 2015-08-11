@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import java.util.Arrays;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -9,6 +11,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -92,6 +97,23 @@ public class FaLevel extends EntityBase {
 
     public void setPosition(final Integer position) {
         this.position = position;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (!(obj instanceof FaLevel)) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+        FaLevel other = (FaLevel) obj;
+        return EqualsBuilder.reflectionEquals(this, other, Arrays.asList("parentNode"));
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this, Arrays.asList("parentNode"));
     }
 
     @Override

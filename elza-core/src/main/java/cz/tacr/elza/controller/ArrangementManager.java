@@ -331,7 +331,7 @@ public class ArrangementManager {
     }
 
     /**
-     * Přidá záznam do poslední (otevřené) verze archivní položky
+     * Vytvoří nový uzel v první úrovni archivní položky
      *
      * @param findingAid    archivní pomůcka
      * @return              nový záznam z archivný pomůcky
@@ -346,6 +346,12 @@ public class ArrangementManager {
         return createLastInLevel(change, lastVersion.getRootNode());
     }
 
+    /**
+     * Vytvoří nový uzel za předaným uzlem.
+     *
+     * @param faLevel       uzel za kterým se má vytvořit nový
+     * @return              nový uzel
+     */
     // TODO: dopsat testy
     @Transactional
     @RequestMapping(value = "/addFaLevelAfter", method = RequestMethod.PUT)
@@ -367,26 +373,58 @@ public class ArrangementManager {
     }
 
     // TODO: dopsat testy
-    // TODO: otestovat, zda-li to vůbec funguje
     @Transactional
     @RequestMapping(value = "/moveFaLevelUnder", method = RequestMethod.PUT)
-    public FaLevel moveFaLevelUnder(@RequestBody FaLevel[] faLevels) {
-        Assert.notNull(faLevels);
-        Assert.isTrue(faLevels.length == 2);
-        for(int i = 0; i < faLevels.length; i++) {
-            Assert.notNull(faLevels[i]);
-        }
+    public FaLevel moveFaLevelUnder(Integer faLevelNodeId, Integer parentNodeId) {
+        Assert.notNull(faLevelNodeId);
+        Assert.notNull(parentNodeId);
 
-        FaLevel faLevel = faLevels[0];
-        FaLevel parent = faLevels[1];
+        FaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(faLevelNodeId);
+        FaLevel parent = levelRepository.findByNodeIdAndDeleteChangeIsNull(parentNodeId);
         Assert.state(faLevel != parent, "Nelze vložit sama do sebe");
 
+        // vkládaný nesmí být rodičem uzla pod který ho vkládám
+        checkCycle(faLevel, parent);
 
         FaChange change = createChange();
         shiftNodesUp(faLevel, change);
         FaLevel newLevel = createNewLevelVersion(faLevel, change);
 
         return addLastInLevel(newLevel, parent);
+    }
+
+    private void checkCycle(FaLevel movedNode, FaLevel targetNode) {
+        Assert.notNull(movedNode);
+        Assert.notNull(targetNode);
+
+        FaLevel node = targetNode;
+        while (node.getParentNode() != null) {
+            if (movedNode.equals(node.getParentNode())) {
+                throw new IllegalStateException("Přesouvaný uzel je rodičem cílového uzlu. Přesun nelze provést.");
+            }
+            node = node.getParentNode();
+        }
+    }
+
+    // TODO: dopsat testy
+    @Transactional
+    @RequestMapping(value = "/moveFaLevelAfter", method = RequestMethod.PUT)
+    public FaLevel moveFaLevelAfter(Integer faLevelNodeId, Integer predecessorNodeId) {
+        Assert.notNull(faLevelNodeId);
+        Assert.notNull(predecessorNodeId);
+
+        FaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(faLevelNodeId);
+        FaLevel predecessor = levelRepository.findByNodeIdAndDeleteChangeIsNull(predecessorNodeId);
+        Assert.state(faLevel != predecessor, "Nelze vložit sama za sebe");
+
+        // vkládaný nesmí být rodičem uzla za který ho vkládám
+        checkCycle(faLevel, predecessor);
+
+        FaChange change = createChange();
+        shiftNodesUp(faLevel, change);
+        FaLevel newLevel = createNewLevelVersion(faLevel, change);
+
+        return addAfterInLevel(newLevel, predecessor, change);
     }
 
     private FaLevel addLastInLevel(FaLevel level, FaLevel parent) {
@@ -401,28 +439,6 @@ public class ArrangementManager {
         level.setParentNode(parent);
 
         return levelRepository.save(level);
-    }
-
-    // TODO: dopsat testy
-    // TODO: otestovat, zda-li to vůbec funguje
-    @Transactional
-    @RequestMapping(value = "/moveFaLevelAfter", method = RequestMethod.PUT)
-    public FaLevel moveFaLevelAfter(@RequestBody FaLevel[] faLevels) {
-        Assert.notNull(faLevels);
-        Assert.isTrue(faLevels.length == 2);
-        for(int i = 0; i < faLevels.length; i++) {
-            Assert.notNull(faLevels[i]);
-        }
-
-        FaLevel faLevel = faLevels[0];
-        FaLevel predecessor = faLevels[1];
-        Assert.state(faLevel != predecessor, "Nelze vložit sama za sebe");
-
-        FaChange change = createChange();
-        shiftNodesUp(faLevel, change);
-        FaLevel newLevel = createNewLevelVersion(faLevel, change);
-
-        return addAfterInLevel(newLevel, predecessor, change);
     }
 
     private void shiftNodesDown(FaLevel movedLevel, FaChange change) {
