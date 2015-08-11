@@ -6,7 +6,7 @@
 
     <!--Verze 1.0 - prvotni vytvoreni schematu -->
 
-    <changeSet id="1" author="pubal">
+    <changeSet id="1" author="pubal" runOnChange="true" failOnError="false">
 
         <createTable tableName="hibernate_sequences">
             <column name="sequence_name" type="varchar(255)">
@@ -30,7 +30,7 @@
             <column name="create_change_id" type="int"/>
             <column name="delete_change_id" type="int"/>
             <column name="node_id" type="int">
-                <constraints unique="true"/>
+                <constraints unique="true" uniqueConstraintName="u_arr_fa_level_node_id" />
             </column>
             <column name="parent_node_id" type="int"/>
             <column name="position" type="int"/>
