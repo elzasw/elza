@@ -1,7 +1,6 @@
 package cz.tacr.elza.controller;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -406,6 +405,7 @@ public class ArrangementManager {
 
     // TODO: dopsat testy
     // TODO: otestovat, zda-li to vůbec funguje
+    @Transactional
     @RequestMapping(value = "/moveFaLevelAfter", method = RequestMethod.PUT)
     public FaLevel moveFaLevelAfter(@RequestBody FaLevel[] faLevels) {
         Assert.notNull(faLevels);
@@ -496,7 +496,7 @@ public class ArrangementManager {
 
     @RequestMapping(value = "/findFaLevelByParentNodeOrderByPositionAsc", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<FaLevel> findFaLevelByParentNodeOrderByPositionAsc(@RequestParam(value = "faLevelId") Integer faLevelId,
-                                                                   @RequestParam(value = "faChangeId", required = false)  Integer faChangeId) {
+            @RequestParam(value = "faChangeId", required = false)  Integer faChangeId) {
         Assert.notNull(faLevelId);
 
         if (faChangeId == null) {
