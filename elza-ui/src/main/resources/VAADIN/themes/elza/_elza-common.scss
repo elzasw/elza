@@ -1,0 +1,14 @@
+.v-table .v-table-header-cell {
+  color: white;
+  background-color: $color-app-alt;
+}
+
+.action-transparent {
+  background: transparent;
+  .v-menubar-menuitem {
+    background: transparent;
+  }
+  .v-button {
+    background: transparent;
+  }
+}
