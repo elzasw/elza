@@ -118,9 +118,11 @@ public class FindingAidDetailView extends ElzaView {
         List<FaLevel> faLevelsAll = new LinkedList<FaLevel>();
 
         Integer rootFaLevelId = selectVersions.getRootNode().getFaLevelId();
-        Integer lockChangeId = null;
+        final Integer lockChangeId;
         if (selectVersions.getLockChange() != null) {
             lockChangeId = selectVersions.getLockChange().getChangeId();
+        } else {
+            lockChangeId = null;
         }
         List<FaLevel> faLevels = arrangementManager.findFaLevelByParentNodeOrderByPositionAsc(rootFaLevelId,
                 lockChangeId);
@@ -149,8 +151,8 @@ public class FindingAidDetailView extends ElzaView {
 
                 Integer itemIdLast = itemId;
 
-                List<FaLevel> faLevels = arrangementManager.findFaLevelsByNodeIdOrderByPositionAsc(itemId);
-                for (FaLevel faLevel : getChildByFaLevel(faLevels)) {
+                List<FaLevel> faLevels = arrangementManager.findFaLevelChildByParentNodeIdOrderByPositionAsc(itemId, lockChangeId);
+                for (FaLevel faLevel : faLevels) {
                     Item item = table.addItemAfter(itemIdLast, faLevel.getNodeId());
                     itemIdLast = faLevel.getNodeId();
                     initNewItemInContainer(item, faLevel, container);
@@ -267,7 +269,7 @@ public class FindingAidDetailView extends ElzaView {
         item.getItemProperty(LEVEL).setValue(faLevel.getNodeId());
         item.getItemProperty(LEVEL_POSITION).setValue(faLevel.getPosition());
         if (faLevel.getParentNode() != null) {
-            container.setParent(faLevel.getNodeId(), faLevel.getParentNode().getNodeId());
+            container.setParent(faLevel.getNodeId(), faLevel.getParentNode().get(0).getNodeId());
         }
         container.setChildrenAllowed(faLevel.getNodeId(), true);
         container.setCollapsed(faLevel.getNodeId(), true);
@@ -324,7 +326,7 @@ public class FindingAidDetailView extends ElzaView {
                     HierarchicalCollapsibleContainer container = (HierarchicalCollapsibleContainer) table.getContainerDataSource();
 
                     if (newFaLevel.getParentNode() != null) {
-                        container.setParent(newFaLevel.getNodeId(), newFaLevel.getParentNode().getNodeId());
+                        container.setParent(newFaLevel.getNodeId(), newFaLevel.getParentNode().get(0).getNodeId());
                     }
                     item.getItemProperty(LEVEL).setValue(newFaLevel.getNodeId());
                     item.getItemProperty(LEVEL_POSITION).setValue(newFaLevel.getPosition());

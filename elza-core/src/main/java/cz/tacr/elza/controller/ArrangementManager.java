@@ -522,6 +522,18 @@ public class ArrangementManager {
         return levelRepository.findByParentNodeOrderByPositionAsc(faLevelId, faChange);
     }
 
+    @RequestMapping(value = "/findFaLevelChildByParentNodeIdOrderByPositionAsc", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<FaLevel> findFaLevelChildByParentNodeIdOrderByPositionAsc(@RequestParam(value = "parentNodeId") Integer parentNodeId,
+            @RequestParam(value = "faChangeId", required = false)  Integer faChangeId) {
+        Assert.notNull(parentNodeId);
+
+        if (faChangeId == null) {
+            return levelRepository.findByParentNodeIdOrderByPositionAsc(parentNodeId);
+        }
+        FaChange faChange = faChangeRepository.getOne(faChangeId);
+        return levelRepository.findByParentNodeIdOrderByPositionAsc(parentNodeId, faChange);
+    }
+
     // TODO: přepsat, dopsat testy
     @RequestMapping(value = "/getOneFaLevelByNodeIdOrderByPositionAsc/{nodeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<FaLevel> getOneFaLevelByNodeIdOrderByPositionAsc(@RequestParam("nodeId")Integer nodeId) {
