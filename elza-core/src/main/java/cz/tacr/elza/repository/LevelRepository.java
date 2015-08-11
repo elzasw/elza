@@ -34,6 +34,8 @@ public interface LevelRepository extends JpaRepository<FaLevel, Integer> {
 
     List<FaLevel> findByNodeIdAndDeleteChangeIsNullOrderByPositionAsc(Integer levelId);
 
+    List<FaLevel> findByNodeIdOrderByPositionAsc(Integer levelId);
+
     @Query("SELECT c FROM arr_fa_level c WHERE c.parentNode in ?1  and c.deleteChange is null order by c.position asc")
     List<FaLevel> findByParentNodeInDeleteChangeIsNullOrderByPositionAsc(List<FaLevel> faLevels);
 
