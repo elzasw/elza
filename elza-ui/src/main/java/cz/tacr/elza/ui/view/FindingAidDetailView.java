@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import ru.xpoft.vaadin.VaadinView;
 
@@ -95,6 +96,7 @@ public class FindingAidDetailView extends ElzaView {
         container.addContainerProperty(LEVEL_POSITION, Integer.class, 0);
 
         table = new TreeTable();
+        table.addStyleName("detail-table");
         table.setWidth("100%");
 
         FaVersion selectVersions = null;
@@ -127,13 +129,7 @@ public class FindingAidDetailView extends ElzaView {
 
         for (FaLevel faLevel : faLevelsAll) {
             Item item = container.addItem(faLevel.getNodeId());
-            item.getItemProperty(LEVEL).setValue(faLevel.getNodeId());
-            item.getItemProperty(LEVEL_POSITION).setValue(faLevel.getPosition());
-            if (faLevel.getParentNode() != null) {
-                container.setParent(faLevel.getNodeId(), faLevel.getParentNode().getNodeId());
-            }
-            container.setChildrenAllowed(faLevel.getNodeId(), true);
-            container.setCollapsed(faLevel.getNodeId(), true);
+            initNewItemInContainer(item, faLevel, container);
         }
 
         table.addCollapseListener(new Tree.CollapseListener() {
@@ -157,13 +153,7 @@ public class FindingAidDetailView extends ElzaView {
                 for (FaLevel faLevel : getChildByFaLevel(faLevels)) {
                     Item item = table.addItemAfter(itemIdLast, faLevel.getNodeId());
                     itemIdLast = faLevel.getNodeId();
-                    if (faLevel.getParentNode() != null) {
-                        container.setParent(faLevel.getNodeId(), faLevel.getParentNode().getNodeId());
-                    }
-                    item.getItemProperty(LEVEL).setValue(faLevel.getNodeId());
-                    item.getItemProperty(LEVEL_POSITION).setValue(faLevel.getPosition());
-                    container.setChildrenAllowed(faLevel.getNodeId(), true);
-                    container.setCollapsed(faLevel.getNodeId(), true);
+                    initNewItemInContainer(item, faLevel, container);
                 }
             }
         });
@@ -179,10 +169,11 @@ public class FindingAidDetailView extends ElzaView {
             @Override
             public Object generateCell(final Table source, final Object itemId, final Object columnId) {
                 // TODO: změnit celou tabulku na Ax
-                FaLevel faLevel = arrangementManager.getOneFaLevelByNodeIdAndDeleteChangeIsNull((Integer) itemId);
                 AxMenuBar menu = new AxMenuBar().actions(
                         new AxAction().icon(FontAwesome.ALIGN_JUSTIFY).submenu(
                                 new AxAction().caption("Přidat záznam za").icon(FontAwesome.PLUS).run(() -> {
+                                    FaLevel faLevel = arrangementManager
+                                            .getOneFaLevelByNodeIdAndDeleteChangeIsNull((Integer) itemId);
 
                                     if (table.isCollapsed(itemId)) {
                                         table.setCollapsed(itemId, false);
@@ -194,17 +185,15 @@ public class FindingAidDetailView extends ElzaView {
 
                                     Item item = table.addItemAfter(itemIdLast, newFaLevel.getNodeId());
                                     itemIdLast = newFaLevel.getNodeId();
-                                    if (newFaLevel.getParentNode() != null) {
-                                        container.setParent(newFaLevel.getNodeId(), newFaLevel.getParentNode().getNodeId());
-                                    }
-                                    item.getItemProperty(LEVEL).setValue(newFaLevel.getNodeId());
-                                    item.getItemProperty(LEVEL_POSITION).setValue(newFaLevel.getPosition());
-                                    container.setChildrenAllowed(newFaLevel.getNodeId(), true);
-                                    container.setCollapsed(newFaLevel.getNodeId(), true);
+
+                                    initNewItemInContainer(item, newFaLevel, container);
 
                                     Notification.show("Přidáno...");
                                 }),
                                 new AxAction().caption("Přidat záznam pod").icon(FontAwesome.PLUS).run(() -> {
+                                    FaLevel faLevel = arrangementManager
+                                            .getOneFaLevelByNodeIdAndDeleteChangeIsNull((Integer) itemId);
+
 
                                     if (table.isCollapsed(itemId)) {
                                         table.setCollapsed(itemId, false);
@@ -212,31 +201,39 @@ public class FindingAidDetailView extends ElzaView {
 
                                     FaLevel newFaLevel = arrangementManager.addFaLevelChild(faLevel);
 
-                                    Integer itemIdLast = faLevel.getNodeId();
+                                    Object itemIdLast = faLevel.getNodeId();
+                                    Collection<?> children = container.getChildren(
+                                            faLevel.getNodeId());
+                                    if (!CollectionUtils.isEmpty(children)) {
+                                        Iterator<?> iterator = children.iterator();
+                                        while (iterator.hasNext()) {
+                                            itemIdLast = iterator.next();
+                                        }
+                                    }
 
                                     Item item = table.addItemAfter(itemIdLast, newFaLevel.getNodeId());
                                     itemIdLast = newFaLevel.getNodeId();
-                                    if (newFaLevel.getParentNode() != null) {
-                                        container.setParent(newFaLevel.getNodeId(), newFaLevel.getParentNode().getNodeId());
-                                    }
-                                    item.getItemProperty(LEVEL).setValue(newFaLevel.getNodeId());
-                                    item.getItemProperty(LEVEL_POSITION).setValue(newFaLevel.getPosition());
-                                    container.setChildrenAllowed(newFaLevel.getNodeId(), true);
-                                    container.setCollapsed(newFaLevel.getNodeId(), true);
+                                    initNewItemInContainer(item, newFaLevel, container);
 
                                     Notification.show("Přidáno...");
                                 }),
                                 new AxAction().caption("Smazat").icon(FontAwesome.TRASH_O).run(() -> {
+                                    FaLevel faLevel = arrangementManager
+                                            .getOneFaLevelByNodeIdAndDeleteChangeIsNull((Integer) itemId);
                                     arrangementManager.deleteFaLevel(faLevel);
                                     removeAllChildren(table, (Integer) itemId);
                                     table.removeItem(itemId);
                                     Notification.show("Smazáno...");
                                 }),
                                 new AxAction().caption("Vyjmout").icon(FontAwesome.CUT).run(() -> {
+                                    FaLevel faLevel = arrangementManager
+                                            .getOneFaLevelByNodeIdAndDeleteChangeIsNull((Integer) itemId);
                                     faLevelVyjmout = faLevel;
                                     Notification.show("Ve schránce...");
                                 }),
                                 new AxAction().caption("Vložit za").icon(FontAwesome.PASTE).run(() -> {
+                                    FaLevel faLevel = arrangementManager
+                                            .getOneFaLevelByNodeIdAndDeleteChangeIsNull((Integer) itemId);
                                     if (faLevelVyjmout != null) {
                                         FaLevel[] sendFaLevels = new FaLevel[] {faLevelVyjmout, faLevel};
                                         arrangementManager.moveFaLevelAfter(sendFaLevels);
@@ -248,6 +245,8 @@ public class FindingAidDetailView extends ElzaView {
                                 }),
                                 new AxAction().caption("Vložit pod").icon(FontAwesome.PASTE).run(() -> {
                                     if (faLevelVyjmout != null) {
+                                        FaLevel faLevel = arrangementManager
+                                                .getOneFaLevelByNodeIdAndDeleteChangeIsNull((Integer) itemId);
                                         FaLevel[] sendFaLevels = new FaLevel[] {faLevelVyjmout, faLevel};
                                         arrangementManager.moveFaLevelUnder(sendFaLevels);
                                         faLevelVyjmout = null;
@@ -262,6 +261,26 @@ public class FindingAidDetailView extends ElzaView {
             }
         });
     }
+
+    /**
+     * Nastaví novou položku v konejneru.
+     *
+     * @param item      nová položka
+     * @param faLevel   level
+     * @param container kontejner
+     */
+    private void initNewItemInContainer(final Item item,
+                                        final FaLevel faLevel,
+                                        final HierarchicalCollapsibleContainer container) {
+        item.getItemProperty(LEVEL).setValue(faLevel.getNodeId());
+        item.getItemProperty(LEVEL_POSITION).setValue(faLevel.getPosition());
+        if (faLevel.getParentNode() != null) {
+            container.setParent(faLevel.getNodeId(), faLevel.getParentNode().getNodeId());
+        }
+        container.setChildrenAllowed(faLevel.getNodeId(), true);
+        container.setCollapsed(faLevel.getNodeId(), true);
+    }
+
 
     private List<FaLevel> getChildByFaLevel(final List<FaLevel> faLevels) {
         List<FaLevel> childs = null;
@@ -342,14 +361,14 @@ public class FindingAidDetailView extends ElzaView {
         form.setValue(appVersion);
         new AxWindow().components(form)
         .buttonPrimary(new AxAction<VOApproveVersion>()
-                .caption("Uložit")
-                .exception(ex -> {
-                    ex.printStackTrace();
-                })
-                .primary()
-                .value(form::commit)
-                .action(this::approveVersion)
-                ).buttonClose().modal().style("fa-window-detail").show();
+                        .caption("Uložit")
+                        .exception(ex -> {
+                            ex.printStackTrace();
+                        })
+                        .primary()
+                        .value(form::commit)
+                        .action(this::approveVersion)
+        ).buttonClose().modal().style("fa-window-detail").show();
 
     }
 

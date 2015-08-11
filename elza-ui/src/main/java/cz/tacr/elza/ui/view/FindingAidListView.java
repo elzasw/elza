@@ -1,37 +1,24 @@
 package cz.tacr.elza.ui.view;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-
-import ru.xpoft.vaadin.VaadinView;
-
 import com.vaadin.data.Validator;
-import com.vaadin.data.util.BeanItemContainer;
-import com.vaadin.event.ItemClickEvent;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.FontAwesome;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.Table;
-
-import cz.req.ax.AxAction;
-import cz.req.ax.AxContainer;
-import cz.req.ax.AxForm;
-import cz.req.ax.AxWindow;
+import cz.req.ax.*;
+import cz.req.ax.util.LocalDateTimeConverter;
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleSetManager;
 import cz.tacr.elza.domain.ArrangementType;
 import cz.tacr.elza.domain.FindingAid;
 import cz.tacr.elza.domain.RuleSet;
 import cz.tacr.elza.ui.ElzaView;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+import ru.xpoft.vaadin.VaadinView;
 
 
 /**
@@ -51,11 +38,9 @@ public class FindingAidListView extends ElzaView {
     @Autowired
     private RuleSetManager ruleSetManager;
 
-
-    BeanItemContainer<FindingAid> container;
     AxContainer<ArrangementType> arTypeContainer;
     AxContainer<RuleSet> ruleSetContainer;
-
+    AxTable<FindingAid> tableFA;
     AxForm<FindingAid> formFA;
 
     @Override
@@ -66,101 +51,52 @@ public class FindingAidListView extends ElzaView {
 
         formFA = formularFA();
 
-        Table table = new Table();
-        table.setWidth("100%");
-        table.addContainerProperty("name", String.class, "", "Název", null, null);
-        table.addContainerProperty("createDate", LocalDateTime.class, null, "Datum vytvoření", null, null);
-        table.setSortEnabled(false);
-        table.addGeneratedColumn("createDate", new Table.ColumnGenerator() {
-            @Override
-            public Object generateCell(final Table source, final Object itemId, final Object columnId) {
-                FindingAid findingAid = (FindingAid) itemId;
-                return findingAid.getCreateDate().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM));
-            }
-        });
-
-        table.addGeneratedColumn("actions", new Table.ColumnGenerator() {
-            @Override
-            public Object generateCell(final Table source, final Object itemId, final Object columnId) {
-
-                final FindingAid findingAid = (FindingAid) itemId;
-
-                Button buttonUpravit = new Button("Upravit");
-                buttonUpravit.addStyleName("button-edit");
-                buttonUpravit.addClickListener(new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(final Button.ClickEvent event) {
-                        upravitFA(formFA, findingAid);
-                    }
-                });
-
-                Button buttonSmazat = new Button("Smazat");
-                buttonSmazat.addStyleName("button-remove");
-                buttonSmazat.addClickListener(new Button.ClickListener() {
-                    @Override
-                    public void buttonClick(final Button.ClickEvent event) {
-                        smazatFA(findingAid);
-                    }
-                });
-
-                CssLayout layout = new CssLayout(buttonUpravit, buttonSmazat);
-                return layout;
-            }
-        });
-
-        table.setColumnHeader("actions", "Akce");
-
-        table.addItemClickListener(new ItemClickEvent.ItemClickListener() {
-            @Override
-            public void itemClick(final ItemClickEvent itemClickEvent) {
-                FindingAid findingAid = (FindingAid) itemClickEvent.getItemId();
-                navigate(FindingAidDetailView.class, findingAid.getFindingAidId());
-            }
-        });
-
-        container = new BeanItemContainer<>(FindingAid.class);
-
-        refresh();
-
-        table.addStyleName("table");
-        table.setContainerDataSource(container);
-        table.setVisibleColumns("name", "createDate", "actions");
+        tableFA = new AxBeanTable<>(AxContainer.init(FindingAid.class).supplier(arrangementManager::getFindingAids));
+        tableFA.select(findingAid -> navigate(FindingAidDetailView.class, findingAid.getFindingAidId()));
+        tableFA.header(Table.ColumnHeaderMode.EXPLICIT_DEFAULTS_ID)
+                .column("name").header("Název")
+                .column("createDate").header("Datum vytvoření").width(200).converter(new LocalDateTimeConverter())
+                .column("actions").header("Akce").width(100).generator((itemObject, itemId, columnId) ->
+                cssLayout("action-transparent",
+                        AxAction.of(itemObject).icon(FontAwesome.EDIT).action(this::upravitFA).button(),
+                        AxAction.of(itemObject).icon(FontAwesome.TIMES).action(this::smazatFA).button()
+                )).done();
 
         actions(new AxAction().caption("Nový").icon(FontAwesome.PLUS_CIRCLE)
                 .run(() -> novyFA(formularNewFA())));
 
-        components(table);
+        components(tableFA.getTable());
+        refresh();
     }
 
     private void refresh() {
-        container.removeAllItems();
-        container.addAll(arrangementManager.getFindingAids());
+        tableFA.refresh();
     }
 
     private void novyFA(final AxForm<VONewFindingAid> form) {
         new AxWindow().components(form)
-        .buttonPrimary(new AxAction<VONewFindingAid>()
-                .caption("Uložit")
-                .primary()
-                .exception(ex -> {
-                    ex.printStackTrace();
-                })
-                .value(form::commit)
-                .action(this::vytvoritFA)
+                .buttonPrimary(new AxAction<VONewFindingAid>()
+                                .caption("Uložit")
+                                .primary()
+                                .exception(ex -> {
+                                    ex.printStackTrace();
+                                })
+                                .value(form::commit)
+                                .action(this::vytvoritFA)
                 ).buttonClose().modal().style("window-detail").show();
     }
 
-    private void upravitFA(final AxForm<FindingAid> form, final FindingAid findingAid) {
-        form.setValue(findingAid);
-        new AxWindow().components(form)
-        .buttonPrimary(new AxAction<FindingAid>()
-                .caption("Uložit")
-                .exception(ex -> {
-                    ex.printStackTrace();
-                })
-                .primary()
-                .value(form::commit)
-                .action(this::ulozitFA)
+    private void upravitFA(final FindingAid findingAid) {
+        formFA.setValue(findingAid);
+        new AxWindow().components(formFA)
+                .buttonPrimary(new AxAction<FindingAid>()
+                                .caption("Uložit")
+                                .exception(ex -> {
+                                    ex.printStackTrace();
+                                })
+                                .primary()
+                                .value(formFA::commit)
+                                .action(this::ulozitFA)
                 ).buttonClose().modal().style("window-detail").show();
     }
 
