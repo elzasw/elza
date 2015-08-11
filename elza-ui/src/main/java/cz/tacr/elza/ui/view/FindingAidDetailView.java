@@ -150,10 +150,12 @@ public class FindingAidDetailView extends ElzaView {
             @Override
             public void nodeExpand(final Tree.ExpandEvent expandEvent) {
                 Integer itemId = (Integer) expandEvent.getItemId();
+                Object source = expandEvent.getSource();
 
                 Integer itemIdLast = itemId;
 
-                for (FaLevel faLevel : getChildByFaLevel(arrangementManager.findFaLevelsByNodeIdAndDeleteChangeIsNullOrderByPositionAsc(itemId))) {
+                List<FaLevel> faLevels = arrangementManager.findFaLevelsByNodeIdOrderByPositionAsc(itemId);
+                for (FaLevel faLevel : getChildByFaLevel(faLevels)) {
                     Item item = table.addItemAfter(itemIdLast, faLevel.getNodeId());
                     itemIdLast = faLevel.getNodeId();
                     if (faLevel.getParentNode() != null) {
@@ -263,7 +265,23 @@ public class FindingAidDetailView extends ElzaView {
     }
 
     private List<FaLevel> getChildByFaLevel(final List<FaLevel> faLevels) {
-        List<FaLevel> childs = arrangementManager.findFaLevelByParentNodeInOrderByPositionAsc(faLevels);
+        List<FaLevel> childs = null;
+
+        if (versionId == null) {
+            childs = arrangementManager.findFaLevelByParentNodeInOrderByPositionAsc(faLevels);
+        } else {
+            childs = new ArrayList<FaLevel>();
+            FaVersion selectVersions = arrangementManager.getFaVersionById(versionId);
+            Integer lockChangeId = null;
+            if (selectVersions.getLockChange() != null) {
+                lockChangeId = selectVersions.getLockChange().getChangeId();
+            }
+            for (FaLevel faLevel : childs) {
+                List<FaLevel> childsSubList = arrangementManager.findFaLevelByParentNodeOrderByPositionAsc(
+                    faLevel.getFaLevelId(), lockChangeId);
+                childs.addAll(childsSubList);
+            }
+        }
         return childs;
     }
 

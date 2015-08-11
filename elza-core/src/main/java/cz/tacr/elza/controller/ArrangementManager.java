@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -494,7 +495,7 @@ public class ArrangementManager {
 
     @RequestMapping(value = "/findFaLevelByParentNodeOrderByPositionAsc", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<FaLevel> findFaLevelByParentNodeOrderByPositionAsc(@RequestParam(value = "faLevelId") Integer faLevelId,
-                                                                   @RequestParam(value = "faChangeId")  Integer faChangeId) {
+                                                                   @RequestParam(value = "faChangeId", required = false)  Integer faChangeId) {
         Assert.notNull(faLevelId);
 
         if (faChangeId == null) {
@@ -523,5 +524,11 @@ public class ArrangementManager {
     public List<FaLevel> findFaLevelsByNodeIdAndDeleteChangeIsNullOrderByPositionAsc(@RequestParam("nodeId")Integer nodeId) {
         Assert.notNull(nodeId);
         return levelRepository.findByNodeIdAndDeleteChangeIsNullOrderByPositionAsc(nodeId);
+    }
+
+    @RequestMapping(value = "/findFaLevelsByNodeIdOrderByPositionAsc{nodeId}", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<FaLevel> findFaLevelsByNodeIdOrderByPositionAsc(@RequestParam("nodeId")Integer nodeId) {
+        Assert.notNull(nodeId);
+        return levelRepository.findByNodeIdOrderByPositionAsc(nodeId);
     }
 }
