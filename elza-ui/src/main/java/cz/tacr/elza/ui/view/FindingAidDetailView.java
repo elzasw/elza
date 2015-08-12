@@ -27,7 +27,6 @@ import cz.req.ax.AxAction;
 import cz.req.ax.AxContainer;
 import cz.req.ax.AxForm;
 import cz.req.ax.AxMenuBar;
-import cz.req.ax.AxView;
 import cz.req.ax.AxWindow;
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleSetManager;
@@ -125,7 +124,6 @@ public class FindingAidDetailView extends ElzaView {
         List<FaLevel> faLevels = arrangementManager.findFaLevelByParentNodeOrderByPositionAsc(rootFaLevelId,
                 lockChangeId);
         faLevelsAll.addAll(faLevels);
-        //faLevelsAll.addAll(getAllChildByFaLevel(faLevels));
 
         for (FaLevel faLevel : faLevelsAll) {
             Item item = container.addItem(faLevel.getNodeId());
@@ -145,11 +143,10 @@ public class FindingAidDetailView extends ElzaView {
             @Override
             public void nodeExpand(final Tree.ExpandEvent expandEvent) {
                 Integer itemId = (Integer) expandEvent.getItemId();
-                Object source = expandEvent.getSource();
 
                 Integer itemIdLast = itemId;
 
-                List<FaLevel> faLevels = arrangementManager.findFaLevelsByNodeIdOrderByPositionAsc(itemId);
+                List<FaLevel> faLevels = arrangementManager.findFaLevelsByNodeIdAndDeleteChangeIsNullOrderByPositionAsc(itemId);
                 for (FaLevel faLevel : getChildByFaLevel(faLevels)) {
                     Item item = table.addItemAfter(itemIdLast, faLevel.getNodeId());
                     itemIdLast = faLevel.getNodeId();
@@ -221,8 +218,26 @@ public class FindingAidDetailView extends ElzaView {
                                     FaLevel faLevel = arrangementManager
                                             .getOneFaLevelByNodeIdAndDeleteChangeIsNull((Integer) itemId);
                                     arrangementManager.deleteFaLevel(faLevel);
-                                    removeAllChildren(table, (Integer) itemId);
                                     table.removeItem(itemId);
+                                    //                                    container.removeAllItems();
+                                    //                                    FaVersion selectVersions = arrangementManager.getOneFaVersionByFindingAid(findingAidId);
+                                    //
+                                    //                                    List<FaLevel> faLevelsAll = new LinkedList<FaLevel>();
+                                    //
+                                    //                                    Integer rootFaLevelId = selectVersions.getRootNode().getFaLevelId();
+                                    //                                    Integer lockChangeId = null;
+                                    //                                    if (selectVersions.getLockChange() != null) {
+                                    //                                        lockChangeId = selectVersions.getLockChange().getChangeId();
+                                    //                                    }
+                                    //                                    List<FaLevel> faLevels = arrangementManager.findFaLevelByParentNodeOrderByPositionAsc(rootFaLevelId,
+                                    //                                            lockChangeId);
+                                    //                                    faLevelsAll.addAll(faLevels);
+                                    //
+                                    //                                    for (FaLevel level : faLevelsAll) {
+                                    //                                        Item item = container.addItem(level.getNodeId());
+                                    //                                        initNewItemInContainer(item, level, container);
+                                    //                                    }
+
                                     Notification.show("Smazáno...");
                                 }),
                                 new AxAction().caption("Vyjmout").icon(FontAwesome.CUT).run(() -> {
@@ -234,6 +249,11 @@ public class FindingAidDetailView extends ElzaView {
                                 new AxAction().caption("Vložit za").icon(FontAwesome.PASTE).run(() -> {
                                     if (faLevelVyjmout != null) {
                                         arrangementManager.moveFaLevelAfter(faLevelVyjmout.getNodeId(), (Integer) itemId);
+
+                                        table.removeItem(faLevelVyjmout.getNodeId());
+                                        Item item = table.addItemAfter(itemId, faLevelVyjmout.getNodeId());
+                                        initNewItemInContainer(item, faLevelVyjmout, container);
+
                                         faLevelVyjmout = null;
                                     } else {
                                         throw new UnsupportedOperationException();
@@ -242,6 +262,19 @@ public class FindingAidDetailView extends ElzaView {
                                 new AxAction().caption("Vložit pod").icon(FontAwesome.PASTE).run(() -> {
                                     if (faLevelVyjmout != null) {
                                         arrangementManager.moveFaLevelUnder(faLevelVyjmout.getNodeId(), (Integer) itemId);
+
+                                        table.removeItem(faLevelVyjmout.getNodeId());
+                                        Collection<?> children = table.getChildren(itemId);
+                                        Object addAfterId;
+                                        if (children == null || children.isEmpty()) {
+                                            addAfterId = itemId;
+                                        } else {
+                                            int size = children.size();
+                                            addAfterId = children.toArray()[size - 1];
+                                        }
+                                        Item item = table.addItemAfter(addAfterId, faLevelVyjmout.getNodeId());
+                                        initNewItemInContainer(item, faLevelVyjmout, container);
+
                                         faLevelVyjmout = null;
                                     } else {
                                         throw new UnsupportedOperationException();
@@ -302,7 +335,6 @@ public class FindingAidDetailView extends ElzaView {
             Iterator<?> itChilder = tmpChildren.iterator();
             while (itChilder.hasNext()) {
                 Integer child = (Integer) itChilder.next();
-                removeAllChildren(table, child);
                 table.removeItem(child);
             }
         }
@@ -314,39 +346,39 @@ public class FindingAidDetailView extends ElzaView {
             navigate(VersionListView.class, getParameterInteger()));
             actions(hist);
         } else {
-        actions(
-                new AxAction().caption("Přidat záznam").icon(FontAwesome.PLUS).run(() -> {
+            actions(
+                    new AxAction().caption("Přidat záznam").icon(FontAwesome.PLUS).run(() -> {
 
-                    FaLevel newFaLevel = arrangementManager.addFaLevel(findingAid);
+                        FaLevel newFaLevel = arrangementManager.addFaLevel(findingAid);
 
-                    Item item = table.addItem(newFaLevel.getNodeId());
+                        Item item = table.addItem(newFaLevel.getNodeId());
 
-                    HierarchicalCollapsibleContainer container = (HierarchicalCollapsibleContainer) table.getContainerDataSource();
+                        HierarchicalCollapsibleContainer container = (HierarchicalCollapsibleContainer) table.getContainerDataSource();
 
-                    if (newFaLevel.getParentNode() != null) {
-                        container.setParent(newFaLevel.getNodeId(), newFaLevel.getParentNode().getNodeId());
-                    }
-                    item.getItemProperty(LEVEL).setValue(newFaLevel.getNodeId());
-                    item.getItemProperty(LEVEL_POSITION).setValue(newFaLevel.getPosition());
-                    container.setChildrenAllowed(newFaLevel.getNodeId(), true);
-                    container.setCollapsed(newFaLevel.getNodeId(), true);
+                        if (newFaLevel.getParentNode() != null) {
+                            container.setParent(newFaLevel.getNodeId(), newFaLevel.getParentNode().getNodeId());
+                        }
+                        item.getItemProperty(LEVEL).setValue(newFaLevel.getNodeId());
+                        item.getItemProperty(LEVEL_POSITION).setValue(newFaLevel.getPosition());
+                        container.setChildrenAllowed(newFaLevel.getNodeId(), true);
+                        container.setCollapsed(newFaLevel.getNodeId(), true);
 
-                    Notification.show("Přidáno...");
+                        Notification.show("Přidáno...");
 
-                }),
-                new AxAction().caption("Zobrazit historii").icon(FontAwesome.HISTORY).run(() ->
-                navigate(VersionListView.class, getParameterInteger())),
-                new AxAction().caption("Schválit verzi").icon(FontAwesome.HISTORY).run(() -> {
-                    AxForm<VOApproveVersion> formularApproveVersion = formularApproveVersion();
-                    FaVersion version = arrangementManager.getOneFaVersionByFindingAid(findingAid.getFindingAidId());
-                    VOApproveVersion appVersion = new VOApproveVersion();
-                    appVersion.setArrangementTypeId(version.getArrangementType().getArrangementTypeId());
-                    appVersion.setRuleSetId(version.getRuleSet().getRuleSetId());
+                    }),
+                    new AxAction().caption("Zobrazit historii").icon(FontAwesome.HISTORY).run(() ->
+                    navigate(VersionListView.class, getParameterInteger())),
+                    new AxAction().caption("Schválit verzi").icon(FontAwesome.HISTORY).run(() -> {
+                        AxForm<VOApproveVersion> formularApproveVersion = formularApproveVersion();
+                        FaVersion version = arrangementManager.getOneFaVersionByFindingAid(findingAid.getFindingAidId());
+                        VOApproveVersion appVersion = new VOApproveVersion();
+                        appVersion.setArrangementTypeId(version.getArrangementType().getArrangementTypeId());
+                        appVersion.setRuleSetId(version.getRuleSet().getRuleSetId());
 
-                    approveVersion(formularApproveVersion, appVersion);
-                })
-                );
-    }
+                        approveVersion(formularApproveVersion, appVersion);
+                    })
+                    );
+        }
     }
 
     private void approveVersion(final AxForm<VOApproveVersion> form, final VOApproveVersion appVersion) {

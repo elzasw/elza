@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -383,27 +384,14 @@ public class ArrangementManager {
         FaLevel parent = levelRepository.findByNodeIdAndDeleteChangeIsNull(parentNodeId);
         Assert.state(faLevel != parent, "Nelze vložit sama do sebe");
 
-        // vkládaný nesmí být rodičem uzla pod který ho vkládám
+        // vkládaný nesmí být rodičem uzlu pod který ho vkládám
         checkCycle(faLevel, parent);
 
         FaChange change = createChange();
-        shiftNodesUp(faLevel, change);
+        shiftNodesUp(nodesToShiftUp(faLevel), change);
         FaLevel newLevel = createNewLevelVersion(faLevel, change);
 
         return addLastInLevel(newLevel, parent);
-    }
-
-    private void checkCycle(FaLevel movedNode, FaLevel targetNode) {
-        Assert.notNull(movedNode);
-        Assert.notNull(targetNode);
-
-        FaLevel node = targetNode;
-        while (node.getParentNode() != null) {
-            if (movedNode.equals(node.getParentNode())) {
-                throw new IllegalStateException("Přesouvaný uzel je rodičem cílového uzlu. Přesun nelze provést.");
-            }
-            node = node.getParentNode();
-        }
     }
 
     // TODO: dopsat testy
@@ -417,14 +405,38 @@ public class ArrangementManager {
         FaLevel predecessor = levelRepository.findByNodeIdAndDeleteChangeIsNull(predecessorNodeId);
         Assert.state(faLevel != predecessor, "Nelze vložit sama za sebe");
 
-        // vkládaný nesmí být rodičem uzla za který ho vkládám
+        // vkládaný nesmí být rodičem uzlu za který ho vkládám
         checkCycle(faLevel, predecessor);
 
         FaChange change = createChange();
-        shiftNodesUp(faLevel, change);
+        List<FaLevel> nodesToShiftUp = nodesToShiftUp(faLevel);
+        List<FaLevel> nodesToShiftDown = nodesToShiftDown(predecessor);
+        nodesToShiftDown.remove(faLevel);
+        nodesToShiftUp.remove(predecessor);
+
+        List<FaLevel> down = new ArrayList<FaLevel>(nodesToShiftDown);
+        //        down.removeAll(nodesToShiftUp);
+        shiftNodesDown(down, change);
+
+        List<FaLevel> up = new ArrayList<FaLevel>(nodesToShiftUp);
+        //        up.removeAll(nodesToShiftDown);
+        shiftNodesUp(up, change);
         FaLevel newLevel = createNewLevelVersion(faLevel, change);
 
-        return addAfterInLevel(newLevel, predecessor, change);
+        return addAfterInLevel(newLevel, predecessor);
+    }
+
+    private void checkCycle(FaLevel movedNode, FaLevel targetNode) {
+        Assert.notNull(movedNode);
+        Assert.notNull(targetNode);
+
+        FaLevel node = targetNode;
+        while (node.getParentNode() != null) {
+            if (movedNode.equals(node.getParentNode())) {
+                throw new IllegalStateException("Přesouvaný uzel je rodičem cílového uzlu. Přesun nelze provést.");
+            }
+            node = node.getParentNode();
+        }
     }
 
     private FaLevel addLastInLevel(FaLevel level, FaLevel parent) {
@@ -441,35 +453,44 @@ public class ArrangementManager {
         return levelRepository.save(level);
     }
 
-    private void shiftNodesDown(FaLevel movedLevel, FaChange change) {
-        Assert.notNull(movedLevel);
+    private void shiftNodesDown(List<FaLevel> nodesToShift, FaChange change) {
+        Assert.notNull(nodesToShift);
         Assert.notNull(change);
 
-        List<FaLevel> levelsToShift = levelRepository.findByParentNodeAndPositionGreaterThanOrderByPositionAsc(movedLevel.getParentNode(), movedLevel.getPosition());
-        for (FaLevel node : levelsToShift) {
+        for (FaLevel node : nodesToShift) {
             FaLevel newNode = createNewLevelVersion(node, change);
             newNode.setPosition(node.getPosition() + 1);
             levelRepository.save(newNode);
         }
     }
 
-    private void shiftNodesUp(FaLevel movedLevel, FaChange change) {
-        Assert.notNull(movedLevel);
+    private void shiftNodesUp(List<FaLevel> nodesToShift, FaChange change) {
+        Assert.notNull(nodesToShift);
         Assert.notNull(change);
 
-        List<FaLevel> levelsToShift = levelRepository.findByParentNodeAndPositionGreaterThanOrderByPositionAsc(movedLevel.getParentNode(), movedLevel.getPosition());
-        for (FaLevel node : levelsToShift) {
+        for (FaLevel node : nodesToShift) {
             FaLevel newNode = createNewLevelVersion(node, change);
             newNode.setPosition(node.getPosition() - 1);
             levelRepository.save(newNode);
         }
     }
+    private List<FaLevel> nodesToShiftDown(FaLevel movedLevel) {
+        Assert.notNull(movedLevel);
 
-    private FaLevel addAfterInLevel(FaLevel level, FaLevel predecessor, FaChange change) {
+        return levelRepository.findByParentNodeAndPositionGreaterThanOrderByPositionAsc(movedLevel.getParentNode(),
+                movedLevel.getPosition());
+    }
+
+    private List<FaLevel> nodesToShiftUp(FaLevel movedLevel) {
+        Assert.notNull(movedLevel);
+
+        return levelRepository.findByParentNodeAndPositionGreaterThanOrderByPositionAsc(movedLevel.getParentNode(),
+                movedLevel.getPosition());
+    }
+
+    private FaLevel addAfterInLevel(FaLevel level, FaLevel predecessor) {
         Assert.notNull(level);
         Assert.notNull(predecessor);
-
-        shiftNodesDown(predecessor, change);
 
         level.setParentNode(predecessor.getParentNode());
         level.setPosition(predecessor.getPosition() + 1);
@@ -482,7 +503,9 @@ public class ArrangementManager {
     public FaLevel deleteFaLevel(@RequestBody FaLevel level) {
         Assert.notNull(level);
 
-        level.setDeleteChange(createChange());
+        FaChange change = createChange();
+        level.setDeleteChange(change);
+        shiftNodesUp(nodesToShiftUp(level), change);
 
         return levelRepository.save(level);
     }
