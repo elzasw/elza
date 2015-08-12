@@ -9,7 +9,6 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -105,14 +104,11 @@ public class ArrangementManager {
         return findingAid;
     }
 
-    private FaLevel createLevel(final FaChange createChange, final FaLevel parent) {
+    private FaLevel createLevel(final FaChange createChange, final Integer parentNodeId) {
         FaLevel level = new FaLevel();
         level.setPosition(1);
         level.setCreateChange(createChange);
-
-        if (parent != null) {
-            level.setParentNode(parent);
-        }
+        level.setParentNodeId(parentNodeId);
 
         Integer maxNodeId = levelRepository.findMaxNodeId();
         if (maxNodeId == null) {
@@ -127,14 +123,14 @@ public class ArrangementManager {
         Assert.notNull(change);
         Assert.notNull(level);
 
-        List<FaLevel> levelsToShift = levelRepository.findByParentNodeAndPositionGreaterThanOrderByPositionAsc(level.getParentNode(), level.getPosition());
+        List<FaLevel> levelsToShift = levelRepository.findByParentNodeAndPositionGreaterThanOrderByPositionAsc(level.getParentNodeId(), level.getPosition());
         for (FaLevel node : levelsToShift) {
             FaLevel newNode = createNewLevelVersion(node, change);
             newNode.setPosition(node.getPosition() + 1);
             levelRepository.save(newNode);
         }
 
-        return createLevel(change, level.getParentNode(), level.getPosition() + 1);
+        return createLevel(change, level.getParentNodeId(), level.getPosition() + 1);
     }
 
     private FaLevel createNewLevelVersion(FaLevel node, FaChange change) {
@@ -155,7 +151,7 @@ public class ArrangementManager {
 
         FaLevel newNode = new FaLevel();
         newNode.setNodeId(node.getNodeId());
-        newNode.setParentNode(node.getParentNode());
+        newNode.setParentNodeId(node.getParentNodeId());
         newNode.setPosition(node.getPosition());
 
         return newNode;
@@ -165,25 +161,21 @@ public class ArrangementManager {
         Assert.notNull(createChange);
         Assert.notNull(parent);
 
-        Integer maxPosition = levelRepository.findMaxPositionUnderParent(parent);
+        Integer maxPosition = levelRepository.findMaxPositionUnderParent(parent.getNodeId());
         if (maxPosition == null) {
             maxPosition = 0;
         }
 
-        return createLevel(createChange, parent, maxPosition + 1);
+        return createLevel(createChange, parent.getNodeId(), maxPosition + 1);
     }
 
-    private FaLevel createLevel(final FaChange createChange, final FaLevel parent, final Integer position) {
+    private FaLevel createLevel(final FaChange createChange, final Integer parentNodeId, final Integer position) {
         Assert.notNull(createChange);
-        Assert.notNull(parent);
 
         FaLevel level = new FaLevel();
         level.setPosition(position);
         level.setCreateChange(createChange);
-
-        if (parent != null) {
-            level.setParentNode(parent);
-        }
+        level.setParentNodeId(parentNodeId);
 
         Integer maxNodeId = levelRepository.findMaxNodeId();
         if (maxNodeId == null) {
@@ -230,7 +222,7 @@ public class ArrangementManager {
     }
 
     private void removeTree(FaLevel rootNode) {
-        levelRepository.findByParentNodeOrderByPositionAsc(rootNode).forEach((node) -> {removeTree(node);});
+        levelRepository.findByParentNodeIdAndDeleteChangeIsNullOrderByPositionAsc(rootNode.getNodeId()).forEach((node) -> {removeTree(node);});
 
         levelRepository.delete(rootNode);
     }
@@ -320,7 +312,7 @@ public class ArrangementManager {
         Assert.notNull(ruleSetId);
 
         FindingAid findingAid = findingAidRepository.findOne(findingAidId);
-        FaVersion version = versionRepository.findByFindingAidAndLockChangeIsNull(findingAid);
+        FaVersion version = versionRepository.findByFindingAidIdAndLockChangeIsNull(findingAidId);
 
         FaChange change = createChange();
         version.setLockChange(change);
@@ -339,10 +331,10 @@ public class ArrangementManager {
      */
     @Transactional
     @RequestMapping(value = "/addFaLevel", method = RequestMethod.PUT)
-    public FaLevel addFaLevel(@RequestBody FindingAid findingAid) {
-        Assert.notNull(findingAid);
+    public FaLevel addFaLevel(@RequestParam("findingAidId") Integer findingAidId) {
+        Assert.notNull(findingAidId);
 
-        FaVersion lastVersion = versionRepository.findByFindingAidAndLockChangeIsNull(findingAid);
+        FaVersion lastVersion = versionRepository.findByFindingAidIdAndLockChangeIsNull(findingAidId);
         FaChange change = createChange();
         return createLastInLevel(change, lastVersion.getRootNode());
     }
@@ -356,9 +348,10 @@ public class ArrangementManager {
     // TODO: dopsat testy
     @Transactional
     @RequestMapping(value = "/addFaLevelAfter", method = RequestMethod.PUT)
-    public FaLevel addFaLevelAfter(@RequestBody FaLevel faLevel) {
-        Assert.notNull(faLevel);
+    public FaLevel addFaLevelAfter(@RequestParam("nodeId") Integer nodeId) {
+        Assert.notNull(nodeId);
 
+        FaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
         FaChange change = createChange();
         return createAfterInLevel(change, faLevel);
     }
@@ -366,9 +359,10 @@ public class ArrangementManager {
     // TODO: dopsat testy
     @Transactional
     @RequestMapping(value = "/addFaLevelChild", method = RequestMethod.PUT)
-    public FaLevel addFaLevelChild(@RequestBody FaLevel faLevel) {
-        Assert.notNull(faLevel);
+    public FaLevel addFaLevelChild(@RequestParam("nodeId") Integer nodeId) {
+        Assert.notNull(nodeId);
 
+        FaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
         FaChange change = createChange();
         return createLastInLevel(change, faLevel);
     }
@@ -376,11 +370,11 @@ public class ArrangementManager {
     // TODO: dopsat testy
     @Transactional
     @RequestMapping(value = "/moveFaLevelUnder", method = RequestMethod.PUT)
-    public FaLevel moveFaLevelUnder(Integer faLevelNodeId, Integer parentNodeId) {
-        Assert.notNull(faLevelNodeId);
+    public FaLevel moveFaLevelUnder(@RequestParam("nodeId") Integer nodeId, @RequestParam("parentNodeId") Integer parentNodeId) {
+        Assert.notNull(nodeId);
         Assert.notNull(parentNodeId);
 
-        FaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(faLevelNodeId);
+        FaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
         FaLevel parent = levelRepository.findByNodeIdAndDeleteChangeIsNull(parentNodeId);
         Assert.state(faLevel != parent, "Nelze vložit sama do sebe");
 
@@ -391,17 +385,17 @@ public class ArrangementManager {
         shiftNodesUp(nodesToShiftUp(faLevel), change);
         FaLevel newLevel = createNewLevelVersion(faLevel, change);
 
-        return addLastInLevel(newLevel, parent);
+        return addLastInLevel(newLevel, parent.getNodeId());
     }
 
     // TODO: dopsat testy
     @Transactional
     @RequestMapping(value = "/moveFaLevelAfter", method = RequestMethod.PUT)
-    public FaLevel moveFaLevelAfter(Integer faLevelNodeId, Integer predecessorNodeId) {
-        Assert.notNull(faLevelNodeId);
+    public FaLevel moveFaLevelAfter(@RequestParam("nodeId") Integer nodeId, @RequestParam("predecessorNodeId") Integer predecessorNodeId) {
+        Assert.notNull(nodeId);
         Assert.notNull(predecessorNodeId);
 
-        FaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(faLevelNodeId);
+        FaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
         FaLevel predecessor = levelRepository.findByNodeIdAndDeleteChangeIsNull(predecessorNodeId);
         Assert.state(faLevel != predecessor, "Nelze vložit sama za sebe");
 
@@ -431,24 +425,24 @@ public class ArrangementManager {
         Assert.notNull(targetNode);
 
         FaLevel node = targetNode;
-        while (node.getParentNode() != null) {
-            if (movedNode.equals(node.getParentNode())) {
+        while (node.getParentNodeId() != null) {
+            if (movedNode.getNodeId().equals(node.getParentNodeId())) {
                 throw new IllegalStateException("Přesouvaný uzel je rodičem cílového uzlu. Přesun nelze provést.");
             }
-            node = node.getParentNode();
+            node = levelRepository.findByNodeIdAndDeleteChangeIsNull(node.getParentNodeId());
         }
     }
 
-    private FaLevel addLastInLevel(FaLevel level, FaLevel parent) {
+    private FaLevel addLastInLevel(FaLevel level, Integer parentNodeId) {
         Assert.notNull(level);
-        Assert.notNull(parent);
+        Assert.notNull(parentNodeId);
 
-        Integer maxPosition = levelRepository.findMaxPositionUnderParent(parent);
+        Integer maxPosition = levelRepository.findMaxPositionUnderParent(parentNodeId);
         if (maxPosition == null) {
             maxPosition = 0;
         }
         level.setPosition(maxPosition + 1);
-        level.setParentNode(parent);
+        level.setParentNodeId(parentNodeId);
 
         return levelRepository.save(level);
     }
@@ -477,14 +471,14 @@ public class ArrangementManager {
     private List<FaLevel> nodesToShiftDown(FaLevel movedLevel) {
         Assert.notNull(movedLevel);
 
-        return levelRepository.findByParentNodeAndPositionGreaterThanOrderByPositionAsc(movedLevel.getParentNode(),
+        return levelRepository.findByParentNodeAndPositionGreaterThanOrderByPositionAsc(movedLevel.getParentNodeId(),
                 movedLevel.getPosition());
     }
 
     private List<FaLevel> nodesToShiftUp(FaLevel movedLevel) {
         Assert.notNull(movedLevel);
 
-        return levelRepository.findByParentNodeAndPositionGreaterThanOrderByPositionAsc(movedLevel.getParentNode(),
+        return levelRepository.findByParentNodeAndPositionGreaterThanOrderByPositionAsc(movedLevel.getParentNodeId(),
                 movedLevel.getPosition());
     }
 
@@ -492,7 +486,7 @@ public class ArrangementManager {
         Assert.notNull(level);
         Assert.notNull(predecessor);
 
-        level.setParentNode(predecessor.getParentNode());
+        level.setParentNodeId(predecessor.getParentNodeId());
         level.setPosition(predecessor.getPosition() + 1);
         return levelRepository.save(level);
     }
@@ -500,9 +494,10 @@ public class ArrangementManager {
     // TODO: dopsat testy
     @Transactional
     @RequestMapping(value = "/deleteFaLevel", method = RequestMethod.DELETE)
-    public FaLevel deleteFaLevel(@RequestBody FaLevel level) {
-        Assert.notNull(level);
+    public FaLevel deleteLevel(@RequestParam("nodeId") Integer nodeId) {
+        Assert.notNull(nodeId);
 
+        FaLevel level = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
         FaChange change = createChange();
         level.setDeleteChange(change);
         shiftNodesUp(nodesToShiftUp(level), change);
@@ -512,19 +507,17 @@ public class ArrangementManager {
 
     // TODO: přepsat, dopsat testy
     @RequestMapping(value = "/getOneFaLevelByNodeIdAndDeleteChangeIsNull/{nodeId}", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public FaLevel getOneFaLevelByNodeIdAndDeleteChangeIsNull(@RequestParam("nodeId")Integer nodeId) {
+    public FaLevel findLevelByNodeId(@RequestParam("nodeId")Integer nodeId) {
         Assert.notNull(nodeId);
-        return levelRepository.findTopByNodeIdAndDeleteChangeIsNull(nodeId);
+        return levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
     }
 
     @RequestMapping(value = "/getOneFaVersionByFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public FaVersion getOneFaVersionByFindingAid(@RequestParam(value = "findingAidId") Integer findingAidId) {
+    public FaVersion getOpenVersionByFindingAidId(@RequestParam(value = "findingAidId") Integer findingAidId) {
         Assert.notNull(findingAidId);
-        List<FaVersion> resultList = versionRepository.findByFindingAidIdAndLockChangeIsNull(findingAidId);
-        if (resultList.size() != 1) {
-            throw new RuntimeException("Nenalezen jeden záznam. Nalezeno " + resultList.size());
-        }
-        return resultList.get(0);
+        FaVersion faVersion = versionRepository.findByFindingAidIdAndLockChangeIsNull(findingAidId);
+
+        return faVersion;
     }
 
     @RequestMapping(value = "/getFaVersionById", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -534,53 +527,19 @@ public class ArrangementManager {
     }
 
     @RequestMapping(value = "/findFaLevelByParentNodeOrderByPositionAsc", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<FaLevel> findFaLevelByParentNodeOrderByPositionAsc(@RequestParam(value = "faLevelId") Integer faLevelId,
-            @RequestParam(value = "faChangeId", required = false)  Integer faChangeId) {
-        Assert.notNull(faLevelId);
+    public List<FaLevel> findSubLevels(@RequestParam(value = "nodeId") Integer nodeId,
+            @RequestParam(value = "versionId", required = false)  Integer versionId) {
+        Assert.notNull(nodeId);
 
-        if (faChangeId == null) {
-            return levelRepository.findByParentNodeOrderByPositionAsc(faLevelId);
+        FaChange change = null;
+        if (versionId != null) {
+            FaVersion version = versionRepository.getOne(versionId);
+            change = version.getLockChange();
         }
-        FaChange faChange = faChangeRepository.getOne(faChangeId);
-        return levelRepository.findByParentNodeOrderByPositionAsc(faLevelId, faChange);
-    }
-
-    @RequestMapping(value = "/findFaLevelChildByParentNodeIdOrderByPositionAsc", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<FaLevel> findFaLevelChildByParentNodeIdOrderByPositionAsc(@RequestParam(value = "parentNodeId") Integer parentNodeId,
-            @RequestParam(value = "faChangeId", required = false)  Integer faChangeId) {
-        Assert.notNull(parentNodeId);
-
-        if (faChangeId == null) {
-            return levelRepository.findByParentNodeIdOrderByPositionAsc(parentNodeId);
+        if (change == null) {
+            //            return levelRepository.findByParentNodeOrderByPositionAsc(faLevelId);
+            return levelRepository.findByParentNodeIdAndDeleteChangeIsNullOrderByPositionAsc(nodeId);
         }
-        FaChange faChange = faChangeRepository.getOne(faChangeId);
-        return levelRepository.findByParentNodeIdOrderByPositionAsc(parentNodeId, faChange);
-    }
-
-    // TODO: přepsat, dopsat testy
-    @RequestMapping(value = "/getOneFaLevelByNodeIdOrderByPositionAsc/{nodeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<FaLevel> getOneFaLevelByNodeIdOrderByPositionAsc(@RequestParam("nodeId")Integer nodeId) {
-        Assert.notNull(nodeId);
-        return levelRepository.findByNodeIdAndDeleteChangeIsNullOrderByPositionAsc(nodeId);
-    }
-
-    // TODO: přepsat, dopsat testy
-    @RequestMapping(value = "/findFaLevelByParentNodeInOrderByPositionAsc", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<FaLevel> findFaLevelByParentNodeInOrderByPositionAsc(@RequestBody List<FaLevel> faLevelList) {
-        Assert.notNull(faLevelList);
-        return levelRepository.findByParentNodeInDeleteChangeIsNullOrderByPositionAsc(faLevelList);
-    }
-
-    // TODO: přepsat, dopsat testy
-    @RequestMapping(value = "/findFaLevelsByNodeIdAndDeleteChangeIsNullOrderByPositionAsc{nodeId}", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<FaLevel> findFaLevelsByNodeIdAndDeleteChangeIsNullOrderByPositionAsc(@RequestParam("nodeId")Integer nodeId) {
-        Assert.notNull(nodeId);
-        return levelRepository.findByNodeIdAndDeleteChangeIsNullOrderByPositionAsc(nodeId);
-    }
-
-    @RequestMapping(value = "/findFaLevelsByNodeIdOrderByPositionAsc{nodeId}", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<FaLevel> findFaLevelsByNodeIdOrderByPositionAsc(@RequestParam("nodeId")Integer nodeId) {
-        Assert.notNull(nodeId);
-        return levelRepository.findByNodeIdOrderByPositionAsc(nodeId);
+        return levelRepository.findByParentNodeOrderByPositionAsc(nodeId, change);
     }
 }

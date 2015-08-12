@@ -33,12 +33,8 @@ public class FaLevel extends EntityBase {
     @Column(nullable = false)
     private Integer nodeId;
 
-    //Zde je chyba hibernate, při použití "referencedColumnName" ignoruje LAZY a vždy načítá celý strom až ke kořenu.
-    //Vzhledem k malé hloubce stromu neřešíme.
-    //http://stackoverflow.com/questions/14732098/hibernate-fechtype-lazy-not-working-for-composite-manytoone-relationships
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parentNodeId", nullable = true, referencedColumnName = "nodeId")
-    private FaLevel parentNode;
+    @Column(name = "parentNodeId", nullable = true)
+    private Integer parentNodeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = FaChange.class)
     @JoinColumn(name = "createChangeId", nullable = false)
@@ -67,12 +63,12 @@ public class FaLevel extends EntityBase {
         this.nodeId = nodeId;
     }
 
-    public FaLevel getParentNode() {
-        return parentNode;
+    public Integer getParentNodeId() {
+        return parentNodeId;
     }
 
-    public void setParentNode(final FaLevel parentNode) {
-        this.parentNode = parentNode;
+    public void setParentNodeId(final Integer parentNodeId) {
+        this.parentNodeId = parentNodeId;
     }
 
     public FaChange getCreateChange() {

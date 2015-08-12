@@ -20,41 +20,18 @@ public interface LevelRepository extends JpaRepository<FaLevel, Integer> {
     @Query(value = "SELECT max(l.nodeId) FROM arr_fa_level l")
     Integer findMaxNodeId();
 
-    @Query("SELECT c FROM arr_fa_level c WHERE c.parentNode = ?1 and c.deleteChange is null order by c.position asc")
-    List<FaLevel> findByParentNodeOrderByPositionAsc(FaLevel level);
+    List<FaLevel> findByParentNodeIdAndDeleteChangeIsNullOrderByPositionAsc(Integer parentNodeId);
 
-    @Query("SELECT c FROM arr_fa_level c join c.parentNode p WHERE p.faLevelId = ?1 and c.deleteChange is null order by c.position asc")
-    List<FaLevel> findByParentNodeOrderByPositionAsc(Integer levelId);
-
-    @Query("SELECT c FROM arr_fa_level c join c.parentNode p WHERE p.nodeId = ?1 and p.deleteChange is null and c.deleteChange is null order by c.position asc")
-    List<FaLevel> findByParentNodeIdOrderByPositionAsc(Integer parentNodeId);
-
-    @Query("SELECT c FROM arr_fa_level c join c.parentNode p WHERE p.faLevelId = ?1 "
+    @Query("SELECT c FROM arr_fa_level c WHERE c.parentNodeId = ?1 "
             + "and c.createChange < ?2 and (c.deleteChange is null or c.deleteChange > ?2)"
             + " order by c.position asc")
-    List<FaLevel> findByParentNodeOrderByPositionAsc(Integer levelId, FaChange change);
+    List<FaLevel> findByParentNodeOrderByPositionAsc(Integer parentNodeId, FaChange change);
 
-    @Query("SELECT c FROM arr_fa_level c join c.parentNode p WHERE p.nodeId = ?1 "
-            + "and p.createChange < ?2 and (p.deleteChange is null or p.deleteChange > ?2)"
-            + "and c.createChange < ?2 and (c.deleteChange is null or c.deleteChange > ?2)"
-            + " order by c.position asc")
-    List<FaLevel> findByParentNodeIdOrderByPositionAsc(Integer parentNodeId, FaChange change); 
+    @Query("SELECT max(l.position) FROM arr_fa_level l WHERE l.parentNodeId = ?1 and l.deleteChange is null")
+    Integer findMaxPositionUnderParent(Integer parentNodeId);
 
-    List<FaLevel> findByNodeIdAndDeleteChangeIsNullOrderByPositionAsc(Integer levelId);
-
-    List<FaLevel> findByNodeIdOrderByPositionAsc(Integer levelId);
-
-    @Query("SELECT c FROM arr_fa_level c WHERE c.parentNode in ?1  and c.deleteChange is null order by c.position asc")
-    List<FaLevel> findByParentNodeInDeleteChangeIsNullOrderByPositionAsc(List<FaLevel> faLevels);
-
-
-    FaLevel findTopByNodeIdAndDeleteChangeIsNull(Integer nodeId);
-
-    @Query("SELECT max(l.position) FROM arr_fa_level l WHERE l.parentNode = ?1 and l.deleteChange is null")
-    Integer findMaxPositionUnderParent(FaLevel parent);
-
-    @Query("SELECT l FROM arr_fa_level l WHERE l.parentNode = ?1  and l.position > ?2 and l.deleteChange is null order by l.position asc")
-    List<FaLevel> findByParentNodeAndPositionGreaterThanOrderByPositionAsc(FaLevel parentNode, Integer position);
+    @Query("SELECT l FROM arr_fa_level l WHERE l.parentNodeId = ?1  and l.position > ?2 and l.deleteChange is null order by l.position asc")
+    List<FaLevel> findByParentNodeAndPositionGreaterThanOrderByPositionAsc(Integer getParentNodeId, Integer position);
 
     FaLevel findByNodeIdAndDeleteChangeIsNull(Integer levelId);
 }

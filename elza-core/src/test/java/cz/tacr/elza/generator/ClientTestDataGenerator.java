@@ -103,7 +103,7 @@ public class ClientTestDataGenerator {
             nodesCreated = 0;
             FindingAid findingAid = createFindingAid(TEST_NAME + i, ruleSet, arrangementType);
             nodeIdGenerator++;
-            FaVersion version = versionRepository.findByFindingAidAndLockChangeIsNull(findingAid);
+            FaVersion version = versionRepository.findByFindingAidIdAndLockChangeIsNull(findingAid.getFindingAidId());
             try {
                 createTree(version.getRootNode(), version.getCreateChange());
             } catch (IllegalStateException ex) {}
@@ -179,7 +179,7 @@ public class ClientTestDataGenerator {
         FaLevel level = new FaLevel();
         level.setCreateChange(change);
         level.setNodeId(++nodeIdGenerator);
-        level.setParentNode(parent);
+        level.setParentNodeId(parent.getNodeId());
         level.setPosition(position + 1);
         nodesCreated++;
 

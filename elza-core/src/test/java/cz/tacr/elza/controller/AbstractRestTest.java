@@ -146,7 +146,7 @@ public abstract class AbstractRestTest {
     protected FaLevel createLevel(final Integer position, final FaLevel parent, final FaChange change) {
         FaLevel level = new FaLevel();
         level.setPosition(position);
-        level.setParentNode(parent);
+        level.setParentNodeId(parent.getNodeId());
         level.setCreateChange(change);
         Integer maxNodeId = levelRepository.findMaxNodeId();
         if (maxNodeId == null) {
