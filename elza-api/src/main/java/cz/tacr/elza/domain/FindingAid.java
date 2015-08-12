@@ -15,7 +15,7 @@ import cz.req.ax.IdObject;
  * @since 22.7.15
  */
 @Entity(name = "arr_finding_aid")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class FindingAid extends EntityBase implements IdObject<Integer> {
 
     @Id

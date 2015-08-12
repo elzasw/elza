@@ -117,9 +117,11 @@ public class FindingAidDetailView extends ElzaView {
         List<FaLevel> faLevelsAll = new LinkedList<FaLevel>();
 
         Integer rootFaLevelId = selectVersions.getRootNode().getFaLevelId();
-        Integer lockChangeId = null;
+        final Integer lockChangeId;
         if (selectVersions.getLockChange() != null) {
             lockChangeId = selectVersions.getLockChange().getChangeId();
+        } else {
+            lockChangeId = null;
         }
         List<FaLevel> faLevels = arrangementManager.findFaLevelByParentNodeOrderByPositionAsc(rootFaLevelId,
                 lockChangeId);
@@ -146,8 +148,8 @@ public class FindingAidDetailView extends ElzaView {
 
                 Integer itemIdLast = itemId;
 
-                List<FaLevel> faLevels = arrangementManager.findFaLevelsByNodeIdAndDeleteChangeIsNullOrderByPositionAsc(itemId);
-                for (FaLevel faLevel : getChildByFaLevel(faLevels)) {
+                List<FaLevel> faLevels = arrangementManager.findFaLevelChildByParentNodeIdOrderByPositionAsc(itemId, lockChangeId);
+                for (FaLevel faLevel : faLevels) {
                     Item item = table.addItemAfter(itemIdLast, faLevel.getNodeId());
                     itemIdLast = faLevel.getNodeId();
                     initNewItemInContainer(item, faLevel, container);
