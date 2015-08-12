@@ -164,7 +164,7 @@ public class FindingAidDetailView extends ElzaView {
                                         table.setCollapsed(itemId, false);
                                     }
 
-                                    FaLevel newFaLevel = arrangementManager.addFaLevelAfter((Integer) itemId);
+                                    FaLevel newFaLevel = arrangementManager.addLevelAfter((Integer) itemId);
 
 
                                     Item item = table.addItemAfter(itemId, newFaLevel.getNodeId());
@@ -178,7 +178,7 @@ public class FindingAidDetailView extends ElzaView {
                                         table.setCollapsed(itemId, false);
                                     }
 
-                                    FaLevel newFaLevel = arrangementManager.addFaLevelChild((Integer) itemId);
+                                    FaLevel newFaLevel = arrangementManager.addLevelChild((Integer) itemId);
 
                                     Object itemIdLast = itemId;
                                     Collection<?> children = container.getChildren(itemId);
@@ -225,7 +225,7 @@ public class FindingAidDetailView extends ElzaView {
                                 }),
                                 new AxAction().caption("Vložit za").icon(FontAwesome.PASTE).run(() -> {
                                     if (levelNodeIdVyjmout != null) {
-                                        arrangementManager.moveFaLevelAfter(levelNodeIdVyjmout, (Integer) itemId);
+                                        arrangementManager.moveLevelAfter(levelNodeIdVyjmout, (Integer) itemId);
 
                                         table.removeItem(levelNodeIdVyjmout);
                                         Item item = table.addItemAfter(itemId, levelNodeIdVyjmout);
@@ -239,7 +239,7 @@ public class FindingAidDetailView extends ElzaView {
                                 }),
                                 new AxAction().caption("Vložit pod").icon(FontAwesome.PASTE).run(() -> {
                                     if (levelNodeIdVyjmout != null) {
-                                        arrangementManager.moveFaLevelUnder(levelNodeIdVyjmout, (Integer) itemId);
+                                        arrangementManager.moveLevelUnder(levelNodeIdVyjmout, (Integer) itemId);
 
                                         table.removeItem(levelNodeIdVyjmout);
                                         Collection<?> children = table.getChildren(itemId);
@@ -306,7 +306,7 @@ public class FindingAidDetailView extends ElzaView {
             actions(
                     new AxAction().caption("Přidat záznam").icon(FontAwesome.PLUS).run(() -> {
 
-                        FaLevel newFaLevel = arrangementManager.addFaLevel(findingAidId);
+                        FaLevel newFaLevel = arrangementManager.addLevel(findingAidId);
 
                         Item item = table.addItem(newFaLevel.getNodeId());
 

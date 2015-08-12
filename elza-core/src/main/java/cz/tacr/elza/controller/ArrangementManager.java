@@ -326,12 +326,12 @@ public class ArrangementManager {
     /**
      * Vytvoří nový uzel v první úrovni archivní položky
      *
-     * @param findingAid    archivní pomůcka
-     * @return              nový záznam z archivný pomůcky
+     * @param findingAidId    id archivní pomůcky
+     * @return                nový záznam z archivný pomůcky
      */
     @Transactional
-    @RequestMapping(value = "/addFaLevel", method = RequestMethod.PUT)
-    public FaLevel addFaLevel(@RequestParam("findingAidId") Integer findingAidId) {
+    @RequestMapping(value = "/addLevel", method = RequestMethod.PUT, params = {"findingAidId"})
+    public FaLevel addLevel(@RequestParam("findingAidId") Integer findingAidId) {
         Assert.notNull(findingAidId);
 
         FaVersion lastVersion = versionRepository.findByFindingAidIdAndLockChangeIsNull(findingAidId);
@@ -342,13 +342,12 @@ public class ArrangementManager {
     /**
      * Vytvoří nový uzel za předaným uzlem.
      *
-     * @param faLevel       uzel za kterým se má vytvořit nový
+     * @param nodeId        id uzlu za kterým se má vytvořit nový
      * @return              nový uzel
      */
-    // TODO: dopsat testy
     @Transactional
-    @RequestMapping(value = "/addFaLevelAfter", method = RequestMethod.PUT)
-    public FaLevel addFaLevelAfter(@RequestParam("nodeId") Integer nodeId) {
+    @RequestMapping(value = "/addLevelAfter", method = RequestMethod.PUT, params = {"nodeId"})
+    public FaLevel addLevelAfter(@RequestParam("nodeId") Integer nodeId) {
         Assert.notNull(nodeId);
 
         FaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
@@ -356,10 +355,15 @@ public class ArrangementManager {
         return createAfterInLevel(change, faLevel);
     }
 
-    // TODO: dopsat testy
+    /**
+     * Vytvoří nový uzel na poslední pozici pod předaným uzlem.
+     *
+     * @param nodeId        id uzlu pod kterým se má vytvořit nový
+     * @return              nový uzel
+     */
     @Transactional
-    @RequestMapping(value = "/addFaLevelChild", method = RequestMethod.PUT)
-    public FaLevel addFaLevelChild(@RequestParam("nodeId") Integer nodeId) {
+    @RequestMapping(value = "/addLevelChild", method = RequestMethod.PUT, params = {"nodeId"})
+    public FaLevel addLevelChild(@RequestParam("nodeId") Integer nodeId) {
         Assert.notNull(nodeId);
 
         FaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
@@ -367,10 +371,16 @@ public class ArrangementManager {
         return createLastInLevel(change, faLevel);
     }
 
-    // TODO: dopsat testy
+    /**
+     * Přesune uzel na poslední pozici pod předaným uzlem.
+     *
+     * @param nodeId       id uzlu který se přesouvá
+     * @param parentNodeId id uzlu pod který se má uzel přesunout
+     * @return             přesunutý uzel
+     */
     @Transactional
-    @RequestMapping(value = "/moveFaLevelUnder", method = RequestMethod.PUT)
-    public FaLevel moveFaLevelUnder(@RequestParam("nodeId") Integer nodeId, @RequestParam("parentNodeId") Integer parentNodeId) {
+    @RequestMapping(value = "/moveLevelUnder", method = RequestMethod.PUT, params = {"nodeId", "parentNodeId"})
+    public FaLevel moveLevelUnder(@RequestParam("nodeId") Integer nodeId, @RequestParam("parentNodeId") Integer parentNodeId) {
         Assert.notNull(nodeId);
         Assert.notNull(parentNodeId);
 
@@ -388,10 +398,16 @@ public class ArrangementManager {
         return addLastInLevel(newLevel, parent.getNodeId());
     }
 
-    // TODO: dopsat testy
+    /**
+     * Přesune uzel za předaný uzel.
+     *
+     * @param nodeId            id uzlu který se přesouvá
+     * @param predecessorNodeId id uzlu za který se má uzel přesunout
+     * @return                   přesunutý uzel
+     */
     @Transactional
-    @RequestMapping(value = "/moveFaLevelAfter", method = RequestMethod.PUT)
-    public FaLevel moveFaLevelAfter(@RequestParam("nodeId") Integer nodeId, @RequestParam("predecessorNodeId") Integer predecessorNodeId) {
+    @RequestMapping(value = "/moveLevelAfter", method = RequestMethod.PUT, params = {"nodeId", "predecessorNodeId"})
+    public FaLevel moveLevelAfter(@RequestParam("nodeId") Integer nodeId, @RequestParam("predecessorNodeId") Integer predecessorNodeId) {
         Assert.notNull(nodeId);
         Assert.notNull(predecessorNodeId);
 
@@ -491,9 +507,14 @@ public class ArrangementManager {
         return levelRepository.save(level);
     }
 
-    // TODO: dopsat testy
+    /**
+     * Smaže uzel.
+     *
+     * @param nodeId            id uzlu který maže
+     * @return                  smazaný uzel
+     */
     @Transactional
-    @RequestMapping(value = "/deleteFaLevel", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/deleteLevel", method = RequestMethod.PUT)
     public FaLevel deleteLevel(@RequestParam("nodeId") Integer nodeId) {
         Assert.notNull(nodeId);
 
@@ -505,14 +526,25 @@ public class ArrangementManager {
         return levelRepository.save(level);
     }
 
-    // TODO: přepsat, dopsat testy
-    @RequestMapping(value = "/getOneFaLevelByNodeIdAndDeleteChangeIsNull/{nodeId}", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    /**
+     * Načte uzel podle identifikátoru.
+     *
+     * @param nodeId            id uzlu
+     * @return                  uzel s daným identifikátorem
+     */
+    @RequestMapping(value = "/findLevelByNodeId", method = RequestMethod.GET)
     public FaLevel findLevelByNodeId(@RequestParam("nodeId")Integer nodeId) {
         Assert.notNull(nodeId);
         return levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
     }
 
-    @RequestMapping(value = "/getOneFaVersionByFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    /**
+     * Načte neuzavřenou verzi archivní pomůcky.
+     *
+     * @param findingAidId      id archivní pomůcky
+     * @return                  verze
+     */
+    @RequestMapping(value = "/getOpenVersionByFindingAidId", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public FaVersion getOpenVersionByFindingAidId(@RequestParam(value = "findingAidId") Integer findingAidId) {
         Assert.notNull(findingAidId);
         FaVersion faVersion = versionRepository.findByFindingAidIdAndLockChangeIsNull(findingAidId);
@@ -520,24 +552,37 @@ public class ArrangementManager {
         return faVersion;
     }
 
-    @RequestMapping(value = "/getFaVersionById", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    /**
+     * Načte verzi podle identifikátoru.
+     *
+     * @param versionId      id verze
+     * @return               verze s daným identifikátorem
+     */
+    @RequestMapping(value = "/getVersion", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public FaVersion getFaVersionById(@RequestParam("versionId") final Integer versionId) {
         Assert.notNull(versionId);
-        return versionRepository.getOne(versionId);
+        return versionRepository.findOne(versionId);
     }
 
-    @RequestMapping(value = "/findFaLevelByParentNodeOrderByPositionAsc", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    /**
+     * Načte potomky daného uzlu v konkrétní verzi. Pokud není identifikátor verze předaný načítají se potomci
+     * z neuzavřené verze.
+     *
+     * @param nodeId      id rodiče
+     * @param versionId   id verze, může být null
+     * @return            potomci předaného uzlu
+     */
+    @RequestMapping(value = "/findSubLevels", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<FaLevel> findSubLevels(@RequestParam(value = "nodeId") Integer nodeId,
             @RequestParam(value = "versionId", required = false)  Integer versionId) {
         Assert.notNull(nodeId);
 
         FaChange change = null;
         if (versionId != null) {
-            FaVersion version = versionRepository.getOne(versionId);
+            FaVersion version = versionRepository.findOne(versionId);
             change = version.getLockChange();
         }
         if (change == null) {
-            //            return levelRepository.findByParentNodeOrderByPositionAsc(faLevelId);
             return levelRepository.findByParentNodeIdAndDeleteChangeIsNullOrderByPositionAsc(nodeId);
         }
         return levelRepository.findByParentNodeOrderByPositionAsc(nodeId, change);
