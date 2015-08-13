@@ -17,7 +17,7 @@ public interface FaVersion<FA extends FindingAid, FC extends FaChange,FL extends
 
     void setLockChange(FC lockChange);
 
-    FaLevel getRootNode();
+    FL getRootNode();
 
     void setRootNode(FL rootNode);
 
