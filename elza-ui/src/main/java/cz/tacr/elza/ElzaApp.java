@@ -2,6 +2,8 @@ package cz.tacr.elza;
 
 import com.vaadin.server.AxVaadinServlet;
 import cz.req.ax.AxAction;
+import cz.req.ax.util.MavenUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -34,17 +36,26 @@ public class ElzaApp extends WebMvcAutoConfiguration {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public static void main(String[] args) {
+        String version = MavenUtils.getVersion("cz.tacr.elza", "elza-core");
+        args = (String[]) ArrayUtils.add(args, "--application.version=" + version);
         SpringApplication.run(ElzaApp.class, args);
     }
 
     @Bean
     public ServletRegistrationBean vaadinServlet() {
         AxVaadinServlet servlet = new AxVaadinServlet();
+        try {
+            servlet.getCacheItem("/VAADIN/themes/elza/styles.css");
+        } catch (Exception e) {
+            logger.error("Error SASS precompile: " + e.getMessage());
+        }
         ServletRegistrationBean registration = new ServletRegistrationBean(servlet, "/ui/*", "/VAADIN/*");
         registration.addInitParameter("beanName", "elzaUI");
         registration.addInitParameter("widgetset", "com.vaadin.DefaultWidgetSet");
         registration.addInitParameter("systemMessagesBeanName", "DEFAULT");
         registration.addInitParameter("heartbeatInterval", "28");
+//        registration.setAsyncSupported(true);
+        registration.setLoadOnStartup(1);
         return registration;
     }
 

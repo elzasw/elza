@@ -4,7 +4,8 @@ import com.vaadin.server.ThemeResource;
 import com.vaadin.ui.CssLayout;
 import cz.req.ax.AxView;
 import cz.tacr.elza.ui.view.FindingAidListView;
-import cz.tacr.elza.ui.view.FindingAidView;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 
 import javax.annotation.PostConstruct;
 
@@ -14,12 +15,17 @@ import javax.annotation.PostConstruct;
  */
 public abstract class ElzaView extends AxView {
 
+    @Autowired
+    Environment environment;
+
     public ElzaView() {
         setWrap(true);
     }
 
     @PostConstruct
     public void init() {
+        String version = environment.getProperty("application.version", "Unknown");
+        pageHeader().addComponent(newLabel("Verze: " + version, "application-version"));
         actions(action(FindingAidListView.class).caption("ELZA").icon(new ThemeResource("img/elza-logo.png")));
     }
 
