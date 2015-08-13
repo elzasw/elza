@@ -3,7 +3,6 @@ package cz.tacr.elza.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,17 +18,13 @@ import cz.tacr.elza.repository.RuleSetRepository;
  */
 @RestController
 @RequestMapping("/api/ruleSetManager")
-public class RuleSetManager {
+public class RuleSetManager implements cz.tacr.elza.api.controller.RuleSetManager {
 
     @Autowired
     private RuleSetRepository ruleSetRepository;
 
-    /**
-     * Vrátí všechny sady pravidel.
-     *
-     * @return všechny sady pravidel
-     */
-    @RequestMapping(value = "/getRuleSets", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Override
+    @RequestMapping(value = "/getRuleSets", method = RequestMethod.GET)
     public List<RuleSet> getRuleSets() {
         return ruleSetRepository.findAll();
     }
