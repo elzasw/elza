@@ -29,28 +29,19 @@
 
             <column name="create_change_id" type="int"/>
             <column name="delete_change_id" type="int"/>
-            <column name="node_id" type="int">
-                <constraints unique="true" uniqueConstraintName="u_arr_fa_level_node_id" />
-            </column>
+            <column name="node_id" type="int"/>
             <column name="parent_node_id" type="int"/>
             <column name="position" type="int"/>
         </createTable>
 
         <addForeignKeyConstraint constraintName="fk_arr_fa_level_1"
                                  baseTableName="arr_fa_level"
-                                 baseColumnNames="parent_node_id"
-                                 referencedTableName="arr_fa_level"
-                                 referencedColumnNames="node_id"
-                                 onDelete="NO ACTION"/>
-
-        <addForeignKeyConstraint constraintName="fk_arr_fa_level_2"
-                                 baseTableName="arr_fa_level"
                                  baseColumnNames="create_change_id"
                                  referencedTableName="arr_fa_change"
                                  referencedColumnNames="change_id"
                                  onDelete="NO ACTION"/>
 
-        <addForeignKeyConstraint constraintName="fk_arr_fa_level_3"
+        <addForeignKeyConstraint constraintName="fk_arr_fa_level_2"
                                  baseTableName="arr_fa_level"
                                  baseColumnNames="delete_change_id"
                                  referencedTableName="arr_fa_change"
@@ -106,19 +97,12 @@
 
         <addForeignKeyConstraint constraintName="fk_arr_fa_version_2"
                                  baseTableName="arr_fa_version"
-                                 baseColumnNames="root_node_id"
-                                 referencedTableName="arr_fa_level"
-                                 referencedColumnNames="node_id"
-                                 onDelete="NO ACTION"/>
-
-        <addForeignKeyConstraint constraintName="fk_arr_fa_version_3"
-                                 baseTableName="arr_fa_version"
                                  baseColumnNames="rule_set_id"
                                  referencedTableName="rul_rule_set"
                                  referencedColumnNames="rule_set_id"
                                  onDelete="NO ACTION"/>
 
-        <addForeignKeyConstraint constraintName="fk_arr_fa_version_4"
+        <addForeignKeyConstraint constraintName="fk_arr_fa_version_3"
                                  baseTableName="arr_fa_version"
                                  baseColumnNames="create_change_id"
                                  referencedTableName="arr_fa_change"
@@ -126,14 +110,14 @@
                                  onDelete="NO ACTION"/>
 
 
-        <addForeignKeyConstraint constraintName="fk_arr_fa_version_5"
+        <addForeignKeyConstraint constraintName="fk_arr_fa_version_4"
                                  baseTableName="arr_fa_version"
                                  baseColumnNames="arrangement_type_id"
                                  referencedTableName="rul_arrangement_type"
                                  referencedColumnNames="arrangement_type_id"
                                  onDelete="NO ACTION"/>
 
-        <addForeignKeyConstraint constraintName="fk_arr_fa_version_6"
+        <addForeignKeyConstraint constraintName="fk_arr_fa_version_5"
                                  baseTableName="arr_fa_version"
                                  baseColumnNames="finding_aid_id"
                                  referencedTableName="arr_finding_aid"

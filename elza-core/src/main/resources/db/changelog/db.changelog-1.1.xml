@@ -8,7 +8,6 @@
 
         <!--Verze 1.1 - změna unique omezeni na tabulce arr_fa_level -->
         <changeSet id="2" author="vanek" failOnError="false" runOnChange="true">
-                <dropUniqueConstraint tableName="arr_fa_level" constraintName="u_arr_fa_level_node_id"/>
                 <addUniqueConstraint tableName="arr_fa_level" columnNames="position,parent_node_id,delete_change_id" constraintName="u_arr_fa_level_ppd"/>
         </changeSet>
 

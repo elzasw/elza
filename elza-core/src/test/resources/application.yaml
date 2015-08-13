@@ -8,11 +8,6 @@ spring:
   jpa:
     # Logovani SQL dotazu
     show-sql: true
-    # Upgrade DB
-    hibernate.ddl-auto: update
-
-liquibase:
-    enabled: false
 
 vax:
   viewMain: FindingAidList

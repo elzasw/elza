@@ -6,9 +6,18 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-        <!--Verze 1.1 - změna unique omezeni na tabulce arr_fa_level -->
-        <changeSet id="3" author="vanek" failOnError="false" runOnChange="true">
-                <dropUniqueConstraint tableName="arr_fa_level" constraintName="fk_arr_fa_level_1"/>
+        <!--Verze 1.3 - přidání indexů na tabulku arr_fa_level -->
+        <changeSet id="3" author="vanek" failOnError="true" runOnChange="true">
+                <createIndex tableName="arr_fa_level" indexName="i_node_id_1">
+                    <column name="node_id" />
+                    <column name="delete_change_id" />
+                    <column name="create_change_id" />                    
+                </createIndex>
+                <createIndex tableName="arr_fa_level" indexName="i_parent_node_id_1">
+                    <column name="parent_node_id" />
+                    <column name="delete_change_id" />
+                    <column name="create_change_id" />
+                </createIndex>
         </changeSet>
 
 
