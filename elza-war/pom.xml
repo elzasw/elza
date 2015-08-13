@@ -34,6 +34,7 @@
         <resources>
             <resource>
                 <directory>../elza-core/src/main/resources</directory>
+                <filtering>true</filtering>
                 <includes>
                     <include>*.yaml</include>
                 </includes>

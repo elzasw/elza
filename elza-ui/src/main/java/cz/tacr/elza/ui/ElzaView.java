@@ -24,7 +24,7 @@ public abstract class ElzaView extends AxView {
 
     @PostConstruct
     public void init() {
-        String version = environment.getProperty("application.version", "Unknown");
+        String version = environment.getProperty("application.version", "Devel");
         pageHeader().addComponent(newLabel("Verze: " + version, "application-version"));
         actions(action(FindingAidListView.class).caption("ELZA").icon(new ThemeResource("img/elza-logo.png")));
     }
