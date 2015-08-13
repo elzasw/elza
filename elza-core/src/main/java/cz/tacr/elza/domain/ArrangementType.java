@@ -15,7 +15,7 @@ import cz.req.ax.IdObject;
  */
 @Entity(name = "rul_arrangement_type")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrangementType extends EntityBase implements IdObject<Integer> {
+public class ArrangementType implements IdObject<Integer>, cz.tacr.elza.api.ArrangementType {
 
     @Id
     @GeneratedValue
@@ -27,26 +27,32 @@ public class ArrangementType extends EntityBase implements IdObject<Integer> {
     @Column(length = 50, nullable = false)
     private String name;
 
+    @Override
     public Integer getArrangementTypeId() {
         return arrangementTypeId;
     }
 
+    @Override
     public void setArrangementTypeId(final Integer arrangementTypeId) {
         this.arrangementTypeId = arrangementTypeId;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(final String name) {
         this.name = name;
     }
 
+    @Override
     public String getCode() {
         return code;
     }
 
+    @Override
     public void setCode(String code) {
         this.code = code;
     }

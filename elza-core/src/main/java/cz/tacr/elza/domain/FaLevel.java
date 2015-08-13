@@ -1,5 +1,6 @@
 package cz.tacr.elza.domain;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 import javax.persistence.Column;
@@ -12,6 +13,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import cz.req.ax.IdObject;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -24,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity(name = "arr_fa_level")
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"position", "parentNodeId", "deleteChangeId"}))
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class FaLevel extends EntityBase {
+public class FaLevel implements IdObject<Integer>, cz.tacr.elza.api.FaLevel<FaChange> {
 
     @Id
     @GeneratedValue
@@ -47,52 +49,69 @@ public class FaLevel extends EntityBase {
     @Column(nullable = false)
     private Integer position;
 
+    @Override
     public Integer getFaLevelId() {
         return faLevelId;
     }
 
+    @Override
     public void setFaLevelId(final Integer faLevelId) {
         this.faLevelId = faLevelId;
     }
 
+    @Override
     public Integer getNodeId() {
         return nodeId;
     }
 
+    @Override
     public void setNodeId(final Integer nodeId) {
         this.nodeId = nodeId;
     }
 
+    @Override
     public Integer getParentNodeId() {
         return parentNodeId;
     }
 
+    @Override
     public void setParentNodeId(final Integer parentNodeId) {
         this.parentNodeId = parentNodeId;
     }
 
+    @Override
     public FaChange getCreateChange() {
         return createChange;
     }
 
-    public void setCreateChange(final FaChange createChange) {
+    @Override
+    public void setCreateChange(FaChange createChange) {
         this.createChange = createChange;
     }
 
+    @Override
     public FaChange getDeleteChange() {
         return deleteChange;
     }
 
+    @Override
     public void setDeleteChange(final FaChange deleteChange) {
         this.deleteChange = deleteChange;
     }
 
+    @Override
     public Integer getPosition() {
         return position;
     }
 
+    @Override
     public void setPosition(final Integer position) {
         this.position = position;
+    }
+
+    @Override
+    public Integer getId() {
+        return null;
     }
 
     @Override

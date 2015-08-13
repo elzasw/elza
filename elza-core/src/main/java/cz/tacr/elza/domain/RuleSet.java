@@ -9,13 +9,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.req.ax.IdObject;
 
+import java.io.Serializable;
+
 /**
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
 @Entity(name = "rul_rule_set")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class RuleSet extends EntityBase implements IdObject<Integer> {
+public class RuleSet implements IdObject<Integer>, cz.tacr.elza.api.RuleSet, Serializable {
 
     @Id
     @GeneratedValue
@@ -27,26 +29,32 @@ public class RuleSet extends EntityBase implements IdObject<Integer> {
     @Column(length = 50, nullable = false)
     private String name;
 
+    @Override
     public Integer getRuleSetId() {
         return ruleSetId;
     }
 
+    @Override
     public void setRuleSetId(final Integer ruleSetId) {
         this.ruleSetId = ruleSetId;
     }
 
+    @Override
     public String getCode() {
       return code;
     }
 
+    @Override
     public void setCode(String code) {
       this.code = code;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(final String name) {
         this.name = name;
     }
