@@ -26,6 +26,12 @@
   }
 }
 
+.detail-table .v-table-body{
+    overflow: auto;
+    overflow-x: auto !important;
+}
+
+
 .action-transparent {
   background: transparent;
   .v-menubar-menuitem {
