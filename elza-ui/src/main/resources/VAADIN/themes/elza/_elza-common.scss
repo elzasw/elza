@@ -1,6 +1,29 @@
+.window-root {
+  > .page-header > .window-caption {
+    //color: $color-app-alt;
+    width: 100%;
+    margin: 0;
+    padding: 10px 20px;
+    color:white;
+    background-color: $color-app;
+  }
+  > .page-footer > .menu-bar {
+    .v-menubar-menuitem-primary-right {
+      background-color: $color-app-alt;
+    }
+    .v-menubar-menuitem-right {
+      background-color: #404040;
+    }
+  }
+}
+
 .v-table .v-table-header-cell {
   color: white;
   background-color: $color-app-alt;
+
+  :not(:first-child) {
+    border-left: 3px solid white;
+  }
 }
 
 .action-transparent {
