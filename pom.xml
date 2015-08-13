@@ -33,7 +33,7 @@
             <dependency>
                 <groupId>cz.req.vax</groupId>
                 <artifactId>vax</artifactId>
-                <version>0.1-SNAPSHOT</version>
+                <version>0.1.0-SNAPSHOT</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -101,37 +101,9 @@
 
     <repositories>
         <repository>
-            <id>releases</id>
-            <name>Release repository</name>
-            <url>http://nexus.marbes.cz/content/repositories/releases</url>
-        </repository>
-        <repository>
-            <id>snapshots</id>
-            <name>Marbes Snapshot Repository</name>
-            <url>http://nexus.marbes.cz/content/repositories/snapshots</url>
-        </repository>
-        <repository>
-            <id>spring-releases</id>
-            <url>http://repo.spring.io/release</url>
-        </repository>
-        <repository>
             <id>sonatype-snapshots</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </repository>
-        <repository>
-            <id>vaadin-releases</id>
-            <url>https://oss.sonatype.org/content/repositories/vaadin-releases</url>
-        </repository>
-        <repository>
-            <id>vaadin-addons</id>
-            <url>http://maven.vaadin.com/vaadin-addons</url>
-        </repository>
     </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>vaadin-releases</id>
-            <url>https://oss.sonatype.org/content/repositories/vaadin-releases</url>
-        </pluginRepository>
-    </pluginRepositories>
 
 </project>
