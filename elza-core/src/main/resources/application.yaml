@@ -1,3 +1,6 @@
+application:
+  version: ${project.parent.version}
+
 spring:
   datasource:
     url: jdbc:postgresql://vyv-inet/elza
