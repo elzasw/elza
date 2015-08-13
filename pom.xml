@@ -24,8 +24,7 @@
         <module>elza-api</module>
         <module>elza-core</module>
         <module>elza-ui</module>
-        <!--<module>elza-war</module>
-        <module>elza-dist</module>-->
+        <module>elza-war</module>
     </modules>
 
     <dependencyManagement>
