@@ -1,11 +1,12 @@
 package cz.tacr.elza.controller;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.transaction.Transactional;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -392,7 +393,7 @@ public class ArrangementManager {
         checkCycle(faLevel, parent);
 
         FaChange change = createChange();
-        shiftNodesUp(nodesToShiftUp(faLevel), change);
+        shiftNodesUp(nodesToShift(faLevel), change);
         FaLevel newLevel = createNewLevelVersion(faLevel, change);
 
         return addLastInLevel(newLevel, parent.getNodeId());
@@ -419,21 +420,29 @@ public class ArrangementManager {
         checkCycle(faLevel, predecessor);
 
         FaChange change = createChange();
-        List<FaLevel> nodesToShiftUp = nodesToShiftUp(faLevel);
-        List<FaLevel> nodesToShiftDown = nodesToShiftDown(predecessor);
-        nodesToShiftDown.remove(faLevel);
-        nodesToShiftUp.remove(predecessor);
+        List<FaLevel> nodesToShiftUp = nodesToShift(faLevel);
+        List<FaLevel> nodesToShiftDown = nodesToShift(predecessor);
+        Integer position;
+        if (faLevel.getParentNodeId().equals(predecessor.getParentNodeId())) {
+            Collection<FaLevel> nodesToShift = CollectionUtils.disjunction(nodesToShiftDown, nodesToShiftUp);
+            if (faLevel.getPosition() > predecessor.getPosition()) {
+                nodesToShift.remove(faLevel);
+                shiftNodesDown(nodesToShift, change);
+                position = predecessor.getPosition() + 1;
+            } else {
+                shiftNodesUp(nodesToShift, change);
+                position = predecessor.getPosition();
+            }
+        } else {
+            shiftNodesDown(nodesToShiftDown, change);
+            shiftNodesUp(nodesToShiftUp, change);
+            position = predecessor.getPosition() + 1;
+        }
 
-        List<FaLevel> down = new ArrayList<FaLevel>(nodesToShiftDown);
-        //        down.removeAll(nodesToShiftUp);
-        shiftNodesDown(down, change);
 
-        List<FaLevel> up = new ArrayList<FaLevel>(nodesToShiftUp);
-        //        up.removeAll(nodesToShiftDown);
-        shiftNodesUp(up, change);
         FaLevel newLevel = createNewLevelVersion(faLevel, change);
 
-        return addAfterInLevel(newLevel, predecessor);
+        return addAfterInLevel(newLevel, predecessor.getParentNodeId(), position);
     }
 
     private void checkCycle(FaLevel movedNode, FaLevel targetNode) {
@@ -463,7 +472,7 @@ public class ArrangementManager {
         return levelRepository.save(level);
     }
 
-    private void shiftNodesDown(List<FaLevel> nodesToShift, FaChange change) {
+    private void shiftNodesDown(Collection<FaLevel> nodesToShift, FaChange change) {
         Assert.notNull(nodesToShift);
         Assert.notNull(change);
 
@@ -474,7 +483,7 @@ public class ArrangementManager {
         }
     }
 
-    private void shiftNodesUp(List<FaLevel> nodesToShift, FaChange change) {
+    private void shiftNodesUp(Collection<FaLevel> nodesToShift, FaChange change) {
         Assert.notNull(nodesToShift);
         Assert.notNull(change);
 
@@ -484,26 +493,19 @@ public class ArrangementManager {
             levelRepository.save(newNode);
         }
     }
-    private List<FaLevel> nodesToShiftDown(FaLevel movedLevel) {
+    private List<FaLevel> nodesToShift(FaLevel movedLevel) {
         Assert.notNull(movedLevel);
 
         return levelRepository.findByParentNodeAndPositionGreaterThanOrderByPositionAsc(movedLevel.getParentNodeId(),
                 movedLevel.getPosition());
     }
 
-    private List<FaLevel> nodesToShiftUp(FaLevel movedLevel) {
-        Assert.notNull(movedLevel);
-
-        return levelRepository.findByParentNodeAndPositionGreaterThanOrderByPositionAsc(movedLevel.getParentNodeId(),
-                movedLevel.getPosition());
-    }
-
-    private FaLevel addAfterInLevel(FaLevel level, FaLevel predecessor) {
+    private FaLevel addAfterInLevel(FaLevel level, Integer parentNodeId, Integer position) {
         Assert.notNull(level);
-        Assert.notNull(predecessor);
+        Assert.notNull(position);
 
-        level.setParentNodeId(predecessor.getParentNodeId());
-        level.setPosition(predecessor.getPosition() + 1);
+        level.setParentNodeId(parentNodeId);
+        level.setPosition(position);
         return levelRepository.save(level);
     }
 
@@ -521,7 +523,7 @@ public class ArrangementManager {
         FaLevel level = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
         FaChange change = createChange();
         level.setDeleteChange(change);
-        shiftNodesUp(nodesToShiftUp(level), change);
+        shiftNodesUp(nodesToShift(level), change);
 
         return levelRepository.save(level);
     }
