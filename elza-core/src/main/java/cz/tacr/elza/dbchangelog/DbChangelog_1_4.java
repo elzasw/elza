@@ -63,11 +63,6 @@ public class DbChangelog_1_4 implements liquibase.change.custom.CustomTaskChange
         Queue<Integer> parents = new LinkedList<Integer>();
         parents.add(1);
 
-        //        for (int position = 1; position <= nodesInLevel; position++) {
-        //            createLevel(1, position);
-        //            parents.add(nodeCount);
-        //        };
-
         while (depth > 0) {
             depth--;
             Queue<Integer> newParents = new LinkedList<Integer>();
