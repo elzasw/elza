@@ -37,7 +37,7 @@ import cz.tacr.elza.repository.VersionRepository;
  */
 @RestController
 @RequestMapping("/api/arrangementManager")
-public class ArrangementManager {
+public class ArrangementManager /*implements cz.tacr.elza.api.controller.ArrangementManager*/ {
 
     @Autowired
     private FindingAidRepository findingAidRepository;
@@ -63,7 +63,7 @@ public class ArrangementManager {
      * @param name název archivní pomůcky
      * @return nová archivní pomůcka
      */
-    private FindingAid createFindingAid(@RequestParam(value = "name") final String name) {
+    private FindingAid createFindingAid(final String name) {
         Assert.hasText(name);
 
         FindingAid findingAid = new FindingAid();
@@ -74,17 +74,9 @@ public class ArrangementManager {
         return findingAid;
     }
 
-    /**
-     * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.
-     *
-     * @param name              název archivní pomůcky
-     * @param arrangementTypeId id typu výstupu
-     * @param ruleSetId         id pravidel podle kterých se vytváří popis
-     * @return nová archivní pomůcka
-     */
-    @RequestMapping(value = "/createFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE,
-            params = {"name", "arrangementTypeId", "ruleSetId"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
+    @RequestMapping(value = "/createFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE,
+    params = {"name", "arrangementTypeId", "ruleSetId"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public FindingAid createFindingAid(@RequestParam(value = "name") final String name,
             @RequestParam(value = "arrangementTypeId") final Integer arrangementTypeId,
             @RequestParam(value = "ruleSetId") final Integer ruleSetId) {
@@ -203,11 +195,7 @@ public class ArrangementManager {
         return faChangeRepository.save(change);
     }
 
-    /**
-     * Smaže archivní pomůcku se zadaným id. Maže kompletní strukturu se všemi závislostmi.
-     *
-     * @param findingAidId id archivní pomůcky
-     */
+
     @RequestMapping(value = "/deleteFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, params = {"findingAidId"})
     @Transactional
     public void deleteFindingAid(@RequestParam(value = "findingAidId") final Integer findingAidId) {
@@ -228,23 +216,12 @@ public class ArrangementManager {
         levelRepository.delete(rootNode);
     }
 
-    /**
-     * Vrátí všechny archivní pomůcky.
-     *
-     * @return všechny archivní pomůcky
-     */
+
     @RequestMapping(value = "/getFindingAids", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
     public List<FindingAid> getFindingAids() {
         return findingAidRepository.findAll();
     }
 
-    /**
-     * Aktualizace názvu archivní pomůcky.
-     *
-     * @param findingAidId id archivní pomůcky
-     * @param name         název arhivní pomůcky
-     * @return aktualizovaná archivní pomůcka
-     */
     @RequestMapping(value = "/updateFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, params = {"findingAidId", "name"},
             produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
@@ -259,22 +236,11 @@ public class ArrangementManager {
         return findingAid;
     }
 
-    /**
-     * Vrátí všechny typy výstupu.
-     *
-     * @return všechny typy výstupu
-     */
     @RequestMapping(value = "/getArrangementTypes", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ArrangementType> getArrangementTypes() {
         return arrangementTypeRepository.findAll();
     }
 
-    /**
-     * Vrátí seznam verzí pro danou archivní pomůcku seřazený od nejnovější k nejstarší.
-     *
-     * @param findingAidId id archivní pomůcky
-     * @return seznam verzí pro danou archivní pomůcku seřazený od nejnovější k nejstarší
-     */
     @RequestMapping(value = "/getFindingAidVersions", method = RequestMethod.GET, params = {"findingAidId"}, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public List<FaVersion> getFindingAidVersions(@RequestParam(value = "findingAidId") final Integer findingAidId) {
@@ -283,12 +249,6 @@ public class ArrangementManager {
         return versionRepository.findVersionsByFindingAidIdOrderByCreateDateAsc(findingAidId);
     }
 
-    /**
-     * Vrátí archivní pomůcku.
-     *
-     * @param findingAidId id archivní pomůcky
-     * @return archivní pomůcka
-     */
     @RequestMapping(value = "/getFindingAid", method = RequestMethod.GET, params = {"findingAidId"}, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public FindingAid getFindingAid(final Integer findingAidId) {
@@ -296,14 +256,6 @@ public class ArrangementManager {
         return findingAidRepository.getOne(findingAidId);
     }
 
-    /**
-     * Schválí otevřenou verzi archivní pomůcky a otevře novou verzi.
-     *
-     * @param findingAidId id archivní pomůcky
-     * @param arrangementTypeId id typu výstupu nové verze
-     * @param ruleSetId         id pravidel podle kterých se vytváří popis v nové verzi
-     * @return nová verze archivní pomůcky
-     */
     @Transactional
     @RequestMapping(value = "/approveVersion", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE,
     params = {"findingAidId", "arrangementTypeId", "ruleSetId"}, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -324,12 +276,6 @@ public class ArrangementManager {
         return createVersion(change, findingAid, arrangementType, ruleSet, version.getRootNode());
     }
 
-    /**
-     * Vytvoří nový uzel v první úrovni archivní položky
-     *
-     * @param findingAidId    id archivní pomůcky
-     * @return                nový záznam z archivný pomůcky
-     */
     @Transactional
     @RequestMapping(value = "/addLevel", method = RequestMethod.PUT, params = {"findingAidId"})
     public FaLevel addLevel(@RequestParam("findingAidId") Integer findingAidId) {
@@ -340,12 +286,6 @@ public class ArrangementManager {
         return createLastInLevel(change, lastVersion.getRootNode());
     }
 
-    /**
-     * Vytvoří nový uzel za předaným uzlem.
-     *
-     * @param nodeId        id uzlu za kterým se má vytvořit nový
-     * @return              nový uzel
-     */
     @Transactional
     @RequestMapping(value = "/addLevelAfter", method = RequestMethod.PUT, params = {"nodeId"})
     public FaLevel addLevelAfter(@RequestParam("nodeId") Integer nodeId) {
@@ -356,12 +296,6 @@ public class ArrangementManager {
         return createAfterInLevel(change, faLevel);
     }
 
-    /**
-     * Vytvoří nový uzel na poslední pozici pod předaným uzlem.
-     *
-     * @param nodeId        id uzlu pod kterým se má vytvořit nový
-     * @return              nový uzel
-     */
     @Transactional
     @RequestMapping(value = "/addLevelChild", method = RequestMethod.PUT, params = {"nodeId"})
     public FaLevel addLevelChild(@RequestParam("nodeId") Integer nodeId) {
@@ -372,13 +306,6 @@ public class ArrangementManager {
         return createLastInLevel(change, faLevel);
     }
 
-    /**
-     * Přesune uzel na poslední pozici pod předaným uzlem.
-     *
-     * @param nodeId       id uzlu který se přesouvá
-     * @param parentNodeId id uzlu pod který se má uzel přesunout
-     * @return             přesunutý uzel
-     */
     @Transactional
     @RequestMapping(value = "/moveLevelUnder", method = RequestMethod.PUT, params = {"nodeId", "parentNodeId"})
     public FaLevel moveLevelUnder(@RequestParam("nodeId") Integer nodeId, @RequestParam("parentNodeId") Integer parentNodeId) {
@@ -399,13 +326,6 @@ public class ArrangementManager {
         return addLastInLevel(newLevel, parent.getNodeId());
     }
 
-    /**
-     * Přesune uzel za předaný uzel.
-     *
-     * @param nodeId            id uzlu který se přesouvá
-     * @param predecessorNodeId id uzlu za který se má uzel přesunout
-     * @return                   přesunutý uzel
-     */
     @Transactional
     @RequestMapping(value = "/moveLevelAfter", method = RequestMethod.PUT, params = {"nodeId", "predecessorNodeId"})
     public FaLevel moveLevelAfter(@RequestParam("nodeId") Integer nodeId, @RequestParam("predecessorNodeId") Integer predecessorNodeId) {
@@ -509,12 +429,6 @@ public class ArrangementManager {
         return levelRepository.save(level);
     }
 
-    /**
-     * Smaže uzel.
-     *
-     * @param nodeId            id uzlu který maže
-     * @return                  smazaný uzel
-     */
     @Transactional
     @RequestMapping(value = "/deleteLevel", method = RequestMethod.PUT)
     public FaLevel deleteLevel(@RequestParam("nodeId") Integer nodeId) {
@@ -528,24 +442,12 @@ public class ArrangementManager {
         return levelRepository.save(level);
     }
 
-    /**
-     * Načte uzel podle identifikátoru.
-     *
-     * @param nodeId            id uzlu
-     * @return                  uzel s daným identifikátorem
-     */
     @RequestMapping(value = "/findLevelByNodeId", method = RequestMethod.GET)
     public FaLevel findLevelByNodeId(@RequestParam("nodeId")Integer nodeId) {
         Assert.notNull(nodeId);
         return levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
     }
 
-    /**
-     * Načte neuzavřenou verzi archivní pomůcky.
-     *
-     * @param findingAidId      id archivní pomůcky
-     * @return                  verze
-     */
     @RequestMapping(value = "/getOpenVersionByFindingAidId", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public FaVersion getOpenVersionByFindingAidId(@RequestParam(value = "findingAidId") Integer findingAidId) {
         Assert.notNull(findingAidId);
@@ -554,26 +456,12 @@ public class ArrangementManager {
         return faVersion;
     }
 
-    /**
-     * Načte verzi podle identifikátoru.
-     *
-     * @param versionId      id verze
-     * @return               verze s daným identifikátorem
-     */
     @RequestMapping(value = "/getVersion", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public FaVersion getFaVersionById(@RequestParam("versionId") final Integer versionId) {
         Assert.notNull(versionId);
         return versionRepository.findOne(versionId);
     }
 
-    /**
-     * Načte potomky daného uzlu v konkrétní verzi. Pokud není identifikátor verze předaný načítají se potomci
-     * z neuzavřené verze.
-     *
-     * @param nodeId      id rodiče
-     * @param versionId   id verze, může být null
-     * @return            potomci předaného uzlu
-     */
     @RequestMapping(value = "/findSubLevels", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<FaLevel> findSubLevels(@RequestParam(value = "nodeId") Integer nodeId,
             @RequestParam(value = "versionId", required = false)  Integer versionId) {
