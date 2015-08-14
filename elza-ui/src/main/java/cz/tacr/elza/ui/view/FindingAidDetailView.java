@@ -246,9 +246,9 @@ public class FindingAidDetailView extends ElzaView {
                                         arrangementManager.moveLevelUnder(levelNodeIdVyjmout, (Integer) itemId);
 
                                         Integer position = (Integer) container.getItem(levelNodeIdVyjmout)
-                                                 .getItemProperty(LEVEL_POSITION).getValue();
-                                         repositionLowerSiblings((Integer) levelNodeIdVyjmout, position, container);
-                                         table.removeItem(levelNodeIdVyjmout);
+                                                .getItemProperty(LEVEL_POSITION).getValue();
+                                        repositionLowerSiblings((Integer) levelNodeIdVyjmout, position, container);
+                                        table.removeItem(levelNodeIdVyjmout);
 
 
                                         Object itemIdLast = itemId;
@@ -345,14 +345,14 @@ public class FindingAidDetailView extends ElzaView {
      * @param position pozice prvního sourozence pod id
      */
     private void repositionLowerSiblings(final Integer itemId,
-                                         final int position,
-                                         final HierarchicalCollapsibleContainer container) {
+            final int position,
+            final HierarchicalCollapsibleContainer container) {
         Collection<Integer> lowerSiblings = container.getLowerSiblings(itemId);
 
         int index = position;
         for (Integer lowerSibling : lowerSiblings) {
             container.getItem(lowerSibling).getItemProperty(LEVEL_POSITION)
-                    .setValue(index++);
+            .setValue(index++);
         }
     }
 
@@ -404,7 +404,7 @@ public class FindingAidDetailView extends ElzaView {
 
     private void addActionsButtons(boolean historiOnly) {
         if (historiOnly) {
-            AxAction hist = new AxAction().caption("Zobrazit historii").icon(FontAwesome.HISTORY).run(() ->
+            AxAction hist = new AxAction().caption("Zobrazit verze").icon(FontAwesome.HISTORY).run(() ->
             navigate(VersionListView.class, findingAidId));
             actions(hist);
         } else {
@@ -428,9 +428,9 @@ public class FindingAidDetailView extends ElzaView {
                         Notification.show("Přidáno...");
 
                     }),
-                    new AxAction().caption("Zobrazit historii").icon(FontAwesome.HISTORY).run(() ->
+                    new AxAction().caption("Zobrazit verze").icon(FontAwesome.HISTORY).run(() ->
                     navigate(VersionListView.class, findingAidId)),
-                    new AxAction().caption("Schválit verzi").icon(FontAwesome.HISTORY).run(() -> {
+                    new AxAction().caption("Uzavřít verzi").icon(FontAwesome.HISTORY).run(() -> {
                         AxForm<VOApproveVersion> formularApproveVersion = formularApproveVersion();
                         FaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
                         VOApproveVersion appVersion = new VOApproveVersion();
@@ -469,7 +469,7 @@ public class FindingAidDetailView extends ElzaView {
     private AxForm<VOApproveVersion> formularApproveVersion() {
         AxForm<VOApproveVersion> form = AxForm.init(VOApproveVersion.class);
         form.addStyleName("fa-form");
-        form.setCaption("Schválení verze archivní pomůcky");
+        form.setCaption("Uzavření verze archivní pomůcky");
 
         arTypeContainer = new AxContainer<>(ArrangementType.class).supplier(arrangementManager::getArrangementTypes);
         arTypeContainer.setBeanIdProperty("arrangementTypeId");
