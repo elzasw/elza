@@ -238,7 +238,7 @@ public class FindingAidDetailView extends ElzaView {
 
                                         levelNodeIdVyjmout = null;
                                     } else {
-                                        throw new UnsupportedOperationException();
+                                        Notification.show("Není co vložit, nejprve je potřeba vyjmout uzel.");
                                     }
                                 }),
                                 new AxAction().caption("Vložit pod").icon(FontAwesome.PASTE).run(() -> {
@@ -267,7 +267,7 @@ public class FindingAidDetailView extends ElzaView {
 
                                         levelNodeIdVyjmout = null;
                                     } else {
-                                        throw new UnsupportedOperationException();
+                                        Notification.show("Není co vložit, nejprve je potřeba vyjmout uzel.");
                                     }
                                 })
                                 )
