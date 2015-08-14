@@ -34,7 +34,7 @@ public class DbChangelog_1_4 implements liquibase.change.custom.CustomTaskChange
 
             statement = connection.createStatement();
             //FA
-            statement.executeUpdate("INSERT INTO arr_finding_aid(finding_aid_id, create_date, name) VALUES (1, '2015-08-13 12:00:00', 'Ukázka')");
+            statement.executeUpdate("INSERT INTO arr_finding_aid(finding_aid_id, create_date, name) VALUES (1, '2015-08-13 12:00:00', 'Archiv 1')");
 
             //Change
             statement.executeUpdate("INSERT INTO arr_fa_change(change_id, change_date) VALUES (1, '2015-08-13 12:00:00')");
@@ -61,13 +61,14 @@ public class DbChangelog_1_4 implements liquibase.change.custom.CustomTaskChange
 
     private void createTree(int depth, int nodesInLevel) throws SQLException {
         Queue<Integer> parents = new LinkedList<Integer>();
+        parents.add(1);
 
-        for (int position = 1; position <= nodesInLevel; position++) {
-            createLevel(1, position);
-            parents.add(nodeCount);
-        };
+        //        for (int position = 1; position <= nodesInLevel; position++) {
+        //            createLevel(1, position);
+        //            parents.add(nodeCount);
+        //        };
 
-        while (depth > 1) {
+        while (depth > 0) {
             depth--;
             Queue<Integer> newParents = new LinkedList<Integer>();
             while (!parents.isEmpty()) {
