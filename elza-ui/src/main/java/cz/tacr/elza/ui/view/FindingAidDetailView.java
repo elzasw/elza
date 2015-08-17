@@ -170,7 +170,7 @@ public class FindingAidDetailView extends ElzaView {
         if (version != null && version.getLockChange() != null && version.getLockChange().getChangeDate() != null) {
             String createDataStr = version.getLockChange().getChangeDate()
                     .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM));
-            com.vaadin.ui.Component verzeComponent = newLabel("Prohlížíte si uzavřenou verzi k " + createDataStr);
+            com.vaadin.ui.Component verzeComponent = newLabel("Prohlížíte si uzavřenou verzi k " + createDataStr, "h2");
             components(verzeComponent, table);
         } else {
             components(table);
@@ -284,6 +284,8 @@ public class FindingAidDetailView extends ElzaView {
                         }
                     } catch (IllegalStateException e) {
                         ElzaNotifications.showWarn(e.getMessage());
+                    } catch (IllegalArgumentException e) {
+                        ElzaNotifications.showError(e.getMessage());
                     }
                 }).menuItem(parent);
                 child.setStyleName("show-if-cut");
@@ -317,6 +319,8 @@ public class FindingAidDetailView extends ElzaView {
                         }
                     } catch (IllegalStateException e) {
                         ElzaNotifications.showWarn(e.getMessage());
+                    } catch (IllegalArgumentException e) {
+                        ElzaNotifications.showError(e.getMessage());
                     }
                 }).menuItem(parent);
                 child.setStyleName("show-if-cut");
@@ -361,6 +365,8 @@ public class FindingAidDetailView extends ElzaView {
                         }
                     } catch (IllegalStateException e) {
                         ElzaNotifications.showWarn(e.getMessage());
+                    } catch (IllegalArgumentException e) {
+                        ElzaNotifications.showError(e.getMessage());
                     }
                 }).menuItem(parent);
                 child.setStyleName("show-if-cut");
