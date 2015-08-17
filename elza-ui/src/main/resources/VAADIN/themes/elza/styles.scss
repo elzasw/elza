@@ -25,6 +25,7 @@ $ax-main-focus: $color-app;
 
   @import "elza-layout";
   @import "elza-common";
+  @import "elza-table";
 
   .window-detail {
     box-shadow: 0 0 10px 1px $color-app-alt;
@@ -40,6 +41,10 @@ $ax-main-focus: $color-app;
     color: $color-app-alt;
   }
 
+}
+
+.v-overlay-container[aria-label="item-not-cut"] .v-menubar-menuitem-show-if-cut{
+    display: none;
 }
 
 
