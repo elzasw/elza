@@ -4,8 +4,8 @@
     width: 100%;
     margin: 0;
     padding: 10px 20px;
-    color:white;
-    background-color: $color-app;
+    color:black;
+    background-color: $color-gray1;
   }
   > .page-footer > .menu-bar {
     .v-menubar-menuitem-primary-right {
@@ -30,7 +30,15 @@
 }
 
 .v-Notification{
-    background: #D5D5D5;
+    background: #73B573;
+}
+
+.v-Notification.error{
+  background: #CA5E58;
+}
+
+.v-Notification.warning{
+  background: #F9A937;
 }
 
 .v-Notification.v-position-bottom{
@@ -38,5 +46,9 @@
 }
 .v-Notification.v-position-right{
     right: 50px;
+}
+
+.v-Notification h1, .v-Notification.warning h1, .v-Notification.error h1 {
+    color: white;
 }
 
