@@ -79,7 +79,13 @@ public class HierarchicalCollapsibleContainer extends HierarchicalContainer impl
         sortList.sort(new Comparator<OrderItem>() {
             @Override
             public int compare(final OrderItem o1, final OrderItem o2) {
-                return o1.getPosition().compareTo(o2.getPosition());
+                int result = o1.getPosition().compareTo(o2.getPosition());
+                //pokud mají prvky stejnou pozici a jeden z nich je prvek, pro který hledáme sourozence, chceme
+                //ho mít vždy nahoře
+                if(result == 0 && o1.getItemId().equals(itemId)){
+                    return -1;
+                }
+                return result;
             }
         });
 
@@ -94,7 +100,6 @@ public class HierarchicalCollapsibleContainer extends HierarchicalContainer impl
             }
 
             if(insert){
-                System.out.println(sibling.getItemId());
                 result.add(sibling.getItemId());
             }
         }

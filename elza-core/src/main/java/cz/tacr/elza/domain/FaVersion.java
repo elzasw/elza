@@ -7,6 +7,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import cz.req.ax.IdObject;
 
@@ -119,6 +120,7 @@ public class FaVersion implements IdObject<Integer>, cz.tacr.elza.api.FaVersion<
     }
 
     @Override
+    @JsonIgnore
     public Integer getId() {
         return faVersionId;
     }

@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import cz.req.ax.IdObject;
 
@@ -52,6 +53,7 @@ public class FaChange implements IdObject<Integer>, cz.tacr.elza.api.FaChange {
     }
 
     @Override
+    @JsonIgnore
     public Integer getId() {
         return changeId;
     }
