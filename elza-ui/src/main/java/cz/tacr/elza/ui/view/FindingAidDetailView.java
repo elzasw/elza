@@ -568,8 +568,8 @@ public class FindingAidDetailView extends ElzaView {
 
     private void approveVersion(final AxForm<VOApproveVersion> form, final VOApproveVersion appVersion) {
         form.setValue(appVersion);
-        new AxWindow().components(form)
-        .buttonPrimary(new AxAction<VOApproveVersion>()
+        new AxWindow().caption("Uzavření verze archivní pomůcky").components(form)
+        .buttonClose().buttonPrimary(new AxAction<VOApproveVersion>()
                 .caption("Uložit")
                 .exception(ex -> {
                     ex.printStackTrace();
@@ -577,7 +577,7 @@ public class FindingAidDetailView extends ElzaView {
                 .primary()
                 .value(form::commit)
                 .action(this::approveVersion)
-                ).buttonClose().modal().style("fa-window-detail").show();
+                ).modal().style("fa-window-detail").show();
 
     }
 
@@ -602,7 +602,6 @@ public class FindingAidDetailView extends ElzaView {
     private AxForm<VOApproveVersion> formularApproveVersion() {
         AxForm<VOApproveVersion> form = AxForm.init(VOApproveVersion.class);
         form.addStyleName("fa-form");
-        form.setCaption("Uzavření verze archivní pomůcky");
 
         arTypeContainer = new AxContainer<>(ArrangementType.class).supplier(arrangementManager::getArrangementTypes);
         arTypeContainer.setBeanIdProperty("arrangementTypeId");
