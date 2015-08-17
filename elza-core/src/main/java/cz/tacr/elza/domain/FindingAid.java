@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import cz.req.ax.IdObject;
 
@@ -60,6 +61,7 @@ public class FindingAid implements IdObject<Integer>, cz.tacr.elza.api.FindingAi
     }
 
     @Override
+    @JsonIgnore
     public Integer getId() {
         return findingAidId;
     }

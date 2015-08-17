@@ -50,8 +50,10 @@ public class ArrangementManagerTest extends AbstractRestTest {
     private static final String FIND_SUB_LEVELS_URL = ARRANGEMENT_MANAGER_URL + "/findSubLevels";
 
     private static final String ADD_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/addLevel";
+    private static final String ADD_LEVEL_BEFORE_URL = ARRANGEMENT_MANAGER_URL + "/addLevelBefore";
     private static final String ADD_LEVEL_AFTER_URL = ARRANGEMENT_MANAGER_URL + "/addLevelAfter";
     private static final String ADD_LEVEL_CHILD_URL = ARRANGEMENT_MANAGER_URL + "/addLevelChild";
+    private static final String MOVE_LEVEL_BEFORE_URL = ARRANGEMENT_MANAGER_URL + "/moveLevelBefore";
     private static final String MOVE_LEVEL_UNDER_URL = ARRANGEMENT_MANAGER_URL + "/moveLevelUnder";
     private static final String MOVE_LEVEL_AFTER_URL = ARRANGEMENT_MANAGER_URL + "/moveLevelAfter";
     private static final String DELETE_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/deleteLevel";
@@ -63,6 +65,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
     private static final String RULE_SET_ID_ATT = "ruleSetId";
     private static final String NODE_ID_ATT = "nodeId";
     private static final String PARENT_NODE_ID_ATT = "parentNodeId";
+    private static final String FOLLOWER_NODE_ID_ATT = "followerNodeId";
     private static final String PREDECESSOR_NODE_ID_ATT = "predecessorNodeId";
     private static final String VERSION_ID_ATT = "versionId";
 
@@ -365,6 +368,33 @@ public class ArrangementManagerTest extends AbstractRestTest {
     }
 
     @Test
+    public void testRestAddLevelBefore() {
+        FindingAid findingAid = createFindingAid(TEST_NAME);
+
+        FaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
+
+        Response response = given().parameter(FA_ID_ATT, findingAid.getFindingAidId()).put(ADD_LEVEL_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        FaLevel second = response.getBody().as(FaLevel.class);
+
+        response = given().parameter(NODE_ID_ATT, second.getNodeId()).put(ADD_LEVEL_BEFORE_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        FaLevel first = response.getBody().as(FaLevel.class);
+
+        List<FaLevel> subLevels = arrangementManager
+                .findSubLevels(version.getRootNode().getNodeId(), version.getFaVersionId());
+        Assert.assertTrue(subLevels.size() == 2);
+
+        Iterator<FaLevel> iterator = subLevels.iterator();
+        Assert.assertTrue(first.getNodeId().equals(iterator.next().getNodeId()));
+        Assert.assertTrue(second.getNodeId().equals(iterator.next().getNodeId()));
+    }
+
+    @Test
     public void testRestAddLevelAfter() {
         FindingAid findingAid = createFindingAid(TEST_NAME);
 
@@ -413,6 +443,37 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         Assert.assertTrue(child.getFaLevelId().equals(subLevels.iterator().next().getFaLevelId()));
         Assert.assertTrue(child.getParentNodeId().equals(parent.getNodeId()));
+    }
+
+    @Test
+    public void testRestMoveLevelBefore() {
+        FindingAid findingAid = createFindingAid(TEST_NAME);
+
+        FaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
+
+        Response response = given().parameter(FA_ID_ATT, findingAid.getFindingAidId()).put(ADD_LEVEL_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        FaLevel parent = response.getBody().as(FaLevel.class);
+
+        response = given().parameter(NODE_ID_ATT, parent.getNodeId()).put(ADD_LEVEL_CHILD_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        FaLevel child = response.getBody().as(FaLevel.class);
+
+        response = given().parameter(NODE_ID_ATT, child.getNodeId()).
+                parameter(FOLLOWER_NODE_ID_ATT, parent.getNodeId()).put(MOVE_LEVEL_BEFORE_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        FaLevel movedChild = response.getBody().as(FaLevel.class);
+
+        List<FaLevel> subLevels = arrangementManager.findSubLevels(version.getRootNode().getNodeId(), version.getFaVersionId());
+
+        Assert.assertTrue(subLevels.size() == 2);
+        Assert.assertTrue(movedChild.getParentNodeId().equals(parent.getParentNodeId()));
     }
 
     @Test

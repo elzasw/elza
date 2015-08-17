@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.req.ax.IdObject;
@@ -63,6 +64,7 @@ public class ArrangementType implements IdObject<Integer>, cz.tacr.elza.api.Arra
     }
 
     @Override
+    @JsonIgnore
     public Integer getId() {
         return arrangementTypeId;
     }

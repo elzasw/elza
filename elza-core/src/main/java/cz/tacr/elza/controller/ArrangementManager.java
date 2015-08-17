@@ -116,14 +116,23 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
         Assert.notNull(change);
         Assert.notNull(level);
 
-        List<FaLevel> levelsToShift = levelRepository.findByParentNodeAndPositionGreaterThanOrderByPositionAsc(level.getParentNodeId(), level.getPosition());
-        for (FaLevel node : levelsToShift) {
-            FaLevel newNode = createNewLevelVersion(node, change);
-            newNode.setPosition(node.getPosition() + 1);
-            levelRepository.save(newNode);
-        }
+        List<FaLevel> levelsToShift = levelRepository.findByParentNodeAndPositionGreaterThanOrderByPositionAsc(
+                level.getParentNodeId(), level.getPosition());
+        shiftNodesDown(levelsToShift, change);
 
         return createLevel(change, level.getParentNodeId(), level.getPosition() + 1);
+    }
+
+    private FaLevel createBeforeInLevel(final FaChange change, final FaLevel level){
+        Assert.notNull(change);
+        Assert.notNull(level);
+
+
+        List<FaLevel> levelsToShift = levelRepository.findByParentNodeAndPositionGreaterThanOrderByPositionAsc(
+                level.getParentNodeId(), level.getPosition() - 1);
+        shiftNodesDown(levelsToShift, change);
+
+        return createLevel(change, level.getParentNodeId(), level.getPosition());
     }
 
     private FaLevel createNewLevelVersion(FaLevel node, FaChange change) {
@@ -277,6 +286,17 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
     }
 
     @Transactional
+    @RequestMapping(value = "/addLevelBefore", method = RequestMethod.PUT, params = {"nodeId"})
+    public FaLevel addLevelBefore(@RequestParam("nodeId") Integer nodeId){
+        Assert.notNull(nodeId);
+
+        FaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
+        FaChange change = createChange();
+
+        return createBeforeInLevel(change, faLevel);
+    }
+
+    @Transactional
     @RequestMapping(value = "/addLevel", method = RequestMethod.PUT, params = {"findingAidId"})
     public FaLevel addLevel(@RequestParam("findingAidId") Integer findingAidId) {
         Assert.notNull(findingAidId);
@@ -285,6 +305,8 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
         FaChange change = createChange();
         return createLastInLevel(change, lastVersion.getRootNode());
     }
+
+
 
     @Transactional
     @RequestMapping(value = "/addLevelAfter", method = RequestMethod.PUT, params = {"nodeId"})
@@ -304,6 +326,47 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
         FaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
         FaChange change = createChange();
         return createLastInLevel(change, faLevel);
+    }
+
+
+    @Transactional
+    @RequestMapping(value = "/moveLevelBefore", method = RequestMethod.PUT, params = {"nodeId", "followerNodeId"})
+    public FaLevel moveLevelBefore(@RequestParam("nodeId") Integer nodeId,
+                                   @RequestParam("followerNodeId") Integer followerNodeId) {
+
+        Assert.notNull(nodeId);
+        Assert.notNull(followerNodeId);
+
+        FaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
+        FaLevel follower = levelRepository.findByNodeIdAndDeleteChangeIsNull(followerNodeId);
+        Assert.state(faLevel != follower, "Nelze vložit sama před sebe");
+
+        checkCycle(faLevel, follower);
+
+        FaChange change = createChange();
+        List<FaLevel> nodesToShiftUp = nodesToShift(faLevel);
+        List<FaLevel> nodesToShiftDown = nodesToShift(follower);
+        nodesToShiftDown.add(follower);
+
+        Integer position;
+        if (faLevel.getParentNodeId().equals(follower.getParentNodeId())) {
+            Collection<FaLevel> nodesToShift = CollectionUtils.disjunction(nodesToShiftDown, nodesToShiftUp);
+            if (faLevel.getPosition() > follower.getPosition()) {
+                nodesToShift.remove(faLevel);
+                shiftNodesDown(nodesToShift, change);
+                position = follower.getPosition();
+            } else {
+                shiftNodesUp(nodesToShift, change);
+                position = follower.getPosition() - 1;
+            }
+        } else {
+            shiftNodesDown(nodesToShiftDown, change);
+            shiftNodesUp(nodesToShiftUp, change);
+            position = follower.getPosition();
+        }
+
+        FaLevel newLevel = createNewLevelVersion(faLevel, change);
+        return addInLevel(newLevel, follower.getParentNodeId(), position);
     }
 
     @Transactional
@@ -362,7 +425,7 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
 
         FaLevel newLevel = createNewLevelVersion(faLevel, change);
 
-        return addAfterInLevel(newLevel, predecessor.getParentNodeId(), position);
+        return addInLevel(newLevel, predecessor.getParentNodeId(), position);
     }
 
     private void checkCycle(FaLevel movedNode, FaLevel targetNode) {
@@ -420,7 +483,7 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
                 movedLevel.getPosition());
     }
 
-    private FaLevel addAfterInLevel(FaLevel level, Integer parentNodeId, Integer position) {
+    private FaLevel addInLevel(FaLevel level, Integer parentNodeId, Integer position) {
         Assert.notNull(level);
         Assert.notNull(position);
 

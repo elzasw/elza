@@ -17,6 +17,7 @@ import cz.req.ax.IdObject;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
@@ -110,8 +111,9 @@ public class FaLevel implements IdObject<Integer>, cz.tacr.elza.api.FaLevel<FaCh
     }
 
     @Override
+    @JsonIgnore
     public Integer getId() {
-        return null;
+        return faLevelId;
     }
 
     @Override
