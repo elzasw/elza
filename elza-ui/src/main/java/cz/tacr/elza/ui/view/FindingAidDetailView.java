@@ -276,6 +276,8 @@ public class FindingAidDetailView extends ElzaView {
                         addItemBeforeToContainer(level, container, itemId);
                         repositionLowerSiblings(level.getNodeId(), level.getPosition() + 1, container);
                         discardNodeCut();
+
+                        ElzaNotifications.show("Přesunuto...");
                     }
                 }).menuItem(parent);
                 child.setStyleName("show-if-cut");
@@ -289,22 +291,32 @@ public class FindingAidDetailView extends ElzaView {
                         repositionLowerSiblings((Integer) levelNodeIdVyjmout, position, container);
                         table.removeItem(levelNodeIdVyjmout);
 
+                        FaLevel faLevelVyjmout = arrangementManager.findLevelByNodeId(
+                                 levelNodeIdVyjmout);
 
-                        Object itemIdLast = itemId;
-                        Collection<?> children = container.getChildren(itemId);
-                        if (!CollectionUtils.isEmpty(children)) {
-                            Iterator<?> iterator = children.iterator();
-                            while (iterator.hasNext()) {
-                                itemIdLast = iterator.next();
+                        if (container.isCollapsed(itemId)) {
+                            List<FaLevel> faLevels = arrangementManager.findSubLevels((Integer) itemId, versionId);
+                            Integer idLast = (Integer) itemId;
+                            for (FaLevel faLevel : faLevels) {
+                                idLast = addItemAfterToContainer(faLevel, container, idLast);
                             }
+                        } else {
+
+                            //najdeme posledního přímého potomka
+                            Object itemIdLast = itemId;
+                            Collection<?> children = container.getChildren(itemId);
+                            if (!CollectionUtils.isEmpty(children)) {
+                                Iterator<?> iterator = children.iterator();
+                                while (iterator.hasNext()) {
+                                    itemIdLast = iterator.next();
+                                }
+                            }
+                            addItemAfterToContainer(faLevelVyjmout, container, itemIdLast);
                         }
 
-                        FaLevel faLevelVyjmout = arrangementManager.findLevelByNodeId(
-                                levelNodeIdVyjmout);
-
-                        addItemAfterToContainer(faLevelVyjmout, container, itemIdLast);
-
                         discardNodeCut();
+
+                        ElzaNotifications.show("Přesunuto...");
                     }
                 }).menuItem(parent);
                 child.setStyleName("show-if-cut");
@@ -333,6 +345,8 @@ public class FindingAidDetailView extends ElzaView {
 
 
                         discardNodeCut();
+
+                        ElzaNotifications.show("Přesunuto...");
                     }
                 }).menuItem(parent);
                 child.setStyleName("show-if-cut");
