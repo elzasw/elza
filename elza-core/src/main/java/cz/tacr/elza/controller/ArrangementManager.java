@@ -340,6 +340,10 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
 
         FaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
         FaLevel follower = levelRepository.findByNodeIdAndDeleteChangeIsNull(followerNodeId);
+
+        if(faLevel == null || follower == null){
+            throw new IllegalArgumentException("Přesun se nezdařil. Záznam byl pravděpodobně smazán jiným uživatelem. Aktualizujte stránku");
+        }
         if(faLevel.equals(follower)){
             throw new IllegalStateException("Nelze vložit záznam na stejné místo ve stromu");
         }
@@ -380,6 +384,10 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
 
         FaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
         FaLevel parent = levelRepository.findByNodeIdAndDeleteChangeIsNull(parentNodeId);
+        if(faLevel == null || parent == null){
+            throw new IllegalArgumentException("Přesun se nezdařil. Záznam byl pravděpodobně smazán jiným uživatelem. Aktualizujte stránku");
+        }
+
         if(faLevel.equals(parent)){
             throw new IllegalStateException("Nelze vložit záznam sám do sebe");
         }
@@ -402,6 +410,9 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
 
         FaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
         FaLevel predecessor = levelRepository.findByNodeIdAndDeleteChangeIsNull(predecessorNodeId);
+        if(faLevel == null || predecessor == null){
+            throw new IllegalArgumentException("Přesun se nezdařil. Záznam byl pravděpodobně smazán jiným uživatelem. Aktualizujte stránku");
+        }
         if(faLevel.equals(predecessor)){
             throw new IllegalStateException("Nelze vložit záznam na stejné místo ve stromu");
         }

@@ -41,10 +41,19 @@ $ax-main-focus: $color-app;
     color: gray;
   }
 
+  .h2 {
+    margin: 0;
+    color: $color-title;
+    font-weight: normal;
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+
 }
 
 .v-overlay-container[aria-label="item-not-cut"] .v-menubar-menuitem-show-if-cut{
     display: none;
 }
+
 
 
