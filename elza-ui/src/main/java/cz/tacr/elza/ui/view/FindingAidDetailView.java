@@ -22,6 +22,8 @@ import com.vaadin.data.Item;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.Position;
+import com.vaadin.ui.CssLayout;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Table;
@@ -123,7 +125,8 @@ public class FindingAidDetailView extends ElzaView {
             addActionMenu(container);
             table.setVisibleColumns(LEVEL, LEVEL_POSITION, ACTION);
         } else {
-            table.setVisibleColumns(LEVEL, LEVEL_POSITION);
+            addActionHistMenu(container);
+            table.setVisibleColumns(LEVEL, LEVEL_POSITION, ACTION);
             if (version.getFindingAid() == null
                     || (!version.getFindingAid().getFindingAidId().equals(findingAidId))) {
                 version = null;
@@ -371,6 +374,26 @@ public class FindingAidDetailView extends ElzaView {
                 }).menuItem(parent);
                 child.setStyleName("show-if-cut");
 
+                child = new AxAction().caption("Zobrazit historii").icon(FontAwesome.CUT).run(() -> {
+                    showVersionHistory((Integer) itemId);
+                }).menuItem(parent);
+                return menuBar;
+            }
+        });
+    }
+
+    private void addActionHistMenu(HierarchicalCollapsibleContainer container) {
+        table.addGeneratedColumn("Akce", new Table.ColumnGenerator() {
+            @Override
+            public Object generateCell(final Table source, final Object itemId, final Object columnId) {
+                // TODO: změnit celou tabulku na Ax
+
+                MenuBar menuBar = new MenuBar();
+
+                MenuBar.MenuItem parent = menuBar.addItem("", FontAwesome.ALIGN_JUSTIFY, null);
+                MenuBar.MenuItem child = new AxAction().caption("Zobrazit historii").icon(FontAwesome.CUT).run(() -> {
+                    showVersionHistory((Integer) itemId);
+                }).menuItem(parent);
                 return menuBar;
             }
         });
@@ -574,8 +597,8 @@ public class FindingAidDetailView extends ElzaView {
 
     private void approveVersion(final AxForm<VOApproveVersion> form, final VOApproveVersion appVersion) {
         form.setValue(appVersion);
-        new AxWindow().components(form)
-        .buttonPrimary(new AxAction<VOApproveVersion>()
+        new AxWindow().caption("Uzavření verze archivní pomůcky").components(form)
+        .buttonClose().buttonPrimary(new AxAction<VOApproveVersion>()
                 .caption("Uložit")
                 .exception(ex -> {
                     ex.printStackTrace();
@@ -583,7 +606,7 @@ public class FindingAidDetailView extends ElzaView {
                 .primary()
                 .value(form::commit)
                 .action(this::approveVersion)
-                ).buttonClose().modal().style("fa-window-detail").show();
+                ).modal().style("fa-window-detail").show();
 
     }
 
@@ -608,7 +631,6 @@ public class FindingAidDetailView extends ElzaView {
     private AxForm<VOApproveVersion> formularApproveVersion() {
         AxForm<VOApproveVersion> form = AxForm.init(VOApproveVersion.class);
         form.addStyleName("fa-form");
-        form.setCaption("Uzavření verze archivní pomůcky");
 
         arTypeContainer = new AxContainer<>(ArrangementType.class).supplier(arrangementManager::getArrangementTypes);
         arTypeContainer.setBeanIdProperty("arrangementTypeId");
@@ -620,9 +642,10 @@ public class FindingAidDetailView extends ElzaView {
         return form;
     }
 
-    private void createVersionHistory(final Integer nodeId) {
+    private List<com.vaadin.ui.Component> createVersionHistory(final Integer nodeId) {
         final List<FaLevel> levelList = arrangementManager.findLevels(nodeId);
         final List<FaVersion> versionList = arrangementManager.getFindingAidVersions(findingAidId);
+        List<com.vaadin.ui.Component> resultList = new ArrayList<>();
         for (FaVersion faVersion : versionList) {
             List<FaLevel> levelSublist = new ArrayList<>();
             final Integer idCrateVersion = (faVersion.getCreateChange() == null) ? null : faVersion.getCreateChange().getChangeId();
@@ -648,23 +671,45 @@ public class FindingAidDetailView extends ElzaView {
             if (levelSublist.isEmpty()) { // verze nema zmeny nodu - nechceme
                 continue;
             }
-            
-            // pridani verze
-            
-            
-            // pridani levlu
-            boolean isFirstLevel = true;
-            for (FaLevel faLevel : levelSublist) {
-                String typZmena = "změna";
-                if (isFirstLevel) {
-                    isFirstLevel = false;
-                    typZmena = "vytvoření";
-                }
-                if (faLevel.getFaLevelId().equals(lastIdLevel) && faLevel.getDeleteChange() != null) {
-                    typZmena = "smazání";
-                }
-            }
+            CssLayout layout = createVersionHistoryItem(faVersion, levelSublist, lastIdLevel);
+            resultList.add(layout);
         }
+        return resultList;
+    }
+
+    private CssLayout createVersionHistoryItem(FaVersion faVersion, List<FaLevel> levelSublist, Integer lastIdLevel) {
+     // pridani verze
+        CssLayout layout = new CssLayout();
+        layout.setSizeUndefined();
+//        layout.addStyleName("vrItem");
+
+        Label header = newLabel(faVersion.getFaVersionId().toString(), "h2");
+        layout.addComponent(header);
+
+        // pridani levlu
+        boolean isFirstLevel = true;
+        for (FaLevel faLevel : levelSublist) {
+            String typZmena = "změna";
+            if (isFirstLevel) {
+                isFirstLevel = false;
+                typZmena = "vytvoření";
+            }
+            if (faLevel.getFaLevelId().equals(lastIdLevel) && faLevel.getDeleteChange() != null) {
+                typZmena = "smazání";
+            }
+            String createDataStr = faLevel.getCreateChange().getChangeDate()
+                    .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM));
+            Label label = newLabel(typZmena + " - " + createDataStr);
+            layout.addComponent(label);
+        }
+        return layout;
+    }
+
+    private void showVersionHistory(final Integer nodeId) {
+        List<com.vaadin.ui.Component> componentList = createVersionHistory(nodeId);
+
+        new AxWindow().caption("Historie změn uzlu").components(componentList.toArray(new com.vaadin.ui.Component[componentList.size()]))
+        .buttonClose().modal().style("window-detail").show();
     }
 }
 

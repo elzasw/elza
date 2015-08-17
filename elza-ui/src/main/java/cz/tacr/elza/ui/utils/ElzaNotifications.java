@@ -12,7 +12,7 @@ import com.vaadin.ui.UI;
 public class ElzaNotifications {
 
     public static void show(final String text) {
-        show(text, 1000);
+        show(text, 2000);
     }
 
     public static void show(final String text, final int delay) {
@@ -21,14 +21,14 @@ public class ElzaNotifications {
     }
 
     public static void showWarn(final String text) {
-        Notification notification = createNotification(text, 1000);
+        Notification notification = createNotification(text, 2000);
         notification.setStyleName("warning");
         notification.show(UI.getCurrent().getPage());
     }
 
 
     public static void showError(final String text) {
-        Notification notification = createNotification(text, 1000);
+        Notification notification = createNotification(text, 2000);
         notification.setStyleName("error");
         notification.show(UI.getCurrent().getPage());
     }
