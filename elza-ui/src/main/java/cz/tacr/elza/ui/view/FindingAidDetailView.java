@@ -200,7 +200,29 @@ public class FindingAidDetailView extends ElzaView {
                         }
                 ).menuItem(parent);
 
-                child = new AxAction().caption("Přidat záznam pod").icon(FontAwesome.PLUS).run(() -> {
+
+
+                child = new AxAction().caption("Přidat záznam za").icon(FontAwesome.PLUS).run(new Runnable() {
+                    @Override
+                    public void run() {
+                        discardNodeCut();
+                        Integer lastId = getItemIdAfterChilds((Integer) itemId, container);
+
+                        FaLevel newFaLevel = arrangementManager.addLevelAfter((Integer) itemId);
+
+                        Item item = container.getItem(itemId);
+                        repositionLowerSiblings((Integer) itemId,
+                                (Integer) item.getItemProperty(LEVEL_POSITION).getValue() + 2,
+                                container);
+
+                        addItemAfterToContainer(newFaLevel, container, lastId);
+
+
+                        ElzaNotifications.show("Přidáno...");
+                    }
+                }).menuItem(parent);
+
+                child = new AxAction().caption("Přidat podřízený záznam").icon(FontAwesome.PLUS).run(() -> {
                     discardNodeCut();
                     if (table.isCollapsed(itemId)) {
                         table.setCollapsed(itemId, false);
@@ -221,26 +243,6 @@ public class FindingAidDetailView extends ElzaView {
                     itemIdLast = newFaLevel.getNodeId();
                     initNewItemInContainer(item, newFaLevel, container);
                     ElzaNotifications.show("Přidáno...");
-                }).menuItem(parent);
-
-                child = new AxAction().caption("Přidat záznam za").icon(FontAwesome.PLUS).run(new Runnable() {
-                    @Override
-                    public void run() {
-                        discardNodeCut();
-                        Integer lastId = getItemIdAfterChilds((Integer) itemId, container);
-
-                        FaLevel newFaLevel = arrangementManager.addLevelAfter((Integer) itemId);
-
-                        Item item = container.getItem(itemId);
-                        repositionLowerSiblings((Integer) itemId,
-                                (Integer) item.getItemProperty(LEVEL_POSITION).getValue() + 2,
-                                container);
-
-                        addItemAfterToContainer(newFaLevel, container, lastId);
-
-
-                        ElzaNotifications.show("Přidáno...");
-                    }
                 }).menuItem(parent);
 
                 child = new AxAction().caption("Smazat").icon(FontAwesome.TRASH_O).run(new Runnable() {
@@ -265,88 +267,100 @@ public class FindingAidDetailView extends ElzaView {
                 }).menuItem(parent);
 
                 child = new AxAction().caption("Vložit před").icon(FontAwesome.PASTE).run(() -> {
-                    if (checkPaste()) {
-                        FaLevel level = arrangementManager
-                                .moveLevelBefore(levelNodeIdVyjmout, (Integer) itemId);
-                        Integer position = (Integer) container.getItem(levelNodeIdVyjmout)
-                                .getItemProperty(LEVEL_POSITION).getValue();
-                        repositionLowerSiblings(levelNodeIdVyjmout, position, container);
-                        table.removeItem(levelNodeIdVyjmout);
+                    try {
+                        if (checkPaste()) {
+                            FaLevel level = arrangementManager
+                                    .moveLevelBefore(levelNodeIdVyjmout, (Integer) itemId);
+                            Integer position = (Integer) container.getItem(levelNodeIdVyjmout)
+                                    .getItemProperty(LEVEL_POSITION).getValue();
+                            repositionLowerSiblings(levelNodeIdVyjmout, position, container);
+                            table.removeItem(levelNodeIdVyjmout);
 
-                        addItemBeforeToContainer(level, container, itemId);
-                        repositionLowerSiblings(level.getNodeId(), level.getPosition() + 1, container);
-                        discardNodeCut();
+                            addItemBeforeToContainer(level, container, itemId);
+                            repositionLowerSiblings(level.getNodeId(), level.getPosition() + 1, container);
+                            discardNodeCut();
 
-                        ElzaNotifications.show("Přesunuto...");
-                    }
-                }).menuItem(parent);
-                child.setStyleName("show-if-cut");
-
-                child = new AxAction().caption("Vložit pod").icon(FontAwesome.PASTE).run(() -> {
-                    if (checkPaste()) {
-                        arrangementManager.moveLevelUnder(levelNodeIdVyjmout, (Integer) itemId);
-
-                        Integer position = (Integer) container.getItem(levelNodeIdVyjmout)
-                                .getItemProperty(LEVEL_POSITION).getValue();
-                        repositionLowerSiblings((Integer) levelNodeIdVyjmout, position, container);
-                        table.removeItem(levelNodeIdVyjmout);
-
-                        FaLevel faLevelVyjmout = arrangementManager.findLevelByNodeId(
-                                 levelNodeIdVyjmout);
-
-                        if (container.isCollapsed(itemId)) {
-                            List<FaLevel> faLevels = arrangementManager.findSubLevels((Integer) itemId, versionId);
-                            Integer idLast = (Integer) itemId;
-                            for (FaLevel faLevel : faLevels) {
-                                idLast = addItemAfterToContainer(faLevel, container, idLast);
-                            }
-                        } else {
-
-                            //najdeme posledního přímého potomka
-                            Object itemIdLast = itemId;
-                            Collection<?> children = container.getChildren(itemId);
-                            if (!CollectionUtils.isEmpty(children)) {
-                                Iterator<?> iterator = children.iterator();
-                                while (iterator.hasNext()) {
-                                    itemIdLast = iterator.next();
-                                }
-                            }
-                            addItemAfterToContainer(faLevelVyjmout, container, itemIdLast);
+                            ElzaNotifications.show("Přesunuto...");
                         }
-
-                        discardNodeCut();
-
-                        ElzaNotifications.show("Přesunuto...");
+                    } catch (IllegalStateException e) {
+                        ElzaNotifications.showWarn(e.getMessage());
                     }
                 }).menuItem(parent);
                 child.setStyleName("show-if-cut");
-
 
                 child = new AxAction().caption("Vložit za").icon(FontAwesome.PASTE).run(() -> {
-                    if (checkPaste()) {
-                        arrangementManager.moveLevelAfter(levelNodeIdVyjmout, (Integer) itemId);
+                    try {
+                        if (checkPaste()) {
+                            arrangementManager.moveLevelAfter(levelNodeIdVyjmout, (Integer) itemId);
 
-                        Integer position = (Integer) container.getItem(levelNodeIdVyjmout)
-                                .getItemProperty(LEVEL_POSITION).getValue();
-                        repositionLowerSiblings(levelNodeIdVyjmout, position, container);
-                        table.removeItem(levelNodeIdVyjmout);
-
-
-                        FaLevel faLevelVyjmout = arrangementManager.findLevelByNodeId(
-                                levelNodeIdVyjmout);
-
-                        Item item = container.getItem(itemId);
-                        repositionLowerSiblings((Integer) itemId,
-                                (Integer) item.getItemProperty(LEVEL_POSITION).getValue() + 2,
-                                container);
-
-                        addItemAfterToContainer(faLevelVyjmout, container,
-                                getItemIdAfterChilds((Integer) itemId, container));
+                            Integer position = (Integer) container.getItem(levelNodeIdVyjmout)
+                                    .getItemProperty(LEVEL_POSITION).getValue();
+                            repositionLowerSiblings(levelNodeIdVyjmout, position, container);
+                            table.removeItem(levelNodeIdVyjmout);
 
 
-                        discardNodeCut();
+                            FaLevel faLevelVyjmout = arrangementManager.findLevelByNodeId(
+                                    levelNodeIdVyjmout);
 
-                        ElzaNotifications.show("Přesunuto...");
+                            Item item = container.getItem(itemId);
+                            repositionLowerSiblings((Integer) itemId,
+                                    (Integer) item.getItemProperty(LEVEL_POSITION).getValue() + 2,
+                                    container);
+
+                            addItemAfterToContainer(faLevelVyjmout, container,
+                                    getItemIdAfterChilds((Integer) itemId, container));
+
+
+                            discardNodeCut();
+
+                            ElzaNotifications.show("Přesunuto...");
+                        }
+                    } catch (IllegalStateException e) {
+                        ElzaNotifications.showWarn(e.getMessage());
+                    }
+                }).menuItem(parent);
+                child.setStyleName("show-if-cut");
+
+
+                child = new AxAction().caption("Vložit jako podřízený").icon(FontAwesome.PASTE).run(() -> {
+                    try {
+                        if (checkPaste()) {
+                            arrangementManager.moveLevelUnder(levelNodeIdVyjmout, (Integer) itemId);
+
+                            Integer position = (Integer) container.getItem(levelNodeIdVyjmout)
+                                    .getItemProperty(LEVEL_POSITION).getValue();
+                            repositionLowerSiblings((Integer) levelNodeIdVyjmout, position, container);
+                            table.removeItem(levelNodeIdVyjmout);
+
+                            FaLevel faLevelVyjmout = arrangementManager.findLevelByNodeId(
+                                    levelNodeIdVyjmout);
+
+                            if (container.isCollapsed(itemId)) {
+                                List<FaLevel> faLevels = arrangementManager.findSubLevels((Integer) itemId, versionId);
+                                Integer idLast = (Integer) itemId;
+                                for (FaLevel faLevel : faLevels) {
+                                    idLast = addItemAfterToContainer(faLevel, container, idLast);
+                                }
+                            } else {
+
+                                //najdeme posledního přímého potomka
+                                Object itemIdLast = itemId;
+                                Collection<?> children = container.getChildren(itemId);
+                                if (!CollectionUtils.isEmpty(children)) {
+                                    Iterator<?> iterator = children.iterator();
+                                    while (iterator.hasNext()) {
+                                        itemIdLast = iterator.next();
+                                    }
+                                }
+                                addItemAfterToContainer(faLevelVyjmout, container, itemIdLast);
+                            }
+
+                            discardNodeCut();
+
+                            ElzaNotifications.show("Přesunuto...");
+                        }
+                    } catch (IllegalStateException e) {
+                        ElzaNotifications.showWarn(e.getMessage());
                     }
                 }).menuItem(parent);
                 child.setStyleName("show-if-cut");

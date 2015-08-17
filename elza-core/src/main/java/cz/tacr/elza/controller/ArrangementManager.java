@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
+import javax.naming.OperationNotSupportedException;
 import javax.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -339,7 +340,9 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
 
         FaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
         FaLevel follower = levelRepository.findByNodeIdAndDeleteChangeIsNull(followerNodeId);
-        Assert.state(faLevel != follower, "Nelze vložit sama před sebe");
+        if(faLevel.equals(follower)){
+            throw new IllegalStateException("Nelze vložit záznam na stejné místo ve stromu");
+        }
 
         checkCycle(faLevel, follower);
 
@@ -377,7 +380,9 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
 
         FaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
         FaLevel parent = levelRepository.findByNodeIdAndDeleteChangeIsNull(parentNodeId);
-        Assert.state(faLevel != parent, "Nelze vložit sama do sebe");
+        if(faLevel.equals(parent)){
+            throw new IllegalStateException("Nelze vložit záznam sám do sebe");
+        }
 
         // vkládaný nesmí být rodičem uzlu pod který ho vkládám
         checkCycle(faLevel, parent);
@@ -397,8 +402,9 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
 
         FaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
         FaLevel predecessor = levelRepository.findByNodeIdAndDeleteChangeIsNull(predecessorNodeId);
-        Assert.state(faLevel != predecessor, "Nelze vložit sama za sebe");
-
+        if(faLevel.equals(predecessor)){
+            throw new IllegalStateException("Nelze vložit záznam na stejné místo ve stromu");
+        }
         // vkládaný nesmí být rodičem uzlu za který ho vkládám
         checkCycle(faLevel, predecessor);
 

@@ -16,9 +16,28 @@ public class ElzaNotifications {
     }
 
     public static void show(final String text, final int delay) {
+        Notification notification = createNotification(text, delay);
+        notification.show(UI.getCurrent().getPage());
+    }
+
+    public static void showWarn(final String text) {
+        Notification notification = createNotification(text, 1000);
+        notification.setStyleName("warning");
+        notification.show(UI.getCurrent().getPage());
+    }
+
+
+    public static void showError(final String text) {
+        Notification notification = createNotification(text, 1000);
+        notification.setStyleName("error");
+        notification.show(UI.getCurrent().getPage());
+    }
+
+    private static Notification createNotification(final String text, final int delay){
         Notification notification = new Notification(text);
         notification.setDelayMsec(delay);
         notification.setPosition(Position.BOTTOM_RIGHT);
-        notification.show(UI.getCurrent().getPage());
+        return notification;
     }
+
 }
