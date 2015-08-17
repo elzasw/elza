@@ -34,4 +34,6 @@ public interface LevelRepository extends JpaRepository<FaLevel, Integer> {
     List<FaLevel> findByParentNodeAndPositionGreaterThanOrderByPositionAsc(Integer getParentNodeId, Integer position);
 
     FaLevel findByNodeIdAndDeleteChangeIsNull(Integer levelId);
+
+    List<FaLevel> findByNodeId(Integer nodeId);
 }

@@ -546,5 +546,52 @@ public class FindingAidDetailView extends ElzaView {
         form.addCombo("Pravidla tvorby", "ruleSetId", ruleSetContainer, RuleSet::getName).required();
         return form;
     }
+
+    private void createVersionHistory(final Integer nodeId) {
+        final List<FaLevel> levelList = arrangementManager.findLevels(nodeId);
+        final List<FaVersion> versionList = arrangementManager.getFindingAidVersions(findingAidId);
+        for (FaVersion faVersion : versionList) {
+            List<FaLevel> levelSublist = new ArrayList<>();
+            final Integer idCrateVersion = (faVersion.getCreateChange() == null) ? null : faVersion.getCreateChange().getChangeId();
+            final Integer idLockVersion = (faVersion.getLockChange() == null) ? null : faVersion.getLockChange().getChangeId();
+            Integer lastIdLevel = null;
+            for (FaLevel faLevel : levelList) {
+                final Integer idCrateLevel = (faLevel.getCreateChange() == null)
+                        ? null : faLevel.getCreateChange().getChangeId();
+                final Integer idDeleteLevel = (faLevel.getDeleteChange() == null)
+                        ? null : faLevel.getDeleteChange().getChangeId();
+                // otevrena verze - level do ni nepatri
+                if (idLockVersion == null && idDeleteLevel != null) {
+                    continue;
+                }
+                // uzavrena verze - level do ni nepatri
+                if (!(idLockVersion != null && idCrateLevel < idLockVersion 
+                        && (idDeleteLevel == null || idDeleteLevel > idLockVersion))) {
+                    continue;
+                }
+                levelSublist.add(faLevel);
+                lastIdLevel = faLevel.getFaLevelId();
+            }
+            if (levelSublist.isEmpty()) { // verze nema zmeny nodu - nechceme
+                continue;
+            }
+            
+            // pridani verze
+            
+            
+            // pridani levlu
+            boolean isFirstLevel = true;
+            for (FaLevel faLevel : levelSublist) {
+                String typZmena = "změna";
+                if (isFirstLevel) {
+                    isFirstLevel = false;
+                    typZmena = "vytvoření";
+                }
+                if (faLevel.getFaLevelId().equals(lastIdLevel) && faLevel.getDeleteChange() != null) {
+                    typZmena = "smazání";
+                }
+            }
+        }
+    }
 }
 
