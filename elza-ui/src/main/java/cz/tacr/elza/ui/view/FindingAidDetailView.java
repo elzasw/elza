@@ -109,6 +109,12 @@ public class FindingAidDetailView extends ElzaView {
                 version = null;
             }
         }
+        table.addGeneratedColumn(LEVEL, new Table.ColumnGenerator() {
+            @Override
+            public Object generateCell(final Table source, final Object itemId, final Object columnId) {
+                return "Jednotka archivního popisu číslo " + itemId;
+            }
+        });
         if (version == null) { // chyba nenalezena verze k FA
             navigate(FindingAidListView.class);
             return;
@@ -145,6 +151,7 @@ public class FindingAidDetailView extends ElzaView {
         });
 
         table.setContainerDataSource(container);
+        table.setVisibleColumns(LEVEL, LEVEL_POSITION);
         table.setSortEnabled(false);
 
         if (version != null && version.getLockChange() != null && version.getLockChange().getChangeDate() != null) {
