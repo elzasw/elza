@@ -1,0 +1,22 @@
+.v-table {
+
+    .v-table-body {
+        max-height: calc(100vh - 210px) !important;
+    }
+
+    .v-table-header-cell {
+        color: white;
+        background-color: $color-app-alt;
+
+        :not(:first-child) {
+            border-left: 3px solid white;
+        }
+    }
+}
+
+.v-table.detail-table .v-table-body {
+    overflow: auto !important;
+    overflow-x: auto !important;
+}
+
+

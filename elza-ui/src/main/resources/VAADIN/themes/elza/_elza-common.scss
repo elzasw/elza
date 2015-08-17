@@ -17,19 +17,6 @@
   }
 }
 
-.v-table .v-table-header-cell {
-  color: white;
-  background-color: $color-app-alt;
-
-  :not(:first-child) {
-    border-left: 3px solid white;
-  }
-}
-
-.detail-table .v-table-body{
-    overflow: auto;
-    overflow-x: auto !important;
-}
 
 
 .action-transparent {
@@ -52,3 +39,4 @@
 .v-Notification.v-position-right{
     right: 50px;
 }
+

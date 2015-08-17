@@ -94,6 +94,8 @@ public class FindingAidDetailView extends ElzaView {
         }
 
         this.findingAid = arrangementManager.getFindingAid(findingAidId);
+        discardNodeCut();
+
 
         pageTitle(findingAid.getName());
         addActionsButtons(versionId != null);
@@ -104,12 +106,11 @@ public class FindingAidDetailView extends ElzaView {
 
         table = new TreeTable();
         table.addStyleName("detail-table");
-        discardNodeCut();
         table.setWidth("100%");
 
         table.setContainerDataSource(container);
         table.setSortEnabled(false);
-
+        table.setPageLength(20);
         table.addGeneratedColumn(LEVEL, new Table.ColumnGenerator() {
             @Override
             public Object generateCell(final Table source, final Object itemId, final Object columnId) {
