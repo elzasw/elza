@@ -1,5 +1,7 @@
 package cz.tacr.elza.ui.view;
 
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -145,7 +147,14 @@ public class FindingAidDetailView extends ElzaView {
         table.setContainerDataSource(container);
         table.setSortEnabled(false);
 
-        components(table);
+        if (version != null && version.getLockChange() != null && version.getLockChange().getChangeDate() != null) {
+            String createDataStr = version.getLockChange().getChangeDate()
+                    .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM));
+            com.vaadin.ui.Component verzeComponent = newLabel("Prohlížíte si uzavřenou verzi k " + createDataStr);
+            components(verzeComponent, table);
+        } else {
+            components(table);
+        }
     }
 
     private void addActionMenu(HierarchicalCollapsibleContainer container) {

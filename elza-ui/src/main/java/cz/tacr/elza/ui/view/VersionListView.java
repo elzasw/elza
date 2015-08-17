@@ -3,6 +3,10 @@ package cz.tacr.elza.ui.view;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -32,6 +36,8 @@ import cz.tacr.elza.ui.ElzaView;
 @VaadinView("VersionList")
 public class VersionListView extends ElzaView {
 
+    private static final String ID_TABLE = "idTable";
+
     @Autowired
     private ArrangementManager arrangementManager;
 
@@ -53,9 +59,17 @@ public class VersionListView extends ElzaView {
 
         Table table = new Table();
         table.setWidth("100%");
+        table.setColumnHeader(ID_TABLE, "Pořadí");
         table.addContainerProperty("createChange", LocalDateTime.class, null, "Datum vytvoření", null, null);
         table.addContainerProperty("lockChange", LocalDateTime.class, null, "Datum uzavření", null, null);
         table.setSortEnabled(false);
+        AtomicInteger poradi = new AtomicInteger(0);
+        table.addGeneratedColumn(ID_TABLE, new Table.ColumnGenerator() {
+            @Override
+            public Object generateCell(final Table source, final Object itemId, final Object columnId) {
+                return Integer.valueOf(poradi.incrementAndGet());
+            }
+        });
         table.addGeneratedColumn("createChange", new Table.ColumnGenerator() {
             @Override
             public Object generateCell(final Table source, final Object itemId, final Object columnId) {
@@ -90,13 +104,24 @@ public class VersionListView extends ElzaView {
 
         container = new BeanItemContainer<>(FaVersion.class);
 
-        container.addAll(arrangementManager.getFindingAidVersions(findingAidId));
+        List<FaVersion> dataSource = arrangementManager.getFindingAidVersions(findingAidId);
+        sortFa(dataSource);
+        container.addAll(dataSource);
 
         table.addStyleName("table");
         table.setContainerDataSource(container);
-        table.setVisibleColumns("createChange", "lockChange");
+        table.setVisibleColumns(ID_TABLE, "createChange", "lockChange");
 
         components(table);
     }
 
+    /**
+     * seřadí fa vertion list podle data vytvoření.
+     * @param dataSource
+     */
+    private void sortFa(final List<FaVersion> dataSource) {
+        Comparator<FaVersion> comparator = (e1, e2) -> e1.getCreateChange().getChangeDate()
+                .compareTo(e2.getCreateChange().getChangeDate());
+        Collections.sort(dataSource, comparator);
+    }
 }
