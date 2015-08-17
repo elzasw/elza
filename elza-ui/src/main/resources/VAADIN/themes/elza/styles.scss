@@ -42,4 +42,8 @@ $ax-main-focus: $color-app;
 
 }
 
+.v-overlay-container[aria-label="item-not-cut"] .v-menubar-menuitem-show-if-cut{
+    display: none;
+}
+
 

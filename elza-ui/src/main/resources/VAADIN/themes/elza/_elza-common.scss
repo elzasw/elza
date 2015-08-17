@@ -41,3 +41,14 @@
     background: transparent;
   }
 }
+
+.v-Notification{
+    background: #D5D5D5;
+}
+
+.v-Notification.v-position-bottom{
+    bottom: 50px;
+}
+.v-Notification.v-position-right{
+    right: 50px;
+}
