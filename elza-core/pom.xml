@@ -47,10 +47,6 @@
             <artifactId>hsqldb</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jadira.usertype</groupId>
-            <artifactId>usertype.extended</artifactId>
-        </dependency>
-        <dependency>
           <groupId>org.postgresql</groupId>
           <artifactId>postgresql</artifactId>
         </dependency>
@@ -79,13 +75,24 @@
             <version>1.2.1</version>
         </dependency>
 
+        <!-- TODO Burianek dokumentace Rest API
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>2.2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+            <version>2.2.2</version>
+        </dependency>-->
+
         <!-- test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>com.jayway.restassured</groupId>
             <artifactId>rest-assured</artifactId>

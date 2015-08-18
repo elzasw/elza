@@ -9,8 +9,8 @@ Předpokládané softwarové vybavení:
 * [Apache Maven 3.2.+](https://maven.apache.org/download.cgi)
 
 Získání zdrojových kódů `git clone https://open_marbes@bitbucket.org/tacr/elza.git`
-Sestavení vč dokumentace `mvn javadoc:aggregate` `maven -Pdoc install`
-Sestavení a spuštění `maven -Pexec install`
+Sestavení vč dokumentace `maven -Pjdoc package`
+Sestavení a spuštění `maven -Pexec -Dmaven.test.skip=true install`
 
 Pro spuštění aplikace v IDE
 
