@@ -17,7 +17,7 @@ import cz.tacr.elza.domain.FaVersion;
 @Repository
 public interface VersionRepository extends JpaRepository<FaVersion, Integer> {
 
-    @Query(value = "select v from arr_fa_version v join v.createChange ch join v.findingAid fa where fa.findingAidId = :findingAidId order by ch.changeDate desc")
+    @Query(value = "select v from arr_fa_version v join v.createChange ch join v.findingAid fa where fa.findingAidId = :findingAidId order by ch.changeDate asc")
     List<FaVersion> findVersionsByFindingAidIdOrderByCreateDateAsc(@Param(value = "findingAidId") Integer findingAidId);
 
     @Query(value = "select v from arr_fa_version v join v.findingAid fa where fa.findingAidId = :findingAidId and v.lockChange is null")

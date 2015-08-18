@@ -27,9 +27,50 @@ $ax-main-focus: $color-app;
   @import "elza-common";
   @import "elza-table";
 
-  .window-detail {
+  .history-window-detail {
     box-shadow: 0 0 10px 1px $color-app-alt;
     background-color: white;
+
+      .main-panel{
+          overflow-y: auto;
+          overflow-x: hidden;
+          max-height: 500px;
+      }
+
+
+      .version-header{
+          display: table-row;
+
+          > .v-csslayout{
+              display: table-row;
+
+              div:nth-child(1){
+                  width: 150px;
+              }
+              div:nth-child(2){
+                  width: 180px;
+              }
+              div:nth-child(3){
+                  width: 130px;
+                  text-align: center;
+              }
+              div:nth-child(4){
+                  width: 130px;
+                  text-align: center;
+              }
+
+          }
+
+          .version-table-header{
+              font-weight: bold;
+          }
+      }
+
+      .history-box{
+          width: 650px;
+      }
+
+
   }
 
   .window-detail .form {

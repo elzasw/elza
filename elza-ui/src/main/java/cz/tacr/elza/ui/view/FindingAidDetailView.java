@@ -3,9 +3,15 @@ package cz.tacr.elza.ui.view;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nullable;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -16,6 +22,7 @@ import org.springframework.util.CollectionUtils;
 
 import cz.tacr.elza.ElzaApp;
 import cz.tacr.elza.ui.utils.ElzaNotifications;
+import cz.tacr.elza.ui.window.LevelHistoryWindow;
 import ru.xpoft.vaadin.VaadinView;
 
 import com.vaadin.data.Item;
@@ -644,102 +651,10 @@ public class FindingAidDetailView extends ElzaView {
         return form;
     }
 
-    private List<CssLayout> createVersionHistory(final Integer nodeId) {
-        final List<FaLevel> levelList = arrangementManager.findLevels(nodeId);
-        final List<FaVersion> versionList = arrangementManager.getFindingAidVersions(findingAidId);
-        List<CssLayout> resultList = new ArrayList<>();
-        for (FaVersion faVersion : versionList) {
-            List<FaLevel> levelSublist = new ArrayList<>();
-            final Integer idCrateVersion = (faVersion.getCreateChange() == null) ? null : faVersion.getCreateChange().getChangeId();
-            final Integer idLockVersion = (faVersion.getLockChange() == null) ? null : faVersion.getLockChange().getChangeId();
-            Integer lastIdLevel = null;
-            for (FaLevel faLevel : levelList) {
-                final Integer idCrateLevel = (faLevel.getCreateChange() == null)
-                        ? null : faLevel.getCreateChange().getChangeId();
-                final Integer idDeleteLevel = (faLevel.getDeleteChange() == null)
-                        ? null : faLevel.getDeleteChange().getChangeId();
-                // otevrena verze - level do ni nepatri
-                if (idLockVersion == null && idDeleteLevel != null) {
-                    continue;
-                }
-
-                // uzavrena verze - level do ni nepatri
-                if (idLockVersion != null && !(idCrateLevel < idLockVersion 
-                        && (idDeleteLevel == null || idDeleteLevel > idLockVersion))) {
-                    continue;
-                }
-                levelSublist.add(faLevel);
-                lastIdLevel = faLevel.getFaLevelId();
-            }
-            if (levelSublist.isEmpty()) { // verze nema zmeny nodu - nechceme
-                continue;
-            }
-            CssLayout layout = createVersionHistoryItem(faVersion, levelSublist, lastIdLevel);
-            resultList.add(layout);
-        }
-        return resultList;
-    }
-
-    private CssLayout createVersionHistoryItem(FaVersion faVersion, List<FaLevel> levelSublist, Integer lastIdLevel) {
-     // pridani verze
-        CssLayout layout = new CssLayout();
-        layout.setSizeUndefined();
-//        layout.addStyleName("vrItem");
-
-        Label header = newLabel(faVersion.getFaVersionId().toString(), "h2");
-        layout.addComponent(header);
-
-        layout.setSizeUndefined();
-        String lockDataStr = "otevřená";
-        if (faVersion.getLockChange() != null) {
-            lockDataStr = "uzavřena k " + faVersion.getLockChange().getChangeDate()
-                    .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM));
-        }
-        header = newLabel(lockDataStr, "h2");
-        layout.addComponent(header);
-
-        // pridani levlu
-        boolean isFirstLevel = true;
-        for (FaLevel faLevel : levelSublist) {
-            String typZmena = "změna";
-            if (faLevel.getFaLevelId().equals(lastIdLevel) && faLevel.getDeleteChange() != null) {
-                typZmena = "smazání";
-            }
-            if (isFirstLevel) {
-                isFirstLevel = false;
-                typZmena = "vytvoření";
-            }
-
-            Label labelTyp = newLabel(typZmena);
-
-            String createDataStr = faLevel.getCreateChange().getChangeDate()
-                    .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM));
-            Label labelChangeDate = newLabel(createDataStr);
-            
-            String parentNodeId = (faLevel.getParentNodeId() == null) ? "" : faLevel.getParentNodeId().toString();
-            Label labelParent = newLabel(parentNodeId);
-
-            String position = (faLevel.getPosition() == null) ? "" : faLevel.getPosition().toString();
-            Label labelPosition = newLabel(position);
-            
-            CssLayout layoutChildern = new CssLayout(labelTyp, labelChangeDate, labelParent, labelPosition);
-//            layoutChildern.addStyleName("historie-content");
-            layout.addComponent(layoutChildern);
-        }
-        return layout;
-    }
-
-    private void showVersionHistory(final Integer nodeId) {
-        List<CssLayout> componentList = createVersionHistory(nodeId);
-        CssLayout  layout = new CssLayout();
-        layout.setSizeUndefined();
-        for (CssLayout cssLayout : componentList) {
-            layout.addComponent(cssLayout);
-        }
-
-        // new CssLayout(componentList.toArray(new com.vaadin.ui.Component[componentList.size()]))
-        new AxWindow().caption("Historie změn uzlu").components(layout)
-        .buttonClose().modal().style("window-detail").show();
+    private LevelHistoryWindow showVersionHistory(final Integer nodeId) {
+        LevelHistoryWindow window = new LevelHistoryWindow(arrangementManager);
+        window.show(nodeId, findingAidId);
+        return window;
     }
 }
 

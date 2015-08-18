@@ -561,6 +561,6 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
     @RequestMapping(value = "/findLevels", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<FaLevel> findLevels(@RequestParam(value = "nodeId") Integer nodeId) {
         Assert.notNull(nodeId);
-        return levelRepository.findByNodeId(nodeId);
+        return levelRepository.findByNodeIdOrderByCreateChangeAsc(nodeId);
     }
 }
