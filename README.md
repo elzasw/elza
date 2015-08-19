@@ -11,7 +11,7 @@ Předpokládané softwarové vybavení:
 ### Získání zdrojových kódů
 Příkaz:
 ```
-git clone https://open_marbes@bitbucket.org/tacr/elza.git
+git clone https://open_marbes@bitbucket.org/tacr/elza-core-marbes-consulting.git
 ```
 
 ### Sestavení vč dokumentace
