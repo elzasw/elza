@@ -79,6 +79,13 @@
         </pluginManagement>
     </build>
     <profiles>
+
+        <profile>
+            <id>skiptest</id>
+            <properties>
+                <maven.test.skip>true</maven.test.skip>
+            </properties>
+        </profile>
         <profile>
             <id>jdoc</id>
             <build>
