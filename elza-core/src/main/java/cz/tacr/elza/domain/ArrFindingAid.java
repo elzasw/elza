@@ -18,7 +18,7 @@ import cz.req.ax.IdObject;
  */
 @Entity(name = "arr_finding_aid")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class FindingAid implements IdObject<Integer>, cz.tacr.elza.api.FindingAid, Serializable {
+public class ArrFindingAid implements IdObject<Integer>, cz.tacr.elza.api.ArrFindingAid, Serializable {
 
     @Id
     @GeneratedValue

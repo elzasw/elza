@@ -18,8 +18,8 @@ import com.vaadin.ui.Label;
 
 import cz.req.ax.AxWindow;
 import cz.tacr.elza.controller.ArrangementManager;
-import cz.tacr.elza.domain.FaLevel;
-import cz.tacr.elza.domain.FaVersion;
+import cz.tacr.elza.domain.ArrFaLevel;
+import cz.tacr.elza.domain.ArrFaVersion;
 
 
 /**
@@ -54,20 +54,20 @@ public class LevelHistoryWindow extends AxWindow {
 
 
     private List<CssLayout> createVersionHistory(final Integer nodeId, final Integer findingAidId) {
-            final List<FaVersion> versionList = arrangementManager.getFindingAidVersions(findingAidId);
-            List<FaLevel> allLevels = arrangementManager.findLevels(nodeId);
+            final List<ArrFaVersion> versionList = arrangementManager.getFindingAidVersions(findingAidId);
+            List<ArrFaLevel> allLevels = arrangementManager.findLevels(nodeId);
             List<CssLayout> resultList = new ArrayList<>();
 
-            final Map<FaVersion, List<FaLevel>> versionMap = prepareVersionLevelMap(nodeId, findingAidId);
-            FaLevel firstLevel = allLevels.get(0);
-            FaLevel lastLevel = allLevels.get(allLevels.size()-1);
+            final Map<ArrFaVersion, List<ArrFaLevel>> versionMap = prepareVersionLevelMap(nodeId, findingAidId);
+            ArrFaLevel firstLevel = allLevels.get(0);
+            ArrFaLevel lastLevel = allLevels.get(allLevels.size()-1);
 
 
             int versionNumber = 0;
-            for (FaVersion version : versionList) {
+            for (ArrFaVersion version : versionList) {
                 versionNumber++;
 
-                List<FaLevel> levels = versionMap.get(version);
+                List<ArrFaLevel> levels = versionMap.get(version);
                 if(levels == null || levels.isEmpty()) {
                     continue;
                 }
@@ -79,17 +79,17 @@ public class LevelHistoryWindow extends AxWindow {
             return resultList;
         }
 
-        private Map<FaVersion, List<FaLevel>> prepareVersionLevelMap(final Integer nodeId, final Integer findingAidId) {
-            final List<FaLevel> levelList = arrangementManager.findLevels(nodeId);
-            final List<FaVersion> versionList = arrangementManager.getFindingAidVersions(findingAidId);
+        private Map<ArrFaVersion, List<ArrFaLevel>> prepareVersionLevelMap(final Integer nodeId, final Integer findingAidId) {
+            final List<ArrFaLevel> levelList = arrangementManager.findLevels(nodeId);
+            final List<ArrFaVersion> versionList = arrangementManager.getFindingAidVersions(findingAidId);
 
 
-            FaVersion[] versions = new FaVersion[versionList.size()];
+            ArrFaVersion[] versions = new ArrFaVersion[versionList.size()];
             Integer[] versionEnds = new Integer[versionList.size()];
-            final Map<FaVersion, List<FaLevel>> versionMap = new LinkedHashMap<FaVersion, List<FaLevel>>();
+            final Map<ArrFaVersion, List<ArrFaLevel>> versionMap = new LinkedHashMap<ArrFaVersion, List<ArrFaLevel>>();
 
             int index = 0;
-            for (FaVersion faVersion : versionList) {
+            for (ArrFaVersion faVersion : versionList) {
                 versionEnds[index] = faVersion.getLockChange() == null ? Integer.MAX_VALUE
                                                                        : faVersion.getLockChange().getChangeId();
                 versions[index] = faVersion;
@@ -97,13 +97,13 @@ public class LevelHistoryWindow extends AxWindow {
             }
 
             boolean firstLevel = true;
-            for (FaLevel faLevel : levelList) {
-                FaVersion version = getVersionByChangeId(firstLevel, faLevel, versionEnds, versions);
+            for (ArrFaLevel faLevel : levelList) {
+                ArrFaVersion version = getVersionByChangeId(firstLevel, faLevel, versionEnds, versions);
                 firstLevel = false;
 
-                List<FaLevel> levels = versionMap.get(version);
+                List<ArrFaLevel> levels = versionMap.get(version);
                 if (levels == null) {
-                    levels = new LinkedList<FaLevel>();
+                    levels = new LinkedList<ArrFaLevel>();
                     versionMap.put(version, levels);
                 }
                 levels.add(faLevel);
@@ -112,10 +112,10 @@ public class LevelHistoryWindow extends AxWindow {
             return versionMap;
         }
 
-        private FaVersion getVersionByChangeId(final boolean firstLevel,
-                                               @Nullable final FaLevel faLevel,
+        private ArrFaVersion getVersionByChangeId(final boolean firstLevel,
+                                               @Nullable final ArrFaLevel faLevel,
                                                final Integer[] versionEnds,
-                                               final FaVersion[] versions) {
+                                               final ArrFaVersion[] versions) {
             Integer deleteId = faLevel.getDeleteChange() == null ? null : faLevel.getDeleteChange().getChangeId();
             if (firstLevel || deleteId == null) {
                 Integer createId = faLevel.getCreateChange().getChangeId();
@@ -136,10 +136,10 @@ public class LevelHistoryWindow extends AxWindow {
 
 
         private CssLayout createVersionHistoryItem(final int versionNumber,
-                                                   FaVersion faVersion,
-                                                   List<FaLevel> levelSublist,
-                                                   FaLevel firstLevel,
-                                                   FaLevel lastLevel) {
+                                                   ArrFaVersion faVersion,
+                                                   List<ArrFaLevel> levelSublist,
+                                                   ArrFaLevel firstLevel,
+                                                   ArrFaLevel lastLevel) {
          // pridani verze
             CssLayout layout = new CssLayout();
             layout.setSizeUndefined();
@@ -164,7 +164,7 @@ public class LevelHistoryWindow extends AxWindow {
                 layout.addComponent(createVersionHistoryHeader());
 
                 // pridani levlu
-                for (FaLevel faLevel : levelSublist) {
+                for (ArrFaLevel faLevel : levelSublist) {
                     String typZmena = "změna";
 
                     if (faLevel.equals(lastLevel) && lastLevel.getDeleteChange() != null) {

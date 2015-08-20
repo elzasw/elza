@@ -8,9 +8,9 @@ import cz.req.ax.*;
 import cz.req.ax.util.LocalDateTimeConverter;
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleSetManager;
-import cz.tacr.elza.domain.ArrangementType;
-import cz.tacr.elza.domain.FindingAid;
-import cz.tacr.elza.domain.RuleSet;
+import cz.tacr.elza.domain.ArrArrangementType;
+import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.ui.ElzaView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -38,10 +38,10 @@ public class FindingAidListView extends ElzaView {
     @Autowired
     private RuleSetManager ruleSetManager;
 
-    AxContainer<ArrangementType> arTypeContainer;
-    AxContainer<RuleSet> ruleSetContainer;
-    AxTable<FindingAid> tableFA;
-    AxForm<FindingAid> formFA;
+    AxContainer<ArrArrangementType> arTypeContainer;
+    AxContainer<RulRuleSet> ruleSetContainer;
+    AxTable<ArrFindingAid> tableFA;
+    AxForm<ArrFindingAid> formFA;
 
     @Override
     public void enter(final ViewChangeListener.ViewChangeEvent event) {
@@ -51,7 +51,7 @@ public class FindingAidListView extends ElzaView {
 
         formFA = formularFA();
 
-        tableFA = new AxBeanTable<>(AxContainer.init(FindingAid.class).supplier(arrangementManager::getFindingAids));
+        tableFA = new AxBeanTable<>(AxContainer.init(ArrFindingAid.class).supplier(arrangementManager::getFindingAids));
         tableFA.select(findingAid -> navigate(FindingAidDetailView.class, findingAid.getFindingAidId()));
         tableFA.header(Table.ColumnHeaderMode.EXPLICIT_DEFAULTS_ID)
                 .column("name").header("Název")
@@ -81,10 +81,10 @@ public class FindingAidListView extends ElzaView {
         ).modal().style("window-detail").show();
     }
 
-    private void upravitFA(final FindingAid findingAid) {
+    private void upravitFA(final ArrFindingAid findingAid) {
         formFA.setValue(findingAid);
         new AxWindow().caption("Úprava archivní pomůcky").components(formFA).buttonClose().buttonPrimary(
-                new AxAction<FindingAid>().caption("Uložit")
+                new AxAction<ArrFindingAid>().caption("Uložit")
                         .value(formFA::commit).action(this::ulozitFA)
                         .exception(ex -> ex.printStackTrace())
         ).modal().style("window-detail").show();
@@ -96,12 +96,12 @@ public class FindingAidListView extends ElzaView {
         refresh();
     }
 
-    private void ulozitFA(final FindingAid findingAid) {
+    private void ulozitFA(final ArrFindingAid findingAid) {
         arrangementManager.updateFindingAid(findingAid.getFindingAidId(), findingAid.getName());
         refresh();
     }
 
-    private void smazatFA(final FindingAid findingAid) {
+    private void smazatFA(final ArrFindingAid findingAid) {
         arrangementManager.deleteFindingAid(findingAid.getFindingAidId());
         refresh();
     }
@@ -109,8 +109,8 @@ public class FindingAidListView extends ElzaView {
     @Bean
     @Scope("prototype")
     @Qualifier("formularFA")
-    AxForm<FindingAid> formularFA() {
-        AxForm<FindingAid> form = AxForm.init(FindingAid.class);
+    AxForm<ArrFindingAid> formularFA() {
+        AxForm<ArrFindingAid> form = AxForm.init(ArrFindingAid.class);
         form.addStyleName("form");
         form.addField("Název", "name").required();
         return form;
@@ -130,13 +130,13 @@ public class FindingAidListView extends ElzaView {
             }
         });
 
-        arTypeContainer = new AxContainer<>(ArrangementType.class).supplier(arrangementManager::getArrangementTypes);
+        arTypeContainer = new AxContainer<>(ArrArrangementType.class).supplier(arrangementManager::getArrangementTypes);
         arTypeContainer.setBeanIdProperty("arrangementTypeId");
-        form.addCombo("Typ výstupu", "arrangementTypeId", arTypeContainer, ArrangementType::getName).required();
+        form.addCombo("Typ výstupu", "arrangementTypeId", arTypeContainer, ArrArrangementType::getName).required();
 
-        ruleSetContainer = new AxContainer<>(RuleSet.class).supplier(ruleSetManager::getRuleSets);
+        ruleSetContainer = new AxContainer<>(RulRuleSet.class).supplier(ruleSetManager::getRuleSets);
         ruleSetContainer.setBeanIdProperty("ruleSetId");
-        form.addCombo("Pravidla tvorby", "ruleSetId", ruleSetContainer, RuleSet::getName).required();
+        form.addCombo("Pravidla tvorby", "ruleSetId", ruleSetContainer, RulRuleSet::getName).required();
 
         return form;
     }

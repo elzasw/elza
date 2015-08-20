@@ -1,6 +1,5 @@
 package cz.tacr.elza.domain;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import javax.persistence.Column;
@@ -18,7 +17,7 @@ import cz.req.ax.IdObject;
  */
 @Entity(name = "arr_fa_change")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class FaChange implements IdObject<Integer>, cz.tacr.elza.api.FaChange {
+public class ArrFaChange implements IdObject<Integer>, cz.tacr.elza.api.ArrFaChange {
 
     @Id
     @GeneratedValue
@@ -49,7 +48,7 @@ public class FaChange implements IdObject<Integer>, cz.tacr.elza.api.FaChange {
 
     @Override
     public String toString() {
-        return "FaChange pk=" + changeId;
+        return "ArrFaChange pk=" + changeId;
     }
 
     @Override

@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import cz.tacr.elza.domain.RuleSet;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.RuleSetRepository;
 
 /**
@@ -25,7 +25,7 @@ public class RuleSetManager implements cz.tacr.elza.api.controller.RuleSetManage
 
     @Override
     @RequestMapping(value = "/getRuleSets", method = RequestMethod.GET)
-    public List<RuleSet> getRuleSets() {
+    public List<RulRuleSet> getRuleSets() {
         return ruleSetRepository.findAll();
     }
 }

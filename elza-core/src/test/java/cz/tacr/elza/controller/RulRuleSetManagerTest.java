@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.jayway.restassured.response.Response;
 
-import cz.tacr.elza.domain.RuleSet;
+import cz.tacr.elza.domain.RulRuleSet;
 
 /**
  * Testy pro {@link RuleSetManager}.
@@ -21,7 +21,7 @@ import cz.tacr.elza.domain.RuleSet;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 31. 7. 2015
  */
-public class RuleSetManagerTest extends AbstractRestTest {
+public class RulRuleSetManagerTest extends AbstractRestTest {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -38,7 +38,7 @@ public class RuleSetManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        List<RuleSet> ruleSets = Arrays.asList(response.getBody().as(RuleSet[].class));
+        List<RulRuleSet> ruleSets = Arrays.asList(response.getBody().as(RulRuleSet[].class));
 
         Assert.assertTrue("Nenalezena polozka " + TEST_NAME, !ruleSets.isEmpty());
     }

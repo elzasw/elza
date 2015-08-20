@@ -10,17 +10,19 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.req.ax.IdObject;
 
+import java.io.Serializable;
+
 /**
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
-@Entity(name = "rul_arrangement_type")
+@Entity(name = "rul_rule_set")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrangementType implements IdObject<Integer>, cz.tacr.elza.api.ArrangementType {
+public class RulRuleSet implements IdObject<Integer>, cz.tacr.elza.api.RulRuleSet, Serializable {
 
     @Id
     @GeneratedValue
-    private Integer arrangementTypeId;
+    private Integer ruleSetId;
 
     @Column(length = 5, nullable = false)
     private String code;
@@ -29,13 +31,23 @@ public class ArrangementType implements IdObject<Integer>, cz.tacr.elza.api.Arra
     private String name;
 
     @Override
-    public Integer getArrangementTypeId() {
-        return arrangementTypeId;
+    public Integer getRuleSetId() {
+        return ruleSetId;
     }
 
     @Override
-    public void setArrangementTypeId(final Integer arrangementTypeId) {
-        this.arrangementTypeId = arrangementTypeId;
+    public void setRuleSetId(final Integer ruleSetId) {
+        this.ruleSetId = ruleSetId;
+    }
+
+    @Override
+    public String getCode() {
+      return code;
+    }
+
+    @Override
+    public void setCode(String code) {
+      this.code = code;
     }
 
     @Override
@@ -49,23 +61,13 @@ public class ArrangementType implements IdObject<Integer>, cz.tacr.elza.api.Arra
     }
 
     @Override
-    public String getCode() {
-        return code;
-    }
-
-    @Override
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    @Override
     public String toString() {
-        return "ArrangementType pk=" + arrangementTypeId;
+        return "RulRuleSet pk=" + ruleSetId;
     }
 
     @Override
     @JsonIgnore
     public Integer getId() {
-        return arrangementTypeId;
+        return ruleSetId;
     }
 }

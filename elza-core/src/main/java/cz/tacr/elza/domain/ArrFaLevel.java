@@ -1,6 +1,5 @@
 package cz.tacr.elza.domain;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
 import javax.persistence.Column;
@@ -27,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity(name = "arr_fa_level")
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"position", "parentNodeId", "deleteChangeId"}))
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class FaLevel implements IdObject<Integer>, cz.tacr.elza.api.FaLevel<FaChange> {
+public class ArrFaLevel implements IdObject<Integer>, cz.tacr.elza.api.ArrFaLevel<ArrFaChange> {
 
     @Id
     @GeneratedValue
@@ -39,13 +38,13 @@ public class FaLevel implements IdObject<Integer>, cz.tacr.elza.api.FaLevel<FaCh
     @Column(name = "parentNodeId", nullable = true)
     private Integer parentNodeId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = FaChange.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaChange.class)
     @JoinColumn(name = "createChangeId", nullable = false)
-    private FaChange createChange;
+    private ArrFaChange createChange;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = FaChange.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaChange.class)
     @JoinColumn(name = "deleteChangeId", nullable = true)
-    private FaChange deleteChange;
+    private ArrFaChange deleteChange;
 
     @Column(nullable = false)
     private Integer position;
@@ -81,22 +80,22 @@ public class FaLevel implements IdObject<Integer>, cz.tacr.elza.api.FaLevel<FaCh
     }
 
     @Override
-    public FaChange getCreateChange() {
+    public ArrFaChange getCreateChange() {
         return createChange;
     }
 
     @Override
-    public void setCreateChange(FaChange createChange) {
+    public void setCreateChange(ArrFaChange createChange) {
         this.createChange = createChange;
     }
 
     @Override
-    public FaChange getDeleteChange() {
+    public ArrFaChange getDeleteChange() {
         return deleteChange;
     }
 
     @Override
-    public void setDeleteChange(final FaChange deleteChange) {
+    public void setDeleteChange(final ArrFaChange deleteChange) {
         this.deleteChange = deleteChange;
     }
 
@@ -118,13 +117,13 @@ public class FaLevel implements IdObject<Integer>, cz.tacr.elza.api.FaLevel<FaCh
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof FaLevel)) {
+        if (!(obj instanceof ArrFaLevel)) {
             return false;
         }
         if (this == obj) {
             return true;
         }
-        FaLevel other = (FaLevel) obj;
+        ArrFaLevel other = (ArrFaLevel) obj;
         return EqualsBuilder.reflectionEquals(this, other, Arrays.asList("parentNode"));
     }
 
@@ -135,6 +134,6 @@ public class FaLevel implements IdObject<Integer>, cz.tacr.elza.api.FaLevel<FaCh
 
     @Override
     public String toString() {
-        return "FaLevel pk=" + faLevelId;
+        return "ArrFaLevel pk=" + faLevelId;
     }
 }

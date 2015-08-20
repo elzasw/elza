@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import cz.req.ax.IdObject;
 
-import java.io.Serializable;
 
 /**
  * @author by Ondřej Buriánek, burianek@marbes.cz.
@@ -19,35 +18,36 @@ import java.io.Serializable;
  */
 @Entity(name = "arr_fa_version")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class FaVersion implements IdObject<Integer>, cz.tacr.elza.api.FaVersion<FindingAid, FaChange, FaLevel, ArrangementType, RuleSet> {
+public class ArrFaVersion implements IdObject<Integer>,
+                                     cz.tacr.elza.api.ArrFaVersion<ArrFindingAid, ArrFaChange, ArrFaLevel, ArrArrangementType, RulRuleSet> {
 
     @Id
     @GeneratedValue
     private Integer faVersionId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = FaChange.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaChange.class)
     @JoinColumn(name = "createChangeId", nullable = false)
-    private FaChange createChange;
+    private ArrFaChange createChange;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = FaChange.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaChange.class)
     @JoinColumn(name = "lockChangeId", nullable = true)
-    private FaChange lockChange;
+    private ArrFaChange lockChange;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = FaLevel.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaLevel.class)
     @JoinColumn(name = "rootNodeId", nullable = true, referencedColumnName = "nodeId")
-    private FaLevel rootNode;
+    private ArrFaLevel rootNode;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = FindingAid.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFindingAid.class)
     @JoinColumn(name = "findingAidId", nullable = false)
-    private FindingAid findingAid;
+    private ArrFindingAid findingAid;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrangementType.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrArrangementType.class)
     @JoinColumn(name = "arrangementTypeId", nullable = false)
-    private ArrangementType arrangementType;
+    private ArrArrangementType arrangementType;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RuleSet.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
     @JoinColumn(name = "ruleSetId", nullable = false)
-    private RuleSet ruleSet;
+    private RulRuleSet ruleSet;
 
     @Override
     public Integer getFaVersionId() {
@@ -60,62 +60,62 @@ public class FaVersion implements IdObject<Integer>, cz.tacr.elza.api.FaVersion<
     }
 
     @Override
-    public FaChange getCreateChange() {
+    public ArrFaChange getCreateChange() {
         return createChange;
     }
 
     @Override
-    public void setCreateChange(final FaChange createChange) {
+    public void setCreateChange(final ArrFaChange createChange) {
         this.createChange = createChange;
     }
 
     @Override
-    public FaChange getLockChange() {
+    public ArrFaChange getLockChange() {
         return lockChange;
     }
 
     @Override
-    public void setLockChange(final FaChange lockChange) {
+    public void setLockChange(final ArrFaChange lockChange) {
         this.lockChange = lockChange;
     }
 
     @Override
-    public FaLevel getRootNode() {
+    public ArrFaLevel getRootNode() {
         return rootNode;
     }
 
     @Override
-    public void setRootNode(final FaLevel rootNode) {
+    public void setRootNode(final ArrFaLevel rootNode) {
         this.rootNode = rootNode;
     }
 
     @Override
-    public FindingAid getFindingAid() {
+    public ArrFindingAid getFindingAid() {
         return findingAid;
     }
 
     @Override
-    public void setFindingAid(final FindingAid findingAid) {
+    public void setFindingAid(final ArrFindingAid findingAid) {
         this.findingAid = findingAid;
     }
 
     @Override
-    public ArrangementType getArrangementType() {
+    public ArrArrangementType getArrangementType() {
         return arrangementType;
     }
 
     @Override
-    public void setArrangementType(final ArrangementType arrangementType) {
+    public void setArrangementType(final ArrArrangementType arrangementType) {
         this.arrangementType = arrangementType;
     }
 
     @Override
-    public RuleSet getRuleSet() {
+    public RulRuleSet getRuleSet() {
         return ruleSet;
     }
 
     @Override
-    public void setRuleSet(final RuleSet ruleSet) {
+    public void setRuleSet(final RulRuleSet ruleSet) {
         this.ruleSet = ruleSet;
     }
 
@@ -127,7 +127,7 @@ public class FaVersion implements IdObject<Integer>, cz.tacr.elza.api.FaVersion<
 
     @Override
     public String toString() {
-        return "FaVersion pk=" + faVersionId;
+        return "ArrFaVersion pk=" + faVersionId;
     }
 
 
@@ -140,7 +140,7 @@ public class FaVersion implements IdObject<Integer>, cz.tacr.elza.api.FaVersion<
             return false;
         }
 
-        FaVersion version = (FaVersion) o;
+        ArrFaVersion version = (ArrFaVersion) o;
 
         if (faVersionId != null ? !faVersionId.equals(version.faVersionId) : version.faVersionId != null) {
             return false;

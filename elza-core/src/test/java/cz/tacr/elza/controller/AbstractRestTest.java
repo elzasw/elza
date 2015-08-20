@@ -15,12 +15,12 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import com.jayway.restassured.RestAssured;
 
 import cz.tacr.elza.ElzaCore;
-import cz.tacr.elza.domain.ArrangementType;
-import cz.tacr.elza.domain.FaChange;
-import cz.tacr.elza.domain.FaLevel;
-import cz.tacr.elza.domain.FaVersion;
-import cz.tacr.elza.domain.FindingAid;
-import cz.tacr.elza.domain.RuleSet;
+import cz.tacr.elza.domain.ArrFaChange;
+import cz.tacr.elza.domain.ArrFaVersion;
+import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ArrArrangementType;
+import cz.tacr.elza.domain.ArrFaLevel;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
@@ -87,52 +87,52 @@ public abstract class AbstractRestTest {
         changeRepository.deleteAll();
     }
 
-    protected ArrangementType createArrangementType() {
-        ArrangementType arrangementType = new ArrangementType();
+    protected ArrArrangementType createArrangementType() {
+        ArrArrangementType arrangementType = new ArrArrangementType();
         arrangementType.setName(TEST_NAME);
         arrangementType.setCode(TEST_CODE);
         arrangementTypeRepository.save(arrangementType);
         return arrangementType;
     }
 
-    protected RuleSet createRuleSet() {
-        RuleSet ruleSet = new RuleSet();
+    protected RulRuleSet createRuleSet() {
+        RulRuleSet ruleSet = new RulRuleSet();
         ruleSet.setName(TEST_NAME);
         ruleSet.setCode(TEST_CODE);
         ruleSetRepository.save(ruleSet);
         return ruleSet;
     }
 
-    protected FindingAid createFindingAid(final String name) {
-        RuleSet ruleSet = createRuleSet();
-        ArrangementType arrangementType = createArrangementType();
+    protected ArrFindingAid createFindingAid(final String name) {
+        RulRuleSet ruleSet = createRuleSet();
+        ArrArrangementType arrangementType = createArrangementType();
 
         return arrangementManager.createFindingAid(name, arrangementType.getId(), ruleSet.getId());
     }
 
-    protected FaVersion createFindingAidVersion(final FindingAid findingAid, boolean isLock) {
-        FaLevel root = levelRepository.findAll().iterator().next();
+    protected ArrFaVersion createFindingAidVersion(final ArrFindingAid findingAid, boolean isLock) {
+        ArrFaLevel root = levelRepository.findAll().iterator().next();
         return createFindingAidVersion(findingAid, root, isLock);
     }
 
-    protected FaChange createFaChange(final LocalDateTime changeDate) {
-        FaChange resultChange = new FaChange();
+    protected ArrFaChange createFaChange(final LocalDateTime changeDate) {
+        ArrFaChange resultChange = new ArrFaChange();
         resultChange.setChangeDate(changeDate);
         changeRepository.save(resultChange);
         return resultChange;
     }
 
-    protected FaVersion createFindingAidVersion(final FindingAid findingAid, final FaLevel root, boolean isLock) {
-        RuleSet ruleSet = ruleSetRepository.findAll().iterator().next();
-        ArrangementType arrangementType = arrangementTypeRepository.findAll().iterator().next();
-        FaChange createChange = createFaChange(LocalDateTime.now());
+    protected ArrFaVersion createFindingAidVersion(final ArrFindingAid findingAid, final ArrFaLevel root, boolean isLock) {
+        RulRuleSet ruleSet = ruleSetRepository.findAll().iterator().next();
+        ArrArrangementType arrangementType = arrangementTypeRepository.findAll().iterator().next();
+        ArrFaChange createChange = createFaChange(LocalDateTime.now());
 
-        FaChange lockChange = null;
+        ArrFaChange lockChange = null;
         if (isLock) {
             lockChange = createFaChange(LocalDateTime.now());
         }
 
-        FaVersion version = new FaVersion();
+        ArrFaVersion version = new ArrFaVersion();
         version.setArrangementType(arrangementType);
         version.setCreateChange(createChange);
         version.setLockChange(lockChange);
@@ -143,8 +143,8 @@ public abstract class AbstractRestTest {
         return versionRepository.save(version);
     }
 
-    protected FaLevel createLevel(final Integer position, final FaLevel parent, final FaChange change) {
-        FaLevel level = new FaLevel();
+    protected ArrFaLevel createLevel(final Integer position, final ArrFaLevel parent, final ArrFaChange change) {
+        ArrFaLevel level = new ArrFaLevel();
         level.setPosition(position);
         if (parent != null) {
             level.setParentNodeId(parent.getNodeId());

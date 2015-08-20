@@ -1,6 +1,6 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.FindingAid;
+import cz.tacr.elza.domain.ArrFindingAid;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,6 +9,6 @@ import org.springframework.stereotype.Repository;
  * @since 22.7.15
  */
 @Repository
-public interface FindingAidRepository extends JpaRepository<FindingAid, Integer> {
+public interface FindingAidRepository extends JpaRepository<ArrFindingAid, Integer> {
 
 }

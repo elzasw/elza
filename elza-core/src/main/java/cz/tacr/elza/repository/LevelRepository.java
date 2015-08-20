@@ -6,8 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.FaChange;
-import cz.tacr.elza.domain.FaLevel;
+import cz.tacr.elza.domain.ArrFaChange;
+import cz.tacr.elza.domain.ArrFaLevel;
 
 
 /**
@@ -15,26 +15,26 @@ import cz.tacr.elza.domain.FaLevel;
  * @since 22.7.15
  */
 @Repository
-public interface LevelRepository extends JpaRepository<FaLevel, Integer> {
+public interface LevelRepository extends JpaRepository<ArrFaLevel, Integer> {
 
     @Query(value = "SELECT max(l.nodeId) FROM arr_fa_level l")
     Integer findMaxNodeId();
 
-    List<FaLevel> findByParentNodeIdAndDeleteChangeIsNullOrderByPositionAsc(Integer parentNodeId);
+    List<ArrFaLevel> findByParentNodeIdAndDeleteChangeIsNullOrderByPositionAsc(Integer parentNodeId);
 
     @Query("SELECT c FROM arr_fa_level c WHERE c.parentNodeId = ?1 "
             + "and c.createChange < ?2 and (c.deleteChange is null or c.deleteChange > ?2)"
             + " order by c.position asc")
-    List<FaLevel> findByParentNodeOrderByPositionAsc(Integer parentNodeId, FaChange change);
+    List<ArrFaLevel> findByParentNodeOrderByPositionAsc(Integer parentNodeId, ArrFaChange change);
 
     @Query("SELECT max(l.position) FROM arr_fa_level l WHERE l.parentNodeId = ?1 and l.deleteChange is null")
     Integer findMaxPositionUnderParent(Integer parentNodeId);
 
     @Query("SELECT l FROM arr_fa_level l WHERE l.parentNodeId = ?1  and l.position > ?2 and l.deleteChange is null order by l.position asc")
-    List<FaLevel> findByParentNodeAndPositionGreaterThanOrderByPositionAsc(Integer getParentNodeId, Integer position);
+    List<ArrFaLevel> findByParentNodeAndPositionGreaterThanOrderByPositionAsc(Integer getParentNodeId, Integer position);
 
-    FaLevel findByNodeIdAndDeleteChangeIsNull(Integer levelId);
+    ArrFaLevel findByNodeIdAndDeleteChangeIsNull(Integer levelId);
 
     @Query("SELECT l FROM arr_fa_level l WHERE l.nodeId = ?1 order by l.createChange.changeDate asc")
-    List<FaLevel> findByNodeIdOrderByCreateChangeAsc(Integer nodeId);
+    List<ArrFaLevel> findByNodeIdOrderByCreateChangeAsc(Integer nodeId);
 }

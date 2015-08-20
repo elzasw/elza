@@ -2,8 +2,8 @@ package cz.tacr.elza.api;
 
 import java.io.Serializable;
 
-public interface FaVersion<FA extends FindingAid, FC extends FaChange,FL extends FaLevel,
-        AT extends ArrangementType, RS extends RuleSet> extends Serializable {
+public interface ArrFaVersion<FA extends ArrFindingAid, FC extends ArrFaChange,FL extends ArrFaLevel,
+        AT extends ArrArrangementType, RS extends RulRuleSet> extends Serializable {
 
     Integer getFaVersionId();
 

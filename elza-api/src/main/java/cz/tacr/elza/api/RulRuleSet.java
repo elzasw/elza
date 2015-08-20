@@ -2,7 +2,7 @@ package cz.tacr.elza.api;
 
 import java.io.Serializable;
 
-public interface RuleSet extends Serializable {
+public interface RulRuleSet extends Serializable {
 
     Integer getRuleSetId();
 

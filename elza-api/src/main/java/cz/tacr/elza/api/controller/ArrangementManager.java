@@ -2,10 +2,11 @@ package cz.tacr.elza.api.controller;
 
 import java.util.List;
 
-import cz.tacr.elza.api.ArrangementType;
-import cz.tacr.elza.api.FaLevel;
-import cz.tacr.elza.api.FaVersion;
-import cz.tacr.elza.api.FindingAid;
+import cz.tacr.elza.api.ArrArrangementType;
+import cz.tacr.elza.api.ArrFaLevel;
+import cz.tacr.elza.api.ArrFaVersion;
+import cz.tacr.elza.api.ArrFindingAid;
+
 
 /**
  *
@@ -23,7 +24,7 @@ public interface ArrangementManager {
      * @param ruleSetId         id pravidel podle kterých se vytváří popis
      * @return nová archivní pomůcka
      */
-    FindingAid createFindingAid(String name, Integer arrangementTypeId, Integer ruleSetId);
+    ArrFindingAid createFindingAid(String name, Integer arrangementTypeId, Integer ruleSetId);
 
     /**
      * Smaže archivní pomůcku se zadaným id. Maže kompletní strukturu se všemi závislostmi.
@@ -37,7 +38,7 @@ public interface ArrangementManager {
      *
      * @return všechny archivní pomůcky
      */
-    List<? extends FindingAid> getFindingAids();
+    List<? extends ArrFindingAid> getFindingAids();
 
     /**
      * Aktualizace názvu archivní pomůcky.
@@ -46,14 +47,14 @@ public interface ArrangementManager {
      * @param name         název arhivní pomůcky
      * @return aktualizovaná archivní pomůcka
      */
-    FindingAid updateFindingAid(Integer findingAidId, String name);
+    ArrFindingAid updateFindingAid(Integer findingAidId, String name);
 
     /**
      * Vrátí všechny typy výstupu.
      *
      * @return všechny typy výstupu
      */
-    List<? extends ArrangementType> getArrangementTypes();
+    List<? extends ArrArrangementType> getArrangementTypes();
 
     /**
      * Vrátí seznam verzí pro danou archivní pomůcku seřazený od nejnovější k nejstarší.
@@ -61,7 +62,7 @@ public interface ArrangementManager {
      * @param findingAidId id archivní pomůcky
      * @return seznam verzí pro danou archivní pomůcku seřazený od nejnovější k nejstarší
      */
-    List<? extends FaVersion> getFindingAidVersions(Integer findingAidId);
+    List<? extends ArrFaVersion> getFindingAidVersions(Integer findingAidId);
 
     /**
      * Vrátí archivní pomůcku.
@@ -69,7 +70,7 @@ public interface ArrangementManager {
      * @param findingAidId id archivní pomůcky
      * @return archivní pomůcka
      */
-    FindingAid getFindingAid(Integer findingAidId);
+    ArrFindingAid getFindingAid(Integer findingAidId);
 
     /**
      * Schválí otevřenou verzi archivní pomůcky a otevře novou verzi.
@@ -79,7 +80,7 @@ public interface ArrangementManager {
      * @param ruleSetId         id pravidel podle kterých se vytváří popis v nové verzi
      * @return nová verze archivní pomůcky
      */
-    FaVersion approveVersion(Integer findingAidId, Integer arrangementTypeId, Integer ruleSetId);
+    ArrFaVersion approveVersion(Integer findingAidId, Integer arrangementTypeId, Integer ruleSetId);
 
     /**
      * Vytvoří nový uzel v první úrovni archivní položky
@@ -87,7 +88,7 @@ public interface ArrangementManager {
      * @param findingAidId    id archivní pomůcky
      * @return                nový záznam z archivný pomůcky
      */
-    FaLevel addLevel(Integer findingAidId) ;
+    ArrFaLevel addLevel(Integer findingAidId) ;
 
     /**
      * Vytvoří nový uzel za předaným uzlem.
@@ -95,7 +96,7 @@ public interface ArrangementManager {
      * @param nodeId        id uzlu za kterým se má vytvořit nový
      * @return              nový uzel
      */
-    FaLevel addLevelAfter(Integer nodeId);
+    ArrFaLevel addLevelAfter(Integer nodeId);
 
     /**
      * Vytvoří nový uzel na poslední pozici pod předaným uzlem.
@@ -103,7 +104,7 @@ public interface ArrangementManager {
      * @param nodeId        id uzlu pod kterým se má vytvořit nový
      * @return              nový uzel
      */
-    FaLevel addLevelChild(Integer nodeId);
+    ArrFaLevel addLevelChild(Integer nodeId);
 
     /**
      * Přesune uzel na poslední pozici pod předaným uzlem.
@@ -112,7 +113,7 @@ public interface ArrangementManager {
      * @param parentNodeId id uzlu pod který se má uzel přesunout
      * @return             přesunutý uzel
      */
-    FaLevel moveLevelUnder(Integer nodeId, Integer parentNodeId);
+    ArrFaLevel moveLevelUnder(Integer nodeId, Integer parentNodeId);
 
     /**
      * Přesune uzel za předaný uzel.
@@ -121,7 +122,7 @@ public interface ArrangementManager {
      * @param predecessorNodeId id uzlu za který se má uzel přesunout
      * @return                   přesunutý uzel
      */
-    FaLevel moveLevelAfter(Integer nodeId, Integer predecessorNodeId);
+    ArrFaLevel moveLevelAfter(Integer nodeId, Integer predecessorNodeId);
 
     /**
      * Smaže uzel.
@@ -129,7 +130,7 @@ public interface ArrangementManager {
      * @param nodeId            id uzlu který maže
      * @return                  smazaný uzel
      */
-    FaLevel deleteLevel(Integer nodeId);
+    ArrFaLevel deleteLevel(Integer nodeId);
 
     /**
      * Načte uzel podle identifikátoru.
@@ -137,7 +138,7 @@ public interface ArrangementManager {
      * @param nodeId            id uzlu
      * @return                  uzel s daným identifikátorem
      */
-    FaLevel findLevelByNodeId(Integer nodeId);
+    ArrFaLevel findLevelByNodeId(Integer nodeId);
 
     /**
      * Načte neuzavřenou verzi archivní pomůcky.
@@ -145,7 +146,7 @@ public interface ArrangementManager {
      * @param findingAidId      id archivní pomůcky
      * @return                  verze
      */
-    FaVersion getOpenVersionByFindingAidId(Integer findingAidId);
+    ArrFaVersion getOpenVersionByFindingAidId(Integer findingAidId);
 
     /**
      * Načte verzi podle identifikátoru.
@@ -153,7 +154,7 @@ public interface ArrangementManager {
      * @param versionId      id verze
      * @return               verze s daným identifikátorem
      */
-    FaVersion getFaVersionById(Integer versionId);
+    ArrFaVersion getFaVersionById(Integer versionId);
 
     /**
      * Načte potomky daného uzlu v konkrétní verzi. Pokud není identifikátor verze předaný načítají se potomci
@@ -163,5 +164,5 @@ public interface ArrangementManager {
      * @param versionId   id verze, může být null
      * @return            potomci předaného uzlu
      */
-    List<? extends FaLevel> findSubLevels(Integer nodeId, Integer versionId);
+    List<? extends ArrFaLevel> findSubLevels(Integer nodeId, Integer versionId);
 }

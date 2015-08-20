@@ -2,7 +2,7 @@ package cz.tacr.elza.api.controller;
 
 import java.util.List;
 
-import cz.tacr.elza.api.RuleSet;
+import cz.tacr.elza.api.RulRuleSet;
 
 
 /**
@@ -18,6 +18,6 @@ public interface RuleSetManager {
      *
      * @return všechny sady pravidel
      */
-    List<? extends RuleSet> getRuleSets();
+    List<? extends RulRuleSet> getRuleSets();
 
 }

@@ -19,12 +19,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.jayway.restassured.response.Response;
 
-import cz.tacr.elza.domain.ArrangementType;
-import cz.tacr.elza.domain.FaChange;
-import cz.tacr.elza.domain.FaLevel;
-import cz.tacr.elza.domain.FaVersion;
-import cz.tacr.elza.domain.FindingAid;
-import cz.tacr.elza.domain.RuleSet;
+import cz.tacr.elza.domain.ArrArrangementType;
+import cz.tacr.elza.domain.ArrFaLevel;
+import cz.tacr.elza.domain.ArrFaVersion;
+import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ArrFaChange;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
@@ -91,7 +91,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
     @Test
     @Transactional
     public void testDeleteFindingAid() throws Exception {
-        FindingAid findingAid = createFindingAid(TEST_NAME);
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
         arrangementManager.deleteFindingAid(findingAid.getFindingAidId());
     }
@@ -107,7 +107,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
     @Test
     @Transactional
     public void testUpdateFindingAid() throws Exception {
-        FindingAid findingAid = createFindingAid(TEST_NAME);
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
         arrangementManager.updateFindingAid(findingAid.getFindingAidId(), TEST_UPDATE_NAME);
     }
@@ -115,7 +115,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
     // ---- REST test ----
     @Test
     public void testRestCreateFindingAid() throws Exception {
-        FindingAid findingAid = createFindingAidRest(TEST_NAME);
+        ArrFindingAid findingAid = createFindingAidRest(TEST_NAME);
 
         Assert.assertNotNull(findingAid);
         Assert.assertNotNull(findingAid.getFindingAidId());
@@ -123,9 +123,9 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
     @Test
     public void testRestGetFindingAid() throws Exception {
-        FindingAid findingAid = createFindingAidRest(TEST_NAME);
+        ArrFindingAid findingAid = createFindingAidRest(TEST_NAME);
 
-        FindingAid getFindingAid = getFindingAid(findingAid.getFindingAidId());
+        ArrFindingAid getFindingAid = getFindingAid(findingAid.getFindingAidId());
 
         Assert.assertNotNull(getFindingAid);
         Assert.assertEquals(TEST_NAME, getFindingAid.getName());
@@ -136,7 +136,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
     public void testRestGetFindingAids() throws Exception {
         createFindingAidRest(TEST_NAME);
 
-        List<FindingAid> findingAids = getFindingAids();
+        List<ArrFindingAid> findingAids = getFindingAids();
         Assert.assertTrue("Nenalezena polozka " + TEST_NAME, !findingAids.isEmpty());
     }
 
@@ -157,13 +157,13 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
     @Test
     public void testRestDeleteFindingAidWithMoreVeresions() throws Exception {
-        FindingAid findingAid = createFindingAidRest(TEST_NAME);
+        ArrFindingAid findingAid = createFindingAidRest(TEST_NAME);
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
                 parameter(FA_ID_ATT, findingAid.getFindingAidId()).get(GET_FINDING_AID_VERSIONS_URL);
 
-        List<FaVersion> versions = Arrays.asList(response.getBody().as(FaVersion[].class));
-        FaVersion version = versions.iterator().next();
+        List<ArrFaVersion> versions = Arrays.asList(response.getBody().as(ArrFaVersion[].class));
+        ArrFaVersion version = versions.iterator().next();
 
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
                 parameter(FA_ID_ATT, findingAid.getFindingAidId()).
@@ -192,10 +192,10 @@ public class ArrangementManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        FindingAid updatedFindingAid = null;
+        ArrFindingAid updatedFindingAid = null;
 
-        List<FindingAid> findingAids = getFindingAids();
-        for (FindingAid findingAid : findingAids) {
+        List<ArrFindingAid> findingAids = getFindingAids();
+        for (ArrFindingAid findingAid : findingAids) {
             if (findingAid.getFindingAidId().equals(idFinfingAid)) {
                 updatedFindingAid = findingAid;
                 break;
@@ -207,7 +207,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
     @Test
     public void testRestGetArrangementTypes () throws Exception {
-        ArrangementType arrangementType = new ArrangementType();
+        ArrArrangementType arrangementType = new ArrArrangementType();
         arrangementType.setName(TEST_NAME);
         arrangementType.setCode(TEST_CODE);
         arrangementTypeRepository.save(arrangementType);
@@ -216,13 +216,13 @@ public class ArrangementManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        List<ArrangementType> arrangementTypes = Arrays.asList(response.getBody().as(ArrangementType[].class));
+        List<ArrArrangementType> arrangementTypes = Arrays.asList(response.getBody().as(ArrArrangementType[].class));
         Assert.assertTrue("Nenalezena polozka " + TEST_NAME, !arrangementTypes.isEmpty());
     }
 
     @Test
     public void testRestGetFindingAidVersions() throws Exception {
-        FindingAid findingAid = createFindingAid(TEST_NAME);
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
         int versionCount = 10;
         for (int i = 0; i < versionCount; i++) {
@@ -234,11 +234,11 @@ public class ArrangementManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        List<FaVersion> versions = Arrays.asList(response.getBody().as(FaVersion[].class));
+        List<ArrFaVersion> versions = Arrays.asList(response.getBody().as(ArrFaVersion[].class));
         Assert.assertTrue(versions.size() == versionCount + 1);
 
-        FaVersion prevVersion = null;
-        for (FaVersion version : versions) {
+        ArrFaVersion prevVersion = null;
+        for (ArrFaVersion version : versions) {
             if (prevVersion == null) {
                 prevVersion = version;
                 continue;
@@ -252,13 +252,13 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
     @Test
     public void testRestApproveVersion() {
-        FindingAid findingAid = createFindingAid(TEST_NAME);
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
                 parameter(FA_ID_ATT, findingAid.getFindingAidId()).get(GET_FINDING_AID_VERSIONS_URL);
 
-        List<FaVersion> versions = Arrays.asList(response.getBody().as(FaVersion[].class));
-        FaVersion version = versions.iterator().next();
+        List<ArrFaVersion> versions = Arrays.asList(response.getBody().as(ArrFaVersion[].class));
+        ArrFaVersion version = versions.iterator().next();
 
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
                 parameter(FA_ID_ATT, findingAid.getFindingAidId()).
@@ -268,11 +268,11 @@ public class ArrangementManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        FaVersion newVersion = response.getBody().as(FaVersion.class);
+        ArrFaVersion newVersion = response.getBody().as(ArrFaVersion.class);
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
                 parameter(FA_ID_ATT, findingAid.getFindingAidId()).get(GET_FINDING_AID_VERSIONS_URL);
 
-        versions = Arrays.asList(response.getBody().as(FaVersion[].class));
+        versions = Arrays.asList(response.getBody().as(ArrFaVersion[].class));
 
         Assert.assertNotNull(newVersion);
         Assert.assertTrue(newVersion.getLockChange() == null);
@@ -281,18 +281,18 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
     @Test
     public void testRestGetVersionByFa() throws Exception {
-        FindingAid findingAid = createFindingAid(TEST_NAME);
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        FaVersion version = createFindingAidVersion(findingAid, true);
+        ArrFaVersion version = createFindingAidVersion(findingAid, true);
         // prvni version se vytvori pri zalozeni FA
         Integer createVersionId = version.getFaVersionId() - 1;
-        FaVersion versionChange = createFindingAidVersion(findingAid, true);
+        ArrFaVersion versionChange = createFindingAidVersion(findingAid, true);
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
                 parameter(VERSION_ID_ATT, version.getFaVersionId()).get(GET_VERSION_ID_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
-        FaVersion resultVersion = response.getBody().as(FaVersion.class);
+        ArrFaVersion resultVersion = response.getBody().as(ArrFaVersion.class);
         Assert.assertNotNull("Version nebylo nalezeno", resultVersion);
         Assert.assertEquals(resultVersion.getFaVersionId(), version.getFaVersionId());
 
@@ -302,7 +302,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         Assert.assertEquals(200, response.statusCode());
 
-        resultVersion = response.getBody().as(FaVersion.class);
+        resultVersion = response.getBody().as(ArrFaVersion.class);
         Assert.assertNotNull("Version nebylo nalezeno", resultVersion);
         Assert.assertEquals(resultVersion.getFaVersionId(), createVersionId);
         Assert.assertNull(resultVersion.getLockChange());
@@ -310,16 +310,16 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
     @Test
     public void testRestGetLevelByParent() throws Exception {
-        FindingAid findingAid = createFindingAid(TEST_NAME);
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        FaVersion version = createFindingAidVersion(findingAid, null, false);
-        FaLevel parent = createLevel(1, null, version.getCreateChange());
+        ArrFaVersion version = createFindingAidVersion(findingAid, null, false);
+        ArrFaLevel parent = createLevel(1, null, version.getCreateChange());
         version.setRootNode(parent);
         versionRepository.save(version);
 
-        FaLevel child = createLevel(2, parent, version.getCreateChange());
-        FaLevel child2 = createLevel(2, parent, version.getCreateChange());
-        FaChange change = createFaChange(LocalDateTime.now());
+        ArrFaLevel child = createLevel(2, parent, version.getCreateChange());
+        ArrFaLevel child2 = createLevel(2, parent, version.getCreateChange());
+        ArrFaChange change = createFaChange(LocalDateTime.now());
         child2.setDeleteChange(change);
         levelRepository.save(child2);
 
@@ -328,12 +328,12 @@ public class ArrangementManagerTest extends AbstractRestTest {
                 parameter(VERSION_ID_ATT, version.getFaVersionId()).get(FIND_SUB_LEVELS_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
-        List<FaLevel> levelList = Arrays.asList(response.getBody().as(FaLevel[].class));
+        List<ArrFaLevel> levelList = Arrays.asList(response.getBody().as(ArrFaLevel[].class));
         if (levelList.size() != 1) {
             Assert.fail();
         }
 
-        FaChange lockChange = createFaChange(LocalDateTime.now());
+        ArrFaChange lockChange = createFaChange(LocalDateTime.now());
         version.setLockChange(lockChange);
         versionRepository.save(version);
 
@@ -341,7 +341,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
                 parameter(NODE_ID_ATT, parent.getNodeId()).
                 parameter(VERSION_ID_ATT, version.getFaVersionId()).get(FIND_SUB_LEVELS_URL);
         logger.info(response.asString());
-        levelList = Arrays.asList(response.getBody().as(FaLevel[].class));
+        levelList = Arrays.asList(response.getBody().as(ArrFaLevel[].class));
         if (levelList.size() != 1) {
             Assert.fail();
         }
@@ -349,11 +349,11 @@ public class ArrangementManagerTest extends AbstractRestTest {
     //----
     @Test
     public void testRestAddLevel() {
-        FindingAid findingAid = createFindingAid(TEST_NAME);
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        FaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
+        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
 
-        List<FaLevel> subLevels = arrangementManager.findSubLevels(version.getRootNode().getNodeId(), version.getFaVersionId());
+        List<ArrFaLevel> subLevels = arrangementManager.findSubLevels(version.getRootNode().getNodeId(), version.getFaVersionId());
         Assert.assertTrue(subLevels.isEmpty());
 
         Response response = given().parameter(FA_ID_ATT, findingAid.getFindingAidId()).put(ADD_LEVEL_URL);
@@ -363,82 +363,82 @@ public class ArrangementManagerTest extends AbstractRestTest {
         subLevels = arrangementManager.findSubLevels(version.getRootNode().getNodeId(), version.getFaVersionId());
         Assert.assertTrue(subLevels.size() == 1);
 
-        FaLevel child = response.getBody().as(FaLevel.class);
+        ArrFaLevel child = response.getBody().as(ArrFaLevel.class);
         Assert.assertTrue(child.getFaLevelId().equals(subLevels.iterator().next().getFaLevelId()));
     }
 
     @Test
     public void testRestAddLevelBefore() {
-        FindingAid findingAid = createFindingAid(TEST_NAME);
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        FaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
+        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
 
         Response response = given().parameter(FA_ID_ATT, findingAid.getFindingAidId()).put(ADD_LEVEL_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        FaLevel second = response.getBody().as(FaLevel.class);
+        ArrFaLevel second = response.getBody().as(ArrFaLevel.class);
 
         response = given().parameter(NODE_ID_ATT, second.getNodeId()).put(ADD_LEVEL_BEFORE_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        FaLevel first = response.getBody().as(FaLevel.class);
+        ArrFaLevel first = response.getBody().as(ArrFaLevel.class);
 
-        List<FaLevel> subLevels = arrangementManager
+        List<ArrFaLevel> subLevels = arrangementManager
                 .findSubLevels(version.getRootNode().getNodeId(), version.getFaVersionId());
         Assert.assertTrue(subLevels.size() == 2);
 
-        Iterator<FaLevel> iterator = subLevels.iterator();
+        Iterator<ArrFaLevel> iterator = subLevels.iterator();
         Assert.assertTrue(first.getNodeId().equals(iterator.next().getNodeId()));
         Assert.assertTrue(second.getNodeId().equals(iterator.next().getNodeId()));
     }
 
     @Test
     public void testRestAddLevelAfter() {
-        FindingAid findingAid = createFindingAid(TEST_NAME);
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        FaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
+        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
 
         Response response = given().parameter(FA_ID_ATT, findingAid.getFindingAidId()).put(ADD_LEVEL_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        FaLevel first = response.getBody().as(FaLevel.class);
+        ArrFaLevel first = response.getBody().as(ArrFaLevel.class);
 
         response = given().parameter(NODE_ID_ATT, first.getNodeId()).put(ADD_LEVEL_AFTER_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        FaLevel second = response.getBody().as(FaLevel.class);
+        ArrFaLevel second = response.getBody().as(ArrFaLevel.class);
 
-        List<FaLevel> subLevels = arrangementManager.findSubLevels(version.getRootNode().getNodeId(), version.getFaVersionId());
+        List<ArrFaLevel> subLevels = arrangementManager.findSubLevels(version.getRootNode().getNodeId(), version.getFaVersionId());
         Assert.assertTrue(subLevels.size() == 2);
 
-        Iterator<FaLevel> iterator = subLevels.iterator();
+        Iterator<ArrFaLevel> iterator = subLevels.iterator();
         Assert.assertTrue(first.getFaLevelId().equals(iterator.next().getFaLevelId()));
         Assert.assertTrue(second.getFaLevelId().equals(iterator.next().getFaLevelId()));
     }
 
     @Test
     public void testRestAddLevelChild() {
-        FindingAid findingAid = createFindingAid(TEST_NAME);
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        FaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
+        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
 
         Response response = given().parameter(FA_ID_ATT, findingAid.getFindingAidId()).put(ADD_LEVEL_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        FaLevel parent = response.getBody().as(FaLevel.class);
+        ArrFaLevel parent = response.getBody().as(ArrFaLevel.class);
 
         response = given().parameter(NODE_ID_ATT, parent.getNodeId()).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        FaLevel child = response.getBody().as(FaLevel.class);
+        ArrFaLevel child = response.getBody().as(ArrFaLevel.class);
 
-        List<FaLevel> subLevels = arrangementManager.findSubLevels(parent.getNodeId(), version.getFaVersionId());
+        List<ArrFaLevel> subLevels = arrangementManager.findSubLevels(parent.getNodeId(), version.getFaVersionId());
         Assert.assertTrue(subLevels.size() == 1);
 
         Assert.assertTrue(child.getFaLevelId().equals(subLevels.iterator().next().getFaLevelId()));
@@ -447,30 +447,30 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
     @Test
     public void testRestMoveLevelBefore() {
-        FindingAid findingAid = createFindingAid(TEST_NAME);
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        FaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
+        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
 
         Response response = given().parameter(FA_ID_ATT, findingAid.getFindingAidId()).put(ADD_LEVEL_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        FaLevel parent = response.getBody().as(FaLevel.class);
+        ArrFaLevel parent = response.getBody().as(ArrFaLevel.class);
 
         response = given().parameter(NODE_ID_ATT, parent.getNodeId()).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        FaLevel child = response.getBody().as(FaLevel.class);
+        ArrFaLevel child = response.getBody().as(ArrFaLevel.class);
 
         response = given().parameter(NODE_ID_ATT, child.getNodeId()).
                 parameter(FOLLOWER_NODE_ID_ATT, parent.getNodeId()).put(MOVE_LEVEL_BEFORE_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        FaLevel movedChild = response.getBody().as(FaLevel.class);
+        ArrFaLevel movedChild = response.getBody().as(ArrFaLevel.class);
 
-        List<FaLevel> subLevels = arrangementManager.findSubLevels(version.getRootNode().getNodeId(), version.getFaVersionId());
+        List<ArrFaLevel> subLevels = arrangementManager.findSubLevels(version.getRootNode().getNodeId(), version.getFaVersionId());
 
         Assert.assertTrue(subLevels.size() == 2);
         Assert.assertTrue(movedChild.getParentNodeId().equals(parent.getParentNodeId()));
@@ -478,61 +478,61 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
     @Test
     public void testRestMoveLevelUnder() {
-        FindingAid findingAid = createFindingAid(TEST_NAME);
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        FaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
+        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
 
         Response response = given().parameter(FA_ID_ATT, findingAid.getFindingAidId()).put(ADD_LEVEL_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        FaLevel first = response.getBody().as(FaLevel.class);
+        ArrFaLevel first = response.getBody().as(ArrFaLevel.class);
 
         response = given().parameter(FA_ID_ATT, findingAid.getFindingAidId()).put(ADD_LEVEL_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        FaLevel second = response.getBody().as(FaLevel.class);
+        ArrFaLevel second = response.getBody().as(ArrFaLevel.class);
 
         response = given().parameter(NODE_ID_ATT, first.getNodeId()).
                 parameter(PARENT_NODE_ID_ATT, second.getNodeId()).put(MOVE_LEVEL_UNDER_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        FaLevel child = response.getBody().as(FaLevel.class);
+        ArrFaLevel child = response.getBody().as(ArrFaLevel.class);
         Assert.assertTrue(child.getParentNodeId().equals(second.getNodeId()));
 
-        List<FaLevel> subLevels = arrangementManager.findSubLevels(second.getNodeId(), version.getFaVersionId());
+        List<ArrFaLevel> subLevels = arrangementManager.findSubLevels(second.getNodeId(), version.getFaVersionId());
         Assert.assertTrue(subLevels.size() == 1);
         Assert.assertTrue(child.getFaLevelId().equals(subLevels.iterator().next().getFaLevelId()));
     }
 
     @Test
     public void testRestMoveLevelAfter() {
-        FindingAid findingAid = createFindingAid(TEST_NAME);
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        FaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
+        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
 
         Response response = given().parameter(FA_ID_ATT, findingAid.getFindingAidId()).put(ADD_LEVEL_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        FaLevel parent = response.getBody().as(FaLevel.class);
+        ArrFaLevel parent = response.getBody().as(ArrFaLevel.class);
 
         response = given().parameter(NODE_ID_ATT, parent.getNodeId()).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        FaLevel child = response.getBody().as(FaLevel.class);
+        ArrFaLevel child = response.getBody().as(ArrFaLevel.class);
 
         response = given().parameter(NODE_ID_ATT, child.getNodeId()).
                 parameter(PREDECESSOR_NODE_ID_ATT, parent.getNodeId()).put(MOVE_LEVEL_AFTER_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        FaLevel movedChild = response.getBody().as(FaLevel.class);
+        ArrFaLevel movedChild = response.getBody().as(ArrFaLevel.class);
 
-        List<FaLevel> subLevels = arrangementManager.findSubLevels(version.getRootNode().getNodeId(), version.getFaVersionId());
+        List<ArrFaLevel> subLevels = arrangementManager.findSubLevels(version.getRootNode().getNodeId(), version.getFaVersionId());
 
         Assert.assertTrue(subLevels.size() == 2);
         Assert.assertTrue(movedChild.getParentNodeId().equals(parent.getParentNodeId()));
@@ -540,19 +540,19 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
     @Test
     public void testRestDeleteLevel() {
-        FindingAid findingAid = createFindingAid(TEST_NAME);
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
         Response response = given().parameter(FA_ID_ATT, findingAid.getFindingAidId()).put(ADD_LEVEL_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        FaLevel node = response.getBody().as(FaLevel.class);
+        ArrFaLevel node = response.getBody().as(ArrFaLevel.class);
 
         response = given().parameter(NODE_ID_ATT, node.getNodeId()).put(DELETE_LEVEL_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        FaLevel deletedNode = response.getBody().as(FaLevel.class);
+        ArrFaLevel deletedNode = response.getBody().as(ArrFaLevel.class);
 
         Assert.assertTrue(deletedNode.getDeleteChange() != null);
         Assert.assertTrue(node.getNodeId().equals(deletedNode.getNodeId()));
@@ -561,19 +561,19 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
     @Test
     public void testRestFindLevelByNodeId() {
-        FindingAid findingAid = createFindingAid(TEST_NAME);
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
         Response response = given().parameter(FA_ID_ATT, findingAid.getFindingAidId()).put(ADD_LEVEL_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        FaLevel node = response.getBody().as(FaLevel.class);
+        ArrFaLevel node = response.getBody().as(ArrFaLevel.class);
 
         response = given().parameter(NODE_ID_ATT, node.getNodeId()).get(FIND_LEVEL_BY_NODE_ID_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        FaLevel foundNode = response.getBody().as(FaLevel.class);
+        ArrFaLevel foundNode = response.getBody().as(ArrFaLevel.class);
 
         Assert.assertTrue(node.getNodeId().equals(foundNode.getNodeId()));
         Assert.assertTrue(node.getFaLevelId().equals(foundNode.getFaLevelId()));
@@ -584,12 +584,12 @@ public class ArrangementManagerTest extends AbstractRestTest {
      *
      * @return archivní pomůcky
      */
-    private List<FindingAid> getFindingAids() {
+    private List<ArrFindingAid> getFindingAids() {
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).get(GET_FA_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        List<FindingAid> findingAids = Arrays.asList(response.getBody().as(FindingAid[].class));
+        List<ArrFindingAid> findingAids = Arrays.asList(response.getBody().as(ArrFindingAid[].class));
         return findingAids;
     }
 
@@ -598,11 +598,11 @@ public class ArrangementManagerTest extends AbstractRestTest {
      *
      * @return archivní pomůcka
      */
-    private FindingAid getFindingAid(final Integer findingAidId) {
+    private ArrFindingAid getFindingAid(final Integer findingAidId) {
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(FA_ID_ATT, findingAidId).get(GET_FA_ONE_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
-        return response.getBody().as(FindingAid.class);
+        return response.getBody().as(ArrFindingAid.class);
     }
 
     /**
@@ -610,9 +610,9 @@ public class ArrangementManagerTest extends AbstractRestTest {
      *
      * @return vytvořená položka
      */
-    private FindingAid createFindingAidRest(final String name) {
-        RuleSet ruleSet = createRuleSet();
-        ArrangementType arrangementType = createArrangementType();
+    private ArrFindingAid createFindingAidRest(final String name) {
+        RulRuleSet ruleSet = createRuleSet();
+        ArrArrangementType arrangementType = createArrangementType();
 
         Response response =
                 given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(FA_NAME_ATT, name).
@@ -621,7 +621,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        FindingAid findingAid = response.getBody().as(FindingAid.class);
+        ArrFindingAid findingAid = response.getBody().as(ArrFindingAid.class);
 
 
         return findingAid;

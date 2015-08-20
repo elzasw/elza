@@ -22,12 +22,12 @@ import org.springframework.transaction.annotation.Transactional;
 import cz.tacr.elza.ElzaCore;
 import cz.tacr.elza.configuration.hibernate.impl.TableIdGenerator;
 import cz.tacr.elza.controller.ArrangementManager;
-import cz.tacr.elza.domain.ArrangementType;
-import cz.tacr.elza.domain.FaChange;
-import cz.tacr.elza.domain.FaLevel;
-import cz.tacr.elza.domain.FaVersion;
-import cz.tacr.elza.domain.FindingAid;
-import cz.tacr.elza.domain.RuleSet;
+import cz.tacr.elza.domain.ArrArrangementType;
+import cz.tacr.elza.domain.ArrFaChange;
+import cz.tacr.elza.domain.ArrFaLevel;
+import cz.tacr.elza.domain.ArrFaVersion;
+import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.LevelRepository;
@@ -96,14 +96,14 @@ public class ClientTestDataGenerator {
         }
         nodeIdGenerator = maxNodeId;
 
-        RuleSet ruleSet = createRuleSet();
-        ArrangementType arrangementType = createArrangementType();
+        RulRuleSet ruleSet = createRuleSet();
+        ArrArrangementType arrangementType = createArrangementType();
 
         IntStream.range(0, FA_COUNT).forEach( i -> {
             nodesCreated = 0;
-            FindingAid findingAid = createFindingAid(TEST_NAME + i, ruleSet, arrangementType);
+            ArrFindingAid findingAid = createFindingAid(TEST_NAME + i, ruleSet, arrangementType);
             nodeIdGenerator++;
-            FaVersion version = versionRepository.findByFindingAidIdAndLockChangeIsNull(findingAid.getFindingAidId());
+            ArrFaVersion version = versionRepository.findByFindingAidIdAndLockChangeIsNull(findingAid.getFindingAidId());
             try {
                 createTree(version.getRootNode(), version.getCreateChange());
             } catch (IllegalStateException ex) {}
@@ -113,14 +113,14 @@ public class ClientTestDataGenerator {
         System.out.println(stopWatch.getTime());
     }
 
-    private void createTree(final FaLevel rootNode, final FaChange createChange) {
-        List<FaLevel> firstLevelNodes = IntStream.range(0, RandomUtils.nextInt(5, 20)).mapToObj( i -> {
+    private void createTree(final ArrFaLevel rootNode, final ArrFaChange createChange) {
+        List<ArrFaLevel> firstLevelNodes = IntStream.range(0, RandomUtils.nextInt(5, 20)).mapToObj( i -> {
             checkIfCreateMoreNodes();
             return createLevel(rootNode, i, createChange);
         }).collect(Collectors.toList());
 
-        FaLevel firstNode = firstLevelNodes.get(0);
-        FaLevel secondNode = firstLevelNodes.get(1);
+        ArrFaLevel firstNode = firstLevelNodes.get(0);
+        ArrFaLevel secondNode = firstLevelNodes.get(1);
 
         createMaxDepthLevel(firstNode, TREE_DEPTH - 1, createChange);
         createMaxNodesLevel(secondNode, createChange);
@@ -130,24 +130,24 @@ public class ClientTestDataGenerator {
         });
     }
 
-    private void createMaxNodesLevel(FaLevel firstNode, FaChange createChange) {
+    private void createMaxNodesLevel(ArrFaLevel firstNode, ArrFaChange createChange) {
         IntStream.range(0, MAX_LEVEL_NODES_COUNT).forEach( i -> {
             checkIfCreateMoreNodes();
             createLevel(firstNode, i, createChange);
         });
     }
 
-    private void createMaxDepthLevel(FaLevel secondNode, int depth, FaChange createChange) {
+    private void createMaxDepthLevel(ArrFaLevel secondNode, int depth, ArrFaChange createChange) {
         if (depth == 0) {
             return;
         }
 
         checkIfCreateMoreNodes();
-        FaLevel node = createLevel(secondNode, 0, createChange);
+        ArrFaLevel node = createLevel(secondNode, 0, createChange);
         createMaxDepthLevel(node, depth - 1, createChange);
     }
 
-    private void createSubtree(final FaChange createChange, final FaLevel parent, int depth) {
+    private void createSubtree(final ArrFaChange createChange, final ArrFaLevel parent, int depth) {
         if (RandomUtils.nextInt(1, TREE_DEPTH + 1) < depth) {
             return;
         }
@@ -175,8 +175,8 @@ public class ClientTestDataGenerator {
         }
     }
 
-    private FaLevel createLevel(final FaLevel parent, final int position, final FaChange change) {
-        FaLevel level = new FaLevel();
+    private ArrFaLevel createLevel(final ArrFaLevel parent, final int position, final ArrFaChange change) {
+        ArrFaLevel level = new ArrFaLevel();
         level.setCreateChange(change);
         level.setNodeId(++nodeIdGenerator);
         level.setParentNodeId(parent.getNodeId());
@@ -186,23 +186,23 @@ public class ClientTestDataGenerator {
         return levelRepository.save(level);
     }
 
-    protected ArrangementType createArrangementType() {
-        ArrangementType arrangementType = new ArrangementType();
+    protected ArrArrangementType createArrangementType() {
+        ArrArrangementType arrangementType = new ArrArrangementType();
         arrangementType.setName(TEST_NAME);
         arrangementType.setCode(TEST_CODE);
         arrangementTypeRepository.save(arrangementType);
         return arrangementType;
     }
 
-    protected RuleSet createRuleSet() {
-        RuleSet ruleSet = new RuleSet();
+    protected RulRuleSet createRuleSet() {
+        RulRuleSet ruleSet = new RulRuleSet();
         ruleSet.setName(TEST_NAME);
         ruleSet.setCode(TEST_CODE);
         ruleSetRepository.save(ruleSet);
         return ruleSet;
     }
 
-    protected FindingAid createFindingAid(final String name, RuleSet ruleSet, ArrangementType arrangementType) {
+    protected ArrFindingAid createFindingAid(final String name, RulRuleSet ruleSet, ArrArrangementType arrangementType) {
         return arrangementManager.createFindingAid(name, arrangementType.getId(), ruleSet.getId());
     }
 }

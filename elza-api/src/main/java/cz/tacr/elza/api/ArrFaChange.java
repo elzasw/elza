@@ -3,7 +3,7 @@ package cz.tacr.elza.api;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public interface FaChange extends Serializable {
+public interface ArrFaChange extends Serializable {
 
     Integer getChangeId();
 
