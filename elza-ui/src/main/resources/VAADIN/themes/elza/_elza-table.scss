@@ -9,14 +9,17 @@
         background-color: $color-app-alt;
 
         :not(:first-child) {
-            border-left: 3px solid white;
+//            border-left: 3px solid white;
         }
     }
 }
 
-.v-table.detail-table .v-table-body {
-    overflow: auto !important;
-    overflow-x: auto !important;
+
+
+.v-table.detail-table {
+
+
+    .v-scrollable{
+        overflow: auto;
+    }
 }
-
-
