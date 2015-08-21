@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @since 22.7.15
  */
 @Entity(name = "arr_fa_level")
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"position", "parentNodeId", "deleteChangeId"}))
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"position", "parentNodeId", "deleteFaChangeId"}))
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrFaLevel implements IdObject<Integer>, cz.tacr.elza.api.ArrFaLevel<ArrFaChange> {
 
@@ -39,11 +39,11 @@ public class ArrFaLevel implements IdObject<Integer>, cz.tacr.elza.api.ArrFaLeve
     private Integer parentNodeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaChange.class)
-    @JoinColumn(name = "createChangeId", nullable = false)
+    @JoinColumn(name = "createFaChangeId", nullable = false)
     private ArrFaChange createChange;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaChange.class)
-    @JoinColumn(name = "deleteChangeId", nullable = true)
+    @JoinColumn(name = "deleteFaChangeId", nullable = true)
     private ArrFaChange deleteChange;
 
     @Column(nullable = false)

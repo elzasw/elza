@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+        <!--Verze 1.7 - Přejmenování klíčů podle modelu -->
+        <changeSet id="7" author="kubovy" failOnError="true" runOnChange="true">
+                
+            <renameColumn tableName="arr_fa_change" oldColumnName="change_id" newColumnName="fa_change_id"/>
+            <renameColumn tableName="arr_fa_level" oldColumnName="create_change_id" newColumnName="create_fa_change_id"/>
+            <renameColumn tableName="arr_fa_level" oldColumnName="delete_change_id" newColumnName="delete_fa_change_id"/>
+
+            <renameColumn tableName="arr_fa_version" oldColumnName="create_change_id" newColumnName="create_fa_change_id"/>
+            <renameColumn tableName="arr_fa_version" oldColumnName="lock_change_id" newColumnName="lock_fa_change_id"/>
+
+        </changeSet>
+
+
+</databaseChangeLog>

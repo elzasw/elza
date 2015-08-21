@@ -91,7 +91,7 @@ public class LevelHistoryWindow extends AxWindow {
             int index = 0;
             for (ArrFaVersion faVersion : versionList) {
                 versionEnds[index] = faVersion.getLockChange() == null ? Integer.MAX_VALUE
-                                                                       : faVersion.getLockChange().getChangeId();
+                                                                       : faVersion.getLockChange().getFaChangeId();
                 versions[index] = faVersion;
                 index++;
             }
@@ -116,9 +116,9 @@ public class LevelHistoryWindow extends AxWindow {
                                                @Nullable final ArrFaLevel faLevel,
                                                final Integer[] versionEnds,
                                                final ArrFaVersion[] versions) {
-            Integer deleteId = faLevel.getDeleteChange() == null ? null : faLevel.getDeleteChange().getChangeId();
+            Integer deleteId = faLevel.getDeleteChange() == null ? null : faLevel.getDeleteChange().getFaChangeId();
             if (firstLevel || deleteId == null) {
-                Integer createId = faLevel.getCreateChange().getChangeId();
+                Integer createId = faLevel.getCreateChange().getFaChangeId();
 
                 int index = Arrays.binarySearch(versionEnds, createId);
                 if (index < 0) {

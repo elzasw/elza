@@ -5,9 +5,9 @@ import java.time.LocalDateTime;
 
 public interface ArrFaChange extends Serializable {
 
-    Integer getChangeId();
+    Integer getFaChangeId();
 
-    void setChangeId(Integer changeId);
+    void setFaChangeId(Integer changeId);
 
     LocalDateTime getChangeDate();
 

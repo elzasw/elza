@@ -164,7 +164,7 @@
             <column name="code" type="varchar(15)">
                 <constraints unique="true" nullable="false"/>
             </column>
-            <column name="name" type="varchar(50)">
+            <column name="name" type="varchar(100)">
                 <constraints nullable="false"/>
             </column>
             <column name="shortcut" type="varchar(20)">
@@ -174,7 +174,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="view_order" type="int">
-                <constraints unique="true" nullable="false"/>
+                <constraints nullable="false"/>
             </column>
         </createTable>
 
@@ -183,7 +183,7 @@
                 <constraints primaryKey="true"/>
             </column>
             <column name="code" type="varchar(15)">
-                <constraints unique="true" nullable="false"/>
+                <constraints nullable="false"/>
             </column>
             <column name="name" type="varchar(50)">
                 <constraints nullable="false"/>
@@ -195,7 +195,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="text_lenght_limit_use" type="boolean">
-                <constraints unique="true" nullable="false"/>
+                <constraints nullable="false"/>
             </column>
             <column name="storage_table" type="varchar(200)">
                 <constraints nullable="false"/>
@@ -322,11 +322,11 @@
                                  referencedColumnNames="fa_version_id"
                                  onDelete="NO ACTION"/>
 
-        <addForeignKeyConstraint constraintName="fk_itemSpec_descItm"
+        <addForeignKeyConstraint constraintName="fk_itemSpec_descItmTyp"
                                  baseTableName="rul_desc_item_spec"
                                  baseColumnNames="desc_item_type_id"
-                                 referencedTableName="arr_desc_item"
-                                 referencedColumnNames="desc_item_id"
+                                 referencedTableName="rul_desc_item_type"
+                                 referencedColumnNames="desc_item_type_id"
                                  onDelete="NO ACTION"/>
 
 

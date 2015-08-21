@@ -26,11 +26,11 @@ public class ArrFaVersion implements IdObject<Integer>,
     private Integer faVersionId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaChange.class)
-    @JoinColumn(name = "createChangeId", nullable = false)
+    @JoinColumn(name = "createFaChangeId", nullable = false)
     private ArrFaChange createChange;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaChange.class)
-    @JoinColumn(name = "lockChangeId", nullable = true)
+    @JoinColumn(name = "lockFaChangeId", nullable = true)
     private ArrFaChange lockChange;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaLevel.class)

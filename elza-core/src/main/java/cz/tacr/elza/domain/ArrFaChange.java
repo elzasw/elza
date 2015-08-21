@@ -21,19 +21,19 @@ public class ArrFaChange implements IdObject<Integer>, cz.tacr.elza.api.ArrFaCha
 
     @Id
     @GeneratedValue
-    private Integer changeId;
+    private Integer faChangeId;
 
     @Column(nullable = false)
     private LocalDateTime changeDate;
 
     @Override
-    public Integer getChangeId() {
-      return changeId;
+    public Integer getFaChangeId() {
+      return faChangeId;
     }
 
     @Override
-    public void setChangeId(Integer changeId) {
-      this.changeId = changeId;
+    public void setFaChangeId(Integer faChangeId) {
+      this.faChangeId = faChangeId;
     }
 
     @Override
@@ -48,12 +48,12 @@ public class ArrFaChange implements IdObject<Integer>, cz.tacr.elza.api.ArrFaCha
 
     @Override
     public String toString() {
-        return "ArrFaChange pk=" + changeId;
+        return "ArrFaChange pk=" + faChangeId;
     }
 
     @Override
     @JsonIgnore
     public Integer getId() {
-        return changeId;
+        return faChangeId;
     }
 }
