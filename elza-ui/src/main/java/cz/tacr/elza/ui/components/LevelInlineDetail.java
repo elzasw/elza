@@ -21,6 +21,7 @@ public class LevelInlineDetail extends CssLayout implements Components {
     public LevelInlineDetail(final Runnable onClose) {
         setSizeUndefined();
         addStyleName("level-detail");
+        addStyleName("hidden");
         this.onClose = onClose;
 
         init();

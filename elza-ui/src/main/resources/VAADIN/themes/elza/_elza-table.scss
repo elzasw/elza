@@ -18,8 +18,11 @@
 
 .v-table.detail-table {
 
-
     .v-scrollable{
-        overflow: auto;
+        overflow: auto !important;
     }
+
+
+
+
 }
