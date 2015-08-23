@@ -2,6 +2,8 @@ package cz.tacr.elza.controller;
 
 import java.time.LocalDateTime;
 
+import javax.transaction.Transactional;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -18,11 +20,24 @@ import cz.tacr.elza.ElzaCore;
 import cz.tacr.elza.domain.ArrFaChange;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.ArrArrangementType;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFaLevel;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DataStringRepository;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DataTypeRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.DescItemSpecRepository;
+import cz.tacr.elza.repository.DescItemTypeRepository;
+import cz.tacr.elza.repository.FaViewRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
@@ -67,6 +82,20 @@ public abstract class AbstractRestTest {
     protected LevelRepository levelRepository;
     @Autowired
     private FindingAidRepository findingAidRepository;
+    @Autowired
+    private DescItemRepository descItemRepository;
+    @Autowired
+    private DescItemTypeRepository descItemTypeRepository;
+    @Autowired
+    private DescItemSpecRepository descItemSpecRepository;
+    @Autowired
+    private DataTypeRepository dataTypeRepository;
+    @Autowired
+    private FaViewRepository faViewRepository;
+    @Autowired
+    private DataStringRepository arrDataStringRepository;
+    @Autowired
+    private DataRepository arrDataRepository;
 
     @Before
     public void setUp() {
@@ -79,11 +108,17 @@ public abstract class AbstractRestTest {
 
     @After
     public void setDown() {
+        faViewRepository.deleteAll();
         versionRepository.deleteAll();
         arrangementTypeRepository.deleteAll();
         ruleSetRepository.deleteAll();
         findingAidRepository.deleteAll();
         levelRepository.deleteAll();
+        arrDataRepository.deleteAll();
+        arrDataStringRepository.deleteAll();
+        descItemRepository.deleteAll();
+//        descItemSpecRepository.deleteAll();
+//        descItemTypeRepository.deleteAll();
         changeRepository.deleteAll();
     }
 
@@ -157,5 +192,74 @@ public abstract class AbstractRestTest {
         level.setNodeId(maxNodeId + 1);
 
         return levelRepository.save(level);
+    }
+
+    @Transactional
+    protected ArrDescItem createAttributs(final Integer nodeId, final Integer position,
+                                          final ArrFaChange change, final int index) {
+        RulDescItemType descItemType = createDescItemType(index);
+        RulDescItemSpec rulDescItemSpec = createDescItemSpec(descItemType, index);
+
+        ArrDescItem item = new ArrDescItem();
+        item.setNodeId(nodeId);
+        item.setPosition(position);
+        item.setCreateChange(change);
+        item.setDescItemObjectId(1);
+        item.setDescItemType(descItemType);
+        item.setDescItemSpec(rulDescItemSpec);
+        descItemRepository.save(item);
+        createData(item, index);
+        return item;
+    }
+
+    private ArrData createData(final ArrDescItem item, final int index) {
+        ArrDataString dataStr = new ArrDataString();
+        dataStr.setDescItem(item);
+        RulDataType dataType = dataTypeRepository.getOne(2);
+        dataStr.setDataType(dataType);
+        dataStr.setValue("str data " + index);
+        arrDataStringRepository.save(dataStr);
+        return dataStr;
+    }
+
+    private RulDescItemType createDescItemType(final int index) {
+        RulDescItemType itemType = new RulDescItemType();
+        RulDataType dataType = createDataType(index);
+        itemType.setSys(true);
+        itemType.setDataType(dataType);
+        itemType.setCode("DI" + index);
+        itemType.setName("Desc Item " + index);
+        itemType.setShortcut("DItem " + index);
+        itemType.setDescription("popis");
+        itemType.setCanBeOrdered(false);
+        itemType.setIsValueUnique(false);
+        itemType.setUseSpecification(false);
+        itemType.setViewOrder(index);
+        descItemTypeRepository.save(itemType);
+        return itemType;
+    }
+
+    private RulDescItemSpec createDescItemSpec(final RulDescItemType itemType, final int index) {
+        RulDescItemSpec rulDescItemSpec = new RulDescItemSpec();
+        rulDescItemSpec.setCode("IS" + index);
+        rulDescItemSpec.setDescItemType(itemType);
+        rulDescItemSpec.setName("Item Spec " + index);
+        rulDescItemSpec.setShortcut("ISpec " + index);
+        rulDescItemSpec.setDescription("popis");
+        rulDescItemSpec.setViewOrder(index);
+        descItemSpecRepository.save(rulDescItemSpec);
+        return rulDescItemSpec;
+    }
+
+    private RulDataType createDataType(final int index) {
+        RulDataType dataType = new RulDataType();
+        dataType.setCode("DT" + index);
+        dataType.setName("Data type " + index);
+        dataType.setRegexpUse(false);
+        dataType.setTextLenghtLimitUse((index > 1) ? true : false);
+        dataType.setDescription("popis");
+        dataType.setStorageTable("arr_data_integer");
+        dataTypeRepository.save(dataType);
+        return dataType;
     }
 }

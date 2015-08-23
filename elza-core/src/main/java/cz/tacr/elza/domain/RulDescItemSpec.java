@@ -13,6 +13,7 @@ import javax.persistence.UniqueConstraint;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.hibernate.annotations.Type;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -27,7 +28,7 @@ import cz.req.ax.IdObject;
 @Table(uniqueConstraints = {
         @UniqueConstraint(columnNames = {"code"}),
         @UniqueConstraint(columnNames = {"viewOrder"})})
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class RulDescItemSpec implements IdObject<Integer>, cz.tacr.elza.api.RulDescItemSpec<RulDescItemType> {
 
     @Id
@@ -49,6 +50,7 @@ public class RulDescItemSpec implements IdObject<Integer>, cz.tacr.elza.api.RulD
 
     @Column(nullable = false)
     @Lob
+    @Type(type = "org.hibernate.type.TextType")
     private String description;
 
     @Column(nullable = false)

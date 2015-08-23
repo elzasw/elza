@@ -5,6 +5,8 @@ import javax.persistence.Entity;
 import javax.persistence.Lob;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Type;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
@@ -19,6 +21,7 @@ public class ArrDataText extends ArrData implements cz.tacr.elza.api.ArrDataText
 
     @Column(nullable = false)
     @Lob
+    @Type(type = "org.hibernate.type.TextType")
     private String value;
 
     public String getValue() {

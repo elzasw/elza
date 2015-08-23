@@ -20,7 +20,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.jayway.restassured.response.Response;
 
 import cz.tacr.elza.domain.ArrArrangementType;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDescItemExt;
 import cz.tacr.elza.domain.ArrFaLevel;
+import cz.tacr.elza.domain.ArrFaLevelExt;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFaChange;
@@ -58,6 +61,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
     private static final String MOVE_LEVEL_AFTER_URL = ARRANGEMENT_MANAGER_URL + "/moveLevelAfter";
     private static final String DELETE_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/deleteLevel";
     private static final String FIND_LEVEL_BY_NODE_ID_URL = ARRANGEMENT_MANAGER_URL + "/findLevelByNodeId";
+    private static final String GET_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/getLevel";
 
     private static final String FA_NAME_ATT = "name";
     private static final String FA_ID_ATT = "findingAidId";
@@ -573,10 +577,66 @@ public class ArrangementManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        ArrFaLevel foundNode = response.getBody().as(ArrFaLevel.class);
+        ArrFaLevelExt foundNode = response.getBody().as(ArrFaLevelExt.class);
 
         Assert.assertTrue(node.getNodeId().equals(foundNode.getNodeId()));
         Assert.assertTrue(node.getFaLevelId().equals(foundNode.getFaLevelId()));
+    }
+
+    @Test
+    public void testRestGetLevelByNodeId() {
+
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
+
+        ArrFaVersion version = createFindingAidVersion(findingAid, null, false);
+        ArrFaLevel parent = createLevel(1, null, version.getCreateChange());
+        version.setRootNode(parent);
+        version.setLockChange(createFaChange(LocalDateTime.now()));
+        versionRepository.save(version);
+
+        ArrFaLevel child = createLevel(2, parent, version.getCreateChange());
+        ArrFaChange change = createFaChange(LocalDateTime.now());
+        child.setDeleteChange(change);
+        createAttributs(child.getNodeId(), 1, version.getCreateChange(), 1);
+        levelRepository.save(child);
+        ArrFaChange createChange = createFaChange(LocalDateTime.now());
+        ArrFaLevel child2 = createLevel(2, parent, createChange);
+        ArrDescItem item = createAttributs(child2.getNodeId(), 1, version.getCreateChange(), 2);
+
+        Integer[] descItemTypeIds = {1, item.getDescItemType().getDescItemTypeId()};
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
+                parameter(NODE_ID_ATT, child2.getNodeId()).parameter("descItemTypeIds", descItemTypeIds).get(GET_LEVEL_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+        List<ArrFaLevelExt> levelList = Arrays.asList(response.getBody().as(ArrFaLevelExt[].class));
+        if (levelList.size() != 1) {
+            Assert.fail();
+        } else {
+            ArrFaLevelExt level = levelList.get(0);
+            if (level.getDescItemList().size() != 1) {
+                Assert.fail();
+            } else {
+                ArrDescItemExt descItem = level.getDescItemList().get(0);
+                Assert.assertNotNull(descItem.getData());
+            }
+        }
+
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
+                parameter(NODE_ID_ATT, child.getNodeId()).
+                parameter(VERSION_ID_ATT, version.getFaVersionId()).get(GET_LEVEL_URL);
+        logger.info(response.asString());
+        levelList = Arrays.asList(response.getBody().as(ArrFaLevelExt[].class));
+        if (levelList.size() != 1) {
+            Assert.fail();
+        } else {
+            ArrFaLevelExt level = levelList.get(0);
+            if (level.getDescItemList().size() != 1) {
+                Assert.fail();
+            } else {
+                ArrDescItemExt descItem = level.getDescItemList().get(0);
+                Assert.assertNotNull(descItem.getData());
+            }
+        }
     }
 
     /**

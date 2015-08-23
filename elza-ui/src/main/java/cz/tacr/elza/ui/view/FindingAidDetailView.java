@@ -16,6 +16,7 @@ import org.springframework.util.CollectionUtils;
 
 import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrFaLevel;
+import cz.tacr.elza.domain.ArrFaLevelExt;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.ui.components.LevelInlineDetail;
 import cz.tacr.elza.ui.utils.ElzaNotifications;
@@ -144,7 +145,10 @@ public class FindingAidDetailView extends ElzaView {
                 @Override
                 public void itemClick(final ItemClickEvent event) {
                     table.setWidth("50%");
-                    levelDetailConteiner.showLevelDetail(arrangementManager.findLevelByNodeId((Integer) event.getItemId()));
+                    List<ArrFaLevelExt> levelList = arrangementManager.getLevel((Integer) event.getItemId(), null, null);
+                    ArrFaLevelExt level = levelList.get(0);
+                    levelDetailConteiner.showLevelDetail(level, level.getDescItemList());
+//                    levelDetailConteiner.showLevelDetail(arrangementManager.findLevelByNodeId((Integer) event.getItemId()));
                 }
             });
         }
@@ -326,7 +330,7 @@ public class FindingAidDetailView extends ElzaView {
 
 
                             ArrFaLevel faLevelVyjmout = arrangementManager.findLevelByNodeId(
-                                    levelNodeIdVyjmout);
+                                    levelNodeIdVyjmout, null);
 
                             Item item = container.getItem(itemId);
                             repositionLowerSiblings((Integer) itemId,
@@ -361,7 +365,7 @@ public class FindingAidDetailView extends ElzaView {
                             table.removeItem(levelNodeIdVyjmout);
 
                             ArrFaLevel faLevelVyjmout = arrangementManager.findLevelByNodeId(
-                                    levelNodeIdVyjmout);
+                                    levelNodeIdVyjmout, null);
 
                             if (container.isCollapsed(itemId)) {
                                 List<ArrFaLevel> faLevels = arrangementManager

@@ -2,11 +2,15 @@ package cz.tacr.elza.controller;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -16,13 +20,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.domain.ArrArrangementType;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDescItemExt;
 import cz.tacr.elza.domain.ArrFaChange;
 import cz.tacr.elza.domain.ArrFaLevel;
-import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ArrFaLevelExt;
 import cz.tacr.elza.domain.ArrFaVersion;
+import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
@@ -56,6 +67,9 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
 
     @Autowired
     private ChangeRepository faChangeRepository;
+
+    @Autowired
+    private DataRepository arrDataRepository;
 
     /**
      * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.
@@ -522,9 +536,15 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
     }
 
     @RequestMapping(value = "/findLevelByNodeId", method = RequestMethod.GET)
-    public ArrFaLevel findLevelByNodeId(@RequestParam("nodeId")Integer nodeId) {
+    public ArrFaLevelExt findLevelByNodeId(@RequestParam("nodeId")Integer nodeId, @RequestParam(value = "descItemTypeIds", required = false) Integer[] descItemTypeIds) {
         Assert.notNull(nodeId);
-        return levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
+        Set<Integer> idItemTypeSet = createItemTypeSet(descItemTypeIds);
+        ArrFaLevel level =  levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
+        final List<ArrData> dataList = arrDataRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
+        ArrFaLevelExt levelExt = new ArrFaLevelExt();
+        BeanUtils.copyProperties(level, levelExt);
+        readItemData(levelExt, dataList, idItemTypeSet);
+        return levelExt;
     }
 
     @RequestMapping(value = "/getOpenVersionByFindingAidId", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -561,5 +581,71 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
     public List<ArrFaLevel> findLevels(@RequestParam(value = "nodeId") Integer nodeId) {
         Assert.notNull(nodeId);
         return levelRepository.findByNodeIdOrderByCreateChangeAsc(nodeId);
+    }
+
+    @RequestMapping(value = "/getLevel", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<ArrFaLevelExt> getLevel(@RequestParam(value = "nodeId") Integer nodeId,
+                                     @RequestParam(value = "versionId", required = false) Integer versionId,
+                                     @RequestParam(value = "descItemTypeIds", required = false) Integer[] descItemTypeIds) {
+        Assert.notNull(nodeId);
+        ArrFaChange change = null;
+        if (versionId != null) {
+            ArrFaVersion version = versionRepository.findOne(versionId);
+            change = version.getLockChange();
+        }
+
+        final List<ArrFaLevel> levelList;
+        final List<ArrData> dataList;
+        if (change == null) {
+            levelList = levelRepository.findByNodeIdOrderByCreateChangeAsc(nodeId);
+            dataList = arrDataRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
+        } else {
+            levelList = levelRepository.findByNodeOrderByPositionAsc(nodeId, change);
+            dataList = arrDataRepository.findByNodeIdAndChange(nodeId, change);
+        }
+
+        Set<Integer> idItemTypeSet = createItemTypeSet(descItemTypeIds);
+
+        List<ArrFaLevelExt> resultList = new LinkedList<>();
+        for (ArrFaLevel arrFaLevel : levelList) {
+            ArrFaLevelExt levelExt = new ArrFaLevelExt();
+            BeanUtils.copyProperties(arrFaLevel, levelExt);
+            readItemData(levelExt, dataList, idItemTypeSet);
+            resultList.add(levelExt);
+        }
+        return resultList;
+    }
+
+    private Set<Integer> createItemTypeSet(final Integer[] descItemTypeIds) {
+        Set<Integer> idItemTypeSet = null;
+        if (descItemTypeIds != null && descItemTypeIds.length > 0) {
+            idItemTypeSet = new HashSet<>();
+            for (Integer idItemType : descItemTypeIds) {
+                idItemTypeSet.add(idItemType);
+            }
+        }
+        return idItemTypeSet;
+    }
+
+    private void readItemData(final ArrFaLevelExt levelExt, final List<ArrData> dataList, final Set<Integer> idItemTypeSet) {
+        for (ArrData arrData : dataList) {
+            Integer idItemType = arrData.getDescItem().getDescItemType().getId();
+            if (idItemTypeSet != null && (!idItemTypeSet.contains(idItemType))) {
+                continue;
+            }
+            ArrDescItemExt arrDescItemExt = new ArrDescItemExt();
+            BeanUtils.copyProperties(arrData.getDescItem(), arrDescItemExt);
+            if (arrData instanceof ArrDataString) {
+                ArrDataString stringData = (ArrDataString) arrData;
+                arrDescItemExt.setData(stringData.getValue());
+            } else if (arrData instanceof ArrDataInteger) {
+                ArrDataInteger stringData = (ArrDataInteger) arrData;
+                arrDescItemExt.setData(stringData.getValue().toString());
+            } if (arrData instanceof ArrDataText) {
+                ArrDataText stringData = (ArrDataText) arrData;
+                arrDescItemExt.setData(stringData.getValue());
+            }
+            levelExt.getDescItemList().add(arrDescItemExt);
+        }
     }
 }

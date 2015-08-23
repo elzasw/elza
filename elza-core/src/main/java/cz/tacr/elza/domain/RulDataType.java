@@ -9,6 +9,7 @@ import javax.persistence.Table;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.hibernate.annotations.Type;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -37,6 +38,7 @@ public class RulDataType implements IdObject<Integer>, cz.tacr.elza.api.RulDataT
 
     @Column(length = 15, nullable = false)
     @Lob
+    @Type(type = "org.hibernate.type.TextType")
     private String description;
 
     @Column(nullable = false)

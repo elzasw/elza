@@ -35,6 +35,11 @@ public interface LevelRepository extends JpaRepository<ArrFaLevel, Integer> {
 
     ArrFaLevel findByNodeIdAndDeleteChangeIsNull(Integer levelId);
 
+    @Query("SELECT c FROM arr_fa_level c WHERE c.nodeId = ?1 "
+            + "and c.createChange < ?2 and (c.deleteChange is null or c.deleteChange > ?2)"
+            + " order by c.position asc")
+    List<ArrFaLevel> findByNodeOrderByPositionAsc(Integer parentNodeId, ArrFaChange change);
+
     @Query("SELECT l FROM arr_fa_level l WHERE l.nodeId = ?1 order by l.createChange.changeDate asc")
     List<ArrFaLevel> findByNodeIdOrderByCreateChangeAsc(Integer nodeId);
 }
