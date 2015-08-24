@@ -591,19 +591,28 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ArrFaVersion version = createFindingAidVersion(findingAid, null, false);
         ArrFaLevel parent = createLevel(1, null, version.getCreateChange());
         version.setRootNode(parent);
-        version.setLockChange(createFaChange(LocalDateTime.now()));
         versionRepository.save(version);
+        LocalDateTime startTime = version.getCreateChange().getChangeDate();
 
-        ArrFaLevel child = createLevel(2, parent, version.getCreateChange());
-        ArrFaChange change = createFaChange(LocalDateTime.now());
-        child.setDeleteChange(change);
-        createAttributs(child.getNodeId(), 1, version.getCreateChange(), 1);
+        ArrFaChange createChange = createFaChange(startTime.minusSeconds(1));
+        ArrFaLevel child = createLevel(2, parent, createChange);
+        createAttributs(child.getNodeId(), 1, createChange, 1);
         levelRepository.save(child);
-        ArrFaChange createChange = createFaChange(LocalDateTime.now());
-        ArrFaLevel child2 = createLevel(2, parent, createChange);
-        ArrDescItem item = createAttributs(child2.getNodeId(), 1, version.getCreateChange(), 2);
 
-        Integer[] descItemTypeIds = {1, item.getDescItemType().getDescItemTypeId()};
+        version.setLockChange(createFaChange(startTime.plusSeconds(2)));
+        versionRepository.save(version);
+        child.setDeleteChange(createFaChange(startTime.plusSeconds(3)));
+        createChange = createFaChange(startTime.plusSeconds(3));
+        createAttributs(child.getNodeId(), 2, createChange, 11);
+
+        createChange = createFaChange(startTime.plusSeconds(3));
+        ArrFaLevel child2 = createLevel(2, parent, createChange);
+        ArrDescItem item = createAttributs(child2.getNodeId(), 1, createChange, 2);
+        ArrDescItem item2 = createAttributs(child2.getNodeId(), 2, createChange, 21);
+        item2.setDeleteChange(createChange);
+        descItemRepository.save(item2);
+
+        Integer[] descItemTypeIds = {1, item.getDescItemType().getDescItemTypeId(), item2.getDescItemType().getDescItemTypeId()};
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
                 parameter(NODE_ID_ATT, child2.getNodeId()).parameter("descItemTypeIds", descItemTypeIds).get(GET_LEVEL_URL);
         logger.info(response.asString());
