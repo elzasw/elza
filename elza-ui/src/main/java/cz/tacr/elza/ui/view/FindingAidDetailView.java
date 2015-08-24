@@ -27,7 +27,6 @@ import com.vaadin.data.Item;
 import com.vaadin.event.ItemClickEvent;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.FontAwesome;
-import com.vaadin.ui.Button;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.Table;
@@ -65,6 +64,7 @@ public class FindingAidDetailView extends ElzaView {
 
     private Integer findingAidId;
     private Integer versionId;
+    private Integer rootNodeId;
 
     private ArrFindingAid findingAid;
     private Integer levelNodeIdVyjmout;
@@ -109,7 +109,7 @@ public class FindingAidDetailView extends ElzaView {
 
         table = new TreeTable();
         table.addStyleName("detail-table");
-        table.setWidth("100%");
+        table.setWidth("50%");
 
         table.setContainerDataSource(container);
         table.setSortEnabled(false);
@@ -154,6 +154,7 @@ public class FindingAidDetailView extends ElzaView {
 //        }
 
         refreshTree(container, version.getRootNode());
+        rootNodeId = (Integer) version.getRootNode().getNodeId();
 
         table.addCollapseListener(new Tree.CollapseListener() {
             @Override
@@ -183,7 +184,6 @@ public class FindingAidDetailView extends ElzaView {
             }
         });
 
-
         if (version != null && version.getLockChange() != null && version.getLockChange().getChangeDate() != null) {
             String createDataStr = version.getLockChange().getChangeDate()
                     .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM));
@@ -193,6 +193,14 @@ public class FindingAidDetailView extends ElzaView {
         } else {
             components(table, createInlineDetail());
         }
+        showDetailAP();
+    }
+
+    private void showDetailAP() {
+        table.setWidth("50%");
+        List<ArrFaLevelExt> levelList = arrangementManager.getLevel(rootNodeId, versionId, null);
+        ArrFaLevelExt level = levelList.get(0);
+        levelDetailConteiner.showLevelDetail(level, level.getDescItemList());
     }
 
     private CssLayout createInlineDetail() {
@@ -590,7 +598,9 @@ public class FindingAidDetailView extends ElzaView {
         if (historiOnly) {
             AxAction hist = new AxAction().caption("Zobrazit verze").icon(FontAwesome.HISTORY).run(() ->
                     navigate(VersionListView.class, findingAidId));
-            actions(hist);
+            AxAction detail = new AxAction().caption("Zobrazit detail AP").icon(FontAwesome.BOOK).run(() ->
+                     showDetailAP());
+            actions(hist, detail);
         } else {
             actions(
                     new AxAction().caption("Přidat záznam").icon(FontAwesome.PLUS).run(() -> {
@@ -624,7 +634,9 @@ public class FindingAidDetailView extends ElzaView {
                         appVersion.setRuleSetId(version.getRuleSet().getRuleSetId());
 
                         approveVersion(formularApproveVersion, appVersion);
-                    })
+                    }),
+                    new AxAction().caption("Zobrazit detail AP").icon(FontAwesome.BOOK).run(() ->
+                        showDetailAP())
             );
         }
     }
