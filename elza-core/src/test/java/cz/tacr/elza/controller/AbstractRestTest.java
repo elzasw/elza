@@ -83,7 +83,7 @@ public abstract class AbstractRestTest {
     @Autowired
     private FindingAidRepository findingAidRepository;
     @Autowired
-    private DescItemRepository descItemRepository;
+    protected DescItemRepository descItemRepository;
     @Autowired
     private DescItemTypeRepository descItemTypeRepository;
     @Autowired
@@ -117,8 +117,8 @@ public abstract class AbstractRestTest {
         arrDataRepository.deleteAll();
         arrDataStringRepository.deleteAll();
         descItemRepository.deleteAll();
-//        descItemSpecRepository.deleteAll();
-//        descItemTypeRepository.deleteAll();
+        descItemSpecRepository.deleteAll();
+        descItemTypeRepository.deleteAll();
         changeRepository.deleteAll();
     }
 

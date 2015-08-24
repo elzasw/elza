@@ -139,19 +139,19 @@ public class FindingAidDetailView extends ElzaView {
             return;
         }
 
-        if(version.getLockChange() == null) {
+//        if(version.getLockChange() == null) {
             //zatím zobrazujeme detail jen pro otevřené verze
             table.addItemClickListener(new ItemClickEvent.ItemClickListener() {
                 @Override
                 public void itemClick(final ItemClickEvent event) {
                     table.setWidth("50%");
-                    List<ArrFaLevelExt> levelList = arrangementManager.getLevel((Integer) event.getItemId(), null, null);
+                    List<ArrFaLevelExt> levelList = arrangementManager.getLevel((Integer) event.getItemId(), versionId, null);
                     ArrFaLevelExt level = levelList.get(0);
                     levelDetailConteiner.showLevelDetail(level, level.getDescItemList());
 //                    levelDetailConteiner.showLevelDetail(arrangementManager.findLevelByNodeId((Integer) event.getItemId()));
                 }
             });
-        }
+//        }
 
         refreshTree(container, version.getRootNode());
 
@@ -188,6 +188,7 @@ public class FindingAidDetailView extends ElzaView {
             String createDataStr = version.getLockChange().getChangeDate()
                     .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM));
             com.vaadin.ui.Component verzeComponent = newLabel("Prohlížíte si uzavřenou verzi k " + createDataStr, "h2");
+            verzeComponent.setWidth("100%");
             components(verzeComponent, table, createInlineDetail());
         } else {
             components(table, createInlineDetail());
