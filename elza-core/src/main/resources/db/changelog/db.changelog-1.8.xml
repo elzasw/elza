@@ -112,6 +112,48 @@
             </column>
         </createTable>
 
+        <addForeignKeyConstraint constraintName="fk_parPartySubtype_parPartyType"
+                                 baseTableName="par_party_subtype"
+                                 baseColumnNames="party_type_id"
+                                 referencedTableName="par_party_type"
+                                 referencedColumnNames="party_type_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_abstractParty_parPartySubtype"
+                                 baseTableName="par_abstract_party"
+                                 baseColumnNames="party_subtype_id"
+                                 referencedTableName="par_party_subtype"
+                                 referencedColumnNames="party_subtype_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_abstractParty_regRecord"
+                                 baseTableName="par_abstract_party"
+                                 baseColumnNames="record_id"
+                                 referencedTableName="reg_record"
+                                 referencedColumnNames="record_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_variantRecord_regRecord"
+                                 baseTableName="reg_variant_record"
+                                 baseColumnNames="record_id"
+                                 referencedTableName="reg_record"
+                                 referencedColumnNames="record_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_record_regRegisterType"
+                                 baseTableName="reg_record"
+                                 baseColumnNames="register_type_id"
+                                 referencedTableName="reg_register_type"
+                                 referencedColumnNames="register_type_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_record_regExternalSource"
+                                 baseTableName="reg_record"
+                                 baseColumnNames="external_source_id"
+                                 referencedTableName="reg_external_source"
+                                 referencedColumnNames="external_source_id"
+                                 onDelete="NO ACTION"/>
+
     </changeSet>
 
 
