@@ -259,11 +259,6 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
         return findingAid;
     }
 
-    @RequestMapping(value = "/getArrangementTypes", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<ArrArrangementType> getArrangementTypes() {
-        return arrangementTypeRepository.findAll();
-    }
-
     @RequestMapping(value = "/getFindingAidVersions", method = RequestMethod.GET, params = {"findingAidId"}, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ArrFaVersion> getFindingAidVersions(@RequestParam(value = "findingAidId") final Integer findingAidId) {

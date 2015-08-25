@@ -56,7 +56,7 @@ import cz.tacr.elza.repository.VersionRepository;
 public abstract class AbstractRestTest {
 
     protected static final String ARRANGEMENT_MANAGER_URL = "/api/arrangementManager";
-    protected static final String RULE_SET_MANAGER_URL = "/api/ruleSetManager";
+    protected static final String RULE_MANAGER_URL = "/api/ruleSetManager";
 
     protected static final String TEST_CODE = "Tcode";
     protected static final String TEST_NAME = "Test name";

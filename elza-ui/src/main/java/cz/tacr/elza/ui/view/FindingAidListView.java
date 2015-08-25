@@ -7,7 +7,7 @@ import com.vaadin.ui.Table;
 import cz.req.ax.*;
 import cz.req.ax.util.LocalDateTimeConverter;
 import cz.tacr.elza.controller.ArrangementManager;
-import cz.tacr.elza.controller.RuleSetManager;
+import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.RulRuleSet;
@@ -36,7 +36,7 @@ public class FindingAidListView extends ElzaView {
     private ArrangementManager arrangementManager;
 
     @Autowired
-    private RuleSetManager ruleSetManager;
+    private RuleManager ruleSetManager;
 
     AxContainer<ArrArrangementType> arTypeContainer;
     AxContainer<RulRuleSet> ruleSetContainer;
@@ -130,7 +130,7 @@ public class FindingAidListView extends ElzaView {
             }
         });
 
-        arTypeContainer = new AxContainer<>(ArrArrangementType.class).supplier(arrangementManager::getArrangementTypes);
+        arTypeContainer = new AxContainer<>(ArrArrangementType.class).supplier(ruleSetManager::getArrangementTypes);
         arTypeContainer.setBeanIdProperty("arrangementTypeId");
         form.addCombo("Typ výstupu", "arrangementTypeId", arTypeContainer, ArrArrangementType::getName).required();
 

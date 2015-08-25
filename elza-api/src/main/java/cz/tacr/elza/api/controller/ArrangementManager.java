@@ -51,13 +51,6 @@ public interface ArrangementManager {
     ArrFindingAid updateFindingAid(Integer findingAidId, String name);
 
     /**
-     * Vrátí všechny typy výstupu.
-     *
-     * @return všechny typy výstupu
-     */
-    List<? extends ArrArrangementType> getArrangementTypes();
-
-    /**
      * Vrátí seznam verzí pro danou archivní pomůcku seřazený od nejnovější k nejstarší.
      *
      * @param findingAidId id archivní pomůcky

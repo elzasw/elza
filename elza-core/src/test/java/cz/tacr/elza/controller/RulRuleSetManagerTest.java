@@ -16,7 +16,7 @@ import com.jayway.restassured.response.Response;
 import cz.tacr.elza.domain.RulRuleSet;
 
 /**
- * Testy pro {@link RuleSetManager}.
+ * Testy pro {@link RuleManager}.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 31. 7. 2015
@@ -25,10 +25,10 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static final String GET_RS_URL = RULE_SET_MANAGER_URL + "/getRuleSets";
+    private static final String GET_RS_URL = RULE_MANAGER_URL + "/getRuleSets";
 
     @Autowired
-    private RuleSetManager ruleSetManager;
+    private RuleManager ruleSetManager;
 
     @Test
     public void testRestGetRuleSets() throws Exception {

@@ -45,7 +45,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
     private static final String DELETE_FA_URL = ARRANGEMENT_MANAGER_URL + "/deleteFindingAid";
     private static final String GET_FA_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAids";
     private static final String GET_FA_ONE_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAid";
-    private static final String GET_ARRANGEMENT_TYPES_URL = ARRANGEMENT_MANAGER_URL + "/getArrangementTypes";
+    private static final String GET_ARRANGEMENT_TYPES_URL = RULE_MANAGER_URL + "/getArrangementTypes";
     private static final String GET_FINDING_AID_VERSIONS_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAidVersions";
     private static final String APPROVE_VERSION_URL = ARRANGEMENT_MANAGER_URL + "/approveVersion";
     private static final String GET_VERSION_ID_URL = ARRANGEMENT_MANAGER_URL + "/getVersion";

@@ -39,7 +39,7 @@ import cz.req.ax.AxContainer;
 import cz.req.ax.AxForm;
 import cz.req.ax.AxWindow;
 import cz.tacr.elza.controller.ArrangementManager;
-import cz.tacr.elza.controller.RuleSetManager;
+import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.ui.ElzaView;
@@ -60,7 +60,7 @@ public class FindingAidDetailView extends ElzaView {
     private ArrangementManager arrangementManager;
 
     @Autowired
-    private RuleSetManager ruleSetManager;
+    private RuleManager ruleSetManager;
 
     private Integer findingAidId;
     private Integer versionId;
@@ -676,7 +676,7 @@ public class FindingAidDetailView extends ElzaView {
         AxForm<VOApproveVersion> form = AxForm.init(VOApproveVersion.class);
         form.addStyleName("fa-form");
 
-        arTypeContainer = new AxContainer<>(ArrArrangementType.class).supplier(arrangementManager::getArrangementTypes);
+        arTypeContainer = new AxContainer<>(ArrArrangementType.class).supplier(ruleSetManager::getArrangementTypes);
         arTypeContainer.setBeanIdProperty("arrangementTypeId");
         form.addCombo("Typ výstupu", "arrangementTypeId", arTypeContainer, ArrArrangementType::getName).required();
 
