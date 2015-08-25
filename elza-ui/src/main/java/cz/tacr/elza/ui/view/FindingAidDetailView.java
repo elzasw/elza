@@ -145,8 +145,7 @@ public class FindingAidDetailView extends ElzaView {
                 @Override
                 public void itemClick(final ItemClickEvent event) {
                     table.setWidth("50%");
-                    List<ArrFaLevelExt> levelList = arrangementManager.getLevel((Integer) event.getItemId(), versionId, null);
-                    ArrFaLevelExt level = levelList.get(0);
+                    ArrFaLevelExt level = arrangementManager.getLevel((Integer) event.getItemId(), versionId, null);
                     levelDetailConteiner.showLevelDetail(level, level.getDescItemList());
 //                    levelDetailConteiner.showLevelDetail(arrangementManager.findLevelByNodeId((Integer) event.getItemId()));
                 }
@@ -198,8 +197,7 @@ public class FindingAidDetailView extends ElzaView {
 
     private void showDetailAP() {
         table.setWidth("50%");
-        List<ArrFaLevelExt> levelList = arrangementManager.getLevel(rootNodeId, versionId, null);
-        ArrFaLevelExt level = levelList.get(0);
+        ArrFaLevelExt level = arrangementManager.getLevel(rootNodeId, versionId, null);
         levelDetailConteiner.showLevelDetail(level, level.getDescItemList());
     }
 
@@ -339,7 +337,7 @@ public class FindingAidDetailView extends ElzaView {
 
 
                             ArrFaLevel faLevelVyjmout = arrangementManager.findLevelByNodeId(
-                                    levelNodeIdVyjmout, null);
+                                    levelNodeIdVyjmout);
 
                             Item item = container.getItem(itemId);
                             repositionLowerSiblings((Integer) itemId,
@@ -374,7 +372,7 @@ public class FindingAidDetailView extends ElzaView {
                             table.removeItem(levelNodeIdVyjmout);
 
                             ArrFaLevel faLevelVyjmout = arrangementManager.findLevelByNodeId(
-                                    levelNodeIdVyjmout, null);
+                                    levelNodeIdVyjmout);
 
                             if (container.isCollapsed(itemId)) {
                                 List<ArrFaLevel> faLevels = arrangementManager

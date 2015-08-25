@@ -617,34 +617,32 @@ public class ArrangementManagerTest extends AbstractRestTest {
                 parameter(NODE_ID_ATT, child2.getNodeId()).parameter("descItemTypeIds", descItemTypeIds).get(GET_LEVEL_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
-        List<ArrFaLevelExt> levelList = Arrays.asList(response.getBody().as(ArrFaLevelExt[].class));
-        if (levelList.size() != 1) {
+        ArrFaLevelExt level = response.getBody().as(ArrFaLevelExt.class);
+
+        if (level == null) {
+            Assert.fail();
+        }
+        if (level.getDescItemList().size() != 1) {
             Assert.fail();
         } else {
-            ArrFaLevelExt level = levelList.get(0);
-            if (level.getDescItemList().size() != 1) {
-                Assert.fail();
-            } else {
-                ArrDescItemExt descItem = level.getDescItemList().get(0);
-                Assert.assertNotNull(descItem.getData());
-            }
+            ArrDescItemExt descItem = level.getDescItemList().get(0);
+            Assert.assertNotNull(descItem.getData());
         }
 
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
                 parameter(NODE_ID_ATT, child.getNodeId()).
                 parameter(VERSION_ID_ATT, version.getFaVersionId()).get(GET_LEVEL_URL);
         logger.info(response.asString());
-        levelList = Arrays.asList(response.getBody().as(ArrFaLevelExt[].class));
-        if (levelList.size() != 1) {
+        level = response.getBody().as(ArrFaLevelExt.class);
+        if (level == null) {
+            Assert.fail();
+        }
+
+        if (level.getDescItemList().size() != 1) {
             Assert.fail();
         } else {
-            ArrFaLevelExt level = levelList.get(0);
-            if (level.getDescItemList().size() != 1) {
-                Assert.fail();
-            } else {
-                ArrDescItemExt descItem = level.getDescItemList().get(0);
-                Assert.assertNotNull(descItem.getData());
-            }
+            ArrDescItemExt descItem = level.getDescItemList().get(0);
+            Assert.assertNotNull(descItem.getData());
         }
     }
 

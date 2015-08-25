@@ -4,6 +4,7 @@ import java.util.List;
 
 import cz.tacr.elza.api.ArrArrangementType;
 import cz.tacr.elza.api.ArrFaLevel;
+import cz.tacr.elza.api.ArrFaLevelExt;
 import cz.tacr.elza.api.ArrFaVersion;
 import cz.tacr.elza.api.ArrFindingAid;
 
@@ -165,4 +166,14 @@ public interface ArrangementManager {
      * @return            potomci předaného uzlu
      */
     List<? extends ArrFaLevel> findSubLevels(Integer nodeId, Integer versionId);
+
+    /**
+     * Načte uzel podle identifikátoru. K uzlu doplní jeho Atributy.
+     * 
+     * @param nodeId           id uzlu
+     * @param versionId        id verze, může být null
+     * @param descItemTypeIds  typy atributů, může být null
+     * @return uzel s daným identifikátorem
+     */
+    ArrFaLevelExt getLevel(Integer nodeId, Integer versionId, Integer[] descItemTypeIds);
 }

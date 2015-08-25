@@ -536,15 +536,9 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
     }
 
     @RequestMapping(value = "/findLevelByNodeId", method = RequestMethod.GET)
-    public ArrFaLevelExt findLevelByNodeId(@RequestParam("nodeId")Integer nodeId, @RequestParam(value = "descItemTypeIds", required = false) Integer[] descItemTypeIds) {
+    public ArrFaLevel findLevelByNodeId(@RequestParam("nodeId")Integer nodeId) {
         Assert.notNull(nodeId);
-        Set<Integer> idItemTypeSet = createItemTypeSet(descItemTypeIds);
-        ArrFaLevel level =  levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
-        final List<ArrData> dataList = arrDataRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
-        ArrFaLevelExt levelExt = new ArrFaLevelExt();
-        BeanUtils.copyProperties(level, levelExt);
-        readItemData(levelExt, dataList, idItemTypeSet);
-        return levelExt;
+        return  levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
     }
 
     @RequestMapping(value = "/getOpenVersionByFindingAidId", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -584,7 +578,7 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
     }
 
     @RequestMapping(value = "/getLevel", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<ArrFaLevelExt> getLevel(@RequestParam(value = "nodeId") Integer nodeId,
+    public ArrFaLevelExt getLevel(@RequestParam(value = "nodeId") Integer nodeId,
                                      @RequestParam(value = "versionId", required = false) Integer versionId,
                                      @RequestParam(value = "descItemTypeIds", required = false) Integer[] descItemTypeIds) {
         Assert.notNull(nodeId);
@@ -604,16 +598,19 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
             dataList = arrDataRepository.findByNodeIdAndChange(nodeId, change);
         }
 
+        if (levelList.isEmpty()) {
+            throw new IllegalStateException("Nebyl nalezen záznam podle nodId " + nodeId + " a versionId " + versionId);
+        } else if (levelList.size() > 1) {
+            throw new IllegalStateException("Bylo nalezeno více záznamů (" + levelList.size() 
+                + ") podle nodId " + nodeId + " a versionId " + versionId);
+        }
+        ArrFaLevel arrFaLevel = levelList.get(0);
         Set<Integer> idItemTypeSet = createItemTypeSet(descItemTypeIds);
 
-        List<ArrFaLevelExt> resultList = new LinkedList<>();
-        for (ArrFaLevel arrFaLevel : levelList) {
-            ArrFaLevelExt levelExt = new ArrFaLevelExt();
-            BeanUtils.copyProperties(arrFaLevel, levelExt);
-            readItemData(levelExt, dataList, idItemTypeSet);
-            resultList.add(levelExt);
-        }
-        return resultList;
+        ArrFaLevelExt levelExt = new ArrFaLevelExt();
+        BeanUtils.copyProperties(arrFaLevel, levelExt);
+        readItemData(levelExt, dataList, idItemTypeSet);
+        return levelExt;
     }
 
     private Set<Integer> createItemTypeSet(final Integer[] descItemTypeIds) {
