@@ -8,7 +8,7 @@ import java.util.List;
  * @since 22.7.15
  */
 
-public class ArrFaLevelExt extends ArrFaLevel {
+public class ArrFaLevelExt extends ArrFaLevel implements cz.tacr.elza.api.ArrFaLevelExt<ArrFaChange, ArrDescItemExt> {
 
     private List<ArrDescItemExt> descItemList = new LinkedList<>();
 

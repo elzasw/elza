@@ -2,10 +2,10 @@ package cz.tacr.elza.api;
 
 import java.util.List;
 
-public interface ArrFaLevelExt extends ArrFaLevel {
+public interface ArrFaLevelExt<FC extends ArrFaChange, DI extends ArrDescItemExt> extends ArrFaLevel<FC> {
 
 
-    List<ArrDescItemExt> getDescItemList();
+    List<DI> getDescItemList();
 
-    void setDescItemList(List<ArrDescItemExt> descItemList);
+    void setDescItemList(List<DI> descItemList);
 }
