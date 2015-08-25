@@ -47,7 +47,7 @@ public class ArrDescItem implements IdObject<Integer>, cz.tacr.elza.api.ArrDescI
     private RulDescItemType descItemType;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulDescItemSpec.class)
-    @JoinColumn(name = "descItemSpecId", nullable = false)
+    @JoinColumn(name = "descItemSpecId", nullable = true)
     private RulDescItemSpec descItemSpec;
 
 
