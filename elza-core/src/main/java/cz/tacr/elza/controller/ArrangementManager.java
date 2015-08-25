@@ -3,7 +3,6 @@ package cz.tacr.elza.controller;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -48,7 +47,7 @@ import cz.tacr.elza.repository.VersionRepository;
  */
 @RestController
 @RequestMapping("/api/arrangementManager")
-public class ArrangementManager /*implements cz.tacr.elza.api.controller.ArrangementManager*/ {
+public class ArrangementManager implements cz.tacr.elza.api.controller.ArrangementManager {
 
     @Autowired
     private FindingAidRepository findingAidRepository;
@@ -88,6 +87,7 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
         return findingAid;
     }
 
+    @Override
     @Transactional
     @RequestMapping(value = "/createFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE,
     params = {"name", "arrangementTypeId", "ruleSetId"}, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -219,6 +219,7 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
     }
 
 
+    @Override
     @RequestMapping(value = "/deleteFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, params = {"findingAidId"})
     @Transactional
     public void deleteFindingAid(@RequestParam(value = "findingAidId") final Integer findingAidId) {
@@ -240,13 +241,15 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
     }
 
 
+    @Override
     @RequestMapping(value = "/getFindingAids", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
     public List<ArrFindingAid> getFindingAids() {
         return findingAidRepository.findAll();
     }
 
+    @Override
     @RequestMapping(value = "/updateFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, params = {"findingAidId", "name"},
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     public ArrFindingAid updateFindingAid(@RequestParam(value = "findingAidId") final Integer findingAidId, @RequestParam(value = "name") final String name) {
         Assert.notNull(findingAidId);
@@ -259,21 +262,24 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
         return findingAid;
     }
 
+    @Override
     @RequestMapping(value = "/getFindingAidVersions", method = RequestMethod.GET, params = {"findingAidId"}, consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ArrFaVersion> getFindingAidVersions(@RequestParam(value = "findingAidId") final Integer findingAidId) {
         Assert.notNull(findingAidId);
 
         return versionRepository.findVersionsByFindingAidIdOrderByCreateDateAsc(findingAidId);
     }
 
+    @Override
     @RequestMapping(value = "/getFindingAid", method = RequestMethod.GET, params = {"findingAidId"}, consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    produces = MediaType.APPLICATION_JSON_VALUE)
     public ArrFindingAid getFindingAid(final Integer findingAidId) {
         Assert.notNull(findingAidId);
         return findingAidRepository.getOne(findingAidId);
     }
 
+    @Override
     @Transactional
     @RequestMapping(value = "/approveVersion", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE,
     params = {"findingAidId", "arrangementTypeId", "ruleSetId"}, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -294,6 +300,7 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
         return createVersion(change, findingAid, arrangementType, ruleSet, version.getRootNode());
     }
 
+    @Override
     @Transactional
     @RequestMapping(value = "/addLevelBefore", method = RequestMethod.PUT, params = {"nodeId"})
     public ArrFaLevel addLevelBefore(@RequestParam("nodeId") Integer nodeId){
@@ -305,6 +312,7 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
         return createBeforeInLevel(change, faLevel);
     }
 
+    @Override
     @Transactional
     @RequestMapping(value = "/addLevel", method = RequestMethod.PUT, params = {"findingAidId"})
     public ArrFaLevel addLevel(@RequestParam("findingAidId") Integer findingAidId) {
@@ -315,8 +323,7 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
         return createLastInLevel(change, lastVersion.getRootNode());
     }
 
-
-
+    @Override
     @Transactional
     @RequestMapping(value = "/addLevelAfter", method = RequestMethod.PUT, params = {"nodeId"})
     public ArrFaLevel addLevelAfter(@RequestParam("nodeId") Integer nodeId) {
@@ -327,6 +334,7 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
         return createAfterInLevel(change, faLevel);
     }
 
+    @Override
     @Transactional
     @RequestMapping(value = "/addLevelChild", method = RequestMethod.PUT, params = {"nodeId"})
     public ArrFaLevel addLevelChild(@RequestParam("nodeId") Integer nodeId) {
@@ -337,11 +345,11 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
         return createLastInLevel(change, faLevel);
     }
 
-
+    @Override
     @Transactional
     @RequestMapping(value = "/moveLevelBefore", method = RequestMethod.PUT, params = {"nodeId", "followerNodeId"})
     public ArrFaLevel moveLevelBefore(@RequestParam("nodeId") Integer nodeId,
-                                   @RequestParam("followerNodeId") Integer followerNodeId) {
+            @RequestParam("followerNodeId") Integer followerNodeId) {
 
         Assert.notNull(nodeId);
         Assert.notNull(followerNodeId);
@@ -384,6 +392,7 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
         return addInLevel(newLevel, follower.getParentNodeId(), position);
     }
 
+    @Override
     @Transactional
     @RequestMapping(value = "/moveLevelUnder", method = RequestMethod.PUT, params = {"nodeId", "parentNodeId"})
     public ArrFaLevel moveLevelUnder(@RequestParam("nodeId") Integer nodeId, @RequestParam("parentNodeId") Integer parentNodeId) {
@@ -410,6 +419,7 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
         return addLastInLevel(newLevel, parent.getNodeId());
     }
 
+    @Override
     @Transactional
     @RequestMapping(value = "/moveLevelAfter", method = RequestMethod.PUT, params = {"nodeId", "predecessorNodeId"})
     public ArrFaLevel moveLevelAfter(@RequestParam("nodeId") Integer nodeId, @RequestParam("predecessorNodeId") Integer predecessorNodeId) {
@@ -517,6 +527,7 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
         return levelRepository.save(level);
     }
 
+    @Override
     @Transactional
     @RequestMapping(value = "/deleteLevel", method = RequestMethod.PUT)
     public ArrFaLevel deleteLevel(@RequestParam("nodeId") Integer nodeId) {
@@ -530,12 +541,14 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
         return levelRepository.save(level);
     }
 
+    @Override
     @RequestMapping(value = "/findLevelByNodeId", method = RequestMethod.GET)
     public ArrFaLevel findLevelByNodeId(@RequestParam("nodeId")Integer nodeId) {
         Assert.notNull(nodeId);
         return  levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
     }
 
+    @Override
     @RequestMapping(value = "/getOpenVersionByFindingAidId", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ArrFaVersion getOpenVersionByFindingAidId(@RequestParam(value = "findingAidId") Integer findingAidId) {
         Assert.notNull(findingAidId);
@@ -544,12 +557,14 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
         return faVersion;
     }
 
+    @Override
     @RequestMapping(value = "/getVersion", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ArrFaVersion getFaVersionById(@RequestParam("versionId") final Integer versionId) {
         Assert.notNull(versionId);
         return versionRepository.findOne(versionId);
     }
 
+    @Override
     @RequestMapping(value = "/findSubLevels", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ArrFaLevel> findSubLevels(@RequestParam(value = "nodeId") Integer nodeId,
             @RequestParam(value = "versionId", required = false)  Integer versionId) {
@@ -572,10 +587,11 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
         return levelRepository.findByNodeIdOrderByCreateChangeAsc(nodeId);
     }
 
+    @Override
     @RequestMapping(value = "/getLevel", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ArrFaLevelExt getLevel(@RequestParam(value = "nodeId") Integer nodeId,
-                                     @RequestParam(value = "versionId", required = false) Integer versionId,
-                                     @RequestParam(value = "descItemTypeIds", required = false) Integer[] descItemTypeIds) {
+            @RequestParam(value = "versionId", required = false) Integer versionId,
+            @RequestParam(value = "descItemTypeIds", required = false) Integer[] descItemTypeIds) {
         Assert.notNull(nodeId);
         ArrFaChange change = null;
         if (versionId != null) {
@@ -596,8 +612,8 @@ public class ArrangementManager /*implements cz.tacr.elza.api.controller.Arrange
         if (levelList.isEmpty()) {
             throw new IllegalStateException("Nebyl nalezen záznam podle nodId " + nodeId + " a versionId " + versionId);
         } else if (levelList.size() > 1) {
-            throw new IllegalStateException("Bylo nalezeno více záznamů (" + levelList.size() 
-                + ") podle nodId " + nodeId + " a versionId " + versionId);
+            throw new IllegalStateException("Bylo nalezeno více záznamů (" + levelList.size()
+                    + ") podle nodId " + nodeId + " a versionId " + versionId);
         }
         ArrFaLevel arrFaLevel = levelList.get(0);
         Set<Integer> idItemTypeSet = createItemTypeSet(descItemTypeIds);

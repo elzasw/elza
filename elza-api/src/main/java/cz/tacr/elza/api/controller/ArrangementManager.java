@@ -2,7 +2,6 @@ package cz.tacr.elza.api.controller;
 
 import java.util.List;
 
-import cz.tacr.elza.api.ArrArrangementType;
 import cz.tacr.elza.api.ArrFaLevel;
 import cz.tacr.elza.api.ArrFaLevelExt;
 import cz.tacr.elza.api.ArrFaVersion;
@@ -77,6 +76,14 @@ public interface ArrangementManager {
     ArrFaVersion approveVersion(Integer findingAidId, Integer arrangementTypeId, Integer ruleSetId);
 
     /**
+     * Vytvoří nový uzel před předaným uzlem.
+     *
+     * @param nodeId        id uzlu před kterým se má vytvořit nový
+     * @return              nový uzel
+     */
+    ArrFaLevel addLevelBefore(Integer nodeId);
+
+    /**
      * Vytvoří nový uzel v první úrovni archivní položky
      *
      * @param findingAidId    id archivní pomůcky
@@ -99,6 +106,15 @@ public interface ArrangementManager {
      * @return              nový uzel
      */
     ArrFaLevel addLevelChild(Integer nodeId);
+
+    /**
+     * Přesune uzel před předaný uzel.
+     *
+     * @param nodeId            id uzlu který se přesouvá
+     * @param followerNodeId    id uzlu před který se má uzel přesunout
+     * @return                  přesunutý uzel
+     */
+    ArrFaLevel moveLevelBefore(Integer nodeId, Integer followerNodeId);
 
     /**
      * Přesune uzel na poslední pozici pod předaným uzlem.
@@ -162,7 +178,7 @@ public interface ArrangementManager {
 
     /**
      * Načte uzel podle identifikátoru. K uzlu doplní jeho Atributy.
-     * 
+     *
      * @param nodeId           id uzlu
      * @param versionId        id verze, může být null
      * @param descItemTypeIds  typy atributů, může být null
