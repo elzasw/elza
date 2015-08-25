@@ -1,16 +1,30 @@
 package cz.tacr.elza.controller;
 
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.domain.ArrArrangementType;
+import cz.tacr.elza.domain.RulDescItemConstraint;
+import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemSpecExt;
+import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
+import cz.tacr.elza.repository.DescItemConstraintRepository;
+import cz.tacr.elza.repository.DescItemSpecRepository;
+import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 
 /**
@@ -27,6 +41,15 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager {
     private RuleSetRepository ruleSetRepository;
 
     @Autowired
+    private DescItemTypeRepository descItemTypeRepository;
+
+    @Autowired
+    private DescItemSpecRepository descItemSpecRepository;
+
+    @Autowired
+    private DescItemConstraintRepository descItemConstraintRepository;
+
+    @Autowired
     private ArrangementTypeRepository arrangementTypeRepository;
 
     @Override
@@ -35,8 +58,97 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager {
         return ruleSetRepository.findAll();
     }
 
+    @Override
     @RequestMapping(value = "/getArrangementTypes", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ArrArrangementType> getArrangementTypes() {
         return arrangementTypeRepository.findAll();
+    }
+
+    @Override
+    @RequestMapping(value = "/getDescriptionItemTypes", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<RulDescItemTypeExt> getDescriptionItemTypes(
+            @RequestParam(value = "ruleSetId") Integer ruleSetId) {
+        List<RulDescItemType> itemTypeList = descItemTypeRepository.findAll();
+        return createExt(itemTypeList);
+    }
+
+    @Override
+    @RequestMapping(value = "/getDescriptionItemTypesForNodeId", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<RulDescItemTypeExt> getDescriptionItemTypesForNodeId(
+            @RequestParam(value = "faVersionId") Integer faVersionId,
+            @RequestParam(value = "nodeId") Integer nodeId,
+            @RequestParam(value = "mandatory") Boolean mandatory) {
+        List<RulDescItemType> itemTypeList = descItemTypeRepository.findAll();
+        return createExt(itemTypeList);
+    }
+
+    private List<RulDescItemTypeExt> createExt(final List<RulDescItemType> itemTypeList) {
+        if (itemTypeList.isEmpty()) {
+            return new LinkedList<>();
+        }
+
+        List<RulDescItemSpec> listDescItem = descItemSpecRepository.findByItemTypeIds(itemTypeList);
+        Map<Integer, List<RulDescItemSpec>> itemSpecMap =
+                createGroupMap(listDescItem, p -> p.getDescItemType().getDescItemTypeId());
+
+        List<RulDescItemConstraint> findItemConstList =
+                descItemConstraintRepository.findByItemTypeIds(itemTypeList);
+        Map<Integer, List<RulDescItemConstraint>> itemConstrainMap =
+                createGroupMap(findItemConstList, p -> p.getDescItemType().getDescItemTypeId());
+
+        List<RulDescItemConstraint> findItemSpecConstList =
+                descItemConstraintRepository.findByItemSpecIds(listDescItem);
+        Map<Integer, List<RulDescItemConstraint>> itemSpecConstrainMap =
+                createGroupMap(findItemSpecConstList, p -> p.getDescItemSpec().getDescItemSpecId());
+
+        List<RulDescItemTypeExt> result = new LinkedList<>();
+        for (RulDescItemType rulDescItemType : itemTypeList) {
+            RulDescItemTypeExt descItemTypeExt = new RulDescItemTypeExt();
+            BeanUtils.copyProperties(rulDescItemType, descItemTypeExt);
+            List<RulDescItemSpec> itemSpecList =
+                    itemSpecMap.get(rulDescItemType.getDescItemTypeId());
+            if (itemSpecList != null) {
+                for (RulDescItemSpec rulDescItemSpec : itemSpecList) {
+                    RulDescItemSpecExt descItemSpecExt = new RulDescItemSpecExt();
+                    BeanUtils.copyProperties(rulDescItemSpec, descItemSpecExt);
+                    descItemTypeExt.getRulDescItemSpecList().add(descItemSpecExt);
+                    List<RulDescItemConstraint> itemConstrainList =
+                            itemSpecConstrainMap.get(rulDescItemSpec.getDescItemSpecId());
+                    if (itemConstrainList != null) {
+                        descItemSpecExt.getRulDescItemConstraintList().addAll(itemConstrainList);
+                    }
+                }
+            }
+            List<RulDescItemConstraint> itemConstrainList =
+                    itemConstrainMap.get(rulDescItemType.getDescItemTypeId());
+            if (itemConstrainList != null) {
+                descItemTypeExt.getRulDescItemConstraintList().addAll(itemConstrainList);
+            }
+            result.add(descItemTypeExt);
+        }
+
+        return result;
+    }
+
+    /**
+     * vytvoří z listu mapu listů zagrupovanou podle zadaného klíče.
+     * 
+     * @param findItemConstList
+     * @param f - funkce vracejici hodnotu klíčš pro grupovani.
+     * @return
+     */
+    private <T> Map<Integer, List<T>> createGroupMap(final List<T> findItemConstList,
+            final Function<T, Integer> f) {
+        Map<Integer, List<T>> itemConstrainMap = new HashMap<>();
+        for (T itemConstraint : findItemConstList) {
+            Integer itemTypeId = f.apply(itemConstraint);
+            List<T> itemConstrainList = itemConstrainMap.get(itemTypeId);
+            if (itemConstrainList == null) {
+                itemConstrainList = new LinkedList<>();
+                itemConstrainMap.put(itemTypeId, itemConstrainList);
+            }
+            itemConstrainList.add(itemConstraint);
+        }
+        return itemConstrainMap;
     }
 }

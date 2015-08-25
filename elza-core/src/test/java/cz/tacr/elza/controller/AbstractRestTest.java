@@ -21,6 +21,7 @@ import cz.tacr.elza.domain.ArrFaChange;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.ArrArrangementType;
@@ -34,6 +35,7 @@ import cz.tacr.elza.repository.DataStringRepository;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
+import cz.tacr.elza.repository.DescItemConstraintRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
@@ -89,6 +91,8 @@ public abstract class AbstractRestTest {
     @Autowired
     private DescItemSpecRepository descItemSpecRepository;
     @Autowired
+    private DescItemConstraintRepository descItemConstraintRepository;
+    @Autowired
     private DataTypeRepository dataTypeRepository;
     @Autowired
     private FaViewRepository faViewRepository;
@@ -108,6 +112,7 @@ public abstract class AbstractRestTest {
 
     @After
     public void setDown() {
+        descItemConstraintRepository.deleteAll();
         faViewRepository.deleteAll();
         versionRepository.deleteAll();
         arrangementTypeRepository.deleteAll();
@@ -212,6 +217,14 @@ public abstract class AbstractRestTest {
         return item;
     }
 
+    @Transactional
+    protected RulDescItemConstraint createConstrain(final int index) {
+        RulDescItemType descItemType = createDescItemType(index);
+        RulDescItemSpec rulDescItemSpec = createDescItemSpec(descItemType, index);
+        RulDescItemConstraint itemConstraint = createDescItemConstrain(descItemType, rulDescItemSpec, index);
+        return itemConstraint;
+    }
+
     private ArrData createData(final ArrDescItem item, final int index) {
         ArrDataString dataStr = new ArrDataString();
         dataStr.setDescItem(item);
@@ -237,6 +250,15 @@ public abstract class AbstractRestTest {
         itemType.setViewOrder(index);
         descItemTypeRepository.save(itemType);
         return itemType;
+    }
+
+    private RulDescItemConstraint createDescItemConstrain(final RulDescItemType itemType,
+                                                          RulDescItemSpec rulDescItemSpec, final int index) {
+        RulDescItemConstraint itemConstrain = new RulDescItemConstraint();
+        itemConstrain.setDescItemSpec(rulDescItemSpec);
+        itemConstrain.setDescItemType(itemType);
+        descItemConstraintRepository.save(itemConstrain);
+        return itemConstrain;
     }
 
     private RulDescItemSpec createDescItemSpec(final RulDescItemType itemType, final int index) {

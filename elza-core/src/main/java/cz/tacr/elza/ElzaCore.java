@@ -9,6 +9,7 @@ import org.springframework.boot.orm.jpa.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 /**
@@ -20,6 +21,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @ComponentScan(basePackageClasses = {ElzaCore.class})
 @EnableJpaRepositories(basePackageClasses = {ElzaCore.class})
 @EnableAutoConfiguration
+@EnableAspectJAutoProxy(proxyTargetClass = true)
 public class ElzaCore {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
