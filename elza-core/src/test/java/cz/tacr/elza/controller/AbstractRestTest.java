@@ -1,39 +1,24 @@
 package cz.tacr.elza.controller;
 
-import java.time.LocalDateTime;
-
-import javax.transaction.Transactional;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-
 import com.jayway.restassured.RestAssured;
-
 import cz.tacr.elza.ElzaCore;
+import cz.tacr.elza.domain.ArrArrangementType;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFaChange;
+import cz.tacr.elza.domain.ArrFaLevel;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.ArrArrangementType;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFaLevel;
 import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.DataStringRepository;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DataStringRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemConstraintRepository;
 import cz.tacr.elza.repository.DescItemRepository;
@@ -44,6 +29,18 @@ import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VersionRepository;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.IntegrationTest;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+
+import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 
 /**
  * Abstraktní předek pro testy. Nastavuje REST prostředí.
@@ -59,6 +56,7 @@ public abstract class AbstractRestTest {
 
     protected static final String ARRANGEMENT_MANAGER_URL = "/api/arrangementManager";
     protected static final String RULE_MANAGER_URL = "/api/ruleSetManager";
+    protected static final String REGISTRY_MANAGER_URL = "/api/registryManager";
 
     protected static final String TEST_CODE = "Tcode";
     protected static final String TEST_NAME = "Test name";
