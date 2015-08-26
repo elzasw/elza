@@ -685,13 +685,21 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             BeanUtils.copyProperties(arrData.getDescItem(), arrDescItemExt);
             if (arrData instanceof ArrDataString) {
                 ArrDataString stringData = (ArrDataString) arrData;
-                arrDescItemExt.setData(stringData.getValue());
+                String stringValue = stringData.getValue(); 
+                if (stringValue != null && stringValue.length() > 250 && formatData != null && FORMAT_ATTRIBUTE_SHORT.equals(formatData)) {
+                    stringValue = stringValue.substring(0, 250);
+                }
+                arrDescItemExt.setData(stringValue);
             } else if (arrData instanceof ArrDataInteger) {
                 ArrDataInteger stringData = (ArrDataInteger) arrData;
                 arrDescItemExt.setData(stringData.getValue().toString());
             } if (arrData instanceof ArrDataText) {
                 ArrDataText stringData = (ArrDataText) arrData;
-                arrDescItemExt.setData(stringData.getValue());
+                String stringValue = stringData.getValue(); 
+                if (stringValue != null && stringValue.length() > 250 && formatData != null && FORMAT_ATTRIBUTE_SHORT.equals(formatData)) {
+                    stringValue = stringValue.substring(0, 250);
+                }
+                arrDescItemExt.setData(stringValue);
             }
             levelExt.getDescItemList().add(arrDescItemExt);
         }
