@@ -171,7 +171,7 @@ public class FindingAidDetailView extends ElzaView {
 
                 Integer itemIdLast = itemId;
 
-                List<ArrFaLevel> faLevels = arrangementManager.findSubLevels(itemId, versionId);
+                List<ArrFaLevelExt> faLevels = arrangementManager.findSubLevels(itemId, versionId, null, null);
                 for (ArrFaLevel faLevel : faLevels) {
                     if (container.containsId(faLevel.getNodeId())) {
                         break;
@@ -375,8 +375,8 @@ public class FindingAidDetailView extends ElzaView {
                                     levelNodeIdVyjmout);
 
                             if (container.isCollapsed(itemId)) {
-                                List<ArrFaLevel> faLevels = arrangementManager
-                                        .findSubLevels((Integer) itemId, versionId);
+                                List<ArrFaLevelExt> faLevels = arrangementManager
+                                        .findSubLevels((Integer) itemId, versionId, null, null);
                                 Integer idLast = (Integer) itemId;
                                 for (ArrFaLevel faLevel : faLevels) {
                                     idLast = addItemAfterToContainer(faLevel, container, idLast);
@@ -444,7 +444,7 @@ public class FindingAidDetailView extends ElzaView {
 
     private void refreshTree(final HierarchicalCollapsibleContainer container, final ArrFaLevel rootLevel) {
         container.removeAllItems();
-        List<ArrFaLevel> faLevels = arrangementManager.findSubLevels(rootLevel.getNodeId(), versionId);
+        List<ArrFaLevelExt> faLevels = arrangementManager.findSubLevels(rootLevel.getNodeId(), versionId, null, null);
 
         for (ArrFaLevel faLevel : faLevels) {
             addItemToContainer(faLevel, container);
@@ -483,7 +483,7 @@ public class FindingAidDetailView extends ElzaView {
 
         Integer lastId = level.getNodeId();
         if (!container.isCollapsed(level.getNodeId())) {
-            List<ArrFaLevel> faLevels = arrangementManager.findSubLevels(level.getNodeId(), versionId);
+            List<ArrFaLevelExt> faLevels = arrangementManager.findSubLevels(level.getNodeId(), versionId, null, null);
 
             for (ArrFaLevel faLevel : faLevels) {
                 lastId = addItemAfterToContainer(faLevel, container, lastId);
@@ -500,7 +500,7 @@ public class FindingAidDetailView extends ElzaView {
 
         Integer lastId = level.getNodeId();
         if (!container.isCollapsed(level.getNodeId())) {
-            List<ArrFaLevel> faLevels = arrangementManager.findSubLevels(level.getNodeId(), versionId);
+            List<ArrFaLevelExt> faLevels = arrangementManager.findSubLevels(level.getNodeId(), versionId, null, null);
 
             for (ArrFaLevel faLevel : faLevels) {
                 lastId = addItemAfterToContainer(faLevel, container, lastId);
@@ -515,7 +515,7 @@ public class FindingAidDetailView extends ElzaView {
         initNewItemInContainer(item, level, container);
 
         if (!container.isCollapsed(level.getNodeId())) {
-            List<ArrFaLevel> faLevels = arrangementManager.findSubLevels(level.getNodeId(), versionId);
+            List<ArrFaLevelExt> faLevels = arrangementManager.findSubLevels(level.getNodeId(), versionId, null, null);
 
             for (ArrFaLevel faLevel : faLevels) {
                 addItemToContainer(faLevel, container);
