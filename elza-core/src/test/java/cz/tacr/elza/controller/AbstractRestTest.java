@@ -165,6 +165,13 @@ public abstract class AbstractRestTest {
     protected ArrFaVersion createFindingAidVersion(final ArrFindingAid findingAid, final ArrFaLevel root, boolean isLock) {
         RulRuleSet ruleSet = ruleSetRepository.findAll().iterator().next();
         ArrArrangementType arrangementType = arrangementTypeRepository.findAll().iterator().next();
+
+        return createFindingAidVersion(findingAid, root, ruleSet, arrangementType, isLock);
+    }
+
+    protected ArrFaVersion createFindingAidVersion(final ArrFindingAid findingAid, final ArrFaLevel root,
+                                                   RulRuleSet ruleSet, ArrArrangementType arrangementType, boolean isLock) {
+
         ArrFaChange createChange = createFaChange(LocalDateTime.now());
 
         ArrFaChange lockChange = null;

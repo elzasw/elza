@@ -13,6 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.jayway.restassured.response.Response;
 
+import cz.tacr.elza.domain.ArrArrangementType;
+import cz.tacr.elza.domain.ArrFaVersion;
+import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.RulDescItemSpecExt;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
@@ -31,6 +34,8 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
     private static final String GET_DIT_URL = RULE_MANAGER_URL + "/getDescriptionItemTypes";
     private static final String GET_DIT_FOR_NODE_ID_URL =
             RULE_MANAGER_URL + "/getDescriptionItemTypesForNodeId";
+    private static final String GET_FVDIT_URL = RULE_MANAGER_URL + "/getFaViewDescItemTypes";
+    private static final String SAVE_FVDIT_URL = RULE_MANAGER_URL + "/saveFaViewDescItemTypes";
 
     @Test
     public void testRestGetRuleSets() throws Exception {
@@ -88,5 +93,34 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
                 !itemType.getRulDescItemSpecList().isEmpty());
         Assert.assertTrue("Nenalezena polozka RulDescItemSpecExt->RulDescItemConstraint",
                 !itemSpec.getRulDescItemConstraintList().isEmpty());
+    }
+
+    @Test
+    public void testRestSaveAndGetFaViewDescItemTypes() throws Exception {
+        RulRuleSet ruleSet = createRuleSet();
+        ArrArrangementType arrangementType = createArrangementType();
+        Integer[] descItemTypeIds = {1,2,3,4,5,6,7};
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
+                .parameter("ruleSetId", ruleSet.getRuleSetId())
+                .parameter("arrangementTypeId", arrangementType.getArrangementTypeId())
+                .parameter("descItemTypeIds", descItemTypeIds)
+                .get(SAVE_FVDIT_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
+        ArrFaVersion version = createFindingAidVersion(findingAid, null, ruleSet, arrangementType, false);
+        
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
+                .parameter("faVersionId", version.getFaVersionId())
+                .get(GET_FVDIT_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        List<Integer> ruleSets = Arrays.asList(response.getBody().as(Integer[].class));
+        Assert.assertEquals(descItemTypeIds.length, ruleSets.size());
+        for (int i = 0; i < descItemTypeIds.length; i++) {
+            Assert.assertEquals(descItemTypeIds[i], ruleSets.get(i));
+        }
     }
 }

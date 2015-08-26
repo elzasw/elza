@@ -45,4 +45,22 @@ public interface RuleManager {
      * @return
      */
     List<? extends RulDescItemType> getDescriptionItemTypesForNodeId(Integer faVersionId, Integer nodeId, Boolean mandatory);
+
+    /**
+     * Vrátí seznam identifikátorů typů atributů archivního popisu,
+     * které se mají pro verzi archivní pomůcky zobrazovat v hierarchickém seznamu uzlů.
+     * @param faVersionId
+     * @return
+     */
+    List<Integer> getFaViewDescItemTypes(Integer faVersionId);
+
+    /**
+     * Pro soubor pravidel a typ výstupu uloží seznam identifikátorů typů atributů archivního popisu,
+     *  které se mají zobrazovat v hierarchickém seznamu uzlů.
+     * @param ruleSetId
+     * @param arrangementTypeId
+     * @param descItemTypeIds
+     * @return
+     */
+    List<Integer> saveFaViewDescItemTypes(Integer ruleSetId, Integer arrangementTypeId, Integer[] descItemTypeIds);
 }
