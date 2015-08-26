@@ -170,11 +170,13 @@ public interface ArrangementManager {
      * Načte potomky daného uzlu v konkrétní verzi. Pokud není identifikátor verze předaný načítají se potomci
      * z neuzavřené verze.
      *
-     * @param nodeId      id rodiče
-     * @param versionId   id verze, může být null
+     * @param nodeId          id rodiče
+     * @param versionId       id verze, může být null
+     * @param formatData      formátování dat, může být null - SHORT, FULL
+     * @param descItemTypeIds typy atributů, může být null
      * @return            potomci předaného uzlu
      */
-    List<? extends ArrFaLevel> findSubLevels(Integer nodeId, Integer versionId);
+    List<? extends ArrFaLevelExt> findSubLevels(Integer nodeId, Integer versionId, String formatData, Integer[] descItemTypeIds);
 
     /**
      * Načte uzel podle identifikátoru. K uzlu doplní jeho Atributy.

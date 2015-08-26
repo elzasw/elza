@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.RulDescItemConstraint;
@@ -103,17 +104,17 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager {
 
         List<RulDescItemSpec> listDescItem = descItemSpecRepository.findByItemTypeIds(itemTypeList);
         Map<Integer, List<RulDescItemSpec>> itemSpecMap =
-                createGroupMap(listDescItem, p -> p.getDescItemType().getDescItemTypeId());
+                ElzaTools.createGroupMap(listDescItem, p -> p.getDescItemType().getDescItemTypeId());
 
         List<RulDescItemConstraint> findItemConstList =
                 descItemConstraintRepository.findByItemTypeIds(itemTypeList);
         Map<Integer, List<RulDescItemConstraint>> itemConstrainMap =
-                createGroupMap(findItemConstList, p -> p.getDescItemType().getDescItemTypeId());
+                ElzaTools.createGroupMap(findItemConstList, p -> p.getDescItemType().getDescItemTypeId());
 
         List<RulDescItemConstraint> findItemSpecConstList =
                 descItemConstraintRepository.findByItemSpecIds(listDescItem);
         Map<Integer, List<RulDescItemConstraint>> itemSpecConstrainMap =
-                createGroupMap(findItemSpecConstList, p -> p.getDescItemSpec().getDescItemSpecId());
+                ElzaTools.createGroupMap(findItemSpecConstList, p -> p.getDescItemSpec().getDescItemSpecId());
 
         List<RulDescItemTypeExt> result = new LinkedList<>();
         for (RulDescItemType rulDescItemType : itemTypeList) {
@@ -142,28 +143,6 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager {
         }
 
         return result;
-    }
-
-    /**
-     * vytvoří z listu mapu listů zagrupovanou podle zadaného klíče.
-     * 
-     * @param findItemConstList
-     * @param f - funkce vracejici hodnotu klíčš pro grupovani.
-     * @return
-     */
-    private <T> Map<Integer, List<T>> createGroupMap(final List<T> findItemConstList,
-            final Function<T, Integer> f) {
-        Map<Integer, List<T>> itemConstrainMap = new HashMap<>();
-        for (T itemConstraint : findItemConstList) {
-            Integer itemTypeId = f.apply(itemConstraint);
-            List<T> itemConstrainList = itemConstrainMap.get(itemTypeId);
-            if (itemConstrainList == null) {
-                itemConstrainList = new LinkedList<>();
-                itemConstrainMap.put(itemTypeId, itemConstrainList);
-            }
-            itemConstrainList.add(itemConstraint);
-        }
-        return itemConstrainMap;
     }
 
     @Override

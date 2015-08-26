@@ -1,9 +1,12 @@
 package cz.tacr.elza.controller;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.transaction.Transactional;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
@@ -29,6 +33,7 @@ import cz.tacr.elza.domain.ArrFaLevel;
 import cz.tacr.elza.domain.ArrFaLevelExt;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
@@ -566,8 +571,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Override
     @RequestMapping(value = "/findSubLevels", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<ArrFaLevel> findSubLevels(@RequestParam(value = "nodeId") Integer nodeId,
-            @RequestParam(value = "versionId", required = false)  Integer versionId) {
+    public List<ArrFaLevelExt> findSubLevels(@RequestParam(value = "nodeId") Integer nodeId,
+            @RequestParam(value = "versionId", required = false)  Integer versionId,
+            @RequestParam(value = "formatData", required = false)  String formatData,
+            @RequestParam(value = "descItemTypeIds", required = false) Integer[] descItemTypeIds) {
         Assert.notNull(nodeId);
 
         ArrFaChange change = null;
@@ -575,10 +582,39 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             ArrFaVersion version = versionRepository.findOne(versionId);
             change = version.getLockChange();
         }
+        final List<ArrFaLevel> levelList;
         if (change == null) {
-            return levelRepository.findByParentNodeIdAndDeleteChangeIsNullOrderByPositionAsc(nodeId);
+            levelList = levelRepository.findByParentNodeIdAndDeleteChangeIsNullOrderByPositionAsc(nodeId);
+        } else {
+            levelList = levelRepository.findByParentNodeOrderByPositionAsc(nodeId, change);
         }
-        return levelRepository.findByParentNodeOrderByPositionAsc(nodeId, change);
+
+        Set<Integer> nodeIdSet = new HashSet<>();
+        for (ArrFaLevel arrFaLevel : levelList) {
+            nodeIdSet.add(arrFaLevel.getNodeId());
+        }
+
+        final List<ArrData> dataList;
+        if (nodeIdSet == null || nodeIdSet.isEmpty()) {
+            dataList = new LinkedList<>();
+        } else if (change == null) {
+            dataList = arrDataRepository.findByNodeIdsAndDeleteChangeIsNull(nodeIdSet);
+        } else {
+            dataList = arrDataRepository.findByNodeIdsAndChange(nodeIdSet, change);
+        }
+        Map<Integer, List<ArrData>> dataMap =
+                ElzaTools.createGroupMap(dataList, p -> p.getDescItem().getNodeId());
+
+        Set<Integer> idItemTypeSet = createItemTypeSet(descItemTypeIds);
+        final List<ArrFaLevelExt> resultList = new LinkedList<ArrFaLevelExt>();
+        for (ArrFaLevel arrFaLevel : levelList) {
+            ArrFaLevelExt levelExt = new ArrFaLevelExt();
+            BeanUtils.copyProperties(arrFaLevel, levelExt);
+            List<ArrData> dataNodeList = dataMap.get(arrFaLevel.getNodeId());
+            readItemData(levelExt, dataNodeList, idItemTypeSet, formatData);
+            resultList.add(levelExt);
+        }
+        return resultList;
     }
 
     @RequestMapping(value = "/findLevels", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -620,7 +656,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrFaLevelExt levelExt = new ArrFaLevelExt();
         BeanUtils.copyProperties(arrFaLevel, levelExt);
-        readItemData(levelExt, dataList, idItemTypeSet);
+        readItemData(levelExt, dataList, idItemTypeSet, null);
         return levelExt;
     }
 
@@ -635,7 +671,11 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return idItemTypeSet;
     }
 
-    private void readItemData(final ArrFaLevelExt levelExt, final List<ArrData> dataList, final Set<Integer> idItemTypeSet) {
+    private void readItemData(final ArrFaLevelExt levelExt, final List<ArrData> dataList,
+                              final Set<Integer> idItemTypeSet, final String formatData) {
+        if (dataList == null) {
+            return;
+        }
         for (ArrData arrData : dataList) {
             Integer idItemType = arrData.getDescItem().getDescItemType().getId();
             if (idItemTypeSet != null && (!idItemTypeSet.contains(idItemType))) {

@@ -332,7 +332,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
                 parameter(VERSION_ID_ATT, version.getFaVersionId()).get(FIND_SUB_LEVELS_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
-        List<ArrFaLevel> levelList = Arrays.asList(response.getBody().as(ArrFaLevel[].class));
+        List<ArrFaLevelExt> levelList = Arrays.asList(response.getBody().as(ArrFaLevelExt[].class));
         if (levelList.size() != 1) {
             Assert.fail();
         }
@@ -345,7 +345,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
                 parameter(NODE_ID_ATT, parent.getNodeId()).
                 parameter(VERSION_ID_ATT, version.getFaVersionId()).get(FIND_SUB_LEVELS_URL);
         logger.info(response.asString());
-        levelList = Arrays.asList(response.getBody().as(ArrFaLevel[].class));
+        levelList = Arrays.asList(response.getBody().as(ArrFaLevelExt[].class));
         if (levelList.size() != 1) {
             Assert.fail();
         }
@@ -357,14 +357,14 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
 
-        List<ArrFaLevel> subLevels = arrangementManager.findSubLevels(version.getRootNode().getNodeId(), version.getFaVersionId());
+        List<ArrFaLevelExt> subLevels = arrangementManager.findSubLevels(version.getRootNode().getNodeId(), version.getFaVersionId(), null, null);
         Assert.assertTrue(subLevels.isEmpty());
 
         Response response = given().parameter(FA_ID_ATT, findingAid.getFindingAidId()).put(ADD_LEVEL_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        subLevels = arrangementManager.findSubLevels(version.getRootNode().getNodeId(), version.getFaVersionId());
+        subLevels = arrangementManager.findSubLevels(version.getRootNode().getNodeId(), version.getFaVersionId(), null, null);
         Assert.assertTrue(subLevels.size() == 1);
 
         ArrFaLevel child = response.getBody().as(ArrFaLevel.class);
@@ -389,11 +389,11 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrFaLevel first = response.getBody().as(ArrFaLevel.class);
 
-        List<ArrFaLevel> subLevels = arrangementManager
-                .findSubLevels(version.getRootNode().getNodeId(), version.getFaVersionId());
+        List<ArrFaLevelExt> subLevels = arrangementManager
+                .findSubLevels(version.getRootNode().getNodeId(), version.getFaVersionId(), null, null);
         Assert.assertTrue(subLevels.size() == 2);
 
-        Iterator<ArrFaLevel> iterator = subLevels.iterator();
+        Iterator<ArrFaLevelExt> iterator = subLevels.iterator();
         Assert.assertTrue(first.getNodeId().equals(iterator.next().getNodeId()));
         Assert.assertTrue(second.getNodeId().equals(iterator.next().getNodeId()));
     }
@@ -416,10 +416,10 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrFaLevel second = response.getBody().as(ArrFaLevel.class);
 
-        List<ArrFaLevel> subLevels = arrangementManager.findSubLevels(version.getRootNode().getNodeId(), version.getFaVersionId());
+        List<ArrFaLevelExt> subLevels = arrangementManager.findSubLevels(version.getRootNode().getNodeId(), version.getFaVersionId(), null, null);
         Assert.assertTrue(subLevels.size() == 2);
 
-        Iterator<ArrFaLevel> iterator = subLevels.iterator();
+        Iterator<ArrFaLevelExt> iterator = subLevels.iterator();
         Assert.assertTrue(first.getFaLevelId().equals(iterator.next().getFaLevelId()));
         Assert.assertTrue(second.getFaLevelId().equals(iterator.next().getFaLevelId()));
     }
@@ -442,7 +442,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrFaLevel child = response.getBody().as(ArrFaLevel.class);
 
-        List<ArrFaLevel> subLevels = arrangementManager.findSubLevels(parent.getNodeId(), version.getFaVersionId());
+        List<ArrFaLevelExt> subLevels = arrangementManager.findSubLevels(parent.getNodeId(), version.getFaVersionId(), null, null);
         Assert.assertTrue(subLevels.size() == 1);
 
         Assert.assertTrue(child.getFaLevelId().equals(subLevels.iterator().next().getFaLevelId()));
@@ -474,7 +474,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrFaLevel movedChild = response.getBody().as(ArrFaLevel.class);
 
-        List<ArrFaLevel> subLevels = arrangementManager.findSubLevels(version.getRootNode().getNodeId(), version.getFaVersionId());
+        List<ArrFaLevelExt> subLevels = arrangementManager.findSubLevels(version.getRootNode().getNodeId(), version.getFaVersionId(), null, null);
 
         Assert.assertTrue(subLevels.size() == 2);
         Assert.assertTrue(movedChild.getParentNodeId().equals(parent.getParentNodeId()));
@@ -506,7 +506,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ArrFaLevel child = response.getBody().as(ArrFaLevel.class);
         Assert.assertTrue(child.getParentNodeId().equals(second.getNodeId()));
 
-        List<ArrFaLevel> subLevels = arrangementManager.findSubLevels(second.getNodeId(), version.getFaVersionId());
+        List<ArrFaLevelExt> subLevels = arrangementManager.findSubLevels(second.getNodeId(), version.getFaVersionId(), null, null);
         Assert.assertTrue(subLevels.size() == 1);
         Assert.assertTrue(child.getFaLevelId().equals(subLevels.iterator().next().getFaLevelId()));
     }
@@ -536,7 +536,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrFaLevel movedChild = response.getBody().as(ArrFaLevel.class);
 
-        List<ArrFaLevel> subLevels = arrangementManager.findSubLevels(version.getRootNode().getNodeId(), version.getFaVersionId());
+        List<ArrFaLevelExt> subLevels = arrangementManager.findSubLevels(version.getRootNode().getNodeId(), version.getFaVersionId(), null, null);
 
         Assert.assertTrue(subLevels.size() == 2);
         Assert.assertTrue(movedChild.getParentNodeId().equals(parent.getParentNodeId()));
