@@ -20,4 +20,8 @@ public interface RegVariantRecord<RR extends RegRecord> extends Serializable {
     String getRecord();
 
     void setRecord(String record);
+
+//    void setRegRecordPar(RR regRecordPar);
+//
+//    RR getRegRecordPar();
 }
