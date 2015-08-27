@@ -309,4 +309,84 @@ public abstract class AbstractRestTest {
         dataTypeRepository.save(dataType);
         return dataType;
     }
+
+    protected RulDescItemType createDescItemType(RulDataType rulDataType, Boolean sys, String code, String name, String shortcut, String description, Boolean isValueUnique, Boolean canBeOrdered, Boolean useSpecification, Integer viewOrder) {
+        RulDescItemType dataTypeItem = new RulDescItemType();
+        dataTypeItem.setDataType(rulDataType);
+        dataTypeItem.setSys(sys);
+        dataTypeItem.setCode(code);
+        dataTypeItem.setName(name);
+        dataTypeItem.setShortcut(shortcut);
+        dataTypeItem.setDescription(description);
+        dataTypeItem.setIsValueUnique(isValueUnique);
+        dataTypeItem.setCanBeOrdered(canBeOrdered);
+        dataTypeItem.setUseSpecification(useSpecification);
+        dataTypeItem.setViewOrder(viewOrder);
+        descItemTypeRepository.save(dataTypeItem);
+        return dataTypeItem;
+    }
+
+    protected RulDataType createDataType(String code, String name, String description, Boolean regexUse, Boolean textLenghtLimitUse, String storageTable) {
+        RulDataType dataType = new RulDataType();
+        dataType.setCode(code);
+        dataType.setName(name);
+        dataType.setDescription(description);
+        dataType.setRegexpUse(regexUse);
+        dataType.setTextLenghtLimitUse(textLenghtLimitUse);
+        dataType.setStorageTable(storageTable);
+        dataTypeRepository.save(dataType);
+        return dataType;
+    }
+
+    protected RulDataType getDataType(Integer dataTypeId) {
+        return dataTypeRepository.findOne(dataTypeId);
+    }
+
+    protected RulDescItemSpec createDescItemSpec(RulDescItemType rulDescItemType, String code, String name, String shortcut, String description, Integer viewOrder) {
+        RulDescItemSpec dataSpecItem = new RulDescItemSpec();
+        dataSpecItem.setDescItemType(rulDescItemType);
+        dataSpecItem.setCode(code);
+        dataSpecItem.setName(name);
+        dataSpecItem.setShortcut(shortcut);
+        dataSpecItem.setDescription(description);
+        dataSpecItem.setViewOrder(viewOrder);
+        descItemSpecRepository.save(dataSpecItem);
+        return dataSpecItem;
+    }
+
+    protected RulDescItemConstraint createDescItemConstrain(RulDescItemType rulDescItemType, RulDescItemSpec rulDescItemSpec, ArrFaVersion faVersion, Boolean repeatable, String regexp, Integer textLengthLimit) {
+        RulDescItemConstraint itemConstraint = new RulDescItemConstraint();
+        itemConstraint.setDescItemType(rulDescItemType);
+        itemConstraint.setDescItemSpec(rulDescItemSpec);
+        itemConstraint.setVersion(faVersion);
+        itemConstraint.setRepeatable(repeatable);
+        itemConstraint.setRegexp(regexp);
+        itemConstraint.setTextLenghtLimit(textLengthLimit);
+        descItemConstraintRepository.save(itemConstraint);
+        return itemConstraint;
+    }
+
+    protected ArrDescItem createArrDescItem(ArrFaChange createFaChange, ArrFaChange deleteFaChange, Integer descItemObjectId, RulDescItemType rulDescItemType, RulDescItemSpec rulDescItemSpec, Integer nodeId, Integer position) {
+        ArrDescItem descItem = new ArrDescItem();
+        descItem.setCreateChange(createFaChange);
+        descItem.setDeleteChange(deleteFaChange);
+
+        // pokud není vyplněno, vybere další možné
+        if(descItemObjectId == null) {
+            Integer maxDescItemObjectId = descItemRepository.findMaxDescItemObjectId();
+            if (maxDescItemObjectId == null) {
+                maxDescItemObjectId = 0;
+            }
+            descItemObjectId = maxDescItemObjectId+1;
+        }
+
+        descItem.setDescItemObjectId(descItemObjectId);
+        descItem.setDescItemType(rulDescItemType);
+        descItem.setDescItemSpec(rulDescItemSpec);
+        descItem.setNodeId(nodeId);
+        descItem.setPosition(position);
+        descItemRepository.save(descItem);
+        return descItem;
+    }
+
 }

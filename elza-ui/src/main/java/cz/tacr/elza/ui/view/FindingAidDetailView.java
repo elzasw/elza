@@ -25,6 +25,7 @@ import cz.tacr.elza.domain.ArrFaLevelExt;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.ui.components.LevelInlineDetail;
 import cz.tacr.elza.ui.utils.ElzaNotifications;
+import cz.tacr.elza.ui.window.DescItemTypeWindow;
 import cz.tacr.elza.ui.window.LevelHistoryWindow;
 import ru.xpoft.vaadin.VaadinView;
 
@@ -657,7 +658,9 @@ public class FindingAidDetailView extends ElzaView {
                     navigate(VersionListView.class, findingAidId));
             AxAction detail = new AxAction().caption("Zobrazit detail AP").icon(FontAwesome.BOOK).run(() ->
                      showDetailAP());
-            actions(hist, detail);
+            AxAction itemTypes = new AxAction().caption("Výběr sloupců").icon(FontAwesome.BOOK).run(() ->
+                     showDescItemTypeWindow());
+            actions(hist, detail, itemTypes);
         } else {
             actions(
                     new AxAction().caption("Přidat záznam").icon(FontAwesome.PLUS).run(() -> {
@@ -693,7 +696,9 @@ public class FindingAidDetailView extends ElzaView {
                         approveVersion(formularApproveVersion, appVersion);
                     }),
                     new AxAction().caption("Zobrazit detail AP").icon(FontAwesome.BOOK).run(() ->
-                        showDetailAP())
+                        showDetailAP()),
+                    new AxAction().caption("Výběr sloupců").icon(FontAwesome.BOOK).run(() ->
+                        showDescItemTypeWindow())
             );
         }
     }
@@ -748,6 +753,13 @@ public class FindingAidDetailView extends ElzaView {
     private LevelHistoryWindow showVersionHistory(final Integer nodeId) {
         LevelHistoryWindow window = new LevelHistoryWindow(arrangementManager);
         window.show(nodeId, findingAidId);
+        return window;
+    }
+
+    private DescItemTypeWindow showDescItemTypeWindow() {
+        DescItemTypeWindow window = new DescItemTypeWindow(ruleSetManager);
+        ArrFaVersion version = getVersion();
+        window.show(version);
         return window;
     }
 }
