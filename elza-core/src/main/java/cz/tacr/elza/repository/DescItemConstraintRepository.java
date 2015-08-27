@@ -22,6 +22,13 @@ public interface DescItemConstraintRepository extends JpaRepository<RulDescItemC
     @Query("SELECT s FROM rul_desc_item_constraint s WHERE s.descItemType in (?1)")
     List<RulDescItemConstraint> findByItemTypeIds(Collection<RulDescItemType> itemTypes);
 
+
     @Query("SELECT s FROM rul_desc_item_constraint s WHERE s.descItemSpec in (?1)")
     List<RulDescItemConstraint> findByItemSpecIds(Collection<RulDescItemSpec> itemSpecs);
+
+
+    List<RulDescItemConstraint> findByDescItemSpec(RulDescItemSpec rulDescItemSpec);
+
+
+    List<RulDescItemConstraint> findByDescItemType(RulDescItemType rulDescItemType);
 }

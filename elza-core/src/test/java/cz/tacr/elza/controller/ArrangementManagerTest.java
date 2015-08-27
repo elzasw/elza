@@ -15,11 +15,15 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.jayway.restassured.response.Response;
 
 import cz.tacr.elza.domain.ArrArrangementType;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemExt;
 import cz.tacr.elza.domain.ArrFaLevel;
@@ -27,8 +31,20 @@ import cz.tacr.elza.domain.ArrFaLevelExt;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFaChange;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulDescItemConstraint;
+import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DataTypeRepository;
+import cz.tacr.elza.repository.DescItemConstraintRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.DescItemSpecRepository;
+import cz.tacr.elza.repository.DescItemTypeRepository;
+import cz.tacr.elza.repository.FaViewRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VersionRepository;
@@ -73,6 +89,12 @@ public class ArrangementManagerTest extends AbstractRestTest {
     private static final String PREDECESSOR_NODE_ID_ATT = "predecessorNodeId";
     private static final String VERSION_ID_ATT = "versionId";
 
+    private static final Integer DATA_TYPE_INTEGER = 1;
+    private static final Integer DATA_TYPE_STRING = 2;
+    private static final Integer DATA_TYPE_TEXT = 3;
+    private static final Integer DATA_TYPE_DATACE = 4;
+    private static final Integer DATA_TYPE_REF = 5;
+
     @Autowired
     private ArrangementManager arrangementManager;
     @Autowired
@@ -83,6 +105,22 @@ public class ArrangementManagerTest extends AbstractRestTest {
     private RuleSetRepository ruleSetRepository;
     @Autowired
     private VersionRepository versionRepository;
+    @Autowired
+    private DescItemConstraintRepository descItemConstraintRepository;
+    @Autowired
+    private DescItemRepository descItemRepository;
+    @Autowired
+    private DescItemSpecRepository descItemSpecRepository;
+    @Autowired
+    private DescItemTypeRepository descItemTypeRepository;
+    @Autowired
+    private DataTypeRepository dataTypeRepository;
+    @Autowired
+    private DataRepository dataRepository;
+
+    @Autowired
+    private RuleManager ruleManager;
+
     @PersistenceContext
     EntityManager entityManager;
 
@@ -248,7 +286,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
                 continue;
             }
 
-            if (prevVersion.getCreateChange().getChangeDate().isBefore(version.getCreateChange().getChangeDate())) {
+            if (prevVersion.getCreateChange().getChangeDate().isAfter(version.getCreateChange().getChangeDate())) {
                 Assert.fail();
             }
         }
@@ -368,6 +406,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         Assert.assertTrue(subLevels.size() == 1);
 
         ArrFaLevel child = response.getBody().as(ArrFaLevel.class);
+
         Assert.assertTrue(child.getFaLevelId().equals(subLevels.iterator().next().getFaLevelId()));
     }
 
@@ -693,4 +732,218 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         return findingAid;
     }
+
+    @Test
+    public void testRestCreateDescriptionItem() {
+
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
+
+        ArrFaVersion version = createFindingAidVersion(findingAid, null, false);
+        ArrFaLevel parent = createLevel(1, null, version.getCreateChange());
+        version.setRootNode(parent);
+        versionRepository.save(version);
+        LocalDateTime startTime = version.getCreateChange().getChangeDate();
+
+        ArrFaChange createChange = createFaChange(startTime.minusSeconds(1));
+        ArrFaLevel faLevel = createLevel(2, parent, createChange);
+        levelRepository.save(faLevel);
+
+        Integer nodeId = faLevel.getNodeId();
+
+        RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
+        Assert.assertNotNull("Neexistuje záznam pro datový typ INTEGER", dataType);
+
+        // vytvoření závislých dat
+
+        RulDescItemType descItemType = createDescItemType(dataType, true, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
+        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1);
+        createDescItemConstrain(descItemType, descItemSpec, version, false, null, null);
+        createDescItemConstrain(descItemType, descItemSpec, version, true, null, null);
+        createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null);
+        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 50);
+
+        // přidání hodnoty attributu
+
+        ArrDescItemExt descItem = new ArrDescItemExt();
+        descItem.setDescItemType(descItemType);
+        descItem.setDescItemSpec(descItemSpec);
+        descItem.setData("123");
+        descItem.setNodeId(nodeId);
+
+        ArrDescItem descItemRet = arrangementManager.createDescriptionItem(descItem, version.getFaVersionId());
+
+        // kontrola attributu a hodnoty
+
+        Assert.assertNotNull("Hodnotu attributu se nepodařilo vytvořit", descItemRet);
+
+        List<ArrData> dataList = dataRepository.findByDescItem(descItemRet);
+
+        if (dataList.size() != 1) {
+            Assert.fail("Nesprávný počet položek");
+        }
+
+        ArrData data = dataList.get(0);
+
+        if (!(data instanceof ArrDataInteger)) {
+            Assert.fail("Nesprávný datový typ hodnoty");
+        }
+
+        ArrDataInteger dataInteger = (ArrDataInteger) data;
+
+        if (!dataInteger.getValue().equals(123)) {
+            Assert.fail("Vložená hodnota není identická");
+        }
+
+    }
+
+    @Test
+    public void testRestUpdateDescriptionItem() {
+
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
+
+        ArrFaVersion version = createFindingAidVersion(findingAid, null, false);
+        ArrFaLevel parent = createLevel(1, null, version.getCreateChange());
+        version.setRootNode(parent);
+        versionRepository.save(version);
+        LocalDateTime startTime = version.getCreateChange().getChangeDate();
+
+        ArrFaChange createChange = createFaChange(startTime.minusSeconds(1));
+        ArrFaLevel faLevel = createLevel(2, parent, createChange);
+        levelRepository.save(faLevel);
+
+        Integer nodeId = faLevel.getNodeId();
+
+        RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
+        Assert.assertNotNull("Neexistuje záznam pro datový typ INTEGER", dataType);
+
+        // vytvoření závislých dat
+
+        RulDescItemType descItemType = createDescItemType(dataType, true, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
+        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1);
+        createDescItemConstrain(descItemType, descItemSpec, version, false, null, null);
+        createDescItemConstrain(descItemType, descItemSpec, version, true, null, null);
+        createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null);
+        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 50);
+
+        // přidání hodnoty attributu
+
+        ArrDescItemExt descItem = new ArrDescItemExt();
+        descItem.setDescItemType(descItemType);
+        descItem.setDescItemSpec(descItemSpec);
+        descItem.setData("123");
+        descItem.setNodeId(nodeId);
+
+        ArrDescItem descItemNew = arrangementManager.createDescriptionItem(descItem, version.getFaVersionId());
+
+        // upravení hodnoty bez vytvoření verze
+
+        ArrDescItemExt arrDescItemExt = new ArrDescItemExt();
+        BeanUtils.copyProperties(descItemNew, arrDescItemExt);
+        arrDescItemExt.setData("124");
+        ArrDescItem descItemRet = arrangementManager.updateDescriptionItem(arrDescItemExt ,version.getFaVersionId(), false);
+
+        // kontrola nové hodnoty attributu
+
+        Assert.assertNotNull("Hodnotu attributu se nepodařilo vytvořit", descItemRet);
+
+        List<ArrData> dataList = dataRepository.findByDescItem(descItemRet);
+
+        if (dataList.size() != 1) {
+            Assert.fail("Nesprávný počet položek");
+        }
+
+        ArrData data = dataList.get(0);
+
+        if (!(data instanceof ArrDataInteger)) {
+            Assert.fail("Nesprávný datový typ hodnoty");
+        }
+
+        ArrDataInteger dataInteger = (ArrDataInteger) data;
+
+        if (!dataInteger.getValue().equals(124)) {
+            Assert.fail("Vložená hodnota není identická");
+        }
+
+        // upravení hodnoty s vytvořením verze
+
+        arrDescItemExt = new ArrDescItemExt();
+        BeanUtils.copyProperties(descItemNew, arrDescItemExt);
+        arrDescItemExt.setData("125");
+        descItemRet = arrangementManager.updateDescriptionItem(arrDescItemExt ,version.getFaVersionId(), true);
+
+        // kontrola nové hodnoty attributu
+
+        Assert.assertNotNull("Hodnotu attributu se nepodařilo vytvořit", descItemRet);
+
+        dataList = dataRepository.findByDescItem(descItemRet);
+
+        if (dataList.size() != 1) {
+            Assert.fail("Nesprávný počet položek");
+        }
+
+        ArrData dataNew = dataList.get(0);
+
+        if (!(dataNew instanceof ArrDataInteger)) {
+            Assert.fail("Nesprávný datový typ hodnoty");
+        }
+
+        dataInteger = (ArrDataInteger) dataNew;
+
+        if (!dataInteger.getValue().equals(125)) {
+            Assert.fail("Vložená hodnota není identická");
+        }
+
+        Assert.assertNotEquals(data, dataNew);
+
+    }
+
+    @Test
+    public void testRestDeleteDescriptionItem() {
+
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
+
+        ArrFaVersion version = createFindingAidVersion(findingAid, null, false);
+        ArrFaLevel parent = createLevel(1, null, version.getCreateChange());
+        version.setRootNode(parent);
+        versionRepository.save(version);
+        LocalDateTime startTime = version.getCreateChange().getChangeDate();
+
+        ArrFaChange createChange = createFaChange(startTime.minusSeconds(1));
+        ArrFaLevel faLevel = createLevel(2, parent, createChange);
+        levelRepository.save(faLevel);
+
+        Integer nodeId = faLevel.getNodeId();
+
+        RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
+        Assert.assertNotNull("Neexistuje záznam pro datový typ INTEGER", dataType);
+
+        // vytvoření závislých dat
+
+        RulDescItemType descItemType = createDescItemType(dataType, true, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
+        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1);
+        createDescItemConstrain(descItemType, descItemSpec, version, false, null, null);
+        createDescItemConstrain(descItemType, descItemSpec, version, true, null, null);
+        createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null);
+        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 50);
+
+        // přidání hodnoty attributu
+
+        ArrDescItemExt descItem = new ArrDescItemExt();
+        descItem.setDescItemType(descItemType);
+        descItem.setDescItemSpec(descItemSpec);
+        descItem.setData("123");
+        descItem.setNodeId(nodeId);
+
+        ArrDescItem descItemNew = arrangementManager.createDescriptionItem(descItem, version.getFaVersionId());
+
+        // smazání hodnoty attributu
+
+        ArrDescItem descItemDel = arrangementManager.deleteDescriptionItem(descItemNew.getDescItemObjectId());
+
+        Assert.assertEquals(descItemNew, descItemDel);
+
+        Assert.assertNotNull(descItemDel.getDeleteChange());
+
+    }
+
 }

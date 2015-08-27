@@ -1,7 +1,6 @@
 package cz.tacr.elza.controller;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -16,6 +15,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,9 +25,12 @@ import org.springframework.web.bind.annotation.RestController;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataDatace;
 import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataReference;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemExt;
 import cz.tacr.elza.domain.ArrFaChange;
 import cz.tacr.elza.domain.ArrFaLevel;
@@ -34,10 +38,20 @@ import cz.tacr.elza.domain.ArrFaLevelExt;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.RulDescItemConstraint;
+import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DataDataceRepository;
+import cz.tacr.elza.repository.DataIntegerRepository;
+import cz.tacr.elza.repository.DataReferenceRepository;
 import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DataStringRepository;
+import cz.tacr.elza.repository.DataTextRepository;
+import cz.tacr.elza.repository.DescItemConstraintRepository;
+import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
@@ -74,6 +88,30 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Autowired
     private DataRepository arrDataRepository;
+
+    @Autowired
+    private DescItemRepository descItemRepository;
+
+    @Autowired
+    private DescItemConstraintRepository descItemConstraintRepository;
+
+    @Autowired
+    private DataIntegerRepository dataIntegerRepository;
+
+    @Autowired
+    private DataStringRepository dataStringRepository;
+
+    @Autowired
+    private DataTextRepository dataTextRepository;
+
+    @Autowired
+    private DataDataceRepository dataDataceRepository;
+
+    @Autowired
+    private DataReferenceRepository dataReferenceRepository;
+
+    @Autowired
+    private RuleManager ruleManager;
 
     /**
      * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.
@@ -704,4 +742,401 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             levelExt.getDescItemList().add(arrDescItemExt);
         }
     }
+
+    @RequestMapping(value = "/createDescriptionItem/{faVersionId}", method = RequestMethod.POST)
+    @Transactional
+    public ArrDescItem createDescriptionItem(@RequestBody ArrDescItemExt descItemExt,
+                                             @PathVariable(value = "faVersionId") Integer faVersionId) {
+        Assert.notNull(descItemExt);
+        Assert.notNull(faVersionId);
+
+        Integer nodeId = descItemExt.getNodeId();
+        Assert.notNull(nodeId);
+
+        List<RulDescItemTypeExt> rulDescItemTypes = ruleManager.getDescriptionItemTypesForNodeId(faVersionId, nodeId, false);
+
+        RulDescItemType rulDescItemType = descItemExt.getDescItemType();
+        Assert.notNull(rulDescItemType);
+
+        String data = descItemExt.getData();
+        Assert.notNull(data);
+
+        RulDescItemSpec rulDescItemSpec = descItemExt.getDescItemSpec();
+
+        validateAllowedItemType(rulDescItemTypes, rulDescItemType);
+        validateAllItemConstraintsBySpec(nodeId, rulDescItemType, data, rulDescItemSpec, false);
+        validateAllItemConstraintsByType(nodeId, rulDescItemType, data, false);
+        validateUniqueness();
+
+        // uložení
+
+        ArrDescItem descItem = new ArrDescItem();
+        BeanUtils.copyProperties(descItemExt, descItem);
+
+        ArrFaChange arrFaChange = createChange();
+        descItem.setDeleteChange(null);
+        descItem.setCreateChange(arrFaChange);
+        descItem.setDescItemObjectId(getNextDescItemObjectId());
+
+        Integer maxPosition = descItemRepository.findMaxPositionByNodeIdAndDescItemTypeIdAndDeleteChangeIsNull(nodeId, rulDescItemType.getId());
+        if (maxPosition == null) {
+            maxPosition = 0;
+        }
+        descItem.setPosition(maxPosition + 1);
+
+        descItemRepository.save(descItem);
+
+        saveNewDataValue(rulDescItemType, data, descItem);
+
+        return descItem;
+    }
+
+    @RequestMapping(value = "/updateDescriptionItem/{faVersionId},{createNewVersion}", method = RequestMethod.POST)
+    @Transactional
+    public ArrDescItem updateDescriptionItem(@RequestBody ArrDescItemExt descItemExt,
+                                             @PathVariable(value = "faVersionId") Integer faVersionId,
+                                             @PathVariable(value = "createNewVersion") Boolean createNewVersion) {
+        Assert.notNull(descItemExt);
+        Assert.notNull(faVersionId);
+
+        ArrDescItem descItem = descItemRepository.findOne(descItemExt.getId());
+
+        Assert.notNull(descItem);
+
+        Integer nodeId = descItem.getNodeId();
+
+        List<RulDescItemTypeExt> rulDescItemTypes = ruleManager.getDescriptionItemTypesForNodeId(faVersionId, nodeId, false);
+
+        RulDescItemType rulDescItemType = descItem.getDescItemType();
+
+        String data = descItemExt.getData();
+        Assert.notNull(data);
+
+        RulDescItemSpec rulDescItemSpec = descItemExt.getDescItemSpec();
+
+        validateAllowedItemType(rulDescItemTypes, rulDescItemType);
+        validateAllItemConstraintsBySpec(nodeId, rulDescItemType, data, rulDescItemSpec, true);
+        validateAllItemConstraintsByType(nodeId, rulDescItemType, data, true);
+        validateUniqueness();
+
+        // uložení
+
+        if (createNewVersion) {
+
+            ArrFaChange arrFaChange = createChange();
+            descItem.setDeleteChange(arrFaChange);
+            descItemRepository.save(descItem);
+
+            ArrDescItem descItemNew = new ArrDescItem();
+            descItemNew.setCreateChange(arrFaChange);
+            descItemNew.setDeleteChange(null);
+            descItemNew.setDescItemObjectId(descItem.getDescItemObjectId());
+            descItemNew.setDescItemType(rulDescItemType);
+            descItemNew.setDescItemSpec(rulDescItemSpec);
+            descItemNew.setNodeId(descItem.getNodeId());
+            descItemNew.setPosition(descItem.getPosition());
+
+            descItemRepository.save(descItemNew);
+            descItem = descItemNew;
+
+            saveNewDataValue(rulDescItemType, data, descItem);
+
+        } else {
+
+            List<ArrData> arrDataList = arrDataRepository.findByDescItem(descItem);
+
+            // musí být právě jeden
+            if (arrDataList.size() != 1) {
+                throw new IllegalStateException("Neplatný počet záznamů");
+            }
+
+            ArrData arrData = arrDataList.get(0);
+
+            saveUpdateDataValue(rulDescItemType, data, arrData);
+
+            descItem.setDescItemSpec(rulDescItemSpec);
+            descItemRepository.save(descItem);
+        }
+
+        return descItem;
+    }
+
+    @RequestMapping(value = "/deleteDescriptionItem/{descItemObjectId}", method = RequestMethod.DELETE)
+    @Transactional
+    public ArrDescItem deleteDescriptionItem(@PathVariable(value = "descItemObjectId") Integer descItemObjectId) {
+        Assert.notNull(descItemObjectId);
+        List<ArrDescItem> arrDescItems = descItemRepository.findByDescItemObjectIdAndDeleteChangeIsNull(descItemObjectId);
+
+        // musí být právě jeden
+        if (arrDescItems.size() != 1) {
+            throw new IllegalArgumentException("Neplatný počet záznamů (" + arrDescItems.size() + ")");
+        }
+
+        ArrDescItem arrDescItem = arrDescItems.get(0);
+
+        ArrFaChange arrFaChange = createChange();
+        arrDescItem.setDeleteChange(arrFaChange);
+        descItemRepository.save(arrDescItem);
+
+        // TODO: je třeba ověřit, jestli není potřeba přečíslovat atributy, protože teď může být mezera v position
+
+        return arrDescItem;
+    }
+
+    /**
+     * Pokud má typ atributu vyplněný constraint, který má repeatable false, tak je potřeba zkontrolovat, jestli pro daný node_id už neexistuje jiná hodnota stejného typu atributu
+     *
+     * @param nodeId                Identifikátor uzlu
+     * @param rulDescItemType       Typ atributu
+     * @param rulDescItemConstraint Podmínka
+     */
+    private void validateRepeatableType(Integer nodeId, RulDescItemType rulDescItemType, RulDescItemConstraint rulDescItemConstraint, boolean updated) {
+        if (rulDescItemConstraint.getRepeatable() != null && !rulDescItemConstraint.getRepeatable()) {
+            List<ArrDescItem> arrDescItems = descItemRepository.findByNodeIdAndDeleteChangeIsNullAndDescItemTypeId(nodeId, rulDescItemType.getId());
+            if ((arrDescItems.size() > 0 && !updated) || (arrDescItems.size() != 1 && updated)) {
+                throw new IllegalArgumentException("Pro daný node_id už existuje jiná hodnota stejného typu atributu");
+            }
+        }
+    }
+
+    /**
+     * Pokud má specifikace typu atributu vyplněný constraint, který má repeatable false, tak je potřeba zkontrolovat, jestli pro daný node_id a specifikaci už neexistuje jiná
+     * hodnota stejného typu atributu
+     *
+     * @param nodeId                Identifikátor uzlu
+     * @param rulDescItemType       Typ atributu
+     * @param rulDescItemSpec       Specifický typ atributu
+     * @param rulDescItemConstraint Podmínka
+     */
+    private void validateRepeatableSpec(Integer nodeId,
+                                        RulDescItemType rulDescItemType,
+                                        RulDescItemSpec rulDescItemSpec,
+                                        RulDescItemConstraint rulDescItemConstraint,
+                                        boolean updated) {
+        if (rulDescItemConstraint.getRepeatable() != null && !rulDescItemConstraint.getRepeatable()) {
+            List<ArrDescItem> arrDescItems = descItemRepository.findByNodeIdAndDeleteChangeIsNullAndDescItemTypeIdAndSpecItemTypeId(nodeId, rulDescItemType.getId(),
+                    rulDescItemSpec.getId());
+            if ((arrDescItems.size() > 0 && !updated) || (arrDescItems.size() != 1 && updated)) {
+                throw new IllegalArgumentException("Pro daný node_id už existuje jiná hodnota stejného typu atributu");
+            }
+        }
+    }
+
+    /**
+     * Pokud má typ atributu vyplněný constraint na délku textového řetězce, tak je potřeba zkontrolovat délku hodnoty
+     *
+     * @param data                  Kontrolovaná data
+     * @param rulDescItemConstraint Podmínka
+     */
+    private void validateDataDescItemConstraintTextLenghtLimit(String data, RulDescItemConstraint rulDescItemConstraint) {
+        Integer textLenghtLimit = rulDescItemConstraint.getTextLenghtLimit();
+        if (textLenghtLimit != null) {
+            if (data.length() > textLenghtLimit) {
+                throw new IllegalStateException("Hodnota je příliš dlouhá - " + data.length() + "/" + textLenghtLimit);
+            }
+        }
+    }
+
+    /**
+     * Pokud má typ atributu vyplněný constraint na regulární výraz, tak je potřeba hodnotu ověřit předaným regulárním výrazem
+     *
+     * @param data                  Kontrolovaná data
+     * @param rulDescItemConstraint Podmínka
+     */
+    private void validateDataDescItemConstraintRegexp(String data, RulDescItemConstraint rulDescItemConstraint) {
+        String regexp = rulDescItemConstraint.getRegexp();
+        if (regexp != null) {
+            if (!data.matches(regexp)) {
+                throw new IllegalStateException("Hodnota '" + data + "' neodpovídá výrazu " + regexp);
+            }
+        }
+    }
+
+    /**
+     * Typ atributu musí být povolený pro nodeId
+     *
+     * @param rulDescItemTypes Povolené typy
+     * @param rulDescItemType  Kontrolovaný typ
+     */
+    private void validateAllowedItemType(List<RulDescItemTypeExt> rulDescItemTypes, RulDescItemType rulDescItemType) {
+        // Typ atributu musí být povolený pro nodeId
+        if (!rulDescItemTypes.contains(rulDescItemType)) {
+            throw new IllegalArgumentException("Typ atributu není povolený");
+        }
+    }
+
+    /**
+     * Vrací další identifikátor objektu pro atribut (oproti PK se zachovává při nové verzi)
+     *
+     * @return Identifikátor objektu
+     */
+    private Integer getNextDescItemObjectId() {
+        Integer maxDescItemObjectId = descItemRepository.findMaxDescItemObjectId();
+        if (maxDescItemObjectId == null) {
+            maxDescItemObjectId = 0;
+        }
+        return maxDescItemObjectId + 1;
+    }
+
+    /**
+     * Specifikace (pokud není NULL) musí patřit k typu atributu, který přidávám
+     *
+     * @param rulDescItemType Typ atributu
+     * @param rulDescItemSpec Specifický typ atributu
+     */
+    private void validateSpecificationAttribute(RulDescItemType rulDescItemType, RulDescItemSpec rulDescItemSpec) {
+        if (!rulDescItemSpec.getDescItemType().equals(rulDescItemType)) {
+            throw new IllegalArgumentException("Specifikace musí patřit k typu atributu");
+        }
+    }
+
+    /**
+     * Kontroluje data vůči podmínkám specifického typu atributu
+     *
+     * @param nodeId          Identifikátor uzlu
+     * @param rulDescItemType Typ atributu
+     * @param data            Kontrolovaná data
+     * @param rulDescItemSpec Specifický typ atributu
+     */
+    private void validateAllItemConstraintsBySpec(Integer nodeId, RulDescItemType rulDescItemType, String data, RulDescItemSpec rulDescItemSpec, boolean updated) {
+        if (rulDescItemSpec != null) {
+            validateSpecificationAttribute(rulDescItemType, rulDescItemSpec);
+            List<RulDescItemConstraint> rulDescItemConstraints = descItemConstraintRepository.findByDescItemSpec(rulDescItemSpec);
+            for (RulDescItemConstraint rulDescItemConstraint : rulDescItemConstraints) {
+                validateRepeatableSpec(nodeId, rulDescItemType, rulDescItemSpec, rulDescItemConstraint, updated);
+                validateDataDescItemConstraintTextLenghtLimit(data, rulDescItemConstraint);
+                validateDataDescItemConstraintRegexp(data, rulDescItemConstraint);
+            }
+        } else
+            // Specifikace musí být vyplněna, pokud typ atributu má vyplněno use_specification na true
+            if (rulDescItemType.getUseSpecification()) {
+                throw new IllegalArgumentException("Specifikace musí být vyplněna, pokud typ atributu má nastaveno use_specification na true");
+            }
+    }
+
+    /**
+     * Kontroluje data vůči podmínkám typu atributu
+     *
+     * @param nodeId          Identifikátor uzlu
+     * @param rulDescItemType Typ atributu
+     * @param data            Kontrolovaná data
+     */
+    private void validateAllItemConstraintsByType(Integer nodeId, RulDescItemType rulDescItemType, String data, boolean updated) {
+        List<RulDescItemConstraint> rulDescItemConstraints = descItemConstraintRepository.findByDescItemType(rulDescItemType);
+        for (RulDescItemConstraint rulDescItemConstraint : rulDescItemConstraints) {
+            validateRepeatableType(nodeId, rulDescItemType, rulDescItemConstraint, updated);
+            validateDataDescItemConstraintTextLenghtLimit(data, rulDescItemConstraint);
+            validateDataDescItemConstraintRegexp(data, rulDescItemConstraint);
+        }
+    }
+
+    /**
+     * TODO: kontrolovat unikátnost
+     */
+    private void validateUniqueness(/* TODO */) {
+
+    }
+
+    /**
+     * Uloží novou hodnotu attributu do tabulky podle jeho typu
+     *
+     * @param rulDescItemType Typ atributu
+     * @param data            Hodnota attributu
+     * @param descItem        Spjatý objekt attributu
+     */
+    private void saveNewDataValue(RulDescItemType rulDescItemType, String data, ArrDescItem descItem) {
+        switch (rulDescItemType.getDataType().getCode()) {
+            case "INT":
+                ArrDataInteger valueInt = new ArrDataInteger();
+                valueInt.setDataType(rulDescItemType.getDataType());
+                valueInt.setDescItem(descItem);
+                try {
+                    valueInt.setValue(Integer.valueOf(data));
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu");
+                }
+                dataIntegerRepository.save(valueInt);
+                break;
+            case "STRING":
+                ArrDataString valueString = new ArrDataString();
+                valueString.setDataType(rulDescItemType.getDataType());
+                valueString.setDescItem(descItem);
+                valueString.setValue(data);
+                dataStringRepository.save(valueString);
+                break;
+            case "TEXT":
+                ArrDataText valueText = new ArrDataText();
+                valueText.setDataType(rulDescItemType.getDataType());
+                valueText.setDescItem(descItem);
+                valueText.setValue(data);
+                dataTextRepository.save(valueText);
+                break;
+
+            case "DATACE":
+                ArrDataDatace valueDatace = new ArrDataDatace();
+                valueDatace.setDataType(rulDescItemType.getDataType());
+                valueDatace.setDescItem(descItem);
+                valueDatace.setValue(data);
+                dataDataceRepository.save(valueDatace);
+                break;
+
+            case "REF":
+                ArrDataReference valueReference = new ArrDataReference();
+                valueReference.setDataType(rulDescItemType.getDataType());
+                valueReference.setDescItem(descItem);
+                valueReference.setValue(data);
+                dataReferenceRepository.save(valueReference);
+                break;
+
+            default:
+                throw new IllegalStateException("Datový typ hodnoty není implementován");
+        }
+    }
+
+    /**
+     * Uloží upravenout hodnotu attributu do tabulky podle jeho typu
+     *
+     * @param rulDescItemType Typ atributu
+     * @param data            Hodnota attributu
+     * @param arrData         Upravovaná položka hodnoty attributu
+     */
+    private void saveUpdateDataValue(RulDescItemType rulDescItemType, String data, ArrData arrData) {
+        switch (rulDescItemType.getDataType().getCode()) {
+            case "INT":
+                ArrDataInteger valueInt = (ArrDataInteger) arrData;
+                try {
+                    valueInt.setValue(Integer.valueOf(data));
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu");
+                }
+                dataIntegerRepository.save(valueInt);
+                break;
+            case "STRING":
+                ArrDataString valueString = (ArrDataString) arrData;
+                valueString.setValue(data);
+                dataStringRepository.save(valueString);
+                break;
+            case "TEXT":
+                ArrDataText valueText = (ArrDataText) arrData;
+                valueText.setValue(data);
+                dataTextRepository.save(valueText);
+                break;
+
+            case "DATACE":
+                ArrDataDatace valueDatace = (ArrDataDatace) arrData;
+                valueDatace.setValue(data);
+                dataDataceRepository.save(valueDatace);
+                break;
+
+            case "REF":
+                ArrDataReference valueReference = (ArrDataReference) arrData;
+                valueReference.setValue(data);
+                dataReferenceRepository.save(valueReference);
+                break;
+
+            default:
+                throw new IllegalStateException("Datový typ hodnoty není implementován");
+        }
+    }
+
 }
