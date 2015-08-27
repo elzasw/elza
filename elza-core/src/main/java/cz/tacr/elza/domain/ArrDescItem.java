@@ -25,7 +25,7 @@ import cz.req.ax.IdObject;
 @Entity(name = "arr_desc_item")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrDescItem implements IdObject<Integer>, cz.tacr.elza.api.ArrDescItem<ArrFaChange, RulDescItemType,RulDescItemSpec> {
+public class ArrDescItem extends AbstractVersionableEntity implements IdObject<Integer>, cz.tacr.elza.api.ArrDescItem<ArrFaChange, RulDescItemType,RulDescItemSpec> {
 
     @Id
     @GeneratedValue
@@ -58,66 +58,82 @@ public class ArrDescItem implements IdObject<Integer>, cz.tacr.elza.api.ArrDescI
     private Integer position;
 
 
+    @Override
     public Integer getDescItemId() {
         return descItemId;
     }
 
+    @Override
     public void setDescItemId(final Integer descItemId) {
         this.descItemId = descItemId;
     }
 
+    @Override
     public ArrFaChange getCreateChange() {
         return createChange;
     }
 
+    @Override
     public void setCreateChange(final ArrFaChange createChange) {
         this.createChange = createChange;
     }
 
+    @Override
     public ArrFaChange getDeleteChange() {
         return deleteChange;
     }
 
+    @Override
     public void setDeleteChange(final ArrFaChange deleteChange) {
         this.deleteChange = deleteChange;
     }
 
+    @Override
     public Integer getDescItemObjectId() {
         return descItemObjectId;
     }
 
+    @Override
     public void setDescItemObjectId(final Integer descItemObjectId) {
         this.descItemObjectId = descItemObjectId;
     }
 
+    @Override
     public RulDescItemType getDescItemType() {
         return descItemType;
     }
 
+    @Override
     public void setDescItemType(final RulDescItemType descItemType) {
         this.descItemType = descItemType;
     }
 
+    @Override
     public RulDescItemSpec getDescItemSpec() {
         return descItemSpec;
     }
 
+    @Override
     public void setDescItemSpec(final RulDescItemSpec descItemSpec) {
         this.descItemSpec = descItemSpec;
     }
 
+    @Override
     public Integer getNodeId() {
         return nodeId;
     }
 
+    @Override
     public void setNodeId(final Integer nodeId) {
         this.nodeId = nodeId;
     }
 
+    @Override
     public Integer getPosition() {
         return position;
     }
 
+    @Override
     public void setPosition(final Integer position) {
         this.position = position;
     }

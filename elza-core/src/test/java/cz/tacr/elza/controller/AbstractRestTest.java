@@ -125,23 +125,18 @@ public abstract class AbstractRestTest {
 
     @After
     public void setDown() {
-        abstractPartyRepository.deleteAll();
-        variantRecordRepository.deleteAll();
-        recordRepository.deleteAll();
-        externalSourceRepository.deleteAll();
-        registerTypeRepository.deleteAll();
-        descItemConstraintRepository.deleteAll();
+//        descItemConstraintRepository.deleteAll();
         faViewRepository.deleteAll();
         versionRepository.deleteAll();
-        arrangementTypeRepository.deleteAll();
+//        arrangementTypeRepository.deleteAll();
         ruleSetRepository.deleteAll();
         findingAidRepository.deleteAll();
         levelRepository.deleteAll();
         arrDataRepository.deleteAll();
         arrDataStringRepository.deleteAll();
         descItemRepository.deleteAll();
-        descItemSpecRepository.deleteAll();
-        descItemTypeRepository.deleteAll();
+//        descItemSpecRepository.deleteAll();
+//        descItemTypeRepository.deleteAll();
         changeRepository.deleteAll();
     }
 

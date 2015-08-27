@@ -9,6 +9,8 @@ import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import cz.req.ax.IdObject;
 
 
@@ -18,8 +20,8 @@ import cz.req.ax.IdObject;
  */
 @Entity(name = "arr_fa_version")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrFaVersion implements IdObject<Integer>,
-                                     cz.tacr.elza.api.ArrFaVersion<ArrFindingAid, ArrFaChange, ArrFaLevel, ArrArrangementType, RulRuleSet> {
+public class ArrFaVersion extends AbstractVersionableEntity implements IdObject<Integer>,
+    cz.tacr.elza.api.ArrFaVersion<ArrFindingAid, ArrFaChange, ArrFaLevel, ArrArrangementType, RulRuleSet> {
 
     @Id
     @GeneratedValue

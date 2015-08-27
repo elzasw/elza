@@ -28,7 +28,7 @@ import cz.req.ax.IdObject;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrData implements IdObject<Integer>, cz.tacr.elza.api.ArrData<RulDataType, ArrDescItem>{
+public abstract class ArrData extends AbstractVersionableEntity implements IdObject<Integer>, cz.tacr.elza.api.ArrData<RulDataType, ArrDescItem>{
 
     @Id
     @GeneratedValue
@@ -43,26 +43,32 @@ public class ArrData implements IdObject<Integer>, cz.tacr.elza.api.ArrData<RulD
     @JoinColumn(name = "descItemId", nullable = true)
     private ArrDescItem descItem;
 
+    @Override
     public Integer getDataId() {
         return dataId;
     }
 
+    @Override
     public void setDataId(final Integer dataId) {
         this.dataId = dataId;
     }
 
+    @Override
     public RulDataType getDataType() {
         return dataType;
     }
 
+    @Override
     public void setDataType(final RulDataType dataType) {
         this.dataType = dataType;
     }
 
+    @Override
     public ArrDescItem getDescItem() {
         return descItem;
     }
 
+    @Override
     public void setDescItem(final ArrDescItem descItem) {
         this.descItem = descItem;
     }

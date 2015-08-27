@@ -12,12 +12,13 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-import cz.req.ax.IdObject;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.req.ax.IdObject;
 
 /**
  * @author by Ondřej Buriánek, burianek@marbes.cz.
@@ -26,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity(name = "arr_fa_level")
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"position", "parentNodeId", "deleteFaChangeId"}))
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrFaLevel implements IdObject<Integer>, cz.tacr.elza.api.ArrFaLevel<ArrFaChange> {
+public class ArrFaLevel extends AbstractVersionableEntity implements IdObject<Integer>, cz.tacr.elza.api.ArrFaLevel<ArrFaChange> {
 
     @Id
     @GeneratedValue

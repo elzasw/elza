@@ -7,7 +7,7 @@ import java.io.Serializable;
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public interface RegRecord<RT extends RegRegisterType, ES extends RegExternalSource> extends Serializable {
+public interface RegRecord<RT extends RegRegisterType, ES extends RegExternalSource> extends Versionable, Serializable {
 
     Integer getRecordId();
 

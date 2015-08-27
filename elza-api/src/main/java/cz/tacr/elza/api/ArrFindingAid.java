@@ -3,7 +3,7 @@ package cz.tacr.elza.api;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public interface ArrFindingAid extends Serializable {
+public interface ArrFindingAid extends Versionable, Serializable {
 
     Integer getFindingAidId();
 

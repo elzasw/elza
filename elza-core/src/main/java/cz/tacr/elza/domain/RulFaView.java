@@ -10,7 +10,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -28,7 +27,7 @@ import cz.req.ax.IdObject;
 @Entity(name = "rul_fa_view")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulFaView implements IdObject<Integer>, cz.tacr.elza.api.RulFaView<ArrArrangementType, RulRuleSet> {
+public class RulFaView extends AbstractVersionableEntity implements IdObject<Integer>, cz.tacr.elza.api.RulFaView<ArrArrangementType, RulRuleSet> {
 
     @Id
     @GeneratedValue
@@ -45,34 +44,42 @@ public class RulFaView implements IdObject<Integer>, cz.tacr.elza.api.RulFaView<
     @Column(length = 1000, nullable = false)
     private String viewSpecification;
 
+    @Override
     public Integer getFaViewId() {
         return faViewId;
     }
 
+    @Override
     public void setFaViewId(final Integer faViewId) {
         this.faViewId = faViewId;
     }
 
+    @Override
     public ArrArrangementType getArrangementType() {
         return arrangementType;
     }
 
+    @Override
     public void setArrangementType(final ArrArrangementType arrangementType) {
         this.arrangementType = arrangementType;
     }
 
+    @Override
     public RulRuleSet getRuleSet() {
         return ruleSet;
     }
 
+    @Override
     public void setRuleSet(final RulRuleSet ruleSet) {
         this.ruleSet = ruleSet;
     }
 
+    @Override
     public String getViewSpecification() {
         return viewSpecification;
     }
 
+    @Override
     public void setViewSpecification(final String viewSpecification) {
         this.viewSpecification = viewSpecification;
     }

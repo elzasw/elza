@@ -2,7 +2,7 @@ package cz.tacr.elza.api;
 
 import java.io.Serializable;
 
-public interface ArrFaLevel<FC extends ArrFaChange> extends Serializable {
+public interface ArrFaLevel<FC extends ArrFaChange> extends Versionable, Serializable {
 
     Integer getFaLevelId();
 

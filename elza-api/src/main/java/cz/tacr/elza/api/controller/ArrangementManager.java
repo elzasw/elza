@@ -6,6 +6,7 @@ import cz.tacr.elza.api.ArrFaLevel;
 import cz.tacr.elza.api.ArrFaLevelExt;
 import cz.tacr.elza.api.ArrFaVersion;
 import cz.tacr.elza.api.ArrFindingAid;
+import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 
 
 /**
@@ -14,7 +15,7 @@ import cz.tacr.elza.api.ArrFindingAid;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 12. 8. 2015
  */
-public interface ArrangementManager {
+public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVersion> {
     public static final String FORMAT_ATTRIBUTE_FULL = "FULL";
     public static final String FORMAT_ATTRIBUTE_SHORT = "SHORT";
 
@@ -48,8 +49,9 @@ public interface ArrangementManager {
      * @param findingAidId id archivní pomůcky
      * @param name         název arhivní pomůcky
      * @return aktualizovaná archivní pomůcka
+     * @throws ConcurrentUpdateException chyba při současné manipulaci s položkou více uživateli
      */
-    ArrFindingAid updateFindingAid(Integer findingAidId, String name);
+    ArrFindingAid updateFindingAid(FA findingAid) throws ConcurrentUpdateException;
 
     /**
      * Vrátí seznam verzí pro danou archivní pomůcku seřazený od nejnovější k nejstarší.
@@ -68,14 +70,15 @@ public interface ArrangementManager {
     ArrFindingAid getFindingAid(Integer findingAidId);
 
     /**
-     * Schválí otevřenou verzi archivní pomůcky a otevře novou verzi.
+     * Uzavře otevřenou verzi archivní pomůcky a otevře novou verzi.
      *
-     * @param findingAidId id archivní pomůcky
+     * @param version verze, která se má uzavřít
      * @param arrangementTypeId id typu výstupu nové verze
      * @param ruleSetId         id pravidel podle kterých se vytváří popis v nové verzi
      * @return nová verze archivní pomůcky
+     * @throws ConcurrentUpdateException chyba při současné manipulaci s položkou více uživateli
      */
-    ArrFaVersion approveVersion(Integer findingAidId, Integer arrangementTypeId, Integer ruleSetId);
+    ArrFaVersion approveVersion(FV version, Integer arrangementTypeId, Integer ruleSetId) throws ConcurrentUpdateException;
 
     /**
      * Vytvoří nový uzel před předaným uzlem.

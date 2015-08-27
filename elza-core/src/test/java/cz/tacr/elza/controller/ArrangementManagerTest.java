@@ -23,19 +23,16 @@ import com.jayway.restassured.response.Response;
 import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemExt;
+import cz.tacr.elza.domain.ArrFaChange;
 import cz.tacr.elza.domain.ArrFaLevel;
 import cz.tacr.elza.domain.ArrFaLevelExt;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
-import cz.tacr.elza.domain.ArrFaChange;
 import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
@@ -44,7 +41,6 @@ import cz.tacr.elza.repository.DescItemConstraintRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
-import cz.tacr.elza.repository.FaViewRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VersionRepository;
@@ -150,8 +146,9 @@ public class ArrangementManagerTest extends AbstractRestTest {
     @Transactional
     public void testUpdateFindingAid() throws Exception {
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);
+        findingAid.setName(TEST_NAME);
 
-        arrangementManager.updateFindingAid(findingAid.getFindingAidId(), TEST_UPDATE_NAME);
+        arrangementManager.updateFindingAid(findingAid);
     }
 
     // ---- REST test ----
@@ -227,10 +224,11 @@ public class ArrangementManagerTest extends AbstractRestTest {
     @Test
     public void testRestUpdateFindingAid() throws Exception {
         Integer idFinfingAid = createFindingAidRest(TEST_NAME).getFindingAidId();
+        ArrFindingAid arrFindingAid = findingAidRepository.findOne(idFinfingAid);
 
-        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(FA_ID_ATT, idFinfingAid)
-                .parameter(FA_NAME_ATT, TEST_UPDATE_NAME)
-                .get(UPDATE_FA_URL);
+        arrFindingAid.setName(TEST_UPDATE_NAME);
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(arrFindingAid)
+                .put(UPDATE_FA_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
@@ -303,10 +301,11 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ArrFaVersion version = versions.iterator().next();
 
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
-                parameter(FA_ID_ATT, findingAid.getFindingAidId()).
+                body(version).
+                //                parameter(FA_ID_ATT, findingAid.getFindingAidId()).
                 parameter(ARRANGEMENT_TYPE_ID_ATT, version.getArrangementType().getArrangementTypeId()).
                 parameter(RULE_SET_ID_ATT, version.getRuleSet().getRuleSetId()).
-                get(APPROVE_VERSION_URL);
+                put(APPROVE_VERSION_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 

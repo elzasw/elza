@@ -10,6 +10,7 @@ import javax.persistence.Id;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import cz.req.ax.IdObject;
 
 /**
@@ -18,7 +19,7 @@ import cz.req.ax.IdObject;
  */
 @Entity(name = "arr_finding_aid")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrFindingAid implements IdObject<Integer>, cz.tacr.elza.api.ArrFindingAid, Serializable {
+public class ArrFindingAid extends AbstractVersionableEntity implements IdObject<Integer>, cz.tacr.elza.api.ArrFindingAid, Serializable {
 
     @Id
     @GeneratedValue

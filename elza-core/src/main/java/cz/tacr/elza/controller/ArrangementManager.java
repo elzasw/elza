@@ -66,7 +66,7 @@ import cz.tacr.elza.repository.VersionRepository;
  */
 @RestController
 @RequestMapping("/api/arrangementManager")
-public class ArrangementManager implements cz.tacr.elza.api.controller.ArrangementManager {
+public class ArrangementManager implements cz.tacr.elza.api.controller.ArrangementManager<ArrFindingAid, ArrFaVersion> {
 
     @Autowired
     private FindingAidRepository findingAidRepository;
@@ -290,19 +290,14 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return findingAidRepository.findAll();
     }
 
+    @RequestMapping(value = "/updateFindingAid", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @Override
-    @RequestMapping(value = "/updateFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, params = {"findingAidId", "name"},
-    produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
-    public ArrFindingAid updateFindingAid(@RequestParam(value = "findingAidId") final Integer findingAidId, @RequestParam(value = "name") final String name) {
-        Assert.notNull(findingAidId);
-        Assert.hasText(name);
+    public ArrFindingAid updateFindingAid(@RequestBody ArrFindingAid findingAid) {
+        Assert.notNull(findingAid);
 
-        ArrFindingAid findingAid = findingAidRepository.getOne(findingAidId);
-        findingAid.setName(name);
-        findingAidRepository.save(findingAid);
-
-        return findingAid;
+        return findingAidRepository.save(findingAid);
     }
 
     @Override
@@ -324,18 +319,18 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Override
     @Transactional
-    @RequestMapping(value = "/approveVersion", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE,
-    params = {"findingAidId", "arrangementTypeId", "ruleSetId"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ArrFaVersion approveVersion(final Integer findingAidId, final Integer arrangementTypeId, final Integer ruleSetId) {
-        Assert.notNull(findingAidId);
+    @RequestMapping(value = "/approveVersion", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
+    params = {"arrangementTypeId", "ruleSetId"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ArrFaVersion approveVersion(@RequestBody final ArrFaVersion version, final Integer arrangementTypeId, final Integer ruleSetId) {
+        Assert.notNull(version);
         Assert.notNull(arrangementTypeId);
         Assert.notNull(ruleSetId);
 
-        ArrFindingAid findingAid = findingAidRepository.findOne(findingAidId);
-        ArrFaVersion version = versionRepository.findByFindingAidIdAndLockChangeIsNull(findingAidId);
+        ArrFindingAid findingAid = version.getFindingAid();
 
         ArrFaChange change = createChange();
         version.setLockChange(change);
+        versionRepository.save(version);
 
         ArrArrangementType arrangementType = arrangementTypeRepository.findOne(arrangementTypeId);
         RulRuleSet ruleSet = ruleSetRepository.findOne(ruleSetId);
@@ -710,7 +705,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     }
 
     private void readItemData(final ArrFaLevelExt levelExt, final List<ArrData> dataList,
-                              final Set<Integer> idItemTypeSet, final String formatData) {
+            final Set<Integer> idItemTypeSet, final String formatData) {
         if (dataList == null) {
             return;
         }
@@ -723,7 +718,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             BeanUtils.copyProperties(arrData.getDescItem(), arrDescItemExt);
             if (arrData instanceof ArrDataString) {
                 ArrDataString stringData = (ArrDataString) arrData;
-                String stringValue = stringData.getValue(); 
+                String stringValue = stringData.getValue();
                 if (stringValue != null && stringValue.length() > 250 && formatData != null && FORMAT_ATTRIBUTE_SHORT.equals(formatData)) {
                     stringValue = stringValue.substring(0, 250);
                 }
@@ -733,7 +728,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 arrDescItemExt.setData(stringData.getValue().toString());
             } if (arrData instanceof ArrDataText) {
                 ArrDataText stringData = (ArrDataText) arrData;
-                String stringValue = stringData.getValue(); 
+                String stringValue = stringData.getValue();
                 if (stringValue != null && stringValue.length() > 250 && formatData != null && FORMAT_ATTRIBUTE_SHORT.equals(formatData)) {
                     stringValue = stringValue.substring(0, 250);
                 }
@@ -746,7 +741,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @RequestMapping(value = "/createDescriptionItem/{faVersionId}", method = RequestMethod.POST)
     @Transactional
     public ArrDescItem createDescriptionItem(@RequestBody ArrDescItemExt descItemExt,
-                                             @PathVariable(value = "faVersionId") Integer faVersionId) {
+            @PathVariable(value = "faVersionId") Integer faVersionId) {
         Assert.notNull(descItemExt);
         Assert.notNull(faVersionId);
 
@@ -794,8 +789,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @RequestMapping(value = "/updateDescriptionItem/{faVersionId},{createNewVersion}", method = RequestMethod.POST)
     @Transactional
     public ArrDescItem updateDescriptionItem(@RequestBody ArrDescItemExt descItemExt,
-                                             @PathVariable(value = "faVersionId") Integer faVersionId,
-                                             @PathVariable(value = "createNewVersion") Boolean createNewVersion) {
+            @PathVariable(value = "faVersionId") Integer faVersionId,
+            @PathVariable(value = "createNewVersion") Boolean createNewVersion) {
         Assert.notNull(descItemExt);
         Assert.notNull(faVersionId);
 
@@ -909,10 +904,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      * @param rulDescItemConstraint Podmínka
      */
     private void validateRepeatableSpec(Integer nodeId,
-                                        RulDescItemType rulDescItemType,
-                                        RulDescItemSpec rulDescItemSpec,
-                                        RulDescItemConstraint rulDescItemConstraint,
-                                        boolean updated) {
+            RulDescItemType rulDescItemType,
+            RulDescItemSpec rulDescItemSpec,
+            RulDescItemConstraint rulDescItemConstraint,
+            boolean updated) {
         if (rulDescItemConstraint.getRepeatable() != null && !rulDescItemConstraint.getRepeatable()) {
             List<ArrDescItem> arrDescItems = descItemRepository.findByNodeIdAndDeleteChangeIsNullAndDescItemTypeIdAndSpecItemTypeId(nodeId, rulDescItemType.getId(),
                     rulDescItemSpec.getId());
@@ -1046,50 +1041,50 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      */
     private void saveNewDataValue(RulDescItemType rulDescItemType, String data, ArrDescItem descItem) {
         switch (rulDescItemType.getDataType().getCode()) {
-            case "INT":
-                ArrDataInteger valueInt = new ArrDataInteger();
-                valueInt.setDataType(rulDescItemType.getDataType());
-                valueInt.setDescItem(descItem);
-                try {
-                    valueInt.setValue(Integer.valueOf(data));
-                } catch (NumberFormatException e) {
-                    throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu");
-                }
-                dataIntegerRepository.save(valueInt);
-                break;
-            case "STRING":
-                ArrDataString valueString = new ArrDataString();
-                valueString.setDataType(rulDescItemType.getDataType());
-                valueString.setDescItem(descItem);
-                valueString.setValue(data);
-                dataStringRepository.save(valueString);
-                break;
-            case "TEXT":
-                ArrDataText valueText = new ArrDataText();
-                valueText.setDataType(rulDescItemType.getDataType());
-                valueText.setDescItem(descItem);
-                valueText.setValue(data);
-                dataTextRepository.save(valueText);
-                break;
+        case "INT":
+            ArrDataInteger valueInt = new ArrDataInteger();
+            valueInt.setDataType(rulDescItemType.getDataType());
+            valueInt.setDescItem(descItem);
+            try {
+                valueInt.setValue(Integer.valueOf(data));
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu");
+            }
+            dataIntegerRepository.save(valueInt);
+            break;
+        case "STRING":
+            ArrDataString valueString = new ArrDataString();
+            valueString.setDataType(rulDescItemType.getDataType());
+            valueString.setDescItem(descItem);
+            valueString.setValue(data);
+            dataStringRepository.save(valueString);
+            break;
+        case "TEXT":
+            ArrDataText valueText = new ArrDataText();
+            valueText.setDataType(rulDescItemType.getDataType());
+            valueText.setDescItem(descItem);
+            valueText.setValue(data);
+            dataTextRepository.save(valueText);
+            break;
 
-            case "DATACE":
-                ArrDataDatace valueDatace = new ArrDataDatace();
-                valueDatace.setDataType(rulDescItemType.getDataType());
-                valueDatace.setDescItem(descItem);
-                valueDatace.setValue(data);
-                dataDataceRepository.save(valueDatace);
-                break;
+        case "DATACE":
+            ArrDataDatace valueDatace = new ArrDataDatace();
+            valueDatace.setDataType(rulDescItemType.getDataType());
+            valueDatace.setDescItem(descItem);
+            valueDatace.setValue(data);
+            dataDataceRepository.save(valueDatace);
+            break;
 
-            case "REF":
-                ArrDataReference valueReference = new ArrDataReference();
-                valueReference.setDataType(rulDescItemType.getDataType());
-                valueReference.setDescItem(descItem);
-                valueReference.setValue(data);
-                dataReferenceRepository.save(valueReference);
-                break;
+        case "REF":
+            ArrDataReference valueReference = new ArrDataReference();
+            valueReference.setDataType(rulDescItemType.getDataType());
+            valueReference.setDescItem(descItem);
+            valueReference.setValue(data);
+            dataReferenceRepository.save(valueReference);
+            break;
 
-            default:
-                throw new IllegalStateException("Datový typ hodnoty není implementován");
+        default:
+            throw new IllegalStateException("Datový typ hodnoty není implementován");
         }
     }
 
@@ -1102,40 +1097,40 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      */
     private void saveUpdateDataValue(RulDescItemType rulDescItemType, String data, ArrData arrData) {
         switch (rulDescItemType.getDataType().getCode()) {
-            case "INT":
-                ArrDataInteger valueInt = (ArrDataInteger) arrData;
-                try {
-                    valueInt.setValue(Integer.valueOf(data));
-                } catch (NumberFormatException e) {
-                    throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu");
-                }
-                dataIntegerRepository.save(valueInt);
-                break;
-            case "STRING":
-                ArrDataString valueString = (ArrDataString) arrData;
-                valueString.setValue(data);
-                dataStringRepository.save(valueString);
-                break;
-            case "TEXT":
-                ArrDataText valueText = (ArrDataText) arrData;
-                valueText.setValue(data);
-                dataTextRepository.save(valueText);
-                break;
+        case "INT":
+            ArrDataInteger valueInt = (ArrDataInteger) arrData;
+            try {
+                valueInt.setValue(Integer.valueOf(data));
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu");
+            }
+            dataIntegerRepository.save(valueInt);
+            break;
+        case "STRING":
+            ArrDataString valueString = (ArrDataString) arrData;
+            valueString.setValue(data);
+            dataStringRepository.save(valueString);
+            break;
+        case "TEXT":
+            ArrDataText valueText = (ArrDataText) arrData;
+            valueText.setValue(data);
+            dataTextRepository.save(valueText);
+            break;
 
-            case "DATACE":
-                ArrDataDatace valueDatace = (ArrDataDatace) arrData;
-                valueDatace.setValue(data);
-                dataDataceRepository.save(valueDatace);
-                break;
+        case "DATACE":
+            ArrDataDatace valueDatace = (ArrDataDatace) arrData;
+            valueDatace.setValue(data);
+            dataDataceRepository.save(valueDatace);
+            break;
 
-            case "REF":
-                ArrDataReference valueReference = (ArrDataReference) arrData;
-                valueReference.setValue(data);
-                dataReferenceRepository.save(valueReference);
-                break;
+        case "REF":
+            ArrDataReference valueReference = (ArrDataReference) arrData;
+            valueReference.setValue(data);
+            dataReferenceRepository.save(valueReference);
+            break;
 
-            default:
-                throw new IllegalStateException("Datový typ hodnoty není implementován");
+        default:
+            throw new IllegalStateException("Datový typ hodnoty není implementován");
         }
     }
 

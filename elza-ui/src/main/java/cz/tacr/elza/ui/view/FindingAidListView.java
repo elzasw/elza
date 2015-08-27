@@ -1,10 +1,25 @@
 package cz.tacr.elza.ui.view;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
+import ru.xpoft.vaadin.VaadinView;
+
 import com.vaadin.data.Validator;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.Table;
-import cz.req.ax.*;
+
+import cz.req.ax.AxAction;
+import cz.req.ax.AxBeanTable;
+import cz.req.ax.AxContainer;
+import cz.req.ax.AxForm;
+import cz.req.ax.AxTable;
+import cz.req.ax.AxWindow;
 import cz.req.ax.util.LocalDateTimeConverter;
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleManager;
@@ -12,13 +27,7 @@ import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.ui.ElzaView;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-import ru.xpoft.vaadin.VaadinView;
+import cz.tacr.elza.ui.utils.ConcurrentUpdateExceptionHandler;
 
 
 /**
@@ -54,12 +63,12 @@ public class FindingAidListView extends ElzaView {
         tableFA = new AxBeanTable<>(AxContainer.init(ArrFindingAid.class).supplier(arrangementManager::getFindingAids));
         tableFA.select(findingAid -> navigate(FindingAidDetailView.class, findingAid.getFindingAidId()));
         tableFA.header(Table.ColumnHeaderMode.EXPLICIT_DEFAULTS_ID)
-                .column("name").header("Název")
-                .column("createDate").header("Datum vytvoření").width(200).converter(new LocalDateTimeConverter())
-                .column("actions").header("Akce").width(100).generator((itemObject, itemId, columnId) ->
-                cssLayout("action-transparent",
-                        AxAction.of(itemObject).icon(FontAwesome.EDIT).action(this::upravitFA).button(),
-                        AxAction.of(itemObject).icon(FontAwesome.TIMES).action(this::smazatFA).button()
+        .column("name").header("Název")
+        .column("createDate").header("Datum vytvoření").width(200).converter(new LocalDateTimeConverter())
+        .column("actions").header("Akce").width(100).generator((itemObject, itemId, columnId) ->
+        cssLayout("action-transparent",
+                AxAction.of(itemObject).icon(FontAwesome.EDIT).action(this::upravitFA).button(),
+                AxAction.of(itemObject).icon(FontAwesome.TIMES).action(this::smazatFA).button()
                 )).done();
 
         actions(new AxAction().caption("Nový").icon(FontAwesome.PLUS_CIRCLE)
@@ -76,18 +85,18 @@ public class FindingAidListView extends ElzaView {
     private void novyFA(final AxForm<VONewFindingAid> form) {
         new AxWindow().caption("Vytvoření archivní pomůcky").components(form).buttonClose().buttonPrimary(
                 new AxAction<VONewFindingAid>().caption("Uložit")
-                        .value(form::commit).action(this::vytvoritFA)
-                        .exception(ex -> ex.printStackTrace())
-        ).modal().style("window-detail").show();
+                .value(form::commit).action(this::vytvoritFA)
+                .exception(ex -> ex.printStackTrace())
+                ).modal().style("window-detail").show();
     }
 
     private void upravitFA(final ArrFindingAid findingAid) {
         formFA.setValue(findingAid);
         new AxWindow().caption("Úprava archivní pomůcky").components(formFA).buttonClose().buttonPrimary(
                 new AxAction<ArrFindingAid>().caption("Uložit")
-                        .value(formFA::commit).action(this::ulozitFA)
-                        .exception(ex -> ex.printStackTrace())
-        ).modal().style("window-detail").show();
+                .value(formFA::commit).action(this::ulozitFA)
+                .exception(new ConcurrentUpdateExceptionHandler())
+                ).modal().style("window-detail").show();
     }
 
     private void vytvoritFA(final VONewFindingAid findingAid) {
@@ -97,7 +106,7 @@ public class FindingAidListView extends ElzaView {
     }
 
     private void ulozitFA(final ArrFindingAid findingAid) {
-        arrangementManager.updateFindingAid(findingAid.getFindingAidId(), findingAid.getName());
+        arrangementManager.updateFindingAid(findingAid);
         refresh();
     }
 

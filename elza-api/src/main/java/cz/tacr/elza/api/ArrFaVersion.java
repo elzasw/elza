@@ -3,7 +3,7 @@ package cz.tacr.elza.api;
 import java.io.Serializable;
 
 public interface ArrFaVersion<FA extends ArrFindingAid, FC extends ArrFaChange,FL extends ArrFaLevel,
-        AT extends ArrArrangementType, RS extends RulRuleSet> extends Serializable {
+        AT extends ArrArrangementType, RS extends RulRuleSet> extends Versionable, Serializable {
 
     Integer getFaVersionId();
 
