@@ -15,6 +15,7 @@ import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.repository.AbstractPartyRepository;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRepository;
@@ -24,10 +25,14 @@ import cz.tacr.elza.repository.DescItemConstraintRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
+import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.FaViewRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.repository.VersionRepository;
 import org.junit.After;
 import org.junit.Before;
@@ -98,6 +103,16 @@ public abstract class AbstractRestTest {
     private DataStringRepository arrDataStringRepository;
     @Autowired
     private DataRepository arrDataRepository;
+    @Autowired
+    private RegisterTypeRepository registerTypeRepository;
+    @Autowired
+    private ExternalSourceRepository externalSourceRepository;
+    @Autowired
+    private AbstractPartyRepository abstractPartyRepository;
+    @Autowired
+    private VariantRecordRepository variantRecordRepository;
+    @Autowired
+    private RegRecordRepository recordRepository;
 
     @Before
     public void setUp() {
@@ -110,6 +125,11 @@ public abstract class AbstractRestTest {
 
     @After
     public void setDown() {
+        abstractPartyRepository.deleteAll();
+        variantRecordRepository.deleteAll();
+        recordRepository.deleteAll();
+        externalSourceRepository.deleteAll();
+        registerTypeRepository.deleteAll();
         descItemConstraintRepository.deleteAll();
         faViewRepository.deleteAll();
         versionRepository.deleteAll();
