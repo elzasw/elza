@@ -1,6 +1,5 @@
 package cz.tacr.elza.api.controller;
 
-import com.sun.istack.internal.Nullable;
 import cz.tacr.elza.api.RegExternalSource;
 import cz.tacr.elza.api.RegRecord;
 import cz.tacr.elza.api.RegRegisterType;
@@ -49,7 +48,7 @@ public interface RegistryManager<RR extends RegRecord> {
      * @param count             počet výsledků k vrácení
      * @return                  vybrané záznamy dle popisu seřazené za record, nebo prázdná množina
      */
-    List<? extends RegRecord> findRecord(@Nullable String search, Integer from, Integer count, Integer registerTypeId);
+    List<? extends RegRecord> findRecord(String search, Integer from, Integer count, Integer registerTypeId);
 
     List<? extends RegVariantRecord> getVariantRecords();
 }
