@@ -1,9 +1,13 @@
 package cz.tacr.elza.controller;
 
 import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.response.Response;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.repository.AbstractPartyRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.VariantRecordRepository;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -17,6 +21,8 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import static com.jayway.restassured.RestAssured.given;
+
 /**
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
@@ -25,8 +31,10 @@ public class RegistryManagerTest extends AbstractRestTest {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private static final String CREATE_RECORD_URL = REGISTRY_MANAGER_URL + "/createRecord";
+    private static final String DELETE_RECORD_URL = REGISTRY_MANAGER_URL + "/deleteRecord";
 
     private static final String RECORD_ATT = "regRecord";
+    private static final String RECORD_ID_ATT = "recordId";
 
 
     @Autowired
@@ -35,26 +43,22 @@ public class RegistryManagerTest extends AbstractRestTest {
     @Autowired
     private RegisterTypeRepository registerTypeRepository;
 
-//    private Integer id;
+    @Autowired
+    private RegRecordRepository recordRepository;
 
-//    @Test
-//    @Transactional
-//    public void testCreateRecord() throws Exception {
-//        RegRecord regRecord = new RegRecord();
-//        regRecord.setRecord("TEST RECORD");
-//        regRecord.setCharacteristics("TEST CHAR");
-//        regRecord.setLocal(false);
-//
-//        regRecord = registryManager.createRecord(regRecord);
-//        id = regRecord.getId();
-//    }
+    @Autowired
+    private VariantRecordRepository variantRecordRepository;
+
+    @Autowired
+    private AbstractPartyRepository abstractPartyRepository;
+
 
     @Test
     public void testRestCreateRecord() throws Exception {
-        RegRecord record = createRecordRest();
-
-        Assert.assertNotNull(record);
-        Assert.assertNotNull(record.getRecordId());
+//        RegRecord record = createRecordRest();
+//
+//        Assert.assertNotNull(record);
+//        Assert.assertNotNull(record.getRecordId());
     }
 
 //    @Test
@@ -73,6 +77,28 @@ public class RegistryManagerTest extends AbstractRestTest {
 //        registryManager.updateRecord(regRecord2);
 //        return;
 //    }
+
+    @Test
+    public void testRestDeleteRecord() {
+        RegRecord record = createRecord();
+
+        long countStart = recordRepository.count();
+
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(RECORD_ID_ATT, record.getId())
+                .get(DELETE_RECORD_URL);
+        logger.info(response.asString());
+        long countEnd = recordRepository.count();
+
+        Assert.assertEquals(200, response.statusCode());
+        Assert.assertEquals(countStart, countEnd + 1);
+    }
+
+    @Test
+    public void testRestGetRegisterTypes() {
+        createRegisterType();
+
+
+    }
 
     private RegRecord createRecordRest() {
         RegRecord regRecord = new RegRecord();
@@ -117,6 +143,16 @@ public class RegistryManagerTest extends AbstractRestTest {
         regRegisterType.setName(TEST_NAME);
         registerTypeRepository.save(regRegisterType);
         return regRegisterType;
+    }
+
+    protected RegRecord createRecord() {
+        RegRecord regRecord = new RegRecord();
+        regRecord.setRecord(TEST_NAME);
+        regRecord.setCharacteristics("CHARACTERISTICS");
+        regRecord.setLocal(false);
+        regRecord.setRegisterType(createRegisterType());
+
+        return recordRepository.save(regRecord);
     }
 
 }
