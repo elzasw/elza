@@ -35,7 +35,7 @@ public class RegVariantRecord implements IdObject<Integer>, cz.tacr.elza.api.Reg
     private Integer variantRecordId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRecord.class)
-    @JoinColumn(name = "regRecordId", nullable = false)
+    @JoinColumn(name = "recordId", nullable = false)
     private RegRecord regRecord;
 
     @Column(length = 500)
