@@ -1,10 +1,13 @@
 package cz.tacr.elza.controller;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import org.springframework.beans.BeanUtils;
@@ -44,7 +47,8 @@ import cz.tacr.elza.repository.VersionRepository;
 @RequestMapping("/api/ruleSetManager")
 public class RuleManager implements cz.tacr.elza.api.controller.RuleManager {
 
-    private static final String VIEW_SPECIFICATION_SEPARATOR = ";";
+    private static final String VIEW_SPECIFICATION_SEPARATOR = "|";
+    private static final String VIEW_SPECIFICATION_SEPARATOR_REGEX = "\\|";
 
     @Autowired
     private RuleSetRepository ruleSetRepository;
@@ -147,7 +151,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager {
 
     @Override
     @RequestMapping(value = "/getFaViewDescItemTypes", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Integer> getFaViewDescItemTypes(@RequestParam(value = "faVersionId") Integer faVersionId) {
+    public List<RulDescItemType> getFaViewDescItemTypes(@RequestParam(value = "faVersionId") Integer faVersionId) {
         Assert.notNull(faVersionId);
         ArrFaVersion version = versionRepository.getOne(faVersionId);
         RulRuleSet ruleSet = version.getRuleSet();
@@ -167,11 +171,22 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager {
         RulFaView faView = faViewList.get(0);
 
         String itemTypesStr = faView.getViewSpecification();
-        String[] itemTypes = itemTypesStr.split(VIEW_SPECIFICATION_SEPARATOR);
-        List<Integer> resultList = new LinkedList<>();
+        String[] itemTypes = itemTypesStr.split(VIEW_SPECIFICATION_SEPARATOR_REGEX);
+        List<Integer> resultIdList = new LinkedList<>();
         for (String itemTypeIdStr : itemTypes) {
-            resultList.add(Integer.valueOf(itemTypeIdStr));
+            resultIdList.add(Integer.valueOf(itemTypeIdStr));
         }
+        final List<RulDescItemType> resultList = descItemTypeRepository.findAll(resultIdList);
+        Collections.sort(resultList, new Comparator<RulDescItemType>() {
+
+            @Override
+            public int compare(RulDescItemType r1, RulDescItemType r2) {
+                Integer position1 = resultIdList.indexOf(r1.getDescItemTypeId());
+                Integer position2 = resultIdList.indexOf(r2.getDescItemTypeId());
+                return position1.compareTo(position2);
+            }
+            
+        });
         return resultList;
     }
 

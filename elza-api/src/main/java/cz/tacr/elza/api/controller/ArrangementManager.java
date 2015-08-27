@@ -15,6 +15,8 @@ import cz.tacr.elza.api.ArrFindingAid;
  * @since 12. 8. 2015
  */
 public interface ArrangementManager {
+    public static final String FORMAT_ATTRIBUTE_FULL = "FULL";
+    public static final String FORMAT_ATTRIBUTE_SHORT = "SHORT";
 
     /**
      * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.

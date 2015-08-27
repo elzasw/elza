@@ -52,7 +52,7 @@ public interface RuleManager {
      * @param faVersionId
      * @return
      */
-    List<Integer> getFaViewDescItemTypes(Integer faVersionId);
+    List<? extends RulDescItemType> getFaViewDescItemTypes(Integer faVersionId);
 
     /**
      * Pro soubor pravidel a typ výstupu uloží seznam identifikátorů typů atributů archivního popisu,

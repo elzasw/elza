@@ -15,14 +15,16 @@
 }
 
 
-
 .v-table.detail-table {
 
     .v-scrollable{
         overflow: auto !important;
     }
 
-
-
+    .v-table-cell-wrapper {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        max-width: 2000px;
+    }
 
 }
