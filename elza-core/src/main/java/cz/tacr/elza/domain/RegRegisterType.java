@@ -37,6 +37,9 @@ public class RegRegisterType implements IdObject<Integer>, cz.tacr.elza.api.RegR
     @Column(length = 200, nullable = false)
     private String name;
 
+    /* Konstanty pro vazby a fieldy. */
+    public static final String ID = "registerTypeId";
+
 
     @Override
     public Integer getRegisterTypeId() {

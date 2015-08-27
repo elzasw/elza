@@ -1,5 +1,12 @@
 package cz.tacr.elza.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import cz.req.ax.IdObject;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -38,10 +45,18 @@ public class RegVariantRecord extends AbstractVersionableEntity implements IdObj
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRecord.class)
     @JoinColumn(name = "recordId", nullable = false)
+    @JsonBackReference(value = "regRecordPar")
     private RegRecord regRecord;
+
+//    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRecord.class)
+//    @JoinColumn(name = "recordId", nullable = false, insertable = false, updatable = false)
+//    private RegRecord regRecordPar;
 
     @Column(length = 500)
     private String record;
+
+    /* Konstanty pro vazby a fieldy. */
+    public static final String RECORD = "record";
 
 
     @Override
@@ -73,6 +88,16 @@ public class RegVariantRecord extends AbstractVersionableEntity implements IdObj
     public void setRecord(final String record) {
         this.record = record;
     }
+
+//    @Override
+//    public RegRecord getRegRecordPar() {
+//        return regRecordPar;
+//    }
+//
+//    @Override
+//    public void setRegRecordPar(RegRecord regRecordPar) {
+//        this.regRecordPar = regRecordPar;
+//    }
 
     @Override
     @JsonIgnore

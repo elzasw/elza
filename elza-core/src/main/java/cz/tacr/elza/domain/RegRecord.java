@@ -9,7 +9,10 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -30,7 +33,7 @@ import cz.req.ax.IdObject;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RegRecord extends AbstractVersionableEntity implements IdObject<Integer>, cz.tacr.elza.api.RegRecord<RegRegisterType, RegExternalSource> {
+public class RegRecord extends AbstractVersionableEntity implements IdObject<Integer>, cz.tacr.elza.api.RegRecord<RegRegisterType, RegExternalSource, RegVariantRecord> {
 
     @Id
     @GeneratedValue
@@ -43,6 +46,10 @@ public class RegRecord extends AbstractVersionableEntity implements IdObject<Int
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegExternalSource.class)
     @JoinColumn(name = "externalSourceId")
     private RegExternalSource externalSource;
+
+//    @JsonManagedReference(value = "regRecordPar")
+    @OneToMany(mappedBy = "regRecord")
+    private List<RegVariantRecord> variantRecordList = new ArrayList<>(0);
 
     @Column(length = 500, nullable = false)
     private String record;
@@ -58,6 +65,13 @@ public class RegRecord extends AbstractVersionableEntity implements IdObject<Int
 
     @Column(length = 200)
     private String external_id;
+
+    /* Konstanty pro vazby a fieldy. */
+    public static final String VARIANT_RECORD_LIST = "variantRecordList";
+    public static final String REGISTER_TYPE = "registerType";
+    public static final String RECORD = "record";
+    public static final String CHARACTERISTICS = "characteristics";
+    public static final String COMMENT = "comment";
 
 
     @Override
@@ -138,6 +152,16 @@ public class RegRecord extends AbstractVersionableEntity implements IdObject<Int
     @Override
     public void setExternal_id(final String external_id) {
         this.external_id = external_id;
+    }
+
+    @Override
+    public void setVariantRecordList(final List<RegVariantRecord> variantRecordList) {
+        this.variantRecordList = variantRecordList;
+    }
+
+    @Override
+    public List<RegVariantRecord> getVariantRecordList() {
+        return variantRecordList;
     }
 
     @Override
