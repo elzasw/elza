@@ -3,6 +3,7 @@ package cz.tacr.elza.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -41,4 +42,14 @@ public interface DescItemRepository extends JpaRepository<ArrDescItem, Integer> 
 
     @Query(value = "SELECT max(i.position) FROM arr_desc_item i JOIN i.descItemType t WHERE i.nodeId = ?1 AND t.descItemTypeId = ?2 AND i.deleteChange IS NULL")
     Integer findMaxPositionByNodeIdAndDescItemTypeIdAndDeleteChangeIsNull(Integer nodeId, Integer descItemTypeId);
+
+    @Query("SELECT i FROM arr_desc_item i JOIN i.descItemType t WHERE i.position >= ?1 AND i.nodeId = ?2 AND i.deleteChange IS NULL AND t.descItemTypeId = ?3")
+    List<ArrDescItem> findByNodeIdAndDescItemTypeIdAndDeleteChangeIsNullAfterPosistion(Integer position, Integer nodeId, Integer descItemTypeId);
+
+    @Query("SELECT i FROM arr_desc_item i JOIN i.descItemType t WHERE i.position < ?1 AND i.nodeId = ?2 AND i.deleteChange IS NULL AND t.descItemTypeId = ?3")
+    List<ArrDescItem> findByNodeIdAndDescItemTypeIdAndDeleteChangeIsNullBeforePosistion(Integer position, Integer nodeId, Integer descItemTypeId);
+
+    @Query("SELECT i FROM arr_desc_item i JOIN i.descItemType t WHERE i.position > ?1 AND i.position <= ?2 AND i.nodeId = ?3 AND i.deleteChange IS NULL AND t.descItemTypeId = ?4")
+    List<ArrDescItem> findByNodeIdAndDescItemTypeIdAndDeleteChangeIsNullBetweenPositions(Integer position, Integer position2, Integer nodeId, Integer descItemTypeId);
+
 }

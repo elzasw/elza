@@ -794,6 +794,46 @@ public class ArrangementManagerTest extends AbstractRestTest {
             Assert.fail("Vložená hodnota není identická");
         }
 
+        // vytvoření závislých dat
+
+        RulDescItemType descItemType2 = createDescItemType(dataType, true, "ITEM_TYPE2", "Item type 2", "SH3", "Desc 3", false, false, true, 2);
+        RulDescItemSpec descItemSpec2 = createDescItemSpec(descItemType2, "ITEM_SPEC2", "Item spec 2", "SH4", "Desc 4", 2);
+        createDescItemConstrain(descItemType2, descItemSpec, version, null, "[0-9]*", null);
+        createDescItemConstrain(descItemType2, descItemSpec, version, null, null, 50);
+
+        // přidání hodnoty attributu - kontrola position
+
+        descItem = new ArrDescItemExt();
+        descItem.setDescItemType(descItemType2);
+        descItem.setDescItemSpec(descItemSpec2);
+        descItem.setData("123");
+        descItem.setNodeId(nodeId);
+
+        ArrDescItem descItemRet1 = arrangementManager.createDescriptionItem(descItem, version.getFaVersionId());
+
+        descItem = new ArrDescItemExt();
+        descItem.setDescItemType(descItemType2);
+        descItem.setDescItemSpec(descItemSpec2);
+        descItem.setData("1234");
+        descItem.setPosition(1);
+        descItem.setNodeId(nodeId);
+
+        ArrDescItem descItemRet2 = arrangementManager.createDescriptionItem(descItem, version.getFaVersionId());
+
+        Assert.assertNotNull(descItemRepository.findOne(descItemRet1.getId()).getDeleteChange());
+        Assert.assertEquals(new Integer(1), descItemRepository.findOne(descItemRet2.getId()).getPosition());
+
+        descItem = new ArrDescItemExt();
+        descItem.setDescItemType(descItemType2);
+        descItem.setDescItemSpec(descItemSpec2);
+        descItem.setData("12345");
+        descItem.setPosition(10);
+        descItem.setNodeId(nodeId);
+
+        ArrDescItem descItemRet3 = arrangementManager.createDescriptionItem(descItem, version.getFaVersionId());
+
+        Assert.assertEquals(new Integer(3), descItemRepository.findOne(descItemRet3.getId()).getPosition());
+
     }
 
     @Test
@@ -894,6 +934,81 @@ public class ArrangementManagerTest extends AbstractRestTest {
         }
 
         Assert.assertNotEquals(data, dataNew);
+
+    }
+
+    @Test
+    public void testRestUpdateDescriptionItemPositions() {
+
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
+
+        ArrFaVersion version = createFindingAidVersion(findingAid, null, false);
+        ArrFaLevel parent = createLevel(1, null, version.getCreateChange());
+        version.setRootNode(parent);
+        versionRepository.save(version);
+        LocalDateTime startTime = version.getCreateChange().getChangeDate();
+
+        ArrFaChange createChange = createFaChange(startTime.minusSeconds(1));
+        ArrFaLevel faLevel = createLevel(2, parent, createChange);
+        levelRepository.save(faLevel);
+
+        Integer nodeId = faLevel.getNodeId();
+
+        RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
+        Assert.assertNotNull("Neexistuje záznam pro datový typ INTEGER", dataType);
+
+        // vytvoření závislých dat
+
+        RulDescItemType descItemType = createDescItemType(dataType, true, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
+        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1);
+        createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null);
+        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 10);
+
+        // přidání hodnot attributů k uzlu
+
+        ArrDescItemExt descItem1 = new ArrDescItemExt();
+        descItem1.setDescItemType(descItemType);
+        descItem1.setDescItemSpec(descItemSpec);
+        descItem1.setData("1");
+        descItem1.setNodeId(nodeId);
+
+        descItem1 = arrangementManager.createDescriptionItem(descItem1, version.getFaVersionId());
+
+        ArrDescItemExt descItem2 = new ArrDescItemExt();
+        descItem2.setDescItemType(descItemType);
+        descItem2.setDescItemSpec(descItemSpec);
+        descItem2.setData("2");
+        descItem2.setNodeId(nodeId);
+
+        descItem2 = arrangementManager.createDescriptionItem(descItem2, version.getFaVersionId());
+
+        ArrDescItemExt descItem3 = new ArrDescItemExt();
+        descItem3.setDescItemType(descItemType);
+        descItem3.setDescItemSpec(descItemSpec);
+        descItem3.setData("3");
+        descItem3.setNodeId(nodeId);
+
+        descItem3 = arrangementManager.createDescriptionItem(descItem3, version.getFaVersionId());
+
+        ArrDescItemExt descItem4 = new ArrDescItemExt();
+        descItem4.setDescItemType(descItemType);
+        descItem4.setDescItemSpec(descItemSpec);
+        descItem4.setData("4");
+        descItem4.setNodeId(nodeId);
+
+        descItem4 = arrangementManager.createDescriptionItem(descItem4, version.getFaVersionId());
+
+        // úprava pozicí
+
+        descItem3.setPosition(1);
+        descItem3 = arrangementManager.updateDescriptionItem(descItem3, version.getFaVersionId(), true);
+
+        // TODO: dopsat asserty
+
+        descItem3.setPosition(3);
+        descItem3 = arrangementManager.updateDescriptionItem(descItem3, version.getFaVersionId(), true);
+
+        // TODO: dopsat asserty
 
     }
 
