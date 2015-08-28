@@ -1001,15 +1001,42 @@ public class ArrangementManagerTest extends AbstractRestTest {
         // úprava pozicí
 
         descItem3.setPosition(1);
-        descItem3 = arrangementManager.updateDescriptionItem(descItem3, version.getFaVersionId(), true);
+        ArrDescItemExt descItem3New = arrangementManager.updateDescriptionItem(descItem3, version.getFaVersionId(), true);
 
-        // TODO: dopsat asserty
+        // kontrola pozice attributu
+        checkChangePositionDescItem(descItem1, 2, true);
+        checkChangePositionDescItem(descItem2, 3, true);
+        checkChangePositionDescItem(descItem3, 1, true);
+        checkChangePositionDescItem(descItem4, 4, false);
 
-        descItem3.setPosition(3);
-        descItem3 = arrangementManager.updateDescriptionItem(descItem3, version.getFaVersionId(), true);
+        descItem3New.setPosition(3);
+        ArrDescItemExt descItem3New2 = arrangementManager.updateDescriptionItem(descItem3New, version.getFaVersionId(), true);
 
-        // TODO: dopsat asserty
+        // kontrola pozice attributu
+        checkChangePositionDescItem(descItem1, 1, true);
+        checkChangePositionDescItem(descItem2, 2, true);
+        checkChangePositionDescItem(descItem3, 3, true);
+        checkChangePositionDescItem(descItem4, 4, false);
 
+    }
+
+    /**
+     * Kontroluje, zda-li se po změně pozice správně vytvořila kopie
+     * @param descItem
+     * @param newPosition
+     */
+    private void checkChangePositionDescItem(ArrDescItemExt descItem, int newPosition, boolean hasNewRecord) {
+        List<ArrDescItem> descItemList1 = descItemRepository.findByDescItemObjectIdAndDeleteChangeIsNull(descItem.getDescItemObjectId());
+        if (descItemList1.size() != 1) {
+            Assert.fail("Nesprávný počet položek");
+        }
+        ArrDescItem descItemChange = descItemList1.get(0);
+        if (hasNewRecord) {
+            Assert.assertNotEquals("Nemůže být stejný záznam, protože se provedla změna pozice", descItem, descItemChange);
+        } else {
+            Assert.assertEquals("Musí být stejný záznam, protože se neprovedla změna pozice", descItem, descItemChange);
+        }
+        Assert.assertEquals(newPosition, descItemChange.getPosition().intValue());
     }
 
     @Test
