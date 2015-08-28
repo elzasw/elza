@@ -1,7 +1,6 @@
 package cz.tacr.elza.api;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * Záznamy v rejstříku.
@@ -42,7 +41,7 @@ public interface RegRecord<RT extends RegRegisterType, ES extends RegExternalSou
 
     void setExternal_id(String external_id);
 
-    void setVariantRecordList(List<VR> variantRecordList);
-
-    List<VR> getVariantRecordList();
+//    void setVariantRecordList(List<VR> variantRecordList);
+//
+//    List<VR> getVariantRecordList();
 }

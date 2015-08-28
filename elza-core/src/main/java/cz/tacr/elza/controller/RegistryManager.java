@@ -88,6 +88,16 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     }
 
     @Override
+    @RequestMapping(value = "/deleteVariantRecord", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE,
+            params = {"variantRecordId"})
+    @Transactional
+    public void deleteVariantRecord(@RequestParam(value = "variantRecordId") final Integer variantRecordId) {
+        Assert.notNull(variantRecordId);
+
+        variantRecordRepository.delete(variantRecordId);
+    }
+
+    @Override
     @RequestMapping(value = "/getRegisterTypes", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
     public List<RegRegisterType> getRegisterTypes() {
         return registerTypeRepository.findAll();
@@ -104,8 +114,27 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     public List<RegRecord> findRecord(@RequestParam @Nullable final String search, @RequestParam final Integer from,
                                       @RequestParam final Integer count, @RequestParam final Integer registerTypeId) {
 
-        return regRecordRepository.findRegRecordByTextAndType(search, registerTypeId, from, count);
+        List<RegRecord> regRecords = regRecordRepository.findRegRecordByTextAndType(search, registerTypeId, from, count);
+        regRecords.forEach((record) -> {
+            record.getVariantRecordList().forEach((variantRecord) -> {
+                variantRecord.setRegRecord(null);
+            });
+//            RegRecordExt regRecordExt = new RegRecordExt();
+//            BeanUtils.copyProperties(record, regRecordExt);
+
+        });
+
+
+        return regRecords;
     }
+
+//    @Override
+//    @RequestMapping(value = "/getRecord", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE,
+//            params = {"recordId"})
+//    @Transactional
+//    public RegRecord getRecord(@RequestParam(value = "recordId") final Integer recordId) {
+//
+//    }
 
     @Override
     @RequestMapping(value = "/getVariantRecords", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)

@@ -2,10 +2,12 @@ package cz.tacr.elza.controller;
 
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Response;
+import cz.tacr.elza.domain.RegExternalSource;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.repository.AbstractPartyRepository;
+import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
@@ -35,11 +37,15 @@ public class RegistryManagerTest extends AbstractRestTest {
 
     private static final String CREATE_RECORD_URL = REGISTRY_MANAGER_URL + "/createRecord";
     private static final String DELETE_RECORD_URL = REGISTRY_MANAGER_URL + "/deleteRecord";
+    private static final String DELETE_VARIANT_RECORD_URL = REGISTRY_MANAGER_URL + "/deleteVariantRecord";
     private static final String FIND_RECORD_URL = REGISTRY_MANAGER_URL + "/findRecord";
+    private static final String GET_REGISTER_TYPES_URL = REGISTRY_MANAGER_URL + "/getRegisterTypes";
+    private static final String GET_EXTERNAL_SOURCES_URL = REGISTRY_MANAGER_URL + "/getExternalSources";
     private static final String GET_VARIANT_RECORD_URL = REGISTRY_MANAGER_URL + "/getVariantRecords";
 
     private static final String RECORD_ATT = "regRecord";
     private static final String RECORD_ID_ATT = "recordId";
+    private static final String VARIANT_RECORD_ID_ATT = "variantRecordId";
 
     private static final String SEARCH_ATT = "search";
     private static final String FROM_ATT = "from";
@@ -61,6 +67,9 @@ public class RegistryManagerTest extends AbstractRestTest {
 
     @Autowired
     private AbstractPartyRepository abstractPartyRepository;
+
+    @Autowired
+    private ExternalSourceRepository externalSourceRepository;
 
 
     @Test
@@ -104,15 +113,51 @@ public class RegistryManagerTest extends AbstractRestTest {
     }
 
     @Test
+    public void testRestDeleteVariantRecord() {
+        RegRecord record = createRecord();
+        RegVariantRecord variantRecord = createVariantRecord(TEST_NAME, record);
+
+        long countStart = variantRecordRepository.count();
+
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(VARIANT_RECORD_ID_ATT, variantRecord.getId())
+                .get(DELETE_VARIANT_RECORD_URL);
+        logger.info(response.asString());
+        long countEnd = variantRecordRepository.count();
+
+        Assert.assertEquals(200, response.statusCode());
+        Assert.assertEquals(countStart, countEnd + 1);
+    }
+
+    /**
+     * Test načtení typů rejstříkových záznamů - 2ks.
+     */
+    @Test
     public void testRestGetRegisterTypes() {
-//        RegRecord record = createRecord();
-//
-//        List<RegRecord> records = registryManager.findRecord(TEST_NAME, 0, 100, record.getRegisterType().getId());
-//
-//        createVariantRecord("varianta", record);
-//        records = registryManager.findRecord("varianta", 0, 100, record.getRegisterType().getId());
-//
-//        Assert.assertFalse(records.isEmpty());
+        createRegisterType();
+        createRegisterType();
+
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).get(GET_REGISTER_TYPES_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        List<RegRegisterType> registerTypes = Arrays.asList(response.getBody().as(RegRegisterType[].class));
+        Assert.assertTrue("Nenalezeny typy záznamů.", registerTypes.size() == 2);
+    }
+
+    /**
+     * Test načtení texterních zdrojů - 2ks.
+     */
+    @Test
+    public void testRestGetExternalSources() {
+        createExternalSource();
+        createExternalSource();
+
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).get(GET_EXTERNAL_SOURCES_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        List<RegExternalSource> externalSources = Arrays.asList(response.getBody().as(RegExternalSource[].class));
+        Assert.assertTrue("Nenalezeny externí zdroje.", externalSources.size() == 2);
     }
 
     private RegRecord createRecordRest() {
@@ -196,6 +241,10 @@ public class RegistryManagerTest extends AbstractRestTest {
 //        records = registryManager.findRecord("varianta", 0, 100, record.getRegisterType().getId());
     }
 
+    /**
+     * Vytvoření jednoho typu rejstříku.
+     * @return  vytvořený objekt, zapsaný do db
+     */
     protected RegRegisterType createRegisterType() {
         RegRegisterType regRegisterType = new RegRegisterType();
         regRegisterType.setCode(TEST_CODE);
@@ -204,6 +253,22 @@ public class RegistryManagerTest extends AbstractRestTest {
         return regRegisterType;
     }
 
+    /**
+     * Vytvoření jednoho externího zdroje.
+     * @return  vytvořený objekt, zapsaný do db
+     */
+    protected RegExternalSource createExternalSource() {
+        RegExternalSource externalSource = new RegExternalSource();
+        externalSource.setCode(TEST_CODE);
+        externalSource.setName(TEST_NAME);
+        externalSourceRepository.save(externalSource);
+        return externalSource;
+    }
+
+    /**
+     * Vytvoření jednoho záznamu rejstříku defaultního typu.
+     * @return  vytvořený objekt, zapsaný do db
+     */
     protected RegRecord createRecord() {
         RegRecord regRecord = new RegRecord();
         regRecord.setRecord(TEST_NAME);

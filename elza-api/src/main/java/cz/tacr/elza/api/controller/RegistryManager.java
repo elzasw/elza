@@ -29,6 +29,13 @@ public interface RegistryManager<RR extends RegRecord> {
     void deleteRecord(Integer recordId);
 
     /**
+     * Smaže variantní záznam.
+     *
+     * @param variantRecordId       id variantního záznamu
+     */
+    void deleteVariantRecord(Integer variantRecordId);
+
+    /**
      * @return  vrátí seznam typů registrů
      */
     List<? extends RegRegisterType> getRegisterTypes();

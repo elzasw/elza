@@ -1,6 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import cz.req.ax.IdObject;
@@ -37,7 +36,6 @@ public class RegVariantRecord implements IdObject<Integer>, cz.tacr.elza.api.Reg
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRecord.class)
     @JoinColumn(name = "recordId", nullable = false)
-    @JsonBackReference(value = "regRecordPar")
     private RegRecord regRecord;
 
 //    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRecord.class)
