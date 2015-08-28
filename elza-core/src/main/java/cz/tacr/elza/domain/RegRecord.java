@@ -45,7 +45,6 @@ public class RegRecord implements IdObject<Integer>, cz.tacr.elza.api.RegRecord<
     @JoinColumn(name = "externalSourceId")
     private RegExternalSource externalSource;
 
-//    @JsonIgnore
     @OneToMany(mappedBy = "regRecord")
     private List<RegVariantRecord> variantRecordList = new ArrayList<>(0);
 
@@ -152,10 +151,12 @@ public class RegRecord implements IdObject<Integer>, cz.tacr.elza.api.RegRecord<
         this.external_id = external_id;
     }
 
+    @Override
     public void setVariantRecordList(final List<RegVariantRecord> variantRecordList) {
         this.variantRecordList = variantRecordList;
     }
 
+    @Override
     public List<RegVariantRecord> getVariantRecordList() {
         return variantRecordList;
     }

@@ -119,11 +119,7 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
             record.getVariantRecordList().forEach((variantRecord) -> {
                 variantRecord.setRegRecord(null);
             });
-//            RegRecordExt regRecordExt = new RegRecordExt();
-//            BeanUtils.copyProperties(record, regRecordExt);
-
         });
-
 
         return regRecords;
     }

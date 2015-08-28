@@ -97,6 +97,9 @@ public class RegistryManagerTest extends AbstractRestTest {
 //        return;
 //    }
 
+    /**
+     * Test smazání záznamu v rejstříku včetně návazných entit.
+     */
     @Test
     public void testRestDeleteRecord() {
         RegRecord record = createRecord();
@@ -112,6 +115,9 @@ public class RegistryManagerTest extends AbstractRestTest {
         Assert.assertEquals(countStart, countEnd + 1);
     }
 
+    /**
+     * Test smazání variantních záznamů v rejstříku.
+     */
     @Test
     public void testRestDeleteVariantRecord() {
         RegRecord record = createRecord();
@@ -160,6 +166,44 @@ public class RegistryManagerTest extends AbstractRestTest {
         Assert.assertTrue("Nenalezeny externí zdroje.", externalSources.size() == 2);
     }
 
+    /**
+     * Test vyhledání záznamů v rejstříku dle hledacího řetězce - prohldávání i dle variantních záznamů.
+     */
+    @Test
+    public void testRestFindRecords() {
+        RegRecord record = createRecord();
+        createVariantRecord("varianta", record);
+
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
+                .parameter(SEARCH_ATT, TEST_NAME)
+                .parameter(FROM_ATT, 0)
+                .parameter(COUNT_ATT, 1)
+                .parameter(REGISTER_TYPE_ID_ATT, record.getRegisterType().getId())
+                .get(FIND_RECORD_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        List<RegRecord> records = Arrays.asList(response.getBody().as(RegRecord[].class));
+        Assert.assertTrue("Nenalezena polozka: " + TEST_NAME, records.size() == 1);
+        Assert.assertTrue("Nenalezena variantní polozka: " + TEST_NAME, records.get(0).getVariantRecordList().size() == 1);
+
+        createVariantRecord("varianta", record);
+
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
+                .parameter(SEARCH_ATT, "varianta")
+                .parameter(FROM_ATT, 0)
+                .parameter(COUNT_ATT, 1)
+                .parameter(REGISTER_TYPE_ID_ATT, record.getRegisterType().getId())
+                .get(FIND_RECORD_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        records = Arrays.asList(response.getBody().as(RegRecord[].class));
+        Assert.assertTrue("Nenalezena polozka: " + "varianta", records.size() == 1);
+        Assert.assertTrue("Nenalezena variantní polozka: " + TEST_NAME, records.get(0).getVariantRecordList().size() == 2);
+    }
+
+    //TODO kuzel zkultivovat
     private RegRecord createRecordRest() {
         RegRecord regRecord = new RegRecord();
         regRecord.setRecord(TEST_NAME);
@@ -195,50 +239,6 @@ public class RegistryManagerTest extends AbstractRestTest {
         RegRecord record = requestEntity.getBody();
 
         return record;
-    }
-
-    @Test
-    public void testRestFindRecords() {
-        RegRecord record = createRecord();
-        createVariantRecord("varianta", record);
-
-        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
-                .parameter(SEARCH_ATT, TEST_NAME)
-                .parameter(FROM_ATT, 0)
-                .parameter(COUNT_ATT, 1)
-                .parameter(REGISTER_TYPE_ID_ATT, record.getRegisterType().getId())
-                .get(FIND_RECORD_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
-        List<RegRecord> records = Arrays.asList(response.getBody().as(RegRecord[].class));
-        Assert.assertTrue("Nenalezena polozka: " + TEST_NAME, records.size() == 1);
-
-        createVariantRecord("varianta", record);
-
-        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
-                .parameter(SEARCH_ATT, "varianta")
-                .parameter(FROM_ATT, 0)
-                .parameter(COUNT_ATT, 1)
-                .parameter(REGISTER_TYPE_ID_ATT, record.getRegisterType().getId())
-                .get(FIND_RECORD_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
-        records = Arrays.asList(response.getBody().as(RegRecord[].class));
-        Assert.assertTrue("Nenalezena polozka: " + "varianta", records.size() == 1);
-
-        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).get(GET_VARIANT_RECORD_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
-        // ONDRO TADY
-        List<RegVariantRecord> variantRecords = Arrays.asList(response.getBody().as(RegVariantRecord[].class));
-
-
-//        List<RegRecord> records = registryManager.findRecord(TEST_NAME, 0, 100, record.getRegisterType().getId());
-
-//        records = registryManager.findRecord("varianta", 0, 100, record.getRegisterType().getId());
     }
 
     /**
