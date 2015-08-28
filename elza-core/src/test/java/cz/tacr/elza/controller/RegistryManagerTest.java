@@ -39,6 +39,7 @@ public class RegistryManagerTest extends AbstractRestTest {
     private static final String DELETE_RECORD_URL = REGISTRY_MANAGER_URL + "/deleteRecord";
     private static final String DELETE_VARIANT_RECORD_URL = REGISTRY_MANAGER_URL + "/deleteVariantRecord";
     private static final String FIND_RECORD_URL = REGISTRY_MANAGER_URL + "/findRecord";
+    private static final String FIND_RECORD_COUNT_URL = REGISTRY_MANAGER_URL + "/findRecordCount";
     private static final String GET_REGISTER_TYPES_URL = REGISTRY_MANAGER_URL + "/getRegisterTypes";
     private static final String GET_EXTERNAL_SOURCES_URL = REGISTRY_MANAGER_URL + "/getExternalSources";
     private static final String GET_VARIANT_RECORD_URL = REGISTRY_MANAGER_URL + "/getVariantRecords";
@@ -201,6 +202,39 @@ public class RegistryManagerTest extends AbstractRestTest {
         records = Arrays.asList(response.getBody().as(RegRecord[].class));
         Assert.assertTrue("Nenalezena polozka: " + "varianta", records.size() == 1);
         Assert.assertTrue("Nenalezena variantní polozka: " + TEST_NAME, records.get(0).getVariantRecordList().size() == 2);
+    }
+
+    /**
+     * Vyhledání záznamů - varianta pro počet.
+     * Jeden záznam - výstup jeden dle name.
+     * Dva záznamy - výstup jeden dle "varianta".
+     */
+    @Test
+    public void testRestFindRecordsCount() {
+        RegRecord record = createRecord();
+        createVariantRecord("varianta", record);
+
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
+                .parameter(SEARCH_ATT, TEST_NAME)
+                .parameter(REGISTER_TYPE_ID_ATT, record.getRegisterType().getId())
+                .get(FIND_RECORD_COUNT_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        long recordsCount = response.getBody().as(long.class);
+        Assert.assertTrue("Nenalezena polozka: " + TEST_NAME, recordsCount == 1);
+
+        createRecord();
+
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
+                .parameter(SEARCH_ATT, "varianta")
+                .parameter(REGISTER_TYPE_ID_ATT, record.getRegisterType().getId())
+                .get(FIND_RECORD_COUNT_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        recordsCount = response.getBody().as(long.class);
+        Assert.assertTrue("Nenalezena polozka: varianta", recordsCount == 1);
     }
 
     //TODO kuzel zkultivovat

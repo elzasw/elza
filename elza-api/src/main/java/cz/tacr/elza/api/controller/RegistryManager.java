@@ -57,5 +57,14 @@ public interface RegistryManager<RR extends RegRecord> {
      */
     List<? extends RegRecord> findRecord(String search, Integer from, Integer count, Integer registerTypeId);
 
+    /**
+     * Celkový počet záznamů v DB pro funkci {@link #findRecord(String, Integer, Integer, Integer)}
+     *
+     * @param search            hledaný řetězec, může být null
+     * @param registerTypeId    typ záznamu
+     * @return                  celkový počet záznamů, který je v db za dané parametry
+     */
+    long findRecordCount(String search, Integer registerTypeId);
+
     List<? extends RegVariantRecord> getVariantRecords();
 }

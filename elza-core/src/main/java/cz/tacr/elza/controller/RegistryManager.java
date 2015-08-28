@@ -124,6 +124,14 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
         return regRecords;
     }
 
+    @Override
+    @RequestMapping(value = "/findRecordCount", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public long findRecordCount(@RequestParam @Nullable final String search,
+                                           @RequestParam final Integer registerTypeId) {
+
+        return regRecordRepository.findRegRecordByTextAndTypeCount(search, registerTypeId);
+    }
+
 //    @Override
 //    @RequestMapping(value = "/getRecord", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE,
 //            params = {"recordId"})
