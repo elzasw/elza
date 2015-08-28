@@ -2,10 +2,12 @@ package cz.tacr.elza.api.controller;
 
 import java.util.List;
 
+import cz.tacr.elza.api.ArrDescItemExt;
 import cz.tacr.elza.api.ArrFaLevel;
 import cz.tacr.elza.api.ArrFaLevelExt;
 import cz.tacr.elza.api.ArrFaVersion;
 import cz.tacr.elza.api.ArrFindingAid;
+import cz.tacr.elza.api.vo.ArrDescItemSavePack;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 
 
@@ -15,7 +17,7 @@ import cz.tacr.elza.api.exception.ConcurrentUpdateException;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 12. 8. 2015
  */
-public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVersion> {
+public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVersion, DIE extends ArrDescItemExt, DISP extends ArrDescItemSavePack> {
     public static final String FORMAT_ATTRIBUTE_FULL = "FULL";
     public static final String FORMAT_ATTRIBUTE_SHORT = "SHORT";
 
@@ -192,4 +194,41 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
      * @return uzel s daným identifikátorem
      */
     ArrFaLevelExt getLevel(Integer nodeId, Integer versionId, Integer[] descItemTypeIds);
+
+    /**
+     * Přidá atribut archivního popisu včetně hodnoty k existující jednotce archivního popisu.
+     *
+     * @param descItemExt       atribut archivního popisu k vytvoření
+     * @param faVersionId       id verze
+     * @return                  vytvořený atribut archivního popisu
+     */
+    DIE createDescriptionItem(DIE descItemExt, Integer faVersionId);
+
+    /**
+     * Upraví hodnotu existujícího atributu archivního popisu.
+     *
+     * @param descItemExt       atribut archivního popisu k upravení
+     * @param faVersionId       id verze
+     * @param createNewVersion  zda-li se má vytvářet nová verze
+     * @return                  upravený atribut archivního popisu
+     */
+    DIE updateDescriptionItem(DIE descItemExt, Integer faVersionId, Boolean createNewVersion);
+
+    /**
+     * Vymaže atribut archivního popisu.
+     *
+     * @param descItemObjectId  id atributu archivního popisu ke smazání
+     * @return                  upravený(smazaný) atribut archivního popisu
+     */
+    DIE deleteDescriptionItem(Integer descItemObjectId);
+
+
+    /**
+     * Hromadně upraví archivní popis, resp. uloží hodnoty předaných atributů.
+     *
+     * @param descItemSavePack  object nesoucí předávané atributy archivního popisu k vytvoření/úpravě/smazání
+     * @return                  upravené atributy archivního popisu
+     */
+    List<DIE> saveDescriptionItems(DISP descItemSavePack);
+
 }
