@@ -29,6 +29,13 @@ public interface RegistryManager<RR extends RegRecord> {
     void deleteRecord(Integer recordId);
 
     /**
+     * Smaže variantní záznam.
+     *
+     * @param variantRecordId       id variantního záznamu
+     */
+    void deleteVariantRecord(Integer variantRecordId);
+
+    /**
      * @return  vrátí seznam typů registrů
      */
     List<? extends RegRegisterType> getRegisterTypes();
@@ -49,6 +56,15 @@ public interface RegistryManager<RR extends RegRecord> {
      * @return                  vybrané záznamy dle popisu seřazené za record, nebo prázdná množina
      */
     List<? extends RegRecord> findRecord(String search, Integer from, Integer count, Integer registerTypeId);
+
+    /**
+     * Celkový počet záznamů v DB pro funkci {@link #findRecord(String, Integer, Integer, Integer)}
+     *
+     * @param search            hledaný řetězec, může být null
+     * @param registerTypeId    typ záznamu
+     * @return                  celkový počet záznamů, který je v db za dané parametry
+     */
+    long findRecordCount(String search, Integer registerTypeId);
 
     List<? extends RegVariantRecord> getVariantRecords();
 }

@@ -45,7 +45,6 @@ public class RegRecord implements IdObject<Integer>, cz.tacr.elza.api.RegRecord<
     @JoinColumn(name = "externalSourceId")
     private RegExternalSource externalSource;
 
-//    @JsonManagedReference(value = "regRecordPar")
     @OneToMany(mappedBy = "regRecord")
     private List<RegVariantRecord> variantRecordList = new ArrayList<>(0);
 
