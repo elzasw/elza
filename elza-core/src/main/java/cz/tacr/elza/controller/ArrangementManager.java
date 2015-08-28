@@ -834,6 +834,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         // validace
 
+        if (deleteDescItems.size() + updateDescItems.size() + createDescItems.size() == 0) {
+            throw new IllegalArgumentException("Žádné položky k vytvoření/smazání/změně");
+        }
+
         if ((deleteDescItems.size() > 0 || createDescItems.size() > 0) && createNewVersion == false) {
             throw new IllegalArgumentException("Při mazání/vytváření hodnoty atributu musí být nastavená hodnota o verzování na true");
         }
@@ -856,6 +860,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
             // úpravy s verzováním
             for (ArrDescItemExt descItem : updateDescItems) {
+                refreshDescItem(descItem); // TODO: slapa -> vyřešit problém s pozicemi
                 descItemRet.add(updateDescriptionItemRaw(descItem, versionId, true, arrFaChange));
             }
 
@@ -872,6 +877,15 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
 
         return descItemRet;
+    }
+
+    private void refreshDescItem(ArrDescItemExt descItem) {
+        List<ArrDescItem> descItems = descItemRepository.findByDescItemObjectIdAndDeleteChangeIsNull(descItem.getDescItemObjectId());
+        // musí být právě jeden
+        if (descItems.size() != 1) {
+            throw new IllegalArgumentException("Neplatný počet záznamů (" + descItems.size() + ")");
+        }
+        BeanUtils.copyProperties(descItems.get(0), descItem);
     }
 
     /**
@@ -940,8 +954,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         saveNewDataValue(rulDescItemType, data, descItem);
 
-        BeanUtils.copyProperties(descItem, descItemExt);
-        return descItemExt;
+        ArrDescItemExt descItemRet = new ArrDescItemExt();
+        BeanUtils.copyProperties(descItem, descItemRet);
+        descItemRet.setData(descItemExt.getData());
+        return descItemRet;
     }
 
     /**
@@ -961,7 +977,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             throw new IllegalArgumentException("Pokud vytvářím novou verzi, musí být předaná reference změny. Pokud verzi nevytvářím, musí být reference změny null.");
         }
 
-        ArrDescItem descItem = descItemRepository.findOne(descItemExt.getId());
+        List<ArrDescItem> descItems = descItemRepository.findByDescItemObjectIdAndDeleteChangeIsNull(descItemExt.getDescItemObjectId());
+        // musí být právě jeden
+        if (descItems.size() != 1) {
+            throw new IllegalArgumentException("Neplatný počet záznamů (" + descItems.size() + ")");
+        }
+        ArrDescItem descItem = descItems.get(0);
 
         Assert.notNull(descItem);
 

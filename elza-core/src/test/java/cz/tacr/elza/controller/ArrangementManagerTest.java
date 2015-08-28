@@ -3,6 +3,7 @@ package cz.tacr.elza.controller;
 import static com.jayway.restassured.RestAssured.given;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -37,6 +38,7 @@ import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
@@ -1017,6 +1019,109 @@ public class ArrangementManagerTest extends AbstractRestTest {
         checkChangePositionDescItem(descItem2, 2, true);
         checkChangePositionDescItem(descItem3, 3, true);
         checkChangePositionDescItem(descItem4, 4, false);
+
+    }
+
+    @Test
+    public void testRestSaveDescriptionItems() {
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
+
+        ArrFaVersion version = createFindingAidVersion(findingAid, null, false);
+        ArrFaLevel parent = createLevel(1, null, version.getCreateChange());
+        version.setRootNode(parent);
+        versionRepository.save(version);
+        LocalDateTime startTime = version.getCreateChange().getChangeDate();
+
+        ArrFaChange createChange = createFaChange(startTime.minusSeconds(1));
+        ArrFaLevel faLevel = createLevel(2, parent, createChange);
+        levelRepository.save(faLevel);
+
+        Integer nodeId = faLevel.getNodeId();
+
+        RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
+        Assert.assertNotNull("Neexistuje záznam pro datový typ INTEGER", dataType);
+
+        // vytvoření závislých dat
+
+        RulDescItemType descItemType = createDescItemType(dataType, true, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
+        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1);
+        createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null);
+        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 10);
+
+        // přidání hodnot attributů k uzlu
+
+        ArrDescItemExt descItem1 = new ArrDescItemExt();
+        descItem1.setDescItemType(descItemType);
+        descItem1.setDescItemSpec(descItemSpec);
+        descItem1.setData("1");
+        descItem1.setNodeId(nodeId);
+
+        ArrDescItemExt descItem1Save = arrangementManager.createDescriptionItem(descItem1, version.getFaVersionId());
+
+        ArrDescItemExt descItem2 = new ArrDescItemExt();
+        descItem2.setDescItemType(descItemType);
+        descItem2.setDescItemSpec(descItemSpec);
+        descItem2.setData("2");
+        descItem2.setNodeId(nodeId);
+
+        ArrDescItemExt descItem2Save = arrangementManager.createDescriptionItem(descItem2, version.getFaVersionId());
+
+        ArrDescItemExt descItem3 = new ArrDescItemExt();
+        descItem3.setDescItemType(descItemType);
+        descItem3.setDescItemSpec(descItemSpec);
+        descItem3.setData("3");
+        descItem3.setNodeId(nodeId);
+
+        ArrDescItemExt descItem3Save = arrangementManager.createDescriptionItem(descItem3, version.getFaVersionId());
+
+        ArrDescItemExt descItem4 = new ArrDescItemExt();
+        descItem4.setDescItemType(descItemType);
+        descItem4.setDescItemSpec(descItemSpec);
+        descItem4.setData("4");
+        descItem4.setNodeId(nodeId);
+
+        ArrDescItemExt descItem4Save = arrangementManager.createDescriptionItem(descItem4, version.getFaVersionId());
+
+        // vytvoření změn k odeslání
+
+        ArrDescItemSavePack descItemSavePack = new ArrDescItemSavePack();
+
+        List<ArrDescItemExt> descItems = new ArrayList<>();
+        List<ArrDescItemExt> deleteDescItems = new ArrayList<>();
+
+        deleteDescItems.add(descItem1Save);
+
+        descItem2Save.setPosition(1);
+        descItems.add(descItem2Save);
+
+        descItem3Save.setPosition(2);
+        descItems.add(descItem3Save);
+
+        ArrDescItemExt descItemNew1 = new ArrDescItemExt();
+        descItemNew1.setDescItemType(descItemType);
+        descItemNew1.setDescItemSpec(descItemSpec);
+        descItemNew1.setData("11");
+        descItemNew1.setNodeId(nodeId);
+        descItemNew1.setPosition(3);
+        descItems.add(descItemNew1);
+
+        descItem4Save.setPosition(4);
+        descItems.add(descItem4Save);
+
+        ArrDescItemExt descItemNew2 = new ArrDescItemExt();
+        descItemNew2.setDescItemType(descItemType);
+        descItemNew2.setDescItemSpec(descItemSpec);
+        descItemNew2.setData("12");
+        descItemNew2.setNodeId(nodeId);
+        descItemNew2.setPosition(5);
+        descItems.add(descItemNew2);
+
+        descItemSavePack.setCreateNewVersion(true);
+        descItemSavePack.setFaVersionId(version.getFaVersionId());
+        descItemSavePack.setDescItems(descItems);
+        descItemSavePack.setDeleteDescItems(deleteDescItems);
+
+        List<ArrDescItemExt> descItemListSave = arrangementManager.saveDescriptionItems(descItemSavePack);
 
     }
 
