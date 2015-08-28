@@ -1056,8 +1056,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             descItemRepository.save(descItem);
         }
 
-        BeanUtils.copyProperties(descItem, descItemExt);
-        return descItemExt;
+        ArrDescItemExt descItemRet = new ArrDescItemExt();
+        BeanUtils.copyProperties(descItem, descItemRet);
+        descItemRet.setData(descItemExt.getData());
+        return descItemRet;
     }
 
     /**
