@@ -108,7 +108,7 @@ public class LevelInlineDetail extends CssLayout implements Components {
         });
         BeanItemContainer<ArrDescItemExt> container = new BeanItemContainer<>(ArrDescItemExt.class);
         container.addAll(descItemList);
-        table.addStyleName("table");
+        table.addStyleName("attribut-table");
         table.setContainerDataSource(container);
         table.setVisibleColumns("descItemType", "data");
         detailContent.addComponent(table);
