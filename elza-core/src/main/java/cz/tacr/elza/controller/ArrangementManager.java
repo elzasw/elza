@@ -42,6 +42,7 @@ import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataDataceRepository;
@@ -66,7 +67,7 @@ import cz.tacr.elza.repository.VersionRepository;
  */
 @RestController
 @RequestMapping("/api/arrangementManager")
-public class ArrangementManager implements cz.tacr.elza.api.controller.ArrangementManager {
+public class ArrangementManager implements cz.tacr.elza.api.controller.ArrangementManager<ArrDescItemExt, ArrDescItemSavePack> {
 
     @Autowired
     private FindingAidRepository findingAidRepository;
@@ -743,6 +744,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
     }
 
+    @Override
     @RequestMapping(value = "/createDescriptionItem/{faVersionId}", method = RequestMethod.POST)
     @Transactional
     public ArrDescItemExt createDescriptionItem(@RequestBody ArrDescItemExt descItemExt,
@@ -808,110 +810,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return descItemExt;
     }
 
-    private void updatePositionsBetween(Integer position, Integer position2, Integer nodeId, ArrFaChange arrFaChange, ArrDescItem descItem) {
-        List<ArrDescItem> descItemListForUpdate = descItemRepository.findByNodeIdAndDescItemTypeIdAndDeleteChangeIsNullBetweenPositions(position, position2, nodeId, descItem.getDescItemType().getDescItemTypeId());
-        updatePositionsRaw(arrFaChange, descItemListForUpdate, -1);
-    }
-
-    private void updatePositionsAfter(Integer position, Integer nodeId, ArrFaChange arrFaChange, ArrDescItem descItem) {
-        List<ArrDescItem> descItemListForUpdate = descItemRepository.findByNodeIdAndDescItemTypeIdAndDeleteChangeIsNullAfterPosistion(position, nodeId, descItem.getDescItemType().getDescItemTypeId());
-        updatePositionsRaw(arrFaChange, descItemListForUpdate, 1);
-    }
-
-    private void updatePositionsBefore(Integer position, Integer nodeId, ArrFaChange arrFaChange, ArrDescItem descItem) {
-        List<ArrDescItem> descItemListForUpdate = descItemRepository.findByNodeIdAndDescItemTypeIdAndDeleteChangeIsNullBeforePosistion(position, nodeId, descItem.getDescItemType().getDescItemTypeId());
-        updatePositionsRaw(arrFaChange, descItemListForUpdate, 1);
-    }
-
-    /**
-     * Upraví pozici s kopií dat u všech položek ze seznamu
-     * @param arrFaChange   Změna
-     * @param descItemListForUpdate Seznam upravovaných položek
-     * @param diff  Číselná změna (posun)
-     */
-    private void updatePositionsRaw(ArrFaChange arrFaChange, List<ArrDescItem> descItemListForUpdate, int diff) {
-        for(ArrDescItem descItemUpdate : descItemListForUpdate) {
-            descItemUpdate.setDeleteChange(arrFaChange);
-
-            ArrDescItem descItemNew = new ArrDescItem();
-            descItemNew.setCreateChange(arrFaChange);
-            descItemNew.setDeleteChange(null);
-            descItemNew.setDescItemObjectId(descItemUpdate.getDescItemObjectId());
-            descItemNew.setDescItemType(descItemUpdate.getDescItemType());
-            descItemNew.setDescItemSpec(descItemUpdate.getDescItemSpec());
-            descItemNew.setNodeId(descItemUpdate.getNodeId());
-            descItemNew.setPosition(descItemUpdate.getPosition() + diff);
-
-            descItemRepository.save(descItemUpdate);
-            descItemRepository.save(descItemNew);
-
-            copyDataValue(descItemUpdate, descItemNew);
-        }
-    }
-
-    /**
-     * Vytvoří kopie hodnot pro novou verzi hodnoty atributu
-     * @param descItemUpdate    Původní hodnota attributu
-     * @param descItemNew       Nová hodnota attributu
-     */
-    private void copyDataValue(ArrDescItem descItemUpdate, ArrDescItem descItemNew) {
-        List<ArrData> arrDataList = arrDataRepository.findByDescItem(descItemUpdate);
-        if (arrDataList.size() != 1) {
-            throw new IllegalStateException("Neplatný počet záznamů");
-        }
-
-        ArrData arrData = arrDataList.get(0);
-
-        switch (arrData.getDataType().getCode()) {
-            case "INT":
-                ArrDataInteger valueInt = (ArrDataInteger) arrData;
-                ArrDataInteger valueIntNew = new ArrDataInteger();
-                valueIntNew.setDataType(arrData.getDataType());
-                valueIntNew.setValue(valueInt.getValue());
-                valueIntNew.setDescItem(descItemNew);
-                dataIntegerRepository.save(valueIntNew);
-                break;
-            case "STRING":
-                ArrDataString valueString = (ArrDataString) arrData;
-                ArrDataString valueStringNew = new ArrDataString();
-                valueStringNew.setDataType(arrData.getDataType());
-                valueStringNew.setValue(valueString.getValue());
-                valueStringNew.setDescItem(descItemNew);
-                dataStringRepository.save(valueStringNew);
-                break;
-            case "TEXT":
-                ArrDataText valueText = (ArrDataText) arrData;
-                ArrDataText valueTextNew = new ArrDataText();
-                valueTextNew.setDataType(arrData.getDataType());
-                valueTextNew.setValue(valueText.getValue());
-                valueTextNew.setDescItem(descItemNew);
-                dataTextRepository.save(valueTextNew);
-                break;
-
-            case "DATACE":
-                ArrDataDatace valueDatace = (ArrDataDatace) arrData;
-                ArrDataDatace valueDataceNew = new ArrDataDatace();
-                valueDataceNew.setDataType(arrData.getDataType());
-                valueDataceNew.setValue(valueDatace.getValue());
-                valueDataceNew.setDescItem(descItemNew);
-                dataDataceRepository.save(valueDataceNew);
-                break;
-
-            case "REF":
-                ArrDataReference valueReference = (ArrDataReference) arrData;
-                ArrDataReference valueReferenceNew = new ArrDataReference();
-                valueReferenceNew.setDataType(arrData.getDataType());
-                valueReferenceNew.setValue(valueReference.getValue());
-                valueReferenceNew.setDescItem(descItemNew);
-                dataReferenceRepository.save(valueReferenceNew);
-                break;
-
-            default:
-                throw new IllegalStateException("Datový typ hodnoty není implementován");
-        }
-
-    }
-
+    @Override
     @RequestMapping(value = "/updateDescriptionItem/{faVersionId},{createNewVersion}", method = RequestMethod.POST)
     @Transactional
     public ArrDescItemExt updateDescriptionItem(@RequestBody ArrDescItemExt descItemExt,
@@ -1020,6 +919,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return descItemExt;
     }
 
+    @Override
     @RequestMapping(value = "/deleteDescriptionItem/{descItemObjectId}", method = RequestMethod.DELETE)
     @Transactional
     public ArrDescItemExt deleteDescriptionItem(@PathVariable(value = "descItemObjectId") Integer descItemObjectId) {
@@ -1042,6 +942,15 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         ArrDescItemExt descItemExt = new ArrDescItemExt();
         BeanUtils.copyProperties(descItem, descItemExt);
         return descItemExt;
+    }
+
+    @Override
+    @RequestMapping(value = "/saveDescriptionItems", method = RequestMethod.POST)
+    @Transactional
+    public List<ArrDescItemExt> saveDescriptionItems(@RequestBody ArrDescItemSavePack descItemSavePack) {
+        Assert.notNull(descItemSavePack);
+        // TODO: dopsat implementaci
+        return null;
     }
 
     /**
@@ -1300,6 +1209,111 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             default:
                 throw new IllegalStateException("Datový typ hodnoty není implementován");
         }
+    }
+
+
+    private void updatePositionsBetween(Integer position, Integer position2, Integer nodeId, ArrFaChange arrFaChange, ArrDescItem descItem) {
+        List<ArrDescItem> descItemListForUpdate = descItemRepository.findByNodeIdAndDescItemTypeIdAndDeleteChangeIsNullBetweenPositions(position, position2, nodeId, descItem.getDescItemType().getDescItemTypeId());
+        updatePositionsRaw(arrFaChange, descItemListForUpdate, -1);
+    }
+
+    private void updatePositionsAfter(Integer position, Integer nodeId, ArrFaChange arrFaChange, ArrDescItem descItem) {
+        List<ArrDescItem> descItemListForUpdate = descItemRepository.findByNodeIdAndDescItemTypeIdAndDeleteChangeIsNullAfterPosistion(position, nodeId, descItem.getDescItemType().getDescItemTypeId());
+        updatePositionsRaw(arrFaChange, descItemListForUpdate, 1);
+    }
+
+    private void updatePositionsBefore(Integer position, Integer nodeId, ArrFaChange arrFaChange, ArrDescItem descItem) {
+        List<ArrDescItem> descItemListForUpdate = descItemRepository.findByNodeIdAndDescItemTypeIdAndDeleteChangeIsNullBeforePosistion(position, nodeId, descItem.getDescItemType().getDescItemTypeId());
+        updatePositionsRaw(arrFaChange, descItemListForUpdate, 1);
+    }
+
+    /**
+     * Upraví pozici s kopií dat u všech položek ze seznamu
+     * @param arrFaChange   Změna
+     * @param descItemListForUpdate Seznam upravovaných položek
+     * @param diff  Číselná změna (posun)
+     */
+    private void updatePositionsRaw(ArrFaChange arrFaChange, List<ArrDescItem> descItemListForUpdate, int diff) {
+        for(ArrDescItem descItemUpdate : descItemListForUpdate) {
+            descItemUpdate.setDeleteChange(arrFaChange);
+
+            ArrDescItem descItemNew = new ArrDescItem();
+            descItemNew.setCreateChange(arrFaChange);
+            descItemNew.setDeleteChange(null);
+            descItemNew.setDescItemObjectId(descItemUpdate.getDescItemObjectId());
+            descItemNew.setDescItemType(descItemUpdate.getDescItemType());
+            descItemNew.setDescItemSpec(descItemUpdate.getDescItemSpec());
+            descItemNew.setNodeId(descItemUpdate.getNodeId());
+            descItemNew.setPosition(descItemUpdate.getPosition() + diff);
+
+            descItemRepository.save(descItemUpdate);
+            descItemRepository.save(descItemNew);
+
+            copyDataValue(descItemUpdate, descItemNew);
+        }
+    }
+
+    /**
+     * Vytvoří kopie hodnot pro novou verzi hodnoty atributu
+     * @param descItemUpdate    Původní hodnota attributu
+     * @param descItemNew       Nová hodnota attributu
+     */
+    private void copyDataValue(ArrDescItem descItemUpdate, ArrDescItem descItemNew) {
+        List<ArrData> arrDataList = arrDataRepository.findByDescItem(descItemUpdate);
+        if (arrDataList.size() != 1) {
+            throw new IllegalStateException("Neplatný počet záznamů");
+        }
+
+        ArrData arrData = arrDataList.get(0);
+
+        switch (arrData.getDataType().getCode()) {
+            case "INT":
+                ArrDataInteger valueInt = (ArrDataInteger) arrData;
+                ArrDataInteger valueIntNew = new ArrDataInteger();
+                valueIntNew.setDataType(arrData.getDataType());
+                valueIntNew.setValue(valueInt.getValue());
+                valueIntNew.setDescItem(descItemNew);
+                dataIntegerRepository.save(valueIntNew);
+                break;
+            case "STRING":
+                ArrDataString valueString = (ArrDataString) arrData;
+                ArrDataString valueStringNew = new ArrDataString();
+                valueStringNew.setDataType(arrData.getDataType());
+                valueStringNew.setValue(valueString.getValue());
+                valueStringNew.setDescItem(descItemNew);
+                dataStringRepository.save(valueStringNew);
+                break;
+            case "TEXT":
+                ArrDataText valueText = (ArrDataText) arrData;
+                ArrDataText valueTextNew = new ArrDataText();
+                valueTextNew.setDataType(arrData.getDataType());
+                valueTextNew.setValue(valueText.getValue());
+                valueTextNew.setDescItem(descItemNew);
+                dataTextRepository.save(valueTextNew);
+                break;
+
+            case "DATACE":
+                ArrDataDatace valueDatace = (ArrDataDatace) arrData;
+                ArrDataDatace valueDataceNew = new ArrDataDatace();
+                valueDataceNew.setDataType(arrData.getDataType());
+                valueDataceNew.setValue(valueDatace.getValue());
+                valueDataceNew.setDescItem(descItemNew);
+                dataDataceRepository.save(valueDataceNew);
+                break;
+
+            case "REF":
+                ArrDataReference valueReference = (ArrDataReference) arrData;
+                ArrDataReference valueReferenceNew = new ArrDataReference();
+                valueReferenceNew.setDataType(arrData.getDataType());
+                valueReferenceNew.setValue(valueReference.getValue());
+                valueReferenceNew.setDescItem(descItemNew);
+                dataReferenceRepository.save(valueReferenceNew);
+                break;
+
+            default:
+                throw new IllegalStateException("Datový typ hodnoty není implementován");
+        }
+
     }
 
 }
