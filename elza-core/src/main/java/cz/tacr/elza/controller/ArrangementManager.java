@@ -858,15 +858,14 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 descItemRet.add(deleteDescriptionsItemRaw(descItem.getDescItemObjectId(), arrFaChange));
             }
 
-            // úpravy s verzováním
-            for (ArrDescItemExt descItem : updateDescItems) {
-                refreshDescItem(descItem); // TODO: slapa -> vyřešit problém s pozicemi
-                descItemRet.add(updateDescriptionItemRaw(descItem, versionId, true, arrFaChange));
-            }
-
             // vytvoření
             for (ArrDescItemExt descItem : createDescItems) {
                 descItemRet.add(createDescriptionItemRaw(descItem, versionId, arrFaChange));
+            }
+
+            // úpravy s verzováním
+            for (ArrDescItemExt descItem : updateDescItems) {
+                descItemRet.add(updateDescriptionItemRaw(descItem, versionId, true, arrFaChange));
             }
 
         } else {
@@ -1400,6 +1399,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      * @param descItem      spjatý objekt attributu
      * @param diff          rozdíl pozice
      */
+    @Transactional
     private void updatePositionsAfter(Integer position, Integer nodeId, ArrFaChange arrFaChange, ArrDescItem descItem, int diff) {
         List<ArrDescItem> descItemListForUpdate = descItemRepository
                 .findByNodeIdAndDescItemTypeIdAndDeleteChangeIsNullAfterPosistion(position, nodeId, descItem.getDescItemType().getDescItemTypeId());

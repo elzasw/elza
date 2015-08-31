@@ -1123,6 +1123,25 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         List<ArrDescItemExt> descItemListSave = arrangementManager.saveDescriptionItems(descItemSavePack);
 
+        Assert.assertNotNull(descItemListSave);
+        Assert.assertEquals(6, descItemListSave.size());
+
+        for (ArrDescItemExt descItem : descItemListSave) {
+            if (descItem.getDescItemObjectId().equals(descItem1Save.getDescItemObjectId())) {
+                Assert.assertNotNull(descItem.getDeleteChange());
+            } else if (descItem.getDescItemObjectId().equals(descItem2Save.getDescItemObjectId())) {
+                Assert.assertEquals(descItem2Save.getPosition(), descItem.getPosition());
+            } else if (descItem.getDescItemObjectId().equals(descItem3Save.getDescItemObjectId())) {
+                Assert.assertEquals(descItem3Save.getPosition(), descItem.getPosition());
+            } else if (descItem.getDescItemObjectId().equals(descItem4Save.getDescItemObjectId())) {
+                Assert.assertEquals(descItem4Save.getPosition(), descItem.getPosition());
+            } else {
+                if (!descItem.getPosition().equals(3) && !descItem.getPosition().equals(5)) {
+                    Assert.fail("Neplatná pozice nově přidaných položek - " + descItem.getPosition());
+                }
+            }
+        }
+
     }
 
     /**
