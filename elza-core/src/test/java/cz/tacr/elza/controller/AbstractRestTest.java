@@ -10,6 +10,10 @@ import cz.tacr.elza.domain.ArrFaChange;
 import cz.tacr.elza.domain.ArrFaLevel;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ParAbstractParty;
+import cz.tacr.elza.domain.ParPartySubtype;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulDescItemSpec;
@@ -29,12 +33,14 @@ import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.FaViewRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.PartySubtypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.repository.VersionRepository;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +68,7 @@ public abstract class AbstractRestTest {
     protected static final String ARRANGEMENT_MANAGER_URL = "/api/arrangementManager";
     protected static final String RULE_MANAGER_URL = "/api/ruleSetManager";
     protected static final String REGISTRY_MANAGER_URL = "/api/registryManager";
+    protected static final String PARTY_MANAGER_URL = "/api/partyManager";
 
     protected static final String TEST_CODE = "Tcode";
     protected static final String TEST_NAME = "Test name";
@@ -108,11 +115,13 @@ public abstract class AbstractRestTest {
     @Autowired
     private ExternalSourceRepository externalSourceRepository;
     @Autowired
-    private AbstractPartyRepository abstractPartyRepository;
+    protected AbstractPartyRepository abstractPartyRepository;
     @Autowired
     private VariantRecordRepository variantRecordRepository;
     @Autowired
     private RegRecordRepository recordRepository;
+    @Autowired
+    private PartySubtypeRepository partySubtypeRepository;
 
     @Before
     public void setUp() {
@@ -389,4 +398,35 @@ public abstract class AbstractRestTest {
         return descItem;
     }
 
+    protected RegRecord createRecord(int index) {
+        RegRegisterType registerType = new RegRegisterType();
+        registerType.setCode("RT" + index);
+        registerType.setName("Reg type " + index);
+        registerTypeRepository.save(registerType);
+        RegRecord record = new RegRecord();
+        record.setCharacteristics(" dobrovolný hasičský sbor");
+        record.setLocal(Boolean.TRUE);
+        record.setRegisterType(registerType);
+        record.setRecord("Sbor dobrovolných hasičů Topol");
+        recordRepository.save(record);
+        return record;
+    }
+
+    protected ParPartySubtype findPartySubtype() {
+        return partySubtypeRepository.findOne(1);
+    }
+
+    protected ParAbstractParty createParAbstractParty() {
+        final ParPartySubtype partySubtype = findPartySubtype();
+        final RegRecord record = createRecord(1);
+        return createParAbstractParty(partySubtype, record);
+    }
+
+    protected ParAbstractParty createParAbstractParty(final ParPartySubtype partySubtype, final RegRecord record) {
+        ParAbstractParty party = new ParAbstractParty();
+        party.setPartySubtype(partySubtype);
+        party.setRecord(record);
+        abstractPartyRepository.save(party);
+        return party;
+    }
 }
