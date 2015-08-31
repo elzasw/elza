@@ -3,6 +3,7 @@ package cz.tacr.elza.api.controller;
 import cz.tacr.elza.api.RegExternalSource;
 import cz.tacr.elza.api.RegRecord;
 import cz.tacr.elza.api.RegRegisterType;
+import cz.tacr.elza.api.RegVariantRecord;
 
 import java.util.List;
 
@@ -10,7 +11,7 @@ import java.util.List;
 /**
  * Rozhraní operací pro rejstřík.
  */
-public interface RegistryManager<RR extends RegRecord> {
+public interface RegistryManager<RR extends RegRecord, VR extends RegVariantRecord> {
 
     /**
      * Vytvoření nového záznamu.
@@ -38,6 +39,24 @@ public interface RegistryManager<RR extends RegRecord> {
      * @param recordId  id záznamu rejstříku
      */
     void deleteRecord(Integer recordId);
+
+    /**
+     * Vytvoří nový variantní záznam rejstříku.
+     *
+     * @param variantRecord     vyplněný objekt bez vazeb
+     * @param regRecordId       id nadřazeného záznamu rejstříku
+     * @return                  nově vytvořený objekt
+     */
+    RegVariantRecord createVariantRecord(VR variantRecord, Integer regRecordId);
+
+    /**
+     * Vytvoří nový variantní záznam rejstříku.
+     *
+     * @param variantRecord     vyplněný objekt bez vazeb
+     * @param regRecordId       id nadřazeného záznamu rejstříku
+     * @return                  nově vytvořený objekt
+     */
+    RegVariantRecord updateVariantRecord(VR variantRecord, Integer regRecordId);
 
     /**
      * Smaže variantní záznam.

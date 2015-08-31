@@ -21,6 +21,8 @@ import java.util.List;
 import static com.jayway.restassured.RestAssured.given;
 
 /**
+ * Test pro operace s rejstříkem.
+ *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
 public class RegistryManagerTest extends AbstractRestTest {
@@ -30,9 +32,14 @@ public class RegistryManagerTest extends AbstractRestTest {
     private static final String CREATE_RECORD_URL = REGISTRY_MANAGER_URL + "/createRecord";
     private static final String UPDATE_RECORD_URL = REGISTRY_MANAGER_URL + "/updateRecord";
     private static final String DELETE_RECORD_URL = REGISTRY_MANAGER_URL + "/deleteRecord";
+
+    private static final String CREATE_VARIANT_RECORD_URL = REGISTRY_MANAGER_URL + "/createVariantRecord";
+    private static final String UPDATE_VARIANT_RECORD_URL = REGISTRY_MANAGER_URL + "/updateVariantRecord";
     private static final String DELETE_VARIANT_RECORD_URL = REGISTRY_MANAGER_URL + "/deleteVariantRecord";
+
     private static final String FIND_RECORD_URL = REGISTRY_MANAGER_URL + "/findRecord";
     private static final String FIND_RECORD_COUNT_URL = REGISTRY_MANAGER_URL + "/findRecordCount";
+
     private static final String GET_REGISTER_TYPES_URL = REGISTRY_MANAGER_URL + "/getRegisterTypes";
     private static final String GET_EXTERNAL_SOURCES_URL = REGISTRY_MANAGER_URL + "/getExternalSources";
     private static final String GET_RECORD_URL = REGISTRY_MANAGER_URL + "/getRecord";
@@ -77,7 +84,7 @@ public class RegistryManagerTest extends AbstractRestTest {
      * Update záznamu v rejstříku - jiný popis, jiný typ.
      */
     @Test
-    public void testUpdateRecord() {
+    public void testRestUpdateRecord() {
         RegRecord record = restCreateRecord();
 
         Assert.assertTrue("Původní jméno", record.getRecord().equals(TEST_NAME));
@@ -120,6 +127,46 @@ public class RegistryManagerTest extends AbstractRestTest {
 
         Assert.assertEquals(200, response.statusCode());
         Assert.assertEquals(countStart, countEnd + 1);
+    }
+
+    /**
+     * Vytvoření variantního záznamu rejstříku.
+     */
+    @Test
+    public void testRestCreateVariantRecord() {
+        RegRecord record = restCreateRecord();
+        RegVariantRecord newVariantRecord = restCreateVariantRecord(record);
+
+        // ověření
+        Assert.assertNotNull(newVariantRecord);
+        Assert.assertNotNull(newVariantRecord.getId());
+        Assert.assertNotNull(variantRecordRepository.getOne(newVariantRecord.getId()));
+    }
+
+    /**
+     * Update variantního záznamu v rejstříku - jiný popis, jiný typ.
+     */
+    @Test
+    public void testRestUpdateVariantRecord() {
+        RegRecord record = restCreateRecord();
+
+        RegVariantRecord variantRecord = restCreateVariantRecord(record);
+
+        Assert.assertTrue("Původní jméno", variantRecord.getRecord().equals(TEST_NAME));
+        variantRecord.setRecord(TEST_UPDATE_NAME);
+
+        Response response =
+                given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(variantRecord)
+                        .parameter(RECORD_ID_ATT, record.getId())
+                        .put(UPDATE_VARIANT_RECORD_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        RegVariantRecord updatedVariantRecord = response.getBody().as(RegVariantRecord.class);
+
+        // ověření
+        Assert.assertNotNull(updatedVariantRecord);
+        Assert.assertTrue(updatedVariantRecord.getRecord().equals(TEST_UPDATE_NAME));
     }
 
     /**
@@ -317,6 +364,7 @@ public class RegistryManagerTest extends AbstractRestTest {
 
     /**
      * Vytvoří RESTově záznam rejstříku.
+     *
      * @return  záznam
      */
     private RegRecord restCreateRecord() {
@@ -329,7 +377,8 @@ public class RegistryManagerTest extends AbstractRestTest {
         Integer externalSourceId = null;
 
         Response response =
-                given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(regRecord)
+                given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
+                        .body(regRecord)
                         .parameter(REGISTER_TYPE_ID_ATT, registerType.getId())
                         .parameter(EXTERNAL_SOURCE_ID_ATT, externalSourceId)
                         .put(CREATE_RECORD_URL);
@@ -337,6 +386,27 @@ public class RegistryManagerTest extends AbstractRestTest {
         Assert.assertEquals(200, response.statusCode());
 
         return response.getBody().as(RegRecord.class);
+    }
+
+    /**
+     * Vytvoří RESTově variantní záznam rejstříku.
+     *
+     * @param record   k tomuto záznamu
+     * @return  variantní záznam
+     */
+    private RegVariantRecord restCreateVariantRecord(final RegRecord record) {
+        RegVariantRecord variantRecord = new RegVariantRecord();
+        variantRecord.setRecord(TEST_NAME);
+
+        Response response =
+                given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
+                        .body(variantRecord)
+                        .parameter(RECORD_ID_ATT, record.getId())
+                        .put(CREATE_VARIANT_RECORD_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        return response.getBody().as(RegVariantRecord.class);
     }
 
 }
