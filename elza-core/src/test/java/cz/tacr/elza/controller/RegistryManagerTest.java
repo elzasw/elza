@@ -5,7 +5,6 @@ import cz.tacr.elza.domain.RegExternalSource;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.repository.AbstractPartyRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
@@ -29,6 +28,7 @@ public class RegistryManagerTest extends AbstractRestTest {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private static final String CREATE_RECORD_URL = REGISTRY_MANAGER_URL + "/createRecord";
+    private static final String UPDATE_RECORD_URL = REGISTRY_MANAGER_URL + "/updateRecord";
     private static final String DELETE_RECORD_URL = REGISTRY_MANAGER_URL + "/deleteRecord";
     private static final String DELETE_VARIANT_RECORD_URL = REGISTRY_MANAGER_URL + "/deleteVariantRecord";
     private static final String FIND_RECORD_URL = REGISTRY_MANAGER_URL + "/findRecord";
@@ -48,9 +48,6 @@ public class RegistryManagerTest extends AbstractRestTest {
 
 
     @Autowired
-    private RegistryManager registryManager;
-
-    @Autowired
     private RegisterTypeRepository registerTypeRepository;
 
     @Autowired
@@ -58,9 +55,6 @@ public class RegistryManagerTest extends AbstractRestTest {
 
     @Autowired
     private VariantRecordRepository variantRecordRepository;
-
-    @Autowired
-    private AbstractPartyRepository abstractPartyRepository;
 
     @Autowired
     private ExternalSourceRepository externalSourceRepository;
@@ -71,46 +65,44 @@ public class RegistryManagerTest extends AbstractRestTest {
      */
     @Test
     public void testRestCreateRecord() {
-        RegRecord regRecord = new RegRecord();
-        regRecord.setRecord(TEST_NAME);
-        regRecord.setCharacteristics("CHARACTERISTICS");
-        regRecord.setLocal(false);
+        RegRecord newRecord = restCreateRecord();
 
-        RegRegisterType registerType = createRegisterType();
-        Integer externalSourceId = null;
+        // ověření
+        Assert.assertNotNull(newRecord);
+        Assert.assertNotNull(newRecord.getRecordId());
+        Assert.assertNotNull(recordRepository.getOne(newRecord.getId()));
+    }
+
+    /**
+     * Update záznamu v rejstříku - jiný popis, jiný typ.
+     */
+    @Test
+    public void testUpdateRecord() {
+        RegRecord record = restCreateRecord();
+
+        Assert.assertTrue("Původní jméno", record.getRecord().equals(TEST_NAME));
+        record.setRecord(TEST_UPDATE_NAME);
+
+        RegRegisterType newRegisterType = createRegisterType();
+        record.setRegisterType(null);
+        Integer externalSourceId = record.getExternalSource() != null ? record.getExternalSource().getId() : null;
+        record.setExternalSource(null);
 
         Response response =
-                given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(regRecord)
-                        .parameter(REGISTER_TYPE_ID_ATT, registerType.getId())
+                given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(record)
+                        .parameter(REGISTER_TYPE_ID_ATT, newRegisterType.getId())
                         .parameter(EXTERNAL_SOURCE_ID_ATT, externalSourceId)
-                        .put(CREATE_RECORD_URL);
+                        .put(UPDATE_RECORD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        RegRecord newRecord = response.getBody().as(RegRecord.class);
+        RegRecord updatedRecord = response.getBody().as(RegRecord.class);
 
         // ověření
-        Assert.assertNotNull(recordRepository.getOne(newRecord.getId()));
-        Assert.assertNotNull(newRecord);
-        Assert.assertNotNull(newRecord.getRecordId());
+        Assert.assertNotNull(updatedRecord);
+        Assert.assertTrue(updatedRecord.getRecord().equals(TEST_UPDATE_NAME));
+        Assert.assertTrue(updatedRecord.getRegisterType().getId().equals(newRegisterType.getId()));
     }
-
-//    @Test
-//    @Transactional
-//    public void testUpdateRecord() throws Exception {
-//
-//        RegRecord regRecord2 = new RegRecord();
-//        regRecord2.setRecordId(id);
-//        regRecord2.setRecord("TEST RECORD 2");
-//        regRecord2.setCharacteristics("TEST CHAR 2");
-//        regRecord2.setLocal(true);
-//
-//        List<RegRegisterType> all = registerTypeRepository.findAll();
-//        regRecord2.setRegisterType(all.get(0));
-//
-//        registryManager.updateRecord(regRecord2);
-//        return;
-//    }
 
     /**
      * Test smazání záznamu v rejstříku včetně návazných entit.
@@ -274,7 +266,7 @@ public class RegistryManagerTest extends AbstractRestTest {
      * Vytvoření jednoho typu rejstříku.
      * @return  vytvořený objekt, zapsaný do db
      */
-    protected RegRegisterType createRegisterType() {
+    private RegRegisterType createRegisterType() {
         RegRegisterType regRegisterType = new RegRegisterType();
         regRegisterType.setCode(TEST_CODE);
         regRegisterType.setName(TEST_NAME);
@@ -286,7 +278,7 @@ public class RegistryManagerTest extends AbstractRestTest {
      * Vytvoření jednoho externího zdroje.
      * @return  vytvořený objekt, zapsaný do db
      */
-    protected RegExternalSource createExternalSource() {
+    private RegExternalSource createExternalSource() {
         RegExternalSource externalSource = new RegExternalSource();
         externalSource.setCode(TEST_CODE);
         externalSource.setName(TEST_NAME);
@@ -298,7 +290,7 @@ public class RegistryManagerTest extends AbstractRestTest {
      * Vytvoření jednoho záznamu rejstříku defaultního typu.
      * @return  vytvořený objekt, zapsaný do db
      */
-    protected RegRecord createRecord() {
+    private RegRecord createRecord() {
         RegRecord regRecord = new RegRecord();
         regRecord.setRecord(TEST_NAME);
         regRecord.setCharacteristics("CHARACTERISTICS");
@@ -315,7 +307,7 @@ public class RegistryManagerTest extends AbstractRestTest {
      * @param record    záznam rejstříku ke kterému patří
      * @return          vytvořený objekt
      */
-    protected RegVariantRecord createVariantRecord(final String obsah, final RegRecord record) {
+    private RegVariantRecord createVariantRecord(final String obsah, final RegRecord record) {
         RegVariantRecord regVariantRecord = new RegVariantRecord();
         regVariantRecord.setRecord(obsah);
         regVariantRecord.setRegRecord(record);
@@ -323,10 +315,28 @@ public class RegistryManagerTest extends AbstractRestTest {
         return variantRecordRepository.save(regVariantRecord);
     }
 
-//    protected ParAbstractParty createAbstractParty() {
-//        ParAbstractParty abstractParty = new ParAbstractParty();
-//
-//        return abstractPartyRepository.save(abstractParty);
-//    }
+    /**
+     * Vytvoří RESTově záznam rejstříku.
+     * @return  záznam
+     */
+    private RegRecord restCreateRecord() {
+        RegRecord regRecord = new RegRecord();
+        regRecord.setRecord(TEST_NAME);
+        regRecord.setCharacteristics("CHARACTERISTICS");
+        regRecord.setLocal(false);
+
+        RegRegisterType registerType = createRegisterType();
+        Integer externalSourceId = null;
+
+        Response response =
+                given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(regRecord)
+                        .parameter(REGISTER_TYPE_ID_ATT, registerType.getId())
+                        .parameter(EXTERNAL_SOURCE_ID_ATT, externalSourceId)
+                        .put(CREATE_RECORD_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        return response.getBody().as(RegRecord.class);
+    }
 
 }

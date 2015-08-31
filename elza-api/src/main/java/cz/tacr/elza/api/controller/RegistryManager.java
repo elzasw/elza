@@ -23,6 +23,16 @@ public interface RegistryManager<RR extends RegRecord> {
     RR createRecord(RR regRecord, Integer registerTypeId, Integer externalSourceId);
 
     /**
+     * Update záznamu.
+     *
+     * @param record            naplněný objekt s vlastním ID, bez vazeb
+     * @param registerTypeId    id typu rejstříku
+     * @param externalSourceId  id externího zdroje, může být null
+     * @return                  změněný objekt
+     */
+    RegRecord updateRecord(RR record, Integer registerTypeId, Integer externalSourceId);
+
+    /**
      * Smaže entity které používají daný záznam a pak záznam samotný.
      *
      * @param recordId  id záznamu rejstříku

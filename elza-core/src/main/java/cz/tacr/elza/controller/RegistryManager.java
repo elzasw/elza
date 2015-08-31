@@ -48,10 +48,38 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
 
 
     @RequestMapping(value = "/createRecord", method = RequestMethod.PUT)
+    @Override
     @Transactional
     public @ResponseBody RegRecord createRecord(@RequestBody final RegRecord record,
                                                 @RequestParam final Integer registerTypeId,
                                                 @RequestParam @Nullable final Integer externalSourceId) {
+
+        return saveRecordInternal(record, registerTypeId, externalSourceId);
+    }
+
+    @RequestMapping(value = "/updateRecord", method = RequestMethod.PUT)
+    @Override
+    @Transactional
+    public @ResponseBody RegRecord updateRecord(@RequestBody final RegRecord record,
+                                                @RequestParam final Integer registerTypeId,
+                                                @RequestParam @Nullable final Integer externalSourceId) {
+
+        Assert.notNull(record.getId(), "Očekáváno ID pro update.");
+
+        return saveRecordInternal(record, registerTypeId, externalSourceId);
+    }
+
+    /**
+     * Uložení či update objektu.
+     *
+     * @param record            naplněný objekt, bez vazeb
+     * @param registerTypeId    id typu rejstříku
+     * @param externalSourceId  id externího zdroje, může být null
+     * @return      výslendný objekt
+     */
+    private RegRecord saveRecordInternal(final RegRecord record,
+                                         final Integer registerTypeId,
+                                         @Nullable final Integer externalSourceId) {
 
         Assert.notNull(record);
         Assert.notNull(registerTypeId);
@@ -70,17 +98,6 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
         return regRecordRepository.save(record);
     }
 
-    @RequestMapping(value = "/updateRecord", method = RequestMethod.PUT)
-    @Transactional
-    public RegRecord updateRecord(@RequestBody final RegRecord record) {
-        Assert.notNull(record);
-        Assert.notNull(record.getRegisterType());
-        Assert.notNull(record.getRecord());
-        Assert.notNull(record.getCharacteristics());
-        Assert.notNull(record.getLocal());
-
-        return regRecordRepository.save(record);
-    }
 
     @Override
     @RequestMapping(value = "/deleteRecord", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE,
