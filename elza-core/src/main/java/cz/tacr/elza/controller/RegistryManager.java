@@ -3,7 +3,6 @@ package cz.tacr.elza.controller;
 import cz.tacr.elza.domain.RegExternalSource;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.repository.AbstractPartyRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
@@ -48,17 +47,29 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     private ExternalSourceRepository externalSourceRepository;
 
 
-    @RequestMapping(value = "/createRecord", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+//    @RequestMapping(value = "/createRecord", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
+//            params = {"record", "registerTypeId"}, produces = MediaType.APPLICATION_JSON_VALUE)
+//    @Transactional
+//    public @ResponseBody RegRecord createRecord(@RequestParam(value = "record") final RegRecord record,
+//                                                @RequestParam(value = "registerTypeId") final Integer registerTypeId) {
+    @RequestMapping(value = "/createRecord", method = RequestMethod.POST)
     @Transactional
-    public @ResponseBody RegRecord createRecord(@RequestBody final RegRecord regRecord) {
-        Assert.notNull(regRecord);
-        Assert.notNull(regRecord.getRegisterType());
-        Assert.notNull(regRecord.getRecord());
-        Assert.notNull(regRecord.getCharacteristics());
-        Assert.notNull(regRecord.getLocal());
+    public @ResponseBody RegRecord createRecord(@RequestBody final RegRecord record) {
+        Assert.notNull(record);
+//        Assert.notNull(registerTypeId);
+        Assert.notNull(record.getRecord());
+        Assert.notNull(record.getCharacteristics());
+        Assert.notNull(record.getLocal());
 
-        return regRecordRepository.save(regRecord);
+        RegRegisterType regRegisterType1 = new RegRegisterType();
+        regRegisterType1.setName("N");
+        regRegisterType1.setCode("C");
+        registerTypeRepository.save(regRegisterType1);
+
+//        RegRegisterType regRegisterType = registerTypeRepository.getOne(registerTypeId);
+        record.setRegisterType(regRegisterType1);
+
+        return regRecordRepository.save(record);
     }
 
     @RequestMapping(value = "/updateRecord", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -132,19 +143,14 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
         return regRecordRepository.findRegRecordByTextAndTypeCount(search, registerTypeId);
     }
 
-//    @Override
-//    @RequestMapping(value = "/getRecord", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE,
-//            params = {"recordId"})
-//    @Transactional
-//    public RegRecord getRecord(@RequestParam(value = "recordId") final Integer recordId) {
-//
-//    }
-
     @Override
-    @RequestMapping(value = "/getVariantRecords", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public List<RegVariantRecord> getVariantRecords() {
-        return variantRecordRepository.findAll();
-    }
+    @RequestMapping(value = "/getRecord", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE,
+            params = {"recordId"})
+    @Transactional
+    public RegRecord getRecord(@RequestParam(value = "recordId") final Integer recordId) {
+        Assert.notNull(recordId);
 
+        return regRecordRepository.getOne(recordId);
+    }
 
 }

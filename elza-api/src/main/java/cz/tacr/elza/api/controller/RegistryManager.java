@@ -3,7 +3,6 @@ package cz.tacr.elza.api.controller;
 import cz.tacr.elza.api.RegExternalSource;
 import cz.tacr.elza.api.RegRecord;
 import cz.tacr.elza.api.RegRegisterType;
-import cz.tacr.elza.api.RegVariantRecord;
 
 import java.util.List;
 
@@ -16,7 +15,8 @@ public interface RegistryManager<RR extends RegRecord> {
     /**
      * Vytvoření nového záznamu.
      *
-     * @param regRecord     naplněný objekt
+     * @param regRecord         naplněný objekt, bez vazeb
+     * @param registerTypeId    id typu rejst59ku
      * @return              nově vytvořený objekt
      */
     RR createRecord(RR regRecord);
@@ -66,5 +66,11 @@ public interface RegistryManager<RR extends RegRecord> {
      */
     long findRecordCount(String search, Integer registerTypeId);
 
-    List<? extends RegVariantRecord> getVariantRecords();
+    /**
+     * Vrátí jeden záznam dle id.
+     * @param recordId      id požadovaného záznamu
+     * @return              záznam
+     */
+    RegRecord getRecord(Integer recordId);
+
 }
