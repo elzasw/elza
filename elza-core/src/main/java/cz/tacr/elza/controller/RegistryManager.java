@@ -3,6 +3,7 @@ package cz.tacr.elza.controller;
 import cz.tacr.elza.domain.RegExternalSource;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.repository.AbstractPartyRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
@@ -29,7 +29,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/registryManager")
-public class RegistryManager implements cz.tacr.elza.api.controller.RegistryManager<RegRecord> {
+public class RegistryManager implements cz.tacr.elza.api.controller.RegistryManager<RegRecord, RegVariantRecord> {
 
     @Autowired
     private RegRecordRepository regRecordRepository;
@@ -50,9 +50,9 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     @RequestMapping(value = "/createRecord", method = RequestMethod.PUT)
     @Override
     @Transactional
-    public @ResponseBody RegRecord createRecord(@RequestBody final RegRecord record,
-                                                @RequestParam final Integer registerTypeId,
-                                                @RequestParam @Nullable final Integer externalSourceId) {
+    public RegRecord createRecord(@RequestBody final RegRecord record,
+                                  @RequestParam final Integer registerTypeId,
+                                  @RequestParam @Nullable final Integer externalSourceId) {
 
         return saveRecordInternal(record, registerTypeId, externalSourceId);
     }
@@ -60,44 +60,14 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     @RequestMapping(value = "/updateRecord", method = RequestMethod.PUT)
     @Override
     @Transactional
-    public @ResponseBody RegRecord updateRecord(@RequestBody final RegRecord record,
-                                                @RequestParam final Integer registerTypeId,
-                                                @RequestParam @Nullable final Integer externalSourceId) {
+    public RegRecord updateRecord(@RequestBody final RegRecord record,
+                                  @RequestParam final Integer registerTypeId,
+                                  @RequestParam @Nullable final Integer externalSourceId) {
 
         Assert.notNull(record.getId(), "Očekáváno ID pro update.");
 
         return saveRecordInternal(record, registerTypeId, externalSourceId);
     }
-
-    /**
-     * Uložení či update objektu.
-     *
-     * @param record            naplněný objekt, bez vazeb
-     * @param registerTypeId    id typu rejstříku
-     * @param externalSourceId  id externího zdroje, může být null
-     * @return      výslendný objekt
-     */
-    private RegRecord saveRecordInternal(final RegRecord record,
-                                         final Integer registerTypeId,
-                                         @Nullable final Integer externalSourceId) {
-
-        Assert.notNull(record);
-        Assert.notNull(registerTypeId);
-        Assert.notNull(record.getRecord());
-        Assert.notNull(record.getCharacteristics());
-        Assert.notNull(record.getLocal());
-
-        RegRegisterType regRegisterType = registerTypeRepository.getOne(registerTypeId);
-        record.setRegisterType(regRegisterType);
-
-        if (externalSourceId != null) {
-            RegExternalSource externalSource = externalSourceRepository.getOne(externalSourceId);
-            record.setExternalSource(externalSource);
-        }
-
-        return regRecordRepository.save(record);
-    }
-
 
     @Override
     @RequestMapping(value = "/deleteRecord", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -110,6 +80,30 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
         abstractPartyRepository.delete(abstractPartyRepository.findParAbstractPartyByRecordId(recordId));
 
         regRecordRepository.delete(recordId);
+    }
+
+    @RequestMapping(value = "/createVariantRecord", method = RequestMethod.PUT)
+    @Override
+    public RegVariantRecord createVariantRecord(@RequestBody final RegVariantRecord variantRecord,
+                                                @RequestParam final Integer recordId) {
+
+        RegVariantRecord newVariantRecord = saveVariantRecordInternal(variantRecord, recordId);
+        newVariantRecord.setRegRecord(null);
+
+        return newVariantRecord;
+    }
+
+    @RequestMapping(value = "/updateVariantRecord", method = RequestMethod.PUT)
+    @Override
+    public RegVariantRecord updateVariantRecord(@RequestBody final RegVariantRecord variantRecord,
+                                                @RequestParam final Integer recordId) {
+
+        Assert.notNull(variantRecord.getId(), "Očekáváno ID pro update.");
+
+        RegVariantRecord newVariantRecord = saveVariantRecordInternal(variantRecord, recordId);
+        newVariantRecord.setRegRecord(null);
+
+        return newVariantRecord;
     }
 
     @Override
@@ -165,6 +159,55 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
         Assert.notNull(recordId);
 
         return regRecordRepository.getOne(recordId);
+    }
+
+    /**
+     * Uložení či update záznamu.
+     *
+     * @param record            naplněný objekt, bez vazeb
+     * @param registerTypeId    id typu rejstříku
+     * @param externalSourceId  id externího zdroje, může být null
+     * @return      výslendný objekt
+     */
+    private RegRecord saveRecordInternal(final RegRecord record,
+                                         final Integer registerTypeId,
+                                         @Nullable final Integer externalSourceId) {
+
+        Assert.notNull(record);
+        Assert.notNull(registerTypeId);
+        Assert.notNull(record.getRecord());
+        Assert.notNull(record.getCharacteristics());
+        Assert.notNull(record.getLocal());
+
+        RegRegisterType regRegisterType = registerTypeRepository.getOne(registerTypeId);
+        record.setRegisterType(regRegisterType);
+
+        if (externalSourceId != null) {
+            RegExternalSource externalSource = externalSourceRepository.getOne(externalSourceId);
+            record.setExternalSource(externalSource);
+        }
+
+        return regRecordRepository.save(record);
+    }
+
+    /**
+     * Uložení či update variantního záznamu.
+     *
+     * @param variantRecord     variantní záznam, bez vazeb
+     * @param regRecordId       id záznamu rejstříku
+     * @return      výslendný objekt uložený do db
+     */
+    @Transactional
+    private RegVariantRecord saveVariantRecordInternal(@RequestBody final RegVariantRecord variantRecord,
+                                                       @RequestParam final Integer regRecordId) {
+
+        Assert.notNull(variantRecord);
+        Assert.notNull(regRecordId);
+
+        RegRecord regRecord = regRecordRepository.getOne(regRecordId);
+        variantRecord.setRegRecord(regRecord);
+
+        return variantRecordRepository.save(variantRecord);
     }
 
 }
