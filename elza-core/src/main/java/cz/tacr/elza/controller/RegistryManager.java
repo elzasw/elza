@@ -47,33 +47,30 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     private ExternalSourceRepository externalSourceRepository;
 
 
-//    @RequestMapping(value = "/createRecord", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
-//            params = {"record", "registerTypeId"}, produces = MediaType.APPLICATION_JSON_VALUE)
-//    @Transactional
-//    public @ResponseBody RegRecord createRecord(@RequestParam(value = "record") final RegRecord record,
-//                                                @RequestParam(value = "registerTypeId") final Integer registerTypeId) {
-    @RequestMapping(value = "/createRecord", method = RequestMethod.POST)
+    @RequestMapping(value = "/createRecord", method = RequestMethod.PUT)
     @Transactional
-    public @ResponseBody RegRecord createRecord(@RequestBody final RegRecord record) {
+    public @ResponseBody RegRecord createRecord(@RequestBody final RegRecord record,
+                                                @RequestParam final Integer registerTypeId,
+                                                @RequestParam @Nullable final Integer externalSourceId) {
+
         Assert.notNull(record);
-//        Assert.notNull(registerTypeId);
+        Assert.notNull(registerTypeId);
         Assert.notNull(record.getRecord());
         Assert.notNull(record.getCharacteristics());
         Assert.notNull(record.getLocal());
 
-        RegRegisterType regRegisterType1 = new RegRegisterType();
-        regRegisterType1.setName("N");
-        regRegisterType1.setCode("C");
-        registerTypeRepository.save(regRegisterType1);
+        RegRegisterType regRegisterType = registerTypeRepository.getOne(registerTypeId);
+        record.setRegisterType(regRegisterType);
 
-//        RegRegisterType regRegisterType = registerTypeRepository.getOne(registerTypeId);
-        record.setRegisterType(regRegisterType1);
+        if (externalSourceId != null) {
+            RegExternalSource externalSource = externalSourceRepository.getOne(externalSourceId);
+            record.setExternalSource(externalSource);
+        }
 
         return regRecordRepository.save(record);
     }
 
-    @RequestMapping(value = "/updateRecord", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/updateRecord", method = RequestMethod.PUT)
     @Transactional
     public RegRecord updateRecord(@RequestBody final RegRecord record) {
         Assert.notNull(record);

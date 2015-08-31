@@ -16,10 +16,11 @@ public interface RegistryManager<RR extends RegRecord> {
      * Vytvoření nového záznamu.
      *
      * @param regRecord         naplněný objekt, bez vazeb
-     * @param registerTypeId    id typu rejst59ku
+     * @param registerTypeId    id typu rejstříku
+     * @param externalSourceId  id externího zdroje, může být null
      * @return              nově vytvořený objekt
      */
-    RR createRecord(RR regRecord);
+    RR createRecord(RR regRecord, Integer registerTypeId, Integer externalSourceId);
 
     /**
      * Smaže entity které používají daný záznam a pak záznam samotný.

@@ -37,7 +37,6 @@ public class RegistryManagerTest extends AbstractRestTest {
     private static final String GET_EXTERNAL_SOURCES_URL = REGISTRY_MANAGER_URL + "/getExternalSources";
     private static final String GET_RECORD_URL = REGISTRY_MANAGER_URL + "/getRecord";
 
-    private static final String RECORD_ATT = "record";
     private static final String RECORD_ID_ATT = "recordId";
     private static final String VARIANT_RECORD_ID_ATT = "variantRecordId";
 
@@ -45,6 +44,7 @@ public class RegistryManagerTest extends AbstractRestTest {
     private static final String FROM_ATT = "from";
     private static final String COUNT_ATT = "count";
     private static final String REGISTER_TYPE_ID_ATT = "registerTypeId";
+    private static final String EXTERNAL_SOURCE_ID_ATT = "externalSourceId";
 
 
     @Autowired
@@ -77,10 +77,13 @@ public class RegistryManagerTest extends AbstractRestTest {
         regRecord.setLocal(false);
 
         RegRegisterType registerType = createRegisterType();
+        Integer externalSourceId = null;
 
         Response response =
                 given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(regRecord)
-                        .post(CREATE_RECORD_URL);
+                        .parameter(REGISTER_TYPE_ID_ATT, registerType.getId())
+                        .parameter(EXTERNAL_SOURCE_ID_ATT, externalSourceId)
+                        .put(CREATE_RECORD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
