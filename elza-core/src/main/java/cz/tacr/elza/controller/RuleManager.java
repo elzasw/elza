@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -192,6 +194,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager {
 
     @Override
     @RequestMapping(value = "/saveFaViewDescItemTypes", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
     public List<Integer> saveFaViewDescItemTypes(@RequestParam(value = "ruleSetId") Integer ruleSetId,
                                                  @RequestParam(value = "arrangementTypeId") Integer arrangementTypeId,
                                                  @RequestParam(value = "descItemTypeIds") Integer[] descItemTypeIds) {
