@@ -797,23 +797,23 @@
             <column name="text_lenght_limit" value="20"/>
         </insert>
 
-        <insert tableName="hibernate_sequences">
+        <insert tableName="db_hibernate_sequences">
             <column name="sequence_name" value="rul_desc_item_constraint|desc_item_constraint_id"/>
             <column name="next_val" value="4"/>
         </insert>
-        <insert tableName="hibernate_sequences">
+        <insert tableName="db_hibernate_sequences">
             <column name="sequence_name" value="rul_desc_item_spec|desc_item_spec_id"/>
             <column name="next_val" value="65"/>
         </insert>
-        <insert tableName="hibernate_sequences">
+        <insert tableName="db_hibernate_sequences">
             <column name="sequence_name" value="rul_fa_view|fa_view_id"/>
             <column name="next_val" value="4"/>
         </insert>
-        <insert tableName="hibernate_sequences">
+        <insert tableName="db_hibernate_sequences">
             <column name="sequence_name" value="rul_desc_item_type|desc_item_type_id"/>
             <column name="next_val" value="10"/>
         </insert>
-        <insert tableName="hibernate_sequences">
+        <insert tableName="db_hibernate_sequences">
             <column name="sequence_name" value="rul_data_type|data_type_id"/>
             <column name="next_val" value="6"/>
         </insert>
