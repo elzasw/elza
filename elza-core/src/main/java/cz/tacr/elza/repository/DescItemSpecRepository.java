@@ -20,4 +20,6 @@ public interface DescItemSpecRepository extends JpaRepository<RulDescItemSpec, I
 
     @Query("SELECT s FROM rul_desc_item_spec s WHERE s.descItemType in (?1)")
     List<RulDescItemSpec> findByItemTypeIds(Collection<RulDescItemType> itemTypes);
+
+    List<RulDescItemSpec> findByDescItemType(RulDescItemType rulDescItemType);
 }

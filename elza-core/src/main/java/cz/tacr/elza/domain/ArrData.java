@@ -28,7 +28,7 @@ import cz.req.ax.IdObject;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrData implements IdObject<Integer>, cz.tacr.elza.api.ArrData<RulDataType, ArrDescItem>{
+public abstract class ArrData implements IdObject<Integer>, cz.tacr.elza.api.ArrData<RulDataType, ArrDescItem>{
 
     @Id
     @GeneratedValue
@@ -91,5 +91,7 @@ public class ArrData implements IdObject<Integer>, cz.tacr.elza.api.ArrData<RulD
     public int hashCode() {
         return new HashCodeBuilder().append(getId()).toHashCode();
     }
+
+    public abstract String getData();
 
 }

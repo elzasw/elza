@@ -26,4 +26,9 @@ public class ArrDataReference extends ArrData implements cz.tacr.elza.api.ArrDat
     public void setValue(final String value) {
         this.value = value;
     }
+
+    @Override
+    public String getData() {
+        return getValue();
+    }
 }

@@ -191,8 +191,9 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
             @Override
             public void itemClick(final ItemClickEvent event) {
                 table.setWidth("50%");
+                Integer versionId = getVersion().getFaVersionId();
                 ArrFaLevelExt level = arrangementManager.getLevel((Integer) event.getItemId(), versionId, null);
-                levelDetailConteiner.showLevelDetail(level, level.getDescItemList());
+                levelDetailConteiner.showLevelDetail(level, level.getDescItemList(), versionId);
             }
         });
 
@@ -251,8 +252,9 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
 
     private void showDetailAP() {
         table.setWidth("50%");
+        Integer versionId = getVersion().getFaVersionId();
         ArrFaLevelExt level = arrangementManager.getLevel(rootNodeId, versionId, null);
-        levelDetailConteiner.showLevelDetail(level, level.getDescItemList());
+        levelDetailConteiner.showLevelDetail(level, level.getDescItemList(), versionId);
     }
 
     private CssLayout createInlineDetail() {
@@ -261,7 +263,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
             public void run() {
                 table.setWidth("100%");
             }
-        });
+        }, ruleSetManager, arrangementManager);
 
         return levelDetailConteiner;
     }
@@ -641,7 +643,8 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
         if (faLevel instanceof ArrFaLevelExt) {
             ArrFaLevelExt faLevelExt = (ArrFaLevelExt) faLevel;
             Map<Integer, String> attributeMap = createAttributeMap(faLevelExt);
-            attributeMap.forEach((k,v) -> item.getItemProperty(k).setValue(v));
+            //attributeMap.forEach((k,v) -> item.getItemProperty(k).setValue(v));
+            // TODO slapa: opravit?
         }
 
         if (faLevel.getParentNodeId().equals(getVersion().getRootNode().getNodeId())) {

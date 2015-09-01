@@ -54,6 +54,8 @@ import cz.tacr.elza.repository.DataStringRepository;
 import cz.tacr.elza.repository.DataTextRepository;
 import cz.tacr.elza.repository.DescItemConstraintRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.DescItemSpecRepository;
+import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
@@ -114,6 +116,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Autowired
     private RuleManager ruleManager;
+
+    @Autowired
+    private DescItemTypeRepository descItemTypeRepository;
+
+    @Autowired
+    private DescItemSpecRepository descItemSpecRepository;
 
     /**
      * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.
@@ -905,18 +913,17 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         List<RulDescItemTypeExt> rulDescItemTypes = ruleManager.getDescriptionItemTypesForNodeId(faVersionId, nodeId, false);
 
-        RulDescItemType rulDescItemType = descItemExt.getDescItemType();
+        RulDescItemType rulDescItemType = descItemTypeRepository.findOne(descItemExt.getDescItemType().getDescItemTypeId());
         Assert.notNull(rulDescItemType);
 
         String data = descItemExt.getData();
-        Assert.notNull(data);
+        Assert.notNull(data, "Není vyplněna hodnota");
 
-        RulDescItemSpec rulDescItemSpec = descItemExt.getDescItemSpec();
+        RulDescItemSpec rulDescItemSpec = (descItemExt.getDescItemSpec() != null) ? descItemSpecRepository.findOne(descItemExt.getDescItemSpec().getDescItemSpecId()) : null;
 
         validateAllowedItemType(rulDescItemTypes, rulDescItemType);
         validateAllItemConstraintsBySpec(nodeId, rulDescItemType, data, rulDescItemSpec, null);
         validateAllItemConstraintsByType(nodeId, rulDescItemType, data, null);
-        validateUniqueness();
 
         // uložení
 
@@ -994,12 +1001,11 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         String data = descItemExt.getData();
         Assert.notNull(data);
 
-        RulDescItemSpec rulDescItemSpec = descItemExt.getDescItemSpec();
+        RulDescItemSpec rulDescItemSpec = (descItemExt.getDescItemSpec() != null) ? descItemSpecRepository.findOne(descItemExt.getDescItemSpec().getDescItemSpecId()) : null;
 
         validateAllowedItemType(rulDescItemTypes, rulDescItemType);
         validateAllItemConstraintsBySpec(nodeId, rulDescItemType, data, rulDescItemSpec, descItem);
         validateAllItemConstraintsByType(nodeId, rulDescItemType, data, descItem);
-        validateUniqueness();
 
         // uložení
 
@@ -1265,12 +1271,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
     }
 
-    /**
-     * TODO: kontrolovat unikátnost
-     */
-    private void validateUniqueness(/* TODO */) {
-
-    }
 
     /**
      * Uloží novou hodnotu attributu do tabulky podle jeho typu.

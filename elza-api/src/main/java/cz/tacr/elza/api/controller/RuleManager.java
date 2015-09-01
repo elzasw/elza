@@ -3,6 +3,9 @@ package cz.tacr.elza.api.controller;
 import java.util.List;
 
 import cz.tacr.elza.api.ArrArrangementType;
+import cz.tacr.elza.api.ArrDescItem;
+import cz.tacr.elza.api.RulDataType;
+import cz.tacr.elza.api.RulDescItemSpec;
 import cz.tacr.elza.api.RulDescItemType;
 import cz.tacr.elza.api.RulRuleSet;
 
@@ -13,7 +16,7 @@ import cz.tacr.elza.api.RulRuleSet;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 12. 8. 2015
  */
-public interface RuleManager {
+public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType, DIS extends RulDescItemSpec> {
 
     /**
      * Vrátí všechny sady pravidel.
@@ -45,6 +48,33 @@ public interface RuleManager {
      * @return
      */
     List<? extends RulDescItemType> getDescriptionItemTypesForNodeId(Integer faVersionId, Integer nodeId, Boolean mandatory);
+
+
+    /**
+     * Vrátí všechny hodnoty attrubutu archivního popisu k uzlu.
+     * @param faVersionId
+     * @param nodeId
+     * @param rulDescItemTypeId
+     * @return
+     */
+    List<? extends ArrDescItem> getDescriptionItemsForAttribute(Integer faVersionId, Integer nodeId, Integer rulDescItemTypeId);
+
+
+    /**
+     * TODO
+     * @param rulDescItemType
+     * @return
+     */
+    List<DIS> getDescItemSpecsFortDescItemType(DIT rulDescItemType);
+
+
+    /**
+     * TODO
+     * @param rulDescItemType
+     * @return
+     */
+    DT getDataTypeForDescItemType(DIT rulDescItemType);
+
 
     /**
      * Vrátí seznam identifikátorů typů atributů archivního popisu,

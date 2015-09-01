@@ -1,8 +1,12 @@
 package cz.tacr.elza.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemType;
 
 
@@ -12,5 +16,8 @@ import cz.tacr.elza.domain.RulDescItemType;
  */
 @Repository
 public interface DescItemTypeRepository extends JpaRepository<RulDescItemType, Integer> {
+
+    @Query("SELECT DISTINCT t.dataType FROM rul_desc_item_type t WHERE t = ?1")
+    List<RulDataType> findRulDataType(RulDescItemType descItemType);
 
 }

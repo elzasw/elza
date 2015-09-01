@@ -16,6 +16,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,7 +24,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.domain.ArrArrangementType;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDescItemExt;
 import cz.tacr.elza.domain.ArrFaVersion;
+import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemSpecExt;
@@ -32,7 +37,10 @@ import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemConstraintRepository;
+import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FaViewRepository;
@@ -47,7 +55,7 @@ import cz.tacr.elza.repository.VersionRepository;
  */
 @RestController
 @RequestMapping("/api/ruleSetManager")
-public class RuleManager implements cz.tacr.elza.api.controller.RuleManager {
+public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulDataType, RulDescItemType, RulDescItemSpec> {
 
     private static final String VIEW_SPECIFICATION_SEPARATOR = "|";
     private static final String VIEW_SPECIFICATION_SEPARATOR_REGEX = "\\|";
@@ -72,6 +80,16 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager {
 
     @Autowired
     private FaViewRepository faViewRepository;
+
+    @Autowired
+    private DescItemRepository descItemRepository;
+
+    @Autowired
+    private DataRepository dataRepository;
+
+    @Autowired
+    private DataTypeRepository dataTypeRepository;
+
 
     @Override
     @RequestMapping(value = "/getRuleSets", method = RequestMethod.GET)
@@ -101,6 +119,57 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager {
             @RequestParam(value = "mandatory") Boolean mandatory) {
         List<RulDescItemType> itemTypeList = descItemTypeRepository.findAll();
         return createExt(itemTypeList);
+    }
+
+    @Override
+    @RequestMapping(value = "/getDescriptionItemsForAttribute", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<ArrDescItemExt> getDescriptionItemsForAttribute(
+            @RequestParam(value = "faVersionId") Integer faVersionId,
+            @RequestParam(value = "nodeId") Integer nodeId,
+            @RequestParam(value = "rulDescItemTypeId") Integer rulDescItemTypeId) {
+        List<ArrDescItem> itemList = descItemRepository.findByNodeIdAndDeleteChangeIsNullAndDescItemTypeId(nodeId, rulDescItemTypeId);
+        return createItemExt(itemList);
+    }
+
+    @Override
+    @RequestMapping(value = "/getDescItemSpecsFortDescItemType", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<RulDescItemSpec> getDescItemSpecsFortDescItemType(
+            @RequestBody() RulDescItemType rulDescItemType) {
+        List<RulDescItemSpec> itemList = descItemSpecRepository.findByDescItemType(rulDescItemType);
+        return itemList;
+    }
+
+    @Override
+    @RequestMapping(value = "/getDataTypeForDescItemType", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public RulDataType getDataTypeForDescItemType(
+            @RequestBody() RulDescItemType rulDescItemType) {
+        List<RulDataType> typeList = descItemTypeRepository.findRulDataType(rulDescItemType);
+        return typeList.get(0);
+    }
+
+    private List<ArrDescItemExt> createItemExt(List<ArrDescItem> itemList) {
+        List<ArrDescItemExt> descItemList = new LinkedList<>();
+        if (itemList.isEmpty()) {
+            return descItemList;
+        }
+
+        for (ArrDescItem descItem : itemList) {
+            ArrDescItemExt descItemExt = new ArrDescItemExt();
+
+            BeanUtils.copyProperties(descItem, descItemExt);
+
+            List<ArrData> dataList = dataRepository.findByDescItem(descItem);
+
+            if (dataList.size() != 1) {
+                throw new IllegalStateException("Neplatný počet odkazujících dat (" + dataList.size() + ")");
+            }
+
+            ArrData data = dataList.get(0);
+            descItemExt.setData(data.getData());
+            descItemList.add(descItemExt);
+        }
+
+        return descItemList;
     }
 
     private List<RulDescItemTypeExt> createExt(final List<RulDescItemType> itemTypeList) {
