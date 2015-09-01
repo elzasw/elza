@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+        <!--Verze 1.11 - změna velikosti varchar -->
+        <changeSet id="11" author="vavrejn" failOnError="false" runOnChange="true">
+                <modifyDataType tableName="rul_arrangement_type" columnName="code" newDataType="varchar(50)"/>
+                <modifyDataType tableName="rul_arrangement_type" columnName="name" newDataType="varchar(250)"/>
+                <modifyDataType tableName="arr_data_datace" columnName="value" newDataType="varchar(250)"/>
+                <modifyDataType tableName="arr_data_reference" columnName="value" newDataType="varchar(250)"/>
+                <modifyDataType tableName="par_party_subtype" columnName="code" newDataType="varchar(50)"/>
+                <modifyDataType tableName="par_party_subtype" columnName="name" newDataType="varchar(250)"/>
+                <modifyDataType tableName="par_party_type" columnName="code" newDataType="varchar(50)"/>
+                <modifyDataType tableName="par_party_type" columnName="name" newDataType="varchar(250)"/>
+                <modifyDataType tableName="reg_external_source" columnName="code" newDataType="varchar(50)"/>
+                <modifyDataType tableName="reg_external_source" columnName="name" newDataType="varchar(250)"/>
+                <modifyDataType tableName="reg_record" columnName="record" newDataType="varchar(1000)"/>
+                <modifyDataType tableName="reg_record" columnName="external_id" newDataType="varchar(250)"/>
+                <modifyDataType tableName="reg_register_type" columnName="code" newDataType="varchar(50)"/>
+                <modifyDataType tableName="reg_register_type" columnName="name" newDataType="varchar(250)"/>
+                <modifyDataType tableName="reg_variant_record" columnName="record" newDataType="varchar(1000)"/>
+                <modifyDataType tableName="rul_data_type" columnName="code" newDataType="varchar(50)"/>
+                <modifyDataType tableName="rul_data_type" columnName="name" newDataType="varchar(250)"/>
+                <modifyDataType tableName="rul_data_type" columnName="storage_table" newDataType="varchar(250)"/>
+                <modifyDataType tableName="rul_desc_item_constraint" columnName="regexp" newDataType="varchar(250)"/>
+                <modifyDataType tableName="rul_desc_item_spec" columnName="code" newDataType="varchar(50)"/>
+                <modifyDataType tableName="rul_desc_item_spec" columnName="name" newDataType="varchar(250)"/>
+                <modifyDataType tableName="rul_desc_item_spec" columnName="shortcut" newDataType="varchar(50)"/>
+                <modifyDataType tableName="rul_desc_item_type" columnName="code" newDataType="varchar(50)"/>
+                <modifyDataType tableName="rul_desc_item_type" columnName="name" newDataType="varchar(250)"/>
+                <modifyDataType tableName="rul_desc_item_type" columnName="shortcut" newDataType="varchar(50)"/>
+                <modifyDataType tableName="rul_rule_set" columnName="code" newDataType="varchar(50)"/>
+                <modifyDataType tableName="rul_rule_set" columnName="name" newDataType="varchar(250)"/>
+        </changeSet>
+
+
+</databaseChangeLog>

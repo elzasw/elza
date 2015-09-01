@@ -42,7 +42,7 @@ public class RegVariantRecord implements IdObject<Integer>, cz.tacr.elza.api.Reg
 //    @JoinColumn(name = "recordId", nullable = false, insertable = false, updatable = false)
 //    private RegRecord regRecordPar;
 
-    @Column(length = 500)
+    @Column(length = 1000)
     private String record;
 
     /* Konstanty pro vazby a fieldy. */

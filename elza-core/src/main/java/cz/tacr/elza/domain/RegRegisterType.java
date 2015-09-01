@@ -31,10 +31,10 @@ public class RegRegisterType implements IdObject<Integer>, cz.tacr.elza.api.RegR
     @GeneratedValue
     private Integer registerTypeId;
 
-    @Column(length = 20, nullable = false)
+    @Column(length = 50, nullable = false)
     private String code;
 
-    @Column(length = 200, nullable = false)
+    @Column(length = 250, nullable = false)
     private String name;
 
     /* Konstanty pro vazby a fieldy. */

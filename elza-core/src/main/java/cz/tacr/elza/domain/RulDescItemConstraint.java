@@ -46,7 +46,7 @@ public class RulDescItemConstraint implements IdObject<Integer>, cz.tacr.elza.ap
     @Column(nullable = true)
     private Boolean repeatable;
 
-    @Column(length = 500, nullable = true)
+    @Column(length = 250, nullable = true)
     private String regexp;
 
     @Column(nullable = true)

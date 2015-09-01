@@ -30,13 +30,13 @@ public class RulDataType implements IdObject<Integer>, cz.tacr.elza.api.RulDataT
     @GeneratedValue
     private Integer dataTypeId;
 
-    @Column(length = 15, nullable = false)
+    @Column(length = 50, nullable = false)
     private String code;
 
-    @Column(length = 50, nullable = false)
+    @Column(length = 250, nullable = false)
     private String name;
 
-    @Column(length = 15, nullable = false)
+    @Column(nullable = false)
     @Lob
     @Type(type = "org.hibernate.type.TextType")
     private String description;
@@ -47,7 +47,7 @@ public class RulDataType implements IdObject<Integer>, cz.tacr.elza.api.RulDataT
     @Column(nullable = false)
     private Boolean textLenghtLimitUse;
 
-    @Column(length = 200, nullable = false)
+    @Column(length = 250, nullable = false)
     private String storageTable;
 
     public Integer getDataTypeId() {

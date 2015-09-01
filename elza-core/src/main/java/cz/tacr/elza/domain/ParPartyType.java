@@ -34,10 +34,10 @@ public class ParPartyType implements IdObject<Integer>, cz.tacr.elza.api.ParPart
     @GeneratedValue
     private Integer partyTypeId;
 
-    @Column(length = 15, nullable = false)
+    @Column(length = 50, nullable = false)
     private String code;
 
-    @Column(length = 50, nullable = false)
+    @Column(length = 250, nullable = false)
     private String name;
 
     @Column(nullable = false)

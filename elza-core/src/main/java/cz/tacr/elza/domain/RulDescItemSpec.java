@@ -39,13 +39,13 @@ public class RulDescItemSpec implements IdObject<Integer>, cz.tacr.elza.api.RulD
     @JoinColumn(name = "descItemTypeId", nullable = false)
     private RulDescItemType descItemType;
 
-    @Column(length = 15, nullable = false)
+    @Column(length = 50, nullable = false)
     private String code;
 
-    @Column(length = 50, nullable = false)
+    @Column(length = 250, nullable = false)
     private String name;
 
-    @Column(length = 20, nullable = false)
+    @Column(length = 50, nullable = false)
     private String shortcut;
 
     @Column(nullable = false)

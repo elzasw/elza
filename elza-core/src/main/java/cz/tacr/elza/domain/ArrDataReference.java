@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataReference extends ArrData implements cz.tacr.elza.api.ArrDataReference{
 
-    @Column(length = 100, nullable = false)
+    @Column(length = 250, nullable = false)
     private String value;
 
     public String getValue() {

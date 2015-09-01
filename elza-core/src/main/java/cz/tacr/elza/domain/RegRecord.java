@@ -48,7 +48,7 @@ public class RegRecord implements IdObject<Integer>, cz.tacr.elza.api.RegRecord<
     @OneToMany(mappedBy = "regRecord")
     private List<RegVariantRecord> variantRecordList = new ArrayList<>(0);
 
-    @Column(length = 500, nullable = false)
+    @Column(length = 1000, nullable = false)
     private String record;
 
     @Column(nullable = false)
@@ -60,7 +60,7 @@ public class RegRecord implements IdObject<Integer>, cz.tacr.elza.api.RegRecord<
     @Column(nullable = false)
     private Boolean local;
 
-    @Column(length = 200)
+    @Column(length = 250)
     private String external_id;
 
     /* Konstanty pro vazby a fieldy. */
