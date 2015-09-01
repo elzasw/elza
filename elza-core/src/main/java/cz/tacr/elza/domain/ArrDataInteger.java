@@ -26,4 +26,9 @@ public class ArrDataInteger extends ArrData implements cz.tacr.elza.api.ArrDataI
     public void setValue(final Integer value) {
         this.value = value;
     }
+
+    @Override
+    public String getData() {
+        return value.toString();
+    }
 }

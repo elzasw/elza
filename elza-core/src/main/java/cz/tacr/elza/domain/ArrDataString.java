@@ -27,4 +27,8 @@ public class ArrDataString extends ArrData implements cz.tacr.elza.api.ArrDataSt
         this.value = value;
     }
 
+    @Override
+    public String getData() {
+        return getValue();
+    }
 }

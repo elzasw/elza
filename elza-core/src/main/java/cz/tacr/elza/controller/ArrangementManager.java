@@ -28,11 +28,16 @@ import org.springframework.web.bind.annotation.RestController;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataDatace;
 import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataReference;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemExt;
 import cz.tacr.elza.domain.ArrFaChange;
@@ -48,14 +53,21 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DataCoordinatesRepository;
 import cz.tacr.elza.repository.DataDataceRepository;
 import cz.tacr.elza.repository.DataIntegerRepository;
+import cz.tacr.elza.repository.DataPartyRefRepository;
+import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.DataReferenceRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataStringRepository;
 import cz.tacr.elza.repository.DataTextRepository;
+import cz.tacr.elza.repository.DataUnitdateRepository;
+import cz.tacr.elza.repository.DataUnitidRepository;
 import cz.tacr.elza.repository.DescItemConstraintRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.DescItemSpecRepository;
+import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
@@ -115,10 +127,31 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     private DataDataceRepository dataDataceRepository;
 
     @Autowired
+    private DataUnitdateRepository dataUnitdateRepository;
+
+    @Autowired
+    private DataUnitidRepository dataUnitidRepository;
+
+    @Autowired
+    private DataCoordinatesRepository dataCoordinatesRepository;
+
+    @Autowired
+    private DataPartyRefRepository dataPartyRefRepository;
+
+    @Autowired
+    private DataRecordRefRepository dataRecordRefRepository;
+
+    @Autowired
     private DataReferenceRepository dataReferenceRepository;
 
     @Autowired
     private RuleManager ruleManager;
+
+    @Autowired
+    private DescItemTypeRepository descItemTypeRepository;
+
+    @Autowired
+    private DescItemSpecRepository descItemSpecRepository;
 
     /**
      * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.
@@ -933,18 +966,17 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         List<RulDescItemTypeExt> rulDescItemTypes = ruleManager.getDescriptionItemTypesForNodeId(faVersionId, nodeId, false);
 
-        RulDescItemType rulDescItemType = descItemExt.getDescItemType();
+        RulDescItemType rulDescItemType = descItemTypeRepository.findOne(descItemExt.getDescItemType().getDescItemTypeId());
         Assert.notNull(rulDescItemType);
 
         String data = descItemExt.getData();
-        Assert.notNull(data);
+        Assert.notNull(data, "Není vyplněna hodnota");
 
-        RulDescItemSpec rulDescItemSpec = descItemExt.getDescItemSpec();
+        RulDescItemSpec rulDescItemSpec = (descItemExt.getDescItemSpec() != null) ? descItemSpecRepository.findOne(descItemExt.getDescItemSpec().getDescItemSpecId()) : null;
 
         validateAllowedItemType(rulDescItemTypes, rulDescItemType);
         validateAllItemConstraintsBySpec(nodeId, rulDescItemType, data, rulDescItemSpec, null);
         validateAllItemConstraintsByType(nodeId, rulDescItemType, data, null);
-        validateUniqueness();
 
         // uložení
 
@@ -1022,12 +1054,11 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         String data = descItemExt.getData();
         Assert.notNull(data);
 
-        RulDescItemSpec rulDescItemSpec = descItemExt.getDescItemSpec();
+        RulDescItemSpec rulDescItemSpec = (descItemExt.getDescItemSpec() != null) ? descItemSpecRepository.findOne(descItemExt.getDescItemSpec().getDescItemSpecId()) : null;
 
         validateAllowedItemType(rulDescItemTypes, rulDescItemType);
         validateAllItemConstraintsBySpec(nodeId, rulDescItemType, data, rulDescItemSpec, descItem);
         validateAllItemConstraintsByType(nodeId, rulDescItemType, data, descItem);
-        validateUniqueness();
 
         // uložení
 
@@ -1293,12 +1324,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
     }
 
-    /**
-     * TODO: kontrolovat unikátnost
-     */
-    private void validateUniqueness(/* TODO */) {
-
-    }
 
     /**
      * Uloží novou hodnotu attributu do tabulky podle jeho typu.
@@ -1320,6 +1345,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             }
             dataIntegerRepository.save(valueInt);
             break;
+
         case "STRING":
             ArrDataString valueString = new ArrDataString();
             valueString.setDataType(rulDescItemType.getDataType());
@@ -1327,6 +1353,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             valueString.setValue(data);
             dataStringRepository.save(valueString);
             break;
+
+            case "FORMATTED_TEXT":
         case "TEXT":
             ArrDataText valueText = new ArrDataText();
             valueText.setDataType(rulDescItemType.getDataType());
@@ -1351,6 +1379,60 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             dataReferenceRepository.save(valueReference);
             break;
 
+
+            case "UNITDATE":
+                ArrDataUnitdate valueUnitdateNew = new ArrDataUnitdate();
+                valueUnitdateNew.setDataType(rulDescItemType.getDataType());
+                valueUnitdateNew.setDescItem(descItem);
+                valueUnitdateNew.setValue(data);
+                dataUnitdateRepository.save(valueUnitdateNew);
+                break;
+
+            case "UNITID":
+                ArrDataUnitid valueUnitid = new ArrDataUnitid();
+                valueUnitid.setDataType(rulDescItemType.getDataType());
+                valueUnitid.setDescItem(descItem);
+                valueUnitid.setValue(data);
+                dataUnitidRepository.save(valueUnitid);
+                break;
+
+            case "PARTY_REF":
+                ArrDataPartyRef valuePartyRef = new ArrDataPartyRef();
+                valuePartyRef.setDataType(rulDescItemType.getDataType());
+                valuePartyRef.setDescItem(descItem);
+                try {
+                    String[] dataArray = data.split(",");
+                    valuePartyRef.setPosition(Integer.valueOf(dataArray[0]));
+                    valuePartyRef.setAbstractPartyId(Integer.valueOf(dataArray[1]));
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu (" + data + ")");
+                }
+                dataPartyRefRepository.save(valuePartyRef);
+                break;
+
+            case "RECORD_REF":
+                ArrDataRecordRef valueRecordRef = new ArrDataRecordRef();
+                valueRecordRef.setDataType(rulDescItemType.getDataType());
+                valueRecordRef.setDescItem(descItem);
+                try {
+                    String[] dataArray = data.split(",");
+                    valueRecordRef.setPosition(Integer.valueOf(dataArray[0]));
+                    valueRecordRef.setRecordId(Integer.valueOf(dataArray[1]));
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu (" + data + ")");
+                }
+                dataRecordRefRepository.save(valueRecordRef);
+                break;
+
+            case "COORDINATES":
+                ArrDataCoordinates valueCoordinates = new ArrDataCoordinates();
+                valueCoordinates.setDataType(rulDescItemType.getDataType());
+                valueCoordinates.setDescItem(descItem);
+                valueCoordinates.setValue(data);
+                dataCoordinatesRepository.save(valueCoordinates);
+                break;
+
+
         default:
             throw new IllegalStateException("Datový typ hodnoty není implementován");
         }
@@ -1374,11 +1456,14 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             }
             dataIntegerRepository.save(valueInt);
             break;
+
         case "STRING":
             ArrDataString valueString = (ArrDataString) arrData;
             valueString.setValue(data);
             dataStringRepository.save(valueString);
             break;
+
+            case "FORMATTED_TEXT":
         case "TEXT":
             ArrDataText valueText = (ArrDataText) arrData;
             valueText.setValue(data);
@@ -1396,6 +1481,48 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             valueReference.setValue(data);
             dataReferenceRepository.save(valueReference);
             break;
+
+            case "UNITDATE":
+                ArrDataUnitdate valueUnitdate = (ArrDataUnitdate) arrData;
+                valueUnitdate.setValue(data);
+                dataUnitdateRepository.save(valueUnitdate);
+                break;
+
+            case "UNITID":
+                ArrDataUnitid valueUnitid = (ArrDataUnitid) arrData;
+                valueUnitid.setValue(data);
+                dataUnitidRepository.save(valueUnitid);
+                break;
+
+            case "PARTY_REF":
+                ArrDataPartyRef valuePartyRef = (ArrDataPartyRef) arrData;
+                try {
+                    String[] dataArray = data.split(",");
+                    valuePartyRef.setPosition(Integer.valueOf(dataArray[0]));
+                    valuePartyRef.setAbstractPartyId(Integer.valueOf(dataArray[1]));
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu (" + data + ")");
+                }
+                dataPartyRefRepository.save(valuePartyRef);
+                break;
+
+            case "RECORD_REF":
+                ArrDataRecordRef valueRecordRef = (ArrDataRecordRef) arrData;
+                try {
+                    String[] dataArray = data.split(",");
+                    valueRecordRef.setPosition(Integer.valueOf(dataArray[0]));
+                    valueRecordRef.setRecordId(Integer.valueOf(dataArray[1]));
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu (" + data + ")");
+                }
+                dataRecordRefRepository.save(valueRecordRef);
+                break;
+
+            case "COORDINATES":
+                ArrDataCoordinates valueCoordinates = (ArrDataCoordinates) arrData;
+                valueCoordinates.setValue(data);
+                dataCoordinatesRepository.save(valueCoordinates);
+                break;
 
         default:
             throw new IllegalStateException("Datový typ hodnoty není implementován");
@@ -1498,6 +1625,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 valueIntNew.setDescItem(descItemNew);
                 dataIntegerRepository.save(valueIntNew);
                 break;
+
             case "STRING":
                 ArrDataString valueString = (ArrDataString) arrData;
                 ArrDataString valueStringNew = new ArrDataString();
@@ -1506,6 +1634,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 valueStringNew.setDescItem(descItemNew);
                 dataStringRepository.save(valueStringNew);
                 break;
+
+            case "FORMATTED_TEXT":
             case "TEXT":
                 ArrDataText valueText = (ArrDataText) arrData;
                 ArrDataText valueTextNew = new ArrDataText();
@@ -1531,6 +1661,53 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 valueReferenceNew.setValue(valueReference.getValue());
                 valueReferenceNew.setDescItem(descItemNew);
                 dataReferenceRepository.save(valueReferenceNew);
+                break;
+
+            case "UNITDATE":
+                ArrDataUnitdate valueUnitdate = (ArrDataUnitdate) arrData;
+                ArrDataUnitdate valueUnitdateNew = new ArrDataUnitdate();
+                valueUnitdateNew.setDataType(arrData.getDataType());
+                valueUnitdateNew.setValue(valueUnitdate.getValue());
+                valueUnitdateNew.setDescItem(descItemNew);
+                dataUnitdateRepository.save(valueUnitdateNew);
+                break;
+
+            case "UNITID":
+                ArrDataUnitid valueUnitid = (ArrDataUnitid) arrData;
+                ArrDataUnitid valueUnitidNew = new ArrDataUnitid();
+                valueUnitidNew.setDataType(arrData.getDataType());
+                valueUnitidNew.setValue(valueUnitid.getValue());
+                valueUnitidNew.setDescItem(descItemNew);
+                dataUnitidRepository.save(valueUnitidNew);
+                break;
+
+            case "PARTY_REF":
+                ArrDataPartyRef valuePartyRef = (ArrDataPartyRef) arrData;
+                ArrDataPartyRef valuePartyRefNew = new ArrDataPartyRef();
+                valuePartyRefNew.setDataType(arrData.getDataType());
+                valuePartyRefNew.setPosition(valuePartyRef.getPosition());
+                valuePartyRefNew.setAbstractPartyId(valuePartyRef.getAbstractPartyId());
+                valuePartyRefNew.setDescItem(descItemNew);
+                dataPartyRefRepository.save(valuePartyRefNew);
+                break;
+
+            case "RECORD_REF":
+                ArrDataRecordRef valueRecordRef = (ArrDataRecordRef) arrData;
+                ArrDataRecordRef valueRecordRefNew = new ArrDataRecordRef();
+                valueRecordRefNew.setDataType(arrData.getDataType());
+                valueRecordRefNew.setPosition(valueRecordRef.getPosition());
+                valueRecordRefNew.setRecordId(valueRecordRef.getRecordId());
+                valueRecordRefNew.setDescItem(descItemNew);
+                dataRecordRefRepository.save(valueRecordRefNew);
+                break;
+
+            case "COORDINATES":
+                ArrDataCoordinates valueCoordinates = (ArrDataCoordinates) arrData;
+                ArrDataCoordinates valueCoordinatesNew = new ArrDataCoordinates();
+                valueCoordinatesNew.setDataType(arrData.getDataType());
+                valueCoordinatesNew.setValue(valueCoordinates.getValue());
+                valueCoordinatesNew.setDescItem(descItemNew);
+                dataCoordinatesRepository.save(valueCoordinatesNew);
                 break;
 
             default:

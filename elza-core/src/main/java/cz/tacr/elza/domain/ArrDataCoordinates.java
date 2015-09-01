@@ -2,32 +2,29 @@ package cz.tacr.elza.domain;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Lob;
 import javax.persistence.Table;
-
-import org.hibernate.annotations.Type;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 20.8.2015
+ * @author Martin Šlapa
+ * @since 1.9.2015
  */
-@Entity(name = "arr_data_text")
+@Entity(name = "arr_data_coordinates")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrDataText extends ArrData implements cz.tacr.elza.api.ArrDataText{
+public class ArrDataCoordinates extends ArrData implements cz.tacr.elza.api.ArrDataCoordinates {
 
-    @Column(nullable = false)
-    @Lob
-    @Type(type = "org.hibernate.type.TextType")
+    @Column(length = 250, nullable = false)
     private String value;
 
+    @Override
     public String getValue() {
         return value;
     }
 
+    @Override
     public void setValue(final String value) {
         this.value = value;
     }

@@ -16,4 +16,21 @@ public class ArrDescItemExt extends ArrDescItem implements cz.tacr.elza.api.ArrD
     public void setData(String data) {
         this.data = data;
     }
+
+    /*@Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ArrDescItemExt)) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+
+        TODO: dopsat správně porovnání pro ChildComponentContainer
+
+        return true;
+    }*/
 }

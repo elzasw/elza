@@ -186,7 +186,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                 table.setWidth("50%");
                 ArrFaLevel node = (ArrFaLevel) event.getItemId();
                 ArrFaLevelExt level = arrangementManager.getLevel(node.getNodeId(), version.getFaVersionId(), null);
-                levelDetailConteiner.showLevelDetail(level, level.getDescItemList());
+                levelDetailConteiner.showLevelDetail(level, level.getDescItemList(), version.getFaVersionId());
             }
         });
 
@@ -263,7 +263,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
     private void showDetailAP() {
         table.setWidth("50%");
         ArrFaLevelExt level = arrangementManager.getLevel(rootNode.getNodeId(), version.getFaVersionId(), null);
-        levelDetailConteiner.showLevelDetail(level, level.getDescItemList());
+        levelDetailConteiner.showLevelDetail(level, level.getDescItemList(), version.getFaVersionId());
     }
 
     private CssLayout createInlineDetail() {
@@ -272,7 +272,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
             public void run() {
                 table.setWidth("100%");
             }
-        });
+        }, ruleSetManager, arrangementManager);
 
         return levelDetailConteiner;
     }
@@ -638,7 +638,17 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
     private void initNewItemInContainer(final BeanItem<ArrFaLevel> item,
             final ArrFaLevel faLevel,
             final HierarchicalCollapsibleBeanItemContainer container) {
-        if (faLevel.getParentNodeId().equals(rootNode.getNodeId())) {
+        item.getItemProperty(LEVEL).setValue(faLevel.getNodeId());
+        item.getItemProperty(LEVEL_POSITION).setValue(faLevel.getPosition());
+
+        if (faLevel instanceof ArrFaLevelExt) {
+            ArrFaLevelExt faLevelExt = (ArrFaLevelExt) faLevel;
+            Map<Integer, String> attributeMap = createAttributeMap(faLevelExt);
+            //attributeMap.forEach((k,v) -> item.getItemProperty(k).setValue(v));
+            // TODO slapa: opravit?
+        }
+
+        if (faLevel.getParentNodeId().equals(version.getRootNode().getNodeId())) {
             //hack kvůli chybě ve vaadin, aby byl vložen prvek do seznamu rootů
             if (faLevel.equals(container.firstItemId())) {
                 container.setParent(faLevel, container.lastItemId());

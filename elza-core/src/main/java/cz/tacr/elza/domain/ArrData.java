@@ -98,4 +98,6 @@ public abstract class ArrData extends AbstractVersionableEntity implements IdObj
         return new HashCodeBuilder().append(getId()).toHashCode();
     }
 
+    public abstract String getData();
+
 }

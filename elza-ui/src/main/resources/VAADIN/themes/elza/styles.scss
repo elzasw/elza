@@ -113,6 +113,38 @@ $ax-main-focus: $color-app;
         }
     }
 
+    .container-values {
+        > .v-csslayout {
+            display: table-row;
+        }
+
+        .v-button {
+            display: inline-block;
+            margin: 10px;
+        }
+    }
+
+    .attribut-value {
+
+        .small-input {
+            width: 50px;
+        }
+
+        .long-input {
+            width: 300px;
+        }
+
+        textarea {
+
+        }
+    }
+
+    .new-attribut-button {
+
+        display: block;
+
+    }
+
 }
 
 .v-overlay-container[aria-label="item-not-cut"] .v-menubar-menuitem-show-if-cut {

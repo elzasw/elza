@@ -20,6 +20,7 @@ import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.AbstractPartyRepository;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
@@ -54,6 +55,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Abstraktní předek pro testy. Nastavuje REST prostředí.
@@ -266,7 +268,7 @@ public abstract class AbstractRestTest {
         return dataStr;
     }
 
-    private RulDescItemType createDescItemType(final int index) {
+    protected RulDescItemType createDescItemType(final int index) {
         RulDescItemType itemType = new RulDescItemType();
         RulDataType dataType = createDataType(index);
         itemType.setSys(true);
@@ -479,5 +481,22 @@ public abstract class AbstractRestTest {
         party.setPartySubtype(partySubtype);
         abstractPartyRepository.save(party);
         return party;
+    }
+
+    protected RulFaView createFaView(RulRuleSet ruleSet, ArrArrangementType arrangementType, List<Integer> ids) {
+        RulFaView view = new RulFaView();
+        view.setArrangementType(arrangementType);
+        view.setRuleSet(ruleSet);
+        String specification = null;
+        for (Integer id : ids) {
+            if (specification == null) {
+                specification = id.toString();
+            } else {
+                specification += "|" + id.toString();
+            }
+        }
+        view.setViewSpecification(specification);
+
+        return faViewRepository.save(view);
     }
 }

@@ -3,6 +3,7 @@ package cz.tacr.elza.controller;
 import static com.jayway.restassured.RestAssured.given;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.Assert;
@@ -17,6 +18,7 @@ import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.RulDescItemSpecExt;
+import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
 
@@ -99,7 +101,13 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
     public void testRestSaveAndGetFaViewDescItemTypes() throws Exception {
         RulRuleSet ruleSet = createRuleSet();
         ArrArrangementType arrangementType = createArrangementType();
-        Integer[] descItemTypeIds = {1,2,3,4,5,6,7};
+        List<Integer> descItemTypeIdList = new LinkedList<>();
+        for (int i = 0; i < 7; i++) {
+            descItemTypeIdList.add(createDescItemType(i).getDescItemTypeId());
+        }
+        Integer[] descItemTypeIds = descItemTypeIdList.toArray(new Integer[descItemTypeIdList.size()]);
+        createFaView(ruleSet, arrangementType, descItemTypeIdList);
+
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .parameter("ruleSetId", ruleSet.getRuleSetId())
                 .parameter("arrangementTypeId", arrangementType.getArrangementTypeId())
@@ -117,10 +125,10 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-//        List<Integer> ruleSets = Arrays.asList(response.getBody().as(Integer[].class));
-//        Assert.assertEquals(descItemTypeIds.length, ruleSets.size());
-//        for (int i = 0; i < descItemTypeIds.length; i++) {
-//            Assert.assertEquals(descItemTypeIds[i], ruleSets.get(i));
-//        }
+        List<RulDescItemType> ruleSets = Arrays.asList(response.getBody().as(RulDescItemType[].class));
+        Assert.assertEquals(descItemTypeIds.length, ruleSets.size());
+        for (int i = 0; i < descItemTypeIds.length; i++) {
+            Assert.assertEquals(descItemTypeIds[i], ruleSets.get(i).getDescItemTypeId());
+        }
     }
 }
