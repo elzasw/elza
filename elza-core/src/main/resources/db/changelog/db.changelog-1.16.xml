@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+        <!--Verze 1.16 - přidání sloupečku pro optimistický zámek -->
+        <changeSet id="16" author="vanek" failOnError="false" runOnChange="true">
+            <addColumn tableName="arr_finding_aid">
+                <column name="version" type="int" defaultValueNumeric="0" />
+            </addColumn>
+            <addColumn tableName="arr_fa_version">
+                <column name="version" type="int" defaultValueNumeric="0" />
+            </addColumn>
+            <addColumn tableName="arr_fa_level">
+                <column name="version" type="int" defaultValueNumeric="0" />
+            </addColumn>
+            <addColumn tableName="reg_record"> 
+                <column name="version" type="int" defaultValueNumeric="0" />
+            </addColumn>
+            <addColumn tableName="reg_variant_record">
+                <column name="version" type="int" defaultValueNumeric="0" />
+            </addColumn>
+            <addColumn tableName="par_abstract_party">
+                <column name="version" type="int" defaultValueNumeric="0" />
+            </addColumn>
+            <addColumn tableName="arr_data">
+                <column name="version" type="int" defaultValueNumeric="0" />
+            </addColumn>
+            <addColumn tableName="arr_desc_item">
+                <column name="version" type="int" defaultValueNumeric="0" />
+            </addColumn>
+            <addColumn tableName="rul_fa_view">
+                <column name="version" type="int" defaultValueNumeric="0" />
+            </addColumn>
+        </changeSet>
+</databaseChangeLog>
+
+
+
+
+
+
+
+
+
+

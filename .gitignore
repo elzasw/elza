@@ -48,3 +48,6 @@ org.eclipse.jdt.core.prefs
 /elza-war/.settings/org.eclipse.wst.jsdt.ui.superType.container
 /elza-war/.settings/org.eclipse.wst.jsdt.ui.superType.name
 /elza-war/.settings/org.eclipse.wst.validation.prefs
+/elza-api/.settings/org.eclipse.wst.validation.prefs
+/elza-core/.settings/org.eclipse.wst.validation.prefs
+/elza-ui/.settings/org.eclipse.wst.validation.prefs

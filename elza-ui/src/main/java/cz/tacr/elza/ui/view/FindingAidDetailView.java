@@ -638,9 +638,6 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
     private void initNewItemInContainer(final BeanItem<ArrFaLevel> item,
             final ArrFaLevel faLevel,
             final HierarchicalCollapsibleBeanItemContainer container) {
-        item.getItemProperty(LEVEL).setValue(faLevel.getNodeId());
-        item.getItemProperty(LEVEL_POSITION).setValue(faLevel.getPosition());
-
         if (faLevel instanceof ArrFaLevelExt) {
             ArrFaLevelExt faLevelExt = (ArrFaLevelExt) faLevel;
             Map<Integer, String> attributeMap = createAttributeMap(faLevelExt);
