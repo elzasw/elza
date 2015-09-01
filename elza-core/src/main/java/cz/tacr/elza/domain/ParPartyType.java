@@ -27,14 +27,17 @@ import javax.persistence.Table;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ParPartyType implements IdObject<Integer>, cz.tacr.elza.api.ParPartyType {
 
+    /* Konstanty pro vazby a fieldy. */
+    public static final String PARTY_TYPE_ID = "partyTypeId";
+
     @Id
     @GeneratedValue
     private Integer partyTypeId;
 
-    @Column(length = 15, nullable = false)
+    @Column(length = 50, nullable = false)
     private String code;
 
-    @Column(length = 50, nullable = false)
+    @Column(length = 250, nullable = false)
     private String name;
 
     @Column(nullable = false)

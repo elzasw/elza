@@ -22,10 +22,10 @@ public class ArrArrangementType implements IdObject<Integer>, cz.tacr.elza.api.A
     @GeneratedValue
     private Integer arrangementTypeId;
 
-    @Column(length = 5, nullable = false)
+    @Column(length = 50, nullable = false)
     private String code;
 
-    @Column(length = 50, nullable = false)
+    @Column(length = 250, nullable = false)
     private String name;
 
     @Override

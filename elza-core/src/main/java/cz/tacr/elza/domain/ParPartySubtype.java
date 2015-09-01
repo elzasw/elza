@@ -30,6 +30,9 @@ import javax.persistence.Table;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ParPartySubtype implements IdObject<Integer>, cz.tacr.elza.api.ParPartySubtype<ParPartyType> {
 
+    /* Konstanty pro vazby a fieldy. */
+    public static final String PARTY_TYPE = "partyType";
+
     @Id
     @GeneratedValue
     private Integer partySubtypeId;
@@ -38,10 +41,10 @@ public class ParPartySubtype implements IdObject<Integer>, cz.tacr.elza.api.ParP
     @JoinColumn(name = "partyTypeId", nullable = false)
     private ParPartyType partyType;
 
-    @Column(length = 15, nullable = false)
+    @Column(length = 50, nullable = false)
     private String code;
 
-    @Column(length = 50, nullable = false)
+    @Column(length = 250, nullable = false)
     private String name;
 
     @Column(nullable = false)

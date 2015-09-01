@@ -1,6 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import cz.req.ax.IdObject;
@@ -45,14 +44,13 @@ public class RegVariantRecord extends AbstractVersionableEntity implements IdObj
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRecord.class)
     @JoinColumn(name = "recordId", nullable = false)
-    @JsonBackReference(value = "regRecordPar")
     private RegRecord regRecord;
 
 //    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRecord.class)
 //    @JoinColumn(name = "recordId", nullable = false, insertable = false, updatable = false)
 //    private RegRecord regRecordPar;
 
-    @Column(length = 500)
+    @Column(length = 1000)
     private String record;
 
     /* Konstanty pro vazby a fieldy. */

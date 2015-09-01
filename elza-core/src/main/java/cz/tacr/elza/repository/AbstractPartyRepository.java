@@ -11,7 +11,7 @@ import java.util.List;
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public interface AbstractPartyRepository extends JpaRepository<ParAbstractParty, Integer> {
+public interface AbstractPartyRepository extends JpaRepository<ParAbstractParty, Integer>, AbstractPartyRepositoryCustom {
 
     /**
      * @param recordId  id záznamu rejtříku

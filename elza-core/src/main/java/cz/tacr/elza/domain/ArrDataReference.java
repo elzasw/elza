@@ -11,18 +11,20 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
-@Entity(name = "arr_data_reference")
+@Entity(name = "arr_data_unitid")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataReference extends ArrData implements cz.tacr.elza.api.ArrDataReference{
 
-    @Column(length = 100, nullable = false)
+    @Column(length = 250, nullable = false)
     private String value;
 
+    @Override
     public String getValue() {
         return value;
     }
 
+    @Override
     public void setValue(final String value) {
         this.value = value;
     }

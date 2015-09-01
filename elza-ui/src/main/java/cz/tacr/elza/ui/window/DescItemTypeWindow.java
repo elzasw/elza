@@ -26,7 +26,6 @@ import com.vaadin.ui.Table.TableDragMode;
 
 import cz.req.ax.AxAction;
 import cz.req.ax.AxWindow;
-import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.RulDescItemType;
@@ -54,7 +53,7 @@ public class DescItemTypeWindow extends AxWindow {
         this.ruleSetManager = ruleSetManager;
     }
 
-    public AxWindow show(final ArrFaVersion version) {
+    public AxWindow show(final ArrFaVersion version, PosAction posAction) {
         ruleSetId = version.getRuleSet().getRuleSetId();
         arrangementTypeId = version.getArrangementType().getArrangementTypeId();
         List<RulDescItemTypeExt> itemTypeSet = ruleSetManager.getDescriptionItemTypes(ruleSetId);
@@ -125,7 +124,7 @@ public class DescItemTypeWindow extends AxWindow {
         table.setVisibleColumns(COLUMN_SELECTED, COLUMN_NAME);
 
         caption("Výber sloupců k zobrazení").components(table).buttonClose("Storno")
-                .buttonPrimary(new AxAction().caption("Uložit").run(() -> save())).modal()
+                .buttonPrimary(new AxAction().caption("Uložit").run(() -> save(posAction))).modal()
                 .style("window-detail");
 
         return super.show();
@@ -142,7 +141,7 @@ public class DescItemTypeWindow extends AxWindow {
         targer.getItemProperty(COLUMN_SELECTED).setValue(value);
     }
 
-    private void save() {
+    private void save(PosAction posAction) {
         List<Integer> resultList = new LinkedList<>();
         for (Object itemId : container.getItemIds()) {
             Item item = container.getItem(itemId);
@@ -154,6 +153,7 @@ public class DescItemTypeWindow extends AxWindow {
         }
         ruleSetManager.saveFaViewDescItemTypes(ruleSetId, arrangementTypeId,
                 resultList.toArray(new Integer[resultList.size()]));
+        posAction.onCommit();
     }
 
     private DropHandler createDropHandler(final Table table) {

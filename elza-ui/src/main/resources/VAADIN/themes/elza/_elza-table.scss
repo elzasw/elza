@@ -25,6 +25,15 @@
         text-overflow: ellipsis;
         overflow: hidden;
         max-width: 2000px;
+/*        white-space: pre-wrap;  */
+    }
+
+}
+
+.v-table.attribut-table {
+
+    .v-table-cell-wrapper {
+        white-space: pre-wrap;
     }
 
 }

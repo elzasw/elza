@@ -25,6 +25,7 @@ import com.vaadin.data.util.BeanItem;
 import com.vaadin.event.ItemClickEvent;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.FontAwesome;
+import com.vaadin.server.Page;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.Table;
@@ -52,6 +53,7 @@ import cz.tacr.elza.ui.utils.ConcurrentUpdateExceptionHandler;
 import cz.tacr.elza.ui.utils.ElzaNotifications;
 import cz.tacr.elza.ui.window.DescItemTypeWindow;
 import cz.tacr.elza.ui.window.LevelHistoryWindow;
+import cz.tacr.elza.ui.window.PosAction;
 
 
 /**
@@ -63,7 +65,7 @@ import cz.tacr.elza.ui.window.LevelHistoryWindow;
 @Component
 @Scope("prototype")
 @VaadinView("FindingAidDetail")
-public class FindingAidDetailView extends ElzaView {
+public class FindingAidDetailView extends ElzaView implements PosAction {
 
     @Autowired
     private ArrangementManager arrangementManager;
@@ -129,15 +131,15 @@ public class FindingAidDetailView extends ElzaView {
         table.setPageLength(20);
 
         List<Object> sloupceId = new LinkedList<>();
-        sloupceId.add("faLevelId");
-        table.setColumnHeader("faLevelId", "Úroveň");
-        table.addGeneratedColumn("faLevelId", new Table.ColumnGenerator() {
-            @Override
-            public Object generateCell(final Table source, final Object itemId, final Object columnId) {
-                ArrFaLevel node = (ArrFaLevel) itemId;
-                return node.getNodeId();
-            }
-        });
+//        sloupceId.add("faLevelId");
+//        table.setColumnHeader("faLevelId", "Úroveň");
+//        table.addGeneratedColumn("faLevelId", new Table.ColumnGenerator() {
+//            @Override
+//            public Object generateCell(final Table source, final Object itemId, final Object columnId) {
+//                ArrFaLevel node = (ArrFaLevel) itemId;
+//                return node.getNodeId();
+//            }
+//        });
         sloupceId.add(POSITION_FIELD);
         table.setColumnHeader(POSITION_FIELD, LEVEL_POSITION);
         table.addGeneratedColumn(POSITION_FIELD, new Table.ColumnGenerator() {
@@ -149,7 +151,8 @@ public class FindingAidDetailView extends ElzaView {
         });
         for (RulDescItemType descItemType : sloupce) {
             sloupceId.add(descItemType.getDescItemTypeId());
-            table.setColumnHeader(descItemType.getDescItemTypeId(), descItemType.getShortcut());
+            table.setColumnHeader(descItemType.getDescItemTypeId(), "<div title=\"" + descItemType.getName()
+                    + "\" >" + descItemType.getShortcut() + "</div>");
             table.addGeneratedColumn(descItemType.getDescItemTypeId(), new Table.ColumnGenerator() {
                 @Override
                 public Object generateCell(final Table source, final Object itemId, final Object columnId) {
@@ -565,6 +568,11 @@ public class FindingAidDetailView extends ElzaView {
     }
 
     private void addAttributeToCache(final ArrFaLevelExt level) {
+        Map<Integer, String> attributeList = createAttributeMap(level);
+        attributeCache.put(level.getNodeId(), attributeList);
+    }
+
+    private Map<Integer, String> createAttributeMap(final ArrFaLevelExt level) {
         Map<Integer, String> attributeList = new HashMap<>();
         List<ArrDescItemExt> descItemList = level.getDescItemList();
         for (ArrDescItemExt arrDescItemExt : descItemList) {
@@ -582,7 +590,7 @@ public class FindingAidDetailView extends ElzaView {
             }
             attributeList.put(descItemTypeId, attribute);
         }
-        attributeCache.put(level.getNodeId(), attributeList);
+        return attributeList;
     }
 
     private void addItemToContainer(final ArrFaLevel level, final HierarchicalCollapsibleBeanItemContainer container) {
@@ -630,7 +638,7 @@ public class FindingAidDetailView extends ElzaView {
     private void initNewItemInContainer(final BeanItem<ArrFaLevel> item,
             final ArrFaLevel faLevel,
             final HierarchicalCollapsibleBeanItemContainer container) {
-        if (faLevel.getParentNodeId().equals(version.getRootNode().getNodeId())) {
+        if (faLevel.getParentNodeId().equals(rootNode.getNodeId())) {
             //hack kvůli chybě ve vaadin, aby byl vložen prvek do seznamu rootů
             if (faLevel.equals(container.firstItemId())) {
                 container.setParent(faLevel, container.lastItemId());
@@ -665,7 +673,7 @@ public class FindingAidDetailView extends ElzaView {
             navigate(VersionListView.class, findingAidId));
             AxAction detail = new AxAction().caption("Zobrazit detail AP").icon(FontAwesome.BOOK).run(() ->
             showDetailAP());
-            AxAction itemTypes = new AxAction().caption("Výběr sloupců").icon(FontAwesome.BOOK).run(() ->
+            AxAction itemTypes = new AxAction().caption("Výběr sloupců").icon(FontAwesome.COG).run(() ->
                      showDescItemTypeWindow());
             actions(hist, detail, itemTypes);
         } else {
@@ -702,7 +710,7 @@ public class FindingAidDetailView extends ElzaView {
                     }),
                     new AxAction().caption("Zobrazit detail AP").icon(FontAwesome.BOOK).run(() ->
                         showDetailAP()),
-                    new AxAction().caption("Výběr sloupců").icon(FontAwesome.BOOK).run(() ->
+                    new AxAction().caption("Výběr sloupců").icon(FontAwesome.COG).run(() ->
                         showDescItemTypeWindow())
                     );
         }
@@ -762,8 +770,13 @@ public class FindingAidDetailView extends ElzaView {
     private DescItemTypeWindow showDescItemTypeWindow() {
         DescItemTypeWindow window = new DescItemTypeWindow(ruleSetManager);
         ArrFaVersion arrFaVersion = arrangementManager.getFaVersionById(version.getId());
-        window.show(arrFaVersion);
+        window.show(arrFaVersion, this);
         return window;
+    }
+
+    @Override
+    public void onCommit() {
+        Page.getCurrent().reload();
     }
 }
 

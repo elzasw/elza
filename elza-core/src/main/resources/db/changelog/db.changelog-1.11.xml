@@ -6,34 +6,36 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-        <!--Verze 1.11 - přidání sloupečku pro optimistický zámek -->
-        <changeSet id="11" author="vanek" failOnError="false" runOnChange="true">
-            <addColumn tableName="arr_finding_aid">
-                <column name="version" type="int" defaultValueNumeric="0" />
-            </addColumn>
-            <addColumn tableName="arr_fa_version">
-                <column name="version" type="int" defaultValueNumeric="0" />
-            </addColumn>
-            <addColumn tableName="arr_fa_level">
-                <column name="version" type="int" defaultValueNumeric="0" />
-            </addColumn>
-            <addColumn tableName="reg_record"> 
-                <column name="version" type="int" defaultValueNumeric="0" />
-            </addColumn>
-            <addColumn tableName="reg_variant_record">
-                <column name="version" type="int" defaultValueNumeric="0" />
-            </addColumn>
-            <addColumn tableName="par_abstract_party">
-                <column name="version" type="int" defaultValueNumeric="0" />
-            </addColumn>
-            <addColumn tableName="arr_data">
-                <column name="version" type="int" defaultValueNumeric="0" />
-            </addColumn>
-            <addColumn tableName="arr_desc_item">
-                <column name="version" type="int" defaultValueNumeric="0" />
-            </addColumn>
-            <addColumn tableName="rul_fa_view">
-                <column name="version" type="int" defaultValueNumeric="0" />
-            </addColumn>
+        <!--Verze 1.11 - změna velikosti varchar -->
+        <changeSet id="11" author="vavrejn" failOnError="false" runOnChange="true">
+                <modifyDataType tableName="rul_arrangement_type" columnName="code" newDataType="varchar(50)"/>
+                <modifyDataType tableName="rul_arrangement_type" columnName="name" newDataType="varchar(250)"/>
+                <modifyDataType tableName="arr_data_datace" columnName="value" newDataType="varchar(250)"/>
+                <modifyDataType tableName="arr_data_reference" columnName="value" newDataType="varchar(250)"/>
+                <modifyDataType tableName="par_party_subtype" columnName="code" newDataType="varchar(50)"/>
+                <modifyDataType tableName="par_party_subtype" columnName="name" newDataType="varchar(250)"/>
+                <modifyDataType tableName="par_party_type" columnName="code" newDataType="varchar(50)"/>
+                <modifyDataType tableName="par_party_type" columnName="name" newDataType="varchar(250)"/>
+                <modifyDataType tableName="reg_external_source" columnName="code" newDataType="varchar(50)"/>
+                <modifyDataType tableName="reg_external_source" columnName="name" newDataType="varchar(250)"/>
+                <modifyDataType tableName="reg_record" columnName="record" newDataType="varchar(1000)"/>
+                <modifyDataType tableName="reg_record" columnName="external_id" newDataType="varchar(250)"/>
+                <modifyDataType tableName="reg_register_type" columnName="code" newDataType="varchar(50)"/>
+                <modifyDataType tableName="reg_register_type" columnName="name" newDataType="varchar(250)"/>
+                <modifyDataType tableName="reg_variant_record" columnName="record" newDataType="varchar(1000)"/>
+                <modifyDataType tableName="rul_data_type" columnName="code" newDataType="varchar(50)"/>
+                <modifyDataType tableName="rul_data_type" columnName="name" newDataType="varchar(250)"/>
+                <modifyDataType tableName="rul_data_type" columnName="storage_table" newDataType="varchar(250)"/>
+                <modifyDataType tableName="rul_desc_item_constraint" columnName="regexp" newDataType="varchar(250)"/>
+                <modifyDataType tableName="rul_desc_item_spec" columnName="code" newDataType="varchar(50)"/>
+                <modifyDataType tableName="rul_desc_item_spec" columnName="name" newDataType="varchar(250)"/>
+                <modifyDataType tableName="rul_desc_item_spec" columnName="shortcut" newDataType="varchar(50)"/>
+                <modifyDataType tableName="rul_desc_item_type" columnName="code" newDataType="varchar(50)"/>
+                <modifyDataType tableName="rul_desc_item_type" columnName="name" newDataType="varchar(250)"/>
+                <modifyDataType tableName="rul_desc_item_type" columnName="shortcut" newDataType="varchar(50)"/>
+                <modifyDataType tableName="rul_rule_set" columnName="code" newDataType="varchar(50)"/>
+                <modifyDataType tableName="rul_rule_set" columnName="name" newDataType="varchar(250)"/>
         </changeSet>
+
+
 </databaseChangeLog>

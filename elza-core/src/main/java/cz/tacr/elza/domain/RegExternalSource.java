@@ -31,10 +31,10 @@ public class RegExternalSource implements IdObject<Integer>, cz.tacr.elza.api.Re
     @GeneratedValue
     private Integer externalSourceId;
 
-    @Column(length = 20, nullable = false)
+    @Column(length = 50, nullable = false)
     private String code;
 
-    @Column(length = 200, nullable = false)
+    @Column(length = 250, nullable = false)
     private String name;
 
 

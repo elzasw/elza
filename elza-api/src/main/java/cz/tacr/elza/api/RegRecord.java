@@ -42,7 +42,15 @@ public interface RegRecord<RT extends RegRegisterType, ES extends RegExternalSou
 
     void setExternal_id(String external_id);
 
+    /**
+     * Vazba na variantní záznamy.
+     * @param variantRecordList množina záznamů
+     */
     void setVariantRecordList(List<VR> variantRecordList);
 
+    /**
+     * Vazba na variantní záznamy.
+     * @return  množina, může být prázdná
+     */
     List<VR> getVariantRecordList();
 }

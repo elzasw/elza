@@ -24,10 +24,10 @@ public class RulRuleSet implements IdObject<Integer>, cz.tacr.elza.api.RulRuleSe
     @GeneratedValue
     private Integer ruleSetId;
 
-    @Column(length = 5, nullable = false)
+    @Column(length = 50, nullable = false)
     private String code;
 
-    @Column(length = 50, nullable = false)
+    @Column(length = 250, nullable = false)
     private String name;
 
     @Override

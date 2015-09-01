@@ -11,15 +11,27 @@ import java.util.List;
 /**
  * Rozhraní operací pro rejstřík.
  */
-public interface RegistryManager<RR extends RegRecord> {
+public interface RegistryManager<RR extends RegRecord, VR extends RegVariantRecord> {
 
     /**
      * Vytvoření nového záznamu.
      *
-     * @param regRecord     naplněný objekt
+     * @param regRecord         naplněný objekt, bez vazeb
+     * @param registerTypeId    id typu rejstříku
+     * @param externalSourceId  id externího zdroje, může být null
      * @return              nově vytvořený objekt
      */
-    RR createRecord(RR regRecord);
+    RR createRecord(RR regRecord, Integer registerTypeId, Integer externalSourceId);
+
+    /**
+     * Update záznamu.
+     *
+     * @param record            naplněný objekt s vlastním ID, bez vazeb
+     * @param registerTypeId    id typu rejstříku
+     * @param externalSourceId  id externího zdroje, může být null
+     * @return                  změněný objekt
+     */
+    RegRecord updateRecord(RR record, Integer registerTypeId, Integer externalSourceId);
 
     /**
      * Smaže entity které používají daný záznam a pak záznam samotný.
@@ -27,6 +39,31 @@ public interface RegistryManager<RR extends RegRecord> {
      * @param recordId  id záznamu rejstříku
      */
     void deleteRecord(Integer recordId);
+
+    /**
+     * Vytvoří nový variantní záznam rejstříku.
+     *
+     * @param variantRecord     vyplněný objekt bez vazeb
+     * @param regRecordId       id nadřazeného záznamu rejstříku
+     * @return                  nově vytvořený objekt
+     */
+    RegVariantRecord createVariantRecord(VR variantRecord, Integer regRecordId);
+
+    /**
+     * Vytvoří nový variantní záznam rejstříku.
+     *
+     * @param variantRecord     vyplněný objekt bez vazeb
+     * @param regRecordId       id nadřazeného záznamu rejstříku
+     * @return                  nově vytvořený objekt
+     */
+    RegVariantRecord updateVariantRecord(VR variantRecord, Integer regRecordId);
+
+    /**
+     * Smaže variantní záznam.
+     *
+     * @param variantRecordId       id variantního záznamu
+     */
+    void deleteVariantRecord(Integer variantRecordId);
 
     /**
      * @return  vrátí seznam typů registrů
@@ -50,5 +87,20 @@ public interface RegistryManager<RR extends RegRecord> {
      */
     List<? extends RegRecord> findRecord(String search, Integer from, Integer count, Integer registerTypeId);
 
-    List<? extends RegVariantRecord> getVariantRecords();
+    /**
+     * Celkový počet záznamů v DB pro funkci {@link #findRecord(String, Integer, Integer, Integer)}
+     *
+     * @param search            hledaný řetězec, může být null
+     * @param registerTypeId    typ záznamu
+     * @return                  celkový počet záznamů, který je v db za dané parametry
+     */
+    long findRecordCount(String search, Integer registerTypeId);
+
+    /**
+     * Vrátí jeden záznam dle id.
+     * @param recordId      id požadovaného záznamu
+     * @return              záznam
+     */
+    RegRecord getRecord(Integer recordId);
+
 }

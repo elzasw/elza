@@ -12,17 +12,25 @@ import java.util.List;
  */
 public interface RegRecordRepositoryCustom {
 
-
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (record, charateristics, comment),
      * nebo pole variantního záznamu obsahují hledaný řetězec. V případě, že hledaný řetězec je null, nevyhodnocuje se.
      *
      * @param searchRecord      hledaný řetězec, může být null
-     * @param registerTypeId    ty záznamu
+     * @param registerTypeId    typ záznamu
      * @param firstResult       index prvního záznamu, začíná od 0
      * @param maxResults        počet výsledků k vrácení
      * @return                  vybrané záznamy dle popisu seřazené za record, nbeo prázdná množina
      */
     List<RegRecord> findRegRecordByTextAndType(@Nullable String searchRecord, Integer registerTypeId,
                                                Integer firstResult, Integer maxResults);
+
+    /**
+     * Celkový počet záznamů v DB pro funkci {@link #findRegRecordByTextAndType(String, Integer, Integer, Integer)}
+     *
+     * @param searchRecord      hledaný řetězec, může být null
+     * @param registerTypeId    typ záznamu
+     * @return                  celkový počet záznamů, který je v db za dané parametry
+     */
+    long findRegRecordByTextAndTypeCount(String searchRecord, Integer registerTypeId);
 }
