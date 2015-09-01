@@ -33,15 +33,19 @@ public class AttributValue extends CssLayout implements Components {
 
         switch (dataType.getCode()) {
             case "INT":
-            case "REF":
+            case "UNITID":
                 form.addField(null, "data").style("small-input");
                 break;
             case "STRING":
                 form.addField(null, "data").style("long-input");
                 break;
-            case "DATACE":
+            case "UNITDATE":
             case "TEXT":
+            case "COORDINATES":
                 form.addField(null, "data", TextArea.class);
+                break;
+            case "FORMATTED_TEXT":
+                form.addRichtext(null, "data");
                 break;
             default:
                 throw new IllegalStateException("Typ '" + dataType.getCode() + "' není implementován");
