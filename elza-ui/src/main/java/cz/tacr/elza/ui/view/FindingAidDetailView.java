@@ -21,6 +21,7 @@ import org.springframework.util.CollectionUtils;
 import ru.xpoft.vaadin.VaadinView;
 
 import com.vaadin.data.Item;
+import com.vaadin.data.util.BeanItem;
 import com.vaadin.event.ItemClickEvent;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.FontAwesome;
@@ -72,10 +73,10 @@ public class FindingAidDetailView extends ElzaView {
 
     private Integer findingAidId;
     private ArrFaVersion version;
-    private Integer rootNodeId;
+    private ArrFaLevel rootNode;
 
     private ArrFindingAid findingAid;
-    private Integer levelNodeIdVyjmout;
+    private ArrFaLevel levelNodeVyjmout;
 
     AxContainer<ArrArrangementType> arTypeContainer;
     AxContainer<RulRuleSet> ruleSetContainer;
@@ -85,6 +86,7 @@ public class FindingAidDetailView extends ElzaView {
 
     public static final String LEVEL = "Úroveň";
     public static final String LEVEL_POSITION = "Pozice";
+    public static final String POSITION_FIELD = "position";
     public static final String ACTION = "Akce";
 
     private Map<Integer, Map<Integer, String>> attributeCache = new HashMap<Integer, Map<Integer, String>>();
@@ -109,9 +111,8 @@ public class FindingAidDetailView extends ElzaView {
         pageTitle(findingAid.getName());
         addActionsButtons(version.getLockChange() != null);
 
-        HierarchicalCollapsibleContainer container = new HierarchicalCollapsibleContainer();
-        container.addContainerProperty(LEVEL, Integer.class, 0);
-        container.addContainerProperty(LEVEL_POSITION, Integer.class, 0);
+        rootNode = arrangementManager.findLevelByNodeId(version.getRootNode().getNodeId() , version.getFaVersionId());
+        HierarchicalCollapsibleBeanItemContainer container = new HierarchicalCollapsibleBeanItemContainer(null, rootNode.getNodeId());
 
 
         List<RulDescItemType> sloupce = new LinkedList<>();
@@ -126,23 +127,34 @@ public class FindingAidDetailView extends ElzaView {
         table.setContainerDataSource(container);
         table.setSortEnabled(false);
         table.setPageLength(20);
-        table.addGeneratedColumn(LEVEL, new Table.ColumnGenerator() {
-            @Override
-            public Object generateCell(final Table source, final Object itemId, final Object columnId) {
-                return "";
-            }
-        });
 
         List<Object> sloupceId = new LinkedList<>();
-        sloupceId.add(LEVEL);
-        sloupceId.add(LEVEL_POSITION);
+        sloupceId.add("faLevelId");
+        table.setColumnHeader("faLevelId", "Úroveň");
+        table.addGeneratedColumn("faLevelId", new Table.ColumnGenerator() {
+            @Override
+            public Object generateCell(final Table source, final Object itemId, final Object columnId) {
+                ArrFaLevel node = (ArrFaLevel) itemId;
+                return node.getNodeId();
+            }
+        });
+        sloupceId.add(POSITION_FIELD);
+        table.setColumnHeader(POSITION_FIELD, LEVEL_POSITION);
+        table.addGeneratedColumn(POSITION_FIELD, new Table.ColumnGenerator() {
+            @Override
+            public Object generateCell(final Table source, final Object itemId, final Object columnId) {
+                ArrFaLevel node = (ArrFaLevel) itemId;
+                return node.getPosition();
+            }
+        });
         for (RulDescItemType descItemType : sloupce) {
             sloupceId.add(descItemType.getDescItemTypeId());
             table.setColumnHeader(descItemType.getDescItemTypeId(), descItemType.getShortcut());
             table.addGeneratedColumn(descItemType.getDescItemTypeId(), new Table.ColumnGenerator() {
                 @Override
                 public Object generateCell(final Table source, final Object itemId, final Object columnId) {
-                    return getAttributeValue((Integer)itemId, (Integer)columnId);
+                    ArrFaLevel node = (ArrFaLevel) itemId;
+                    return getAttributeValue(node.getNodeId(), (Integer)columnId);
                 }
             });
         }
@@ -169,18 +181,18 @@ public class FindingAidDetailView extends ElzaView {
             @Override
             public void itemClick(final ItemClickEvent event) {
                 table.setWidth("50%");
-                ArrFaLevelExt level = arrangementManager.getLevel((Integer) event.getItemId(), version.getFaVersionId(), null);
+                ArrFaLevel node = (ArrFaLevel) event.getItemId();
+                ArrFaLevelExt level = arrangementManager.getLevel(node.getNodeId(), version.getFaVersionId(), null);
                 levelDetailConteiner.showLevelDetail(level, level.getDescItemList());
             }
         });
 
-        refreshTree(container, version.getRootNode());
-        rootNodeId = (Integer) version.getRootNode().getNodeId();
+        refreshTree(container, rootNode);
 
         table.addCollapseListener(new Tree.CollapseListener() {
             @Override
             public void nodeCollapse(final Tree.CollapseEvent collapseEvent) {
-                Integer itemId = (Integer) collapseEvent.getItemId();
+                ArrFaLevel itemId = (ArrFaLevel) collapseEvent.getItemId();
                 removeAllChildren(table, itemId);
             }
         });
@@ -189,19 +201,22 @@ public class FindingAidDetailView extends ElzaView {
 
             @Override
             public void nodeExpand(final Tree.ExpandEvent expandEvent) {
-                Integer itemId = (Integer) expandEvent.getItemId();
+                ArrFaLevel itemId = (ArrFaLevel) expandEvent.getItemId();
 
-                Integer itemIdLast = itemId;
+                ArrFaLevel itemIdLast = itemId;
 
-                List<ArrFaLevelExt> faLevels = arrangementManager.findSubLevels(itemId, version.getFaVersionId(), ArrangementManager.FORMAT_ATTRIBUTE_SHORT, null);
-                for (ArrFaLevelExt faLevel : faLevels) {
-                    if (container.containsId(faLevel.getNodeId())) {
+                List<ArrFaLevel> faLevels = arrangementManager.findSubLevels(itemId.getNodeId(), version.getFaVersionId());
+                for (ArrFaLevel faLevel : faLevels) {
+                    if (container.containsId(faLevel)) {
                         break;
                     }
-                    addAttributeToCache(faLevel);
-                    Item item = table.addItemAfter(itemIdLast, faLevel.getNodeId());
-                    itemIdLast = faLevel.getNodeId();
+                    BeanItem item = (BeanItem) table.addItemAfter(itemIdLast, faLevel);
+                    itemIdLast = faLevel;
                     initNewItemInContainer(item, faLevel, container);
+                }
+                List<ArrFaLevelExt> faLevelsExt = arrangementManager.findSubLevels(itemId.getNodeId(), version.getFaVersionId(), ArrangementManager.FORMAT_ATTRIBUTE_SHORT, null);
+                for (ArrFaLevelExt faLevel : faLevelsExt) {
+                    addAttributeToCache(faLevel);
                 }
             }
         });
@@ -244,7 +259,7 @@ public class FindingAidDetailView extends ElzaView {
 
     private void showDetailAP() {
         table.setWidth("50%");
-        ArrFaLevelExt level = arrangementManager.getLevel(rootNodeId, version.getFaVersionId(), null);
+        ArrFaLevelExt level = arrangementManager.getLevel(rootNode.getNodeId(), version.getFaVersionId(), null);
         levelDetailConteiner.showLevelDetail(level, level.getDescItemList());
     }
 
@@ -260,7 +275,7 @@ public class FindingAidDetailView extends ElzaView {
     }
 
 
-    private void addActionMenu(HierarchicalCollapsibleContainer container) {
+    private void addActionMenu(HierarchicalCollapsibleBeanItemContainer container) {
         table.addGeneratedColumn("Akce", new Table.ColumnGenerator() {
             @Override
             public Object generateCell(final Table source, final Object itemId, final Object columnId) {
@@ -272,37 +287,34 @@ public class FindingAidDetailView extends ElzaView {
                 MenuBar.MenuItem child = new AxAction().caption("Přidat záznam před").icon(FontAwesome.PLUS).run(() -> {
                     discardNodeCut();
 
-                    ArrFaLevel level = arrangementManager.addLevelBefore((Integer) itemId);
-                    Item item = container
-                            .addItemAt(container.indexOfId(itemId), level.getNodeId());
+                    ArrFaLevel node = (ArrFaLevel) itemId;
+                    ArrFaLevel level = arrangementManager.addLevelBefore(node);
+                    BeanItem item = (BeanItem) container.addItemAt(container.indexOfId(node), level);
+
                     initNewItemInContainer(item, level, container);
-                    repositionLowerSiblings(level.getNodeId(),
-                            (Integer) item.getItemProperty(LEVEL_POSITION).getValue() + 1,
-                            container);
+                    repositionLowerSiblings(level, level.getPosition() + 1 , container);
+                    table.refreshRowCache();
                     ElzaNotifications.show("Přidáno...");
                 }
-                        ).menuItem(parent);
-
+            ).exception(new ConcurrentUpdateExceptionHandler()).menuItem(parent);
 
                 child = new AxAction().caption("Přidat záznam za").icon(FontAwesome.PLUS).run(new Runnable() {
                     @Override
                     public void run() {
                         discardNodeCut();
-                        Integer lastId = getItemIdAfterChilds((Integer) itemId, container);
+                        ArrFaLevel node = (ArrFaLevel) itemId;
+                        ArrFaLevel lastId = getItemIdAfterChilds(node, container);
 
-                        ArrFaLevel newFaLevel = arrangementManager.addLevelAfter((Integer) itemId);
+                        ArrFaLevel newFaLevel = arrangementManager.addLevelAfter(node);
 
-                        Item item = container.getItem(itemId);
-                        repositionLowerSiblings((Integer) itemId,
-                                (Integer) item.getItemProperty(LEVEL_POSITION).getValue() + 2,
-                                container);
+                        repositionLowerSiblings(node, node.getPosition() + 2, container);
 
                         addItemAfterToContainer(newFaLevel, container, lastId);
-
+                        table.refreshRowCache();
 
                         ElzaNotifications.show("Přidáno...");
                     }
-                }).menuItem(parent);
+                }).exception(new ConcurrentUpdateExceptionHandler()).menuItem(parent);
 
                 child = new AxAction().caption("Přidat podřízený záznam").icon(FontAwesome.PLUS).run(() -> {
                     discardNodeCut();
@@ -310,57 +322,54 @@ public class FindingAidDetailView extends ElzaView {
                         table.setCollapsed(itemId, false);
                     }
 
-                    ArrFaLevel newFaLevel = arrangementManager.addLevelChild((Integer) itemId);
+                    ArrFaLevel itemIdLast = (ArrFaLevel) itemId;
+                    ArrFaLevel newFaLevel = arrangementManager.addLevelChild(itemIdLast);
 
-                    Object itemIdLast = itemId;
-                    Collection<?> children = container.getChildren(itemId);
+                    Collection<?> children = container.getChildren(itemIdLast);
                     if (!CollectionUtils.isEmpty(children)) {
                         Iterator<?> iterator = children.iterator();
                         while (iterator.hasNext()) {
-                            itemIdLast = iterator.next();
+                            itemIdLast = (ArrFaLevel) iterator.next();
                         }
                     }
 
-                    Item item = table.addItemAfter(itemIdLast, newFaLevel.getNodeId());
-                    itemIdLast = newFaLevel.getNodeId();
+                    BeanItem item = (BeanItem) table.addItemAfter(itemIdLast, newFaLevel);
+                    itemIdLast = newFaLevel;
                     initNewItemInContainer(item, newFaLevel, container);
                     ElzaNotifications.show("Přidáno...");
-                }).menuItem(parent);
+                }).exception(new ConcurrentUpdateExceptionHandler()).menuItem(parent);
 
                 child = new AxAction().caption("Smazat").icon(FontAwesome.TRASH_O).run(new Runnable() {
                     @Override
                     public void run() {
                         discardNodeCut();
-                        arrangementManager.deleteLevel((Integer) itemId);
+                        ArrFaLevel node = (ArrFaLevel) itemId;
+                        arrangementManager.deleteLevel(node.getNodeId());
 
-                        Integer position = (Integer) container.getItem(itemId)
-                                .getItemProperty(LEVEL_POSITION).getValue();
-                        repositionLowerSiblings((Integer) itemId, position, container);
+                        repositionLowerSiblings(node, node.getPosition(), container);
 
                         table.removeItem(itemId);
-
+                        table.refreshRowCache();
                         ElzaNotifications.show("Smazáno...");
                     }
-                }).menuItem(parent);
+                }).exception(new ConcurrentUpdateExceptionHandler()).menuItem(parent);
 
                 child = new AxAction().caption("Vyjmout").icon(FontAwesome.CUT).run(() -> {
-                    cutNode((Integer) itemId);
+                    cutNode((ArrFaLevel) itemId);
                     ElzaNotifications.show("Ve schránce...");
                 }).menuItem(parent);
 
                 child = new AxAction().caption("Vložit před").icon(FontAwesome.PASTE).run(() -> {
                     try {
                         if (checkPaste()) {
-                            ArrFaLevel level = arrangementManager
-                                    .moveLevelBefore(levelNodeIdVyjmout, (Integer) itemId);
-                            Integer position = (Integer) container.getItem(levelNodeIdVyjmout)
-                                    .getItemProperty(LEVEL_POSITION).getValue();
-                            repositionLowerSiblings(levelNodeIdVyjmout, position, container);
-                            table.removeItem(levelNodeIdVyjmout);
+                            ArrFaLevel level = arrangementManager.moveLevelBefore(levelNodeVyjmout, ((ArrFaLevel) itemId).getNodeId());
+                            repositionLowerSiblings(levelNodeVyjmout, levelNodeVyjmout.getPosition(), container);
+                            table.removeItem(levelNodeVyjmout);
 
-                            addItemBeforeToContainer(level, container, itemId);
-                            repositionLowerSiblings(level.getNodeId(), level.getPosition() + 1, container);
+                            addItemBeforeToContainer(level, container, (ArrFaLevel) itemId);
+                            repositionLowerSiblings(level, level.getPosition() + 1, container);
                             discardNodeCut();
+                            table.refreshRowCache();
 
                             ElzaNotifications.show("Přesunuto...");
                         }
@@ -369,33 +378,20 @@ public class FindingAidDetailView extends ElzaView {
                     } catch (IllegalArgumentException e) {
                         ElzaNotifications.showError(e.getMessage());
                     }
-                }).menuItem(parent);
+                }).exception(new ConcurrentUpdateExceptionHandler()).menuItem(parent);
                 child.setStyleName("show-if-cut");
 
                 child = new AxAction().caption("Vložit za").icon(FontAwesome.PASTE).run(() -> {
                     try {
                         if (checkPaste()) {
-                            arrangementManager.moveLevelAfter(levelNodeIdVyjmout, (Integer) itemId);
+                            ArrFaLevel level = arrangementManager.moveLevelAfter(levelNodeVyjmout, ((ArrFaLevel) itemId).getNodeId());
+                            repositionLowerSiblings(levelNodeVyjmout, levelNodeVyjmout.getPosition(), container);
+                            table.removeItem(levelNodeVyjmout);
 
-                            Integer position = (Integer) container.getItem(levelNodeIdVyjmout)
-                                    .getItemProperty(LEVEL_POSITION).getValue();
-                            repositionLowerSiblings(levelNodeIdVyjmout, position, container);
-                            table.removeItem(levelNodeIdVyjmout);
-
-
-                            ArrFaLevel faLevelVyjmout = arrangementManager.findLevelByNodeId(
-                                    levelNodeIdVyjmout);
-
-                            Item item = container.getItem(itemId);
-                            repositionLowerSiblings((Integer) itemId,
-                                    (Integer) item.getItemProperty(LEVEL_POSITION).getValue() + 2,
-                                    container);
-
-                            addItemAfterToContainer(faLevelVyjmout, container,
-                                    getItemIdAfterChilds((Integer) itemId, container));
-
-
+                            repositionLowerSiblings((ArrFaLevel) itemId, ((ArrFaLevel) itemId).getPosition() + 2, container);
+                            addItemAfterToContainer(level, container, getItemIdAfterChilds((ArrFaLevel) itemId, container));
                             discardNodeCut();
+                            table.refreshRowCache();
 
                             ElzaNotifications.show("Přesunuto...");
                         }
@@ -404,46 +400,44 @@ public class FindingAidDetailView extends ElzaView {
                     } catch (IllegalArgumentException e) {
                         ElzaNotifications.showError(e.getMessage());
                     }
-                }).menuItem(parent);
+                }).exception(new ConcurrentUpdateExceptionHandler()).menuItem(parent);
                 child.setStyleName("show-if-cut");
 
 
                 child = new AxAction().caption("Vložit jako podřízený").icon(FontAwesome.PASTE).run(() -> {
                     try {
                         if (checkPaste()) {
-                            arrangementManager.moveLevelUnder(levelNodeIdVyjmout, (Integer) itemId);
-
-                            Integer position = (Integer) container.getItem(levelNodeIdVyjmout)
-                                    .getItemProperty(LEVEL_POSITION).getValue();
-                            repositionLowerSiblings((Integer) levelNodeIdVyjmout, position, container);
-                            table.removeItem(levelNodeIdVyjmout);
-
-                            ArrFaLevel faLevelVyjmout = arrangementManager.findLevelByNodeId(
-                                    levelNodeIdVyjmout);
+                            ArrFaLevel level = arrangementManager.moveLevelUnder(levelNodeVyjmout, ((ArrFaLevel) itemId).getNodeId());
+                            repositionLowerSiblings(levelNodeVyjmout, levelNodeVyjmout.getPosition(), container);
+                            table.removeItem(levelNodeVyjmout);
 
                             if (container.isCollapsed(itemId)) {
-                                List<ArrFaLevelExt> faLevels = arrangementManager
-                                        .findSubLevels((Integer) itemId, version.getFaVersionId(), ArrangementManager.FORMAT_ATTRIBUTE_SHORT, null);
-                                Integer idLast = (Integer) itemId;
-                                for (ArrFaLevelExt faLevel : faLevels) {
-                                    addAttributeToCache(faLevel);
+                                List<ArrFaLevelExt> faLevelsExt = arrangementManager
+                                        .findSubLevels(((ArrFaLevel) itemId).getNodeId(), version.getFaVersionId(), ArrangementManager.FORMAT_ATTRIBUTE_SHORT, null);
+                                List<ArrFaLevel> faLevels = arrangementManager.findSubLevels(((ArrFaLevel) itemId).getNodeId(), version.getFaVersionId());
+                                ArrFaLevel idLast = (ArrFaLevel) itemId;
+                                for (ArrFaLevel faLevel : faLevels) {
                                     idLast = addItemAfterToContainer(faLevel, container, idLast);
+                                }
+                                for (ArrFaLevelExt faLevel : faLevelsExt) {
+                                    addAttributeToCache(faLevel);
                                 }
                             } else {
 
                                 //najdeme posledního přímého potomka
-                                Object itemIdLast = itemId;
+                                ArrFaLevel itemIdLast = (ArrFaLevel) itemId;
                                 Collection<?> children = container.getChildren(itemId);
                                 if (!CollectionUtils.isEmpty(children)) {
                                     Iterator<?> iterator = children.iterator();
                                     while (iterator.hasNext()) {
-                                        itemIdLast = iterator.next();
+                                        itemIdLast = (ArrFaLevel) iterator.next();
                                     }
                                 }
-                                addItemAfterToContainer(faLevelVyjmout, container, itemIdLast);
+                                addItemAfterToContainer(level, container, itemIdLast);
                             }
 
                             discardNodeCut();
+                            table.refreshRowCache();
 
                             ElzaNotifications.show("Přesunuto...");
                         }
@@ -452,7 +446,7 @@ public class FindingAidDetailView extends ElzaView {
                     } catch (IllegalArgumentException e) {
                         ElzaNotifications.showError(e.getMessage());
                     }
-                }).menuItem(parent);
+                }).exception(new ConcurrentUpdateExceptionHandler()).menuItem(parent);
                 child.setStyleName("show-if-cut");
 
                 child = new AxAction().caption("Zobrazit historii").icon(FontAwesome.CALENDAR).run(() -> {
@@ -463,7 +457,7 @@ public class FindingAidDetailView extends ElzaView {
         });
     }
 
-    private void addActionHistMenu(HierarchicalCollapsibleContainer container) {
+    private void addActionHistMenu(HierarchicalCollapsibleBeanItemContainer container) {
         table.addGeneratedColumn("Akce", new Table.ColumnGenerator() {
             @Override
             public Object generateCell(final Table source, final Object itemId, final Object columnId) {
@@ -482,7 +476,7 @@ public class FindingAidDetailView extends ElzaView {
     }
 
     private boolean checkPaste() {
-        if (levelNodeIdVyjmout == null) {
+        if (levelNodeVyjmout == null) {
             ElzaNotifications.show("Není co vložit, nejprve je potřeba vyjmout uzel.");
             return false;
         } else {
@@ -490,11 +484,16 @@ public class FindingAidDetailView extends ElzaView {
         }
     }
 
-    private void refreshTree(final HierarchicalCollapsibleContainer container, final ArrFaLevel rootLevel) {
+    private void refreshTree(final HierarchicalCollapsibleBeanItemContainer container, final ArrFaLevel rootLevel) {
         container.removeAllItems();
-        List<ArrFaLevelExt> faLevels = arrangementManager.findSubLevels(rootLevel.getNodeId(), version.getFaVersionId(), ArrangementManager.FORMAT_ATTRIBUTE_SHORT, null);
+        List<ArrFaLevelExt> faLevelsExt = arrangementManager.findSubLevels(rootLevel.getNodeId(), version.getFaVersionId(), ArrangementManager.FORMAT_ATTRIBUTE_SHORT, null);
+        for (ArrFaLevelExt faLevel : faLevelsExt) {
+            addAttributeToCache(faLevel);
+        }
 
-        for (ArrFaLevelExt faLevel : faLevels) {
+        List<ArrFaLevel> faLevels = arrangementManager.findSubLevels(rootLevel.getNodeId(), version.getFaVersionId());
+
+        for (ArrFaLevel faLevel : faLevels) {
             addItemToContainer(faLevel, container);
         }
     }
@@ -505,9 +504,8 @@ public class FindingAidDetailView extends ElzaView {
      * @param itemId id položky, za kterou budeme vkládat
      * @return id posledního potomka
      */
-    private Integer getItemIdAfterChilds(final Integer itemId, final HierarchicalCollapsibleContainer container) {
-
-        Integer lastId = itemId;
+    private ArrFaLevel getItemIdAfterChilds(final ArrFaLevel itemId, final HierarchicalCollapsibleBeanItemContainer container) {
+        ArrFaLevel lastId = itemId;
 
         Collection<?> childs = container.getChildren(lastId);
         if (!CollectionUtils.isEmpty(childs)) {
@@ -516,43 +514,50 @@ public class FindingAidDetailView extends ElzaView {
             while (iterator.hasNext()) {
                 child = iterator.next();
             }
-            lastId = getItemIdAfterChilds((Integer) child, container);
+            lastId = getItemIdAfterChilds((ArrFaLevel) child, container);
         }
 
         return lastId;
     }
 
 
-    private Integer addItemAfterToContainer(final ArrFaLevel level,
-            final HierarchicalCollapsibleContainer container,
-            final Object itemIdBefore) {
-        Item item = container.addItemAfter(itemIdBefore, level.getNodeId());
+    private ArrFaLevel addItemAfterToContainer(final ArrFaLevel level,
+            final HierarchicalCollapsibleBeanItemContainer container,
+            final ArrFaLevel itemIdBefore) {
+        BeanItem item = (BeanItem) container.addItemAfter(itemIdBefore, level);
         initNewItemInContainer(item, level, container);
 
-        Integer lastId = level.getNodeId();
-        if (!container.isCollapsed(level.getNodeId())) {
-            List<ArrFaLevelExt> faLevels = arrangementManager.findSubLevels(level.getNodeId(), version.getFaVersionId(), ArrangementManager.FORMAT_ATTRIBUTE_SHORT, null);
-
-            for (ArrFaLevelExt faLevel : faLevels) {
+        ArrFaLevel lastId = level;
+        if (!container.isCollapsed(level)) {
+            List<ArrFaLevelExt> faLevelsExt = arrangementManager.findSubLevels(level.getNodeId(), version.getFaVersionId(), ArrangementManager.FORMAT_ATTRIBUTE_SHORT, null);
+            for (ArrFaLevelExt faLevel : faLevelsExt) {
                 addAttributeToCache(faLevel);
+            }
+
+            List<ArrFaLevel> faLevels = arrangementManager.findSubLevels(level.getNodeId(), version.getFaVersionId());
+            for (ArrFaLevel faLevel : faLevels) {
                 lastId = addItemAfterToContainer(faLevel, container, lastId);
             }
+
         }
         return lastId;
     }
 
-    private Integer addItemBeforeToContainer(final ArrFaLevel level,
-            final HierarchicalCollapsibleContainer container,
-            final Object itemIdAfter) {
-        Item item = container.addItemAt(container.indexOfId(itemIdAfter), level.getNodeId());
+    private ArrFaLevel addItemBeforeToContainer(final ArrFaLevel level,
+            final HierarchicalCollapsibleBeanItemContainer container,
+            final ArrFaLevel itemIdAfter) {
+        BeanItem item = (BeanItem) container.addItemAt(container.indexOfId(itemIdAfter), level);
         initNewItemInContainer(item, level, container);
 
-        Integer lastId = level.getNodeId();
-        if (!container.isCollapsed(level.getNodeId())) {
-            List<ArrFaLevelExt> faLevels = arrangementManager.findSubLevels(level.getNodeId(), version.getFaVersionId(), ArrangementManager.FORMAT_ATTRIBUTE_SHORT, null);
-
-            for (ArrFaLevelExt faLevel : faLevels) {
+        ArrFaLevel lastId = level;
+        if (!container.isCollapsed(level)) {
+            List<ArrFaLevelExt> faLevelsExt = arrangementManager.findSubLevels(level.getNodeId(), version.getFaVersionId(), ArrangementManager.FORMAT_ATTRIBUTE_SHORT, null);
+            for (ArrFaLevelExt faLevel : faLevelsExt) {
                 addAttributeToCache(faLevel);
+            }
+
+            List<ArrFaLevel> faLevels = arrangementManager.findSubLevels(level.getNodeId(), version.getFaVersionId());
+            for (ArrFaLevel faLevel : faLevels) {
                 lastId = addItemAfterToContainer(faLevel, container, lastId);
             }
         }
@@ -580,15 +585,19 @@ public class FindingAidDetailView extends ElzaView {
         attributeCache.put(level.getNodeId(), attributeList);
     }
 
-    private void addItemToContainer(final ArrFaLevelExt level, final HierarchicalCollapsibleContainer container) {
-        Item item = container.addItem(level.getNodeId());
+    private void addItemToContainer(final ArrFaLevel level, final HierarchicalCollapsibleBeanItemContainer container) {
+        BeanItem item = (BeanItem) container.addItem(level);
 
-        addAttributeToCache(level);
         initNewItemInContainer(item, level, container);
 
-        if (!container.isCollapsed(level.getNodeId())) {
-            List<ArrFaLevelExt> faLevels = arrangementManager.findSubLevels(level.getNodeId(), version.getFaVersionId(), ArrangementManager.FORMAT_ATTRIBUTE_SHORT, null);
-            for (ArrFaLevelExt faLevel : faLevels) {
+        if (!container.isCollapsed(level)) {
+            List<ArrFaLevelExt> faLevelsExt = arrangementManager.findSubLevels(level.getNodeId(), version.getFaVersionId(), ArrangementManager.FORMAT_ATTRIBUTE_SHORT, null);
+            for (ArrFaLevelExt faLevel : faLevelsExt) {
+                addAttributeToCache(faLevel);
+            }
+
+            List<ArrFaLevel> faLevels = arrangementManager.findSubLevels(level.getNodeId(), version.getFaVersionId());
+            for (ArrFaLevel faLevel : faLevels) {
                 addItemToContainer(faLevel, container);
             }
         }
@@ -600,15 +609,13 @@ public class FindingAidDetailView extends ElzaView {
      * @param itemId   id
      * @param position pozice prvního sourozence pod id
      */
-    private void repositionLowerSiblings(final Integer itemId,
-            final int position,
-            final HierarchicalCollapsibleContainer container) {
-        Collection<Integer> lowerSiblings = container.getLowerSiblings(itemId);
+    private void repositionLowerSiblings(final ArrFaLevel itemId, final Integer position,
+            final HierarchicalCollapsibleBeanItemContainer container) {
+        Collection<ArrFaLevel> lowerSiblings = container.getLowerSiblings(itemId);
 
         int index = position;
-        for (Integer lowerSibling : lowerSiblings) {
-            container.getItem(lowerSibling).getItemProperty(LEVEL_POSITION)
-            .setValue(index++);
+        for (ArrFaLevel lowerSibling : lowerSiblings) {
+            lowerSibling.setPosition(index++);
         }
     }
 
@@ -620,35 +627,34 @@ public class FindingAidDetailView extends ElzaView {
      * @param faLevel   level
      * @param container kontejner
      */
-    private void initNewItemInContainer(final Item item,
+    private void initNewItemInContainer(final BeanItem<ArrFaLevel> item,
             final ArrFaLevel faLevel,
-            final HierarchicalCollapsibleContainer container) {
-        item.getItemProperty(LEVEL).setValue(faLevel.getNodeId());
-        item.getItemProperty(LEVEL_POSITION).setValue(faLevel.getPosition());
+            final HierarchicalCollapsibleBeanItemContainer container) {
         if (faLevel.getParentNodeId().equals(version.getRootNode().getNodeId())) {
             //hack kvůli chybě ve vaadin, aby byl vložen prvek do seznamu rootů
-            if (faLevel.getNodeId().equals(container.firstItemId())) {
-                container.setParent(faLevel.getNodeId(), container.lastItemId());
+            if (faLevel.equals(container.firstItemId())) {
+                container.setParent(faLevel, container.lastItemId());
             } else {
-                container.setParent(faLevel.getNodeId(), container.firstItemId());
+                container.setParent(faLevel, container.firstItemId());
             }
 
-            container.setParent(faLevel.getNodeId(), null);
+            container.setParent(faLevel, null);
         } else if (faLevel.getParentNodeId() != null) {
-            container.setParent(faLevel.getNodeId(), faLevel.getParentNodeId());
+            container.setParent(faLevel, item.getBean());
         }
-        container.setChildrenAllowed(faLevel.getNodeId(), true);
-        container.setCollapsed(faLevel.getNodeId(), container.isCollapsed(faLevel.getNodeId()));
+
+        container.addBean(faLevel);
+        container.setChildrenAllowed(faLevel, true);
+        container.setCollapsed(faLevel, container.isCollapsed(faLevel));
     }
 
-    private void removeAllChildren(final TreeTable table, final Integer itemId) {
+    private void removeAllChildren(final TreeTable table, final ArrFaLevel itemId) {
         Collection<?> children = table.getChildren(itemId);
         if (children != null) {
             ArrayList tmpChildren = new ArrayList(children);
             Iterator<?> itChilder = tmpChildren.iterator();
             while (itChilder.hasNext()) {
-                Integer child = (Integer) itChilder.next();
-                table.removeItem(child);
+                table.removeItem(itChilder.next());
             }
         }
     }
@@ -668,21 +674,19 @@ public class FindingAidDetailView extends ElzaView {
 
                         ArrFaLevel newFaLevel = arrangementManager.addLevel(findingAidId);
 
-                        Item item = table.addItem(newFaLevel.getNodeId());
+                        Item item = table.addItem(newFaLevel);
 
-                        HierarchicalCollapsibleContainer container = (HierarchicalCollapsibleContainer) table
+                        HierarchicalCollapsibleBeanItemContainer container = (HierarchicalCollapsibleBeanItemContainer) table
                                 .getContainerDataSource();
 
                         if (newFaLevel.getParentNodeId() != null) {
-                            container.setParent(newFaLevel.getNodeId(), newFaLevel.getParentNodeId());
+                            container.setParent(newFaLevel, rootNode);
                         }
-                        item.getItemProperty(LEVEL).setValue(newFaLevel.getNodeId());
-                        item.getItemProperty(LEVEL_POSITION).setValue(newFaLevel.getPosition());
-                        container.setChildrenAllowed(newFaLevel.getNodeId(), true);
-                        container.setCollapsed(newFaLevel.getNodeId(), true);
-
+                        container.setChildrenAllowed(newFaLevel, true);
+                        container.setCollapsed(newFaLevel, true);
+                        container.addBean(newFaLevel);
+                        table.refreshRowCache();
                         ElzaNotifications.show("Přidáno...");
-
                     }),
                     new AxAction().caption("Zobrazit verze").icon(FontAwesome.HISTORY).run(() ->
                     navigate(VersionListView.class, findingAidId)),
@@ -722,14 +726,14 @@ public class FindingAidDetailView extends ElzaView {
                 voApproveVersion.getRuleSetId());
     }
 
-    private void cutNode(final Integer itemId) {
+    private void cutNode(final ArrFaLevel itemId) {
         UI.getCurrent().setOverlayContainerLabel("");
-        levelNodeIdVyjmout = itemId;
+        levelNodeVyjmout = itemId;
     }
 
     private void discardNodeCut() {
         UI.getCurrent().setOverlayContainerLabel("item-not-cut");
-        levelNodeIdVyjmout = null;
+        levelNodeVyjmout = null;
     }
 
     @Bean

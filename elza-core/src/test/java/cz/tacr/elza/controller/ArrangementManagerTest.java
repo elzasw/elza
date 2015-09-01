@@ -62,7 +62,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
     private static final String APPROVE_VERSION_URL = ARRANGEMENT_MANAGER_URL + "/approveVersion";
     private static final String GET_VERSION_ID_URL = ARRANGEMENT_MANAGER_URL + "/getVersion";
     private static final String GET_VERSION_BY_FA_ID_URL = ARRANGEMENT_MANAGER_URL + "/getOpenVersionByFindingAidId";
-    private static final String FIND_SUB_LEVELS_URL = ARRANGEMENT_MANAGER_URL + "/findSubLevels";
+    private static final String FIND_SUB_LEVELS_EXT_URL = ARRANGEMENT_MANAGER_URL + "/findSubLevelsExt";
 
     private static final String ADD_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/addLevel";
     private static final String ADD_LEVEL_BEFORE_URL = ARRANGEMENT_MANAGER_URL + "/addLevelBefore";
@@ -366,7 +366,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
                 parameter(NODE_ID_ATT, parent.getNodeId()).
-                parameter(VERSION_ID_ATT, version.getFaVersionId()).get(FIND_SUB_LEVELS_URL);
+                parameter(VERSION_ID_ATT, version.getFaVersionId()).get(FIND_SUB_LEVELS_EXT_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
         List<ArrFaLevelExt> levelList = Arrays.asList(response.getBody().as(ArrFaLevelExt[].class));
@@ -380,7 +380,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
                 parameter(NODE_ID_ATT, parent.getNodeId()).
-                parameter(VERSION_ID_ATT, version.getFaVersionId()).get(FIND_SUB_LEVELS_URL);
+                parameter(VERSION_ID_ATT, version.getFaVersionId()).get(FIND_SUB_LEVELS_EXT_URL);
         logger.info(response.asString());
         levelList = Arrays.asList(response.getBody().as(ArrFaLevelExt[].class));
         if (levelList.size() != 1) {

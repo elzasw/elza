@@ -7,8 +7,8 @@ import cz.tacr.elza.api.ArrFaLevel;
 import cz.tacr.elza.api.ArrFaLevelExt;
 import cz.tacr.elza.api.ArrFaVersion;
 import cz.tacr.elza.api.ArrFindingAid;
-import cz.tacr.elza.api.vo.ArrDescItemSavePack;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
+import cz.tacr.elza.api.vo.ArrDescItemSavePack;
 
 
 /**
@@ -17,7 +17,7 @@ import cz.tacr.elza.api.exception.ConcurrentUpdateException;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 12. 8. 2015
  */
-public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVersion, DIE extends ArrDescItemExt, DISP extends ArrDescItemSavePack> {
+public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVersion, DIE extends ArrDescItemExt, DISP extends ArrDescItemSavePack, FL extends ArrFaLevel> {
     public static final String FORMAT_ATTRIBUTE_FULL = "FULL";
     public static final String FORMAT_ATTRIBUTE_SHORT = "SHORT";
 
@@ -85,10 +85,10 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
     /**
      * Vytvoří nový uzel před předaným uzlem.
      *
-     * @param nodeId        id uzlu před kterým se má vytvořit nový
+     * @param node        uzel před kterým se má vytvořit nový
      * @return              nový uzel
      */
-    ArrFaLevel addLevelBefore(Integer nodeId);
+    ArrFaLevel addLevelBefore(FL node);
 
     /**
      * Vytvoří nový uzel v první úrovni archivní položky
@@ -101,45 +101,45 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
     /**
      * Vytvoří nový uzel za předaným uzlem.
      *
-     * @param nodeId        id uzlu za kterým se má vytvořit nový
+     * @param node        uzel za kterým se má vytvořit nový
      * @return              nový uzel
      */
-    ArrFaLevel addLevelAfter(Integer nodeId);
+    ArrFaLevel addLevelAfter(FL node);
 
     /**
      * Vytvoří nový uzel na poslední pozici pod předaným uzlem.
      *
-     * @param nodeId        id uzlu pod kterým se má vytvořit nový
-     * @return              nový uzel
+     * @param node        uzel pod kterým se má vytvořit nový
+     * @return            nový uzel
      */
-    ArrFaLevel addLevelChild(Integer nodeId);
+    ArrFaLevel addLevelChild(FL node);
 
     /**
      * Přesune uzel před předaný uzel.
      *
-     * @param nodeId            id uzlu který se přesouvá
-     * @param followerNodeId    id uzlu před který se má uzel přesunout
+     * @param node            uzel který se přesouvá
+     * @param followerNode    id uzlu před který se má uzel přesunout
      * @return                  přesunutý uzel
      */
-    ArrFaLevel moveLevelBefore(Integer nodeId, Integer followerNodeId);
+    ArrFaLevel moveLevelBefore(FL node, Integer followerNodeId);
 
     /**
      * Přesune uzel na poslední pozici pod předaným uzlem.
      *
-     * @param nodeId       id uzlu který se přesouvá
-     * @param parentNodeId id uzlu pod který se má uzel přesunout
+     * @param node       uzel který se přesouvá
+     * @param parentNode id uzlu pod který se má uzel přesunout
      * @return             přesunutý uzel
      */
-    ArrFaLevel moveLevelUnder(Integer nodeId, Integer parentNodeId);
+    ArrFaLevel moveLevelUnder(FL node, Integer parentNodeId);
 
     /**
      * Přesune uzel za předaný uzel.
      *
-     * @param nodeId            id uzlu který se přesouvá
-     * @param predecessorNodeId id uzlu za který se má uzel přesunout
+     * @param node            uzel který se přesouvá
+     * @param predecessorNode id uzlu za který se má uzel přesunout
      * @return                   přesunutý uzel
      */
-    ArrFaLevel moveLevelAfter(Integer nodeId, Integer predecessorNodeId);
+    ArrFaLevel moveLevelAfter(FL node, Integer predecessorNodeId);
 
     /**
      * Smaže uzel.
@@ -153,9 +153,10 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
      * Načte uzel podle identifikátoru.
      *
      * @param nodeId            id uzlu
+     * @param versionId         id verze, může být null
      * @return                  uzel s daným identifikátorem
      */
-    ArrFaLevel findLevelByNodeId(Integer nodeId);
+    ArrFaLevel findLevelByNodeId(Integer nodeId, Integer versionId);
 
     /**
      * Načte neuzavřenou verzi archivní pomůcky.
@@ -184,6 +185,16 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
      * @return            potomci předaného uzlu
      */
     List<? extends ArrFaLevelExt> findSubLevels(Integer nodeId, Integer versionId, String formatData, Integer[] descItemTypeIds);
+
+    /**
+     * Načte potomky daného uzlu v konkrétní verzi. Pokud není identifikátor verze předaný načítají se potomci
+     * z neuzavřené verze.
+     *
+     * @param nodeId          id rodiče
+     * @param versionId       id verze, může být null
+     * @return            potomci předaného uzlu
+     */
+    List<? extends ArrFaLevel> findSubLevels(Integer nodeId, Integer versionId);
 
     /**
      * Načte uzel podle identifikátoru. K uzlu doplní jeho Atributy.

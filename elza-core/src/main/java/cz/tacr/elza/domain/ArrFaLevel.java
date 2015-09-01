@@ -1,7 +1,5 @@
 package cz.tacr.elza.domain;
 
-import java.util.Arrays;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -125,12 +123,12 @@ public class ArrFaLevel extends AbstractVersionableEntity implements IdObject<In
             return true;
         }
         ArrFaLevel other = (ArrFaLevel) obj;
-        return EqualsBuilder.reflectionEquals(this, other, Arrays.asList("parentNode"));
+        return EqualsBuilder.reflectionEquals(faLevelId, other.getFaLevelId());
     }
 
     @Override
     public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this, Arrays.asList("parentNode"));
+        return HashCodeBuilder.reflectionHashCode(faLevelId);
     }
 
     @Override

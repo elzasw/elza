@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -67,7 +69,10 @@ import cz.tacr.elza.repository.VersionRepository;
  */
 @RestController
 @RequestMapping("/api/arrangementManager")
-public class ArrangementManager implements cz.tacr.elza.api.controller.ArrangementManager<ArrFindingAid, ArrFaVersion, ArrDescItemExt, ArrDescItemSavePack> {
+public class ArrangementManager implements cz.tacr.elza.api.controller.ArrangementManager<ArrFindingAid, ArrFaVersion, ArrDescItemExt, ArrDescItemSavePack, ArrFaLevel> {
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Autowired
     private FindingAidRepository findingAidRepository;
@@ -213,6 +218,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         newNode.setNodeId(node.getNodeId());
         newNode.setParentNodeId(node.getParentNodeId());
         newNode.setPosition(node.getPosition());
+        newNode.setVersion(node.getVersion());
 
         return newNode;
     }
@@ -321,8 +327,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @Override
     @Transactional
     @RequestMapping(value = "/approveVersion", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
-    params = {"arrangementTypeId", "ruleSetId"}, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ArrFaVersion approveVersion(@RequestBody final ArrFaVersion version, final Integer arrangementTypeId, final Integer ruleSetId) {
+    produces = MediaType.APPLICATION_JSON_VALUE)
+    public ArrFaVersion approveVersion(@RequestBody final ArrFaVersion version, @RequestParam("arrangementTypeId") final Integer arrangementTypeId, @RequestParam("ruleSetId") final Integer ruleSetId) {
         Assert.notNull(version);
         Assert.notNull(arrangementTypeId);
         Assert.notNull(ruleSetId);
@@ -341,14 +347,13 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Override
     @Transactional
-    @RequestMapping(value = "/addLevelBefore", method = RequestMethod.PUT, params = {"nodeId"})
-    public ArrFaLevel addLevelBefore(@RequestParam("nodeId") Integer nodeId){
-        Assert.notNull(nodeId);
+    @RequestMapping(value = "/addLevelBefore", method = RequestMethod.PUT)
+    public ArrFaLevel addLevelBefore(@RequestBody ArrFaLevel node){
+        Assert.notNull(node);
 
-        ArrFaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
         ArrFaChange change = createChange();
 
-        return createBeforeInLevel(change, faLevel);
+        return createBeforeInLevel(change, node);
     }
 
     @Override
@@ -364,57 +369,52 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Override
     @Transactional
-    @RequestMapping(value = "/addLevelAfter", method = RequestMethod.PUT, params = {"nodeId"})
-    public ArrFaLevel addLevelAfter(@RequestParam("nodeId") Integer nodeId) {
-        Assert.notNull(nodeId);
+    @RequestMapping(value = "/addLevelAfter", method = RequestMethod.PUT)
+    public ArrFaLevel addLevelAfter(@RequestBody ArrFaLevel node) {
+        Assert.notNull(node);
 
-        ArrFaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
         ArrFaChange change = createChange();
-        return createAfterInLevel(change, faLevel);
+        return createAfterInLevel(change, node);
     }
 
     @Override
     @Transactional
-    @RequestMapping(value = "/addLevelChild", method = RequestMethod.PUT, params = {"nodeId"})
-    public ArrFaLevel addLevelChild(@RequestParam("nodeId") Integer nodeId) {
-        Assert.notNull(nodeId);
+    @RequestMapping(value = "/addLevelChild", method = RequestMethod.PUT)
+    public ArrFaLevel addLevelChild(@RequestBody ArrFaLevel node) {
+        Assert.notNull(node);
 
-        ArrFaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
         ArrFaChange change = createChange();
-        return createLastInLevel(change, faLevel);
+        return createLastInLevel(change, node);
     }
 
     @Override
     @Transactional
-    @RequestMapping(value = "/moveLevelBefore", method = RequestMethod.PUT, params = {"nodeId", "followerNodeId"})
-    public ArrFaLevel moveLevelBefore(@RequestParam("nodeId") Integer nodeId,
-            @RequestParam("followerNodeId") Integer followerNodeId) {
-
-        Assert.notNull(nodeId);
+    @RequestMapping(value = "/moveLevelBefore", method = RequestMethod.PUT)
+    public ArrFaLevel moveLevelBefore(@RequestBody ArrFaLevel node, @RequestParam("followerNodeId") Integer followerNodeId) {
+        Assert.notNull(node);
         Assert.notNull(followerNodeId);
 
-        ArrFaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
         ArrFaLevel follower = levelRepository.findByNodeIdAndDeleteChangeIsNull(followerNodeId);
 
-        if(faLevel == null || follower == null){
+        if(node == null || follower == null){
             throw new IllegalArgumentException("Přesun se nezdařil. Záznam byl pravděpodobně smazán jiným uživatelem. Aktualizujte stránku");
         }
-        if(faLevel.equals(follower)){
+        if(node.equals(follower)){
             throw new IllegalStateException("Nelze vložit záznam na stejné místo ve stromu");
         }
 
-        checkCycle(faLevel, follower);
+        checkCycle(node, follower);
 
         ArrFaChange change = createChange();
-        List<ArrFaLevel> nodesToShiftUp = nodesToShift(faLevel);
+        List<ArrFaLevel> nodesToShiftUp = nodesToShift(node);
         List<ArrFaLevel> nodesToShiftDown = nodesToShift(follower);
         nodesToShiftDown.add(follower);
 
         Integer position;
-        if (faLevel.getParentNodeId().equals(follower.getParentNodeId())) {
+        if (node.getParentNodeId().equals(follower.getParentNodeId())) {
             Collection<ArrFaLevel> nodesToShift = CollectionUtils.disjunction(nodesToShiftDown, nodesToShiftUp);
-            if (faLevel.getPosition() > follower.getPosition()) {
-                nodesToShift.remove(faLevel);
+            if (node.getPosition() > follower.getPosition()) {
+                nodesToShift.remove(node);
                 shiftNodesDown(nodesToShift, change);
                 position = follower.getPosition();
             } else {
@@ -427,63 +427,61 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             position = follower.getPosition();
         }
 
-        ArrFaLevel newLevel = createNewLevelVersion(faLevel, change);
+        ArrFaLevel newLevel = createNewLevelVersion(node, change);
         return addInLevel(newLevel, follower.getParentNodeId(), position);
     }
 
     @Override
     @Transactional
-    @RequestMapping(value = "/moveLevelUnder", method = RequestMethod.PUT, params = {"nodeId", "parentNodeId"})
-    public ArrFaLevel moveLevelUnder(@RequestParam("nodeId") Integer nodeId, @RequestParam("parentNodeId") Integer parentNodeId) {
-        Assert.notNull(nodeId);
+    @RequestMapping(value = "/moveLevelUnder", method = RequestMethod.PUT)
+    public ArrFaLevel moveLevelUnder(@RequestBody ArrFaLevel node, @RequestParam("parentNodeId") Integer parentNodeId) {
+        Assert.notNull(node);
         Assert.notNull(parentNodeId);
 
-        ArrFaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
         ArrFaLevel parent = levelRepository.findByNodeIdAndDeleteChangeIsNull(parentNodeId);
-        if(faLevel == null || parent == null){
+        if(node == null || parent == null){
             throw new IllegalArgumentException("Přesun se nezdařil. Záznam byl pravděpodobně smazán jiným uživatelem. Aktualizujte stránku");
         }
 
-        if(faLevel.equals(parent)){
+        if(node.equals(parent)){
             throw new IllegalStateException("Nelze vložit záznam sám do sebe");
         }
 
         // vkládaný nesmí být rodičem uzlu pod který ho vkládám
-        checkCycle(faLevel, parent);
+        checkCycle(node, parent);
 
         ArrFaChange change = createChange();
-        shiftNodesUp(nodesToShift(faLevel), change);
-        ArrFaLevel newLevel = createNewLevelVersion(faLevel, change);
+        shiftNodesUp(nodesToShift(node), change);
+        ArrFaLevel newLevel = createNewLevelVersion(node, change);
 
         return addLastInLevel(newLevel, parent.getNodeId());
     }
 
     @Override
     @Transactional
-    @RequestMapping(value = "/moveLevelAfter", method = RequestMethod.PUT, params = {"nodeId", "predecessorNodeId"})
-    public ArrFaLevel moveLevelAfter(@RequestParam("nodeId") Integer nodeId, @RequestParam("predecessorNodeId") Integer predecessorNodeId) {
-        Assert.notNull(nodeId);
+    @RequestMapping(value = "/moveLevelAfter", method = RequestMethod.PUT)
+    public ArrFaLevel moveLevelAfter(@RequestBody ArrFaLevel node, @RequestParam("predecessorNodeId") Integer predecessorNodeId) {
+        Assert.notNull(node);
         Assert.notNull(predecessorNodeId);
 
-        ArrFaLevel faLevel = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
         ArrFaLevel predecessor = levelRepository.findByNodeIdAndDeleteChangeIsNull(predecessorNodeId);
-        if(faLevel == null || predecessor == null){
+        if(node == null || predecessor == null){
             throw new IllegalArgumentException("Přesun se nezdařil. Záznam byl pravděpodobně smazán jiným uživatelem. Aktualizujte stránku");
         }
-        if(faLevel.equals(predecessor)){
+        if(node.equals(predecessor)){
             throw new IllegalStateException("Nelze vložit záznam na stejné místo ve stromu");
         }
         // vkládaný nesmí být rodičem uzlu za který ho vkládám
-        checkCycle(faLevel, predecessor);
+        checkCycle(node, predecessor);
 
         ArrFaChange change = createChange();
-        List<ArrFaLevel> nodesToShiftUp = nodesToShift(faLevel);
+        List<ArrFaLevel> nodesToShiftUp = nodesToShift(node);
         List<ArrFaLevel> nodesToShiftDown = nodesToShift(predecessor);
         Integer position;
-        if (faLevel.getParentNodeId().equals(predecessor.getParentNodeId())) {
+        if (node.getParentNodeId().equals(predecessor.getParentNodeId())) {
             Collection<ArrFaLevel> nodesToShift = CollectionUtils.disjunction(nodesToShiftDown, nodesToShiftUp);
-            if (faLevel.getPosition() > predecessor.getPosition()) {
-                nodesToShift.remove(faLevel);
+            if (node.getPosition() > predecessor.getPosition()) {
+                nodesToShift.remove(node);
                 shiftNodesDown(nodesToShift, change);
                 position = predecessor.getPosition() + 1;
             } else {
@@ -497,7 +495,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
 
 
-        ArrFaLevel newLevel = createNewLevelVersion(faLevel, change);
+        ArrFaLevel newLevel = createNewLevelVersion(node, change);
 
         return addInLevel(newLevel, predecessor.getParentNodeId(), position);
     }
@@ -582,9 +580,27 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Override
     @RequestMapping(value = "/findLevelByNodeId", method = RequestMethod.GET)
-    public ArrFaLevel findLevelByNodeId(@RequestParam("nodeId")Integer nodeId) {
+    public ArrFaLevel findLevelByNodeId(@RequestParam("nodeId") Integer nodeId, @RequestParam("versionId") Integer versionId) {
         Assert.notNull(nodeId);
-        return  levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
+
+        ArrFaChange change = null;
+        if (versionId != null) {
+            ArrFaVersion version = versionRepository.findOne(versionId);
+            change = version.getLockChange();
+        }
+
+        final ArrFaLevel level;
+        if (change == null) {
+            level = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
+        } else {
+            level = levelRepository.findByNodeOrderByPositionAsc(nodeId, change);
+        }
+
+        if (level == null) {
+            throw new IllegalStateException("Nebyl nalezen záznam podle nodId " + nodeId + " a versionId " + versionId);
+        }
+
+        return level;
     }
 
     @Override
@@ -604,7 +620,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     }
 
     @Override
-    @RequestMapping(value = "/findSubLevels", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/findSubLevelsExt", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ArrFaLevelExt> findSubLevels(@RequestParam(value = "nodeId") Integer nodeId,
             @RequestParam(value = "versionId", required = false)  Integer versionId,
             @RequestParam(value = "formatData", required = false)  String formatData,
@@ -651,6 +667,27 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return resultList;
     }
 
+    @Override
+    @RequestMapping(value = "/findSubLevels", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<ArrFaLevel> findSubLevels(@RequestParam(value = "nodeId") Integer nodeId,
+            @RequestParam(value = "versionId", required = false)  Integer versionId) {
+        Assert.notNull(nodeId);
+
+        ArrFaChange change = null;
+        if (versionId != null) {
+            ArrFaVersion version = versionRepository.findOne(versionId);
+            change = version.getLockChange();
+        }
+        final List<ArrFaLevel> levelList;
+        if (change == null) {
+            levelList = levelRepository.findByParentNodeIdAndDeleteChangeIsNullOrderByPositionAsc(nodeId);
+        } else {
+            levelList = levelRepository.findByParentNodeOrderByPositionAsc(nodeId, change);
+        }
+
+        return levelList;
+    }
+
     @RequestMapping(value = "/findLevels", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ArrFaLevel> findLevels(@RequestParam(value = "nodeId") Integer nodeId) {
         Assert.notNull(nodeId);
@@ -669,27 +706,23 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             change = version.getLockChange();
         }
 
-        final List<ArrFaLevel> levelList;
+        final ArrFaLevel level;
         final List<ArrData> dataList;
         if (change == null) {
-            levelList = levelRepository.findByNodeIdOrderByCreateChangeAsc(nodeId);
+            level = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
             dataList = arrDataRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
         } else {
-            levelList = levelRepository.findByNodeOrderByPositionAsc(nodeId, change);
+            level = levelRepository.findByNodeOrderByPositionAsc(nodeId, change);
             dataList = arrDataRepository.findByNodeIdAndChange(nodeId, change);
         }
 
-        if (levelList.isEmpty()) {
+        if (level == null) {
             throw new IllegalStateException("Nebyl nalezen záznam podle nodId " + nodeId + " a versionId " + versionId);
-        } else if (levelList.size() > 1) {
-            throw new IllegalStateException("Bylo nalezeno více záznamů (" + levelList.size()
-                    + ") podle nodId " + nodeId + " a versionId " + versionId);
         }
-        ArrFaLevel arrFaLevel = levelList.get(0);
         Set<Integer> idItemTypeSet = createItemTypeSet(descItemTypeIds);
 
         ArrFaLevelExt levelExt = new ArrFaLevelExt();
-        BeanUtils.copyProperties(arrFaLevel, levelExt);
+        BeanUtils.copyProperties(level, levelExt);
         readItemData(levelExt, dataList, idItemTypeSet, null);
         return levelExt;
     }
