@@ -12,7 +12,7 @@
             <renameTable oldTableName="arr_data_unitid" newTableName="arr_data_reference" />
             <renameTable oldTableName="arr_data_unitdate" newTableName="arr_data_datace" />
 
-            <createTable tableName="arr_data_unitdate">
+            <createTable tableName="arr_data_unitid">
                 <column name="data_id" type="int">
                     <constraints primaryKey="true"/>
                 </column>
