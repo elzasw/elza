@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+        <!--Verze 1.13 - oprava tabulek -->
+        <changeSet id="13" author="bendik" failOnError="false" runOnChange="true">
+
+            <renameTable oldTableName="arr_data_unitid" newTableName="arr_data_reference" />
+            <renameTable oldTableName="arr_data_unitdate" newTableName="arr_data_datace" />
+
+            <createTable tableName="arr_data_unitdate">
+                <column name="data_id" type="int">
+                    <constraints primaryKey="true"/>
+                </column>
+                <column name="value" type="varchar(250)">
+                    <constraints nullable="false"/>
+                </column>
+            </createTable>
+
+            <createTable tableName="arr_data_unitdate">
+                <column name="data_id" type="int">
+                    <constraints primaryKey="true"/>
+                </column>
+                <column name="value" type="varchar(250)">
+                    <constraints nullable="false"/>
+                </column>
+            </createTable>
+
+            <addForeignKeyConstraint constraintName="fk_dataUnitid_data"
+                                     baseTableName="arr_data_unitid"
+                                     baseColumnNames="data_id"
+                                     referencedTableName="arr_data"
+                                     referencedColumnNames="data_id"
+                                     onDelete="NO ACTION"/>
+
+            <addForeignKeyConstraint constraintName="fk_dataUnitdate_data"
+                                     baseTableName="arr_data_unitdate"
+                                     baseColumnNames="data_id"
+                                     referencedTableName="arr_data"
+                                     referencedColumnNames="data_id"
+                                     onDelete="NO ACTION"/>
+
+        </changeSet>
+
+
+</databaseChangeLog>
