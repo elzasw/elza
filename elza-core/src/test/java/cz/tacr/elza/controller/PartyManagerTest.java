@@ -112,12 +112,45 @@ public class PartyManagerTest extends AbstractRestTest {
 
     @Test
     public void testRestGetPartyTypes() throws Exception {
-        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
-                .get(GET_PARTY_TYPES);
+        Response response =
+                given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).get(GET_PARTY_TYPES);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
-        List<ParPartyType> partyTypeList = Arrays.asList(response.getBody().as(ParPartyType[].class));
+        List<ParPartyType> partyTypeList =
+                Arrays.asList(response.getBody().as(ParPartyType[].class));
 
         Assert.assertTrue("Nenalezena polozka ", partyTypeList.size() > 1);
+    }
+
+    @Test
+    public void testRestFindParty() throws Exception {
+        ParAbstractParty partyInput = createParty("varianta");
+
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
+                .parameter("search", partyInput.getRecord().getRecord())
+                .parameter("from", 0)
+                .parameter("count", 2)
+                .parameter("partyTypeId", 1)
+                .get(FIND_ABSTRACT_PARTY);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+        List<ParAbstractParty> partyList =
+                Arrays.asList(response.getBody().as(ParAbstractParty[].class));
+
+        Assert.assertTrue("Nenalezena polozka ", partyList.size() == 1);
+    }
+
+    @Test
+    public void testRestFindPartyCount() throws Exception {
+        ParAbstractParty partyInput = createParty("varianta");
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
+                .parameter("search", partyInput.getRecord().getRecord())
+                .parameter("partyTypeId", 1)
+                .get(FIND_ABSTRACT_PARTY_COUNT);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+        Long partyCount = response.getBody().as(Long.class);
+
+        Assert.assertTrue("Nenalezena polozka ", partyCount == 1);
     }
 }

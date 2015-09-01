@@ -27,6 +27,9 @@ import javax.persistence.Table;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ParPartyType implements IdObject<Integer>, cz.tacr.elza.api.ParPartyType {
 
+    /* Konstanty pro vazby a fieldy. */
+    public static final String PARTY_TYPE_ID = "partyTypeId";
+
     @Id
     @GeneratedValue
     private Integer partyTypeId;

@@ -65,10 +65,10 @@ public interface PartyManager<PAPV extends ParAbstractPartyVals> {
      * variantních hesel.
      * 
      * @param search
-     * @param registerTypeId
+     * @param partyTypeId
      * @return
      */
-    Integer findAbstractPartyCount(String search, Integer registerTypeId);
+    Long findAbstractPartyCount(String search, Integer partyTypeId);
 
     /**
      * Vrátí abstraktní osobu na základě identifikátoru.

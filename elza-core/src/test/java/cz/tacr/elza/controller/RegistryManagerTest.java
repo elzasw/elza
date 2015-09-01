@@ -310,18 +310,6 @@ public class RegistryManagerTest extends AbstractRestTest {
     }
 
     /**
-     * Vytvoření jednoho typu rejstříku.
-     * @return  vytvořený objekt, zapsaný do db
-     */
-    private RegRegisterType createRegisterType() {
-        RegRegisterType regRegisterType = new RegRegisterType();
-        regRegisterType.setCode(TEST_CODE);
-        regRegisterType.setName(TEST_NAME);
-        registerTypeRepository.save(regRegisterType);
-        return regRegisterType;
-    }
-
-    /**
      * Vytvoření jednoho externího zdroje.
      * @return  vytvořený objekt, zapsaný do db
      */
@@ -331,35 +319,6 @@ public class RegistryManagerTest extends AbstractRestTest {
         externalSource.setName(TEST_NAME);
         externalSourceRepository.save(externalSource);
         return externalSource;
-    }
-
-    /**
-     * Vytvoření jednoho záznamu rejstříku defaultního typu.
-     * @return  vytvořený objekt, zapsaný do db
-     */
-    private RegRecord createRecord() {
-        RegRecord regRecord = new RegRecord();
-        regRecord.setRecord(TEST_NAME);
-        regRecord.setCharacteristics("CHARACTERISTICS");
-        regRecord.setLocal(false);
-        regRecord.setRegisterType(createRegisterType());
-
-        return recordRepository.save(regRecord);
-    }
-
-    /**
-     * Vytvoří variantní záznam rejstříku
-     *
-     * @param obsah     textový obsah záznamu
-     * @param record    záznam rejstříku ke kterému patří
-     * @return          vytvořený objekt
-     */
-    private RegVariantRecord createVariantRecord(final String obsah, final RegRecord record) {
-        RegVariantRecord regVariantRecord = new RegVariantRecord();
-        regVariantRecord.setRecord(obsah);
-        regVariantRecord.setRegRecord(record);
-
-        return variantRecordRepository.save(regVariantRecord);
     }
 
     /**

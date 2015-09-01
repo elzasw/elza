@@ -30,6 +30,11 @@ import javax.persistence.Table;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ParAbstractParty implements IdObject<Integer>, cz.tacr.elza.api.ParAbstractParty<RegRecord, ParPartySubtype> {
 
+    /* Konstanty pro vazby a fieldy. */
+    public static final String ABSTRACT_PARTY_ID = "abstractPartyId";
+    public static final String RECORD = "record";
+    public static final String PARTY_SUBTYPE = "partySubtype";
+
     @Id
     @GeneratedValue
     private Integer abstractPartyId;

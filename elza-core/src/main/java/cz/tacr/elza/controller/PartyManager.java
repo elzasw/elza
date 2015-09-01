@@ -55,9 +55,11 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
 
         Assert.notNull(abstractParty.getPartySubtypeId(), "Není vyplněné partySubtypeId");
         Assert.notNull(abstractParty.getRecordId(), "Není vyplněné recordId");
-        final ParPartySubtype partySubtype = partySubtypeRepository.findOne(abstractParty.getPartySubtypeId());
+        final ParPartySubtype partySubtype =
+                partySubtypeRepository.findOne(abstractParty.getPartySubtypeId());
         final RegRecord record = recordRepository.findOne(abstractParty.getRecordId());
-        Assert.notNull(partySubtype, "Nebyla nalezena ParPartySubtype s id " + abstractParty.getPartySubtypeId());
+        Assert.notNull(partySubtype,
+                "Nebyla nalezena ParPartySubtype s id " + abstractParty.getPartySubtypeId());
         Assert.notNull(record, "Nebyla nalezena RegRecord s id " + abstractParty.getRecordId());
 
         ParAbstractParty party = new ParAbstractParty();
@@ -70,14 +72,17 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
     @RequestMapping(value = "/updateAbstractParty", method = RequestMethod.PUT)
     @Transactional
     @Override
-    public ParAbstractParty updateAbstractParty(@RequestParam("abstractPartyId") Integer abstractPartyId,
-                                                @RequestBody ParAbstractPartyVals abstractParty) {
+    public ParAbstractParty updateAbstractParty(
+            @RequestParam("abstractPartyId") Integer abstractPartyId,
+            @RequestBody ParAbstractPartyVals abstractParty) {
         Assert.notNull(abstractPartyId);
         Assert.notNull(abstractParty.getPartySubtypeId(), "Není vyplněné partySubtypeId");
         Assert.notNull(abstractParty.getRecordId(), "Není vyplněné recordId");
-        final ParPartySubtype partySubtype = partySubtypeRepository.findOne(abstractParty.getPartySubtypeId());
+        final ParPartySubtype partySubtype =
+                partySubtypeRepository.findOne(abstractParty.getPartySubtypeId());
         final RegRecord record = recordRepository.findOne(abstractParty.getRecordId());
-        Assert.notNull(partySubtype, "Nebyla nalezena ParPartySubtype s id " + abstractParty.getPartySubtypeId());
+        Assert.notNull(partySubtype,
+                "Nebyla nalezena ParPartySubtype s id " + abstractParty.getPartySubtypeId());
         Assert.notNull(record, "Nebyla nalezena RegRecord s id " + abstractParty.getRecordId());
 
         ParAbstractParty party = abstractPartyRepository.findOne(abstractPartyId);
@@ -96,22 +101,35 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
         abstractPartyRepository.delete(abstractPartyId);
     }
 
+    @RequestMapping(value = "/findAbstractParty", method = RequestMethod.GET)
     @Override
-    public List<? extends ParAbstractParty> findAbstractParty(String search, Integer from,
-            Integer count, Integer partyTypeId) {
-        // TODO Auto-generated method stub
-        return null;
+    public List<ParAbstractParty> findAbstractParty(@RequestParam("search") String search,
+            @RequestParam("from") Integer from, @RequestParam("count") Integer count,
+            @RequestParam(value = "partyTypeId", required = false) Integer partyTypeId) {
+        List<ParAbstractParty> resultList = abstractPartyRepository
+                .findAbstractPartyByTextAndType(search, partyTypeId, from, count);
+        resultList.forEach((party) -> {
+            if (party.getRecord() != null) {
+                party.getRecord().getVariantRecordList().forEach((variantRecord) -> {
+                    variantRecord.setRegRecord(null);
+                });
+            }
+        });
+        return resultList;
     }
 
+    @RequestMapping(value = "/findAbstractPartyCount", method = RequestMethod.GET)
     @Override
-    public Integer findAbstractPartyCount(String search, Integer registerTypeId) {
-        // TODO Auto-generated method stub
-        return null;
+    public Long findAbstractPartyCount(@RequestParam("search") String search,
+            @RequestParam("partyTypeId") Integer partyTypeId) {
+        return (Long) abstractPartyRepository.findAbstractPartyByTextAndTypeCount(search,
+            partyTypeId);
     }
 
     @RequestMapping(value = "/getAbstractParty", method = RequestMethod.GET)
     @Override
-    public ParAbstractParty getAbstractParty(@RequestParam("abstractPartyId") Integer abstractPartyId) {
+    public ParAbstractParty getAbstractParty(
+            @RequestParam("abstractPartyId") Integer abstractPartyId) {
         Assert.notNull(abstractPartyId);
         return abstractPartyRepository.getOne(abstractPartyId);
     }

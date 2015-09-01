@@ -12,8 +12,10 @@ import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ParAbstractParty;
 import cz.tacr.elza.domain.ParPartySubtype;
+import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulDescItemSpec;
@@ -426,6 +428,60 @@ public abstract class AbstractRestTest {
         ParAbstractParty party = new ParAbstractParty();
         party.setPartySubtype(partySubtype);
         party.setRecord(record);
+        abstractPartyRepository.save(party);
+        return party;
+    }
+
+    /**
+     * Vytvoření jednoho typu rejstříku.
+     * @return  vytvořený objekt, zapsaný do db
+     */
+    protected RegRegisterType createRegisterType() {
+        RegRegisterType regRegisterType = new RegRegisterType();
+        regRegisterType.setCode(TEST_CODE);
+        regRegisterType.setName(TEST_NAME);
+        registerTypeRepository.save(regRegisterType);
+        return regRegisterType;
+    }
+
+    /**
+     * Vytvoření jednoho záznamu rejstříku defaultního typu.
+     * @return  vytvořený objekt, zapsaný do db
+     */
+    protected RegRecord createRecord() {
+        RegRecord regRecord = new RegRecord();
+        regRecord.setRecord(TEST_NAME);
+        regRecord.setCharacteristics("CHARACTERISTICS");
+        regRecord.setLocal(false);
+        regRecord.setRegisterType(createRegisterType());
+
+        return recordRepository.save(regRecord);
+    }
+
+    /**
+     * Vytvoří variantní záznam rejstříku
+     *
+     * @param obsah     textový obsah záznamu
+     * @param record    záznam rejstříku ke kterému patří
+     * @return          vytvořený objekt
+     */
+    protected RegVariantRecord createVariantRecord(final String obsah, final RegRecord record) {
+        RegVariantRecord regVariantRecord = new RegVariantRecord();
+        regVariantRecord.setRecord(obsah);
+        regVariantRecord.setRegRecord(record);
+
+        return variantRecordRepository.save(regVariantRecord);
+    }
+
+    @Transactional
+    protected ParAbstractParty createParty(String obsah) {
+        final RegRecord record = createRecord();
+        final ParPartySubtype partySubtype = findPartySubtype();
+        createVariantRecord(obsah, record);
+
+        ParAbstractParty party = new ParAbstractParty();
+        party.setRecord(record);
+        party.setPartySubtype(partySubtype);
         abstractPartyRepository.save(party);
         return party;
     }
