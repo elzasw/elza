@@ -113,36 +113,50 @@ $ax-main-focus: $color-app;
         }
     }
 
-    .container-values {
-        > .v-csslayout {
-            display: table-row;
-        }
+    .wrapper-item {
+        display: block;
 
         .v-button {
-            display: inline-block;
             margin: 10px;
         }
+
+        /*.container-values {
+            > .v-csslayout {
+                display: table-row;
+            }
+
+            .v-button {
+                display: inline-block;
+                margin: 10px;
+            }
+        }*/
     }
 
     .attribut-value {
 
         .small-input {
-            width: 50px;
+            width: 100px;
         }
 
         .long-input {
-            width: 300px;
+            width: 400px;
         }
 
         textarea {
+            width: 400px;
+        }
 
+        .attribut-spec {
+            margin-right: 10px;
         }
     }
 
-    .new-attribut-button {
-
+    .label-name {
         display: block;
+    }
 
+    .new-attribut-button {
+        display: table;
     }
 
 }

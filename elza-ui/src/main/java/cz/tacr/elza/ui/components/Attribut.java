@@ -1,12 +1,17 @@
 package cz.tacr.elza.ui.components;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.vaadin.event.dd.DragAndDropEvent;
+import com.vaadin.event.dd.DropHandler;
+import com.vaadin.event.dd.acceptcriteria.AcceptAll;
+import com.vaadin.event.dd.acceptcriteria.AcceptCriterion;
 import com.vaadin.server.FontAwesome;
-import com.vaadin.ui.Button;
 import com.vaadin.ui.CssLayout;
+import com.vaadin.ui.DragAndDropWrapper;
 import com.vaadin.ui.Label;
 
 import cz.req.ax.AxAction;
@@ -17,10 +22,13 @@ import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 
-
+/**
+ * @author Martin Šlapa
+ * @since 2.10.2015
+ */
 public class Attribut extends CssLayout implements Components {
 
-    ChildComponentContainer<ArrDescItemExt, AttributValue> childs;
+    ChildComponentContainer<ArrDescItemExt, AttributDragAndDropWrapper> childs;
     List<RulDescItemSpec> descItemSpecs;
     RulDataType dataType;
     Integer nodeId;
@@ -35,12 +43,18 @@ public class Attribut extends CssLayout implements Components {
         this.versionId = versionId;
         deleteDescItems = new ArrayList<>();
 
-        addComponent(new Label(type.getName()));
+        Label nadpis = new Label(type.getName());
+        nadpis.setSizeUndefined();
+        nadpis.addStyleName("label-name");
+
+        addComponent(nadpis);
 
         childs = new ChildComponentContainer<>();
         childs.addStyleName("container-values");
 
         addComponent(childs);
+        itemExtList.sort((o1, o2) -> o1.getPosition().compareTo(o2.getPosition()));
+
         for (ArrDescItemExt descItemExt : itemExtList) {
             newAtributValue(descItemExt);
         }
@@ -56,7 +70,7 @@ public class Attribut extends CssLayout implements Components {
 
 
     public List<ArrDescItemExt> getKeys() {
-        List<ArrDescItemExt> collect = childs.getChils().stream().map(AttributValue::commit).collect(Collectors.toList());
+        List<ArrDescItemExt> collect = childs.getChils().stream().map(AttributDragAndDropWrapper::commit).collect(Collectors.toList());
         return collect;
     }
 
@@ -65,10 +79,38 @@ public class Attribut extends CssLayout implements Components {
     }
 
     AttributValue newAtributValue(final ArrDescItemExt a) {
-        AttributValue value = new AttributValue(a, descItemSpecs, dataType, AxAction.of(a).icon(FontAwesome.TRASH_O).action(this::deleteAtributValue));
+        AttributValue value = new AttributValue(a, descItemSpecs, dataType, AxAction.of(a).icon(FontAwesome.TRASH_O).action(this::deleteAtributValue), AxAction.of(a).icon(FontAwesome.SORT));
         a.setPosition(childs.getComponentCount() + 1);
         a.setNodeId(nodeId);
-        childs.addComponent(a, value);
+
+        AttributDragAndDropWrapper wrapper = new AttributDragAndDropWrapper(value);
+
+        wrapper.setDropHandler(new DropHandler() {
+            @Override
+            public void drop(DragAndDropEvent event) {
+                try {
+                    AttributDragAndDropWrapper source = (AttributDragAndDropWrapper) event.getTransferable().getSourceComponent();
+                    AttributDragAndDropWrapper target = (AttributDragAndDropWrapper) event.getTargetDetails().getTarget();
+
+                    childs.moveComponent(source, target);
+                    precislujPoradi();
+
+                    System.out.println("DragAndDrop " + childs.getKey(source).getPosition() + " >> " + childs.getKey(target).getPosition());
+                } catch (Exception e) {
+                    System.err.println("Drop error: " + e.getMessage());
+                }
+            }
+
+            @Override
+            public AcceptCriterion getAcceptCriterion() {
+                return AcceptAll.get();
+            }
+        });
+
+        childs.addStyleName("no-horizontal-drag-hints");
+        wrapper.setDragStartMode(DragAndDropWrapper.DragStartMode.COMPONENT);
+
+        childs.addComponent(a, wrapper);
         return value;
     }
 
@@ -86,8 +128,8 @@ public class Attribut extends CssLayout implements Components {
 
     public void precislujPoradi() {
         for (int i = 0; i < childs.getComponentCount(); i++) {
-            AttributValue attributValue = (AttributValue) childs.getComponent(i);
-            childs.getKey(attributValue).setPosition(i + 1);
+            AttributDragAndDropWrapper wrapper = (AttributDragAndDropWrapper) childs.getComponent(i);
+            childs.getKey(wrapper).setPosition(i + 1);
         }
     }
 

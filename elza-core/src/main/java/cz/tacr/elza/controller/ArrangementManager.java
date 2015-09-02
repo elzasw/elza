@@ -884,7 +884,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
                 ArrDescItem descItemOrig = descItemsOrig.get(0);
 
-                if (descItemOrig.getPosition() != descItem.getPosition()) {
+                if (!descItemOrig.getPosition().equals(descItem.getPosition())) {
                     updatePositionDescItems.add(descItem);
                 }
 
@@ -1067,6 +1067,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         if (createNewVersion) {
 
+            Integer maxPosition = descItemRepository.findMaxPositionByNodeIdAndDescItemTypeIdAndDeleteChangeIsNull(nodeId, rulDescItemType.getId());
+
             descItem.setDeleteChange(arrFaChange);
             descItemRepository.save(descItem);
 
@@ -1077,8 +1079,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             descItemNew.setDescItemType(rulDescItemType);
             descItemNew.setDescItemSpec(rulDescItemSpec);
             descItemNew.setNodeId(descItem.getNodeId());
-
-            Integer maxPosition = descItemRepository.findMaxPositionByNodeIdAndDescItemTypeIdAndDeleteChangeIsNull(nodeId, rulDescItemType.getId());
 
             // provedla se změna pozice
             if (positionUI != position) {
@@ -1187,7 +1187,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             List<ArrDescItem> arrDescItems = descItemRepository.findByNodeIdAndDeleteChangeIsNullAndDescItemTypeId(nodeId, rulDescItemType.getId());
             arrDescItems.remove(descItem); // odstraníme ten, co přidáváme / upravujeme
             if (arrDescItems.size() > 0) {
-                throw new IllegalArgumentException("Pro daný node_id už existuje jiná hodnota stejného typu atributu");
+                throw new IllegalArgumentException("Pro daný uzel již existuje jiná hodnota stejného typu atributu");
             }
         }
     }
@@ -1211,7 +1211,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                     rulDescItemSpec.getId());
             arrDescItems.remove(descItem); // odstraníme ten, co přidáváme / upravujeme
             if (arrDescItems.size() > 0) {
-                throw new IllegalArgumentException("Pro daný node_id už existuje jiná hodnota stejného typu atributu");
+                throw new IllegalArgumentException("Pro daný uzel již existuje jiná hodnota stejného typu atributu");
             }
         }
     }
