@@ -46,7 +46,6 @@ import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VersionRepository;
-import scala.annotation.meta.getter;
 
 /**
  * Testy pro {@link ArrangementManager}.
