@@ -120,7 +120,7 @@ public class LevelInlineDetail extends CssLayout implements Components {
                 attribut = new Attribut(listItem, listSpec, type, dataType, level.getNodeId(), versionId);
 
                 attributWindow = new AxWindow();
-                attributWindow.caption("Detail attributu")
+                attributWindow.caption("Detail atributu")
                         .components(attribut)
                         .buttonClose()
                         .modal()

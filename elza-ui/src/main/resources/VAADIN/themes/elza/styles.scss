@@ -119,17 +119,27 @@ $ax-main-focus: $color-app;
         .v-button {
             margin: 10px;
         }
+    }
 
-        /*.container-values {
-            > .v-csslayout {
-                display: table-row;
-            }
+    .container-values {
+        .v-csslayout {
+            display: table-row;
+        }
 
-            .v-button {
-                display: inline-block;
-                margin: 10px;
-            }
-        }*/
+        .v-button {
+            margin: 10px;
+        }
+
+        .sort-icon {
+            margin-top: 10px;
+            padding: 6px 5px 7px 5px;
+            color: gray;
+        }
+
+        .sort-icon:hover {
+            color: black;
+        }
+
     }
 
     .attribut-value {

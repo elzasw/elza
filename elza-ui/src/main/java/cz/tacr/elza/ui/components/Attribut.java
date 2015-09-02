@@ -1,7 +1,6 @@
 package cz.tacr.elza.ui.components;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -10,6 +9,7 @@ import com.vaadin.event.dd.DropHandler;
 import com.vaadin.event.dd.acceptcriteria.AcceptAll;
 import com.vaadin.event.dd.acceptcriteria.AcceptCriterion;
 import com.vaadin.server.FontAwesome;
+import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.DragAndDropWrapper;
 import com.vaadin.ui.Label;
@@ -22,25 +22,29 @@ import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 
+
 /**
  * @author Martin Šlapa
  * @since 2.10.2015
  */
 public class Attribut extends CssLayout implements Components {
 
-    ChildComponentContainer<ArrDescItemExt, AttributDragAndDropWrapper> childs;
+    ChildComponentContainer<ArrDescItemExt, AttributValue> childs;
     List<RulDescItemSpec> descItemSpecs;
     RulDataType dataType;
     Integer nodeId;
 
     List<ArrDescItemExt> deleteDescItems;
     private Integer versionId;
+    private RulDescItemType type;
+    private AxAction newValueButton;
 
     public Attribut(List<ArrDescItemExt> itemExtList, List<RulDescItemSpec> descItemSpecs, RulDescItemType type, RulDataType dataType, Integer nodeId, Integer versionId) {
         this.descItemSpecs = descItemSpecs;
         this.dataType = dataType;
         this.nodeId = nodeId;
         this.versionId = versionId;
+        this.type = type;
         deleteDescItems = new ArrayList<>();
 
         Label nadpis = new Label(type.getName());
@@ -59,18 +63,25 @@ public class Attribut extends CssLayout implements Components {
             newAtributValue(descItemExt);
         }
 
-        AxAction newValueButton = new AxAction().run(() -> {
+        newValueButton = new AxAction().run(() -> {
             ArrDescItemExt descItem = new ArrDescItemExt();
             descItem.setDescItemType(type);
             newAtributValue(descItem);
         }).caption("Přidat další hodnotu").style("new-attribut-button").icon(FontAwesome.PLUS);
 
         addComponent(newValueButton.button());
+
+        // přidá nový řádek, pokud nebyl žádný (ulehčení pro uživatele)
+        if (itemExtList.size() == 0) {
+            ArrDescItemExt descItem = new ArrDescItemExt();
+            descItem.setDescItemType(type);
+            newAtributValue(descItem);
+        }
     }
 
 
     public List<ArrDescItemExt> getKeys() {
-        List<ArrDescItemExt> collect = childs.getChils().stream().map(AttributDragAndDropWrapper::commit).collect(Collectors.toList());
+        List<ArrDescItemExt> collect = childs.getChils().stream().map(AttributValue::commit).collect(Collectors.toList());
         return collect;
     }
 
@@ -79,18 +90,33 @@ public class Attribut extends CssLayout implements Components {
     }
 
     AttributValue newAtributValue(final ArrDescItemExt a) {
-        AttributValue value = new AttributValue(a, descItemSpecs, dataType, AxAction.of(a).icon(FontAwesome.TRASH_O).action(this::deleteAtributValue), AxAction.of(a).icon(FontAwesome.SORT));
-        a.setPosition(childs.getComponentCount() + 1);
-        a.setNodeId(nodeId);
 
-        AttributDragAndDropWrapper wrapper = new AttributDragAndDropWrapper(value);
+        Label sortIcon = new Label();
+        sortIcon.addStyleName("sort-icon");
+        sortIcon.setContentMode(ContentMode.HTML);
+        sortIcon.setValue(FontAwesome.SORT.getHtml());
+        sortIcon.setSizeUndefined();
+
+        DragAndDropWrapper wrapper = new DragAndDropWrapper(sortIcon);
 
         wrapper.setDropHandler(new DropHandler() {
             @Override
             public void drop(DragAndDropEvent event) {
                 try {
-                    AttributDragAndDropWrapper source = (AttributDragAndDropWrapper) event.getTransferable().getSourceComponent();
-                    AttributDragAndDropWrapper target = (AttributDragAndDropWrapper) event.getTargetDetails().getTarget();
+                    DragAndDropWrapper sourceWrapper = (DragAndDropWrapper) event.getTransferable().getSourceComponent();
+                    DragAndDropWrapper targetWrapper = (DragAndDropWrapper) event.getTargetDetails().getTarget();
+
+                    AttributValue source = null;
+                    AttributValue target = null;
+
+                    for (AttributValue attributValue : childs.getChils()) {
+                        if (attributValue.getWrapper().equals(sourceWrapper)) {
+                            source = attributValue;
+                        }
+                        if (attributValue.getWrapper().equals(targetWrapper)) {
+                            target = attributValue;
+                        }
+                    }
 
                     childs.moveComponent(source, target);
                     precislujPoradi();
@@ -109,8 +135,12 @@ public class Attribut extends CssLayout implements Components {
 
         childs.addStyleName("no-horizontal-drag-hints");
         wrapper.setDragStartMode(DragAndDropWrapper.DragStartMode.COMPONENT);
+        wrapper.setSizeUndefined();
 
-        childs.addComponent(a, wrapper);
+        AttributValue value = new AttributValue(a, descItemSpecs, dataType, AxAction.of(a).icon(FontAwesome.TRASH_O).action(this::deleteAtributValue), wrapper);
+        a.setPosition(childs.getComponentCount() + 1);
+        a.setNodeId(nodeId);
+        childs.addComponent(a, value);
         return value;
     }
 
@@ -128,8 +158,8 @@ public class Attribut extends CssLayout implements Components {
 
     public void precislujPoradi() {
         for (int i = 0; i < childs.getComponentCount(); i++) {
-            AttributDragAndDropWrapper wrapper = (AttributDragAndDropWrapper) childs.getComponent(i);
-            childs.getKey(wrapper).setPosition(i + 1);
+            AttributValue av = (AttributValue) childs.getComponent(i);
+            childs.getKey(av).setPosition(i + 1);
         }
     }
 

@@ -3,6 +3,7 @@ package cz.tacr.elza.ui.components;
 import java.util.List;
 
 import com.vaadin.ui.CssLayout;
+import com.vaadin.ui.DragAndDropWrapper;
 import com.vaadin.ui.TextArea;
 
 import cz.req.ax.AxAction;
@@ -22,7 +23,10 @@ public class AttributValue extends CssLayout implements Components {
 
     AxForm<ArrDescItemExt> form;
 
-    public AttributValue(ArrDescItemExt a, List<RulDescItemSpec> descItemSpecs, RulDataType dataType, AxAction deleteAction, AxAction drag) {
+    private DragAndDropWrapper wrapper;
+
+    public AttributValue(ArrDescItemExt a, List<RulDescItemSpec> descItemSpecs, RulDataType dataType, AxAction deleteAction, DragAndDropWrapper wrapper) {
+        this.wrapper = wrapper;
         form = AxForm.init(a).layoutCss();
         form.addStyleName("attribut-value");
 
@@ -52,28 +56,17 @@ public class AttributValue extends CssLayout implements Components {
                 throw new IllegalStateException("Typ '" + dataType.getCode() + "' není implementován");
         }
 
-        addComponent(drag.button());
+        addComponent(wrapper);
         addComponent(form);
         addComponent(deleteAction.button());
+    }
+
+    public DragAndDropWrapper getWrapper() {
+        return wrapper;
     }
 
     public ArrDescItemExt commit() {
         return form.commit();
     }
-
-    /*@Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-
-        TODO: dopsat správně porovnání pro ChildComponentContainer
-
-        if (o == null) {
-            return false;
-        }
-
-        return true;
-    }*/
 
 }
