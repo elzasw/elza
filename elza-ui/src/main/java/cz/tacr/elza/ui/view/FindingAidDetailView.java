@@ -453,7 +453,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                 child.setStyleName("show-if-cut");
 
                 child = new AxAction().caption("Zobrazit historii").icon(FontAwesome.CALENDAR).run(() -> {
-                    showVersionHistory((Integer) itemId);
+                    showVersionHistory(((ArrFaLevel) itemId).getNodeId());
                 }).menuItem(parent);
                 return menuBar;
             }
@@ -641,8 +641,9 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
         if (faLevel instanceof ArrFaLevelExt) {
             ArrFaLevelExt faLevelExt = (ArrFaLevelExt) faLevel;
             Map<Integer, String> attributeMap = createAttributeMap(faLevelExt);
-            //attributeMap.forEach((k,v) -> item.getItemProperty(k).setValue(v));
-            // TODO slapa: opravit?
+            if (attributeMap != null) {
+                attributeMap.forEach((k,v) -> item.getItemProperty(k).setValue(v));
+            }
         }
 
         if (faLevel.getParentNodeId().equals(version.getRootNode().getNodeId())) {
