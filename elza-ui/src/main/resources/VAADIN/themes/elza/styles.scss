@@ -10,6 +10,7 @@ body.v-generated-body {
 $color-app: #0095ba;
 $color-app-alt: #012e58;
 $color-gray1: #e7e7e7;
+$color-gray2: #a2a2a2;
 $color-title: #606262;
 $v-focus-color: $color-app;
 $ax-main-focus: $color-app;
@@ -98,11 +99,17 @@ $ax-main-focus: $color-app;
         float: right;
     }
 
+    .margin-top{
+        margin-top: 10px;
+    }
+
 
 
     .level-detail {
         width: 50%;
         padding-left: 15px;
+        height: calc(100vh - 165px) !important;
+        overflow-y: auto;
 
         .detail-content{
             width: 100%;

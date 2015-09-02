@@ -28,7 +28,7 @@
 .page-header {
   .menu-bar {
     height: auto;
-    font-size: 26px;
+    font-size: 18px;
     line-height: 50px;
     background: transparent;
     > .v-menubar-menuitem:first-child {
@@ -48,4 +48,61 @@
     color: $color-title;
     font-weight: normal;
   }
+}
+
+
+.form-grid{
+    display: table;
+
+
+    > div{
+        display: table-row;
+    }
+
+    > .grid-row{
+        > div:first-child{
+            width: 200px;
+            color: $color-gray2;
+        }
+
+        > div{
+            display: table-cell;
+            white-space: normal;
+        }
+    }
+
+
+}
+
+.form-grid.row-spacing{
+    .grid-row:not(:first-child) {
+        > div {
+            padding-top: 10px;
+        }
+
+        .multi-value{
+            padding-top: 0;
+        }
+    }
+}
+
+.form-grid.attr-detail{
+
+    > div:hover .edit-btn{
+        visibility: visible;
+    }
+    
+    .edit-btn{
+        visibility: hidden;
+        position: relative;
+        height: 20px;
+        padding-left: 7px;
+    }
+
+    div.edit-btn:hover{
+        background-color: white !important;
+        background: none;
+        border: none;
+    }
+
 }

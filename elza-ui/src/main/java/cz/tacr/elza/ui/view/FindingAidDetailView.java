@@ -18,9 +18,11 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import cz.tacr.elza.ui.components.TreeTable;
 import ru.xpoft.vaadin.VaadinView;
 
 import com.vaadin.data.Item;
+import com.vaadin.data.Property;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.event.ItemClickEvent;
 import com.vaadin.navigator.ViewChangeListener;
@@ -30,7 +32,6 @@ import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.Tree;
-import com.vaadin.ui.TreeTable;
 import com.vaadin.ui.UI;
 
 import cz.req.ax.AxAction;
@@ -123,6 +124,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
         }
 
         table = new TreeTable();
+        table.resizeOnPageResize("detail-table");
         table.addStyleName("detail-table");
         table.setWidth("50%");
 
@@ -183,10 +185,24 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
         table.addItemClickListener(new ItemClickEvent.ItemClickListener() {
             @Override
             public void itemClick(final ItemClickEvent event) {
-                table.setWidth("50%");
                 ArrFaLevel node = (ArrFaLevel) event.getItemId();
                 ArrFaLevelExt level = arrangementManager.getLevel(node.getNodeId(), version.getFaVersionId(), null);
                 levelDetailConteiner.showLevelDetail(level, level.getDescItemList(), version.getFaVersionId());
+            }
+        });
+
+        table.setItemDescriptionGenerator( new Table.ItemDescriptionGenerator() {
+            @Override
+            public String generateDescription(com.vaadin.ui.Component source, Object itemId,
+                    Object propertyId) {
+
+                if(propertyId == null || itemId == null){
+                    return null;
+                }
+
+                Property property = container.getItem(itemId).getItemProperty(propertyId);
+
+                return property == null || property.getValue() == null ? null : property.getValue().toString();
             }
         });
 
@@ -261,19 +277,12 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
     }
 
     private void showDetailAP() {
-        table.setWidth("50%");
         ArrFaLevelExt level = arrangementManager.getLevel(rootNode.getNodeId(), version.getFaVersionId(), null);
         levelDetailConteiner.showLevelDetail(level, level.getDescItemList(), version.getFaVersionId());
     }
 
     private CssLayout createInlineDetail() {
-        levelDetailConteiner = new LevelInlineDetail(new Runnable() {
-            @Override
-            public void run() {
-                table.setWidth("100%");
-            }
-        }, ruleSetManager, arrangementManager);
-
+        levelDetailConteiner = new LevelInlineDetail(ruleSetManager, arrangementManager);
         return levelDetailConteiner;
     }
 

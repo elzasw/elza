@@ -5,20 +5,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.CompareToBuilder;
 
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
-import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.Notification;
-import com.vaadin.ui.Table;
 
 import cz.req.ax.AxAction;
 import cz.req.ax.AxWindow;
-import cz.req.ax.Components;
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrDescItemExt;
@@ -35,7 +31,6 @@ import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
  */
 public class LevelInlineDetail extends CssLayout implements Components {
 
-    private Runnable onClose;
     private CssLayout detailContent;
 
     private RuleManager ruleSetManager;
@@ -43,27 +38,21 @@ public class LevelInlineDetail extends CssLayout implements Components {
 
     private Attribut attribut;
     private AxWindow attributWindow = null;
+    private ComboBox attributesComboBox;
 
-    public LevelInlineDetail(final Runnable onClose, final RuleManager ruleSetManager, final ArrangementManager arrangementManager) {
+    public LevelInlineDetail(final RuleManager ruleSetManager, final ArrangementManager arrangementManager) {
         setSizeUndefined();
         addStyleName("level-detail");
-        addStyleName("hidden");
-        this.onClose = onClose;
         this.ruleSetManager = ruleSetManager;
         this.arrangementManager = arrangementManager;
 
         init();
     }
 
-    private void init(){
-        Button closeButton = new AxAction().icon(FontAwesome.TIMES).right().run(()->{
-            LevelInlineDetail.this.addStyleName("hidden");
-            onClose.run();
-        }).button();
-        detailContent = cssLayout("detail-content");
+    private void init() {
+        detailContent = cssLayoutExt("detail-content");
 
         addComponent(newLabel("Detail atributu", "h2"));
-        addComponent(closeButton);
         addComponent(detailContent);
     }
 
@@ -100,34 +89,20 @@ public class LevelInlineDetail extends CssLayout implements Components {
 
     }
 
-    public void showLevelDetail(final ArrFaLevelExt level, final List<ArrDescItemExt> descItemList, final Integer versionId) {
-        removeStyleName("hidden");
+    public void showLevelDetail(final ArrFaLevelExt level,
+                                final List<ArrDescItemExt> descItemList,
+                                final Integer versionId) {
         detailContent.removeAllComponents();
-        detailContent.addComponent(newLabel("Zobrazen level s nodeId " + level.getNodeId()));
-        detailContent.addComponent(newLabel("Pozice: "+level.getPosition()));
 
-        BeanItemContainer<RulDescItemType> descItemTypeBeanItemContainer = new BeanItemContainer<>(RulDescItemType.class);
+        BeanItemContainer<RulDescItemType> descItemTypeBeanItemContainer = new BeanItemContainer<>(
+                RulDescItemType.class);
         descItemTypeBeanItemContainer.addAll(ruleSetManager.getDescriptionItemTypes(0));
-        ComboBox attributesComboBox = new ComboBox(null, descItemTypeBeanItemContainer);
+        attributesComboBox = new ComboBox(null, descItemTypeBeanItemContainer);
         attributesComboBox.setItemCaptionPropertyId("name");
 
         attributesComboBox.addValueChangeListener(event -> {
             RulDescItemType type = (RulDescItemType) event.getProperty().getValue();
-            if (type != null) {
-                List<ArrDescItemExt> listItem = ruleSetManager.getDescriptionItemsForAttribute(versionId, level.getNodeId(), type.getDescItemTypeId());
-                List<RulDescItemSpec> listSpec = ruleSetManager.getDescItemSpecsFortDescItemType(type);
-                RulDataType dataType = ruleSetManager.getDataTypeForDescItemType(type);
-                attribut = new Attribut(listItem, listSpec, type, dataType, level.getNodeId(), versionId);
-
-                attributWindow = new AxWindow();
-                attributWindow.caption("Detail atributu")
-                        .components(attribut)
-                        .buttonClose()
-                        .modal()
-                        .style("window-detail").show().closeListener(e -> {
-                    attributesComboBox.setValue(null);
-                }).menuActions(AxAction.of(attribut).caption("Uložit").action(this::saveAttributeWithVersion), AxAction.of(attribut).caption("Uložit bez uložení historie").action(this::saveAttributeWithoutVersion));
-            }
+            showEditAttrWindow(level, type, versionId);
         });
         detailContent.addComponent(attributesComboBox);
 
@@ -142,40 +117,70 @@ public class LevelInlineDetail extends CssLayout implements Components {
                     .toComparison();
         });
 
-        Table table = new Table();
-        table.setColumnHeaderMode(Table.ColumnHeaderMode.HIDDEN);
-        table.setWidth("100%");
-        table.addContainerProperty("descItemType", String.class, null, "Attribut", null, null);
-        table.addContainerProperty("data", String.class, null, "Hodnota", null, null);
-        final Set<Integer> useValue = new HashSet<>();
-        table.addGeneratedColumn("descItemType", new Table.ColumnGenerator() {
-            @Override
-            public Object generateCell(final Table source, final Object itemId, final Object columnId) {
-                ArrDescItemExt descItem = (ArrDescItemExt) itemId;
-                Integer descItemTypeId = descItem.getDescItemType().getDescItemTypeId();
-                if (useValue.contains(descItemTypeId)) {
-                    return "";
-                }
-                useValue.add(descItemTypeId);
-                return descItem.getDescItemType().getName();
+
+        FormGrid grid = new FormGrid().setRowSpacing(true).style("attr-detail");
+        grid.setMarginTop(true);
+        Integer lastDescItemTypeId = null;
+        for (ArrDescItemExt item : descItemList) {
+            String caption;
+            if(item.getDescItemType().getDescItemTypeId().equals(lastDescItemTypeId)){
+                caption = "";
+                grid.addRow(caption, newLabel(item.getData(), "multi-value"));
+            }else{
+                caption = item.getDescItemType().getName();
+
+                CssLayout captionLayout = cssLayoutExt(null);
+                captionLayout.addComponent(newLabel(caption));
+                captionLayout.addComponent(createEditButton(level, item.getDescItemType(), versionId));
+
+                CssLayout layout = grid.addRow(captionLayout, newLabel(item.getData()));
+
+
+                lastDescItemTypeId = item.getDescItemType().getDescItemTypeId();
             }
-        });
-        table.addGeneratedColumn("data", (source, itemId, columnId) -> {
-            ArrDescItemExt descItem = (ArrDescItemExt) itemId;
-            String specName = null;
-            if (descItem.getDescItemSpec() != null) {
-                specName = descItem.getDescItemSpec().getName();
-            }
-            return StringUtils.defaultString(specName) + " " + descItem.getData();
-        });
-        BeanItemContainer<ArrDescItemExt> container = new BeanItemContainer<>(ArrDescItemExt.class);
-        container.addAll(descItemList);
-        table.addStyleName("attribut-table");
-        table.setContainerDataSource(container);
-        table.setVisibleColumns("descItemType", "data");
-        detailContent.addComponent(table);
+        }
+
+        detailContent.addComponent(grid);
     }
 
 
+    private void showEditAttrWindow(final ArrFaLevelExt level, final RulDescItemType type, final Integer versionId) {
+        if (type != null) {
+            List<ArrDescItemExt> listItem = ruleSetManager
+                    .getDescriptionItemsForAttribute(versionId, level.getNodeId(), type.getDescItemTypeId());
+            List<RulDescItemSpec> listSpec = ruleSetManager.getDescItemSpecsFortDescItemType(type);
+            RulDataType dataType = ruleSetManager.getDataTypeForDescItemType(type);
+            attribut = new Attribut(listItem, listSpec, type, dataType, level.getNodeId(), versionId);
 
+            attributWindow = new AxWindow();
+            attributWindow.caption("Detail atributu")
+                    .components(attribut)
+                    .buttonClose()
+                    .modal()
+                    .style("window-detail").show().closeListener(e -> {
+                attributesComboBox.setValue(null);
+            }).menuActions(AxAction.of(attribut).caption("Uložit").action(this::saveAttributeWithVersion),
+                    AxAction.of(attribut).caption("Uložit bez uložení historie")
+                            .action(this::saveAttributeWithoutVersion)
+            );
+        }
+    }
+
+
+    private Button createEditButton(final ArrFaLevelExt level, final RulDescItemType type, final Integer versionId) {
+
+        Button button = new Button(FontAwesome.EDIT);
+        button.addStyleName("edit-btn");
+        button.addStyleName("icon-button");
+        button.addClickListener(new Button.ClickListener() {
+            @Override
+            public void buttonClick(final Button.ClickEvent event) {
+                showEditAttrWindow(level, type, versionId);
+
+            }
+        });
+
+
+        return button;
+    }
 }
