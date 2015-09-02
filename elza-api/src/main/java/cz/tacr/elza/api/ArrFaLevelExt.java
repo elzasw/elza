@@ -8,4 +8,5 @@ public interface ArrFaLevelExt<FC extends ArrFaChange, DI extends ArrDescItemExt
     List<DI> getDescItemList();
 
     void setDescItemList(List<DI> descItemList);
+
 }
