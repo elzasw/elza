@@ -49,10 +49,10 @@ public class DbChangelog_1_4 implements liquibase.change.custom.CustomTaskChange
 
             createTree(DEPTH, NODES_IN_LEVEL);
 
-            statement.executeUpdate("INSERT INTO hibernate_sequences (sequence_name, next_val) VALUES ('arr_finding_aid|finding_aid_id', 2)");
-            statement.executeUpdate("INSERT INTO hibernate_sequences (sequence_name, next_val) VALUES ('arr_fa_change|change_id', 2)");
-            statement.executeUpdate("INSERT INTO hibernate_sequences (sequence_name, next_val) VALUES ('arr_fa_version|fa_version_id', 2)");
-            statement.executeUpdate("INSERT INTO hibernate_sequences (sequence_name, next_val) VALUES ('arr_fa_level|fa_level_id', " + ++nodeCount + ")");
+            statement.executeUpdate("INSERT INTO db_hibernate_sequences (sequence_name, next_val) VALUES ('arr_finding_aid|finding_aid_id', 2)");
+            statement.executeUpdate("INSERT INTO db_hibernate_sequences (sequence_name, next_val) VALUES ('arr_fa_change|change_id', 2)");
+            statement.executeUpdate("INSERT INTO db_hibernate_sequences (sequence_name, next_val) VALUES ('arr_fa_version|fa_version_id', 2)");
+            statement.executeUpdate("INSERT INTO db_hibernate_sequences (sequence_name, next_val) VALUES ('arr_fa_level|fa_level_id', " + ++nodeCount + ")");
         } catch (Exception e) {
             throw new CustomChangeException(e);
 

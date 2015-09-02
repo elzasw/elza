@@ -25,7 +25,7 @@
         <delete tableName="arr_fa_version"/>
         <delete tableName="arr_finding_aid"/>
         <delete tableName="arr_fa_change"/>
-        <delete tableName="hibernate_sequences"/>
+        <delete tableName="db_hibernate_sequences"/>
         <delete tableName="par_abstract_party"/>
         <delete tableName="par_party_subtype"/>
         <delete tableName="par_party_type"/>

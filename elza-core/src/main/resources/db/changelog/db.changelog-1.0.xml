@@ -8,7 +8,7 @@
 
     <changeSet id="1" author="pubal" runOnChange="true" failOnError="false">
 
-        <createTable tableName="hibernate_sequences">
+        <createTable tableName="db_hibernate_sequences">
             <column name="sequence_name" type="varchar(255)">
                 <constraints primaryKey="true"/>
             </column>

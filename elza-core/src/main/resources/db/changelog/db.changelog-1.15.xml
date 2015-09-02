@@ -213,16 +213,16 @@
         <insert tableName="reg_register_type" ><column name="register_type_id" value="5" /><column name="code" value="ARTWORK" /><column name="name" value="Rejstřík děl" /></insert>
         <insert tableName="reg_register_type" ><column name="register_type_id" value="6" /><column name="code" value="TERM" /><column name="name" value="Rejstřík věcný" /></insert>
 
-        <insert tableName="hibernate_sequences"><column name="sequence_name" value="rul_rule_set|rule_set_id"/><column name="next_val" value="2"/></insert>
-        <insert tableName="hibernate_sequences"><column name="sequence_name" value="rul_arrangement_type|arrangement_type_id"/><column name="next_val" value="4"/></insert>
-        <insert tableName="hibernate_sequences"><column name="sequence_name" value="rul_data_type|data_type_id"/><column name="next_val" value="10"/></insert>
-        <insert tableName="hibernate_sequences"><column name="sequence_name" value="rul_desc_item_type|desc_item_type_id"/><column name="next_val" value="48"/></insert>
-        <insert tableName="hibernate_sequences"><column name="sequence_name" value="rul_desc_item_spec|desc_item_spec_id"/><column name="next_val" value="65"/></insert>
-        <insert tableName="hibernate_sequences"><column name="sequence_name" value="rul_desc_item_constraint|desc_item_constraint_id"/><column name="next_val" value="36"/></insert>
-        <insert tableName="hibernate_sequences"><column name="sequence_name" value="rul_fa_view|fa_view_id"/><column name="next_val" value="4"/></insert>
-        <insert tableName="hibernate_sequences"><column name="sequence_name" value="par_party_type|party_type_id"/><column name="next_val" value="5"/></insert>
-        <insert tableName="hibernate_sequences"><column name="sequence_name" value="par_party_subtype|party_subtype_id"/><column name="next_val" value="22"/></insert>
-        <insert tableName="hibernate_sequences"><column name="sequence_name" value="reg_register_type|register_type_id"/><column name="next_val" value="7"/></insert>
+        <insert tableName="db_hibernate_sequences"><column name="sequence_name" value="rul_rule_set|rule_set_id"/><column name="next_val" value="2"/></insert>
+        <insert tableName="db_hibernate_sequences"><column name="sequence_name" value="rul_arrangement_type|arrangement_type_id"/><column name="next_val" value="4"/></insert>
+        <insert tableName="db_hibernate_sequences"><column name="sequence_name" value="rul_data_type|data_type_id"/><column name="next_val" value="10"/></insert>
+        <insert tableName="db_hibernate_sequences"><column name="sequence_name" value="rul_desc_item_type|desc_item_type_id"/><column name="next_val" value="48"/></insert>
+        <insert tableName="db_hibernate_sequences"><column name="sequence_name" value="rul_desc_item_spec|desc_item_spec_id"/><column name="next_val" value="65"/></insert>
+        <insert tableName="db_hibernate_sequences"><column name="sequence_name" value="rul_desc_item_constraint|desc_item_constraint_id"/><column name="next_val" value="36"/></insert>
+        <insert tableName="db_hibernate_sequences"><column name="sequence_name" value="rul_fa_view|fa_view_id"/><column name="next_val" value="4"/></insert>
+        <insert tableName="db_hibernate_sequences"><column name="sequence_name" value="par_party_type|party_type_id"/><column name="next_val" value="5"/></insert>
+        <insert tableName="db_hibernate_sequences"><column name="sequence_name" value="par_party_subtype|party_subtype_id"/><column name="next_val" value="22"/></insert>
+        <insert tableName="db_hibernate_sequences"><column name="sequence_name" value="reg_register_type|register_type_id"/><column name="next_val" value="7"/></insert>
 
     </changeSet>
 
