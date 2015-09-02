@@ -2,9 +2,6 @@ package cz.tacr.elza.ui.components;
 
 import java.util.List;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-
-import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.TextArea;
 
@@ -17,18 +14,22 @@ import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 
 
+/**
+ * @author Martin Šlapa
+ * @since 2.10.2015
+ */
 public class AttributValue extends CssLayout implements Components {
 
     AxForm<ArrDescItemExt> form;
 
-    public AttributValue(ArrDescItemExt a, List<RulDescItemSpec> descItemSpecs, RulDataType dataType, AxAction deleteAction) {
+    public AttributValue(ArrDescItemExt a, List<RulDescItemSpec> descItemSpecs, RulDataType dataType, AxAction deleteAction, AxAction drag) {
         form = AxForm.init(a).layoutCss();
         form.addStyleName("attribut-value");
 
         if (descItemSpecs != null && descItemSpecs.size() > 0) {
             AxItemContainer<RulDescItemSpec> container = AxItemContainer.init(RulDescItemSpec.class);
             container.addAll(descItemSpecs);
-            form.addCombo(null, "descItemSpec", container, "name");
+            form.addCombo(null, "descItemSpec", container, "name").field().addStyleName("attribut-spec");
         }
 
         switch (dataType.getCode()) {
@@ -42,15 +43,16 @@ public class AttributValue extends CssLayout implements Components {
             case "UNITDATE":
             case "TEXT":
             case "COORDINATES":
-                form.addField(null, "data", TextArea.class);
+                form.addField(null, "data", TextArea.class).field().setNullRepresentation("");
                 break;
             case "FORMATTED_TEXT":
-                form.addRichtext(null, "data");
+                form.addRichtext(null, "data").field().setNullRepresentation("");
                 break;
             default:
                 throw new IllegalStateException("Typ '" + dataType.getCode() + "' není implementován");
         }
 
+        addComponent(drag.button());
         addComponent(form);
         addComponent(deleteAction.button());
     }
