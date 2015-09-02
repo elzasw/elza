@@ -4,6 +4,7 @@ import com.jayway.restassured.RestAssured;
 import cz.tacr.elza.ElzaCore;
 import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFaChange;
@@ -25,6 +26,7 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.AbstractPartyRepository;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataStringRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
@@ -78,6 +80,9 @@ public abstract class AbstractRestTest {
     protected static final String TEST_NAME = "Test name";
     protected static final String TEST_UPDATE_NAME = "Update name";
 
+    protected static final String DATA_TYP_STRING = "STR";
+    protected static final String DATA_TYP_RECORD = "REC";
+
     protected static final String CONTENT_TYPE_HEADER = "content-type";
     protected static final String JSON_CONTENT_TYPE = "application/json";
 
@@ -126,6 +131,8 @@ public abstract class AbstractRestTest {
     private RegRecordRepository recordRepository;
     @Autowired
     private PartySubtypeRepository partySubtypeRepository;
+    @Autowired
+    private DataRecordRefRepository dataRecordRefRepository;
 
     @Before
     public void setUp() {
@@ -138,18 +145,18 @@ public abstract class AbstractRestTest {
 
     @After
     public void setDown() {
-//        descItemConstraintRepository.deleteAll();
+        descItemConstraintRepository.deleteAll();
         faViewRepository.deleteAll();
         versionRepository.deleteAll();
-//        arrangementTypeRepository.deleteAll();
+        arrangementTypeRepository.deleteAll();
         ruleSetRepository.deleteAll();
         findingAidRepository.deleteAll();
         levelRepository.deleteAll();
         arrDataRepository.deleteAll();
         arrDataStringRepository.deleteAll();
         descItemRepository.deleteAll();
-//        descItemSpecRepository.deleteAll();
-//        descItemTypeRepository.deleteAll();
+        descItemSpecRepository.deleteAll();
+        descItemTypeRepository.deleteAll();
         changeRepository.deleteAll();
     }
 
@@ -234,7 +241,7 @@ public abstract class AbstractRestTest {
 
     @Transactional
     protected ArrDescItem createAttributs(final Integer nodeId, final Integer position,
-                                          final ArrFaChange change, final int index) {
+                                          final ArrFaChange change, final int index, final String typ) {
         RulDescItemType descItemType = createDescItemType(index);
         RulDescItemSpec rulDescItemSpec = createDescItemSpec(descItemType, index);
 
@@ -246,7 +253,7 @@ public abstract class AbstractRestTest {
         item.setDescItemType(descItemType);
         item.setDescItemSpec(rulDescItemSpec);
         descItemRepository.save(item);
-        createData(item, index);
+        createData(item, index, typ);
         return item;
     }
 
@@ -258,14 +265,26 @@ public abstract class AbstractRestTest {
         return itemConstraint;
     }
 
-    private ArrData createData(final ArrDescItem item, final int index) {
-        ArrDataString dataStr = new ArrDataString();
-        dataStr.setDescItem(item);
-        RulDataType dataType = dataTypeRepository.getOne(2);
-        dataStr.setDataType(dataType);
-        dataStr.setValue("str data " + index);
-        arrDataStringRepository.save(dataStr);
-        return dataStr;
+    private ArrData createData(final ArrDescItem item, final int index, final String typ) {
+        if (typ == null || DATA_TYP_STRING.equalsIgnoreCase(typ)) {
+            ArrDataString dataStr = new ArrDataString();
+            dataStr.setDescItem(item);
+            RulDataType dataType = dataTypeRepository.getOne(2);
+            dataStr.setDataType(dataType);
+            dataStr.setValue("str data " + index);
+            arrDataStringRepository.save(dataStr);
+            return dataStr;
+        } else if (DATA_TYP_RECORD.equalsIgnoreCase(typ)) {
+            ArrDataRecordRef dataStr = new ArrDataRecordRef();
+            RegRecord record = createRecord();
+            dataStr.setDescItem(item);
+            RulDataType dataType = dataTypeRepository.getOne(2);
+            dataStr.setDataType(dataType);
+            dataStr.setRecordId(record.getRecordId());
+            dataRecordRefRepository.save(dataStr);
+            return dataStr;
+        }
+        return null;
     }
 
     protected RulDescItemType createDescItemType(final int index) {

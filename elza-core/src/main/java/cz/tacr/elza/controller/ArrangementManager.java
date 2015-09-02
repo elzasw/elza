@@ -45,12 +45,15 @@ import cz.tacr.elza.domain.ArrFaLevel;
 import cz.tacr.elza.domain.ArrFaLevelExt;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ParAbstractParty;
+import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
+import cz.tacr.elza.repository.AbstractPartyRepository;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataCoordinatesRepository;
@@ -70,6 +73,7 @@ import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VersionRepository;
 
@@ -152,6 +156,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Autowired
     private DescItemSpecRepository descItemSpecRepository;
+
+    @Autowired
+    private AbstractPartyRepository abstractPartyRepository;
+
+    @Autowired
+    private RegRecordRepository recordRepository;
 
     /**
      * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.
@@ -786,24 +796,62 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             BeanUtils.copyProperties(arrData.getDescItem(), arrDescItemExt);
             if (arrData instanceof ArrDataString) {
                 ArrDataString stringData = (ArrDataString) arrData;
-                String stringValue = stringData.getValue();
-                if (stringValue != null && stringValue.length() > 250 && formatData != null && FORMAT_ATTRIBUTE_SHORT.equals(formatData)) {
-                    stringValue = stringValue.substring(0, 250);
-                }
+                String stringValue = createFormatString(stringData.getValue(), formatData);
                 arrDescItemExt.setData(stringValue);
             } else if (arrData instanceof ArrDataInteger) {
                 ArrDataInteger stringData = (ArrDataInteger) arrData;
-                arrDescItemExt.setData(stringData.getValue().toString());
-            } if (arrData instanceof ArrDataText) {
-                ArrDataText stringData = (ArrDataText) arrData;
-                String stringValue = stringData.getValue();
-                if (stringValue != null && stringValue.length() > 250 && formatData != null && FORMAT_ATTRIBUTE_SHORT.equals(formatData)) {
-                    stringValue = stringValue.substring(0, 250);
+                if (stringData.getValue() != null) {
+                    arrDescItemExt.setData(stringData.getValue().toString());
                 }
+            } else if (arrData instanceof ArrDataText) {
+                ArrDataText stringData = (ArrDataText) arrData;
+                String stringValue = createFormatString(stringData.getValue(), formatData);
                 arrDescItemExt.setData(stringValue);
+            } else if (arrData instanceof ArrDataCoordinates) {
+                ArrDataCoordinates stringData = (ArrDataCoordinates) arrData;
+                arrDescItemExt.setData(stringData.getValue());
+            } else if (arrData instanceof ArrDataPartyRef) {
+                ArrDataPartyRef stringData = (ArrDataPartyRef) arrData;
+                Integer idAbstractPartyId = stringData.getAbstractPartyId();
+                if (idAbstractPartyId != null) {
+                    ParAbstractParty abstractParty = abstractPartyRepository.getOne(idAbstractPartyId);
+                    if (abstractParty.getRecord() != null) {
+                        abstractParty.getRecord().getVariantRecordList().forEach((variantRecord) -> {
+                            variantRecord.setRegRecord(null);
+                        });
+                        String stringValue = createFormatString(abstractParty.getRecord().getRecord(), formatData);
+                        arrDescItemExt.setData(stringValue);
+                    }
+                    arrDescItemExt.setAbstractParty(abstractParty);
+                }
+            } else if (arrData instanceof ArrDataRecordRef) {
+                ArrDataRecordRef stringData = (ArrDataRecordRef) arrData;
+                Integer recordId = stringData.getRecordId();
+                if (recordId != null) {
+                    RegRecord record = recordRepository.getOne(recordId);
+                    record.getVariantRecordList().forEach((variantRecord) -> {
+                        variantRecord.setRegRecord(null);
+                    });
+                    String stringValue = createFormatString(record.getRecord(), formatData);
+                    arrDescItemExt.setData(stringValue);
+                    arrDescItemExt.setRecord(record);
+                }
+            } else if (arrData instanceof ArrDataUnitdate) {
+                
+            } else if (arrData instanceof ArrDataUnitid) {
+                
             }
+
             levelExt.getDescItemList().add(arrDescItemExt);
         }
+    }
+
+    private String createFormatString(final String value,  final String formatData) {
+        String stringValue = value;
+        if (stringValue != null && stringValue.length() > 250 && formatData != null && FORMAT_ATTRIBUTE_SHORT.equals(formatData)) {
+            stringValue = stringValue.substring(0, 250);
+        }
+        return stringValue;
     }
 
     @Override
