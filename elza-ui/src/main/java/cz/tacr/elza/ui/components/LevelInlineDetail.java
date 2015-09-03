@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.CompareToBuilder;
 
 import com.vaadin.data.util.BeanItemContainer;
@@ -123,9 +124,16 @@ public class LevelInlineDetail extends CssLayout implements Components {
         Integer lastDescItemTypeId = null;
         for (ArrDescItemExt item : descItemList) {
             String caption;
+            String value = item.getData();
+
+            if (item.getDescItemSpec() != null) {
+                String specName = item.getDescItemSpec().getName();
+                value = specName + ": " + value;
+            }
+
             if(item.getDescItemType().getDescItemTypeId().equals(lastDescItemTypeId)){
                 caption = "";
-                grid.addRow(caption, newLabel(item.getData(), "multi-value"));
+                grid.addRow(caption, newLabel(value, "multi-value"));
             }else{
                 caption = item.getDescItemType().getName();
 
@@ -133,7 +141,7 @@ public class LevelInlineDetail extends CssLayout implements Components {
                 captionLayout.addComponent(newLabel(caption));
                 captionLayout.addComponent(createEditButton(level, item.getDescItemType(), versionId));
 
-                CssLayout layout = grid.addRow(captionLayout, newLabel(item.getData()));
+                grid.addRow(captionLayout, newLabel(value));
 
 
                 lastDescItemTypeId = item.getDescItemType().getDescItemTypeId();

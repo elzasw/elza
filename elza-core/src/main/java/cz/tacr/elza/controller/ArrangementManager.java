@@ -1382,50 +1382,50 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      */
     private void saveNewDataValue(RulDescItemType rulDescItemType, String data, ArrDescItem descItem) {
         switch (rulDescItemType.getDataType().getCode()) {
-        case "INT":
-            ArrDataInteger valueInt = new ArrDataInteger();
-            valueInt.setDataType(rulDescItemType.getDataType());
-            valueInt.setDescItem(descItem);
-            try {
-                valueInt.setValue(Integer.valueOf(data));
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu");
-            }
-            dataIntegerRepository.save(valueInt);
-            break;
+            case "INT":
+                ArrDataInteger valueInt = new ArrDataInteger();
+                valueInt.setDataType(rulDescItemType.getDataType());
+                valueInt.setDescItem(descItem);
+                try {
+                    valueInt.setValue(Integer.valueOf(data));
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu");
+                }
+                dataIntegerRepository.save(valueInt);
+                break;
 
-        case "STRING":
-            ArrDataString valueString = new ArrDataString();
-            valueString.setDataType(rulDescItemType.getDataType());
-            valueString.setDescItem(descItem);
-            valueString.setValue(data);
-            dataStringRepository.save(valueString);
-            break;
+            case "STRING":
+                ArrDataString valueString = new ArrDataString();
+                valueString.setDataType(rulDescItemType.getDataType());
+                valueString.setDescItem(descItem);
+                valueString.setValue(data);
+                dataStringRepository.save(valueString);
+                break;
 
             case "FORMATTED_TEXT":
-        case "TEXT":
-            ArrDataText valueText = new ArrDataText();
-            valueText.setDataType(rulDescItemType.getDataType());
-            valueText.setDescItem(descItem);
-            valueText.setValue(data);
-            dataTextRepository.save(valueText);
-            break;
+            case "TEXT":
+                ArrDataText valueText = new ArrDataText();
+                valueText.setDataType(rulDescItemType.getDataType());
+                valueText.setDescItem(descItem);
+                valueText.setValue(data);
+                dataTextRepository.save(valueText);
+                break;
 
-        case "DATACE":
-            ArrDataDatace valueDatace = new ArrDataDatace();
-            valueDatace.setDataType(rulDescItemType.getDataType());
-            valueDatace.setDescItem(descItem);
-            valueDatace.setValue(data);
-            dataDataceRepository.save(valueDatace);
-            break;
+            case "DATACE":
+                ArrDataDatace valueDatace = new ArrDataDatace();
+                valueDatace.setDataType(rulDescItemType.getDataType());
+                valueDatace.setDescItem(descItem);
+                valueDatace.setValue(data);
+                dataDataceRepository.save(valueDatace);
+                break;
 
-        case "REF":
-            ArrDataReference valueReference = new ArrDataReference();
-            valueReference.setDataType(rulDescItemType.getDataType());
-            valueReference.setDescItem(descItem);
-            valueReference.setValue(data);
-            dataReferenceRepository.save(valueReference);
-            break;
+            case "REF":
+                ArrDataReference valueReference = new ArrDataReference();
+                valueReference.setDataType(rulDescItemType.getDataType());
+                valueReference.setDescItem(descItem);
+                valueReference.setValue(data);
+                dataReferenceRepository.save(valueReference);
+                break;
 
 
             case "UNITDATE":
@@ -1451,7 +1451,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 try {
                     String[] dataArray = data.split(",");
                     valuePartyRef.setPosition(Integer.valueOf(dataArray[0]));
-                    valuePartyRef.setAbstractPartyId(Integer.valueOf(dataArray[1]));
+                    Integer abstractPartyId = Integer.valueOf(dataArray[1]);
+                    valuePartyRef.setAbstractPartyId(abstractPartyId);
+                    ParAbstractParty abstractParty = abstractPartyRepository.findOne(abstractPartyId);
+                    if (abstractParty == null) {
+                        throw new IllegalArgumentException("Neplatný odkaz do tabulky");
+                    }
                 } catch (NumberFormatException e) {
                     throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu (" + data + ")");
                 }
@@ -1465,7 +1470,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 try {
                     String[] dataArray = data.split(",");
                     valueRecordRef.setPosition(Integer.valueOf(dataArray[0]));
-                    valueRecordRef.setRecordId(Integer.valueOf(dataArray[1]));
+                    Integer recordId = Integer.valueOf(dataArray[1]);
+                    valueRecordRef.setRecordId(recordId);
+                    RegRecord record = recordRepository.findOne(recordId);
+                    if (record == null) {
+                        throw new IllegalArgumentException("Neplatný odkaz do tabulky");
+                    }
                 } catch (NumberFormatException e) {
                     throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu (" + data + ")");
                 }
@@ -1481,8 +1491,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 break;
 
 
-        default:
-            throw new IllegalStateException("Datový typ hodnoty není implementován");
+            default:
+                throw new IllegalStateException("Datový typ hodnoty není implementován");
         }
     }
 
@@ -1495,40 +1505,40 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      */
     private void saveUpdateDataValue(RulDescItemType rulDescItemType, String data, ArrData arrData) {
         switch (rulDescItemType.getDataType().getCode()) {
-        case "INT":
-            ArrDataInteger valueInt = (ArrDataInteger) arrData;
-            try {
-                valueInt.setValue(Integer.valueOf(data));
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu");
-            }
-            dataIntegerRepository.save(valueInt);
-            break;
+            case "INT":
+                ArrDataInteger valueInt = (ArrDataInteger) arrData;
+                try {
+                    valueInt.setValue(Integer.valueOf(data));
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu");
+                }
+                dataIntegerRepository.save(valueInt);
+                break;
 
-        case "STRING":
-            ArrDataString valueString = (ArrDataString) arrData;
-            valueString.setValue(data);
-            dataStringRepository.save(valueString);
-            break;
+            case "STRING":
+                ArrDataString valueString = (ArrDataString) arrData;
+                valueString.setValue(data);
+                dataStringRepository.save(valueString);
+                break;
 
             case "FORMATTED_TEXT":
-        case "TEXT":
-            ArrDataText valueText = (ArrDataText) arrData;
-            valueText.setValue(data);
-            dataTextRepository.save(valueText);
-            break;
+            case "TEXT":
+                ArrDataText valueText = (ArrDataText) arrData;
+                valueText.setValue(data);
+                dataTextRepository.save(valueText);
+                break;
 
-        case "DATACE":
-            ArrDataDatace valueDatace = (ArrDataDatace) arrData;
-            valueDatace.setValue(data);
-            dataDataceRepository.save(valueDatace);
-            break;
+            case "DATACE":
+                ArrDataDatace valueDatace = (ArrDataDatace) arrData;
+                valueDatace.setValue(data);
+                dataDataceRepository.save(valueDatace);
+                break;
 
-        case "REF":
-            ArrDataReference valueReference = (ArrDataReference) arrData;
-            valueReference.setValue(data);
-            dataReferenceRepository.save(valueReference);
-            break;
+            case "REF":
+                ArrDataReference valueReference = (ArrDataReference) arrData;
+                valueReference.setValue(data);
+                dataReferenceRepository.save(valueReference);
+                break;
 
             case "UNITDATE":
                 ArrDataUnitdate valueUnitdate = (ArrDataUnitdate) arrData;
@@ -1547,7 +1557,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 try {
                     String[] dataArray = data.split(",");
                     valuePartyRef.setPosition(Integer.valueOf(dataArray[0]));
-                    valuePartyRef.setAbstractPartyId(Integer.valueOf(dataArray[1]));
+                    Integer abstractPartyId = Integer.valueOf(dataArray[1]);
+                    valuePartyRef.setAbstractPartyId(abstractPartyId);
+                    ParAbstractParty abstractParty = abstractPartyRepository.findOne(abstractPartyId);
+                    if (abstractParty == null) {
+                        throw new IllegalArgumentException("Neplatný odkaz do tabulky");
+                    }
                 } catch (NumberFormatException e) {
                     throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu (" + data + ")");
                 }
@@ -1559,7 +1574,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 try {
                     String[] dataArray = data.split(",");
                     valueRecordRef.setPosition(Integer.valueOf(dataArray[0]));
-                    valueRecordRef.setRecordId(Integer.valueOf(dataArray[1]));
+                    Integer recordId = Integer.valueOf(dataArray[1]);
+                    valueRecordRef.setRecordId(recordId);
+                    RegRecord record = recordRepository.findOne(recordId);
+                    if (record == null) {
+                        throw new IllegalArgumentException("Neplatný odkaz do tabulky");
+                    }
                 } catch (NumberFormatException e) {
                     throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu (" + data + ")");
                 }
@@ -1572,8 +1592,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 dataCoordinatesRepository.save(valueCoordinates);
                 break;
 
-        default:
-            throw new IllegalStateException("Datový typ hodnoty není implementován");
+            default:
+                throw new IllegalStateException("Datový typ hodnoty není implementován");
         }
     }
 

@@ -61,7 +61,8 @@
 
     > .grid-row{
         > div:first-child{
-            width: 200px;
+            width: 210px;
+            padding-right: 15px;
             color: $color-gray2;
         }
 
@@ -91,11 +92,22 @@
     > div:hover .edit-btn{
         visibility: visible;
     }
+
+    > .grid-row{
+        > div:first-child{
+            > div:first-child{
+                white-space: normal;
+                max-width: 170px;
+            }
+        }
+
+    }
     
     .edit-btn{
         visibility: hidden;
         position: relative;
         height: 20px;
+        width: 20px;
         padding-left: 7px;
     }
 
