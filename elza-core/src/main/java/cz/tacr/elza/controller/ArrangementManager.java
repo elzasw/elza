@@ -370,8 +370,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Override
     @Transactional
-    @RequestMapping(value = "/approveVersion", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
-    produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/approveVersion", method = RequestMethod.PUT)
     public ArrFaVersion approveVersion(@RequestBody final ArrFaVersion version, @RequestParam("arrangementTypeId") final Integer arrangementTypeId, @RequestParam("ruleSetId") final Integer ruleSetId) {
         Assert.notNull(version);
         Assert.notNull(arrangementTypeId);
@@ -388,6 +387,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         return createVersion(change, findingAid, arrangementType, ruleSet, version.getRootNode());
     }
+
 
     @Override
     @Transactional
@@ -837,9 +837,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                     arrDescItemExt.setRecord(record);
                 }
             } else if (arrData instanceof ArrDataUnitdate) {
-                
+
             } else if (arrData instanceof ArrDataUnitid) {
-                
+
             }
 
             levelExt.getDescItemList().add(arrDescItemExt);
