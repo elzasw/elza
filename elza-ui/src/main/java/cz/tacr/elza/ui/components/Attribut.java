@@ -82,6 +82,11 @@ public class Attribut extends CssLayout implements Components {
 
     public List<ArrDescItemExt> getKeys() {
         List<ArrDescItemExt> collect = childs.getChils().stream().map(AttributValue::commit).collect(Collectors.toList());
+        for (ArrDescItemExt descItemExt : collect) {
+            if (descItemExt.getData() == null) {
+                descItemExt.setData(new String());
+            }
+        }
         return collect;
     }
 

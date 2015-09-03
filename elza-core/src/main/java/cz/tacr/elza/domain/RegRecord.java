@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.req.ax.IdObject;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 
 /**
@@ -39,14 +40,17 @@ public class RegRecord extends AbstractVersionableEntity implements IdObject<Int
     @GeneratedValue
     private Integer recordId;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRegisterType.class)
     @JoinColumn(name = "registerTypeId", nullable = false)
     private RegRegisterType registerType;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegExternalSource.class)
     @JoinColumn(name = "externalSourceId")
     private RegExternalSource externalSource;
 
+    @RestResource(exported = false)
     @OneToMany(mappedBy = "regRecord")
     private List<RegVariantRecord> variantRecordList = new ArrayList<>(0);
 
