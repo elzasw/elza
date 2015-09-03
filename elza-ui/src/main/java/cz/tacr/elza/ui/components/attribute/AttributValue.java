@@ -1,6 +1,8 @@
-package cz.tacr.elza.ui.components;
+package cz.tacr.elza.ui.components.attribute;
 
 import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.DragAndDropWrapper;
@@ -13,6 +15,7 @@ import cz.req.ax.Components;
 import cz.tacr.elza.domain.ArrDescItemExt;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.ui.components.autocomplete.Autocomplete;
 
 
 /**
@@ -25,9 +28,13 @@ public class AttributValue extends CssLayout implements Components {
 
     private DragAndDropWrapper wrapper;
 
-    public AttributValue(ArrDescItemExt a, List<RulDescItemSpec> descItemSpecs, RulDataType dataType, AxAction deleteAction, DragAndDropWrapper wrapper) {
+    private AttributeValuesLoader attributeValuesLoader;
+
+    public AttributValue(ArrDescItemExt descItemExt, List<RulDescItemSpec> descItemSpecs, RulDataType dataType,
+                         AxAction deleteAction, DragAndDropWrapper wrapper, final AttributeValuesLoader attributeValuesLoader) {
         this.wrapper = wrapper;
-        form = AxForm.init(a).layoutCss();
+        this.attributeValuesLoader = attributeValuesLoader;
+        form = AxForm.init(descItemExt).layoutCss();
         form.addStyleName("attribut-value");
 
         if (descItemSpecs != null && descItemSpecs.size() > 0) {
@@ -52,6 +59,16 @@ public class AttributValue extends CssLayout implements Components {
             case "FORMATTED_TEXT":
                 form.addRichtext(null, "data").field().setNullRepresentation("");
                 break;
+            case "PARTY_REF":
+                Autocomplete partyRefAutoc = createPartyRefAutocomplete();
+                form.getFieldGroup().bind(partyRefAutoc, "abstractParty");
+                form.addComponent(partyRefAutoc);
+                break;
+            case "RECORD_REF":
+                Autocomplete recordRefAutoc = createRecordRefAutocomplete();
+                form.getFieldGroup().bind(recordRefAutoc, "record");
+                form.addComponent(recordRefAutoc);
+                break;
             default:
                 throw new IllegalStateException("Typ '" + dataType.getCode() + "' není implementován");
         }
@@ -60,6 +77,34 @@ public class AttributValue extends CssLayout implements Components {
         addComponent(form);
         addComponent(deleteAction.button());
     }
+
+    private Autocomplete createPartyRefAutocomplete(){
+        Autocomplete autocomplete = new Autocomplete((text)->{
+            return attributeValuesLoader.loadPartyRefItemsFulltext(text);
+        });
+        initAutocomplete(autocomplete);
+
+        return autocomplete;
+    }
+
+    private Autocomplete createRecordRefAutocomplete(){
+        Autocomplete autocomplete = new Autocomplete((text)->{
+            return attributeValuesLoader.loadRecordRefItemsFulltext(text);
+        });
+        initAutocomplete(autocomplete);
+
+        return autocomplete;
+    }
+
+    private void initAutocomplete(final Autocomplete autocomplete) {
+        autocomplete.reloadItems("");
+        autocomplete.addTextChangeListener((event) -> {
+            if (StringUtils.isBlank(event.getText())) {
+                autocomplete.reloadItems("");
+            }
+        });
+    }
+
 
     public DragAndDropWrapper getWrapper() {
         return wrapper;
