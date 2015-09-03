@@ -124,6 +124,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
         }
 
         table = new TreeTable();
+        table.setSelectable(true);
         table.resizeOnPageResize("detail-table");
         table.addStyleName("detail-table");
         table.setWidth("50%");
@@ -195,14 +196,28 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
             @Override
             public String generateDescription(com.vaadin.ui.Component source, Object itemId,
                     Object propertyId) {
-
                 if(propertyId == null || itemId == null){
                     return null;
                 }
 
-                Property property = container.getItem(itemId).getItemProperty(propertyId);
+                ArrFaLevel node = (ArrFaLevel) itemId;
 
-                return property == null || property.getValue() == null ? null : property.getValue().toString();
+                if(propertyId instanceof Integer){
+                    return getAttributeValue(node.getNodeId(), (Integer) propertyId);
+                }else{
+                    Property property = container.getContainerProperty(itemId, propertyId);
+                    if(property == null){
+                        return null;
+                    }
+
+                    Object value = container.getContainerProperty(itemId, propertyId).getValue();
+                    return value == null ? null : value.toString();
+                }
+
+
+//                Property property = container.getItem(itemId).getItemProperty(propertyId);
+//
+//                return property == null || property.getValue() == null ? null : property.getValue().toString();
             }
         });
 

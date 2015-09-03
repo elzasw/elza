@@ -4,9 +4,14 @@
         max-height: calc(100vh - 210px) !important;
         background-color: white;
 
+        .v-table-row{
+            background-color: #fafafa;
+        }
+
         .v-table-row-odd{
             background-color: white;
         }
+
     }
 
     .v-scrollable{
@@ -22,7 +27,30 @@
         }
     }
 
+}
 
+.v-table.v-selectable {
+
+    .v-table-body{
+        .v-table-row:hover,
+        .v-table-row-odd:hover{
+            background-color: #f5f5f5;
+            cursor: pointer;
+        }
+
+        .v-table-row.v-selected,
+        .v-table-row-odd.v-selected{
+            background-color: $color-gray1;
+            border-color: $color-gray1;
+            outline: none;
+            color: inherit;
+        }
+
+        .v-table-row.v-table-focus,
+        .v-table-row-odd.v-table-focus{
+            outline: none;
+        }
+    }
 }
 
 

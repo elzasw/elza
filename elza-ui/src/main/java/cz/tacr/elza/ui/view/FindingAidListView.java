@@ -61,6 +61,7 @@ public class FindingAidListView extends ElzaView {
         formFA = formularFA();
 
         tableFA = new AxBeanTable<>(AxContainer.init(ArrFindingAid.class).supplier(arrangementManager::getFindingAids));
+        tableFA.style("v-selectable");
         tableFA.select(findingAid -> navigate(FindingAidDetailView.class, findingAid.getFindingAidId()));
         tableFA.header(Table.ColumnHeaderMode.EXPLICIT_DEFAULTS_ID)
         .column("name").header("Název")
