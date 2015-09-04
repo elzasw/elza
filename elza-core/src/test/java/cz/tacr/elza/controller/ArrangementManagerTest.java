@@ -296,25 +296,22 @@ public class ArrangementManagerTest extends AbstractRestTest {
     public void testRestApproveVersion() {
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        Response response = get(spec -> {
-            spec.parameter(FA_ID_ATT, findingAid.getFindingAidId());
-        }, GET_FINDING_AID_VERSIONS_URL);
+        Response response = get(spec -> spec.parameter(FA_ID_ATT, findingAid.getFindingAidId())
+        , GET_FINDING_AID_VERSIONS_URL);
 
         List<ArrFaVersion> versions = Arrays.asList(response.getBody().as(ArrFaVersion[].class));
         ArrFaVersion version = versions.iterator().next();
 
 
-        response = put(spec -> {
-            spec.body(version).
+        response = put(spec -> spec.body(version).
             parameter(ARRANGEMENT_TYPE_ID_ATT, version.getArrangementType().getArrangementTypeId()).
-            parameter(RULE_SET_ID_ATT, version.getRuleSet().getRuleSetId());
-        }, APPROVE_VERSION_URL);
+            parameter(RULE_SET_ID_ATT, version.getRuleSet().getRuleSetId())
+        , APPROVE_VERSION_URL);
 
         ArrFaVersion newVersion = response.getBody().as(ArrFaVersion.class);
 
-        response = get(spec -> {
-            spec.parameter(FA_ID_ATT, findingAid.getFindingAidId());
-        }, GET_FINDING_AID_VERSIONS_URL);
+        response = get(spec -> spec.parameter(FA_ID_ATT, findingAid.getFindingAidId()),
+                GET_FINDING_AID_VERSIONS_URL);
 
         versions = Arrays.asList(response.getBody().as(ArrFaVersion[].class));
 

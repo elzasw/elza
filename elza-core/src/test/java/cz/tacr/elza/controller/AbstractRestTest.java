@@ -4,7 +4,7 @@ import static com.jayway.restassured.RestAssured.given;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.transaction.Transactional;
 
@@ -535,21 +535,20 @@ public abstract class AbstractRestTest {
     }
 
 
-    public static Response put(Consumer<RequestSpecification> params, String url) {
+    public static Response put(Function<RequestSpecification, RequestSpecification> params, String url) {
         return httpMethod(params, url, HttpMethod.PUT);
     }
 
-    public static Response get(Consumer<RequestSpecification> params, String url) {
+    public static Response get(Function<RequestSpecification, RequestSpecification> params, String url) {
         return httpMethod(params, url, HttpMethod.GET);
     }
 
-    public static Response httpMethod(Consumer<RequestSpecification> params, String url, HttpMethod method) {
+    public static Response httpMethod(Function<RequestSpecification, RequestSpecification> params, String url, HttpMethod method) {
         Assert.assertNotNull(params);
         Assert.assertNotNull(url);
         Assert.assertNotNull(method);
 
-        RequestSpecification requestSpecification = given();
-        params.accept(requestSpecification);
+        RequestSpecification requestSpecification = params.apply(given());
 
         requestSpecification.header(JSON_CT_HEADER).log().all();
 
