@@ -1752,7 +1752,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 ArrDataRecordRef valueRecordRef = (ArrDataRecordRef) arrData;
                 ArrDataRecordRef valueRecordRefNew = new ArrDataRecordRef();
                 valueRecordRefNew.setDataType(arrData.getDataType());
-                valueRecordRefNew.setPosition(valueRecordRef.getPosition());
                 valueRecordRefNew.setRecordId(valueRecordRef.getRecordId());
                 valueRecordRefNew.setDescItem(descItemNew);
                 dataRecordRefRepository.save(valueRecordRefNew);

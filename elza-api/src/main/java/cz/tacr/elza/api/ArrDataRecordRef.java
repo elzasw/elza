@@ -11,12 +11,6 @@ import java.io.Serializable;
 public interface ArrDataRecordRef extends Serializable{
 
 
-    Integer getPosition();
-
-
-    void setPosition(final Integer position);
-
-
     Integer getRecordId();
 
 
