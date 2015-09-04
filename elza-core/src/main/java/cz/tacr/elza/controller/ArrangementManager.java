@@ -1611,7 +1611,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      * @param descItem      spjatý objekt attributu
      * @param diff          rozdíl pozice
      */
-    @Transactional
     private void updatePositionsAfter(Integer position, Integer nodeId, ArrFaChange arrFaChange, ArrDescItem descItem, int diff) {
         List<ArrDescItem> descItemListForUpdate = descItemRepository
                 .findByNodeIdAndDescItemTypeIdAndDeleteChangeIsNullAfterPosistion(position, nodeId, descItem.getDescItemType().getDescItemTypeId());
@@ -1769,7 +1768,5 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             default:
                 throw new IllegalStateException("Datový typ hodnoty není implementován");
         }
-
     }
-
 }
