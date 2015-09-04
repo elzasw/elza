@@ -91,14 +91,6 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
     ArrFaLevel addLevelBefore(FL node);
 
     /**
-     * Vytvoří nový uzel v první úrovni archivní položky
-     *
-     * @param findingAidId    id archivní pomůcky
-     * @return                nový záznam z archivný pomůcky
-     */
-    ArrFaLevel addLevel(Integer findingAidId) ;
-
-    /**
      * Vytvoří nový uzel za předaným uzlem.
      *
      * @param node        uzel za kterým se má vytvořit nový

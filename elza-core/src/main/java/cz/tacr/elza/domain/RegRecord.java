@@ -175,7 +175,7 @@ public class RegRecord extends AbstractVersionableEntity implements IdObject<Int
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.api.ParPartySubtype)) {
+        if (!(obj instanceof cz.tacr.elza.api.RegRecord)) {
             return false;
         }
         if (this == obj) {

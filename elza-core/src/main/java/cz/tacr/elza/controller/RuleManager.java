@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.RestController;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemExt;
 import cz.tacr.elza.domain.ArrFaVersion;
@@ -36,6 +38,8 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.repository.AbstractPartyRepository;
+import cz.tacr.elza.repository.AbstractPartyRepositoryCustom;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
@@ -44,6 +48,7 @@ import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FaViewRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VersionRepository;
 
@@ -89,6 +94,12 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
 
     @Autowired
     private DataTypeRepository dataTypeRepository;
+
+    @Autowired
+    private AbstractPartyRepository abstractPartyRepository;
+
+    @Autowired
+    private RegRecordRepository regRecordRepository;
 
 
     @Override
@@ -167,6 +178,15 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
             ArrData data = dataList.get(0);
             descItemExt.setData(data.getData());
             descItemList.add(descItemExt);
+
+            if(data instanceof ArrDataPartyRef){
+                ArrDataPartyRef partyRef = (ArrDataPartyRef) data;
+                descItemExt.setAbstractParty(abstractPartyRepository.findOne(partyRef.getAbstractPartyId()));
+            }  else if(data instanceof ArrDataRecordRef){
+                ArrDataRecordRef recordRef = (ArrDataRecordRef) data;
+                descItemExt.setRecord(regRecordRepository.findOne(recordRef.getRecordId()));
+            }
+
         }
 
         return descItemList;

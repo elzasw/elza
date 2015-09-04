@@ -18,6 +18,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import cz.tacr.elza.controller.PartyManager;
+import cz.tacr.elza.controller.RegistryManager;
 import cz.tacr.elza.ui.components.TreeTable;
 import ru.xpoft.vaadin.VaadinView;
 
@@ -28,7 +30,9 @@ import com.vaadin.event.ItemClickEvent;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Page;
+import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.CssLayout;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.Tree;
@@ -73,6 +77,12 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
 
     @Autowired
     private RuleManager ruleSetManager;
+
+    @Autowired
+    private PartyManager partyManager;
+
+    @Autowired
+    private RegistryManager registryManager;
 
     private Integer findingAidId;
     private ArrFaVersion version;
@@ -160,7 +170,16 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                 @Override
                 public Object generateCell(final Table source, final Object itemId, final Object columnId) {
                     ArrFaLevel node = (ArrFaLevel) itemId;
-                    return getAttributeValue(node.getNodeId(), (Integer)columnId);
+                    String value = getAttributeValue(node.getNodeId(), (Integer) columnId);
+                    Label result;
+                    if (value == null) {
+                        result = null;
+                    } else {
+                        result = newLabel(value);
+                        result.setContentMode(ContentMode.HTML);
+                    }
+
+                    return result;
                 }
             });
         }
@@ -297,7 +316,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
     }
 
     private CssLayout createInlineDetail() {
-        levelDetailConteiner = new LevelInlineDetail(ruleSetManager, arrangementManager);
+        levelDetailConteiner = new LevelInlineDetail(ruleSetManager, arrangementManager, partyManager, registryManager);
         return levelDetailConteiner;
     }
 
@@ -712,7 +731,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
             actions(
                     new AxAction().caption("Přidat záznam").icon(FontAwesome.PLUS).run(() -> {
 
-                        ArrFaLevel newFaLevel = arrangementManager.addLevel(findingAidId);
+                        ArrFaLevel newFaLevel = arrangementManager.addLevelChild(version.getRootNode());
 
                         Item item = table.addItem(newFaLevel);
 

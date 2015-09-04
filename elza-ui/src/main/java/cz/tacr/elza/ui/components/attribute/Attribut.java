@@ -1,4 +1,4 @@
-package cz.tacr.elza.ui.components;
+package cz.tacr.elza.ui.components.attribute;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,13 +38,21 @@ public class Attribut extends CssLayout implements Components {
     private Integer versionId;
     private RulDescItemType type;
     private AxAction newValueButton;
+    private AttributeValuesLoader attributeValuesLoader;
 
-    public Attribut(List<ArrDescItemExt> itemExtList, List<RulDescItemSpec> descItemSpecs, RulDescItemType type, RulDataType dataType, Integer nodeId, Integer versionId) {
+    public Attribut(List<ArrDescItemExt> itemExtList,
+                    List<RulDescItemSpec> descItemSpecs,
+                    RulDescItemType type,
+                    RulDataType dataType,
+                    Integer nodeId,
+                    Integer versionId,
+                    final AttributeValuesLoader attributeValuesLoader) {
         this.descItemSpecs = descItemSpecs;
         this.dataType = dataType;
         this.nodeId = nodeId;
         this.versionId = versionId;
         this.type = type;
+        this.attributeValuesLoader = attributeValuesLoader;
         deleteDescItems = new ArrayList<>();
 
         Label nadpis = new Label(type.getName());
@@ -142,7 +150,7 @@ public class Attribut extends CssLayout implements Components {
         wrapper.setDragStartMode(DragAndDropWrapper.DragStartMode.COMPONENT);
         wrapper.setSizeUndefined();
 
-        AttributValue value = new AttributValue(a, descItemSpecs, dataType, AxAction.of(a).icon(FontAwesome.TRASH_O).action(this::deleteAtributValue), wrapper);
+        AttributValue value = new AttributValue(a, descItemSpecs, dataType, AxAction.of(a).icon(FontAwesome.TRASH_O).action(this::deleteAtributValue), wrapper, attributeValuesLoader);
         a.setPosition(childs.getComponentCount() + 1);
         a.setNodeId(nodeId);
         childs.addComponent(a, value);

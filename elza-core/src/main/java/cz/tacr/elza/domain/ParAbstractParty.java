@@ -88,7 +88,7 @@ public class ParAbstractParty extends AbstractVersionableEntity implements IdObj
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.api.ParPartySubtype)) {
+        if (!(obj instanceof cz.tacr.elza.api.ParAbstractParty)) {
             return false;
         }
         if (this == obj) {
