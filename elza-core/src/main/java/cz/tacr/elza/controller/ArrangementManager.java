@@ -402,17 +402,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Override
     @Transactional
-    @RequestMapping(value = "/addLevel", method = RequestMethod.PUT, params = {"findingAidId"})
-    public ArrFaLevel addLevel(@RequestParam("findingAidId") Integer findingAidId) {
-        Assert.notNull(findingAidId);
-
-        ArrFaVersion lastVersion = versionRepository.findByFindingAidIdAndLockChangeIsNull(findingAidId);
-        ArrFaChange change = createChange();
-        return createLastInLevel(change, lastVersion.getRootNode());
-    }
-
-    @Override
-    @Transactional
     @RequestMapping(value = "/addLevelAfter", method = RequestMethod.PUT)
     public ArrFaLevel addLevelAfter(@RequestBody ArrFaLevel node) {
         Assert.notNull(node);

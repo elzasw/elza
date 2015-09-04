@@ -731,7 +731,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
             actions(
                     new AxAction().caption("Přidat záznam").icon(FontAwesome.PLUS).run(() -> {
 
-                        ArrFaLevel newFaLevel = arrangementManager.addLevel(findingAidId);
+                        ArrFaLevel newFaLevel = arrangementManager.addLevelChild(version.getRootNode());
 
                         Item item = table.addItem(newFaLevel);
 
