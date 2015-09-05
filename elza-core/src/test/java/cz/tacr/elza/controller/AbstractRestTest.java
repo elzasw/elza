@@ -1,6 +1,32 @@
 package cz.tacr.elza.controller;
 
+import static com.jayway.restassured.RestAssured.given;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.function.Function;
+
+import javax.transaction.Transactional;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.IntegrationTest;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.http.HttpMethod;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+
 import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.response.Header;
+import com.jayway.restassured.response.Response;
+import com.jayway.restassured.specification.RequestSpecification;
+
 import cz.tacr.elza.ElzaCore;
 import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrData;
@@ -13,7 +39,6 @@ import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ParAbstractParty;
 import cz.tacr.elza.domain.ParPartySubtype;
-import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
@@ -44,20 +69,6 @@ import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.repository.VersionRepository;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-
-import javax.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * Abstraktní předek pro testy. Nastavuje REST prostředí.
@@ -70,6 +81,9 @@ import java.util.List;
 @IntegrationTest("server.port:0") // zvoli volny port, lze spustit i s aktivni Elzou
 @WebAppConfiguration
 public abstract class AbstractRestTest {
+
+
+    private static final Logger logger = LoggerFactory.getLogger(ArrangementManagerTest.class);
 
     protected static final String ARRANGEMENT_MANAGER_URL = "/api/arrangementManager";
     protected static final String RULE_MANAGER_URL = "/api/ruleSetManager";
@@ -85,6 +99,7 @@ public abstract class AbstractRestTest {
 
     protected static final String CONTENT_TYPE_HEADER = "content-type";
     protected static final String JSON_CONTENT_TYPE = "application/json";
+    private static final Header JSON_CT_HEADER = new Header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE);
 
     @Value("${local.server.port}")
     private int port;
@@ -517,5 +532,56 @@ public abstract class AbstractRestTest {
         view.setViewSpecification(specification);
 
         return faViewRepository.save(view);
+    }
+
+
+    public static Response put(Function<RequestSpecification, RequestSpecification> params, String url) {
+        return httpMethod(params, url, HttpMethod.PUT);
+    }
+
+    public static Response get(Function<RequestSpecification, RequestSpecification> params, String url) {
+        return httpMethod(params, url, HttpMethod.GET);
+    }
+
+    public static Response httpMethod(Function<RequestSpecification, RequestSpecification> params, String url, HttpMethod method) {
+        Assert.assertNotNull(params);
+        Assert.assertNotNull(url);
+        Assert.assertNotNull(method);
+
+        RequestSpecification requestSpecification = params.apply(given());
+
+        requestSpecification.header(JSON_CT_HEADER).log().all();
+
+        Response response = null;
+        switch (method) {
+            case GET:
+                response = requestSpecification.get(url);
+                break;
+            case PUT:
+                response = requestSpecification.put(url);
+                break;
+            case DELETE:
+                response = requestSpecification.delete(url);
+                break;
+            case HEAD:
+                response = requestSpecification.head(url);
+                break;
+            case OPTIONS:
+                response = requestSpecification.options(url);
+                break;
+            case PATCH:
+                response = requestSpecification.patch(url);
+                break;
+            case POST:
+                response = requestSpecification.post(url);
+                break;
+            default:
+                throw new IllegalStateException("Nedefinovaný stav " + method + ".");
+        }
+
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        return response;
     }
 }

@@ -12,6 +12,7 @@ import javax.persistence.UniqueConstraint;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -37,10 +38,12 @@ public class ArrFaLevel extends AbstractVersionableEntity implements IdObject<In
     @Column(name = "parentNodeId", nullable = true)
     private Integer parentNodeId;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaChange.class)
     @JoinColumn(name = "createFaChangeId", nullable = false)
     private ArrFaChange createChange;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaChange.class)
     @JoinColumn(name = "deleteFaChangeId", nullable = true)
     private ArrFaChange deleteChange;

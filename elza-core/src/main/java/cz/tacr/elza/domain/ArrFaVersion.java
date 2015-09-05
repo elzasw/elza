@@ -7,9 +7,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import org.springframework.data.rest.core.annotation.RestResource;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 
 import cz.req.ax.IdObject;
 
@@ -27,26 +28,32 @@ public class ArrFaVersion extends AbstractVersionableEntity implements IdObject<
     @GeneratedValue
     private Integer faVersionId;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaChange.class)
     @JoinColumn(name = "createFaChangeId", nullable = false)
     private ArrFaChange createChange;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaChange.class)
     @JoinColumn(name = "lockFaChangeId", nullable = true)
     private ArrFaChange lockChange;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaLevel.class)
     @JoinColumn(name = "rootNodeId", nullable = true, referencedColumnName = "nodeId")
     private ArrFaLevel rootNode;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFindingAid.class)
     @JoinColumn(name = "findingAidId", nullable = false)
     private ArrFindingAid findingAid;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrArrangementType.class)
     @JoinColumn(name = "arrangementTypeId", nullable = false)
     private ArrArrangementType arrangementType;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
     @JoinColumn(name = "ruleSetId", nullable = false)
     private RulRuleSet ruleSet;
