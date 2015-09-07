@@ -178,10 +178,10 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
     private void showEditAttrWindow(final ArrFaLevelExt level, final RulDescItemType type, final Integer versionId) {
         if (type != null) {
             List<ArrDescItemExt> listItem = ruleSetManager
-                    .getDescriptionItemsForAttribute(versionId, level.getNodeId(), type.getDescItemTypeId());
+                    .getDescriptionItemsForAttribute(versionId, level.getNode().getNodeId(), type.getDescItemTypeId());
             List<RulDescItemSpec> listSpec = ruleSetManager.getDescItemSpecsFortDescItemType(type);
             RulDataType dataType = ruleSetManager.getDataTypeForDescItemType(type);
-            attribut = new Attribut(listItem, listSpec, type, dataType, level.getNodeId(), versionId, getAttributeValuesLoader());
+            attribut = new Attribut(listItem, listSpec, type, dataType, level.getNode().getNodeId(), versionId, getAttributeValuesLoader());
 
             attributWindow = new AxWindow();
             attributWindow.caption("Detail atributu")

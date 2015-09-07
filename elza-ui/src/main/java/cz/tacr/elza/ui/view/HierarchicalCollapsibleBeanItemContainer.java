@@ -65,10 +65,10 @@ public class HierarchicalCollapsibleBeanItemContainer extends BeanItemContainer<
         }
 
         ArrFaLevel item = (ArrFaLevel) itemId;
-        Object parentNodeId = item.getParentNodeId();
+        Object parentNodeId = item.getParentNode().getNodeId();
         for (Object candidateId : getItemIds()) {
             ArrFaLevel parent = (ArrFaLevel) candidateId;
-            if (parent.getNodeId().equals(parentNodeId)) {
+            if (parent.getNode().getNodeId().equals(parentNodeId)) {
                 return parent;
             }
         }
@@ -81,7 +81,7 @@ public class HierarchicalCollapsibleBeanItemContainer extends BeanItemContainer<
         LinkedList<ArrFaLevel> result = new LinkedList<ArrFaLevel>();
         for (Object candidateId : getItemIds()) {
             ArrFaLevel node = (ArrFaLevel) candidateId;
-            Object parentRef = node.getParentNodeId();
+            Object parentRef = node.getParentNode().getNodeId();
             if (parentRef.equals(rootNodeId)) {
                 result.add((ArrFaLevel) candidateId);
             }
@@ -108,7 +108,7 @@ public class HierarchicalCollapsibleBeanItemContainer extends BeanItemContainer<
     @Override
     public boolean isRoot(Object itemId) {
         ArrFaLevel node = (ArrFaLevel) itemId;
-        return node.getParentNodeId().equals(rootNodeId);
+        return node.getParentNode().getNodeId().equals(rootNodeId);
     }
 
     @Override
@@ -158,7 +158,7 @@ public class HierarchicalCollapsibleBeanItemContainer extends BeanItemContainer<
                 int result = o1.getPosition().compareTo(o2.getPosition());
                 //pokud mají prvky stejnou pozici a jeden z nich je prvek, pro který hledáme sourozence, chceme
                 //ho mít vždy nahoře
-                if(result == 0 && o1.getNodeId().equals(item.getNodeId())){
+                if(result == 0 && o1.getNode().getNodeId().equals(item.getNode().getNodeId())){
                     return -1;
                 }
                 return result;
@@ -170,7 +170,7 @@ public class HierarchicalCollapsibleBeanItemContainer extends BeanItemContainer<
 
         boolean insert = false;
         for (ArrFaLevel sibling : siblings) {
-            if(sibling.getNodeId().equals(item.getNodeId()) && !insert){
+            if(sibling.getNode().getNodeId().equals(item.getNode().getNodeId()) && !insert){
                 insert = true;
                 continue;
             }

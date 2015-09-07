@@ -1,6 +1,7 @@
 package cz.tacr.elza.generator;
 
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -27,10 +28,12 @@ import cz.tacr.elza.domain.ArrFaChange;
 import cz.tacr.elza.domain.ArrFaLevel;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VersionRepository;
 
@@ -80,9 +83,10 @@ public class ClientTestDataGenerator {
     private ArrangementTypeRepository arrangementTypeRepository;
     @Autowired
     private RuleSetRepository ruleSetRepository;
+    @Autowired
+    private NodeRepository nodeRepository;
 
     private int nodesCreated = 0;
-    private int nodeIdGenerator = 0;
 
     @Test
     @Transactional(noRollbackFor = IllegalStateException.class)
@@ -90,22 +94,15 @@ public class ClientTestDataGenerator {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
 
-        Integer maxNodeId = levelRepository.findMaxNodeId();
-        if (maxNodeId == null) {
-            maxNodeId = 0;
-        }
-        nodeIdGenerator = maxNodeId;
-
         RulRuleSet ruleSet = createRuleSet();
         ArrArrangementType arrangementType = createArrangementType();
 
         IntStream.range(0, FA_COUNT).forEach( i -> {
             nodesCreated = 0;
             ArrFindingAid findingAid = createFindingAid(TEST_NAME + i, ruleSet, arrangementType);
-            nodeIdGenerator++;
             ArrFaVersion version = versionRepository.findByFindingAidIdAndLockChangeIsNull(findingAid.getFindingAidId());
             try {
-                createTree(version.getRootNode(), version.getCreateChange());
+                createTree(version.getRootFaLevel(), version.getCreateChange());
             } catch (IllegalStateException ex) {}
         });
 
@@ -135,6 +132,12 @@ public class ClientTestDataGenerator {
             checkIfCreateMoreNodes();
             createLevel(firstNode, i, createChange);
         });
+    }
+
+    protected ArrNode createNode() {
+        ArrNode node = new ArrNode();
+        node.setLastUpdate(LocalDateTime.now());
+        return nodeRepository.save(node);
     }
 
     private void createMaxDepthLevel(ArrFaLevel secondNode, int depth, ArrFaChange createChange) {
@@ -178,8 +181,8 @@ public class ClientTestDataGenerator {
     private ArrFaLevel createLevel(final ArrFaLevel parent, final int position, final ArrFaChange change) {
         ArrFaLevel level = new ArrFaLevel();
         level.setCreateChange(change);
-        level.setNodeId(++nodeIdGenerator);
-        level.setParentNodeId(parent.getNodeId());
+        level.setNode(createNode());
+        level.setParentNode(parent.getNode());
         level.setPosition(position + 1);
         nodesCreated++;
 
