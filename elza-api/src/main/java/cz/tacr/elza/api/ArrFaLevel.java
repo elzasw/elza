@@ -2,7 +2,19 @@ package cz.tacr.elza.api;
 
 import java.io.Serializable;
 
-public interface ArrFaLevel<FC extends ArrFaChange, N extends ArrNode> extends Versionable, Serializable {
+/**
+ * Úroveň hierarchického popisu. Úroveň sama o sobě není nositelem hodnoty. Vlastní hodnoty prvků
+ * popisu jsou zapsány v atributech archivního popisu {@link ArrDescItem}.
+ *
+ * @author vavrejn
+ *
+ * @param <FC> {@link ArrFaChange}
+ * @param <N> {@link ArrNode}
+ */
+public interface ArrFaLevel<FC extends ArrFaChange, N extends ArrNode>
+        extends
+            Versionable,
+            Serializable {
 
     Integer getFaLevelId();
 

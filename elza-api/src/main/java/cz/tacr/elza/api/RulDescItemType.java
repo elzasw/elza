@@ -5,8 +5,12 @@ import java.io.Serializable;
 
 
 /**
+ * evidence typů atributů archivního popisu. evidence je společná pro všechny archivní pomůcky.
+ * 
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
+ *
+ * @param <RT> {@link RulDataType}
  */
 public interface RulDescItemType<RT extends RulDataType> extends Serializable {
 

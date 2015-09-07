@@ -8,6 +8,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 /**
+ * Typ výstupu podle zvolených pravidel tvorby. V případě základních pravidel se jedná o manipulační
+ * seznam, inventář, katalog. Typ výstupu se používá pro kontrolu struktury archivního popisu. Je
+ * realizována pouze entita obalující, nikoli další objekty, které realizují kontroly.
+ * 
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
