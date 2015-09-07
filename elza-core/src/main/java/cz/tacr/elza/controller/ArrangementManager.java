@@ -83,6 +83,7 @@ import cz.tacr.elza.repository.VersionRepository;
 
 
 /**
+ * {@inheritDoc} 
  * API pro pořádání.
  *
  * @author by Ondřej Buriánek, burianek@marbes.cz.

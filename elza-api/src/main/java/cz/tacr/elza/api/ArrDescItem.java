@@ -25,7 +25,7 @@ public interface ArrDescItem<FC extends ArrFaChange, RT extends RulDescItemType,
     /**
      * Nastaví identifikátor hodnoty atributu, který se mění při každé verzované změně hodnoty.
      * 
-     * @param descItemId
+     * @param descItemId identifikátor hodnoty atributu
      */
     public void setDescItemId(final Integer descItemId);
 
@@ -38,7 +38,7 @@ public interface ArrDescItem<FC extends ArrFaChange, RT extends RulDescItemType,
     /**
      * Nastaví číslo změny založení hodnoty.
      * 
-     * @param createChange
+     * @param createChange číslo změny založení hodnoty.
      */
     void setCreateChange(final FC createChange);
 
@@ -58,7 +58,7 @@ public interface ArrDescItem<FC extends ArrFaChange, RT extends RulDescItemType,
     /**
      * Nastaví identifikátor hodnoty atrributu, který se nemění při verzované změně hodnoty.
      * 
-     * @param descItemObjectId
+     * @param descItemObjectId identifikátor hodnoty atrributu, který se nemění při verzované změně hodnoty.
      */
     void setDescItemObjectId(final Integer descItemObjectId);
 
@@ -72,7 +72,7 @@ public interface ArrDescItem<FC extends ArrFaChange, RT extends RulDescItemType,
     /**
      * Nastaví odkaz na typ atributu.
      * 
-     * @param descItemType
+     * @param descItemType odkaz na typ atributu.
      */
     void setDescItemType(final RT descItemType);
 
@@ -84,7 +84,7 @@ public interface ArrDescItem<FC extends ArrFaChange, RT extends RulDescItemType,
     /**
      * Nastaví odkaz na podtyp atributu.
      * 
-     * @param descItemSpec
+     * @param descItemSpec odkaz na podtyp atributu.
      */
     void setDescItemSpec(final RS descItemSpec);
 
@@ -97,7 +97,7 @@ public interface ArrDescItem<FC extends ArrFaChange, RT extends RulDescItemType,
     /**
      * Nastaví ID nodu.
      * 
-     * @param nodeId
+     * @param node nod.
      */
     void setNode(final N node);
 
@@ -112,7 +112,7 @@ public interface ArrDescItem<FC extends ArrFaChange, RT extends RulDescItemType,
      * Nastaví pořadí atributu v rámci shodného typu a specifikace atributu. U neopakovatelných
      * atributů bude hodnota vždy 1, u opakovatelných dle skutečnosti.).
      * 
-     * @param position
+     * @param position pořadí atributu v rámci shodného typu a specifikace atributu.
      */
     void setPosition(final Integer position);
 

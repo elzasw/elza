@@ -15,7 +15,7 @@ public interface ArrDescItemExt<FC extends ArrFaChange, RT extends RulDescItemTy
 
     /**
      * Nastaví hodnotu atributu.
-     * @param data
+     * @param data hodnota atributu.
      */
     void setData(String data);
 
@@ -25,8 +25,8 @@ public interface ArrDescItemExt<FC extends ArrFaChange, RT extends RulDescItemTy
     PAP getAbstractParty();
 
     /**
-     * Nastabí osobu.
-     * @param abstractParty
+     * Nastaví osobu.
+     * @param abstractParty osoba
      */
     void setAbstractParty(PAP abstractParty);
 
@@ -38,7 +38,7 @@ public interface ArrDescItemExt<FC extends ArrFaChange, RT extends RulDescItemTy
 
     /**
      * Nastabí záznam v rejstříku.
-     * @param record
+     * @param record záznam v rejstříku.
      */
     void setRecord(RR record);
 }

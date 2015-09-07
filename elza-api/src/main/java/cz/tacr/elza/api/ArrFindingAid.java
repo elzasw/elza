@@ -23,7 +23,7 @@ public interface ArrFindingAid extends Versionable, Serializable {
 
     /**
      * Nastaví jméno AP.
-     * @param name
+     * @param name jméno AP.
      */
     void setName(String name);
 
@@ -35,7 +35,7 @@ public interface ArrFindingAid extends Versionable, Serializable {
 
     /**
      * Nastaví datum založení.
-     * @param createDate
+     * @param createDate datum založení.
      */
     void setCreateDate(LocalDateTime createDate);
 }

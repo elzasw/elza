@@ -6,7 +6,7 @@ import java.io.Serializable;
 /**
  * Evidence možných specifikací typů atributů archivního popisu. Evidence je společná pro všechny
  * archivní pomůcky. Vazba výčtu specifikací na různá pravidla bude řešeno později. Podtyp atributu
- * (Role entit -> Malíř, Role entit -> Sochař, Role entit -> Spisovatel).
+ * (Role entit - Malíř, Role entit - Sochař, Role entit - Spisovatel).
  * 
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015

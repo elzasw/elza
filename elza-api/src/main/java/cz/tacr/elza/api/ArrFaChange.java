@@ -18,7 +18,7 @@ public interface ArrFaChange extends Serializable {
 
     /**
      * Nastaví číslo změny.
-     * @param changeId
+     * @param changeId  číslo změny.
      */
     void setFaChangeId(Integer changeId);
 
@@ -30,7 +30,7 @@ public interface ArrFaChange extends Serializable {
 
     /**
      * Nastaví datum změny.
-     * @param changeDate
+     * @param changeDate datum změny.
      */
     void setChangeDate(LocalDateTime changeDate);
 }

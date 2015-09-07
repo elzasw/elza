@@ -10,8 +10,8 @@ import cz.tacr.elza.api.ArrNode;
  * Zapouzdření {@link ArrFaLevel} a {@link ArrNode}.
  * @author vavrejn
  *
- * @param <FL>
- * @param <N>
+ * @param <FL> {@link ArrFaLevel}
+ * @param <N> {@link ArrNode}
  */
 public interface ArrFaLevelPack<FL extends ArrFaLevel, N extends ArrNode> extends Serializable {
 
