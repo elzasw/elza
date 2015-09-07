@@ -1,6 +1,7 @@
 package cz.tacr.elza.api;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * Jméno abstraktní osoby.
@@ -17,7 +18,31 @@ public interface ParAbstractPartyName<AB extends ParAbstractParty> extends Versi
 
     void setAbstractParty(AB abstractParty);
 
-    String getName();
+    String getMainPart();
 
-    void setName(String name);
+    void setMainPart(String mainPart);
+
+    String getOtherPart();
+
+    void setOtherPart(String otherPart);
+
+    String getAnotation();
+
+    void setAnotation(String anotation);
+
+    String getDegreeBefore();
+
+    void setDegreeBefore(String degreeBefore);
+
+    String getDegreeAfter();
+
+    void setDegreeAfter(String degreeAfter);
+
+    LocalDateTime getValidFrom();
+
+    void setValidFrom(LocalDateTime validFrom);
+
+    LocalDateTime getValidTo();
+
+    void setValidTo(LocalDateTime validTo);
 }
