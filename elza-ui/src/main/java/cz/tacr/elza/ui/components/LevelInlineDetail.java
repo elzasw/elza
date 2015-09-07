@@ -94,10 +94,11 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         pack.setDeleteDescItems(deleteDescItems);
         pack.setCreateNewVersion(createNewVersion);
         pack.setFaVersionId(attribut.getVersionId());
+        pack.setNode(attribut.getNode());
 
         try {
             arrangementManager.saveDescriptionItems(pack);
-            ArrFaLevelExt level = arrangementManager.getLevel(attribut.getNodeId(), attribut.getVersionId(), null);
+            ArrFaLevelExt level = arrangementManager.getLevel(attribut.getNode().getNodeId(), attribut.getVersionId(), null);
             showLevelDetail(level, level.getDescItemList(), attribut.getVersionId());
             if (attributWindow != null) {
                 attributWindow.close();
@@ -181,7 +182,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
                     .getDescriptionItemsForAttribute(versionId, level.getNode().getNodeId(), type.getDescItemTypeId());
             List<RulDescItemSpec> listSpec = ruleSetManager.getDescItemSpecsFortDescItemType(type);
             RulDataType dataType = ruleSetManager.getDataTypeForDescItemType(type);
-            attribut = new Attribut(listItem, listSpec, type, dataType, level.getNode().getNodeId(), versionId, getAttributeValuesLoader());
+            attribut = new Attribut(listItem, listSpec, type, dataType, level.getNode(), versionId, getAttributeValuesLoader());
 
             attributWindow = new AxWindow();
             attributWindow.caption("Detail atributu")

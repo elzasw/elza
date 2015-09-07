@@ -27,6 +27,7 @@ import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemExt;
 import cz.tacr.elza.domain.ArrFaVersion;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulDescItemSpec;
@@ -45,6 +46,7 @@ import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FaViewRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VersionRepository;
@@ -98,6 +100,9 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     @Autowired
     private RegRecordRepository regRecordRepository;
 
+    @Autowired
+    private NodeRepository nodeRepository;
+
 
     @Override
     @RequestMapping(value = "/getRuleSets", method = RequestMethod.GET)
@@ -138,10 +143,12 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
         ArrFaVersion version = versionRepository.findOne(faVersionId);
         Assert.notNull(version);
         List<ArrDescItem> itemList;
+        ArrNode node = nodeRepository.findOne(nodeId);
+        Assert.notNull(node);
         if (version.getLockChange() == null) {
-            itemList = descItemRepository.findByNodeIdAndDeleteChangeIsNullAndDescItemTypeId(nodeId, rulDescItemTypeId);
+            itemList = descItemRepository.findByNodeAndDeleteChangeIsNullAndDescItemTypeId(node, rulDescItemTypeId);
         } else {
-            itemList = descItemRepository.findByNodeIdDescItemTypeIdAndLockChangeId(nodeId, rulDescItemTypeId, version.getLockChange());
+            itemList = descItemRepository.findByNodeDescItemTypeIdAndLockChangeId(node, rulDescItemTypeId, version.getLockChange());
         }
         return createItemExt(itemList);
     }

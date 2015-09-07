@@ -2,7 +2,7 @@ package cz.tacr.elza.api;
 
 import java.io.Serializable;
 
-public interface ArrArrangementType extends Serializable {
+public interface RulArrangementType extends Serializable {
     
     Integer getArrangementTypeId();
 
