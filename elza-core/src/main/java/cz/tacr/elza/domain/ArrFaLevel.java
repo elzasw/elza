@@ -14,7 +14,7 @@ import javax.persistence.*;
 @Entity(name = "arr_fa_level")
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"position", "parentNodeId", "deleteFaChangeId"}))
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrFaLevel extends AbstractVersionableEntity implements IdObject<Integer>, cz.tacr.elza.api.ArrFaLevel<ArrFaChange, ArrNode> {
+public class ArrFaLevel extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrFaLevel<ArrFaChange, ArrNode> {
 
     @Id
     @GeneratedValue

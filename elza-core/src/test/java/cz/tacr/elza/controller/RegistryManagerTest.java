@@ -153,7 +153,7 @@ public class RegistryManagerTest extends AbstractRestTest {
 
         Response response =
                 given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(variantRecord)
-                        .parameter(RECORD_ID_ATT, record.getId())
+                        .parameter(RECORD_ID_ATT, record.getRecordId())
                         .put(UPDATE_VARIANT_RECORD_URL);
         logger.info(response.asString());
         Assert.assertEquals(response.print(), 200, response.statusCode());
