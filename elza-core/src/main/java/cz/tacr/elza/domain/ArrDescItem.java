@@ -14,7 +14,7 @@ import javax.persistence.*;
 @Entity(name = "arr_desc_item")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrDescItem extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrDescItem<ArrFaChange, RulDescItemType, RulDescItemSpec> {
+public class ArrDescItem extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrDescItem<ArrFaChange, RulDescItemType, RulDescItemSpec, ArrNode> {
 
     @Id
     @GeneratedValue
@@ -39,9 +39,9 @@ public class ArrDescItem extends AbstractVersionableEntity implements cz.tacr.el
     @JoinColumn(name = "descItemSpecId", nullable = true)
     private RulDescItemSpec descItemSpec;
 
-
-    @Column(nullable = false)
-    private Integer nodeId;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
+    @JoinColumn(name = "nodeId", nullable = false)
+    private ArrNode node;
 
     @Column(nullable = false)
     private Integer position;
@@ -108,13 +108,13 @@ public class ArrDescItem extends AbstractVersionableEntity implements cz.tacr.el
     }
 
     @Override
-    public Integer getNodeId() {
-        return nodeId;
+    public ArrNode getNode() {
+        return node;
     }
 
     @Override
-    public void setNodeId(final Integer nodeId) {
-        this.nodeId = nodeId;
+    public void setNode(final ArrNode node) {
+        this.node = node;
     }
 
     @Override
@@ -143,6 +143,6 @@ public class ArrDescItem extends AbstractVersionableEntity implements cz.tacr.el
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(descItemId).append(nodeId).append(position).toHashCode();
+        return new HashCodeBuilder().append(descItemId).append(node.getNodeId()).append(position).toHashCode();
     }
 }

@@ -18,6 +18,7 @@ import cz.req.ax.AxAction;
 import cz.req.ax.ChildComponentContainer;
 import cz.req.ax.Components;
 import cz.tacr.elza.domain.ArrDescItemExt;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
@@ -32,7 +33,7 @@ public class Attribut extends CssLayout implements Components {
     ChildComponentContainer<ArrDescItemExt, AttributValue> childs;
     List<RulDescItemSpec> descItemSpecs;
     RulDataType dataType;
-    Integer nodeId;
+    ArrNode node;
 
     List<ArrDescItemExt> deleteDescItems;
     private Integer versionId;
@@ -44,12 +45,12 @@ public class Attribut extends CssLayout implements Components {
                     List<RulDescItemSpec> descItemSpecs,
                     RulDescItemType type,
                     RulDataType dataType,
-                    Integer nodeId,
+                    ArrNode node,
                     Integer versionId,
                     final AttributeValuesLoader attributeValuesLoader) {
         this.descItemSpecs = descItemSpecs;
         this.dataType = dataType;
-        this.nodeId = nodeId;
+        this.node = node;
         this.versionId = versionId;
         this.type = type;
         this.attributeValuesLoader = attributeValuesLoader;
@@ -98,8 +99,8 @@ public class Attribut extends CssLayout implements Components {
         return collect;
     }
 
-    public Integer getNodeId() {
-        return nodeId;
+    public ArrNode getNode() {
+        return node;
     }
 
     AttributValue newAtributValue(final ArrDescItemExt a) {
@@ -152,7 +153,7 @@ public class Attribut extends CssLayout implements Components {
 
         AttributValue value = new AttributValue(a, descItemSpecs, dataType, AxAction.of(a).icon(FontAwesome.TRASH_O).action(this::deleteAtributValue), wrapper, attributeValuesLoader);
         a.setPosition(childs.getComponentCount() + 1);
-        a.setNodeId(nodeId);
+        a.setNode(node);
         childs.addComponent(a, value);
         return value;
     }

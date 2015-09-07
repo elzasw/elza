@@ -4,13 +4,14 @@ import java.io.Serializable;
 import java.util.List;
 
 import cz.tacr.elza.api.ArrDescItemExt;
+import cz.tacr.elza.api.ArrNode;
 
 
 /**
  * @author Martin Šlapa
  * @since 28.8.2015
  */
-public interface ArrDescItemSavePack<DIE extends ArrDescItemExt> extends Serializable {
+public interface ArrDescItemSavePack<DIE extends ArrDescItemExt, N extends ArrNode> extends Serializable {
 
     List<DIE> getDescItems();
 
@@ -34,5 +35,11 @@ public interface ArrDescItemSavePack<DIE extends ArrDescItemExt> extends Seriali
 
 
     void setCreateNewVersion(Boolean createNewVersion);
+
+
+    N getNode();
+
+
+    void setNode(N node);
 
 }

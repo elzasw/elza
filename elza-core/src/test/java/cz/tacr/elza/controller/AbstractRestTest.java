@@ -261,13 +261,13 @@ public abstract class AbstractRestTest {
     }
 
     @Transactional
-    protected ArrDescItem createAttributs(final Integer nodeId, final Integer position,
+    protected ArrDescItem createAttributs(final ArrNode node, final Integer position,
                                           final ArrFaChange change, final int index, final String typ) {
         RulDescItemType descItemType = createDescItemType(index);
         RulDescItemSpec rulDescItemSpec = createDescItemSpec(descItemType, index);
 
         ArrDescItem item = new ArrDescItem();
-        item.setNodeId(nodeId);
+        item.setNode(node);
         item.setPosition(position);
         item.setCreateChange(change);
         item.setDescItemObjectId(1);
@@ -414,7 +414,7 @@ public abstract class AbstractRestTest {
         return itemConstraint;
     }
 
-    protected ArrDescItem createArrDescItem(ArrFaChange createFaChange, ArrFaChange deleteFaChange, Integer descItemObjectId, RulDescItemType rulDescItemType, RulDescItemSpec rulDescItemSpec, Integer nodeId, Integer position) {
+    protected ArrDescItem createArrDescItem(ArrFaChange createFaChange, ArrFaChange deleteFaChange, Integer descItemObjectId, RulDescItemType rulDescItemType, RulDescItemSpec rulDescItemSpec, ArrNode node, Integer position) {
         ArrDescItem descItem = new ArrDescItem();
         descItem.setCreateChange(createFaChange);
         descItem.setDeleteChange(deleteFaChange);
@@ -431,7 +431,7 @@ public abstract class AbstractRestTest {
         descItem.setDescItemObjectId(descItemObjectId);
         descItem.setDescItemType(rulDescItemType);
         descItem.setDescItemSpec(rulDescItemSpec);
-        descItem.setNodeId(nodeId);
+        descItem.setNode(node);
         descItem.setPosition(position);
         descItemRepository.save(descItem);
         return descItem;

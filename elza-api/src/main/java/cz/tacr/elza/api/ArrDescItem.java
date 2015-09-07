@@ -9,7 +9,7 @@ import java.io.Serializable;
  * @since 20.8.2015
  */
 public interface ArrDescItem<FC extends ArrFaChange, RT extends RulDescItemType,
-    RS extends RulDescItemSpec> extends Versionable, Serializable {
+    RS extends RulDescItemSpec, N extends ArrNode> extends Versionable, Serializable {
 
 
     public Integer getDescItemId();
@@ -48,10 +48,10 @@ public interface ArrDescItem<FC extends ArrFaChange, RT extends RulDescItemType,
     void setDescItemSpec(final RS descItemSpec);
 
 
-    Integer getNodeId();
+    N getNode();
 
 
-    void setNodeId(final Integer nodeId);
+    void setNode(final N node);
 
 
     Integer getPosition();
