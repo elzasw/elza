@@ -13,7 +13,7 @@ import cz.tacr.elza.api.vo.FaViewDescItemTypes;
 
 
 /**
- *
+ * Rozhraní operací pro pravidla.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 12. 8. 2015

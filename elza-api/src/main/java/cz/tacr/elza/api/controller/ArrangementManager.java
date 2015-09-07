@@ -14,7 +14,7 @@ import cz.tacr.elza.api.vo.ArrFaLevelPack;
 
 
 /**
- *
+ * Rozhraní operací pro archivní pomůcku a hierarchický přehled včetně atributů.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 12. 8. 2015

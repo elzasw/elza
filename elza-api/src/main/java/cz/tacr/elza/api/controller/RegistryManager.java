@@ -10,6 +10,11 @@ import java.util.List;
 
 /**
  * Rozhraní operací pro rejstřík.
+ * 
+ * @author vavrejn
+ *
+ * @param <RR> {@link RegRecord}
+ * @param <VR> {@link RegVariantRecord}
  */
 public interface RegistryManager<RR extends RegRecord, VR extends RegVariantRecord> {
 
