@@ -7,7 +7,7 @@ import cz.tacr.elza.api.ParAbstractPartyVals;
 import cz.tacr.elza.api.ParPartyType;
 
 /**
- *
+ * Rozhraní operací pro pravidla.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 12. 8. 2015
