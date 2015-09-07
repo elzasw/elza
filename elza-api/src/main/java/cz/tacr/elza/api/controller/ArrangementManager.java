@@ -219,10 +219,10 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
     /**
      * Vymaže atribut archivního popisu.
      *
-     * @param descItemObjectId  id atributu archivního popisu ke smazání
+     * @param descItemExt       atribut archivního popisu ke smazání
      * @return                  upravený(smazaný) atribut archivního popisu
      */
-    DIE deleteDescriptionItem(Integer descItemObjectId);
+    DIE deleteDescriptionItem(DIE descItemExt);
 
 
     /**

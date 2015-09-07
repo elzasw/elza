@@ -31,6 +31,7 @@ import cz.tacr.elza.domain.ArrFaLevel;
 import cz.tacr.elza.domain.ArrFaLevelExt;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
@@ -649,19 +650,19 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrFaChange createChange = createFaChange(startTime.minusSeconds(1));
         ArrFaLevel child = createLevel(2, parent, createChange);
-        createAttributs(child.getNode().getNodeId(), 1, createChange, 1, DATA_TYP_RECORD);
+        createAttributs(child.getNode(), 1, createChange, 1, DATA_TYP_RECORD);
         levelRepository.save(child);
 
         version.setLockChange(createFaChange(startTime.plusSeconds(2)));
         versionRepository.save(version);
         child.setDeleteChange(createFaChange(startTime.plusSeconds(3)));
         createChange = createFaChange(startTime.plusSeconds(3));
-        createAttributs(child.getNode().getNodeId(), 2, createChange, 11, null);
+        createAttributs(child.getNode(), 2, createChange, 11, null);
 
         createChange = createFaChange(startTime.plusSeconds(3));
         ArrFaLevel child2 = createLevel(2, parent, createChange);
-        ArrDescItem item = createAttributs(child2.getNode().getNodeId(), 1, createChange, 2, null);
-        ArrDescItem item2 = createAttributs(child2.getNode().getNodeId(), 2, createChange, 21, null);
+        ArrDescItem item = createAttributs(child2.getNode(), 1, createChange, 2, null);
+        ArrDescItem item2 = createAttributs(child2.getNode(), 2, createChange, 21, null);
         item2.setDeleteChange(createChange);
         descItemRepository.save(item2);
 
@@ -772,7 +773,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ArrFaLevel faLevel = createLevel(2, parent, createChange);
         levelRepository.save(faLevel);
 
-        Integer nodeId = faLevel.getNode().getNodeId();
+        ArrNode node = faLevel.getNode();
 
         RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
         Assert.assertNotNull("Neexistuje záznam pro datový typ INTEGER", dataType);
@@ -792,7 +793,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItem.setDescItemType(descItemType);
         descItem.setDescItemSpec(descItemSpec);
         descItem.setData("123");
-        descItem.setNodeId(nodeId);
+        descItem.setNode(node);
 
         ArrDescItem descItemRet = arrangementManager.createDescriptionItem(descItem, version.getFaVersionId());
 
@@ -831,7 +832,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItem.setDescItemType(descItemType2);
         descItem.setDescItemSpec(descItemSpec2);
         descItem.setData("123");
-        descItem.setNodeId(nodeId);
+        descItem.setNode(node);
 
         ArrDescItem descItemRet1 = arrangementManager.createDescriptionItem(descItem, version.getFaVersionId());
 
@@ -840,7 +841,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItem.setDescItemSpec(descItemSpec2);
         descItem.setData("1234");
         descItem.setPosition(1);
-        descItem.setNodeId(nodeId);
+        descItem.setNode(node);
 
         ArrDescItem descItemRet2 = arrangementManager.createDescriptionItem(descItem, version.getFaVersionId());
 
@@ -852,7 +853,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItem.setDescItemSpec(descItemSpec2);
         descItem.setData("12345");
         descItem.setPosition(10);
-        descItem.setNodeId(nodeId);
+        descItem.setNode(node);
 
         ArrDescItem descItemRet3 = arrangementManager.createDescriptionItem(descItem, version.getFaVersionId());
 
@@ -875,7 +876,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ArrFaLevel faLevel = createLevel(2, parent, createChange);
         levelRepository.save(faLevel);
 
-        Integer nodeId = faLevel.getNode().getNodeId();
+        ArrNode node = faLevel.getNode();
 
         RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
         Assert.assertNotNull("Neexistuje záznam pro datový typ INTEGER", dataType);
@@ -895,7 +896,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItem.setDescItemType(descItemType);
         descItem.setDescItemSpec(descItemSpec);
         descItem.setData("123");
-        descItem.setNodeId(nodeId);
+        descItem.setNode(node);
 
         ArrDescItem descItemNew = arrangementManager.createDescriptionItem(descItem, version.getFaVersionId());
 
@@ -976,7 +977,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ArrFaLevel faLevel = createLevel(2, parent, createChange);
         levelRepository.save(faLevel);
 
-        Integer nodeId = faLevel.getNode().getNodeId();
+        ArrNode node = faLevel.getNode();
 
         RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
         Assert.assertNotNull("Neexistuje záznam pro datový typ INTEGER", dataType);
@@ -994,7 +995,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItem1.setDescItemType(descItemType);
         descItem1.setDescItemSpec(descItemSpec);
         descItem1.setData("1");
-        descItem1.setNodeId(nodeId);
+        descItem1.setNode(node);
 
         descItem1 = arrangementManager.createDescriptionItem(descItem1, version.getFaVersionId());
 
@@ -1002,7 +1003,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItem2.setDescItemType(descItemType);
         descItem2.setDescItemSpec(descItemSpec);
         descItem2.setData("2");
-        descItem2.setNodeId(nodeId);
+        descItem2.setNode(node);
 
         descItem2 = arrangementManager.createDescriptionItem(descItem2, version.getFaVersionId());
 
@@ -1010,7 +1011,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItem3.setDescItemType(descItemType);
         descItem3.setDescItemSpec(descItemSpec);
         descItem3.setData("3");
-        descItem3.setNodeId(nodeId);
+        descItem3.setNode(node);
 
         descItem3 = arrangementManager.createDescriptionItem(descItem3, version.getFaVersionId());
 
@@ -1018,7 +1019,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItem4.setDescItemType(descItemType);
         descItem4.setDescItemSpec(descItemSpec);
         descItem4.setData("4");
-        descItem4.setNodeId(nodeId);
+        descItem4.setNode(node);
 
         descItem4 = arrangementManager.createDescriptionItem(descItem4, version.getFaVersionId());
 
@@ -1058,7 +1059,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ArrFaLevel faLevel = createLevel(2, parent, createChange);
         levelRepository.save(faLevel);
 
-        Integer nodeId = faLevel.getNode().getNodeId();
+        ArrNode node = faLevel.getNode();
 
         RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
         Assert.assertNotNull("Neexistuje záznam pro datový typ INTEGER", dataType);
@@ -1076,7 +1077,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItem1.setDescItemType(descItemType);
         descItem1.setDescItemSpec(descItemSpec);
         descItem1.setData("1");
-        descItem1.setNodeId(nodeId);
+        descItem1.setNode(node);
 
         ArrDescItemExt descItem1Save = arrangementManager.createDescriptionItem(descItem1, version.getFaVersionId());
 
@@ -1084,7 +1085,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItem2.setDescItemType(descItemType);
         descItem2.setDescItemSpec(descItemSpec);
         descItem2.setData("2");
-        descItem2.setNodeId(nodeId);
+        descItem2.setNode(node);
 
         ArrDescItemExt descItem2Save = arrangementManager.createDescriptionItem(descItem2, version.getFaVersionId());
 
@@ -1092,7 +1093,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItem3.setDescItemType(descItemType);
         descItem3.setDescItemSpec(descItemSpec);
         descItem3.setData("3");
-        descItem3.setNodeId(nodeId);
+        descItem3.setNode(node);
 
         ArrDescItemExt descItem3Save = arrangementManager.createDescriptionItem(descItem3, version.getFaVersionId());
 
@@ -1100,7 +1101,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItem4.setDescItemType(descItemType);
         descItem4.setDescItemSpec(descItemSpec);
         descItem4.setData("4");
-        descItem4.setNodeId(nodeId);
+        descItem4.setNode(node);
 
         ArrDescItemExt descItem4Save = arrangementManager.createDescriptionItem(descItem4, version.getFaVersionId());
 
@@ -1123,7 +1124,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItemNew1.setDescItemType(descItemType);
         descItemNew1.setDescItemSpec(descItemSpec);
         descItemNew1.setData("11");
-        descItemNew1.setNodeId(nodeId);
+        descItemNew1.setNode(node);
         descItemNew1.setPosition(3);
         descItems.add(descItemNew1);
 
@@ -1134,7 +1135,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItemNew2.setDescItemType(descItemType);
         descItemNew2.setDescItemSpec(descItemSpec);
         descItemNew2.setData("12");
-        descItemNew2.setNodeId(nodeId);
+        descItemNew2.setNode(node);
         descItemNew2.setPosition(5);
         descItems.add(descItemNew2);
 
@@ -1200,7 +1201,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ArrFaLevel faLevel = createLevel(2, parent, createChange);
         levelRepository.save(faLevel);
 
-        Integer nodeId = faLevel.getNode().getNodeId();
+        ArrNode node = faLevel.getNode();
 
         RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
         Assert.assertNotNull("Neexistuje záznam pro datový typ INTEGER", dataType);
@@ -1220,17 +1221,17 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItem.setDescItemType(descItemType);
         descItem.setDescItemSpec(descItemSpec);
         descItem.setData("123");
-        descItem.setNodeId(nodeId);
+        descItem.setNode(node);
 
         ArrDescItem descItemNew = arrangementManager.createDescriptionItem(descItem, version.getFaVersionId());
 
         // smazání hodnoty attributu
 
-        ArrDescItem descItemDel = arrangementManager.deleteDescriptionItem(descItemNew.getDescItemObjectId());
+        /*ArrDescItem descItemDel = arrangementManager.deleteDescriptionItem(descItemNew);
 
         Assert.assertEquals(descItemNew, descItemDel);
 
-        Assert.assertNotNull(descItemDel.getDeleteChange());
+        Assert.assertNotNull(descItemDel.getDeleteChange());*/
 
     }
 
