@@ -203,6 +203,6 @@ public class ClientTestDataGenerator {
     }
 
     protected ArrFindingAid createFindingAid(final String name, RulRuleSet ruleSet, ArrArrangementType arrangementType) {
-        return arrangementManager.createFindingAid(name, arrangementType.getId(), ruleSet.getId());
+        return arrangementManager.createFindingAid(name, arrangementType.getArrangementTypeId(), ruleSet.getRuleSetId());
     }
 }

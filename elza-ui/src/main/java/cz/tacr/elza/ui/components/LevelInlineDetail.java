@@ -237,7 +237,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
                         return Collections.EMPTY_LIST;
                     }
 
-                    RulDescItemSpec specDo = descItemSpecRepository.getOne(specification.getId());
+                    RulDescItemSpec specDo = descItemSpecRepository.getOne(specification.getDescItemSpecId());
 
                     List<RegRecord> recordList = registryManager
                             .findRecord(text, 0, 50, specDo.getRegisterType().getRegisterTypeId());

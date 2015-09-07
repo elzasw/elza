@@ -1,14 +1,11 @@
 package cz.tacr.elza.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.req.ax.IdObject;
 
 /**
  * @author by Ondřej Buriánek, burianek@marbes.cz.
@@ -16,7 +13,7 @@ import cz.req.ax.IdObject;
  */
 @Entity(name = "rul_arrangement_type")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrArrangementType implements IdObject<Integer>, cz.tacr.elza.api.ArrArrangementType {
+public class ArrArrangementType implements cz.tacr.elza.api.ArrArrangementType {
 
     @Id
     @GeneratedValue
@@ -63,9 +60,4 @@ public class ArrArrangementType implements IdObject<Integer>, cz.tacr.elza.api.A
         return "ArrArrangementType pk=" + arrangementTypeId;
     }
 
-    @Override
-    @JsonIgnore
-    public Integer getId() {
-        return arrangementTypeId;
-    }
 }

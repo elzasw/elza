@@ -1,22 +1,10 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.req.ax.IdObject;
+import javax.persistence.*;
 
 
 /**
@@ -28,7 +16,7 @@ import cz.req.ax.IdObject;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public abstract class ArrData extends AbstractVersionableEntity implements IdObject<Integer>, cz.tacr.elza.api.ArrData<RulDataType, ArrDescItem>{
+public abstract class ArrData extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrData<RulDataType, ArrDescItem> {
 
     @Id
     @GeneratedValue
@@ -74,12 +62,6 @@ public abstract class ArrData extends AbstractVersionableEntity implements IdObj
     }
 
     @Override
-    @JsonIgnore
-    public Integer getId() {
-        return dataId;
-    }
-
-    @Override
     public boolean equals(final Object obj) {
         if (!(obj instanceof ArrData)) {
             return false;
@@ -90,12 +72,12 @@ public abstract class ArrData extends AbstractVersionableEntity implements IdObj
 
         ArrData other = (ArrData) obj;
 
-        return new EqualsBuilder().append(getId(), other.getId()).isEquals();
+        return new EqualsBuilder().append(dataId, other.getDataId()).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(getId()).toHashCode();
+        return new HashCodeBuilder().append(dataId).toHashCode();
     }
 
     public abstract String getData();

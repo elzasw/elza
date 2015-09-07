@@ -1,27 +1,13 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.req.ax.IdObject;
 import org.springframework.data.rest.core.annotation.RestResource;
+
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -34,7 +20,7 @@ import org.springframework.data.rest.core.annotation.RestResource;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RegRecord extends AbstractVersionableEntity implements IdObject<Integer>, cz.tacr.elza.api.RegRecord<RegRegisterType, RegExternalSource, RegVariantRecord> {
+public class RegRecord extends AbstractVersionableEntity implements cz.tacr.elza.api.RegRecord<RegRegisterType, RegExternalSource, RegVariantRecord> {
 
     @Id
     @GeneratedValue
@@ -168,12 +154,6 @@ public class RegRecord extends AbstractVersionableEntity implements IdObject<Int
     }
 
     @Override
-    @JsonIgnore
-    public Integer getId() {
-        return recordId;
-    }
-
-    @Override
     public boolean equals(final Object obj) {
         if (!(obj instanceof cz.tacr.elza.api.RegRecord)) {
             return false;
@@ -184,12 +164,12 @@ public class RegRecord extends AbstractVersionableEntity implements IdObject<Int
 
         RegRecord other = (RegRecord) obj;
 
-        return new EqualsBuilder().append(getId(), other.getId()).isEquals();
+        return new EqualsBuilder().append(recordId, other.getRecordId()).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(getId()).toHashCode();
+        return new HashCodeBuilder().append(recordId).toHashCode();
     }
 
 }

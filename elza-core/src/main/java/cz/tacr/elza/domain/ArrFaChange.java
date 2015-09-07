@@ -1,16 +1,13 @@
 package cz.tacr.elza.domain;
 
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.req.ax.IdObject;
+import java.time.LocalDateTime;
 
 /**
  * @author by Ondřej Buriánek, burianek@marbes.cz.
@@ -18,7 +15,7 @@ import cz.req.ax.IdObject;
  */
 @Entity(name = "arr_fa_change")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrFaChange implements IdObject<Integer>, cz.tacr.elza.api.ArrFaChange {
+public class ArrFaChange implements cz.tacr.elza.api.ArrFaChange {
 
     @Id
     @GeneratedValue
@@ -29,22 +26,22 @@ public class ArrFaChange implements IdObject<Integer>, cz.tacr.elza.api.ArrFaCha
 
     @Override
     public Integer getFaChangeId() {
-      return faChangeId;
+        return faChangeId;
     }
 
     @Override
     public void setFaChangeId(Integer faChangeId) {
-      this.faChangeId = faChangeId;
+        this.faChangeId = faChangeId;
     }
 
     @Override
     public LocalDateTime getChangeDate() {
-      return changeDate;
+        return changeDate;
     }
 
     @Override
     public void setChangeDate(LocalDateTime changeDate) {
-      this.changeDate = changeDate;
+        this.changeDate = changeDate;
     }
 
     @Override
@@ -52,9 +49,4 @@ public class ArrFaChange implements IdObject<Integer>, cz.tacr.elza.api.ArrFaCha
         return "ArrFaChange pk=" + faChangeId;
     }
 
-    @Override
-    @JsonIgnore
-    public Integer getId() {
-        return faChangeId;
-    }
 }

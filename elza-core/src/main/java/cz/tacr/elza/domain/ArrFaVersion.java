@@ -1,18 +1,10 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-
-import org.springframework.data.rest.core.annotation.RestResource;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.springframework.data.rest.core.annotation.RestResource;
 
-import cz.req.ax.IdObject;
+import javax.persistence.*;
 
 
 /**
@@ -21,8 +13,8 @@ import cz.req.ax.IdObject;
  */
 @Entity(name = "arr_fa_version")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrFaVersion extends AbstractVersionableEntity implements IdObject<Integer>,
-    cz.tacr.elza.api.ArrFaVersion<ArrFindingAid, ArrFaChange, ArrFaLevel, ArrArrangementType, RulRuleSet> {
+public class ArrFaVersion extends AbstractVersionableEntity implements
+        cz.tacr.elza.api.ArrFaVersion<ArrFindingAid, ArrFaChange, ArrFaLevel, ArrArrangementType, RulRuleSet> {
 
     @Id
     @GeneratedValue
@@ -126,12 +118,6 @@ public class ArrFaVersion extends AbstractVersionableEntity implements IdObject<
     @Override
     public void setRuleSet(final RulRuleSet ruleSet) {
         this.ruleSet = ruleSet;
-    }
-
-    @Override
-    @JsonIgnore
-    public Integer getId() {
-        return faVersionId;
     }
 
     @Override

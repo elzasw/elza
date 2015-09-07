@@ -1,20 +1,12 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Lob;
-import javax.persistence.Table;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.hibernate.annotations.Type;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.req.ax.IdObject;
+import javax.persistence.*;
 
 
 /**
@@ -24,7 +16,7 @@ import cz.req.ax.IdObject;
 @Entity(name = "rul_data_type")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulDataType implements IdObject<Integer>, cz.tacr.elza.api.RulDataType {
+public class RulDataType implements cz.tacr.elza.api.RulDataType {
 
     @Id
     @GeneratedValue
@@ -107,12 +99,6 @@ public class RulDataType implements IdObject<Integer>, cz.tacr.elza.api.RulDataT
     }
 
     @Override
-    @JsonIgnore
-    public Integer getId() {
-        return dataTypeId;
-    }
-
-    @Override
     public boolean equals(final Object obj) {
         if (!(obj instanceof RulDataType)) {
             return false;
@@ -123,12 +109,12 @@ public class RulDataType implements IdObject<Integer>, cz.tacr.elza.api.RulDataT
 
         RulDataType other = (RulDataType) obj;
 
-        return new EqualsBuilder().append(getId(), other.getId()).isEquals();
+        return new EqualsBuilder().append(dataTypeId, other.getDataTypeId()).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(getId()).append(name).append(code).toHashCode();
+        return new HashCodeBuilder().append(dataTypeId).append(name).append(code).toHashCode();
     }
 
 }

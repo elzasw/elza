@@ -817,7 +817,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
 
     private DescItemTypeWindow showDescItemTypeWindow() {
         DescItemTypeWindow window = new DescItemTypeWindow(ruleSetManager);
-        ArrFaVersion arrFaVersion = arrangementManager.getFaVersionById(version.getId());
+        ArrFaVersion arrFaVersion = arrangementManager.getFaVersionById(version.getFaVersionId());
         window.show(arrFaVersion, this);
         return window;
     }

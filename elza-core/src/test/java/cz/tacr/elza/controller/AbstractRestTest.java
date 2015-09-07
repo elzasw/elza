@@ -195,7 +195,7 @@ public abstract class AbstractRestTest {
         RulRuleSet ruleSet = createRuleSet();
         ArrArrangementType arrangementType = createArrangementType();
 
-        return arrangementManager.createFindingAid(name, arrangementType.getId(), ruleSet.getId());
+        return arrangementManager.createFindingAid(name, arrangementType.getArrangementTypeId(), ruleSet.getRuleSetId());
     }
 
     protected ArrFaVersion createFindingAidVersion(final ArrFindingAid findingAid, boolean isLock) {

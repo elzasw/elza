@@ -2,6 +2,7 @@ package cz.tacr.elza.ui.view;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -47,6 +48,9 @@ public class FindingAidListView extends ElzaView {
     @Autowired
     private RuleManager ruleSetManager;
 
+    @Value("${test.value:!!!}")
+            private String string;
+
     AxContainer<ArrArrangementType> arTypeContainer;
     AxContainer<RulRuleSet> ruleSetContainer;
     AxTable<ArrFindingAid> tableFA;
@@ -56,7 +60,7 @@ public class FindingAidListView extends ElzaView {
     public void enter(final ViewChangeListener.ViewChangeEvent event) {
         super.enter(event);
 
-        pageTitle("Archivní pomůcky");
+        pageTitle("Archivní pomůcky "+string);
 
         formFA = formularFA();
 

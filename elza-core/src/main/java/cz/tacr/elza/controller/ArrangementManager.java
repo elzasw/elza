@@ -777,7 +777,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             return;
         }
         for (ArrData arrData : dataList) {
-            Integer idItemType = arrData.getDescItem().getDescItemType().getId();
+            Integer idItemType = arrData.getDescItem().getDescItemType().getDescItemTypeId();
             if (idItemTypeSet != null && (!idItemTypeSet.contains(idItemType))) {
                 continue;
             }
@@ -1026,7 +1026,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
 
         Integer position;
-        Integer maxPosition = descItemRepository.findMaxPositionByNodeIdAndDescItemTypeIdAndDeleteChangeIsNull(nodeId, rulDescItemType.getId());
+        Integer maxPosition = descItemRepository.findMaxPositionByNodeIdAndDescItemTypeIdAndDeleteChangeIsNull(nodeId, rulDescItemType.getDescItemTypeId());
         if (maxPosition == null) {
             position = 1; // ještě žádný neexistuje
         } else {
@@ -1104,7 +1104,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         if (createNewVersion) {
 
-            Integer maxPosition = descItemRepository.findMaxPositionByNodeIdAndDescItemTypeIdAndDeleteChangeIsNull(nodeId, rulDescItemType.getId());
+            Integer maxPosition = descItemRepository.findMaxPositionByNodeIdAndDescItemTypeIdAndDeleteChangeIsNull(nodeId, rulDescItemType.getDescItemTypeId());
 
             descItem.setDeleteChange(arrFaChange);
             descItemRepository.save(descItem);
@@ -1221,7 +1221,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      */
     private void validateRepeatableType(Integer nodeId, RulDescItemType rulDescItemType, RulDescItemConstraint rulDescItemConstraint, ArrDescItem descItem) {
         if (rulDescItemConstraint.getRepeatable() != null && !rulDescItemConstraint.getRepeatable()) {
-            List<ArrDescItem> arrDescItems = descItemRepository.findByNodeIdAndDeleteChangeIsNullAndDescItemTypeId(nodeId, rulDescItemType.getId());
+            List<ArrDescItem> arrDescItems = descItemRepository.findByNodeIdAndDeleteChangeIsNullAndDescItemTypeId(nodeId, rulDescItemType.getDescItemTypeId());
             arrDescItems.remove(descItem); // odstraníme ten, co přidáváme / upravujeme
             if (arrDescItems.size() > 0) {
                 throw new IllegalArgumentException("Pro daný uzel již existuje jiná hodnota stejného typu atributu");
@@ -1244,8 +1244,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             RulDescItemConstraint rulDescItemConstraint,
                                         ArrDescItem descItem) {
         if (rulDescItemConstraint.getRepeatable() != null && !rulDescItemConstraint.getRepeatable()) {
-            List<ArrDescItem> arrDescItems = descItemRepository.findByNodeIdAndDeleteChangeIsNullAndDescItemTypeIdAndSpecItemTypeId(nodeId, rulDescItemType.getId(),
-                    rulDescItemSpec.getId());
+            List<ArrDescItem> arrDescItems = descItemRepository.findByNodeIdAndDeleteChangeIsNullAndDescItemTypeIdAndSpecItemTypeId(nodeId, rulDescItemType.getDescItemTypeId(),
+                    rulDescItemSpec.getDescItemSpecId());
             arrDescItems.remove(descItem); // odstraníme ten, co přidáváme / upravujeme
             if (arrDescItems.size() > 0) {
                 throw new IllegalArgumentException("Pro daný uzel již existuje jiná hodnota stejného typu atributu");

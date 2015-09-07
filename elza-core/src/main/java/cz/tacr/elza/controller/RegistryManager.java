@@ -66,7 +66,7 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
                                   @RequestParam final Integer registerTypeId,
                                   @RequestParam @Nullable final Integer externalSourceId) {
 
-        Assert.notNull(record.getId(), "Očekáváno ID pro update.");
+        Assert.notNull(record.getRecordId(), "Očekáváno ID pro update.");
 
         return saveRecordInternal(record, registerTypeId, externalSourceId);
     }
@@ -102,7 +102,7 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     public RegVariantRecord updateVariantRecord(@RequestBody final RegVariantRecord variantRecord,
                                                 @RequestParam final Integer recordId) {
 
-        Assert.notNull(variantRecord.getId(), "Očekáváno ID pro update.");
+        Assert.notNull(variantRecord.getVariantRecordId(), "Očekáváno ID pro update.");
 
         RegVariantRecord newVariantRecord = saveVariantRecordInternal(variantRecord, recordId);
         newVariantRecord.setRegRecord(null);

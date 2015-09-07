@@ -746,7 +746,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         Response response =
                 given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(FA_NAME_ATT, name).
-                parameter("arrangementTypeId", arrangementType.getId()).parameter("ruleSetId", ruleSet.getId()).
+                parameter("arrangementTypeId", arrangementType.getArrangementTypeId()).parameter("ruleSetId", ruleSet.getRuleSetId()).
                 get(CREATE_FA_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
@@ -844,8 +844,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrDescItem descItemRet2 = arrangementManager.createDescriptionItem(descItem, version.getFaVersionId());
 
-        Assert.assertNotNull(descItemRepository.findOne(descItemRet1.getId()).getDeleteChange());
-        Assert.assertEquals(new Integer(1), descItemRepository.findOne(descItemRet2.getId()).getPosition());
+        Assert.assertNotNull(descItemRepository.findOne(descItemRet1.getDescItemId()).getDeleteChange());
+        Assert.assertEquals(new Integer(1), descItemRepository.findOne(descItemRet2.getDescItemId()).getPosition());
 
         descItem = new ArrDescItemExt();
         descItem.setDescItemType(descItemType2);
@@ -856,7 +856,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrDescItem descItemRet3 = arrangementManager.createDescriptionItem(descItem, version.getFaVersionId());
 
-        Assert.assertEquals(new Integer(3), descItemRepository.findOne(descItemRet3.getId()).getPosition());
+        Assert.assertEquals(new Integer(3), descItemRepository.findOne(descItemRet3.getDescItemId()).getPosition());
 
     }
 

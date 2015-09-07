@@ -2,7 +2,6 @@ package cz.tacr.elza.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import cz.req.ax.IdObject;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -17,14 +16,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.req.ax.IdObject;
-
 
 /**
  * Variantní rejstříková hesla.
@@ -36,7 +27,7 @@ import cz.req.ax.IdObject;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RegVariantRecord extends AbstractVersionableEntity implements IdObject<Integer>, cz.tacr.elza.api.RegVariantRecord<RegRecord> {
+public class RegVariantRecord extends AbstractVersionableEntity implements  cz.tacr.elza.api.RegVariantRecord<RegRecord> {
 
     @Id
     @GeneratedValue
@@ -98,12 +89,6 @@ public class RegVariantRecord extends AbstractVersionableEntity implements IdObj
 //    }
 
     @Override
-    @JsonIgnore
-    public Integer getId() {
-        return variantRecordId;
-    }
-
-    @Override
     public boolean equals(final Object obj) {
         if (!(obj instanceof cz.tacr.elza.api.ParPartySubtype)) {
             return false;
@@ -114,12 +99,12 @@ public class RegVariantRecord extends AbstractVersionableEntity implements IdObj
 
         RegVariantRecord other = (RegVariantRecord) obj;
 
-        return new EqualsBuilder().append(getId(), other.getId()).isEquals();
+        return new EqualsBuilder().append(variantRecordId, other.getVariantRecordId()).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(getId()).toHashCode();
+        return new HashCodeBuilder().append(variantRecordId).toHashCode();
     }
 
 }
