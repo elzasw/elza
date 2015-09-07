@@ -7,7 +7,9 @@ import cz.tacr.elza.api.ArrDescItem;
 import cz.tacr.elza.api.RulDataType;
 import cz.tacr.elza.api.RulDescItemSpec;
 import cz.tacr.elza.api.RulDescItemType;
+import cz.tacr.elza.api.RulFaView;
 import cz.tacr.elza.api.RulRuleSet;
+import cz.tacr.elza.api.vo.FaViewDescItemTypes;
 
 
 /**
@@ -16,7 +18,7 @@ import cz.tacr.elza.api.RulRuleSet;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 12. 8. 2015
  */
-public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType, DIS extends RulDescItemSpec> {
+public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType, DIS extends RulDescItemSpec, RFV extends RulFaView> {
 
     /**
      * Vrátí všechny sady pravidel.
@@ -82,7 +84,7 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      * @param faVersionId
      * @return
      */
-    List<? extends RulDescItemType> getFaViewDescItemTypes(Integer faVersionId);
+    FaViewDescItemTypes getFaViewDescItemTypes(Integer faVersionId);
 
     /**
      * Pro soubor pravidel a typ výstupu uloží seznam identifikátorů typů atributů archivního popisu,
@@ -92,5 +94,5 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      * @param descItemTypeIds
      * @return
      */
-    List<Integer> saveFaViewDescItemTypes(Integer ruleSetId, Integer arrangementTypeId, Integer[] descItemTypeIds);
+    List<Integer> saveFaViewDescItemTypes(RFV rulFaView, Integer[] descItemTypeIds);
 }

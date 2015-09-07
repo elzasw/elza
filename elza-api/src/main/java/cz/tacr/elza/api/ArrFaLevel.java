@@ -2,19 +2,19 @@ package cz.tacr.elza.api;
 
 import java.io.Serializable;
 
-public interface ArrFaLevel<FC extends ArrFaChange> extends Versionable, Serializable {
+public interface ArrFaLevel<FC extends ArrFaChange, N extends ArrNode> extends Versionable, Serializable {
 
     Integer getFaLevelId();
 
     void setFaLevelId(Integer faLevelId);
 
-    Integer getNodeId();
+    N getNode();
 
-    void setNodeId(Integer nodeId);
+    void setNode(N node);
 
-    Integer getParentNodeId();
+    N getParentNode();
 
-    void setParentNodeId(Integer parentNodeId);
+    void setParentNode(N parentNode);
 
     FC getCreateChange();
 

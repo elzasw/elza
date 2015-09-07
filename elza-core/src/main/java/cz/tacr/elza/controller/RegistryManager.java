@@ -54,7 +54,7 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     @Override
     @Transactional
     public RegRecord createRecord(@RequestBody final RegRecord record) {
-        Assert.isNull(record.getId(), "Při vytváření záznamu nesmí být vyplněno ID (recordId).");
+        Assert.isNull(record.getRecordId(), "Při vytváření záznamu nesmí být vyplněno ID (recordId).");
 
         return saveRecordInternal(record);
     }
@@ -63,7 +63,7 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     @Override
     @Transactional
     public RegRecord updateRecord(@RequestBody final RegRecord record) {
-        Assert.notNull(record.getId(), "Očekáváno ID (recordId) pro update.");
+        Assert.notNull(record.getRecordId(), "Očekáváno ID (recordId) pro update.");
 
         return saveRecordInternal(record);
     }
@@ -84,7 +84,7 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     @RequestMapping(value = "/createVariantRecord", method = RequestMethod.PUT)
     @Override
     public RegVariantRecord createVariantRecord(@RequestBody final RegVariantRecord variantRecord) {
-        Assert.isNull(variantRecord.getId(), "Při vytváření záznamu nesmí být vyplněno ID (variantRecordId).");
+        Assert.isNull(variantRecord.getVariantRecordId(), "Při vytváření záznamu nesmí být vyplněno ID (variantRecordId).");
 
         RegVariantRecord newVariantRecord = saveVariantRecordInternal(variantRecord);
         newVariantRecord.getRegRecord().getVariantRecordList();
@@ -97,7 +97,7 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     @RequestMapping(value = "/updateVariantRecord", method = RequestMethod.PUT)
     @Override
     public RegVariantRecord updateVariantRecord(@RequestBody final RegVariantRecord variantRecord) {
-        Assert.notNull(variantRecord.getId(), "Očekáváno ID pro update.");
+        Assert.notNull(variantRecord.getVariantRecordId(), "Očekáváno ID pro update.");
 
         RegVariantRecord newVariantRecord = saveVariantRecordInternal(variantRecord);
 

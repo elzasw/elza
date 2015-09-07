@@ -1,24 +1,11 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.hibernate.annotations.Type;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.req.ax.IdObject;
+import javax.persistence.*;
 
 
 /**
@@ -30,7 +17,7 @@ import cz.req.ax.IdObject;
         @UniqueConstraint(columnNames = {"code"}),
         @UniqueConstraint(columnNames = {"viewOrder"})})
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulDescItemType implements IdObject<Integer>, cz.tacr.elza.api.RulDescItemType<RulDataType> {
+public class RulDescItemType implements cz.tacr.elza.api.RulDescItemType<RulDataType> {
 
     @Id
     @GeneratedValue
@@ -159,12 +146,6 @@ public class RulDescItemType implements IdObject<Integer>, cz.tacr.elza.api.RulD
     }
 
     @Override
-    @JsonIgnore
-    public Integer getId() {
-        return descItemTypeId;
-    }
-
-    @Override
     public boolean equals(final Object obj) {
         if (!(obj instanceof RulDescItemType)) {
             return false;
@@ -175,11 +156,11 @@ public class RulDescItemType implements IdObject<Integer>, cz.tacr.elza.api.RulD
 
         RulDescItemType other = (RulDescItemType) obj;
 
-        return new EqualsBuilder().append(getId(), other.getId()).isEquals();
+        return new EqualsBuilder().append(descItemTypeId, other.getDescItemTypeId()).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(getId()).append(name).append(code).toHashCode();
+        return new HashCodeBuilder().append(descItemTypeId).append(name).append(code).toHashCode();
     }
 }

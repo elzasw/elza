@@ -30,6 +30,8 @@ import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
+import cz.tacr.elza.domain.RulFaView;
+import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
 
 
 /**
@@ -47,6 +49,7 @@ public class DescItemTypeWindow extends AxWindow {
     private IndexedContainer container;
     private Integer ruleSetId;
     private Integer arrangementTypeId;
+    private RulFaView rulFaView;
 
     public DescItemTypeWindow(final RuleManager ruleSetManager) {
         Assert.notNull(ruleSetManager);
@@ -58,8 +61,9 @@ public class DescItemTypeWindow extends AxWindow {
         arrangementTypeId = version.getArrangementType().getArrangementTypeId();
         List<RulDescItemTypeExt> itemTypeSet = ruleSetManager.getDescriptionItemTypes(ruleSetId);
 
-        List<RulDescItemType> selectedItemTypeList =
-                ruleSetManager.getFaViewDescItemTypes(version.getFaVersionId());
+        FaViewDescItemTypes faViewDescItemTypes = ruleSetManager.getFaViewDescItemTypes(version.getFaVersionId());
+        rulFaView = faViewDescItemTypes.getRulFaView();
+        List<RulDescItemType> selectedItemTypeList = faViewDescItemTypes.getDescItemTypes();
         List<Integer> selectedItemTypeIdList = new LinkedList<>();
         for (RulDescItemType itemTypeIdStr : selectedItemTypeList) {
             selectedItemTypeIdList.add(itemTypeIdStr.getDescItemTypeId());
@@ -151,13 +155,14 @@ public class DescItemTypeWindow extends AxWindow {
                 resultList.add(id);
             }
         }
-        ruleSetManager.saveFaViewDescItemTypes(ruleSetId, arrangementTypeId,
+        ruleSetManager.saveFaViewDescItemTypes(rulFaView,
                 resultList.toArray(new Integer[resultList.size()]));
         posAction.onCommit();
     }
 
     private DropHandler createDropHandler(final Table table) {
         return new DropHandler() {
+            @Override
             public void drop(DragAndDropEvent dropEvent) {
                 DataBoundTransferable t = (DataBoundTransferable) dropEvent.getTransferable();
                 Object sourceItemId = t.getItemId();
@@ -184,6 +189,7 @@ public class DescItemTypeWindow extends AxWindow {
                 }
             }
 
+            @Override
             public AcceptCriterion getAcceptCriterion() {
                 return new And(new SourceIs(table), AcceptItem.ALL);
             }

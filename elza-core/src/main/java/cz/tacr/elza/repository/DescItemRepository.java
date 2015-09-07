@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -34,8 +35,14 @@ public interface DescItemRepository extends JpaRepository<ArrDescItem, Integer> 
     @Query("SELECT i FROM arr_desc_item i JOIN i.descItemType t WHERE i.nodeId = ?1 AND i.deleteChange IS NULL AND t.descItemTypeId = ?2")
     List<ArrDescItem> findByNodeIdAndDeleteChangeIsNullAndDescItemTypeId(Integer nodeId, Integer descItemTypeId);
 
+    @Query("SELECT i FROM arr_desc_item i JOIN i.descItemType t WHERE i.nodeId = ?1 AND t.descItemTypeId = ?2 AND i.createChange < ?3 AND (i.deleteChange > ?3 OR i.deleteChange IS NULL)")
+    List<ArrDescItem> findByNodeIdDescItemTypeIdAndLockChangeId(Integer nodeId, Integer descItemTypeId, ArrFaChange change);
+
     @Query("SELECT i FROM arr_desc_item i WHERE i.deleteChange IS NULL AND i.descItemObjectId = ?1")
     List<ArrDescItem> findByDescItemObjectIdAndDeleteChangeIsNull(Integer descItemObjectId);
+
+    @Query("SELECT i FROM arr_desc_item i WHERE i.descItemObjectId = ?1 AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
+    List<ArrDescItem> findByDescItemObjectIdAndLockChangeId(Integer descItemObjectId, ArrFaChange change);
 
     @Query(value = "SELECT max(i.descItemObjectId) FROM arr_desc_item i")
     Integer findMaxDescItemObjectId();
