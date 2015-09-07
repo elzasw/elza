@@ -73,16 +73,12 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
      */
     private Predicate preparefindRegRecordByTextAndType(final String searchRecord, final Integer registerTypeId,
                                                    final Root<RegRecord> record, final CriteriaBuilder builder) {
-
-        final String searchString = (searchRecord != null ? searchRecord.toLowerCase() : null);
-
         Join<Object, Object> variantRecord = record.join(RegRecord.VARIANT_RECORD_LIST, JoinType.LEFT);
         Join<Object, Object> registerType = record.join(RegRecord.REGISTER_TYPE);
 
-        String searchValue = "%"+searchRecord+"%";
-
         Predicate conditon = null;
         if (StringUtils.isNotBlank(searchRecord)) {
+            final String searchValue = "%"+searchRecord.toLowerCase()+"%";
             conditon =  builder.or(
                     builder.like(builder.lower(record.get(RegRecord.RECORD)), searchValue),
                     builder.like(builder.lower(record.get(RegRecord.CHARACTERISTICS)), searchValue),
