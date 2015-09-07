@@ -2,6 +2,7 @@ package cz.tacr.elza.ui.components.attribute;
 
 import java.util.List;
 
+import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.ui.components.autocomplete.AutocompleteItem;
 
 
@@ -13,7 +14,7 @@ public interface AttributeValuesLoader {
 
     List<AutocompleteItem> loadPartyRefItemsFulltext(String text);
 
-    List<AutocompleteItem> loadRecordRefItemsFulltext(String text);
+    List<AutocompleteItem> loadRecordRefItemsFulltext(String text, RulDescItemSpec specification);
 
 
 }

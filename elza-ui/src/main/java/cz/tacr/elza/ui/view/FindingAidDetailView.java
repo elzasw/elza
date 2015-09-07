@@ -95,6 +95,8 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
     AxContainer<RulRuleSet> ruleSetContainer;
 
     private TreeTable table;
+
+    @Autowired
     private LevelInlineDetail levelDetailConteiner;
 
     public static final String LEVEL = "Úroveň";
@@ -279,9 +281,9 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                     .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM));
             com.vaadin.ui.Component verzeComponent = newLabel("Prohlížíte si uzavřenou verzi k " + createDataStr, "h2");
             verzeComponent.setWidth("100%");
-            components(verzeComponent, table, createInlineDetail());
+            components(verzeComponent, table, levelDetailConteiner);
         } else {
-            components(table, createInlineDetail());
+            components(table, levelDetailConteiner);
         }
         showDetailAP();
     }
@@ -313,11 +315,6 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
     private void showDetailAP() {
         ArrFaLevelExt level = arrangementManager.getLevel(rootNode.getNodeId(), version.getFaVersionId(), null);
         levelDetailConteiner.showLevelDetail(level, level.getDescItemList(), version.getFaVersionId());
-    }
-
-    private CssLayout createInlineDetail() {
-        levelDetailConteiner = new LevelInlineDetail(ruleSetManager, arrangementManager, partyManager, registryManager);
-        return levelDetailConteiner;
     }
 
 

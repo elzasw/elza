@@ -4,6 +4,9 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.vaadin.data.Property;
+import com.vaadin.ui.AbstractSelect;
+import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.DragAndDropWrapper;
 import com.vaadin.ui.TextArea;
@@ -30,6 +33,8 @@ public class AttributValue extends CssLayout implements Components {
 
     private AttributeValuesLoader attributeValuesLoader;
 
+    private ComboBox specificationCombo;
+
     public AttributValue(ArrDescItemExt descItemExt, List<RulDescItemSpec> descItemSpecs, RulDataType dataType,
                          AxAction deleteAction, DragAndDropWrapper wrapper, final AttributeValuesLoader attributeValuesLoader) {
         this.wrapper = wrapper;
@@ -40,7 +45,8 @@ public class AttributValue extends CssLayout implements Components {
         if (descItemSpecs != null && descItemSpecs.size() > 0) {
             AxItemContainer<RulDescItemSpec> container = AxItemContainer.init(RulDescItemSpec.class);
             container.addAll(descItemSpecs);
-            form.addCombo(null, "descItemSpec", container, "name").field().addStyleName("attribut-spec");
+            specificationCombo = form.addCombo(null, "descItemSpec", container, "name").field();
+            specificationCombo.addStyleName("attribut-spec");
         }
 
         switch (dataType.getCode()) {
@@ -65,9 +71,16 @@ public class AttributValue extends CssLayout implements Components {
                 form.addComponent(partyRefAutoc);
                 break;
             case "RECORD_REF":
-                Autocomplete recordRefAutoc = createRecordRefAutocomplete();
+                final Autocomplete recordRefAutoc = createRecordRefAutocomplete();
                 form.getFieldGroup().bind(recordRefAutoc, "record");
                 form.addComponent(recordRefAutoc);
+
+                specificationCombo.setNullSelectionAllowed(false);
+                specificationCombo.addValueChangeListener((value) -> {
+                    recordRefAutoc.setValue(null);
+                    recordRefAutoc.reloadItems("");
+                });
+
                 break;
             default:
                 throw new IllegalStateException("Typ '" + dataType.getCode() + "' není implementován");
@@ -89,7 +102,12 @@ public class AttributValue extends CssLayout implements Components {
 
     private Autocomplete createRecordRefAutocomplete(){
         Autocomplete autocomplete = new Autocomplete((text)->{
-            return attributeValuesLoader.loadRecordRefItemsFulltext(text);
+            if(specificationCombo == null){
+                throw new IllegalStateException("Musí být umožněn výběr typu stecifikace.");
+            }
+
+            RulDescItemSpec selectedSpec = (RulDescItemSpec) specificationCombo.getValue();
+            return attributeValuesLoader.loadRecordRefItemsFulltext(text, selectedSpec);
         });
         initAutocomplete(autocomplete);
 
@@ -112,6 +130,15 @@ public class AttributValue extends CssLayout implements Components {
 
     public ArrDescItemExt commit() {
         return form.commit();
+    }
+
+
+    private class SpecificationValueChangeListener implements Property.ValueChangeListener{
+
+        @Override
+        public void valueChange(final Property.ValueChangeEvent event) {
+
+        }
     }
 
 }

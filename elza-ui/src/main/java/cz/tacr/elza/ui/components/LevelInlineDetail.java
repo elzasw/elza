@@ -5,6 +5,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang.builder.CompareToBuilder;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.server.FontAwesome;
@@ -13,11 +17,9 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
-import com.vaadin.ui.UI;
 
 import cz.req.ax.AxAction;
 import cz.req.ax.AxWindow;
-import cz.tacr.elza.ElzaApp;
 import cz.tacr.elza.api.controller.PartyManager;
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RegistryManager;
@@ -30,6 +32,7 @@ import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
+import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.ui.components.attribute.Attribut;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesLoader;
 import cz.tacr.elza.ui.components.autocomplete.AutocompleteItem;
@@ -39,14 +42,27 @@ import cz.tacr.elza.ui.components.autocomplete.AutocompleteItem;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 21.8.2015
  */
-public class LevelInlineDetail extends CssLayout implements Components {
+
+@Component
+@Scope("prototype")
+public class LevelInlineDetail extends CssLayout implements Components, InitializingBean {
 
     private CssLayout detailContent;
 
+    @Autowired
     private RuleManager ruleSetManager;
+
+    @Autowired
     private ArrangementManager arrangementManager;
+
+    @Autowired
     private PartyManager partyManager;
+
+    @Autowired
     private RegistryManager registryManager;
+
+    @Autowired
+    private DescItemSpecRepository descItemSpecRepository;
 
     private AttributeValuesLoader attributeValuesLoader;
 
@@ -54,23 +70,11 @@ public class LevelInlineDetail extends CssLayout implements Components {
     private AxWindow attributWindow = null;
     private ComboBox attributesComboBox;
 
-    public LevelInlineDetail(final RuleManager ruleSetManager, final ArrangementManager arrangementManager,
-                             final PartyManager partyManager, final RegistryManager registryManager) {
-        setSizeUndefined();
-        addStyleName("level-detail");
-        this.ruleSetManager = ruleSetManager;
-        this.arrangementManager = arrangementManager;
-        this.partyManager = partyManager;
-        this.registryManager = registryManager;
-        init();
+
+
+    public LevelInlineDetail() {
     }
 
-    private void init() {
-        detailContent = cssLayoutExt("detail-content");
-
-        addComponent(newLabel("Detail atributu", "h2"));
-        addComponent(detailContent);
-    }
 
     private void saveAttributeWithVersion(Attribut attribut) {
         saveAttribute(attribut, true);
@@ -228,8 +232,15 @@ public class LevelInlineDetail extends CssLayout implements Components {
                 }
 
                 @Override
-                public List<AutocompleteItem> loadRecordRefItemsFulltext(final String text) {
-                    List<RegRecord> recordList = registryManager.findRecord(text, 0, 50, null);
+                public List<AutocompleteItem> loadRecordRefItemsFulltext(final String text, final RulDescItemSpec specification) {
+                    if(specification == null){
+                        return Collections.EMPTY_LIST;
+                    }
+
+                    RulDescItemSpec specDo = descItemSpecRepository.getOne(specification.getId());
+
+                    List<RegRecord> recordList = registryManager
+                            .findRecord(text, 0, 50, specDo.getRegisterType().getRegisterTypeId());
                     List<AutocompleteItem> result = new ArrayList<>(recordList.size());
 
                     for (RegRecord regRecord : recordList) {
@@ -241,5 +252,15 @@ public class LevelInlineDetail extends CssLayout implements Components {
             };
         }
         return attributeValuesLoader;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        setSizeUndefined();
+        addStyleName("level-detail");
+        detailContent = cssLayoutExt("detail-content");
+
+        addComponent(newLabel("Detail atributu", "h2"));
+        addComponent(detailContent);
     }
 }

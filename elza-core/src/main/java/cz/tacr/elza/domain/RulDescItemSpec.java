@@ -29,7 +29,7 @@ import cz.req.ax.IdObject;
         @UniqueConstraint(columnNames = {"code"}),
         @UniqueConstraint(columnNames = {"viewOrder"})})
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class RulDescItemSpec implements IdObject<Integer>, cz.tacr.elza.api.RulDescItemSpec<RulDescItemType> {
+public class RulDescItemSpec implements IdObject<Integer>, cz.tacr.elza.api.RulDescItemSpec<RulDescItemType, RegRegisterType> {
 
     @Id
     @GeneratedValue
@@ -55,6 +55,10 @@ public class RulDescItemSpec implements IdObject<Integer>, cz.tacr.elza.api.RulD
 
     @Column(nullable = false)
     private Integer viewOrder;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRegisterType.class)
+    @JoinColumn(name = "registerTypeId", nullable = true)
+    private RegRegisterType registerType;
 
     public Integer getDescItemSpecId() {
         return descItemSpecId;
@@ -111,6 +115,16 @@ public class RulDescItemSpec implements IdObject<Integer>, cz.tacr.elza.api.RulD
     public void setViewOrder(final Integer viewOrder) {
         this.viewOrder = viewOrder;
     }
+
+    public RegRegisterType getRegisterType() {
+        return registerType;
+    }
+
+
+    public void setRegisterType(final RegRegisterType registerType) {
+        this.registerType = registerType;
+    }
+
 
     @Override
     public Integer getId() {

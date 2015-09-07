@@ -7,7 +7,7 @@ import java.io.Serializable;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
-public interface RulDescItemSpec<RIT extends RulDescItemType> extends Serializable {
+public interface RulDescItemSpec<RIT extends RulDescItemType, RT extends RegRegisterType> extends Serializable {
 
 
     public Integer getDescItemSpecId();
@@ -50,6 +50,10 @@ public interface RulDescItemSpec<RIT extends RulDescItemType> extends Serializab
 
 
     public void setViewOrder(final Integer viewOrder);
+
+    public RT getRegisterType();
+
+    public void setRegisterType(RT registerType);
 
 
 }
