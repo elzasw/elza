@@ -48,9 +48,6 @@ public class FindingAidListView extends ElzaView {
     @Autowired
     private RuleManager ruleSetManager;
 
-    @Value("${test.value:!!!}")
-            private String string;
-
     AxContainer<ArrArrangementType> arTypeContainer;
     AxContainer<RulRuleSet> ruleSetContainer;
     AxTable<ArrFindingAid> tableFA;
@@ -60,7 +57,7 @@ public class FindingAidListView extends ElzaView {
     public void enter(final ViewChangeListener.ViewChangeEvent event) {
         super.enter(event);
 
-        pageTitle("Archivní pomůcky "+string);
+        pageTitle("Archivní pomůcky");
 
         formFA = formularFA();
 
