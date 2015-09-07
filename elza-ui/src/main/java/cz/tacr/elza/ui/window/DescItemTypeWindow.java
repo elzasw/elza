@@ -32,6 +32,7 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
+import cz.tacr.elza.ui.utils.ConcurrentUpdateExceptionHandler;
 
 
 /**
@@ -128,8 +129,8 @@ public class DescItemTypeWindow extends AxWindow {
         table.setVisibleColumns(COLUMN_SELECTED, COLUMN_NAME);
 
         caption("Výber sloupců k zobrazení").components(table).buttonClose("Storno")
-                .buttonPrimary(new AxAction().caption("Uložit").run(() -> save(posAction))).modal()
-                .style("window-detail");
+                .buttonPrimary(new AxAction().caption("Uložit").exception(new ConcurrentUpdateExceptionHandler())
+                .run(() -> save(posAction))).modal().style("window-detail");
 
         return super.show();
     }

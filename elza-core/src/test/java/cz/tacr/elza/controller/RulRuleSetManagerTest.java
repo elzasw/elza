@@ -1,26 +1,24 @@
 package cz.tacr.elza.controller;
 
-import static com.jayway.restassured.RestAssured.given;
-
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.jayway.restassured.response.Response;
 
-import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.RulDescItemSpecExt;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
+import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
 
 /**
  * Testy pro {@link RuleManager}.
@@ -43,9 +41,7 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
     public void testRestGetRuleSets() throws Exception {
         createRuleSet();
 
-        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).get(GET_RS_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
+        Response response = get(GET_RS_URL);
 
         List<RulRuleSet> ruleSets = Arrays.asList(response.getBody().as(RulRuleSet[].class));
 
@@ -55,10 +51,7 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
     @Test
     public void testRestGetDescriptionItemTypes() throws Exception {
         createConstrain(1);
-        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
-                .parameter("ruleSetId", 1).get(GET_DIT_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
+        Response response = get((spec) -> spec.parameter("ruleSetId", 1), GET_DIT_URL);
 
         List<RulDescItemTypeExt> ruleSets =
                 Arrays.asList(response.getBody().as(RulDescItemTypeExt[].class));
@@ -77,11 +70,9 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
     @Test
     public void testRestGetDescriptionItemTypesForNodeId() throws Exception {
         createConstrain(2);
-        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
-                .parameter("faVersionId", 2).parameter("nodeId", 1)
-                .parameter("mandatory", Boolean.FALSE).get(GET_DIT_FOR_NODE_ID_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
+
+        Response response = get((spec) -> spec.parameter("faVersionId", 2).parameter(ArrangementManagerTest.NODE_ID_ATT , 1)
+                .parameter("mandatory", Boolean.FALSE), GET_DIT_FOR_NODE_ID_URL);
 
         List<RulDescItemTypeExt> ruleSets =
                 Arrays.asList(response.getBody().as(RulDescItemTypeExt[].class));
@@ -99,33 +90,23 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
 
     @Test
     public void testRestSaveAndGetFaViewDescItemTypes() throws Exception {
-        RulRuleSet ruleSet = createRuleSet();
-        ArrArrangementType arrangementType = createArrangementType();
-        List<Integer> descItemTypeIdList = new LinkedList<>();
-        for (int i = 0; i < 7; i++) {
-            descItemTypeIdList.add(createDescItemType(i).getDescItemTypeId());
-        }
-        Integer[] descItemTypeIds = descItemTypeIdList.toArray(new Integer[descItemTypeIdList.size()]);
-        createFaView(ruleSet, arrangementType, descItemTypeIdList);
-
-        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
-                .parameter("ruleSetId", ruleSet.getRuleSetId())
-                .parameter("arrangementTypeId", arrangementType.getArrangementTypeId())
-                .parameter("descItemTypeIds", descItemTypeIds)
-                .get(SAVE_FVDIT_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
+        Integer[] descItemTypeIds = IntStream.range(0, 7).map(i -> createDescItemType(i).getDescItemTypeId())
+                .boxed().toArray(Integer[]::new);
 
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);
-        ArrFaVersion version = createFindingAidVersion(findingAid, null, ruleSet, arrangementType, false);
-        
-        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
-                .parameter("faVersionId", version.getFaVersionId())
-                .get(GET_FVDIT_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
+        Response response = get((spec) -> spec.parameter(ArrangementManagerTest.FA_ID_ATT, findingAid.getFindingAidId()),
+                ArrangementManagerTest.GET_VERSION_BY_FA_ID_URL);
+        ArrFaVersion version = response.getBody().as(ArrFaVersion.class);
 
-        List<RulDescItemType> ruleSets = Arrays.asList(response.getBody().as(RulDescItemType[].class));
+        RulFaView faView = createFaView(version.getRuleSet(), version.getArrangementType(), descItemTypeIds);
+
+        response = put((spec) -> spec.body(faView).parameter("descItemTypeIds", descItemTypeIds),
+                SAVE_FVDIT_URL);
+
+        response = get((spec) -> spec.parameter("faVersionId", version.getFaVersionId()), GET_FVDIT_URL);
+
+        FaViewDescItemTypes faViewDescItemTypes = response.getBody().as(FaViewDescItemTypes.class);
+        List<RulDescItemType> ruleSets = faViewDescItemTypes.getDescItemTypes();
         Assert.assertEquals(descItemTypeIds.length, ruleSets.size());
         for (int i = 0; i < descItemTypeIds.length; i++) {
             Assert.assertEquals(descItemTypeIds[i], ruleSets.get(i).getDescItemTypeId());

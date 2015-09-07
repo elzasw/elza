@@ -54,44 +54,44 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
     private static final Logger logger = LoggerFactory.getLogger(ArrangementManagerTest.class);
 
-    private static final String CREATE_FA_URL = ARRANGEMENT_MANAGER_URL + "/createFindingAid";
-    private static final String UPDATE_FA_URL = ARRANGEMENT_MANAGER_URL + "/updateFindingAid";
-    private static final String DELETE_FA_URL = ARRANGEMENT_MANAGER_URL + "/deleteFindingAid";
-    private static final String GET_FA_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAids";
-    private static final String GET_FA_ONE_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAid";
-    private static final String GET_ARRANGEMENT_TYPES_URL = RULE_MANAGER_URL + "/getArrangementTypes";
-    private static final String GET_FINDING_AID_VERSIONS_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAidVersions";
-    private static final String APPROVE_VERSION_URL = ARRANGEMENT_MANAGER_URL + "/approveVersion";
-    private static final String GET_VERSION_ID_URL = ARRANGEMENT_MANAGER_URL + "/getVersion";
-    private static final String GET_VERSION_BY_FA_ID_URL = ARRANGEMENT_MANAGER_URL + "/getOpenVersionByFindingAidId";
-    private static final String FIND_SUB_LEVELS_EXT_URL = ARRANGEMENT_MANAGER_URL + "/findSubLevelsExt";
+    public static final String CREATE_FA_URL = ARRANGEMENT_MANAGER_URL + "/createFindingAid";
+    public static final String UPDATE_FA_URL = ARRANGEMENT_MANAGER_URL + "/updateFindingAid";
+    public static final String DELETE_FA_URL = ARRANGEMENT_MANAGER_URL + "/deleteFindingAid";
+    public static final String GET_FA_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAids";
+    public static final String GET_FA_ONE_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAid";
+    public static final String GET_ARRANGEMENT_TYPES_URL = RULE_MANAGER_URL + "/getArrangementTypes";
+    public static final String GET_FINDING_AID_VERSIONS_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAidVersions";
+    public static final String APPROVE_VERSION_URL = ARRANGEMENT_MANAGER_URL + "/approveVersion";
+    public static final String GET_VERSION_ID_URL = ARRANGEMENT_MANAGER_URL + "/getVersion";
+    public static final String GET_VERSION_BY_FA_ID_URL = ARRANGEMENT_MANAGER_URL + "/getOpenVersionByFindingAidId";
+    public static final String FIND_SUB_LEVELS_EXT_URL = ARRANGEMENT_MANAGER_URL + "/findSubLevelsExt";
 
-    private static final String ADD_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/addLevel";
-    private static final String ADD_LEVEL_BEFORE_URL = ARRANGEMENT_MANAGER_URL + "/addLevelBefore";
-    private static final String ADD_LEVEL_AFTER_URL = ARRANGEMENT_MANAGER_URL + "/addLevelAfter";
-    private static final String ADD_LEVEL_CHILD_URL = ARRANGEMENT_MANAGER_URL + "/addLevelChild";
-    private static final String MOVE_LEVEL_BEFORE_URL = ARRANGEMENT_MANAGER_URL + "/moveLevelBefore";
-    private static final String MOVE_LEVEL_UNDER_URL = ARRANGEMENT_MANAGER_URL + "/moveLevelUnder";
-    private static final String MOVE_LEVEL_AFTER_URL = ARRANGEMENT_MANAGER_URL + "/moveLevelAfter";
-    private static final String DELETE_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/deleteLevel";
-    private static final String FIND_LEVEL_BY_NODE_ID_URL = ARRANGEMENT_MANAGER_URL + "/findLevelByNodeId";
-    private static final String GET_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/getLevel";
+    public static final String ADD_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/addLevel";
+    public static final String ADD_LEVEL_BEFORE_URL = ARRANGEMENT_MANAGER_URL + "/addLevelBefore";
+    public static final String ADD_LEVEL_AFTER_URL = ARRANGEMENT_MANAGER_URL + "/addLevelAfter";
+    public static final String ADD_LEVEL_CHILD_URL = ARRANGEMENT_MANAGER_URL + "/addLevelChild";
+    public static final String MOVE_LEVEL_BEFORE_URL = ARRANGEMENT_MANAGER_URL + "/moveLevelBefore";
+    public static final String MOVE_LEVEL_UNDER_URL = ARRANGEMENT_MANAGER_URL + "/moveLevelUnder";
+    public static final String MOVE_LEVEL_AFTER_URL = ARRANGEMENT_MANAGER_URL + "/moveLevelAfter";
+    public static final String DELETE_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/deleteLevel";
+    public static final String FIND_LEVEL_BY_NODE_ID_URL = ARRANGEMENT_MANAGER_URL + "/findLevelByNodeId";
+    public static final String GET_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/getLevel";
 
-    private static final String FA_NAME_ATT = "name";
-    private static final String FA_ID_ATT = "findingAidId";
-    private static final String ARRANGEMENT_TYPE_ID_ATT = "arrangementTypeId";
-    private static final String RULE_SET_ID_ATT = "ruleSetId";
-    private static final String NODE_ID_ATT = "nodeId";
-    private static final String PARENT_NODE_ID_ATT = "parentNodeId";
-    private static final String FOLLOWER_NODE_ID_ATT = "followerNodeId";
-    private static final String PREDECESSOR_NODE_ID_ATT = "predecessorNodeId";
-    private static final String VERSION_ID_ATT = "versionId";
+    public static final String FA_NAME_ATT = "name";
+    public static final String FA_ID_ATT = "findingAidId";
+    public static final String ARRANGEMENT_TYPE_ID_ATT = "arrangementTypeId";
+    public static final String RULE_SET_ID_ATT = "ruleSetId";
+    public static final String NODE_ID_ATT = "nodeId";
+    public static final String PARENT_NODE_ID_ATT = "parentNodeId";
+    public static final String FOLLOWER_NODE_ID_ATT = "followerNodeId";
+    public static final String PREDECESSOR_NODE_ID_ATT = "predecessorNodeId";
+    public static final String VERSION_ID_ATT = "versionId";
 
-    private static final Integer DATA_TYPE_INTEGER = 1;
-    private static final Integer DATA_TYPE_STRING = 2;
-    private static final Integer DATA_TYPE_TEXT = 3;
-    private static final Integer DATA_TYPE_DATACE = 4;
-    private static final Integer DATA_TYPE_REF = 5;
+    public static final Integer DATA_TYPE_INTEGER = 1;
+    public static final Integer DATA_TYPE_STRING = 2;
+    public static final Integer DATA_TYPE_TEXT = 3;
+    public static final Integer DATA_TYPE_DATACE = 4;
+    public static final Integer DATA_TYPE_REF = 5;
 
     @Autowired
     private ArrangementManager arrangementManager;

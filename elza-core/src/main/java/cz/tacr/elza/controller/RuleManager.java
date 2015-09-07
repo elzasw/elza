@@ -11,7 +11,6 @@ import javax.transaction.Transactional;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -107,13 +106,13 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     }
 
     @Override
-    @RequestMapping(value = "/getArrangementTypes", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/getArrangementTypes", method = RequestMethod.GET)
     public List<ArrArrangementType> getArrangementTypes() {
         return arrangementTypeRepository.findAll();
     }
 
     @Override
-    @RequestMapping(value = "/getDescriptionItemTypes", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/getDescriptionItemTypes", method = RequestMethod.GET)
     public List<RulDescItemTypeExt> getDescriptionItemTypes(
             @RequestParam(value = "ruleSetId") Integer ruleSetId) {
         List<RulDescItemType> itemTypeList = descItemTypeRepository.findAll();
@@ -121,7 +120,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     }
 
     @Override
-    @RequestMapping(value = "/getDescriptionItemTypesForNodeId", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/getDescriptionItemTypesForNodeId", method = RequestMethod.GET)
     public List<RulDescItemTypeExt> getDescriptionItemTypesForNodeId(
             @RequestParam(value = "faVersionId") Integer faVersionId,
             @RequestParam(value = "nodeId") Integer nodeId,
@@ -131,7 +130,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     }
 
     @Override
-    @RequestMapping(value = "/getDescriptionItemsForAttribute", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/getDescriptionItemsForAttribute", method = RequestMethod.GET)
     public List<ArrDescItemExt> getDescriptionItemsForAttribute(
             @RequestParam(value = "faVersionId") Integer faVersionId,
             @RequestParam(value = "nodeId") Integer nodeId,
@@ -148,7 +147,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     }
 
     @Override
-    @RequestMapping(value = "/getDescItemSpecsFortDescItemType", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/getDescItemSpecsFortDescItemType", method = RequestMethod.GET)
     public List<RulDescItemSpec> getDescItemSpecsFortDescItemType(
             @RequestBody() RulDescItemType rulDescItemType) {
         List<RulDescItemSpec> itemList = descItemSpecRepository.findByDescItemType(rulDescItemType);
@@ -156,7 +155,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     }
 
     @Override
-    @RequestMapping(value = "/getDataTypeForDescItemType", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/getDataTypeForDescItemType", method = RequestMethod.GET)
     public RulDataType getDataTypeForDescItemType(
             @RequestBody() RulDescItemType rulDescItemType) {
         List<RulDataType> typeList = descItemTypeRepository.findRulDataType(rulDescItemType);
@@ -246,7 +245,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     }
 
     @Override
-    @RequestMapping(value = "/getFaViewDescItemTypes", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/getFaViewDescItemTypes", method = RequestMethod.GET)
     public FaViewDescItemTypes getFaViewDescItemTypes(@RequestParam(value = "faVersionId") Integer faVersionId) {
         Assert.notNull(faVersionId);
         ArrFaVersion version = versionRepository.getOne(faVersionId);
@@ -292,7 +291,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     }
 
     @Override
-    @RequestMapping(value = "/saveFaViewDescItemTypes", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/saveFaViewDescItemTypes", method = RequestMethod.PUT)
     @Transactional
     public List<Integer> saveFaViewDescItemTypes(@RequestBody RulFaView rulFaView,
                                                  @RequestParam(value = "descItemTypeIds") Integer[] descItemTypeIds) {
@@ -303,11 +302,6 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
             throw new ConcurrentUpdateException("Nastavení zobrazení sloupců s identifikátorem " + faViewId + " již neexistuje.");
         }
 
-//        RulRuleSet ruleSet = rulFaView.getRuleSet();
-//        ArrArrangementType arrangementType = rulFaView.getArrangementType();
-//        List<RulFaView> faViewList =
-//                faViewRepository.findByRuleSetAndArrangementType(ruleSet, arrangementType);
-
         String itemTypesStr = null;
         for (Integer itemTypeId : descItemTypeIds) {
             if (itemTypesStr == null) {
@@ -316,23 +310,8 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
                 itemTypesStr += VIEW_SPECIFICATION_SEPARATOR + itemTypeId.toString();
             }
         }
-
-//        RulFaView faView = null;
-//        if (faViewList.size() > 1) {
-//            throw new IllegalStateException("Bylo nalezeno více záznamů (" + faViewList.size()
-//                    + ") podle RuleSetId " + ruleSet.getRuleSetId() + " a ArrangementTypeId "
-//                    + arrangementType.getArrangementTypeId());
-//        } else if (faViewList.isEmpty()) {
-//            faView = new RulFaView();
-//            faView.setArrangementType(arrangementType);
-//            faView.setRuleSet(ruleSet);
-//            faView.setViewSpecification(itemTypesStr);
-//            faViewRepository.save(faView);
-//        } else {
-//            faView = faViewList.get(0);
-            rulFaView.setViewSpecification(itemTypesStr);
-            faViewRepository.save(rulFaView);
-//        }
+        rulFaView.setViewSpecification(itemTypesStr);
+        faViewRepository.save(rulFaView);
 
         return Arrays.asList(descItemTypeIds);
     }

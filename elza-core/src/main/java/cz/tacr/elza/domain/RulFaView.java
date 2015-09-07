@@ -1,11 +1,21 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.Arrays;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.data.rest.core.annotation.RestResource;
 
-import javax.persistence.*;
-import java.util.Arrays;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -21,10 +31,12 @@ public class RulFaView extends AbstractVersionableEntity implements cz.tacr.elza
     @GeneratedValue
     private Integer faViewId;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrArrangementType.class)
     @JoinColumn(name = "arrangementTypeId", nullable = false)
     private ArrArrangementType arrangementType;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
     @JoinColumn(name = "ruleSetId", nullable = false)
     private RulRuleSet ruleSet;

@@ -3,7 +3,6 @@ package cz.tacr.elza.controller;
 import static com.jayway.restassured.RestAssured.given;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.function.Function;
 
 import javax.transaction.Transactional;
@@ -523,7 +522,7 @@ public abstract class AbstractRestTest {
         return party;
     }
 
-    protected RulFaView createFaView(RulRuleSet ruleSet, ArrArrangementType arrangementType, List<Integer> ids) {
+    protected RulFaView createFaView(RulRuleSet ruleSet, ArrArrangementType arrangementType, Integer[] ids) {
         RulFaView view = new RulFaView();
         view.setArrangementType(arrangementType);
         view.setRuleSet(ruleSet);
@@ -547,6 +546,10 @@ public abstract class AbstractRestTest {
 
     public static Response get(Function<RequestSpecification, RequestSpecification> params, String url) {
         return httpMethod(params, url, HttpMethod.GET);
+    }
+
+    public static Response get(String url) {
+        return httpMethod((spec) -> spec, url, HttpMethod.GET);
     }
 
     public static Response httpMethod(Function<RequestSpecification, RequestSpecification> params, String url, HttpMethod method) {
@@ -585,7 +588,8 @@ public abstract class AbstractRestTest {
                 throw new IllegalStateException("Nedefinovaný stav " + method + ".");
         }
 
-        logger.info(response.asString());
+        logger.info("Response status: " + response.statusLine() + ", response body:");
+        response.prettyPrint();
         Assert.assertEquals(200, response.statusCode());
 
         return response;
