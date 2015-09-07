@@ -13,7 +13,7 @@ import javax.persistence.Id;
  */
 @Entity(name = "rul_arrangement_type")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrArrangementType implements cz.tacr.elza.api.ArrArrangementType {
+public class ArrArrangementType implements cz.tacr.elza.api.RulArrangementType {
 
     @Id
     @GeneratedValue

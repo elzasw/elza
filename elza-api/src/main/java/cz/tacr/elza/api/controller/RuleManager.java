@@ -2,7 +2,7 @@ package cz.tacr.elza.api.controller;
 
 import java.util.List;
 
-import cz.tacr.elza.api.ArrArrangementType;
+import cz.tacr.elza.api.RulArrangementType;
 import cz.tacr.elza.api.ArrDescItem;
 import cz.tacr.elza.api.RulDataType;
 import cz.tacr.elza.api.RulDescItemSpec;
@@ -33,7 +33,7 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      *
      * @return všechny typy výstupu
      */
-    List<? extends ArrArrangementType> getArrangementTypes();
+    List<? extends RulArrangementType> getArrangementTypes();
 
     /**
      * Vrátí všechny typy atributů archivního popisu k zadaným pravidlům tvorby.
