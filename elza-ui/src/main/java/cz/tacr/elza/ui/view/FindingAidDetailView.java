@@ -50,6 +50,7 @@ import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.vo.ArrFaLevelWithExtraNode;
 import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
 import cz.tacr.elza.ui.ElzaView;
 import cz.tacr.elza.ui.components.LevelInlineDetail;
