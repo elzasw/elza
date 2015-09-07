@@ -826,9 +826,21 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                     arrDescItemExt.setData(stringValue);
                 }
             } else if (arrData instanceof ArrDataUnitdate) {
-
+                ArrDataUnitdate stringData = (ArrDataUnitdate) arrData;
+                String stringValue = createFormatString(stringData.getValue(), formatData);
+                arrDescItemExt.setData(stringValue);
             } else if (arrData instanceof ArrDataUnitid) {
-
+                ArrDataUnitid stringData = (ArrDataUnitid) arrData;
+                String stringValue = createFormatString(stringData.getValue(), formatData);
+                arrDescItemExt.setData(stringValue);
+            } else if (arrData instanceof ArrDataDatace) {
+                ArrDataDatace stringData = (ArrDataDatace) arrData;
+                String stringValue = createFormatString(stringData.getValue(), formatData);
+                arrDescItemExt.setData(stringValue);
+            } else if (arrData instanceof ArrDataReference) {
+                ArrDataReference stringData = (ArrDataReference) arrData;
+                String stringValue = createFormatString(stringData.getValue(), formatData);
+                arrDescItemExt.setData(stringValue);
             }
 
             levelExt.getDescItemList().add(arrDescItemExt);
