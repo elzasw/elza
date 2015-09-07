@@ -17,9 +17,9 @@ public interface ArrFaVersion<FA extends ArrFindingAid, FC extends ArrFaChange,F
 
     void setLockChange(FC lockChange);
 
-    FL getRootNode();
+    FL getRootFaLevel();
 
-    void setRootNode(FL rootNode);
+    void setRootFaLevel(FL rootNode);
 
     FA getFindingAid();
 

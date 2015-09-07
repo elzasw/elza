@@ -37,6 +37,7 @@ import cz.tacr.elza.domain.ArrFaChange;
 import cz.tacr.elza.domain.ArrFaLevel;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParAbstractParty;
 import cz.tacr.elza.domain.ParPartySubtype;
 import cz.tacr.elza.domain.RegRecord;
@@ -63,6 +64,7 @@ import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.FaViewRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PartySubtypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
@@ -148,6 +150,8 @@ public abstract class AbstractRestTest {
     private PartySubtypeRepository partySubtypeRepository;
     @Autowired
     private DataRecordRefRepository dataRecordRefRepository;
+    @Autowired
+    private NodeRepository nodeRepository;
 
     @Before
     public void setUp() {
@@ -172,6 +176,7 @@ public abstract class AbstractRestTest {
         descItemRepository.deleteAll();
         descItemSpecRepository.deleteAll();
         descItemTypeRepository.deleteAll();
+        nodeRepository.deleteAll();
         changeRepository.deleteAll();
     }
 
@@ -232,7 +237,7 @@ public abstract class AbstractRestTest {
         version.setCreateChange(createChange);
         version.setLockChange(lockChange);
         version.setFindingAid(findingAid);
-        version.setRootNode(root);
+        version.setRootFaLevel(root);
         version.setRuleSet(ruleSet);
 
         return versionRepository.save(version);
@@ -242,16 +247,17 @@ public abstract class AbstractRestTest {
         ArrFaLevel level = new ArrFaLevel();
         level.setPosition(position);
         if (parent != null) {
-            level.setParentNodeId(parent.getNodeId());
+            level.setParentNode(parent.getNode());
         }
         level.setCreateChange(change);
-        Integer maxNodeId = levelRepository.findMaxNodeId();
-        if (maxNodeId == null) {
-            maxNodeId = 0;
-        }
-        level.setNodeId(maxNodeId + 1);
-
+        level.setNode(createNode());
         return levelRepository.save(level);
+    }
+
+    protected ArrNode createNode() {
+        ArrNode node = new ArrNode();
+        node.setLastUpdate(LocalDateTime.now());
+        return nodeRepository.save(node);
     }
 
     @Transactional

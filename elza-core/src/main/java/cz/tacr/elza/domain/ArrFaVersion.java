@@ -40,8 +40,8 @@ public class ArrFaVersion extends AbstractVersionableEntity implements IdObject<
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaLevel.class)
-    @JoinColumn(name = "rootNodeId", nullable = true, referencedColumnName = "nodeId")
-    private ArrFaLevel rootNode;
+    @JoinColumn(name = "rootFaLevelId", nullable = false)
+    private ArrFaLevel rootFaLevel;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFindingAid.class)
@@ -89,13 +89,13 @@ public class ArrFaVersion extends AbstractVersionableEntity implements IdObject<
     }
 
     @Override
-    public ArrFaLevel getRootNode() {
-        return rootNode;
+    public ArrFaLevel getRootFaLevel() {
+        return rootFaLevel;
     }
 
     @Override
-    public void setRootNode(final ArrFaLevel rootNode) {
-        this.rootNode = rootNode;
+    public void setRootFaLevel(final ArrFaLevel rootFaLevel) {
+        this.rootFaLevel = rootFaLevel;
     }
 
     @Override
