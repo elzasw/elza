@@ -6,18 +6,16 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-        <!--Verze 1.17 - smazani sloupce position z tabulky ArrDataRecordRef -->
-        <changeSet id="17" author="kubovy" failOnError="false" runOnChange="true">
-          <dropColumn tableName="arr_data_record_ref" columnName="position" />
+        <!--
+            Verze 1.20
+            - vytvoření tabulky arr_node
+            - naplnění dat tabulky arr_node podle již vytvořených uzlů + přidání platné sequnce
+            - přidání cizích klíčů
+        -->
+        <changeSet id="20" author="slapa">
+
+            <customChange class="cz.tacr.elza.dbchangelog.DbChangelog_1_20" />
+
         </changeSet>
+
 </databaseChangeLog>
-
-
-
-
-
-
-
-
-
-

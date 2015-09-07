@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
 import org.springframework.boot.context.embedded.ServletRegistrationBean;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.*;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -25,6 +26,7 @@ import javax.servlet.ServletException;
 @Import({ElzaCore.class})
 @ComponentScan(basePackageClasses = {ElzaCore.class, AxAction.class})
 @EnableAutoConfiguration
+@EnableConfigurationProperties
 @EnableWebMvc
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 public class ElzaApp extends WebMvcAutoConfiguration {
@@ -32,9 +34,8 @@ public class ElzaApp extends WebMvcAutoConfiguration {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public static void main(String[] args) {
-        System.setProperty("liquibase.databaseChangeLogTableName", "db_databasechangelog");
-        System.setProperty("liquibase.databaseChangeLogLockTableName", "db_databasechangeloglock");
-
+        ElzaCore.configure();
+        System.setProperty("spring.config.location", "classpath:/elza-ui.yaml");
         SpringApplication.run(ElzaApp.class, args);
     }
 

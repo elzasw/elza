@@ -136,7 +136,14 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
             @RequestParam(value = "faVersionId") Integer faVersionId,
             @RequestParam(value = "nodeId") Integer nodeId,
             @RequestParam(value = "rulDescItemTypeId") Integer rulDescItemTypeId) {
-        List<ArrDescItem> itemList = descItemRepository.findByNodeIdAndDeleteChangeIsNullAndDescItemTypeId(nodeId, rulDescItemTypeId);
+        ArrFaVersion version = versionRepository.findOne(faVersionId);
+        Assert.notNull(version);
+        List<ArrDescItem> itemList;
+        if (version.getLockChange() == null) {
+            itemList = descItemRepository.findByNodeIdAndDeleteChangeIsNullAndDescItemTypeId(nodeId, rulDescItemTypeId);
+        } else {
+            itemList = descItemRepository.findByNodeIdDescItemTypeIdAndLockChangeId(nodeId, rulDescItemTypeId, version.getLockChange());
+        }
         return createItemExt(itemList);
     }
 

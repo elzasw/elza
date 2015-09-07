@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrFaChange;
 import cz.tacr.elza.domain.ArrFaLevel;
+import cz.tacr.elza.domain.ArrNode;
 
 
 /**
@@ -17,29 +18,26 @@ import cz.tacr.elza.domain.ArrFaLevel;
 @Repository
 public interface LevelRepository extends JpaRepository<ArrFaLevel, Integer> {
 
-    @Query(value = "SELECT max(l.nodeId) FROM arr_fa_level l")
-    Integer findMaxNodeId();
+    List<ArrFaLevel> findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(ArrNode parentNode);
 
-    List<ArrFaLevel> findByParentNodeIdAndDeleteChangeIsNullOrderByPositionAsc(Integer parentNodeId);
-
-    @Query("SELECT c FROM arr_fa_level c WHERE c.parentNodeId = ?1 "
+    @Query("SELECT c FROM arr_fa_level c WHERE c.parentNode = ?1 "
             + "and c.createChange < ?2 and (c.deleteChange is null or c.deleteChange > ?2)"
             + " order by c.position asc")
-    List<ArrFaLevel> findByParentNodeOrderByPositionAsc(Integer parentNodeId, ArrFaChange change);
+    List<ArrFaLevel> findByParentNodeOrderByPositionAsc(ArrNode parentNode, ArrFaChange change);
 
-    @Query("SELECT max(l.position) FROM arr_fa_level l WHERE l.parentNodeId = ?1 and l.deleteChange is null")
-    Integer findMaxPositionUnderParent(Integer parentNodeId);
+    @Query("SELECT max(l.position) FROM arr_fa_level l WHERE l.parentNode = ?1 and l.deleteChange is null")
+    Integer findMaxPositionUnderParent(ArrNode parentNode);
 
-    @Query("SELECT l FROM arr_fa_level l WHERE l.parentNodeId = ?1  and l.position > ?2 and l.deleteChange is null order by l.position asc")
-    List<ArrFaLevel> findByParentNodeAndPositionGreaterThanOrderByPositionAsc(Integer getParentNodeId, Integer position);
+    @Query("SELECT l FROM arr_fa_level l WHERE l.parentNode = ?1  and l.position > ?2 and l.deleteChange is null order by l.position asc")
+    List<ArrFaLevel> findByParentNodeAndPositionGreaterThanOrderByPositionAsc(ArrNode parentNode, Integer position);
 
-    ArrFaLevel findByNodeIdAndDeleteChangeIsNull(Integer levelId);
+    ArrFaLevel findByNodeAndDeleteChangeIsNull(ArrNode node);
 
-    @Query("SELECT c FROM arr_fa_level c WHERE c.nodeId = ?1 "
+    @Query("SELECT c FROM arr_fa_level c WHERE c.node = ?1 "
             + "and c.createChange < ?2 and (c.deleteChange is null or c.deleteChange > ?2)"
             + " order by c.position asc")
-    ArrFaLevel findByNodeOrderByPositionAsc(Integer parentNodeId, ArrFaChange change);
+    ArrFaLevel findByNodeOrderByPositionAsc(ArrNode parentNode, ArrFaChange change);
 
-    @Query("SELECT l FROM arr_fa_level l WHERE l.nodeId = ?1 order by l.createChange.changeDate asc")
-    List<ArrFaLevel> findByNodeIdOrderByCreateChangeAsc(Integer nodeId);
+    @Query("SELECT l FROM arr_fa_level l WHERE l.node = ?1 order by l.createChange.changeDate asc")
+    List<ArrFaLevel> findByNodeOrderByCreateChangeAsc(ArrNode node);
 }

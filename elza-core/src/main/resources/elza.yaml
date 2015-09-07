@@ -1,0 +1,14 @@
+spring:
+  application:
+     name: elza
+     version: ${project.parent.version}
+  datasource:
+    url: ${elza.data.url}
+    username: ${elza.data.user}
+    password: ${elza.data.pass}
+  data:
+    rest:
+      base-uri: /rest
+  jpa:
+    # Logovani SQL dotazu
+    #show-sql: true

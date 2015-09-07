@@ -1,5 +1,6 @@
 # Java classes
 *.class
+rebel.xml
 
 # Package files
 *.jar
@@ -36,18 +37,4 @@ org.eclipse.m2e.core.prefs
 .classpath
 com.vaadin.integration.eclipse.prefs
 org.eclipse.jdt.core.prefs
-/elza-api/.settings/org.eclipse.wst.common.component
-/elza-api/.settings/org.eclipse.wst.common.project.facet.core.xml
-/elza-core/.settings/org.eclipse.wst.common.component
-/elza-core/.settings/org.eclipse.wst.common.project.facet.core.xml
-/elza-ui/.settings/org.eclipse.wst.common.component
-/elza-ui/.settings/org.eclipse.wst.common.project.facet.core.xml
-/elza-war/.settings/.jsdtscope
-/elza-war/.settings/org.eclipse.wst.common.component
-/elza-war/.settings/org.eclipse.wst.common.project.facet.core.xml
-/elza-war/.settings/org.eclipse.wst.jsdt.ui.superType.container
-/elza-war/.settings/org.eclipse.wst.jsdt.ui.superType.name
-/elza-war/.settings/org.eclipse.wst.validation.prefs
-/elza-api/.settings/org.eclipse.wst.validation.prefs
-/elza-core/.settings/org.eclipse.wst.validation.prefs
-/elza-ui/.settings/org.eclipse.wst.validation.prefs
+.settings

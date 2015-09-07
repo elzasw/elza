@@ -51,19 +51,19 @@ public class ArrDescItemExt extends ArrDescItem implements cz.tacr.elza.api.ArrD
             return false;
         }
         ArrDescItemExt castOther = (ArrDescItemExt) other;
-        if (getId() == null) {
+        if (getDescItemId()== null) {
             return false;
         }
 
         return new EqualsBuilder()
-                .append(getId(), castOther.getId())
+                .append(getDescItemId(), castOther.getDescItemId())
                 .isEquals();
     }
 
     @Override
     public int hashCode() {
         return new HashCodeBuilder()
-                .append(getId())
+                .append(getDescItemId())
                 .toHashCode();
     }
 }

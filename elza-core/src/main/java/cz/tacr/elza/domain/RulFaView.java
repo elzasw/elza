@@ -1,23 +1,11 @@
 package cz.tacr.elza.domain;
 
-import java.util.Arrays;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.req.ax.IdObject;
+import javax.persistence.*;
+import java.util.Arrays;
 
 
 /**
@@ -27,7 +15,7 @@ import cz.req.ax.IdObject;
 @Entity(name = "rul_fa_view")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulFaView extends AbstractVersionableEntity implements IdObject<Integer>, cz.tacr.elza.api.RulFaView<ArrArrangementType, RulRuleSet> {
+public class RulFaView extends AbstractVersionableEntity implements cz.tacr.elza.api.RulFaView<ArrArrangementType, RulRuleSet> {
 
     @Id
     @GeneratedValue
@@ -85,12 +73,6 @@ public class RulFaView extends AbstractVersionableEntity implements IdObject<Int
     }
 
     @Override
-    @JsonIgnore
-    public Integer getId() {
-        return faViewId;
-    }
-
-    @Override
     public boolean equals(final Object obj) {
         if (!(obj instanceof RulFaView)) {
             return false;
@@ -101,7 +83,7 @@ public class RulFaView extends AbstractVersionableEntity implements IdObject<Int
 
         RulFaView other = (RulFaView) obj;
 
-        return new EqualsBuilder().append(getId(), other.getId()).isEquals();
+        return new EqualsBuilder().append(faViewId, other.getFaViewId()).isEquals();
     }
 
     @Override

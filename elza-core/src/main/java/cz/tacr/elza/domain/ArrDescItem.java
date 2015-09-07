@@ -1,21 +1,10 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.req.ax.IdObject;
+import javax.persistence.*;
 
 
 /**
@@ -25,7 +14,7 @@ import cz.req.ax.IdObject;
 @Entity(name = "arr_desc_item")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrDescItem extends AbstractVersionableEntity implements IdObject<Integer>, cz.tacr.elza.api.ArrDescItem<ArrFaChange, RulDescItemType,RulDescItemSpec> {
+public class ArrDescItem extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrDescItem<ArrFaChange, RulDescItemType, RulDescItemSpec> {
 
     @Id
     @GeneratedValue
@@ -138,13 +127,6 @@ public class ArrDescItem extends AbstractVersionableEntity implements IdObject<I
         this.position = position;
     }
 
-
-    @Override
-    @JsonIgnore
-    public Integer getId() {
-        return descItemId;
-    }
-
     @Override
     public boolean equals(final Object obj) {
         if (!(obj instanceof ArrDescItem)) {
@@ -156,11 +138,11 @@ public class ArrDescItem extends AbstractVersionableEntity implements IdObject<I
 
         ArrDescItem other = (ArrDescItem) obj;
 
-        return new EqualsBuilder().append(getId(), other.getId()).isEquals();
+        return new EqualsBuilder().append(descItemId, other.getDescItemId()).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(getId()).append(nodeId).append(position).toHashCode();
+        return new HashCodeBuilder().append(descItemId).append(nodeId).append(position).toHashCode();
     }
 }
