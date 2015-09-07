@@ -3,12 +3,9 @@ package cz.tacr.elza.controller;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
 
 import javax.transaction.Transactional;
 
@@ -23,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataPartyRef;
@@ -38,8 +36,8 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
 import cz.tacr.elza.repository.AbstractPartyRepository;
-import cz.tacr.elza.repository.AbstractPartyRepositoryCustom;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
@@ -60,7 +58,7 @@ import cz.tacr.elza.repository.VersionRepository;
  */
 @RestController
 @RequestMapping("/api/ruleSetManager")
-public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulDataType, RulDescItemType, RulDescItemSpec> {
+public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulDataType, RulDescItemType, RulDescItemSpec, RulFaView> {
 
     private static final String VIEW_SPECIFICATION_SEPARATOR = "|";
     private static final String VIEW_SPECIFICATION_SEPARATOR_REGEX = "\\|";
@@ -242,7 +240,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
 
     @Override
     @RequestMapping(value = "/getFaViewDescItemTypes", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<RulDescItemType> getFaViewDescItemTypes(@RequestParam(value = "faVersionId") Integer faVersionId) {
+    public FaViewDescItemTypes getFaViewDescItemTypes(@RequestParam(value = "faVersionId") Integer faVersionId) {
         Assert.notNull(faVersionId);
         ArrFaVersion version = versionRepository.getOne(faVersionId);
         RulRuleSet ruleSet = version.getRuleSet();
@@ -276,23 +274,32 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
                 Integer position2 = resultIdList.indexOf(r2.getDescItemTypeId());
                 return position1.compareTo(position2);
             }
-            
+
         });
-        return resultList;
+
+        FaViewDescItemTypes result = new FaViewDescItemTypes();
+        result.setRulFaView(faView);
+        result.setDescItemTypes(resultList);
+
+        return result;
     }
 
     @Override
     @RequestMapping(value = "/saveFaViewDescItemTypes", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
-    public List<Integer> saveFaViewDescItemTypes(@RequestParam(value = "ruleSetId") Integer ruleSetId,
-                                                 @RequestParam(value = "arrangementTypeId") Integer arrangementTypeId,
+    public List<Integer> saveFaViewDescItemTypes(@RequestBody RulFaView rulFaView,
                                                  @RequestParam(value = "descItemTypeIds") Integer[] descItemTypeIds) {
-        Assert.notNull(ruleSetId);
-        Assert.notNull(arrangementTypeId);
-        RulRuleSet ruleSet = ruleSetRepository.getOne(ruleSetId);
-        ArrArrangementType arrangementType = arrangementTypeRepository.getOne(arrangementTypeId);
-        List<RulFaView> faViewList =
-                faViewRepository.findByRuleSetAndArrangementType(ruleSet, arrangementType);
+        Assert.notNull(rulFaView);
+
+        Integer faViewId = rulFaView.getFaViewId();
+        if (!faViewRepository.exists(faViewId)) {
+            throw new ConcurrentUpdateException("Nastavení zobrazení sloupců s identifikátorem " + faViewId + " již neexistuje.");
+        }
+
+//        RulRuleSet ruleSet = rulFaView.getRuleSet();
+//        ArrArrangementType arrangementType = rulFaView.getArrangementType();
+//        List<RulFaView> faViewList =
+//                faViewRepository.findByRuleSetAndArrangementType(ruleSet, arrangementType);
 
         String itemTypesStr = null;
         for (Integer itemTypeId : descItemTypeIds) {
@@ -303,22 +310,22 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
             }
         }
 
-        RulFaView faView = null;
-        if (faViewList.size() > 1) {
-            throw new IllegalStateException("Bylo nalezeno více záznamů (" + faViewList.size()
-                    + ") podle RuleSetId " + ruleSet.getRuleSetId() + " a ArrangementTypeId "
-                    + arrangementType.getArrangementTypeId());
-        } else if (faViewList.isEmpty()) {
-            faView = new RulFaView();
-            faView.setArrangementType(arrangementType);
-            faView.setRuleSet(ruleSet);
-            faView.setViewSpecification(itemTypesStr);
-            faViewRepository.save(faView);
-        } else {
-            faView = faViewList.get(0);
-            faView.setViewSpecification(itemTypesStr);
-            faViewRepository.save(faView);
-        }
+//        RulFaView faView = null;
+//        if (faViewList.size() > 1) {
+//            throw new IllegalStateException("Bylo nalezeno více záznamů (" + faViewList.size()
+//                    + ") podle RuleSetId " + ruleSet.getRuleSetId() + " a ArrangementTypeId "
+//                    + arrangementType.getArrangementTypeId());
+//        } else if (faViewList.isEmpty()) {
+//            faView = new RulFaView();
+//            faView.setArrangementType(arrangementType);
+//            faView.setRuleSet(ruleSet);
+//            faView.setViewSpecification(itemTypesStr);
+//            faViewRepository.save(faView);
+//        } else {
+//            faView = faViewList.get(0);
+            rulFaView.setViewSpecification(itemTypesStr);
+            faViewRepository.save(rulFaView);
+//        }
 
         return Arrays.asList(descItemTypeIds);
     }

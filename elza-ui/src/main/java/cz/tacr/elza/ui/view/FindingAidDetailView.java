@@ -18,9 +18,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import cz.tacr.elza.controller.PartyManager;
-import cz.tacr.elza.controller.RegistryManager;
-import cz.tacr.elza.ui.components.TreeTable;
 import ru.xpoft.vaadin.VaadinView;
 
 import com.vaadin.data.Item;
@@ -31,7 +28,6 @@ import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Page;
 import com.vaadin.shared.ui.label.ContentMode;
-import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.Table;
@@ -43,6 +39,8 @@ import cz.req.ax.AxContainer;
 import cz.req.ax.AxForm;
 import cz.req.ax.AxWindow;
 import cz.tacr.elza.controller.ArrangementManager;
+import cz.tacr.elza.controller.PartyManager;
+import cz.tacr.elza.controller.RegistryManager;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrDescItemExt;
@@ -52,8 +50,10 @@ import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
 import cz.tacr.elza.ui.ElzaView;
 import cz.tacr.elza.ui.components.LevelInlineDetail;
+import cz.tacr.elza.ui.components.TreeTable;
 import cz.tacr.elza.ui.utils.ConcurrentUpdateExceptionHandler;
 import cz.tacr.elza.ui.utils.ElzaNotifications;
 import cz.tacr.elza.ui.window.DescItemTypeWindow;
@@ -132,7 +132,8 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
 
         List<RulDescItemType> sloupce = new LinkedList<>();
         if (version != null) {
-            sloupce = ruleSetManager.getFaViewDescItemTypes(version.getFaVersionId());
+             FaViewDescItemTypes faViewDescItemTypes = ruleSetManager.getFaViewDescItemTypes(version.getFaVersionId());
+             sloupce = faViewDescItemTypes.getDescItemTypes();
         }
 
         table = new TreeTable();

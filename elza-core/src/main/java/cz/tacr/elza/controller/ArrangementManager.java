@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
@@ -319,6 +320,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     public void deleteFindingAid(@RequestParam(value = "findingAidId") final Integer findingAidId) {
         Assert.notNull(findingAidId);
 
+        if (!findingAidRepository.exists(findingAidId)) {
+            return;
+        }
+
         versionRepository.findVersionsByFindingAidIdOrderByCreateDateAsc(findingAidId).forEach((version) -> {
             ArrFaLevel rootNode = version.getRootNode();
             versionRepository.delete(version);
@@ -347,6 +352,11 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @Transactional
     public ArrFindingAid updateFindingAid(@RequestBody ArrFindingAid findingAid) {
         Assert.notNull(findingAid);
+
+        Integer findingAidId = findingAid.getFindingAidId();
+        if (!findingAidRepository.exists(findingAidId)) {
+            throw new ConcurrentUpdateException("Archivní pomůcka s identifikátorem " + findingAidId + " již neexistuje.");
+        }
 
         return findingAidRepository.save(findingAid);
     }
@@ -377,6 +387,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         Assert.notNull(ruleSetId);
 
         ArrFindingAid findingAid = version.getFindingAid();
+        Integer findingAidId = findingAid.getFindingAidId();
+        if (!findingAidRepository.exists(findingAidId)) {
+            throw new ConcurrentUpdateException("Archivní pomůcka s identifikátorem " + findingAidId + " již neexistuje.");
+        }
 
         ArrFaChange change = createChange();
         version.setLockChange(change);
