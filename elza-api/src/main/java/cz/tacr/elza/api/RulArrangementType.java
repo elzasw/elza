@@ -23,7 +23,7 @@ public interface RulArrangementType extends Serializable {
 
     /**
      * Nastaví název typu výstupu.
-     * @param name
+     * @param name název typu výstupu.
      */
     void setName(String name);
 
@@ -35,7 +35,7 @@ public interface RulArrangementType extends Serializable {
 
     /**
      * Nastaví kód typu výstupu.
-     * @param code
+     * @param code kód typu výstupu
      */
     void setCode(String code);
 }
