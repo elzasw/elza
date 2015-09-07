@@ -3,6 +3,8 @@ package cz.tacr.elza.repository;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
+
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
@@ -77,21 +79,21 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
         Join<Object, Object> variantRecord = record.join(RegRecord.VARIANT_RECORD_LIST, JoinType.LEFT);
         Join<Object, Object> registerType = record.join(RegRecord.REGISTER_TYPE);
 
+        String searchValue = "%"+searchRecord+"%";
+
         Predicate conditon = null;
-        if (searchString != null) {
+        if (StringUtils.isNotBlank(searchRecord)) {
             conditon =  builder.or(
-                    builder.like(builder.lower(record.get(RegRecord.RECORD)), searchString),
-                    builder.like(builder.lower(record.get(RegRecord.CHARACTERISTICS)), searchString),
-                    builder.like(builder.lower(record.get(RegRecord.COMMENT)), searchString),
-                    builder.like(builder.lower(variantRecord.get(RegVariantRecord.RECORD)), searchString)
+                    builder.like(builder.lower(record.get(RegRecord.RECORD)), searchValue),
+                    builder.like(builder.lower(record.get(RegRecord.CHARACTERISTICS)), searchValue),
+                    builder.like(builder.lower(record.get(RegRecord.COMMENT)), searchValue),
+                    builder.like(builder.lower(variantRecord.get(RegVariantRecord.RECORD)), searchValue)
             );
         }
 
         if (registerTypeId != null) {
-            builder.and(
-                    conditon,
-                    builder.equal(registerType.get(RegRegisterType.ID), registerTypeId)
-            );
+            Predicate typePred = builder.equal(registerType.get(RegRegisterType.ID), registerTypeId);
+            conditon = conditon == null ? typePred : builder.and(conditon, typePred);
         }
 
         return conditon;

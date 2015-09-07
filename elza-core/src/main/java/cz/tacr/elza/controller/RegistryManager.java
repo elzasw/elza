@@ -1,14 +1,10 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.domain.RegExternalSource;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.repository.AbstractPartyRepository;
-import cz.tacr.elza.repository.ExternalSourceRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
-import cz.tacr.elza.repository.VariantRecordRepository;
+import java.util.List;
+
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -18,9 +14,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-import java.util.List;
+import cz.tacr.elza.domain.RegExternalSource;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.repository.AbstractPartyRepository;
+import cz.tacr.elza.repository.ExternalSourceRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.VariantRecordRepository;
 
 /**
  * Rejstřík.
@@ -84,6 +86,7 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
 
     @RequestMapping(value = "/createVariantRecord", method = RequestMethod.PUT)
     @Override
+    @Transactional
     public RegVariantRecord createVariantRecord(@RequestBody final RegVariantRecord variantRecord,
                                                 @RequestParam final Integer recordId) {
 
@@ -95,6 +98,7 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
 
     @RequestMapping(value = "/updateVariantRecord", method = RequestMethod.PUT)
     @Override
+    @Transactional
     public RegVariantRecord updateVariantRecord(@RequestBody final RegVariantRecord variantRecord,
                                                 @RequestParam final Integer recordId) {
 
@@ -154,7 +158,6 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     @Override
     @RequestMapping(value = "/getRecord", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE,
             params = {"recordId"})
-    @Transactional
     public RegRecord getRecord(@RequestParam(value = "recordId") final Integer recordId) {
         Assert.notNull(recordId);
 
@@ -197,7 +200,6 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
      * @param regRecordId       id záznamu rejstříku
      * @return      výslendný objekt uložený do db
      */
-    @Transactional
     private RegVariantRecord saveVariantRecordInternal(@RequestBody final RegVariantRecord variantRecord,
                                                        @RequestParam final Integer regRecordId) {
 

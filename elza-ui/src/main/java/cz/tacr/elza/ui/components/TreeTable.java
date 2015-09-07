@@ -40,7 +40,16 @@ public class TreeTable extends com.vaadin.ui.TreeTable {
     }
 
 
+    @Override
+    public void setSelectable(final boolean selectable) {
+        super.setSelectable(selectable);
 
+        if (selectable) {
+            addStyleName("v-selectable");
+        } else {
+            removeStyleName("v-selectable");
+        }
+    }
 
     private class PageResizeListener implements Page.BrowserWindowResizeListener{
 

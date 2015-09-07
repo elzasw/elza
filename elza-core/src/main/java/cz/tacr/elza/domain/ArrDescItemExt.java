@@ -29,6 +29,7 @@ public class ArrDescItemExt extends ArrDescItem implements cz.tacr.elza.api.ArrD
 
     public void setAbstractParty(ParAbstractParty abstractParty) {
         this.abstractParty = abstractParty;
+        this.data = abstractParty == null ? null : abstractParty.getRecord().getRecord();
     }
 
     public RegRecord getRecord() {
@@ -36,7 +37,9 @@ public class ArrDescItemExt extends ArrDescItem implements cz.tacr.elza.api.ArrD
     }
 
     public void setRecord(RegRecord record) {
+
         this.record = record;
+        this.data = record == null ? null : record.getRecord();
     }
 
     @Override

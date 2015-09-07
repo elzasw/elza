@@ -1,60 +1,80 @@
 package cz.tacr.elza.ui.components;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.lang.builder.CompareToBuilder;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.server.FontAwesome;
+import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
 
 import cz.req.ax.AxAction;
 import cz.req.ax.AxWindow;
+import cz.tacr.elza.api.controller.PartyManager;
 import cz.tacr.elza.controller.ArrangementManager;
+import cz.tacr.elza.controller.RegistryManager;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrDescItemExt;
 import cz.tacr.elza.domain.ArrFaLevelExt;
+import cz.tacr.elza.domain.ParAbstractParty;
+import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
+import cz.tacr.elza.repository.DescItemSpecRepository;
+import cz.tacr.elza.ui.components.attribute.Attribut;
+import cz.tacr.elza.ui.components.attribute.AttributeValuesLoader;
+import cz.tacr.elza.ui.components.autocomplete.AutocompleteItem;
 
 
 /**
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 21.8.2015
  */
-public class LevelInlineDetail extends CssLayout implements Components {
+
+@Component
+@Scope("prototype")
+public class LevelInlineDetail extends CssLayout implements Components, InitializingBean {
 
     private CssLayout detailContent;
 
+    @Autowired
     private RuleManager ruleSetManager;
+
+    @Autowired
     private ArrangementManager arrangementManager;
+
+    @Autowired
+    private PartyManager partyManager;
+
+    @Autowired
+    private RegistryManager registryManager;
+
+    @Autowired
+    private DescItemSpecRepository descItemSpecRepository;
+
+    private AttributeValuesLoader attributeValuesLoader;
 
     private Attribut attribut;
     private AxWindow attributWindow = null;
     private ComboBox attributesComboBox;
 
-    public LevelInlineDetail(final RuleManager ruleSetManager, final ArrangementManager arrangementManager) {
-        setSizeUndefined();
-        addStyleName("level-detail");
-        this.ruleSetManager = ruleSetManager;
-        this.arrangementManager = arrangementManager;
 
-        init();
+
+    public LevelInlineDetail() {
     }
 
-    private void init() {
-        detailContent = cssLayoutExt("detail-content");
-
-        addComponent(newLabel("Detail atributu", "h2"));
-        addComponent(detailContent);
-    }
 
     private void saveAttributeWithVersion(Attribut attribut) {
         saveAttribute(attribut, true);
@@ -123,9 +143,18 @@ public class LevelInlineDetail extends CssLayout implements Components {
         Integer lastDescItemTypeId = null;
         for (ArrDescItemExt item : descItemList) {
             String caption;
+            String value = item.getData();
+
+            if (item.getDescItemSpec() != null) {
+                String specName = item.getDescItemSpec().getName();
+                value = specName + ": " + value;
+            }
+
             if(item.getDescItemType().getDescItemTypeId().equals(lastDescItemTypeId)){
                 caption = "";
-                grid.addRow(caption, newLabel(item.getData(), "multi-value"));
+                Label lblValue = newLabel(value, "multi-value");
+                lblValue.setContentMode(ContentMode.HTML);
+                grid.addRow(caption, lblValue);
             }else{
                 caption = item.getDescItemType().getName();
 
@@ -133,7 +162,9 @@ public class LevelInlineDetail extends CssLayout implements Components {
                 captionLayout.addComponent(newLabel(caption));
                 captionLayout.addComponent(createEditButton(level, item.getDescItemType(), versionId));
 
-                CssLayout layout = grid.addRow(captionLayout, newLabel(item.getData()));
+                Label lblValue = newLabel(value);
+                lblValue.setContentMode(ContentMode.HTML);
+                grid.addRow(captionLayout, lblValue);
 
 
                 lastDescItemTypeId = item.getDescItemType().getDescItemTypeId();
@@ -150,7 +181,7 @@ public class LevelInlineDetail extends CssLayout implements Components {
                     .getDescriptionItemsForAttribute(versionId, level.getNodeId(), type.getDescItemTypeId());
             List<RulDescItemSpec> listSpec = ruleSetManager.getDescItemSpecsFortDescItemType(type);
             RulDataType dataType = ruleSetManager.getDataTypeForDescItemType(type);
-            attribut = new Attribut(listItem, listSpec, type, dataType, level.getNodeId(), versionId);
+            attribut = new Attribut(listItem, listSpec, type, dataType, level.getNodeId(), versionId, getAttributeValuesLoader());
 
             attributWindow = new AxWindow();
             attributWindow.caption("Detail atributu")
@@ -182,5 +213,54 @@ public class LevelInlineDetail extends CssLayout implements Components {
 
 
         return button;
+    }
+
+
+    private AttributeValuesLoader getAttributeValuesLoader() {
+        if (attributeValuesLoader == null) {
+            attributeValuesLoader = new AttributeValuesLoader() {
+                @Override
+                public List<AutocompleteItem> loadPartyRefItemsFulltext(final String text) {
+                    List<ParAbstractParty> partyList = partyManager.findAbstractParty(text, 0, 50, null);
+                    List<AutocompleteItem> result = new ArrayList<>(partyList.size());
+
+                    for (ParAbstractParty partyItem : partyList) {
+                        result.add(new AutocompleteItem(partyItem, partyItem.getRecord().getRecord()));
+                    }
+
+                    return result;
+                }
+
+                @Override
+                public List<AutocompleteItem> loadRecordRefItemsFulltext(final String text, final RulDescItemSpec specification) {
+                    if(specification == null){
+                        return Collections.EMPTY_LIST;
+                    }
+
+                    RulDescItemSpec specDo = descItemSpecRepository.getOne(specification.getId());
+
+                    List<RegRecord> recordList = registryManager
+                            .findRecord(text, 0, 50, specDo.getRegisterType().getRegisterTypeId());
+                    List<AutocompleteItem> result = new ArrayList<>(recordList.size());
+
+                    for (RegRecord regRecord : recordList) {
+                        result.add(new AutocompleteItem(regRecord, regRecord.getRecord()));
+                    }
+
+                    return result;
+                }
+            };
+        }
+        return attributeValuesLoader;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        setSizeUndefined();
+        addStyleName("level-detail");
+        detailContent = cssLayoutExt("detail-content");
+
+        addComponent(newLabel("Detail atributu", "h2"));
+        addComponent(detailContent);
     }
 }

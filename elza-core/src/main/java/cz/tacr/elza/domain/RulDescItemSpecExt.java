@@ -28,7 +28,7 @@ import cz.req.ax.IdObject;
  * @since 20.8.2015
  */
 
-public class RulDescItemSpecExt extends RulDescItemSpec implements cz.tacr.elza.api.RulDescItemSpecExt<RulDescItemType, RulDescItemConstraint> {
+public class RulDescItemSpecExt extends RulDescItemSpec implements cz.tacr.elza.api.RulDescItemSpecExt<RulDescItemType, RulDescItemConstraint, RegRegisterType> {
 
     private List<RulDescItemConstraint> rulDescItemConstraintList = new LinkedList<>();
 

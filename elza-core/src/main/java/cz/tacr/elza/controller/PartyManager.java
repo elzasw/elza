@@ -52,9 +52,9 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
     @Transactional
     @Override
     public ParAbstractParty insertAbstractParty(@RequestBody ParAbstractPartyVals abstractParty) {
-
         Assert.notNull(abstractParty.getPartySubtypeId(), "Není vyplněné partySubtypeId");
         Assert.notNull(abstractParty.getRecordId(), "Není vyplněné recordId");
+
         final ParPartySubtype partySubtype =
                 partySubtypeRepository.findOne(abstractParty.getPartySubtypeId());
         final RegRecord record = recordRepository.findOne(abstractParty.getRecordId());
@@ -122,8 +122,7 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
     @Override
     public Long findAbstractPartyCount(@RequestParam("search") String search,
             @RequestParam("partyTypeId") Integer partyTypeId) {
-        return (Long) abstractPartyRepository.findAbstractPartyByTextAndTypeCount(search,
-            partyTypeId);
+        return abstractPartyRepository.findAbstractPartyByTextAndTypeCount(search, partyTypeId);
     }
 
     @RequestMapping(value = "/getAbstractParty", method = RequestMethod.GET)
@@ -133,5 +132,4 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
         Assert.notNull(abstractPartyId);
         return abstractPartyRepository.getOne(abstractPartyId);
     }
-
 }
