@@ -1,15 +1,5 @@
 package cz.tacr.elza.ui.components;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.apache.commons.lang.builder.CompareToBuilder;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.label.ContentMode;
@@ -17,7 +7,6 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
-
 import cz.req.ax.AxAction;
 import cz.req.ax.AxWindow;
 import cz.tacr.elza.api.controller.PartyManager;
@@ -36,6 +25,15 @@ import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.ui.components.attribute.Attribut;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesLoader;
 import cz.tacr.elza.ui.components.autocomplete.AutocompleteItem;
+import org.apache.commons.lang.builder.CompareToBuilder;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 
 /**
@@ -222,7 +220,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             attributeValuesLoader = new AttributeValuesLoader() {
                 @Override
                 public List<AutocompleteItem> loadPartyRefItemsFulltext(final String text) {
-                    List<ParAbstractParty> partyList = partyManager.findAbstractParty(text, 0, 50, null);
+                    List<ParAbstractParty> partyList = partyManager.findAbstractParty(text, 0, 50, null, true);
                     List<AutocompleteItem> result = new ArrayList<>(partyList.size());
 
                     for (ParAbstractParty partyItem : partyList) {

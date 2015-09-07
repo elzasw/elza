@@ -1,6 +1,11 @@
 package cz.tacr.elza.repository;
 
-import java.util.List;
+import cz.tacr.elza.domain.ParAbstractParty;
+import cz.tacr.elza.domain.ParPartySubtype;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegVariantRecord;
+import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -11,14 +16,7 @@ import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-
-import org.springframework.stereotype.Component;
-
-import cz.tacr.elza.domain.ParAbstractParty;
-import cz.tacr.elza.domain.ParPartySubtype;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegVariantRecord;
+import java.util.List;
 
 /**
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
@@ -31,13 +29,13 @@ public class AbstractPartyRepositoryImpl implements AbstractPartyRepositoryCusto
 
     @Override
     public List<ParAbstractParty> findAbstractPartyByTextAndType(final String searchRecord, final Integer registerTypeId,
-                                                      final Integer firstResult, final Integer maxResults) {
+                                         final Integer firstResult, final Integer maxResults, final Boolean originator) {
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<ParAbstractParty> query = builder.createQuery(ParAbstractParty.class);
         Root<ParAbstractParty> record = query.from(ParAbstractParty.class);
 
-        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeId, record, builder);
+        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeId, record, builder, originator);
 
         Order order = builder.asc(record.get(ParAbstractParty.ABSTRACT_PARTY_ID));
         query.select(record).where(condition).orderBy(order);
@@ -49,13 +47,14 @@ public class AbstractPartyRepositoryImpl implements AbstractPartyRepositoryCusto
     }
 
     @Override
-    public long findAbstractPartyByTextAndTypeCount(final String searchRecord, final Integer registerTypeId) {
+    public long findAbstractPartyByTextAndTypeCount(final String searchRecord, final Integer registerTypeId,
+                                                    final Boolean originator) {
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Long> query = builder.createQuery(Long.class);
         Root<ParAbstractParty> record = query.from(ParAbstractParty.class);
 
-        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeId, record, builder);
+        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeId, record, builder, originator);
 
         query.select(builder.count(record)).where(condition);
 
@@ -67,13 +66,13 @@ public class AbstractPartyRepositoryImpl implements AbstractPartyRepositoryCusto
      * Připraví dotaz pro nalezení rejstříkových záznamů.
      *
      * @param searchRecord      hledaný řetězec, může být null
-     * @param partyTypeId    typ záznamu
-     * @param record            kořen dotazu pro danou entitu
+     * @param partyTypeId       typ záznamu
      * @param builder           buider pro vytváření podmínek
+     * @param originator        původce - true, není původce - false, null - neaplikuje filtr - obě možnosti
      * @return                  výsledné podmínky pro dotaz
      */
     private Predicate preparefindRegRecordByTextAndType(final String searchRecord, final Integer partyTypeId,
-                                                   final Root<ParAbstractParty> party, final CriteriaBuilder builder) {
+                        final Root<ParAbstractParty> party, final CriteriaBuilder builder, final Boolean originator) {
 
         final String searchString = (searchRecord != null ? searchRecord.toLowerCase() : null);
 
@@ -83,11 +82,11 @@ public class AbstractPartyRepositoryImpl implements AbstractPartyRepositoryCusto
         Join<Object, Object> partySubtype = party.join(ParAbstractParty.PARTY_SUBTYPE);
         Join<Object, Object> partyType = partySubtype.join(ParPartySubtype.PARTY_TYPE);
 
-        String searchValue = "%"+searchRecord+"%";
+        String searchValue = "%"+searchString+"%";
 
-        Predicate conditon = null;
+        Predicate condition = null;
         if (searchString != null) {
-            conditon =  builder.or(
+            condition = builder.or(
                     builder.like(builder.lower(record.get(RegRecord.RECORD)), searchValue),
                     builder.like(builder.lower(record.get(RegRecord.CHARACTERISTICS)), searchValue),
                     builder.like(builder.lower(record.get(RegRecord.COMMENT)), searchValue),
@@ -95,13 +94,20 @@ public class AbstractPartyRepositoryImpl implements AbstractPartyRepositoryCusto
             );
         }
 
+        if (originator != null) {
+            condition = builder.and(
+                    condition,
+                    builder.equal(partySubtype.get(ParPartySubtype.ORIGINATOR), originator)
+            );
+        }
+
         if (partyTypeId != null) {
-            builder.and(
-                    conditon,
+            condition = builder.and(
+                    condition,
                     builder.equal(partyType.get(ParPartyType.PARTY_TYPE_ID), partyTypeId)
             );
         }
 
-        return conditon;
+        return condition;
     }
 }

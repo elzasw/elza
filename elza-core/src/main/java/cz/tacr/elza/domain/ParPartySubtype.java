@@ -4,7 +4,16 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 
 /**
@@ -21,6 +30,7 @@ public class ParPartySubtype implements cz.tacr.elza.api.ParPartySubtype<ParPart
 
     /* Konstanty pro vazby a fieldy. */
     public static final String PARTY_TYPE = "partyType";
+    public static final String ORIGINATOR = "originator";
 
     @Id
     @GeneratedValue

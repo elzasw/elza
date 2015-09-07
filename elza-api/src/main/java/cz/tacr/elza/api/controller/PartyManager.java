@@ -1,10 +1,10 @@
 package cz.tacr.elza.api.controller;
 
-import java.util.List;
-
 import cz.tacr.elza.api.ParAbstractParty;
 import cz.tacr.elza.api.ParAbstractPartyVals;
 import cz.tacr.elza.api.ParPartyType;
+
+import java.util.List;
 
 /**
  * Rozhraní operací pro osoby a rejstřík.
@@ -57,10 +57,11 @@ public interface PartyManager<PAPV extends ParAbstractPartyVals> {
      * @param from pořadí prvního záznamu.
      * @param count počet záznamů pro vrácení.
      * @param partyTypeId id typu.
+     * @param originator        původce - true, není původce - false, null - neaplikuje filtr - obě možnosti
      * @return seznam osob vyhovující zadané frázi.
      */
     List<? extends ParAbstractParty> findAbstractParty(String search, Integer from, Integer count,
-            Integer partyTypeId);
+            Integer partyTypeId, Boolean originator);
 
     /**
      * Vrátí počet osob vyhovující zadané frázi. Osobu vyhledává podle hesla v rejstříku včetně
@@ -68,9 +69,10 @@ public interface PartyManager<PAPV extends ParAbstractPartyVals> {
      * 
      * @param search fráze pro vyhledávání.
      * @param partyTypeId id typu.
+     * @param originator        původce - true, není původce - false, null - neaplikuje filtr - obě možnosti
      * @return počet osob vyhovující zadané frázi.
      */
-    Long findAbstractPartyCount(String search, Integer partyTypeId);
+    Long findAbstractPartyCount(String search, Integer partyTypeId, Boolean originator);
 
     /**
      * Vrátí abstraktní osobu na základě identifikátoru.

@@ -1,8 +1,8 @@
 package cz.tacr.elza.repository;
 
-import java.util.List;
-
 import cz.tacr.elza.domain.ParAbstractParty;
+
+import java.util.List;
 
 /**
  * Repository pro abstraktní osoby.
@@ -17,15 +17,18 @@ public interface AbstractPartyRepositoryCustom {
      * @param registerTypeId
      * @param firstResult
      * @param maxResults
+     * @param originator        původce - true, není původce - false, null - neaplikuje filtr - obě možnosti
      * @return
      */
-    List<ParAbstractParty> findAbstractPartyByTextAndType(String searchRecord, Integer registerTypeId, Integer firstResult, Integer maxResults);
+    List<ParAbstractParty> findAbstractPartyByTextAndType(String searchRecord, Integer registerTypeId,
+                                                          Integer firstResult, Integer maxResults, Boolean originator);
 
     /**
      * 
      * @param searchRecord
      * @param registerTypeId
+     * @param originator        původce - true, není původce - false, null - neaplikuje filtr - obě možnosti
      * @return
      */
-    long findAbstractPartyByTextAndTypeCount(String searchRecord, Integer registerTypeId);
+    long findAbstractPartyByTextAndTypeCount(String searchRecord, Integer registerTypeId, Boolean originator);
 }
