@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+        <!--Verze 1.17 - smazani sloupce position z tabulky ArrDataRecordRef -->
+        <changeSet id="17" author="kubovy" failOnError="false" runOnChange="true">
+          <dropColumn tableName="arr_data_record_ref" columnName="position" />
+        </changeSet>
+</databaseChangeLog>
+
+
+
+
+
+
+
+
+
+

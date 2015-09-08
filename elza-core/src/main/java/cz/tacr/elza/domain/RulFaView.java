@@ -13,11 +13,9 @@ import javax.persistence.Table;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.data.rest.core.annotation.RestResource;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.req.ax.IdObject;
 
 
 /**
@@ -27,16 +25,18 @@ import cz.req.ax.IdObject;
 @Entity(name = "rul_fa_view")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulFaView extends AbstractVersionableEntity implements IdObject<Integer>, cz.tacr.elza.api.RulFaView<ArrArrangementType, RulRuleSet> {
+public class RulFaView extends AbstractVersionableEntity implements cz.tacr.elza.api.RulFaView<ArrArrangementType, RulRuleSet> {
 
     @Id
     @GeneratedValue
     private Integer faViewId;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrArrangementType.class)
     @JoinColumn(name = "arrangementTypeId", nullable = false)
     private ArrArrangementType arrangementType;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
     @JoinColumn(name = "ruleSetId", nullable = false)
     private RulRuleSet ruleSet;
@@ -85,12 +85,6 @@ public class RulFaView extends AbstractVersionableEntity implements IdObject<Int
     }
 
     @Override
-    @JsonIgnore
-    public Integer getId() {
-        return faViewId;
-    }
-
-    @Override
     public boolean equals(final Object obj) {
         if (!(obj instanceof RulFaView)) {
             return false;
@@ -101,7 +95,7 @@ public class RulFaView extends AbstractVersionableEntity implements IdObject<Int
 
         RulFaView other = (RulFaView) obj;
 
-        return new EqualsBuilder().append(getId(), other.getId()).isEquals();
+        return new EqualsBuilder().append(faViewId, other.getFaViewId()).isEquals();
     }
 
     @Override

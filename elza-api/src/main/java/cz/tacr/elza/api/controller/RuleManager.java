@@ -2,21 +2,23 @@ package cz.tacr.elza.api.controller;
 
 import java.util.List;
 
-import cz.tacr.elza.api.ArrArrangementType;
+import cz.tacr.elza.api.RulArrangementType;
 import cz.tacr.elza.api.ArrDescItem;
 import cz.tacr.elza.api.RulDataType;
 import cz.tacr.elza.api.RulDescItemSpec;
 import cz.tacr.elza.api.RulDescItemType;
+import cz.tacr.elza.api.RulFaView;
 import cz.tacr.elza.api.RulRuleSet;
+import cz.tacr.elza.api.vo.FaViewDescItemTypes;
 
 
 /**
- *
+ * Rozhraní operací pro pravidla.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 12. 8. 2015
  */
-public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType, DIS extends RulDescItemSpec> {
+public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType, DIS extends RulDescItemSpec, RFV extends RulFaView> {
 
     /**
      * Vrátí všechny sady pravidel.
@@ -31,47 +33,47 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      *
      * @return všechny typy výstupu
      */
-    List<? extends ArrArrangementType> getArrangementTypes();
+    List<? extends RulArrangementType> getArrangementTypes();
 
     /**
      * Vrátí všechny typy atributů archivního popisu k zadaným pravidlům tvorby.
-     * @param ruleSetId
-     * @return
+     * @param ruleSetId     Identifikátor sady pravidel
+     * @return  Seznam typů hodnot atrubutů
      */
     List<? extends RulDescItemType> getDescriptionItemTypes(Integer ruleSetId);
 
     /**
-     * Vrátí všechny typy atributů archivního popisu k uzlu.
-     * @param faVersionId
-     * @param nodeId
-     * @param mandatory
-     * @return
+     * Vrátí všechny typy hodnot atributů archivního popisu k uzlu.
+     * @param faVersionId   Identifikátor verze
+     * @param nodeId        Identifikátor uzlu
+     * @param mandatory     true - vrací všechny povinné typy, false - vrací všechny nepovinné typy, null - vrací všechno
+     * @return  Seznam typů hodnot atributů
      */
     List<? extends RulDescItemType> getDescriptionItemTypesForNodeId(Integer faVersionId, Integer nodeId, Boolean mandatory);
 
 
     /**
-     * Vrátí všechny hodnoty attrubutu archivního popisu k uzlu.
-     * @param faVersionId
-     * @param nodeId
-     * @param rulDescItemTypeId
-     * @return
+     * Vrátí všechny hodnoty atributu archivního popisu k uzlu.
+     * @param faVersionId       Identifikátor verze
+     * @param nodeId            Identifikátor uzlu
+     * @param rulDescItemTypeId Identifikátor typu atributu
+     * @return  Seznam hodnot atrubutu
      */
     List<? extends ArrDescItem> getDescriptionItemsForAttribute(Integer faVersionId, Integer nodeId, Integer rulDescItemTypeId);
 
 
     /**
-     * TODO
-     * @param rulDescItemType
-     * @return
+     * Vrací specifikace podle typu atributu.
+     * @param rulDescItemType   Typ hodnoty atributu
+     * @return  Seznam specifikací
      */
     List<DIS> getDescItemSpecsFortDescItemType(DIT rulDescItemType);
 
 
     /**
-     * TODO
-     * @param rulDescItemType
-     * @return
+     * Vrací datový typ podle typu hodnoty atributu.
+     * @param rulDescItemType   Typ hodnoty atributu
+     * @return                  Datový typ
      */
     DT getDataTypeForDescItemType(DIT rulDescItemType);
 
@@ -82,7 +84,7 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      * @param faVersionId
      * @return
      */
-    List<? extends RulDescItemType> getFaViewDescItemTypes(Integer faVersionId);
+    FaViewDescItemTypes getFaViewDescItemTypes(Integer faVersionId);
 
     /**
      * Pro soubor pravidel a typ výstupu uloží seznam identifikátorů typů atributů archivního popisu,
@@ -92,5 +94,5 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      * @param descItemTypeIds
      * @return
      */
-    List<Integer> saveFaViewDescItemTypes(Integer ruleSetId, Integer arrangementTypeId, Integer[] descItemTypeIds);
+    List<Integer> saveFaViewDescItemTypes(RFV rulFaView, Integer[] descItemTypeIds);
 }

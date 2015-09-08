@@ -77,7 +77,7 @@ public class RegistryManagerTest extends AbstractRestTest {
         // ověření
         Assert.assertNotNull(newRecord);
         Assert.assertNotNull(newRecord.getRecordId());
-        Assert.assertNotNull(recordRepository.getOne(newRecord.getId()));
+        Assert.assertNotNull(recordRepository.getOne(newRecord.getRecordId()));
     }
 
     /**
@@ -91,14 +91,10 @@ public class RegistryManagerTest extends AbstractRestTest {
         record.setRecord(TEST_UPDATE_NAME);
 
         RegRegisterType newRegisterType = createRegisterType();
-        record.setRegisterType(null);
-        Integer externalSourceId = record.getExternalSource() != null ? record.getExternalSource().getId() : null;
-        record.setExternalSource(null);
+        record.setRegisterType(newRegisterType);
 
         Response response =
                 given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(record)
-                        .parameter(REGISTER_TYPE_ID_ATT, newRegisterType.getId())
-                        .parameter(EXTERNAL_SOURCE_ID_ATT, externalSourceId)
                         .put(UPDATE_RECORD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
@@ -108,7 +104,7 @@ public class RegistryManagerTest extends AbstractRestTest {
         // ověření
         Assert.assertNotNull(updatedRecord);
         Assert.assertTrue(updatedRecord.getRecord().equals(TEST_UPDATE_NAME));
-        Assert.assertTrue(updatedRecord.getRegisterType().getId().equals(newRegisterType.getId()));
+        Assert.assertTrue(updatedRecord.getRegisterType().getRegisterTypeId().equals(newRegisterType.getRegisterTypeId()));
     }
 
     /**
@@ -120,7 +116,7 @@ public class RegistryManagerTest extends AbstractRestTest {
 
         long countStart = recordRepository.count();
 
-        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(RECORD_ID_ATT, record.getId())
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(RECORD_ID_ATT, record.getRecordId())
                 .get(DELETE_RECORD_URL);
         logger.info(response.asString());
         long countEnd = recordRepository.count();
@@ -139,8 +135,8 @@ public class RegistryManagerTest extends AbstractRestTest {
 
         // ověření
         Assert.assertNotNull(newVariantRecord);
-        Assert.assertNotNull(newVariantRecord.getId());
-        Assert.assertNotNull(variantRecordRepository.getOne(newVariantRecord.getId()));
+        Assert.assertNotNull(newVariantRecord.getVariantRecordId());
+        Assert.assertNotNull(variantRecordRepository.getOne(newVariantRecord.getVariantRecordId()));
     }
 
     /**
@@ -157,10 +153,10 @@ public class RegistryManagerTest extends AbstractRestTest {
 
         Response response =
                 given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(variantRecord)
-                        .parameter(RECORD_ID_ATT, record.getId())
+                        .parameter(RECORD_ID_ATT, record.getRecordId())
                         .put(UPDATE_VARIANT_RECORD_URL);
         logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
+        Assert.assertEquals(response.print(), 200, response.statusCode());
 
         RegVariantRecord updatedVariantRecord = response.getBody().as(RegVariantRecord.class);
 
@@ -179,7 +175,7 @@ public class RegistryManagerTest extends AbstractRestTest {
 
         long countStart = variantRecordRepository.count();
 
-        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(VARIANT_RECORD_ID_ATT, variantRecord.getId())
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(VARIANT_RECORD_ID_ATT, variantRecord.getVariantRecordId())
                 .get(DELETE_VARIANT_RECORD_URL);
         logger.info(response.asString());
         long countEnd = variantRecordRepository.count();
@@ -201,7 +197,7 @@ public class RegistryManagerTest extends AbstractRestTest {
         Assert.assertEquals(200, response.statusCode());
 
         List<RegRegisterType> registerTypes = Arrays.asList(response.getBody().as(RegRegisterType[].class));
-        Assert.assertTrue("Nenalezeny typy záznamů.", registerTypes.size() == 2);
+        Assert.assertTrue("Nenalezeny typy záznamů (" + registerTypes.size() + ")", registerTypes.size() >= 2);
     }
 
     /**
@@ -217,7 +213,7 @@ public class RegistryManagerTest extends AbstractRestTest {
         Assert.assertEquals(200, response.statusCode());
 
         List<RegExternalSource> externalSources = Arrays.asList(response.getBody().as(RegExternalSource[].class));
-        Assert.assertTrue("Nenalezeny externí zdroje.", externalSources.size() == 2);
+        Assert.assertTrue("Nenalezeny externí zdroje (" + externalSources.size() + ")", externalSources.size() >= 2);
     }
 
     /**
@@ -232,14 +228,14 @@ public class RegistryManagerTest extends AbstractRestTest {
                 .parameter(SEARCH_ATT, TEST_NAME)
                 .parameter(FROM_ATT, 0)
                 .parameter(COUNT_ATT, 1)
-                .parameter(REGISTER_TYPE_ID_ATT, record.getRegisterType().getId())
+                .parameter(REGISTER_TYPE_ID_ATT, record.getRegisterType().getRegisterTypeId())
                 .get(FIND_RECORD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
         List<RegRecord> records = Arrays.asList(response.getBody().as(RegRecord[].class));
-        Assert.assertTrue("Nenalezena polozka: " + TEST_NAME, records.size() == 1);
-        Assert.assertTrue("Nenalezena variantní polozka: " + TEST_NAME, records.get(0).getVariantRecordList().size() == 1);
+        Assert.assertEquals("Nenalezena polozka: " + TEST_NAME, 1, records.size());
+        Assert.assertEquals("Nenalezena variantní polozka: " + TEST_NAME, 1, records.get(0).getVariantRecordList().size());
 
         createVariantRecord("varianta", record);
 
@@ -247,14 +243,14 @@ public class RegistryManagerTest extends AbstractRestTest {
                 .parameter(SEARCH_ATT, "varianta")
                 .parameter(FROM_ATT, 0)
                 .parameter(COUNT_ATT, 1)
-                .parameter(REGISTER_TYPE_ID_ATT, record.getRegisterType().getId())
+                .parameter(REGISTER_TYPE_ID_ATT, record.getRegisterType().getRegisterTypeId())
                 .get(FIND_RECORD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
         records = Arrays.asList(response.getBody().as(RegRecord[].class));
-        Assert.assertTrue("Nenalezena polozka: " + "varianta", records.size() == 1);
-        Assert.assertTrue("Nenalezena variantní polozka: " + TEST_NAME, records.get(0).getVariantRecordList().size() == 2);
+        Assert.assertEquals("Nenalezena polozka: " + "varianta", 1, records.size());
+        Assert.assertEquals("Nenalezena variantní polozka: " + TEST_NAME, 2, records.get(0).getVariantRecordList().size());
     }
 
     /**
@@ -269,25 +265,25 @@ public class RegistryManagerTest extends AbstractRestTest {
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .parameter(SEARCH_ATT, TEST_NAME)
-                .parameter(REGISTER_TYPE_ID_ATT, record.getRegisterType().getId())
+                .parameter(REGISTER_TYPE_ID_ATT, record.getRegisterType().getRegisterTypeId())
                 .get(FIND_RECORD_COUNT_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
         long recordsCount = response.getBody().as(long.class);
-        Assert.assertTrue("Nenalezena polozka: " + TEST_NAME, recordsCount == 1);
+        Assert.assertEquals("Nenalezena polozka: " + TEST_NAME, 1, recordsCount);
 
         createRecord();
 
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .parameter(SEARCH_ATT, "varianta")
-                .parameter(REGISTER_TYPE_ID_ATT, record.getRegisterType().getId())
+                .parameter(REGISTER_TYPE_ID_ATT, record.getRegisterType().getRegisterTypeId())
                 .get(FIND_RECORD_COUNT_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
         recordsCount = response.getBody().as(long.class);
-        Assert.assertTrue("Nenalezena polozka: varianta", recordsCount == 1);
+        Assert.assertEquals("Nenalezena polozka: varianta", 1, recordsCount);
     }
 
     /**
@@ -298,7 +294,7 @@ public class RegistryManagerTest extends AbstractRestTest {
         RegRecord record = createRecord();
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
-                .param(RECORD_ID_ATT, record.getId())
+                .param(RECORD_ID_ATT, record.getRecordId())
                 .get(GET_RECORD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
@@ -306,7 +302,7 @@ public class RegistryManagerTest extends AbstractRestTest {
         RegRecord foundRecord = response.getBody().as(RegRecord.class);
 
         Assert.assertNotNull(foundRecord);
-        Assert.assertTrue(foundRecord.getId().equals(record.getId()));
+        Assert.assertTrue(foundRecord.getRecordId().equals(record.getRecordId()));
     }
 
     /**
@@ -334,12 +330,13 @@ public class RegistryManagerTest extends AbstractRestTest {
 
         RegRegisterType registerType = createRegisterType();
         Integer externalSourceId = null;
+        regRecord.setRegisterType(registerType);
 
         Response response =
                 given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                         .body(regRecord)
-                        .parameter(REGISTER_TYPE_ID_ATT, registerType.getId())
-                        .parameter(EXTERNAL_SOURCE_ID_ATT, externalSourceId)
+//                        .parameter(REGISTER_TYPE_ID_ATT, registerType.getId())
+//                        .parameter(EXTERNAL_SOURCE_ID_ATT, externalSourceId)
                         .put(CREATE_RECORD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
@@ -356,14 +353,14 @@ public class RegistryManagerTest extends AbstractRestTest {
     private RegVariantRecord restCreateVariantRecord(final RegRecord record) {
         RegVariantRecord variantRecord = new RegVariantRecord();
         variantRecord.setRecord(TEST_NAME);
+        variantRecord.setRegRecord(record);
 
         Response response =
                 given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                         .body(variantRecord)
-                        .parameter(RECORD_ID_ATT, record.getId())
                         .put(CREATE_VARIANT_RECORD_URL);
         logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
+        Assert.assertEquals(response.print(), 200, response.statusCode());
 
         return response.getBody().as(RegVariantRecord.class);
     }

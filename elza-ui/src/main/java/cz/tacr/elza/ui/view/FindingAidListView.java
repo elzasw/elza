@@ -61,6 +61,7 @@ public class FindingAidListView extends ElzaView {
         formFA = formularFA();
 
         tableFA = new AxBeanTable<>(AxContainer.init(ArrFindingAid.class).supplier(arrangementManager::getFindingAids));
+        tableFA.style("v-selectable");
         tableFA.select(findingAid -> navigate(FindingAidDetailView.class, findingAid.getFindingAidId()));
         tableFA.header(Table.ColumnHeaderMode.EXPLICIT_DEFAULTS_ID)
         .column("name").header("Název")
@@ -72,7 +73,9 @@ public class FindingAidListView extends ElzaView {
                 )).done();
 
         actions(new AxAction().caption("Nový").icon(FontAwesome.PLUS_CIRCLE)
-                .run(() -> novyFA(formularNewFA())));
+                .run(() -> novyFA(formularNewFA()))/*,
+                new AxAction().caption("Testovací data").icon(FontAwesome.DATABASE)
+                .run(() -> navigate(TestDataView.class))*/);
 
         components(tableFA.getTable());
         refresh();

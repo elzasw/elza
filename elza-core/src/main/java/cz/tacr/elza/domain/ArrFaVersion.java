@@ -1,17 +1,10 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import org.springframework.data.rest.core.annotation.RestResource;
 
-import cz.req.ax.IdObject;
+import javax.persistence.*;
 
 
 /**
@@ -20,33 +13,39 @@ import cz.req.ax.IdObject;
  */
 @Entity(name = "arr_fa_version")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrFaVersion extends AbstractVersionableEntity implements IdObject<Integer>,
-    cz.tacr.elza.api.ArrFaVersion<ArrFindingAid, ArrFaChange, ArrFaLevel, ArrArrangementType, RulRuleSet> {
+public class ArrFaVersion extends AbstractVersionableEntity implements
+        cz.tacr.elza.api.ArrFaVersion<ArrFindingAid, ArrFaChange, ArrFaLevel, ArrArrangementType, RulRuleSet> {
 
     @Id
     @GeneratedValue
     private Integer faVersionId;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaChange.class)
     @JoinColumn(name = "createFaChangeId", nullable = false)
     private ArrFaChange createChange;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaChange.class)
     @JoinColumn(name = "lockFaChangeId", nullable = true)
     private ArrFaChange lockChange;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaLevel.class)
-    @JoinColumn(name = "rootNodeId", nullable = true, referencedColumnName = "nodeId")
-    private ArrFaLevel rootNode;
+    @JoinColumn(name = "rootFaLevelId", nullable = false)
+    private ArrFaLevel rootFaLevel;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFindingAid.class)
     @JoinColumn(name = "findingAidId", nullable = false)
     private ArrFindingAid findingAid;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrArrangementType.class)
     @JoinColumn(name = "arrangementTypeId", nullable = false)
     private ArrArrangementType arrangementType;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
     @JoinColumn(name = "ruleSetId", nullable = false)
     private RulRuleSet ruleSet;
@@ -82,13 +81,13 @@ public class ArrFaVersion extends AbstractVersionableEntity implements IdObject<
     }
 
     @Override
-    public ArrFaLevel getRootNode() {
-        return rootNode;
+    public ArrFaLevel getRootFaLevel() {
+        return rootFaLevel;
     }
 
     @Override
-    public void setRootNode(final ArrFaLevel rootNode) {
-        this.rootNode = rootNode;
+    public void setRootFaLevel(final ArrFaLevel rootFaLevel) {
+        this.rootFaLevel = rootFaLevel;
     }
 
     @Override
@@ -119,12 +118,6 @@ public class ArrFaVersion extends AbstractVersionableEntity implements IdObject<
     @Override
     public void setRuleSet(final RulRuleSet ruleSet) {
         this.ruleSet = ruleSet;
-    }
-
-    @Override
-    @JsonIgnore
-    public Integer getId() {
-        return faVersionId;
     }
 
     @Override

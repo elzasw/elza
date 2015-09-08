@@ -12,11 +12,9 @@ import javax.persistence.UniqueConstraint;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.data.rest.core.annotation.RestResource;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.req.ax.IdObject;
 
 /**
  * @author by Ondřej Buriánek, burianek@marbes.cz.
@@ -25,22 +23,28 @@ import cz.req.ax.IdObject;
 @Entity(name = "arr_fa_level")
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"position", "parentNodeId", "deleteFaChangeId"}))
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrFaLevel extends AbstractVersionableEntity implements IdObject<Integer>, cz.tacr.elza.api.ArrFaLevel<ArrFaChange> {
+public class ArrFaLevel extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrFaLevel<ArrFaChange, ArrNode> {
 
     @Id
     @GeneratedValue
     private Integer faLevelId;
 
-    @Column(nullable = false)
-    private Integer nodeId;
+    @RestResource(exported = false)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
+    @JoinColumn(name = "nodeId", nullable = false)
+    private ArrNode node;
 
-    @Column(name = "parentNodeId", nullable = true)
-    private Integer parentNodeId;
+    @RestResource(exported = false)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
+    @JoinColumn(name = "parentNodeId", nullable = true)
+    private ArrNode parentNode;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaChange.class)
     @JoinColumn(name = "createFaChangeId", nullable = false)
     private ArrFaChange createChange;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaChange.class)
     @JoinColumn(name = "deleteFaChangeId", nullable = true)
     private ArrFaChange deleteChange;
@@ -59,23 +63,23 @@ public class ArrFaLevel extends AbstractVersionableEntity implements IdObject<In
     }
 
     @Override
-    public Integer getNodeId() {
-        return nodeId;
+    public ArrNode getNode() {
+        return node;
     }
 
     @Override
-    public void setNodeId(final Integer nodeId) {
-        this.nodeId = nodeId;
+    public void setNode(ArrNode node) {
+        this.node = node;
     }
 
     @Override
-    public Integer getParentNodeId() {
-        return parentNodeId;
+    public ArrNode getParentNode() {
+        return parentNode;
     }
 
     @Override
-    public void setParentNodeId(final Integer parentNodeId) {
-        this.parentNodeId = parentNodeId;
+    public void setParentNode(ArrNode parentNode) {
+        this.parentNode = parentNode;
     }
 
     @Override
@@ -106,12 +110,6 @@ public class ArrFaLevel extends AbstractVersionableEntity implements IdObject<In
     @Override
     public void setPosition(final Integer position) {
         this.position = position;
-    }
-
-    @Override
-    @JsonIgnore
-    public Integer getId() {
-        return faLevelId;
     }
 
     @Override

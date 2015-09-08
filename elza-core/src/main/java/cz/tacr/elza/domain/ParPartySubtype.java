@@ -1,8 +1,6 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import cz.req.ax.IdObject;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -28,10 +26,11 @@ import javax.persistence.Table;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParPartySubtype implements IdObject<Integer>, cz.tacr.elza.api.ParPartySubtype<ParPartyType> {
+public class ParPartySubtype implements cz.tacr.elza.api.ParPartySubtype<ParPartyType> {
 
     /* Konstanty pro vazby a fieldy. */
     public static final String PARTY_TYPE = "partyType";
+    public static final String ORIGINATOR = "originator";
 
     @Id
     @GeneratedValue
@@ -115,11 +114,6 @@ public class ParPartySubtype implements IdObject<Integer>, cz.tacr.elza.api.ParP
         this.originator = originator;
     }
 
-    @Override
-    @JsonIgnore
-    public Integer getId() {
-        return partySubtypeId;
-    }
 
     @Override
     public boolean equals(final Object obj) {
@@ -132,12 +126,12 @@ public class ParPartySubtype implements IdObject<Integer>, cz.tacr.elza.api.ParP
 
         ParPartySubtype other = (ParPartySubtype) obj;
 
-        return new EqualsBuilder().append(getId(), other.getId()).isEquals();
+        return new EqualsBuilder().append(partySubtypeId, other.getPartySubtypeId()).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(getId()).toHashCode();
+        return new HashCodeBuilder().append(partySubtypeId).toHashCode();
     }
 
 }

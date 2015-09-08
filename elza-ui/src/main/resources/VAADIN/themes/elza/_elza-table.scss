@@ -2,6 +2,20 @@
 
     .v-table-body {
         max-height: calc(100vh - 210px) !important;
+        background-color: white;
+
+        .v-table-row{
+            background-color: #fafafa;
+        }
+
+        .v-table-row-odd{
+            background-color: white;
+        }
+
+    }
+
+    .v-scrollable{
+        overflow: auto !important;
     }
 
     .v-table-header-cell {
@@ -12,28 +26,60 @@
 //            border-left: 3px solid white;
         }
     }
+
+}
+
+.v-table.v-selectable {
+
+    .v-table-body{
+        .v-table-row:hover,
+        .v-table-row-odd:hover{
+            background-color: #f5f5f5;
+            cursor: pointer;
+        }
+
+        .v-table-row.v-selected,
+        .v-table-row-odd.v-selected{
+            background-color: $color-gray1;
+            border-color: $color-gray1;
+            outline: none;
+            color: inherit;
+        }
+
+        .v-table-row.v-table-focus,
+        .v-table-row-odd.v-table-focus{
+            outline: none;
+        }
+    }
 }
 
 
 .v-table.detail-table {
+
+    margin-top: 16px;
+    font-size: 13px;
 
     .v-scrollable{
         overflow: auto !important;
     }
 
     .v-table-cell-wrapper {
-        text-overflow: ellipsis;
         overflow: hidden;
         max-width: 2000px;
-/*        white-space: pre-wrap;  */
+
+        max-height: 30px;
+        height: 30px;
+        line-height: 15px;
+        text-overflow: ellipsis;
+    }
+
+    .v-table-cell-content{
+        width: 350px;
+        max-height: 30px;
+        padding-top: 2px;
+        padding-bottom: 4px;
+        white-space: normal;
     }
 
 }
 
-.v-table.attribut-table {
-
-    .v-table-cell-wrapper {
-        white-space: pre-wrap;
-    }
-
-}

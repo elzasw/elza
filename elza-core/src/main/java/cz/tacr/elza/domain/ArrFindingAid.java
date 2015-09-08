@@ -1,17 +1,13 @@
 package cz.tacr.elza.domain;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.req.ax.IdObject;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * @author by Ondřej Buriánek, burianek@marbes.cz.
@@ -19,7 +15,7 @@ import cz.req.ax.IdObject;
  */
 @Entity(name = "arr_finding_aid")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrFindingAid extends AbstractVersionableEntity implements IdObject<Integer>, cz.tacr.elza.api.ArrFindingAid, Serializable {
+public class ArrFindingAid extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrFindingAid, Serializable {
 
     @Id
     @GeneratedValue
@@ -59,12 +55,6 @@ public class ArrFindingAid extends AbstractVersionableEntity implements IdObject
     @Override
     public void setCreateDate(final LocalDateTime createDate) {
         this.createDate = createDate;
-    }
-
-    @Override
-    @JsonIgnore
-    public Integer getId() {
-        return findingAidId;
     }
 
     @Override

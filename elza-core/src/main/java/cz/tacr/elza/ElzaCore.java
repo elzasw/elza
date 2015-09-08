@@ -27,11 +27,14 @@ public class ElzaCore {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public static void main(String[] args) {
+        configure();
+        SpringApplication.run(ElzaCore.class, args);
+    }
 
+    public static void configure() {
+        System.setProperty("spring.config.name", "elza");
         System.setProperty("liquibase.databaseChangeLogTableName", "db_databasechangelog");
         System.setProperty("liquibase.databaseChangeLogLockTableName", "db_databasechangeloglock");
-
-        SpringApplication.run(ElzaCore.class, args);
     }
 
     @Bean

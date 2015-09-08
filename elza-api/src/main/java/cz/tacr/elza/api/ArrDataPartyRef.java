@@ -5,6 +5,7 @@ import java.io.Serializable;
 
 
 /**
+ * hodnota atributu archivního popisu typu PartyRef.
  * @author Martin Šlapa
  * @since 1.9.2015
  */

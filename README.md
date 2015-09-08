@@ -20,6 +20,7 @@ Příkaz:
 mvn -Pjdoc,skiptest package
 ```
 Ve složce /target/apidocs se nachází Javadoc dokumentace, otevřete index.html.
+Pro sestavení dokumentace včetně UML diagramů modelu použijte profil jdocuml (je potřeba mít nainstalován Graphviz a v PATH spustitelný dot).
 
 
 ### Sestavení a spuštění embed
@@ -46,16 +47,17 @@ Uživatelské rozhranní najdete na adrese http://localhost:8080/ui.
 
 ## Konfigurace a logování
 
-Aplikace je konfigurována pomocí souboru `application.yaml`. Umístění konfiguračních souborů:
+Aplikace je konfigurována pomocí souboru `elza.yaml`. Umístění konfiguračních souborů:
 
-* vzorové výchozí `elza-core/src/main/resources`
 * war Tomcat `webapps/elza/WEB-INF/classes`
-* embed načítá v aktuální cestě
+* embed načítá v aktuální cestě nebo složce config
 
 ### Databázové připojení
+Do konfigura vložte nastavení datového zdroje. Při prvním připojení se datové struktury vytvoří automaticky.
+
 ```
-spring:
-    datasource:
+elza:
+    data:
         url: jdbc:postgresql://server/databaze
         username: uzivatel
         password: heslo

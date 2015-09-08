@@ -4,10 +4,19 @@ import java.io.Serializable;
 
 
 /**
+ * Nastavení zobrazení archivního popisu pomůcky, respektive jaké atributy budou vidět v
+ * hierarchickém pohledu (stromu) na pomůcku.
+ *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
+ *
+ * @param <AT> {@link RulArrangementType}
+ * @param <RS> {@link RulRuleSet}
  */
-public interface RulFaView<AT extends ArrArrangementType, RS extends RulRuleSet> extends Versionable, Serializable {
+public interface RulFaView<AT extends RulArrangementType, RS extends RulRuleSet>
+        extends
+            Versionable,
+            Serializable {
 
 
     Integer getFaViewId();

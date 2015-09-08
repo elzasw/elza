@@ -15,9 +15,11 @@ public class ConcurrentUpdateExceptionHandler implements Consumer<ActionExceptio
 
     @Override
     public void accept(ActionException ex) {
+        ex.printStackTrace();
         if (ex.getCause() != null && ex.getCause() instanceof ConcurrentUpdateException) {
             ElzaNotifications.showError("Entita byla změněna nebo odstraněna. Načtěte znovu entitu a opakujte akci.");
+        } else {
+            throw ex;
         }
-        ex.printStackTrace();
     }
 }

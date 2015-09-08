@@ -2,7 +2,6 @@ package cz.tacr.elza.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import cz.req.ax.IdObject;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -25,7 +24,7 @@ import javax.persistence.Table;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RegExternalSource implements IdObject<Integer>, cz.tacr.elza.api.RegExternalSource {
+public class RegExternalSource implements  cz.tacr.elza.api.RegExternalSource {
 
     @Id
     @GeneratedValue
@@ -69,12 +68,6 @@ public class RegExternalSource implements IdObject<Integer>, cz.tacr.elza.api.Re
     }
 
     @Override
-    @JsonIgnore
-    public Integer getId() {
-        return externalSourceId;
-    }
-
-    @Override
     public boolean equals(final Object obj) {
         if (!(obj instanceof RegExternalSource)) {
             return false;
@@ -85,12 +78,12 @@ public class RegExternalSource implements IdObject<Integer>, cz.tacr.elza.api.Re
 
         RegExternalSource other = (RegExternalSource) obj;
 
-        return new EqualsBuilder().append(getId(), other.getId()).isEquals();
+        return new EqualsBuilder().append(externalSourceId, other.getExternalSourceId()).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(getId()).toHashCode();
+        return new HashCodeBuilder().append(getExternalSourceId()).toHashCode();
     }
 
 }

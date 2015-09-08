@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+        <!--Verze 1.21 - entita par_abstract_party_name -->
+        <changeSet id="21" author="kuzel" failOnError="true" runOnChange="true">
+            <dropColumn tableName="par_abstract_party_name" columnName="name" />
+
+            <addColumn tableName="par_abstract_party_name">
+                <column name="main_part" type="varchar(255)">
+                </column>
+            </addColumn>
+
+            <addColumn tableName="par_abstract_party_name">
+                <column name="other_part" type="varchar(255)">
+                </column>
+            </addColumn>
+
+            <addColumn tableName="par_abstract_party_name">
+                <column name="annotation" type="text">
+                </column>
+            </addColumn>
+
+            <addColumn tableName="par_abstract_party_name">
+                <column name="degree_before" type="varchar(50)">
+                </column>
+            </addColumn>
+
+            <addColumn tableName="par_abstract_party_name">
+                <column name="degree_after" type="varchar(50)">
+                </column>
+            </addColumn>
+
+            <addColumn tableName="par_abstract_party_name">
+                <column name="valid_from" type="timestamp">
+                </column>
+            </addColumn>
+
+            <addColumn tableName="par_abstract_party_name">
+                <column name="valid_to" type="timestamp">
+                </column>
+            </addColumn>
+
+            <addForeignKeyConstraint constraintName="fk_abstrPartyName_abstrParty"
+                                     baseTableName="par_abstract_party_name"
+                                     baseColumnNames="abstract_party_id"
+                                     referencedTableName="par_abstract_party"
+                                     referencedColumnNames="abstract_party_id"
+                                     onDelete="NO ACTION"/>
+
+        </changeSet>
+</databaseChangeLog>
+
+
+
+
+
+
+
+
+
+

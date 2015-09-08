@@ -1,15 +1,11 @@
 package cz.tacr.elza.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.req.ax.IdObject;
-
 import java.io.Serializable;
 
 /**
@@ -18,7 +14,7 @@ import java.io.Serializable;
  */
 @Entity(name = "rul_rule_set")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class RulRuleSet implements IdObject<Integer>, cz.tacr.elza.api.RulRuleSet, Serializable {
+public class RulRuleSet implements cz.tacr.elza.api.RulRuleSet, Serializable {
 
     @Id
     @GeneratedValue
@@ -42,12 +38,12 @@ public class RulRuleSet implements IdObject<Integer>, cz.tacr.elza.api.RulRuleSe
 
     @Override
     public String getCode() {
-      return code;
+        return code;
     }
 
     @Override
     public void setCode(String code) {
-      this.code = code;
+        this.code = code;
     }
 
     @Override
@@ -63,11 +59,5 @@ public class RulRuleSet implements IdObject<Integer>, cz.tacr.elza.api.RulRuleSe
     @Override
     public String toString() {
         return "RulRuleSet pk=" + ruleSetId;
-    }
-
-    @Override
-    @JsonIgnore
-    public Integer getId() {
-        return ruleSetId;
     }
 }

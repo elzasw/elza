@@ -19,22 +19,9 @@ public class ArrDataRecordRef extends ArrData implements cz.tacr.elza.api.ArrDat
     @Column(nullable = false)
     private Integer recordId;
 
-    @Column(nullable = true)
-    private Integer position;
-
     @Override
     public String getData() {
-        return getPosition() + ";" + getRecordId();
-    }
-
-    @Override
-    public Integer getPosition() {
-        return position;
-    }
-
-    @Override
-    public void setPosition(Integer position) {
-        this.position = position;
+        return getRecordId() + "";
     }
 
     @Override

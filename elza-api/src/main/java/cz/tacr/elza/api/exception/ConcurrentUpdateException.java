@@ -13,4 +13,8 @@ public class ConcurrentUpdateException extends RuntimeException {
         super(e);
     }
 
+    public ConcurrentUpdateException(String msg) {
+        super(msg);
+    }
+
 }

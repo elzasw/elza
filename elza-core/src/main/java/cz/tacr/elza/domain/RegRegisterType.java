@@ -2,7 +2,6 @@ package cz.tacr.elza.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import cz.req.ax.IdObject;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -25,7 +24,7 @@ import javax.persistence.Table;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RegRegisterType implements IdObject<Integer>, cz.tacr.elza.api.RegRegisterType {
+public class RegRegisterType implements  cz.tacr.elza.api.RegRegisterType {
 
     @Id
     @GeneratedValue
@@ -72,12 +71,6 @@ public class RegRegisterType implements IdObject<Integer>, cz.tacr.elza.api.RegR
     }
 
     @Override
-    @JsonIgnore
-    public Integer getId() {
-        return registerTypeId;
-    }
-
-    @Override
     public boolean equals(final Object obj) {
         if (!(obj instanceof RegRegisterType)) {
             return false;
@@ -88,12 +81,12 @@ public class RegRegisterType implements IdObject<Integer>, cz.tacr.elza.api.RegR
 
         RegRegisterType other = (RegRegisterType) obj;
 
-        return new EqualsBuilder().append(getId(), other.getId()).isEquals();
+        return new EqualsBuilder().append(registerTypeId, other.getRegisterTypeId()).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(getId()).toHashCode();
+        return new HashCodeBuilder().append(registerTypeId).toHashCode();
     }
 
 }

@@ -1,23 +1,10 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.req.ax.IdObject;
+import javax.persistence.*;
 
 
 /**
@@ -30,7 +17,7 @@ import cz.req.ax.IdObject;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParAbstractParty extends AbstractVersionableEntity implements IdObject<Integer>, cz.tacr.elza.api.ParAbstractParty<RegRecord, ParPartySubtype> {
+public class ParAbstractParty extends AbstractVersionableEntity implements cz.tacr.elza.api.ParAbstractParty<RegRecord, ParPartySubtype> {
 
     /* Konstanty pro vazby a fieldy. */
     public static final String ABSTRACT_PARTY_ID = "abstractPartyId";
@@ -81,14 +68,8 @@ public class ParAbstractParty extends AbstractVersionableEntity implements IdObj
     }
 
     @Override
-    @JsonIgnore
-    public Integer getId() {
-        return abstractPartyId;
-    }
-
-    @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.api.ParPartySubtype)) {
+        if (!(obj instanceof cz.tacr.elza.api.ParAbstractParty)) {
             return false;
         }
         if (this == obj) {
@@ -97,12 +78,12 @@ public class ParAbstractParty extends AbstractVersionableEntity implements IdObj
 
         ParAbstractParty other = (ParAbstractParty) obj;
 
-        return new EqualsBuilder().append(getId(), other.getId()).isEquals();
+        return new EqualsBuilder().append(abstractPartyId, other.getAbstractPartyId()).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(getId()).toHashCode();
+        return new HashCodeBuilder().append(abstractPartyId).toHashCode();
     }
 
 }

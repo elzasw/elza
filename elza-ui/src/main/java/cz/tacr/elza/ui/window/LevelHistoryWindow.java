@@ -182,7 +182,7 @@ public class LevelHistoryWindow extends AxWindow {
                             .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM));
                     Label labelChangeDate = newLabel(createDataStr);
 
-                    String parentNodeId = (faLevel.getParentNodeId() == null) ? "" : faLevel.getParentNodeId().toString();
+                    String parentNodeId = (faLevel.getParentNode() == null) ? "" : faLevel.getParentNode().getNodeId().toString();
                     Label labelParent = newLabel(parentNodeId);
 
                     String position = (faLevel.getPosition() == null) ? "" : faLevel.getPosition().toString();

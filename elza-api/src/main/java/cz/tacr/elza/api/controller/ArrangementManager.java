@@ -7,17 +7,19 @@ import cz.tacr.elza.api.ArrFaLevel;
 import cz.tacr.elza.api.ArrFaLevelExt;
 import cz.tacr.elza.api.ArrFaVersion;
 import cz.tacr.elza.api.ArrFindingAid;
+import cz.tacr.elza.api.ArrNode;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.ArrDescItemSavePack;
+import cz.tacr.elza.api.vo.ArrFaLevelPack;
 
 
 /**
- *
+ * Rozhraní operací pro archivní pomůcku a hierarchický přehled včetně atributů.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 12. 8. 2015
  */
-public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVersion, DIE extends ArrDescItemExt, DISP extends ArrDescItemSavePack, FL extends ArrFaLevel> {
+public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVersion, DIE extends ArrDescItemExt, DISP extends ArrDescItemSavePack, FL extends ArrFaLevel, FLP extends ArrFaLevelPack, N extends ArrNode> {
     public static final String FORMAT_ATTRIBUTE_FULL = "FULL";
     public static final String FORMAT_ATTRIBUTE_SHORT = "SHORT";
 
@@ -85,69 +87,58 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
     /**
      * Vytvoří nový uzel před předaným uzlem.
      *
-     * @param node        uzel před kterým se má vytvořit nový
+     * @param node        object obsahující uzel a uzel(node) rodiče
      * @return              nový uzel
      */
-    ArrFaLevel addLevelBefore(FL node);
-
-    /**
-     * Vytvoří nový uzel v první úrovni archivní položky
-     *
-     * @param findingAidId    id archivní pomůcky
-     * @return                nový záznam z archivný pomůcky
-     */
-    ArrFaLevel addLevel(Integer findingAidId) ;
+    ArrFaLevel addLevelBefore(FLP node);
 
     /**
      * Vytvoří nový uzel za předaným uzlem.
      *
-     * @param node        uzel za kterým se má vytvořit nový
+     * @param node        object obsahující uzel a uzel(node) rodiče
      * @return              nový uzel
      */
-    ArrFaLevel addLevelAfter(FL node);
+    ArrFaLevel addLevelAfter(FLP node);
 
     /**
      * Vytvoří nový uzel na poslední pozici pod předaným uzlem.
      *
-     * @param node        uzel pod kterým se má vytvořit nový
+     * @param node        object obsahující uzel a uzel(node) rodiče
      * @return            nový uzel
      */
-    ArrFaLevel addLevelChild(FL node);
+    ArrFaLevel addLevelChild(FLP node);
 
     /**
      * Přesune uzel před předaný uzel.
      *
-     * @param node            uzel který se přesouvá
-     * @param followerNode    id uzlu před který se má uzel přesunout
+     * @param node            uzel který se přesouvá s uzlem před který se přesouvá
      * @return                  přesunutý uzel
      */
-    ArrFaLevel moveLevelBefore(FL node, Integer followerNodeId);
+    ArrFaLevel moveLevelBefore(FLP node);
 
     /**
      * Přesune uzel na poslední pozici pod předaným uzlem.
      *
-     * @param node       uzel který se přesouvá
-     * @param parentNode id uzlu pod který se má uzel přesunout
+     * @param node       uzel který se přesouvá s uzlem pod který se přesouvá
      * @return             přesunutý uzel
      */
-    ArrFaLevel moveLevelUnder(FL node, Integer parentNodeId);
+    ArrFaLevel moveLevelUnder(FLP node);
 
     /**
      * Přesune uzel za předaný uzel.
      *
-     * @param node            uzel který se přesouvá
-     * @param predecessorNode id uzlu za který se má uzel přesunout
+     * @param node            uzel který se přesouvá s uzlem za který se přesouvá
      * @return                   přesunutý uzel
      */
-    ArrFaLevel moveLevelAfter(FL node, Integer predecessorNodeId);
+    ArrFaLevel moveLevelAfter(FLP node);
 
     /**
      * Smaže uzel.
      *
-     * @param nodeId            id uzlu který maže
+     * @param node            uzel který se maže s uzlem rodiče
      * @return                  smazaný uzel
      */
-    ArrFaLevel deleteLevel(Integer nodeId);
+    ArrFaLevel deleteLevel(FLP node);
 
     /**
      * Načte uzel podle identifikátoru.
@@ -228,10 +219,10 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
     /**
      * Vymaže atribut archivního popisu.
      *
-     * @param descItemObjectId  id atributu archivního popisu ke smazání
+     * @param descItemExt       atribut archivního popisu ke smazání
      * @return                  upravený(smazaný) atribut archivního popisu
      */
-    DIE deleteDescriptionItem(Integer descItemObjectId);
+    DIE deleteDescriptionItem(DIE descItemExt);
 
 
     /**

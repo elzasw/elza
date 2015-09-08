@@ -1,18 +1,44 @@
 package cz.tacr.elza.controller;
 
+import static com.jayway.restassured.RestAssured.given;
+
+import java.time.LocalDateTime;
+import java.util.function.Function;
+
+import javax.transaction.Transactional;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.IntegrationTest;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.http.HttpMethod;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+
 import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.response.Header;
+import com.jayway.restassured.response.Response;
+import com.jayway.restassured.specification.RequestSpecification;
+
 import cz.tacr.elza.ElzaCore;
 import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFaChange;
 import cz.tacr.elza.domain.ArrFaLevel;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParAbstractParty;
 import cz.tacr.elza.domain.ParPartySubtype;
-import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
@@ -25,6 +51,7 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.AbstractPartyRepository;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataStringRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
@@ -36,26 +63,13 @@ import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.FaViewRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PartySubtypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.repository.VersionRepository;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-
-import javax.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * Abstraktní předek pro testy. Nastavuje REST prostředí.
@@ -69,6 +83,9 @@ import java.util.List;
 @WebAppConfiguration
 public abstract class AbstractRestTest {
 
+
+    private static final Logger logger = LoggerFactory.getLogger(ArrangementManagerTest.class);
+
     protected static final String ARRANGEMENT_MANAGER_URL = "/api/arrangementManager";
     protected static final String RULE_MANAGER_URL = "/api/ruleSetManager";
     protected static final String REGISTRY_MANAGER_URL = "/api/registryManager";
@@ -78,8 +95,12 @@ public abstract class AbstractRestTest {
     protected static final String TEST_NAME = "Test name";
     protected static final String TEST_UPDATE_NAME = "Update name";
 
+    protected static final String DATA_TYP_STRING = "STR";
+    protected static final String DATA_TYP_RECORD = "REC";
+
     protected static final String CONTENT_TYPE_HEADER = "content-type";
     protected static final String JSON_CONTENT_TYPE = "application/json";
+    private static final Header JSON_CT_HEADER = new Header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE);
 
     @Value("${local.server.port}")
     private int port;
@@ -126,6 +147,10 @@ public abstract class AbstractRestTest {
     private RegRecordRepository recordRepository;
     @Autowired
     private PartySubtypeRepository partySubtypeRepository;
+    @Autowired
+    private DataRecordRefRepository dataRecordRefRepository;
+    @Autowired
+    private NodeRepository nodeRepository;
 
     @Before
     public void setUp() {
@@ -138,18 +163,19 @@ public abstract class AbstractRestTest {
 
     @After
     public void setDown() {
-//        descItemConstraintRepository.deleteAll();
+        descItemConstraintRepository.deleteAll();
         faViewRepository.deleteAll();
         versionRepository.deleteAll();
-//        arrangementTypeRepository.deleteAll();
+        arrangementTypeRepository.deleteAll();
         ruleSetRepository.deleteAll();
         findingAidRepository.deleteAll();
         levelRepository.deleteAll();
         arrDataRepository.deleteAll();
         arrDataStringRepository.deleteAll();
         descItemRepository.deleteAll();
-//        descItemSpecRepository.deleteAll();
-//        descItemTypeRepository.deleteAll();
+        descItemSpecRepository.deleteAll();
+        descItemTypeRepository.deleteAll();
+        nodeRepository.deleteAll();
         changeRepository.deleteAll();
     }
 
@@ -173,7 +199,7 @@ public abstract class AbstractRestTest {
         RulRuleSet ruleSet = createRuleSet();
         ArrArrangementType arrangementType = createArrangementType();
 
-        return arrangementManager.createFindingAid(name, arrangementType.getId(), ruleSet.getId());
+        return arrangementManager.createFindingAid(name, arrangementType.getArrangementTypeId(), ruleSet.getRuleSetId());
     }
 
     protected ArrFaVersion createFindingAidVersion(final ArrFindingAid findingAid, boolean isLock) {
@@ -210,7 +236,7 @@ public abstract class AbstractRestTest {
         version.setCreateChange(createChange);
         version.setLockChange(lockChange);
         version.setFindingAid(findingAid);
-        version.setRootNode(root);
+        version.setRootFaLevel(root);
         version.setRuleSet(ruleSet);
 
         return versionRepository.save(version);
@@ -220,33 +246,34 @@ public abstract class AbstractRestTest {
         ArrFaLevel level = new ArrFaLevel();
         level.setPosition(position);
         if (parent != null) {
-            level.setParentNodeId(parent.getNodeId());
+            level.setParentNode(parent.getNode());
         }
         level.setCreateChange(change);
-        Integer maxNodeId = levelRepository.findMaxNodeId();
-        if (maxNodeId == null) {
-            maxNodeId = 0;
-        }
-        level.setNodeId(maxNodeId + 1);
-
+        level.setNode(createNode());
         return levelRepository.save(level);
     }
 
+    protected ArrNode createNode() {
+        ArrNode node = new ArrNode();
+        node.setLastUpdate(LocalDateTime.now());
+        return nodeRepository.save(node);
+    }
+
     @Transactional
-    protected ArrDescItem createAttributs(final Integer nodeId, final Integer position,
-                                          final ArrFaChange change, final int index) {
+    protected ArrDescItem createAttributs(final ArrNode node, final Integer position,
+                                          final ArrFaChange change, final int index, final String typ) {
         RulDescItemType descItemType = createDescItemType(index);
         RulDescItemSpec rulDescItemSpec = createDescItemSpec(descItemType, index);
 
         ArrDescItem item = new ArrDescItem();
-        item.setNodeId(nodeId);
+        item.setNode(node);
         item.setPosition(position);
         item.setCreateChange(change);
         item.setDescItemObjectId(1);
         item.setDescItemType(descItemType);
         item.setDescItemSpec(rulDescItemSpec);
         descItemRepository.save(item);
-        createData(item, index);
+        createData(item, index, typ);
         return item;
     }
 
@@ -258,14 +285,26 @@ public abstract class AbstractRestTest {
         return itemConstraint;
     }
 
-    private ArrData createData(final ArrDescItem item, final int index) {
-        ArrDataString dataStr = new ArrDataString();
-        dataStr.setDescItem(item);
-        RulDataType dataType = dataTypeRepository.getOne(2);
-        dataStr.setDataType(dataType);
-        dataStr.setValue("str data " + index);
-        arrDataStringRepository.save(dataStr);
-        return dataStr;
+    private ArrData createData(final ArrDescItem item, final int index, final String typ) {
+        if (typ == null || DATA_TYP_STRING.equalsIgnoreCase(typ)) {
+            ArrDataString dataStr = new ArrDataString();
+            dataStr.setDescItem(item);
+            RulDataType dataType = dataTypeRepository.getOne(2);
+            dataStr.setDataType(dataType);
+            dataStr.setValue("str data " + index);
+            arrDataStringRepository.save(dataStr);
+            return dataStr;
+        } else if (DATA_TYP_RECORD.equalsIgnoreCase(typ)) {
+            ArrDataRecordRef dataStr = new ArrDataRecordRef();
+            RegRecord record = createRecord();
+            dataStr.setDescItem(item);
+            RulDataType dataType = dataTypeRepository.getOne(2);
+            dataStr.setDataType(dataType);
+            dataStr.setRecordId(record.getRecordId());
+            dataRecordRefRepository.save(dataStr);
+            return dataStr;
+        }
+        return null;
     }
 
     protected RulDescItemType createDescItemType(final int index) {
@@ -374,7 +413,7 @@ public abstract class AbstractRestTest {
         return itemConstraint;
     }
 
-    protected ArrDescItem createArrDescItem(ArrFaChange createFaChange, ArrFaChange deleteFaChange, Integer descItemObjectId, RulDescItemType rulDescItemType, RulDescItemSpec rulDescItemSpec, Integer nodeId, Integer position) {
+    protected ArrDescItem createArrDescItem(ArrFaChange createFaChange, ArrFaChange deleteFaChange, Integer descItemObjectId, RulDescItemType rulDescItemType, RulDescItemSpec rulDescItemSpec, ArrNode node, Integer position) {
         ArrDescItem descItem = new ArrDescItem();
         descItem.setCreateChange(createFaChange);
         descItem.setDeleteChange(deleteFaChange);
@@ -391,7 +430,7 @@ public abstract class AbstractRestTest {
         descItem.setDescItemObjectId(descItemObjectId);
         descItem.setDescItemType(rulDescItemType);
         descItem.setDescItemSpec(rulDescItemSpec);
-        descItem.setNodeId(nodeId);
+        descItem.setNode(node);
         descItem.setPosition(position);
         descItemRepository.save(descItem);
         return descItem;
@@ -483,7 +522,7 @@ public abstract class AbstractRestTest {
         return party;
     }
 
-    protected RulFaView createFaView(RulRuleSet ruleSet, ArrArrangementType arrangementType, List<Integer> ids) {
+    protected RulFaView createFaView(RulRuleSet ruleSet, ArrArrangementType arrangementType, Integer[] ids) {
         RulFaView view = new RulFaView();
         view.setArrangementType(arrangementType);
         view.setRuleSet(ruleSet);
@@ -498,5 +537,61 @@ public abstract class AbstractRestTest {
         view.setViewSpecification(specification);
 
         return faViewRepository.save(view);
+    }
+
+
+    public static Response put(Function<RequestSpecification, RequestSpecification> params, String url) {
+        return httpMethod(params, url, HttpMethod.PUT);
+    }
+
+    public static Response get(Function<RequestSpecification, RequestSpecification> params, String url) {
+        return httpMethod(params, url, HttpMethod.GET);
+    }
+
+    public static Response get(String url) {
+        return httpMethod((spec) -> spec, url, HttpMethod.GET);
+    }
+
+    public static Response httpMethod(Function<RequestSpecification, RequestSpecification> params, String url, HttpMethod method) {
+        Assert.assertNotNull(params);
+        Assert.assertNotNull(url);
+        Assert.assertNotNull(method);
+
+        RequestSpecification requestSpecification = params.apply(given());
+
+        requestSpecification.header(JSON_CT_HEADER).log().all();
+
+        Response response = null;
+        switch (method) {
+            case GET:
+                response = requestSpecification.get(url);
+                break;
+            case PUT:
+                response = requestSpecification.put(url);
+                break;
+            case DELETE:
+                response = requestSpecification.delete(url);
+                break;
+            case HEAD:
+                response = requestSpecification.head(url);
+                break;
+            case OPTIONS:
+                response = requestSpecification.options(url);
+                break;
+            case PATCH:
+                response = requestSpecification.patch(url);
+                break;
+            case POST:
+                response = requestSpecification.post(url);
+                break;
+            default:
+                throw new IllegalStateException("Nedefinovaný stav " + method + ".");
+        }
+
+        logger.info("Response status: " + response.statusLine() + ", response body:");
+        response.prettyPrint();
+        Assert.assertEquals(200, response.statusCode());
+
+        return response;
     }
 }

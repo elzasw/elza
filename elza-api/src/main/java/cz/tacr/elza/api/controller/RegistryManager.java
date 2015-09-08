@@ -10,28 +10,29 @@ import java.util.List;
 
 /**
  * Rozhraní operací pro rejstřík.
+ * 
+ * @author vavrejn
+ *
+ * @param <RR> {@link RegRecord}
+ * @param <VR> {@link RegVariantRecord}
  */
 public interface RegistryManager<RR extends RegRecord, VR extends RegVariantRecord> {
 
     /**
      * Vytvoření nového záznamu.
      *
-     * @param regRecord         naplněný objekt, bez vazeb
-     * @param registerTypeId    id typu rejstříku
-     * @param externalSourceId  id externího zdroje, může být null
+     * @param regRecord         naplněný objekt
      * @return              nově vytvořený objekt
      */
-    RR createRecord(RR regRecord, Integer registerTypeId, Integer externalSourceId);
+    RR createRecord(RR regRecord);
 
     /**
      * Update záznamu.
      *
-     * @param record            naplněný objekt s vlastním ID, bez vazeb
-     * @param registerTypeId    id typu rejstříku
-     * @param externalSourceId  id externího zdroje, může být null
+     * @param record            naplněný objekt s vlastním ID
      * @return                  změněný objekt
      */
-    RegRecord updateRecord(RR record, Integer registerTypeId, Integer externalSourceId);
+    RegRecord updateRecord(RR record);
 
     /**
      * Smaže entity které používají daný záznam a pak záznam samotný.
@@ -47,7 +48,7 @@ public interface RegistryManager<RR extends RegRecord, VR extends RegVariantReco
      * @param regRecordId       id nadřazeného záznamu rejstříku
      * @return                  nově vytvořený objekt
      */
-    RegVariantRecord createVariantRecord(VR variantRecord, Integer regRecordId);
+    RegVariantRecord createVariantRecord(VR variantRecord);
 
     /**
      * Vytvoří nový variantní záznam rejstříku.
@@ -56,7 +57,7 @@ public interface RegistryManager<RR extends RegRecord, VR extends RegVariantReco
      * @param regRecordId       id nadřazeného záznamu rejstříku
      * @return                  nově vytvořený objekt
      */
-    RegVariantRecord updateVariantRecord(VR variantRecord, Integer regRecordId);
+    RegVariantRecord updateVariantRecord(VR variantRecord);
 
     /**
      * Smaže variantní záznam.

@@ -3,13 +3,14 @@ package cz.tacr.elza.domain.vo;
 import java.util.List;
 
 import cz.tacr.elza.domain.ArrDescItemExt;
+import cz.tacr.elza.domain.ArrNode;
 
 
 /**
  * @author Martin Šlapa
  * @since 28.8.2015
  */
-public class ArrDescItemSavePack implements cz.tacr.elza.api.vo.ArrDescItemSavePack<ArrDescItemExt> {
+public class ArrDescItemSavePack implements cz.tacr.elza.api.vo.ArrDescItemSavePack<ArrDescItemExt, ArrNode> {
 
     private List<ArrDescItemExt> descItems;
 
@@ -18,6 +19,8 @@ public class ArrDescItemSavePack implements cz.tacr.elza.api.vo.ArrDescItemSaveP
     private Integer faVersionId;
 
     private Boolean createNewVersion;
+
+    private ArrNode node;
 
     @Override
     public List<ArrDescItemExt> getDescItems() {
@@ -57,6 +60,16 @@ public class ArrDescItemSavePack implements cz.tacr.elza.api.vo.ArrDescItemSaveP
     @Override
     public void setCreateNewVersion(Boolean createNewVersion) {
         this.createNewVersion = createNewVersion;
+    }
+
+    @Override
+    public ArrNode getNode() {
+        return node;
+    }
+
+    @Override
+    public void setNode(ArrNode node) {
+        this.node = node;
     }
 
 }

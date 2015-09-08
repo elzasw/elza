@@ -10,6 +10,7 @@ body.v-generated-body {
 $color-app: #0095ba;
 $color-app-alt: #012e58;
 $color-gray1: #e7e7e7;
+$color-gray2: #a2a2a2;
 $color-title: #606262;
 $v-focus-color: $color-app;
 $ax-main-focus: $color-app;
@@ -98,11 +99,17 @@ $ax-main-focus: $color-app;
         float: right;
     }
 
+    .margin-top{
+        margin-top: 10px;
+    }
+
 
 
     .level-detail {
         width: 50%;
         padding-left: 15px;
+        height: calc(100vh - 165px) !important;
+        overflow-y: auto;
 
         .detail-content{
             width: 100%;
@@ -113,36 +120,60 @@ $ax-main-focus: $color-app;
         }
     }
 
+    .wrapper-item {
+        display: block;
+
+        .v-button {
+            margin: 10px;
+        }
+    }
+
     .container-values {
-        > .v-csslayout {
+        .v-csslayout {
             display: table-row;
         }
 
         .v-button {
-            display: inline-block;
             margin: 10px;
         }
+
+        .sort-icon {
+            margin-top: 10px;
+            padding: 6px 5px 7px 5px;
+            color: gray;
+        }
+
+        .sort-icon:hover {
+            color: black;
+        }
+
     }
 
     .attribut-value {
 
         .small-input {
-            width: 50px;
+            width: 100px;
         }
 
         .long-input {
-            width: 300px;
+            width: 400px;
         }
 
         textarea {
+            width: 400px;
+        }
 
+        .attribut-spec {
+            margin-right: 10px;
         }
     }
 
-    .new-attribut-button {
-
+    .label-name {
         display: block;
+    }
 
+    .new-attribut-button {
+        display: table;
     }
 
 }
