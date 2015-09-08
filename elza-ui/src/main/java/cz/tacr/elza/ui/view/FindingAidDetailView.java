@@ -193,7 +193,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
             addActionMenu(container);
             table.setVisibleColumns(sloupceId.toArray());
         } else {
-            addActionHistMenu(container);
+            addActionHistMenu();
             table.setVisibleColumns(sloupceId.toArray());
             if (version.getFindingAid() == null
                     || (!version.getFindingAid().getFindingAidId().equals(findingAidId))) {
@@ -516,15 +516,13 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                 }).exception(new ConcurrentUpdateExceptionHandler()).menuItem(parent);
                 child.setStyleName("show-if-cut");
 
-                child = new AxAction().caption("Zobrazit historii").icon(FontAwesome.CALENDAR).run(() -> {
-                    showVersionHistory(((ArrFaLevel) itemId).getNode().getNodeId());
-                }).menuItem(parent);
+                child = createHistoryMenuItem((ArrFaLevel) itemId).menuItem(parent);
                 return menuBar;
             }
         });
     }
 
-    private void addActionHistMenu(HierarchicalCollapsibleBeanItemContainer container) {
+    private void addActionHistMenu() {
         table.addGeneratedColumn("Akce", new Table.ColumnGenerator() {
             @Override
             public Object generateCell(final Table source, final Object itemId, final Object columnId) {
@@ -533,13 +531,17 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                 MenuBar menuBar = new MenuBar();
 
                 MenuBar.MenuItem parent = menuBar.addItem("", FontAwesome.ALIGN_JUSTIFY, null);
-                MenuBar.MenuItem child = new AxAction().caption("Zobrazit historii").icon(FontAwesome.CALENDAR)
-                        .run(() -> {
-                            showVersionHistory((Integer) itemId);
-                        }).menuItem(parent);
+                createHistoryMenuItem((ArrFaLevel) itemId).menuItem(parent);
                 return menuBar;
             }
         });
+    }
+
+    private AxAction createHistoryMenuItem(ArrFaLevel faLevel) {
+        return new AxAction().caption("Zobrazit historii").icon(FontAwesome.CALENDAR)
+            .run(() -> {
+                showVersionHistory(faLevel);
+            });
     }
 
     private boolean checkPaste() {
@@ -838,9 +840,9 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
         return form;
     }
 
-    private LevelHistoryWindow showVersionHistory(final Integer nodeId) {
+    private LevelHistoryWindow showVersionHistory(final ArrFaLevel faLevel) {
         LevelHistoryWindow window = new LevelHistoryWindow(arrangementManager);
-        window.show(nodeId, findingAidId);
+        window.show(faLevel.getNode().getNodeId(), findingAidId);
         return window;
     }
 
