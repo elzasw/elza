@@ -1,10 +1,10 @@
 package cz.tacr.elza.api.controller;
 
+import java.util.List;
+
 import cz.tacr.elza.api.ParAbstractParty;
 import cz.tacr.elza.api.ParAbstractPartyVals;
-import cz.tacr.elza.api.ParPartyType;
-
-import java.util.List;
+import cz.tacr.elza.api.ParPartyTypeExt;
 
 /**
  * Rozhraní operací pro osoby a rejstřík.
@@ -12,17 +12,17 @@ import java.util.List;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 12. 8. 2015
  *
- * @param <PAPV> {@link ParAbstractPartyVals}
+ * @param <PAPV> {@link ParAbstractParty}
  */
-public interface PartyManager<PAPV extends ParAbstractPartyVals> {
+public interface PartyManager<PAPV extends ParAbstractParty> {
 
 
     /**
-     * Vrátí všechny typy osob včetně podtypu.
+     * Vrátí všechny typy osob včetně podtypů.
      * 
      * @return typy osob včetně podtypu.
      */
-    List<? extends ParPartyType> getPartyTypes();
+    List<? extends ParPartyTypeExt> getPartyTypes();
 
     /**
      * Vloží záznam o abstraktní osobě. Je umožněno vložit návázané rejstříkové heslo a podtyp.
@@ -36,10 +36,10 @@ public interface PartyManager<PAPV extends ParAbstractPartyVals> {
      * Upraví záznam abstraktní osoby. Je umožněna změna rejstříkového hesla a podtypu.
      * 
      * @param abstractPartyId id záznamu pro aktualizaci.
-     * @param abstractParty data o abstraktní osobě pro aktualizaci {@link ParAbstractPartyVals}.
+     * @param abstractParty data o abstraktní osobě pro aktualizaci {@link ParAbstractParty}.
      * @return Aktualizovaný záznam.
      */
-    ParAbstractParty updateAbstractParty(Integer abstractPartyId, PAPV abstractParty);
+    ParAbstractParty updateAbstractParty(PAPV abstractParty);
 
     /**
      * Smaže abstraktní osobu.

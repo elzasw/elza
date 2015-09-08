@@ -123,6 +123,11 @@ public class RegistryManagerTest extends AbstractRestTest {
 
         Assert.assertEquals(200, response.statusCode());
         Assert.assertEquals(countStart, countEnd + 1);
+        
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(RECORD_ID_ATT, 874522214)
+                .get(DELETE_RECORD_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
     }
 
     /**
@@ -182,6 +187,11 @@ public class RegistryManagerTest extends AbstractRestTest {
 
         Assert.assertEquals(200, response.statusCode());
         Assert.assertEquals(countStart, countEnd + 1);
+
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(VARIANT_RECORD_ID_ATT, 1278544547)
+                .get(DELETE_VARIANT_RECORD_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
     }
 
     /**

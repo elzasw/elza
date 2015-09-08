@@ -407,75 +407,90 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @Override
     @Transactional
     @RequestMapping(value = "/addLevelBefore", method = RequestMethod.PUT)
-    public ArrFaLevel addLevelBefore(@RequestBody ArrFaLevelWithExtraNode levelWithParentNode){
+    public ArrFaLevelWithExtraNode addLevelBefore(@RequestBody ArrFaLevelWithExtraNode levelWithParentNode){
         Assert.notNull(levelWithParentNode);
         ArrFaLevel node = levelWithParentNode.getFaLevel();
         ArrNode parentNode = levelWithParentNode.getExtraNode();
-        Assert.notNull(node);
-        Assert.notNull(parentNode);
+
+        isValidArrFaLevel(node);
+        isValidNode(parentNode);
 
         ArrFaChange change = createChange();
         ArrFaLevel faLevelRet = createBeforeInLevel(change, node);
         parentNode.setLastUpdate(LocalDateTime.now());
-        nodeRepository.save(parentNode);
-        return faLevelRet;
+        parentNode = nodeRepository.save(parentNode);
+
+        ArrFaLevelWithExtraNode levelWithParentNodeRet = new ArrFaLevelWithExtraNode();
+        levelWithParentNodeRet.setFaLevel(faLevelRet);
+        levelWithParentNodeRet.setExtraNode(parentNode);
+
+        return levelWithParentNodeRet;
     }
 
     @Override
     @Transactional
     @RequestMapping(value = "/addLevelAfter", method = RequestMethod.PUT)
-    public ArrFaLevel addLevelAfter(@RequestBody ArrFaLevelWithExtraNode levelWithParentNode) {
+    public ArrFaLevelWithExtraNode addLevelAfter(@RequestBody ArrFaLevelWithExtraNode levelWithParentNode) {
         Assert.notNull(levelWithParentNode);
         ArrFaLevel node = levelWithParentNode.getFaLevel();
         ArrNode parentNode = levelWithParentNode.getExtraNode();
-        Assert.notNull(node);
-        Assert.notNull(parentNode);
 
+        isValidArrFaLevel(node);
+        isValidNode(parentNode);
 
         ArrFaChange change = createChange();
         ArrFaLevel faLevelRet = createAfterInLevel(change, node);
+
         parentNode.setLastUpdate(LocalDateTime.now());
-        nodeRepository.save(parentNode);
-        return faLevelRet;
+        parentNode = nodeRepository.save(parentNode);
+
+        ArrFaLevelWithExtraNode levelWithParentNodeRet = new ArrFaLevelWithExtraNode();
+        levelWithParentNodeRet.setFaLevel(faLevelRet);
+        levelWithParentNodeRet.setExtraNode(parentNode);
+
+        return levelWithParentNodeRet;
     }
 
     @Override
     @Transactional
     @RequestMapping(value = "/addLevelChild", method = RequestMethod.PUT)
-    public ArrFaLevel addLevelChild(@RequestBody ArrFaLevelWithExtraNode levelWithParentNode) {
+    public ArrFaLevelWithExtraNode addLevelChild(@RequestBody ArrFaLevelWithExtraNode levelWithParentNode) {
         Assert.notNull(levelWithParentNode);
 
         ArrFaLevel node = levelWithParentNode.getFaLevel();
-        ArrNode parentNode = levelWithParentNode.getExtraNode();
-        Assert.notNull(node);
+        //ArrNode parentNode = levelWithParentNode.getExtraNode();
+        isValidArrFaLevel(node);
 
         ArrFaChange change = createChange();
         ArrFaLevel faLevelRet = createLastInLevel(change, node);
 
-        if (parentNode != null) { // TODO: kontrolovat null jen u root uzlu, jinak nesmí být null (asi by se měla udělat extra metoda na přidávání do root uzlu)
-            parentNode.setLastUpdate(LocalDateTime.now());
-            nodeRepository.save(parentNode);
-        }
+        node.getNode().setLastUpdate(LocalDateTime.now());
+        node.setNode(nodeRepository.save(node.getNode()));
 
-        return faLevelRet;
+        ArrFaLevelWithExtraNode levelWithParentNodeRet = new ArrFaLevelWithExtraNode();
+        levelWithParentNodeRet.setFaLevel(faLevelRet);
+        levelWithParentNodeRet.setExtraNode(node.getNode());
+
+        return levelWithParentNodeRet;
     }
 
     @Override
     @Transactional
     @RequestMapping(value = "/moveLevelBefore", method = RequestMethod.PUT)
-    public ArrFaLevel moveLevelBefore(@RequestBody ArrFaLevelWithExtraNode levelWithFollowerNode) {
+    public ArrFaLevelWithExtraNode moveLevelBefore(@RequestBody ArrFaLevelWithExtraNode levelWithFollowerNode) {
         Assert.notNull(levelWithFollowerNode);
 
         ArrFaLevel node = levelWithFollowerNode.getFaLevel();
         ArrNode followerNode = levelWithFollowerNode.getExtraNode();
-        Assert.notNull(node);
-        Assert.notNull(followerNode);
+
+        isValidArrFaLevel(node);
+        isValidNode(followerNode);
 
         if (followerNode == null) {
             throw new IllegalArgumentException("Přesun se nezdařil. Záznam byl pravděpodobně smazán jiným uživatelem. Aktualizujte stránku");
         }
 
-        ArrFaLevel follower = levelRepository.findByNodeAndDeleteChangeIsNull(followerNode);
+        ArrFaLevel follower = findNodeInRootTreeByNodeId(followerNode, levelWithFollowerNode.getRootNode());
 
         if(node == null || follower == null){
             throw new IllegalArgumentException("Přesun se nezdařil. Záznam byl pravděpodobně smazán jiným uživatelem. Aktualizujte stránku");
@@ -510,29 +525,35 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrFaLevel newLevel = createNewLevelVersion(node, change);
         ArrFaLevel faLevelRet = addInLevel(newLevel, follower.getParentNode(), position);
-        node.getNode().setLastUpdate(LocalDateTime.now());
-        nodeRepository.save(node.getNode());
+        faLevelRet.getNode().setLastUpdate(LocalDateTime.now());
+        faLevelRet.setNode(nodeRepository.save(faLevelRet.getNode()));
         followerNode.setLastUpdate(LocalDateTime.now());
-        nodeRepository.save(followerNode);
-        return faLevelRet;
+        followerNode = nodeRepository.save(followerNode);
+
+        ArrFaLevelWithExtraNode levelWithFollowerNodeRet = new ArrFaLevelWithExtraNode();
+        levelWithFollowerNodeRet.setFaLevel(faLevelRet);
+        levelWithFollowerNodeRet.setExtraNode(followerNode);
+
+        return levelWithFollowerNodeRet;
     }
 
     @Override
     @Transactional
     @RequestMapping(value = "/moveLevelUnder", method = RequestMethod.PUT)
-    public ArrFaLevel moveLevelUnder(@RequestBody ArrFaLevelWithExtraNode levelWithUnderNode) {
+    public ArrFaLevelWithExtraNode moveLevelUnder(@RequestBody ArrFaLevelWithExtraNode levelWithUnderNode) {
         Assert.notNull(levelWithUnderNode);
 
         ArrFaLevel node = levelWithUnderNode.getFaLevel();
         ArrNode parentNode = levelWithUnderNode.getExtraNode();
-        Assert.notNull(node);
-        Assert.notNull(parentNode);
+
+        isValidArrFaLevel(node);
+        isValidNode(parentNode);
 
         if(parentNode == null){
             throw new IllegalArgumentException("Přesun se nezdařil. Záznam byl pravděpodobně smazán jiným uživatelem. Aktualizujte stránku");
         }
 
-        ArrFaLevel parent = levelRepository.findByNodeAndDeleteChangeIsNull(parentNode);
+        ArrFaLevel parent = findNodeInRootTreeByNodeId(parentNode, levelWithUnderNode.getRootNode());
         if(node == null || parent == null){
             throw new IllegalArgumentException("Přesun se nezdařil. Záznam byl pravděpodobně smazán jiným uživatelem. Aktualizujte stránku");
         }
@@ -550,30 +571,36 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrFaLevel faLevelRet = addLastInLevel(newLevel, parent.getNode());
 
-        node.getNode().setLastUpdate(LocalDateTime.now());
-        nodeRepository.save(node.getNode());
+        faLevelRet.getNode().setLastUpdate(LocalDateTime.now());
+        faLevelRet.setNode(nodeRepository.save(faLevelRet.getNode()));
 
         parentNode.setLastUpdate(LocalDateTime.now());
-        nodeRepository.save(parentNode);
-        return faLevelRet;
+        parentNode = nodeRepository.save(parentNode);
+
+        ArrFaLevelWithExtraNode levelWithPredecessorNodeRet = new ArrFaLevelWithExtraNode();
+        levelWithPredecessorNodeRet.setFaLevel(faLevelRet);
+        levelWithPredecessorNodeRet.setExtraNode(parentNode);
+
+        return levelWithPredecessorNodeRet;
     }
 
     @Override
     @Transactional
     @RequestMapping(value = "/moveLevelAfter", method = RequestMethod.PUT)
-    public ArrFaLevel moveLevelAfter(@RequestBody ArrFaLevelWithExtraNode levelWithPredecessorNode) {
+    public ArrFaLevelWithExtraNode moveLevelAfter(@RequestBody ArrFaLevelWithExtraNode levelWithPredecessorNode) {
         Assert.notNull(levelWithPredecessorNode);
 
         ArrFaLevel node = levelWithPredecessorNode.getFaLevel();
         ArrNode predecessorNode = levelWithPredecessorNode.getExtraNode();
-        Assert.notNull(node);
-        Assert.notNull(predecessorNode);
+
+        isValidArrFaLevel(node);
+        isValidNode(predecessorNode);
 
         if(predecessorNode == null){
             throw new IllegalArgumentException("Přesun se nezdařil. Záznam byl pravděpodobně smazán jiným uživatelem. Aktualizujte stránku");
         }
 
-        ArrFaLevel predecessor = levelRepository.findByNodeAndDeleteChangeIsNull(predecessorNode);
+        ArrFaLevel predecessor = findNodeInRootTreeByNodeId(predecessorNode, levelWithPredecessorNode.getRootNode());
         if(node == null || predecessor == null){
             throw new IllegalArgumentException("Přesun se nezdařil. Záznam byl pravděpodobně smazán jiným uživatelem. Aktualizujte stránku");
         }
@@ -608,23 +635,104 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrFaLevel faLevelRet = addInLevel(newLevel, predecessor.getParentNode(), position);
 
-        node.getNode().setLastUpdate(LocalDateTime.now());
-        nodeRepository.save(node.getNode());
+        faLevelRet.getNode().setLastUpdate(LocalDateTime.now());
+        faLevelRet.setNode(nodeRepository.save(faLevelRet.getNode()));
         predecessorNode.setLastUpdate(LocalDateTime.now());
-        nodeRepository.save(predecessorNode);
-        return faLevelRet;
+        predecessorNode = nodeRepository.save(predecessorNode);
+
+        ArrFaLevelWithExtraNode levelWithPredecessorNodeRet = new ArrFaLevelWithExtraNode();
+        levelWithPredecessorNodeRet.setFaLevel(faLevelRet);
+        levelWithPredecessorNodeRet.setExtraNode(predecessorNode);
+
+        return levelWithPredecessorNodeRet;
     }
+
+    /**
+     * Kontrola uzlu, že existuje v DB.
+     * @param node  Kontrolovaný uzel
+     */
+    private void isValidNode(final ArrNode node) {
+        Assert.notNull(node);
+        ArrNode nodeDB = nodeRepository.findOne(node.getNodeId());
+        if (nodeDB == null) {
+            throw new IllegalArgumentException("Neplatný uzel");
+        }
+    }
+
+    /**
+     * Kontrola uzlu, že existuje v DB a není smazán.
+     * @param node  Kontrolovaný uzel
+     */
+    private void isValidArrFaLevel(final ArrFaLevel node) {
+        Assert.notNull(node);
+        ArrFaLevel nodeDB = levelRepository.findOne(node.getFaLevelId());
+        if (nodeDB == null) {
+            throw new IllegalArgumentException("Neplatný uzel");
+        }
+        /*if (nodeDB.getDeleteChange() != null) {
+            throw new IllegalArgumentException("Uzel je již smazaný");
+        }*/
+    }
+
+    /**
+     * Zjistí, jestli je daný node ve stejném stromu, jako je daný kořen. Pokud máme dva nody se stejným nodeId v
+     * různých stromech, je potřeba najít tu entitu pro konkrétní strom.
+     *
+     * @param node     id nodu
+     * @param rootNode id kořenu
+     * @return nalezený level pro daný strom nebo null, pokud nebyl nalezen
+     */
+    private ArrFaLevel findNodeInRootTreeByNodeId(final ArrNode node, final ArrNode rootNode) {
+        List<ArrFaLevel> levelsByNode = levelRepository.findByNodeAndDeleteChangeIsNull(node);
+
+        if (levelsByNode.isEmpty()) {
+            throw new IllegalArgumentException("Nebyl nalezen level s nodeId " + node.getNodeId());
+        } else if (levelsByNode.size() == 1) {
+            return levelsByNode.iterator().next();
+        }
+
+
+        for (ArrFaLevel arrFaLevel : levelsByNode) {
+            if (isLevelInRootTree(arrFaLevel, rootNode)) {
+                return arrFaLevel;
+            }
+        }
+
+        return null;
+    }
+
+    private boolean isLevelInRootTree(final ArrFaLevel level, final ArrNode rootNode) {
+        if (level.getNode().equals(rootNode) || rootNode.equals(level.getParentNode())) {
+            return true;
+        }
+
+        List<ArrFaLevel> levelsByNode = levelRepository.findByNodeAndDeleteChangeIsNull(level.getParentNode());
+
+        boolean result = false;
+        for (ArrFaLevel parentLevel : levelsByNode) {
+            result = result || isLevelInRootTree(parentLevel, rootNode);
+        }
+
+        return result;
+    }
+
 
     private void checkCycle(ArrFaLevel movedNode, ArrFaLevel targetNode) {
         Assert.notNull(movedNode);
         Assert.notNull(targetNode);
 
         ArrFaLevel node = targetNode;
-        while (node.getParentNode() != null) {
-            if (movedNode.getNode().equals(node.getParentNode())) {
-                throw new IllegalStateException("Přesouvaný uzel je rodičem cílového uzlu. Přesun nelze provést.");
-            }
-            node = levelRepository.findByNodeAndDeleteChangeIsNull(node.getParentNode());
+        if (node.getParentNode() == null) {
+            return;
+        }
+
+        if (movedNode.getNode().equals(node.getParentNode())) {
+            throw new IllegalStateException("Přesouvaný uzel je rodičem cílového uzlu. Přesun nelze provést.");
+        }
+
+        List<ArrFaLevel> parentNodes = levelRepository.findByNodeAndDeleteChangeIsNull(node.getParentNode());
+        for (ArrFaLevel parentNode : parentNodes) {
+            checkCycle(movedNode, parentNode);
         }
     }
 
@@ -682,58 +790,36 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @Override
     @Transactional
     @RequestMapping(value = "/deleteLevel", method = RequestMethod.PUT)
-    public ArrFaLevel deleteLevel(@RequestBody ArrFaLevelWithExtraNode levelWithParentNode) {
+    public ArrFaLevelWithExtraNode deleteLevel(@RequestBody ArrFaLevelWithExtraNode levelWithParentNode) {
         Assert.notNull(levelWithParentNode);
 
-        ArrFaLevel faLevel = levelWithParentNode.getFaLevel();
-        ArrNode node = faLevel.getNode();
+        ArrFaLevel level = levelWithParentNode.getFaLevel();
+        ArrNode node = level.getNode();
         ArrNode parentNode = levelWithParentNode.getExtraNode();
 
         if(node == null){
             throw new IllegalArgumentException("Záznam neexistuje");
         }
-
-        ArrFaLevel level = levelRepository.findByNodeAndDeleteChangeIsNull(node);
+         //TODO kubovy smazání uzlu
+        //ArrFaLevel level = levelRepository.findFirstByNodeAndDeleteChangeIsNull(node);
         ArrFaChange change = createChange();
         level.setDeleteChange(change);
         shiftNodesUp(nodesToShift(level), change);
 
-        node.setLastUpdate(LocalDateTime.now());
-        nodeRepository.save(node);
+        level = levelRepository.save(level);
+
+        ArrFaLevelWithExtraNode levelWithParentNodeRet = new ArrFaLevelWithExtraNode();
+
+        // zámky
+        level.getNode().setLastUpdate(LocalDateTime.now());
+        level.setNode(nodeRepository.save(level.getNode()));
         parentNode.setLastUpdate(LocalDateTime.now());
-        nodeRepository.save(parentNode);
-        return levelRepository.save(level);
-    }
+        parentNode = nodeRepository.save(parentNode);
 
-    @Override
-    @RequestMapping(value = "/findLevelByNodeId", method = RequestMethod.GET)
-    public ArrFaLevel findLevelByNodeId(@RequestParam("nodeId") Integer nodeId, @RequestParam("versionId") Integer versionId) {
-        Assert.notNull(nodeId);
+        levelWithParentNodeRet.setFaLevel(level);
+        levelWithParentNodeRet.setExtraNode(parentNode);
 
-        ArrNode node = nodeRepository.findOne(nodeId);
-
-        if(node == null){
-            throw new IllegalArgumentException("Záznam neexistuje");
-        }
-
-        ArrFaChange change = null;
-        if (versionId != null) {
-            ArrFaVersion version = versionRepository.findOne(versionId);
-            change = version.getLockChange();
-        }
-
-        final ArrFaLevel level;
-        if (change == null) {
-            level = levelRepository.findByNodeAndDeleteChangeIsNull(node);
-        } else {
-            level = levelRepository.findByNodeOrderByPositionAsc(node, change);
-        }
-
-        if (level == null) {
-            throw new IllegalStateException("Nebyl nalezen záznam podle nodId " + nodeId + " a versionId " + versionId);
-        }
-
-        return level;
+        return levelWithParentNodeRet;
     }
 
     @Override
@@ -860,15 +946,17 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
 
         ArrFaChange change = null;
+        ArrFaVersion version = null;
         if (versionId != null) {
-            ArrFaVersion version = versionRepository.findOne(versionId);
+            version = versionRepository.findOne(versionId);
             change = version.getLockChange();
         }
 
         final ArrFaLevel level;
         final List<ArrData> dataList;
         if (change == null) {
-            level = levelRepository.findByNodeAndDeleteChangeIsNull(node);
+            level = version == null ? levelRepository.findFirstByNodeAndDeleteChangeIsNull(node)
+                                    : findNodeInRootTreeByNodeId(node, version.getRootFaLevel().getNode());
             dataList = arrDataRepository.findByNodeAndDeleteChangeIsNull(node);
         } else {
             level = levelRepository.findByNodeOrderByPositionAsc(node, change);

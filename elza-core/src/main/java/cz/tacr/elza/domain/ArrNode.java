@@ -7,8 +7,12 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 
 /**
  * @author Martin Šlapa
@@ -41,5 +45,30 @@ public class ArrNode extends AbstractVersionableEntity implements cz.tacr.elza.a
 
     public void setLastUpdate(LocalDateTime lastUpdate) {
         this.lastUpdate = lastUpdate;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (!(obj instanceof ArrNode)) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+        ArrNode other = (ArrNode) obj;
+        return EqualsBuilder.reflectionEquals(nodeId, other.getNodeId());
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder().append(nodeId).toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "ArrNode{" +
+                "nodeId=" + nodeId +
+                ", lastUpdate=" + lastUpdate +
+                '}';
     }
 }

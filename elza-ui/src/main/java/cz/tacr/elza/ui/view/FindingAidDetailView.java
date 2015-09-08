@@ -52,6 +52,7 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.ArrFaLevelWithExtraNode;
 import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
+import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.ui.ElzaView;
 import cz.tacr.elza.ui.components.LevelInlineDetail;
 import cz.tacr.elza.ui.components.TreeTable;
@@ -84,6 +85,9 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
 
     @Autowired
     private RegistryManager registryManager;
+
+    @Autowired
+    private LevelRepository levelRepository;
 
     private Integer findingAidId;
     private ArrFaVersion version;
@@ -127,7 +131,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
         pageTitle(findingAid.getName());
         addActionsButtons(version.getLockChange() != null);
 
-        rootNode = arrangementManager.findLevelByNodeId(version.getRootFaLevel().getNode().getNodeId() , version.getFaVersionId());
+        rootNode = version.getRootFaLevel();
         HierarchicalCollapsibleBeanItemContainer container = new HierarchicalCollapsibleBeanItemContainer(null, rootNode.getNode().getNodeId());
 
 
@@ -336,11 +340,18 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                     ArrFaLevelWithExtraNode faLevelWithExtraNode = new ArrFaLevelWithExtraNode();
                     faLevelWithExtraNode.setFaLevel(node);
                     faLevelWithExtraNode.setExtraNode(node.getParentNode());
-                    ArrFaLevel level = arrangementManager.addLevelBefore(faLevelWithExtraNode);
+                    faLevelWithExtraNode.setRootNode(version.getRootFaLevel().getNode());
+                    ArrFaLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager.addLevelBefore(faLevelWithExtraNode);
+                    ArrFaLevel level = faLevelWithExtraNodeRet.getFaLevel();
+                    node.setParentNode(faLevelWithExtraNodeRet.getExtraNode());
+
                     BeanItem item = (BeanItem) container.addItemAt(container.indexOfId(node), level);
 
                     initNewItemInContainer(item, level, container);
                     repositionLowerSiblings(level, level.getPosition() + 1 , container);
+
+                    refreshParentReferences(node, faLevelWithExtraNodeRet, container);
+
                     table.refreshRowCache();
                     ElzaNotifications.show("Přidáno...");
                 }
@@ -356,11 +367,19 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                         ArrFaLevelWithExtraNode faLevelWithExtraNode = new ArrFaLevelWithExtraNode();
                         faLevelWithExtraNode.setFaLevel(node);
                         faLevelWithExtraNode.setExtraNode(node.getParentNode());
-                        ArrFaLevel newFaLevel = arrangementManager.addLevelAfter(faLevelWithExtraNode);
+                        faLevelWithExtraNode.setRootNode(version.getRootFaLevel().getNode());
+
+                        ArrFaLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager.addLevelAfter(faLevelWithExtraNode);
+                        ArrFaLevel newFaLevel = faLevelWithExtraNodeRet.getFaLevel();
+                        node.setParentNode(faLevelWithExtraNodeRet.getExtraNode());
 
                         repositionLowerSiblings(node, node.getPosition() + 2, container);
 
                         addItemAfterToContainer(newFaLevel, container, lastId);
+
+                        refreshParentReferences(node, faLevelWithExtraNodeRet, container);
+
+
                         table.refreshRowCache();
 
                         ElzaNotifications.show("Přidáno...");
@@ -376,8 +395,8 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                     ArrFaLevel itemIdLast = (ArrFaLevel) itemId;
                     ArrFaLevelWithExtraNode faLevelWithExtraNode = new ArrFaLevelWithExtraNode();
                     faLevelWithExtraNode.setFaLevel(itemIdLast);
-                    faLevelWithExtraNode.setExtraNode(itemIdLast.getParentNode());
-                    ArrFaLevel newFaLevel = arrangementManager.addLevelChild(faLevelWithExtraNode);
+                    ArrFaLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager.addLevelChild(faLevelWithExtraNode);
+                    ArrFaLevel newFaLevel = faLevelWithExtraNodeRet.getFaLevel();
 
                     Collection<?> children = container.getChildren(itemIdLast);
                     if (!CollectionUtils.isEmpty(children)) {
@@ -390,6 +409,9 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                     BeanItem item = (BeanItem) table.addItemAfter(itemIdLast, newFaLevel);
                     itemIdLast = newFaLevel;
                     initNewItemInContainer(item, newFaLevel, container);
+
+                    refreshParentReferences(itemIdLast, faLevelWithExtraNodeRet, container);
+
                     ElzaNotifications.show("Přidáno...");
                 }).exception(new ConcurrentUpdateExceptionHandler()).menuItem(parent);
 
@@ -401,12 +423,22 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                         ArrFaLevelWithExtraNode faLevelWithExtraNode = new ArrFaLevelWithExtraNode();
                         faLevelWithExtraNode.setFaLevel(node);
                         faLevelWithExtraNode.setExtraNode(node.getParentNode());
+                        faLevelWithExtraNode.setRootNode(version.getRootFaLevel().getNode());
                         arrangementManager.deleteLevel(faLevelWithExtraNode);
 
-                        repositionLowerSiblings(node, node.getPosition(), container);
+                        ArrFaLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager.deleteLevel(faLevelWithExtraNode);
 
+                        ArrFaLevel parentNode = (ArrFaLevel) container.getParent(node);
+                        List<ArrFaLevel> childs = container.getChildren(parentNode);
+                        for (ArrFaLevel faLevel : childs) {
+                            faLevel.setParentNode(faLevelWithExtraNodeRet.getExtraNode());
+                        }
+
+                        repositionLowerSiblings(node, node.getPosition(), container);
                         table.removeItem(itemId);
+
                         table.refreshRowCache();
+
                         ElzaNotifications.show("Smazáno...");
                     }
                 }).exception(new ConcurrentUpdateExceptionHandler()).menuItem(parent);
@@ -422,8 +454,11 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
 
                             ArrFaLevelWithExtraNode faLevelWithExtraNode = new ArrFaLevelWithExtraNode();
                             faLevelWithExtraNode.setFaLevel(levelNodeVyjmout);
-                            faLevelWithExtraNode.setExtraNode(((ArrFaLevel) itemId).getNode());
-                            ArrFaLevel level = arrangementManager.moveLevelBefore(faLevelWithExtraNode);
+                            faLevelWithExtraNode.setExtraNode(((ArrFaLevel) itemId).getParentNode());
+                            faLevelWithExtraNode.setRootNode(version.getRootFaLevel().getNode());
+                            ArrFaLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager.moveLevelBefore(faLevelWithExtraNode);
+                            ArrFaLevel level = faLevelWithExtraNodeRet.getFaLevel();
+
                             repositionLowerSiblings(levelNodeVyjmout, levelNodeVyjmout.getPosition(), container);
                             table.removeItem(levelNodeVyjmout);
 
@@ -447,8 +482,11 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                         if (checkPaste()) {
                             ArrFaLevelWithExtraNode faLevelWithExtraNode = new ArrFaLevelWithExtraNode();
                             faLevelWithExtraNode.setFaLevel(levelNodeVyjmout);
-                            faLevelWithExtraNode.setExtraNode(((ArrFaLevel) itemId).getNode());
-                            ArrFaLevel level = arrangementManager.moveLevelAfter(faLevelWithExtraNode);
+                            faLevelWithExtraNode.setExtraNode(((ArrFaLevel) itemId).getParentNode());
+                            faLevelWithExtraNode.setRootNode(version.getRootFaLevel().getNode());
+                            ArrFaLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager.moveLevelAfter(faLevelWithExtraNode);
+                            ArrFaLevel level = faLevelWithExtraNodeRet.getFaLevel();
+
                             repositionLowerSiblings(levelNodeVyjmout, levelNodeVyjmout.getPosition(), container);
                             table.removeItem(levelNodeVyjmout);
 
@@ -473,8 +511,11 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                         if (checkPaste()) {
                             ArrFaLevelWithExtraNode faLevelWithExtraNode = new ArrFaLevelWithExtraNode();
                             faLevelWithExtraNode.setFaLevel(levelNodeVyjmout);
-                            faLevelWithExtraNode.setExtraNode(((ArrFaLevel) itemId).getNode());
-                            ArrFaLevel level = arrangementManager.moveLevelUnder(faLevelWithExtraNode);
+                            faLevelWithExtraNode.setExtraNode(((ArrFaLevel) itemId).getParentNode());
+                            ArrFaLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager.moveLevelUnder(faLevelWithExtraNode);
+                            ArrFaLevel level = faLevelWithExtraNodeRet.getFaLevel();
+                            //((ArrFaLevel) itemId).setParentNode(faLevelWithExtraNodeRet.getExtraNode());
+
                             repositionLowerSiblings(levelNodeVyjmout, levelNodeVyjmout.getPosition(), container);
                             table.removeItem(levelNodeVyjmout);
 
@@ -520,6 +561,15 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                 return menuBar;
             }
         });
+    }
+
+    // aktualizace všech referencí na společného předka
+    private void refreshParentReferences(ArrFaLevel node, ArrFaLevelWithExtraNode faLevelWithExtraNodeRet, HierarchicalCollapsibleBeanItemContainer container) {
+        ArrFaLevel parentNode = (ArrFaLevel) container.getParent(node);
+        List<ArrFaLevel> childs = container.getChildren(parentNode);
+        for (ArrFaLevel faLevel : childs) {
+            faLevel.setParentNode(faLevelWithExtraNodeRet.getExtraNode());
+        }
     }
 
     private void addActionHistMenu() {
@@ -756,14 +806,20 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
 
                         ArrFaLevelWithExtraNode faLevelWithExtraNode = new ArrFaLevelWithExtraNode();
                         faLevelWithExtraNode.setFaLevel(version.getRootFaLevel());
-                        faLevelWithExtraNode.setExtraNode(version.getRootFaLevel().getParentNode());
+                        faLevelWithExtraNode.setRootNode(version.getRootFaLevel().getNode());
+                        ArrFaLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager.addLevelChild(faLevelWithExtraNode);
+                        ArrFaLevel newFaLevel = faLevelWithExtraNodeRet.getFaLevel();
+                        version.getRootFaLevel().setNode(faLevelWithExtraNodeRet.getExtraNode());
 
-                        ArrFaLevel newFaLevel = arrangementManager.addLevelChild(faLevelWithExtraNode);
+                        // refresh uzlu - vygenerovaná nová verze (zámky)
+                        version.getRootFaLevel().setParentNode(faLevelWithExtraNodeRet.getExtraNode());
 
                         Item item = table.addItem(newFaLevel);
 
                         HierarchicalCollapsibleBeanItemContainer container = (HierarchicalCollapsibleBeanItemContainer) table
                                 .getContainerDataSource();
+
+                        refreshParentReferences(version.getRootFaLevel(), faLevelWithExtraNodeRet, container);
 
                         if (newFaLevel.getParentNode() != null) {
                             container.setParent(newFaLevel, rootNode);
@@ -773,7 +829,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                         container.addBean(newFaLevel);
                         table.refreshRowCache();
                         ElzaNotifications.show("Přidáno...");
-                    }),
+                    }).exception(new ConcurrentUpdateExceptionHandler()),
                     new AxAction().caption("Zobrazit verze").icon(FontAwesome.HISTORY).run(() ->
                     navigate(VersionListView.class, findingAidId)),
                     new AxAction().caption("Uzavřít verzi").icon(FontAwesome.HISTORY).run(() -> {

@@ -64,6 +64,8 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     @Transactional
     public RegRecord updateRecord(@RequestBody final RegRecord record) {
         Assert.notNull(record.getRecordId(), "Očekáváno ID (recordId) pro update.");
+        RegRecord recordTest = regRecordRepository.findOne(record.getRecordId());
+        Assert.notNull(recordTest, "Nebyl nalezen záznam pro update s id " + record.getRecordId());
 
         return saveRecordInternal(record);
     }
@@ -74,6 +76,10 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     @Transactional
     public void deleteRecord(@RequestParam(value = "recordId") final Integer recordId) {
         Assert.notNull(recordId);
+        RegRecord record = regRecordRepository.findOne(recordId);
+        if (record == null) {
+            return;
+        }
 
         variantRecordRepository.delete(variantRecordRepository.findByRegRecordId(recordId));
         abstractPartyRepository.delete(abstractPartyRepository.findParAbstractPartyByRecordId(recordId));
@@ -98,6 +104,8 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     @Override
     public RegVariantRecord updateVariantRecord(@RequestBody final RegVariantRecord variantRecord) {
         Assert.notNull(variantRecord.getVariantRecordId(), "Očekáváno ID pro update.");
+        RegVariantRecord variantRecordTest = variantRecordRepository.findOne(variantRecord.getVariantRecordId());
+        Assert.notNull(variantRecordTest, "Nebyl nalezen záznam pro update s id " + variantRecord.getVariantRecordId());
 
         RegVariantRecord newVariantRecord = saveVariantRecordInternal(variantRecord);
 
@@ -112,6 +120,10 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     @Transactional
     public void deleteVariantRecord(@RequestParam(value = "variantRecordId") final Integer variantRecordId) {
         Assert.notNull(variantRecordId);
+        RegVariantRecord variantRecord = variantRecordRepository.findOne(variantRecordId);
+        if (variantRecord == null) {
+            return;
+        }
 
         variantRecordRepository.delete(variantRecordId);
     }

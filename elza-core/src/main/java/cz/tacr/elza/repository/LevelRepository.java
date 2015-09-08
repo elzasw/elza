@@ -2,8 +2,11 @@ package cz.tacr.elza.repository;
 
 import java.util.List;
 
+import javax.persistence.QueryHint;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrFaChange;
@@ -31,7 +34,13 @@ public interface LevelRepository extends JpaRepository<ArrFaLevel, Integer> {
     @Query("SELECT l FROM arr_fa_level l WHERE l.parentNode = ?1  and l.position > ?2 and l.deleteChange is null order by l.position asc")
     List<ArrFaLevel> findByParentNodeAndPositionGreaterThanOrderByPositionAsc(ArrNode parentNode, Integer position);
 
-    ArrFaLevel findByNodeAndDeleteChangeIsNull(ArrNode node);
+
+    List<ArrFaLevel> findByNodeAndDeleteChangeIsNull(ArrNode node);
+
+    default ArrFaLevel findFirstByNodeAndDeleteChangeIsNull(ArrNode node) {
+        List<ArrFaLevel> levels = findByNodeAndDeleteChangeIsNull(node);
+        return levels.isEmpty() ? null : levels.iterator().next();
+    }
 
     @Query("SELECT c FROM arr_fa_level c WHERE c.node = ?1 "
             + "and c.createChange < ?2 and (c.deleteChange is null or c.deleteChange > ?2)"

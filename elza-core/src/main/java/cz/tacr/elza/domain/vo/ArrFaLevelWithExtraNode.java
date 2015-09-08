@@ -14,6 +14,17 @@ public class ArrFaLevelWithExtraNode implements cz.tacr.elza.api.vo.ArrFaLevelPa
 
     private ArrNode extraNode;
 
+    private ArrNode rootNode;
+
+    public ArrFaLevelWithExtraNode() {
+    }
+
+    public ArrFaLevelWithExtraNode(final ArrFaLevel faLevel, final ArrNode extraNode, final ArrNode rootNode) {
+        this.faLevel = faLevel;
+        this.extraNode = extraNode;
+        this.rootNode = rootNode;
+    }
+
     @Override
     public ArrFaLevel getFaLevel() {
         return faLevel;
@@ -32,5 +43,13 @@ public class ArrFaLevelWithExtraNode implements cz.tacr.elza.api.vo.ArrFaLevelPa
     @Override
     public void setExtraNode(ArrNode extraNode) {
         this.extraNode = extraNode;
+    }
+
+    public ArrNode getRootNode() {
+        return rootNode;
+    }
+
+    public void setRootNode(final ArrNode rootNode) {
+        this.rootNode = rootNode;
     }
 }

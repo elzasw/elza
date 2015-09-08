@@ -5,6 +5,8 @@ import static com.jayway.restassured.RestAssured.given;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -16,6 +18,7 @@ import cz.tacr.elza.domain.ParAbstractParty;
 import cz.tacr.elza.domain.ParAbstractPartyVals;
 import cz.tacr.elza.domain.ParPartySubtype;
 import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParPartyTypeExt;
 import cz.tacr.elza.domain.RegRecord;
 
 /**
@@ -41,15 +44,16 @@ public class PartyManagerTest extends AbstractRestTest {
     public void testRestInsertAbstractParty() throws Exception {
 
         final ParPartySubtype partySubtype = findPartySubtype();
+        partySubtype.setPartyType(null);
         final RegRecord record = createRecord(1);
 
-        ParAbstractPartyVals requestBody = new ParAbstractPartyVals();
-        requestBody.setPartySubtypeId(partySubtype.getPartySubtypeId());
-        requestBody.setRecordId(record.getRecordId());
+        ParAbstractParty requestBody = new ParAbstractParty();
+        requestBody.setPartySubtype(partySubtype);
+        requestBody.setRecord(record);
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(requestBody)
                 .put(INSERT_ABSTRACT_PARTY);
         logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
+        Assert.assertEquals(response.print(), 200, response.statusCode());
 
         ParAbstractParty party = response.getBody().as(ParAbstractParty.class);
 
@@ -63,15 +67,12 @@ public class PartyManagerTest extends AbstractRestTest {
 
         ParAbstractParty partyInput = createParAbstractParty();
         final RegRecord record = createRecord(2);
-
-        ParAbstractPartyVals requestBody = new ParAbstractPartyVals();
-        requestBody.setPartySubtypeId(partyInput.getPartySubtype().getPartySubtypeId());
-        requestBody.setRecordId(record.getRecordId());
+        partyInput.setRecord(record);
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
-                .parameter("abstractPartyId", partyInput.getAbstractPartyId()).body(requestBody)
+                .body(partyInput)
                 .put(UPDATE_ABSTRACT_PARTY);
         logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
+        Assert.assertEquals(response.print(), 200, response.statusCode());
 
         ParAbstractParty party = response.getBody().as(ParAbstractParty.class);
 
@@ -94,6 +95,12 @@ public class PartyManagerTest extends AbstractRestTest {
 
         partyInput = abstractPartyRepository.findOne(partyInput.getAbstractPartyId());
         Assert.assertNull("Nalezena polozka ", partyInput);
+
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
+                .parameter("abstractPartyId", 1875424)
+                .delete(DELETE_ABSTRACT_PARTY);
+        logger.info(response.asString());
+        Assert.assertEquals(response.print(), 200, response.statusCode());
     }
 
     @Test
@@ -116,8 +123,8 @@ public class PartyManagerTest extends AbstractRestTest {
                 given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).get(GET_PARTY_TYPES);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
-        List<ParPartyType> partyTypeList =
-                Arrays.asList(response.getBody().as(ParPartyType[].class));
+        List<ParPartyTypeExt> partyTypeList =
+                Arrays.asList(response.getBody().as(ParPartyTypeExt[].class));
 
         Assert.assertTrue("Nenalezena polozka ", partyTypeList.size() > 1);
     }
@@ -130,7 +137,7 @@ public class PartyManagerTest extends AbstractRestTest {
                 .parameter("search", partyInput.getRecord().getRecord())
                 .parameter("from", 0)
                 .parameter("count", 2)
-                .parameter("partyTypeId", 1)
+                .parameter("partyTypeId", 2)
                 .get(FIND_ABSTRACT_PARTY);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
@@ -145,7 +152,7 @@ public class PartyManagerTest extends AbstractRestTest {
                 .parameter("search", "varianta")
                 .parameter("from", 0)
                 .parameter("count", 4)
-                .parameter("partyTypeId", 1)
+                .parameter("partyTypeId", 2)
                 .get(FIND_ABSTRACT_PARTY);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
@@ -157,7 +164,7 @@ public class PartyManagerTest extends AbstractRestTest {
                 .parameter("search", "varianta")
                 .parameter("from", 0)
                 .parameter("count", 1)
-                .parameter("partyTypeId", 1)
+                .parameter("partyTypeId", 2)
                 .get(FIND_ABSTRACT_PARTY);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
@@ -169,7 +176,7 @@ public class PartyManagerTest extends AbstractRestTest {
                 .parameter("search", "varianta")
                 .parameter("from", 1)
                 .parameter("count", 4)
-                .parameter("partyTypeId", 1)
+                .parameter("partyTypeId", 2)
                 .get(FIND_ABSTRACT_PARTY);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
@@ -183,7 +190,7 @@ public class PartyManagerTest extends AbstractRestTest {
         ParAbstractParty partyInput = createParty("varianta");
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .parameter("search", partyInput.getRecord().getRecord())
-                .parameter("partyTypeId", 1)
+                .parameter("partyTypeId", 2)
                 .get(FIND_ABSTRACT_PARTY_COUNT);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());

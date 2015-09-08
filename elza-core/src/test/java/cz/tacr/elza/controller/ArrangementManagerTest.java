@@ -124,6 +124,11 @@ public class ArrangementManagerTest extends AbstractRestTest {
     EntityManager entityManager;
 
     @Test
+    public void testtest(){
+
+    }
+
+    @Test
     @Transactional
     public void testCreateFindingAid() throws Exception {
         createFindingAid(TEST_NAME);
@@ -582,28 +587,6 @@ public class ArrangementManagerTest extends AbstractRestTest {
         Assert.assertTrue(deletedNode.getDeleteChange() != null);
         Assert.assertTrue(node.getNode().getNodeId().equals(deletedNode.getNode().getNodeId()));
         Assert.assertTrue(node.getFaLevelId().equals(deletedNode.getFaLevelId()));
-    }
-
-    @Test
-    public void testRestFindLevelByNodeId() {
-        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
-
-        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
-
-        Response response = given().parameter(NODE_ID_ATT, version.getRootFaLevel().getNode().getNodeId()).put(ADD_LEVEL_CHILD_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
-        ArrFaLevel node = response.getBody().as(ArrFaLevel.class);
-
-        response = given().parameter(NODE_ID_ATT, node.getNode().getNodeId()).get(FIND_LEVEL_BY_NODE_ID_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
-        ArrFaLevelExt foundNode = response.getBody().as(ArrFaLevelExt.class);
-
-        Assert.assertTrue(node.getNode().getNodeId().equals(foundNode.getNode().getNodeId()));
-        Assert.assertTrue(node.getFaLevelId().equals(foundNode.getFaLevelId()));
     }
 
     private static class TestLevelData {
