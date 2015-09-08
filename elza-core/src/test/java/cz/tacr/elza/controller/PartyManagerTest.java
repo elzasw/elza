@@ -18,6 +18,7 @@ import cz.tacr.elza.domain.ParAbstractParty;
 import cz.tacr.elza.domain.ParAbstractPartyVals;
 import cz.tacr.elza.domain.ParPartySubtype;
 import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParPartyTypeExt;
 import cz.tacr.elza.domain.RegRecord;
 
 /**
@@ -123,8 +124,8 @@ public class PartyManagerTest extends AbstractRestTest {
                 given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).get(GET_PARTY_TYPES);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
-        List<ParPartyType> partyTypeList =
-                Arrays.asList(response.getBody().as(ParPartyType[].class));
+        List<ParPartyTypeExt> partyTypeList =
+                Arrays.asList(response.getBody().as(ParPartyTypeExt[].class));
 
         Assert.assertTrue("Nenalezena polozka ", partyTypeList.size() > 1);
     }
