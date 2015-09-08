@@ -4,11 +4,13 @@ import cz.tacr.elza.domain.ParAbstractParty;
 import cz.tacr.elza.domain.ParAbstractPartyVals;
 import cz.tacr.elza.domain.ParPartySubtype;
 import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParPartyTypeExt;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.repository.AbstractPartyRepository;
 import cz.tacr.elza.repository.PartySubtypeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,7 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -41,10 +46,32 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
     @Autowired
     private PartyTypeRepository partyTypeRepository;
 
+
     @RequestMapping(value = "/getPartyTypes", method = RequestMethod.GET)
     @Override
-    public List<ParPartyType> getPartyTypes() {
-        return partyTypeRepository.findAll();
+    public List<ParPartyTypeExt> getPartyTypes() {
+        List<ParPartyType> all = partyTypeRepository.findAll();
+        List<ParPartySubtype> allSubtype = partySubtypeRepository.findAll();
+        Map<ParPartyType, List<ParPartySubtype>> map = new HashMap<>();
+
+        all.forEach((partyType) -> {
+            map.put(partyType, new ArrayList<>());
+        });
+
+        allSubtype.forEach((partySubtype) -> {
+            List<ParPartySubtype> list = map.get(partySubtype.getPartyType());
+            list.add(partySubtype);
+        });
+
+        List<ParPartyTypeExt> result = new ArrayList<>();
+        map.forEach((partyType, subtypes) -> {
+            ParPartyTypeExt partyTypeExt = new ParPartyTypeExt();
+            BeanUtils.copyProperties(partyType, partyTypeExt);
+            partyTypeExt.setPartySubTypeList(subtypes);
+            result.add(partyTypeExt);
+        });
+
+        return result;
     }
 
     @RequestMapping(value = "/insertAbstractParty", method = RequestMethod.PUT)

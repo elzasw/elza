@@ -1,22 +1,20 @@
 package cz.tacr.elza.controller;
 
-import static com.jayway.restassured.RestAssured.given;
-
-import java.util.Arrays;
-import java.util.List;
-
+import com.jayway.restassured.response.Response;
+import cz.tacr.elza.domain.ParAbstractParty;
+import cz.tacr.elza.domain.ParAbstractPartyVals;
+import cz.tacr.elza.domain.ParPartySubtype;
+import cz.tacr.elza.domain.ParPartyTypeExt;
+import cz.tacr.elza.domain.RegRecord;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jayway.restassured.response.Response;
+import java.util.Arrays;
+import java.util.List;
 
-import cz.tacr.elza.domain.ParAbstractParty;
-import cz.tacr.elza.domain.ParAbstractPartyVals;
-import cz.tacr.elza.domain.ParPartySubtype;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.RegRecord;
+import static com.jayway.restassured.RestAssured.given;
 
 /**
  * Testy pro {@link PartyManager}.
@@ -116,8 +114,8 @@ public class PartyManagerTest extends AbstractRestTest {
                 given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).get(GET_PARTY_TYPES);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
-        List<ParPartyType> partyTypeList =
-                Arrays.asList(response.getBody().as(ParPartyType[].class));
+        List<ParPartyTypeExt> partyTypeList =
+                Arrays.asList(response.getBody().as(ParPartyTypeExt[].class));
 
         Assert.assertTrue("Nenalezena polozka ", partyTypeList.size() > 1);
     }
