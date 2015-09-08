@@ -408,7 +408,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @Override
     @Transactional
     @RequestMapping(value = "/addLevelBefore", method = RequestMethod.PUT)
-    public ArrFaLevel addLevelBefore(@RequestBody ArrFaLevelWithExtraNode levelWithParentNode){
+    public ArrFaLevelWithExtraNode addLevelBefore(@RequestBody ArrFaLevelWithExtraNode levelWithParentNode){
         Assert.notNull(levelWithParentNode);
         ArrFaLevel node = levelWithParentNode.getFaLevel();
         ArrNode parentNode = levelWithParentNode.getExtraNode();
@@ -418,53 +418,65 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         ArrFaChange change = createChange();
         ArrFaLevel faLevelRet = createBeforeInLevel(change, node);
         parentNode.setLastUpdate(LocalDateTime.now());
-        nodeRepository.save(parentNode);
-        return faLevelRet;
+        parentNode = nodeRepository.save(parentNode);
+
+        ArrFaLevelWithExtraNode levelWithParentNodeRet = new ArrFaLevelWithExtraNode();
+        levelWithParentNodeRet.setFaLevel(faLevelRet);
+        levelWithParentNodeRet.setExtraNode(parentNode);
+
+        return levelWithParentNodeRet;
     }
 
     @Override
     @Transactional
     @RequestMapping(value = "/addLevelAfter", method = RequestMethod.PUT)
-    public ArrFaLevel addLevelAfter(@RequestBody ArrFaLevelWithExtraNode levelWithParentNode) {
+    public ArrFaLevelWithExtraNode addLevelAfter(@RequestBody ArrFaLevelWithExtraNode levelWithParentNode) {
         Assert.notNull(levelWithParentNode);
         ArrFaLevel node = levelWithParentNode.getFaLevel();
         ArrNode parentNode = levelWithParentNode.getExtraNode();
         Assert.notNull(node);
         Assert.notNull(parentNode);
 
-
         ArrFaChange change = createChange();
         ArrFaLevel faLevelRet = createAfterInLevel(change, node);
+
         parentNode.setLastUpdate(LocalDateTime.now());
-        nodeRepository.save(parentNode);
-        return faLevelRet;
+        parentNode = nodeRepository.save(parentNode);
+
+        ArrFaLevelWithExtraNode levelWithParentNodeRet = new ArrFaLevelWithExtraNode();
+        levelWithParentNodeRet.setFaLevel(faLevelRet);
+        levelWithParentNodeRet.setExtraNode(parentNode);
+
+        return levelWithParentNodeRet;
     }
 
     @Override
     @Transactional
     @RequestMapping(value = "/addLevelChild", method = RequestMethod.PUT)
-    public ArrFaLevel addLevelChild(@RequestBody ArrFaLevelWithExtraNode levelWithParentNode) {
+    public ArrFaLevelWithExtraNode addLevelChild(@RequestBody ArrFaLevelWithExtraNode levelWithParentNode) {
         Assert.notNull(levelWithParentNode);
 
         ArrFaLevel node = levelWithParentNode.getFaLevel();
-        ArrNode parentNode = levelWithParentNode.getExtraNode();
+        //ArrNode parentNode = levelWithParentNode.getExtraNode();
         Assert.notNull(node);
 
         ArrFaChange change = createChange();
         ArrFaLevel faLevelRet = createLastInLevel(change, node);
 
-        if (parentNode != null) { // TODO: kontrolovat null jen u root uzlu, jinak nesmí být null (asi by se měla udělat extra metoda na přidávání do root uzlu)
-            parentNode.setLastUpdate(LocalDateTime.now());
-            nodeRepository.save(parentNode);
-        }
+        node.getNode().setLastUpdate(LocalDateTime.now());
+        node.setNode(nodeRepository.save(node.getNode()));
 
-        return faLevelRet;
+        ArrFaLevelWithExtraNode levelWithParentNodeRet = new ArrFaLevelWithExtraNode();
+        levelWithParentNodeRet.setFaLevel(faLevelRet);
+        levelWithParentNodeRet.setExtraNode(node.getNode());
+
+        return levelWithParentNodeRet;
     }
 
     @Override
     @Transactional
     @RequestMapping(value = "/moveLevelBefore", method = RequestMethod.PUT)
-    public ArrFaLevel moveLevelBefore(@RequestBody ArrFaLevelWithExtraNode levelWithFollowerNode) {
+    public ArrFaLevelWithExtraNode moveLevelBefore(@RequestBody ArrFaLevelWithExtraNode levelWithFollowerNode) {
         Assert.notNull(levelWithFollowerNode);
 
         ArrFaLevel node = levelWithFollowerNode.getFaLevel();
@@ -511,17 +523,22 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrFaLevel newLevel = createNewLevelVersion(node, change);
         ArrFaLevel faLevelRet = addInLevel(newLevel, follower.getParentNode(), position);
-        node.getNode().setLastUpdate(LocalDateTime.now());
-        nodeRepository.save(node.getNode());
+        faLevelRet.getNode().setLastUpdate(LocalDateTime.now());
+        faLevelRet.setNode(nodeRepository.save(faLevelRet.getNode()));
         followerNode.setLastUpdate(LocalDateTime.now());
-        nodeRepository.save(followerNode);
-        return faLevelRet;
+        followerNode = nodeRepository.save(followerNode);
+
+        ArrFaLevelWithExtraNode levelWithFollowerNodeRet = new ArrFaLevelWithExtraNode();
+        levelWithFollowerNodeRet.setFaLevel(faLevelRet);
+        levelWithFollowerNodeRet.setExtraNode(followerNode);
+
+        return levelWithFollowerNodeRet;
     }
 
     @Override
     @Transactional
     @RequestMapping(value = "/moveLevelUnder", method = RequestMethod.PUT)
-    public ArrFaLevel moveLevelUnder(@RequestBody ArrFaLevelWithExtraNode levelWithUnderNode) {
+    public ArrFaLevelWithExtraNode moveLevelUnder(@RequestBody ArrFaLevelWithExtraNode levelWithUnderNode) {
         Assert.notNull(levelWithUnderNode);
 
         ArrFaLevel node = levelWithUnderNode.getFaLevel();
@@ -551,18 +568,23 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrFaLevel faLevelRet = addLastInLevel(newLevel, parent.getNode());
 
-        node.getNode().setLastUpdate(LocalDateTime.now());
-        nodeRepository.save(node.getNode());
+        faLevelRet.getNode().setLastUpdate(LocalDateTime.now());
+        faLevelRet.setNode(nodeRepository.save(faLevelRet.getNode()));
 
         parentNode.setLastUpdate(LocalDateTime.now());
-        nodeRepository.save(parentNode);
-        return faLevelRet;
+        parentNode = nodeRepository.save(parentNode);
+
+        ArrFaLevelWithExtraNode levelWithPredecessorNodeRet = new ArrFaLevelWithExtraNode();
+        levelWithPredecessorNodeRet.setFaLevel(faLevelRet);
+        levelWithPredecessorNodeRet.setExtraNode(parentNode);
+
+        return levelWithPredecessorNodeRet;
     }
 
     @Override
     @Transactional
     @RequestMapping(value = "/moveLevelAfter", method = RequestMethod.PUT)
-    public ArrFaLevel moveLevelAfter(@RequestBody ArrFaLevelWithExtraNode levelWithPredecessorNode) {
+    public ArrFaLevelWithExtraNode moveLevelAfter(@RequestBody ArrFaLevelWithExtraNode levelWithPredecessorNode) {
         Assert.notNull(levelWithPredecessorNode);
 
         ArrFaLevel node = levelWithPredecessorNode.getFaLevel();
@@ -609,11 +631,16 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrFaLevel faLevelRet = addInLevel(newLevel, predecessor.getParentNode(), position);
 
-        node.getNode().setLastUpdate(LocalDateTime.now());
-        nodeRepository.save(node.getNode());
+        faLevelRet.getNode().setLastUpdate(LocalDateTime.now());
+        faLevelRet.setNode(nodeRepository.save(faLevelRet.getNode()));
         predecessorNode.setLastUpdate(LocalDateTime.now());
-        nodeRepository.save(predecessorNode);
-        return faLevelRet;
+        predecessorNode = nodeRepository.save(predecessorNode);
+
+        ArrFaLevelWithExtraNode levelWithPredecessorNodeRet = new ArrFaLevelWithExtraNode();
+        levelWithPredecessorNodeRet.setFaLevel(faLevelRet);
+        levelWithPredecessorNodeRet.setExtraNode(predecessorNode);
+
+        return levelWithPredecessorNodeRet;
     }
 
     /**
@@ -732,27 +759,36 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @Override
     @Transactional
     @RequestMapping(value = "/deleteLevel", method = RequestMethod.PUT)
-    public ArrFaLevel deleteLevel(@RequestBody ArrFaLevelWithExtraNode levelWithParentNode) {
+    public ArrFaLevelWithExtraNode deleteLevel(@RequestBody ArrFaLevelWithExtraNode levelWithParentNode) {
         Assert.notNull(levelWithParentNode);
 
-        ArrFaLevel faLevel = levelWithParentNode.getFaLevel();
-        ArrNode node = faLevel.getNode();
+        ArrFaLevel level = levelWithParentNode.getFaLevel();
+        ArrNode node = level.getNode();
         ArrNode parentNode = levelWithParentNode.getExtraNode();
 
         if(node == null){
             throw new IllegalArgumentException("Záznam neexistuje");
         }
          //TODO kubovy smazání uzlu
-        ArrFaLevel level = levelRepository.findFirstByNodeAndDeleteChangeIsNull(node);
+        //ArrFaLevel level = levelRepository.findFirstByNodeAndDeleteChangeIsNull(node);
         ArrFaChange change = createChange();
         level.setDeleteChange(change);
         shiftNodesUp(nodesToShift(level), change);
 
-        node.setLastUpdate(LocalDateTime.now());
-        nodeRepository.save(node);
+        level = levelRepository.save(level);
+
+        ArrFaLevelWithExtraNode levelWithParentNodeRet = new ArrFaLevelWithExtraNode();
+
+        // zámky
+        level.getNode().setLastUpdate(LocalDateTime.now());
+        level.setNode(nodeRepository.save(level.getNode()));
         parentNode.setLastUpdate(LocalDateTime.now());
-        nodeRepository.save(parentNode);
-        return levelRepository.save(level);
+        parentNode = nodeRepository.save(parentNode);
+
+        levelWithParentNodeRet.setFaLevel(level);
+        levelWithParentNodeRet.setExtraNode(parentNode);
+
+        return levelWithParentNodeRet;
     }
 
     @Override
