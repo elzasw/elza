@@ -1,31 +1,9 @@
 package cz.tacr.elza.controller;
 
-import static com.jayway.restassured.RestAssured.given;
-
-import java.time.LocalDateTime;
-import java.util.function.Function;
-
-import javax.transaction.Transactional;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.http.HttpMethod;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.response.Header;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
-
 import cz.tacr.elza.ElzaCore;
 import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrData;
@@ -70,6 +48,25 @@ import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.repository.VersionRepository;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.IntegrationTest;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.http.HttpMethod;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+
+import javax.transaction.Transactional;
+import java.time.LocalDateTime;
+import java.util.function.Function;
+
+import static com.jayway.restassured.RestAssured.given;
 
 /**
  * Abstraktní předek pro testy. Nastavuje REST prostředí.
@@ -159,10 +156,12 @@ public abstract class AbstractRestTest {
 
         // nastavi default URI pro REST-assured. Nejcasteni localhost
         RestAssured.baseURI = RestAssured.DEFAULT_URI;
-    }
 
-    @After
-    public void setDown() {
+        // potřebné delete, jen data, ne číselníky
+        abstractPartyRepository.deleteAll();
+        variantRecordRepository.deleteAll();
+        recordRepository.deleteAll();
+
         descItemConstraintRepository.deleteAll();
         faViewRepository.deleteAll();
         versionRepository.deleteAll();
@@ -177,6 +176,10 @@ public abstract class AbstractRestTest {
         descItemTypeRepository.deleteAll();
         nodeRepository.deleteAll();
         changeRepository.deleteAll();
+    }
+
+    @After
+    public void setDown() {
     }
 
     protected ArrArrangementType createArrangementType() {
