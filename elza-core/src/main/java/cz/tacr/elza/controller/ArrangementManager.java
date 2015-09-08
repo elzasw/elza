@@ -1149,7 +1149,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         ArrNode node = descItemExt.getNode();
         Assert.notNull(node);
 
-        List<RulDescItemTypeExt> rulDescItemTypes = ruleManager.getDescriptionItemTypesForNodeId(faVersionId, node.getNodeId(), false);
+        List<RulDescItemTypeExt> rulDescItemTypes = ruleManager.getDescriptionItemTypesForNodeId(faVersionId, node.getNodeId(), null);
 
         RulDescItemType rulDescItemType = descItemTypeRepository.findOne(descItemExt.getDescItemType().getDescItemTypeId());
         Assert.notNull(rulDescItemType);
@@ -1250,7 +1250,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         ArrNode node = descItem.getNode();
         Assert.notNull(node);
 
-        List<RulDescItemTypeExt> rulDescItemTypes = ruleManager.getDescriptionItemTypesForNodeId(faVersionId, node.getNodeId(), false);
+        List<RulDescItemTypeExt> rulDescItemTypes = ruleManager.getDescriptionItemTypesForNodeId(faVersionId, node.getNodeId(), null);
 
         RulDescItemType rulDescItemType = descItem.getDescItemType();
 
