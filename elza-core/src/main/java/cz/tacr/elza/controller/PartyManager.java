@@ -30,7 +30,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/partyManager")
-public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<ParAbstractPartyVals> {
+public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<ParAbstractParty> {
 
     @Autowired
     private AbstractPartyRepository abstractPartyRepository;
@@ -47,48 +47,46 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
         return partyTypeRepository.findAll();
     }
 
+    @Transactional
+    private void updateAbstractParty(final ParAbstractParty source, final ParAbstractParty target) {
+        Assert.notNull(source.getPartySubtype(), "Není vyplněné partySubtype");
+        Assert.notNull(source.getRecord(), "Není vyplněné record");
+        Integer recordId = source.getRecord().getRecordId();
+        Integer partySubtypeId = source.getPartySubtype().getPartySubtypeId();
+        Assert.notNull(partySubtypeId, "Není vyplněné partySubtypeId");
+        Assert.notNull(recordId, "Není vyplněné recordId");
+
+        final ParPartySubtype partySubtype =
+                partySubtypeRepository.findOne(partySubtypeId);
+        final RegRecord record = recordRepository.findOne(recordId);
+        Assert.notNull(partySubtype,
+                "Nebyla nalezena ParPartySubtype s id " + partySubtypeId);
+        Assert.notNull(record, "Nebyla nalezena RegRecord s id " + recordId);
+
+        target.setPartySubtype(partySubtype);
+        target.setRecord(record);
+    }
+
     @RequestMapping(value = "/insertAbstractParty", method = RequestMethod.PUT)
     @Transactional
     @Override
-    public ParAbstractParty insertAbstractParty(@RequestBody final ParAbstractPartyVals abstractParty) {
-        Assert.notNull(abstractParty.getPartySubtypeId(), "Není vyplněné partySubtypeId");
-        Assert.notNull(abstractParty.getRecordId(), "Není vyplněné recordId");
-
-        final ParPartySubtype partySubtype =
-                partySubtypeRepository.findOne(abstractParty.getPartySubtypeId());
-        final RegRecord record = recordRepository.findOne(abstractParty.getRecordId());
-        Assert.notNull(partySubtype,
-                "Nebyla nalezena ParPartySubtype s id " + abstractParty.getPartySubtypeId());
-        Assert.notNull(record, "Nebyla nalezena RegRecord s id " + abstractParty.getRecordId());
-
-        ParAbstractParty party = new ParAbstractParty();
-        party.setPartySubtype(partySubtype);
-        party.setRecord(record);
-        abstractPartyRepository.save(party);
-        return party;
+    public ParAbstractParty insertAbstractParty(@RequestBody final ParAbstractParty abstractParty) {
+        ParAbstractParty newParty = new ParAbstractParty();
+        updateAbstractParty(abstractParty, newParty);
+        abstractPartyRepository.save(newParty);
+        return newParty;
     }
 
     @RequestMapping(value = "/updateAbstractParty", method = RequestMethod.PUT)
     @Transactional
     @Override
-    public ParAbstractParty updateAbstractParty(
-            @RequestParam("abstractPartyId") final Integer abstractPartyId,
-            @RequestBody final ParAbstractPartyVals abstractParty) {
+    public ParAbstractParty updateAbstractParty(@RequestBody final ParAbstractParty abstractParty) {
+        Integer abstractPartyId = abstractParty.getAbstractPartyId();
         Assert.notNull(abstractPartyId);
-        Assert.notNull(abstractParty.getPartySubtypeId(), "Není vyplněné partySubtypeId");
-        Assert.notNull(abstractParty.getRecordId(), "Není vyplněné recordId");
-        final ParPartySubtype partySubtype =
-                partySubtypeRepository.findOne(abstractParty.getPartySubtypeId());
-        final RegRecord record = recordRepository.findOne(abstractParty.getRecordId());
-        Assert.notNull(partySubtype,
-                "Nebyla nalezena ParPartySubtype s id " + abstractParty.getPartySubtypeId());
-        Assert.notNull(record, "Nebyla nalezena RegRecord s id " + abstractParty.getRecordId());
-
         ParAbstractParty party = abstractPartyRepository.findOne(abstractPartyId);
         Assert.notNull(party, "Nebyla nalezena ParAbstractParty s id " + abstractPartyId);
-        party.setPartySubtype(partySubtype);
-        party.setRecord(record);
-        abstractPartyRepository.save(party);
+        updateAbstractParty(abstractParty, abstractParty);
+        abstractPartyRepository.save(abstractParty);
         return party;
     }
 
@@ -96,6 +94,10 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
     @Transactional
     @Override
     public void deleteAbstractParty(@RequestParam("abstractPartyId") final Integer abstractPartyId) {
+        ParAbstractParty abstractParty = abstractPartyRepository.findOne(abstractPartyId);
+        if (abstractParty == null) {
+            return;
+        }
         Assert.notNull(abstractPartyId);
         abstractPartyRepository.delete(abstractPartyId);
     }

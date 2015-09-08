@@ -74,6 +74,10 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     @Transactional
     public void deleteRecord(@RequestParam(value = "recordId") final Integer recordId) {
         Assert.notNull(recordId);
+        RegRecord record = regRecordRepository.findOne(recordId);
+        if (record == null) {
+            return;
+        }
 
         variantRecordRepository.delete(variantRecordRepository.findByRegRecordId(recordId));
         abstractPartyRepository.delete(abstractPartyRepository.findParAbstractPartyByRecordId(recordId));

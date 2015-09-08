@@ -5,6 +5,8 @@ import static com.jayway.restassured.RestAssured.given;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -43,9 +45,9 @@ public class PartyManagerTest extends AbstractRestTest {
         final ParPartySubtype partySubtype = findPartySubtype();
         final RegRecord record = createRecord(1);
 
-        ParAbstractPartyVals requestBody = new ParAbstractPartyVals();
-        requestBody.setPartySubtypeId(partySubtype.getPartySubtypeId());
-        requestBody.setRecordId(record.getRecordId());
+        ParAbstractParty requestBody = new ParAbstractParty();
+        requestBody.setPartySubtype(partySubtype);
+        requestBody.setRecord(record);
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(requestBody)
                 .put(INSERT_ABSTRACT_PARTY);
         logger.info(response.asString());
@@ -64,11 +66,10 @@ public class PartyManagerTest extends AbstractRestTest {
         ParAbstractParty partyInput = createParAbstractParty();
         final RegRecord record = createRecord(2);
 
-        ParAbstractPartyVals requestBody = new ParAbstractPartyVals();
-        requestBody.setPartySubtypeId(partyInput.getPartySubtype().getPartySubtypeId());
-        requestBody.setRecordId(record.getRecordId());
+        partyInput.getPartySubtype().getPartyType().getPartyTypeId();
+        partyInput.setRecord(record);
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
-                .parameter("abstractPartyId", partyInput.getAbstractPartyId()).body(requestBody)
+                .body(partyInput)
                 .put(UPDATE_ABSTRACT_PARTY);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
@@ -94,6 +95,12 @@ public class PartyManagerTest extends AbstractRestTest {
 
         partyInput = abstractPartyRepository.findOne(partyInput.getAbstractPartyId());
         Assert.assertNull("Nalezena polozka ", partyInput);
+
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
+                .parameter("abstractPartyId", 1875424)
+                .delete(DELETE_ABSTRACT_PARTY);
+        logger.info(response.asString());
+        Assert.assertEquals(response.print(), 200, response.statusCode());
     }
 
     @Test
