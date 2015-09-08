@@ -17,6 +17,7 @@ import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
+import cz.tacr.elza.domain.vo.ArrFaLevelWithExtraNode;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
@@ -25,6 +26,7 @@ import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VersionRepository;
 import org.junit.Assert;
@@ -116,6 +118,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
     @Autowired
     private RuleManager ruleManager;
+    @Autowired
+    private NodeRepository nodeRepository;
 
     @PersistenceContext
     EntityManager entityManager;
@@ -266,7 +270,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         int versionCount = 10;
         for (int i = 0; i < versionCount; i++) {
-            createFindingAidVersion(findingAid, false);
+            createFindingAidVersion(findingAid, false, null);
         }
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
@@ -323,10 +327,10 @@ public class ArrangementManagerTest extends AbstractRestTest {
     public void testRestGetVersionByFa() throws Exception {
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        ArrFaVersion version = createFindingAidVersion(findingAid, true);
+        ArrFaVersion version = createFindingAidVersion(findingAid, true, null);
         // prvni version se vytvori pri zalozeni FA
         Integer createVersionId = version.getFaVersionId() - 1;
-        ArrFaVersion versionChange = createFindingAidVersion(findingAid, true);
+        ArrFaVersion versionChange = createFindingAidVersion(findingAid, true, null);
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
                 parameter(VERSION_ID_ATT, version.getFaVersionId()).get(GET_VERSION_ID_URL);
@@ -352,10 +356,9 @@ public class ArrangementManagerTest extends AbstractRestTest {
     public void testRestGetLevelByParent() throws Exception {
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        ArrFaVersion version = createFindingAidVersion(findingAid, null, false);
-        ArrFaLevel parent = createLevel(1, null, version.getCreateChange());
-        version.setRootFaLevel(parent);
-        versionRepository.save(version);
+        ArrFaChange createChange = createFaChange(LocalDateTime.now());
+        ArrFaLevel parent = createLevel(1, null, createChange);
+        ArrFaVersion version = createFindingAidVersion(findingAid, parent, false, createChange);
 
         ArrFaLevel child = createLevel(2, parent, version.getCreateChange());
         ArrFaLevel child2 = createLevel(2, parent, version.getCreateChange());
@@ -391,7 +394,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
     public void testRestAddLevelBefore() {
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
+        ArrFaVersion version = getRootNodeIdForVersion(findingAid.getFindingAidId());
+//        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
 
         Response response = given().parameter(NODE_ID_ATT, version.getRootFaLevel().getNode().getNodeId()).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
@@ -418,7 +422,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
     public void testRestAddLevelAfter() {
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
+        ArrFaVersion version = getRootNodeIdForVersion(findingAid.getFindingAidId());
+//        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
 
         Response response = given().parameter(NODE_ID_ATT, version.getRootFaLevel().getNode().getNodeId()).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
@@ -444,7 +449,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
     public void testRestAddLevelChild() {
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
+        ArrFaVersion version = getRootNodeIdForVersion(findingAid.getFindingAidId());
+//        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
 
         Response response = given().parameter(NODE_ID_ATT, version.getRootFaLevel().getNode().getNodeId()).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
@@ -465,15 +471,31 @@ public class ArrangementManagerTest extends AbstractRestTest {
         Assert.assertTrue(child.getParentNode().getNodeId().equals(parent.getNode().getNodeId()));
     }
 
+    private ArrFaVersion getRootNodeIdForVersion(Integer findingAidId) {
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
+                parameter(FA_ID_ATT, findingAidId).get(GET_VERSION_BY_FA_ID_URL);
+        logger.info(response.asString());
+
+        Assert.assertEquals(200, response.statusCode());
+        ArrFaVersion faVersion = response.getBody().as(ArrFaVersion.class);
+        return faVersion;
+//        ArrFaLevel level = faVersion.getRootFaLevel();
+//        ArrNode node = level.getNode();
+//        return node.getNodeId();
+    }
+
     @Test
     public void testRestMoveLevelBefore() {
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
+        ArrFaVersion version = getRootNodeIdForVersion(findingAid.getFindingAidId());
 
+//        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
+
+        ArrFaLevelWithExtraNode extraLevel = new ArrFaLevelWithExtraNode();
         Response response = given().parameter(NODE_ID_ATT, version.getRootFaLevel().getNode().getNodeId()).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
+        Assert.assertEquals(response.print(), 200, response.statusCode());
 
         ArrFaLevel parent = response.getBody().as(ArrFaLevel.class);
 
@@ -500,7 +522,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
     public void testRestMoveLevelUnder() {
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
+        ArrFaVersion version = getRootNodeIdForVersion(findingAid.getFindingAidId());
+//        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
 
         Response response = given().parameter(NODE_ID_ATT, version.getRootFaLevel().getNode().getNodeId()).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
@@ -531,7 +554,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
     public void testRestMoveLevelAfter() {
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
+        ArrFaVersion version = getRootNodeIdForVersion(findingAid.getFindingAidId());
+//        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
 
         Response response = given().parameter(NODE_ID_ATT, version.getRootFaLevel().getNode().getNodeId()).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
@@ -562,7 +586,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
     public void testRestDeleteLevel() {
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
+        ArrFaVersion version = getRootNodeIdForVersion(findingAid.getFindingAidId());
+//        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
 
         Response response = given().parameter(NODE_ID_ATT, version.getRootFaLevel().getNode().getNodeId()).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
@@ -617,10 +642,10 @@ public class ArrangementManagerTest extends AbstractRestTest {
     private TestLevelData createTestLevelData() {
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        ArrFaVersion version = createFindingAidVersion(findingAid, null, false);
-        ArrFaLevel parent = createLevel(1, null, version.getCreateChange());
-        version.setRootFaLevel(parent);
-//        versionRepository.save(version);   // problem optimisticke zamky
+        ArrFaChange createChangeVersion = createFaChange(LocalDateTime.now());
+        ArrFaLevel parent = createLevel(1, null, createChangeVersion);
+        ArrFaVersion version = createFindingAidVersion(findingAid, parent, false, createChangeVersion);
+
         LocalDateTime startTime = version.getCreateChange().getChangeDate();
 
         ArrFaChange createChange = createFaChange(startTime.minusSeconds(1));
@@ -735,11 +760,12 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
     @Test
     public void testRestCreateDescriptionItem() {
-
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        ArrFaVersion version = createFindingAidVersion(findingAid, null, false);
-        ArrFaLevel parent = createLevel(1, null, version.getCreateChange());
+        ArrFaChange createChangeVersion = createFaChange(LocalDateTime.now());
+        ArrFaLevel parent = createLevel(1, null, createChangeVersion);
+        ArrFaVersion version = createFindingAidVersion(findingAid, parent, false, createChangeVersion);
+
         version.setRootFaLevel(parent);
         versionRepository.save(version);
         LocalDateTime startTime = version.getCreateChange().getChangeDate();
@@ -803,6 +829,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         // přidání hodnoty attributu - kontrola position
 
+        node = nodeRepository.findOne(node.getNodeId());
         descItem = new ArrDescItemExt();
         descItem.setDescItemType(descItemType2);
         descItem.setDescItemSpec(descItemSpec2);
@@ -811,6 +838,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrDescItem descItemRet1 = arrangementManager.createDescriptionItem(descItem, version.getFaVersionId());
 
+        node = nodeRepository.findOne(node.getNodeId());
         descItem = new ArrDescItemExt();
         descItem.setDescItemType(descItemType2);
         descItem.setDescItemSpec(descItemSpec2);
@@ -823,6 +851,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         Assert.assertNotNull(descItemRepository.findOne(descItemRet1.getDescItemId()).getDeleteChange());
         Assert.assertEquals(new Integer(1), descItemRepository.findOne(descItemRet2.getDescItemId()).getPosition());
 
+        node = nodeRepository.findOne(node.getNodeId());
         descItem = new ArrDescItemExt();
         descItem.setDescItemType(descItemType2);
         descItem.setDescItemSpec(descItemSpec2);
@@ -838,13 +867,12 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
     @Test
     public void testRestUpdateDescriptionItem() {
-
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        ArrFaVersion version = createFindingAidVersion(findingAid, null, false);
-        ArrFaLevel parent = createLevel(1, null, version.getCreateChange());
-        version.setRootFaLevel(parent);
-        versionRepository.save(version);
+        ArrFaChange createChangeVersion = createFaChange(LocalDateTime.now());
+        ArrFaLevel parent = createLevel(1, null, createChangeVersion);
+        ArrFaVersion version = createFindingAidVersion(findingAid, parent, false, createChangeVersion);
+
         LocalDateTime startTime = version.getCreateChange().getChangeDate();
 
         ArrFaChange createChange = createFaChange(startTime.minusSeconds(1));
@@ -942,10 +970,10 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        ArrFaVersion version = createFindingAidVersion(findingAid, null, false);
-        ArrFaLevel parent = createLevel(1, null, version.getCreateChange());
-        version.setRootFaLevel(parent);
-        versionRepository.save(version);
+        ArrFaChange createChangeVersion = createFaChange(LocalDateTime.now());
+        ArrFaLevel parent = createLevel(1, null, createChangeVersion);
+        ArrFaVersion version = createFindingAidVersion(findingAid, parent, false, createChangeVersion);
+
         LocalDateTime startTime = version.getCreateChange().getChangeDate();
 
         ArrFaChange createChange = createFaChange(startTime.minusSeconds(1));
@@ -974,6 +1002,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         descItem1 = arrangementManager.createDescriptionItem(descItem1, version.getFaVersionId());
 
+        node = nodeRepository.findOne(node.getNodeId());
         ArrDescItemExt descItem2 = new ArrDescItemExt();
         descItem2.setDescItemType(descItemType);
         descItem2.setDescItemSpec(descItemSpec);
@@ -982,6 +1011,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         descItem2 = arrangementManager.createDescriptionItem(descItem2, version.getFaVersionId());
 
+        node = nodeRepository.findOne(node.getNodeId());
         ArrDescItemExt descItem3 = new ArrDescItemExt();
         descItem3.setDescItemType(descItemType);
         descItem3.setDescItemSpec(descItemSpec);
@@ -990,6 +1020,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         descItem3 = arrangementManager.createDescriptionItem(descItem3, version.getFaVersionId());
 
+        node = nodeRepository.findOne(node.getNodeId());
         ArrDescItemExt descItem4 = new ArrDescItemExt();
         descItem4.setDescItemType(descItemType);
         descItem4.setDescItemSpec(descItemSpec);
@@ -1024,8 +1055,10 @@ public class ArrangementManagerTest extends AbstractRestTest {
     public void testRestSaveDescriptionItems() {
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        ArrFaVersion version = createFindingAidVersion(findingAid, null, false);
-        ArrFaLevel parent = createLevel(1, null, version.getCreateChange());
+        ArrFaChange createChangeVersion = createFaChange(LocalDateTime.now());
+        ArrFaLevel parent = createLevel(1, null, createChangeVersion);
+        ArrFaVersion version = createFindingAidVersion(findingAid, parent, false, createChangeVersion);
+
         version.setRootFaLevel(parent);
         versionRepository.save(version);
         LocalDateTime startTime = version.getCreateChange().getChangeDate();
@@ -1056,6 +1089,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrDescItemExt descItem1Save = arrangementManager.createDescriptionItem(descItem1, version.getFaVersionId());
 
+        node = nodeRepository.findOne(node.getNodeId());
         ArrDescItemExt descItem2 = new ArrDescItemExt();
         descItem2.setDescItemType(descItemType);
         descItem2.setDescItemSpec(descItemSpec);
@@ -1064,6 +1098,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrDescItemExt descItem2Save = arrangementManager.createDescriptionItem(descItem2, version.getFaVersionId());
 
+        node = nodeRepository.findOne(node.getNodeId());
         ArrDescItemExt descItem3 = new ArrDescItemExt();
         descItem3.setDescItemType(descItemType);
         descItem3.setDescItemSpec(descItemSpec);
@@ -1072,6 +1107,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrDescItemExt descItem3Save = arrangementManager.createDescriptionItem(descItem3, version.getFaVersionId());
 
+        node = nodeRepository.findOne(node.getNodeId());
         ArrDescItemExt descItem4 = new ArrDescItemExt();
         descItem4.setDescItemType(descItemType);
         descItem4.setDescItemSpec(descItemSpec);
@@ -1082,6 +1118,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         // vytvoření změn k odeslání
 
+        node = nodeRepository.findOne(node.getNodeId());
         ArrDescItemSavePack descItemSavePack = new ArrDescItemSavePack();
 
         List<ArrDescItemExt> descItems = new ArrayList<>();
@@ -1118,6 +1155,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItemSavePack.setFaVersionId(version.getFaVersionId());
         descItemSavePack.setDescItems(descItems);
         descItemSavePack.setDeleteDescItems(deleteDescItems);
+        descItemSavePack.setNode(node);
 
         List<ArrDescItemExt> descItemListSave = arrangementManager.saveDescriptionItems(descItemSavePack);
 
@@ -1166,10 +1204,10 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        ArrFaVersion version = createFindingAidVersion(findingAid, null, false);
-        ArrFaLevel parent = createLevel(1, null, version.getCreateChange());
-        version.setRootFaLevel(parent);
-        versionRepository.save(version);
+        ArrFaChange createChangeVersion = createFaChange(LocalDateTime.now());
+        ArrFaLevel parent = createLevel(1, null, createChangeVersion);
+        ArrFaVersion version = createFindingAidVersion(findingAid, parent, false, createChangeVersion);
+
         LocalDateTime startTime = version.getCreateChange().getChangeDate();
 
         ArrFaChange createChange = createFaChange(startTime.minusSeconds(1));

@@ -209,9 +209,9 @@ public abstract class AbstractRestTest {
         return arrangementManager.createFindingAid(name, arrangementType.getArrangementTypeId(), ruleSet.getRuleSetId());
     }
 
-    protected ArrFaVersion createFindingAidVersion(final ArrFindingAid findingAid, boolean isLock) {
+    protected ArrFaVersion createFindingAidVersion(final ArrFindingAid findingAid, boolean isLock, ArrFaChange createChange) {
         ArrFaLevel root = levelRepository.findAll().iterator().next();
-        return createFindingAidVersion(findingAid, root, isLock);
+        return createFindingAidVersion(findingAid, root, isLock, createChange);
     }
 
     protected ArrFaChange createFaChange(final LocalDateTime changeDate) {
@@ -221,17 +221,19 @@ public abstract class AbstractRestTest {
         return resultChange;
     }
 
-    protected ArrFaVersion createFindingAidVersion(final ArrFindingAid findingAid, final ArrFaLevel root, boolean isLock) {
+    protected ArrFaVersion createFindingAidVersion(final ArrFindingAid findingAid, final ArrFaLevel root, boolean isLock, ArrFaChange createChange) {
         RulRuleSet ruleSet = ruleSetRepository.findAll().iterator().next();
         ArrArrangementType arrangementType = arrangementTypeRepository.findAll().iterator().next();
 
-        return createFindingAidVersion(findingAid, root, ruleSet, arrangementType, isLock);
+        return createFindingAidVersion(findingAid, root, ruleSet, arrangementType, isLock, createChange);
     }
 
     protected ArrFaVersion createFindingAidVersion(final ArrFindingAid findingAid, final ArrFaLevel root,
-                                                   RulRuleSet ruleSet, ArrArrangementType arrangementType, boolean isLock) {
+                                                   RulRuleSet ruleSet, ArrArrangementType arrangementType, boolean isLock, ArrFaChange createChange) {
 
-        ArrFaChange createChange = createFaChange(LocalDateTime.now());
+        if (createChange == null) {
+            createChange = createFaChange(LocalDateTime.now());
+        }
 
         ArrFaChange lockChange = null;
         if (isLock) {
