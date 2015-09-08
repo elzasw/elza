@@ -4,7 +4,7 @@ import java.util.List;
 
 import cz.tacr.elza.api.ParAbstractParty;
 import cz.tacr.elza.api.ParAbstractPartyVals;
-import cz.tacr.elza.api.ParPartyType;
+import cz.tacr.elza.api.ParPartyTypeExt;
 
 /**
  * Rozhraní operací pro osoby a rejstřík.
@@ -18,11 +18,11 @@ public interface PartyManager<PAPV extends ParAbstractParty> {
 
 
     /**
-     * Vrátí všechny typy osob včetně podtypu.
+     * Vrátí všechny typy osob včetně podtypů.
      * 
      * @return typy osob včetně podtypu.
      */
-    List<? extends ParPartyType> getPartyTypes();
+    List<? extends ParPartyTypeExt> getPartyTypes();
 
     /**
      * Vloží záznam o abstraktní osobě. Je umožněno vložit návázané rejstříkové heslo a podtyp.
