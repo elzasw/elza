@@ -1,6 +1,5 @@
 package cz.tacr.elza.controller;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -26,7 +25,7 @@ import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 
 /**
- * Api pro práci s rejstříkem.
+ * Implementace Api pro práci s rejstříkem.
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */

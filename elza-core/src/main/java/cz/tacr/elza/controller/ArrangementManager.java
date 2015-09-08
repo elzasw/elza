@@ -83,8 +83,7 @@ import cz.tacr.elza.repository.VersionRepository;
 
 
 /**
- * {@inheritDoc}
- * API pro pořádání.
+ * Implementace API pro archivní pomůcku a hierarchický přehled včetně atributů.
  *
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
@@ -274,6 +273,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return newNode;
     }
 
+    /**
+     * vytvoří level jako posledního potomka zadaného kořenového levlu.
+     * @param createChange datum vytvoření
+     * @param node kořen
+     * @return
+     */
     private ArrFaLevel createLastInLevel(ArrFaChange createChange, ArrFaLevel node) {
         Assert.notNull(createChange);
         Assert.notNull(node);
@@ -701,6 +706,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return null;
     }
 
+    /**
+     * zjistí zda je level v zadané hierarchické struktuře.
+     * @param level testovaný level.
+     * @param rootNode kořen zadané hierarchické struktury.
+     * @return
+     */
     private boolean isLevelInRootTree(final ArrFaLevel level, final ArrNode rootNode) {
         if (level.getNode().equals(rootNode) || rootNode.equals(level.getParentNode())) {
             return true;
@@ -974,6 +985,11 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return levelExt;
     }
 
+    /**
+     * převod pole na {@link Set}.
+     * @param descItemTypeIds
+     * @return
+     */
     private Set<Integer> createItemTypeSet(final Integer[] descItemTypeIds) {
         Set<Integer> idItemTypeSet = null;
         if (descItemTypeIds != null && descItemTypeIds.length > 0) {
@@ -985,6 +1001,13 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return idItemTypeSet;
     }
 
+    /**
+     * doplní do nodu jeho atributy. Pokud je potřeba dodělá formátování.
+     * @param levelExt nod (level) do kterého se budou přidávat atributy.
+     * @param dataList seznam atributů
+     * @param idItemTypeSet omezení na typ 
+     * @param formatData typ formátu pro text
+     */
     private void readItemData(final ArrFaLevelExt levelExt, final List<ArrData> dataList,
             final Set<Integer> idItemTypeSet, final String formatData) {
         if (dataList == null) {
@@ -1061,6 +1084,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
     }
 
+    /**
+     * formátuje text pro prezentaci atributů. V současné době pouze upraví délku na 250 znaků.
+     * @param value text pro formátování
+     * @param formatData typ formátu textu.
+     * @return naformátovaný text
+     */
     private String createFormatString(final String value,  final String formatData) {
         String stringValue = value;
         if (stringValue != null && stringValue.length() > 250 && formatData != null && FORMAT_ATTRIBUTE_SHORT.equals(formatData)) {
@@ -1209,15 +1238,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
 
         return descItemRet;
-    }
-
-    private void refreshDescItem(ArrDescItemExt descItem) {
-        List<ArrDescItem> descItems = descItemRepository.findByDescItemObjectIdAndDeleteChangeIsNull(descItem.getDescItemObjectId());
-        // musí být právě jeden
-        if (descItems.size() != 1) {
-            throw new IllegalArgumentException("Neplatný počet záznamů (" + descItems.size() + ")");
-        }
-        BeanUtils.copyProperties(descItems.get(0), descItem);
     }
 
     /**
@@ -1897,7 +1917,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     }
 
     /**
-     * Upraví pozici s kopií dat u všech položek ze seznamu
+     * Upraví pozici s kopií dat u všech položek ze seznamu.
      *
      * @param arrFaChange   Změna
      * @param descItemListForUpdate Seznam upravovaných položek
@@ -1924,7 +1944,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     }
 
     /**
-     * Vytvoří kopie hodnot pro novou verzi hodnoty atributu
+     * Vytvoří kopie hodnot pro novou verzi hodnoty atributu.
      *
      * @param descItemUpdate    Původní hodnota attributu
      * @param descItemNew       Nová hodnota attributu

@@ -1,15 +1,13 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.domain.ParAbstractParty;
-import cz.tacr.elza.domain.ParAbstractPartyVals;
-import cz.tacr.elza.domain.ParPartySubtype;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParPartyTypeExt;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.repository.AbstractPartyRepository;
-import cz.tacr.elza.repository.PartySubtypeRepository;
-import cz.tacr.elza.repository.PartyTypeRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
@@ -19,16 +17,19 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import cz.tacr.elza.domain.ParAbstractParty;
+import cz.tacr.elza.domain.ParPartySubtype;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParPartyTypeExt;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.repository.AbstractPartyRepository;
+import cz.tacr.elza.repository.PartySubtypeRepository;
+import cz.tacr.elza.repository.PartyTypeRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
 
 
 /**
- * API pro práci s pravidly.
+ * Implementace API pro práci s pravidly.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 30. 7. 2015

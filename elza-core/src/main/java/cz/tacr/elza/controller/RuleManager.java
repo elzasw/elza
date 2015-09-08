@@ -52,7 +52,7 @@ import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VersionRepository;
 
 /**
- * API pro práci s pravidly.
+ * Implementace API pro práci s pravidly.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 30. 7. 2015
