@@ -11,10 +11,7 @@ import java.io.Serializable;
  * @param <FC> {@link ArrFaChange}
  * @param <N> {@link ArrNode}
  */
-public interface ArrFaLevel<FC extends ArrFaChange, N extends ArrNode>
-        extends
-            Versionable,
-            Serializable {
+public interface ArrFaLevel<FC extends ArrFaChange, N extends ArrNode> extends Serializable {
 
     Integer getFaLevelId();
 

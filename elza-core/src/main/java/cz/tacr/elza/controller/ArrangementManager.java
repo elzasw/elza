@@ -83,7 +83,7 @@ import cz.tacr.elza.repository.VersionRepository;
 
 
 /**
- * {@inheritDoc} 
+ * {@inheritDoc}
  * API pro pořádání.
  *
  * @author by Ondřej Buriánek, burianek@marbes.cz.
@@ -270,7 +270,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         newNode.setNode(node.getNode());
         newNode.setParentNode(node.getParentNode());
         newNode.setPosition(node.getPosition());
-        newNode.setVersion(node.getVersion());
 
         return newNode;
     }
