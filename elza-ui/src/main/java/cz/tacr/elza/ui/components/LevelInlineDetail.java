@@ -115,7 +115,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
         BeanItemContainer<RulDescItemType> descItemTypeBeanItemContainer = new BeanItemContainer<>(
                 RulDescItemType.class);
-        descItemTypeBeanItemContainer.addAll(ruleSetManager.getDescriptionItemTypes(0));
+        descItemTypeBeanItemContainer.addAll(ruleSetManager.getDescriptionItemTypesForNodeId(versionId, level.getNode().getNodeId(), null));
         attributesComboBox = new ComboBox(null, descItemTypeBeanItemContainer);
         attributesComboBox.setItemCaptionPropertyId("name");
 

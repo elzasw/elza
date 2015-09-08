@@ -37,43 +37,43 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
 
     /**
      * Vrátí všechny typy atributů archivního popisu k zadaným pravidlům tvorby.
-     * @param ruleSetId
-     * @return
+     * @param ruleSetId     Identifikátor sady pravidel
+     * @return  Seznam typů hodnot atrubutů
      */
     List<? extends RulDescItemType> getDescriptionItemTypes(Integer ruleSetId);
 
     /**
-     * Vrátí všechny typy atributů archivního popisu k uzlu.
-     * @param faVersionId
-     * @param nodeId
-     * @param mandatory
-     * @return
+     * Vrátí všechny typy hodnot atributů archivního popisu k uzlu.
+     * @param faVersionId   Identifikátor verze
+     * @param nodeId        Identifikátor uzlu
+     * @param mandatory     true - vrací všechny povinné typy, false - vrací všechny nepovinné typy, null - vrací všechno
+     * @return  Seznam typů hodnot atributů
      */
     List<? extends RulDescItemType> getDescriptionItemTypesForNodeId(Integer faVersionId, Integer nodeId, Boolean mandatory);
 
 
     /**
-     * Vrátí všechny hodnoty attrubutu archivního popisu k uzlu.
-     * @param faVersionId
-     * @param nodeId
-     * @param rulDescItemTypeId
-     * @return
+     * Vrátí všechny hodnoty atributu archivního popisu k uzlu.
+     * @param faVersionId       Identifikátor verze
+     * @param nodeId            Identifikátor uzlu
+     * @param rulDescItemTypeId Identifikátor typu atributu
+     * @return  Seznam hodnot atrubutu
      */
     List<? extends ArrDescItem> getDescriptionItemsForAttribute(Integer faVersionId, Integer nodeId, Integer rulDescItemTypeId);
 
 
     /**
-     * TODO
-     * @param rulDescItemType
-     * @return
+     * Vrací specifikace podle typu atributu.
+     * @param rulDescItemType   Typ hodnoty atributu
+     * @return  Seznam specifikací
      */
     List<DIS> getDescItemSpecsFortDescItemType(DIT rulDescItemType);
 
 
     /**
-     * TODO
-     * @param rulDescItemType
-     * @return
+     * Vrací datový typ podle typu hodnoty atributu.
+     * @param rulDescItemType   Typ hodnoty atributu
+     * @return                  Datový typ
      */
     DT getDataTypeForDescItemType(DIT rulDescItemType);
 
