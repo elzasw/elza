@@ -61,8 +61,7 @@ public class ArrNode extends AbstractVersionableEntity implements cz.tacr.elza.a
 
     @Override
     public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(lastUpdate);
-
+        return new HashCodeBuilder().append(nodeId).toHashCode();
     }
 
     @Override
