@@ -90,7 +90,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
      * @param node        object obsahující uzel a uzel(node) rodiče
      * @return              nový uzel
      */
-    ArrFaLevel addLevelBefore(FLP node);
+    FLP addLevelBefore(FLP node);
 
     /**
      * Vytvoří nový uzel za předaným uzlem.
@@ -98,15 +98,15 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
      * @param node        object obsahující uzel a uzel(node) rodiče
      * @return              nový uzel
      */
-    ArrFaLevel addLevelAfter(FLP node);
+    FLP addLevelAfter(FLP node);
 
     /**
      * Vytvoří nový uzel na poslední pozici pod předaným uzlem.
      *
      * @param node        object obsahující uzel a uzel(node) rodiče
-     * @return            nový uzel
+     * @return            object obsahující nový uzel a uzel(node) rodiče s upravenou verzí
      */
-    ArrFaLevel addLevelChild(FLP node);
+    FLP addLevelChild(FLP node);
 
     /**
      * Přesune uzel před předaný uzel.
@@ -114,7 +114,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
      * @param node            uzel který se přesouvá s uzlem před který se přesouvá
      * @return                  přesunutý uzel
      */
-    ArrFaLevel moveLevelBefore(FLP node);
+    FLP moveLevelBefore(FLP node);
 
     /**
      * Přesune uzel na poslední pozici pod předaným uzlem.
@@ -122,7 +122,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
      * @param node       uzel který se přesouvá s uzlem pod který se přesouvá
      * @return             přesunutý uzel
      */
-    ArrFaLevel moveLevelUnder(FLP node);
+    FLP moveLevelUnder(FLP node);
 
     /**
      * Přesune uzel za předaný uzel.
@@ -130,7 +130,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
      * @param node            uzel který se přesouvá s uzlem za který se přesouvá
      * @return                   přesunutý uzel
      */
-    ArrFaLevel moveLevelAfter(FLP node);
+    FLP moveLevelAfter(FLP node);
 
     /**
      * Smaže uzel.
@@ -138,7 +138,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
      * @param node            uzel který se maže s uzlem rodiče
      * @return                  smazaný uzel
      */
-    ArrFaLevel deleteLevel(FLP node);
+    FLP deleteLevel(FLP node);
 
     /**
      * Načte neuzavřenou verzi archivní pomůcky.
