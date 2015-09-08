@@ -412,8 +412,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         Assert.notNull(levelWithParentNode);
         ArrFaLevel node = levelWithParentNode.getFaLevel();
         ArrNode parentNode = levelWithParentNode.getExtraNode();
-        Assert.notNull(node);
-        Assert.notNull(parentNode);
+
+        isValidArrFaLevel(node);
+        isValidNode(parentNode);
 
         ArrFaChange change = createChange();
         ArrFaLevel faLevelRet = createBeforeInLevel(change, node);
@@ -434,8 +435,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         Assert.notNull(levelWithParentNode);
         ArrFaLevel node = levelWithParentNode.getFaLevel();
         ArrNode parentNode = levelWithParentNode.getExtraNode();
-        Assert.notNull(node);
-        Assert.notNull(parentNode);
+
+        isValidArrFaLevel(node);
+        isValidNode(parentNode);
 
         ArrFaChange change = createChange();
         ArrFaLevel faLevelRet = createAfterInLevel(change, node);
@@ -458,7 +460,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrFaLevel node = levelWithParentNode.getFaLevel();
         //ArrNode parentNode = levelWithParentNode.getExtraNode();
-        Assert.notNull(node);
+        isValidArrFaLevel(node);
 
         ArrFaChange change = createChange();
         ArrFaLevel faLevelRet = createLastInLevel(change, node);
@@ -481,8 +483,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrFaLevel node = levelWithFollowerNode.getFaLevel();
         ArrNode followerNode = levelWithFollowerNode.getExtraNode();
-        Assert.notNull(node);
-        Assert.notNull(followerNode);
+
+        isValidArrFaLevel(node);
+        isValidNode(followerNode);
 
         if (followerNode == null) {
             throw new IllegalArgumentException("Přesun se nezdařil. Záznam byl pravděpodobně smazán jiným uživatelem. Aktualizujte stránku");
@@ -543,8 +546,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrFaLevel node = levelWithUnderNode.getFaLevel();
         ArrNode parentNode = levelWithUnderNode.getExtraNode();
-        Assert.notNull(node);
-        Assert.notNull(parentNode);
+
+        isValidArrFaLevel(node);
+        isValidNode(parentNode);
 
         if(parentNode == null){
             throw new IllegalArgumentException("Přesun se nezdařil. Záznam byl pravděpodobně smazán jiným uživatelem. Aktualizujte stránku");
@@ -589,8 +593,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrFaLevel node = levelWithPredecessorNode.getFaLevel();
         ArrNode predecessorNode = levelWithPredecessorNode.getExtraNode();
-        Assert.notNull(node);
-        Assert.notNull(predecessorNode);
+
+        isValidArrFaLevel(node);
+        isValidNode(predecessorNode);
 
         if(predecessorNode == null){
             throw new IllegalArgumentException("Přesun se nezdařil. Záznam byl pravděpodobně smazán jiným uživatelem. Aktualizujte stránku");
@@ -641,6 +646,33 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         levelWithPredecessorNodeRet.setExtraNode(predecessorNode);
 
         return levelWithPredecessorNodeRet;
+    }
+
+    /**
+     * Kontrola uzlu, že existuje v DB.
+     * @param node  Kontrolovaný uzel
+     */
+    private void isValidNode(final ArrNode node) {
+        Assert.notNull(node);
+        ArrNode nodeDB = nodeRepository.findOne(node.getNodeId());
+        if (nodeDB == null) {
+            throw new IllegalArgumentException("Neplatný uzel");
+        }
+    }
+
+    /**
+     * Kontrola uzlu, že existuje v DB a není smazán.
+     * @param node  Kontrolovaný uzel
+     */
+    private void isValidArrFaLevel(final ArrFaLevel node) {
+        Assert.notNull(node);
+        ArrFaLevel nodeDB = levelRepository.findOne(node.getFaLevelId());
+        if (nodeDB == null) {
+            throw new IllegalArgumentException("Neplatný uzel");
+        }
+        /*if (nodeDB.getDeleteChange() != null) {
+            throw new IllegalArgumentException("Uzel je již smazaný");
+        }*/
     }
 
     /**
