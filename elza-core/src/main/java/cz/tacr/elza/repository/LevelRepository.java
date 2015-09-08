@@ -37,6 +37,9 @@ public interface LevelRepository extends JpaRepository<ArrFaLevel, Integer> {
 
     List<ArrFaLevel> findByNodeAndDeleteChangeIsNull(ArrNode node);
 
+    @Query("SELECT count(l) FROM arr_fa_level l WHERE l.node = ?1 AND l.deleteChange is null")
+    Integer countByNode(ArrNode node);
+
     default ArrFaLevel findFirstByNodeAndDeleteChangeIsNull(ArrNode node) {
         List<ArrFaLevel> levels = findByNodeAndDeleteChangeIsNull(node);
         return levels.isEmpty() ? null : levels.iterator().next();

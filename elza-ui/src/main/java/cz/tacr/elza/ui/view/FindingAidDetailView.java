@@ -424,7 +424,6 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                         faLevelWithExtraNode.setFaLevel(node);
                         faLevelWithExtraNode.setExtraNode(node.getParentNode());
                         faLevelWithExtraNode.setRootNode(version.getRootFaLevel().getNode());
-                        arrangementManager.deleteLevel(faLevelWithExtraNode);
 
                         ArrFaLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager.deleteLevel(faLevelWithExtraNode);
 
@@ -807,7 +806,8 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                         ArrFaLevelWithExtraNode faLevelWithExtraNode = new ArrFaLevelWithExtraNode();
                         faLevelWithExtraNode.setFaLevel(version.getRootFaLevel());
                         faLevelWithExtraNode.setRootNode(version.getRootFaLevel().getNode());
-                        ArrFaLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager.addLevelChild(faLevelWithExtraNode);
+                        ArrFaLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager
+                                .addLevelChild(faLevelWithExtraNode);
                         ArrFaLevel newFaLevel = faLevelWithExtraNodeRet.getFaLevel();
                         version.getRootFaLevel().setNode(faLevelWithExtraNodeRet.getExtraNode());
 
@@ -816,7 +816,8 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
 
                         Item item = table.addItem(newFaLevel);
 
-                        HierarchicalCollapsibleBeanItemContainer container = (HierarchicalCollapsibleBeanItemContainer) table
+                        HierarchicalCollapsibleBeanItemContainer container
+                                = (HierarchicalCollapsibleBeanItemContainer) table
                                 .getContainerDataSource();
 
                         refreshParentReferences(version.getRootFaLevel(), faLevelWithExtraNodeRet, container);

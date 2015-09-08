@@ -21,6 +21,9 @@ import cz.tacr.elza.domain.RulDescItemType;
 @Repository
 public interface DescItemRepository extends JpaRepository<ArrDescItem, Integer> {
 
+    @Query("SELECT i FROM arr_desc_item i WHERE i.node = ?1 AND i.deleteChange IS NULL")
+    List<ArrDescItem> findByNodeAndDeleteChangeIsNull(ArrNode node);
+
     @Query("SELECT i FROM arr_desc_item i JOIN i.descItemType t JOIN i.descItemSpec s WHERE i.node = ?1 AND i.deleteChange IS NULL AND t.descItemTypeId = ?2 AND s.descItemSpecId = ?3")
     List<ArrDescItem> findByNodeAndDeleteChangeIsNullAndDescItemTypeIdAndSpecItemTypeId(ArrNode node, Integer descItemTypeId, Integer descItemSpecId);
 
