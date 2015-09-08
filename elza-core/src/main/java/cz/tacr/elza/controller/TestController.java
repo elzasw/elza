@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 /**
+ * Zkušební třída pro technologie.
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 6.8.15
  */
