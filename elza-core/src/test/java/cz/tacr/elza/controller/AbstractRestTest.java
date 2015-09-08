@@ -300,7 +300,7 @@ public abstract class AbstractRestTest {
             dataStr.setDescItem(item);
             RulDataType dataType = dataTypeRepository.getOne(2);
             dataStr.setDataType(dataType);
-            dataStr.setValue("str data " + index);
+            dataStr.setValue(TEST_NAME + index);
             arrDataStringRepository.save(dataStr);
             return dataStr;
         } else if (DATA_TYP_RECORD.equalsIgnoreCase(typ)) {
