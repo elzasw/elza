@@ -17,7 +17,6 @@ import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParAbstractParty;
 import cz.tacr.elza.domain.ParPartySubtype;
-import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
@@ -164,6 +163,7 @@ public abstract class AbstractRestTest {
         // potřebné delete, jen data, ne číselníky
         abstractPartyRepository.deleteAll();
         variantRecordRepository.deleteAll();
+        arrDataRepository.deleteAll();
         recordRepository.deleteAll();
 
         descItemConstraintRepository.deleteAll();
