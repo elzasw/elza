@@ -141,15 +141,6 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
     ArrFaLevel deleteLevel(FLP node);
 
     /**
-     * Načte uzel podle identifikátoru.
-     *
-     * @param nodeId            id uzlu
-     * @param versionId         id verze, může být null
-     * @return                  uzel s daným identifikátorem
-     */
-    ArrFaLevel findLevelByNodeId(Integer nodeId, Integer versionId);
-
-    /**
      * Načte neuzavřenou verzi archivní pomůcky.
      *
      * @param findingAidId      id archivní pomůcky

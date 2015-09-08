@@ -37,8 +37,8 @@ public class LevelHistoryWindow extends AxWindow {
         this.arrangementManager = arrangementManager;
     }
 
-    public AxWindow show(final Integer nodeId, final Integer findingAidId) {
-        List<CssLayout> componentList = createVersionHistory(nodeId, findingAidId);
+    public AxWindow show(final ArrFaLevel level, final Integer findingAidId) {
+        List<CssLayout> componentList = createVersionHistory(level, findingAidId);
         CssLayout layout = new CssLayout();
         layout.addStyleName("history-box");
         layout.setSizeUndefined();
@@ -53,12 +53,12 @@ public class LevelHistoryWindow extends AxWindow {
     }
 
 
-    private List<CssLayout> createVersionHistory(final Integer nodeId, final Integer findingAidId) {
+    private List<CssLayout> createVersionHistory(final ArrFaLevel level, final Integer findingAidId) {
             final List<ArrFaVersion> versionList = arrangementManager.getFindingAidVersions(findingAidId);
-            List<ArrFaLevel> allLevels = arrangementManager.findLevels(nodeId);
+            List<ArrFaLevel> allLevels = arrangementManager.findLevels(level.getNode().getNodeId());
             List<CssLayout> resultList = new ArrayList<>();
 
-            final Map<ArrFaVersion, List<ArrFaLevel>> versionMap = prepareVersionLevelMap(nodeId, findingAidId);
+            final Map<ArrFaVersion, List<ArrFaLevel>> versionMap = prepareVersionLevelMap(level, findingAidId);
             ArrFaLevel firstLevel = allLevels.get(0);
             ArrFaLevel lastLevel = allLevels.get(allLevels.size()-1);
 
@@ -79,8 +79,8 @@ public class LevelHistoryWindow extends AxWindow {
             return resultList;
         }
 
-        private Map<ArrFaVersion, List<ArrFaLevel>> prepareVersionLevelMap(final Integer nodeId, final Integer findingAidId) {
-            final List<ArrFaLevel> levelList = arrangementManager.findLevels(nodeId);
+        private Map<ArrFaVersion, List<ArrFaLevel>> prepareVersionLevelMap(final ArrFaLevel level, final Integer findingAidId) {
+            final List<ArrFaLevel> levelList = arrangementManager.findLevels(level.getNode().getNodeId());
             final List<ArrFaVersion> versionList = arrangementManager.getFindingAidVersions(findingAidId);
 
 

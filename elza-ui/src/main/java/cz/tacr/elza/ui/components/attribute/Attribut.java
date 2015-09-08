@@ -18,6 +18,7 @@ import cz.req.ax.AxAction;
 import cz.req.ax.ChildComponentContainer;
 import cz.req.ax.Components;
 import cz.tacr.elza.domain.ArrDescItemExt;
+import cz.tacr.elza.domain.ArrFaLevelExt;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
