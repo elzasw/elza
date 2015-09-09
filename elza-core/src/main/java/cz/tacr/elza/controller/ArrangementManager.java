@@ -195,7 +195,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Override
     @Transactional
-    @RequestMapping(value = "/createFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE,
+    @RequestMapping(value = "/createFindingAid", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
     params = {"name", "arrangementTypeId", "ruleSetId"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ArrFindingAid createFindingAid(@RequestParam(value = "name") final String name,
             @RequestParam(value = "arrangementTypeId") final Integer arrangementTypeId,
@@ -283,7 +283,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      * vytvoří level jako posledního potomka zadaného kořenového levlu.
      * @param createChange datum vytvoření
      * @param node kořen
-     * @return
+     * @return vytvořený level.
      */
     private ArrFaLevel createLastInLevel(ArrFaChange createChange, ArrFaLevel node) {
         Assert.notNull(createChange);
@@ -403,6 +403,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             throw new ConcurrentUpdateException("Archivní pomůcka s identifikátorem " + findingAidId + " již neexistuje.");
         }
 
+        if (version.getLockChange() != null) {
+            throw new ConcurrentUpdateException("Verze byla již uzavřena");
+        }
+
         ArrFaChange change = createChange();
         version.setLockChange(change);
         versionRepository.save(version);
@@ -430,6 +434,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         parentNode.setLastUpdate(LocalDateTime.now());
         parentNode = nodeRepository.save(parentNode);
 
+        entityManager.flush();
+        entityManager.refresh(faLevelRet);
+
         ArrFaLevelWithExtraNode levelWithParentNodeRet = new ArrFaLevelWithExtraNode();
         levelWithParentNodeRet.setFaLevel(faLevelRet);
         levelWithParentNodeRet.setExtraNode(parentNode);
@@ -453,6 +460,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         parentNode.setLastUpdate(LocalDateTime.now());
         parentNode = nodeRepository.save(parentNode);
+
+        entityManager.flush();
+        entityManager.refresh(faLevelRet);
 
         ArrFaLevelWithExtraNode levelWithParentNodeRet = new ArrFaLevelWithExtraNode();
         levelWithParentNodeRet.setFaLevel(faLevelRet);
@@ -729,7 +739,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      * zjistí zda je level v zadané hierarchické struktuře.
      * @param level testovaný level.
      * @param rootNode kořen zadané hierarchické struktury.
-     * @return
+     * @return true pokud je level v zadané hierarchické struktuře.
      */
     private boolean isLevelInRootTree(final ArrFaLevel level, final ArrNode rootNode) {
         if (level.getNode().equals(rootNode) || rootNode.equals(level.getParentNode())) {
@@ -987,6 +997,11 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             levelList = levelRepository.findByParentNodeOrderByPositionAsc(node, change);
         }
 
+
+//        for (ArrFaLevel faLevel : levelList) {
+//            entityManager.refresh(faLevel);
+//        }
+
         return levelList;
     }
 
@@ -1065,7 +1080,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      * doplní do nodu jeho atributy. Pokud je potřeba dodělá formátování.
      * @param levelExt nod (level) do kterého se budou přidávat atributy.
      * @param dataList seznam atributů
-     * @param idItemTypeSet omezení na typ 
+     * @param idItemTypeSet omezení na typ
      * @param formatData typ formátu pro text
      */
     private void readItemData(final ArrFaLevelExt levelExt, final List<ArrData> dataList,
@@ -1837,11 +1852,11 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     }
 
     /**
-     * Uloží upravenout hodnotu attributu do tabulky podle jeho typu
-     *  @param rulDescItemType Typ atributu
+     * Uloží upravenout hodnotu attributu do tabulky podle jeho typu.
+     * @param rulDescItemType Typ atributu
      * @param data            Hodnota attributu
      * @param arrData         Upravovaná položka hodnoty attributu
-     * @param descItemExt
+     * @param descItemExt upravená hodnota atributu.
      */
     private void saveUpdateDataValue(RulDescItemType rulDescItemType,
                                      String data,
@@ -1978,7 +1993,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      */
     private void updatePositionsBefore(Integer position, ArrNode node, ArrFaChange arrFaChange, ArrDescItem descItem) {
         List<ArrDescItem> descItemListForUpdate = descItemRepository
-                .findByNodeAndDescItemTypeIdAndDeleteChangeIsNullBeforePosistion(position, node, descItem.getDescItemType().getDescItemTypeId());
+                .findByNodeAndDescItemTypeIdAndDeleteChangeIsNullBeforePosistion(position, node,
+                        descItem.getDescItemType().getDescItemTypeId());
         updatePositionsRaw(arrFaChange, descItemListForUpdate, 1);
     }
 
@@ -2140,6 +2156,11 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return createItemExt(itemList);
     }
 
+    /**
+     * rozšíří level o atributy. Vytvoří z {@link ArrDescItem} rozšíření {@link ArrDescItemExt}.
+     * @param itemList
+     * @return
+     */
     private List<ArrDescItemExt> createItemExt(List<ArrDescItem> itemList) {
         List<ArrDescItemExt> descItemList = new LinkedList<>();
         if (itemList.isEmpty()) {

@@ -9,7 +9,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import cz.tacr.elza.api.RulArrangementType;
+
 /**
+ * Obecné pomocné metody.
+ * 
  * @author vavrejn
  *
  */
@@ -18,9 +22,10 @@ public class ElzaTools {
     /**
      * vytvoří z listu mapu listů zagrupovanou podle zadaného klíče.
      * 
-     * @param findItemConstList
+     * @param <T> typ zpracovávaného objektu.
+     * @param findItemConstList list pro grupovani
      * @param f - funkce vracejici hodnotu klíčš pro grupovani.
-     * @return
+     * @return výsledná mapa.
      */
     public static <T> Map<Integer, List<T>> createGroupMap(final List<T> findItemConstList,
             final Function<T, Integer> f) {

@@ -7,6 +7,7 @@ import cz.tacr.elza.domain.RulRuleSet;
 
 
 /**
+ * Respozitory pro pravidla.
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */

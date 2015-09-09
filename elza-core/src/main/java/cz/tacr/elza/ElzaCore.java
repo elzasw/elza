@@ -13,6 +13,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 /**
+ * Spouštěcí třída pro modul elza-core.
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */

@@ -7,6 +7,7 @@ import cz.tacr.elza.domain.ArrFaChange;
 
 
 /**
+ * Respozitory pro číslo změny.
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */

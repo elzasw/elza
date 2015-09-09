@@ -40,7 +40,7 @@ import cz.tacr.elza.repository.VersionRepository;
 /**
  * Generuje data pro testování z klienta.
  * Pro ychlejší generování je potřeba nastavit přidělování identifikátorů z db po větších počtech
- * @see {@link TableIdGenerator}.
+ * {@link TableIdGenerator}.
  *
  *  počet id / počet vložených záznamů po kterých se provede session flush a clean / čas v minutách
  *  1000    500 40
