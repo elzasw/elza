@@ -9,6 +9,7 @@ import javax.persistence.Id;
 import java.io.Serializable;
 
 /**
+ * popis {@link cz.tacr.elza.api.RulRuleSet}.
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */

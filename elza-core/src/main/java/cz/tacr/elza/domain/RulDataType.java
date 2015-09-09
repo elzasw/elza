@@ -1,6 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -10,6 +9,9 @@ import javax.persistence.*;
 
 
 /**
+ * evidence možných datových typů atributů archivního popisu. 
+ * evidence je společná pro všechny archivní pomůcky.
+ * 
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */

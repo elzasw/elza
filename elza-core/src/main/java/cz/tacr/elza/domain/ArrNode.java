@@ -15,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
+ * Entita zajišťuje zámek pro uzel kvůli konkurentnímu přístupu.
  * @author Martin Šlapa
  * @since 4. 9. 2015
  */

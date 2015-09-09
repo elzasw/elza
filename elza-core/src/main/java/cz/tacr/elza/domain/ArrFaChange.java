@@ -1,6 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.Column;
@@ -10,6 +9,7 @@ import javax.persistence.Id;
 import java.time.LocalDateTime;
 
 /**
+ * Seznam provedených změn v archivních pomůckách.
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */

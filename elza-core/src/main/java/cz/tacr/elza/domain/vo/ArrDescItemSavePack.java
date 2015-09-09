@@ -2,11 +2,13 @@ package cz.tacr.elza.domain.vo;
 
 import java.util.List;
 
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemExt;
 import cz.tacr.elza.domain.ArrNode;
 
 
 /**
+ * Zapouzdření hodnot pro ulžení {@link ArrDescItem}.
  * @author Martin Šlapa
  * @since 28.8.2015
  */
