@@ -1,6 +1,26 @@
 package cz.tacr.elza.controller;
 
+import static com.jayway.restassured.RestAssured.given;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.jayway.restassured.response.Response;
+
 import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
@@ -29,23 +49,6 @@ import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VersionRepository;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-
-import static com.jayway.restassured.RestAssured.given;
 
 /**
  * Testy pro {@link ArrangementManager}.
@@ -617,8 +620,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(node.getFaLevel());
-        levelWithExtraNode.setExtraNode(node.getFaLevel().getParentNode());
-        levelWithExtraNode.getExtraNode().setVersion(levelWithExtraNode.getExtraNode().getVersion() + 1);
+        levelWithExtraNode.setExtraNode(node.getExtraNode());
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(DELETE_LEVEL_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
@@ -1218,7 +1220,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         if (node != null) {
             descItemChange.setNode(node);
         }
-        
+
         if (hasNewRecord) {
             Assert.assertNotEquals("Nemůže být stejný záznam, protože se provedla změna pozice", descItem.getDescItemId(), descItemChange.getDescItemId());
 //            Assert.assertNotEquals("Nemůže být stejný záznam, protože se provedla změna pozice", descItem.getPosition(), descItemChange.getPosition());
