@@ -100,6 +100,11 @@ public abstract class AbstractRestTest {
     protected static final String JSON_CONTENT_TYPE = "application/json";
     private static final Header JSON_CT_HEADER = new Header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE);
 
+    // REGISTRY MANAGER CONSTANTS
+    protected static final String GET_REGISTER_TYPES_URL = REGISTRY_MANAGER_URL + "/getRegisterTypes";
+    protected static final String CREATE_RECORD_URL = REGISTRY_MANAGER_URL + "/createRecord";
+
+
     @Value("${local.server.port}")
     private int port;
 
