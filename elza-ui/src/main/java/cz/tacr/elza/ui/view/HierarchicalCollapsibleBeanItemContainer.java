@@ -14,6 +14,8 @@ import com.vaadin.data.Container;
 import com.vaadin.data.util.BeanItemContainer;
 
 import cz.tacr.elza.domain.ArrFaLevel;
+import cz.tacr.elza.domain.ArrNode;
+
 
 /**
  *
@@ -23,7 +25,7 @@ import cz.tacr.elza.domain.ArrFaLevel;
  */
 public class HierarchicalCollapsibleBeanItemContainer extends BeanItemContainer<ArrFaLevel> implements Container.Hierarchical, Collapsible {
 
-    private Set<ArrFaLevel> isExpandedSet = new HashSet<>();
+    private Set<ArrNode> isExpandedSet = new HashSet<>();
     private Integer rootNodeId;
 
     public HierarchicalCollapsibleBeanItemContainer(Collection<ArrFaLevel> collection, Integer rootNodeId) throws IllegalArgumentException {
@@ -33,16 +35,19 @@ public class HierarchicalCollapsibleBeanItemContainer extends BeanItemContainer<
 
     @Override
     public void setCollapsed(Object itemId, boolean collapsed) {
+        ArrFaLevel level = (ArrFaLevel) itemId;
+
         if (collapsed) {
-            isExpandedSet.remove(itemId);
+            isExpandedSet.remove(level.getNode());
         } else {
-            isExpandedSet.add((ArrFaLevel) itemId);
+            isExpandedSet.add(level.getNode());
         }
     }
 
     @Override
     public boolean isCollapsed(Object itemId) {
-        return !isExpandedSet.contains(itemId);
+        ArrFaLevel level = (ArrFaLevel) itemId;
+        return !isExpandedSet.contains(level.getNode());
     }
 
     @Override

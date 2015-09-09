@@ -244,7 +244,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
             @Override
             public void nodeCollapse(final Tree.CollapseEvent collapseEvent) {
                 ArrFaLevel itemId = (ArrFaLevel) collapseEvent.getItemId();
-                removeAllChildren(table, itemId);
+                removeAllChildren(table, itemId, 0);
             }
         });
 
@@ -473,7 +473,8 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                             faLevelWithExtraNode.setFaLevel(levelNodeVyjmout);
                             faLevelWithExtraNode.setFaLevelTarget(node);
                             faLevelWithExtraNode.setRootNode(version.getRootFaLevel().getNode());
-                            ArrFaLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager.moveLevelBefore(faLevelWithExtraNode);
+                            ArrFaLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager.moveLevelBefore(
+                                    faLevelWithExtraNode);
 
                             refreshTree(container, version.getRootFaLevel());
 
@@ -507,7 +508,8 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                             faLevelWithExtraNode.setFaLevel(levelNodeVyjmout);
                             faLevelWithExtraNode.setFaLevelTarget(node);
                             faLevelWithExtraNode.setRootNode(version.getRootFaLevel().getNode());
-                            ArrFaLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager.moveLevelAfter(faLevelWithExtraNode);
+                            ArrFaLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager.moveLevelAfter(
+                                    faLevelWithExtraNode);
                             refreshTree(container, version.getRootFaLevel());
 
                             discardNodeCut();
@@ -540,6 +542,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                             faLevelWithExtraNode.setFaLevel(levelNodeVyjmout);
                             faLevelWithExtraNode.setExtraNode(((ArrFaLevel) itemId).getNode());
                             ArrFaLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager.moveLevelUnder(faLevelWithExtraNode);
+                            container.setCollapsed(((ArrFaLevel) itemId), false);
                             refreshTree(container, version.getRootFaLevel());
 
                             discardNodeCut();
@@ -638,6 +641,8 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
 
     private void refreshTree(final HierarchicalCollapsibleBeanItemContainer container, final ArrFaLevel rootLevel) {
         version = arrangementManager.getFaVersionById(version.getFaVersionId());
+        int visibleIndex = table.getCurrentPageFirstItemIndex();
+
         container.removeAllItems();
         List<ArrFaLevelExt> faLevelsExt = arrangementManager.findSubLevels(rootLevel.getNode().getNodeId(), version.getFaVersionId(), ArrangementManager.FORMAT_ATTRIBUTE_SHORT, null);
         for (ArrFaLevelExt faLevel : faLevelsExt) {
@@ -649,6 +654,8 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
         for (ArrFaLevel faLevel : faLevels) {
             addItemToContainer(faLevel, container);
         }
+
+        table.setCurrentPageFirstItemIndex(visibleIndex);
     }
 
     /**
@@ -814,16 +821,25 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
         container.setCollapsed(faLevel, container.isCollapsed(faLevel));
     }
 
-    private void removeAllChildren(final TreeTable table, final ArrFaLevel itemId) {
+    private void removeAllChildren(final TreeTable table, final Object itemId, final int level) {
         Collection<?> children = table.getChildren(itemId);
         if (children != null) {
             ArrayList tmpChildren = new ArrayList(children);
             Iterator<?> itChilder = tmpChildren.iterator();
             while (itChilder.hasNext()) {
-                table.removeItem(itChilder.next());
+                removeAllChildren(table, itChilder.next(), level + 1);
+//                table.removeItem(itChilder.next());
             }
         }
+
+
+        table.setCollapsed(itemId, true);
+        if(level > 0){
+            table.removeItem(itemId);
+        }
     }
+
+
 
     private void addActionsButtons(boolean historiOnly) {
         if (historiOnly) {
