@@ -57,45 +57,6 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
     private static final Logger logger = LoggerFactory.getLogger(ArrangementManagerTest.class);
 
-    public static final String CREATE_FA_URL = ARRANGEMENT_MANAGER_URL + "/createFindingAid";
-    public static final String UPDATE_FA_URL = ARRANGEMENT_MANAGER_URL + "/updateFindingAid";
-    public static final String DELETE_FA_URL = ARRANGEMENT_MANAGER_URL + "/deleteFindingAid";
-    public static final String GET_FA_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAids";
-    public static final String GET_FA_ONE_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAid";
-    public static final String GET_ARRANGEMENT_TYPES_URL = RULE_MANAGER_URL + "/getArrangementTypes";
-    public static final String GET_FINDING_AID_VERSIONS_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAidVersions";
-    public static final String APPROVE_VERSION_URL = ARRANGEMENT_MANAGER_URL + "/approveVersion";
-    public static final String GET_VERSION_ID_URL = ARRANGEMENT_MANAGER_URL + "/getVersion";
-    public static final String GET_VERSION_BY_FA_ID_URL = ARRANGEMENT_MANAGER_URL + "/getOpenVersionByFindingAidId";
-    public static final String FIND_SUB_LEVELS_EXT_URL = ARRANGEMENT_MANAGER_URL + "/findSubLevelsExt";
-
-    public static final String ADD_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/addLevel";
-    public static final String ADD_LEVEL_BEFORE_URL = ARRANGEMENT_MANAGER_URL + "/addLevelBefore";
-    public static final String ADD_LEVEL_AFTER_URL = ARRANGEMENT_MANAGER_URL + "/addLevelAfter";
-    public static final String ADD_LEVEL_CHILD_URL = ARRANGEMENT_MANAGER_URL + "/addLevelChild";
-    public static final String MOVE_LEVEL_BEFORE_URL = ARRANGEMENT_MANAGER_URL + "/moveLevelBefore";
-    public static final String MOVE_LEVEL_UNDER_URL = ARRANGEMENT_MANAGER_URL + "/moveLevelUnder";
-    public static final String MOVE_LEVEL_AFTER_URL = ARRANGEMENT_MANAGER_URL + "/moveLevelAfter";
-    public static final String DELETE_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/deleteLevel";
-    public static final String FIND_LEVEL_BY_NODE_ID_URL = ARRANGEMENT_MANAGER_URL + "/findLevelByNodeId";
-    public static final String GET_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/getLevel";
-
-    public static final String FA_NAME_ATT = "name";
-    public static final String FA_ID_ATT = "findingAidId";
-    public static final String ARRANGEMENT_TYPE_ID_ATT = "arrangementTypeId";
-    public static final String RULE_SET_ID_ATT = "ruleSetId";
-    public static final String NODE_ID_ATT = "nodeId";
-    public static final String PARENT_NODE_ID_ATT = "parentNodeId";
-    public static final String FOLLOWER_NODE_ID_ATT = "followerNodeId";
-    public static final String PREDECESSOR_NODE_ID_ATT = "predecessorNodeId";
-    public static final String VERSION_ID_ATT = "versionId";
-
-    public static final Integer DATA_TYPE_INTEGER = 1;
-    public static final Integer DATA_TYPE_STRING = 2;
-    public static final Integer DATA_TYPE_TEXT = 3;
-    public static final Integer DATA_TYPE_DATACE = 4;
-    public static final Integer DATA_TYPE_REF = 5;
-
     @Autowired
     private ArrangementManager arrangementManager;
     @Autowired
@@ -343,13 +304,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         Assert.assertNotNull("Version nebylo nalezeno", resultVersion);
         Assert.assertEquals(resultVersion.getFaVersionId(), version.getFaVersionId());
 
-        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
-                parameter(FA_ID_ATT, findingAid.getFindingAidId()).get(GET_VERSION_BY_FA_ID_URL);
-        logger.info(response.asString());
-
-        Assert.assertEquals(200, response.statusCode());
-
-        resultVersion = response.getBody().as(ArrFaVersion.class);
+        resultVersion = getFindingAidOpenVersion(findingAid);
         Assert.assertNotNull("Version nebylo nalezeno", resultVersion);
         Assert.assertEquals(resultVersion.getFaVersionId(), createVersionId);
         Assert.assertNull(resultVersion.getLockChange());
@@ -483,7 +438,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
     private ArrFaVersion getRootNodeIdForVersion(Integer findingAidId) {
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
-                parameter(FA_ID_ATT, findingAidId).get(GET_VERSION_BY_FA_ID_URL);
+                parameter(FA_ID_ATT, findingAidId).get(GET_OPEN_VERSION_BY_FA_ID_URL);
         logger.info(response.asString());
 
         Assert.assertEquals(200, response.statusCode());
@@ -737,32 +692,6 @@ public class ArrangementManagerTest extends AbstractRestTest {
     }
 
     /**
-     * Načte archivní pomůcky přes REST volání.
-     *
-     * @return archivní pomůcky
-     */
-    private List<ArrFindingAid> getFindingAids() {
-        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).get(GET_FA_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
-        List<ArrFindingAid> findingAids = Arrays.asList(response.getBody().as(ArrFindingAid[].class));
-        return findingAids;
-    }
-
-    /**
-     * Načte archivní pomůcku přes REST volání.
-     *
-     * @return archivní pomůcka
-     */
-    private ArrFindingAid getFindingAid(final Integer findingAidId) {
-        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(FA_ID_ATT, findingAidId).get(GET_FA_ONE_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-        return response.getBody().as(ArrFindingAid.class);
-    }
-
-    /**
      * Vytvoří položku archivní pomůcky přes REST volání.
      *
      * @return vytvořená položka
@@ -774,7 +703,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         Response response =
                 given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(FA_NAME_ATT, name).
                 parameter("arrangementTypeId", arrangementType.getArrangementTypeId()).parameter("ruleSetId", ruleSet.getRuleSetId()).
-                get(CREATE_FA_URL);
+                put(CREATE_FA_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 

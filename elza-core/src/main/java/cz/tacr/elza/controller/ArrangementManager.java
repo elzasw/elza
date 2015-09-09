@@ -189,7 +189,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Override
     @Transactional
-    @RequestMapping(value = "/createFindingAid", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE,
+    @RequestMapping(value = "/createFindingAid", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
     params = {"name", "arrangementTypeId", "ruleSetId"}, produces = MediaType.APPLICATION_JSON_VALUE)
     public ArrFindingAid createFindingAid(@RequestParam(value = "name") final String name,
             @RequestParam(value = "arrangementTypeId") final Integer arrangementTypeId,
@@ -395,6 +395,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         Integer findingAidId = findingAid.getFindingAidId();
         if (!findingAidRepository.exists(findingAidId)) {
             throw new ConcurrentUpdateException("Archivní pomůcka s identifikátorem " + findingAidId + " již neexistuje.");
+        }
+
+        if (version.getLockChange() != null) {
+            throw new ConcurrentUpdateException("Verze byla již uzavřena");
         }
 
         ArrFaChange change = createChange();
@@ -1059,7 +1063,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      * doplní do nodu jeho atributy. Pokud je potřeba dodělá formátování.
      * @param levelExt nod (level) do kterého se budou přidávat atributy.
      * @param dataList seznam atributů
-     * @param idItemTypeSet omezení na typ 
+     * @param idItemTypeSet omezení na typ
      * @param formatData typ formátu pro text
      */
     private void readItemData(final ArrFaLevelExt levelExt, final List<ArrData> dataList,

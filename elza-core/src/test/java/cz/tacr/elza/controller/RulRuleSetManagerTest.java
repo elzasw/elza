@@ -71,7 +71,7 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
     public void testRestGetDescriptionItemTypesForNodeId() throws Exception {
         createConstrain(2);
 
-        Response response = get((spec) -> spec.parameter("faVersionId", 2).parameter(ArrangementManagerTest.NODE_ID_ATT , 1)
+        Response response = get((spec) -> spec.parameter("faVersionId", 2).parameter(NODE_ID_ATT , 1)
                 .parameter("mandatory", Boolean.FALSE), GET_DIT_FOR_NODE_ID_URL);
 
         List<RulDescItemTypeExt> ruleSets =
@@ -94,8 +94,8 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
                 .boxed().toArray(Integer[]::new);
 
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);
-        Response response = get((spec) -> spec.parameter(ArrangementManagerTest.FA_ID_ATT, findingAid.getFindingAidId()),
-                ArrangementManagerTest.GET_VERSION_BY_FA_ID_URL);
+        Response response = get((spec) -> spec.parameter(FA_ID_ATT, findingAid.getFindingAidId()),
+                GET_OPEN_VERSION_BY_FA_ID_URL);
         ArrFaVersion version = response.getBody().as(ArrFaVersion.class);
 
         RulFaView faView = createFaView(version.getRuleSet(), version.getArrangementType(), descItemTypeIds);
