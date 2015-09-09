@@ -644,12 +644,12 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
         int visibleIndex = table.getCurrentPageFirstItemIndex();
 
         container.removeAllItems();
-        List<ArrFaLevelExt> faLevelsExt = arrangementManager.findSubLevels(rootLevel.getNode().getNodeId(), version.getFaVersionId(), ArrangementManager.FORMAT_ATTRIBUTE_SHORT, null);
+        List<ArrFaLevelExt> faLevelsExt = arrangementManager.findSubLevels(version.getRootFaLevel().getNode().getNodeId(), version.getFaVersionId(), ArrangementManager.FORMAT_ATTRIBUTE_SHORT, null);
         for (ArrFaLevelExt faLevel : faLevelsExt) {
             addAttributeToCache(faLevel);
         }
 
-        List<ArrFaLevel> faLevels = arrangementManager.findSubLevels(rootLevel.getNode().getNodeId(), version.getFaVersionId());
+        List<ArrFaLevel> faLevels = arrangementManager.findSubLevels(version.getRootFaLevel().getNode().getNodeId(), version.getFaVersionId());
 
         for (ArrFaLevel faLevel : faLevels) {
             addItemToContainer(faLevel, container);

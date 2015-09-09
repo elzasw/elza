@@ -430,6 +430,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         parentNode.setLastUpdate(LocalDateTime.now());
         parentNode = nodeRepository.save(parentNode);
 
+        entityManager.flush();
+        entityManager.refresh(faLevelRet);
+
         ArrFaLevelWithExtraNode levelWithParentNodeRet = new ArrFaLevelWithExtraNode();
         levelWithParentNodeRet.setFaLevel(faLevelRet);
         levelWithParentNodeRet.setExtraNode(parentNode);
@@ -453,6 +456,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         parentNode.setLastUpdate(LocalDateTime.now());
         parentNode = nodeRepository.save(parentNode);
+
+        entityManager.flush();
+        entityManager.refresh(faLevelRet);
 
         ArrFaLevelWithExtraNode levelWithParentNodeRet = new ArrFaLevelWithExtraNode();
         levelWithParentNodeRet.setFaLevel(faLevelRet);
@@ -985,6 +991,11 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         } else {
             levelList = levelRepository.findByParentNodeOrderByPositionAsc(node, change);
         }
+
+
+//        for (ArrFaLevel faLevel : levelList) {
+//            entityManager.refresh(faLevel);
+//        }
 
         return levelList;
     }
@@ -1977,7 +1988,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      */
     private void updatePositionsBefore(Integer position, ArrNode node, ArrFaChange arrFaChange, ArrDescItem descItem) {
         List<ArrDescItem> descItemListForUpdate = descItemRepository
-                .findByNodeAndDescItemTypeIdAndDeleteChangeIsNullBeforePosistion(position, node, descItem.getDescItemType().getDescItemTypeId());
+                .findByNodeAndDescItemTypeIdAndDeleteChangeIsNullBeforePosistion(position, node,
+                        descItem.getDescItemType().getDescItemTypeId());
         updatePositionsRaw(arrFaChange, descItemListForUpdate, 1);
     }
 
