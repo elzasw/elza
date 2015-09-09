@@ -98,7 +98,7 @@ public class RegistryManagerTest extends AbstractRestTest {
         long countStart = recordRepository.count();
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(RECORD_ID_ATT, record.getRecordId())
-                .get(DELETE_RECORD_URL);
+                .delete(DELETE_RECORD_URL);
         logger.info(response.asString());
         long countEnd = recordRepository.count();
 
@@ -106,7 +106,7 @@ public class RegistryManagerTest extends AbstractRestTest {
         Assert.assertEquals(countStart, countEnd + 1);
         
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(RECORD_ID_ATT, 874522214)
-                .get(DELETE_RECORD_URL);
+                .delete(DELETE_RECORD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
     }
@@ -162,7 +162,7 @@ public class RegistryManagerTest extends AbstractRestTest {
         long countStart = variantRecordRepository.count();
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(VARIANT_RECORD_ID_ATT, variantRecord.getVariantRecordId())
-                .get(DELETE_VARIANT_RECORD_URL);
+                .delete(DELETE_VARIANT_RECORD_URL);
         logger.info(response.asString());
         long countEnd = variantRecordRepository.count();
 
@@ -170,7 +170,7 @@ public class RegistryManagerTest extends AbstractRestTest {
         Assert.assertEquals(countStart, countEnd + 1);
 
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(VARIANT_RECORD_ID_ATT, 1278544547)
-                .get(DELETE_VARIANT_RECORD_URL);
+                .delete(DELETE_VARIANT_RECORD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
     }

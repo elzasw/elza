@@ -72,7 +72,7 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     }
 
     @Override
-    @RequestMapping(value = "/deleteRecord", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE,
+    @RequestMapping(value = "/deleteRecord", method = RequestMethod.DELETE, consumes = MediaType.APPLICATION_JSON_VALUE,
             params = {"recordId"})
     @Transactional
     public void deleteRecord(@RequestParam(value = "recordId") final Integer recordId) {
@@ -116,7 +116,7 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     }
 
     @Override
-    @RequestMapping(value = "/deleteVariantRecord", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE,
+    @RequestMapping(value = "/deleteVariantRecord", method = RequestMethod.DELETE, consumes = MediaType.APPLICATION_JSON_VALUE,
             params = {"variantRecordId"})
     @Transactional
     public void deleteVariantRecord(@RequestParam(value = "variantRecordId") final Integer variantRecordId) {
