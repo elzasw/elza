@@ -176,6 +176,14 @@ $ax-main-focus: $color-app;
         display: table;
     }
 
+
+    .table-hierarchy{
+        display: table;
+
+        > div{
+            display: table-row;
+        }
+    }
 }
 
 .v-overlay-container[aria-label="item-not-cut"] .v-menubar-menuitem-show-if-cut {

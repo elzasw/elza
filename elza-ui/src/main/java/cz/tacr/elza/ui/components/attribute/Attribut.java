@@ -56,6 +56,7 @@ public class Attribut extends CssLayout implements Components {
         this.type = type;
         this.attributeValuesLoader = attributeValuesLoader;
         deleteDescItems = new ArrayList<>();
+        addStyleName("table-hierarchy");
 
         Label nadpis = new Label(type.getName());
         nadpis.setSizeUndefined();
@@ -77,9 +78,9 @@ public class Attribut extends CssLayout implements Components {
             ArrDescItemExt descItem = new ArrDescItemExt();
             descItem.setDescItemType(type);
             newAtributValue(descItem);
-        }).caption("Přidat další hodnotu").style("new-attribut-button").icon(FontAwesome.PLUS);
+        }).caption("Přidat další hodnotu").icon(FontAwesome.PLUS);
 
-        addComponent(newValueButton.button());
+        addComponent(cssLayout("", newValueButton.button()));
 
         // přidá nový řádek, pokud nebyl žádný (ulehčení pro uživatele)
         if (itemExtList.size() == 0) {

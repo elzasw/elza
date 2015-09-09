@@ -114,8 +114,16 @@ public class FindingAidListView extends ElzaView {
     }
 
     private void smazatFA(final ArrFindingAid findingAid) {
-        arrangementManager.deleteFindingAid(findingAid.getFindingAidId());
-        refresh();
+        new AxWindow().caption("Smazání archivní pomůcky")
+                .components(
+                        newLabel("Opravdu chcete smazat archivní pomůcku s názvem \"" + findingAid.getName() + "\""))
+                .buttonClose().buttonPrimary(new AxAction<VONewFindingAid>().caption("Smazat")
+                        .action((e) -> {
+                            arrangementManager.deleteFindingAid(findingAid.getFindingAidId());
+                            refresh();
+                        })
+                        .exception(ex -> ex.printStackTrace())
+        ).modal().style("window-detail").show();
     }
 
     @Bean

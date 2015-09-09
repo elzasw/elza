@@ -9,6 +9,7 @@ import java.util.Map;
 
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
@@ -273,10 +274,13 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
         RulFaView faView = faViewList.get(0);
 
         String itemTypesStr = faView.getViewSpecification();
-        String[] itemTypes = itemTypesStr.split(VIEW_SPECIFICATION_SEPARATOR_REGEX);
         List<Integer> resultIdList = new LinkedList<>();
-        for (String itemTypeIdStr : itemTypes) {
-            resultIdList.add(Integer.valueOf(itemTypeIdStr));
+        if (StringUtils.isNotBlank(itemTypesStr)) {
+            String[] itemTypes = itemTypesStr.split(VIEW_SPECIFICATION_SEPARATOR_REGEX);
+    
+            for (String itemTypeIdStr : itemTypes) {
+                resultIdList.add(Integer.valueOf(itemTypeIdStr));
+            }
         }
         final List<RulDescItemType> resultList = descItemTypeRepository.findAll(resultIdList);
         Collections.sort(resultList, new Comparator<RulDescItemType>() {
@@ -317,7 +321,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
                 itemTypesStr += VIEW_SPECIFICATION_SEPARATOR + itemTypeId.toString();
             }
         }
-        rulFaView.setViewSpecification(itemTypesStr);
+        rulFaView.setViewSpecification(StringUtils.defaultString(itemTypesStr));
         faViewRepository.save(rulFaView);
 
         return Arrays.asList(descItemTypeIds);

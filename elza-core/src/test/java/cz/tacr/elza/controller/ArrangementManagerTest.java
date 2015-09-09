@@ -452,23 +452,30 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ArrFaVersion version = getRootNodeIdForVersion(findingAid.getFindingAidId());
 //        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
 
-        Response response = given().parameter(NODE_ID_ATT, version.getRootFaLevel().getNode().getNodeId()).put(ADD_LEVEL_CHILD_URL);
+        ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
+
+        levelWithExtraNode.setFaLevel(version.getRootFaLevel());
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        ArrFaLevel parent = response.getBody().as(ArrFaLevel.class);
+        ArrFaLevelWithExtraNode parent = response.getBody().as(ArrFaLevelWithExtraNode.class);
 
-        response = given().parameter(NODE_ID_ATT, parent.getNode().getNodeId()).put(ADD_LEVEL_CHILD_URL);
+        Integer parentNodeId = parent.getFaLevel().getNode().getNodeId();
+        levelWithExtraNode = new ArrFaLevelWithExtraNode();
+        levelWithExtraNode.setFaLevel(parent.getFaLevel());
+
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        ArrFaLevel child = response.getBody().as(ArrFaLevel.class);
+        ArrFaLevelWithExtraNode child = response.getBody().as(ArrFaLevelWithExtraNode.class);
 
-        List<ArrFaLevelExt> subLevels = arrangementManager.findSubLevels(parent.getNode().getNodeId(), version.getFaVersionId(), null, null);
+        List<ArrFaLevelExt> subLevels = arrangementManager.findSubLevels(parentNodeId, version.getFaVersionId(), null, null);
         Assert.assertTrue(subLevels.size() == 1);
 
-        Assert.assertTrue(child.getFaLevelId().equals(subLevels.iterator().next().getFaLevelId()));
-        Assert.assertTrue(child.getParentNode().getNodeId().equals(parent.getNode().getNodeId()));
+        Assert.assertTrue(child.getFaLevel().getFaLevelId().equals(subLevels.iterator().next().getFaLevelId()));
+        Assert.assertTrue(child.getFaLevel().getParentNode().getNodeId().equals(parentNodeId));
     }
 
     private ArrFaVersion getRootNodeIdForVersion(Integer findingAidId) {
@@ -492,30 +499,40 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
 //        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
 
-        ArrFaLevelWithExtraNode extraLevel = new ArrFaLevelWithExtraNode();
-        Response response = given().parameter(NODE_ID_ATT, version.getRootFaLevel().getNode().getNodeId()).put(ADD_LEVEL_CHILD_URL);
+        ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
+        levelWithExtraNode.setFaLevel(version.getRootFaLevel());
+
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
         Assert.assertEquals(response.print(), 200, response.statusCode());
 
-        ArrFaLevel parent = response.getBody().as(ArrFaLevel.class);
+        ArrFaLevelWithExtraNode parent = response.getBody().as(ArrFaLevelWithExtraNode.class);
 
-        response = given().parameter(NODE_ID_ATT, parent.getNode().getNodeId()).put(ADD_LEVEL_CHILD_URL);
+        Integer parentNodeId = parent.getFaLevel().getNode().getNodeId();
+        levelWithExtraNode = new ArrFaLevelWithExtraNode();
+        levelWithExtraNode.setFaLevel(parent.getFaLevel());
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        ArrFaLevel child = response.getBody().as(ArrFaLevel.class);
+        ArrFaLevelWithExtraNode child = response.getBody().as(ArrFaLevelWithExtraNode.class);
 
-        response = given().parameter(NODE_ID_ATT, child.getNode().getNodeId()).
-                parameter(FOLLOWER_NODE_ID_ATT, parent.getNode().getNodeId()).put(MOVE_LEVEL_BEFORE_URL);
+        levelWithExtraNode = new ArrFaLevelWithExtraNode();
+        levelWithExtraNode.setFaLevel(child.getFaLevel());
+        ArrNode parentNode = parent.getFaLevel().getNode();
+        parentNode.setVersion(parentNode.getVersion() + 1);
+        levelWithExtraNode.setExtraNode(parentNode);
+
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(MOVE_LEVEL_BEFORE_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        ArrFaLevel movedChild = response.getBody().as(ArrFaLevel.class);
+        ArrFaLevelWithExtraNode movedChild = response.getBody().as(ArrFaLevelWithExtraNode.class);
 
         List<ArrFaLevelExt> subLevels = arrangementManager.findSubLevels(version.getRootFaLevel().getNode().getNodeId(), version.getFaVersionId(), null, null);
 
         Assert.assertTrue(subLevels.size() == 2);
-        Assert.assertTrue(movedChild.getParentNode().getNodeId().equals(parent.getParentNode().getNodeId()));
+        Assert.assertTrue(movedChild.getFaLevel().getParentNode().getNodeId().equals(parent.getFaLevel().getParentNode().getNodeId()));
     }
 
     @Test
