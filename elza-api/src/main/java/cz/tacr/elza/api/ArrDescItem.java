@@ -89,13 +89,12 @@ public interface ArrDescItem<FC extends ArrFaChange, RT extends RulDescItemType,
     void setDescItemSpec(final RS descItemSpec);
 
     /**
-     * 
-     * @return ID nodu.
+     * @return nod.
      */
     N getNode();
 
     /**
-     * Nastaví ID nodu.
+     * Nastaví nod.
      * 
      * @param node nod.
      */
