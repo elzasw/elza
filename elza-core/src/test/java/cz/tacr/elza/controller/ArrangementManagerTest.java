@@ -163,7 +163,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
     }
 
     @Test
-    public void testRestDeleteFindingAidWithMoreVeresions() throws Exception {
+    public void testRestDeleteFindingAidWithMoreVersions() throws Exception {
         ArrFindingAid findingAid = createFindingAidRest(TEST_NAME);
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).

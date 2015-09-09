@@ -1,6 +1,17 @@
 package cz.tacr.elza.controller;
 
+import static com.jayway.restassured.RestAssured.given;
+
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.jayway.restassured.response.Response;
+
 import cz.tacr.elza.domain.ParAbstractParty;
 import cz.tacr.elza.domain.ParPartySubtype;
 import cz.tacr.elza.domain.ParPartyType;
@@ -8,15 +19,6 @@ import cz.tacr.elza.domain.ParPartyTypeExt;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Arrays;
-import java.util.List;
-
-import static com.jayway.restassured.RestAssured.given;
 
 /**
  * Test kompletní funkčnosti rejstříku a osob.
@@ -381,7 +383,6 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
      */
     private ParAbstractParty createAbstractParty(final ParAbstractParty abstractParty) {
         Response response = put((spec) -> spec
-                        .config(getUtf8Config())
                         .body(abstractParty),
                         INSERT_ABSTRACT_PARTY
         );
@@ -407,7 +408,6 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
      */
     private ParAbstractParty updateAbstractParty(final ParAbstractParty abstractParty) {
         Response response = put((spec) -> spec
-                        .config(getUtf8Config())
                         .body(abstractParty),
                         UPDATE_ABSTRACT_PARTY
         );
@@ -435,7 +435,6 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
                                                      final boolean originator) {
 
         Response response = get((spec) -> spec
-                        .config(getUtf8Config())
                         .parameter(SEARCH_ATT, searchString)
                         .parameter(FROM_ATT, 0)
                         .parameter(COUNT_ATT, 10)

@@ -44,7 +44,92 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         ArrFindingAid findingAid = testCreateFindingAid();
         findingAid = testUpdateFindingAid(findingAid);
         testApproveFindingAidVersion(findingAid);
-        testAddLevel(findingAid);
+        testAddLevels(findingAid);
+        testMoveAndDeleteLevels(findingAid);
+    }
+
+    /**
+     * Otestuje přesun a mazání uzlů.
+     *
+     * @param findingAid archivní pomůcka
+     */
+    private void testMoveAndDeleteLevels(ArrFindingAid findingAid) {
+        ArrFaVersion version = getFindingAidOpenVersion(findingAid);
+        ArrNode rootNode = version.getRootFaLevel().getNode();
+
+        List<ArrFaLevel> originalChildren = getSubLevels(rootNode, version);
+        Assert.isTrue(originalChildren.size() == 4);
+
+        // přesun druhého uzlu před první
+        ArrFaLevelWithExtraNode faLevelWithExtraNode = moveLevelBefore(originalChildren.get(1), originalChildren.get(0));
+        ArrFaLevel movedLevel = faLevelWithExtraNode.getFaLevel();
+        Assert.notNull(movedLevel);
+        Assert.notNull(movedLevel.getNode().equals(originalChildren.get(1).getNode()));
+
+        List<ArrFaLevel> children = getSubLevels(rootNode, version);
+        Assert.isTrue(children.size() == 4);
+        Assert.isTrue(children.get(0).getNode().equals(originalChildren.get(1).getNode()));
+        Assert.isTrue(children.get(1).getNode().equals(originalChildren.get(0).getNode()));
+        Assert.isTrue(children.get(2).getNode().equals(originalChildren.get(2).getNode()));
+        Assert.isTrue(children.get(3).getNode().equals(originalChildren.get(3).getNode()));
+        Assert.isTrue(children.get(0).getPosition().equals(1));
+        Assert.isTrue(children.get(1).getPosition().equals(2));
+        Assert.isTrue(children.get(2).getPosition().equals(3));
+        Assert.isTrue(children.get(3).getPosition().equals(4));
+
+        // opakování přesunu druhého uzlu před první, očekává se chyba
+        moveLevelBeforeWithError(originalChildren.get(1), originalChildren.get(0));
+
+        // přesun druhého uzlu pod první
+        faLevelWithExtraNode = moveLevelUnder(children.get(1), children.get(0));
+        movedLevel = faLevelWithExtraNode.getFaLevel();
+        Assert.notNull(movedLevel);
+        Assert.notNull(movedLevel.getNode().equals(children.get(1).getNode()));
+        Assert.notNull(movedLevel.getParentNode().equals(children.get(0).getNode()));
+        Assert.notNull(movedLevel.getPosition().equals(1));
+
+        children = getSubLevels(children.get(0).getNode(), version);
+        Assert.isTrue(children.size() == 1);
+        Assert.isTrue(children.get(0).getNode().equals(movedLevel.getNode()));
+        Assert.isTrue(children.get(0).getPosition().equals(1));
+
+        children = getSubLevels(rootNode, version);
+        Assert.isTrue(children.size() == 3);
+        Assert.isTrue(children.get(0).getNode().equals(originalChildren.get(1).getNode()));
+        Assert.isTrue(children.get(1).getNode().equals(originalChildren.get(2).getNode()));
+        Assert.isTrue(children.get(2).getNode().equals(originalChildren.get(3).getNode()));
+        Assert.isTrue(children.get(0).getPosition().equals(1));
+        Assert.isTrue(children.get(1).getPosition().equals(2));
+        Assert.isTrue(children.get(2).getPosition().equals(3));
+
+        // přesun prvního uzlu za druhý uzel v první úrovni stromu
+        faLevelWithExtraNode = moveLevelAfter(children.get(0), children.get(1));
+        movedLevel = faLevelWithExtraNode.getFaLevel();
+        Assert.notNull(movedLevel);
+        Assert.notNull(movedLevel.getNode().equals(rootNode));
+        Assert.notNull(movedLevel.getPosition().equals(2));
+
+        children = getSubLevels(rootNode, version);
+        Assert.isTrue(children.size() == 3);
+        Assert.isTrue(children.get(0).getNode().equals(originalChildren.get(2).getNode()));
+        Assert.isTrue(children.get(1).getNode().equals(originalChildren.get(1).getNode()));
+        Assert.isTrue(children.get(2).getNode().equals(originalChildren.get(3).getNode()));
+        Assert.isTrue(children.get(0).getPosition().equals(1));
+        Assert.isTrue(children.get(1).getPosition().equals(2));
+        Assert.isTrue(children.get(2).getPosition().equals(3));
+
+        // smazání druhého uzlu v první úrovni
+        ArrFaLevel levelToDelete = children.get(1);
+        ArrFaLevel deletedLevel = deleteLevel(levelToDelete).getFaLevel();
+        Assert.notNull(deletedLevel);
+        Assert.notNull(deletedLevel.getDeleteChange());
+
+        children = getSubLevels(rootNode, version);
+        Assert.isTrue(children.size() == 2);
+        Assert.isTrue(children.get(0).getNode().equals(originalChildren.get(2).getNode()));
+        Assert.isTrue(children.get(1).getNode().equals(originalChildren.get(3).getNode()));
+        Assert.isTrue(children.get(0).getPosition().equals(1));
+        Assert.isTrue(children.get(1).getPosition().equals(2));
     }
 
     /**
@@ -52,7 +137,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @param findingAid archivní pomůcka
      */
-    private void testAddLevel(ArrFindingAid findingAid) {
+    private void testAddLevels(ArrFindingAid findingAid) {
         ArrFaVersion version = getFindingAidOpenVersion(findingAid);
         ArrNode rootNode = version.getRootFaLevel().getNode();
         ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
@@ -69,7 +154,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         Assert.isTrue(children.size() == 1);
         Assert.isTrue(children.get(0).getFaLevelId().equals(child1.getFaLevelId()));
 
-        //přidání druhého levelu pod root
+        // přidání druhého levelu pod root
         levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(getLevelByNodeId(rootNode.getNodeId()));
 
@@ -84,13 +169,48 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         Assert.isTrue(children.get(0).getFaLevelId().equals(child1.getFaLevelId()));
         Assert.isTrue(children.get(1).getFaLevelId().equals(child2.getFaLevelId()));
 
-        //přidání třetího levelu na první pozici pod root
+        // přidání třetího levelu na první pozici pod root
         levelWithExtraNode = new ArrFaLevelWithExtraNode();
         child1 = getLevelByNodeId(child1.getNode().getNodeId());
         levelWithExtraNode.setFaLevel(child1);
         levelWithExtraNode.setExtraNode(child1.getParentNode());
 
         childLevelWithExtraNode = createLevelBefore(levelWithExtraNode);
+        ArrFaLevel child3 = childLevelWithExtraNode.getFaLevel();
+        Assert.notNull(child3);
+        Assert.isTrue(child3.getPosition().equals(1));
+        Assert.isTrue(child3.getParentNode().equals(rootNode));
+
+        children = getSubLevels(rootNode, version);
+        Assert.isTrue(children.size() == 3);
+        Assert.isTrue(children.get(0).getNode().equals(child3.getNode()));
+        Assert.isTrue(children.get(1).getNode().equals(child1.getNode()));
+        Assert.isTrue(children.get(2).getNode().equals(child2.getNode()));
+        Assert.isTrue(children.get(0).getPosition().equals(1));
+        Assert.isTrue(children.get(1).getPosition().equals(2));
+        Assert.isTrue(children.get(2).getPosition().equals(3));
+
+        // přidání uzlu za první uzel pod root (za child3)
+        levelWithExtraNode = new ArrFaLevelWithExtraNode();
+        levelWithExtraNode.setFaLevel(child3);
+        levelWithExtraNode.setExtraNode(child3.getParentNode());
+
+        childLevelWithExtraNode = createLevelAfter(levelWithExtraNode);
+        ArrFaLevel child4 = childLevelWithExtraNode.getFaLevel();
+        Assert.notNull(child4);
+        Assert.isTrue(child4.getPosition().equals(2));
+        Assert.isTrue(child4.getParentNode().equals(rootNode));
+
+        children = getSubLevels(rootNode, version);
+        Assert.isTrue(children.size() == 4);
+        Assert.isTrue(children.get(0).getNode().equals(child3.getNode()));
+        Assert.isTrue(children.get(1).getNode().equals(child4.getNode()));
+        Assert.isTrue(children.get(2).getNode().equals(child1.getNode()));
+        Assert.isTrue(children.get(3).getNode().equals(child2.getNode()));
+        Assert.isTrue(children.get(0).getPosition().equals(1));
+        Assert.isTrue(children.get(1).getPosition().equals(2));
+        Assert.isTrue(children.get(2).getPosition().equals(3));
+        Assert.isTrue(children.get(3).getPosition().equals(4));
     }
 
     /**
@@ -139,6 +259,106 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         ArrFaLevelWithExtraNode parent = response.getBody().as(ArrFaLevelWithExtraNode.class);
 
         return parent;
+    }
+
+    /**
+     * Vytvoří nový uzel za předaným uzlem.
+     *
+     * @param levelWithExtraNode uzal za kterým se vytvoří nový uzel
+     *
+     * @return nový uzel
+     */
+    private ArrFaLevelWithExtraNode createLevelAfter(ArrFaLevelWithExtraNode levelWithExtraNode) {
+        Response response = put(spec -> spec.body(levelWithExtraNode), ADD_LEVEL_AFTER_URL);
+        ArrFaLevelWithExtraNode parent = response.getBody().as(ArrFaLevelWithExtraNode.class);
+
+        return parent;
+    }
+
+    /**
+     * Přesune jeden uzel před druhý.
+     *
+     * @param movedLevel přesouvaný uzel
+     * @param targetLevel uzel před který se má vložit přesouvaný uzel
+     *
+     * @return přesunutý uzel
+     */
+    private ArrFaLevelWithExtraNode moveLevelBefore(ArrFaLevel movedLevel, ArrFaLevel targetLevel) {
+        ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
+        levelWithExtraNode.setFaLevel(movedLevel);
+        levelWithExtraNode.setFaLevelTarget(targetLevel);
+
+        Response response = put(spec -> spec.body(levelWithExtraNode), MOVE_LEVEL_BEFORE_URL);
+
+        return response.getBody().as(ArrFaLevelWithExtraNode.class);
+    }
+
+    /**
+     * Přesune jeden uzel před druhý. Očekává se chyba.
+     *
+     * @param movedLevel přesouvaný uzel
+     * @param targetLevel uzel před který se má vložit přesouvaný uzel
+     */
+    private void moveLevelBeforeWithError(ArrFaLevel movedLevel, ArrFaLevel targetLevel) {
+        ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
+        levelWithExtraNode.setFaLevel(movedLevel);
+        levelWithExtraNode.setFaLevelTarget(targetLevel);
+
+        put(spec -> spec.body(levelWithExtraNode), MOVE_LEVEL_BEFORE_URL, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    /**
+     * Přesune jeden uzel pod druhý.
+     *
+     * @param movedLevel přesouvaný uzel
+     * @param targetLevel uzel pod který se má vložit přesouvaný uzel
+     *
+     * @return přesunutý uzel
+     */
+    private ArrFaLevelWithExtraNode moveLevelUnder(ArrFaLevel movedLevel, ArrFaLevel targetLevel) {
+        ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
+        levelWithExtraNode.setFaLevel(movedLevel);
+        levelWithExtraNode.setExtraNode(targetLevel.getNode());
+
+        Response response = put(spec -> spec.body(levelWithExtraNode), MOVE_LEVEL_UNDER_URL);
+
+        return response.getBody().as(ArrFaLevelWithExtraNode.class);
+    }
+
+    /**
+     * Přesune jeden uzel za druhý.
+     *
+     * @param movedLevel přesouvaný uzel
+     * @param targetLevel uzel za který se má vložit přesouvaný uzel
+     *
+     * @return přesunutý uzel
+     */
+    private ArrFaLevelWithExtraNode moveLevelAfter(ArrFaLevel movedLevel, ArrFaLevel targetLevel) {
+        ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
+        levelWithExtraNode.setFaLevel(movedLevel);
+        levelWithExtraNode.setFaLevelTarget(targetLevel);
+
+        Response response = put(spec -> spec.body(levelWithExtraNode), MOVE_LEVEL_AFTER_URL);
+
+        return response.getBody().as(ArrFaLevelWithExtraNode.class);
+    }
+
+    /**
+     * Přesune jeden uzel za druhý.
+     *
+     * @param movedLevel přesouvaný uzel
+     * @param targetLevel uzel za který se má vložit přesouvaný uzel
+     *
+     * @return přesunutý uzel
+     */
+    private ArrFaLevelWithExtraNode deleteLevel(ArrFaLevel levelToDelete) {
+        ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
+        levelWithExtraNode.setFaLevel(levelToDelete);
+        levelWithExtraNode.setExtraNode(levelToDelete.getParentNode());
+
+        Response response = put(spec -> spec.body(levelWithExtraNode), DELETE_LEVEL_URL);
+
+        return response.getBody().as(ArrFaLevelWithExtraNode.class);
     }
 
     /**

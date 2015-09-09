@@ -659,7 +659,7 @@ public abstract class AbstractRestTest {
 
         RequestSpecification requestSpecification = params.apply(given());
 
-        requestSpecification.header(JSON_CT_HEADER).log().all();
+        requestSpecification.header(JSON_CT_HEADER).log().all().config(UTF8_ENCODER_CONFIG);
 
         Response response = null;
         switch (method) {
