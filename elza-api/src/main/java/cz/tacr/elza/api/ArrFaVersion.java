@@ -25,27 +25,63 @@ public interface ArrFaVersion<FA extends ArrFindingAid, FC extends ArrFaChange, 
 
     void setFaVersionId(Integer faVersionId);
 
+    /**
+     * @return číslo změny vytvoření pomůcky.
+     */
     FC getCreateChange();
 
+    /**
+     * @param createChange číslo změny vytvoření pomůcky.
+     */
     void setCreateChange(FC createChange);
 
+    /**
+     * @return číslo změny uzamčení pomůcky.
+     */
     FC getLockChange();
 
+    /**
+     * @param lockChange číslo změny uzamčení pomůcky.
+     */
     void setLockChange(FC lockChange);
 
+    /**
+     * @return odkaz na root uzel struktury archivního popisu.
+     */
     FL getRootFaLevel();
 
+    /**
+     * @param rootNode odkaz na root uzel struktury archivního popisu .
+     */
     void setRootFaLevel(FL rootNode);
 
+    /**
+     * @return identifikátor archívní pomůcky.
+     */
     FA getFindingAid();
 
+    /**
+     * @param findingAid identifikátor archívní pomůcky.
+     */
     void setFindingAid(FA findingAid);
 
+    /**
+     * @return odkaz na pravidla výstupu.
+     */
     AT getArrangementType();
 
+    /**
+     * @param arrangementType odkaz na pravidla výstupu.
+     */
     void setArrangementType(AT arrangementType);
 
+    /**
+     * @return odkaz na pravidla tvorby.
+     */
     RS getRuleSet();
 
+    /**
+     * @param ruleSet odkaz na pravidla tvorby.
+     */
     void setRuleSet(RS ruleSet);
 }

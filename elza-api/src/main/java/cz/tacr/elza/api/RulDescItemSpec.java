@@ -51,14 +51,26 @@ public interface RulDescItemSpec<RIT extends RulDescItemType, RT extends RegRegi
 
     public void setDescription(final String description);
 
-
+    /**
+     * @return pořadí zobrazení.
+     */
     public Integer getViewOrder();
 
-
+    /**
+     * @param viewOrder pořadí zobrazení.
+     */
     public void setViewOrder(final Integer viewOrder);
 
+    /**
+     * 
+     * @return typ rejstříku specifikace atributu.
+     */
     public RT getRegisterType();
 
+    /**
+     * 
+     * @param registerType typ rejstříku specifikace atributu.
+     */
     public void setRegisterType(RT registerType);
 
 

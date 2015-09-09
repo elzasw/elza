@@ -11,7 +11,8 @@ import java.io.Serializable;
  * @since 20.8.2015
  */
 public interface RulDescItemConstraint<RIT extends RulDescItemType, RIS extends RulDescItemSpec, AV extends ArrFaVersion>
-        extends Serializable {
+        extends
+            Serializable {
 
 
     Integer getDescItemConstraintId();
@@ -38,21 +39,50 @@ public interface RulDescItemConstraint<RIT extends RulDescItemType, RIS extends 
     void setVersion(final AV version);
 
 
+    /**
+     * @return příznak, zda je možné atribut použít opakovaně v rámci jedné jednotky archivního
+     *         popisu.
+     */
     Boolean getRepeatable();
 
 
+    /**
+     * @param repeatable příznak, zda je možné atribut použít opakovaně v rámci jedné jednotky
+     *        archivního popisu.
+     */
     void setRepeatable(final Boolean repeatable);
 
-
+    /**
+     * @return regulární výraz, na který se při uložení atributu kontroluje jeho hodnota. regexp
+     *         bude podporován pouze u některých datových typů jako je například číslo, text ...
+     *         bude uvedeno v číselníku datových typů.
+     */
     String getRegexp();
 
-
+    /**
+     * regulární výraz, na který se při uložení atributu kontroluje jeho hodnota. regexp bude
+     * podporován pouze u některých datových typů jako je například číslo, text ... bude uvedeno v
+     * číselníku datových typů.
+     * 
+     * @param regexp regulární výraz.
+     */
     void setRegexp(final String regexp);
 
-
+    /**
+     * 
+     * @return maximální možná délka textového řetězce hodnoty atributu, na kterou se při uložení
+     *         atributu kontroluje jeho hodnota. limit délky bude podporován pouze u některých
+     *         datových typů jako je například text ... bude uvedeno v číselníku datových typů.
+     */
     Integer getTextLenghtLimit();
 
-
+    /**
+     * maximální možná délka textového řetězce hodnoty atributu, na kterou se při uložení atributu
+     * kontroluje jeho hodnota. limit délky bude podporován pouze u některých datových typů jako je
+     * například text ... bude uvedeno v číselníku datových typů.
+     * 
+     * @param textLenghtLimit maximální možná délka textového řetězce.
+     */
     void setTextLenghtLimit(final Integer textLenghtLimit);
 
 }

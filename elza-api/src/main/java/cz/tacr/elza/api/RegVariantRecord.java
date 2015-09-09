@@ -17,11 +17,13 @@ public interface RegVariantRecord<RR extends RegRecord> extends Versionable, Ser
 
     void setRegRecord(RR regRecord);
 
+    /**
+     * @return variantní rejstříkové heslo.
+     */
     String getRecord();
 
+    /**
+     * @param record variantní rejstříkové heslo.
+     */
     void setRecord(String record);
-
-//    void setRegRecordPar(RR regRecordPar);
-//
-//    RR getRegRecordPar();
 }

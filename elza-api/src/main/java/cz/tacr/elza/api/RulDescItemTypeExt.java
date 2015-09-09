@@ -13,11 +13,27 @@ import java.util.List;
  */
 public interface RulDescItemTypeExt<RT extends RulDataType, RC extends RulDescItemConstraint, RS extends RulDescItemSpecExt> extends RulDescItemType<RT> {
 
+    /**
+     * 
+     * @return podtypy typů atributů.
+     */
     List<RS> getRulDescItemSpecList();
 
+    /**
+     * 
+     * @return pravidla typů atributů.
+     */
     List<RC> getRulDescItemConstraintList();
 
+    /**
+     * 
+     * @param rulDescItemSpecList podtypy typů atributů.
+     */
     void setRulDescItemSpecList(List<RS> rulDescItemSpecList);
 
+    /**
+     * 
+     * @param rulDescItemConstraintList pravidla typů atributů.
+     */
     void setRulDescItemConstraintList(List<RC> rulDescItemConstraintList);
 }

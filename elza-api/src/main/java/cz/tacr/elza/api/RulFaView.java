@@ -37,9 +37,15 @@ public interface RulFaView<AT extends RulArrangementType, RS extends RulRuleSet>
     void setRuleSet(final RS ruleSet);
 
 
+    /**
+     * @return definice typů atributů, které mají být zobrazeny v přehledu/stromu pomůcky)
+     */
     String getViewSpecification();
 
 
+    /**
+     * @param viewSpecification definice typů atributů, které mají být zobrazeny v přehledu/stromu pomůcky).
+     */
     void setViewSpecification(final String viewSpecification);
 
 }

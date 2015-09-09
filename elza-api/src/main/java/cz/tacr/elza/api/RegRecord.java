@@ -8,7 +8,10 @@ import java.util.List;
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public interface RegRecord<RT extends RegRegisterType, ES extends RegExternalSource, VR extends RegVariantRecord> extends Versionable, Serializable {
+public interface RegRecord<RT extends RegRegisterType, ES extends RegExternalSource, VR extends RegVariantRecord>
+        extends
+            Versionable,
+            Serializable {
 
     Integer getRecordId();
 
@@ -22,35 +25,74 @@ public interface RegRecord<RT extends RegRegisterType, ES extends RegExternalSou
 
     void setExternalSource(ES externalSource);
 
+    /**
+     * @return rejstříkové heslo.
+     */
     String getRecord();
 
+    /**
+     * @param record rejstříkové heslo
+     */
     void setRecord(String record);
 
+    /**
+     * @return podrobná charakteristika rejstříkového hesla.
+     */
     String getCharacteristics();
 
+    /**
+     * @param characteristics podrobná charakteristika rejstříkového hesla.
+     */
     void setCharacteristics(String characteristics);
 
+    /**
+     * @return poznámka k heslu v rejstříku,
+     */
     String getComment();
 
+    /**
+     * @param comment poznámka k heslu v rejstříku,
+     */
     void setComment(String comment);
 
+    /**
+     * @return příznak, zda se jedná o lokální nebo globální rejstříkové heslo. lokální heslo je
+     *         přiřazené pouze konkrétnímu archivnímu popisu/pomůcce.
+     */
     Boolean getLocal();
 
+    /**
+     * příznak, zda se jedná o lokální nebo globální rejstříkové heslo. lokální heslo je přiřazené
+     * pouze konkrétnímu archivnímu popisu/pomůcce.
+     * 
+     * @param local příznak, zda se jedná o lokální nebo globální rejstříkové heslo.
+     */
     void setLocal(Boolean local);
 
+    /**
+     * @return externí identifikátor rejstříkového hesla v externím zdroji záznamů, například
+     *         interpi.
+     */
     String getExternal_id();
 
+    /**
+     * externí identifikátor rejstříkového hesla v externím zdroji záznamů, například interpi.
+     * 
+     * @param external_id externí identifikátor rejstříkového hesla.
+     */
     void setExternal_id(String external_id);
 
     /**
      * Vazba na variantní záznamy.
-     * @param variantRecordList množina záznamů
+     * 
+     * @param variantRecordList množina záznamů.
      */
     void setVariantRecordList(List<VR> variantRecordList);
 
     /**
      * Vazba na variantní záznamy.
-     * @return  množina, může být prázdná
+     * 
+     * @return množina, může být prázdná.
      */
     List<VR> getVariantRecordList();
 }

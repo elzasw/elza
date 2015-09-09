@@ -37,21 +37,39 @@ public interface RulDataType extends Serializable {
     void setDescription(final String description);
 
 
+    /**
+     * @return příznak, zda je možná u datového typu kontrola na regulární výraz.
+     */
     Boolean getRegexpUse();
 
 
+    /**
+     * @param regexpUse příznak, zda je možná u datového typu kontrola na regulární výraz.
+     */
     void setRegexpUse(final Boolean regexpUse);
 
 
+    /**
+     * @return příznak, zda je možná u datového typu kontrola na maximální možnou délku textového řetězce.
+     */
     Boolean getTextLenghtLimitUse();
 
 
+    /**
+     * @param textLenghtLimitUse příznak, zda je možná u datového typu kontrola na maximální možnou délku textového řetězce.
+     */
     void setTextLenghtLimitUse(final Boolean textLenghtLimitUse);
 
 
+    /**
+     * @return informace, kde je ulozena hodnota (arr_data_xxx).
+     */
     String getStorageTable();
 
 
+    /**
+     * @param storageTable informace, kde je ulozena hodnota (arr_data_xxx).
+     */
     void setStorageTable(final String storageTable);
 
 
