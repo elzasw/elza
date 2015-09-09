@@ -25,11 +25,14 @@ import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.ui.components.attribute.Attribut;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesLoader;
 import cz.tacr.elza.ui.components.autocomplete.AutocompleteItem;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,6 +47,8 @@ import java.util.List;
 @Component
 @Scope("prototype")
 public class LevelInlineDetail extends CssLayout implements Components, InitializingBean {
+
+    public static final String TITLE_CODE = "ZP2015_TITLE";
 
     private CssLayout detailContent;
 
@@ -67,6 +72,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
     private Attribut attribut;
     private AxWindow attributWindow = null;
     private ComboBox attributesComboBox;
+    private Label lblTitle;
 
 
 
@@ -108,22 +114,29 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
     }
 
+
     public void showLevelDetail(final ArrFaLevelExt level,
                                 final List<ArrDescItemExt> descItemList,
                                 final Integer versionId) {
         detailContent.removeAllComponents();
+        initContentTitle(level, descItemList);
 
-        BeanItemContainer<RulDescItemType> descItemTypeBeanItemContainer = new BeanItemContainer<>(
-                RulDescItemType.class);
-        descItemTypeBeanItemContainer.addAll(ruleSetManager.getDescriptionItemTypesForNodeId(versionId, level.getNode().getNodeId(), null));
-        attributesComboBox = new ComboBox(null, descItemTypeBeanItemContainer);
-        attributesComboBox.setItemCaptionPropertyId("name");
+        boolean versionOpen = isVersionOpen(versionId);
 
-        attributesComboBox.addValueChangeListener(event -> {
-            RulDescItemType type = (RulDescItemType) event.getProperty().getValue();
-            showEditAttrWindow(level, type, versionId);
-        });
-        detailContent.addComponent(attributesComboBox);
+        if (versionOpen) {
+            BeanItemContainer<RulDescItemType> descItemTypeBeanItemContainer = new BeanItemContainer<>(
+                    RulDescItemType.class);
+            descItemTypeBeanItemContainer.addAll(ruleSetManager
+                    .getDescriptionItemTypesForNodeId(versionId, level.getNode().getNodeId(), null));
+            attributesComboBox = new ComboBox(null, descItemTypeBeanItemContainer);
+            attributesComboBox.setItemCaptionPropertyId("name");
+
+            attributesComboBox.addValueChangeListener(event -> {
+                RulDescItemType type = (RulDescItemType) event.getProperty().getValue();
+                showEditAttrWindow(level, type, versionId);
+            });
+            detailContent.addComponent(attributesComboBox);
+        }
 
         Collections.sort(descItemList, (o1, o2) -> {
             Integer specOrder1 = (o1.getDescItemSpec() == null) ? null : o1.getDescItemSpec().getViewOrder();
@@ -159,7 +172,9 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
                 CssLayout captionLayout = cssLayoutExt(null);
                 captionLayout.addComponent(newLabel(caption));
-                captionLayout.addComponent(createEditButton(level, item.getDescItemType(), versionId));
+                if(versionOpen) {
+                    captionLayout.addComponent(createEditButton(level, item.getDescItemType(), versionId));
+                }
 
                 Label lblValue = newLabel(value);
                 lblValue.setContentMode(ContentMode.HTML);
@@ -172,6 +187,27 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
         detailContent.addComponent(grid);
     }
+
+    private boolean isVersionOpen(final Integer versionId) {
+        Assert.notNull(versionId);
+
+        return arrangementManager.getFaVersionById(versionId).getLockChange() == null;
+    }
+
+    public void initContentTitle(final ArrFaLevelExt level, final List<ArrDescItemExt> descItems){
+        Assert.notNull(descItems);
+
+        lblTitle.setValue("Detail archivního popisu s id=" + level.getNode().getNodeId());
+
+        for (ArrDescItemExt descItem : descItems) {
+            if (descItem.getDescItemType().getCode().equals(TITLE_CODE)
+                    && StringUtils.isNotBlank(descItem.getData())) {
+                lblTitle.setValue(descItem.getData());
+                break;
+            }
+        }
+    }
+
 
 
     private void showEditAttrWindow(final ArrFaLevelExt level, final RulDescItemType type, final Integer versionId) {
@@ -259,7 +295,8 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         addStyleName("level-detail");
         detailContent = cssLayoutExt("detail-content");
 
-        addComponent(newLabel("Detail atributu", "h2"));
+        lblTitle = newLabel("Detail archivního popisu", "h2");
+        addComponent(lblTitle);
         addComponent(detailContent);
     }
 }

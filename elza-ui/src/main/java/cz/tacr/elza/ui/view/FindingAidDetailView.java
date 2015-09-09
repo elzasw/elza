@@ -319,6 +319,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
     }
 
     private void showDetailAP() {
+        table.select(null);
         ArrFaLevelExt level = arrangementManager.getLevel(rootNode.getNode().getNodeId(), version.getFaVersionId(), null);
         levelDetailConteiner.showLevelDetail(level, level.getDescItemList(), version.getFaVersionId());
     }
@@ -899,7 +900,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
 
     private LevelHistoryWindow showVersionHistory(final ArrFaLevel faLevel) {
         LevelHistoryWindow window = new LevelHistoryWindow(arrangementManager);
-        window.show(faLevel.getNode().getNodeId(), findingAidId);
+        window.show(faLevel, findingAidId);
         return window;
     }
 
