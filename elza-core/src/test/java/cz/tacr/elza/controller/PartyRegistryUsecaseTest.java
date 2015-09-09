@@ -1,6 +1,10 @@
 package cz.tacr.elza.controller;
 
 import com.jayway.restassured.response.Response;
+import cz.tacr.elza.domain.ParAbstractParty;
+import cz.tacr.elza.domain.ParPartySubtype;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParPartyTypeExt;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
@@ -26,11 +30,20 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
     /* Číselník typů rejstříku. */
     private static final String ARTWORK = "ARTWORK";
 
+    /* Číselník podtypů osoby. */
+    private static final String FYZ_OSOBA = "FYZ_OSOBA";
+    private static final String UDAL_PRIRODA = "UDAL_PRIRODA";
+
+    /** Hesla - objekty testu. */
+    private RegRecord heslo1;
+    private RegRecord heslo2;
 
     @Test
-    public void testRegistry() {
+    public void testRegistryAndParty() {
         testVytvoreniHesel();
         testHledaniHesel();
+        testVytvoreniOsob();
+        testHledaniOsob();
     }
 
     /**
@@ -40,9 +53,9 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         RegRegisterType registerTypeArtWork = getRegisterTypeArtWork();
 
         RegRecord record = fillRecord(registerTypeArtWork, "H1", "Heslo H1");
-        RegRecord heslo1 = createRecord(record);
+        heslo1 = createRecord(record);
         record = fillRecord(registerTypeArtWork, "H2", "Heslo H2");
-        RegRecord heslo2 = createRecord(record);
+        heslo2 = createRecord(record);
         record = fillRecord(registerTypeArtWork, "H3", "Heslo H3");
         createRecord(record);
 
@@ -103,16 +116,43 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         Assert.assertTrue("Nekonalo se.", passed2);
     }
 
+    /**
+     * Vytvoří abstractní osoby různých typů připojených k heslům rejstříku.
+     */
     private void testVytvoreniOsob() {
+        ParPartySubtype partySubTypeOsoba = getPartySubType(FYZ_OSOBA);
+        ParPartySubtype partySubTypeUdalost = getPartySubType(UDAL_PRIRODA);
+
+        ParAbstractParty abstractParty = fillAbstractParty(partySubTypeOsoba, heslo1);
+        createAbstractParty(abstractParty);
+
+        abstractParty = fillAbstractParty(partySubTypeUdalost, heslo2);
+        createAbstractParty(abstractParty);
+    }
+
+    private void testHledaniOsob() {
+        ParPartySubtype partySubTypeOsoba = getPartySubType(FYZ_OSOBA);
+        ParPartySubtype partySubTypeUdalost = getPartySubType(UDAL_PRIRODA);
+
+        List<ParAbstractParty> osoby = findAbstractParty("h1", partySubTypeOsoba.getPartyType(), true);
+        Assert.assertEquals("Nenalezeny osoby. ", 1, osoby.size());
+
+
+        osoby = findAbstractParty("H1", partySubTypeUdalost.getPartyType(), false);
+        Assert.assertEquals("Nalezeny osoby. ", 0, osoby.size());
+
+        osoby = findAbstractParty("V1", partySubTypeUdalost.getPartyType(), false);
+        Assert.assertEquals("Nenalezeny osoby. ", 1, osoby.size());
 
     }
+
 
     /**
      * Vyhledá typ rejstříku - umělecké dílo.
      * @return      typ
      */
     private RegRegisterType getRegisterTypeArtWork() {
-        List<RegRegisterType> regRegisterTypes = restGetRegisterTypes();
+        List<RegRegisterType> regRegisterTypes = getRegisterTypes();
 
         RegRegisterType registerTypeArtWork = null;
         for (final RegRegisterType rt : regRegisterTypes) {
@@ -129,12 +169,39 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
     /**
      * Načtení typů rejstříkových záznamů.
      */
-    private List<RegRegisterType> restGetRegisterTypes() {
+    private List<RegRegisterType> getRegisterTypes() {
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).get(GET_REGISTER_TYPES_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
         return (List<RegRegisterType>) Arrays.asList(response.getBody().as(RegRegisterType[].class));
+    }
+
+    /**
+     * Vyhledá podtyp osoby dle kódu.
+     *
+     * @return      podtyp
+     */
+    private ParPartySubtype getPartySubType(final String code) {
+        List<ParPartyTypeExt> partyTypes = getPartyTypes();
+
+        ParPartySubtype result = null;
+        for (final ParPartyTypeExt pt : partyTypes) {
+            for (final ParPartySubtype pst : pt.getPartySubTypeList()) {
+                if (pst.getCode().equalsIgnoreCase(code)) {
+                    result = pst;
+                    break;
+                }
+            }
+        }
+
+        Assert.assertNotNull("Výběr typu rejstříku - umělecké dílo - selhal.", result);
+        return result;
+    }
+
+    public List<ParPartyTypeExt> getPartyTypes() {
+        Response response = get((spec) -> spec, GET_PARTY_TYPES);
+        return (List<ParPartyTypeExt>) Arrays.asList(response.getBody().as(ParPartyTypeExt[].class));
     }
 
     /**
@@ -269,6 +336,65 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         Assert.assertEquals(200, response.statusCode());
 
         return response.getBody().as(long.class);
+    }
+
+    /**
+     * Naplní entitu osoby.
+     *
+     * @param partySubtype      podtyp
+     * @param regRecord         heslo ke kterému bude připojena
+     * @return  naplněný objekt, neuložený
+     */
+    private ParAbstractParty fillAbstractParty(final ParPartySubtype partySubtype, final RegRecord regRecord) {
+        ParAbstractParty abstractParty = new ParAbstractParty();
+        abstractParty.setPartySubtype(partySubtype);
+        abstractParty.setRecord(regRecord);
+
+        return abstractParty;
+    }
+
+    /**
+     * Vytvoří abstraktní osobu.
+     *
+     * @param abstractParty   objekt osoby
+     * @return  záznam
+     */
+    private ParAbstractParty createAbstractParty(final ParAbstractParty abstractParty) {
+        Response response = put((spec) -> spec
+                        .config(getUtf8Config())
+                        .body(abstractParty),
+                        INSERT_ABSTRACT_PARTY
+        );
+
+        ParAbstractParty newAbstractParty = response.getBody().as(ParAbstractParty.class);
+
+        // ověření
+        Assert.assertNotNull(newAbstractParty);
+        Assert.assertNotNull(newAbstractParty.getAbstractPartyId());
+
+        return newAbstractParty;
+    }
+
+    /**
+     * Nalezne abstraktí osoby dle parametrů.
+     * @param searchString      řetězec hledání
+     * @param partyType         typ osoby
+     * @return                  entity
+     */
+    private List<ParAbstractParty> findAbstractParty(final String searchString, final ParPartyType partyType,
+                                                     final boolean originator) {
+
+        Response response = get((spec) -> spec
+                        .config(getUtf8Config())
+                        .parameter(SEARCH_ATT, searchString)
+                        .parameter(FROM_ATT, 0)
+                        .parameter(COUNT_ATT, 10)
+                        .parameter(PARTY_TYPE_ID_ATT, partyType.getPartyTypeId())
+                        .parameter(ORIGINATOR_ATT, originator),
+                FIND_ABSTRACT_PARTY
+        );
+
+        return (List<ParAbstractParty>) Arrays.asList(response.getBody().as(ParAbstractParty[].class));
     }
 
 }

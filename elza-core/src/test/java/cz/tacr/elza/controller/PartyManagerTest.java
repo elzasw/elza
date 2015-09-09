@@ -1,25 +1,19 @@
 package cz.tacr.elza.controller;
 
-import static com.jayway.restassured.RestAssured.given;
-
-import java.util.Arrays;
-import java.util.List;
-
-import javax.transaction.Transactional;
-
+import com.jayway.restassured.response.Response;
+import cz.tacr.elza.domain.ParAbstractParty;
+import cz.tacr.elza.domain.ParPartySubtype;
+import cz.tacr.elza.domain.ParPartyTypeExt;
+import cz.tacr.elza.domain.RegRecord;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jayway.restassured.response.Response;
+import java.util.Arrays;
+import java.util.List;
 
-import cz.tacr.elza.domain.ParAbstractParty;
-import cz.tacr.elza.domain.ParAbstractPartyVals;
-import cz.tacr.elza.domain.ParPartySubtype;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParPartyTypeExt;
-import cz.tacr.elza.domain.RegRecord;
+import static com.jayway.restassured.RestAssured.given;
 
 /**
  * Testy pro {@link PartyManager}.
@@ -31,14 +25,9 @@ public class PartyManagerTest extends AbstractRestTest {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static final String INSERT_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/insertAbstractParty";
     private static final String UPDATE_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/updateAbstractParty";
     private static final String DELETE_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/deleteAbstractParty";
-    private static final String FIND_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/findAbstractParty";
-    private static final String FIND_ABSTRACT_PARTY_COUNT =
-            PARTY_MANAGER_URL + "/findAbstractPartyCount";
     private static final String GET_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/getAbstractParty";
-    private static final String GET_PARTY_TYPES = PARTY_MANAGER_URL + "/getPartyTypes";
 
     @Test
     public void testRestInsertAbstractParty() throws Exception {

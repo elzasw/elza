@@ -1,22 +1,5 @@
 package cz.tacr.elza.controller;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import cz.tacr.elza.domain.ParAbstractParty;
 import cz.tacr.elza.domain.ParPartySubtype;
 import cz.tacr.elza.domain.ParPartyType;
@@ -26,6 +9,21 @@ import cz.tacr.elza.repository.AbstractPartyRepository;
 import cz.tacr.elza.repository.PartySubtypeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -96,9 +94,20 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
     }
 
     @RequestMapping(value = "/insertAbstractParty", method = RequestMethod.PUT)
-    @Transactional
     @Override
     public ParAbstractParty insertAbstractParty(@RequestBody final ParAbstractParty abstractParty) {
+        ParAbstractParty newParty = insertAbstractPartyInternal(abstractParty);
+
+        if (newParty.getRecord() != null) {
+            newParty.getRecord().getVariantRecordList().forEach((variantRecord) -> {
+                variantRecord.setRegRecord(null);
+            });
+        }
+        return newParty;
+    }
+
+    @Transactional
+    private ParAbstractParty insertAbstractPartyInternal(final ParAbstractParty abstractParty) {
         ParAbstractParty newParty = new ParAbstractParty();
         updateAbstractParty(abstractParty, newParty);
         abstractPartyRepository.save(newParty);
@@ -165,4 +174,5 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
         Assert.notNull(abstractPartyId);
         return abstractPartyRepository.getOne(abstractPartyId);
     }
+
 }
