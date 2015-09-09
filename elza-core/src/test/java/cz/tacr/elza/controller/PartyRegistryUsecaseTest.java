@@ -1,6 +1,8 @@
 package cz.tacr.elza.controller;
 
+import com.jayway.restassured.internal.RestAssuredResponseImpl;
 import com.jayway.restassured.response.Response;
+import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.domain.ParAbstractParty;
 import cz.tacr.elza.domain.ParPartySubtype;
 import cz.tacr.elza.domain.ParPartyType;
@@ -8,6 +10,7 @@ import cz.tacr.elza.domain.ParPartyTypeExt;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -164,7 +167,7 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
     }
 
     /**
-     * Otestuje aktualizace objektů.
+     * Otestuje aktualizace objektů. Včetně 1x konkurentní přístup.
      */
     private void testAktualizace() {
         // osoba, její podtyp
@@ -189,6 +192,14 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         heslo1 = getRecord(heslo1.getRecordId());
         variantRecord = getVariantniHesloByRecord(heslo1, VAR_HESLO_H1V1_UPDATE);
         Assert.assertEquals("Update neproveden.", VAR_HESLO_H1V1_UPDATE, variantRecord.getRecord());
+
+        // concurrent modification, heslo 2, 2x get, změna - update, druhý exemplář změna - update -> CHYBA
+        heslo2 = getRecord(heslo2.getRecordId());
+        RegRecord heslo2a = getRecord(heslo2.getRecordId());
+        heslo2.setRecord("H2x");
+        updateRecord(heslo2);
+        heslo2a.setRecord("H2y");
+        updateRecordConcurrentError(heslo2a);
     }
 
     /**
@@ -543,6 +554,22 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         Assert.assertEquals("Nenalezena spravna polozka typu", regRecord.getRegisterType(), updatedRecord.getRegisterType());
 
         return updatedRecord;
+    }
+
+    /**
+     * Prověří konkurent modification.
+     *
+     * @param regRecord   objekt
+     */
+    private void updateRecordConcurrentError(final RegRecord regRecord) {
+        RestAssuredResponseImpl response = (RestAssuredResponseImpl) putError((spec) -> spec
+                        .body(regRecord),
+                UPDATE_RECORD_URL
+        );
+
+        Assert.assertTrue("Nefunguje optimistic locking.",
+                StringUtils.contains((String)response.getContent(), ConcurrentUpdateException.class.getName())
+        );
     }
 
     /**

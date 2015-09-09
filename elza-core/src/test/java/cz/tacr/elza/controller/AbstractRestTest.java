@@ -644,6 +644,10 @@ public abstract class AbstractRestTest {
         return httpMethod(params, url, HttpMethod.PUT, HttpStatus.OK);
     }
 
+    public static Response putError(Function<RequestSpecification, RequestSpecification> params, String url) {
+        return httpMethod(params, url, HttpMethod.PUT, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     public static Response put(Function<RequestSpecification, RequestSpecification> params, String url, HttpStatus status) {
         return httpMethod(params, url, HttpMethod.PUT, status);
     }
