@@ -171,6 +171,9 @@ public abstract class AbstractRestTest {
     protected static final String DELETE_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/deleteLevel";
     protected static final String FIND_LEVEL_BY_NODE_ID_URL = ARRANGEMENT_MANAGER_URL + "/findLevelByNodeId";
     protected static final String GET_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/getLevel";
+    protected static final String CREATE_DESCRIPTION_ITEM_URL = ARRANGEMENT_MANAGER_URL + "/createDescriptionItem";
+    protected static final String UPDATE_DESCRIPTION_ITEM_URL = ARRANGEMENT_MANAGER_URL + "/updateDescriptionItem";
+    protected static final String DELETE_DESCRIPTION_ITEM_URL = ARRANGEMENT_MANAGER_URL + "/deleteDescriptionItem";
 
     protected static final String FA_NAME_ATT = "name";
     protected static final String FA_ID_ATT = "findingAidId";
