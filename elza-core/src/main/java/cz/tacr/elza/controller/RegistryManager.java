@@ -188,14 +188,18 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
 
         RegRegisterType regRegisterType = record.getRegisterType();
         Assert.notNull(regRegisterType, "Není vyplněné RegisterType.");
-        Assert.notNull(regRegisterType.getRegisterTypeId(), "RegisterType nemá vyplněné ID.");
-        regRegisterType = registerTypeRepository.getOne(regRegisterType.getRegisterTypeId());
+        Integer registerTypeId = regRegisterType.getRegisterTypeId();
+        Assert.notNull(registerTypeId, "RegisterType nemá vyplněné ID.");
+        regRegisterType = registerTypeRepository.findOne(registerTypeId);
+        Assert.notNull(regRegisterType, "RegisterType nebylo nalezeno podle id " + registerTypeId);
         record.setRegisterType(regRegisterType);
 
         RegExternalSource externalSource = record.getExternalSource();
         if (externalSource != null) {
-            Assert.notNull(externalSource.getExternalSourceId(), "ExternalSource nemá vyplněné ID.");
-            externalSource = externalSourceRepository.getOne(externalSource.getExternalSourceId());
+            Integer externalSourceId = externalSource.getExternalSourceId();
+            Assert.notNull(externalSourceId, "ExternalSource nemá vyplněné ID.");
+            externalSource = externalSourceRepository.findOne(externalSourceId);
+            Assert.notNull(externalSource, "ExternalSource nebylo nalezeno podle id " + externalSourceId);
             record.setExternalSource(externalSource);
         }
 
@@ -215,9 +219,11 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
 
         RegRecord regRecord = variantRecord.getRegRecord();
         Assert.notNull(regRecord, "RegRecord musí být vyplněno.");
-        Assert.notNull(regRecord.getRecordId(), "RegRecord nemá vyplněno ID.");
+        Integer recordId = regRecord.getRecordId();
+        Assert.notNull(recordId, "RegRecord nemá vyplněno ID.");
 
-        regRecord = regRecordRepository.getOne(regRecord.getRecordId());
+        regRecord = regRecordRepository.findOne(recordId);
+        Assert.notNull(regRecord, "RegRecord nebylo nalezeno podle id " + recordId);
         variantRecord.setRegRecord(regRecord);
 
         return variantRecordRepository.save(variantRecord);
