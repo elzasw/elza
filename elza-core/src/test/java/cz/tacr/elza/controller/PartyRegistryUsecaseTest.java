@@ -318,6 +318,8 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         // ověření
         Assert.assertNotNull(newRecord);
         Assert.assertNotNull(newRecord.getRecordId());
+        Assert.assertEquals(regRecord.getRecord() , newRecord.getRecord());
+        Assert.assertEquals(regRecord.getCharacteristics() , newRecord.getCharacteristics());
 
         return newRecord;
     }
@@ -371,6 +373,7 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         // ověření
         Assert.assertNotNull(newVariantRecord);
         Assert.assertNotNull(newVariantRecord.getVariantRecordId());
+        Assert.assertEquals(variantRecord.getRecord(), newVariantRecord.getRecord());
 
         return newVariantRecord;
     }
