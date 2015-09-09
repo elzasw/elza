@@ -302,7 +302,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
     private String getAttributeValue(final Integer nodeId, final Integer position) {
         Map<Integer, String> attributs = attributeCache.get(nodeId);
         if (attributs == null) {
-            return "-";
+            return "";
         }
 
         return StringUtils.defaultString(attributs.get(position));

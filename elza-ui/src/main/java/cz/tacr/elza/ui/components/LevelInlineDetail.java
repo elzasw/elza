@@ -303,7 +303,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         addStyleName("level-detail");
         detailContent = cssLayoutExt("detail-content");
 
-        lblTitle = newLabel("Detail archivního popisu", "h2");
+        lblTitle = newLabel("Detail archivního popisu", "h2 text-ellipsis");
         addComponent(lblTitle);
         addComponent(detailContent);
     }
