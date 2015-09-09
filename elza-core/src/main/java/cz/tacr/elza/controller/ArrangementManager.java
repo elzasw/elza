@@ -916,6 +916,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Override
     @RequestMapping(value = "/findSubLevelsExt", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
     public List<ArrFaLevelExt> findSubLevels(@RequestParam(value = "nodeId") Integer nodeId,
             @RequestParam(value = "versionId", required = false)  Integer versionId,
             @RequestParam(value = "formatData", required = false)  String formatData,

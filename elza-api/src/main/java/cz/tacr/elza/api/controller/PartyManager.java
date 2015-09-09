@@ -35,8 +35,7 @@ public interface PartyManager<PAPV extends ParAbstractParty> {
     /**
      * Upraví záznam abstraktní osoby. Je umožněna změna rejstříkového hesla a podtypu.
      * 
-     * @param abstractPartyId id záznamu pro aktualizaci.
-     * @param abstractParty data o abstraktní osobě pro aktualizaci {@link ParAbstractParty}.
+     * @param abstractParty záznamu pro aktualizaci.
      * @return Aktualizovaný záznam.
      */
     ParAbstractParty updateAbstractParty(PAPV abstractParty);

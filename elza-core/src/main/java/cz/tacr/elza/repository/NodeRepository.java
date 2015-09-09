@@ -7,6 +7,7 @@ import cz.tacr.elza.domain.ArrNode;
 
 
 /**
+ * Respozitory pro nody.
  * @author Martin Šlapa
  * @since 4. 9. 2015
  */

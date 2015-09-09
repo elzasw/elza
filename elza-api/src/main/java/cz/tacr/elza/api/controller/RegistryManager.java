@@ -45,7 +45,6 @@ public interface RegistryManager<RR extends RegRecord, VR extends RegVariantReco
      * Vytvoří nový variantní záznam rejstříku.
      *
      * @param variantRecord     vyplněný objekt bez vazeb
-     * @param regRecordId       id nadřazeného záznamu rejstříku
      * @return                  nově vytvořený objekt
      */
     RegVariantRecord createVariantRecord(VR variantRecord);
@@ -54,7 +53,6 @@ public interface RegistryManager<RR extends RegRecord, VR extends RegVariantReco
      * Vytvoří nový variantní záznam rejstříku.
      *
      * @param variantRecord     vyplněný objekt bez vazeb
-     * @param regRecordId       id nadřazeného záznamu rejstříku
      * @return                  nově vytvořený objekt
      */
     RegVariantRecord updateVariantRecord(VR variantRecord);
@@ -81,9 +79,9 @@ public interface RegistryManager<RR extends RegRecord, VR extends RegVariantReco
      * nebo pole variantního záznamu obsahují hledaný řetězec. V případě, že hledaný řetězec je null, nevyhodnocuje se.
      *
      * @param search            hledaný řetězec, může být null
-     * @param registerTypeId    typ záznamu
      * @param from              index prvního záznamu, začíná od 0
      * @param count             počet výsledků k vrácení
+     * @param registerTypeId    typ záznamu
      * @return                  vybrané záznamy dle popisu seřazené za record, nebo prázdná množina
      */
     List<? extends RegRecord> findRecord(String search, Integer from, Integer count, Integer registerTypeId);

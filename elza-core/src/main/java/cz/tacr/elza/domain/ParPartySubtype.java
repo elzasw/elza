@@ -3,6 +3,7 @@ package cz.tacr.elza.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -36,6 +37,7 @@ public class ParPartySubtype implements cz.tacr.elza.api.ParPartySubtype<ParPart
     @GeneratedValue
     private Integer partySubtypeId;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParPartyType.class)
     @JoinColumn(name = "partyTypeId", nullable = false)
     private ParPartyType partyType;
