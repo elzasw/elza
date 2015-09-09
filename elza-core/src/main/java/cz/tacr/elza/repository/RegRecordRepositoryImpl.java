@@ -3,7 +3,6 @@ package cz.tacr.elza.repository;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
-
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -39,7 +38,7 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
         Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeId, record, builder);
 
         Order order = builder.asc(record.get(RegRecord.RECORD));
-        query.select(record).where(condition).orderBy(order);
+        query.select(record).where(condition).orderBy(order).distinct(true);
 
         return entityManager.createQuery(query)
                 .setFirstResult(firstReult)
@@ -56,7 +55,7 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
 
         Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeId, record, builder);
 
-        query.select(builder.count(record)).where(condition);
+        query.select(builder.countDistinct(record)).where(condition);
 
         return entityManager.createQuery(query)
                 .getSingleResult();

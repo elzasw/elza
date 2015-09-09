@@ -38,7 +38,7 @@ public class AbstractPartyRepositoryImpl implements AbstractPartyRepositoryCusto
         Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeId, record, builder, originator);
 
         Order order = builder.asc(record.get(ParAbstractParty.ABSTRACT_PARTY_ID));
-        query.select(record).where(condition).orderBy(order);
+        query.select(record).where(condition).orderBy(order).distinct(true);
 
         return entityManager.createQuery(query)
                 .setFirstResult(firstResult)
@@ -56,7 +56,7 @@ public class AbstractPartyRepositoryImpl implements AbstractPartyRepositoryCusto
 
         Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeId, record, builder, originator);
 
-        query.select(builder.count(record)).where(condition);
+        query.select(builder.countDistinct(record)).where(condition);
 
         return entityManager.createQuery(query)
                 .getSingleResult();
