@@ -1,22 +1,31 @@
 package cz.tacr.elza.controller;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.Assert;
 
 import com.jayway.restassured.response.Response;
 
 import cz.tacr.elza.domain.ArrArrangementType;
+import cz.tacr.elza.domain.ArrDescItemExt;
 import cz.tacr.elza.domain.ArrFaLevel;
 import cz.tacr.elza.domain.ArrFaLevelExt;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemSpecExt;
+import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.domain.vo.ArrFaLevelWithExtraNode;
 
 /**
@@ -27,6 +36,10 @@ import cz.tacr.elza.domain.vo.ArrFaLevelWithExtraNode;
  */
 public class ArrangementManagerUsecaseTest extends AbstractRestTest {
 
+    private static final String TEST_VALUE_123 = "123";
+    private static final String TEST_VALUE_456 = "456";
+    private static final String TEST_VALUE_789 = "789";
+
     private RulRuleSet ruleSet;
     private ArrArrangementType arrangementType;
 
@@ -35,8 +48,25 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
     @Before
     public void setUp() {
         super.setUp();
+
         ruleSet = createRuleSet();
         arrangementType = createArrangementType();
+
+        RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
+
+        // vytvoření závislých dat
+        RulDescItemType descItemType = createDescItemType(dataType, true, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
+        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1);
+        createDescItemConstrain(descItemType, descItemSpec, null, false, null, null);
+        createDescItemConstrain(descItemType, descItemSpec, null, true, null, null);
+        createDescItemConstrain(descItemType, descItemSpec, null, null, "[0-9]*", null);
+        createDescItemConstrain(descItemType, descItemSpec, null, null, null, 50);
+
+        // vytvoření závislých dat
+        RulDescItemType descItemType2 = createDescItemType(dataType, true, "ITEM_TYPE2", "Item type 2", "SH3", "Desc 3", false, false, true, 2);
+        RulDescItemSpec descItemSpec2 = createDescItemSpec(descItemType2, "ITEM_SPEC2", "Item spec 2", "SH4", "Desc 4", 2);
+        createDescItemConstrain(descItemType2, descItemSpec2, null, null, "[0-9]*", null);
+        createDescItemConstrain(descItemType2, descItemSpec2, null, null, null, 50);
     }
 
     @Test
@@ -46,6 +76,205 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         testApproveFindingAidVersion(findingAid);
         testAddLevels(findingAid);
         testMoveAndDeleteLevels(findingAid);
+        testAttributeValues(findingAid);
+    }
+
+    /**
+     * Otestuje práci s atritbuty a hodnotami.
+     *
+     * @param findingAid archivní pomůcka
+     */
+    private void testAttributeValues(ArrFindingAid findingAid) {
+        ArrFaVersion version = getFindingAidOpenVersion(findingAid);
+        ArrNode node = version.getRootFaLevel().getNode();
+
+        List<RulDescItemTypeExt> descItemTypes = getAllRulDescItemTypExt();
+        Assert.isTrue(descItemTypes.size() == 2);
+
+        // Vytvoření hodnoty atributu pro kořenový uzel
+        RulDescItemTypeExt rulDescItemTypeExt = descItemTypes.get(0);
+        ArrDescItemExt descItemExt = createArrDescItemExt(node, rulDescItemTypeExt, version, TEST_VALUE_123);
+        Assert.notNull(descItemExt);
+        Assert.notNull(descItemExt.getData());
+        Assert.isTrue(descItemExt.getData().equals(TEST_VALUE_123));
+
+        ArrFaLevelExt arrFaLevelExt = getLevelByNodeId(node.getNodeId());
+        List<ArrDescItemExt> descItemList = arrFaLevelExt.getDescItemList();
+        Assert.isTrue(descItemList.size() == 1);
+        Assert.isTrue(descItemList.get(0).getData().equals(TEST_VALUE_123));
+        Assert.isTrue(descItemList.get(0).getDescItemObjectId().equals(descItemExt.getDescItemObjectId()));
+
+        // Aktualizace hodnoty
+        ArrDescItemExt arrDescItemExtToUpdate = descItemList.get(0);
+        ArrDescItemExt updatedDescItemExt = updateArrDescItemExt(arrDescItemExtToUpdate, TEST_VALUE_456, version, true);
+        Assert.notNull(updatedDescItemExt);
+        Assert.notNull(updatedDescItemExt.getData());
+        Assert.isTrue(updatedDescItemExt.getData().equals(TEST_VALUE_456));
+
+        arrFaLevelExt = getLevelByNodeId(node.getNodeId());
+        descItemList = arrFaLevelExt.getDescItemList();
+        Assert.isTrue(descItemList.size() == 1);
+        Assert.isTrue(descItemList.get(0).getData().equals(TEST_VALUE_456));
+        Assert.isTrue(descItemList.get(0).getDescItemObjectId().equals(descItemExt.getDescItemObjectId()));
+        Assert.isTrue(descItemList.get(0).getDescItemObjectId().equals(updatedDescItemExt.getDescItemObjectId()));
+
+        // Odstranění hodnoty
+        ArrDescItemExt arrDescItemExtToDelete = descItemList.get(0);
+        ArrDescItemExt deletedDescItemExt = deleteDescriptionItem(arrDescItemExtToDelete);
+        Assert.notNull(deletedDescItemExt);
+        Assert.notNull(deletedDescItemExt.getData());
+        Assert.isTrue(deletedDescItemExt.getData().equals(arrDescItemExtToDelete.getData()));
+        Assert.isTrue(deletedDescItemExt.getDeleteChange() != null);
+
+        arrFaLevelExt = getLevelByNodeId(node.getNodeId());
+        descItemList = arrFaLevelExt.getDescItemList();
+        Assert.isTrue(descItemList.isEmpty());
+
+        // Manipulace s více hodnotami najednou
+        ArrFaVersion faVersion = getFindingAidOpenVersion(findingAid);
+        node = faVersion.getRootFaLevel().getNode();
+        ArrDescItemSavePack savePack = prepareSavePack(node, version, descItemTypes);
+        List<ArrDescItemExt> arrDescItemExts = storeSavePack(savePack);
+        Assert.isTrue(arrDescItemExts.size() == 2);
+        Assert.isTrue(arrDescItemExts.get(0).getData().equals(TEST_VALUE_123));
+        Assert.isTrue(arrDescItemExts.get(0).getPosition().equals(1));
+        Assert.isTrue(arrDescItemExts.get(1).getData().equals(TEST_VALUE_456));
+        Assert.isTrue(arrDescItemExts.get(1).getPosition().equals(1));
+
+        arrFaLevelExt = getLevelByNodeId(node.getNodeId());
+        descItemList = arrFaLevelExt.getDescItemList();
+        Assert.isTrue(descItemList.size() == 2);
+
+        // Uložení s verzováním změn v uzavřené verzi
+        List<ArrFaVersion> versions = getFindingAidVersions(findingAid);
+        savePack = prepareSavePack(node, versions.get(0), descItemTypes);
+        storeSavePackWithError(savePack);
+    }
+
+    private void storeSavePackWithError(ArrDescItemSavePack savePack) {
+        post((spec) -> spec.body(savePack), SAVE_DESCRIPTION_ITEMS_URL, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private List<ArrDescItemExt> storeSavePack(ArrDescItemSavePack savePack) {
+        Response response = post((spec) -> spec.body(savePack), SAVE_DESCRIPTION_ITEMS_URL);
+
+        return Arrays.asList(response.getBody().as(ArrDescItemExt[].class));
+
+    }
+
+    /**
+     * Vytvoří balík hodnot pro uložení.
+     *
+     * @param node uzel na který se dají hodnoty
+     * @param version verze
+     * @param descItemTypes seznam typů atributů
+     *
+     * @return balík hodnot
+     */
+    private ArrDescItemSavePack prepareSavePack(ArrNode node, ArrFaVersion version, List<RulDescItemTypeExt> descItemTypes) {
+        ArrDescItemSavePack savePack = new ArrDescItemSavePack();
+        savePack.setCreateNewVersion(true);
+        savePack.setFaVersionId(version.getFaVersionId());
+        savePack.setNode(node);
+        savePack.setDeleteDescItems(new ArrayList<>());
+
+        List<ArrDescItemExt> descItemExtList = new ArrayList<>(2);
+        savePack.setDescItems(descItemExtList);
+
+        ArrDescItemExt descItem1 = createArrDescItemExt(node, descItemTypes.get(0), TEST_VALUE_123);
+        ArrDescItemExt descItem2 = createArrDescItemExt(node, descItemTypes.get(1), TEST_VALUE_456);
+
+        descItemExtList.add(descItem1);
+        descItemExtList.add(descItem2);
+
+        return savePack;
+    }
+
+    private ArrDescItemExt createArrDescItemExt(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, String value) {
+        RulDescItemType rulDescItemType = new RulDescItemType();
+        BeanUtils.copyProperties(rulDescItemTypeExt, rulDescItemType);
+
+        RulDescItemSpecExt rulDescItemSpecExt1 = rulDescItemTypeExt.getRulDescItemSpecList().get(0);
+        RulDescItemSpec rulDescItemSpec = new RulDescItemSpec();
+        BeanUtils.copyProperties(rulDescItemSpecExt1, rulDescItemSpec);
+
+        ArrDescItemExt descItem = new ArrDescItemExt();
+        descItem.setDescItemType(rulDescItemType);
+        descItem.setDescItemSpec(rulDescItemSpec);
+        descItem.setData(value);
+        descItem.setNode(node);
+
+        return descItem;
+    }
+
+    /**
+     * Vytvoří hodnotu přes REST.
+     *
+     * @param node uzel na kterém se má hodnota vytvořit
+     * @param rulDescItemTypeExt typ atributu
+     * @param version verze
+     *
+     * @return vytvořená hodnota
+     */
+    private ArrDescItemExt createArrDescItemExt(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, ArrFaVersion version,
+            String value) {
+        RulDescItemType rulDescItemType = new RulDescItemType();
+        BeanUtils.copyProperties(rulDescItemTypeExt, rulDescItemType);
+
+        RulDescItemSpecExt rulDescItemSpecExt = rulDescItemTypeExt.getRulDescItemSpecList().get(0);
+        RulDescItemSpec rulDescItemSpec = new RulDescItemSpec();
+        BeanUtils.copyProperties(rulDescItemSpecExt, rulDescItemSpec);
+
+        ArrDescItemExt descItem = new ArrDescItemExt();
+        descItem.setDescItemType(rulDescItemType);
+        descItem.setDescItemSpec(rulDescItemSpec);
+        descItem.setData(value);
+        descItem.setNode(node);
+
+        Response response = post((spec) -> spec.body(descItem).pathParameter(VERSION_ID_ATT, version.getFaVersionId()),
+                CREATE_DESCRIPTION_ITEM_URL);
+
+        return response.getBody().as(ArrDescItemExt.class);
+    }
+
+    /**
+     * Aktualizuje hodnotu přes REST.
+     *
+     * @param descItem hodnota atributu
+     * @param value nová hodnota
+     * @param version verze
+     * @param createNewVersion příznak zda se má změna hodnoty verzovat
+     *
+     * @return vytvořená hodnota
+     */
+    private ArrDescItemExt updateArrDescItemExt(ArrDescItemExt descItem, String value, ArrFaVersion version,
+            boolean createNewVersion) {
+        descItem.setData(value);
+
+        Response response = post((spec) -> spec.body(descItem).pathParameter(VERSION_ID_ATT, version.getFaVersionId())
+                .pathParameter(CREATE_NEW_VERSION_ATT, createNewVersion), UPDATE_DESCRIPTION_ITEM_URL);
+
+        return response.getBody().as(ArrDescItemExt.class);
+    }
+
+    /**
+     * Odstraní hodnotu přes REST.
+     *
+     * @param descItem hodnota která se má odstranit
+     *
+     * @return smazaná hodnota
+     */
+    private ArrDescItemExt deleteDescriptionItem(ArrDescItemExt descItem) {
+        Response response = delete((spec) -> spec.body(descItem), DELETE_DESCRIPTION_ITEM_URL);
+
+        return response.getBody().as(ArrDescItemExt.class);
+    }
+
+    /** @return všechny typy atributů */
+    private List<RulDescItemTypeExt> getAllRulDescItemTypExt() {
+        Response response = get((spec) -> spec.parameter(RULE_SET_ID_ATT, 1), GET_DIT_URL);
+
+        return Arrays.asList(response.getBody().as(RulDescItemTypeExt[].class));
     }
 
     /**

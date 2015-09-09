@@ -1,16 +1,25 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.data.rest.core.annotation.RestResource;
 
-import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
  * Atribut archivního popisu evidovaný k jednotce archivního popisu. Odkaz na uzel stromu AP je
  * řešen pomocí node_id.
- * 
+ *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
@@ -23,10 +32,12 @@ public class ArrDescItem extends AbstractVersionableEntity implements cz.tacr.el
     @GeneratedValue
     private Integer descItemId;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaChange.class)
     @JoinColumn(name = "createFaChangeId", nullable = false)
     private ArrFaChange createChange;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaChange.class)
     @JoinColumn(name = "deleteFaChangeId", nullable = true)
     private ArrFaChange deleteChange;
@@ -34,14 +45,17 @@ public class ArrDescItem extends AbstractVersionableEntity implements cz.tacr.el
     @Column(nullable = false)
     private Integer descItemObjectId;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulDescItemType.class)
     @JoinColumn(name = "descItemTypeId", nullable = false)
     private RulDescItemType descItemType;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulDescItemSpec.class)
     @JoinColumn(name = "descItemSpecId", nullable = true)
     private RulDescItemSpec descItemSpec;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
     @JoinColumn(name = "nodeId", nullable = false)
     private ArrNode node;

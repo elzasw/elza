@@ -1,11 +1,36 @@
 package cz.tacr.elza.controller;
 
+import static com.jayway.restassured.RestAssured.given;
+
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+
+import javax.transaction.Transactional;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.IntegrationTest;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.EncoderConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
 import com.jayway.restassured.response.Header;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
+
 import cz.tacr.elza.ElzaCore;
 import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrData;
@@ -52,28 +77,6 @@ import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.repository.VersionRepository;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-
-import javax.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Function;
-
-import static com.jayway.restassured.RestAssured.given;
 
 /**
  * Abstraktní předek pro testy. Nastavuje REST prostředí.
@@ -168,9 +171,10 @@ public abstract class AbstractRestTest {
     protected static final String DELETE_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/deleteLevel";
     protected static final String FIND_LEVEL_BY_NODE_ID_URL = ARRANGEMENT_MANAGER_URL + "/findLevelByNodeId";
     protected static final String GET_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/getLevel";
-    protected static final String CREATE_DESCRIPTION_ITEM_URL = ARRANGEMENT_MANAGER_URL + "/createDescriptionItem";
-    protected static final String UPDATE_DESCRIPTION_ITEM_URL = ARRANGEMENT_MANAGER_URL + "/updateDescriptionItem";
+    protected static final String CREATE_DESCRIPTION_ITEM_URL = ARRANGEMENT_MANAGER_URL + "/createDescriptionItem/{versionId}";
+    protected static final String UPDATE_DESCRIPTION_ITEM_URL = ARRANGEMENT_MANAGER_URL + "/updateDescriptionItem/{versionId}/{createNewVersion}";
     protected static final String DELETE_DESCRIPTION_ITEM_URL = ARRANGEMENT_MANAGER_URL + "/deleteDescriptionItem";
+    protected static final String SAVE_DESCRIPTION_ITEMS_URL = ARRANGEMENT_MANAGER_URL + "/saveDescriptionItems";
 
     protected static final String FA_NAME_ATT = "name";
     protected static final String FA_ID_ATT = "findingAidId";
@@ -181,6 +185,7 @@ public abstract class AbstractRestTest {
     protected static final String FOLLOWER_NODE_ID_ATT = "followerNodeId";
     protected static final String PREDECESSOR_NODE_ID_ATT = "predecessorNodeId";
     protected static final String VERSION_ID_ATT = "versionId";
+    protected static final String CREATE_NEW_VERSION_ATT = "createNewVersion";
 
     protected static final Integer DATA_TYPE_INTEGER = 1;
     protected static final Integer DATA_TYPE_STRING = 2;
@@ -188,6 +193,16 @@ public abstract class AbstractRestTest {
     protected static final Integer DATA_TYPE_DATACE = 4;
     protected static final Integer DATA_TYPE_REF = 5;
     // END ARRANGEMENT MANAGER CONSTANTS
+
+    // RULE MANAGER CONSTANTS
+    protected static final String GET_DESC_ITEM_SPEC = RULE_MANAGER_URL + "/getDescItemSpecById";
+    protected static final String GET_RS_URL = RULE_MANAGER_URL + "/getRuleSets";
+    protected static final String GET_DIT_URL = RULE_MANAGER_URL + "/getDescriptionItemTypes";
+    protected static final String GET_DIT_FOR_NODE_ID_URL = RULE_MANAGER_URL + "/getDescriptionItemTypesForNodeId";
+    protected static final String GET_FVDIT_URL = RULE_MANAGER_URL + "/getFaViewDescItemTypes";
+    protected static final String SAVE_FVDIT_URL = RULE_MANAGER_URL + "/saveFaViewDescItemTypes";
+    // END RULE MANAGER CONSTANTS
+
     @Value("${local.server.port}")
     private int port;
 
@@ -638,6 +653,14 @@ public abstract class AbstractRestTest {
         return faViewRepository.save(view);
     }
 
+
+    public static Response delete(Function<RequestSpecification, RequestSpecification> params, String url) {
+        return httpMethod(params, url, HttpMethod.DELETE, HttpStatus.OK);
+    }
+
+    public static Response post(Function<RequestSpecification, RequestSpecification> params, String url, HttpStatus status) {
+        return httpMethod(params, url, HttpMethod.POST, status);
+    }
 
     public static Response post(Function<RequestSpecification, RequestSpecification> params, String url) {
         return httpMethod(params, url, HttpMethod.POST, HttpStatus.OK);

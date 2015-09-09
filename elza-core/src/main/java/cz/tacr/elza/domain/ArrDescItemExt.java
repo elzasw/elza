@@ -12,35 +12,41 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 
 public class ArrDescItemExt extends ArrDescItem implements cz.tacr.elza.api.ArrDescItemExt<ArrFaChange, RulDescItemType,RulDescItemSpec, ParAbstractParty, RegRecord, ArrNode> {
 
-    private String data;
+    private String attData;
     private ParAbstractParty abstractParty;
     private RegRecord record;
 
+    @Override
     public String getData() {
-        return data;
+        return attData;
     }
 
+    @Override
     public void setData(String data) {
-        this.data = data;
+        this.attData = data;
     }
 
+    @Override
     public ParAbstractParty getAbstractParty() {
         return abstractParty;
     }
 
+    @Override
     public void setAbstractParty(ParAbstractParty abstractParty) {
         this.abstractParty = abstractParty;
-        this.data = abstractParty == null ? null : abstractParty.getRecord().getRecord();
+        this.attData = abstractParty == null ? null : abstractParty.getRecord().getRecord();
     }
 
+    @Override
     public RegRecord getRecord() {
         return record;
     }
 
+    @Override
     public void setRecord(RegRecord record) {
 
         this.record = record;
-        this.data = record == null ? null : record.getRecord();
+        this.attData = record == null ? null : record.getRecord();
     }
 
     @Override

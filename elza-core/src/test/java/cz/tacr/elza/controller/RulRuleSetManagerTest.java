@@ -32,16 +32,6 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public static final String GET_DESC_ITEM_SPEC = RULE_MANAGER_URL + "/getDescItemSpecById";
-    private static final String GET_RS_URL = RULE_MANAGER_URL + "/getRuleSets";
-    private static final String GET_DIT_URL = RULE_MANAGER_URL + "/getDescriptionItemTypes";
-    private static final String GET_DIT_FOR_NODE_ID_URL =
-            RULE_MANAGER_URL + "/getDescriptionItemTypesForNodeId";
-    private static final String GET_FVDIT_URL = RULE_MANAGER_URL + "/getFaViewDescItemTypes";
-    private static final String SAVE_FVDIT_URL = RULE_MANAGER_URL + "/saveFaViewDescItemTypes";
-
-    public static final Integer DATA_TYPE_INTEGER = 1;
-
     @Test
     public void testRestGetDescItemSpecById() throws Exception{
         RulDataType dataType = getDataType(DATA_TYPE_INTEGER);

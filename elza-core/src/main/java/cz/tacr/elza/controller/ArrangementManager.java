@@ -1174,24 +1174,24 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     }
 
     @Override
-    @RequestMapping(value = "/createDescriptionItem/{faVersionId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/createDescriptionItem/{versionId}", method = RequestMethod.POST)
     @Transactional
     public ArrDescItemExt createDescriptionItem(@RequestBody ArrDescItemExt descItemExt,
-                                                @PathVariable(value = "faVersionId") Integer faVersionId) {
+                                                @PathVariable(value = "versionId") Integer versionId) {
         Assert.notNull(descItemExt);
-        Assert.notNull(faVersionId);
+        Assert.notNull(versionId);
         ArrFaChange arrFaChange = createChange();
-        return createDescriptionItemRaw(descItemExt, faVersionId, arrFaChange, true);
+        return createDescriptionItemRaw(descItemExt, versionId, arrFaChange, true);
     }
 
     @Override
-    @RequestMapping(value = "/updateDescriptionItem/{faVersionId},{createNewVersion}", method = RequestMethod.POST)
+    @RequestMapping(value = "/updateDescriptionItem/{versionId}/{createNewVersion}", method = RequestMethod.POST)
     @Transactional
     public ArrDescItemExt updateDescriptionItem(@RequestBody ArrDescItemExt descItemExt,
-                                                @PathVariable(value = "faVersionId") Integer faVersionId,
+                                                @PathVariable(value = "versionId") Integer versionId,
                                                 @PathVariable(value = "createNewVersion") Boolean createNewVersion) {
         Assert.notNull(descItemExt);
-        Assert.notNull(faVersionId);
+        Assert.notNull(versionId);
         Assert.notNull(createNewVersion);
 
         ArrFaChange arrFaChange = null;
@@ -1199,7 +1199,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             arrFaChange = createChange();
         }
 
-        return updateDescriptionItemRaw(descItemExt, faVersionId, createNewVersion, arrFaChange, true);
+        return updateDescriptionItemRaw(descItemExt, versionId, createNewVersion, arrFaChange, true);
     }
 
     @Override
@@ -1568,6 +1568,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             node.setLastUpdate(LocalDateTime.now());
             descItemRet.setNode(nodeRepository.save(node));
         }
+        descItemRet.setData(descItemExt.getData());
         return descItemRet;
     }
 
