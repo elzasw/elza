@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
+ * popis {@link cz.tacr.elza.api.ArrDataCoordinates}.
  * @author Martin Šlapa
  * @since 1.9.2015
  */

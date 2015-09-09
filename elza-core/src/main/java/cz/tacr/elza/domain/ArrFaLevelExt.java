@@ -3,7 +3,9 @@ package cz.tacr.elza.domain;
 import java.util.LinkedList;
 import java.util.List;
 
+
 /**
+ *  Rozšíření {@link ArrFaLevel} o atributy archivního popisu včetně hodnot.
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */

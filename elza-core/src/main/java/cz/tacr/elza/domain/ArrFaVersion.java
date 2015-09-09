@@ -8,6 +8,11 @@ import javax.persistence.*;
 
 
 /**
+ * Vytvářená nebo již schválená verze archivní pomůcky. Základem archivní pomůcky je hierarchický archivní
+ * popis. Každá pomůcka je vytvářena podle určitých pravidel tvorby. Pravidla tvorby mohou definovat
+ * různé typy finální pomůcky (například manipulační seznam, inventární seznam, katalog v případě
+ * ZP)
+ * 
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */

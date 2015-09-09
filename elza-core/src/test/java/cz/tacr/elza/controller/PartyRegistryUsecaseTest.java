@@ -42,6 +42,10 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
     private RegRecord heslo2;
     private ParAbstractParty party1;
 
+    private static final String VAR_HESLO_H1V1  = "Variantní heslo H1V1";
+    private static final String VAR_HESLO_H1V1_UPDATE  = "Variantní heslo H1V1 aktualizace";
+
+
     @Test
     public void testRegistryAndParty() {
         testVytvoreniHesel();
@@ -68,7 +72,7 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         record.getRegisterType().setRegisterTypeId(0);
         createRecordNegative(record);
 
-        RegVariantRecord variantRecord = fillVariantRecord(heslo1, "Variantní heslo H1V1");
+        RegVariantRecord variantRecord = fillVariantRecord(heslo1, VAR_HESLO_H1V1);
         createVariantRecord(variantRecord);
         variantRecord = fillVariantRecord(heslo1, "Variantní heslo H1V2");
         createVariantRecord(variantRecord);
@@ -164,11 +168,40 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
      * Otestuje update objektů.
      */
     private void testUpdate() {
+        // osoba, její podtyp
         ParPartySubtype subTypeFiktRod = getPartySubType(FIKT_ROD);
         party1.setPartySubtype(subTypeFiktRod);
         updateAbstractParty(party1);
         ParAbstractParty ap = getAbstractParty(party1.getAbstractPartyId());
-        Assert.assertEquals("Update neproveden.", subTypeFiktRod,ap.getPartySubtype());
+        Assert.assertEquals("Update neproveden.", subTypeFiktRod, ap.getPartySubtype());
+
+        // heslo, jeho podrobný popis
+        heslo1.setCharacteristics("Heslo H111");
+        updateRecord(heslo1);
+        heslo1 = getRecord(heslo1.getRecordId());
+        Assert.assertEquals("Update neproveden.", "Heslo H111", heslo1.getCharacteristics());
+
+        // variantní heslo, jeho heslo
+        RegVariantRecord variantRecord = getVariantniHesloByRecord(heslo1, VAR_HESLO_H1V1);
+        variantRecord.setRecord(VAR_HESLO_H1V1_UPDATE);
+        heslo1.getVariantRecordList().clear();
+        variantRecord.setRegRecord(heslo1);
+        updateVariantRecord(variantRecord);
+        heslo1 = getRecord(heslo1.getRecordId());
+        variantRecord = getVariantniHesloByRecord(heslo1, VAR_HESLO_H1V1_UPDATE);
+        Assert.assertEquals("Update neproveden.", VAR_HESLO_H1V1_UPDATE, variantRecord.getRecord());
+    }
+
+    private RegVariantRecord getVariantniHesloByRecord(final RegRecord regRecord, final String record) {
+        RegVariantRecord variantRecord = null;
+        for (final RegVariantRecord vr : regRecord.getVariantRecordList()) {
+            if (record.equals(vr.getRecord())) {
+                variantRecord = vr;
+            }
+        }
+
+        Assert.assertNotNull(variantRecord);
+        return variantRecord;
     }
 
     /**
@@ -401,31 +434,6 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
     }
 
     /**
-     * Upraví abstraktní osobu.
-     *
-     * @param abstractParty   objekt osoby
-     * @return  záznam
-     */
-    private ParAbstractParty updateAbstractParty(final ParAbstractParty abstractParty) {
-        Response response = put((spec) -> spec
-                        .body(abstractParty),
-                        UPDATE_ABSTRACT_PARTY
-        );
-
-        ParAbstractParty newAbstractParty = response.getBody().as(ParAbstractParty.class);
-
-        // ověření
-        Assert.assertNotNull(newAbstractParty);
-        Assert.assertNotNull(newAbstractParty.getAbstractPartyId());
-        Assert.assertNotNull("Nenalezena polozka party subtype", newAbstractParty.getPartySubtype());
-        Assert.assertNotNull("Nenalezena polozka record", newAbstractParty.getRecord());
-        Assert.assertEquals("Nenalezena spravna polozka record", abstractParty.getRecord(), newAbstractParty.getRecord());
-        Assert.assertEquals("Nenalezena spravna polozka subtype", abstractParty.getPartySubtype(), newAbstractParty.getPartySubtype());
-
-        return newAbstractParty;
-    }
-
-    /**
      * Nalezne abstraktní osoby dle parametrů.
      * @param searchString      řetězec hledání
      * @param partyType         typ osoby
@@ -467,6 +475,81 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
     }
 
     /**
+     * Upraví abstraktní osobu.
+     *
+     * @param abstractParty   objekt osoby
+     * @return  záznam
+     */
+    private ParAbstractParty updateAbstractParty(final ParAbstractParty abstractParty) {
+        Response response = put((spec) -> spec
+                        .config(getUtf8Config())
+                        .body(abstractParty),
+                UPDATE_ABSTRACT_PARTY
+        );
+
+        ParAbstractParty updatedAbstractParty = response.getBody().as(ParAbstractParty.class);
+
+        // ověření
+        Assert.assertNotNull(updatedAbstractParty);
+        Assert.assertNotNull(updatedAbstractParty.getAbstractPartyId());
+        Assert.assertNotNull("Nenalezena polozka party subtype", updatedAbstractParty.getPartySubtype());
+        Assert.assertNotNull("Nenalezena polozka record", updatedAbstractParty.getRecord());
+        Assert.assertEquals("Nenalezena spravna polozka record", abstractParty.getRecord(), updatedAbstractParty.getRecord());
+        Assert.assertEquals("Nenalezena spravna polozka subtype", abstractParty.getPartySubtype(), updatedAbstractParty.getPartySubtype());
+
+        return updatedAbstractParty;
+    }
+
+    /**
+     * Upraví rejstříkové heslo.
+     *
+     * @param regRecord   objekt
+     * @return  záznam
+     */
+    private RegRecord updateRecord(final RegRecord regRecord) {
+        Response response = put((spec) -> spec
+                        .config(getUtf8Config())
+                        .body(regRecord),
+                UPDATE_RECORD_URL
+        );
+
+        RegRecord updatedRecord = response.getBody().as(RegRecord.class);
+
+        // ověření
+        Assert.assertNotNull(updatedRecord);
+        Assert.assertNotNull(updatedRecord.getRecordId());
+        Assert.assertNotNull("Nenalezena polozka typu", updatedRecord.getRegisterType());
+        Assert.assertEquals("Nenalezena spravna polozka typu", regRecord.getRegisterType(), updatedRecord.getRegisterType());
+
+        return updatedRecord;
+    }
+
+    /**
+     * Upraví variantní rejstříkové heslo.
+     *
+     * @param regVariantRecord   objekt
+     * @return  záznam
+     */
+    private RegVariantRecord updateVariantRecord(final RegVariantRecord regVariantRecord) {
+        Response response = put((spec) -> spec
+                        .config(getUtf8Config())
+                        .body(regVariantRecord),
+                UPDATE_VARIANT_RECORD_URL
+        );
+
+        RegVariantRecord updatedVariantRecord = response.getBody().as(RegVariantRecord.class);
+
+        // ověření
+        Assert.assertNotNull(updatedVariantRecord);
+        Assert.assertNotNull(updatedVariantRecord.getVariantRecordId());
+        Assert.assertNotNull("Nenalezena polozka hesla", updatedVariantRecord.getRegRecord());
+        Assert.assertEquals("Nenalezena spravna polozka hesla", regVariantRecord.getRegRecord(),
+                updatedVariantRecord.getRegRecord());
+
+        return updatedVariantRecord;
+    }
+
+    /**
      * @param abstractPartyId   id pro načtení
      * @return      entita
      */
@@ -477,6 +560,19 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         );
 
         return response.getBody().as(ParAbstractParty.class);
+    }
+
+    /**
+     * @param recordId   id pro načtení
+     * @return      entita
+     */
+    private RegRecord getRecord(final Integer recordId) {
+        Response response = get((spec) -> spec
+                        .parameter(RECORD_ID_ATT, recordId),
+                GET_RECORD_URL
+        );
+
+        return response.getBody().as(RegRecord.class);
     }
 
 }

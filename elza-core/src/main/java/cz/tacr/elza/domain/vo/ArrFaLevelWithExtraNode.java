@@ -5,6 +5,7 @@ import cz.tacr.elza.domain.ArrFaLevel;
 
 
 /**
+ * Zapouzdření {@link ArrFaLevel} a {@link ArrNode}.
  * @author Martin Šlapa
  * @since 28.8.2015
  */

@@ -8,6 +8,9 @@ import javax.persistence.*;
 
 
 /**
+ * Atribut archivního popisu evidovaný k jednotce archivního popisu. Odkaz na uzel stromu AP je
+ * řešen pomocí node_id.
+ * 
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */

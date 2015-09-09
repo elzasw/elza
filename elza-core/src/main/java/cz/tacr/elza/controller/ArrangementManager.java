@@ -283,7 +283,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      * vytvoří level jako posledního potomka zadaného kořenového levlu.
      * @param createChange datum vytvoření
      * @param node kořen
-     * @return
+     * @return vytvořený level.
      */
     private ArrFaLevel createLastInLevel(ArrFaChange createChange, ArrFaLevel node) {
         Assert.notNull(createChange);
@@ -739,7 +739,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      * zjistí zda je level v zadané hierarchické struktuře.
      * @param level testovaný level.
      * @param rootNode kořen zadané hierarchické struktury.
-     * @return
+     * @return true pokud je level v zadané hierarchické struktuře.
      */
     private boolean isLevelInRootTree(final ArrFaLevel level, final ArrNode rootNode) {
         if (level.getNode().equals(rootNode) || rootNode.equals(level.getParentNode())) {
@@ -1852,11 +1852,11 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     }
 
     /**
-     * Uloží upravenout hodnotu attributu do tabulky podle jeho typu
-     *  @param rulDescItemType Typ atributu
+     * Uloží upravenout hodnotu attributu do tabulky podle jeho typu.
+     * @param rulDescItemType Typ atributu
      * @param data            Hodnota attributu
      * @param arrData         Upravovaná položka hodnoty attributu
-     * @param descItemExt
+     * @param descItemExt upravená hodnota atributu.
      */
     private void saveUpdateDataValue(RulDescItemType rulDescItemType,
                                      String data,
@@ -2156,6 +2156,11 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return createItemExt(itemList);
     }
 
+    /**
+     * rozšíří level o atributy. Vytvoří z {@link ArrDescItem} rozšíření {@link ArrDescItemExt}.
+     * @param itemList
+     * @return
+     */
     private List<ArrDescItemExt> createItemExt(List<ArrDescItem> itemList) {
         List<ArrDescItemExt> descItemList = new LinkedList<>();
         if (itemList.isEmpty()) {

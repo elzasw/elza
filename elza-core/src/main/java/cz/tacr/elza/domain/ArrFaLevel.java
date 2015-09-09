@@ -17,6 +17,7 @@ import org.springframework.data.rest.core.annotation.RestResource;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
+ * popis {@link cz.tacr.elza.api.ArrFaLevel}.
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
