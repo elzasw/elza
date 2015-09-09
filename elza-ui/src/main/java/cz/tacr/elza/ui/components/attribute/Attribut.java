@@ -10,8 +10,11 @@ import com.vaadin.event.dd.acceptcriteria.AcceptAll;
 import com.vaadin.event.dd.acceptcriteria.AcceptCriterion;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.ui.AbstractField;
+import com.vaadin.ui.AbstractSelect;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.DragAndDropWrapper;
+import com.vaadin.ui.Field;
 import com.vaadin.ui.Label;
 
 import cz.req.ax.AxAction;
