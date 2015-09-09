@@ -1,6 +1,8 @@
 package cz.tacr.elza.controller;
 
 import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.config.EncoderConfig;
+import com.jayway.restassured.config.RestAssuredConfig;
 import com.jayway.restassured.response.Header;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
@@ -103,6 +105,16 @@ public abstract class AbstractRestTest {
     // REGISTRY MANAGER CONSTANTS
     protected static final String GET_REGISTER_TYPES_URL = REGISTRY_MANAGER_URL + "/getRegisterTypes";
     protected static final String CREATE_RECORD_URL = REGISTRY_MANAGER_URL + "/createRecord";
+    protected static final String CREATE_VARIANT_RECORD_URL = REGISTRY_MANAGER_URL + "/createVariantRecord";
+    protected static final String FIND_RECORD_URL = REGISTRY_MANAGER_URL + "/findRecord";
+    protected static final String FIND_RECORD_COUNT_URL = REGISTRY_MANAGER_URL + "/findRecordCount";
+
+    protected static final String SEARCH_ATT = "search";
+    protected static final String FROM_ATT = "from";
+    protected static final String COUNT_ATT = "count";
+    protected static final String REGISTER_TYPE_ID_ATT = "registerTypeId";
+
+    // END - REGISTRY MANAGER CONSTANTS
 
 
     @Value("${local.server.port}")
@@ -610,4 +622,12 @@ public abstract class AbstractRestTest {
 
         return response;
     }
+
+    /**
+     * @return  nastavení češtiny pro testy
+     */
+    protected RestAssuredConfig getUtf8Config() {
+        return RestAssuredConfig.newConfig().encoderConfig(EncoderConfig.encoderConfig().defaultContentCharset("UTF-8"));
+    }
+
 }
