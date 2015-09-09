@@ -105,6 +105,15 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     private NodeRepository nodeRepository;
 
 
+
+    @Override
+    @RequestMapping(value = "/getDescItemSpecById", method = RequestMethod.GET)
+    public RulDescItemSpec getDescItemSpecById(@RequestParam(value = "descItemSpecId") Integer descItemSpecId) {
+        Assert.notNull(descItemSpecId);
+
+        return descItemSpecRepository.findOne(descItemSpecId);
+    }
+
     @Override
     @RequestMapping(value = "/getRuleSets", method = RequestMethod.GET)
     public List<RulRuleSet> getRuleSets() {
@@ -169,6 +178,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
         List<RulDataType> typeList = descItemTypeRepository.findRulDataType(rulDescItemType);
         return typeList.get(0);
     }
+
 
     private List<ArrDescItemExt> createItemExt(List<ArrDescItem> itemList) {
         List<ArrDescItemExt> descItemList = new LinkedList<>();

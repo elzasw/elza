@@ -40,8 +40,6 @@ import cz.req.ax.AxContainer;
 import cz.req.ax.AxForm;
 import cz.req.ax.AxWindow;
 import cz.tacr.elza.controller.ArrangementManager;
-import cz.tacr.elza.controller.PartyManager;
-import cz.tacr.elza.controller.RegistryManager;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrDescItemExt;
@@ -53,7 +51,6 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.ArrFaLevelWithExtraNode;
 import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
-import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.ui.ElzaView;
 import cz.tacr.elza.ui.components.LevelInlineDetail;
 import cz.tacr.elza.ui.components.TreeTable;
@@ -81,14 +78,6 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
     @Autowired
     private RuleManager ruleSetManager;
 
-    @Autowired
-    private PartyManager partyManager;
-
-    @Autowired
-    private RegistryManager registryManager;
-
-    @Autowired
-    private LevelRepository levelRepository;
 
     private Integer findingAidId;
     private ArrFaVersion version;

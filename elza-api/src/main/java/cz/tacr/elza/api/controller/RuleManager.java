@@ -21,6 +21,15 @@ import cz.tacr.elza.api.vo.FaViewDescItemTypes;
 public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType, DIS extends RulDescItemSpec, RFV extends RulFaView> {
 
     /**
+     * Najde specifikaci podle id.
+     *
+     * @param descItemSpecId id specifikace
+     * @return nalezená specifikace podle id nebo null, pokud není nalezena
+     */
+    DIS getDescItemSpecById(Integer descItemSpecId);
+
+
+    /**
      * Vrátí všechny sady pravidel.
      *
      * @return všechny sady pravidel
