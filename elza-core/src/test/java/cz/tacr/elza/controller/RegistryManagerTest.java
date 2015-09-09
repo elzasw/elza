@@ -29,19 +29,9 @@ public class RegistryManagerTest extends AbstractRestTest {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static final String UPDATE_RECORD_URL = REGISTRY_MANAGER_URL + "/updateRecord";
-    private static final String DELETE_RECORD_URL = REGISTRY_MANAGER_URL + "/deleteRecord";
-
-    private static final String UPDATE_VARIANT_RECORD_URL = REGISTRY_MANAGER_URL + "/updateVariantRecord";
-    private static final String DELETE_VARIANT_RECORD_URL = REGISTRY_MANAGER_URL + "/deleteVariantRecord";
 
 
     private static final String GET_EXTERNAL_SOURCES_URL = REGISTRY_MANAGER_URL + "/getExternalSources";
-    private static final String GET_RECORD_URL = REGISTRY_MANAGER_URL + "/getRecord";
-
-    private static final String RECORD_ID_ATT = "recordId";
-    private static final String VARIANT_RECORD_ID_ATT = "variantRecordId";
-
     private static final String EXTERNAL_SOURCE_ID_ATT = "externalSourceId";
 
 
