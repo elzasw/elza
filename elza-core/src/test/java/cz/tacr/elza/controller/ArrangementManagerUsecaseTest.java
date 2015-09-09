@@ -145,7 +145,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         descItemList = arrFaLevelExt.getDescItemList();
         Assert.isTrue(descItemList.size() == 2);
 
-        // Uložení s verzováním změn v uzavřené verzi
+        // Uložení s verzováním změn v uzavřené verzi, očekává se chyba
         List<ArrFaVersion> versions = getFindingAidVersions(findingAid);
         savePack = prepareSavePack(node, versions.get(0), descItemTypes);
         storeSavePackWithError(savePack);

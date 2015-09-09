@@ -1,7 +1,19 @@
 package cz.tacr.elza.controller;
 
+import static com.jayway.restassured.RestAssured.given;
+
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.jayway.restassured.internal.RestAssuredResponseImpl;
 import com.jayway.restassured.response.Response;
+
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.domain.ParAbstractParty;
 import cz.tacr.elza.domain.ParPartySubtype;
@@ -10,16 +22,6 @@ import cz.tacr.elza.domain.ParPartyTypeExt;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
-import org.apache.commons.lang.StringUtils;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Arrays;
-import java.util.List;
-
-import static com.jayway.restassured.RestAssured.given;
 
 /**
  * Test kompletní funkčnosti rejstříku a osob.
@@ -43,8 +45,8 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
     private RegRecord heslo2;
     private ParAbstractParty party1;
 
-    private static final String VAR_HESLO_H1V1  = "Variantní heslo H1V1";
-    private static final String VAR_HESLO_H1V1_UPDATE  = "Variantní heslo H1V1 aktualizace";
+    private static final String VAR_HESLO_H1V1  = "Variantni heslo H1V1";
+    private static final String VAR_HESLO_H1V1_UPDATE  = "Variantni heslo H1V1 aktualizace";
 
 
     @Test
@@ -76,9 +78,9 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
 
         RegVariantRecord variantRecord = fillVariantRecord(heslo1, VAR_HESLO_H1V1);
         createVariantRecord(variantRecord);
-        variantRecord = fillVariantRecord(heslo1, "Variantní heslo H1V2");
+        variantRecord = fillVariantRecord(heslo1, "Variantni heslo H1V2");
         createVariantRecord(variantRecord);
-        variantRecord = fillVariantRecord(heslo2, "Variantní heslo H2V1");
+        variantRecord = fillVariantRecord(heslo2, "Variantni heslo H2V1");
         createVariantRecord(variantRecord);
     }
 
