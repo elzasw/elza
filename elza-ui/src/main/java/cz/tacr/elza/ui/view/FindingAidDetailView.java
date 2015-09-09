@@ -315,12 +315,12 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
     }
 
     private Callback<ArrFaLevelExt> creteAttributeEditCallback() {
-        return new Callback<ArrFaLevelExt>() {
-            @Override
-            public void callback(final ArrFaLevelExt item) {
-                addAttributeToCache(item);
-                table.refreshRowCache();
-            }
+        return item -> {
+            ArrFaLevel level = (ArrFaLevel) ((BeanItem) table.getItem(item)).getBean();
+            level.setNode(item.getNode());
+
+            addAttributeToCache(item);
+            table.refreshRowCache();
         };
     }
 
@@ -431,6 +431,8 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                         ArrFaLevel parentNode = (ArrFaLevel) container.getParent(node);
                         if (parentNode == null) {
                             version.getRootFaLevel().setNode(faLevelWithExtraNodeRet.getExtraNode());
+                        } else {
+                            parentNode.setNode(faLevelWithExtraNodeRet.getExtraNode());
                         }
                         List<ArrFaLevel> childs = container.getChildren(parentNode);
                         for (ArrFaLevel faLevel : childs) {
