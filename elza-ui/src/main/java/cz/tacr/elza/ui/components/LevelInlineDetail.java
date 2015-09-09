@@ -64,8 +64,6 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
     @Autowired
     private RegistryManager registryManager;
 
-    @Autowired
-    private DescItemSpecRepository descItemSpecRepository;
 
     private AttributeValuesLoader attributeValuesLoader;
 
@@ -222,7 +220,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
     private void showEditAttrWindow(final ArrFaLevelExt level, final RulDescItemType type, final Integer versionId) {
         if (type != null) {
-            List<ArrDescItemExt> listItem = ruleSetManager
+            List<ArrDescItemExt> listItem = arrangementManager
                     .getDescriptionItemsForAttribute(versionId, level.getNode().getNodeId(), type.getDescItemTypeId());
             List<RulDescItemSpec> listSpec = ruleSetManager.getDescItemSpecsFortDescItemType(type);
             RulDataType dataType = ruleSetManager.getDataTypeForDescItemType(type);
@@ -282,7 +280,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
                         return Collections.EMPTY_LIST;
                     }
 
-                    RulDescItemSpec specDo = descItemSpecRepository.getOne(specification.getDescItemSpecId());
+                    RulDescItemSpec specDo = ruleSetManager.getDescItemSpecById(specification.getDescItemSpecId());
 
                     List<RegRecord> recordList = registryManager
                             .findRecord(text, 0, 50, specDo.getRegisterType().getRegisterTypeId());
@@ -305,7 +303,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         addStyleName("level-detail");
         detailContent = cssLayoutExt("detail-content");
 
-        lblTitle = newLabel("Detail archivního popisu", "h2");
+        lblTitle = newLabel("Detail archivního popisu", "h2 text-ellipsis");
         addComponent(lblTitle);
         addComponent(detailContent);
     }

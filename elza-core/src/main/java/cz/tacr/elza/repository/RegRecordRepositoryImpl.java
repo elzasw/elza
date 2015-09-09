@@ -18,6 +18,7 @@ import javax.persistence.criteria.Root;
 import java.util.List;
 
 /**
+ * Implementace respozitory pro regrecord.
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
 @Component
@@ -25,7 +26,6 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
 
     @PersistenceContext
     private EntityManager entityManager;
-
 
     @Override
     public List<RegRecord> findRegRecordByTextAndType(final String searchRecord, final Integer registerTypeId,

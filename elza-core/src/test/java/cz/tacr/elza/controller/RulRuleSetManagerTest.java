@@ -13,6 +13,8 @@ import com.jayway.restassured.response.Response;
 
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemSpecExt;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
@@ -30,12 +32,35 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    public static final String GET_DESC_ITEM_SPEC = RULE_MANAGER_URL + "/getDescItemSpecById";
     private static final String GET_RS_URL = RULE_MANAGER_URL + "/getRuleSets";
     private static final String GET_DIT_URL = RULE_MANAGER_URL + "/getDescriptionItemTypes";
     private static final String GET_DIT_FOR_NODE_ID_URL =
             RULE_MANAGER_URL + "/getDescriptionItemTypesForNodeId";
     private static final String GET_FVDIT_URL = RULE_MANAGER_URL + "/getFaViewDescItemTypes";
     private static final String SAVE_FVDIT_URL = RULE_MANAGER_URL + "/saveFaViewDescItemTypes";
+
+    public static final Integer DATA_TYPE_INTEGER = 1;
+
+    @Test
+    public void testRestGetDescItemSpecById() throws Exception{
+        RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
+
+        RulDescItemType descItemType = createDescItemType(dataType, true, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
+        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1);
+
+
+        Response response = get((spec) -> spec.parameter("descItemSpecId", descItemSpec.getDescItemSpecId()),
+                GET_DESC_ITEM_SPEC);
+
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+
+        RulDescItemSpec responseSpec = response.getBody().as(RulDescItemSpec.class);
+        Assert.assertEquals(descItemSpec, responseSpec);
+    }
+
 
     @Test
     public void testRestGetRuleSets() throws Exception {

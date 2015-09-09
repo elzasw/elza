@@ -3,7 +3,6 @@ package cz.tacr.elza.api.controller;
 import java.util.List;
 
 import cz.tacr.elza.api.RulArrangementType;
-import cz.tacr.elza.api.ArrDescItem;
 import cz.tacr.elza.api.RulDataType;
 import cz.tacr.elza.api.RulDescItemSpec;
 import cz.tacr.elza.api.RulDescItemType;
@@ -19,6 +18,15 @@ import cz.tacr.elza.api.vo.FaViewDescItemTypes;
  * @since 12. 8. 2015
  */
 public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType, DIS extends RulDescItemSpec, RFV extends RulFaView> {
+
+    /**
+     * Najde specifikaci podle id.
+     *
+     * @param descItemSpecId id specifikace
+     * @return nalezená specifikace podle id nebo null, pokud není nalezena
+     */
+    DIS getDescItemSpecById(Integer descItemSpecId);
+
 
     /**
      * Vrátí všechny sady pravidel.
@@ -53,16 +61,6 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
 
 
     /**
-     * Vrátí všechny hodnoty atributu archivního popisu k uzlu.
-     * @param faVersionId       Identifikátor verze
-     * @param nodeId            Identifikátor uzlu
-     * @param rulDescItemTypeId Identifikátor typu atributu
-     * @return  Seznam hodnot atrubutu
-     */
-    List<? extends ArrDescItem> getDescriptionItemsForAttribute(Integer faVersionId, Integer nodeId, Integer rulDescItemTypeId);
-
-
-    /**
      * Vrací specifikace podle typu atributu.
      * @param rulDescItemType   Typ hodnoty atributu
      * @return  Seznam specifikací
@@ -81,18 +79,17 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
     /**
      * Vrátí seznam identifikátorů typů atributů archivního popisu,
      * které se mají pro verzi archivní pomůcky zobrazovat v hierarchickém seznamu uzlů.
-     * @param faVersionId
-     * @return
+     * @param faVersionId id verze
+     * @return Zapouzdření {@link RulFaView} a {@link FaViewDescItemTypes}.
      */
     FaViewDescItemTypes getFaViewDescItemTypes(Integer faVersionId);
 
     /**
      * Pro soubor pravidel a typ výstupu uloží seznam identifikátorů typů atributů archivního popisu,
      *  které se mají zobrazovat v hierarchickém seznamu uzlů.
-     * @param ruleSetId
-     * @param arrangementTypeId
-     * @param descItemTypeIds
-     * @return
+     * @param rulFaView nastavení zobrazení archivního popisu pro uložení
+     * @param descItemTypeIds seznam typů atributů do {@link RulFaView#setViewSpecification(String)}.
+     * @return descItemTypeIds
      */
     List<Integer> saveFaViewDescItemTypes(RFV rulFaView, Integer[] descItemTypeIds);
 }

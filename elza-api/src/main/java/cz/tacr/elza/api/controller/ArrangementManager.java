@@ -20,7 +20,13 @@ import cz.tacr.elza.api.vo.ArrFaLevelPack;
  * @since 12. 8. 2015
  */
 public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVersion, DIE extends ArrDescItemExt, DISP extends ArrDescItemSavePack, FL extends ArrFaLevel, FLP extends ArrFaLevelPack, N extends ArrNode> {
+    /**
+     * formát popisu atributu - dlouhá verze.
+     */
     public static final String FORMAT_ATTRIBUTE_FULL = "FULL";
+    /**
+     * formát popisu atributu - krátká verze.
+     */
     public static final String FORMAT_ATTRIBUTE_SHORT = "SHORT";
 
     /**
@@ -50,10 +56,9 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
     /**
      * Aktualizace názvu archivní pomůcky.
      *
-     * @param findingAidId id archivní pomůcky
-     * @param name         název arhivní pomůcky
+     * @param findingAid archivní pomůcka
      * @return aktualizovaná archivní pomůcka
-     * @throws ConcurrentUpdateException chyba při současné manipulaci s položkou více uživateli
+     * @throws ConcurrentUpdateException chyba při současné manipulaci s položkou více uživateli.
      */
     ArrFindingAid updateFindingAid(FA findingAid) throws ConcurrentUpdateException;
 
@@ -223,5 +228,14 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
      * @return                  upravené atributy archivního popisu
      */
     List<DIE> saveDescriptionItems(DISP descItemSavePack);
+
+    /**
+     * Vrátí všechny hodnoty atributu archivního popisu k uzlu.
+     * @param faVersionId       Identifikátor verze
+     * @param nodeId            Identifikátor uzlu
+     * @param rulDescItemTypeId Identifikátor typu atributu
+     * @return  Seznam hodnot atrubutu
+     */
+    List<DIE> getDescriptionItemsForAttribute(Integer faVersionId, Integer nodeId, Integer rulDescItemTypeId);
 
 }

@@ -2,11 +2,8 @@ package cz.tacr.elza.repository;
 
 import java.util.List;
 
-import javax.persistence.QueryHint;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrFaChange;
@@ -15,6 +12,7 @@ import cz.tacr.elza.domain.ArrNode;
 
 
 /**
+ * Repozitory pro práci s hierarchickým stromem (level) AP.
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
@@ -23,6 +21,12 @@ public interface LevelRepository extends JpaRepository<ArrFaLevel, Integer> {
 
     List<ArrFaLevel> findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(ArrNode parentNode);
 
+    /**
+     * nalezna levely podle přímého předka po zadaném číslu změny a seřadí podle pozice.
+     * @param parentNode kořen
+     * @param change číslo změny
+     * @return
+     */
     @Query("SELECT c FROM arr_fa_level c WHERE c.parentNode = ?1 "
             + "and c.createChange < ?2 and (c.deleteChange is null or c.deleteChange > ?2)"
             + " order by c.position asc")
