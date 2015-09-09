@@ -11,7 +11,9 @@ import com.vaadin.server.FontAwesome;
 
 import cz.req.ax.AxAction;
 import cz.tacr.elza.ui.ElzaView;
-import cz.tacr.elza.ui.controller.TestDataController;
+import cz.tacr.elza.ui.controller.TestingDataController;
+import cz.tacr.elza.ui.utils.ElzaNotifications;
+
 
 /**
  * Stránka pro práci s testovacími daty.
@@ -22,10 +24,10 @@ import cz.tacr.elza.ui.controller.TestDataController;
 @Component
 @Scope("prototype")
 @VaadinView("TestData")
-public class TestDataView extends ElzaView {
+public class TestingDataView extends ElzaView {
 
     @Autowired
-    private TestDataController testingDataController;
+    private TestingDataController testingDataController;
 
     @Override
     public void enter(final ViewChangeListener.ViewChangeEvent event) {
@@ -34,8 +36,14 @@ public class TestDataView extends ElzaView {
         pageTitle("Testovací data");
 
         actions(new AxAction().caption("Vygenerovat testovací data").icon(FontAwesome.PLUS_CIRCLE)
-                .run(() -> {testingDataController.createData();}),
+                .run(() -> {
+                    testingDataController.createData();
+                    ElzaNotifications.show("Data byla vygenerována.");
+                    }),
                 new AxAction().caption("Odstranit všechna data v databázi").icon(FontAwesome.TIMES)
-                .run(() -> {testingDataController.removeData();}));
+                .run(() -> {
+                    testingDataController.removeData();
+                    ElzaNotifications.show("Data byla smazána.");
+                }));
     }
 }

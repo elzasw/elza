@@ -75,7 +75,7 @@ public class FindingAidListView extends ElzaView {
         actions(new AxAction().caption("Nový").icon(FontAwesome.PLUS_CIRCLE)
                 .run(() -> novyFA(formularNewFA())),
                 new AxAction().caption("Testovací data").icon(FontAwesome.DATABASE)
-                .run(() -> navigate(TestDataView.class)));
+                .run(() -> navigate(TestingDataView.class)));
 
         components(tableFA.getTable());
         refresh();
