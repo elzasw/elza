@@ -1,7 +1,5 @@
 package cz.tacr.elza.controller;
 
-import com.jayway.restassured.config.EncoderConfig;
-import com.jayway.restassured.config.RestAssuredConfig;
 import com.jayway.restassured.response.Response;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
@@ -165,7 +163,7 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
     private RegRecord createRecord(final RegRecord regRecord) {
         Response response =
                 given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
-                        .config(RestAssuredConfig.newConfig().encoderConfig(EncoderConfig.encoderConfig().defaultContentCharset("UTF-8")))
+                        .config(getUtf8Config())
                         .body(regRecord)
                         .put(CREATE_RECORD_URL);
         logger.info(response.asString());
@@ -273,10 +271,4 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         return response.getBody().as(long.class);
     }
 
-    /**
-     * @return  nastavení češtiny pro testy
-     */
-    private RestAssuredConfig getUtf8Config() {
-        return RestAssuredConfig.newConfig().encoderConfig(EncoderConfig.encoderConfig().defaultContentCharset("UTF-8"));
-    }
 }
