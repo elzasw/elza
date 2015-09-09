@@ -25,9 +25,6 @@ public class PartyManagerTest extends AbstractRestTest {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static final String UPDATE_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/updateAbstractParty";
-    private static final String DELETE_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/deleteAbstractParty";
-    private static final String GET_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/getAbstractParty";
 
     @Test
     public void testRestInsertAbstractParty() throws Exception {

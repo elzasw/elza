@@ -115,17 +115,29 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
     }
 
     @RequestMapping(value = "/updateAbstractParty", method = RequestMethod.PUT)
-    @Transactional
     @Override
     public ParAbstractParty updateAbstractParty(@RequestBody final ParAbstractParty abstractParty) {
+        updateAbstractPartyInternal(abstractParty);
+        if (abstractParty.getRecord() != null) {
+            abstractParty.getRecord().getVariantRecordList().forEach((variantRecord) -> {
+                variantRecord.setRegRecord(null);
+            });
+        }
+
+        return abstractParty;
+    }
+
+    @Transactional
+    private ParAbstractParty updateAbstractPartyInternal(final ParAbstractParty abstractParty) {
         Integer abstractPartyId = abstractParty.getAbstractPartyId();
         Assert.notNull(abstractPartyId);
         ParAbstractParty party = abstractPartyRepository.findOne(abstractPartyId);
         Assert.notNull(party, "Nebyla nalezena ParAbstractParty s id " + abstractPartyId);
         updateAbstractParty(abstractParty, abstractParty);
         abstractPartyRepository.save(abstractParty);
-        return party;
+        return abstractParty;
     }
+
 
     @RequestMapping(value = "/deleteAbstractParty", method = RequestMethod.DELETE)
     @Transactional
@@ -172,7 +184,14 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
     public ParAbstractParty getAbstractParty(
             @RequestParam("abstractPartyId") final Integer abstractPartyId) {
         Assert.notNull(abstractPartyId);
-        return abstractPartyRepository.getOne(abstractPartyId);
+        ParAbstractParty party = abstractPartyRepository.getOne(abstractPartyId);
+        if (party.getRecord() != null) {
+            party.getRecord().getVariantRecordList().forEach((variantRecord) -> {
+                variantRecord.setRegRecord(null);
+            });
+        }
+
+        return party;
     }
 
 }

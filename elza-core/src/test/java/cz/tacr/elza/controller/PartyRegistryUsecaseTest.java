@@ -33,10 +33,12 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
     /* Číselník podtypů osoby. */
     private static final String FYZ_OSOBA = "FYZ_OSOBA";
     private static final String UDAL_PRIRODA = "UDAL_PRIRODA";
+    private static final String FIKT_ROD = "FIKT_ROD";
 
-    /** Hesla - objekty testu. */
+    /** Objekty testu. */
     private RegRecord heslo1;
     private RegRecord heslo2;
+    private ParAbstractParty party1;
 
     @Test
     public void testRegistryAndParty() {
@@ -44,6 +46,7 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         testHledaniHesel();
         testVytvoreniOsob();
         testHledaniOsob();
+        testUpdate();
     }
 
     /**
@@ -124,7 +127,7 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         ParPartySubtype partySubTypeUdalost = getPartySubType(UDAL_PRIRODA);
 
         ParAbstractParty abstractParty = fillAbstractParty(partySubTypeOsoba, heslo1);
-        createAbstractParty(abstractParty);
+        party1 = createAbstractParty(abstractParty);
 
         abstractParty = fillAbstractParty(partySubTypeUdalost, heslo2);
         createAbstractParty(abstractParty);
@@ -153,7 +156,17 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         Assert.assertEquals("Nenalezeny osoby. ", 1, osoby.size());
         Assert.assertTrue("Není očekávané heslo.", osoby.get(0).getRecord().equals(heslo2));
         Assert.assertEquals("Neodpovídá počet. ", 1, osobyCount);
+    }
 
+    /**
+     * Otestuje update objektů.
+     */
+    private void testUpdate() {
+        ParPartySubtype subTypeFiktRod = getPartySubType(FIKT_ROD);
+        party1.setPartySubtype(subTypeFiktRod);
+        updateAbstractParty(party1);
+        ParAbstractParty ap = getAbstractParty(party1.getAbstractPartyId());
+        Assert.assertEquals("Update neproveden.", subTypeFiktRod,ap.getPartySubtype());
     }
 
     /**
@@ -378,6 +391,36 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         // ověření
         Assert.assertNotNull(newAbstractParty);
         Assert.assertNotNull(newAbstractParty.getAbstractPartyId());
+        Assert.assertNotNull("Nenalezena polozka party subtype", newAbstractParty.getPartySubtype());
+        Assert.assertNotNull("Nenalezena polozka record", newAbstractParty.getRecord());
+        Assert.assertEquals("Nenalezena spravna polozka record", abstractParty.getRecord(), newAbstractParty.getRecord());
+        Assert.assertEquals("Nenalezena spravna polozka subtype", abstractParty.getPartySubtype(), newAbstractParty.getPartySubtype());
+
+        return newAbstractParty;
+    }
+
+    /**
+     * Upraví abstraktní osobu.
+     *
+     * @param abstractParty   objekt osoby
+     * @return  záznam
+     */
+    private ParAbstractParty updateAbstractParty(final ParAbstractParty abstractParty) {
+        Response response = put((spec) -> spec
+                        .config(getUtf8Config())
+                        .body(abstractParty),
+                        UPDATE_ABSTRACT_PARTY
+        );
+
+        ParAbstractParty newAbstractParty = response.getBody().as(ParAbstractParty.class);
+
+        // ověření
+        Assert.assertNotNull(newAbstractParty);
+        Assert.assertNotNull(newAbstractParty.getAbstractPartyId());
+        Assert.assertNotNull("Nenalezena polozka party subtype", newAbstractParty.getPartySubtype());
+        Assert.assertNotNull("Nenalezena polozka record", newAbstractParty.getRecord());
+        Assert.assertEquals("Nenalezena spravna polozka record", abstractParty.getRecord(), newAbstractParty.getRecord());
+        Assert.assertEquals("Nenalezena spravna polozka subtype", abstractParty.getPartySubtype(), newAbstractParty.getPartySubtype());
 
         return newAbstractParty;
     }
@@ -422,6 +465,19 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         Assert.assertEquals(200, response.statusCode());
 
         return response.getBody().as(long.class);
+    }
+
+    /**
+     * @param abstractPartyId   id pro načtení
+     * @return      entita
+     */
+    private ParAbstractParty getAbstractParty(final Integer abstractPartyId) {
+        Response response = get((spec) -> spec
+                        .parameter(ABSTRACT_PARTY_ID_ATT, abstractPartyId),
+                GET_ABSTRACT_PARTY
+        );
+
+        return response.getBody().as(ParAbstractParty.class);
     }
 
 }
