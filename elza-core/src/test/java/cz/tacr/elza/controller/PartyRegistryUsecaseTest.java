@@ -130,22 +130,31 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         createAbstractParty(abstractParty);
     }
 
+    /**
+     * Vyhledání osob dle výskytu řetězce v heslech.
+     */
     private void testHledaniOsob() {
         ParPartySubtype partySubTypeOsoba = getPartySubType(FYZ_OSOBA);
         ParPartySubtype partySubTypeUdalost = getPartySubType(UDAL_PRIRODA);
 
         List<ParAbstractParty> osoby = findAbstractParty("h1", partySubTypeOsoba.getPartyType(), true);
+        long osobyCount = findAbstractPartyCount("h1", partySubTypeOsoba.getPartyType(), true);
         Assert.assertEquals("Nenalezeny osoby. ", 1, osoby.size());
+        Assert.assertTrue("Není očekávané heslo.", osoby.get(0).getRecord().equals(heslo1));
+        Assert.assertEquals("Neodpovídá počet. ", 1, osobyCount);
 
-
-        osoby = findAbstractParty("H1", partySubTypeUdalost.getPartyType(), false);
+        osoby = findAbstractParty("H1", partySubTypeOsoba.getPartyType(), false);
+        osobyCount = findAbstractPartyCount("H1", partySubTypeOsoba.getPartyType(), false);
         Assert.assertEquals("Nalezeny osoby. ", 0, osoby.size());
+        Assert.assertEquals("Neodpovídá počet. ", 0, osobyCount);
 
         osoby = findAbstractParty("V1", partySubTypeUdalost.getPartyType(), false);
+        osobyCount = findAbstractPartyCount("V1", partySubTypeUdalost.getPartyType(), false);
         Assert.assertEquals("Nenalezeny osoby. ", 1, osoby.size());
+        Assert.assertTrue("Není očekávané heslo.", osoby.get(0).getRecord().equals(heslo2));
+        Assert.assertEquals("Neodpovídá počet. ", 1, osobyCount);
 
     }
-
 
     /**
      * Vyhledá typ rejstříku - umělecké dílo.
@@ -328,8 +337,6 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
     private long findRecordsCount(final String searchString, final RegRegisterType registerType) {
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .parameter(SEARCH_ATT, searchString)
-                .parameter(FROM_ATT, 0)
-                .parameter(COUNT_ATT, 10)
                 .parameter(REGISTER_TYPE_ID_ATT, registerType.getRegisterTypeId())
                 .get(FIND_RECORD_COUNT_URL);
         logger.info(response.asString());
@@ -376,7 +383,7 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
     }
 
     /**
-     * Nalezne abstraktí osoby dle parametrů.
+     * Nalezne abstraktní osoby dle parametrů.
      * @param searchString      řetězec hledání
      * @param partyType         typ osoby
      * @return                  entity
@@ -395,6 +402,26 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         );
 
         return (List<ParAbstractParty>) Arrays.asList(response.getBody().as(ParAbstractParty[].class));
+    }
+
+    /**
+     * Nalezne počet abstraktních osob dle parametrů.
+     * @param searchString      řetězec hledání
+     * @param partyType         typ osoby
+     * @return                  počet entit
+     */
+    private long findAbstractPartyCount(final String searchString, final ParPartyType partyType,
+                                        final boolean originator) {
+
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
+                .parameter(SEARCH_ATT, searchString)
+                .parameter(PARTY_TYPE_ID_ATT, partyType.getPartyTypeId())
+                .parameter(ORIGINATOR_ATT, originator)
+                .get(FIND_ABSTRACT_PARTY_COUNT);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        return response.getBody().as(long.class);
     }
 
 }
