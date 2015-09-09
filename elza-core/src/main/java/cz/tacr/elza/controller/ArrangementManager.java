@@ -170,6 +170,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @Autowired
     private NodeRepository nodeRepository;
 
+    @Autowired
+    private DataRepository dataRepository;
+
+    @Autowired
+    private RegRecordRepository regRecordRepository;
+
     /**
      * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.
      *
@@ -904,7 +910,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Override
     @RequestMapping(value = "/findSubLevelsExt", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @Transactional
     public List<ArrFaLevelExt> findSubLevels(@RequestParam(value = "nodeId") Integer nodeId,
             @RequestParam(value = "versionId", required = false)  Integer versionId,
             @RequestParam(value = "formatData", required = false)  String formatData,
@@ -2113,5 +2118,58 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             default:
                 throw new IllegalStateException("Datový typ hodnoty není implementován");
         }
+    }
+
+    @Override
+    @RequestMapping(value = "/getDescriptionItemsForAttribute", method = RequestMethod.GET)
+    public List<ArrDescItemExt> getDescriptionItemsForAttribute(
+            @RequestParam(value = "faVersionId") Integer faVersionId,
+            @RequestParam(value = "nodeId") Integer nodeId,
+            @RequestParam(value = "rulDescItemTypeId") Integer rulDescItemTypeId) {
+        ArrFaVersion version = versionRepository.findOne(faVersionId);
+        Assert.notNull(version);
+        List<ArrDescItem> itemList;
+        ArrNode node = nodeRepository.findOne(nodeId);
+        Assert.notNull(node);
+        if (version.getLockChange() == null) {
+            itemList = descItemRepository.findByNodeAndDeleteChangeIsNullAndDescItemTypeId(node, rulDescItemTypeId);
+        } else {
+            itemList = descItemRepository.findByNodeDescItemTypeIdAndLockChangeId(node, rulDescItemTypeId, version.getLockChange());
+        }
+        return createItemExt(itemList);
+    }
+
+    private List<ArrDescItemExt> createItemExt(List<ArrDescItem> itemList) {
+        List<ArrDescItemExt> descItemList = new LinkedList<>();
+        if (itemList.isEmpty()) {
+            return descItemList;
+        }
+
+        for (ArrDescItem descItem : itemList) {
+            ArrDescItemExt descItemExt = new ArrDescItemExt();
+
+            BeanUtils.copyProperties(descItem, descItemExt);
+
+            List<ArrData> dataList = dataRepository.findByDescItem(descItem);
+
+            if (dataList.size() != 1) {
+                throw new IllegalStateException("Neplatný počet odkazujících dat (" + dataList.size() + ")");
+            }
+
+            ArrData data = dataList.get(0);
+            descItemExt.setData(data.getData());
+            descItemList.add(descItemExt);
+
+            if(data instanceof ArrDataPartyRef){
+                ArrDataPartyRef partyRef = (ArrDataPartyRef) data;
+                descItemExt.setAbstractParty(abstractPartyRepository.findOne(partyRef.getAbstractPartyId()));
+            }  else if(data instanceof ArrDataRecordRef){
+                ArrDataRecordRef recordRef = (ArrDataRecordRef) data;
+                descItemExt.setRecord(regRecordRepository.findOne(recordRef.getRecordId()));
+            }
+
+        }
+
+        return descItemList;
     }
 }
