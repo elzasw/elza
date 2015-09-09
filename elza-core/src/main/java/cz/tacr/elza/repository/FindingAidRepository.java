@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 /**
+ * Respozitory pro Archivní pomůcku.
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
