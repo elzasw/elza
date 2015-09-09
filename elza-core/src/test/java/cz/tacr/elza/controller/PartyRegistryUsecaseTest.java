@@ -1,17 +1,8 @@
 package cz.tacr.elza.controller;
 
-import static com.jayway.restassured.RestAssured.given;
-
-import java.util.Arrays;
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.jayway.restassured.internal.RestAssuredResponseImpl;
 import com.jayway.restassured.response.Response;
-
+import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.domain.ParAbstractParty;
 import cz.tacr.elza.domain.ParPartySubtype;
 import cz.tacr.elza.domain.ParPartyType;
@@ -19,6 +10,16 @@ import cz.tacr.elza.domain.ParPartyTypeExt;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
+import org.apache.commons.lang.StringUtils;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static com.jayway.restassured.RestAssured.given;
 
 /**
  * Test kompletní funkčnosti rejstříku a osob.
@@ -52,7 +53,8 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         testHledaniHesel();
         testVytvoreniOsob();
         testHledaniOsob();
-        testUpdate();
+        testAktualizace();
+        testSmazani();
     }
 
     /**
@@ -165,9 +167,9 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
     }
 
     /**
-     * Otestuje update objektů.
+     * Otestuje aktualizace objektů. Včetně 1x konkurentní přístup.
      */
-    private void testUpdate() {
+    private void testAktualizace() {
         // osoba, její podtyp
         ParPartySubtype subTypeFiktRod = getPartySubType(FIKT_ROD);
         party1.setPartySubtype(subTypeFiktRod);
@@ -190,8 +192,37 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         heslo1 = getRecord(heslo1.getRecordId());
         variantRecord = getVariantniHesloByRecord(heslo1, VAR_HESLO_H1V1_UPDATE);
         Assert.assertEquals("Update neproveden.", VAR_HESLO_H1V1_UPDATE, variantRecord.getRecord());
+
+        // concurrent modification, heslo 2, 2x get, změna - update, druhý exemplář změna - update -> CHYBA
+        heslo2 = getRecord(heslo2.getRecordId());
+        RegRecord heslo2a = getRecord(heslo2.getRecordId());
+        heslo2.setRecord("H2x");
+        updateRecord(heslo2);
+        heslo2a.setRecord("H2y");
+        updateRecordConcurrentError(heslo2a);
     }
 
+    /**
+     * Test smazání objektů.
+     */
+    private void testSmazani() {
+        delete(party1.getAbstractPartyId(), ABSTRACT_PARTY_ID_ATT, DELETE_ABSTRACT_PARTY);
+        Assert.assertNotNull(getRecord(heslo1.getRecordId())); // zůstává rej. heslo
+        getErr(party1.getAbstractPartyId(), ABSTRACT_PARTY_ID_ATT, GET_ABSTRACT_PARTY);
+
+        delete(heslo1.getRecordId(), RECORD_ID_ATT, DELETE_RECORD_URL);
+        getErr(heslo1.getRecordId(), RECORD_ID_ATT, GET_RECORD_URL);
+
+        RegVariantRecord vr = getVariantniHesloByRecord(heslo1, VAR_HESLO_H1V1_UPDATE);
+        delete(vr.getVariantRecordId(), VARIANT_RECORD_ID_ATT, DELETE_VARIANT_RECORD_URL);
+    }
+
+    /**
+     * Najde variantní záznam z předaného rejstříkového hesla.
+     * @param regRecord     heslo
+     * @param record        text variantního hesla, které hledáme po nadřazeným heslem
+     * @return              var. heslo
+     */
     private RegVariantRecord getVariantniHesloByRecord(final RegRecord regRecord, final String record) {
         RegVariantRecord variantRecord = null;
         for (final RegVariantRecord vr : regRecord.getVariantRecordList()) {
@@ -298,6 +329,8 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         // ověření
         Assert.assertNotNull(newRecord);
         Assert.assertNotNull(newRecord.getRecordId());
+        Assert.assertEquals(regRecord.getRecord() , newRecord.getRecord());
+        Assert.assertEquals(regRecord.getCharacteristics() , newRecord.getCharacteristics());
 
         return newRecord;
     }
@@ -351,6 +384,7 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         // ověření
         Assert.assertNotNull(newVariantRecord);
         Assert.assertNotNull(newVariantRecord.getVariantRecordId());
+        Assert.assertEquals(variantRecord.getRecord(), newVariantRecord.getRecord());
 
         return newVariantRecord;
     }
@@ -482,7 +516,6 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
      */
     private ParAbstractParty updateAbstractParty(final ParAbstractParty abstractParty) {
         Response response = put((spec) -> spec
-                        .config(getUtf8Config())
                         .body(abstractParty),
                 UPDATE_ABSTRACT_PARTY
         );
@@ -508,7 +541,6 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
      */
     private RegRecord updateRecord(final RegRecord regRecord) {
         Response response = put((spec) -> spec
-                        .config(getUtf8Config())
                         .body(regRecord),
                 UPDATE_RECORD_URL
         );
@@ -525,6 +557,22 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
     }
 
     /**
+     * Prověří konkurent modification.
+     *
+     * @param regRecord   objekt
+     */
+    private void updateRecordConcurrentError(final RegRecord regRecord) {
+        RestAssuredResponseImpl response = (RestAssuredResponseImpl) putError((spec) -> spec
+                        .body(regRecord),
+                UPDATE_RECORD_URL
+        );
+
+        Assert.assertTrue("Nefunguje optimistic locking.",
+                StringUtils.contains((String)response.getContent(), ConcurrentUpdateException.class.getName())
+        );
+    }
+
+    /**
      * Upraví variantní rejstříkové heslo.
      *
      * @param regVariantRecord   objekt
@@ -532,7 +580,6 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
      */
     private RegVariantRecord updateVariantRecord(final RegVariantRecord regVariantRecord) {
         Response response = put((spec) -> spec
-                        .config(getUtf8Config())
                         .body(regVariantRecord),
                 UPDATE_VARIANT_RECORD_URL
         );
@@ -573,6 +620,35 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         );
 
         return response.getBody().as(RegRecord.class);
+    }
+
+    /**
+     * Smazání libovolného záznamu dle id.
+     *
+     * @param id            id záznamu
+     * @param attribute     jméno atributu k plnění
+     * @param deleteUrl     url
+     */
+    private void delete(final Integer id, final String attribute, final String deleteUrl) {
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
+                .parameter(attribute, id)
+                .delete(deleteUrl);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+    }
+
+    /**
+     * Get neexistujícícho záznamu. Projde-li, záznam skutečně neexistuje.
+     *
+     * @param id            id záznamu
+     * @param attribute     jméno atributu k plnění
+     * @param getUrl        url
+     */
+    private void getErr(final Integer id, final String attribute, final String getUrl) {
+        getError((spec) -> spec
+                        .parameter(attribute, id),
+                getUrl
+        );
     }
 
 }
