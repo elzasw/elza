@@ -1,11 +1,36 @@
 package cz.tacr.elza.controller;
 
+import static com.jayway.restassured.RestAssured.given;
+
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+
+import javax.transaction.Transactional;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.IntegrationTest;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.EncoderConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
 import com.jayway.restassured.response.Header;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
+
 import cz.tacr.elza.ElzaCore;
 import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrData;
@@ -14,6 +39,7 @@ import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFaChange;
 import cz.tacr.elza.domain.ArrFaLevel;
+import cz.tacr.elza.domain.ArrFaLevelExt;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrNode;
@@ -51,25 +77,6 @@ import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.repository.VersionRepository;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.http.HttpMethod;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-
-import javax.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.util.function.Function;
-
-import static com.jayway.restassured.RestAssured.given;
 
 /**
  * Abstraktní předek pro testy. Nastavuje REST prostředí.
@@ -83,6 +90,8 @@ import static com.jayway.restassured.RestAssured.given;
 @WebAppConfiguration
 public abstract class AbstractRestTest {
 
+
+    private static final RestAssuredConfig UTF8_ENCODER_CONFIG = RestAssuredConfig.newConfig().encoderConfig(EncoderConfig.encoderConfig().defaultContentCharset("UTF-8"));
 
     private static final Logger logger = LoggerFactory.getLogger(ArrangementManagerTest.class);
 
@@ -131,6 +140,47 @@ public abstract class AbstractRestTest {
 
     // END - PARTY MANAGER CONSTANTS
 
+    // ARRANGEMENT MANAGER CONSTANTS
+    protected static final String CREATE_FA_URL = ARRANGEMENT_MANAGER_URL + "/createFindingAid";
+    protected static final String UPDATE_FA_URL = ARRANGEMENT_MANAGER_URL + "/updateFindingAid";
+    protected static final String DELETE_FA_URL = ARRANGEMENT_MANAGER_URL + "/deleteFindingAid";
+    protected static final String GET_FA_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAids";
+    protected static final String GET_FA_ONE_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAid";
+    protected static final String GET_ARRANGEMENT_TYPES_URL = RULE_MANAGER_URL + "/getArrangementTypes";
+    protected static final String GET_FINDING_AID_VERSIONS_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAidVersions";
+    protected static final String APPROVE_VERSION_URL = ARRANGEMENT_MANAGER_URL + "/approveVersion";
+    protected static final String GET_VERSION_ID_URL = ARRANGEMENT_MANAGER_URL + "/getVersion";
+    protected static final String GET_OPEN_VERSION_BY_FA_ID_URL = ARRANGEMENT_MANAGER_URL + "/getOpenVersionByFindingAidId";
+    protected static final String FIND_SUB_LEVELS_EXT_URL = ARRANGEMENT_MANAGER_URL + "/findSubLevelsExt";
+    protected static final String FIND_SUB_LEVELS_URL = ARRANGEMENT_MANAGER_URL + "/findSubLevels";
+
+    protected static final String ADD_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/addLevel";
+    protected static final String ADD_LEVEL_BEFORE_URL = ARRANGEMENT_MANAGER_URL + "/addLevelBefore";
+    protected static final String ADD_LEVEL_AFTER_URL = ARRANGEMENT_MANAGER_URL + "/addLevelAfter";
+    protected static final String ADD_LEVEL_CHILD_URL = ARRANGEMENT_MANAGER_URL + "/addLevelChild";
+    protected static final String MOVE_LEVEL_BEFORE_URL = ARRANGEMENT_MANAGER_URL + "/moveLevelBefore";
+    protected static final String MOVE_LEVEL_UNDER_URL = ARRANGEMENT_MANAGER_URL + "/moveLevelUnder";
+    protected static final String MOVE_LEVEL_AFTER_URL = ARRANGEMENT_MANAGER_URL + "/moveLevelAfter";
+    protected static final String DELETE_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/deleteLevel";
+    protected static final String FIND_LEVEL_BY_NODE_ID_URL = ARRANGEMENT_MANAGER_URL + "/findLevelByNodeId";
+    protected static final String GET_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/getLevel";
+
+    protected static final String FA_NAME_ATT = "name";
+    protected static final String FA_ID_ATT = "findingAidId";
+    protected static final String ARRANGEMENT_TYPE_ID_ATT = "arrangementTypeId";
+    protected static final String RULE_SET_ID_ATT = "ruleSetId";
+    protected static final String NODE_ID_ATT = "nodeId";
+    protected static final String PARENT_NODE_ID_ATT = "parentNodeId";
+    protected static final String FOLLOWER_NODE_ID_ATT = "followerNodeId";
+    protected static final String PREDECESSOR_NODE_ID_ATT = "predecessorNodeId";
+    protected static final String VERSION_ID_ATT = "versionId";
+
+    protected static final Integer DATA_TYPE_INTEGER = 1;
+    protected static final Integer DATA_TYPE_STRING = 2;
+    protected static final Integer DATA_TYPE_TEXT = 3;
+    protected static final Integer DATA_TYPE_DATACE = 4;
+    protected static final Integer DATA_TYPE_REF = 5;
+    // END ARRANGEMENT MANAGER CONSTANTS
     @Value("${local.server.port}")
     private int port;
 
@@ -582,19 +632,27 @@ public abstract class AbstractRestTest {
     }
 
 
+    public static Response post(Function<RequestSpecification, RequestSpecification> params, String url) {
+        return httpMethod(params, url, HttpMethod.POST, HttpStatus.OK);
+    }
+
     public static Response put(Function<RequestSpecification, RequestSpecification> params, String url) {
-        return httpMethod(params, url, HttpMethod.PUT);
+        return httpMethod(params, url, HttpMethod.PUT, HttpStatus.OK);
+    }
+
+    public static Response put(Function<RequestSpecification, RequestSpecification> params, String url, HttpStatus status) {
+        return httpMethod(params, url, HttpMethod.PUT, status);
     }
 
     public static Response get(Function<RequestSpecification, RequestSpecification> params, String url) {
-        return httpMethod(params, url, HttpMethod.GET);
+        return httpMethod(params, url, HttpMethod.GET, HttpStatus.OK);
     }
 
     public static Response get(String url) {
-        return httpMethod((spec) -> spec, url, HttpMethod.GET);
+        return httpMethod((spec) -> spec, url, HttpMethod.GET, HttpStatus.OK);
     }
 
-    public static Response httpMethod(Function<RequestSpecification, RequestSpecification> params, String url, HttpMethod method) {
+    public static Response httpMethod(Function<RequestSpecification, RequestSpecification> params, String url, HttpMethod method, HttpStatus status) {
         Assert.assertNotNull(params);
         Assert.assertNotNull(url);
         Assert.assertNotNull(method);
@@ -632,7 +690,7 @@ public abstract class AbstractRestTest {
 
         logger.info("Response status: " + response.statusLine() + ", response body:");
         response.prettyPrint();
-        Assert.assertEquals(200, response.statusCode());
+        Assert.assertEquals(status.value(), response.statusCode());
 
         return response;
     }
@@ -640,8 +698,56 @@ public abstract class AbstractRestTest {
     /**
      * @return  nastavení češtiny pro testy
      */
-    protected RestAssuredConfig getUtf8Config() {
-        return RestAssuredConfig.newConfig().encoderConfig(EncoderConfig.encoderConfig().defaultContentCharset("UTF-8"));
+    protected static RestAssuredConfig getUtf8Config() {
+        return UTF8_ENCODER_CONFIG;
     }
 
+    /**
+     * Načte archivní pomůcku přes REST volání.
+     *
+     * @return archivní pomůcka
+     */
+    protected ArrFindingAid getFindingAid(final Integer findingAidId) {
+        Response response = get(spec -> spec.parameter(FA_ID_ATT, findingAidId), GET_FA_ONE_URL);
+        return response.getBody().as(ArrFindingAid.class);
+    }
+
+    /**
+     * Načte archivní pomůcky přes REST volání.
+     *
+     * @return archivní pomůcky
+     */
+    protected List<ArrFindingAid> getFindingAids() {
+        Response response = get(GET_FA_URL);
+
+        List<ArrFindingAid> findingAids = Arrays.asList(response.getBody().as(ArrFindingAid[].class));
+        return findingAids;
+    }
+
+    /**
+     * Načte otevřenou verzi archivní pomůcky přes REST volání.
+     *
+     * @param findingAid archivní pomůcka
+     *
+     * @return otevřená verze archivní pomůcky
+     */
+    protected ArrFaVersion getFindingAidOpenVersion(ArrFindingAid findingAid) {
+        Response response = get(spec -> spec.parameter(FA_ID_ATT, findingAid.getFindingAidId()),
+                GET_OPEN_VERSION_BY_FA_ID_URL);
+
+        return response.getBody().as(ArrFaVersion.class);
+    }
+
+    /**
+     * Načte level v otevřené verzi podle nodeId.
+     *
+     * @param nodeId id uzlu
+     *
+     * @return level
+     */
+    protected ArrFaLevelExt getLevelByNodeId(Integer nodeId) {
+        Response response = get(spec -> spec.parameter(NODE_ID_ATT, nodeId), GET_LEVEL_URL);
+
+        return response.getBody().as(ArrFaLevelExt.class);
+    }
 }
