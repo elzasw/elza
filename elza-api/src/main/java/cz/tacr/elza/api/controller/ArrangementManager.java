@@ -224,4 +224,13 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
      */
     List<DIE> saveDescriptionItems(DISP descItemSavePack);
 
+    /**
+     * Vrátí všechny hodnoty atributu archivního popisu k uzlu.
+     * @param faVersionId       Identifikátor verze
+     * @param nodeId            Identifikátor uzlu
+     * @param rulDescItemTypeId Identifikátor typu atributu
+     * @return  Seznam hodnot atrubutu
+     */
+    List<DIE> getDescriptionItemsForAttribute(Integer faVersionId, Integer nodeId, Integer rulDescItemTypeId);
+
 }

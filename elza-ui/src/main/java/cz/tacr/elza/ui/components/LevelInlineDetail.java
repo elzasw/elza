@@ -220,7 +220,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
     private void showEditAttrWindow(final ArrFaLevelExt level, final RulDescItemType type, final Integer versionId) {
         if (type != null) {
-            List<ArrDescItemExt> listItem = ruleSetManager
+            List<ArrDescItemExt> listItem = arrangementManager
                     .getDescriptionItemsForAttribute(versionId, level.getNode().getNodeId(), type.getDescItemTypeId());
             List<RulDescItemSpec> listSpec = ruleSetManager.getDescItemSpecsFortDescItemType(type);
             RulDataType dataType = ruleSetManager.getDataTypeForDescItemType(type);
