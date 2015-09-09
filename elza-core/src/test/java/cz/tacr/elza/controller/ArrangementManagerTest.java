@@ -606,21 +606,28 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ArrFaVersion version = getRootNodeIdForVersion(findingAid.getFindingAidId());
 //        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
 
-        Response response = given().parameter(NODE_ID_ATT, version.getRootFaLevel().getNode().getNodeId()).put(ADD_LEVEL_CHILD_URL);
+        ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
+        levelWithExtraNode.setFaLevel(version.getRootFaLevel());
+
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        ArrFaLevel node = response.getBody().as(ArrFaLevel.class);
+        ArrFaLevelWithExtraNode node = response.getBody().as(ArrFaLevelWithExtraNode.class);
 
-        response = given().parameter(NODE_ID_ATT, node.getNode().getNodeId()).put(DELETE_LEVEL_URL);
+        levelWithExtraNode = new ArrFaLevelWithExtraNode();
+        levelWithExtraNode.setFaLevel(node.getFaLevel());
+        levelWithExtraNode.setExtraNode(node.getFaLevel().getParentNode());
+        levelWithExtraNode.getExtraNode().setVersion(levelWithExtraNode.getExtraNode().getVersion() + 1);
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(DELETE_LEVEL_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        ArrFaLevel deletedNode = response.getBody().as(ArrFaLevel.class);
+        ArrFaLevelWithExtraNode deletedNode = response.getBody().as(ArrFaLevelWithExtraNode.class);
 
-        Assert.assertTrue(deletedNode.getDeleteChange() != null);
-        Assert.assertTrue(node.getNode().getNodeId().equals(deletedNode.getNode().getNodeId()));
-        Assert.assertTrue(node.getFaLevelId().equals(deletedNode.getFaLevelId()));
+        Assert.assertTrue(deletedNode.getFaLevel().getDeleteChange() != null);
+        Assert.assertTrue(node.getFaLevel().getNode().getNodeId().equals(deletedNode.getFaLevel().getNode().getNodeId()));
+        Assert.assertTrue(node.getFaLevel().getFaLevelId().equals(deletedNode.getFaLevel().getFaLevelId()));
     }
 
     private static class TestLevelData {
