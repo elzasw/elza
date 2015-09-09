@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import cz.tacr.elza.ui.components.Callback;
 import ru.xpoft.vaadin.VaadinView;
 
 import com.vaadin.data.Item;
@@ -215,7 +216,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
             public void itemClick(final ItemClickEvent event) {
                 ArrFaLevel node = (ArrFaLevel) event.getItemId();
                 ArrFaLevelExt level = arrangementManager.getLevel(node.getNode().getNodeId(), version.getFaVersionId(), null);
-                levelDetailConteiner.showLevelDetail(level, level.getDescItemList(), version.getFaVersionId());
+                levelDetailConteiner.showLevelDetail(level, level.getDescItemList(), version.getFaVersionId(), creteAttributeEditCallback());
             }
         });
 
@@ -321,7 +322,17 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
     private void showDetailAP() {
         table.select(null);
         ArrFaLevelExt level = arrangementManager.getLevel(rootNode.getNode().getNodeId(), version.getFaVersionId(), null);
-        levelDetailConteiner.showLevelDetail(level, level.getDescItemList(), version.getFaVersionId());
+        levelDetailConteiner.showLevelDetail(level, level.getDescItemList(), version.getFaVersionId(),null);
+    }
+
+    private Callback<ArrFaLevelExt> creteAttributeEditCallback() {
+        return new Callback<ArrFaLevelExt>() {
+            @Override
+            public void callback(final ArrFaLevelExt item) {
+                addAttributeToCache(item);
+                table.refreshRowCache();
+            }
+        };
     }
 
 

@@ -74,6 +74,8 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
     private ComboBox attributesComboBox;
     private Label lblTitle;
 
+    private Callback<ArrFaLevelExt> attributeEditCallback;
+
 
 
     public LevelInlineDetail() {
@@ -103,7 +105,8 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         try {
             arrangementManager.saveDescriptionItems(pack);
             ArrFaLevelExt level = arrangementManager.getLevel(attribut.getNode().getNodeId(), attribut.getVersionId(), null);
-            showLevelDetail(level, level.getDescItemList(), attribut.getVersionId());
+            showLevelDetail(level, level.getDescItemList(), attribut.getVersionId(), attributeEditCallback);
+            sendEditCallback(level);
             if (attributWindow != null) {
                 attributWindow.close();
             }
@@ -117,7 +120,8 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
     public void showLevelDetail(final ArrFaLevelExt level,
                                 final List<ArrDescItemExt> descItemList,
-                                final Integer versionId) {
+                                final Integer versionId, final Callback<ArrFaLevelExt> attributeEditCallback) {
+        this.attributeEditCallback = attributeEditCallback;
         detailContent.removeAllComponents();
         initContentTitle(level, descItemList);
 
@@ -186,6 +190,12 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         }
 
         detailContent.addComponent(grid);
+    }
+
+    private void sendEditCallback(final ArrFaLevelExt level){
+        if(attributeEditCallback != null){
+            attributeEditCallback.callback(level);
+        }
     }
 
     private boolean isVersionOpen(final Integer versionId) {
