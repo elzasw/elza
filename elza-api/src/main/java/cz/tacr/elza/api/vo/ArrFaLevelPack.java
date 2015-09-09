@@ -27,4 +27,8 @@ public interface ArrFaLevelPack<FL extends ArrFaLevel, N extends ArrNode> extend
 
     void setRootNode(N rootNode);
 
+    FL getFaLevelTarget();
+
+    void setFaLevelTarget(FL faLevel);
+
 }
