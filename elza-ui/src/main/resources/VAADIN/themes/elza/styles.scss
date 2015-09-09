@@ -89,6 +89,12 @@ $ax-main-focus: $color-app;
         margin-bottom: 10px;
     }
 
+    .text-ellipsis{
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
 
 
     .hidden{
