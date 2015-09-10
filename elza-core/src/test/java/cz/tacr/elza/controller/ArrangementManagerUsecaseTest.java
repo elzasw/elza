@@ -57,10 +57,10 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         // vytvoření závislých dat
         RulDescItemType descItemType = createDescItemType(dataType, true, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
         RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1);
-        createDescItemConstrain(descItemType, descItemSpec, null, false, null, null);
         createDescItemConstrain(descItemType, descItemSpec, null, true, null, null);
-        createDescItemConstrain(descItemType, descItemSpec, null, null, "[0-9]*", null);
-        createDescItemConstrain(descItemType, descItemSpec, null, null, null, 50);
+        createDescItemConstrain(descItemType, descItemSpec, null, true, null, null);
+        createDescItemConstrain(descItemType, descItemSpec, null, true, "[0-9]*", null);
+        createDescItemConstrain(descItemType, descItemSpec, null, true, null, 50);
 
         // vytvoření závislých dat
         RulDescItemType descItemType2 = createDescItemType(dataType, true, "ITEM_TYPE2", "Item type 2", "SH3", "Desc 3", false, false, true, 2);
@@ -149,6 +149,24 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         List<ArrFaVersion> versions = getFindingAidVersions(findingAid);
         savePack = prepareSavePack(node, versions.get(0), descItemTypes);
         storeSavePackWithError(savePack);
+
+        // Aktualizace hodnot - odebrání a změna
+        node = getFindingAidOpenVersion(findingAid).getRootFaLevel().getNode();
+        ArrDescItemSavePack updateSavePack = prepareUpdateSavePack(node, version, arrDescItemExts);
+        List<ArrDescItemExt> updatedArrDescItemExts = storeSavePack(updateSavePack);
+        Assert.isTrue(updatedArrDescItemExts.size() == 2);
+        Assert.isTrue(updatedArrDescItemExts.get(0).getData().equals(TEST_VALUE_456));
+        Assert.isTrue(updatedArrDescItemExts.get(0).getPosition().equals(1));
+        Assert.isTrue(updatedArrDescItemExts.get(0).getDeleteChange() != null);
+        Assert.isTrue(updatedArrDescItemExts.get(1).getData().equals(TEST_VALUE_789));
+        Assert.isTrue(updatedArrDescItemExts.get(1).getPosition().equals(1));
+
+        arrFaLevelExt = getLevelByNodeId(node.getNodeId());
+        descItemList = arrFaLevelExt.getDescItemList();
+        Assert.isTrue(descItemList.size() == 1);
+        Assert.isTrue(descItemList.get(0).getData().equals(TEST_VALUE_789));
+        Assert.isTrue(descItemList.get(0).getPosition().equals(1));
+        Assert.isTrue(descItemList.get(0).getDescItemObjectId().equals(updatedArrDescItemExts.get(1).getDescItemObjectId()));
     }
 
     private void storeSavePackWithError(ArrDescItemSavePack savePack) {
@@ -190,6 +208,42 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         return savePack;
     }
 
+    /**
+     * Vytvoří balík hodnot pro aktualizaci.
+     *
+     * @param node uzel na který se dají hodnoty
+     * @param version verze
+     * @param originalValues původní hodnoty
+     *
+     * @return balík hodnot
+     */
+    private ArrDescItemSavePack prepareUpdateSavePack(ArrNode node, ArrFaVersion version, List<ArrDescItemExt> originalValues) {
+        ArrDescItemSavePack updateSavePack = new ArrDescItemSavePack();
+        updateSavePack.setCreateNewVersion(true);
+        updateSavePack.setFaVersionId(version.getFaVersionId());
+        updateSavePack.setNode(node);
+
+        List<ArrDescItemExt> updateValues = new ArrayList<ArrDescItemExt>();
+        List<ArrDescItemExt> deleteValues = new ArrayList<ArrDescItemExt>();
+        updateValues.add(originalValues.get(0));
+        originalValues.get(0).setData(TEST_VALUE_789);
+        updateSavePack.setDescItems(updateValues);
+
+        deleteValues.add(originalValues.get(1));
+        updateSavePack.setDeleteDescItems(deleteValues);
+
+        return updateSavePack;
+    }
+
+    /**
+     * Vytvoří hodnotu atributu.
+     *
+     * @param node uzel
+     * @param rulDescItemTypeExt typ atributu
+     * @param value hodnota atributu
+     *
+     * @return hodnota atributu
+     */
     private ArrDescItemExt createArrDescItemExt(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, String value) {
         RulDescItemType rulDescItemType = new RulDescItemType();
         BeanUtils.copyProperties(rulDescItemTypeExt, rulDescItemType);
@@ -383,6 +437,12 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         Assert.isTrue(children.size() == 1);
         Assert.isTrue(children.get(0).getFaLevelId().equals(child1.getFaLevelId()));
 
+        // Opakované přidání bez přenačtení uzlu - očekává se chyba kvůli optimistickému zámku
+        createLevelChildWithError(levelWithExtraNode);
+        children = getSubLevels(rootNode, version);
+        Assert.isTrue(children.size() == 1);
+        Assert.isTrue(children.get(0).getFaLevelId().equals(child1.getFaLevelId()));
+
         // přidání druhého levelu pod root
         levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(getLevelByNodeId(rootNode.getNodeId()));
@@ -474,6 +534,15 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         ArrFaLevelWithExtraNode parent = response.getBody().as(ArrFaLevelWithExtraNode.class);
 
         return parent;
+    }
+
+    /**
+     * Vytvoří nový uzel pod předaným uzlem.
+     *
+     * @param levelWithExtraNode rodičovský uzel
+     */
+    private void createLevelChildWithError(ArrFaLevelWithExtraNode levelWithExtraNode) {
+        put(spec -> spec.body(levelWithExtraNode), ADD_LEVEL_CHILD_URL, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     /**
