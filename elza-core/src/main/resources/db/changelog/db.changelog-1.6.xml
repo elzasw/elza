@@ -14,8 +14,8 @@
             <column name="code" value="INT"/>
             <column name="name" value="INTEGER"/>
             <column name="description" value="Celé číslo."/>
-            <column name="regexp_use" value="0"/>
-            <column name="text_lenght_limit_use" value="0"/>
+            <column name="regexp_use" valueBoolean="0"/>
+            <column name="text_lenght_limit_use" valueBoolean="0"/>
             <column name="storage_table" value="arr_data_integer"/>
         </insert>
         <insert tableName="rul_data_type">
@@ -23,8 +23,8 @@
             <column name="code" value="STRING"/>
             <column name="name" value="STRING"/>
             <column name="description" value="Textový řetězec o maximální délce 500 znaků."/>
-            <column name="regexp_use" value="1"/>
-            <column name="text_lenght_limit_use" value="1"/>
+            <column name="regexp_use" valueBoolean="1"/>
+            <column name="text_lenght_limit_use" valueBoolean="1"/>
             <column name="storage_table" value="arr_data_string"/>
         </insert>
         <insert tableName="rul_data_type">
@@ -32,8 +32,8 @@
             <column name="code" value="TEXT"/>
             <column name="name" value="TEXT"/>
             <column name="description" value="Textové pole pro dlouhý text."/>
-            <column name="regexp_use" value="0"/>
-            <column name="text_lenght_limit_use" value="0"/>
+            <column name="regexp_use" valueBoolean="0"/>
+            <column name="text_lenght_limit_use" valueBoolean="0"/>
             <column name="storage_table" value="arr_data_text"/>
         </insert>
         <insert tableName="rul_data_type">
@@ -41,8 +41,8 @@
             <column name="code" value="DATACE"/>
             <column name="name" value="DATACE"/>
             <column name="description" value="Datace zapsaná ve strojově čitelné formě."/>
-            <column name="regexp_use" value="0"/>
-            <column name="text_lenght_limit_use" value="0"/>
+            <column name="regexp_use" valueBoolean="0"/>
+            <column name="text_lenght_limit_use" valueBoolean="0"/>
             <column name="storage_table" value="arr_data_datace"/>
         </insert>
         <insert tableName="rul_data_type">
@@ -50,126 +50,126 @@
             <column name="code" value="REF"/>
             <column name="name" value="REFERENCE"/>
             <column name="description" value="Referenční číslo"/>
-            <column name="regexp_use" value="0"/>
-            <column name="text_lenght_limit_use" value="0"/>
+            <column name="regexp_use" valueBoolean="0"/>
+            <column name="text_lenght_limit_use" valueBoolean="0"/>
             <column name="storage_table" value="arr_data_reference"/>
         </insert>
 
         <insert tableName="rul_desc_item_type">
             <column name="desc_item_type_id" value="1"/>
             <column name="data_type_id" value="1"/>
-            <column name="sys" value="1"/>
+            <column name="sys" valueBoolean="1"/>
             <column name="code" value="LEVEL"/>
             <column name="name" value="ÚROVEŇ POPISU"/>
             <column name="shortcut" value="ÚROVEŇ"/>
             <column name="description" value="Úroveň archivního popisu."/>
-            <column name="is_value_unique" value="0"/>
-            <column name="can_be_ordered" value="1"/>
-            <column name="use_specification" value="1"/>
+            <column name="is_value_unique" valueBoolean="0"/>
+            <column name="can_be_ordered" valueBoolean="1"/>
+            <column name="use_specification" valueBoolean="1"/>
             <column name="view_order" value="1"/>
         </insert>
         <insert tableName="rul_desc_item_type">
             <column name="desc_item_type_id" value="2"/>
             <column name="data_type_id" value="3"/>
-            <column name="sys" value="1"/>
+            <column name="sys" valueBoolean="1"/>
             <column name="code" value="REGEST"/>
             <column name="name" value="OBSAH/REGEST"/>
             <column name="shortcut" value="REGEST"/>
             <column name="description" value="Obsah, regest jednotky archivního popisu."/>
-            <column name="is_value_unique" value="0"/>
-            <column name="can_be_ordered" value="0"/>
-            <column name="use_specification" value="0"/>
+            <column name="is_value_unique" valueBoolean="0"/>
+            <column name="can_be_ordered" valueBoolean="0"/>
+            <column name="use_specification" valueBoolean="0"/>
             <column name="view_order" value="3"/>
         </insert>
         <insert tableName="rul_desc_item_type">
             <column name="desc_item_type_id" value="3"/>
             <column name="data_type_id" value="1"/>
-            <column name="sys" value="1"/>
+            <column name="sys" valueBoolean="1"/>
             <column name="code" value="EVID_JEDN"/>
             <column name="name" value="EVIDENČNÍ JEDNOTKA DRUH/POČET"/>
             <column name="shortcut" value="EV. JEDNOTKA"/>
             <column name="description" value="Druh a počet evidenční jednotky."/>
-            <column name="is_value_unique" value="0"/>
-            <column name="can_be_ordered" value="1"/>
-            <column name="use_specification" value="1"/>
+            <column name="is_value_unique" valueBoolean="0"/>
+            <column name="can_be_ordered" valueBoolean="1"/>
+            <column name="use_specification" valueBoolean="1"/>
             <column name="view_order" value="6"/>
         </insert>
         <insert tableName="rul_desc_item_type">
             <column name="desc_item_type_id" value="4"/>
             <column name="data_type_id" value="2"/>
-            <column name="sys" value="1"/>
+            <column name="sys" valueBoolean="1"/>
             <column name="code" value="JINE_OZN"/>
             <column name="name" value="JINÁ OZNAČENÍ"/>
             <column name="shortcut" value="OZN"/>
             <column name="description" value="Jiná označení jednotky archivního popisu."/>
-            <column name="is_value_unique" value="0"/>
-            <column name="can_be_ordered" value="1"/>
-            <column name="use_specification" value="1"/>
+            <column name="is_value_unique" valueBoolean="0"/>
+            <column name="can_be_ordered" valueBoolean="1"/>
+            <column name="use_specification" valueBoolean="1"/>
             <column name="view_order" value="9"/>
         </insert>
         <insert tableName="rul_desc_item_type">
             <column name="desc_item_type_id" value="5"/>
             <column name="data_type_id" value="2"/>
-            <column name="sys" value="1"/>
+            <column name="sys" valueBoolean="1"/>
             <column name="code" value="UKL_CIS"/>
             <column name="name" value="UKLÁDACÍ ČÍSLO"/>
             <column name="shortcut" value="UKL. ČÍSLO"/>
             <column name="description" value="Ukládací číslo jednotky archivního popisu."/>
-            <column name="is_value_unique" value="0"/>
-            <column name="can_be_ordered" value="1"/>
-            <column name="use_specification" value="0"/>
+            <column name="is_value_unique" valueBoolean="0"/>
+            <column name="can_be_ordered" valueBoolean="1"/>
+            <column name="use_specification" valueBoolean="0"/>
             <column name="view_order" value="7"/>
         </insert>
         <insert tableName="rul_desc_item_type">
             <column name="desc_item_type_id" value="6"/>
             <column name="data_type_id" value="5"/>
-            <column name="sys" value="1"/>
+            <column name="sys" valueBoolean="1"/>
             <column name="code" value="REF"/>
             <column name="name" value="REFERENČNÍ OZNAČENÍ"/>
             <column name="shortcut" value="REF"/>
             <column name="description" value="Referenční označení."/>
-            <column name="is_value_unique" value="1"/>
-            <column name="can_be_ordered" value="1"/>
-            <column name="use_specification" value="0"/>
+            <column name="is_value_unique" valueBoolean="1"/>
+            <column name="can_be_ordered" valueBoolean="1"/>
+            <column name="use_specification" valueBoolean="0"/>
             <column name="view_order" value="2"/>
         </insert>
         <insert tableName="rul_desc_item_type">
             <column name="desc_item_type_id" value="7"/>
             <column name="data_type_id" value="4"/>
-            <column name="sys" value="1"/>
+            <column name="sys" valueBoolean="1"/>
             <column name="code" value="DAT_ISO"/>
             <column name="name" value="DATACE STROJOVÝ ZPŮSOB ZÁPISU"/>
             <column name="shortcut" value="DAT STROJ"/>
             <column name="description" value="DATACE VZNIKU JEDNOTKY POPISU – STROJOVĚ ČITELNÝ ZPŮSOB ZÁPISU"/>
-            <column name="is_value_unique" value="0"/>
-            <column name="can_be_ordered" value="1"/>
-            <column name="use_specification" value="0"/>
+            <column name="is_value_unique" valueBoolean="0"/>
+            <column name="can_be_ordered" valueBoolean="1"/>
+            <column name="use_specification" valueBoolean="0"/>
             <column name="view_order" value="4"/>
         </insert>
         <insert tableName="rul_desc_item_type">
             <column name="desc_item_type_id" value="8"/>
             <column name="data_type_id" value="2"/>
-            <column name="sys" value="1"/>
+            <column name="sys" valueBoolean="1"/>
             <column name="code" value="DAT_TEXT"/>
             <column name="name" value="DATA SLOVNÍ ZPŮSOB ZÁPISU"/>
             <column name="shortcut" value="DAT SLOVO"/>
             <column name="description" value="DATACE VZNIKU JEDNOTKY POPISU – SLOVNÍ ZPŮSOB ZÁPISU"/>
-            <column name="is_value_unique" value="0"/>
-            <column name="can_be_ordered" value="1"/>
-            <column name="use_specification" value="0"/>
+            <column name="is_value_unique" valueBoolean="0"/>
+            <column name="can_be_ordered" valueBoolean="1"/>
+            <column name="use_specification" valueBoolean="0"/>
             <column name="view_order" value="5"/>
         </insert>
         <insert tableName="rul_desc_item_type">
             <column name="desc_item_type_id" value="9"/>
             <column name="data_type_id" value="1"/>
-            <column name="sys" value="1"/>
+            <column name="sys" valueBoolean="1"/>
             <column name="code" value="POR_CISLO"/>
             <column name="name" value="POŘADOVÉ ČÍSLO"/>
             <column name="shortcut" value="POŘ. ČÍSLO"/>
             <column name="description" value="Pořadové číslo jednotky archivního popisu."/>
-            <column name="is_value_unique" value="1"/>
-            <column name="can_be_ordered" value="1"/>
-            <column name="use_specification" value="0"/>
+            <column name="is_value_unique" valueBoolean="1"/>
+            <column name="can_be_ordered" valueBoolean="1"/>
+            <column name="use_specification" valueBoolean="0"/>
             <column name="view_order" value="8"/>
         </insert>
 
@@ -774,7 +774,7 @@
             <column name="desc_item_type_id" value="3"/>
             <column name="desc_item_spec_id" value="NULL"/>
             <column name="fa_version_id" value="NULL"/>
-            <column name="repeatable" value="1"/>
+            <column name="repeatable" valueBoolean="1"/>
             <column name="regexp" value="NULL"/>
             <column name="text_lenght_limit" value="NULL"/>
         </insert>
@@ -783,7 +783,7 @@
             <column name="desc_item_type_id" value="4"/>
             <column name="desc_item_spec_id" value="64"/>
             <column name="fa_version_id" value="NULL"/>
-            <column name="repeatable" value="1"/>
+            <column name="repeatable" valueBoolean="1"/>
             <column name="regexp" value="NULL"/>
             <column name="text_lenght_limit" value="30"/>
         </insert>
@@ -792,7 +792,7 @@
             <column name="desc_item_type_id" value="5"/>
             <column name="desc_item_spec_id" value="NULL"/>
             <column name="fa_version_id" value="NULL"/>
-            <column name="repeatable" value="1"/>
+            <column name="repeatable" valueBoolean="1"/>
             <column name="regexp" value="\w"/>
             <column name="text_lenght_limit" value="20"/>
         </insert>

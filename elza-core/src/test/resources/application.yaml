@@ -1,17 +1,5 @@
 spring:
   datasource:
-    url: jdbc:postgresql://vyv-inet/elza_test
- #   url: jdbc:postgresql://vyv-inet/elza_test_data
-    username: app
-    password: app
-#    url: jdbc:hsqldb:mem:scratchdb
+    url: jdbc:hsqldb:mem:scratchdb
   jpa:
-    # Logovani SQL dotazu
     show-sql: true
-
-vax:
-  viewMain: FindingAidList
-  viewError: Exception
-
-debug:
-  firstView: FindingAidList
