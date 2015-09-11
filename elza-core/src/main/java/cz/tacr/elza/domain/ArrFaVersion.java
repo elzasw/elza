@@ -19,7 +19,7 @@ import javax.persistence.*;
 @Entity(name = "arr_fa_version")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrFaVersion extends AbstractVersionableEntity implements
-        cz.tacr.elza.api.ArrFaVersion<ArrFindingAid, ArrFaChange, ArrFaLevel, ArrArrangementType, RulRuleSet> {
+        cz.tacr.elza.api.ArrFaVersion<ArrFindingAid, ArrFaChange, ArrFaLevel, RulArrangementType, RulRuleSet> {
 
     @Id
     @GeneratedValue
@@ -46,9 +46,9 @@ public class ArrFaVersion extends AbstractVersionableEntity implements
     private ArrFindingAid findingAid;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrArrangementType.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulArrangementType.class)
     @JoinColumn(name = "arrangementTypeId", nullable = false)
-    private ArrArrangementType arrangementType;
+    private RulArrangementType arrangementType;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
@@ -106,12 +106,12 @@ public class ArrFaVersion extends AbstractVersionableEntity implements
     }
 
     @Override
-    public ArrArrangementType getArrangementType() {
+    public RulArrangementType getArrangementType() {
         return arrangementType;
     }
 
     @Override
-    public void setArrangementType(final ArrArrangementType arrangementType) {
+    public void setArrangementType(final RulArrangementType arrangementType) {
         this.arrangementType = arrangementType;
     }
 

@@ -21,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.jayway.restassured.response.Response;
 
-import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -32,6 +31,7 @@ import cz.tacr.elza.domain.ArrFaLevelExt;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
@@ -215,16 +215,10 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
     @Test
     public void testRestGetArrangementTypes () throws Exception {
-        ArrArrangementType arrangementType = new ArrArrangementType();
-        arrangementType.setName(TEST_NAME);
-        arrangementType.setCode(TEST_CODE);
-        arrangementTypeRepository.save(arrangementType);
+        RulRuleSet ruleSet = createRuleSet();
+        createArrangementType(ruleSet);
 
-        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).get(GET_ARRANGEMENT_TYPES_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
-        List<ArrArrangementType> arrangementTypes = Arrays.asList(response.getBody().as(ArrArrangementType[].class));
+        List<RulArrangementType> arrangementTypes = getArrangementTypes(ruleSet);
         Assert.assertTrue("Nenalezena polozka " + TEST_NAME, !arrangementTypes.isEmpty());
     }
 
@@ -567,7 +561,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(parent.getFaLevel());
-        
+
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
@@ -735,7 +729,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
      */
     private ArrFindingAid createFindingAidRest(final String name) {
         RulRuleSet ruleSet = createRuleSet();
-        ArrArrangementType arrangementType = createArrangementType();
+        RulArrangementType arrangementType = createArrangementType(ruleSet);
 
         Response response =
                 given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(FA_NAME_ATT, name).

@@ -32,7 +32,6 @@ import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 
 import cz.tacr.elza.ElzaCore;
-import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
@@ -48,6 +47,7 @@ import cz.tacr.elza.domain.ParPartySubtype;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulDescItemSpec;
@@ -289,25 +289,24 @@ public abstract class AbstractRestTest {
     public void setDown() {
     }
 
-    protected ArrArrangementType createArrangementType() {
-        ArrArrangementType arrangementType = new ArrArrangementType();
+    protected RulArrangementType createArrangementType(RulRuleSet ruleSet) {
+        RulArrangementType arrangementType = new RulArrangementType();
         arrangementType.setName(TEST_NAME);
         arrangementType.setCode(TEST_CODE);
-        arrangementTypeRepository.save(arrangementType);
-        return arrangementType;
+        arrangementType.setRuleSet(ruleSet);
+        return arrangementTypeRepository.save(arrangementType);
     }
 
     protected RulRuleSet createRuleSet() {
         RulRuleSet ruleSet = new RulRuleSet();
         ruleSet.setName(TEST_NAME);
         ruleSet.setCode(TEST_CODE);
-        ruleSetRepository.save(ruleSet);
-        return ruleSet;
+        return ruleSetRepository.save(ruleSet);
     }
 
     protected ArrFindingAid createFindingAid(final String name) {
         RulRuleSet ruleSet = createRuleSet();
-        ArrArrangementType arrangementType = createArrangementType();
+        RulArrangementType arrangementType = createArrangementType(ruleSet);
 
         return arrangementManager.createFindingAid(name, arrangementType.getArrangementTypeId(), ruleSet.getRuleSetId());
     }
@@ -320,19 +319,18 @@ public abstract class AbstractRestTest {
     protected ArrFaChange createFaChange(final LocalDateTime changeDate) {
         ArrFaChange resultChange = new ArrFaChange();
         resultChange.setChangeDate(changeDate);
-        changeRepository.save(resultChange);
-        return resultChange;
+        return changeRepository.save(resultChange);
     }
 
     protected ArrFaVersion createFindingAidVersion(final ArrFindingAid findingAid, final ArrFaLevel root, boolean isLock, ArrFaChange createChange) {
         RulRuleSet ruleSet = ruleSetRepository.findAll().iterator().next();
-        ArrArrangementType arrangementType = arrangementTypeRepository.findAll().iterator().next();
+        RulArrangementType arrangementType = arrangementTypeRepository.findAll().iterator().next();
 
         return createFindingAidVersion(findingAid, root, ruleSet, arrangementType, isLock, createChange);
     }
 
     protected ArrFaVersion createFindingAidVersion(final ArrFindingAid findingAid, final ArrFaLevel root,
-                                                   RulRuleSet ruleSet, ArrArrangementType arrangementType, boolean isLock, ArrFaChange createChange) {
+                                                   RulRuleSet ruleSet, RulArrangementType arrangementType, boolean isLock, ArrFaChange createChange) {
 
         if (createChange == null) {
             createChange = createFaChange(LocalDateTime.now());
@@ -384,7 +382,7 @@ public abstract class AbstractRestTest {
         item.setDescItemObjectId(1);
         item.setDescItemType(descItemType);
         item.setDescItemSpec(rulDescItemSpec);
-        descItemRepository.save(item);
+        item = descItemRepository.save(item);
         createData(item, index, typ);
         return item;
     }
@@ -432,8 +430,7 @@ public abstract class AbstractRestTest {
         itemType.setIsValueUnique(false);
         itemType.setUseSpecification(false);
         itemType.setViewOrder(index);
-        descItemTypeRepository.save(itemType);
-        return itemType;
+        return descItemTypeRepository.save(itemType);
     }
 
     private RulDescItemConstraint createDescItemConstrain(final RulDescItemType itemType,
@@ -453,8 +450,7 @@ public abstract class AbstractRestTest {
         rulDescItemSpec.setShortcut("ISpec " + index);
         rulDescItemSpec.setDescription("popis");
         rulDescItemSpec.setViewOrder(index);
-        descItemSpecRepository.save(rulDescItemSpec);
-        return rulDescItemSpec;
+        return descItemSpecRepository.save(rulDescItemSpec);
     }
 
     private RulDataType createDataType(final int index) {
@@ -465,8 +461,7 @@ public abstract class AbstractRestTest {
         dataType.setTextLenghtLimitUse((index > 1) ? true : false);
         dataType.setDescription("popis");
         dataType.setStorageTable("arr_data_integer");
-        dataTypeRepository.save(dataType);
-        return dataType;
+        return dataTypeRepository.save(dataType);
     }
 
     protected RulDescItemType createDescItemType(RulDataType rulDataType, Boolean sys, String code, String name, String shortcut, String description, Boolean isValueUnique, Boolean canBeOrdered, Boolean useSpecification, Integer viewOrder) {
@@ -481,8 +476,7 @@ public abstract class AbstractRestTest {
         dataTypeItem.setCanBeOrdered(canBeOrdered);
         dataTypeItem.setUseSpecification(useSpecification);
         dataTypeItem.setViewOrder(viewOrder);
-        descItemTypeRepository.save(dataTypeItem);
-        return dataTypeItem;
+        return descItemTypeRepository.save(dataTypeItem);
     }
 
     protected RulDataType createDataType(String code, String name, String description, Boolean regexUse, Boolean textLenghtLimitUse, String storageTable) {
@@ -493,8 +487,7 @@ public abstract class AbstractRestTest {
         dataType.setRegexpUse(regexUse);
         dataType.setTextLenghtLimitUse(textLenghtLimitUse);
         dataType.setStorageTable(storageTable);
-        dataTypeRepository.save(dataType);
-        return dataType;
+        return dataTypeRepository.save(dataType);
     }
 
     protected RulDataType getDataType(Integer dataTypeId) {
@@ -509,8 +502,7 @@ public abstract class AbstractRestTest {
         dataSpecItem.setShortcut(shortcut);
         dataSpecItem.setDescription(description);
         dataSpecItem.setViewOrder(viewOrder);
-        descItemSpecRepository.save(dataSpecItem);
-        return dataSpecItem;
+        return descItemSpecRepository.save(dataSpecItem);
     }
 
     protected RulDescItemConstraint createDescItemConstrain(RulDescItemType rulDescItemType, RulDescItemSpec rulDescItemSpec, ArrFaVersion faVersion, Boolean repeatable, String regexp, Integer textLengthLimit) {
@@ -521,8 +513,7 @@ public abstract class AbstractRestTest {
         itemConstraint.setRepeatable(repeatable);
         itemConstraint.setRegexp(regexp);
         itemConstraint.setTextLenghtLimit(textLengthLimit);
-        descItemConstraintRepository.save(itemConstraint);
-        return itemConstraint;
+        return descItemConstraintRepository.save(itemConstraint);
     }
 
     protected ArrDescItem createArrDescItem(ArrFaChange createFaChange, ArrFaChange deleteFaChange, Integer descItemObjectId, RulDescItemType rulDescItemType, RulDescItemSpec rulDescItemSpec, ArrNode node, Integer position) {
@@ -544,8 +535,7 @@ public abstract class AbstractRestTest {
         descItem.setDescItemSpec(rulDescItemSpec);
         descItem.setNode(node);
         descItem.setPosition(position);
-        descItemRepository.save(descItem);
-        return descItem;
+        return descItemRepository.save(descItem);
     }
 
     protected RegRecord createRecord(int index) {
@@ -558,8 +548,7 @@ public abstract class AbstractRestTest {
         record.setLocal(Boolean.TRUE);
         record.setRegisterType(registerType);
         record.setRecord("Sbor dobrovolnych hasicu Topol");
-        recordRepository.save(record);
-        return record;
+        return recordRepository.save(record);
     }
 
     protected ParPartySubtype findPartySubtype() {
@@ -578,8 +567,7 @@ public abstract class AbstractRestTest {
         ParAbstractParty party = new ParAbstractParty();
         party.setPartySubtype(partySubtype);
         party.setRecord(record);
-        abstractPartyRepository.save(party);
-        return party;
+        return abstractPartyRepository.save(party);
     }
 
     /**
@@ -590,8 +578,7 @@ public abstract class AbstractRestTest {
         RegRegisterType regRegisterType = new RegRegisterType();
         regRegisterType.setCode(TEST_CODE);
         regRegisterType.setName(TEST_NAME);
-        registerTypeRepository.save(regRegisterType);
-        return regRegisterType;
+        return registerTypeRepository.save(regRegisterType);
     }
 
     /**
@@ -632,11 +619,10 @@ public abstract class AbstractRestTest {
         ParAbstractParty party = new ParAbstractParty();
         party.setRecord(record);
         party.setPartySubtype(partySubtype);
-        abstractPartyRepository.save(party);
-        return party;
+        return abstractPartyRepository.save(party);
     }
 
-    protected RulFaView createFaView(RulRuleSet ruleSet, ArrArrangementType arrangementType, Integer[] ids) {
+    protected RulFaView createFaView(RulRuleSet ruleSet, RulArrangementType arrangementType, Integer[] ids) {
         RulFaView view = new RulFaView();
         view.setArrangementType(arrangementType);
         view.setRuleSet(ruleSet);
@@ -734,13 +720,6 @@ public abstract class AbstractRestTest {
     }
 
     /**
-     * @return  nastavení češtiny pro testy
-     */
-    protected static RestAssuredConfig getUtf8Config() {
-        return UTF8_ENCODER_CONFIG;
-    }
-
-    /**
      * Načte archivní pomůcku přes REST volání.
      *
      * @return archivní pomůcka
@@ -787,5 +766,18 @@ public abstract class AbstractRestTest {
         Response response = get(spec -> spec.parameter(NODE_ID_ATT, nodeId), GET_LEVEL_URL);
 
         return response.getBody().as(ArrFaLevelExt.class);
+    }
+
+    /**
+     * Načte typy výstupů podle pravidel tvorby.
+     *
+     * @param ruleSet pravidla tvorby
+     *
+     * @return typy výstupů
+     */
+    protected List<RulArrangementType> getArrangementTypes(RulRuleSet ruleSet) {
+        Response response = get(spec -> spec.parameter(RULE_SET_ID_ATT, ruleSet.getRuleSetId()), GET_ARRANGEMENT_TYPES_URL);
+
+        return Arrays.asList(response.getBody().as(RulArrangementType[].class));
     }
 }

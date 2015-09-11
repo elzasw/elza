@@ -1,12 +1,15 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import java.io.Serializable;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * popis {@link cz.tacr.elza.api.RulRuleSet}.
@@ -60,5 +63,19 @@ public class RulRuleSet implements cz.tacr.elza.api.RulRuleSet, Serializable {
     @Override
     public String toString() {
         return "RulRuleSet pk=" + ruleSetId;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (!(obj instanceof RulRuleSet)) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+
+        RulRuleSet other = (RulRuleSet) obj;
+
+        return new EqualsBuilder().append(ruleSetId, other.getRuleSetId()).isEquals();
     }
 }

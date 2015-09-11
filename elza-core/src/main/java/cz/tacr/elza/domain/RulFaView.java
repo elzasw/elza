@@ -26,16 +26,16 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity(name = "rul_fa_view")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulFaView extends AbstractVersionableEntity implements cz.tacr.elza.api.RulFaView<ArrArrangementType, RulRuleSet> {
+public class RulFaView extends AbstractVersionableEntity implements cz.tacr.elza.api.RulFaView<RulArrangementType, RulRuleSet> {
 
     @Id
     @GeneratedValue
     private Integer faViewId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrArrangementType.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulArrangementType.class)
     @JoinColumn(name = "arrangementTypeId", nullable = false)
-    private ArrArrangementType arrangementType;
+    private RulArrangementType arrangementType;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
@@ -56,12 +56,12 @@ public class RulFaView extends AbstractVersionableEntity implements cz.tacr.elza
     }
 
     @Override
-    public ArrArrangementType getArrangementType() {
+    public RulArrangementType getArrangementType() {
         return arrangementType;
     }
 
     @Override
-    public void setArrangementType(final ArrArrangementType arrangementType) {
+    public void setArrangementType(final RulArrangementType arrangementType) {
         this.arrangementType = arrangementType;
     }
 

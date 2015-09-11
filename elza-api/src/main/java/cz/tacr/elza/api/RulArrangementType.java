@@ -9,14 +9,14 @@ import java.io.Serializable;
  * @author vavrejn
  *
  */
-public interface RulArrangementType extends Serializable {
-    
+public interface RulArrangementType<RS extends RulRuleSet> extends Serializable {
+
     Integer getArrangementTypeId();
 
     void setArrangementTypeId(Integer arrangementTypeId);
 
     /**
-     * 
+     *
      * @return název typu výstupu.
      */
     String getName();
@@ -28,7 +28,7 @@ public interface RulArrangementType extends Serializable {
     void setName(String name);
 
     /**
-     * 
+     *
      * @return kód typu výstupu
      */
     String getCode();
@@ -38,4 +38,14 @@ public interface RulArrangementType extends Serializable {
      * @param code kód typu výstupu
      */
     void setCode(String code);
+
+    /** @return pravidla tvorby */
+    RS getRuleSet();
+
+    /**
+     * Nastaví pravidla tvorby.
+     *
+     * @param ruleSet pravidla tvorby
+     */
+    void setRuleSet(RS ruleSet);
 }

@@ -21,14 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
-import cz.tacr.elza.domain.ArrArrangementType;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrDescItemExt;
 import cz.tacr.elza.domain.ArrFaVersion;
-import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulDescItemSpec;
@@ -122,8 +116,10 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
 
     @Override
     @RequestMapping(value = "/getArrangementTypes", method = RequestMethod.GET)
-    public List<ArrArrangementType> getArrangementTypes() {
-        return arrangementTypeRepository.findAll();
+    public List<RulArrangementType> getArrangementTypes(Integer ruleSetId) {
+        Assert.notNull(ruleSetId);
+
+        return arrangementTypeRepository.findByRuleSetId(ruleSetId);
     }
 
     @Override
@@ -214,7 +210,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
         Assert.notNull(faVersionId);
         ArrFaVersion version = versionRepository.getOne(faVersionId);
         RulRuleSet ruleSet = version.getRuleSet();
-        ArrArrangementType arrangementType = version.getArrangementType();
+        RulArrangementType arrangementType = version.getArrangementType();
 
         List<RulFaView> faViewList =
                 faViewRepository.findByRuleSetAndArrangementType(ruleSet, arrangementType);
@@ -233,7 +229,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
         List<Integer> resultIdList = new LinkedList<>();
         if (StringUtils.isNotBlank(itemTypesStr)) {
             String[] itemTypes = itemTypesStr.split(VIEW_SPECIFICATION_SEPARATOR_REGEX);
-    
+
             for (String itemTypeIdStr : itemTypes) {
                 resultIdList.add(Integer.valueOf(itemTypeIdStr));
             }

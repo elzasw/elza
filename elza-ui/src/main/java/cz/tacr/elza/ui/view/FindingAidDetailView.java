@@ -18,7 +18,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import cz.tacr.elza.ui.components.Callback;
 import ru.xpoft.vaadin.VaadinView;
 
 import com.vaadin.data.Item;
@@ -36,22 +35,24 @@ import com.vaadin.ui.Tree;
 import com.vaadin.ui.UI;
 
 import cz.req.ax.AxAction;
+import cz.req.ax.AxComboBox;
 import cz.req.ax.AxContainer;
 import cz.req.ax.AxForm;
 import cz.req.ax.AxWindow;
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleManager;
-import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrDescItemExt;
 import cz.tacr.elza.domain.ArrFaLevel;
 import cz.tacr.elza.domain.ArrFaLevelExt;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.ArrFaLevelWithExtraNode;
 import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
 import cz.tacr.elza.ui.ElzaView;
+import cz.tacr.elza.ui.components.Callback;
 import cz.tacr.elza.ui.components.LevelInlineDetail;
 import cz.tacr.elza.ui.components.TreeTable;
 import cz.tacr.elza.ui.utils.ConcurrentUpdateExceptionHandler;
@@ -86,7 +87,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
     private ArrFindingAid findingAid;
     private ArrFaLevel levelNodeVyjmout;
 
-    AxContainer<ArrArrangementType> arTypeContainer;
+    AxContainer<RulArrangementType> arTypeContainer;
     AxContainer<RulRuleSet> ruleSetContainer;
 
     private TreeTable table;
@@ -938,13 +939,25 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
         AxForm<VOApproveVersion> form = AxForm.init(VOApproveVersion.class);
         form.addStyleName("fa-form");
 
-        arTypeContainer = new AxContainer<>(ArrArrangementType.class).supplier(ruleSetManager::getArrangementTypes);
-        arTypeContainer.setBeanIdProperty("arrangementTypeId");
-        form.addCombo("Typ výstupu", "arrangementTypeId", arTypeContainer, ArrArrangementType::getName).required();
-
         ruleSetContainer = new AxContainer<>(RulRuleSet.class).supplier(ruleSetManager::getRuleSets);
         ruleSetContainer.setBeanIdProperty("ruleSetId");
-        form.addCombo("Pravidla tvorby", "ruleSetId", ruleSetContainer, RulRuleSet::getName).required();
+        AxForm<AxComboBox>.AxField<AxComboBox> ruleSetCombo = form.addCombo("Pravidla tvorby", "ruleSetId", ruleSetContainer, RulRuleSet::getName).required();
+        ruleSetCombo.field().addValueChangeListener((event) -> {
+            arTypeContainer.refresh();
+        });
+
+        arTypeContainer = new AxContainer<>(RulArrangementType.class).supplier((repository) -> {
+            Integer ruleSetId = (Integer) ruleSetCombo.field().getValue();
+            if (ruleSetId == null) {
+                return new ArrayList<RulArrangementType>();
+            } else {
+                return ruleSetManager.getArrangementTypes(ruleSetId);
+            }
+        });
+        arTypeContainer.addAll(new ArrayList<RulArrangementType>());
+        arTypeContainer.setBeanIdProperty("arrangementTypeId");
+        form.addCombo("Typ výstupu", "arrangementTypeId", arTypeContainer, RulArrangementType::getName).required();
+
         return form;
     }
 

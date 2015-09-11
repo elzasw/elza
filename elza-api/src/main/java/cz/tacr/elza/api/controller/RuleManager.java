@@ -37,11 +37,13 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
 
 
     /**
-     * Vrátí všechny typy výstupu.
+     * Vrátí všechny typy výstupu pro daná pravidla tvorby.
      *
-     * @return všechny typy výstupu
+     * @param ruleSetId id pravidel tvorby
+     *
+     * @return typy výstupu pro daná pravidla
      */
-    List<? extends RulArrangementType> getArrangementTypes();
+    List<? extends RulArrangementType> getArrangementTypes(Integer ruleSetId);
 
     /**
      * Vrátí všechny typy atributů archivního popisu k zadaným pravidlům tvorby.

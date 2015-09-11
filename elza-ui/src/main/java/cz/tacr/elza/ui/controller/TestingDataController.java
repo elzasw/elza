@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleManager;
-import cz.tacr.elza.domain.ArrArrangementType;
+import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.ArrDescItemExt;
 import cz.tacr.elza.domain.ArrFaChange;
 import cz.tacr.elza.domain.ArrFaLevel;
@@ -470,7 +470,7 @@ public class TestingDataController {
     @Transactional
     @RequestMapping(value = "/createData", method = RequestMethod.POST)
     public void createData() {
-        ArrArrangementType arrArrangementType = arrangementTypeRepository.findAll().iterator().next();
+        RulArrangementType arrArrangementType = arrangementTypeRepository.findAll().iterator().next();
         RulRuleSet ruleSet = ruleSetRepository.findAll().iterator().next();
         ArrFindingAid findingAid = arrangementManager.createFindingAid(FA_NAME, arrArrangementType.getArrangementTypeId(), ruleSet.getRuleSetId());
         ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());

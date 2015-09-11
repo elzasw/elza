@@ -12,13 +12,13 @@ import org.springframework.util.Assert;
 
 import com.jayway.restassured.response.Response;
 
-import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrDescItemExt;
 import cz.tacr.elza.domain.ArrFaLevel;
 import cz.tacr.elza.domain.ArrFaLevelExt;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemSpecExt;
@@ -41,7 +41,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
     private static final String TEST_VALUE_789 = "789";
 
     private RulRuleSet ruleSet;
-    private ArrArrangementType arrangementType;
+    private RulArrangementType arrangementType;
 
     /** Příprava dat. */
     @Override
@@ -50,7 +50,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         super.setUp();
 
         ruleSet = createRuleSet();
-        arrangementType = createArrangementType();
+        arrangementType = createArrangementType(ruleSet);
 
         RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
 
@@ -77,6 +77,49 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         testAddLevels(findingAid);
         testMoveAndDeleteLevels(findingAid);
         testAttributeValues(findingAid);
+        testArrangementTypeRelations(findingAid);
+    }
+
+    /**
+     * Otestuje vazby mezi pravidly tvorby a typy výstupu.
+     *
+     * @param findingAid archivní pomůcka
+     */
+    private void testArrangementTypeRelations(ArrFindingAid findingAid) {
+        List<ArrFaVersion> versions = getFindingAidVersions(findingAid);
+        for (ArrFaVersion version : versions) {
+            RulRuleSet versionRuleSet = version.getRuleSet();
+            RulArrangementType versionArrangementType = version.getArrangementType();
+
+            Assert.isTrue(versionRuleSet.equals(versionArrangementType.getRuleSet()));
+        }
+
+        RulRuleSet rs1 = createRuleSet();
+        createArrangementType(rs1);
+        createArrangementType(rs1);
+        createArrangementType(rs1);
+
+        RulRuleSet rs2 = createRuleSet();
+        RulArrangementType rs2AT1 = createArrangementType(rs2);
+        createArrangementType(rs2);
+
+        List<RulArrangementType> arrangementTypes1 = getArrangementTypes(rs1);
+        Assert.isTrue(arrangementTypes1.size() == 3);
+        Assert.isTrue(arrangementTypes1.get(0).getRuleSet().equals(rs1));
+        Assert.isTrue(arrangementTypes1.get(1).getRuleSet().equals(rs1));
+        Assert.isTrue(arrangementTypes1.get(2).getRuleSet().equals(rs1));
+
+        List<RulArrangementType> arrangementTypes2 = getArrangementTypes(rs2);
+        Assert.isTrue(arrangementTypes2.size() == 2);
+        Assert.isTrue(arrangementTypes2.get(0).getRuleSet().equals(rs2));
+        Assert.isTrue(arrangementTypes2.get(1).getRuleSet().equals(rs2));
+
+        // Pokus o vytvoření archivní pomůcky s typem výstupu nepatřícím pravidlům tvorby
+        createFindingAid(rs1, rs2AT1, HttpStatus.INTERNAL_SERVER_ERROR);
+
+        // Pokus o uzavření verze a vytvoření nové verze archivní pomůcky s typem výstupu nepatřícím pravidlům tvorby
+        ArrFaVersion openVersion = getFindingAidOpenVersion(findingAid);
+        approveVersion(openVersion, rs1, rs2AT1, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     /**
@@ -725,12 +768,31 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      * @return nová otevřená verze archivní pomůcky
      */
     private ArrFaVersion approveVersion(ArrFaVersion openVersion) {
+        return approveVersion(openVersion, ruleSet, arrangementType, HttpStatus.OK);
+    }
+
+    /**
+     * Uzavře verzi archivní pomůcky.
+     *
+     * @param openVersion otevřená verze archivní pomůcky
+     * @param ruleSet pravidla tvorby
+     * @param arrangementType typ výstupu
+     * @param httpStatus stav jakým má skončit volání
+     *
+     * @return nová otevřená verze archivní pomůcky
+     */
+    private ArrFaVersion approveVersion(ArrFaVersion openVersion, RulRuleSet ruleSet, RulArrangementType arrangementType,
+            HttpStatus httpStatus) {
         Response response = put(spec -> spec.body(openVersion).
                 parameter(ARRANGEMENT_TYPE_ID_ATT, arrangementType.getArrangementTypeId()).
                 parameter(RULE_SET_ID_ATT, ruleSet.getRuleSetId())
-                , APPROVE_VERSION_URL);
+                , APPROVE_VERSION_URL, httpStatus);
 
-        return response.getBody().as(ArrFaVersion.class);
+        if (httpStatus == HttpStatus.OK) {
+            return response.getBody().as(ArrFaVersion.class);
+        }
+
+        return null;
     }
 
     /**
@@ -824,12 +886,27 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      * @return archivní pomůcka
      */
     private ArrFindingAid createFindingAid() {
+        return createFindingAid(ruleSet, arrangementType, HttpStatus.OK);
+    }
+
+    /**
+     * Vytvoření archivní pomůcky.
+     *
+     * @param ruleSet pravidla tvorby
+     * @param arrangementType typ výstupu
+     * @param httpStatus stav jakým má skončit volání
+     *
+     * @return archivní pomůcka
+     */
+    private ArrFindingAid createFindingAid(RulRuleSet ruleSet, RulArrangementType arrangementType, HttpStatus httpStatus) {
         Response response = put(spec -> spec.parameter(FA_NAME_ATT, TEST_NAME)
                 .parameter(ARRANGEMENT_TYPE_ID_ATT, arrangementType.getArrangementTypeId())
-                .parameter(RULE_SET_ID_ATT, ruleSet.getRuleSetId()), CREATE_FA_URL);
+                .parameter(RULE_SET_ID_ATT, ruleSet.getRuleSetId()), CREATE_FA_URL, httpStatus);
 
-        ArrFindingAid findingAid = response.getBody().as(ArrFindingAid.class);
+        if (httpStatus == HttpStatus.OK) {
+            return response.getBody().as(ArrFindingAid.class);
+        }
 
-        return findingAid;
+        return null;
     }
 }

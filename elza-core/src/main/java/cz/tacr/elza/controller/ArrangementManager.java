@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
-import cz.tacr.elza.domain.ArrArrangementType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataDatace;
@@ -49,6 +48,7 @@ import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParAbstractParty;
 import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
@@ -206,8 +206,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrFindingAid findingAid = createFindingAid(name);
 
-        ArrArrangementType arrangementType = arrangementTypeRepository.getOne(arrangementTypeId);
+        RulArrangementType arrangementType = arrangementTypeRepository.getOne(arrangementTypeId);
         RulRuleSet ruleSet = ruleSetRepository.getOne(ruleSetId);
+
+        Assert.isTrue(ruleSet.equals(arrangementType.getRuleSet()));
 
         ArrFaChange change = createChange();
 
@@ -309,7 +311,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     }
 
     private ArrFaVersion createVersion(final ArrFaChange createChange, final ArrFindingAid findingAid,
-            final ArrArrangementType arrangementType, final RulRuleSet ruleSet, final ArrFaLevel rootNode) {
+            final RulArrangementType arrangementType, final RulRuleSet ruleSet, final ArrFaLevel rootNode) {
         ArrFaVersion version = new ArrFaVersion();
         version.setCreateChange(createChange);
         version.setArrangementType(arrangementType);
@@ -411,8 +413,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         version.setLockChange(change);
         versionRepository.save(version);
 
-        ArrArrangementType arrangementType = arrangementTypeRepository.findOne(arrangementTypeId);
+        RulArrangementType arrangementType = arrangementTypeRepository.findOne(arrangementTypeId);
         RulRuleSet ruleSet = ruleSetRepository.findOne(ruleSetId);
+
+        Assert.isTrue(ruleSet.equals(arrangementType.getRuleSet()));
 
         return createVersion(change, findingAid, arrangementType, ruleSet, version.getRootFaLevel());
     }
