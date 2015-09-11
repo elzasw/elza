@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+        <!--
+            Verze 1.23
+            - doplnění číselníku rul_desc_item_spec
+        -->
+        <changeSet id="23" author="bendik" >
+            <insert tableName="rul_desc_item_spec" ><column name="desc_item_spec_id" value="65" /><column name="desc_item_type_id" value="39" /><column name="code" value="ZP2015_ENTITY_ROLE_5" /><column name="name" value="Tiskárny" /><column name="description" value="Tiskárny" /><column name="shortcut" value="Tiskárny" /><column name="view_order" value="58" /></insert>
+            <insert tableName="rul_desc_item_spec" ><column name="desc_item_spec_id" value="66" /><column name="desc_item_type_id" value="39" /><column name="code" value="ZP2015_ENTITY_ROLE_6" /><column name="name" value="Místa vydavatelů" /><column name="description" value="Místa vydavatelů" /><column name="shortcut" value="Místa vydavatelů" /><column name="view_order" value="59" /></insert>
+            <insert tableName="rul_desc_item_spec" ><column name="desc_item_spec_id" value="67" /><column name="desc_item_type_id" value="39" /><column name="code" value="ZP2015_ENTITY_ROLE_7" /><column name="name" value="Typová označení a názvy výrobků a typových staveb" /><column name="description" value="Typová označení a názvy výrobků a typových staveb" /><column name="shortcut" value="Typová označení a názvy výrobků a typových staveb" /><column name="view_order" value="60" /></insert>
+            <insert tableName="rul_desc_item_spec" ><column name="desc_item_spec_id" value="68" /><column name="desc_item_type_id" value="39" /><column name="code" value="ZP2015_ENTITY_ROLE_8" /><column name="name" value="Ostatní (události)" /><column name="description" value="Ostatní (události)" /><column name="shortcut" value="Ostatní (události)" /><column name="view_order" value="61" /></insert>
+
+
+            <update tableName="rul_desc_item_spec">
+                <column name="register_type_id" value="2"/>
+                <where>desc_item_spec_id = 61</where>
+            </update>
+
+            <update tableName="rul_desc_item_spec">
+                <column name="register_type_id" value="2"/>
+                <where>desc_item_spec_id = 62</where>
+            </update>
+
+            <update tableName="rul_desc_item_spec">
+                <column name="register_type_id" value="2"/>
+                <where>desc_item_spec_id = 63</where>
+            </update>
+
+            <update tableName="rul_desc_item_spec">
+                <column name="register_type_id" value="2"/>
+                <where>desc_item_spec_id = 64</where>
+            </update>
+
+            <update tableName="rul_desc_item_spec">
+                <column name="register_type_id" value="1"/>
+                <where>desc_item_spec_id = 65</where>
+            </update>
+
+            <update tableName="rul_desc_item_spec">
+                <column name="register_type_id" value="3"/>
+                <where>desc_item_spec_id = 66</where>
+            </update>
+
+            <update tableName="rul_desc_item_spec">
+                <column name="register_type_id" value="5"/>
+                <where>desc_item_spec_id = 67</where>
+            </update>
+
+            <update tableName="rul_desc_item_spec">
+                <column name="register_type_id" value="4"/>
+                <where>desc_item_spec_id = 68</where>
+            </update>
+
+            <update tableName="db_hibernate_sequences">
+                <column name="next_val" value="69"/>
+                <where>sequence_name = 'rul_desc_item_spec|desc_item_spec_id'</where>
+            </update>
+
+        </changeSet>
+</databaseChangeLog>
