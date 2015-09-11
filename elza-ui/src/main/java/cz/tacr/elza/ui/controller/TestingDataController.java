@@ -2,7 +2,6 @@ package cz.tacr.elza.ui.controller;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,7 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleManager;
-import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.ArrDescItemExt;
 import cz.tacr.elza.domain.ArrFaChange;
 import cz.tacr.elza.domain.ArrFaLevel;
@@ -37,6 +35,7 @@ import cz.tacr.elza.domain.ParAbstractParty;
 import cz.tacr.elza.domain.ParPartySubtype;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemSpecExt;
@@ -484,15 +483,64 @@ public class TestingDataController {
         Map<String, ParPartySubtype> partySubTypeMap = partySubtypeRepository.findAll().stream()
             .collect(Collectors.toMap(ParPartySubtype::getCode, Function.identity()));
 
+        List<ParAbstractParty> existingParties = abstractPartyRepository.findAll();
+
         List<ParAbstractParty> parties = new LinkedList<ParAbstractParty>();
-        parties.add(createParAbstractParty(partySubTypeMap.get("KOR_SPOL"), records.get(0)));
-        parties.add(createParAbstractParty(partySubTypeMap.get("KOR_VEREJNE"), records.get(1)));
-        parties.add(createParAbstractParty(partySubTypeMap.get("ROD"), records.get(2)));
-        parties.add(createParAbstractParty(partySubTypeMap.get("VETEV_ROD"), records.get(3)));
-        parties.add(createParAbstractParty(partySubTypeMap.get("FYZ_OSOBA"), records.get(4)));
-        parties.add(createParAbstractParty(partySubTypeMap.get("FYZ_OSOBA"), records.get(5)));
+        for (PartyEnum partyEnum : PartyEnum.values()) {
+            String subType = partyEnum.getSubType();
+            int position = partyEnum.getRecordPosition();
+            ParPartySubtype partySubtype = partySubTypeMap.get(subType);
+            RegRecord regRecord = records.get(position);
+            ParAbstractParty abstractParty = findParty(partySubtype, regRecord, existingParties);
+            if (abstractParty == null) {
+                abstractParty = createParAbstractParty(partySubtype, regRecord);
+            }
+            parties.add(abstractParty);
+        }
 
         return parties;
+    }
+
+    private enum PartyEnum {
+
+        KOR_SPOL("KOR_SPOL", 0),
+        KOR_VEREJNE("KOR_VEREJNE", 1),
+        ROD("ROD", 2),
+        VETEV_ROD("VETEV_ROD", 3),
+        FYZ_OSOBA1("FYZ_OSOBA", 4),
+        FYZ_OSOBA2("FYZ_OSOBA", 5);
+
+        private String subType;
+        private int recordPosition;
+
+        private PartyEnum(String subType, int recordPosition) {
+            this.subType = subType;
+            this.recordPosition = recordPosition;
+        }
+
+        public String getSubType() {
+            return subType;
+        }
+
+        public int getRecordPosition() {
+            return recordPosition;
+        }
+    }
+
+    private ParAbstractParty findParty(ParPartySubtype parPartySubtype, RegRecord regRecord,
+            List<ParAbstractParty> existingParties) {
+        if (existingParties.isEmpty()) {
+            return null;
+        }
+
+        for (ParAbstractParty abstractParty : existingParties) {
+            if (abstractParty.getPartySubtype().equals(parPartySubtype)
+                    && abstractParty.getRecord().equals(regRecord)) {
+                return abstractParty;
+            }
+        }
+
+        return null;
     }
 
     private ParAbstractParty createParAbstractParty(ParPartySubtype parPartySubtype, RegRecord regRecord) {
@@ -506,21 +554,88 @@ public class TestingDataController {
     private List<RegRecord> createRegRecords() {
         Map<String, RegRegisterType> regTypesMap = registerTypeRepository.findAll().stream()
                 .collect(Collectors.toMap(RegRegisterType::getCode, Function.identity()));
+        List<RegRecord> existingRegRecords = recordRepository.findAll();
 
-        List<RegRecord> records = new ArrayList<RegRecord>(6);
+        List<RegRecord> records = new LinkedList<RegRecord>();
 
-        records.add(createRegRecord("Sbor dobrovolných hasičů Topol", "1886-, Topol (Chrudim, Česko), dobrovolný hasičský sbor", "PARTY_GROUP", regTypesMap));
-        records.add(createRegRecord("Okresní úřad Chrudim", "(1990-2002), 1990-2002, Chrudim (Česko), úřad státní okresní správy, V/PFJ: OkÚ Chrudim (1990-2002); Okresní úřad Chrudim II (1990-2002); OkÚ Chrudim II (1990-2002)", "PARTY_GROUP", regTypesMap));
-        records.add(createRegRecord("Habsburkové", "11. století-, evropský panovnický rod", "PERSON", regTypesMap));
-        records.add(createRegRecord("Schwarzenbergové - orlická větev", "(větev rodu), 1802-1979, větev šlechtického rodu s rodovým sídlem v Čechách, V/PFJ: Orlická", "PERSON", regTypesMap));
-        records.add(createRegRecord("MUDR. Novák Josef (1900-1980)", "1.1.1900 Kamenice (Jihlava, Česko) -+1.1.1980 Kamenice, (Praha-východ, Česko), praktický lékař v Kamenici u Prahy", "PERSON", regTypesMap));
-        records.add(createRegRecord("John Jaromír prof. (1882-1952),", "\"*16.4.1882 Klatovy (Česko) - +24.4.1952 Jaroměř (Náchod, Česko), spisovatel, novinář, středoškolský a vysokoškolský učitel, výtvarný estetik a kritik, překladatel z němčiny\"", "PERSON", regTypesMap));
-        createRegRecord("Nové Lhotice (Chrudim, Česko)", "katastrální území a místní část obce Liboměřice, V/PFJ: Niemeczke Lhoticze (Chrudim, Česko); Německé Lhotice (Chrudim, Česko); Lhotice (Chrudim, Česko", "GEO", regTypesMap);
-        createRegRecord("Kyrill (2007 : bouře),", "\"5.1.2007-19.1.2007, tlaková níže vzniklá nad Atlantským oceánem, která se rozvinula , o ničivé bouře se sílou orkánu a zasáhla Evropu V/PFJ: orkán Kyrill; storm Kyrill\"", "EVENT", regTypesMap);
-        createRegRecord("Letní stadion čp. 831/IV (Chrudim, ulice V Průhonech),", "\"1951-, Chrudim (Česko), všesportovní stadion V/PFJ: Stadion Emila Zátopka Chrudim (Chrudim, ulice V Průhonech), Letní stadion Chrudim (Chrudim, ulice V Průhonech); Stadion MFK Chrudim (Chrudim, ulice V Průhonech); Stadion AFK Chrudim (Chrudim, ulice V Průhonech); Letní stadion AFK Chrudim (Chrudim, ulice V Průhonech); Atletický stadion Chrudim (Chrudim, ulice V Průhonech); Transporťácký stadion Chrudim (Chrudim, ulice V Průhonech); Stadion Transporty Chrudim (Chrudim, ulice V Průhonech)\"", "ARTWORK", regTypesMap);
-        createRegRecord("malíři", "MDT 75.071.1", "TERM", regTypesMap);
+        for (RegRecords regRecordEnum : RegRecords.values()) {
+            RegRecord regRecord = findRegRecord(regRecordEnum, existingRegRecords, regTypesMap);
+            if (regRecord == null) {
+                regRecord = createRegRecord(regRecordEnum.getRecord(), regRecordEnum.getCharacteristics(), regRecordEnum.getRegistryType(), regTypesMap);
+            }
+
+            if (regRecordEnum.isReturnRecord()) {
+                records.add(regRecord);
+            }
+        }
 
         return records;
+    }
+
+    /**
+     * Zjistí jestli exituje rejstřík.
+     *
+     * @param regRecordEnum rejstřík
+     * @param existingRegRecords exitující rejstříky
+     * @param regTypesMap mapa typů rejstříků
+     *
+     * @return rejstřík pokud existuje, null když neexistuje
+     */
+    private RegRecord findRegRecord(RegRecords regRecordEnum, List<RegRecord> existingRegRecords, Map<String, RegRegisterType> regTypesMap) {
+        if (existingRegRecords.isEmpty()) {
+            return null;
+        }
+
+        for (RegRecord regRecord : existingRegRecords) {
+            if (regRecord.getRecord().equals(regRecordEnum.getRecord())
+                    && regRecord.getCharacteristics().equals(regRecordEnum.getCharacteristics())
+                    && regRecord.getRegisterType().equals(regTypesMap.get(regRecordEnum.getRegistryType()))) {
+                return regRecord;
+            }
+        }
+        return null;
+    }
+
+    private enum RegRecords {
+
+        TOPOL("Sbor dobrovolných hasičů Topol", "1886-, Topol (Chrudim, Česko), dobrovolný hasičský sbor", "PARTY_GROUP", true),
+        CHRUDIM("Okresní úřad Chrudim", "(1990-2002), 1990-2002, Chrudim (Česko), úřad státní okresní správy, V/PFJ: OkÚ Chrudim (1990-2002); Okresní úřad Chrudim II (1990-2002); OkÚ Chrudim II (1990-2002)", "PARTY_GROUP", true),
+        HABSBURKOVE("Habsburkové", "11. století-, evropský panovnický rod", "PERSON", true),
+        SCHWARZENBERGOVE("Schwarzenbergové - orlická větev", "(větev rodu), 1802-1979, větev šlechtického rodu s rodovým sídlem v Čechách, V/PFJ: Orlická", "PERSON", true),
+        NOVAK("MUDR. Novák Josef (1900-1980)", "1.1.1900 Kamenice (Jihlava, Česko) -+1.1.1980 Kamenice, (Praha-východ, Česko), praktický lékař v Kamenici u Prahy", "PERSON", true),
+        JOHN("John Jaromír prof. (1882-1952),", "\"*16.4.1882 Klatovy (Česko) - +24.4.1952 Jaroměř (Náchod, Česko), spisovatel, novinář, středoškolský a vysokoškolský učitel, výtvarný estetik a kritik, překladatel z němčiny\"", "PERSON", true),
+        LHOTICE("Nové Lhotice (Chrudim, Česko)", "katastrální území a místní část obce Liboměřice, V/PFJ: Niemeczke Lhoticze (Chrudim, Česko); Německé Lhotice (Chrudim, Česko); Lhotice (Chrudim, Česko", "GEO", false),
+        KYRILL("Kyrill (2007 : bouře),", "\"5.1.2007-19.1.2007, tlaková níže vzniklá nad Atlantským oceánem, která se rozvinula , o ničivé bouře se sílou orkánu a zasáhla Evropu V/PFJ: orkán Kyrill; storm Kyrill\"", "EVENT", false),
+        STADION("Letní stadion čp. 831/IV (Chrudim, ulice V Průhonech),", "\"1951-, Chrudim (Česko), všesportovní stadion V/PFJ: Stadion Emila Zátopka Chrudim (Chrudim, ulice V Průhonech), Letní stadion Chrudim (Chrudim, ulice V Průhonech); Stadion MFK Chrudim (Chrudim, ulice V Průhonech); Stadion AFK Chrudim (Chrudim, ulice V Průhonech); Letní stadion AFK Chrudim (Chrudim, ulice V Průhonech); Atletický stadion Chrudim (Chrudim, ulice V Průhonech); Transporťácký stadion Chrudim (Chrudim, ulice V Průhonech); Stadion Transporty Chrudim (Chrudim, ulice V Průhonech)\"", "ARTWORK", false),
+        MALIRI("malíři", "MDT 75.071.1", "TERM", false);
+
+        private String record;
+        private String characteristics;
+        private String registryType;
+        private boolean returnRecord;
+
+        private RegRecords(String record, String characteristics, String registryType, boolean returnRecord) {
+            this.record = record;
+            this.characteristics = characteristics;
+            this.registryType = registryType;
+            this.returnRecord = returnRecord;
+        }
+
+        public String getRecord() {
+            return record;
+        }
+
+        public String getCharacteristics() {
+            return characteristics;
+        }
+
+        public String getRegistryType() {
+            return registryType;
+        }
+
+        public boolean isReturnRecord() {
+            return returnRecord;
+        }
     }
 
     private RegRecord createRegRecord(String record, String characteristics, String registryType,
