@@ -3,3 +3,6 @@ spring:
     url: jdbc:hsqldb:mem:scratchdb
   jpa:
     show-sql: true
+    #pametova databaze automaticky zapina hibernate.ddl-auto: create
+    hibernate.ddl-auto: none
+
