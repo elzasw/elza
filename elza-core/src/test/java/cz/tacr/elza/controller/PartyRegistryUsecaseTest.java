@@ -1,19 +1,7 @@
 package cz.tacr.elza.controller;
 
-import static com.jayway.restassured.RestAssured.given;
-
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.jayway.restassured.internal.RestAssuredResponseImpl;
 import com.jayway.restassured.response.Response;
-
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.domain.ParAbstractParty;
 import cz.tacr.elza.domain.ParPartySubtype;
@@ -22,6 +10,16 @@ import cz.tacr.elza.domain.ParPartyTypeExt;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
+import org.apache.commons.lang.StringUtils;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static com.jayway.restassured.RestAssured.given;
 
 /**
  * Test kompletní funkčnosti rejstříku a osob.
@@ -260,10 +258,7 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
      * Načtení typů rejstříkových záznamů.
      */
     private List<RegRegisterType> getRegisterTypes() {
-        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).get(GET_REGISTER_TYPES_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
+        Response response = get((spec) -> spec, GET_REGISTER_TYPES_URL);
         return (List<RegRegisterType>) Arrays.asList(response.getBody().as(RegRegisterType[].class));
     }
 
@@ -318,13 +313,10 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
      * @return  záznam
      */
     private RegRecord createRecord(final RegRecord regRecord) {
-        Response response =
-                given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
-                        .config(getUtf8Config())
-                        .body(regRecord)
-                        .put(CREATE_RECORD_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
+        Response response = put((spec) -> spec
+                        .body(regRecord),
+                CREATE_RECORD_URL
+        );
 
         RegRecord newRecord = response.getBody().as(RegRecord.class);
 
@@ -342,13 +334,10 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
      * @param regRecord naplněný objekt k založení
      */
     private void createRecordNegative(final RegRecord regRecord) {
-        Response response =
-                given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
-                        .config(getUtf8Config())
-                        .body(regRecord)
-                        .put(CREATE_RECORD_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(500, response.statusCode());
+        putError((spec) -> spec
+                        .body(regRecord),
+                CREATE_RECORD_URL
+        );
     }
 
     /**
@@ -373,13 +362,10 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
      * @return  záznam
      */
     private RegVariantRecord createVariantRecord(final RegVariantRecord variantRecord) {
-        Response response =
-                given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
-                        .config(getUtf8Config())
+        Response response = put((spec) -> spec
                         .body(variantRecord)
-                        .put(CREATE_VARIANT_RECORD_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(response.print(), 200, response.statusCode());
+                , CREATE_VARIANT_RECORD_URL
+        );
 
         RegVariantRecord newVariantRecord = response.getBody().as(RegVariantRecord.class);
 
@@ -399,14 +385,13 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
      * @return                  nalezená hesla
      */
     private List<RegRecord> findRecords(final String searchString, final RegRegisterType registerType) {
-        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
-                .parameter(SEARCH_ATT, searchString)
-                .parameter(FROM_ATT, 0)
-                .parameter(COUNT_ATT, 10)
-                .parameter(REGISTER_TYPE_ID_ATT, registerType.getRegisterTypeId())
-                .get(FIND_RECORD_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
+        Response response = get((spec) -> spec
+                        .parameter(SEARCH_ATT, searchString)
+                        .parameter(FROM_ATT, 0)
+                        .parameter(COUNT_ATT, 10)
+                        .parameter(REGISTER_TYPE_ID_ATT, registerType.getRegisterTypeId())
+                , FIND_RECORD_URL
+        );
 
         return (List<RegRecord>) Arrays.asList(response.getBody().as(RegRecord[].class));
     }
