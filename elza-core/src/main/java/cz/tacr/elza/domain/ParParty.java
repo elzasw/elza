@@ -24,11 +24,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author Martin Kužel [<a href="mailto:martin.kuzel@marbes.cz">martin.kuzel@marbes.cz</a>]
  * @since 21.8.2015
  */
-@Entity(name = "par_abstract_party")
+@Entity(name = "par_party")
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParAbstractParty extends AbstractVersionableEntity implements cz.tacr.elza.api.ParAbstractParty<RegRecord, ParPartySubtype> {
+public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.api.ParParty<RegRecord, ParPartySubtype> {
 
     /* Konstanty pro vazby a fieldy. */
     public static final String ABSTRACT_PARTY_ID = "abstractPartyId";
@@ -82,14 +82,14 @@ public class ParAbstractParty extends AbstractVersionableEntity implements cz.ta
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.api.ParAbstractParty)) {
+        if (!(obj instanceof cz.tacr.elza.api.ParParty)) {
             return false;
         }
         if (this == obj) {
             return true;
         }
 
-        ParAbstractParty other = (ParAbstractParty) obj;
+        cz.tacr.elza.domain.ParParty other = (cz.tacr.elza.domain.ParParty) obj;
 
         return new EqualsBuilder().append(abstractPartyId, other.getAbstractPartyId()).isEquals();
     }

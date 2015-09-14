@@ -22,20 +22,20 @@ import java.time.LocalDateTime;
  *
  * @author Martin Kužel [<a href="mailto:martin.kuzel@marbes.cz">martin.kuzel@marbes.cz</a>]
  */
-@Entity(name = "par_abstract_party_name")
+@Entity(name = "par_party_name")
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParAbstractPartyName extends AbstractVersionableEntity
-        implements cz.tacr.elza.api.ParAbstractPartyName<ParAbstractParty> {
+public class ParPartyName extends AbstractVersionableEntity
+        implements cz.tacr.elza.api.ParPartyName<ParParty> {
 
     @Id
     @GeneratedValue
     private Integer abstractPartyNameId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParAbstractParty.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParParty.class)
     @JoinColumn(name = "abstractPartyId", nullable = false)
-    private ParAbstractParty abstractParty;
+    private ParParty abstractParty;
 
     @Column(length = 255)
     private String mainPart;
@@ -70,12 +70,12 @@ public class ParAbstractPartyName extends AbstractVersionableEntity
     }
 
     @Override
-    public ParAbstractParty getAbstractParty() {
+    public ParParty getAbstractParty() {
         return abstractParty;
     }
 
     @Override
-    public void setAbstractParty(final ParAbstractParty abstractParty) {
+    public void setAbstractParty(final ParParty abstractParty) {
         this.abstractParty = abstractParty;
     }
 
@@ -151,14 +151,14 @@ public class ParAbstractPartyName extends AbstractVersionableEntity
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.api.ParAbstractPartyName)) {
+        if (!(obj instanceof cz.tacr.elza.api.ParPartyName)) {
             return false;
         }
         if (this == obj) {
             return true;
         }
 
-        ParAbstractPartyName other = (ParAbstractPartyName) obj;
+        ParPartyName other = (ParPartyName) obj;
 
         return new EqualsBuilder().append(abstractPartyNameId, other.getAbstractPartyNameId()).isEquals();
     }

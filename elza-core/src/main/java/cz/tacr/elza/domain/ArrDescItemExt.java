@@ -10,10 +10,10 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  * @since 20.8.2015
  */
 
-public class ArrDescItemExt extends ArrDescItem implements cz.tacr.elza.api.ArrDescItemExt<ArrFaChange, RulDescItemType,RulDescItemSpec, ParAbstractParty, RegRecord, ArrNode> {
+public class ArrDescItemExt extends ArrDescItem implements cz.tacr.elza.api.ArrDescItemExt<ArrFaChange, RulDescItemType,RulDescItemSpec, ParParty, RegRecord, ArrNode> {
 
     private String attData;
-    private ParAbstractParty abstractParty;
+    private ParParty abstractParty;
     private RegRecord record;
 
     @Override
@@ -27,12 +27,12 @@ public class ArrDescItemExt extends ArrDescItem implements cz.tacr.elza.api.ArrD
     }
 
     @Override
-    public ParAbstractParty getAbstractParty() {
+    public ParParty getAbstractParty() {
         return abstractParty;
     }
 
     @Override
-    public void setAbstractParty(ParAbstractParty abstractParty) {
+    public void setAbstractParty(ParParty abstractParty) {
         this.abstractParty = abstractParty;
         this.attData = abstractParty == null ? null : abstractParty.getRecord().getRecord();
     }
