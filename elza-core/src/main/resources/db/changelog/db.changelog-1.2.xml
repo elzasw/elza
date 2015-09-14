@@ -5,10 +5,10 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
         <!--
-            Verze 1.25
+            Verze 3
             - přejmenování par_abstract* tabulek
         -->
-        <changeSet id="25" author="kuzel">
+        <changeSet id="3" author="kuzel">
 
               <renameTable oldTableName="par_abstract_party" newTableName="par_party" />
               <renameTable oldTableName="par_abstract_party_name" newTableName="par_party_name" />
