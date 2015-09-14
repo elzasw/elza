@@ -14,6 +14,18 @@
         <vaadin.theme.path>VAADIN/themes/elza</vaadin.theme.path>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- Verze Vaadin, Vaadin-Spring, Vaadin-Ax -->
+            <dependency>
+                <groupId>cz.req.vax</groupId>
+                <artifactId>vax</artifactId>
+                <version>0.1.0-SNAPSHOT</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>cz.tacr.elza</groupId>
