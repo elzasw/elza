@@ -23,6 +23,7 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.ui.components.attribute.Attribut;
+import cz.tacr.elza.ui.components.attribute.AttributeValuesComparator;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesLoader;
 import cz.tacr.elza.ui.components.autocomplete.AutocompleteItem;
 
@@ -140,17 +141,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             detailContent.addComponent(attributesComboBox);
         }
 
-        Collections.sort(descItemList, (o1, o2) -> {
-            Integer specOrder1 = (o1.getDescItemSpec() == null) ? null : o1.getDescItemSpec().getViewOrder();
-            Integer specOrder2 = (o2.getDescItemSpec() == null) ? null : o2.getDescItemSpec().getViewOrder();
-            return new CompareToBuilder()
-                    .append(o1.getDescItemType().getViewOrder(), o2.getDescItemType().getViewOrder())
-                    .append(o1.getDescItemType().getName(), o2.getDescItemType().getName())
-                    .append(specOrder1, specOrder2)
-                    .append(o1.getPosition(), o2.getPosition())
-                    .toComparison();
-        });
-
+        descItemList.sort(new AttributeValuesComparator());
 
         FormGrid grid = new FormGrid().setRowSpacing(true).style("attr-detail");
         grid.setMarginTop(true);

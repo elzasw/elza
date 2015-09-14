@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.builder.CompareToBuilder;
+
 import com.vaadin.event.dd.DragAndDropEvent;
 import com.vaadin.event.dd.DropHandler;
 import com.vaadin.event.dd.acceptcriteria.AcceptAll;
@@ -71,7 +73,7 @@ public class Attribut extends CssLayout implements Components {
         childs.addStyleName("container-values");
 
         addComponent(childs);
-        itemExtList.sort((o1, o2) -> o1.getPosition().compareTo(o2.getPosition()));
+        itemExtList.sort(new AttributeValuesComparator());
 
         for (ArrDescItemExt descItemExt : itemExtList) {
             newAtributValue(descItemExt);
@@ -108,7 +110,7 @@ public class Attribut extends CssLayout implements Components {
         return node;
     }
 
-    AttributValue newAtributValue(final ArrDescItemExt a) {
+    public AttributValue newAtributValue(final ArrDescItemExt a) {
 
         Label sortIcon = new Label();
         sortIcon.addStyleName("sort-icon");

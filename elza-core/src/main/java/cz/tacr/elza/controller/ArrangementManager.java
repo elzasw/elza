@@ -724,7 +724,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         List<ArrFaLevel> levelsByNode = levelRepository.findByNodeAndDeleteChangeIsNull(node);
 
         if (levelsByNode.isEmpty()) {
-            throw new IllegalArgumentException("Nebyl nalezen level s nodeId " + node.getNodeId());
+            throw new IllegalArgumentException("Entita byla změněna nebo odstraněna. Načtěte znovu entitu a opakujte akci.");
         } else if (levelsByNode.size() == 1) {
             return levelsByNode.iterator().next();
         }

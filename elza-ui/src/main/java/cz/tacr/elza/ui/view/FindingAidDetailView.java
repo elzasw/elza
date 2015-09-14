@@ -429,16 +429,18 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                 child = new AxAction().caption("Smazat").icon(FontAwesome.TRASH_O).run(new Runnable() {
                     @Override
                     public void run() {
-                        discardNodeCut();
-                        ArrFaLevel node = (ArrFaLevel) itemId;
-                        ArrFaLevelWithExtraNode faLevelWithExtraNode = new ArrFaLevelWithExtraNode();
-                        faLevelWithExtraNode.setFaLevel(node);
-                        faLevelWithExtraNode.setExtraNode(node.getParentNode());
-                        faLevelWithExtraNode.setRootNode(version.getRootFaLevel().getNode());
+                        try {
+                            discardNodeCut();
+                            ArrFaLevel node = (ArrFaLevel) itemId;
+                            ArrFaLevelWithExtraNode faLevelWithExtraNode = new ArrFaLevelWithExtraNode();
+                            faLevelWithExtraNode.setFaLevel(node);
+                            faLevelWithExtraNode.setExtraNode(node.getParentNode());
+                            faLevelWithExtraNode.setRootNode(version.getRootFaLevel().getNode());
 
-                        ArrFaLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager.deleteLevel(faLevelWithExtraNode);
+                            ArrFaLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager
+                                    .deleteLevel(faLevelWithExtraNode);
 
-                        refreshTree(container, version.getRootFaLevel());
+                            refreshTree(container, version.getRootFaLevel());
 
                         /*ArrFaLevel parentNode = (ArrFaLevel) container.getParent(node);
                         if (parentNode == null) {
@@ -456,7 +458,12 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
 
                         table.refreshRowCache();*/
 
-                        ElzaNotifications.show("Smazáno...");
+                            ElzaNotifications.show("Smazáno...");
+                        } catch (IllegalStateException e) {
+                            ElzaNotifications.showWarn(e.getMessage());
+                        } catch (IllegalArgumentException e) {
+                            ElzaNotifications.showError(e.getMessage());
+                        }
                     }
                 }).exception(new ConcurrentUpdateExceptionHandler()).menuItem(parent);
 
