@@ -88,7 +88,8 @@ import java.util.Set;
  */
 @RestController
 @RequestMapping("/api/arrangementManager")
-public class ArrangementManager implements cz.tacr.elza.api.controller.ArrangementManager<ArrFindingAid, ArrFaVersion, ArrDescItemExt, ArrDescItemSavePack, ArrFaLevel, ArrFaLevelWithExtraNode, ArrNode> {
+public class ArrangementManager implements cz.tacr.elza.api.controller.ArrangementManager<ArrFindingAid, ArrFaVersion,
+    ArrDescItemExt, ArrDescItemSavePack, ArrFaLevel, ArrFaLevelWithExtraNode, ArrNode> {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -243,7 +244,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return createLevel(change, level.getParentNode(), level.getPosition() + 1);
     }
 
-    private ArrFaLevel createBeforeInLevel(final ArrFaChange change, final ArrFaLevel level){
+    private ArrFaLevel createBeforeInLevel(final ArrFaChange change, final ArrFaLevel level) {
         Assert.notNull(change);
         Assert.notNull(level);
 
@@ -392,7 +393,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @Override
     @Transactional
     @RequestMapping(value = "/approveVersion", method = RequestMethod.PUT)
-    public ArrFaVersion approveVersion(@RequestBody final ArrFaVersion version, @RequestParam("arrangementTypeId") final Integer arrangementTypeId, @RequestParam("ruleSetId") final Integer ruleSetId) {
+    public ArrFaVersion approveVersion(@RequestBody final ArrFaVersion version,
+            @RequestParam("arrangementTypeId") final Integer arrangementTypeId,
+            @RequestParam("ruleSetId") final Integer ruleSetId) {
         Assert.notNull(version);
         Assert.notNull(arrangementTypeId);
         Assert.notNull(ruleSetId);
@@ -423,7 +426,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @Override
     @Transactional
     @RequestMapping(value = "/addLevelBefore", method = RequestMethod.PUT)
-    public ArrFaLevelWithExtraNode addLevelBefore(@RequestBody ArrFaLevelWithExtraNode levelWithParentNode){
+    public ArrFaLevelWithExtraNode addLevelBefore(@RequestBody ArrFaLevelWithExtraNode levelWithParentNode) {
         Assert.notNull(levelWithParentNode);
         ArrFaLevel node = levelWithParentNode.getFaLevel();
         ArrNode parentNode = levelWithParentNode.getExtraNode();
@@ -524,10 +527,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrFaLevel follower = findNodeInRootTreeByNodeId(targetNode, levelWithFollowerNode.getRootNode());
 
-        if(level == null || follower == null){
+        if (level == null || follower == null) {
             throw new IllegalArgumentException("Přesun se nezdařil. Záznam byl pravděpodobně smazán jiným uživatelem. Aktualizujte stránku");
         }
-        if(level.equals(follower)){
+        if (level.equals(follower)) {
             throw new IllegalStateException("Nelze vložit záznam na stejné místo ve stromu");
         }
 
@@ -588,16 +591,16 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         isValidArrFaLevel(node);
         isValidNode(parentNode);
 
-        if(parentNode == null){
+        if (parentNode == null) {
             throw new IllegalArgumentException("Přesun se nezdařil. Záznam byl pravděpodobně smazán jiným uživatelem. Aktualizujte stránku");
         }
 
         ArrFaLevel parent = findNodeInRootTreeByNodeId(parentNode, levelWithUnderNode.getRootNode());
-        if(node == null || parent == null){
+        if (node == null || parent == null) {
             throw new IllegalArgumentException("Přesun se nezdařil. Záznam byl pravděpodobně smazán jiným uživatelem. Aktualizujte stránku");
         }
 
-        if(node.equals(parent)){
+        if (node.equals(parent)) {
             throw new IllegalStateException("Nelze vložit záznam sám do sebe");
         }
 
@@ -639,15 +642,15 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         isValidArrFaLevel(predecessorLevel);
         isValidNode(predecessorNode);
 
-        if(predecessorNode == null){
+        if (predecessorNode == null) {
             throw new IllegalArgumentException("Přesun se nezdařil. Záznam byl pravděpodobně smazán jiným uživatelem. Aktualizujte stránku");
         }
 
         ArrFaLevel predecessor = findNodeInRootTreeByNodeId(predecessorNode, levelWithPredecessorNode.getRootNode());
-        if(level == null || predecessor == null){
+        if (level == null || predecessor == null) {
             throw new IllegalArgumentException("Přesun se nezdařil. Záznam byl pravděpodobně smazán jiným uživatelem. Aktualizujte stránku");
         }
-        if(level.equals(predecessor)){
+        if (level.equals(predecessor)) {
             throw new IllegalStateException("Nelze vložit záznam na stejné místo ve stromu");
         }
 
@@ -655,7 +658,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         nodeRepository.save(level.getParentNode());
 
         predecessorLevel.getParentNode().setLastUpdate(LocalDateTime.now());
-        predecessorLevel.setParentNode(nodeRepository.save(predecessorLevel.getParentNode()));;
+        predecessorLevel.setParentNode(nodeRepository.save(predecessorLevel.getParentNode()));
 
         predecessorNode.setLastUpdate(LocalDateTime.now());
         nodeRepository.save(predecessorNode);
@@ -701,8 +704,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      */
     private void isValidNode(final ArrNode node) {
         Assert.notNull(node);
-        ArrNode nodeDB = nodeRepository.findOne(node.getNodeId());
-        if (nodeDB == null) {
+        ArrNode dbNode = nodeRepository.findOne(node.getNodeId());
+        if (dbNode == null) {
             throw new IllegalArgumentException("Neplatný uzel");
         }
     }
@@ -713,13 +716,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      */
     private void isValidArrFaLevel(final ArrFaLevel node) {
         Assert.notNull(node);
-        ArrFaLevel nodeDB = levelRepository.findOne(node.getFaLevelId());
-        if (nodeDB == null) {
+        ArrFaLevel dbNode = levelRepository.findOne(node.getFaLevelId());
+        if (dbNode == null) {
             throw new IllegalArgumentException("Neplatný uzel");
         }
-        /*if (nodeDB.getDeleteChange() != null) {
-            throw new IllegalArgumentException("Uzel je již smazaný");
-        }*/
     }
 
     /**
@@ -840,6 +840,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             levelRepository.save(newNode);
         }
     }
+
     private List<ArrFaLevel> nodesToShift(ArrFaLevel movedLevel) {
         Assert.notNull(movedLevel);
 
@@ -869,11 +870,11 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         isValidAndOpenVersion(versionId);
         ArrFaLevel level = findNodeInRootTreeByNodeId(faLevel.getNode(), levelWithParentNode.getRootNode());
-        if(level == null || level.getDeleteChange() != null){
+        if (level == null || level.getDeleteChange() != null) {
             throw new IllegalArgumentException("Záznam již byl smazán");
         }
 
-        if(node == null){
+        if (node == null) {
             throw new IllegalArgumentException("Záznam neexistuje");
         }
 
@@ -895,10 +896,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return levelWithParentNodeRet;
     }
 
-    public ArrFaLevel deleteLevelCascade(final ArrFaLevel level, final ArrFaChange deleteChange){
+    public ArrFaLevel deleteLevelCascade(final ArrFaLevel level, final ArrFaChange deleteChange) {
 
         //pokud je level sdílený, smažeme pouze entitu, atributy ponecháme
-        if(isLevelShared(level)){
+        if (isLevelShared(level)) {
             return deleteLevelInner(level, deleteChange);
         }
 
@@ -915,7 +916,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return deleteLevelInner(level, deleteChange);
     }
 
-    private ArrFaLevel deleteLevelInner(final ArrFaLevel level, final ArrFaChange deleteChange){
+    private ArrFaLevel deleteLevelInner(final ArrFaLevel level, final ArrFaChange deleteChange) {
         Assert.notNull(level);
 
         ArrNode node = level.getNode();
@@ -927,7 +928,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     }
 
 
-    private boolean isLevelShared(final ArrFaLevel level){
+    private boolean isLevelShared(final ArrFaLevel level) {
         Assert.notNull(level);
 
         return levelRepository.countByNode(level.getNode()) > 1;
@@ -960,7 +961,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrNode node = nodeRepository.findOne(nodeId);
 
-        if(node == null){
+        if (node == null) {
             throw new IllegalArgumentException("Záznam neexistuje");
         }
 
@@ -1012,7 +1013,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrNode node = nodeRepository.findOne(nodeId);
 
-        if(node == null){
+        if (node == null) {
             throw new IllegalArgumentException("Záznam neexistuje");
         }
 
@@ -1042,7 +1043,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrNode node = nodeRepository.findOne(nodeId);
 
-        if(node == null){
+        if (node == null) {
             throw new IllegalArgumentException("Záznam neexistuje");
         }
 
@@ -1058,7 +1059,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrNode node = nodeRepository.findOne(nodeId);
 
-        if(node == null){
+        if (node == null) {
             throw new IllegalArgumentException("Záznam neexistuje");
         }
 
@@ -1121,7 +1122,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
         for (ArrData arrData : dataList) {
             Integer idItemType = arrData.getDescItem().getDescItemType().getDescItemTypeId();
-            if (idItemTypeSet != null && (!idItemTypeSet.contains(idItemType))) {
+            if (idItemTypeSet != null && !idItemTypeSet.contains(idItemType)) {
                 continue;
             }
             ArrDescItemExt arrDescItemExt = new ArrDescItemExt();
@@ -1659,10 +1660,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      */
     private void validateDataDescItemConstraintTextLenghtLimit(String data, RulDescItemConstraint rulDescItemConstraint) {
         Integer textLenghtLimit = rulDescItemConstraint.getTextLenghtLimit();
-        if (textLenghtLimit != null) {
-            if (data.length() > textLenghtLimit) {
-                throw new IllegalStateException("Hodnota je příliš dlouhá - " + data.length() + "/" + textLenghtLimit);
-            }
+        if (textLenghtLimit != null && data.length() > textLenghtLimit) {
+            throw new IllegalStateException("Hodnota je příliš dlouhá - " + data.length() + "/" + textLenghtLimit);
         }
     }
 
@@ -1674,10 +1673,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      */
     private void validateDataDescItemConstraintRegexp(String data, RulDescItemConstraint rulDescItemConstraint) {
         String regexp = rulDescItemConstraint.getRegexp();
-        if (regexp != null) {
-            if (!data.matches(regexp)) {
-                throw new IllegalStateException("Hodnota '" + data + "' neodpovídá výrazu " + regexp);
-            }
+        if (regexp != null && !data.matches(regexp)) {
+            throw new IllegalStateException("Hodnota '" + data + "' neodpovídá výrazu " + regexp);
         }
     }
 
@@ -1841,7 +1838,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 try {
                     Integer abstractPartyId = descItemExt.getAbstractParty() == null
                                               ? null : descItemExt.getAbstractParty().getAbstractPartyId();
-                    if(abstractPartyId == null || abstractPartyRepository.findOne(abstractPartyId) == null){
+                    if (abstractPartyId == null || abstractPartyRepository.findOne(abstractPartyId) == null) {
                         throw new IllegalArgumentException("Neplatný odkaz do tabulky");
                     }
 
@@ -1947,7 +1944,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 try {
                     Integer abstractPartyId = descItemExt.getAbstractParty() == null
                                               ? null : descItemExt.getAbstractParty().getAbstractPartyId();
-                    if(abstractPartyId == null || abstractPartyRepository.findOne(abstractPartyId) == null){
+                    if (abstractPartyId == null || abstractPartyRepository.findOne(abstractPartyId) == null) {
                         throw new IllegalArgumentException("Neplatný odkaz do tabulky");
                     }
 
@@ -2214,10 +2211,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             descItemExt.setData(data.getData());
             descItemList.add(descItemExt);
 
-            if(data instanceof ArrDataPartyRef){
+            if (data instanceof ArrDataPartyRef) {
                 ArrDataPartyRef partyRef = (ArrDataPartyRef) data;
                 descItemExt.setAbstractParty(abstractPartyRepository.findOne(partyRef.getAbstractPartyId()));
-            }  else if(data instanceof ArrDataRecordRef){
+            }  else if (data instanceof ArrDataRecordRef) {
                 ArrDataRecordRef recordRef = (ArrDataRecordRef) data;
                 descItemExt.setRecord(regRecordRepository.findOne(recordRef.getRecordId()));
             }

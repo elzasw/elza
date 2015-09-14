@@ -1,15 +1,23 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
  * Entita umožňující limitovat hodnoty typu atributu nebo podtypu.
- * 
+ *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
@@ -43,58 +51,72 @@ public class RulDescItemConstraint implements cz.tacr.elza.api.RulDescItemConstr
     @Column(nullable = true)
     private Integer textLenghtLimit;
 
+    @Override
     public Integer getDescItemConstraintId() {
         return descItemConstraintId;
     }
 
+    @Override
     public void setDescItemConstraintId(final Integer descItemConstraintId) {
         this.descItemConstraintId = descItemConstraintId;
     }
 
+    @Override
     public RulDescItemType getDescItemType() {
         return descItemType;
     }
 
+    @Override
     public void setDescItemType(final RulDescItemType descItemType) {
         this.descItemType = descItemType;
     }
 
+    @Override
     public RulDescItemSpec getDescItemSpec() {
         return descItemSpec;
     }
 
+    @Override
     public void setDescItemSpec(final RulDescItemSpec descItemSpec) {
         this.descItemSpec = descItemSpec;
     }
 
+    @Override
     public ArrFaVersion getVersion() {
         return version;
     }
 
+    @Override
     public void setVersion(final ArrFaVersion version) {
         this.version = version;
     }
 
+    @Override
     public Boolean getRepeatable() {
         return repeatable;
     }
 
+    @Override
     public void setRepeatable(final Boolean repeatable) {
         this.repeatable = repeatable;
     }
 
+    @Override
     public String getRegexp() {
         return regexp;
     }
 
+    @Override
     public void setRegexp(final String regexp) {
         this.regexp = regexp;
     }
 
+    @Override
     public Integer getTextLenghtLimit() {
         return textLenghtLimit;
     }
 
+    @Override
     public void setTextLenghtLimit(final Integer textLenghtLimit) {
         this.textLenghtLimit = textLenghtLimit;
     }

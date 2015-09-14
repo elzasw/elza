@@ -58,7 +58,7 @@ public class ArrDescItemExt extends ArrDescItem implements cz.tacr.elza.api.ArrD
             return false;
         }
         ArrDescItemExt castOther = (ArrDescItemExt) other;
-        if (getDescItemId()== null) {
+        if (getDescItemId() == null) {
             return false;
         }
 

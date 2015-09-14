@@ -15,10 +15,7 @@ public interface RulArrangementType<RS extends RulRuleSet> extends Serializable 
 
     void setArrangementTypeId(Integer arrangementTypeId);
 
-    /**
-     *
-     * @return název typu výstupu.
-     */
+    /** @return název typu výstupu */
     String getName();
 
     /**
@@ -27,10 +24,7 @@ public interface RulArrangementType<RS extends RulRuleSet> extends Serializable 
      */
     void setName(String name);
 
-    /**
-     *
-     * @return kód typu výstupu
-     */
+    /** @return kód typu výstupu */
     String getCode();
 
     /**

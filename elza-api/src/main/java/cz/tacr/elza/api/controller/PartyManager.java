@@ -1,9 +1,9 @@
 package cz.tacr.elza.api.controller;
 
+import java.util.List;
+
 import cz.tacr.elza.api.ParParty;
 import cz.tacr.elza.api.ParPartyTypeExt;
-
-import java.util.List;
 
 /**
  * Rozhraní operací pro osoby a rejstřík.
@@ -18,14 +18,14 @@ public interface PartyManager<PAPV extends ParParty> {
 
     /**
      * Vrátí všechny typy osob včetně podtypů.
-     * 
+     *
      * @return typy osob včetně podtypu.
      */
     List<? extends ParPartyTypeExt> getPartyTypes();
 
     /**
      * Vloží záznam o abstraktní osobě. Je umožněno vložit návázané rejstříkové heslo a podtyp.
-     * 
+     *
      * @param abstractParty data o abstraktní osobě
      * @return Založený záznam.
      */
@@ -33,7 +33,7 @@ public interface PartyManager<PAPV extends ParParty> {
 
     /**
      * Upraví záznam abstraktní osoby. Je umožněna změna rejstříkového hesla a podtypu.
-     * 
+     *
      * @param abstractParty záznamu pro aktualizaci.
      * @return Aktualizovaný záznam.
      */
@@ -41,7 +41,7 @@ public interface PartyManager<PAPV extends ParParty> {
 
     /**
      * Smaže abstraktní osobu.
-     * 
+     *
      * @param abstractPartyId id záznamu pro samzání.
      */
     void deleteAbstractParty(Integer abstractPartyId);
@@ -50,7 +50,7 @@ public interface PartyManager<PAPV extends ParParty> {
      * Vyhledá osobu daného typu podle zadaného názvu. Vrátí seznam osob vyhovující zadané frázi.
      * Osobu vyhledává podle hesla v rejstříku včetně variantních hesel. Výsledek je stránkovaný, je
      * vrácen zadaný počet záznamů od from záznamu.
-     * 
+     *
      * @param search fráze pro vyhledávání.
      * @param from pořadí prvního záznamu.
      * @param count počet záznamů pro vrácení.
@@ -64,7 +64,7 @@ public interface PartyManager<PAPV extends ParParty> {
     /**
      * Vrátí počet osob vyhovující zadané frázi. Osobu vyhledává podle hesla v rejstříku včetně
      * variantních hesel.
-     * 
+     *
      * @param search fráze pro vyhledávání.
      * @param partyTypeId id typu.
      * @param originator        původce - true, není původce - false, null - neaplikuje filtr - obě možnosti
@@ -74,7 +74,7 @@ public interface PartyManager<PAPV extends ParParty> {
 
     /**
      * Vrátí abstraktní osobu na základě identifikátoru.
-     * 
+     *
      * @param abstractPartyId identifikátor abstraktní osoby.
      * @return nalezená abstraktní osoba.
      */

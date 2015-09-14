@@ -7,7 +7,7 @@ import java.io.Serializable;
  * Evidence možných specifikací typů atributů archivního popisu. Evidence je společná pro všechny
  * archivní pomůcky. Vazba výčtu specifikací na různá pravidla bude řešeno později. Podtyp atributu
  * (Role entit - Malíř, Role entit - Sochař, Role entit - Spisovatel).
- * 
+ *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
@@ -16,62 +16,60 @@ public interface RulDescItemSpec<RIT extends RulDescItemType, RT extends RegRegi
             Serializable {
 
 
-    public Integer getDescItemSpecId();
+    Integer getDescItemSpecId();
 
 
-    public void setDescItemSpecId(final Integer descItemSpecId);
+    void setDescItemSpecId(final Integer descItemSpecId);
 
 
-    public RIT getDescItemType();
+    RIT getDescItemType();
 
 
-    public void setDescItemType(final RIT descItemType);
+    void setDescItemType(final RIT descItemType);
 
 
-    public String getCode();
+    String getCode();
 
 
-    public void setCode(final String code);
+    void setCode(final String code);
 
 
-    public String getName();
+    String getName();
 
 
-    public void setName(final String name);
+    void setName(final String name);
 
 
-    public String getShortcut();
+    String getShortcut();
 
 
-    public void setShortcut(final String shortcut);
+    void setShortcut(final String shortcut);
 
 
-    public String getDescription();
+    String getDescription();
 
 
-    public void setDescription(final String description);
+    void setDescription(final String description);
 
     /**
      * @return pořadí zobrazení.
      */
-    public Integer getViewOrder();
+    Integer getViewOrder();
 
     /**
      * @param viewOrder pořadí zobrazení.
      */
-    public void setViewOrder(final Integer viewOrder);
+    void setViewOrder(final Integer viewOrder);
 
     /**
-     * 
+     *
      * @return typ rejstříku specifikace atributu.
      */
-    public RT getRegisterType();
+    RT getRegisterType();
 
     /**
-     * 
+     *
      * @param registerType typ rejstříku specifikace atributu.
      */
-    public void setRegisterType(RT registerType);
-
-
+    void setRegisterType(RT registerType);
 }

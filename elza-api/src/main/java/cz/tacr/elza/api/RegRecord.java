@@ -9,9 +9,7 @@ import java.util.List;
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
 public interface RegRecord<RT extends RegRegisterType, ES extends RegExternalSource, VR extends RegVariantRecord>
-        extends
-            Versionable,
-            Serializable {
+    extends Versionable, Serializable {
 
     Integer getRecordId();
 
@@ -62,9 +60,9 @@ public interface RegRecord<RT extends RegRegisterType, ES extends RegExternalSou
     Boolean getLocal();
 
     /**
-     * příznak, zda se jedná o lokální nebo globální rejstříkové heslo. lokální heslo je přiřazené
+     * Příznak, zda se jedná o lokální nebo globální rejstříkové heslo. lokální heslo je přiřazené
      * pouze konkrétnímu archivnímu popisu/pomůcce.
-     * 
+     *
      * @param local příznak, zda se jedná o lokální nebo globální rejstříkové heslo.
      */
     void setLocal(Boolean local);
@@ -73,25 +71,25 @@ public interface RegRecord<RT extends RegRegisterType, ES extends RegExternalSou
      * @return externí identifikátor rejstříkového hesla v externím zdroji záznamů, například
      *         interpi.
      */
-    String getExternal_id();
+    String getExternalId();
 
     /**
-     * externí identifikátor rejstříkového hesla v externím zdroji záznamů, například interpi.
-     * 
-     * @param external_id externí identifikátor rejstříkového hesla.
+     * Externí identifikátor rejstříkového hesla v externím zdroji záznamů, například interpi.
+     *
+     * @param externalId externí identifikátor rejstříkového hesla.
      */
-    void setExternal_id(String external_id);
+    void setExternalId(String externalId);
 
     /**
      * Vazba na variantní záznamy.
-     * 
+     *
      * @param variantRecordList množina záznamů.
      */
     void setVariantRecordList(List<VR> variantRecordList);
 
     /**
      * Vazba na variantní záznamy.
-     * 
+     *
      * @return množina, může být prázdná.
      */
     List<VR> getVariantRecordList();

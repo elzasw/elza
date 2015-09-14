@@ -1,11 +1,6 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartySubtype;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegVariantRecord;
-import org.springframework.stereotype.Component;
+import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -16,7 +11,14 @@ import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.util.List;
+
+import org.springframework.stereotype.Component;
+
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartySubtype;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegVariantRecord;
 
 /**
  * Implementace repository osob.
@@ -84,7 +86,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
         Join<Object, Object> partySubtype = party.join(ParParty.PARTY_SUBTYPE);
         Join<Object, Object> partyType = partySubtype.join(ParPartySubtype.PARTY_TYPE);
 
-        String searchValue = "%"+searchString+"%";
+        String searchValue = "%" + searchString + "%";
 
         Predicate condition = null;
         if (searchString != null) {

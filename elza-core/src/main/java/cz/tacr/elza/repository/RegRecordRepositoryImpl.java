@@ -1,10 +1,6 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegVariantRecord;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.stereotype.Component;
+import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -15,7 +11,13 @@ import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.springframework.stereotype.Component;
+
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegVariantRecord;
 
 /**
  * Implementace respozitory pro regrecord.
@@ -77,7 +79,7 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
 
         Predicate conditon = null;
         if (StringUtils.isNotBlank(searchRecord)) {
-            final String searchValue = "%"+searchRecord.toLowerCase()+"%";
+            final String searchValue = "%" + searchRecord.toLowerCase() + "%";
             conditon =  builder.or(
                     builder.like(builder.lower(record.get(RegRecord.RECORD)), searchValue),
                     builder.like(builder.lower(record.get(RegRecord.CHARACTERISTICS)), searchValue),

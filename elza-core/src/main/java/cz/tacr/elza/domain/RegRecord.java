@@ -1,13 +1,25 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.springframework.data.rest.core.annotation.RestResource;
 
-import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -52,8 +64,8 @@ public class RegRecord extends AbstractVersionableEntity implements cz.tacr.elza
     @Column(nullable = false)
     private Boolean local;
 
-    @Column(length = 250)
-    private String external_id;
+    @Column(name = "externalId", length = 250)
+    private String externalId;
 
     /* Konstanty pro vazby a fieldy. */
     public static final String VARIANT_RECORD_LIST = "variantRecordList";
@@ -134,13 +146,13 @@ public class RegRecord extends AbstractVersionableEntity implements cz.tacr.elza
     }
 
     @Override
-    public String getExternal_id() {
-        return external_id;
+    public String getExternalId() {
+        return externalId;
     }
 
     @Override
-    public void setExternal_id(final String external_id) {
-        this.external_id = external_id;
+    public void setExternalId(final String externalId) {
+        this.externalId = externalId;
     }
 
     @Override
