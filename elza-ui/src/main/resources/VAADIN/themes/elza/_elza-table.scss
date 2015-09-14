@@ -63,14 +63,14 @@
         overflow: auto !important;
     }
 
-    .v-table-cell-wrapper {
+    .v-table-cell-wrapper div{
         overflow: hidden;
         max-width: 2000px;
 
         max-height: 30px;
         height: 30px;
         line-height: 15px;
-        text-overflow: ellipsis;
+        white-space: normal;
     }
 
     .v-table-cell-content{

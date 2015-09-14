@@ -3,10 +3,13 @@ package cz.tacr.elza.ui.components;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.shared.ui.window.WindowMode;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
+import com.vaadin.ui.UI;
+
 import cz.req.ax.AxAction;
 import cz.req.ax.AxWindow;
 import cz.tacr.elza.api.controller.PartyManager;
@@ -222,12 +225,16 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
                     .components(attribut)
                     .buttonClose()
                     .modal()
-                    .style("window-detail").show().closeListener(e -> {
+                    .style("window-detail").closeListener(e -> {
                 attributesComboBox.setValue(null);
             }).menuActions(AxAction.of(attribut).caption("Uložit").action(this::saveAttributeWithVersion),
                     AxAction.of(attribut).caption("Uložit bez uložení historie")
                             .action(this::saveAttributeWithoutVersion)
             );
+
+            attributWindow.getWindow().center();
+            UI.getCurrent().addWindow(attributWindow.getWindow());
+
         }
     }
 

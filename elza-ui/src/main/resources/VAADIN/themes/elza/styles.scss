@@ -72,8 +72,17 @@ $ax-main-focus: $color-app;
 
     }
 
-    .window-detail .form {
-        display: block;
+    .window-detail{
+        .form {
+            display: block;
+        }
+
+        .page-body{
+            max-height: 60vh;
+            overflow: hidden;
+            overflow-y: auto;
+
+        }
     }
 
     .v-formlayout .v-caption {
