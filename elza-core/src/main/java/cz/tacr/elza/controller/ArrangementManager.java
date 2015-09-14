@@ -429,7 +429,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         Assert.notNull(levelWithParentNode);
         ArrFaLevel node = levelWithParentNode.getFaLevel();
         ArrNode parentNode = levelWithParentNode.getExtraNode();
+        Integer versionId = levelWithParentNode.getFaVersionId();
 
+        isValidAndOpenVersion(versionId);
         isValidArrFaLevel(node);
         isValidNode(parentNode);
 
@@ -455,7 +457,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         Assert.notNull(levelWithParentNode);
         ArrFaLevel node = levelWithParentNode.getFaLevel();
         ArrNode parentNode = levelWithParentNode.getExtraNode();
+        Integer versionId = levelWithParentNode.getFaVersionId();
 
+        isValidAndOpenVersion(versionId);
         isValidArrFaLevel(node);
         isValidNode(parentNode);
 
@@ -482,7 +486,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         Assert.notNull(levelWithParentNode);
 
         ArrFaLevel node = levelWithParentNode.getFaLevel();
-        //ArrNode parentNode = levelWithParentNode.getExtraNode();
+        Integer versionId = levelWithParentNode.getFaVersionId();
+
+        isValidAndOpenVersion(versionId);
         isValidArrFaLevel(node);
 
         ArrFaChange change = createChange();
@@ -507,7 +513,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         ArrFaLevel level = levelWithFollowerNode.getFaLevel();
         ArrFaLevel targetLevel = levelWithFollowerNode.getFaLevelTarget();
         ArrNode targetNode = targetLevel.getNode();
+        Integer versionId = levelWithFollowerNode.getFaVersionId();
 
+        isValidAndOpenVersion(versionId);
         isValidArrFaLevel(level);
         isValidArrFaLevel(targetLevel);
         isValidNode(targetNode);
@@ -576,7 +584,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrFaLevel node = levelWithUnderNode.getFaLevel();
         ArrNode parentNode = levelWithUnderNode.getExtraNode();
+        Integer versionId = levelWithUnderNode.getFaVersionId();
 
+        isValidAndOpenVersion(versionId);
         isValidArrFaLevel(node);
         isValidNode(parentNode);
 
@@ -624,7 +634,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         ArrFaLevel level = levelWithPredecessorNode.getFaLevel();
         ArrFaLevel predecessorLevel = levelWithPredecessorNode.getFaLevelTarget();
         ArrNode predecessorNode = predecessorLevel.getNode();
+        Integer versionId = levelWithPredecessorNode.getFaVersionId();
 
+        isValidAndOpenVersion(versionId);
         isValidArrFaLevel(level);
         isValidArrFaLevel(predecessorLevel);
         isValidNode(predecessorNode);
@@ -710,6 +722,21 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         /*if (nodeDB.getDeleteChange() != null) {
             throw new IllegalArgumentException("Uzel je již smazaný");
         }*/
+    }
+
+    /**
+     * Kontrola verze, že existuje v DB a není uzavřena.
+     * @param versionId Identifikátor verze
+     */
+    private void isValidAndOpenVersion(Integer versionId) {
+        Assert.notNull(versionId);
+        ArrFaVersion version = versionRepository.findOne(versionId);
+        if (version == null) {
+            throw new IllegalArgumentException("Verze neexistuje");
+        }
+        if (version.getLockChange() != null) {
+            throw new IllegalArgumentException("Aktuální verze je zamčená");
+        }
     }
 
     /**
@@ -840,7 +867,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         ArrFaLevel faLevel = levelWithParentNode.getFaLevel();
         ArrNode node = faLevel.getNode();
         ArrNode parentNode = levelWithParentNode.getExtraNode();
+        Integer versionId = levelWithParentNode.getFaVersionId();
 
+        isValidAndOpenVersion(versionId);
         ArrFaLevel level = findNodeInRootTreeByNodeId(faLevel.getNode(), levelWithParentNode.getRootNode());
         if(level == null || level.getDeleteChange() != null){
             throw new IllegalArgumentException("Záznam již byl smazán");

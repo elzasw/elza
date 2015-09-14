@@ -31,4 +31,8 @@ public interface ArrFaLevelPack<FL extends ArrFaLevel, N extends ArrNode> extend
 
     void setFaLevelTarget(FL faLevel);
 
+    Integer getFaVersionId();
+
+    void  setFaVersionId(Integer faVersionId);
+
 }

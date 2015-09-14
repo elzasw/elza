@@ -19,6 +19,8 @@ public class ArrFaLevelWithExtraNode implements cz.tacr.elza.api.vo.ArrFaLevelPa
 
     private ArrFaLevel faLevelTarget;
 
+    private Integer faVersionId;
+
     public ArrFaLevelWithExtraNode() {
     }
 
@@ -61,6 +63,16 @@ public class ArrFaLevelWithExtraNode implements cz.tacr.elza.api.vo.ArrFaLevelPa
     @Override
     public void setFaLevelTarget(ArrFaLevel faLevelTarget) {
         this.faLevelTarget = faLevelTarget;
+    }
+
+    @Override
+    public Integer getFaVersionId() {
+        return faVersionId;
+    }
+
+    @Override
+    public void setFaVersionId(Integer faVersionId) {
+        this.faVersionId = faVersionId;
     }
 
     @Override

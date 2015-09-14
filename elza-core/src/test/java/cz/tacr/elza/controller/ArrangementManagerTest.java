@@ -351,16 +351,20 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(version.getRootFaLevel());
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
 
         ArrFaLevelWithExtraNode second = response.getBody().as(ArrFaLevelWithExtraNode.class);
 
         levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(second.getFaLevel());
         levelWithExtraNode.setExtraNode(second.getExtraNode());
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
+
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_BEFORE_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
@@ -385,6 +389,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(version.getRootFaLevel());
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
@@ -395,6 +400,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(first.getFaLevel());
         levelWithExtraNode.setExtraNode(first.getExtraNode());
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
+
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_AFTER_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
@@ -417,8 +424,9 @@ public class ArrangementManagerTest extends AbstractRestTest {
 //        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
 
         ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
-
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
         levelWithExtraNode.setFaLevel(version.getRootFaLevel());
+
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
@@ -428,6 +436,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         Integer parentNodeId = parent.getFaLevel().getNode().getNodeId();
         levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(parent.getFaLevel());
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
 
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
@@ -465,6 +474,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(version.getRootFaLevel());
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
@@ -474,6 +484,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(parent.getFaLevel());
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
+
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
@@ -489,6 +501,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         parentNode.setVersion(parentNode.getVersion() + 1);
         parent.getFaLevel().getParentNode().setVersion(parent.getFaLevel().getParentNode().getVersion() + 1);
         levelWithExtraNode.setFaLevelTarget(parent.getFaLevel());
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
 
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(MOVE_LEVEL_BEFORE_URL);
         logger.info(response.asString());
@@ -511,6 +524,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(version.getRootFaLevel());
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
@@ -520,6 +534,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(version.getRootFaLevel());
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
 
         version.getRootFaLevel().getNode().setVersion(version.getRootFaLevel().getNode().getVersion() + 1);
 
@@ -552,6 +567,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(version.getRootFaLevel());
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
@@ -561,6 +577,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(parent.getFaLevel());
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
 
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
@@ -571,6 +588,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(child.getFaLevel());
         levelWithExtraNode.setFaLevelTarget(parent.getFaLevel());
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
 
         child.getFaLevel().getParentNode().setVersion(child.getFaLevel().getParentNode().getVersion() + 1);
         parent.getFaLevel().getNode().setVersion(parent.getFaLevel().getNode().getVersion() + 1);
@@ -597,6 +615,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(version.getRootFaLevel());
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
@@ -607,6 +626,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(node.getFaLevel());
         levelWithExtraNode.setExtraNode(node.getExtraNode());
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
+
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(DELETE_LEVEL_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());

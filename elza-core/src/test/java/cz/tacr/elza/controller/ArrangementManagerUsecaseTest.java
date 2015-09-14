@@ -387,7 +387,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         Assert.isTrue(originalChildren.size() == 4);
 
         // přesun druhého uzlu před první
-        ArrFaLevelWithExtraNode faLevelWithExtraNode = moveLevelBefore(originalChildren.get(1), originalChildren.get(0));
+        ArrFaLevelWithExtraNode faLevelWithExtraNode = moveLevelBefore(originalChildren.get(1), originalChildren.get(0), version);
         ArrFaLevel movedLevel = faLevelWithExtraNode.getFaLevel();
         Assert.notNull(movedLevel);
         Assert.notNull(movedLevel.getNode().equals(originalChildren.get(1).getNode()));
@@ -404,10 +404,10 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         Assert.isTrue(children.get(3).getPosition().equals(4));
 
         // opakování přesunu druhého uzlu před první, očekává se chyba
-        moveLevelBeforeWithError(originalChildren.get(1), originalChildren.get(0));
+        moveLevelBeforeWithError(originalChildren.get(1), originalChildren.get(0), version);
 
         // přesun druhého uzlu pod první
-        faLevelWithExtraNode = moveLevelUnder(children.get(1), children.get(0));
+        faLevelWithExtraNode = moveLevelUnder(children.get(1), children.get(0), version);
         movedLevel = faLevelWithExtraNode.getFaLevel();
         Assert.notNull(movedLevel);
         Assert.notNull(movedLevel.getNode().equals(children.get(1).getNode()));
@@ -429,7 +429,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         Assert.isTrue(children.get(2).getPosition().equals(3));
 
         // přesun prvního uzlu za druhý uzel v první úrovni stromu
-        faLevelWithExtraNode = moveLevelAfter(children.get(0), children.get(1));
+        faLevelWithExtraNode = moveLevelAfter(children.get(0), children.get(1), version);
         movedLevel = faLevelWithExtraNode.getFaLevel();
         Assert.notNull(movedLevel);
         Assert.notNull(movedLevel.getNode().equals(rootNode));
@@ -446,7 +446,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
 
         // smazání druhého uzlu v první úrovni
         ArrFaLevel levelToDelete = children.get(1);
-        ArrFaLevel deletedLevel = deleteLevel(levelToDelete).getFaLevel();
+        ArrFaLevel deletedLevel = deleteLevel(levelToDelete, version).getFaLevel();
         Assert.notNull(deletedLevel);
         Assert.notNull(deletedLevel.getDeleteChange());
 
@@ -468,6 +468,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         ArrNode rootNode = version.getRootFaLevel().getNode();
         ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(version.getRootFaLevel());
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
 
         // přidání prvního levelu pod root
         ArrFaLevelWithExtraNode childLevelWithExtraNode = createLevelChild(levelWithExtraNode);
@@ -489,6 +490,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         // přidání druhého levelu pod root
         levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(getLevelByNodeId(rootNode.getNodeId()));
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
 
         childLevelWithExtraNode = createLevelChild(levelWithExtraNode);
         ArrFaLevel child2 = childLevelWithExtraNode.getFaLevel();
@@ -506,6 +508,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         child1 = getLevelByNodeId(child1.getNode().getNodeId());
         levelWithExtraNode.setFaLevel(child1);
         levelWithExtraNode.setExtraNode(child1.getParentNode());
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
 
         childLevelWithExtraNode = createLevelBefore(levelWithExtraNode);
         ArrFaLevel child3 = childLevelWithExtraNode.getFaLevel();
@@ -526,6 +529,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(child3);
         levelWithExtraNode.setExtraNode(child3.getParentNode());
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
 
         childLevelWithExtraNode = createLevelAfter(levelWithExtraNode);
         ArrFaLevel child4 = childLevelWithExtraNode.getFaLevel();
@@ -621,13 +625,15 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @param movedLevel přesouvaný uzel
      * @param targetLevel uzel před který se má vložit přesouvaný uzel
+     * @param version verze archivní pomůcky
      *
      * @return přesunutý uzel
      */
-    private ArrFaLevelWithExtraNode moveLevelBefore(ArrFaLevel movedLevel, ArrFaLevel targetLevel) {
+    private ArrFaLevelWithExtraNode moveLevelBefore(ArrFaLevel movedLevel, ArrFaLevel targetLevel, ArrFaVersion version) {
         ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(movedLevel);
         levelWithExtraNode.setFaLevelTarget(targetLevel);
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
 
         Response response = put(spec -> spec.body(levelWithExtraNode), MOVE_LEVEL_BEFORE_URL);
 
@@ -639,11 +645,13 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @param movedLevel přesouvaný uzel
      * @param targetLevel uzel před který se má vložit přesouvaný uzel
+     * @param version verze archivní pomůcky
      */
-    private void moveLevelBeforeWithError(ArrFaLevel movedLevel, ArrFaLevel targetLevel) {
+    private void moveLevelBeforeWithError(ArrFaLevel movedLevel, ArrFaLevel targetLevel, ArrFaVersion version) {
         ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(movedLevel);
         levelWithExtraNode.setFaLevelTarget(targetLevel);
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
 
         put(spec -> spec.body(levelWithExtraNode), MOVE_LEVEL_BEFORE_URL, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -653,13 +661,15 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @param movedLevel přesouvaný uzel
      * @param targetLevel uzel pod který se má vložit přesouvaný uzel
+     * @param version verze archivní pomůcky
      *
      * @return přesunutý uzel
      */
-    private ArrFaLevelWithExtraNode moveLevelUnder(ArrFaLevel movedLevel, ArrFaLevel targetLevel) {
+    private ArrFaLevelWithExtraNode moveLevelUnder(ArrFaLevel movedLevel, ArrFaLevel targetLevel, ArrFaVersion version) {
         ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(movedLevel);
         levelWithExtraNode.setExtraNode(targetLevel.getNode());
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
 
         Response response = put(spec -> spec.body(levelWithExtraNode), MOVE_LEVEL_UNDER_URL);
 
@@ -671,13 +681,15 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @param movedLevel přesouvaný uzel
      * @param targetLevel uzel za který se má vložit přesouvaný uzel
+     * @param version verze archivní pomůcky
      *
      * @return přesunutý uzel
      */
-    private ArrFaLevelWithExtraNode moveLevelAfter(ArrFaLevel movedLevel, ArrFaLevel targetLevel) {
+    private ArrFaLevelWithExtraNode moveLevelAfter(ArrFaLevel movedLevel, ArrFaLevel targetLevel, ArrFaVersion version) {
         ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(movedLevel);
         levelWithExtraNode.setFaLevelTarget(targetLevel);
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
 
         Response response = put(spec -> spec.body(levelWithExtraNode), MOVE_LEVEL_AFTER_URL);
 
@@ -689,13 +701,15 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @param movedLevel přesouvaný uzel
      * @param targetLevel uzel za který se má vložit přesouvaný uzel
+     * @param version verze archivní pomůcky
      *
      * @return přesunutý uzel
      */
-    private ArrFaLevelWithExtraNode deleteLevel(ArrFaLevel levelToDelete) {
+    private ArrFaLevelWithExtraNode deleteLevel(ArrFaLevel levelToDelete, ArrFaVersion version) {
         ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
         levelWithExtraNode.setFaLevel(levelToDelete);
         levelWithExtraNode.setExtraNode(levelToDelete.getParentNode());
+        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
 
         Response response = put(spec -> spec.body(levelWithExtraNode), DELETE_LEVEL_URL);
 
