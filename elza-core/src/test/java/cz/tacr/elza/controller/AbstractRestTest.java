@@ -1,36 +1,11 @@
 package cz.tacr.elza.controller;
 
-import static com.jayway.restassured.RestAssured.given;
-
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Function;
-
-import javax.transaction.Transactional;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.EncoderConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
 import com.jayway.restassured.response.Header;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
-
 import cz.tacr.elza.ElzaCore;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
@@ -42,7 +17,7 @@ import cz.tacr.elza.domain.ArrFaLevelExt;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ParAbstractParty;
+import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartySubtype;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
@@ -54,7 +29,6 @@ import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.repository.AbstractPartyRepository;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
@@ -70,6 +44,7 @@ import cz.tacr.elza.repository.FaViewRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartySubtypeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
@@ -77,6 +52,28 @@ import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.repository.VersionRepository;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.IntegrationTest;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+
+import javax.transaction.Transactional;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+
+import static com.jayway.restassured.RestAssured.given;
 
 /**
  * Abstraktní předek pro testy. Nastavuje REST prostředí.
@@ -241,7 +238,7 @@ public abstract class AbstractRestTest {
     @Autowired
     private ExternalSourceRepository externalSourceRepository;
     @Autowired
-    protected AbstractPartyRepository abstractPartyRepository;
+    protected PartyRepository abstractPartyRepository;
     @Autowired
     private VariantRecordRepository variantRecordRepository;
     @Autowired
@@ -555,7 +552,7 @@ public abstract class AbstractRestTest {
         return partySubtypeRepository.findOne(5);
     }
 
-    protected ParAbstractParty createParAbstractParty() {
+    protected ParParty createParAbstractParty() {
         final ParPartySubtype partySubtype = findPartySubtype();
 //        final ParPartyType partyType = partyTypeRepository.findOne(partySubtype.getPartyType().getPartyTypeId());
         partySubtype.setPartyType(null);
@@ -563,8 +560,8 @@ public abstract class AbstractRestTest {
         return createParAbstractParty(partySubtype, record);
     }
 
-    protected ParAbstractParty createParAbstractParty(final ParPartySubtype partySubtype, final RegRecord record) {
-        ParAbstractParty party = new ParAbstractParty();
+    protected ParParty createParAbstractParty(final ParPartySubtype partySubtype, final RegRecord record) {
+        ParParty party = new ParParty();
         party.setPartySubtype(partySubtype);
         party.setRecord(record);
         return abstractPartyRepository.save(party);
@@ -611,12 +608,12 @@ public abstract class AbstractRestTest {
     }
 
     @Transactional
-    protected ParAbstractParty createParty(String obsah) {
+    protected ParParty createParty(String obsah) {
         final RegRecord record = createRecord();
         final ParPartySubtype partySubtype = findPartySubtype();
         createVariantRecord(obsah, record);
 
-        ParAbstractParty party = new ParAbstractParty();
+        ParParty party = new ParParty();
         party.setRecord(record);
         party.setPartySubtype(partySubtype);
         return abstractPartyRepository.save(party);

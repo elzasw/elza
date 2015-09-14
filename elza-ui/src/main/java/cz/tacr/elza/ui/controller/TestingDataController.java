@@ -1,28 +1,5 @@
 package cz.tacr.elza.ui.controller;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.sql.DataSource;
-import javax.transaction.Transactional;
-
-import org.apache.commons.lang.math.RandomUtils;
-import org.hibernate.Session;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrDescItemExt;
@@ -31,7 +8,7 @@ import cz.tacr.elza.domain.ArrFaLevel;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ParAbstractParty;
+import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartySubtype;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
@@ -42,7 +19,6 @@ import cz.tacr.elza.domain.RulDescItemSpecExt;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
-import cz.tacr.elza.repository.AbstractPartyRepository;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRepository;
@@ -51,12 +27,34 @@ import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartySubtypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.repository.VersionRepository;
+import org.apache.commons.lang.math.RandomUtils;
+import org.hibernate.Session;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.sql.DataSource;
+import javax.transaction.Transactional;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Kontroler pro testovací data.
@@ -79,7 +77,7 @@ public class TestingDataController {
     private RuleManager ruleManager;
 
     @Autowired
-    private AbstractPartyRepository abstractPartyRepository;
+    private PartyRepository abstractPartyRepository;
     @Autowired
     private DataRepository dataRepository;
     @Autowired
@@ -475,23 +473,23 @@ public class TestingDataController {
         ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
 
         List<RegRecord> records = createRegRecords();
-        List<ParAbstractParty> parties = createParties(records);
+        List<ParParty> parties = createParties(records);
         createTree(MAX_DEPTH, NODES_IN_LEVEL, version, parties);
     }
 
-    private List<ParAbstractParty> createParties(List<RegRecord> records) {
+    private List<ParParty> createParties(List<RegRecord> records) {
         Map<String, ParPartySubtype> partySubTypeMap = partySubtypeRepository.findAll().stream()
             .collect(Collectors.toMap(ParPartySubtype::getCode, Function.identity()));
 
-        List<ParAbstractParty> existingParties = abstractPartyRepository.findAll();
+        List<ParParty> existingParties = abstractPartyRepository.findAll();
 
-        List<ParAbstractParty> parties = new LinkedList<ParAbstractParty>();
+        List<ParParty> parties = new LinkedList<ParParty>();
         for (PartyEnum partyEnum : PartyEnum.values()) {
             String subType = partyEnum.getSubType();
             int position = partyEnum.getRecordPosition();
             ParPartySubtype partySubtype = partySubTypeMap.get(subType);
             RegRecord regRecord = records.get(position);
-            ParAbstractParty abstractParty = findParty(partySubtype, regRecord, existingParties);
+            ParParty abstractParty = findParty(partySubtype, regRecord, existingParties);
             if (abstractParty == null) {
                 abstractParty = createParAbstractParty(partySubtype, regRecord);
             }
@@ -527,13 +525,13 @@ public class TestingDataController {
         }
     }
 
-    private ParAbstractParty findParty(ParPartySubtype parPartySubtype, RegRecord regRecord,
-            List<ParAbstractParty> existingParties) {
+    private ParParty findParty(ParPartySubtype parPartySubtype, RegRecord regRecord,
+            List<ParParty> existingParties) {
         if (existingParties.isEmpty()) {
             return null;
         }
 
-        for (ParAbstractParty abstractParty : existingParties) {
+        for (ParParty abstractParty : existingParties) {
             if (abstractParty.getPartySubtype().equals(parPartySubtype)
                     && abstractParty.getRecord().equals(regRecord)) {
                 return abstractParty;
@@ -543,8 +541,8 @@ public class TestingDataController {
         return null;
     }
 
-    private ParAbstractParty createParAbstractParty(ParPartySubtype parPartySubtype, RegRecord regRecord) {
-        ParAbstractParty parAbstractParty = new ParAbstractParty();
+    private ParParty createParAbstractParty(ParPartySubtype parPartySubtype, RegRecord regRecord) {
+        ParParty parAbstractParty = new ParParty();
         parAbstractParty.setPartySubtype(parPartySubtype);
         parAbstractParty.setRecord(regRecord);
 
@@ -649,7 +647,7 @@ public class TestingDataController {
         return recordRepository.save(regRecord);
     }
 
-    private void createTree(int maxDepth, int nodesInLevel, ArrFaVersion version, List<ParAbstractParty> parties) {
+    private void createTree(int maxDepth, int nodesInLevel, ArrFaVersion version, List<ParParty> parties) {
         Queue<ArrNode> parents = new LinkedList<>();
         parents.add(version.getRootFaLevel().getNode());
 
@@ -677,7 +675,7 @@ public class TestingDataController {
         }
     }
 
-    private void createLevelAttributes(ArrNode node, ArrFaVersion version, int depth, List<ParAbstractParty> parties) {
+    private void createLevelAttributes(ArrNode node, ArrFaVersion version, int depth, List<ParParty> parties) {
         ArrDescItemSavePack descItemSavePack = new ArrDescItemSavePack();
         descItemSavePack.setCreateNewVersion(true);
         descItemSavePack.setFaVersionId(version.getFaVersionId());
@@ -803,10 +801,10 @@ public class TestingDataController {
         }
     }
 
-    private ArrDescItemExt createPartyRefValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, List<ParAbstractParty> parties) {
+    private ArrDescItemExt createPartyRefValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, List<ParParty> parties) {
         ArrDescItemExt descItemExt = createValue(node, rulDescItemTypeExt);
 
-        ParAbstractParty parAbstractParty = parties.get(RandomUtils.nextInt(parties.size()));
+        ParParty parAbstractParty = parties.get(RandomUtils.nextInt(parties.size()));
         descItemExt.setAbstractParty(parAbstractParty);
 //        descItemExt.setData(parAbstractParty.getRecord().getRecord());
 //        descItemExt.setRecord(parAbstractParty.getRecord());

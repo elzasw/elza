@@ -3,7 +3,7 @@ package cz.tacr.elza.controller;
 import com.jayway.restassured.internal.RestAssuredResponseImpl;
 import com.jayway.restassured.response.Response;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
-import cz.tacr.elza.domain.ParAbstractParty;
+import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartySubtype;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParPartyTypeExt;
@@ -41,7 +41,7 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
     /** Objekty testu. */
     private RegRecord heslo1;
     private RegRecord heslo2;
-    private ParAbstractParty party1;
+    private ParParty party1;
 
     private static final String VAR_HESLO_H1V1  = "Variantni heslo H1V1";
     private static final String VAR_HESLO_H1V1_UPDATE  = "Variantni heslo H1V1 aktualizace";
@@ -134,7 +134,7 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         ParPartySubtype partySubTypeOsoba = getPartySubType(FYZ_OSOBA);
         ParPartySubtype partySubTypeUdalost = getPartySubType(UDAL_PRIRODA);
 
-        ParAbstractParty abstractParty = fillAbstractParty(partySubTypeOsoba, heslo1);
+        ParParty abstractParty = fillAbstractParty(partySubTypeOsoba, heslo1);
         party1 = createAbstractParty(abstractParty);
 
         abstractParty = fillAbstractParty(partySubTypeUdalost, heslo2);
@@ -148,7 +148,7 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         ParPartySubtype partySubTypeOsoba = getPartySubType(FYZ_OSOBA);
         ParPartySubtype partySubTypeUdalost = getPartySubType(UDAL_PRIRODA);
 
-        List<ParAbstractParty> osoby = findAbstractParty("h1", partySubTypeOsoba.getPartyType(), true);
+        List<ParParty> osoby = findAbstractParty("h1", partySubTypeOsoba.getPartyType(), true);
         long osobyCount = findAbstractPartyCount("h1", partySubTypeOsoba.getPartyType(), true);
         Assert.assertEquals("Nenalezeny osoby. ", 1, osoby.size());
         Assert.assertTrue("Není očekávané heslo.", osoby.get(0).getRecord().equals(heslo1));
@@ -174,7 +174,7 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         ParPartySubtype subTypeFiktRod = getPartySubType(FIKT_ROD);
         party1.setPartySubtype(subTypeFiktRod);
         updateAbstractParty(party1);
-        ParAbstractParty ap = getAbstractParty(party1.getAbstractPartyId());
+        ParParty ap = getAbstractParty(party1.getAbstractPartyId());
         Assert.assertEquals("Update neproveden.", subTypeFiktRod, ap.getPartySubtype());
 
         // heslo, jeho podrobný popis
@@ -421,8 +421,8 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
      * @param regRecord         heslo ke kterému bude připojena
      * @return  naplněný objekt, neuložený
      */
-    private ParAbstractParty fillAbstractParty(final ParPartySubtype partySubtype, final RegRecord regRecord) {
-        ParAbstractParty abstractParty = new ParAbstractParty();
+    private ParParty fillAbstractParty(final ParPartySubtype partySubtype, final RegRecord regRecord) {
+        ParParty abstractParty = new ParParty();
         abstractParty.setPartySubtype(partySubtype);
         abstractParty.setRecord(regRecord);
 
@@ -435,13 +435,13 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
      * @param abstractParty   objekt osoby
      * @return  záznam
      */
-    private ParAbstractParty createAbstractParty(final ParAbstractParty abstractParty) {
+    private ParParty createAbstractParty(final ParParty abstractParty) {
         Response response = put((spec) -> spec
                         .body(abstractParty),
                         INSERT_ABSTRACT_PARTY
         );
 
-        ParAbstractParty newAbstractParty = response.getBody().as(ParAbstractParty.class);
+        ParParty newAbstractParty = response.getBody().as(ParParty.class);
 
         // ověření
         Assert.assertNotNull(newAbstractParty);
@@ -460,7 +460,7 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
      * @param partyType         typ osoby
      * @return                  entity
      */
-    private List<ParAbstractParty> findAbstractParty(final String searchString, final ParPartyType partyType,
+    private List<ParParty> findAbstractParty(final String searchString, final ParPartyType partyType,
                                                      final boolean originator) {
 
         Response response = get((spec) -> spec
@@ -472,7 +472,7 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
                 FIND_ABSTRACT_PARTY
         );
 
-        return (List<ParAbstractParty>) Arrays.asList(response.getBody().as(ParAbstractParty[].class));
+        return (List<ParParty>) Arrays.asList(response.getBody().as(ParParty[].class));
     }
 
     /**
@@ -501,13 +501,13 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
      * @param abstractParty   objekt osoby
      * @return  záznam
      */
-    private ParAbstractParty updateAbstractParty(final ParAbstractParty abstractParty) {
+    private ParParty updateAbstractParty(final ParParty abstractParty) {
         Response response = put((spec) -> spec
                         .body(abstractParty),
                 UPDATE_ABSTRACT_PARTY
         );
 
-        ParAbstractParty updatedAbstractParty = response.getBody().as(ParAbstractParty.class);
+        ParParty updatedAbstractParty = response.getBody().as(ParParty.class);
 
         // ověření
         Assert.assertNotNull(updatedAbstractParty);
@@ -587,13 +587,13 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
      * @param abstractPartyId   id pro načtení
      * @return      entita
      */
-    private ParAbstractParty getAbstractParty(final Integer abstractPartyId) {
+    private ParParty getAbstractParty(final Integer abstractPartyId) {
         Response response = get((spec) -> spec
                         .parameter(ABSTRACT_PARTY_ID_ATT, abstractPartyId),
                 GET_ABSTRACT_PARTY
         );
 
-        return response.getBody().as(ParAbstractParty.class);
+        return response.getBody().as(ParParty.class);
     }
 
     /**

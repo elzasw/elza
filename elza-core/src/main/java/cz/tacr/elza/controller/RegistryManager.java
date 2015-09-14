@@ -4,8 +4,8 @@ import cz.tacr.elza.domain.RegExternalSource;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.repository.AbstractPartyRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
+import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
@@ -41,7 +41,7 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     private VariantRecordRepository variantRecordRepository;
 
     @Autowired
-    private AbstractPartyRepository abstractPartyRepository;
+    private PartyRepository abstractPartyRepository;
 
     @Autowired
     private ExternalSourceRepository externalSourceRepository;

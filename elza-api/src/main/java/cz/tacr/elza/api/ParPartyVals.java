@@ -7,7 +7,7 @@ import java.io.Serializable;
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public interface ParAbstractPartyVals
+public interface ParPartyVals
         extends Serializable {
 
     public Integer getRecordId();

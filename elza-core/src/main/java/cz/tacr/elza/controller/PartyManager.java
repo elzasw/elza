@@ -1,11 +1,11 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.domain.ParAbstractParty;
+import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartySubtype;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParPartyTypeExt;
 import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.repository.AbstractPartyRepository;
+import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartySubtypeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
@@ -34,10 +34,10 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/partyManager")
-public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<ParAbstractParty> {
+public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<ParParty> {
 
     @Autowired
-    private AbstractPartyRepository abstractPartyRepository;
+    private PartyRepository abstractPartyRepository;
     @Autowired
     private RegRecordRepository recordRepository;
     @Autowired
@@ -74,7 +74,7 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
     }
 
     @Transactional
-    private void updateAbstractParty(final ParAbstractParty source, final ParAbstractParty target) {
+    private void updateAbstractParty(final ParParty source, final ParParty target) {
         Assert.notNull(source.getPartySubtype(), "Není vyplněné partySubtype");
         Assert.notNull(source.getRecord(), "Není vyplněné record");
         Integer recordId = source.getRecord().getRecordId();
@@ -95,8 +95,8 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
 
     @RequestMapping(value = "/insertAbstractParty", method = RequestMethod.PUT)
     @Override
-    public ParAbstractParty insertAbstractParty(@RequestBody final ParAbstractParty abstractParty) {
-        ParAbstractParty newParty = insertAbstractPartyInternal(abstractParty);
+    public ParParty insertAbstractParty(@RequestBody final ParParty abstractParty) {
+        ParParty newParty = insertAbstractPartyInternal(abstractParty);
 
         if (newParty.getRecord() != null) {
             newParty.getRecord().getVariantRecordList().forEach((variantRecord) -> {
@@ -107,8 +107,8 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
     }
 
     @Transactional
-    private ParAbstractParty insertAbstractPartyInternal(final ParAbstractParty abstractParty) {
-        ParAbstractParty newParty = new ParAbstractParty();
+    private ParParty insertAbstractPartyInternal(final ParParty abstractParty) {
+        ParParty newParty = new ParParty();
         updateAbstractParty(abstractParty, newParty);
         abstractPartyRepository.save(newParty);
         return newParty;
@@ -116,7 +116,7 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
 
     @RequestMapping(value = "/updateAbstractParty", method = RequestMethod.PUT)
     @Override
-    public ParAbstractParty updateAbstractParty(@RequestBody final ParAbstractParty abstractParty) {
+    public ParParty updateAbstractParty(@RequestBody final ParParty abstractParty) {
         updateAbstractPartyInternal(abstractParty);
         if (abstractParty.getRecord() != null) {
             abstractParty.getRecord().getVariantRecordList().forEach((variantRecord) -> {
@@ -128,11 +128,11 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
     }
 
     @Transactional
-    private ParAbstractParty updateAbstractPartyInternal(final ParAbstractParty abstractParty) {
+    private ParParty updateAbstractPartyInternal(final ParParty abstractParty) {
         Integer abstractPartyId = abstractParty.getAbstractPartyId();
         Assert.notNull(abstractPartyId);
-        ParAbstractParty party = abstractPartyRepository.findOne(abstractPartyId);
-        Assert.notNull(party, "Nebyla nalezena ParAbstractParty s id " + abstractPartyId);
+        ParParty party = abstractPartyRepository.findOne(abstractPartyId);
+        Assert.notNull(party, "Nebyla nalezena ParParty s id " + abstractPartyId);
         updateAbstractParty(abstractParty, abstractParty);
         abstractPartyRepository.save(abstractParty);
         return abstractParty;
@@ -143,7 +143,7 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
     @Transactional
     @Override
     public void deleteAbstractParty(@RequestParam("abstractPartyId") final Integer abstractPartyId) {
-        ParAbstractParty abstractParty = abstractPartyRepository.findOne(abstractPartyId);
+        ParParty abstractParty = abstractPartyRepository.findOne(abstractPartyId);
         if (abstractParty == null) {
             return;
         }
@@ -153,12 +153,12 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
 
     @RequestMapping(value = "/findAbstractParty", method = RequestMethod.GET)
     @Override
-    public List<ParAbstractParty> findAbstractParty(@RequestParam("search") final String search,
+    public List<ParParty> findAbstractParty(@RequestParam("search") final String search,
             @RequestParam("from") final Integer from, @RequestParam("count") final Integer count,
             @RequestParam(value = "partyTypeId", required = false) final Integer partyTypeId,
             @Nullable @RequestParam(value = "originator", required = false) final Boolean originator) {
 
-        List<ParAbstractParty> resultList = abstractPartyRepository
+        List<ParParty> resultList = abstractPartyRepository
                 .findAbstractPartyByTextAndType(search, partyTypeId, from, count, originator);
         resultList.forEach((party) -> {
             if (party.getRecord() != null) {
@@ -181,10 +181,10 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
 
     @RequestMapping(value = "/getAbstractParty", method = RequestMethod.GET)
     @Override
-    public ParAbstractParty getAbstractParty(
+    public ParParty getAbstractParty(
             @RequestParam("abstractPartyId") final Integer abstractPartyId) {
         Assert.notNull(abstractPartyId);
-        ParAbstractParty party = abstractPartyRepository.getOne(abstractPartyId);
+        ParParty party = abstractPartyRepository.getOne(abstractPartyId);
         if (party.getRecord() != null) {
             party.getRecord().getVariantRecordList().forEach((variantRecord) -> {
                 variantRecord.setRegRecord(null);
