@@ -20,7 +20,7 @@ public interface PartyRepositoryCustom {
      * @param originator        původce - true, není původce - false, null - neaplikuje filtr - obě možnosti
      * @return
      */
-    List<ParParty> findAbstractPartyByTextAndType(String searchRecord, Integer registerTypeId,
+    List<ParParty> findPartyByTextAndType(String searchRecord, Integer registerTypeId,
                                                           Integer firstResult, Integer maxResults, Boolean originator);
 
     /**
@@ -30,5 +30,5 @@ public interface PartyRepositoryCustom {
      * @param originator        původce - true, není původce - false, null - neaplikuje filtr - obě možnosti
      * @return
      */
-    long findAbstractPartyByTextAndTypeCount(String searchRecord, Integer registerTypeId, Boolean originator);
+    long findPartyByTextAndTypeCount(String searchRecord, Integer registerTypeId, Boolean originator);
 }

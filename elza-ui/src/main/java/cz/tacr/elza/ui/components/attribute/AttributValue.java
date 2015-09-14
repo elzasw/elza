@@ -1,16 +1,10 @@
 package cz.tacr.elza.ui.components.attribute;
 
-import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
-
 import com.vaadin.data.Property;
-import com.vaadin.ui.AbstractSelect;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.DragAndDropWrapper;
 import com.vaadin.ui.TextArea;
-
 import cz.req.ax.AxAction;
 import cz.req.ax.AxForm;
 import cz.req.ax.AxItemContainer;
@@ -19,6 +13,9 @@ import cz.tacr.elza.domain.ArrDescItemExt;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.ui.components.autocomplete.Autocomplete;
+import org.apache.commons.lang.StringUtils;
+
+import java.util.List;
 
 
 /**
@@ -67,7 +64,7 @@ public class AttributValue extends CssLayout implements Components {
                 break;
             case "PARTY_REF":
                 Autocomplete partyRefAutoc = createPartyRefAutocomplete();
-                form.getFieldGroup().bind(partyRefAutoc, "abstractParty");
+                form.getFieldGroup().bind(partyRefAutoc, "party");
                 form.addComponent(partyRefAutoc);
                 break;
             case "RECORD_REF":

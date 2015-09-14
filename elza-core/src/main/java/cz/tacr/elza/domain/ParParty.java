@@ -30,7 +30,7 @@ import javax.persistence.Table;
 public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.api.ParParty<RegRecord, ParPartySubtype> {
 
     /* Konstanty pro vazby a fieldy. */
-    public static final String ABSTRACT_PARTY_ID = "abstractPartyId";
+    public static final String ABSTRACT_PARTY_ID = "partyId";
     public static final String RECORD = "record";
     public static final String PARTY_SUBTYPE = "partySubtype";
 

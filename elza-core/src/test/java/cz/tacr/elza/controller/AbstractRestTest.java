@@ -140,7 +140,7 @@ public abstract class AbstractRestTest {
 
     protected static final String PARTY_TYPE_ID_ATT = "partyTypeId";
     protected static final String ORIGINATOR_ATT = "originator";
-    protected static final String ABSTRACT_PARTY_ID_ATT = "abstractPartyId";
+    protected static final String ABSTRACT_PARTY_ID_ATT = "partyId";
 
     // END - PARTY MANAGER CONSTANTS
 
@@ -238,7 +238,7 @@ public abstract class AbstractRestTest {
     @Autowired
     private ExternalSourceRepository externalSourceRepository;
     @Autowired
-    protected PartyRepository abstractPartyRepository;
+    protected PartyRepository partyRepository;
     @Autowired
     private VariantRecordRepository variantRecordRepository;
     @Autowired
@@ -261,7 +261,7 @@ public abstract class AbstractRestTest {
         RestAssured.baseURI = RestAssured.DEFAULT_URI;
 
         // potřebné delete, jen data, ne číselníky
-        abstractPartyRepository.deleteAll();
+        partyRepository.deleteAll();
         variantRecordRepository.deleteAll();
         arrDataRepository.deleteAll();
         recordRepository.deleteAll();
@@ -552,19 +552,19 @@ public abstract class AbstractRestTest {
         return partySubtypeRepository.findOne(5);
     }
 
-    protected ParParty createParAbstractParty() {
+    protected ParParty createParParty() {
         final ParPartySubtype partySubtype = findPartySubtype();
 //        final ParPartyType partyType = partyTypeRepository.findOne(partySubtype.getPartyType().getPartyTypeId());
         partySubtype.setPartyType(null);
         final RegRecord record = createRecord(1);
-        return createParAbstractParty(partySubtype, record);
+        return createParParty(partySubtype, record);
     }
 
-    protected ParParty createParAbstractParty(final ParPartySubtype partySubtype, final RegRecord record) {
+    protected ParParty createParParty(final ParPartySubtype partySubtype, final RegRecord record) {
         ParParty party = new ParParty();
         party.setPartySubtype(partySubtype);
         party.setRecord(record);
-        return abstractPartyRepository.save(party);
+        return partyRepository.save(party);
     }
 
     /**
@@ -616,7 +616,7 @@ public abstract class AbstractRestTest {
         ParParty party = new ParParty();
         party.setRecord(record);
         party.setPartySubtype(partySubtype);
-        return abstractPartyRepository.save(party);
+        return partyRepository.save(party);
     }
 
     protected RulFaView createFaView(RulRuleSet ruleSet, RulArrangementType arrangementType, Integer[] ids) {

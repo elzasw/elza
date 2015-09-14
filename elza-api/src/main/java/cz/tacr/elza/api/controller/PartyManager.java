@@ -78,5 +78,5 @@ public interface PartyManager<PAPV extends ParParty> {
      * @param partyId identifikátor osoby
      * @return nalezená abstraktní osoba
      */
-    ParParty getAbstractParty(Integer partyId);
+    ParParty getParty(Integer partyId);
 }

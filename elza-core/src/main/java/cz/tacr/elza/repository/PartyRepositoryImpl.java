@@ -1,6 +1,11 @@
 package cz.tacr.elza.repository;
 
-import java.util.List;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartySubtype;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegVariantRecord;
+import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -11,14 +16,7 @@ import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-
-import org.springframework.stereotype.Component;
-
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartySubtype;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegVariantRecord;
+import java.util.List;
 
 /**
  * Implementace repository osob.
@@ -32,7 +30,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
     private EntityManager entityManager;
 
     @Override
-    public List<ParParty> findAbstractPartyByTextAndType(final String searchRecord, final Integer registerTypeId,
+    public List<ParParty> findPartyByTextAndType(final String searchRecord, final Integer registerTypeId,
                                          final Integer firstResult, final Integer maxResults, final Boolean originator) {
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
@@ -51,7 +49,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
     }
 
     @Override
-    public long findAbstractPartyByTextAndTypeCount(final String searchRecord, final Integer registerTypeId,
+    public long findPartyByTextAndTypeCount(final String searchRecord, final Integer registerTypeId,
                                                     final Boolean originator) {
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();

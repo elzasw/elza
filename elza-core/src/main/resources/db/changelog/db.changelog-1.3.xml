@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+        <!--
+            Verze 4
+            - přejmenování par_abstract* tabulek, dodatek
+        -->
+        <changeSet id="4" author="kuzel">
+
+            <renameColumn tableName="par_party" oldColumnName="abstract_party_id" newColumnName="party_id" />
+
+            <renameColumn tableName="par_party_name" oldColumnName="abstract_party_id" newColumnName="party_id" />
+            <renameColumn tableName="par_party_name" oldColumnName="abstract_party_name_id" newColumnName="party_name_id" />
+
+            <renameColumn tableName="arr_data_party_ref" oldColumnName="abstract_party_id" newColumnName="party_id" />
+
+
+            <dropForeignKeyConstraint baseTableName="arr_data_party_ref" constraintName="fk_dataPartyRef_abstractParty" />
+            <addForeignKeyConstraint constraintName="fk_dataPartyRef_party"
+                                     baseTableName="arr_data_party_ref"
+                                     baseColumnNames="party_id"
+                                     referencedTableName="par_party"
+                                     referencedColumnNames="party_id"
+                                     onDelete="NO ACTION"/>
+
+            <dropForeignKeyConstraint baseTableName="par_party_name" constraintName="fk_abstrPartyName_abstrParty" />
+            <addForeignKeyConstraint constraintName="fk_partyName_party"
+                                     baseTableName="par_party_name"
+                                     baseColumnNames="party_id"
+                                     referencedTableName="par_party"
+                                     referencedColumnNames="party_id"
+                                     onDelete="NO ACTION"/>
+
+        </changeSet>
+</databaseChangeLog>

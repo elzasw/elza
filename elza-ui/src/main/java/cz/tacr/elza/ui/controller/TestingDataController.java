@@ -77,7 +77,7 @@ public class TestingDataController {
     private RuleManager ruleManager;
 
     @Autowired
-    private PartyRepository abstractPartyRepository;
+    private PartyRepository partyRepository;
     @Autowired
     private DataRepository dataRepository;
     @Autowired
@@ -481,7 +481,7 @@ public class TestingDataController {
         Map<String, ParPartySubtype> partySubTypeMap = partySubtypeRepository.findAll().stream()
             .collect(Collectors.toMap(ParPartySubtype::getCode, Function.identity()));
 
-        List<ParParty> existingParties = abstractPartyRepository.findAll();
+        List<ParParty> existingParties = partyRepository.findAll();
 
         List<ParParty> parties = new LinkedList<ParParty>();
         for (PartyEnum partyEnum : PartyEnum.values()) {
@@ -489,11 +489,11 @@ public class TestingDataController {
             int position = partyEnum.getRecordPosition();
             ParPartySubtype partySubtype = partySubTypeMap.get(subType);
             RegRecord regRecord = records.get(position);
-            ParParty abstractParty = findParty(partySubtype, regRecord, existingParties);
-            if (abstractParty == null) {
-                abstractParty = createParAbstractParty(partySubtype, regRecord);
+            ParParty party = findParty(partySubtype, regRecord, existingParties);
+            if (party == null) {
+                party = createParParty(partySubtype, regRecord);
             }
-            parties.add(abstractParty);
+            parties.add(party);
         }
 
         return parties;
@@ -531,22 +531,22 @@ public class TestingDataController {
             return null;
         }
 
-        for (ParParty abstractParty : existingParties) {
-            if (abstractParty.getPartySubtype().equals(parPartySubtype)
-                    && abstractParty.getRecord().equals(regRecord)) {
-                return abstractParty;
+        for (ParParty party : existingParties) {
+            if (party.getPartySubtype().equals(parPartySubtype)
+                    && party.getRecord().equals(regRecord)) {
+                return party;
             }
         }
 
         return null;
     }
 
-    private ParParty createParAbstractParty(ParPartySubtype parPartySubtype, RegRecord regRecord) {
-        ParParty parAbstractParty = new ParParty();
-        parAbstractParty.setPartySubtype(parPartySubtype);
-        parAbstractParty.setRecord(regRecord);
+    private ParParty createParParty(ParPartySubtype parPartySubtype, RegRecord regRecord) {
+        ParParty parParty = new ParParty();
+        parParty.setPartySubtype(parPartySubtype);
+        parParty.setRecord(regRecord);
 
-        return abstractPartyRepository.save(parAbstractParty);
+        return partyRepository.save(parParty);
     }
 
     private List<RegRecord> createRegRecords() {
@@ -804,10 +804,10 @@ public class TestingDataController {
     private ArrDescItemExt createPartyRefValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, List<ParParty> parties) {
         ArrDescItemExt descItemExt = createValue(node, rulDescItemTypeExt);
 
-        ParParty parAbstractParty = parties.get(RandomUtils.nextInt(parties.size()));
-        descItemExt.setParty(parAbstractParty);
-//        descItemExt.setData(parAbstractParty.getRecord().getRecord());
-//        descItemExt.setRecord(parAbstractParty.getRecord());
+        ParParty parParty = parties.get(RandomUtils.nextInt(parties.size()));
+        descItemExt.setParty(parParty);
+//        descItemExt.setData(parParty.getRecord().getRecord());
+//        descItemExt.setRecord(parParty.getRecord());
 
       return descItemExt;
     }
@@ -903,7 +903,7 @@ public class TestingDataController {
         findingAidRepository.deleteAllInBatch();
         dataRepository.deleteAllInBatch();
         descItemRepository.deleteAllInBatch();
-        abstractPartyRepository.deleteAllInBatch();
+        partyRepository.deleteAllInBatch();
         externalSourceRepository.deleteAllInBatch();
         variantRecordRepository.deleteAllInBatch();
         recordRepository.deleteAllInBatch();
