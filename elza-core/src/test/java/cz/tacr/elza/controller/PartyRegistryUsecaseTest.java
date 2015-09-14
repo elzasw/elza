@@ -174,7 +174,7 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         ParPartySubtype subTypeFiktRod = getPartySubType(FIKT_ROD);
         party1.setPartySubtype(subTypeFiktRod);
         updateAbstractParty(party1);
-        ParParty ap = getAbstractParty(party1.getAbstractPartyId());
+        ParParty ap = getAbstractParty(party1.getPartyId());
         Assert.assertEquals("Update neproveden.", subTypeFiktRod, ap.getPartySubtype());
 
         // heslo, jeho podrobný popis
@@ -206,9 +206,9 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
      * Test smazání objektů.
      */
     private void testSmazani() {
-        delete(party1.getAbstractPartyId(), ABSTRACT_PARTY_ID_ATT, DELETE_ABSTRACT_PARTY);
+        delete(party1.getPartyId(), ABSTRACT_PARTY_ID_ATT, DELETE_ABSTRACT_PARTY);
         Assert.assertNotNull(getRecord(heslo1.getRecordId())); // zůstává rej. heslo
-        getErr(party1.getAbstractPartyId(), ABSTRACT_PARTY_ID_ATT, GET_ABSTRACT_PARTY);
+        getErr(party1.getPartyId(), ABSTRACT_PARTY_ID_ATT, GET_ABSTRACT_PARTY);
 
         delete(heslo1.getRecordId(), RECORD_ID_ATT, DELETE_RECORD_URL);
         getErr(heslo1.getRecordId(), RECORD_ID_ATT, GET_RECORD_URL);
@@ -445,7 +445,7 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
 
         // ověření
         Assert.assertNotNull(newAbstractParty);
-        Assert.assertNotNull(newAbstractParty.getAbstractPartyId());
+        Assert.assertNotNull(newAbstractParty.getPartyId());
         Assert.assertNotNull("Nenalezena polozka party subtype", newAbstractParty.getPartySubtype());
         Assert.assertNotNull("Nenalezena polozka record", newAbstractParty.getRecord());
         Assert.assertEquals("Nenalezena spravna polozka record", abstractParty.getRecord(), newAbstractParty.getRecord());
@@ -511,7 +511,7 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
 
         // ověření
         Assert.assertNotNull(updatedAbstractParty);
-        Assert.assertNotNull(updatedAbstractParty.getAbstractPartyId());
+        Assert.assertNotNull(updatedAbstractParty.getPartyId());
         Assert.assertNotNull("Nenalezena polozka party subtype", updatedAbstractParty.getPartySubtype());
         Assert.assertNotNull("Nenalezena polozka record", updatedAbstractParty.getRecord());
         Assert.assertEquals("Nenalezena spravna polozka record", abstractParty.getRecord(), updatedAbstractParty.getRecord());

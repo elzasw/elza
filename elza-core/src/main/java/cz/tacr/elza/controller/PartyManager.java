@@ -95,8 +95,8 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
 
     @RequestMapping(value = "/insertAbstractParty", method = RequestMethod.PUT)
     @Override
-    public ParParty insertAbstractParty(@RequestBody final ParParty abstractParty) {
-        ParParty newParty = insertAbstractPartyInternal(abstractParty);
+    public ParParty insertParty(@RequestBody final ParParty party) {
+        ParParty newParty = insertAbstractPartyInternal(party);
 
         if (newParty.getRecord() != null) {
             newParty.getRecord().getVariantRecordList().forEach((variantRecord) -> {
@@ -116,20 +116,20 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
 
     @RequestMapping(value = "/updateAbstractParty", method = RequestMethod.PUT)
     @Override
-    public ParParty updateAbstractParty(@RequestBody final ParParty abstractParty) {
-        updateAbstractPartyInternal(abstractParty);
-        if (abstractParty.getRecord() != null) {
-            abstractParty.getRecord().getVariantRecordList().forEach((variantRecord) -> {
+    public ParParty updateParty(@RequestBody final ParParty party) {
+        updateAbstractPartyInternal(party);
+        if (party.getRecord() != null) {
+            party.getRecord().getVariantRecordList().forEach((variantRecord) -> {
                 variantRecord.setRegRecord(null);
             });
         }
 
-        return abstractParty;
+        return party;
     }
 
     @Transactional
     private ParParty updateAbstractPartyInternal(final ParParty abstractParty) {
-        Integer abstractPartyId = abstractParty.getAbstractPartyId();
+        Integer abstractPartyId = abstractParty.getPartyId();
         Assert.notNull(abstractPartyId);
         ParParty party = abstractPartyRepository.findOne(abstractPartyId);
         Assert.notNull(party, "Nebyla nalezena ParParty s id " + abstractPartyId);
@@ -142,21 +142,21 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
     @RequestMapping(value = "/deleteAbstractParty", method = RequestMethod.DELETE)
     @Transactional
     @Override
-    public void deleteAbstractParty(@RequestParam("abstractPartyId") final Integer abstractPartyId) {
-        ParParty abstractParty = abstractPartyRepository.findOne(abstractPartyId);
+    public void deleteParty(@RequestParam("abstractPartyId") final Integer partyId) {
+        ParParty abstractParty = abstractPartyRepository.findOne(partyId);
         if (abstractParty == null) {
             return;
         }
-        Assert.notNull(abstractPartyId);
-        abstractPartyRepository.delete(abstractPartyId);
+        Assert.notNull(partyId);
+        abstractPartyRepository.delete(partyId);
     }
 
     @RequestMapping(value = "/findAbstractParty", method = RequestMethod.GET)
     @Override
-    public List<ParParty> findAbstractParty(@RequestParam("search") final String search,
-            @RequestParam("from") final Integer from, @RequestParam("count") final Integer count,
-            @RequestParam(value = "partyTypeId", required = false) final Integer partyTypeId,
-            @Nullable @RequestParam(value = "originator", required = false) final Boolean originator) {
+    public List<ParParty> findParty(@RequestParam("search") final String search,
+                                    @RequestParam("from") final Integer from, @RequestParam("count") final Integer count,
+                                    @RequestParam(value = "partyTypeId", required = false) final Integer partyTypeId,
+                                    @Nullable @RequestParam(value = "originator", required = false) final Boolean originator) {
 
         List<ParParty> resultList = abstractPartyRepository
                 .findAbstractPartyByTextAndType(search, partyTypeId, from, count, originator);
@@ -172,9 +172,9 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
 
     @RequestMapping(value = "/findAbstractPartyCount", method = RequestMethod.GET)
     @Override
-    public Long findAbstractPartyCount(@RequestParam("search") final String search,
-            @RequestParam("partyTypeId") final Integer partyTypeId,
-            @Nullable @RequestParam(value = "originator", required = false) final Boolean originator) {
+    public Long findPartyCount(@RequestParam("search") final String search,
+                               @RequestParam("partyTypeId") final Integer partyTypeId,
+                               @Nullable @RequestParam(value = "originator", required = false) final Boolean originator) {
 
         return abstractPartyRepository.findAbstractPartyByTextAndTypeCount(search, partyTypeId, originator);
     }
@@ -182,9 +182,9 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
     @RequestMapping(value = "/getAbstractParty", method = RequestMethod.GET)
     @Override
     public ParParty getAbstractParty(
-            @RequestParam("abstractPartyId") final Integer abstractPartyId) {
-        Assert.notNull(abstractPartyId);
-        ParParty party = abstractPartyRepository.getOne(abstractPartyId);
+            @RequestParam("abstractPartyId") final Integer partyId) {
+        Assert.notNull(partyId);
+        ParParty party = abstractPartyRepository.getOne(partyId);
         if (party.getRecord() != null) {
             party.getRecord().getVariantRecordList().forEach((variantRecord) -> {
                 variantRecord.setRegRecord(null);

@@ -31,11 +31,11 @@ public class ParPartyName extends AbstractVersionableEntity
 
     @Id
     @GeneratedValue
-    private Integer abstractPartyNameId;
+    private Integer partyNameId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParParty.class)
-    @JoinColumn(name = "abstractPartyId", nullable = false)
-    private ParParty abstractParty;
+    @JoinColumn(name = "partyId", nullable = false)
+    private ParParty party;
 
     @Column(length = 255)
     private String mainPart;
@@ -60,23 +60,23 @@ public class ParPartyName extends AbstractVersionableEntity
 
 
     @Override
-    public Integer getAbstractPartyNameId() {
-        return abstractPartyNameId;
+    public Integer getPartyNameId() {
+        return partyNameId;
     }
 
     @Override
-    public void setAbstractPartyNameId(final Integer abstractPartyNameId) {
-        this.abstractPartyNameId = abstractPartyNameId;
+    public void setPartyNameId(final Integer partyNameId) {
+        this.partyNameId = partyNameId;
     }
 
     @Override
-    public ParParty getAbstractParty() {
-        return abstractParty;
+    public ParParty getParty() {
+        return party;
     }
 
     @Override
-    public void setAbstractParty(final ParParty abstractParty) {
-        this.abstractParty = abstractParty;
+    public void setParty(final ParParty party) {
+        this.party = party;
     }
 
     @Override
@@ -160,12 +160,12 @@ public class ParPartyName extends AbstractVersionableEntity
 
         ParPartyName other = (ParPartyName) obj;
 
-        return new EqualsBuilder().append(abstractPartyNameId, other.getAbstractPartyNameId()).isEquals();
+        return new EqualsBuilder().append(partyNameId, other.getPartyNameId()).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(abstractPartyNameId).toHashCode();
+        return new HashCodeBuilder().append(partyNameId).toHashCode();
     }
 
 }

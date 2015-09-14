@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+        <!--
+            Verze 1.26
+            - přejmenování par_abstract* tabulek, dodatek
+        -->
+        <changeSet id="26" author="kuzel">
+
+            <renameColumn tableName="par_party" oldColumnName="abstract_party_id" newColumnName="party_id" />
+
+            <renameColumn tableName="par_party_name" oldColumnName="abstract_party_id" newColumnName="party_id" />
+            <renameColumn tableName="par_party_name" oldColumnName="abstract_party_name_id" newColumnName="party_name_id" />
+
+            <renameColumn tableName="arr_data_party_ref" oldColumnName="abstract_party_id" newColumnName="party_id" />
+
+        </changeSet>
+</databaseChangeLog>

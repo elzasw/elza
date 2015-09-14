@@ -805,7 +805,7 @@ public class TestingDataController {
         ArrDescItemExt descItemExt = createValue(node, rulDescItemTypeExt);
 
         ParParty parAbstractParty = parties.get(RandomUtils.nextInt(parties.size()));
-        descItemExt.setAbstractParty(parAbstractParty);
+        descItemExt.setParty(parAbstractParty);
 //        descItemExt.setData(parAbstractParty.getRecord().getRecord());
 //        descItemExt.setRecord(parAbstractParty.getRecord());
 

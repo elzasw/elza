@@ -257,7 +257,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             attributeValuesLoader = new AttributeValuesLoader() {
                 @Override
                 public List<AutocompleteItem> loadPartyRefItemsFulltext(final String text) {
-                    List<ParParty> partyList = partyManager.findAbstractParty(text, 0, 50, null, true);
+                    List<ParParty> partyList = partyManager.findParty(text, 0, 50, null, true);
                     List<AutocompleteItem> result = new ArrayList<>(partyList.size());
 
                     for (ParParty partyItem : partyList) {

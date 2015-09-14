@@ -74,12 +74,12 @@ public class PartyManagerTest extends AbstractRestTest {
         ParParty partyInput = createParAbstractParty();
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
-                .parameter("abstractPartyId", partyInput.getAbstractPartyId())
+                .parameter("abstractPartyId", partyInput.getPartyId())
                 .delete(DELETE_ABSTRACT_PARTY);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        partyInput = abstractPartyRepository.findOne(partyInput.getAbstractPartyId());
+        partyInput = abstractPartyRepository.findOne(partyInput.getPartyId());
         Assert.assertNull("Nalezena polozka ", partyInput);
 
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
@@ -94,7 +94,7 @@ public class PartyManagerTest extends AbstractRestTest {
         ParParty partyInput = createParAbstractParty();
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
-                .parameter("abstractPartyId", partyInput.getAbstractPartyId())
+                .parameter("abstractPartyId", partyInput.getPartyId())
                 .get(GET_ABSTRACT_PARTY);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());

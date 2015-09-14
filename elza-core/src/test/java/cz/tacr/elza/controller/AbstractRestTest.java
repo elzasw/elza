@@ -131,12 +131,12 @@ public abstract class AbstractRestTest {
 
     // PARTY MANAGER CONSTANTS
     protected static final String GET_PARTY_TYPES = PARTY_MANAGER_URL + "/getPartyTypes";
-    protected static final String INSERT_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/insertAbstractParty";
-    protected static final String FIND_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/findAbstractParty";
-    protected static final String FIND_ABSTRACT_PARTY_COUNT = PARTY_MANAGER_URL + "/findAbstractPartyCount";
-    protected static final String UPDATE_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/updateAbstractParty";
-    protected static final String DELETE_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/deleteAbstractParty";
-    protected static final String GET_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/getAbstractParty";
+    protected static final String INSERT_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/insertParty";
+    protected static final String FIND_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/findParty";
+    protected static final String FIND_ABSTRACT_PARTY_COUNT = PARTY_MANAGER_URL + "/findPartyCount";
+    protected static final String UPDATE_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/updateParty";
+    protected static final String DELETE_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/deleteParty";
+    protected static final String GET_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/getParty";
 
     protected static final String PARTY_TYPE_ID_ATT = "partyTypeId";
     protected static final String ORIGINATOR_ATT = "originator";
