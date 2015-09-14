@@ -1,10 +1,9 @@
 package cz.tacr.elza.api.controller;
 
-import java.util.List;
-
-import cz.tacr.elza.api.ParAbstractParty;
-import cz.tacr.elza.api.ParAbstractPartyVals;
+import cz.tacr.elza.api.ParParty;
 import cz.tacr.elza.api.ParPartyTypeExt;
+
+import java.util.List;
 
 /**
  * Rozhraní operací pro osoby a rejstřík.
@@ -12,9 +11,9 @@ import cz.tacr.elza.api.ParPartyTypeExt;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 12. 8. 2015
  *
- * @param <PAPV> {@link ParAbstractParty}
+ * @param <PAPV> {@link ParParty}
  */
-public interface PartyManager<PAPV extends ParAbstractParty> {
+public interface PartyManager<PAPV extends ParParty> {
 
 
     /**
@@ -30,7 +29,7 @@ public interface PartyManager<PAPV extends ParAbstractParty> {
      * @param abstractParty data o abstraktní osobě
      * @return Založený záznam.
      */
-    ParAbstractParty insertAbstractParty(PAPV abstractParty);
+    ParParty insertAbstractParty(PAPV abstractParty);
 
     /**
      * Upraví záznam abstraktní osoby. Je umožněna změna rejstříkového hesla a podtypu.
@@ -38,7 +37,7 @@ public interface PartyManager<PAPV extends ParAbstractParty> {
      * @param abstractParty záznamu pro aktualizaci.
      * @return Aktualizovaný záznam.
      */
-    ParAbstractParty updateAbstractParty(PAPV abstractParty);
+    ParParty updateAbstractParty(PAPV abstractParty);
 
     /**
      * Smaže abstraktní osobu.
@@ -59,7 +58,7 @@ public interface PartyManager<PAPV extends ParAbstractParty> {
      * @param originator        původce - true, není původce - false, null - neaplikuje filtr - obě možnosti
      * @return seznam osob vyhovující zadané frázi.
      */
-    List<? extends ParAbstractParty> findAbstractParty(String search, Integer from, Integer count,
+    List<? extends ParParty> findAbstractParty(String search, Integer from, Integer count,
             Integer partyTypeId, Boolean originator);
 
     /**
@@ -79,5 +78,5 @@ public interface PartyManager<PAPV extends ParAbstractParty> {
      * @param abstractPartyId identifikátor abstraktní osoby.
      * @return nalezená abstraktní osoba.
      */
-    ParAbstractParty getAbstractParty(Integer abstractPartyId);
+    ParParty getAbstractParty(Integer abstractPartyId);
 }

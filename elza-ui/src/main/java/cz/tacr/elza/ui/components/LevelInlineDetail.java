@@ -3,13 +3,11 @@ package cz.tacr.elza.ui.components;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.label.ContentMode;
-import com.vaadin.shared.ui.window.WindowMode;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.UI;
-
 import cz.req.ax.AxAction;
 import cz.req.ax.AxWindow;
 import cz.tacr.elza.api.controller.PartyManager;
@@ -18,20 +16,17 @@ import cz.tacr.elza.controller.RegistryManager;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrDescItemExt;
 import cz.tacr.elza.domain.ArrFaLevelExt;
-import cz.tacr.elza.domain.ParAbstractParty;
+import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
-import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.ui.components.attribute.Attribut;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesComparator;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesLoader;
 import cz.tacr.elza.ui.components.autocomplete.AutocompleteItem;
-
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.CompareToBuilder;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -262,10 +257,10 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             attributeValuesLoader = new AttributeValuesLoader() {
                 @Override
                 public List<AutocompleteItem> loadPartyRefItemsFulltext(final String text) {
-                    List<ParAbstractParty> partyList = partyManager.findAbstractParty(text, 0, 50, null, true);
+                    List<ParParty> partyList = partyManager.findAbstractParty(text, 0, 50, null, true);
                     List<AutocompleteItem> result = new ArrayList<>(partyList.size());
 
-                    for (ParAbstractParty partyItem : partyList) {
+                    for (ParParty partyItem : partyList) {
                         result.add(new AutocompleteItem(partyItem, partyItem.getRecord().getRecord()));
                     }
 

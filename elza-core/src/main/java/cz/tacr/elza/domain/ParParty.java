@@ -5,7 +5,16 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.springframework.data.rest.core.annotation.RestResource;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 
 
 /**
@@ -14,11 +23,11 @@ import javax.persistence.*;
  * @author Martin Kužel [<a href="mailto:martin.kuzel@marbes.cz">martin.kuzel@marbes.cz</a>]
  * @since 21.8.2015
  */
-@Entity(name = "par_abstract_party")
+@Entity(name = "par_party")
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParAbstractParty extends AbstractVersionableEntity implements cz.tacr.elza.api.ParAbstractParty<RegRecord, ParPartySubtype> {
+public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.api.ParParty<RegRecord, ParPartySubtype> {
 
     /* Konstanty pro vazby a fieldy. */
     public static final String ABSTRACT_PARTY_ID = "abstractPartyId";
@@ -72,14 +81,14 @@ public class ParAbstractParty extends AbstractVersionableEntity implements cz.ta
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.api.ParAbstractParty)) {
+        if (!(obj instanceof cz.tacr.elza.api.ParParty)) {
             return false;
         }
         if (this == obj) {
             return true;
         }
 
-        ParAbstractParty other = (ParAbstractParty) obj;
+        cz.tacr.elza.domain.ParParty other = (cz.tacr.elza.domain.ParParty) obj;
 
         return new EqualsBuilder().append(abstractPartyId, other.getAbstractPartyId()).isEquals();
     }

@@ -7,7 +7,7 @@ package cz.tacr.elza.domain;
  * @since 21.8.2015
  */
 
-public class ParAbstractPartyVals implements cz.tacr.elza.api.ParAbstractPartyVals {
+public class ParPartyVals implements cz.tacr.elza.api.ParPartyVals {
 
     private Integer recordId;
     private Integer partySubtypeId;

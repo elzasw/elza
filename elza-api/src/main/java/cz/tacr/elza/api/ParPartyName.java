@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public interface ParAbstractPartyName<AB extends ParAbstractParty> extends Versionable, Serializable {
+public interface ParPartyName<AB extends ParParty> extends Versionable, Serializable {
 
     Integer getAbstractPartyNameId();
 

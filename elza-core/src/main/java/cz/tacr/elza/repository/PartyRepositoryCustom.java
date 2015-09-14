@@ -1,15 +1,15 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ParAbstractParty;
+import cz.tacr.elza.domain.ParParty;
 
 import java.util.List;
 
 /**
- * Repository pro abstraktní osoby.
+ * Repository pro osoby.
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public interface AbstractPartyRepositoryCustom {
+public interface PartyRepositoryCustom {
 
     /**
      * 
@@ -20,7 +20,7 @@ public interface AbstractPartyRepositoryCustom {
      * @param originator        původce - true, není původce - false, null - neaplikuje filtr - obě možnosti
      * @return
      */
-    List<ParAbstractParty> findAbstractPartyByTextAndType(String searchRecord, Integer registerTypeId,
+    List<ParParty> findAbstractPartyByTextAndType(String searchRecord, Integer registerTypeId,
                                                           Integer firstResult, Integer maxResults, Boolean originator);
 
     /**
