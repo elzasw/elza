@@ -1,18 +1,19 @@
 package cz.tacr.elza.configuration.hibernate.impl;
 
-import org.hibernate.MappingException;
-import org.hibernate.dialect.Dialect;
-import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.id.enhanced.TableGenerator;
-import org.hibernate.type.Type;
-
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
+
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+import org.hibernate.MappingException;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.id.enhanced.TableGenerator;
+import org.hibernate.type.Type;
 
 
 /**
@@ -38,7 +39,9 @@ public class TableIdGenerator extends TableGenerator {
     @Override
     public Serializable generate(SessionImplementor session, Object obj) {
         Serializable id = getReplicatedId(obj);
-        if (id == null) id = super.generate(session, obj);
+        if (id == null) {
+            id = super.generate(session, obj);
+        }
         return id;
     }
 
@@ -48,14 +51,16 @@ public class TableIdGenerator extends TableGenerator {
 
             ArrayList<Field> fields = new ArrayList<>();
             fields.addAll(Arrays.asList(cls.getDeclaredFields()));
-            if (cls.getSuperclass() != null)
+            if (cls.getSuperclass() != null) {
                 fields.addAll(Arrays.asList(cls.getSuperclass().getDeclaredFields()));
-
+            }
             for (Field field : fields) {
                 if (field.getAnnotation(Id.class) != null && field.getAnnotation(GeneratedValue.class) != null) {
                     field.setAccessible(true);
                     Serializable id = (Serializable) field.get(obj);
-                    if (id != null) return id;
+                    if (id != null) {
+                        return id;
+                    }
                 }
             }
             return null;

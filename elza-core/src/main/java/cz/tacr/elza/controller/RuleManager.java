@@ -32,17 +32,11 @@ import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
-import cz.tacr.elza.repository.AbstractPartyRepository;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemConstraintRepository;
-import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FaViewRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VersionRepository;
 
@@ -79,26 +73,6 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
 
     @Autowired
     private FaViewRepository faViewRepository;
-
-    @Autowired
-    private DescItemRepository descItemRepository;
-
-    @Autowired
-    private DataRepository dataRepository;
-
-    @Autowired
-    private DataTypeRepository dataTypeRepository;
-
-    @Autowired
-    private AbstractPartyRepository abstractPartyRepository;
-
-    @Autowired
-    private RegRecordRepository regRecordRepository;
-
-    @Autowired
-    private NodeRepository nodeRepository;
-
-
 
     @Override
     @RequestMapping(value = "/getDescItemSpecById", method = RequestMethod.GET)

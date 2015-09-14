@@ -18,6 +18,10 @@ import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 @Component
 public class OptimisticLockingFailureExceptionHandler {
 
+    /**
+     * Obaluje všechny metody v managerech a převádí výjimku {@link OptimisticLockingFailureException}
+     * na {@link ConcurrentUpdateException}.
+     */
     @Around(value = "execution(* cz.tacr.elza.api.controller..*.*(..))")
     public Object handleStaleObjectStateException(ProceedingJoinPoint pjp) throws Throwable {
         try {

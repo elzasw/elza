@@ -10,7 +10,6 @@ import javax.persistence.Id;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
@@ -67,9 +66,6 @@ public class ArrNode extends AbstractVersionableEntity implements cz.tacr.elza.a
 
     @Override
     public String toString() {
-        return "ArrNode{" +
-                "nodeId=" + nodeId +
-                ", lastUpdate=" + lastUpdate +
-                '}';
+        return "ArrNode{" + "nodeId=" + nodeId + ", lastUpdate=" + lastUpdate + '}';
     }
 }

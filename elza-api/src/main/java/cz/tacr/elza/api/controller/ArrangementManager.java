@@ -19,15 +19,14 @@ import cz.tacr.elza.api.vo.ArrFaLevelPack;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 12. 8. 2015
  */
-public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVersion, DIE extends ArrDescItemExt, DISP extends ArrDescItemSavePack, FL extends ArrFaLevel, FLP extends ArrFaLevelPack, N extends ArrNode> {
-    /**
-     * formát popisu atributu - dlouhá verze.
-     */
-    public static final String FORMAT_ATTRIBUTE_FULL = "FULL";
-    /**
-     * formát popisu atributu - krátká verze.
-     */
-    public static final String FORMAT_ATTRIBUTE_SHORT = "SHORT";
+public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVersion, DIE extends ArrDescItemExt,
+    DISP extends ArrDescItemSavePack, FL extends ArrFaLevel, FLP extends ArrFaLevelPack, N extends ArrNode> {
+
+    /** Formát popisu atributu - dlouhá verze. */
+    String FORMAT_ATTRIBUTE_FULL = "FULL";
+
+    /** Formát popisu atributu - krátká verze. */
+    String FORMAT_ATTRIBUTE_SHORT = "SHORT";
 
     /**
      * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.

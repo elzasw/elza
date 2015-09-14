@@ -1,10 +1,15 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
 import org.springframework.data.rest.core.annotation.RestResource;
 
-import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -12,7 +17,7 @@ import javax.persistence.*;
  * popis. Každá pomůcka je vytvářena podle určitých pravidel tvorby. Pravidla tvorby mohou definovat
  * různé typy finální pomůcky (například manipulační seznam, inventární seznam, katalog v případě
  * ZP)
- * 
+ *
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
@@ -132,15 +137,15 @@ public class ArrFaVersion extends AbstractVersionableEntity implements
 
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
+    public boolean equals(final Object obj) {
+        if (this == obj) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
 
-        ArrFaVersion version = (ArrFaVersion) o;
+        ArrFaVersion version = (ArrFaVersion) obj;
 
         if (faVersionId != null ? !faVersionId.equals(version.faVersionId) : version.faVersionId != null) {
             return false;
