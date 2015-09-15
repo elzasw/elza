@@ -2,7 +2,7 @@ package cz.tacr.elza.controller;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
-import cz.tacr.elza.domain.ArrFaVersion;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemConstraint;
@@ -18,8 +18,8 @@ import cz.tacr.elza.repository.DescItemConstraintRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FaViewRepository;
+import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
-import cz.tacr.elza.repository.VersionRepository;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +67,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     private ArrangementTypeRepository arrangementTypeRepository;
 
     @Autowired
-    private VersionRepository versionRepository;
+    private FindingAidVersionRepository findingAidVersionRepository;
 
     @Autowired
     private FaViewRepository faViewRepository;
@@ -180,7 +180,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     @RequestMapping(value = "/getFaViewDescItemTypes", method = RequestMethod.GET)
     public FaViewDescItemTypes getFaViewDescItemTypes(@RequestParam(value = "faVersionId") Integer faVersionId) {
         Assert.notNull(faVersionId);
-        ArrFaVersion version = versionRepository.getOne(faVersionId);
+        ArrFindingAidVersion version = findingAidVersionRepository.getOne(faVersionId);
         RulRuleSet ruleSet = version.getRuleSet();
         RulArrangementType arrangementType = version.getArrangementType();
 

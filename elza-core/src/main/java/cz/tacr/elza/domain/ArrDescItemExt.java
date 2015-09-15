@@ -10,7 +10,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  * @since 20.8.2015
  */
 
-public class ArrDescItemExt extends ArrDescItem implements cz.tacr.elza.api.ArrDescItemExt<ArrFaChange, RulDescItemType,RulDescItemSpec, ParParty, RegRecord, ArrNode> {
+public class ArrDescItemExt extends ArrDescItem implements cz.tacr.elza.api.ArrDescItemExt<ArrChange, RulDescItemType,RulDescItemSpec, ParParty, RegRecord, ArrNode> {
 
     private String attData;
     private ParParty party;

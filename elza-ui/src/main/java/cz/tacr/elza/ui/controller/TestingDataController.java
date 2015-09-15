@@ -1,35 +1,12 @@
 package cz.tacr.elza.ui.controller;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.sql.DataSource;
-import javax.transaction.Transactional;
-
-import org.apache.commons.lang.math.RandomUtils;
-import org.hibernate.Session;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleManager;
+import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItemExt;
-import cz.tacr.elza.domain.ArrFaChange;
-import cz.tacr.elza.domain.ArrFaLevel;
-import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartySubtype;
@@ -48,6 +25,7 @@ import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
+import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PartyRepository;
@@ -56,7 +34,27 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
-import cz.tacr.elza.repository.VersionRepository;
+import org.apache.commons.lang.math.RandomUtils;
+import org.hibernate.Session;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.sql.DataSource;
+import javax.transaction.Transactional;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Kontroler pro testovací data.
@@ -103,7 +101,7 @@ public class TestingDataController {
     @Autowired
     private VariantRecordRepository variantRecordRepository;
     @Autowired
-    private VersionRepository versionRepository;
+    private FindingAidVersionRepository findingAidVersionRepository;
 
     @Autowired
     private ArrangementTypeRepository arrangementTypeRepository;
@@ -472,7 +470,7 @@ public class TestingDataController {
         RulArrangementType arrArrangementType = arrangementTypeRepository.findAll().iterator().next();
         RulRuleSet ruleSet = ruleSetRepository.findAll().iterator().next();
         ArrFindingAid findingAid = arrangementManager.createFindingAid(FA_NAME, arrArrangementType.getArrangementTypeId(), ruleSet.getRuleSetId());
-        ArrFaVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
+        ArrFindingAidVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
 
         List<RegRecord> records = createRegRecords();
         List<ParParty> parties = createParties(records);
@@ -649,11 +647,11 @@ public class TestingDataController {
         return recordRepository.save(regRecord);
     }
 
-    private void createTree(int maxDepth, int nodesInLevel, ArrFaVersion version, List<ParParty> parties) {
+    private void createTree(int maxDepth, int nodesInLevel, ArrFindingAidVersion version, List<ParParty> parties) {
         Queue<ArrNode> parents = new LinkedList<>();
-        parents.add(version.getRootFaLevel().getNode());
+        parents.add(version.getRootLevel().getNode());
 
-        ArrFaChange change = new ArrFaChange();
+        ArrChange change = new ArrChange();
         change.setChangeDate(LocalDateTime.now());
         changeRepository.save(change);
         Session session = entityManager.unwrap(Session.class);
@@ -664,7 +662,7 @@ public class TestingDataController {
             while (!parents.isEmpty()) {
                 ArrNode parent = parents.poll();
                 for (int position = 1; position <= nodesInLevel; position++) {
-                    ArrFaLevel level = createLevel(change, parent, position);
+                    ArrLevel level = createLevel(change, parent, position);
                     ArrNode node = level.getNode();
                     createLevelAttributes(node, version, depth, parties);
                     newParents.add(node);
@@ -677,10 +675,10 @@ public class TestingDataController {
         }
     }
 
-    private void createLevelAttributes(ArrNode node, ArrFaVersion version, int depth, List<ParParty> parties) {
+    private void createLevelAttributes(ArrNode node, ArrFindingAidVersion version, int depth, List<ParParty> parties) {
         ArrDescItemSavePack descItemSavePack = new ArrDescItemSavePack();
         descItemSavePack.setCreateNewVersion(true);
-        descItemSavePack.setFaVersionId(version.getFaVersionId());
+        descItemSavePack.setFaVersionId(version.getFindingAidVersionId());
         descItemSavePack.setNode(node);
 
         List<ArrDescItemExt> descItems = new LinkedList<ArrDescItemExt>();
@@ -878,13 +876,13 @@ public class TestingDataController {
         return rulDescItemSpecList.get(RandomUtils.nextInt(size));
     }
 
-    private ArrFaLevel createLevel(final ArrFaChange createChange, final ArrNode parentNode, final Integer position) {
+    private ArrLevel createLevel(final ArrChange createChange, final ArrNode parentNode, final Integer position) {
         Assert.notNull(createChange);
 
-        ArrFaLevel level = new ArrFaLevel();
+        ArrLevel level = new ArrLevel();
         level.setPosition(position);
         level.setCreateChange(createChange);
-        level.setParentNode(parentNode);
+        level.setNodeParent(parentNode);
         level.setNode(createNode());
         return levelRepository.save(level);
     }
@@ -899,7 +897,7 @@ public class TestingDataController {
     @Transactional
     @RequestMapping(value = "/removeData", method = RequestMethod.DELETE)
     public void removeData() {
-        versionRepository.deleteAllInBatch();
+        findingAidVersionRepository.deleteAllInBatch();
         findingAidRepository.deleteAllInBatch();
         dataRepository.deleteAllInBatch();
         descItemRepository.deleteAllInBatch();

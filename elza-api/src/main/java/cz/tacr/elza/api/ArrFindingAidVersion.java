@@ -11,19 +11,19 @@ import java.io.Serializable;
  * @author vavrejn
  *
  * @param <FA> {@link ArrFindingAid}
- * @param <FC> {@link ArrFaChange}
- * @param <FL> {@link ArrFaLevel}
+ * @param <FC> {@link ArrChange}
+ * @param <FL> {@link ArrLevel}
  * @param <AT> {@link RulArrangementType}
  * @param <RS> {@link RulRuleSet}
  */
-public interface ArrFaVersion<FA extends ArrFindingAid, FC extends ArrFaChange, FL extends ArrFaLevel, AT extends RulArrangementType, RS extends RulRuleSet>
+public interface ArrFindingAidVersion<FA extends ArrFindingAid, FC extends ArrChange, FL extends ArrLevel, AT extends RulArrangementType, RS extends RulRuleSet>
         extends
             Versionable,
             Serializable {
 
-    Integer getFaVersionId();
+    Integer getFindingAidVersionId();
 
-    void setFaVersionId(Integer faVersionId);
+    void setFindingAidVersionId(Integer versionId);
 
     /**
      * @return číslo změny vytvoření pomůcky.
@@ -48,12 +48,12 @@ public interface ArrFaVersion<FA extends ArrFindingAid, FC extends ArrFaChange, 
     /**
      * @return odkaz na root uzel struktury archivního popisu.
      */
-    FL getRootFaLevel();
+    FL getRootLevel();
 
     /**
      * @param rootNode odkaz na root uzel struktury archivního popisu .
      */
-    void setRootFaLevel(FL rootNode);
+    void setRootLevel(FL rootNode);
 
     /**
      * @return identifikátor archívní pomůcky.

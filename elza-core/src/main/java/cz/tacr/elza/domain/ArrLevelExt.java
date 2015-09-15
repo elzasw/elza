@@ -5,12 +5,12 @@ import java.util.List;
 
 
 /**
- *  Rozšíření {@link ArrFaLevel} o atributy archivního popisu včetně hodnot.
+ *  Rozšíření {@link ArrLevel} o atributy archivního popisu včetně hodnot.
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
 
-public class ArrFaLevelExt extends ArrFaLevel implements cz.tacr.elza.api.ArrFaLevelExt<ArrFaChange, ArrNode, ArrDescItemExt> {
+public class ArrLevelExt extends ArrLevel implements cz.tacr.elza.api.ArrLevelExt<ArrChange, ArrNode, ArrDescItemExt> {
 
     private List<ArrDescItemExt> descItemList = new LinkedList<>();
 
@@ -24,6 +24,6 @@ public class ArrFaLevelExt extends ArrFaLevel implements cz.tacr.elza.api.ArrFaL
 
     @Override
     public String toString() {
-        return "ArrFaLevelExt pk=" + getFaLevelId();
+        return "ArrLevelExt pk=" + getLevelId();
     }
 }

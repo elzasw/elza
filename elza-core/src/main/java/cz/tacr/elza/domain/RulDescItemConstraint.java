@@ -1,5 +1,9 @@
 package cz.tacr.elza.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -8,11 +12,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -24,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity(name = "rul_desc_item_constraint")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulDescItemConstraint implements cz.tacr.elza.api.RulDescItemConstraint<RulDescItemType, RulDescItemSpec, ArrFaVersion> {
+public class RulDescItemConstraint implements cz.tacr.elza.api.RulDescItemConstraint<RulDescItemType, RulDescItemSpec, ArrFindingAidVersion> {
 
     @Id
     @GeneratedValue
@@ -38,9 +37,9 @@ public class RulDescItemConstraint implements cz.tacr.elza.api.RulDescItemConstr
     @JoinColumn(name = "descItemSpecId", nullable = true)
     private RulDescItemSpec descItemSpec;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaVersion.class)
-    @JoinColumn(name = "faVersionId", nullable = true)
-    private ArrFaVersion version;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFindingAidVersion.class)
+    @JoinColumn(name = "findingAidVersionId", nullable = true)
+    private ArrFindingAidVersion version;
 
     @Column(nullable = true)
     private Boolean repeatable;
@@ -82,12 +81,12 @@ public class RulDescItemConstraint implements cz.tacr.elza.api.RulDescItemConstr
     }
 
     @Override
-    public ArrFaVersion getVersion() {
+    public ArrFindingAidVersion getVersion() {
         return version;
     }
 
     @Override
-    public void setVersion(final ArrFaVersion version) {
+    public void setVersion(final ArrFindingAidVersion version) {
         this.version = version;
     }
 

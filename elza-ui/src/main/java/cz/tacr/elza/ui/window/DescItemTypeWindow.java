@@ -1,13 +1,5 @@
 package cz.tacr.elza.ui.window;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
-
-import org.apache.commons.lang.BooleanUtils;
-import org.springframework.util.Assert;
-
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.util.IndexedContainer;
@@ -23,16 +15,22 @@ import com.vaadin.ui.AbstractSelect.AcceptItem;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.Table.TableDragMode;
-
 import cz.req.ax.AxAction;
 import cz.req.ax.AxWindow;
 import cz.tacr.elza.controller.RuleManager;
-import cz.tacr.elza.domain.ArrFaVersion;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
 import cz.tacr.elza.ui.utils.ConcurrentUpdateExceptionHandler;
+import org.apache.commons.lang.BooleanUtils;
+import org.springframework.util.Assert;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
 
 
 /**
@@ -57,12 +55,12 @@ public class DescItemTypeWindow extends AxWindow {
         this.ruleSetManager = ruleSetManager;
     }
 
-    public AxWindow show(final ArrFaVersion version, PosAction posAction) {
+    public AxWindow show(final ArrFindingAidVersion version, PosAction posAction) {
         ruleSetId = version.getRuleSet().getRuleSetId();
         arrangementTypeId = version.getArrangementType().getArrangementTypeId();
         List<RulDescItemTypeExt> itemTypeSet = ruleSetManager.getDescriptionItemTypes(ruleSetId);
 
-        FaViewDescItemTypes faViewDescItemTypes = ruleSetManager.getFaViewDescItemTypes(version.getFaVersionId());
+        FaViewDescItemTypes faViewDescItemTypes = ruleSetManager.getFaViewDescItemTypes(version.getFindingAidVersionId());
         rulFaView = faViewDescItemTypes.getRulFaView();
         List<RulDescItemType> selectedItemTypeList = faViewDescItemTypes.getDescItemTypes();
         List<Integer> selectedItemTypeIdList = new LinkedList<>();

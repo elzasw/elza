@@ -1,43 +1,44 @@
 package cz.tacr.elza.domain.vo;
 
+import cz.tacr.elza.api.vo.ArrLevelPack;
+import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrFaLevel;
 
 
 /**
- * Zapouzdření {@link ArrFaLevel} a {@link ArrNode}.
+ * Zapouzdření {@link ArrLevel} a {@link ArrNode}.
  * @author Martin Šlapa
  * @since 28.8.2015
  */
-public class ArrFaLevelWithExtraNode implements cz.tacr.elza.api.vo.ArrFaLevelPack<ArrFaLevel, ArrNode> {
+public class ArrLevelWithExtraNode implements ArrLevelPack<ArrLevel, ArrNode> {
 
-    private ArrFaLevel faLevel;
+    private ArrLevel level;
 
     private ArrNode extraNode;
 
     private ArrNode rootNode;
 
-    private ArrFaLevel faLevelTarget;
+    private ArrLevel levelTarget;
 
     private Integer faVersionId;
 
-    public ArrFaLevelWithExtraNode() {
+    public ArrLevelWithExtraNode() {
     }
 
-    public ArrFaLevelWithExtraNode(final ArrFaLevel faLevel, final ArrNode extraNode, final ArrNode rootNode) {
-        this.faLevel = faLevel;
+    public ArrLevelWithExtraNode(final ArrLevel level, final ArrNode extraNode, final ArrNode rootNode) {
+        this.level = level;
         this.extraNode = extraNode;
         this.rootNode = rootNode;
     }
 
     @Override
-    public ArrFaLevel getFaLevel() {
-        return faLevel;
+    public ArrLevel getLevel() {
+        return level;
     }
 
     @Override
-    public void setFaLevel(ArrFaLevel faLevel) {
-        this.faLevel = faLevel;
+    public void setLevel(ArrLevel faLevel) {
+        this.level = faLevel;
     }
 
     @Override
@@ -61,8 +62,8 @@ public class ArrFaLevelWithExtraNode implements cz.tacr.elza.api.vo.ArrFaLevelPa
     }
 
     @Override
-    public void setFaLevelTarget(ArrFaLevel faLevelTarget) {
-        this.faLevelTarget = faLevelTarget;
+    public void setLevelTarget(ArrLevel levelTarget) {
+        this.levelTarget = levelTarget;
     }
 
     @Override
@@ -76,7 +77,7 @@ public class ArrFaLevelWithExtraNode implements cz.tacr.elza.api.vo.ArrFaLevelPa
     }
 
     @Override
-    public ArrFaLevel getFaLevelTarget() {
-        return faLevelTarget;
+    public ArrLevel getLevelTarget() {
+        return levelTarget;
     }
 }

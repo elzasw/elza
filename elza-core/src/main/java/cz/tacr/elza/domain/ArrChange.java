@@ -13,25 +13,25 @@ import java.time.LocalDateTime;
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
-@Entity(name = "arr_fa_change")
+@Entity(name = "arr_change")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrFaChange implements cz.tacr.elza.api.ArrFaChange {
+public class ArrChange implements cz.tacr.elza.api.ArrChange {
 
     @Id
     @GeneratedValue
-    private Integer faChangeId;
+    private Integer changeId;
 
     @Column(nullable = false)
     private LocalDateTime changeDate;
 
     @Override
-    public Integer getFaChangeId() {
-        return faChangeId;
+    public Integer getChangeId() {
+        return changeId;
     }
 
     @Override
-    public void setFaChangeId(Integer faChangeId) {
-        this.faChangeId = faChangeId;
+    public void setChangeId(Integer changeId) {
+        this.changeId = changeId;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class ArrFaChange implements cz.tacr.elza.api.ArrFaChange {
 
     @Override
     public String toString() {
-        return "ArrFaChange pk=" + faChangeId;
+        return "ArrChange pk=" + changeId;
     }
 
 }

@@ -1,18 +1,8 @@
 package cz.tacr.elza.controller;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.IntStream;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.jayway.restassured.response.Response;
-
-import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemSpecExt;
@@ -21,6 +11,14 @@ import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * Testy pro {@link RuleManager}.
@@ -36,7 +34,7 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
     public void testRestGetDescItemSpecById() throws Exception{
         RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
 
-        RulDescItemType descItemType = createDescItemType(dataType, true, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
+        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
         RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1);
 
 
@@ -111,14 +109,14 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);
         Response response = get((spec) -> spec.parameter(FA_ID_ATT, findingAid.getFindingAidId()),
                 GET_OPEN_VERSION_BY_FA_ID_URL);
-        ArrFaVersion version = response.getBody().as(ArrFaVersion.class);
+        ArrFindingAidVersion version = response.getBody().as(ArrFindingAidVersion.class);
 
         RulFaView faView = createFaView(version.getRuleSet(), version.getArrangementType(), descItemTypeIds);
 
         response = put((spec) -> spec.body(faView).parameter("descItemTypeIds", descItemTypeIds),
                 SAVE_FVDIT_URL);
 
-        response = get((spec) -> spec.parameter("faVersionId", version.getFaVersionId()), GET_FVDIT_URL);
+        response = get((spec) -> spec.parameter("faVersionId", version.getFindingAidVersionId()), GET_FVDIT_URL);
 
         FaViewDescItemTypes faViewDescItemTypes = response.getBody().as(FaViewDescItemTypes.class);
         List<RulDescItemType> ruleSets = faViewDescItemTypes.getDescItemTypes();

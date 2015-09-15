@@ -1,5 +1,10 @@
 package cz.tacr.elza.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.data.rest.core.annotation.RestResource;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -8,12 +13,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.springframework.data.rest.core.annotation.RestResource;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -26,21 +25,21 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity(name = "arr_desc_item")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrDescItem extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrDescItem<ArrFaChange, RulDescItemType, RulDescItemSpec, ArrNode> {
+public class ArrDescItem extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrDescItem<ArrChange, RulDescItemType, RulDescItemSpec, ArrNode> {
 
     @Id
     @GeneratedValue
     private Integer descItemId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaChange.class)
-    @JoinColumn(name = "createFaChangeId", nullable = false)
-    private ArrFaChange createChange;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
+    @JoinColumn(name = "createChangeId", nullable = false)
+    private ArrChange createChange;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaChange.class)
-    @JoinColumn(name = "deleteFaChangeId", nullable = true)
-    private ArrFaChange deleteChange;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
+    @JoinColumn(name = "deleteChangeId", nullable = true)
+    private ArrChange deleteChange;
 
     @Column(nullable = false)
     private Integer descItemObjectId;
@@ -75,22 +74,22 @@ public class ArrDescItem extends AbstractVersionableEntity implements cz.tacr.el
     }
 
     @Override
-    public ArrFaChange getCreateChange() {
+    public ArrChange getCreateChange() {
         return createChange;
     }
 
     @Override
-    public void setCreateChange(final ArrFaChange createChange) {
+    public void setCreateChange(final ArrChange createChange) {
         this.createChange = createChange;
     }
 
     @Override
-    public ArrFaChange getDeleteChange() {
+    public ArrChange getDeleteChange() {
         return deleteChange;
     }
 
     @Override
-    public void setDeleteChange(final ArrFaChange deleteChange) {
+    public void setDeleteChange(final ArrChange deleteChange) {
         this.deleteChange = deleteChange;
     }
 

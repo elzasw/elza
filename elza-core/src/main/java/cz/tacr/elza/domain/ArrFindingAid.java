@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * Archivní pomůcka. Archivní pomůcka je lineárně verzována pomocí {@link ArrFaVersion}.
+ * Archivní pomůcka. Archivní pomůcka je lineárně verzována pomocí {@link ArrFindingAidVersion}.
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */

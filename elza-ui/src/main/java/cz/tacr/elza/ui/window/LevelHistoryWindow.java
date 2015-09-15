@@ -1,5 +1,14 @@
 package cz.tacr.elza.ui.window;
 
+import com.vaadin.ui.CssLayout;
+import com.vaadin.ui.Label;
+import cz.req.ax.AxWindow;
+import cz.tacr.elza.controller.ArrangementManager;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import org.springframework.util.Assert;
+
+import javax.annotation.Nullable;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
@@ -8,18 +17,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.Nullable;
-
-import org.springframework.util.Assert;
-
-import com.vaadin.ui.CssLayout;
-import com.vaadin.ui.Label;
-
-import cz.req.ax.AxWindow;
-import cz.tacr.elza.controller.ArrangementManager;
-import cz.tacr.elza.domain.ArrFaLevel;
-import cz.tacr.elza.domain.ArrFaVersion;
 
 
 /**
@@ -37,7 +34,7 @@ public class LevelHistoryWindow extends AxWindow {
         this.arrangementManager = arrangementManager;
     }
 
-    public AxWindow show(final ArrFaLevel level, final Integer findingAidId) {
+    public AxWindow show(final ArrLevel level, final Integer findingAidId) {
         List<CssLayout> componentList = createVersionHistory(level, findingAidId);
         CssLayout layout = new CssLayout();
         layout.addStyleName("history-box");
@@ -53,21 +50,21 @@ public class LevelHistoryWindow extends AxWindow {
     }
 
 
-    private List<CssLayout> createVersionHistory(final ArrFaLevel level, final Integer findingAidId) {
-            final List<ArrFaVersion> versionList = arrangementManager.getFindingAidVersions(findingAidId);
-            List<ArrFaLevel> allLevels = arrangementManager.findLevels(level.getNode().getNodeId());
+    private List<CssLayout> createVersionHistory(final ArrLevel level, final Integer findingAidId) {
+            final List<ArrFindingAidVersion> versionList = arrangementManager.getFindingAidVersions(findingAidId);
+            List<ArrLevel> allLevels = arrangementManager.findLevels(level.getNode().getNodeId());
             List<CssLayout> resultList = new ArrayList<>();
 
-            final Map<ArrFaVersion, List<ArrFaLevel>> versionMap = prepareVersionLevelMap(level, findingAidId);
-            ArrFaLevel firstLevel = allLevels.get(0);
-            ArrFaLevel lastLevel = allLevels.get(allLevels.size()-1);
+            final Map<ArrFindingAidVersion, List<ArrLevel>> versionMap = prepareVersionLevelMap(level, findingAidId);
+            ArrLevel firstLevel = allLevels.get(0);
+            ArrLevel lastLevel = allLevels.get(allLevels.size()-1);
 
 
             int versionNumber = 0;
-            for (ArrFaVersion version : versionList) {
+            for (ArrFindingAidVersion version : versionList) {
                 versionNumber++;
 
-                List<ArrFaLevel> levels = versionMap.get(version);
+                List<ArrLevel> levels = versionMap.get(version);
                 if(levels == null || levels.isEmpty()) {
                     continue;
                 }
@@ -79,31 +76,31 @@ public class LevelHistoryWindow extends AxWindow {
             return resultList;
         }
 
-        private Map<ArrFaVersion, List<ArrFaLevel>> prepareVersionLevelMap(final ArrFaLevel level, final Integer findingAidId) {
-            final List<ArrFaLevel> levelList = arrangementManager.findLevels(level.getNode().getNodeId());
-            final List<ArrFaVersion> versionList = arrangementManager.getFindingAidVersions(findingAidId);
+        private Map<ArrFindingAidVersion, List<ArrLevel>> prepareVersionLevelMap(final ArrLevel level, final Integer findingAidId) {
+            final List<ArrLevel> levelList = arrangementManager.findLevels(level.getNode().getNodeId());
+            final List<ArrFindingAidVersion> versionList = arrangementManager.getFindingAidVersions(findingAidId);
 
 
-            ArrFaVersion[] versions = new ArrFaVersion[versionList.size()];
+            ArrFindingAidVersion[] versions = new ArrFindingAidVersion[versionList.size()];
             Integer[] versionEnds = new Integer[versionList.size()];
-            final Map<ArrFaVersion, List<ArrFaLevel>> versionMap = new LinkedHashMap<ArrFaVersion, List<ArrFaLevel>>();
+            final Map<ArrFindingAidVersion, List<ArrLevel>> versionMap = new LinkedHashMap<ArrFindingAidVersion, List<ArrLevel>>();
 
             int index = 0;
-            for (ArrFaVersion faVersion : versionList) {
+            for (ArrFindingAidVersion faVersion : versionList) {
                 versionEnds[index] = faVersion.getLockChange() == null ? Integer.MAX_VALUE
-                                                                       : faVersion.getLockChange().getFaChangeId();
+                                                                       : faVersion.getLockChange().getChangeId();
                 versions[index] = faVersion;
                 index++;
             }
 
             boolean firstLevel = true;
-            for (ArrFaLevel faLevel : levelList) {
-                ArrFaVersion version = getVersionByChangeId(firstLevel, faLevel, versionEnds, versions);
+            for (ArrLevel faLevel : levelList) {
+                ArrFindingAidVersion version = getVersionByChangeId(firstLevel, faLevel, versionEnds, versions);
                 firstLevel = false;
 
-                List<ArrFaLevel> levels = versionMap.get(version);
+                List<ArrLevel> levels = versionMap.get(version);
                 if (levels == null) {
-                    levels = new LinkedList<ArrFaLevel>();
+                    levels = new LinkedList<ArrLevel>();
                     versionMap.put(version, levels);
                 }
                 levels.add(faLevel);
@@ -112,13 +109,13 @@ public class LevelHistoryWindow extends AxWindow {
             return versionMap;
         }
 
-        private ArrFaVersion getVersionByChangeId(final boolean firstLevel,
-                                               @Nullable final ArrFaLevel faLevel,
+        private ArrFindingAidVersion getVersionByChangeId(final boolean firstLevel,
+                                               @Nullable final ArrLevel faLevel,
                                                final Integer[] versionEnds,
-                                               final ArrFaVersion[] versions) {
-            Integer deleteId = faLevel.getDeleteChange() == null ? null : faLevel.getDeleteChange().getFaChangeId();
+                                               final ArrFindingAidVersion[] versions) {
+            Integer deleteId = faLevel.getDeleteChange() == null ? null : faLevel.getDeleteChange().getChangeId();
             if (firstLevel || deleteId == null) {
-                Integer createId = faLevel.getCreateChange().getFaChangeId();
+                Integer createId = faLevel.getCreateChange().getChangeId();
 
                 int index = Arrays.binarySearch(versionEnds, createId);
                 if (index < 0) {
@@ -136,10 +133,10 @@ public class LevelHistoryWindow extends AxWindow {
 
 
         private CssLayout createVersionHistoryItem(final int versionNumber,
-                                                   ArrFaVersion faVersion,
-                                                   List<ArrFaLevel> levelSublist,
-                                                   ArrFaLevel firstLevel,
-                                                   ArrFaLevel lastLevel) {
+                                                   ArrFindingAidVersion faVersion,
+                                                   List<ArrLevel> levelSublist,
+                                                   ArrLevel firstLevel,
+                                                   ArrLevel lastLevel) {
          // pridani verze
             CssLayout layout = new CssLayout();
             layout.setSizeUndefined();
@@ -164,7 +161,7 @@ public class LevelHistoryWindow extends AxWindow {
                 layout.addComponent(createVersionHistoryHeader());
 
                 // pridani levlu
-                for (ArrFaLevel faLevel : levelSublist) {
+                for (ArrLevel faLevel : levelSublist) {
                     String typZmena = "změna";
 
                     if (faLevel.equals(lastLevel) && lastLevel.getDeleteChange() != null) {
@@ -182,7 +179,7 @@ public class LevelHistoryWindow extends AxWindow {
                             .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM));
                     Label labelChangeDate = newLabel(createDataStr);
 
-                    String parentNodeId = (faLevel.getParentNode() == null) ? "" : faLevel.getParentNode().getNodeId().toString();
+                    String parentNodeId = (faLevel.getNodeParent() == null) ? "" : faLevel.getNodeParent().getNodeId().toString();
                     Label labelParent = newLabel(parentNodeId);
 
                     String position = (faLevel.getPosition() == null) ? "" : faLevel.getPosition().toString();

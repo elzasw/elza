@@ -8,19 +8,19 @@ import java.time.LocalDateTime;
  * @author vavrejn
  *
  */
-public interface ArrFaChange extends Serializable {
+public interface ArrChange extends Serializable {
 
     /**
      * 
      * @return číslo změny.
      */
-    Integer getFaChangeId();
+    Integer getChangeId();
 
     /**
      * Nastaví číslo změny.
      * @param changeId  číslo změny.
      */
-    void setFaChangeId(Integer changeId);
+    void setChangeId(Integer changeId);
 
     /**
      * 

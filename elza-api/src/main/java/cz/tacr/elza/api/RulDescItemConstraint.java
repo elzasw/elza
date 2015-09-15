@@ -10,7 +10,7 @@ import java.io.Serializable;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
-public interface RulDescItemConstraint<RIT extends RulDescItemType, RIS extends RulDescItemSpec, AV extends ArrFaVersion>
+public interface RulDescItemConstraint<RIT extends RulDescItemType, RIS extends RulDescItemSpec, AV extends ArrFindingAidVersion>
         extends
             Serializable {
 

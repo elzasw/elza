@@ -26,17 +26,6 @@ public interface RulDescItemType<RT extends RulDataType> extends Serializable {
 
     void setDataType(final RT dataType);
 
-    /**
-     * @return příznak, zda se jedná o systémový kód atributu
-     */
-    Boolean getSys();
-
-    /**
-     * @param sys příznak, zda se jedná o systémový kód atributu.
-     */
-    void setSys(final Boolean sys);
-
-
     String getCode();
 
 

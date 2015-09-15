@@ -1,5 +1,18 @@
 package cz.tacr.elza.ui.view;
 
+import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.event.ItemClickEvent;
+import com.vaadin.navigator.ViewChangeListener;
+import com.vaadin.ui.Table;
+import cz.tacr.elza.controller.ArrangementManager;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.ui.ElzaView;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import ru.xpoft.vaadin.VaadinView;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -7,22 +20,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
-import cz.tacr.elza.domain.ArrFaChange;
-import cz.tacr.elza.domain.ArrFaVersion;
-import ru.xpoft.vaadin.VaadinView;
-
-import com.vaadin.data.util.BeanItemContainer;
-import com.vaadin.event.ItemClickEvent;
-import com.vaadin.navigator.ViewChangeListener;
-import com.vaadin.ui.Table;
-
-import cz.tacr.elza.controller.ArrangementManager;
-import cz.tacr.elza.ui.ElzaView;
 
 
 /**
@@ -41,7 +38,7 @@ public class VersionListView extends ElzaView {
     @Autowired
     private ArrangementManager arrangementManager;
 
-    BeanItemContainer<ArrFaVersion> container;
+    BeanItemContainer<ArrFindingAidVersion> container;
 
     private Integer findingAidId;
 
@@ -73,15 +70,15 @@ public class VersionListView extends ElzaView {
         table.addGeneratedColumn("createChange", new Table.ColumnGenerator() {
             @Override
             public Object generateCell(final Table source, final Object itemId, final Object columnId) {
-                ArrFaVersion version = (ArrFaVersion) itemId;
+                ArrFindingAidVersion version = (ArrFindingAidVersion) itemId;
                 return version.getCreateChange().getChangeDate().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM));
             }
         });
         table.addGeneratedColumn("lockChange", new Table.ColumnGenerator() {
             @Override
             public Object generateCell(final Table source, final Object itemId, final Object columnId) {
-                ArrFaVersion version = (ArrFaVersion) itemId;
-                ArrFaChange lockChange = version.getLockChange();
+                ArrFindingAidVersion version = (ArrFindingAidVersion) itemId;
+                ArrChange lockChange = version.getLockChange();
                 if (lockChange == null) {
                     return null;
                 }
@@ -92,19 +89,19 @@ public class VersionListView extends ElzaView {
         table.addItemClickListener(new ItemClickEvent.ItemClickListener() {
             @Override
             public void itemClick(final ItemClickEvent itemClickEvent) {
-                ArrFaVersion version = (ArrFaVersion) itemClickEvent.getItemId();
+                ArrFindingAidVersion version = (ArrFindingAidVersion) itemClickEvent.getItemId();
                 Integer versionId = null;
                 if (version.getLockChange() != null) {
-                    versionId = version.getFaVersionId();
+                    versionId = version.getFindingAidVersionId();
                 }
                 VOFindingAidVersionParam params = new VOFindingAidVersionParam(findingAidId, versionId);
                 navigate(FindingAidDetailView.class, params);
             }
         });
 
-        container = new BeanItemContainer<>(ArrFaVersion.class);
+        container = new BeanItemContainer<>(ArrFindingAidVersion.class);
 
-        List<ArrFaVersion> dataSource = arrangementManager.getFindingAidVersions(findingAidId);
+        List<ArrFindingAidVersion> dataSource = arrangementManager.getFindingAidVersions(findingAidId);
         sortFa(dataSource);
         container.addAll(dataSource);
 
@@ -119,8 +116,8 @@ public class VersionListView extends ElzaView {
      * seřadí fa vertion list podle data vytvoření.
      * @param dataSource
      */
-    private void sortFa(final List<ArrFaVersion> dataSource) {
-        Comparator<ArrFaVersion> comparator = (e1, e2) -> e1.getCreateChange().getChangeDate()
+    private void sortFa(final List<ArrFindingAidVersion> dataSource) {
+        Comparator<ArrFindingAidVersion> comparator = (e1, e2) -> e1.getCreateChange().getChangeDate()
                 .compareTo(e2.getCreateChange().getChangeDate());
         Collections.sort(dataSource, comparator);
     }
