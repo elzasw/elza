@@ -785,7 +785,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         // vytvoření závislých dat
 
-        RulDescItemType descItemType = createDescItemType(dataType, true, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
+        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
         RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1);
         createDescItemConstrain(descItemType, descItemSpec, version, false, null, null);
         createDescItemConstrain(descItemType, descItemSpec, version, true, null, null);
@@ -826,7 +826,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         // vytvoření závislých dat
 
-        RulDescItemType descItemType2 = createDescItemType(dataType, true, "ITEM_TYPE2", "Item type 2", "SH3", "Desc 3", false, false, true, 2);
+        RulDescItemType descItemType2 = createDescItemType(dataType, "ITEM_TYPE2", "Item type 2", "SH3", "Desc 3", false, false, true, 2);
         RulDescItemSpec descItemSpec2 = createDescItemSpec(descItemType2, "ITEM_SPEC2", "Item spec 2", "SH4", "Desc 4", 2);
         createDescItemConstrain(descItemType2, descItemSpec, version, null, "[0-9]*", null);
         createDescItemConstrain(descItemType2, descItemSpec, version, null, null, 50);
@@ -890,7 +890,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         // vytvoření závislých dat
 
-        RulDescItemType descItemType = createDescItemType(dataType, true, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
+        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
         RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1);
         createDescItemConstrain(descItemType, descItemSpec, version, false, null, null);
         createDescItemConstrain(descItemType, descItemSpec, version, true, null, null);
@@ -991,7 +991,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         // vytvoření závislých dat
 
-        RulDescItemType descItemType = createDescItemType(dataType, true, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
+        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
         RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1);
         createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null);
         createDescItemConstrain(descItemType, descItemSpec, version, null, null, 10);
@@ -1078,7 +1078,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         // vytvoření závislých dat
 
-        RulDescItemType descItemType = createDescItemType(dataType, true, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
+        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
         RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1);
         createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null);
         createDescItemConstrain(descItemType, descItemSpec, version, null, null, 10);
@@ -1231,7 +1231,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         // vytvoření závislých dat
 
-        RulDescItemType descItemType = createDescItemType(dataType, true, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
+        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
         RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1);
         createDescItemConstrain(descItemType, descItemSpec, version, false, null, null);
         createDescItemConstrain(descItemType, descItemSpec, version, true, null, null);

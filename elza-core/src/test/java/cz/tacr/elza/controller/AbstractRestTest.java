@@ -417,7 +417,6 @@ public abstract class AbstractRestTest {
     protected RulDescItemType createDescItemType(final int index) {
         RulDescItemType itemType = new RulDescItemType();
         RulDataType dataType = createDataType(index);
-        itemType.setSys(true);
         itemType.setDataType(dataType);
         itemType.setCode("DI" + index);
         itemType.setName("Desc Item " + index);
@@ -461,10 +460,9 @@ public abstract class AbstractRestTest {
         return dataTypeRepository.save(dataType);
     }
 
-    protected RulDescItemType createDescItemType(RulDataType rulDataType, Boolean sys, String code, String name, String shortcut, String description, Boolean isValueUnique, Boolean canBeOrdered, Boolean useSpecification, Integer viewOrder) {
+    protected RulDescItemType createDescItemType(RulDataType rulDataType, String code, String name, String shortcut, String description, Boolean isValueUnique, Boolean canBeOrdered, Boolean useSpecification, Integer viewOrder) {
         RulDescItemType dataTypeItem = new RulDescItemType();
         dataTypeItem.setDataType(rulDataType);
-        dataTypeItem.setSys(sys);
         dataTypeItem.setCode(code);
         dataTypeItem.setName(name);
         dataTypeItem.setShortcut(shortcut);

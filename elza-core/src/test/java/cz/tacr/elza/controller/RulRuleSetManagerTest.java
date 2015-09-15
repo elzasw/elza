@@ -34,7 +34,7 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
     public void testRestGetDescItemSpecById() throws Exception{
         RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
 
-        RulDescItemType descItemType = createDescItemType(dataType, true, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
+        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
         RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1);
 
 
