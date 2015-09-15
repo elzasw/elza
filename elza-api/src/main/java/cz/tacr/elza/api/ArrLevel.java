@@ -8,14 +8,14 @@ import java.io.Serializable;
  *
  * @author vavrejn
  *
- * @param <FC> {@link ArrFaChange}
+ * @param <FC> {@link ArrChange}
  * @param <N> {@link ArrNode}
  */
-public interface ArrFaLevel<FC extends ArrFaChange, N extends ArrNode> extends Serializable {
+public interface ArrLevel<FC extends ArrChange, N extends ArrNode> extends Serializable {
 
-    Integer getFaLevelId();
+    Integer getLevelId();
 
-    void setFaLevelId(Integer faLevelId);
+    void setLevelId(Integer levelId);
 
     /**
      * 
@@ -41,13 +41,13 @@ public interface ArrFaLevel<FC extends ArrFaChange, N extends ArrNode> extends S
      * 
      * @return odkaz na nadřízený uzel stromu, v případě root levelu je NULL.
      */
-    N getParentNode();
+    N getNodeParent();
 
     /**
      * 
      * @param parentNode odkaz na nadřízený uzel stromu, v případě root levelu je NULL.
      */
-    void setParentNode(N parentNode);
+    void setNodeParent(N parentNode);
 
     /**
      * @return číslo změny vytvoření uzlu.

@@ -1,14 +1,13 @@
 package cz.tacr.elza.repository;
 
-import java.util.List;
-
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrNode;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFaChange;
-import cz.tacr.elza.domain.ArrNode;
+import java.util.List;
 
 
 /**
@@ -28,13 +27,13 @@ public interface DescItemRepository extends JpaRepository<ArrDescItem, Integer> 
     List<ArrDescItem> findByNodeAndDeleteChangeIsNullAndDescItemTypeId(ArrNode node, Integer descItemTypeId);
 
     @Query("SELECT i FROM arr_desc_item i JOIN i.descItemType t WHERE i.node = ?1 AND t.descItemTypeId = ?2 AND i.createChange < ?3 AND (i.deleteChange > ?3 OR i.deleteChange IS NULL)")
-    List<ArrDescItem> findByNodeDescItemTypeIdAndLockChangeId(ArrNode node, Integer descItemTypeId, ArrFaChange change);
+    List<ArrDescItem> findByNodeDescItemTypeIdAndLockChangeId(ArrNode node, Integer descItemTypeId, ArrChange change);
 
     @Query("SELECT i FROM arr_desc_item i WHERE i.deleteChange IS NULL AND i.descItemObjectId = ?1")
     List<ArrDescItem> findByDescItemObjectIdAndDeleteChangeIsNull(Integer descItemObjectId);
 
     @Query("SELECT i FROM arr_desc_item i WHERE i.descItemObjectId = ?1 AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
-    List<ArrDescItem> findByDescItemObjectIdAndLockChangeId(Integer descItemObjectId, ArrFaChange change);
+    List<ArrDescItem> findByDescItemObjectIdAndLockChangeId(Integer descItemObjectId, ArrChange change);
 
     @Query(value = "SELECT max(i.descItemObjectId) FROM arr_desc_item i")
     Integer findMaxDescItemObjectId();

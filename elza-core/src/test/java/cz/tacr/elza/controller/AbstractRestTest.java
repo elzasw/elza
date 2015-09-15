@@ -7,15 +7,15 @@ import com.jayway.restassured.response.Header;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 import cz.tacr.elza.ElzaCore;
+import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFaChange;
-import cz.tacr.elza.domain.ArrFaLevel;
-import cz.tacr.elza.domain.ArrFaLevelExt;
-import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartySubtype;
@@ -308,52 +308,52 @@ public abstract class AbstractRestTest {
         return arrangementManager.createFindingAid(name, arrangementType.getArrangementTypeId(), ruleSet.getRuleSetId());
     }
 
-    protected ArrFaVersion createFindingAidVersion(final ArrFindingAid findingAid, boolean isLock, ArrFaChange createChange) {
-        ArrFaLevel root = levelRepository.findAll().iterator().next();
+    protected ArrFindingAidVersion createFindingAidVersion(final ArrFindingAid findingAid, boolean isLock, ArrChange createChange) {
+        ArrLevel root = levelRepository.findAll().iterator().next();
         return createFindingAidVersion(findingAid, root, isLock, createChange);
     }
 
-    protected ArrFaChange createFaChange(final LocalDateTime changeDate) {
-        ArrFaChange resultChange = new ArrFaChange();
+    protected ArrChange createFaChange(final LocalDateTime changeDate) {
+        ArrChange resultChange = new ArrChange();
         resultChange.setChangeDate(changeDate);
         return changeRepository.save(resultChange);
     }
 
-    protected ArrFaVersion createFindingAidVersion(final ArrFindingAid findingAid, final ArrFaLevel root, boolean isLock, ArrFaChange createChange) {
+    protected ArrFindingAidVersion createFindingAidVersion(final ArrFindingAid findingAid, final ArrLevel root, boolean isLock, ArrChange createChange) {
         RulRuleSet ruleSet = ruleSetRepository.findAll().iterator().next();
         RulArrangementType arrangementType = arrangementTypeRepository.findAll().iterator().next();
 
         return createFindingAidVersion(findingAid, root, ruleSet, arrangementType, isLock, createChange);
     }
 
-    protected ArrFaVersion createFindingAidVersion(final ArrFindingAid findingAid, final ArrFaLevel root,
-                                                   RulRuleSet ruleSet, RulArrangementType arrangementType, boolean isLock, ArrFaChange createChange) {
+    protected ArrFindingAidVersion createFindingAidVersion(final ArrFindingAid findingAid, final ArrLevel root,
+                                                   RulRuleSet ruleSet, RulArrangementType arrangementType, boolean isLock, ArrChange createChange) {
 
         if (createChange == null) {
             createChange = createFaChange(LocalDateTime.now());
         }
 
-        ArrFaChange lockChange = null;
+        ArrChange lockChange = null;
         if (isLock) {
             lockChange = createFaChange(LocalDateTime.now());
         }
 
-        ArrFaVersion version = new ArrFaVersion();
+        ArrFindingAidVersion version = new ArrFindingAidVersion();
         version.setArrangementType(arrangementType);
         version.setCreateChange(createChange);
         version.setLockChange(lockChange);
         version.setFindingAid(findingAid);
-        version.setRootFaLevel(root);
+        version.setRootLevel(root);
         version.setRuleSet(ruleSet);
 
         return versionRepository.save(version);
     }
 
-    protected ArrFaLevel createLevel(final Integer position, final ArrFaLevel parent, final ArrFaChange change) {
-        ArrFaLevel level = new ArrFaLevel();
+    protected ArrLevel createLevel(final Integer position, final ArrLevel parent, final ArrChange change) {
+        ArrLevel level = new ArrLevel();
         level.setPosition(position);
         if (parent != null) {
-            level.setParentNode(parent.getNode());
+            level.setNodeParent(parent.getNode());
         }
         level.setCreateChange(change);
         level.setNode(createNode());
@@ -368,7 +368,7 @@ public abstract class AbstractRestTest {
 
     @Transactional
     protected ArrDescItem createAttributs(final ArrNode node, final Integer position,
-                                          final ArrFaChange change, final int index, final String typ) {
+                                          final ArrChange change, final int index, final String typ) {
         RulDescItemType descItemType = createDescItemType(index);
         RulDescItemSpec rulDescItemSpec = createDescItemSpec(descItemType, index);
 
@@ -502,7 +502,7 @@ public abstract class AbstractRestTest {
         return descItemSpecRepository.save(dataSpecItem);
     }
 
-    protected RulDescItemConstraint createDescItemConstrain(RulDescItemType rulDescItemType, RulDescItemSpec rulDescItemSpec, ArrFaVersion faVersion, Boolean repeatable, String regexp, Integer textLengthLimit) {
+    protected RulDescItemConstraint createDescItemConstrain(RulDescItemType rulDescItemType, RulDescItemSpec rulDescItemSpec, ArrFindingAidVersion faVersion, Boolean repeatable, String regexp, Integer textLengthLimit) {
         RulDescItemConstraint itemConstraint = new RulDescItemConstraint();
         itemConstraint.setDescItemType(rulDescItemType);
         itemConstraint.setDescItemSpec(rulDescItemSpec);
@@ -513,7 +513,7 @@ public abstract class AbstractRestTest {
         return descItemConstraintRepository.save(itemConstraint);
     }
 
-    protected ArrDescItem createArrDescItem(ArrFaChange createFaChange, ArrFaChange deleteFaChange, Integer descItemObjectId, RulDescItemType rulDescItemType, RulDescItemSpec rulDescItemSpec, ArrNode node, Integer position) {
+    protected ArrDescItem createArrDescItem(ArrChange createFaChange, ArrChange deleteFaChange, Integer descItemObjectId, RulDescItemType rulDescItemType, RulDescItemSpec rulDescItemSpec, ArrNode node, Integer position) {
         ArrDescItem descItem = new ArrDescItem();
         descItem.setCreateChange(createFaChange);
         descItem.setDeleteChange(deleteFaChange);
@@ -745,11 +745,11 @@ public abstract class AbstractRestTest {
      *
      * @return otevřená verze archivní pomůcky
      */
-    protected ArrFaVersion getFindingAidOpenVersion(ArrFindingAid findingAid) {
+    protected ArrFindingAidVersion getFindingAidOpenVersion(ArrFindingAid findingAid) {
         Response response = get(spec -> spec.parameter(FA_ID_ATT, findingAid.getFindingAidId()),
                 GET_OPEN_VERSION_BY_FA_ID_URL);
 
-        return response.getBody().as(ArrFaVersion.class);
+        return response.getBody().as(ArrFindingAidVersion.class);
     }
 
     /**
@@ -759,10 +759,10 @@ public abstract class AbstractRestTest {
      *
      * @return level
      */
-    protected ArrFaLevelExt getLevelByNodeId(Integer nodeId) {
+    protected ArrLevelExt getLevelByNodeId(Integer nodeId) {
         Response response = get(spec -> spec.parameter(NODE_ID_ATT, nodeId), GET_LEVEL_URL);
 
-        return response.getBody().as(ArrFaLevelExt.class);
+        return response.getBody().as(ArrLevelExt.class);
     }
 
     /**

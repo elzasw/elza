@@ -11,7 +11,7 @@ import java.io.Serializable;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
-public interface ArrDescItem<FC extends ArrFaChange, RT extends RulDescItemType,
+public interface ArrDescItem<FC extends ArrChange, RT extends RulDescItemType,
     RS extends RulDescItemSpec, N extends ArrNode> extends Versionable, Serializable {
 
     /**

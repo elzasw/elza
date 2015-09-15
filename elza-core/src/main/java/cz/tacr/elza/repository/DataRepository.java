@@ -1,16 +1,15 @@
 package cz.tacr.elza.repository;
 
-import java.util.Collection;
-import java.util.List;
-
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrNode;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFaChange;
-import cz.tacr.elza.domain.ArrNode;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -38,11 +37,11 @@ public interface DataRepository extends JpaRepository<ArrData, Integer> {
 
     @Query("SELECT d FROM arr_data d join d.descItem i WHERE i.node = ?1 "
             + "and i.createChange < ?2 and (i.deleteChange is null or i.deleteChange > ?2)")
-    List<ArrData> findByNodeAndChange(ArrNode node, ArrFaChange change);
+    List<ArrData> findByNodeAndChange(ArrNode node, ArrChange change);
 
     @Query("SELECT d FROM arr_data d join d.descItem i WHERE i.node in (?1) "
             + "and i.createChange < ?2 and (i.deleteChange is null or i.deleteChange > ?2)")
-    List<ArrData> findByNodesAndChange(Collection<ArrNode> nodes, ArrFaChange change);
+    List<ArrData> findByNodesAndChange(Collection<ArrNode> nodes, ArrChange change);
 
 
     List<ArrData> findByDescItem(ArrDescItem descItem);

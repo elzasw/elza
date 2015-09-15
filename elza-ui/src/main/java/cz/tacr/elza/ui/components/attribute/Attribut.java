@@ -1,33 +1,26 @@
 package cz.tacr.elza.ui.components.attribute;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang.builder.CompareToBuilder;
-
 import com.vaadin.event.dd.DragAndDropEvent;
 import com.vaadin.event.dd.DropHandler;
 import com.vaadin.event.dd.acceptcriteria.AcceptAll;
 import com.vaadin.event.dd.acceptcriteria.AcceptCriterion;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.label.ContentMode;
-import com.vaadin.ui.AbstractField;
-import com.vaadin.ui.AbstractSelect;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.DragAndDropWrapper;
-import com.vaadin.ui.Field;
 import com.vaadin.ui.Label;
-
 import cz.req.ax.AxAction;
 import cz.req.ax.ChildComponentContainer;
 import cz.req.ax.Components;
 import cz.tacr.elza.domain.ArrDescItemExt;
-import cz.tacr.elza.domain.ArrFaLevelExt;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**

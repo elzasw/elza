@@ -1,22 +1,11 @@
 package cz.tacr.elza.controller;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.BeanUtils;
-import org.springframework.http.HttpStatus;
-import org.springframework.util.Assert;
-
 import com.jayway.restassured.response.Response;
-
 import cz.tacr.elza.domain.ArrDescItemExt;
-import cz.tacr.elza.domain.ArrFaLevel;
-import cz.tacr.elza.domain.ArrFaLevelExt;
-import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDataType;
@@ -26,7 +15,16 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
-import cz.tacr.elza.domain.vo.ArrFaLevelWithExtraNode;
+import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.BeanUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.util.Assert;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Kompletní test {@link ArrangementManager}.
@@ -86,8 +84,8 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      * @param findingAid archivní pomůcka
      */
     private void testArrangementTypeRelations(ArrFindingAid findingAid) {
-        List<ArrFaVersion> versions = getFindingAidVersions(findingAid);
-        for (ArrFaVersion version : versions) {
+        List<ArrFindingAidVersion> versions = getFindingAidVersions(findingAid);
+        for (ArrFindingAidVersion version : versions) {
             RulRuleSet versionRuleSet = version.getRuleSet();
             RulArrangementType versionArrangementType = version.getArrangementType();
 
@@ -118,7 +116,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         createFindingAid(rs1, rs2AT1, HttpStatus.INTERNAL_SERVER_ERROR);
 
         // Pokus o uzavření verze a vytvoření nové verze archivní pomůcky s typem výstupu nepatřícím pravidlům tvorby
-        ArrFaVersion openVersion = getFindingAidOpenVersion(findingAid);
+        ArrFindingAidVersion openVersion = getFindingAidOpenVersion(findingAid);
         approveVersion(openVersion, rs1, rs2AT1, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -128,8 +126,8 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      * @param findingAid archivní pomůcka
      */
     private void testAttributeValues(ArrFindingAid findingAid) {
-        ArrFaVersion version = getFindingAidOpenVersion(findingAid);
-        ArrNode node = version.getRootFaLevel().getNode();
+        ArrFindingAidVersion version = getFindingAidOpenVersion(findingAid);
+        ArrNode node = version.getRootLevel().getNode();
 
         List<RulDescItemTypeExt> descItemTypes = getAllRulDescItemTypExt();
         Assert.isTrue(descItemTypes.size() == 2);
@@ -141,7 +139,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         Assert.notNull(descItemExt.getData());
         Assert.isTrue(descItemExt.getData().equals(TEST_VALUE_123));
 
-        ArrFaLevelExt arrFaLevelExt = getLevelByNodeId(node.getNodeId());
+        ArrLevelExt arrFaLevelExt = getLevelByNodeId(node.getNodeId());
         List<ArrDescItemExt> descItemList = arrFaLevelExt.getDescItemList();
         Assert.isTrue(descItemList.size() == 1);
         Assert.isTrue(descItemList.get(0).getData().equals(TEST_VALUE_123));
@@ -174,8 +172,8 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         Assert.isTrue(descItemList.isEmpty());
 
         // Manipulace s více hodnotami najednou
-        ArrFaVersion faVersion = getFindingAidOpenVersion(findingAid);
-        node = faVersion.getRootFaLevel().getNode();
+        ArrFindingAidVersion faVersion = getFindingAidOpenVersion(findingAid);
+        node = faVersion.getRootLevel().getNode();
         ArrDescItemSavePack savePack = prepareSavePack(node, version, descItemTypes);
         List<ArrDescItemExt> arrDescItemExts = storeSavePack(savePack);
         Assert.isTrue(arrDescItemExts.size() == 2);
@@ -189,12 +187,12 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         Assert.isTrue(descItemList.size() == 2);
 
         // Uložení s verzováním změn v uzavřené verzi, očekává se chyba
-        List<ArrFaVersion> versions = getFindingAidVersions(findingAid);
+        List<ArrFindingAidVersion> versions = getFindingAidVersions(findingAid);
         savePack = prepareSavePack(node, versions.get(0), descItemTypes);
         storeSavePackWithError(savePack);
 
         // Aktualizace hodnot - odebrání a změna
-        node = getFindingAidOpenVersion(findingAid).getRootFaLevel().getNode();
+        node = getFindingAidOpenVersion(findingAid).getRootLevel().getNode();
         ArrDescItemSavePack updateSavePack = prepareUpdateSavePack(node, version, arrDescItemExts);
         List<ArrDescItemExt> updatedArrDescItemExts = storeSavePack(updateSavePack);
         Assert.isTrue(updatedArrDescItemExts.size() == 2);
@@ -232,10 +230,10 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return balík hodnot
      */
-    private ArrDescItemSavePack prepareSavePack(ArrNode node, ArrFaVersion version, List<RulDescItemTypeExt> descItemTypes) {
+    private ArrDescItemSavePack prepareSavePack(ArrNode node, ArrFindingAidVersion version, List<RulDescItemTypeExt> descItemTypes) {
         ArrDescItemSavePack savePack = new ArrDescItemSavePack();
         savePack.setCreateNewVersion(true);
-        savePack.setFaVersionId(version.getFaVersionId());
+        savePack.setFaVersionId(version.getFindingAidVersionId());
         savePack.setNode(node);
         savePack.setDeleteDescItems(new ArrayList<>());
 
@@ -260,10 +258,10 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return balík hodnot
      */
-    private ArrDescItemSavePack prepareUpdateSavePack(ArrNode node, ArrFaVersion version, List<ArrDescItemExt> originalValues) {
+    private ArrDescItemSavePack prepareUpdateSavePack(ArrNode node, ArrFindingAidVersion version, List<ArrDescItemExt> originalValues) {
         ArrDescItemSavePack updateSavePack = new ArrDescItemSavePack();
         updateSavePack.setCreateNewVersion(true);
-        updateSavePack.setFaVersionId(version.getFaVersionId());
+        updateSavePack.setFaVersionId(version.getFindingAidVersionId());
         updateSavePack.setNode(node);
 
         List<ArrDescItemExt> updateValues = new ArrayList<ArrDescItemExt>();
@@ -313,7 +311,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return vytvořená hodnota
      */
-    private ArrDescItemExt createArrDescItemExt(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, ArrFaVersion version,
+    private ArrDescItemExt createArrDescItemExt(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, ArrFindingAidVersion version,
             String value) {
         RulDescItemType rulDescItemType = new RulDescItemType();
         BeanUtils.copyProperties(rulDescItemTypeExt, rulDescItemType);
@@ -328,7 +326,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         descItem.setData(value);
         descItem.setNode(node);
 
-        Response response = post((spec) -> spec.body(descItem).pathParameter(VERSION_ID_ATT, version.getFaVersionId()),
+        Response response = post((spec) -> spec.body(descItem).pathParameter(VERSION_ID_ATT, version.getFindingAidVersionId()),
                 CREATE_DESCRIPTION_ITEM_URL);
 
         return response.getBody().as(ArrDescItemExt.class);
@@ -344,11 +342,11 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return vytvořená hodnota
      */
-    private ArrDescItemExt updateArrDescItemExt(ArrDescItemExt descItem, String value, ArrFaVersion version,
+    private ArrDescItemExt updateArrDescItemExt(ArrDescItemExt descItem, String value, ArrFindingAidVersion version,
             boolean createNewVersion) {
         descItem.setData(value);
 
-        Response response = post((spec) -> spec.body(descItem).pathParameter(VERSION_ID_ATT, version.getFaVersionId())
+        Response response = post((spec) -> spec.body(descItem).pathParameter(VERSION_ID_ATT, version.getFindingAidVersionId())
                 .pathParameter(CREATE_NEW_VERSION_ATT, createNewVersion), UPDATE_DESCRIPTION_ITEM_URL);
 
         return response.getBody().as(ArrDescItemExt.class);
@@ -380,19 +378,19 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      * @param findingAid archivní pomůcka
      */
     private void testMoveAndDeleteLevels(ArrFindingAid findingAid) {
-        ArrFaVersion version = getFindingAidOpenVersion(findingAid);
-        ArrNode rootNode = version.getRootFaLevel().getNode();
+        ArrFindingAidVersion version = getFindingAidOpenVersion(findingAid);
+        ArrNode rootNode = version.getRootLevel().getNode();
 
-        List<ArrFaLevel> originalChildren = getSubLevels(rootNode, version);
+        List<ArrLevel> originalChildren = getSubLevels(rootNode, version);
         Assert.isTrue(originalChildren.size() == 4);
 
         // přesun druhého uzlu před první
-        ArrFaLevelWithExtraNode faLevelWithExtraNode = moveLevelBefore(originalChildren.get(1), originalChildren.get(0), version);
-        ArrFaLevel movedLevel = faLevelWithExtraNode.getFaLevel();
+        ArrLevelWithExtraNode faLevelWithExtraNode = moveLevelBefore(originalChildren.get(1), originalChildren.get(0), version);
+        ArrLevel movedLevel = faLevelWithExtraNode.getLevel();
         Assert.notNull(movedLevel);
         Assert.notNull(movedLevel.getNode().equals(originalChildren.get(1).getNode()));
 
-        List<ArrFaLevel> children = getSubLevels(rootNode, version);
+        List<ArrLevel> children = getSubLevels(rootNode, version);
         Assert.isTrue(children.size() == 4);
         Assert.isTrue(children.get(0).getNode().equals(originalChildren.get(1).getNode()));
         Assert.isTrue(children.get(1).getNode().equals(originalChildren.get(0).getNode()));
@@ -408,10 +406,10 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
 
         // přesun druhého uzlu pod první
         faLevelWithExtraNode = moveLevelUnder(children.get(1), children.get(0), version);
-        movedLevel = faLevelWithExtraNode.getFaLevel();
+        movedLevel = faLevelWithExtraNode.getLevel();
         Assert.notNull(movedLevel);
         Assert.notNull(movedLevel.getNode().equals(children.get(1).getNode()));
-        Assert.notNull(movedLevel.getParentNode().equals(children.get(0).getNode()));
+        Assert.notNull(movedLevel.getNodeParent().equals(children.get(0).getNode()));
         Assert.notNull(movedLevel.getPosition().equals(1));
 
         children = getSubLevels(children.get(0).getNode(), version);
@@ -430,7 +428,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
 
         // přesun prvního uzlu za druhý uzel v první úrovni stromu
         faLevelWithExtraNode = moveLevelAfter(children.get(0), children.get(1), version);
-        movedLevel = faLevelWithExtraNode.getFaLevel();
+        movedLevel = faLevelWithExtraNode.getLevel();
         Assert.notNull(movedLevel);
         Assert.notNull(movedLevel.getNode().equals(rootNode));
         Assert.notNull(movedLevel.getPosition().equals(2));
@@ -445,8 +443,8 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         Assert.isTrue(children.get(2).getPosition().equals(3));
 
         // smazání druhého uzlu v první úrovni
-        ArrFaLevel levelToDelete = children.get(1);
-        ArrFaLevel deletedLevel = deleteLevel(levelToDelete, version).getFaLevel();
+        ArrLevel levelToDelete = children.get(1);
+        ArrLevel deletedLevel = deleteLevel(levelToDelete, version).getLevel();
         Assert.notNull(deletedLevel);
         Assert.notNull(deletedLevel.getDeleteChange());
 
@@ -464,57 +462,57 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      * @param findingAid archivní pomůcka
      */
     private void testAddLevels(ArrFindingAid findingAid) {
-        ArrFaVersion version = getFindingAidOpenVersion(findingAid);
-        ArrNode rootNode = version.getRootFaLevel().getNode();
-        ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
-        levelWithExtraNode.setFaLevel(version.getRootFaLevel());
-        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
+        ArrFindingAidVersion version = getFindingAidOpenVersion(findingAid);
+        ArrNode rootNode = version.getRootLevel().getNode();
+        ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
+        levelWithExtraNode.setLevel(version.getRootLevel());
+        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
 
         // přidání prvního levelu pod root
-        ArrFaLevelWithExtraNode childLevelWithExtraNode = createLevelChild(levelWithExtraNode);
-        ArrFaLevel child1 = childLevelWithExtraNode.getFaLevel();
+        ArrLevelWithExtraNode childLevelWithExtraNode = createLevelChild(levelWithExtraNode);
+        ArrLevel child1 = childLevelWithExtraNode.getLevel();
         Assert.notNull(child1);
         Assert.isTrue(child1.getPosition().equals(1));
-        Assert.isTrue(child1.getParentNode().equals(rootNode));
+        Assert.isTrue(child1.getNodeParent().equals(rootNode));
 
-        List<ArrFaLevel> children = getSubLevels(rootNode, version);
+        List<ArrLevel> children = getSubLevels(rootNode, version);
         Assert.isTrue(children.size() == 1);
-        Assert.isTrue(children.get(0).getFaLevelId().equals(child1.getFaLevelId()));
+        Assert.isTrue(children.get(0).getLevelId().equals(child1.getLevelId()));
 
         // Opakované přidání bez přenačtení uzlu - očekává se chyba kvůli optimistickému zámku
         createLevelChildWithError(levelWithExtraNode);
         children = getSubLevels(rootNode, version);
         Assert.isTrue(children.size() == 1);
-        Assert.isTrue(children.get(0).getFaLevelId().equals(child1.getFaLevelId()));
+        Assert.isTrue(children.get(0).getLevelId().equals(child1.getLevelId()));
 
         // přidání druhého levelu pod root
-        levelWithExtraNode = new ArrFaLevelWithExtraNode();
-        levelWithExtraNode.setFaLevel(getLevelByNodeId(rootNode.getNodeId()));
-        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
+        levelWithExtraNode = new ArrLevelWithExtraNode();
+        levelWithExtraNode.setLevel(getLevelByNodeId(rootNode.getNodeId()));
+        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
 
         childLevelWithExtraNode = createLevelChild(levelWithExtraNode);
-        ArrFaLevel child2 = childLevelWithExtraNode.getFaLevel();
+        ArrLevel child2 = childLevelWithExtraNode.getLevel();
         Assert.notNull(child2);
         Assert.isTrue(child2.getPosition().equals(2));
-        Assert.isTrue(child2.getParentNode().equals(rootNode));
+        Assert.isTrue(child2.getNodeParent().equals(rootNode));
 
         children = getSubLevels(rootNode, version);
         Assert.isTrue(children.size() == 2);
-        Assert.isTrue(children.get(0).getFaLevelId().equals(child1.getFaLevelId()));
-        Assert.isTrue(children.get(1).getFaLevelId().equals(child2.getFaLevelId()));
+        Assert.isTrue(children.get(0).getLevelId().equals(child1.getLevelId()));
+        Assert.isTrue(children.get(1).getLevelId().equals(child2.getLevelId()));
 
         // přidání třetího levelu na první pozici pod root
-        levelWithExtraNode = new ArrFaLevelWithExtraNode();
+        levelWithExtraNode = new ArrLevelWithExtraNode();
         child1 = getLevelByNodeId(child1.getNode().getNodeId());
-        levelWithExtraNode.setFaLevel(child1);
-        levelWithExtraNode.setExtraNode(child1.getParentNode());
-        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
+        levelWithExtraNode.setLevel(child1);
+        levelWithExtraNode.setExtraNode(child1.getNodeParent());
+        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
 
         childLevelWithExtraNode = createLevelBefore(levelWithExtraNode);
-        ArrFaLevel child3 = childLevelWithExtraNode.getFaLevel();
+        ArrLevel child3 = childLevelWithExtraNode.getLevel();
         Assert.notNull(child3);
         Assert.isTrue(child3.getPosition().equals(1));
-        Assert.isTrue(child3.getParentNode().equals(rootNode));
+        Assert.isTrue(child3.getNodeParent().equals(rootNode));
 
         children = getSubLevels(rootNode, version);
         Assert.isTrue(children.size() == 3);
@@ -526,16 +524,16 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         Assert.isTrue(children.get(2).getPosition().equals(3));
 
         // přidání uzlu za první uzel pod root (za child3)
-        levelWithExtraNode = new ArrFaLevelWithExtraNode();
-        levelWithExtraNode.setFaLevel(child3);
-        levelWithExtraNode.setExtraNode(child3.getParentNode());
-        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
+        levelWithExtraNode = new ArrLevelWithExtraNode();
+        levelWithExtraNode.setLevel(child3);
+        levelWithExtraNode.setExtraNode(child3.getNodeParent());
+        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
 
         childLevelWithExtraNode = createLevelAfter(levelWithExtraNode);
-        ArrFaLevel child4 = childLevelWithExtraNode.getFaLevel();
+        ArrLevel child4 = childLevelWithExtraNode.getLevel();
         Assert.notNull(child4);
         Assert.isTrue(child4.getPosition().equals(2));
-        Assert.isTrue(child4.getParentNode().equals(rootNode));
+        Assert.isTrue(child4.getNodeParent().equals(rootNode));
 
         children = getSubLevels(rootNode, version);
         Assert.isTrue(children.size() == 4);
@@ -557,16 +555,16 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return potomky předaného uzlu
      */
-    private List<ArrFaLevel> getSubLevels(ArrNode rootNode, ArrFaVersion version) {
+    private List<ArrLevel> getSubLevels(ArrNode rootNode, ArrFindingAidVersion version) {
         Response response;
         if (version == null) {
             response = get(spec -> spec.parameter(NODE_ID_ATT, rootNode.getNodeId()), FIND_SUB_LEVELS_URL);
         } else {
             response = get(spec -> spec.parameter(NODE_ID_ATT, rootNode.getNodeId())
-                    .parameter(VERSION_ID_ATT, version.getFaVersionId()), FIND_SUB_LEVELS_URL);
+                    .parameter(VERSION_ID_ATT, version.getFindingAidVersionId()), FIND_SUB_LEVELS_URL);
         }
 
-        return Arrays.asList(response.getBody().as(ArrFaLevel[].class));
+        return Arrays.asList(response.getBody().as(ArrLevel[].class));
     }
 
     /**
@@ -576,9 +574,9 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return nový uzel
      */
-    private ArrFaLevelWithExtraNode createLevelChild(ArrFaLevelWithExtraNode levelWithExtraNode) {
+    private ArrLevelWithExtraNode createLevelChild(ArrLevelWithExtraNode levelWithExtraNode) {
         Response response = put(spec -> spec.body(levelWithExtraNode), ADD_LEVEL_CHILD_URL);
-        ArrFaLevelWithExtraNode parent = response.getBody().as(ArrFaLevelWithExtraNode.class);
+        ArrLevelWithExtraNode parent = response.getBody().as(ArrLevelWithExtraNode.class);
 
         return parent;
     }
@@ -588,7 +586,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @param levelWithExtraNode rodičovský uzel
      */
-    private void createLevelChildWithError(ArrFaLevelWithExtraNode levelWithExtraNode) {
+    private void createLevelChildWithError(ArrLevelWithExtraNode levelWithExtraNode) {
         put(spec -> spec.body(levelWithExtraNode), ADD_LEVEL_CHILD_URL, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -599,9 +597,9 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return nový uzel
      */
-    private ArrFaLevelWithExtraNode createLevelBefore(ArrFaLevelWithExtraNode levelWithExtraNode) {
+    private ArrLevelWithExtraNode createLevelBefore(ArrLevelWithExtraNode levelWithExtraNode) {
         Response response = put(spec -> spec.body(levelWithExtraNode), ADD_LEVEL_BEFORE_URL);
-        ArrFaLevelWithExtraNode parent = response.getBody().as(ArrFaLevelWithExtraNode.class);
+        ArrLevelWithExtraNode parent = response.getBody().as(ArrLevelWithExtraNode.class);
 
         return parent;
     }
@@ -613,9 +611,9 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return nový uzel
      */
-    private ArrFaLevelWithExtraNode createLevelAfter(ArrFaLevelWithExtraNode levelWithExtraNode) {
+    private ArrLevelWithExtraNode createLevelAfter(ArrLevelWithExtraNode levelWithExtraNode) {
         Response response = put(spec -> spec.body(levelWithExtraNode), ADD_LEVEL_AFTER_URL);
-        ArrFaLevelWithExtraNode parent = response.getBody().as(ArrFaLevelWithExtraNode.class);
+        ArrLevelWithExtraNode parent = response.getBody().as(ArrLevelWithExtraNode.class);
 
         return parent;
     }
@@ -629,15 +627,15 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return přesunutý uzel
      */
-    private ArrFaLevelWithExtraNode moveLevelBefore(ArrFaLevel movedLevel, ArrFaLevel targetLevel, ArrFaVersion version) {
-        ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
-        levelWithExtraNode.setFaLevel(movedLevel);
-        levelWithExtraNode.setFaLevelTarget(targetLevel);
-        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
+    private ArrLevelWithExtraNode moveLevelBefore(ArrLevel movedLevel, ArrLevel targetLevel, ArrFindingAidVersion version) {
+        ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
+        levelWithExtraNode.setLevel(movedLevel);
+        levelWithExtraNode.setLevelTarget(targetLevel);
+        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
 
         Response response = put(spec -> spec.body(levelWithExtraNode), MOVE_LEVEL_BEFORE_URL);
 
-        return response.getBody().as(ArrFaLevelWithExtraNode.class);
+        return response.getBody().as(ArrLevelWithExtraNode.class);
     }
 
     /**
@@ -647,11 +645,11 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      * @param targetLevel uzel před který se má vložit přesouvaný uzel
      * @param version verze archivní pomůcky
      */
-    private void moveLevelBeforeWithError(ArrFaLevel movedLevel, ArrFaLevel targetLevel, ArrFaVersion version) {
-        ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
-        levelWithExtraNode.setFaLevel(movedLevel);
-        levelWithExtraNode.setFaLevelTarget(targetLevel);
-        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
+    private void moveLevelBeforeWithError(ArrLevel movedLevel, ArrLevel targetLevel, ArrFindingAidVersion version) {
+        ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
+        levelWithExtraNode.setLevel(movedLevel);
+        levelWithExtraNode.setLevelTarget(targetLevel);
+        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
 
         put(spec -> spec.body(levelWithExtraNode), MOVE_LEVEL_BEFORE_URL, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -665,15 +663,15 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return přesunutý uzel
      */
-    private ArrFaLevelWithExtraNode moveLevelUnder(ArrFaLevel movedLevel, ArrFaLevel targetLevel, ArrFaVersion version) {
-        ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
-        levelWithExtraNode.setFaLevel(movedLevel);
+    private ArrLevelWithExtraNode moveLevelUnder(ArrLevel movedLevel, ArrLevel targetLevel, ArrFindingAidVersion version) {
+        ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
+        levelWithExtraNode.setLevel(movedLevel);
         levelWithExtraNode.setExtraNode(targetLevel.getNode());
-        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
+        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
 
         Response response = put(spec -> spec.body(levelWithExtraNode), MOVE_LEVEL_UNDER_URL);
 
-        return response.getBody().as(ArrFaLevelWithExtraNode.class);
+        return response.getBody().as(ArrLevelWithExtraNode.class);
     }
 
     /**
@@ -685,15 +683,15 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return přesunutý uzel
      */
-    private ArrFaLevelWithExtraNode moveLevelAfter(ArrFaLevel movedLevel, ArrFaLevel targetLevel, ArrFaVersion version) {
-        ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
-        levelWithExtraNode.setFaLevel(movedLevel);
-        levelWithExtraNode.setFaLevelTarget(targetLevel);
-        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
+    private ArrLevelWithExtraNode moveLevelAfter(ArrLevel movedLevel, ArrLevel targetLevel, ArrFindingAidVersion version) {
+        ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
+        levelWithExtraNode.setLevel(movedLevel);
+        levelWithExtraNode.setLevelTarget(targetLevel);
+        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
 
         Response response = put(spec -> spec.body(levelWithExtraNode), MOVE_LEVEL_AFTER_URL);
 
-        return response.getBody().as(ArrFaLevelWithExtraNode.class);
+        return response.getBody().as(ArrLevelWithExtraNode.class);
     }
 
     /**
@@ -705,15 +703,15 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return přesunutý uzel
      */
-    private ArrFaLevelWithExtraNode deleteLevel(ArrFaLevel levelToDelete, ArrFaVersion version) {
-        ArrFaLevelWithExtraNode levelWithExtraNode = new ArrFaLevelWithExtraNode();
-        levelWithExtraNode.setFaLevel(levelToDelete);
-        levelWithExtraNode.setExtraNode(levelToDelete.getParentNode());
-        levelWithExtraNode.setFaVersionId(version.getFaVersionId());
+    private ArrLevelWithExtraNode deleteLevel(ArrLevel levelToDelete, ArrFindingAidVersion version) {
+        ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
+        levelWithExtraNode.setLevel(levelToDelete);
+        levelWithExtraNode.setExtraNode(levelToDelete.getNodeParent());
+        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
 
         Response response = put(spec -> spec.body(levelWithExtraNode), DELETE_LEVEL_URL);
 
-        return response.getBody().as(ArrFaLevelWithExtraNode.class);
+        return response.getBody().as(ArrLevelWithExtraNode.class);
     }
 
     /**
@@ -722,24 +720,24 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      * @param findingAid archivní pomůcka
      */
     private void testApproveFindingAidVersion(ArrFindingAid findingAid) {
-        ArrFaVersion openVersion = getFindingAidOpenVersion(findingAid);
+        ArrFindingAidVersion openVersion = getFindingAidOpenVersion(findingAid);
 
-        ArrFaVersion newOpenVersion = approveVersion(openVersion);
+        ArrFindingAidVersion newOpenVersion = approveVersion(openVersion);
         Assert.notNull(newOpenVersion);
-        Assert.isTrue(!openVersion.getFaVersionId().equals(newOpenVersion.getFaVersionId()));
+        Assert.isTrue(!openVersion.getFindingAidVersionId().equals(newOpenVersion.getFindingAidVersionId()));
         Assert.isTrue(newOpenVersion.getArrangementType().getArrangementTypeId().equals(arrangementType.getArrangementTypeId()));
         Assert.isTrue(newOpenVersion.getRuleSet().getRuleSetId().equals(ruleSet.getRuleSetId()));
         Assert.isTrue(newOpenVersion.getLockChange() == null);
 
-        ArrFaVersion newOpenVersionCheck = getFindingAidOpenVersion(findingAid);
+        ArrFindingAidVersion newOpenVersionCheck = getFindingAidOpenVersion(findingAid);
         Assert.isTrue(newOpenVersionCheck.equals(newOpenVersion));
 
-        ArrFaVersion closedVersion = getVersionById(openVersion.getFaVersionId());
+        ArrFindingAidVersion closedVersion = getVersionById(openVersion.getFindingAidVersionId());
         Assert.notNull(closedVersion);
-        Assert.isTrue(closedVersion.getFaVersionId().equals(openVersion.getFaVersionId()));
+        Assert.isTrue(closedVersion.getFindingAidVersionId().equals(openVersion.getFindingAidVersionId()));
         Assert.isTrue(closedVersion.getLockChange() != null);
 
-        List<ArrFaVersion> versions = getFindingAidVersions(findingAid);
+        List<ArrFindingAidVersion> versions = getFindingAidVersions(findingAid);
         Assert.isTrue(versions.size() == 2);
         Assert.isTrue(versions.get(0).getLockChange() != null);
         Assert.isTrue(versions.get(1).getLockChange() == null);
@@ -754,11 +752,11 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return seznam verzí archivní pomůcky
      */
-    private List<ArrFaVersion> getFindingAidVersions(ArrFindingAid findingAid) {
+    private List<ArrFindingAidVersion> getFindingAidVersions(ArrFindingAid findingAid) {
         Response response = get(spec -> spec.parameter(FA_ID_ATT, findingAid.getFindingAidId()),
                 GET_FINDING_AID_VERSIONS_URL);
 
-        return Arrays.asList(response.getBody().as(ArrFaVersion[].class));
+        return Arrays.asList(response.getBody().as(ArrFindingAidVersion[].class));
     }
 
     /**
@@ -768,10 +766,10 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return verze archivní pomůcky
      */
-    private ArrFaVersion getVersionById(Integer versionId) {
+    private ArrFindingAidVersion getVersionById(Integer versionId) {
         Response response = get(spec -> spec.parameter(VERSION_ID_ATT, versionId), GET_VERSION_ID_URL);
 
-        return response.getBody().as(ArrFaVersion.class);
+        return response.getBody().as(ArrFindingAidVersion.class);
     }
 
     /**
@@ -781,7 +779,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return nová otevřená verze archivní pomůcky
      */
-    private ArrFaVersion approveVersion(ArrFaVersion openVersion) {
+    private ArrFindingAidVersion approveVersion(ArrFindingAidVersion openVersion) {
         return approveVersion(openVersion, ruleSet, arrangementType, HttpStatus.OK);
     }
 
@@ -795,7 +793,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return nová otevřená verze archivní pomůcky
      */
-    private ArrFaVersion approveVersion(ArrFaVersion openVersion, RulRuleSet ruleSet, RulArrangementType arrangementType,
+    private ArrFindingAidVersion approveVersion(ArrFindingAidVersion openVersion, RulRuleSet ruleSet, RulArrangementType arrangementType,
             HttpStatus httpStatus) {
         Response response = put(spec -> spec.body(openVersion).
                 parameter(ARRANGEMENT_TYPE_ID_ATT, arrangementType.getArrangementTypeId()).
@@ -803,7 +801,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
                 , APPROVE_VERSION_URL, httpStatus);
 
         if (httpStatus == HttpStatus.OK) {
-            return response.getBody().as(ArrFaVersion.class);
+            return response.getBody().as(ArrFindingAidVersion.class);
         }
 
         return null;
@@ -816,7 +814,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return nová otevřená verze archivní pomůcky
      */
-    private void approveVersionWithError(ArrFaVersion openVersion) {
+    private void approveVersionWithError(ArrFindingAidVersion openVersion) {
         put(spec -> spec.body(openVersion).
                 parameter(ARRANGEMENT_TYPE_ID_ATT, arrangementType.getArrangementTypeId()).
                 parameter(RULE_SET_ID_ATT, ruleSet.getRuleSetId())
@@ -883,15 +881,15 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         List<ArrFindingAid> findingAids = getFindingAids();
         Assert.isTrue(findingAids.size() == findingAidsCount);
 
-        ArrFaVersion openVersion = getFindingAidOpenVersion(findingAid);
+        ArrFindingAidVersion openVersion = getFindingAidOpenVersion(findingAid);
         Assert.notNull(openVersion);
         Assert.isNull(openVersion.getLockChange());
 
-        Integer nodeId = openVersion.getRootFaLevel().getNode().getNodeId();
-        ArrFaLevelExt rootLevel = getLevelByNodeId(nodeId);
+        Integer nodeId = openVersion.getRootLevel().getNode().getNodeId();
+        ArrLevelExt rootLevel = getLevelByNodeId(nodeId);
         Assert.notNull(rootLevel);
         Assert.isTrue(rootLevel.getNode().getNodeId().equals(nodeId));
-        Assert.isNull(rootLevel.getParentNode());
+        Assert.isNull(rootLevel.getNodeParent());
     }
 
     /**

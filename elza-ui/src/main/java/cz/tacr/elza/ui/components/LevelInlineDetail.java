@@ -15,7 +15,7 @@ import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RegistryManager;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrDescItemExt;
-import cz.tacr.elza.domain.ArrFaLevelExt;
+import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulDataType;
@@ -71,7 +71,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
     private ComboBox attributesComboBox;
     private Label lblTitle;
 
-    private Callback<ArrFaLevelExt> attributeEditCallback;
+    private Callback<ArrLevelExt> attributeEditCallback;
 
 
 
@@ -101,7 +101,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
         try {
             arrangementManager.saveDescriptionItems(pack);
-            ArrFaLevelExt level = arrangementManager.getLevel(attribut.getNode().getNodeId(), attribut.getVersionId(), null);
+            ArrLevelExt level = arrangementManager.getLevel(attribut.getNode().getNodeId(), attribut.getVersionId(), null);
             showLevelDetail(level, level.getDescItemList(), attribut.getVersionId(), attributeEditCallback);
             sendEditCallback(level);
             if (attributWindow != null) {
@@ -115,9 +115,9 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
     }
 
 
-    public void showLevelDetail(final ArrFaLevelExt level,
+    public void showLevelDetail(final ArrLevelExt level,
                                 final List<ArrDescItemExt> descItemList,
-                                final Integer versionId, final Callback<ArrFaLevelExt> attributeEditCallback) {
+                                final Integer versionId, final Callback<ArrLevelExt> attributeEditCallback) {
         this.attributeEditCallback = attributeEditCallback;
         detailContent.removeAllComponents();
         initContentTitle(level, descItemList);
@@ -179,7 +179,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         detailContent.addComponent(grid);
     }
 
-    private void sendEditCallback(final ArrFaLevelExt level){
+    private void sendEditCallback(final ArrLevelExt level){
         if(attributeEditCallback != null){
             attributeEditCallback.callback(level);
         }
@@ -191,7 +191,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         return arrangementManager.getFaVersionById(versionId).getLockChange() == null;
     }
 
-    public void initContentTitle(final ArrFaLevelExt level, final List<ArrDescItemExt> descItems){
+    public void initContentTitle(final ArrLevelExt level, final List<ArrDescItemExt> descItems){
         Assert.notNull(descItems);
 
         lblTitle.setValue("Detail archivního popisu s id=" + level.getNode().getNodeId());
@@ -207,7 +207,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
 
 
-    private void showEditAttrWindow(final ArrFaLevelExt level, final RulDescItemType type, final Integer versionId) {
+    private void showEditAttrWindow(final ArrLevelExt level, final RulDescItemType type, final Integer versionId) {
         if (type != null) {
             List<ArrDescItemExt> listItem = arrangementManager
                     .getDescriptionItemsForAttribute(versionId, level.getNode().getNodeId(), type.getDescItemTypeId());
@@ -234,7 +234,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
     }
 
 
-    private Button createEditButton(final ArrFaLevelExt level, final RulDescItemType type, final Integer versionId) {
+    private Button createEditButton(final ArrLevelExt level, final RulDescItemType type, final Integer versionId) {
 
         Button button = new Button(FontAwesome.EDIT);
         button.addStyleName("edit-btn");

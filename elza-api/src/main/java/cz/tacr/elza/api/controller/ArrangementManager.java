@@ -1,16 +1,16 @@
 package cz.tacr.elza.api.controller;
 
-import java.util.List;
-
 import cz.tacr.elza.api.ArrDescItemExt;
-import cz.tacr.elza.api.ArrFaLevel;
-import cz.tacr.elza.api.ArrFaLevelExt;
-import cz.tacr.elza.api.ArrFaVersion;
 import cz.tacr.elza.api.ArrFindingAid;
+import cz.tacr.elza.api.ArrFindingAidVersion;
+import cz.tacr.elza.api.ArrLevel;
+import cz.tacr.elza.api.ArrLevelExt;
 import cz.tacr.elza.api.ArrNode;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.ArrDescItemSavePack;
-import cz.tacr.elza.api.vo.ArrFaLevelPack;
+import cz.tacr.elza.api.vo.ArrLevelPack;
+
+import java.util.List;
 
 
 /**
@@ -19,8 +19,8 @@ import cz.tacr.elza.api.vo.ArrFaLevelPack;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 12. 8. 2015
  */
-public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVersion, DIE extends ArrDescItemExt,
-    DISP extends ArrDescItemSavePack, FL extends ArrFaLevel, FLP extends ArrFaLevelPack, N extends ArrNode> {
+public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFindingAidVersion, DIE extends ArrDescItemExt,
+    DISP extends ArrDescItemSavePack, FL extends ArrLevel, FLP extends ArrLevelPack, N extends ArrNode> {
 
     /** Formát popisu atributu - dlouhá verze. */
     String FORMAT_ATTRIBUTE_FULL = "FULL";
@@ -67,7 +67,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
      * @param findingAidId id archivní pomůcky
      * @return seznam verzí pro danou archivní pomůcku seřazený od nejnovější k nejstarší
      */
-    List<? extends ArrFaVersion> getFindingAidVersions(Integer findingAidId);
+    List<? extends ArrFindingAidVersion> getFindingAidVersions(Integer findingAidId);
 
     /**
      * Vrátí archivní pomůcku.
@@ -86,7 +86,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
      * @return nová verze archivní pomůcky
      * @throws ConcurrentUpdateException chyba při současné manipulaci s položkou více uživateli
      */
-    ArrFaVersion approveVersion(FV version, Integer arrangementTypeId, Integer ruleSetId) throws ConcurrentUpdateException;
+    ArrFindingAidVersion approveVersion(FV version, Integer arrangementTypeId, Integer ruleSetId) throws ConcurrentUpdateException;
 
     /**
      * Vytvoří nový uzel před předaným uzlem.
@@ -150,7 +150,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
      * @param findingAidId      id archivní pomůcky
      * @return                  verze
      */
-    ArrFaVersion getOpenVersionByFindingAidId(Integer findingAidId);
+    ArrFindingAidVersion getOpenVersionByFindingAidId(Integer findingAidId);
 
     /**
      * Načte verzi podle identifikátoru.
@@ -158,7 +158,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
      * @param versionId      id verze
      * @return               verze s daným identifikátorem
      */
-    ArrFaVersion getFaVersionById(Integer versionId);
+    ArrFindingAidVersion getFaVersionById(Integer versionId);
 
     /**
      * Načte potomky daného uzlu v konkrétní verzi. Pokud není identifikátor verze předaný načítají se potomci
@@ -170,7 +170,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
      * @param descItemTypeIds typy atributů, může být null
      * @return            potomci předaného uzlu
      */
-    List<? extends ArrFaLevelExt> findSubLevels(Integer nodeId, Integer versionId, String formatData, Integer[] descItemTypeIds);
+    List<? extends ArrLevelExt> findSubLevels(Integer nodeId, Integer versionId, String formatData, Integer[] descItemTypeIds);
 
     /**
      * Načte potomky daného uzlu v konkrétní verzi. Pokud není identifikátor verze předaný načítají se potomci
@@ -180,7 +180,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
      * @param versionId       id verze, může být null
      * @return            potomci předaného uzlu
      */
-    List<? extends ArrFaLevel> findSubLevels(Integer nodeId, Integer versionId);
+    List<? extends ArrLevel> findSubLevels(Integer nodeId, Integer versionId);
 
     /**
      * Načte uzel podle identifikátoru. K uzlu doplní jeho Atributy.
@@ -190,7 +190,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFaVe
      * @param descItemTypeIds  typy atributů, může být null
      * @return uzel s daným identifikátorem
      */
-    ArrFaLevelExt getLevel(Integer nodeId, Integer versionId, Integer[] descItemTypeIds);
+    ArrLevelExt getLevel(Integer nodeId, Integer versionId, Integer[] descItemTypeIds);
 
     /**
      * Přidá atribut archivního popisu včetně hodnoty k existující jednotce archivního popisu.

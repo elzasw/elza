@@ -1,15 +1,14 @@
 package cz.tacr.elza.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.springframework.data.rest.core.annotation.RestResource;
+
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-
-import org.springframework.data.rest.core.annotation.RestResource;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -21,29 +20,29 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
-@Entity(name = "arr_fa_version")
+@Entity(name = "arr_finding_aid_version")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrFaVersion extends AbstractVersionableEntity implements
-        cz.tacr.elza.api.ArrFaVersion<ArrFindingAid, ArrFaChange, ArrFaLevel, RulArrangementType, RulRuleSet> {
+public class ArrFindingAidVersion extends AbstractVersionableEntity implements
+        cz.tacr.elza.api.ArrFindingAidVersion<ArrFindingAid, ArrChange, ArrLevel, RulArrangementType, RulRuleSet> {
 
     @Id
     @GeneratedValue
-    private Integer faVersionId;
+    private Integer findingAidVersionId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaChange.class)
-    @JoinColumn(name = "createFaChangeId", nullable = false)
-    private ArrFaChange createChange;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
+    @JoinColumn(name = "createChangeId", nullable = false)
+    private ArrChange createChange;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaChange.class)
-    @JoinColumn(name = "lockFaChangeId", nullable = true)
-    private ArrFaChange lockChange;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
+    @JoinColumn(name = "lockChangeId", nullable = true)
+    private ArrChange lockChange;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFaLevel.class)
-    @JoinColumn(name = "rootFaLevelId", nullable = false)
-    private ArrFaLevel rootFaLevel;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrLevel.class)
+    @JoinColumn(name = "rootLevelId", nullable = false)
+    private ArrLevel rootLevel;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFindingAid.class)
@@ -61,43 +60,43 @@ public class ArrFaVersion extends AbstractVersionableEntity implements
     private RulRuleSet ruleSet;
 
     @Override
-    public Integer getFaVersionId() {
-        return faVersionId;
+    public Integer getFindingAidVersionId() {
+        return findingAidVersionId;
     }
 
     @Override
-    public void setFaVersionId(final Integer faVersionId) {
-        this.faVersionId = faVersionId;
+    public void setFindingAidVersionId(final Integer findingAidVersionId) {
+        this.findingAidVersionId = findingAidVersionId;
     }
 
     @Override
-    public ArrFaChange getCreateChange() {
+    public ArrChange getCreateChange() {
         return createChange;
     }
 
     @Override
-    public void setCreateChange(final ArrFaChange createChange) {
+    public void setCreateChange(final ArrChange createChange) {
         this.createChange = createChange;
     }
 
     @Override
-    public ArrFaChange getLockChange() {
+    public ArrChange getLockChange() {
         return lockChange;
     }
 
     @Override
-    public void setLockChange(final ArrFaChange lockChange) {
+    public void setLockChange(final ArrChange lockChange) {
         this.lockChange = lockChange;
     }
 
     @Override
-    public ArrFaLevel getRootFaLevel() {
-        return rootFaLevel;
+    public ArrLevel getRootLevel() {
+        return rootLevel;
     }
 
     @Override
-    public void setRootFaLevel(final ArrFaLevel rootFaLevel) {
-        this.rootFaLevel = rootFaLevel;
+    public void setRootLevel(final ArrLevel rootFaLevel) {
+        this.rootLevel = rootFaLevel;
     }
 
     @Override
@@ -132,7 +131,7 @@ public class ArrFaVersion extends AbstractVersionableEntity implements
 
     @Override
     public String toString() {
-        return "ArrFaVersion pk=" + faVersionId;
+        return "ArrFindingAidVersion pk=" + findingAidVersionId;
     }
 
 
@@ -145,9 +144,9 @@ public class ArrFaVersion extends AbstractVersionableEntity implements
             return false;
         }
 
-        ArrFaVersion version = (ArrFaVersion) obj;
+        cz.tacr.elza.domain.ArrFindingAidVersion version = (cz.tacr.elza.domain.ArrFindingAidVersion) obj;
 
-        if (faVersionId != null ? !faVersionId.equals(version.faVersionId) : version.faVersionId != null) {
+        if (findingAidVersionId != null ? !findingAidVersionId.equals(version.findingAidVersionId) : version.findingAidVersionId != null) {
             return false;
         }
 
@@ -156,6 +155,6 @@ public class ArrFaVersion extends AbstractVersionableEntity implements
 
     @Override
     public int hashCode() {
-        return faVersionId != null ? faVersionId.hashCode() : 0;
+        return findingAidVersionId != null ? findingAidVersionId.hashCode() : 0;
     }
 }

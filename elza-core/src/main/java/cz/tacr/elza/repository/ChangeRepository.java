@@ -1,9 +1,8 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.ArrChange;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import cz.tacr.elza.domain.ArrFaChange;
 
 
 /**
@@ -12,6 +11,6 @@ import cz.tacr.elza.domain.ArrFaChange;
  * @since 22.7.15
  */
 @Repository
-public interface ChangeRepository extends JpaRepository<ArrFaChange, Integer> {
+public interface ChangeRepository extends JpaRepository<ArrChange, Integer> {
 
 }

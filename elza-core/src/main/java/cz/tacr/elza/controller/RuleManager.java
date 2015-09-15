@@ -2,7 +2,7 @@ package cz.tacr.elza.controller;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
-import cz.tacr.elza.domain.ArrFaVersion;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemConstraint;
@@ -180,7 +180,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     @RequestMapping(value = "/getFaViewDescItemTypes", method = RequestMethod.GET)
     public FaViewDescItemTypes getFaViewDescItemTypes(@RequestParam(value = "faVersionId") Integer faVersionId) {
         Assert.notNull(faVersionId);
-        ArrFaVersion version = versionRepository.getOne(faVersionId);
+        ArrFindingAidVersion version = versionRepository.getOne(faVersionId);
         RulRuleSet ruleSet = version.getRuleSet();
         RulArrangementType arrangementType = version.getArrangementType();
 

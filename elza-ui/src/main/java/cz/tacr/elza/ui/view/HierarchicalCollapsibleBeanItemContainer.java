@@ -1,5 +1,11 @@
 package cz.tacr.elza.ui.view;
 
+import com.vaadin.data.Collapsible;
+import com.vaadin.data.Container;
+import com.vaadin.data.util.BeanItemContainer;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -9,13 +15,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import com.vaadin.data.Collapsible;
-import com.vaadin.data.Container;
-import com.vaadin.data.util.BeanItemContainer;
-
-import cz.tacr.elza.domain.ArrFaLevel;
-import cz.tacr.elza.domain.ArrNode;
-
 
 /**
  *
@@ -23,19 +22,19 @@ import cz.tacr.elza.domain.ArrNode;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 28. 8. 2015
  */
-public class HierarchicalCollapsibleBeanItemContainer extends BeanItemContainer<ArrFaLevel> implements Container.Hierarchical, Collapsible {
+public class HierarchicalCollapsibleBeanItemContainer extends BeanItemContainer<ArrLevel> implements Container.Hierarchical, Collapsible {
 
     private Set<ArrNode> isExpandedSet = new HashSet<>();
     private Integer rootNodeId;
 
-    public HierarchicalCollapsibleBeanItemContainer(Collection<ArrFaLevel> collection, Integer rootNodeId) throws IllegalArgumentException {
-        super(ArrFaLevel.class, collection);
+    public HierarchicalCollapsibleBeanItemContainer(Collection<ArrLevel> collection, Integer rootNodeId) throws IllegalArgumentException {
+        super(ArrLevel.class, collection);
         this.rootNodeId = rootNodeId;
     }
 
     @Override
     public void setCollapsed(Object itemId, boolean collapsed) {
-        ArrFaLevel level = (ArrFaLevel) itemId;
+        ArrLevel level = (ArrLevel) itemId;
 
         if (collapsed) {
             isExpandedSet.remove(level.getNode());
@@ -46,17 +45,17 @@ public class HierarchicalCollapsibleBeanItemContainer extends BeanItemContainer<
 
     @Override
     public boolean isCollapsed(Object itemId) {
-        ArrFaLevel level = (ArrFaLevel) itemId;
+        ArrLevel level = (ArrLevel) itemId;
         return !isExpandedSet.contains(level.getNode());
     }
 
     @Override
-    public List<ArrFaLevel> getChildren(Object itemId) {
-        LinkedList<ArrFaLevel> children = new LinkedList<ArrFaLevel>();
+    public List<ArrLevel> getChildren(Object itemId) {
+        LinkedList<ArrLevel> children = new LinkedList<ArrLevel>();
 
         for (Object candidateId : getItemIds()) {
             if (getParent(candidateId) == itemId) {
-                children.add((ArrFaLevel) candidateId);
+                children.add((ArrLevel) candidateId);
             }
         }
 
@@ -69,10 +68,10 @@ public class HierarchicalCollapsibleBeanItemContainer extends BeanItemContainer<
             return null;
         }
 
-        ArrFaLevel item = (ArrFaLevel) itemId;
-        Object parentNodeId = item.getParentNode().getNodeId();
+        ArrLevel item = (ArrLevel) itemId;
+        Object parentNodeId = item.getNodeParent().getNodeId();
         for (Object candidateId : getItemIds()) {
-            ArrFaLevel parent = (ArrFaLevel) candidateId;
+            ArrLevel parent = (ArrLevel) candidateId;
             if (parent.getNode().getNodeId().equals(parentNodeId)) {
                 return parent;
             }
@@ -82,13 +81,13 @@ public class HierarchicalCollapsibleBeanItemContainer extends BeanItemContainer<
     }
 
     @Override
-    public List<ArrFaLevel> rootItemIds() {
-        LinkedList<ArrFaLevel> result = new LinkedList<ArrFaLevel>();
+    public List<ArrLevel> rootItemIds() {
+        LinkedList<ArrLevel> result = new LinkedList<ArrLevel>();
         for (Object candidateId : getItemIds()) {
-            ArrFaLevel node = (ArrFaLevel) candidateId;
-            Object parentRef = node.getParentNode().getNodeId();
+            ArrLevel node = (ArrLevel) candidateId;
+            Object parentRef = node.getNodeParent().getNodeId();
             if (parentRef.equals(rootNodeId)) {
-                result.add((ArrFaLevel) candidateId);
+                result.add((ArrLevel) candidateId);
             }
         }
 
@@ -112,8 +111,8 @@ public class HierarchicalCollapsibleBeanItemContainer extends BeanItemContainer<
 
     @Override
     public boolean isRoot(Object itemId) {
-        ArrFaLevel node = (ArrFaLevel) itemId;
-        return node.getParentNode().getNodeId().equals(rootNodeId);
+        ArrLevel node = (ArrLevel) itemId;
+        return node.getNodeParent().getNodeId().equals(rootNodeId);
     }
 
     @Override
@@ -129,7 +128,7 @@ public class HierarchicalCollapsibleBeanItemContainer extends BeanItemContainer<
                 ArrayList tmpChildren = new ArrayList(children);
                 Iterator<?> itChilder = tmpChildren.iterator();
                 while (itChilder.hasNext()) {
-                    ArrFaLevel child = (ArrFaLevel) itChilder.next();
+                    ArrLevel child = (ArrLevel) itChilder.next();
                     if (!isCollapsed(child)) {
                         removeItem(child);
                     }
@@ -140,7 +139,7 @@ public class HierarchicalCollapsibleBeanItemContainer extends BeanItemContainer<
         return super.removeItem(itemId);
     }
 
-    public List<ArrFaLevel> getSiblings(final Object itemId){
+    public List<ArrLevel> getSiblings(final Object itemId){
         if(getParent(itemId) == null){
             return rootItemIds();
         } else{
@@ -153,13 +152,13 @@ public class HierarchicalCollapsibleBeanItemContainer extends BeanItemContainer<
      * @param itemId id
      * @return seznam sourozenců
      */
-    public Collection<ArrFaLevel> getLowerSiblings(final Object itemId){
-        ArrFaLevel item = (ArrFaLevel) itemId;
-        List<ArrFaLevel> siblings = getSiblings(itemId);
+    public Collection<ArrLevel> getLowerSiblings(final Object itemId){
+        ArrLevel item = (ArrLevel) itemId;
+        List<ArrLevel> siblings = getSiblings(itemId);
 
-        siblings.sort(new Comparator<ArrFaLevel>() {
+        siblings.sort(new Comparator<ArrLevel>() {
             @Override
-            public int compare(final ArrFaLevel o1, final ArrFaLevel o2) {
+            public int compare(final ArrLevel o1, final ArrLevel o2) {
                 int result = o1.getPosition().compareTo(o2.getPosition());
                 //pokud mají prvky stejnou pozici a jeden z nich je prvek, pro který hledáme sourozence, chceme
                 //ho mít vždy nahoře
@@ -174,7 +173,7 @@ public class HierarchicalCollapsibleBeanItemContainer extends BeanItemContainer<
         Collection result = new LinkedList();
 
         boolean insert = false;
-        for (ArrFaLevel sibling : siblings) {
+        for (ArrLevel sibling : siblings) {
             if(sibling.getNode().getNodeId().equals(item.getNode().getNodeId()) && !insert){
                 insert = true;
                 continue;
