@@ -1838,7 +1838,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 try {
                     Integer partyId = descItemExt.getParty() == null
                                               ? null : descItemExt.getParty().getPartyId();
-                    if(partyId == null || partyRepository.findOne(partyId) == null){
+                    if (partyId == null || partyRepository.findOne(partyId) == null) {
                         throw new IllegalArgumentException("Neplatný odkaz do tabulky");
                     }
 

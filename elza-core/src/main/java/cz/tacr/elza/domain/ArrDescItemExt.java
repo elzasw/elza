@@ -33,7 +33,7 @@ public class ArrDescItemExt extends ArrDescItem implements cz.tacr.elza.api.ArrD
 
     @Override
     public void setParty(ParParty party) {
-        this.party = this.party;
+        this.party = party;
         this.attData = this.party == null ? null : this.party.getRecord().getRecord();
     }
 
