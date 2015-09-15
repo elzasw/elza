@@ -17,7 +17,6 @@ import javax.transaction.Transactional;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -775,7 +774,6 @@ public class ArrangementManagerTest extends AbstractRestTest {
         return findingAid;
     }
 
-    @Ignore
     @Test
     public void testRestCreateDescriptionItemsForAllDataTypes() {
         RulRuleSet ruleSet = createRuleSet();
@@ -794,6 +792,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         List<ArrDescItemExt> descItems = new ArrayList<>();
         savePack.setDescItems(descItems);
 
+        RegRecord record = restCreateRecord();
+        ParParty party = restCreateParty();
         Map<String, RulDescItemType> itemTypes = new HashMap<>();
         List<RulDataType> dataTypes = dataTypeRepository.findAll();
         int order = 1;
@@ -803,23 +803,27 @@ public class ArrangementManagerTest extends AbstractRestTest {
             itemTypes.put(dataType.getCode(), descItemType);
         }
 
+        int valuesCount = 0;
         for (String dtCode : itemTypes.keySet()) {
             RulDescItemType rulDescItemType = itemTypes.get(dtCode);
             RulDescItemTypeExt rulDescItemTypeExt = new RulDescItemTypeExt();
             BeanUtils.copyProperties(rulDescItemType, rulDescItemTypeExt);
+            valuesCount++;
             switch (dtCode) {
                 case DT_COORDINATES:
                     descItems.add(createCoordinatesValue(node, rulDescItemTypeExt));
                     break;
                 case DT_FORMATTED_TEXT:
                     descItems.add(createFormattedTextValue(node, rulDescItemTypeExt));
+                    descItems.add(createFormattedTextValue(node, rulDescItemTypeExt));
+                    valuesCount++;
                     break;
                 case DT_INT:
                     descItems.add(createIntValue(node, rulDescItemTypeExt));
                     break;
-//                case DT_PARTY_REF:
-//                    descItems.add(createPartyRefValue(node, rulDescItemTypeExt, parties));
-//                    break;
+                case DT_PARTY_REF:
+                    descItems.add(createPartyRefValue(node, rulDescItemTypeExt, party));
+                    break;
                 case DT_STRING:
                     descItems.add(createStringValue(node, rulDescItemTypeExt));
                     break;
@@ -832,41 +836,97 @@ public class ArrangementManagerTest extends AbstractRestTest {
                 case DT_UNITID:
                     descItems.add(createIntValue(node, rulDescItemTypeExt));
                     break;
-//                case DT_RECORD_REF:
-//                    descItems.add(createRecordRefValue(node, rulDescItemTypeExt, records));
-//                    break;
-//                default:
-//                    throw new IllegalStateException("Není definován case pro datový typ " + dtCode + " doplňte jej.");
+                case DT_RECORD_REF:
+                    descItems.add(createRecordRefValue(node, rulDescItemTypeExt, record));
+                    break;
+                default:
+                    throw new IllegalStateException("Není definován case pro datový typ " + dtCode + " doplňte jej.");
             }
         }
 
         List<ArrDescItemExt> arrDescItemsExt = storeSavePack(savePack);
-    }
+        // zkontrolovat uložení
+        Assert.assertTrue(arrDescItemsExt.size() == valuesCount);
+        for (ArrDescItemExt descItemExt : arrDescItemsExt) {
+            Assert.assertNotNull(descItemExt.getDescItemId());
+            Assert.assertNotNull(descItemExt.getCreateChange());
+            Assert.assertNull(descItemExt.getDeleteChange());
+        }
 
+        // načtení hodnot
+        ArrLevelExt rootLevel = getLevelByNodeId(node.getNodeId());
+        List<ArrDescItemExt> descItemList = rootLevel.getDescItemList();
+        Assert.assertTrue(arrDescItemsExt.size() == descItemList.size());
+        for (ArrDescItem descItem : descItemList) {
+            Assert.assertNotNull(descItem.getDescItemId());
+            Assert.assertNotNull(descItem.getCreateChange());
+            Assert.assertNull(descItem.getDeleteChange());
+        }
 
-    private void chooseAndSetSpecification(ArrDescItemExt descItemExt, RulDescItemTypeExt rulDescItemTypeExt,
-            String specCode) {
-        for (RulDescItemSpec spec : rulDescItemTypeExt.getRulDescItemSpecList()) {
-            if (spec.getCode().equals(specCode)) {
-                descItemExt.setDescItemSpec(spec);
+        // update hodnot
+        savePack.setNode(rootLevel.getNode());
+        savePack.setDescItems(arrDescItemsExt);
+        savePack.setCreateNewVersion(false);
+        for (ArrDescItemExt descItemExt : arrDescItemsExt) {
+            if (descItemExt.getDescItemType().getDataType().getCode().equals(DT_PARTY_REF)) {
+                descItemExt.setParty(party);
+                continue;
+            }
+            if (descItemExt.getDescItemType().getDataType().getCode().equals(DT_RECORD_REF)) {
+                descItemExt.setRecord(record);
+                continue;
             }
         }
+        arrDescItemsExt = storeSavePack(savePack);
+
+        // více hodnot u jednoho atributu -> změna pořadí
+        rootLevel = getLevelByNodeId(node.getNodeId());
+        ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
+        levelWithExtraNode.setLevel(rootLevel);
+        levelWithExtraNode.setFaVersionId(openVersion.getFindingAidVersionId());
+        ArrLevelWithExtraNode childLevelWithExtraNode = createLevelChild(levelWithExtraNode);
+        ArrNode childNode = childLevelWithExtraNode.getLevel().getNode();
+
+        savePack = new ArrDescItemSavePack();
+        savePack.setCreateNewVersion(true);
+        savePack.setDeleteDescItems(new ArrayList<ArrDescItemExt>());
+        savePack.setFaVersionId(openVersion.getFindingAidVersionId());
+        savePack.setNode(childNode);
+
+        descItems = new ArrayList<>();
+        savePack.setDescItems(descItems);
+
+        RulDescItemType descItemType = itemTypes.get(DT_FORMATTED_TEXT);
+
+        RulDescItemTypeExt rulDescItemTypeExt = new RulDescItemTypeExt();
+        BeanUtils.copyProperties(descItemType, rulDescItemTypeExt);
+        descItems.add(createFormattedTextValue(childNode, rulDescItemTypeExt));
+        descItems.add(createFormattedTextValue(childNode, rulDescItemTypeExt));
+
+        arrDescItemsExt = storeSavePack(savePack);
+
+        ArrLevelExt childLevel = getLevelByNodeId(childNode.getNodeId());
+        ArrDescItemExt value1 = arrDescItemsExt.get(0);
+        ArrDescItemExt value2 = arrDescItemsExt.get(1);
+        Integer p1 = value1.getPosition();
+        Integer p2 = value2.getPosition();
+        value1.setPosition(p2);
+        value2.setPosition(p1);
+
+        savePack.setNode(childLevel.getNode());
+        savePack.setDescItems(arrDescItemsExt);
     }
 
-    private ArrDescItemExt createPartyRefValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, List<RegRecord> records) {
+    private ArrDescItemExt createRecordRefValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, RegRecord record) {
         ArrDescItemExt descItemExt = createValue(node, rulDescItemTypeExt);
-
-        RegRecord regRecord = records.get(RandomUtils.nextInt(records.size()));
-        descItemExt.setRecord(regRecord);
+        descItemExt.setRecord(record);
 
       return descItemExt;
     }
 
-    private ArrDescItemExt createRecordRefValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, List<ParParty> parties) {
+    private ArrDescItemExt createPartyRefValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, ParParty party) {
         ArrDescItemExt descItemExt = createValue(node, rulDescItemTypeExt);
-
-        ParParty parParty = parties.get(RandomUtils.nextInt(parties.size()));
-        descItemExt.setParty(parParty);
+        descItemExt.setParty(party);
 
         return descItemExt;
     }
@@ -945,7 +1005,11 @@ public class ArrangementManagerTest extends AbstractRestTest {
         RulDescItemType descItemType = createDescItemType(dataType, code, name, code, description, false, false,
                 false, order);
 
-        return descItemTypeRepository.save(descItemType);
+        descItemType = descItemTypeRepository.save(descItemType);
+
+        createDescItemConstrain(descItemType, null);
+
+        return descItemType;
     }
 
     @Test

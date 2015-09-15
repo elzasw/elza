@@ -55,6 +55,7 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
+import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
@@ -90,7 +91,6 @@ import cz.tacr.elza.repository.VariantRecordRepository;
 @IntegrationTest("server.port:0") // zvoli volny port, lze spustit i s aktivni Elzou
 @WebAppConfiguration
 public abstract class AbstractRestTest {
-
 
     private static final RestAssuredConfig UTF8_ENCODER_CONFIG = RestAssuredConfig.newConfig().encoderConfig(EncoderConfig.encoderConfig().defaultContentCharset("UTF-8"));
 
@@ -279,9 +279,9 @@ public abstract class AbstractRestTest {
         RestAssured.baseURI = RestAssured.DEFAULT_URI;
 
         // potřebné delete, jen data, ne číselníky
+        arrDataRepository.deleteAll();
         partyRepository.deleteAll();
         variantRecordRepository.deleteAll();
-        arrDataRepository.deleteAll();
         recordRepository.deleteAll();
 
         descItemConstraintRepository.deleteAll();
@@ -291,8 +291,6 @@ public abstract class AbstractRestTest {
         ruleSetRepository.deleteAll();
         findingAidRepository.deleteAll();
         levelRepository.deleteAll();
-        arrDataRepository.deleteAll();
-        arrDataStringRepository.deleteAll();
         descItemRepository.deleteAll();
         descItemSpecRepository.deleteAll();
         descItemTypeRepository.deleteAll();
@@ -402,7 +400,7 @@ public abstract class AbstractRestTest {
     protected RulDescItemConstraint createConstrain(final int index) {
         RulDescItemType descItemType = createDescItemType(index);
         RulDescItemSpec rulDescItemSpec = createDescItemSpec(descItemType, index);
-        RulDescItemConstraint itemConstraint = createDescItemConstrain(descItemType, rulDescItemSpec, index);
+        RulDescItemConstraint itemConstraint = createDescItemConstrain(descItemType, rulDescItemSpec);
         return itemConstraint;
     }
 
@@ -430,7 +428,7 @@ public abstract class AbstractRestTest {
 
     protected RulDescItemType createDescItemType(final int index) {
         RulDescItemType itemType = new RulDescItemType();
-        RulDataType dataType = createDataType(index);
+        RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
         itemType.setDataType(dataType);
         itemType.setCode("DI" + index);
         itemType.setName("Desc Item " + index);
@@ -443,8 +441,7 @@ public abstract class AbstractRestTest {
         return descItemTypeRepository.save(itemType);
     }
 
-    private RulDescItemConstraint createDescItemConstrain(final RulDescItemType itemType,
-                                                          RulDescItemSpec rulDescItemSpec, final int index) {
+    protected RulDescItemConstraint createDescItemConstrain(final RulDescItemType itemType, RulDescItemSpec rulDescItemSpec) {
         RulDescItemConstraint itemConstrain = new RulDescItemConstraint();
         itemConstrain.setDescItemSpec(rulDescItemSpec);
         itemConstrain.setDescItemType(itemType);
@@ -463,18 +460,8 @@ public abstract class AbstractRestTest {
         return descItemSpecRepository.save(rulDescItemSpec);
     }
 
-    private RulDataType createDataType(final int index) {
-        RulDataType dataType = new RulDataType();
-        dataType.setCode("DT" + index);
-        dataType.setName("Data type " + index);
-        dataType.setRegexpUse(false);
-        dataType.setTextLenghtLimitUse((index > 1) ? true : false);
-        dataType.setDescription("popis");
-        dataType.setStorageTable("arr_data_integer");
-        return dataTypeRepository.save(dataType);
-    }
-
-    protected RulDescItemType createDescItemType(RulDataType rulDataType, String code, String name, String shortcut, String description, Boolean isValueUnique, Boolean canBeOrdered, Boolean useSpecification, Integer viewOrder) {
+    protected RulDescItemType createDescItemType(RulDataType rulDataType, String code, String name, String shortcut,
+            String description, Boolean isValueUnique, Boolean canBeOrdered, Boolean useSpecification, Integer viewOrder) {
         RulDescItemType dataTypeItem = new RulDescItemType();
         dataTypeItem.setDataType(rulDataType);
         dataTypeItem.setCode(code);
@@ -514,7 +501,8 @@ public abstract class AbstractRestTest {
         return descItemSpecRepository.save(dataSpecItem);
     }
 
-    protected RulDescItemConstraint createDescItemConstrain(RulDescItemType rulDescItemType, RulDescItemSpec rulDescItemSpec, ArrFindingAidVersion faVersion, Boolean repeatable, String regexp, Integer textLengthLimit) {
+    protected RulDescItemConstraint createDescItemConstrain(RulDescItemType rulDescItemType, RulDescItemSpec rulDescItemSpec,
+            ArrFindingAidVersion faVersion, Boolean repeatable, String regexp, Integer textLengthLimit) {
         RulDescItemConstraint itemConstraint = new RulDescItemConstraint();
         itemConstraint.setDescItemType(rulDescItemType);
         itemConstraint.setDescItemSpec(rulDescItemSpec);
@@ -525,7 +513,8 @@ public abstract class AbstractRestTest {
         return descItemConstraintRepository.save(itemConstraint);
     }
 
-    protected ArrDescItem createArrDescItem(ArrChange createFaChange, ArrChange deleteFaChange, Integer descItemObjectId, RulDescItemType rulDescItemType, RulDescItemSpec rulDescItemSpec, ArrNode node, Integer position) {
+    protected ArrDescItem createArrDescItem(ArrChange createFaChange, ArrChange deleteFaChange, Integer descItemObjectId,
+            RulDescItemType rulDescItemType, RulDescItemSpec rulDescItemSpec, ArrNode node, Integer position) {
         ArrDescItem descItem = new ArrDescItem();
         descItem.setCreateChange(createFaChange);
         descItem.setDeleteChange(deleteFaChange);
@@ -822,5 +811,211 @@ public abstract class AbstractRestTest {
         Response response = post((spec) -> spec.body(savePack), SAVE_DESCRIPTION_ITEMS_URL);
 
         return Arrays.asList(response.getBody().as(ArrDescItemExt[].class));
+    }
+
+    /**
+     * Vytvoří RESTově záznam rejstříku.
+     *
+     * @return  záznam
+     */
+    protected RegRecord restCreateRecord() {
+        RegRecord regRecord = new RegRecord();
+        regRecord.setRecord(TEST_NAME);
+        regRecord.setCharacteristics("CHARACTERISTICS");
+        regRecord.setLocal(false);
+
+        RegRegisterType registerType = createRegisterType();
+        regRecord.setRegisterType(registerType);
+
+        Response response = put(spec -> spec.body(regRecord), CREATE_RECORD_URL);
+
+        return response.getBody().as(RegRecord.class);
+    }
+
+    /**
+     * Vytvoří přes REST osobu.
+     *
+     * @return osoba
+     */
+    protected ParParty restCreateParty() {
+        final ParPartySubtype partySubtype = findPartySubtype();
+        partySubtype.setPartyType(null);
+        final RegRecord record = restCreateRecord();
+
+        ParParty requestBody = new ParParty();
+        requestBody.setPartySubtype(partySubtype);
+        requestBody.setRecord(record);
+
+        Response response = put(spec -> spec.body(requestBody), INSERT_ABSTRACT_PARTY);
+
+        return response.getBody().as(ParParty.class);
+    }
+
+
+    /**
+     * Najde podřízené úrovně.
+     *
+     * @param rootNode nadřazený uzel pro který hledáme potomky
+     * @param version verze, může být null
+     *
+     * @return potomky předaného uzlu
+     */
+    protected List<ArrLevel> getSubLevels(ArrNode rootNode, ArrFindingAidVersion version) {
+        Response response;
+        if (version == null) {
+            response = get(spec -> spec.parameter(NODE_ID_ATT, rootNode.getNodeId()), FIND_SUB_LEVELS_URL);
+        } else {
+            response = get(spec -> spec.parameter(NODE_ID_ATT, rootNode.getNodeId())
+                    .parameter(VERSION_ID_ATT, version.getFindingAidVersionId()), FIND_SUB_LEVELS_URL);
+        }
+
+        return Arrays.asList(response.getBody().as(ArrLevel[].class));
+    }
+
+    /**
+     * Vytvoří nový uzel pod předaným uzlem.
+     *
+     * @param levelWithExtraNode rodičovský uzel
+     *
+     * @return nový uzel
+     */
+    protected ArrLevelWithExtraNode createLevelChild(ArrLevelWithExtraNode levelWithExtraNode) {
+        Response response = put(spec -> spec.body(levelWithExtraNode), ADD_LEVEL_CHILD_URL);
+        ArrLevelWithExtraNode parent = response.getBody().as(ArrLevelWithExtraNode.class);
+
+        return parent;
+    }
+
+    /**
+     * Vytvoří nový uzel pod předaným uzlem.
+     *
+     * @param levelWithExtraNode rodičovský uzel
+     */
+    protected void createLevelChildWithError(ArrLevelWithExtraNode levelWithExtraNode) {
+        put(spec -> spec.body(levelWithExtraNode), ADD_LEVEL_CHILD_URL, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    /**
+     * Vytvoří nový uzel před předaným uzlem.
+     *
+     * @param levelWithExtraNode uzal před kterým se vytvoří nový uzel
+     *
+     * @return nový uzel
+     */
+    protected ArrLevelWithExtraNode createLevelBefore(ArrLevelWithExtraNode levelWithExtraNode) {
+        Response response = put(spec -> spec.body(levelWithExtraNode), ADD_LEVEL_BEFORE_URL);
+        ArrLevelWithExtraNode parent = response.getBody().as(ArrLevelWithExtraNode.class);
+
+        return parent;
+    }
+
+    /**
+     * Vytvoří nový uzel za předaným uzlem.
+     *
+     * @param levelWithExtraNode uzal za kterým se vytvoří nový uzel
+     *
+     * @return nový uzel
+     */
+    protected ArrLevelWithExtraNode createLevelAfter(ArrLevelWithExtraNode levelWithExtraNode) {
+        Response response = put(spec -> spec.body(levelWithExtraNode), ADD_LEVEL_AFTER_URL);
+        ArrLevelWithExtraNode parent = response.getBody().as(ArrLevelWithExtraNode.class);
+
+        return parent;
+    }
+
+    /**
+     * Přesune jeden uzel před druhý.
+     *
+     * @param movedLevel přesouvaný uzel
+     * @param targetLevel uzel před který se má vložit přesouvaný uzel
+     * @param version verze archivní pomůcky
+     *
+     * @return přesunutý uzel
+     */
+    protected ArrLevelWithExtraNode moveLevelBefore(ArrLevel movedLevel, ArrLevel targetLevel, ArrFindingAidVersion version) {
+        ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
+        levelWithExtraNode.setLevel(movedLevel);
+        levelWithExtraNode.setLevelTarget(targetLevel);
+        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
+
+        Response response = put(spec -> spec.body(levelWithExtraNode), MOVE_LEVEL_BEFORE_URL);
+
+        return response.getBody().as(ArrLevelWithExtraNode.class);
+    }
+
+    /**
+     * Přesune jeden uzel před druhý. Očekává se chyba.
+     *
+     * @param movedLevel přesouvaný uzel
+     * @param targetLevel uzel před který se má vložit přesouvaný uzel
+     * @param version verze archivní pomůcky
+     */
+    protected void moveLevelBeforeWithError(ArrLevel movedLevel, ArrLevel targetLevel, ArrFindingAidVersion version) {
+        ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
+        levelWithExtraNode.setLevel(movedLevel);
+        levelWithExtraNode.setLevelTarget(targetLevel);
+        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
+
+        put(spec -> spec.body(levelWithExtraNode), MOVE_LEVEL_BEFORE_URL, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    /**
+     * Přesune jeden uzel pod druhý.
+     *
+     * @param movedLevel přesouvaný uzel
+     * @param targetLevel uzel pod který se má vložit přesouvaný uzel
+     * @param version verze archivní pomůcky
+     *
+     * @return přesunutý uzel
+     */
+    protected ArrLevelWithExtraNode moveLevelUnder(ArrLevel movedLevel, ArrLevel targetLevel, ArrFindingAidVersion version) {
+        ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
+        levelWithExtraNode.setLevel(movedLevel);
+        levelWithExtraNode.setExtraNode(targetLevel.getNode());
+        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
+
+        Response response = put(spec -> spec.body(levelWithExtraNode), MOVE_LEVEL_UNDER_URL);
+
+        return response.getBody().as(ArrLevelWithExtraNode.class);
+    }
+
+    /**
+     * Přesune jeden uzel za druhý.
+     *
+     * @param movedLevel přesouvaný uzel
+     * @param targetLevel uzel za který se má vložit přesouvaný uzel
+     * @param version verze archivní pomůcky
+     *
+     * @return přesunutý uzel
+     */
+    protected ArrLevelWithExtraNode moveLevelAfter(ArrLevel movedLevel, ArrLevel targetLevel, ArrFindingAidVersion version) {
+        ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
+        levelWithExtraNode.setLevel(movedLevel);
+        levelWithExtraNode.setLevelTarget(targetLevel);
+        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
+
+        Response response = put(spec -> spec.body(levelWithExtraNode), MOVE_LEVEL_AFTER_URL);
+
+        return response.getBody().as(ArrLevelWithExtraNode.class);
+    }
+
+    /**
+     * Přesune jeden uzel za druhý.
+     *
+     * @param movedLevel přesouvaný uzel
+     * @param targetLevel uzel za který se má vložit přesouvaný uzel
+     * @param version verze archivní pomůcky
+     *
+     * @return přesunutý uzel
+     */
+    protected ArrLevelWithExtraNode deleteLevel(ArrLevel levelToDelete, ArrFindingAidVersion version) {
+        ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
+        levelWithExtraNode.setLevel(levelToDelete);
+        levelWithExtraNode.setExtraNode(levelToDelete.getNodeParent());
+        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
+
+        Response response = put(spec -> spec.body(levelWithExtraNode), DELETE_LEVEL_URL);
+
+        return response.getBody().as(ArrLevelWithExtraNode.class);
     }
 }

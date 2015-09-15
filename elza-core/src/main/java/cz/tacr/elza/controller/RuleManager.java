@@ -1,5 +1,25 @@
 package cz.tacr.elza.controller;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import javax.transaction.Transactional;
+
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
@@ -20,23 +40,6 @@ import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FaViewRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import javax.transaction.Transactional;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Implementace API pro práci s pravidly.
@@ -142,8 +145,12 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
         Map<Integer, List<RulDescItemConstraint>> itemConstrainMap =
                 ElzaTools.createGroupMap(findItemConstList, p -> p.getDescItemType().getDescItemTypeId());
 
-        List<RulDescItemConstraint> findItemSpecConstList =
-                descItemConstraintRepository.findByItemSpecIds(listDescItem);
+        List<RulDescItemConstraint> findItemSpecConstList;
+        if (listDescItem.isEmpty()) {
+            findItemSpecConstList = new ArrayList<>();
+        } else {
+            findItemSpecConstList = descItemConstraintRepository.findByItemSpecIds(listDescItem);
+        }
         Map<Integer, List<RulDescItemConstraint>> itemSpecConstrainMap =
                 ElzaTools.createGroupMap(findItemSpecConstList, p -> p.getDescItemSpec().getDescItemSpecId());
 

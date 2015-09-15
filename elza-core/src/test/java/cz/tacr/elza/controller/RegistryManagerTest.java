@@ -1,6 +1,18 @@
 package cz.tacr.elza.controller;
 
+import static com.jayway.restassured.RestAssured.given;
+
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.jayway.restassured.response.Response;
+
 import cz.tacr.elza.domain.RegExternalSource;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
@@ -9,16 +21,6 @@ import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.Arrays;
-import java.util.List;
-
-import static com.jayway.restassured.RestAssured.given;
 
 /**
  * Test pro operace s rejstříkem.
@@ -104,7 +106,7 @@ public class RegistryManagerTest extends AbstractRestTest {
 
         Assert.assertEquals(200, response.statusCode());
         Assert.assertEquals(countStart, countEnd + 1);
-        
+
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(RECORD_ID_ATT, 874522214)
                 .delete(DELETE_RECORD_URL);
         logger.info(response.asString());
@@ -306,33 +308,6 @@ public class RegistryManagerTest extends AbstractRestTest {
         externalSource.setName(TEST_NAME);
         externalSourceRepository.save(externalSource);
         return externalSource;
-    }
-
-    /**
-     * Vytvoří RESTově záznam rejstříku.
-     *
-     * @return  záznam
-     */
-    private RegRecord restCreateRecord() {
-        RegRecord regRecord = new RegRecord();
-        regRecord.setRecord(TEST_NAME);
-        regRecord.setCharacteristics("CHARACTERISTICS");
-        regRecord.setLocal(false);
-
-        RegRegisterType registerType = createRegisterType();
-        Integer externalSourceId = null;
-        regRecord.setRegisterType(registerType);
-
-        Response response =
-                given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
-                        .body(regRecord)
-//                        .parameter(REGISTER_TYPE_ID_ATT, registerType.getId())
-//                        .parameter(EXTERNAL_SOURCE_ID_ATT, externalSourceId)
-                        .put(CREATE_RECORD_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
-        return response.getBody().as(RegRecord.class);
     }
 
     /**

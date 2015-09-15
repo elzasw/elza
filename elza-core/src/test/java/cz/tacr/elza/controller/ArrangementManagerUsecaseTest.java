@@ -1,6 +1,17 @@
 package cz.tacr.elza.controller;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.BeanUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.util.Assert;
+
 import com.jayway.restassured.response.Response;
+
 import cz.tacr.elza.domain.ArrDescItemExt;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
@@ -16,15 +27,6 @@ import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.BeanUtils;
-import org.springframework.http.HttpStatus;
-import org.springframework.util.Assert;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Kompletní test {@link ArrangementManager}.
@@ -538,173 +540,6 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         Assert.isTrue(children.get(1).getPosition().equals(2));
         Assert.isTrue(children.get(2).getPosition().equals(3));
         Assert.isTrue(children.get(3).getPosition().equals(4));
-    }
-
-    /**
-     * Najde podřízené úrovně.
-     *
-     * @param rootNode nadřazený uzel pro který hledáme potomky
-     * @param version verze, může být null
-     *
-     * @return potomky předaného uzlu
-     */
-    private List<ArrLevel> getSubLevels(ArrNode rootNode, ArrFindingAidVersion version) {
-        Response response;
-        if (version == null) {
-            response = get(spec -> spec.parameter(NODE_ID_ATT, rootNode.getNodeId()), FIND_SUB_LEVELS_URL);
-        } else {
-            response = get(spec -> spec.parameter(NODE_ID_ATT, rootNode.getNodeId())
-                    .parameter(VERSION_ID_ATT, version.getFindingAidVersionId()), FIND_SUB_LEVELS_URL);
-        }
-
-        return Arrays.asList(response.getBody().as(ArrLevel[].class));
-    }
-
-    /**
-     * Vytvoří nový uzel pod předaným uzlem.
-     *
-     * @param levelWithExtraNode rodičovský uzel
-     *
-     * @return nový uzel
-     */
-    private ArrLevelWithExtraNode createLevelChild(ArrLevelWithExtraNode levelWithExtraNode) {
-        Response response = put(spec -> spec.body(levelWithExtraNode), ADD_LEVEL_CHILD_URL);
-        ArrLevelWithExtraNode parent = response.getBody().as(ArrLevelWithExtraNode.class);
-
-        return parent;
-    }
-
-    /**
-     * Vytvoří nový uzel pod předaným uzlem.
-     *
-     * @param levelWithExtraNode rodičovský uzel
-     */
-    private void createLevelChildWithError(ArrLevelWithExtraNode levelWithExtraNode) {
-        put(spec -> spec.body(levelWithExtraNode), ADD_LEVEL_CHILD_URL, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    /**
-     * Vytvoří nový uzel před předaným uzlem.
-     *
-     * @param levelWithExtraNode uzal před kterým se vytvoří nový uzel
-     *
-     * @return nový uzel
-     */
-    private ArrLevelWithExtraNode createLevelBefore(ArrLevelWithExtraNode levelWithExtraNode) {
-        Response response = put(spec -> spec.body(levelWithExtraNode), ADD_LEVEL_BEFORE_URL);
-        ArrLevelWithExtraNode parent = response.getBody().as(ArrLevelWithExtraNode.class);
-
-        return parent;
-    }
-
-    /**
-     * Vytvoří nový uzel za předaným uzlem.
-     *
-     * @param levelWithExtraNode uzal za kterým se vytvoří nový uzel
-     *
-     * @return nový uzel
-     */
-    private ArrLevelWithExtraNode createLevelAfter(ArrLevelWithExtraNode levelWithExtraNode) {
-        Response response = put(spec -> spec.body(levelWithExtraNode), ADD_LEVEL_AFTER_URL);
-        ArrLevelWithExtraNode parent = response.getBody().as(ArrLevelWithExtraNode.class);
-
-        return parent;
-    }
-
-    /**
-     * Přesune jeden uzel před druhý.
-     *
-     * @param movedLevel přesouvaný uzel
-     * @param targetLevel uzel před který se má vložit přesouvaný uzel
-     * @param version verze archivní pomůcky
-     *
-     * @return přesunutý uzel
-     */
-    private ArrLevelWithExtraNode moveLevelBefore(ArrLevel movedLevel, ArrLevel targetLevel, ArrFindingAidVersion version) {
-        ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
-        levelWithExtraNode.setLevel(movedLevel);
-        levelWithExtraNode.setLevelTarget(targetLevel);
-        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
-
-        Response response = put(spec -> spec.body(levelWithExtraNode), MOVE_LEVEL_BEFORE_URL);
-
-        return response.getBody().as(ArrLevelWithExtraNode.class);
-    }
-
-    /**
-     * Přesune jeden uzel před druhý. Očekává se chyba.
-     *
-     * @param movedLevel přesouvaný uzel
-     * @param targetLevel uzel před který se má vložit přesouvaný uzel
-     * @param version verze archivní pomůcky
-     */
-    private void moveLevelBeforeWithError(ArrLevel movedLevel, ArrLevel targetLevel, ArrFindingAidVersion version) {
-        ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
-        levelWithExtraNode.setLevel(movedLevel);
-        levelWithExtraNode.setLevelTarget(targetLevel);
-        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
-
-        put(spec -> spec.body(levelWithExtraNode), MOVE_LEVEL_BEFORE_URL, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    /**
-     * Přesune jeden uzel pod druhý.
-     *
-     * @param movedLevel přesouvaný uzel
-     * @param targetLevel uzel pod který se má vložit přesouvaný uzel
-     * @param version verze archivní pomůcky
-     *
-     * @return přesunutý uzel
-     */
-    private ArrLevelWithExtraNode moveLevelUnder(ArrLevel movedLevel, ArrLevel targetLevel, ArrFindingAidVersion version) {
-        ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
-        levelWithExtraNode.setLevel(movedLevel);
-        levelWithExtraNode.setExtraNode(targetLevel.getNode());
-        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
-
-        Response response = put(spec -> spec.body(levelWithExtraNode), MOVE_LEVEL_UNDER_URL);
-
-        return response.getBody().as(ArrLevelWithExtraNode.class);
-    }
-
-    /**
-     * Přesune jeden uzel za druhý.
-     *
-     * @param movedLevel přesouvaný uzel
-     * @param targetLevel uzel za který se má vložit přesouvaný uzel
-     * @param version verze archivní pomůcky
-     *
-     * @return přesunutý uzel
-     */
-    private ArrLevelWithExtraNode moveLevelAfter(ArrLevel movedLevel, ArrLevel targetLevel, ArrFindingAidVersion version) {
-        ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
-        levelWithExtraNode.setLevel(movedLevel);
-        levelWithExtraNode.setLevelTarget(targetLevel);
-        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
-
-        Response response = put(spec -> spec.body(levelWithExtraNode), MOVE_LEVEL_AFTER_URL);
-
-        return response.getBody().as(ArrLevelWithExtraNode.class);
-    }
-
-    /**
-     * Přesune jeden uzel za druhý.
-     *
-     * @param movedLevel přesouvaný uzel
-     * @param targetLevel uzel za který se má vložit přesouvaný uzel
-     * @param version verze archivní pomůcky
-     *
-     * @return přesunutý uzel
-     */
-    private ArrLevelWithExtraNode deleteLevel(ArrLevel levelToDelete, ArrFindingAidVersion version) {
-        ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
-        levelWithExtraNode.setLevel(levelToDelete);
-        levelWithExtraNode.setExtraNode(levelToDelete.getNodeParent());
-        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
-
-        Response response = put(spec -> spec.body(levelWithExtraNode), DELETE_LEVEL_URL);
-
-        return response.getBody().as(ArrLevelWithExtraNode.class);
     }
 
     /**

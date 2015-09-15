@@ -1,19 +1,20 @@
 package cz.tacr.elza.controller;
 
-import com.jayway.restassured.response.Response;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartySubtype;
-import cz.tacr.elza.domain.ParPartyTypeExt;
-import cz.tacr.elza.domain.RegRecord;
+import static com.jayway.restassured.RestAssured.given;
+
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.List;
+import com.jayway.restassured.response.Response;
 
-import static com.jayway.restassured.RestAssured.given;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyTypeExt;
+import cz.tacr.elza.domain.RegRecord;
 
 /**
  * Testy pro {@link PartyManager}.
@@ -25,23 +26,9 @@ public class PartyManagerTest extends AbstractRestTest {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-
     @Test
     public void testRestInsertParty() throws Exception {
-
-        final ParPartySubtype partySubtype = findPartySubtype();
-        partySubtype.setPartyType(null);
-        final RegRecord record = createRecord(1);
-
-        ParParty requestBody = new ParParty();
-        requestBody.setPartySubtype(partySubtype);
-        requestBody.setRecord(record);
-        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(requestBody)
-                .put(INSERT_ABSTRACT_PARTY);
-        logger.info(response.asString());
-        Assert.assertEquals(response.print(), 200, response.statusCode());
-
-        ParParty party = response.getBody().as(ParParty.class);
+        ParParty party = restCreateParty();
 
         Assert.assertNotNull("Nenalezena polozka ", party);
         Assert.assertNotNull("Nenalezena polozka party subtype", party.getPartySubtype());
