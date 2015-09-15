@@ -3,21 +3,26 @@ package cz.tacr.elza.controller;
 import static com.jayway.restassured.RestAssured.given;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 
 import com.jayway.restassured.response.Response;
 
@@ -31,10 +36,14 @@ import cz.tacr.elza.domain.ArrFaLevelExt;
 import cz.tacr.elza.domain.ArrFaVersion;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemSpecExt;
 import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.domain.vo.ArrFaLevelWithExtraNode;
@@ -763,6 +772,178 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
 
         return findingAid;
+    }
+
+    @Test
+    public void testRestCreateDescriptionItemsForAllDataTypes() {
+        RulRuleSet ruleSet = createRuleSet();
+        RulArrangementType arrangementType = createArrangementType(ruleSet);
+        ArrFindingAid findingAid = createFindingAid(ruleSet, arrangementType, HttpStatus.OK);
+        ArrFaVersion openVersion = getFindingAidOpenVersion(findingAid);
+
+        ArrDescItemSavePack savePack = new ArrDescItemSavePack();
+        savePack.setCreateNewVersion(true);
+        savePack.setDeleteDescItems(new ArrayList<ArrDescItemExt>());
+        savePack.setFaVersionId(openVersion.getFaVersionId());
+
+        ArrNode node = openVersion.getRootFaLevel().getNode();
+        savePack.setNode(node);
+
+        List<ArrDescItemExt> descItems = new ArrayList<>();
+        savePack.setDescItems(descItems);
+
+        Map<String, RulDescItemType> itemTypes = new HashMap<>();
+        List<RulDataType> dataTypes = dataTypeRepository.findAll();
+        int order = 1;
+        for (RulDataType dataType : dataTypes) {
+            RulDescItemType descItemType = createRulDescItemType(dataType, order++);
+            descItemType.setDataType(dataType);
+            itemTypes.put(dataType.getCode(), descItemType);
+        }
+
+        for (String dtCode : itemTypes.keySet()) {
+            RulDescItemType rulDescItemType = itemTypes.get(dtCode);
+            RulDescItemTypeExt rulDescItemTypeExt = new RulDescItemTypeExt();
+            BeanUtils.copyProperties(rulDescItemType, rulDescItemTypeExt);
+            switch (dtCode) {
+                case DT_COORDINATES:
+                    descItems.add(createCoordinatesValue(node, rulDescItemTypeExt));
+                    break;
+                case DT_FORMATTED_TEXT:
+                    descItems.add(createFormattedTextValue(node, rulDescItemTypeExt));
+                    break;
+                case DT_INT:
+                    descItems.add(createIntValue(node, rulDescItemTypeExt));
+                    break;
+//                case DT_PARTY_REF:
+//                    descItems.add(createPartyRefValue(node, rulDescItemTypeExt, parties));
+//                    break;
+                case DT_STRING:
+                    descItems.add(createStringValue(node, rulDescItemTypeExt));
+                    break;
+                case DT_TEXT:
+                    descItems.add(createTextValue(node, rulDescItemTypeExt));
+                    break;
+                case DT_UNITDATE:
+                    descItems.add(createUnitDateValue(node, rulDescItemTypeExt));
+                    break;
+                case DT_UNITID:
+                    descItems.add(createIntValue(node, rulDescItemTypeExt));
+                    break;
+//                case DT_RECORD_REF:
+//                    descItems.add(createRecordRefValue(node, rulDescItemTypeExt, records));
+//                    break;
+//                default:
+//                    throw new IllegalStateException("Není definován case pro datový typ " + dtCode + " doplňte jej.");
+            }
+        }
+
+        List<ArrDescItemExt> arrDescItemsExt = storeSavePack(savePack);
+    }
+
+
+    private void chooseAndSetSpecification(ArrDescItemExt descItemExt, RulDescItemTypeExt rulDescItemTypeExt,
+            String specCode) {
+        for (RulDescItemSpec spec : rulDescItemTypeExt.getRulDescItemSpecList()) {
+            if (spec.getCode().equals(specCode)) {
+                descItemExt.setDescItemSpec(spec);
+            }
+        }
+    }
+
+    private ArrDescItemExt createPartyRefValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, List<RegRecord> records) {
+        ArrDescItemExt descItemExt = createValue(node, rulDescItemTypeExt);
+
+        RegRecord regRecord = records.get(RandomUtils.nextInt(records.size()));
+        descItemExt.setRecord(regRecord);
+
+      return descItemExt;
+    }
+
+    private ArrDescItemExt createRecordRefValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, List<ParParty> parties) {
+        ArrDescItemExt descItemExt = createValue(node, rulDescItemTypeExt);
+
+        ParParty parParty = parties.get(RandomUtils.nextInt(parties.size()));
+        descItemExt.setParty(parParty);
+
+        return descItemExt;
+    }
+
+    private ArrDescItemExt createCoordinatesValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
+        ArrDescItemExt descItemExt = createValue(node, rulDescItemTypeExt);
+        descItemExt.setData("coordinates");
+
+        return descItemExt;
+    }
+
+    private ArrDescItemExt createUnitDateValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
+        ArrDescItemExt descItemExt = createValue(node, rulDescItemTypeExt);
+        descItemExt.setData(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        return descItemExt;
+    }
+
+    private ArrDescItemExt createIntValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
+        ArrDescItemExt descItemExt = createValue(node, rulDescItemTypeExt);
+        descItemExt.setData(Integer.toString(RandomUtils.nextInt(Integer.MAX_VALUE)));
+
+        return descItemExt;
+    }
+
+    private ArrDescItemExt createValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
+        ArrDescItemExt descItemExt = createValueWithoutspecification(node, rulDescItemTypeExt);
+        descItemExt.setDescItemSpec(chooseSpec(rulDescItemTypeExt.getRulDescItemSpecList()));
+
+        return descItemExt;
+    }
+
+    private ArrDescItemExt createValueWithoutspecification(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
+        ArrDescItemExt descItemExt = new ArrDescItemExt();
+        descItemExt.setNode(node);
+        descItemExt.setDescItemType(rulDescItemTypeExt);
+
+        return descItemExt;
+    }
+
+    private ArrDescItemExt createStringValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
+        ArrDescItemExt descItemExt = createValue(node, rulDescItemTypeExt);
+        descItemExt.setData(Integer.toString(RandomUtils.nextInt(Integer.MAX_VALUE)));
+
+        return descItemExt;
+    }
+
+    private ArrDescItemExt createTextValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
+        ArrDescItemExt descItemExt = createValue(node, rulDescItemTypeExt);
+        descItemExt.setData("Text");
+
+      return descItemExt;
+    }
+
+    private ArrDescItemExt createFormattedTextValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
+        ArrDescItemExt descItemExt = createValue(node, rulDescItemTypeExt);
+        descItemExt.setData("Formatted text");
+
+      return descItemExt;
+    }
+
+    private RulDescItemSpec chooseSpec(List<RulDescItemSpecExt> rulDescItemSpecList) {
+        if (rulDescItemSpecList == null || rulDescItemSpecList.isEmpty()) {
+            return null;
+        }
+
+        int size = rulDescItemSpecList.size();
+        return rulDescItemSpecList.get(RandomUtils.nextInt(size));
+    }
+
+
+    private RulDescItemType createRulDescItemType(RulDataType dataType, int order) {
+        String code = dataType.getCode();
+        String description = dataType.getDescription();
+        String name = dataType.getName();
+        RulDescItemType descItemType = createDescItemType(dataType, true, code, name, code, description, false, false,
+                false, order);
+
+        return descItemTypeRepository.save(descItemType);
     }
 
     @Test

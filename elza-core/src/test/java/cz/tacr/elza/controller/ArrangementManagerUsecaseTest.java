@@ -70,7 +70,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
     }
 
     @Test
-    public void UsecaserTest() {
+    public void UsecaseTest() {
         ArrFindingAid findingAid = testCreateFindingAid();
         findingAid = testUpdateFindingAid(findingAid);
         testApproveFindingAidVersion(findingAid);
@@ -214,13 +214,6 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
 
     private void storeSavePackWithError(ArrDescItemSavePack savePack) {
         post((spec) -> spec.body(savePack), SAVE_DESCRIPTION_ITEMS_URL, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    private List<ArrDescItemExt> storeSavePack(ArrDescItemSavePack savePack) {
-        Response response = post((spec) -> spec.body(savePack), SAVE_DESCRIPTION_ITEMS_URL);
-
-        return Arrays.asList(response.getBody().as(ArrDescItemExt[].class));
-
     }
 
     /**
@@ -901,26 +894,5 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      */
     private ArrFindingAid createFindingAid() {
         return createFindingAid(ruleSet, arrangementType, HttpStatus.OK);
-    }
-
-    /**
-     * Vytvoření archivní pomůcky.
-     *
-     * @param ruleSet pravidla tvorby
-     * @param arrangementType typ výstupu
-     * @param httpStatus stav jakým má skončit volání
-     *
-     * @return archivní pomůcka
-     */
-    private ArrFindingAid createFindingAid(RulRuleSet ruleSet, RulArrangementType arrangementType, HttpStatus httpStatus) {
-        Response response = put(spec -> spec.parameter(FA_NAME_ATT, TEST_NAME)
-                .parameter(ARRANGEMENT_TYPE_ID_ATT, arrangementType.getArrangementTypeId())
-                .parameter(RULE_SET_ID_ATT, ruleSet.getRuleSetId()), CREATE_FA_URL, httpStatus);
-
-        if (httpStatus == HttpStatus.OK) {
-            return response.getBody().as(ArrFindingAid.class);
-        }
-
-        return null;
     }
 }

@@ -1,16 +1,41 @@
 package cz.tacr.elza.controller;
 
+import static com.jayway.restassured.RestAssured.given;
+
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+
+import javax.transaction.Transactional;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.IntegrationTest;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.EncoderConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
 import com.jayway.restassured.response.Header;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
+
 import cz.tacr.elza.ElzaCore;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDescItemExt;
 import cz.tacr.elza.domain.ArrFaChange;
 import cz.tacr.elza.domain.ArrFaLevel;
 import cz.tacr.elza.domain.ArrFaLevelExt;
@@ -29,6 +54,7 @@ import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
@@ -52,28 +78,6 @@ import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.repository.VersionRepository;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-
-import javax.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Function;
-
-import static com.jayway.restassured.RestAssured.given;
 
 /**
  * Abstraktní předek pro testy. Nastavuje REST prostředí.
@@ -189,6 +193,10 @@ public abstract class AbstractRestTest {
     protected static final Integer DATA_TYPE_TEXT = 3;
     protected static final Integer DATA_TYPE_DATACE = 4;
     protected static final Integer DATA_TYPE_REF = 5;
+    protected static final Integer DATA_TYPE_FORMATTED_TEXT = 6;
+    protected static final Integer DATA_TYPE_COORDINATES = 7;
+    protected static final Integer DATA_TYPE_PARTY_REF = 8;
+    protected static final Integer DATA_TYPE_RECORD_REF = 9;
     // END ARRANGEMENT MANAGER CONSTANTS
 
     // RULE MANAGER CONSTANTS
@@ -198,6 +206,16 @@ public abstract class AbstractRestTest {
     protected static final String GET_DIT_FOR_NODE_ID_URL = RULE_MANAGER_URL + "/getDescriptionItemTypesForNodeId";
     protected static final String GET_FVDIT_URL = RULE_MANAGER_URL + "/getFaViewDescItemTypes";
     protected static final String SAVE_FVDIT_URL = RULE_MANAGER_URL + "/saveFaViewDescItemTypes";
+
+    protected static final String DT_UNITID = "UNITID";
+    protected static final String DT_STRING = "STRING";
+    protected static final String DT_INT = "INT";
+    protected static final String DT_UNITDATE = "UNITDATE";
+    protected static final String DT_PARTY_REF = "PARTY_REF";
+    protected static final String DT_TEXT = "TEXT";
+    protected static final String DT_COORDINATES = "COORDINATES";
+    protected static final String DT_FORMATTED_TEXT = "FORMATTED_TEXT";
+    protected static final String DT_RECORD_REF = "RECORD_REF";
     // END RULE MANAGER CONSTANTS
 
     @Value("${local.server.port}")
@@ -280,10 +298,6 @@ public abstract class AbstractRestTest {
         descItemTypeRepository.deleteAll();
         nodeRepository.deleteAll();
         changeRepository.deleteAll();
-    }
-
-    @After
-    public void setDown() {
     }
 
     protected RulArrangementType createArrangementType(RulRuleSet ruleSet) {
@@ -776,5 +790,39 @@ public abstract class AbstractRestTest {
         Response response = get(spec -> spec.parameter(RULE_SET_ID_ATT, ruleSet.getRuleSetId()), GET_ARRANGEMENT_TYPES_URL);
 
         return Arrays.asList(response.getBody().as(RulArrangementType[].class));
+    }
+
+    /**
+     * Vytvoření archivní pomůcky.
+     *
+     * @param ruleSet pravidla tvorby
+     * @param arrangementType typ výstupu
+     * @param httpStatus stav jakým má skončit volání
+     *
+     * @return archivní pomůcka
+     */
+    protected ArrFindingAid createFindingAid(RulRuleSet ruleSet, RulArrangementType arrangementType, HttpStatus httpStatus) {
+        Response response = put(spec -> spec.parameter(FA_NAME_ATT, TEST_NAME)
+                .parameter(ARRANGEMENT_TYPE_ID_ATT, arrangementType.getArrangementTypeId())
+                .parameter(RULE_SET_ID_ATT, ruleSet.getRuleSetId()), CREATE_FA_URL, httpStatus);
+
+        if (httpStatus == HttpStatus.OK) {
+            return response.getBody().as(ArrFindingAid.class);
+        }
+
+        return null;
+    }
+
+    /**
+     * Uloží balík hodnot.
+     *
+     * @param savePack hodnoty
+     *
+     * @return uložené i vymazané hodnoty
+     */
+    protected List<ArrDescItemExt> storeSavePack(ArrDescItemSavePack savePack) {
+        Response response = post((spec) -> spec.body(savePack), SAVE_DESCRIPTION_ITEMS_URL);
+
+        return Arrays.asList(response.getBody().as(ArrDescItemExt[].class));
     }
 }
