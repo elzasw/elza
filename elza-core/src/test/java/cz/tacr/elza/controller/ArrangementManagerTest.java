@@ -26,9 +26,9 @@ import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
+import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
-import cz.tacr.elza.repository.VersionRepository;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -63,7 +63,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
     @Autowired
     private RuleSetRepository ruleSetRepository;
     @Autowired
-    private VersionRepository versionRepository;
+    private FindingAidVersionRepository findingAidVersionRepository;
     @Autowired
     private DescItemConstraintRepository descItemConstraintRepository;
     @Autowired
@@ -327,7 +327,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrChange lockChange = createFaChange(LocalDateTime.now());
         version.setLockChange(lockChange);
-        versionRepository.save(version);
+        findingAidVersionRepository.save(version);
 
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
                 parameter(NODE_ID_ATT, parent.getNode().getNodeId()).
@@ -684,7 +684,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         levelRepository.save(child);
 
         version.setLockChange(createFaChange(startTime.plusSeconds(2)));
-        versionRepository.save(version);
+        findingAidVersionRepository.save(version);
         child.setDeleteChange(createFaChange(startTime.plusSeconds(3)));
         createChange = createFaChange(startTime.plusSeconds(3));
         createAttributs(child.getNode(), 2, createChange, 11, null);
@@ -771,7 +771,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ArrFindingAidVersion version = createFindingAidVersion(findingAid, parent, false, createChangeVersion);
 
         version.setRootLevel(parent);
-        versionRepository.save(version);
+        findingAidVersionRepository.save(version);
         LocalDateTime startTime = version.getCreateChange().getChangeDate();
 
         ArrChange createChange = createFaChange(startTime.minusSeconds(1));
@@ -1064,7 +1064,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ArrFindingAidVersion version = createFindingAidVersion(findingAid, parent, false, createChangeVersion);
 
         version.setRootLevel(parent);
-        versionRepository.save(version);
+        findingAidVersionRepository.save(version);
         LocalDateTime startTime = version.getCreateChange().getChangeDate();
 
         ArrChange createChange = createFaChange(startTime.minusSeconds(1));

@@ -49,12 +49,12 @@ import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
+import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
-import cz.tacr.elza.repository.VersionRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,7 +101,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     private ArrangementTypeRepository arrangementTypeRepository;
 
     @Autowired
-    private VersionRepository versionRepository;
+    private FindingAidVersionRepository findingAidVersionRepository;
 
     @Autowired
     private RuleSetRepository ruleSetRepository;
@@ -317,7 +317,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         version.setFindingAid(findingAid);
         version.setRuleSet(ruleSet);
         version.setRootLevel(rootNode);
-        return versionRepository.save(version);
+        return findingAidVersionRepository.save(version);
     }
 
     private ArrChange createChange() {
@@ -344,9 +344,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         deleteLevelCascade(version.getRootLevel(), change);
 
-        for (ArrFindingAidVersion deleteVersion : versionRepository
+        for (ArrFindingAidVersion deleteVersion : findingAidVersionRepository
                 .findVersionsByFindingAidIdOrderByCreateDateAsc(findingAidId)) {
-            versionRepository.delete(deleteVersion);
+            findingAidVersionRepository.delete(deleteVersion);
         }
         findingAidRepository.delete(findingAidId);
     }
@@ -379,7 +379,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     public List<ArrFindingAidVersion> getFindingAidVersions(@RequestParam(value = "findingAidId") final Integer findingAidId) {
         Assert.notNull(findingAidId);
 
-        return versionRepository.findVersionsByFindingAidIdOrderByCreateDateAsc(findingAidId);
+        return findingAidVersionRepository.findVersionsByFindingAidIdOrderByCreateDateAsc(findingAidId);
     }
 
     @Override
@@ -412,7 +412,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrChange change = createChange();
         version.setLockChange(change);
-        versionRepository.save(version);
+        findingAidVersionRepository.save(version);
 
         RulArrangementType arrangementType = arrangementTypeRepository.findOne(arrangementTypeId);
         RulRuleSet ruleSet = ruleSetRepository.findOne(ruleSetId);
@@ -728,7 +728,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      */
     private void isValidAndOpenVersion(Integer versionId) {
         Assert.notNull(versionId);
-        ArrFindingAidVersion version = versionRepository.findOne(versionId);
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
         if (version == null) {
             throw new IllegalArgumentException("Verze neexistuje");
         }
@@ -938,7 +938,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @RequestMapping(value = "/getOpenVersionByFindingAidId", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ArrFindingAidVersion getOpenVersionByFindingAidId(@RequestParam(value = "findingAidId") Integer findingAidId) {
         Assert.notNull(findingAidId);
-        ArrFindingAidVersion faVersion = versionRepository.findByFindingAidIdAndLockChangeIsNull(findingAidId);
+        ArrFindingAidVersion faVersion = findingAidVersionRepository.findByFindingAidIdAndLockChangeIsNull(findingAidId);
 
         return faVersion;
     }
@@ -947,7 +947,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @RequestMapping(value = "/getVersion", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ArrFindingAidVersion getFaVersionById(@RequestParam("versionId") final Integer versionId) {
         Assert.notNull(versionId);
-        return versionRepository.findOne(versionId);
+        return findingAidVersionRepository.findOne(versionId);
     }
 
     @Override
@@ -967,7 +967,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrChange change = null;
         if (versionId != null) {
-            ArrFindingAidVersion version = versionRepository.findOne(versionId);
+            ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
             change = version.getLockChange();
         }
         final List<ArrLevel> levelList;
@@ -1019,7 +1019,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrChange change = null;
         if (versionId != null) {
-            ArrFindingAidVersion version = versionRepository.findOne(versionId);
+            ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
             change = version.getLockChange();
         }
         final List<ArrLevel> levelList;
@@ -1066,7 +1066,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         ArrChange change = null;
         ArrFindingAidVersion version = null;
         if (versionId != null) {
-            version = versionRepository.findOne(versionId);
+            version = findingAidVersionRepository.findOne(versionId);
             change = version.getLockChange();
         }
 
@@ -1439,7 +1439,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             throw new IllegalArgumentException("Pokud vytvářím novou verzi, musí být předaná reference změny. Pokud verzi nevytvářím, musí být reference změny null.");
         }
 
-        ArrFindingAidVersion version = versionRepository.findOne(faVersionId);
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
 
         Assert.notNull(version);
         if (createNewVersion && version.getLockChange() != null) {
@@ -2172,7 +2172,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             @RequestParam(value = "faVersionId") Integer faVersionId,
             @RequestParam(value = "nodeId") Integer nodeId,
             @RequestParam(value = "rulDescItemTypeId") Integer rulDescItemTypeId) {
-        ArrFindingAidVersion version = versionRepository.findOne(faVersionId);
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
         Assert.notNull(version);
         List<ArrDescItem> itemList;
         ArrNode node = nodeRepository.findOne(nodeId);

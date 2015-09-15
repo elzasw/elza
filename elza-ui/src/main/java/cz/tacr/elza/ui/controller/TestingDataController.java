@@ -25,6 +25,7 @@ import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
+import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PartyRepository;
@@ -33,7 +34,6 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
-import cz.tacr.elza.repository.VersionRepository;
 import org.apache.commons.lang.math.RandomUtils;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,7 +101,7 @@ public class TestingDataController {
     @Autowired
     private VariantRecordRepository variantRecordRepository;
     @Autowired
-    private VersionRepository versionRepository;
+    private FindingAidVersionRepository findingAidVersionRepository;
 
     @Autowired
     private ArrangementTypeRepository arrangementTypeRepository;
@@ -897,7 +897,7 @@ public class TestingDataController {
     @Transactional
     @RequestMapping(value = "/removeData", method = RequestMethod.DELETE)
     public void removeData() {
-        versionRepository.deleteAllInBatch();
+        findingAidVersionRepository.deleteAllInBatch();
         findingAidRepository.deleteAllInBatch();
         dataRepository.deleteAllInBatch();
         descItemRepository.deleteAllInBatch();

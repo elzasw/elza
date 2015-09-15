@@ -42,6 +42,7 @@ import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.FaViewRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
+import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PartyRepository;
@@ -51,7 +52,6 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
-import cz.tacr.elza.repository.VersionRepository;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -210,7 +210,7 @@ public abstract class AbstractRestTest {
     @Autowired
     private RuleSetRepository ruleSetRepository;
     @Autowired
-    private VersionRepository versionRepository;
+    private FindingAidVersionRepository findingAidVersionRepository;
     @Autowired
     protected ChangeRepository changeRepository;
     @Autowired
@@ -268,7 +268,7 @@ public abstract class AbstractRestTest {
 
         descItemConstraintRepository.deleteAll();
         faViewRepository.deleteAll();
-        versionRepository.deleteAll();
+        findingAidVersionRepository.deleteAll();
         arrangementTypeRepository.deleteAll();
         ruleSetRepository.deleteAll();
         findingAidRepository.deleteAll();
@@ -346,7 +346,7 @@ public abstract class AbstractRestTest {
         version.setRootLevel(root);
         version.setRuleSet(ruleSet);
 
-        return versionRepository.save(version);
+        return findingAidVersionRepository.save(version);
     }
 
     protected ArrLevel createLevel(final Integer position, final ArrLevel parent, final ArrChange change) {

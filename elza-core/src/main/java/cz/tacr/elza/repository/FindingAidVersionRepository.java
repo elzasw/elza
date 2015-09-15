@@ -14,7 +14,7 @@ import java.util.List;
  * @since 22.7.15
  */
 @Repository
-public interface VersionRepository extends JpaRepository<ArrFindingAidVersion, Integer> {
+public interface FindingAidVersionRepository extends JpaRepository<ArrFindingAidVersion, Integer> {
 
     @Query(value = "select v from arr_finding_aid_version v join v.createChange ch join v.findingAid fa where fa.findingAidId = :findingAidId order by ch.changeDate asc")
     List<ArrFindingAidVersion> findVersionsByFindingAidIdOrderByCreateDateAsc(@Param(value = "findingAidId") Integer findingAidId);
