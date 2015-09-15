@@ -22,13 +22,13 @@ public interface ArrDescItemExt<FC extends ArrFaChange, RT extends RulDescItemTy
     /**
      * @return Odkaz na osobu.
      */
-    PAP getAbstractParty();
+    PAP getParty();
 
     /**
      * Nastaví osobu.
-     * @param abstractParty osoba
+     * @param party osoba
      */
-    void setAbstractParty(PAP abstractParty);
+    void setParty(PAP party);
 
     /**
      * 

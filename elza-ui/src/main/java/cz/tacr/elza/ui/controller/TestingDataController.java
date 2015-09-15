@@ -1,5 +1,28 @@
 package cz.tacr.elza.ui.controller;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.sql.DataSource;
+import javax.transaction.Transactional;
+
+import org.apache.commons.lang.math.RandomUtils;
+import org.hibernate.Session;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrDescItemExt;
@@ -34,27 +57,6 @@ import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.repository.VersionRepository;
-import org.apache.commons.lang.math.RandomUtils;
-import org.hibernate.Session;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.sql.DataSource;
-import javax.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Kontroler pro testovací data.
@@ -77,7 +79,7 @@ public class TestingDataController {
     private RuleManager ruleManager;
 
     @Autowired
-    private PartyRepository abstractPartyRepository;
+    private PartyRepository partyRepository;
     @Autowired
     private DataRepository dataRepository;
     @Autowired
@@ -481,7 +483,7 @@ public class TestingDataController {
         Map<String, ParPartySubtype> partySubTypeMap = partySubtypeRepository.findAll().stream()
             .collect(Collectors.toMap(ParPartySubtype::getCode, Function.identity()));
 
-        List<ParParty> existingParties = abstractPartyRepository.findAll();
+        List<ParParty> existingParties = partyRepository.findAll();
 
         List<ParParty> parties = new LinkedList<ParParty>();
         for (PartyEnum partyEnum : PartyEnum.values()) {
@@ -489,11 +491,11 @@ public class TestingDataController {
             int position = partyEnum.getRecordPosition();
             ParPartySubtype partySubtype = partySubTypeMap.get(subType);
             RegRecord regRecord = records.get(position);
-            ParParty abstractParty = findParty(partySubtype, regRecord, existingParties);
-            if (abstractParty == null) {
-                abstractParty = createParAbstractParty(partySubtype, regRecord);
+            ParParty party = findParty(partySubtype, regRecord, existingParties);
+            if (party == null) {
+                party = createParParty(partySubtype, regRecord);
             }
-            parties.add(abstractParty);
+            parties.add(party);
         }
 
         return parties;
@@ -531,22 +533,22 @@ public class TestingDataController {
             return null;
         }
 
-        for (ParParty abstractParty : existingParties) {
-            if (abstractParty.getPartySubtype().equals(parPartySubtype)
-                    && abstractParty.getRecord().equals(regRecord)) {
-                return abstractParty;
+        for (ParParty party : existingParties) {
+            if (party.getPartySubtype().equals(parPartySubtype)
+                    && party.getRecord().equals(regRecord)) {
+                return party;
             }
         }
 
         return null;
     }
 
-    private ParParty createParAbstractParty(ParPartySubtype parPartySubtype, RegRecord regRecord) {
-        ParParty parAbstractParty = new ParParty();
-        parAbstractParty.setPartySubtype(parPartySubtype);
-        parAbstractParty.setRecord(regRecord);
+    private ParParty createParParty(ParPartySubtype parPartySubtype, RegRecord regRecord) {
+        ParParty parParty = new ParParty();
+        parParty.setPartySubtype(parPartySubtype);
+        parParty.setRecord(regRecord);
 
-        return abstractPartyRepository.save(parAbstractParty);
+        return partyRepository.save(parParty);
     }
 
     private List<RegRecord> createRegRecords() {
@@ -804,10 +806,8 @@ public class TestingDataController {
     private ArrDescItemExt createPartyRefValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, List<ParParty> parties) {
         ArrDescItemExt descItemExt = createValue(node, rulDescItemTypeExt);
 
-        ParParty parAbstractParty = parties.get(RandomUtils.nextInt(parties.size()));
-        descItemExt.setAbstractParty(parAbstractParty);
-//        descItemExt.setData(parAbstractParty.getRecord().getRecord());
-//        descItemExt.setRecord(parAbstractParty.getRecord());
+        ParParty parParty = parties.get(RandomUtils.nextInt(parties.size()));
+        descItemExt.setParty(parParty);
 
       return descItemExt;
     }
@@ -903,7 +903,7 @@ public class TestingDataController {
         findingAidRepository.deleteAllInBatch();
         dataRepository.deleteAllInBatch();
         descItemRepository.deleteAllInBatch();
-        abstractPartyRepository.deleteAllInBatch();
+        partyRepository.deleteAllInBatch();
         externalSourceRepository.deleteAllInBatch();
         variantRecordRepository.deleteAllInBatch();
         recordRepository.deleteAllInBatch();

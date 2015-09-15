@@ -9,9 +9,9 @@ import java.io.Serializable;
  */
 public interface ParParty<RR extends RegRecord, PS extends ParPartySubtype> extends Versionable, Serializable {
 
-    Integer getAbstractPartyId();
+    Integer getPartyId();
 
-    void setAbstractPartyId(Integer abstractPartyId);
+    void setPartyId(Integer partyId);
 
     RR getRecord();
 

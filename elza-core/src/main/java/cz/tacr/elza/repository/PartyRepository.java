@@ -18,6 +18,6 @@ public interface PartyRepository extends JpaRepository<ParParty, Integer>, Party
      * @return  záznamy patřící danému záznamu v rejstříku
      */
     @Query("SELECT ap FROM par_party ap JOIN ap.record r WHERE r.recordId = ?1")
-    List<ParParty> findParAbstractPartyByRecordId(Integer recordId);
+    List<ParParty> findParPartyByRecordId(Integer recordId);
 
 }

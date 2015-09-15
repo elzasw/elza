@@ -13,7 +13,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 public class ArrDescItemExt extends ArrDescItem implements cz.tacr.elza.api.ArrDescItemExt<ArrFaChange, RulDescItemType,RulDescItemSpec, ParParty, RegRecord, ArrNode> {
 
     private String attData;
-    private ParParty abstractParty;
+    private ParParty party;
     private RegRecord record;
 
     @Override
@@ -27,14 +27,14 @@ public class ArrDescItemExt extends ArrDescItem implements cz.tacr.elza.api.ArrD
     }
 
     @Override
-    public ParParty getAbstractParty() {
-        return abstractParty;
+    public ParParty getParty() {
+        return party;
     }
 
     @Override
-    public void setAbstractParty(ParParty abstractParty) {
-        this.abstractParty = abstractParty;
-        this.attData = abstractParty == null ? null : abstractParty.getRecord().getRecord();
+    public void setParty(ParParty party) {
+        this.party = party;
+        this.attData = this.party == null ? null : this.party.getRecord().getRecord();
     }
 
     @Override

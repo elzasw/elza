@@ -41,7 +41,7 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     private VariantRecordRepository variantRecordRepository;
 
     @Autowired
-    private PartyRepository abstractPartyRepository;
+    private PartyRepository partyRepository;
 
     @Autowired
     private ExternalSourceRepository externalSourceRepository;
@@ -83,7 +83,7 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
         }
 
         variantRecordRepository.delete(variantRecordRepository.findByRegRecordId(recordId));
-        abstractPartyRepository.delete(abstractPartyRepository.findParAbstractPartyByRecordId(recordId));
+        partyRepository.delete(partyRepository.findParPartyByRecordId(recordId));
 
         regRecordRepository.delete(recordId);
     }

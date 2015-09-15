@@ -1,9 +1,9 @@
 package cz.tacr.elza.api.controller;
 
-import java.util.List;
-
 import cz.tacr.elza.api.ParParty;
 import cz.tacr.elza.api.ParPartyTypeExt;
+
+import java.util.List;
 
 /**
  * Rozhraní operací pro osoby a rejstřík.
@@ -24,27 +24,27 @@ public interface PartyManager<PAPV extends ParParty> {
     List<? extends ParPartyTypeExt> getPartyTypes();
 
     /**
-     * Vloží záznam o abstraktní osobě. Je umožněno vložit návázané rejstříkové heslo a podtyp.
+     * Vloží záznam o osobě. Je umožněno vložit návázané rejstříkové heslo a podtyp.
      *
-     * @param abstractParty data o abstraktní osobě
+     * @param party data o abstraktní osobě
      * @return Založený záznam.
      */
-    ParParty insertAbstractParty(PAPV abstractParty);
+    ParParty insertParty(PAPV party);
 
     /**
      * Upraví záznam abstraktní osoby. Je umožněna změna rejstříkového hesla a podtypu.
      *
-     * @param abstractParty záznamu pro aktualizaci.
+     * @param party záznamu pro aktualizaci.
      * @return Aktualizovaný záznam.
      */
-    ParParty updateAbstractParty(PAPV abstractParty);
+    ParParty updateParty(PAPV party);
 
     /**
      * Smaže abstraktní osobu.
-     *
-     * @param abstractPartyId id záznamu pro samzání.
+     * 
+     * @param partyId id záznamu pro samzání.
      */
-    void deleteAbstractParty(Integer abstractPartyId);
+    void deleteParty(Integer partyId);
 
     /**
      * Vyhledá osobu daného typu podle zadaného názvu. Vrátí seznam osob vyhovující zadané frázi.
@@ -58,8 +58,8 @@ public interface PartyManager<PAPV extends ParParty> {
      * @param originator        původce - true, není původce - false, null - neaplikuje filtr - obě možnosti
      * @return seznam osob vyhovující zadané frázi.
      */
-    List<? extends ParParty> findAbstractParty(String search, Integer from, Integer count,
-            Integer partyTypeId, Boolean originator);
+    List<? extends ParParty> findParty(String search, Integer from, Integer count,
+                                       Integer partyTypeId, Boolean originator);
 
     /**
      * Vrátí počet osob vyhovující zadané frázi. Osobu vyhledává podle hesla v rejstříku včetně
@@ -70,13 +70,13 @@ public interface PartyManager<PAPV extends ParParty> {
      * @param originator        původce - true, není původce - false, null - neaplikuje filtr - obě možnosti
      * @return počet osob vyhovující zadané frázi.
      */
-    Long findAbstractPartyCount(String search, Integer partyTypeId, Boolean originator);
+    Long findPartyCount(String search, Integer partyTypeId, Boolean originator);
 
     /**
      * Vrátí abstraktní osobu na základě identifikátoru.
-     *
-     * @param abstractPartyId identifikátor abstraktní osoby.
-     * @return nalezená abstraktní osoba.
+     * 
+     * @param partyId identifikátor osoby
+     * @return nalezená abstraktní osoba
      */
-    ParParty getAbstractParty(Integer abstractPartyId);
+    ParParty getParty(Integer partyId);
 }

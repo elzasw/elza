@@ -27,7 +27,7 @@ public class PartyManagerTest extends AbstractRestTest {
 
 
     @Test
-    public void testRestInsertAbstractParty() throws Exception {
+    public void testRestInsertParty() throws Exception {
 
         final ParPartySubtype partySubtype = findPartySubtype();
         partySubtype.setPartyType(null);
@@ -49,9 +49,9 @@ public class PartyManagerTest extends AbstractRestTest {
     }
 
     @Test
-    public void testRestUpdateAbstractParty() throws Exception {
+    public void testRestUpdateParty() throws Exception {
 
-        ParParty partyInput = createParAbstractParty();
+        ParParty partyInput = createParParty();
         final RegRecord record = createRecord(2);
         partyInput.setRecord(record);
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
@@ -70,31 +70,31 @@ public class PartyManagerTest extends AbstractRestTest {
     }
 
     @Test
-    public void testRestDeleteAbstractParty() throws Exception {
-        ParParty partyInput = createParAbstractParty();
+    public void testRestDeleteParty() throws Exception {
+        ParParty partyInput = createParParty();
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
-                .parameter("abstractPartyId", partyInput.getAbstractPartyId())
+                .parameter("partyId", partyInput.getPartyId())
                 .delete(DELETE_ABSTRACT_PARTY);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        partyInput = abstractPartyRepository.findOne(partyInput.getAbstractPartyId());
+        partyInput = partyRepository.findOne(partyInput.getPartyId());
         Assert.assertNull("Nalezena polozka ", partyInput);
 
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
-                .parameter("abstractPartyId", 1875424)
+                .parameter("partyId", 1875424)
                 .delete(DELETE_ABSTRACT_PARTY);
         logger.info(response.asString());
         Assert.assertEquals(response.print(), 200, response.statusCode());
     }
 
     @Test
-    public void testRestGetAbstractParty() throws Exception {
-        ParParty partyInput = createParAbstractParty();
+    public void testRestGetParty() throws Exception {
+        ParParty partyInput = createParParty();
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
-                .parameter("abstractPartyId", partyInput.getAbstractPartyId())
+                .parameter("partyId", partyInput.getPartyId())
                 .get(GET_ABSTRACT_PARTY);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());

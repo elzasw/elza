@@ -161,7 +161,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     private DescItemSpecRepository descItemSpecRepository;
 
     @Autowired
-    private PartyRepository abstractPartyRepository;
+    private PartyRepository partyRepository;
 
     @Autowired
     private RegRecordRepository recordRepository;
@@ -1145,15 +1145,15 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 arrDescItemExt.setData(stringData.getValue());
             } else if (arrData instanceof ArrDataPartyRef) {
                 ArrDataPartyRef stringData = (ArrDataPartyRef) arrData;
-                Integer idAbstractPartyId = stringData.getAbstractPartyId();
-                if (idAbstractPartyId != null) {
-                    ParParty abstractParty = abstractPartyRepository.getOne(idAbstractPartyId);
-                    arrDescItemExt.setAbstractParty(abstractParty);
-                    if (abstractParty.getRecord() != null) {
-                        abstractParty.getRecord().getVariantRecordList().forEach((variantRecord) -> {
+                Integer idPartyId = stringData.getPartyId();
+                if (idPartyId != null) {
+                    ParParty party = partyRepository.getOne(idPartyId);
+                    arrDescItemExt.setParty(party);
+                    if (party.getRecord() != null) {
+                        party.getRecord().getVariantRecordList().forEach((variantRecord) -> {
                             variantRecord.setRegRecord(null);
                         });
-                        String stringValue = createFormatString(abstractParty.getRecord().getRecord(), formatData);
+                        String stringValue = createFormatString(party.getRecord().getRecord(), formatData);
                         arrDescItemExt.setData(stringValue);
                     }
                 }
@@ -1836,13 +1836,13 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 valuePartyRef.setDataType(rulDescItemType.getDataType());
                 valuePartyRef.setDescItem(descItem);
                 try {
-                    Integer abstractPartyId = descItemExt.getAbstractParty() == null
-                                              ? null : descItemExt.getAbstractParty().getAbstractPartyId();
-                    if (abstractPartyId == null || abstractPartyRepository.findOne(abstractPartyId) == null) {
+                    Integer partyId = descItemExt.getParty() == null
+                                              ? null : descItemExt.getParty().getPartyId();
+                    if (partyId == null || partyRepository.findOne(partyId) == null) {
                         throw new IllegalArgumentException("Neplatný odkaz do tabulky");
                     }
 
-                    valuePartyRef.setAbstractPartyId(abstractPartyId);
+                    valuePartyRef.setPartyId(partyId);
                 } catch (NumberFormatException e) {
                     throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu (" + data + ")");
                 }
@@ -1942,13 +1942,13 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             case "PARTY_REF":
                 ArrDataPartyRef valuePartyRef = (ArrDataPartyRef) arrData;
                 try {
-                    Integer abstractPartyId = descItemExt.getAbstractParty() == null
-                                              ? null : descItemExt.getAbstractParty().getAbstractPartyId();
-                    if (abstractPartyId == null || abstractPartyRepository.findOne(abstractPartyId) == null) {
+                    Integer partyId = descItemExt.getParty() == null
+                                              ? null : descItemExt.getParty().getPartyId();
+                    if(partyId == null || partyRepository.findOne(partyId) == null){
                         throw new IllegalArgumentException("Neplatný odkaz do tabulky");
                     }
 
-                    valuePartyRef.setAbstractPartyId(abstractPartyId);
+                    valuePartyRef.setPartyId(partyId);
                 } catch (NumberFormatException e) {
                     throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu (" + data + ")");
                 }
@@ -2138,7 +2138,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 ArrDataPartyRef valuePartyRefNew = new ArrDataPartyRef();
                 valuePartyRefNew.setDataType(arrData.getDataType());
                 valuePartyRefNew.setPosition(valuePartyRef.getPosition());
-                valuePartyRefNew.setAbstractPartyId(valuePartyRef.getAbstractPartyId());
+                valuePartyRefNew.setPartyId(valuePartyRef.getPartyId());
                 valuePartyRefNew.setDescItem(descItemNew);
                 dataPartyRefRepository.save(valuePartyRefNew);
                 break;
@@ -2213,8 +2213,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
             if (data instanceof ArrDataPartyRef) {
                 ArrDataPartyRef partyRef = (ArrDataPartyRef) data;
-                descItemExt.setAbstractParty(abstractPartyRepository.findOne(partyRef.getAbstractPartyId()));
-            }  else if (data instanceof ArrDataRecordRef) {
+                descItemExt.setParty(partyRepository.findOne(partyRef.getPartyId()));
+            }  else if(data instanceof ArrDataRecordRef){
                 ArrDataRecordRef recordRef = (ArrDataRecordRef) data;
                 descItemExt.setRecord(regRecordRepository.findOne(recordRef.getRecordId()));
             }

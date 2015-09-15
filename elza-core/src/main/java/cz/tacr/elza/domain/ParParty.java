@@ -1,5 +1,10 @@
 package cz.tacr.elza.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.data.rest.core.annotation.RestResource;
+
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -10,12 +15,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.springframework.data.rest.core.annotation.RestResource;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -31,13 +30,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.api.ParParty<RegRecord, ParPartySubtype> {
 
     /* Konstanty pro vazby a fieldy. */
-    public static final String ABSTRACT_PARTY_ID = "abstractPartyId";
+    public static final String ABSTRACT_PARTY_ID = "partyId";
     public static final String RECORD = "record";
     public static final String PARTY_SUBTYPE = "partySubtype";
 
     @Id
     @GeneratedValue
-    private Integer abstractPartyId;
+    private Integer partyId;
 
     @RestResource(exported = false)
     @OneToOne(fetch = FetchType.LAZY, targetEntity = RegRecord.class)
@@ -51,13 +50,13 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
 
 
     @Override
-    public Integer getAbstractPartyId() {
-        return abstractPartyId;
+    public Integer getPartyId() {
+        return partyId;
     }
 
     @Override
-    public void setAbstractPartyId(final Integer abstractPartyId) {
-        this.abstractPartyId = abstractPartyId;
+    public void setPartyId(final Integer partyId) {
+        this.partyId = partyId;
     }
 
     @Override
@@ -91,12 +90,12 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
 
         cz.tacr.elza.domain.ParParty other = (cz.tacr.elza.domain.ParParty) obj;
 
-        return new EqualsBuilder().append(abstractPartyId, other.getAbstractPartyId()).isEquals();
+        return new EqualsBuilder().append(partyId, other.getPartyId()).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(abstractPartyId).toHashCode();
+        return new HashCodeBuilder().append(partyId).toHashCode();
     }
 
 }

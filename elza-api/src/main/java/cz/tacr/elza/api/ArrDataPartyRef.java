@@ -18,8 +18,8 @@ public interface ArrDataPartyRef extends Serializable{
     void setPosition(final Integer position);
 
 
-    Integer getAbstractPartyId();
+    Integer getPartyId();
 
 
-    void setAbstractPartyId(final Integer abstractPartyId);
+    void setPartyId(final Integer partyId);
 }

@@ -10,13 +10,13 @@ import java.time.LocalDateTime;
  */
 public interface ParPartyName<AB extends ParParty> extends Versionable, Serializable {
 
-    Integer getAbstractPartyNameId();
+    Integer getPartyNameId();
 
-    void setAbstractPartyNameId(Integer abstractPartyNameId);
+    void setPartyNameId(Integer partyNameId);
 
-    AB getAbstractParty();
+    AB getParty();
 
-    void setAbstractParty(AB abstractParty);
+    void setParty(AB party);
 
     /**
      * @return Hlavní část jména.
