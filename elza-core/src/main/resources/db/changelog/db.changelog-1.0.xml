@@ -499,13 +499,6 @@
                                  onDelete="NO ACTION"/>
 
         <addForeignKeyConstraint constraintName="fk_dataDatace_data"
-                                 baseTableName="arr_data_unitdate"
-                                 baseColumnNames="data_id"
-                                 referencedTableName="arr_data"
-                                 referencedColumnNames="data_id"
-                                 onDelete="NO ACTION"/>
-
-        <addForeignKeyConstraint constraintName="fk_dataDatace_data"
                                  baseTableName="arr_data_datace"
                                  baseColumnNames="data_id"
                                  referencedTableName="arr_data"
@@ -514,13 +507,6 @@
 
         <addForeignKeyConstraint constraintName="fk_dataString_data"
                                  baseTableName="arr_data_string"
-                                 baseColumnNames="data_id"
-                                 referencedTableName="arr_data"
-                                 referencedColumnNames="data_id"
-                                 onDelete="NO ACTION"/>
-
-        <addForeignKeyConstraint constraintName="fk_dataRefer_data"
-                                 baseTableName="arr_data_unitid"
                                  baseColumnNames="data_id"
                                  referencedTableName="arr_data"
                                  referencedColumnNames="data_id"
@@ -722,7 +708,7 @@
                                  referencedColumnNames="data_id"
                                  onDelete="NO ACTION"/>
 
-        <addForeignKeyConstraint constraintName="fk_dataUnitdate_data"
+        <addForeignKeyConstraint constraintName="fk_dataUnitdate_data_2"
                                  baseTableName="arr_data_unitdate"
                                  baseColumnNames="data_id"
                                  referencedTableName="arr_data"
