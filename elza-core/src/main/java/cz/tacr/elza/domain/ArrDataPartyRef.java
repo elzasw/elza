@@ -1,10 +1,10 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -44,7 +44,6 @@ public class ArrDataPartyRef extends ArrData implements cz.tacr.elza.api.ArrData
 
     @Override
     public String getData() {
-        return getPartyId()+"";
-//        return getPosition() + "," + getPartyId();
+        return getPartyId() + "";
     }
 }

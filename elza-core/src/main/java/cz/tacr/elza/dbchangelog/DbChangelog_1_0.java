@@ -1,6 +1,5 @@
 package cz.tacr.elza.dbchangelog;
 
-import java.sql.ResultSet;
 import java.sql.Statement;
 
 import liquibase.database.Database;
