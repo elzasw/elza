@@ -17,6 +17,7 @@ import javax.transaction.Transactional;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -774,6 +775,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         return findingAid;
     }
 
+    @Ignore
     @Test
     public void testRestCreateDescriptionItemsForAllDataTypes() {
         RulRuleSet ruleSet = createRuleSet();
