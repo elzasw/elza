@@ -1,6 +1,6 @@
 package cz.tacr.elza.domain.vo;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
 import cz.tacr.elza.api.vo.ArrLevelPack;
 import cz.tacr.elza.domain.ArrLevel;

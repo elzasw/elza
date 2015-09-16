@@ -2,7 +2,7 @@ package cz.tacr.elza.domain.vo;
 
 import java.util.List;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemExt;
