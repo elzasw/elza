@@ -159,6 +159,7 @@
                                 -hide java.*
                                 -Xdoclint:none
                             </additionalparam>
+                            <sourcepath>elza-api/src/main/java/cz/tacr/elza/api:elza-core/src/main/java/cz/tacr/elza/domain</sourcepath>
                             <failOnError>false</failOnError>
                         </configuration>
                     </plugin>
