@@ -1,5 +1,15 @@
 package cz.tacr.elza.ui.components.attribute;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang.NotImplementedException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+
 import com.vaadin.event.dd.DragAndDropEvent;
 import com.vaadin.event.dd.DropHandler;
 import com.vaadin.event.dd.acceptcriteria.AcceptAll;
@@ -9,18 +19,25 @@ import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.DragAndDropWrapper;
 import com.vaadin.ui.Label;
+
 import cz.req.ax.AxAction;
 import cz.req.ax.ChildComponentContainer;
 import cz.req.ax.Components;
-import cz.tacr.elza.domain.ArrDescItemExt;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDescItemCoordinates;
+import cz.tacr.elza.domain.ArrDescItemFormattedText;
+import cz.tacr.elza.domain.ArrDescItemInt;
+import cz.tacr.elza.domain.ArrDescItemPartyRef;
+import cz.tacr.elza.domain.ArrDescItemRecordRef;
+import cz.tacr.elza.domain.ArrDescItemString;
+import cz.tacr.elza.domain.ArrDescItemText;
+import cz.tacr.elza.domain.ArrDescItemUnitdate;
+import cz.tacr.elza.domain.ArrDescItemUnitid;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import cz.tacr.elza.domain.factory.DescItemFactory;
 
 
 /**
@@ -29,18 +46,18 @@ import java.util.stream.Collectors;
  */
 public class Attribut extends CssLayout implements Components {
 
-    ChildComponentContainer<ArrDescItemExt, AttributValue> childs;
+    ChildComponentContainer<ArrDescItem, AttributValue> childs;
     List<RulDescItemSpec> descItemSpecs;
     RulDataType dataType;
     ArrNode node;
 
-    List<ArrDescItemExt> deleteDescItems;
+    List<ArrDescItem> deleteDescItems;
     private Integer versionId;
     private RulDescItemType type;
     private AxAction newValueButton;
     private AttributeValuesLoader attributeValuesLoader;
 
-    public Attribut(List<ArrDescItemExt> itemExtList,
+    public Attribut(List<ArrDescItem> itemExtList,
                     List<RulDescItemSpec> descItemSpecs,
                     RulDescItemType type,
                     RulDataType dataType,
@@ -68,12 +85,12 @@ public class Attribut extends CssLayout implements Components {
         addComponent(childs);
         itemExtList.sort(new AttributeValuesComparator());
 
-        for (ArrDescItemExt descItemExt : itemExtList) {
+        for (ArrDescItem descItemExt : itemExtList) {
             newAtributValue(descItemExt);
         }
 
         newValueButton = new AxAction().run(() -> {
-            ArrDescItemExt descItem = new ArrDescItemExt();
+            ArrDescItem descItem = createDescItemByType(dataType);
             descItem.setDescItemType(type);
             newAtributValue(descItem);
         }).caption("Přidat další hodnotu").icon(FontAwesome.PLUS);
@@ -82,20 +99,21 @@ public class Attribut extends CssLayout implements Components {
 
         // přidá nový řádek, pokud nebyl žádný (ulehčení pro uživatele)
         if (itemExtList.size() == 0) {
-            ArrDescItemExt descItem = new ArrDescItemExt();
+            ArrDescItem descItem = createDescItemByType(dataType);
             descItem.setDescItemType(type);
             newAtributValue(descItem);
         }
     }
 
 
-    public List<ArrDescItemExt> getKeys() {
-        List<ArrDescItemExt> collect = childs.getChils().stream().map(AttributValue::commit).collect(Collectors.toList());
-        for (ArrDescItemExt descItemExt : collect) {
+    public List<ArrDescItem> getKeys() {
+        List<ArrDescItem> collect = childs.getChils().stream().map(AttributValue::commit).collect(Collectors.toList());
+        // TODO: vyresit
+        /*for (ArrDescItem descItemExt : collect) {
             if (descItemExt.getData() == null) {
                 descItemExt.setData(new String());
             }
-        }
+        }*/
         return collect;
     }
 
@@ -103,7 +121,34 @@ public class Attribut extends CssLayout implements Components {
         return node;
     }
 
-    public AttributValue newAtributValue(final ArrDescItemExt a) {
+    public ArrDescItem createDescItemByType(RulDataType dataType) {
+        Assert.notNull(dataType);
+
+        switch (dataType.getCode()) {
+            case "INT":
+                return new ArrDescItemInt();
+            case "STRING":
+                return new ArrDescItemString();
+            case "TEXT":
+                return new ArrDescItemText();
+            case "UNITDATE":
+                return new ArrDescItemUnitdate();
+            case "UNITID":
+                return new ArrDescItemUnitid();
+            case "FORMATTED_TEXT":
+                return new ArrDescItemFormattedText();
+            case "COORDINATES":
+                return new ArrDescItemCoordinates();
+            case "PARTY_REF":
+                return new ArrDescItemPartyRef();
+            case "RECORD_REF":
+                return new ArrDescItemRecordRef();
+            default:
+                throw new NotImplementedException("Nebyl namapován datový typ");
+        }
+    }
+
+    public AttributValue newAtributValue(final ArrDescItem a) {
 
         Label sortIcon = new Label();
         sortIcon.addStyleName("sort-icon");
@@ -158,7 +203,7 @@ public class Attribut extends CssLayout implements Components {
         return value;
     }
 
-    private void deleteAtributValue(final ArrDescItemExt a) {
+    private void deleteAtributValue(final ArrDescItem a) {
         childs.removeComponent(a);
         if (a.getDescItemObjectId() != null) {
             deleteDescItems.add(a);
@@ -166,7 +211,7 @@ public class Attribut extends CssLayout implements Components {
         precislujPoradi();
     }
 
-    public List<ArrDescItemExt> getDeleteDescItems() {
+    public List<ArrDescItem> getDeleteDescItems() {
         return deleteDescItems;
     }
 

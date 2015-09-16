@@ -3,7 +3,7 @@ package cz.tacr.elza.ui.controller;
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDescItemExt;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
@@ -661,12 +661,12 @@ public class TestingDataController {
             Queue<ArrNode> newParents = new LinkedList<>();
             while (!parents.isEmpty()) {
                 ArrNode parent = parents.poll();
-                for (int position = 1; position <= nodesInLevel; position++) {
+                /*for (int position = 1; position <= nodesInLevel; position++) {
                     ArrLevel level = createLevel(change, parent, position);
                     ArrNode node = level.getNode();
                     createLevelAttributes(node, version, depth, parties);
                     newParents.add(node);
-                };
+                };*/
                 session.flush();
                 session.clear();
             }
@@ -675,15 +675,15 @@ public class TestingDataController {
         }
     }
 
-    private void createLevelAttributes(ArrNode node, ArrFindingAidVersion version, int depth, List<ParParty> parties) {
+    /*private void createLevelAttributes(ArrNode node, ArrFindingAidVersion version, int depth, List<ParParty> parties) {
         ArrDescItemSavePack descItemSavePack = new ArrDescItemSavePack();
         descItemSavePack.setCreateNewVersion(true);
         descItemSavePack.setFaVersionId(version.getFindingAidVersionId());
         descItemSavePack.setNode(node);
 
-        List<ArrDescItemExt> descItems = new LinkedList<ArrDescItemExt>();
+        List<ArrDescItem> descItems = new LinkedList<ArrDescItem>();
         descItemSavePack.setDescItems(descItems);
-        descItemSavePack.setDeleteDescItems(new LinkedList<ArrDescItemExt>());
+        descItemSavePack.setDeleteDescItems(new LinkedList<ArrDescItem>());
 
         List<RulDescItemTypeExt> descriptionItemTypes = ruleManager.getDescriptionItemTypes(version.getRuleSet().getRuleSetId());
         for (RulDescItemTypeExt rulDescItemTypeExt : descriptionItemTypes) {
@@ -891,7 +891,7 @@ public class TestingDataController {
         ArrNode node = new ArrNode();
         node.setLastUpdate(LocalDateTime.now());
         return nodeRepository.save(node);
-    }
+    }*/
 
     /** Odstraní data z databáze, kromě tabulek s prefixem rul_. */
     @Transactional

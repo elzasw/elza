@@ -10,15 +10,15 @@ import java.util.List;
  * @since 22.7.15
  */
 
-public class ArrLevelExt extends ArrLevel implements cz.tacr.elza.api.ArrLevelExt<ArrChange, ArrNode, ArrDescItemExt> {
+public class ArrLevelExt extends ArrLevel implements cz.tacr.elza.api.ArrLevelExt<ArrChange, ArrNode, ArrDescItem> {
 
-    private List<ArrDescItemExt> descItemList = new LinkedList<>();
+    private List<ArrDescItem> descItemList = new LinkedList<>();
 
-    public List<ArrDescItemExt> getDescItemList() {
+    public List<ArrDescItem> getDescItemList() {
         return descItemList;
     }
 
-    public void setDescItemList(List<ArrDescItemExt> descItemList) {
+    public void setDescItemList(List<ArrDescItem> descItemList) {
         this.descItemList = descItemList;
     }
 

@@ -1,6 +1,8 @@
 package cz.tacr.elza.api.controller;
 
-import cz.tacr.elza.api.ArrDescItemExt;
+import java.util.List;
+
+import cz.tacr.elza.api.ArrDescItem;
 import cz.tacr.elza.api.ArrFindingAid;
 import cz.tacr.elza.api.ArrFindingAidVersion;
 import cz.tacr.elza.api.ArrLevel;
@@ -10,8 +12,6 @@ import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.ArrDescItemSavePack;
 import cz.tacr.elza.api.vo.ArrLevelPack;
 
-import java.util.List;
-
 
 /**
  * Rozhraní operací pro archivní pomůcku a hierarchický přehled včetně atributů.
@@ -19,7 +19,7 @@ import java.util.List;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 12. 8. 2015
  */
-public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFindingAidVersion, DIE extends ArrDescItemExt,
+public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFindingAidVersion, DI extends ArrDescItem,
     DISP extends ArrDescItemSavePack, FL extends ArrLevel, FLP extends ArrLevelPack, N extends ArrNode> {
 
     /** Formát popisu atributu - dlouhá verze. */
@@ -199,7 +199,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @param faVersionId       id verze
      * @return                  vytvořený atribut archivního popisu
      */
-    DIE createDescriptionItem(DIE descItemExt, Integer faVersionId);
+    DI createDescriptionItem(DI descItemExt, Integer faVersionId);
 
     /**
      * Upraví hodnotu existujícího atributu archivního popisu.
@@ -209,7 +209,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @param createNewVersion  zda-li se má vytvářet nová verze
      * @return                  upravený atribut archivního popisu
      */
-    DIE updateDescriptionItem(DIE descItemExt, Integer faVersionId, Boolean createNewVersion);
+    DI updateDescriptionItem(DI descItemExt, Integer faVersionId, Boolean createNewVersion);
 
     /**
      * Vymaže atribut archivního popisu.
@@ -217,7 +217,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @param descItemExt       atribut archivního popisu ke smazání
      * @return                  upravený(smazaný) atribut archivního popisu
      */
-    DIE deleteDescriptionItem(DIE descItemExt);
+    DI deleteDescriptionItem(DI descItemExt);
 
 
     /**
@@ -226,7 +226,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @param descItemSavePack  object nesoucí předávané atributy archivního popisu k vytvoření/úpravě/smazání
      * @return                  upravené atributy archivního popisu
      */
-    List<DIE> saveDescriptionItems(DISP descItemSavePack);
+    List<DI> saveDescriptionItems(DISP descItemSavePack);
 
     /**
      * Vrátí všechny hodnoty atributu archivního popisu k uzlu.
@@ -235,6 +235,6 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @param rulDescItemTypeId Identifikátor typu atributu
      * @return  Seznam hodnot atrubutu
      */
-    List<DIE> getDescriptionItemsForAttribute(Integer faVersionId, Integer nodeId, Integer rulDescItemTypeId);
+    List<DI> getDescriptionItemsForAttribute(Integer faVersionId, Integer nodeId, Integer rulDescItemTypeId);
 
 }

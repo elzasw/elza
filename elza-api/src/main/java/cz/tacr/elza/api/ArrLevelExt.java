@@ -8,9 +8,9 @@ import java.util.List;
  *
  * @param <FC> {@link ArrChange}
  * @param <N> {@link ArrNode}
- * @param <DI> {@link ArrDescItemExt}
+ * @param <DI> {@link ArrDescItem}
  */
-public interface ArrLevelExt<FC extends ArrChange, N extends ArrNode, DI extends ArrDescItemExt> extends ArrLevel<FC, N> {
+public interface ArrLevelExt<FC extends ArrChange, N extends ArrNode, DI extends ArrDescItem> extends ArrLevel<FC, N> {
 
     /**
      * 

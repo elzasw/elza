@@ -1,5 +1,16 @@
 package cz.tacr.elza.ui.components;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.label.ContentMode;
@@ -8,34 +19,27 @@ import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.UI;
+
 import cz.req.ax.AxAction;
 import cz.req.ax.AxWindow;
 import cz.tacr.elza.api.controller.PartyManager;
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RegistryManager;
 import cz.tacr.elza.controller.RuleManager;
-import cz.tacr.elza.domain.ArrDescItemExt;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDescItemString;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.ui.components.attribute.Attribut;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesComparator;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesLoader;
 import cz.tacr.elza.ui.components.autocomplete.AutocompleteItem;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 
 /**
@@ -88,8 +92,8 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
     }
 
     private void saveAttribute(Attribut attribut, Boolean createNewVersion) {
-        List<ArrDescItemExt> descItems = attribut.getKeys();
-        List<ArrDescItemExt> deleteDescItems = attribut.getDeleteDescItems();
+        List<ArrDescItem> descItems = attribut.getKeys();
+        List<ArrDescItem> deleteDescItems = attribut.getDeleteDescItems();
 
         ArrDescItemSavePack pack = new ArrDescItemSavePack();
 
@@ -116,7 +120,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
 
     public void showLevelDetail(final ArrLevelExt level,
-                                final List<ArrDescItemExt> descItemList,
+                                final List<ArrDescItem> descItemList,
                                 final Integer versionId, final Callback<ArrLevelExt> attributeEditCallback) {
         this.attributeEditCallback = attributeEditCallback;
         detailContent.removeAllComponents();
@@ -144,9 +148,9 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         FormGrid grid = new FormGrid().setRowSpacing(true).style("attr-detail");
         grid.setMarginTop(true);
         Integer lastDescItemTypeId = null;
-        for (ArrDescItemExt item : descItemList) {
+        for (ArrDescItem item : descItemList) {
             String caption;
-            String value = item.getData();
+            String value = item.toString();
 
             if (item.getDescItemSpec() != null) {
                 String specName = item.getDescItemSpec().getName();
@@ -191,15 +195,16 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         return arrangementManager.getFaVersionById(versionId).getLockChange() == null;
     }
 
-    public void initContentTitle(final ArrLevelExt level, final List<ArrDescItemExt> descItems){
+    public void initContentTitle(final ArrLevelExt level, final List<ArrDescItem> descItems){
         Assert.notNull(descItems);
 
         lblTitle.setValue("Detail archivního popisu s id=" + level.getNode().getNodeId());
 
-        for (ArrDescItemExt descItem : descItems) {
-            if (descItem.getDescItemType().getCode().equals(TITLE_CODE)
-                    && StringUtils.isNotBlank(descItem.getData())) {
-                lblTitle.setValue(descItem.getData());
+        for (ArrDescItem descItem : descItems) {
+            if (descItem.getDescItemType().getCode().equals(TITLE_CODE)) {
+                ArrDescItemString descItemString = (ArrDescItemString) descItem;
+                if (StringUtils.isNotBlank(descItemString.getValue()))
+                lblTitle.setValue(descItemString.getValue());
                 break;
             }
         }
@@ -209,7 +214,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
     private void showEditAttrWindow(final ArrLevelExt level, final RulDescItemType type, final Integer versionId) {
         if (type != null) {
-            List<ArrDescItemExt> listItem = arrangementManager
+            List<ArrDescItem> listItem = arrangementManager
                     .getDescriptionItemsForAttribute(versionId, level.getNode().getNodeId(), type.getDescItemTypeId());
             List<RulDescItemSpec> listSpec = ruleSetManager.getDescItemSpecsFortDescItemType(type);
             RulDataType dataType = ruleSetManager.getDataTypeForDescItemType(type);

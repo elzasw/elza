@@ -12,7 +12,7 @@ import java.io.Serializable;
  * @since 20.8.2015
  */
 public interface ArrDescItem<FC extends ArrChange, RT extends RulDescItemType,
-    RS extends RulDescItemSpec, N extends ArrNode> extends Versionable, Serializable {
+    RS extends RulDescItemSpec, N extends ArrNode> extends Serializable {
 
     /**
      * @return identifikátor hodnoty atributu, který se mění při každé verzované změně hodnoty.

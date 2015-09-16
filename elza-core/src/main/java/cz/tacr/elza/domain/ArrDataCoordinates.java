@@ -30,8 +30,4 @@ public class ArrDataCoordinates extends ArrData implements cz.tacr.elza.api.ArrD
         this.value = value;
     }
 
-    @Override
-    public String getData() {
-        return getValue();
-    }
 }

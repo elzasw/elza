@@ -42,8 +42,4 @@ public class ArrDataPartyRef extends ArrData implements cz.tacr.elza.api.ArrData
         this.partyId = partyId;
     }
 
-    @Override
-    public String getData() {
-        return getPartyId() + "";
-    }
 }

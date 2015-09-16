@@ -3,7 +3,6 @@ package cz.tacr.elza.domain.vo;
 import java.util.List;
 
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrDescItemExt;
 import cz.tacr.elza.domain.ArrNode;
 
 
@@ -12,11 +11,11 @@ import cz.tacr.elza.domain.ArrNode;
  * @author Martin Šlapa
  * @since 28.8.2015
  */
-public class ArrDescItemSavePack implements cz.tacr.elza.api.vo.ArrDescItemSavePack<ArrDescItemExt, ArrNode> {
+public class ArrDescItemSavePack implements cz.tacr.elza.api.vo.ArrDescItemSavePack<ArrDescItem, ArrNode> {
 
-    private List<ArrDescItemExt> descItems;
+    private List<ArrDescItem> descItems;
 
-    private List<ArrDescItemExt> deleteDescItems;
+    private List<ArrDescItem> deleteDescItems;
 
     private Integer faVersionId;
 
@@ -25,22 +24,22 @@ public class ArrDescItemSavePack implements cz.tacr.elza.api.vo.ArrDescItemSaveP
     private ArrNode node;
 
     @Override
-    public List<ArrDescItemExt> getDescItems() {
+    public List<ArrDescItem> getDescItems() {
         return descItems;
     }
 
     @Override
-    public void setDescItems(List<ArrDescItemExt> descItems) {
+    public void setDescItems(List<ArrDescItem> descItems) {
         this.descItems = descItems;
     }
 
     @Override
-    public List<ArrDescItemExt> getDeleteDescItems() {
+    public List<ArrDescItem> getDeleteDescItems() {
         return deleteDescItems;
     }
 
     @Override
-    public void setDeleteDescItems(List<ArrDescItemExt> descItems) {
+    public void setDeleteDescItems(List<ArrDescItem> descItems) {
         this.deleteDescItems = descItems;
     }
 

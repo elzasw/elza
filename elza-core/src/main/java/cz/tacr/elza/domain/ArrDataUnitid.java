@@ -29,8 +29,4 @@ public class ArrDataUnitid extends ArrData implements cz.tacr.elza.api.ArrDataUn
         this.value = value;
     }
 
-    @Override
-    public String getData() {
-        return getValue();
-    }
 }

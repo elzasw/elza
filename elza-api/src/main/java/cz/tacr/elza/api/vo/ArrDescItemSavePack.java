@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.List;
 
 import cz.tacr.elza.api.ArrDescItem;
-import cz.tacr.elza.api.ArrDescItemExt;
 import cz.tacr.elza.api.ArrNode;
 
 
@@ -13,21 +12,21 @@ import cz.tacr.elza.api.ArrNode;
  * @author Martin Šlapa
  * @since 28.8.2015
  *
- * @param <DIE> {@link ArrDescItemExt}
+ * @param <DI> {@link ArrDescItem}
  * @param <N> {@link ArrNode}
  */
-public interface ArrDescItemSavePack<DIE extends ArrDescItemExt, N extends ArrNode> extends Serializable {
+public interface ArrDescItemSavePack<DI extends ArrDescItem, N extends ArrNode> extends Serializable {
 
-    List<DIE> getDescItems();
-
-
-    void setDescItems(List<DIE> descItems);
+    List<DI> getDescItems();
 
 
-    List<DIE> getDeleteDescItems();
+    void setDescItems(List<DI> descItems);
 
 
-    void setDeleteDescItems(List<DIE> descItems);
+    List<DI> getDeleteDescItems();
+
+
+    void setDeleteDescItems(List<DI> descItems);
 
 
     Integer getFaVersionId();

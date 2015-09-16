@@ -32,8 +32,4 @@ public class ArrDataText extends ArrData implements cz.tacr.elza.api.ArrDataText
         this.value = value;
     }
 
-    @Override
-    public String getData() {
-        return getValue();
-    }
 }

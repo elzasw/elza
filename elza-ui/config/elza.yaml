@@ -1,5 +1,5 @@
 elza:
   data:
-      url: jdbc:postgresql://vyv-inet:5432/elza
+      url: jdbc:postgresql://vyv-inet:5432/elza_slapa
       user: app
       pass: app

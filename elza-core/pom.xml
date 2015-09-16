@@ -71,6 +71,11 @@
             <version>1.2.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>ma.glasnost.orika</groupId>
+            <artifactId>orika-core</artifactId>
+            <version>1.4.5</version>
+        </dependency>
         <!-- TODO Burianek dokumentace Rest API
         <dependency>
             <groupId>io.springfox</groupId>

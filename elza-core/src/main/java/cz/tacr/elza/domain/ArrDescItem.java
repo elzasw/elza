@@ -25,7 +25,7 @@ import javax.persistence.Table;
 @Entity(name = "arr_desc_item")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrDescItem extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrDescItem<ArrChange, RulDescItemType, RulDescItemSpec, ArrNode> {
+public class ArrDescItem implements cz.tacr.elza.api.ArrDescItem<ArrChange, RulDescItemType, RulDescItemSpec, ArrNode> {
 
     @Id
     @GeneratedValue
@@ -150,6 +150,11 @@ public class ArrDescItem extends AbstractVersionableEntity implements cz.tacr.el
         }
         if (this == obj) {
             return true;
+        }
+
+        // TODO: zkontrolovat v UI
+        if (getDescItemId() == null) {
+            return false;
         }
 
         ArrDescItem other = (ArrDescItem) obj;

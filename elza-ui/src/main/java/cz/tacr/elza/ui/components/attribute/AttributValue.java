@@ -1,21 +1,23 @@
 package cz.tacr.elza.ui.components.attribute;
 
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+
 import com.vaadin.data.Property;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.DragAndDropWrapper;
 import com.vaadin.ui.TextArea;
+
 import cz.req.ax.AxAction;
 import cz.req.ax.AxForm;
 import cz.req.ax.AxItemContainer;
 import cz.req.ax.Components;
-import cz.tacr.elza.domain.ArrDescItemExt;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.ui.components.autocomplete.Autocomplete;
-import org.apache.commons.lang.StringUtils;
-
-import java.util.List;
 
 
 /**
@@ -24,7 +26,7 @@ import java.util.List;
  */
 public class AttributValue extends CssLayout implements Components {
 
-    AxForm<ArrDescItemExt> form;
+    AxForm<ArrDescItem> form;
 
     private DragAndDropWrapper wrapper;
 
@@ -32,7 +34,7 @@ public class AttributValue extends CssLayout implements Components {
 
     private ComboBox specificationCombo;
 
-    public AttributValue(ArrDescItemExt descItemExt, List<RulDescItemSpec> descItemSpecs, RulDataType dataType,
+    public AttributValue(ArrDescItem descItemExt, List<RulDescItemSpec> descItemSpecs, RulDataType dataType,
                          AxAction deleteAction, DragAndDropWrapper wrapper, final AttributeValuesLoader attributeValuesLoader) {
         this.wrapper = wrapper;
         this.attributeValuesLoader = attributeValuesLoader;
@@ -49,18 +51,18 @@ public class AttributValue extends CssLayout implements Components {
         switch (dataType.getCode()) {
             case "INT":
             case "UNITID":
-                form.addField(null, "data").style("small-input");
+                form.addField(null, "value").style("small-input");
                 break;
             case "STRING":
-                form.addField(null, "data").style("long-input");
+                form.addField(null, "value").style("long-input");
                 break;
             case "UNITDATE":
             case "TEXT":
             case "COORDINATES":
-                form.addField(null, "data", TextArea.class).field().setNullRepresentation("");
+                form.addField(null, "value", TextArea.class).field().setNullRepresentation("");
                 break;
             case "FORMATTED_TEXT":
-                form.addRichtext(null, "data").field().setNullRepresentation("");
+                form.addRichtext(null, "value").field().setNullRepresentation("");
                 break;
             case "PARTY_REF":
                 Autocomplete partyRefAutoc = createPartyRefAutocomplete();
@@ -125,7 +127,7 @@ public class AttributValue extends CssLayout implements Components {
         return wrapper;
     }
 
-    public ArrDescItemExt commit() {
+    public ArrDescItem commit() {
         return form.commit();
     }
 

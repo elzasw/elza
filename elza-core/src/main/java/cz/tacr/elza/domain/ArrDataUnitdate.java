@@ -29,8 +29,4 @@ public class ArrDataUnitdate extends ArrData implements cz.tacr.elza.api.ArrData
         this.value = value;
     }
 
-    @Override
-    public String getData() {
-        return getValue();
-    }
 }

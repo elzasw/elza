@@ -20,11 +20,6 @@ public class ArrDataRecordRef extends ArrData implements cz.tacr.elza.api.ArrDat
     private Integer recordId;
 
     @Override
-    public String getData() {
-        return getRecordId() + "";
-    }
-
-    @Override
     public Integer getRecordId() {
         return recordId;
     }

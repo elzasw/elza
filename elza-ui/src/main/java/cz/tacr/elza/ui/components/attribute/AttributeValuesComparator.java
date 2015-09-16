@@ -4,17 +4,17 @@ import java.util.Comparator;
 
 import org.apache.commons.lang.builder.CompareToBuilder;
 
-import cz.tacr.elza.domain.ArrDescItemExt;
+import cz.tacr.elza.domain.ArrDescItem;
 
 
 /**
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 14.9.2015
  */
-public class AttributeValuesComparator implements Comparator<ArrDescItemExt> {
+public class AttributeValuesComparator implements Comparator<ArrDescItem> {
 
     @Override
-    public int compare(final ArrDescItemExt o1, final ArrDescItemExt o2) {
+    public int compare(final ArrDescItem o1, final ArrDescItem o2) {
 
         Integer specOrder1 = (o1.getDescItemSpec() == null) ? null : o1.getDescItemSpec().getViewOrder();
         Integer specOrder2 = (o2.getDescItemSpec() == null) ? null : o2.getDescItemSpec().getViewOrder();

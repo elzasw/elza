@@ -26,14 +26,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public abstract class ArrData extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrData<RulDataType, ArrDescItem> {
+public abstract class ArrData<T> implements cz.tacr.elza.api.ArrData<RulDataType, ArrDescItem> {
 
     @Id
     @GeneratedValue
     private Integer dataId;
 
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulDataType.class)
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = RulDataType.class)
     @JoinColumn(name = "dataTypeId", nullable = false)
     private RulDataType dataType;
 
@@ -89,7 +89,5 @@ public abstract class ArrData extends AbstractVersionableEntity implements cz.ta
     public int hashCode() {
         return new HashCodeBuilder().append(dataId).toHashCode();
     }
-
-    public abstract String getData();
 
 }
