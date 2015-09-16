@@ -15,22 +15,22 @@
             <column name="next_val" type="bigint"/>
         </createTable>
 
-        <createTable tableName="arr_fa_change">
-            <column name="fa_change_id" type="int">
+        <createTable tableName="arr_change">
+            <column name="change_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
             <column name="change_date" type="timestamp"/>
         </createTable>
 
-        <createTable tableName="arr_fa_level">
-            <column name="fa_level_id" type="int">
+        <createTable tableName="arr_level">
+            <column name="level_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
 
-            <column name="create_fa_change_id" type="int"/>
-            <column name="delete_fa_change_id" type="int"/>
+            <column name="create_change_id" type="int"/>
+            <column name="delete_change_id" type="int"/>
             <column name="node_id" type="int"/>
-            <column name="parent_node_id" type="int"/>
+            <column name="node_id_parent" type="int"/>
             <column name="position" type="int"/>
         </createTable>
 
@@ -62,17 +62,17 @@
             <column name="name" type="varchar(250)"/>
         </createTable>
 
-        <createTable tableName="arr_fa_version">
-            <column name="fa_version_id" type="int">
+        <createTable tableName="arr_finding_aid_version">
+            <column name="finding_aid_version_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
             <column name="arrangement_type_id" type="int"/>
-            <column name="create_fa_change_id" type="int"/>
+            <column name="create_change_id" type="int"/>
             <column name="finding_aid_id" type="int"/>
-            <column name="lock_fa_change_id" type="int"/>
+            <column name="lock_change_id" type="int"/>
             <column name="rule_set_id" type="int"/>
             <column name="version" type="int" defaultValueNumeric="0" />
-            <column name="root_fa_level_id" type="int">
+            <column name="root_level_id" type="int">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -81,10 +81,10 @@
             <column name="desc_item_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="create_fa_change_id" type="int">
+            <column name="create_change_id" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="delete_fa_change_id" type="int"/>
+            <column name="delete_change_id" type="int"/>
             <column name="desc_item_object_id" type="int">
                 <constraints nullable="false"/>
             </column>
@@ -121,29 +121,11 @@
             </column>
         </createTable>
 
-        <createTable tableName="arr_data_datace">
-            <column name="data_id" type="int">
-                <constraints primaryKey="true"/>
-            </column>
-            <column name="value" type="varchar(100)">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-
         <createTable tableName="arr_data_string">
             <column name="data_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
             <column name="value" type="varchar(1000)">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-
-        <createTable tableName="arr_data_reference">
-            <column name="data_id" type="int">
-                <constraints primaryKey="true"/>
-            </column>
-            <column name="value" type="varchar(250)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -196,9 +178,6 @@
                 <constraints primaryKey="true"/>
             </column>
             <column name="data_type_id" type="int">
-                <constraints nullable="false"/>
-            </column>
-            <column name="sys" type="boolean">
                 <constraints nullable="false"/>
             </column>
             <column name="code" type="varchar(50)">
@@ -313,8 +292,8 @@
             </column>
         </createTable>
 
-        <createTable tableName="par_abstract_party">
-            <column name="abstract_party_id" type="int">
+        <createTable tableName="par_party">
+            <column name="party_id" type="int">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="party_subtype_id" type="int">
@@ -406,16 +385,16 @@
             <column name="data_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="abstract_party_id" type="int">
+            <column name="party_id" type="int">
                 <constraints nullable="false"/>
             </column>
         </createTable>
 
-        <createTable tableName="par_abstract_party_name">
+        <createTable tableName="par_party_name">
             <column name="abstract_party_name_id" type="int">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="abstract_party_id" type="int">
+            <column name="party_id" type="int">
                 <constraints nullable="false"/>
             </column>
             <column name="main_part" type="varchar(255)"/>
@@ -443,77 +422,63 @@
                 <constraints nullable="false"/>
             </column>
             <column name="desc_item_spec_id" type="int"/>
-            <column name="fa_version_id" type="int"/>
+            <column name="finding_aid_version_id" type="int"/>
             <column name="repeatable" type="boolean"/>
             <column name="regexp" type="varchar(500)"/>
             <column name="text_lenght_limit" type="int"/>
         </createTable>
 
-        <addForeignKeyConstraint constraintName="fk_arr_fa_level_1"
-                                 baseTableName="arr_fa_level"
-                                 baseColumnNames="create_fa_change_id"
-                                 referencedTableName="arr_fa_change"
-                                 referencedColumnNames="fa_change_id"
+        <addForeignKeyConstraint constraintName="fk_arr_level_1"
+                                 baseTableName="arr_level"
+                                 baseColumnNames="create_change_id"
+                                 referencedTableName="arr_change"
+                                 referencedColumnNames="change_id"
                                  onDelete="NO ACTION"/>
 
-        <addForeignKeyConstraint constraintName="fk_arr_fa_level_2"
-                                 baseTableName="arr_fa_level"
-                                 baseColumnNames="delete_fa_change_id"
-                                 referencedTableName="arr_fa_change"
-                                 referencedColumnNames="fa_change_id"
+        <addForeignKeyConstraint constraintName="fk_arr_level_2"
+                                 baseTableName="arr_level"
+                                 baseColumnNames="delete_change_id"
+                                 referencedTableName="arr_change"
+                                 referencedColumnNames="change_id"
                                  onDelete="NO ACTION"/>
 
-        <addForeignKeyConstraint constraintName="fk_arr_fa_version_1"
-                                 baseTableName="arr_fa_version"
-                                 baseColumnNames="lock_fa_change_id"
-                                 referencedTableName="arr_fa_change"
-                                 referencedColumnNames="fa_change_id"
+        <addForeignKeyConstraint constraintName="fk_arr_finding_aid_version_1"
+                                 baseTableName="arr_finding_aid_version"
+                                 baseColumnNames="lock_change_id"
+                                 referencedTableName="arr_change"
+                                 referencedColumnNames="change_id"
                                  onDelete="NO ACTION"/>
 
-        <addForeignKeyConstraint constraintName="fk_arr_fa_version_2"
-                                 baseTableName="arr_fa_version"
+        <addForeignKeyConstraint constraintName="fk_arr_finding_aid_version_2"
+                                 baseTableName="arr_finding_aid_version"
                                  baseColumnNames="rule_set_id"
                                  referencedTableName="rul_rule_set"
                                  referencedColumnNames="rule_set_id"
                                  onDelete="NO ACTION"/>
 
-        <addForeignKeyConstraint constraintName="fk_arr_fa_version_3"
-                                 baseTableName="arr_fa_version"
-                                 baseColumnNames="create_fa_change_id"
-                                 referencedTableName="arr_fa_change"
-                                 referencedColumnNames="fa_change_id"
+        <addForeignKeyConstraint constraintName="fk_arr_finding_aid_version_3"
+                                 baseTableName="arr_finding_aid_version"
+                                 baseColumnNames="create_change_id"
+                                 referencedTableName="arr_change"
+                                 referencedColumnNames="change_id"
                                  onDelete="NO ACTION"/>
 
-        <addForeignKeyConstraint constraintName="fk_arr_fa_version_4"
-                                 baseTableName="arr_fa_version"
+        <addForeignKeyConstraint constraintName="fk_arr_finding_aid_version_4"
+                                 baseTableName="arr_finding_aid_version"
                                  baseColumnNames="arrangement_type_id"
                                  referencedTableName="rul_arrangement_type"
                                  referencedColumnNames="arrangement_type_id"
                                  onDelete="NO ACTION"/>
 
-        <addForeignKeyConstraint constraintName="fk_arr_fa_version_5"
-                                 baseTableName="arr_fa_version"
+        <addForeignKeyConstraint constraintName="fk_arr_finding_aid_version_5"
+                                 baseTableName="arr_finding_aid_version"
                                  baseColumnNames="finding_aid_id"
                                  referencedTableName="arr_finding_aid"
                                  referencedColumnNames="finding_aid_id"
                                  onDelete="NO ACTION"/>
 
-        <addForeignKeyConstraint constraintName="fk_dataDatace_data"
-                                 baseTableName="arr_data_datace"
-                                 baseColumnNames="data_id"
-                                 referencedTableName="arr_data"
-                                 referencedColumnNames="data_id"
-                                 onDelete="NO ACTION"/>
-
         <addForeignKeyConstraint constraintName="fk_dataString_data"
                                  baseTableName="arr_data_string"
-                                 baseColumnNames="data_id"
-                                 referencedTableName="arr_data"
-                                 referencedColumnNames="data_id"
-                                 onDelete="NO ACTION"/>
-
-        <addForeignKeyConstraint constraintName="fk_dataRefer_data"
-                                 baseTableName="arr_data_reference"
                                  baseColumnNames="data_id"
                                  referencedTableName="arr_data"
                                  referencedColumnNames="data_id"
@@ -550,16 +515,16 @@
 
         <addForeignKeyConstraint constraintName="fk_descItem_crChange"
                                  baseTableName="arr_desc_item"
-                                 baseColumnNames="create_fa_change_id"
-                                 referencedTableName="arr_fa_change"
-                                 referencedColumnNames="fa_change_id"
+                                 baseColumnNames="create_change_id"
+                                 referencedTableName="arr_change"
+                                 referencedColumnNames="change_id"
                                  onDelete="NO ACTION"/>
 
         <addForeignKeyConstraint constraintName="fk_descItem_delChange"
                                  baseTableName="arr_desc_item"
-                                 baseColumnNames="delete_fa_change_id"
-                                 referencedTableName="arr_fa_change"
-                                 referencedColumnNames="fa_change_id"
+                                 baseColumnNames="delete_change_id"
+                                 referencedTableName="arr_change"
+                                 referencedColumnNames="change_id"
                                  onDelete="NO ACTION"/>
 
         <addForeignKeyConstraint constraintName="fk_descItem_descItemType"
@@ -612,9 +577,9 @@
 
         <addForeignKeyConstraint constraintName="fk_itemConst_version"
                                  baseTableName="rul_desc_item_constraint"
-                                 baseColumnNames="fa_version_id"
-                                 referencedTableName="arr_fa_version"
-                                 referencedColumnNames="fa_version_id"
+                                 baseColumnNames="finding_aid_version_id"
+                                 referencedTableName="arr_finding_aid_version"
+                                 referencedColumnNames="finding_aid_version_id"
                                  onDelete="NO ACTION"/>
 
         <addForeignKeyConstraint constraintName="fk_itemSpec_descItmTyp"
@@ -631,15 +596,15 @@
                                  referencedColumnNames="party_type_id"
                                  onDelete="NO ACTION"/>
 
-        <addForeignKeyConstraint constraintName="fk_abstractParty_parPartySubtype"
-                                 baseTableName="par_abstract_party"
+        <addForeignKeyConstraint constraintName="fk_party_parPartySubtype"
+                                 baseTableName="par_party"
                                  baseColumnNames="party_subtype_id"
                                  referencedTableName="par_party_subtype"
                                  referencedColumnNames="party_subtype_id"
                                  onDelete="NO ACTION"/>
 
-        <addForeignKeyConstraint constraintName="fk_abstractParty_regRecord"
-                                 baseTableName="par_abstract_party"
+        <addForeignKeyConstraint constraintName="fk_party_regRecord"
+                                 baseTableName="par_party"
                                  baseColumnNames="record_id"
                                  referencedTableName="reg_record"
                                  referencedColumnNames="record_id"
@@ -694,11 +659,11 @@
                                  referencedColumnNames="data_id"
                                  onDelete="NO ACTION"/>
 
-        <addForeignKeyConstraint constraintName="fk_dataPartyRef_abstractParty"
+        <addForeignKeyConstraint constraintName="fk_dataPartyRef_party"
                                  baseTableName="arr_data_party_ref"
-                                 baseColumnNames="abstract_party_id"
-                                 referencedTableName="par_abstract_party"
-                                 referencedColumnNames="abstract_party_id"
+                                 baseColumnNames="party_id"
+                                 referencedTableName="par_party"
+                                 referencedColumnNames="party_id"
                                  onDelete="NO ACTION"/>
 
         <addForeignKeyConstraint constraintName="fk_dataUnitid_data"
@@ -722,11 +687,11 @@
                                  referencedColumnNames="register_type_id"
                                  onDelete="NO ACTION"/>
 
-        <addForeignKeyConstraint constraintName="fk_abstrPartyName_abstrParty"
-                                 baseTableName="par_abstract_party_name"
-                                 baseColumnNames="abstract_party_id"
-                                 referencedTableName="par_abstract_party"
-                                 referencedColumnNames="abstract_party_id"
+        <addForeignKeyConstraint constraintName="fk_partyName_party"
+                                 baseTableName="par_party_name"
+                                 baseColumnNames="party_id"
+                                 referencedTableName="par_party"
+                                 referencedColumnNames="party_id"
                                  onDelete="NO ACTION"/>
 
         <addForeignKeyConstraint constraintName="fk_rulSet_arrType"
@@ -736,16 +701,16 @@
                                  referencedColumnNames="rule_set_id"
                                  onDelete="NO ACTION"/>
 
-        <addForeignKeyConstraint constraintName="fk_faLevel_node"
-                                 baseTableName="arr_fa_level"
+        <addForeignKeyConstraint constraintName="fk_level_node"
+                                 baseTableName="arr_level"
                                  baseColumnNames="node_id"
                                  referencedTableName="arr_node"
                                  referencedColumnNames="node_id"
                                  onDelete="NO ACTION"/>
 
-        <addForeignKeyConstraint constraintName="fk_faLevel_node_parent"
-                                 baseTableName="arr_fa_level"
-                                 baseColumnNames="parent_node_id"
+        <addForeignKeyConstraint constraintName="fk_level_node_parent"
+                                 baseTableName="arr_level"
+                                 baseColumnNames="node_id_parent"
                                  referencedTableName="arr_node"
                                  referencedColumnNames="node_id"
                                  onDelete="NO ACTION"/>
@@ -758,24 +723,24 @@
                                  onDelete="NO ACTION"/>
 
         <addForeignKeyConstraint constraintName="fk_faVersion_level"
-                                 baseTableName="arr_fa_version"
-                                 baseColumnNames="root_fa_level_id"
-                                 referencedTableName="arr_fa_level"
-                                 referencedColumnNames="fa_level_id"
+                                 baseTableName="arr_finding_aid_version"
+                                 baseColumnNames="root_level_id"
+                                 referencedTableName="arr_level"
+                                 referencedColumnNames="level_id"
                                  onDelete="NO ACTION"/>
 
-        <addUniqueConstraint tableName="arr_fa_level" columnNames="position,parent_node_id,delete_fa_change_id" constraintName="u_arr_fa_level_ppd"/>
+        <addUniqueConstraint tableName="arr_level" columnNames="position,node_id_parent,delete_change_id" constraintName="u_arr_level_ppd"/>
 
-        <createIndex tableName="arr_fa_level" indexName="i_node_id_1">
+        <createIndex tableName="arr_level" indexName="i_node_id_1">
             <column name="node_id" />
-            <column name="delete_fa_change_id" />
-            <column name="create_fa_change_id" />
+            <column name="delete_change_id" />
+            <column name="create_change_id" />
         </createIndex>
 
-        <createIndex tableName="arr_fa_level" indexName="i_parent_node_id_1">
-            <column name="parent_node_id" />
-            <column name="delete_fa_change_id" />
-            <column name="create_fa_change_id" />
+        <createIndex tableName="arr_level" indexName="i_node_id_parent_1">
+            <column name="node_id_parent" />
+            <column name="delete_change_id" />
+            <column name="create_change_id" />
         </createIndex>
 
     </changeSet>
