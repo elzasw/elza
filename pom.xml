@@ -181,11 +181,4 @@
         <connection>scm:git:http://git.marbes.cz/r/INET/ELZA/elza.git</connection>
     </scm>
 
-    <repositories>
-        <repository>
-            <id>sonatype-snapshots</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </repository>
-    </repositories>
-
 </project>
