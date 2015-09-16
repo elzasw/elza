@@ -1261,6 +1261,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         descItems.sort((o1, o2) -> {
             Integer pos1 = o1.getPosition();
             Integer pos2 = o2.getPosition();
+            if (pos1 == null && pos2 == null) {
+                return 0;
+            } else
             if (pos1 == null) {
                 return -1;
             } else if (pos2 == null) {
