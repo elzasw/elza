@@ -1112,27 +1112,11 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 continue;
             }
 
-            // TODO: vyřešit zkracování hodnot
-
             ArrDescItem descItem = arrData.getDescItem();
-            descItem = descItemFactory.getDescItem(descItem);
+            descItem = descItemFactory.getDescItem(descItem, formatData);
             levelExt.getDescItemList().add(descItem);
 
         }
-    }
-
-    /**
-     * formátuje text pro prezentaci atributů. V současné době pouze upraví délku na 250 znaků.
-     * @param value      text pro formátování
-     * @param formatData typ formátu textu.
-     * @return naformátovaný text
-     */
-    private String createFormatString(final String value, final String formatData) {
-        String stringValue = value;
-        if (stringValue != null && stringValue.length() > 250 && formatData != null && FORMAT_ATTRIBUTE_SHORT.equals(formatData)) {
-            stringValue = stringValue.substring(0, 250);
-        }
-        return stringValue;
     }
 
     @Override
@@ -1300,6 +1284,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         String data = descItemExt.toString();
         Assert.notNull(data, "Není vyplněna hodnota");
+        if (data.length() == 0) {
+            throw new IllegalArgumentException("Není vyplněna hodnota");
+        }
 
         RulDescItemSpec rulDescItemSpec = (descItemExt.getDescItemSpec() != null) ? descItemSpecRepository.findOne(descItemExt.getDescItemSpec().getDescItemSpecId()) : null;
 
@@ -1394,6 +1381,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         String data = descItemExt.toString();
         Assert.notNull(data);
+        if (data.length() == 0) {
+            throw new IllegalArgumentException("Není vyplněna hodnota");
+        }
 
         RulDescItemSpec rulDescItemSpec = (descItemExt.getDescItemSpec() != null) ? descItemSpecRepository.findOne(descItemExt.getDescItemSpec().getDescItemSpecId()) : null;
 

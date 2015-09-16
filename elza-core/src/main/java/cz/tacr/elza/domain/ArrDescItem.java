@@ -164,6 +164,6 @@ public class ArrDescItem implements cz.tacr.elza.api.ArrDescItem<ArrChange, RulD
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(descItemId).append(node.getNodeId()).append(position).toHashCode();
+        return new HashCodeBuilder().append(getDescItemId()).toHashCode();
     }
 }

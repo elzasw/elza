@@ -1,7 +1,9 @@
 package cz.tacr.elza.domain.factory;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.BeanUtils;
@@ -11,6 +13,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.api.controller.ArrangementManager;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataInteger;
@@ -54,6 +57,8 @@ import ma.glasnost.orika.impl.DefaultMapperFactory;
 
 @Component
 public class DescItemFactory implements InitializingBean {
+
+    private final String PROPERTY_FORMAT = "format";
 
     private DefaultMapperFactory factory;
     private MapperFacade facade;
@@ -160,7 +165,8 @@ public class DescItemFactory implements InitializingBean {
 
             @Override
             public void mapBtoA(ArrDataText arrDataText, ArrDescItemFormattedText arrDescItemFormattedText, MappingContext context) {
-                arrDescItemFormattedText.setValue(arrDataText.getValue());
+                String formattedValue = formatString(context, arrDataText.getValue());
+                arrDescItemFormattedText.setValue(formattedValue);
             }
         }).register();
 
@@ -269,7 +275,8 @@ public class DescItemFactory implements InitializingBean {
 
             @Override
             public void mapBtoA(ArrDataString arrDataString, ArrDescItemString arrDescItemString, MappingContext context) {
-                arrDescItemString.setValue(arrDataString.getValue());
+                String formattedValue = formatString(context, arrDataString.getValue());
+                arrDescItemString.setValue(formattedValue);
             }
         }).register();
 
@@ -295,7 +302,8 @@ public class DescItemFactory implements InitializingBean {
 
             @Override
             public void mapBtoA(ArrDataText arrDataText, ArrDescItemText arrDescItemText, MappingContext context) {
-                arrDescItemText.setValue(arrDataText.getValue());
+                String formattedValue = formatString(context, arrDataText.getValue());
+                arrDescItemText.setValue(formattedValue);
             }
         }).register();
 
@@ -378,6 +386,17 @@ public class DescItemFactory implements InitializingBean {
         ArrDescItem descItemTmp = createDescItemByType(descItem.getDescItemType().getDataType());
         BeanUtils.copyProperties(descItem, descItemTmp);
         facade.map(data, descItemTmp);
+        return descItemTmp;
+    }
+
+    public ArrDescItem getDescItem(ArrDescItem descItem, String formatData) {
+        ArrData data = getDataByDescItem(descItem);
+        ArrDescItem descItemTmp = createDescItemByType(descItem.getDescItemType().getDataType());
+        BeanUtils.copyProperties(descItem, descItemTmp);
+        Map<Object,Object> map = new HashMap<>();
+        map.put(PROPERTY_FORMAT, formatData);
+        MappingContext x = new MappingContext(map);
+        facade.map(data, descItemTmp, x);
         return descItemTmp;
     }
 
@@ -474,5 +493,22 @@ public class DescItemFactory implements InitializingBean {
             throw new NotImplementedException("Nebyla namapována repozitory pro datový typ");
         }
     }
+
+    private String formatString(final MappingContext context, final String value) {
+        String valueRet = value;
+        if (context != null) {
+            String format = (String) context.getProperty(PROPERTY_FORMAT);
+            if (format != null) {
+                String stringValue = value;
+                if (stringValue != null && stringValue.length() > 250 && format != null && ArrangementManager.FORMAT_ATTRIBUTE_SHORT.equals(format)) {
+                    valueRet = stringValue.substring(0, 250);
+                }
+            }
+        }
+        return valueRet;
+    }
+
+
+
 
 }
