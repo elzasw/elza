@@ -1298,16 +1298,14 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         RulDescItemType rulDescItemType = descItemTypeRepository.findOne(descItemExt.getDescItemType().getDescItemTypeId());
         Assert.notNull(rulDescItemType);
 
-        // TODO: vyřešit
-        /*String data = descItemExt.getData();
-        Assert.notNull(data, "Není vyplněna hodnota");*/
+        String data = descItemExt.toString();
+        Assert.notNull(data, "Není vyplněna hodnota");
 
         RulDescItemSpec rulDescItemSpec = (descItemExt.getDescItemSpec() != null) ? descItemSpecRepository.findOne(descItemExt.getDescItemSpec().getDescItemSpecId()) : null;
 
         validateAllowedItemType(rulDescItemTypes, rulDescItemType);
-        // TODO: vyřešit
-        //validateAllItemConstraintsBySpec(node, rulDescItemType, data, rulDescItemSpec, null);
-        //validateAllItemConstraintsByType(node, rulDescItemType, data, null);
+        validateAllItemConstraintsBySpec(node, rulDescItemType, descItemExt, rulDescItemSpec, null);
+        validateAllItemConstraintsByType(node, rulDescItemType, descItemExt, null);
 
         // uložení
 
@@ -1316,7 +1314,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         descItem.setDeleteChange(null);
         descItem.setCreateChange(arrFaChange);
         descItem.setDescItemObjectId(getNextDescItemObjectId());
-
 
         Integer position;
         Integer maxPosition = descItemRepository.findMaxPositionByNodeAndDescItemTypeIdAndDeleteChangeIsNull(node, rulDescItemType.getDescItemTypeId());
@@ -1395,16 +1392,15 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         RulDescItemType rulDescItemType = descItem.getDescItemType();
 
-        // TODO: vyřešit
-        /*String data = descItemExt.getData();
-        Assert.notNull(data);*/
+        String data = descItemExt.toString();
+        Assert.notNull(data);
 
         RulDescItemSpec rulDescItemSpec = (descItemExt.getDescItemSpec() != null) ? descItemSpecRepository.findOne(descItemExt.getDescItemSpec().getDescItemSpecId()) : null;
 
         validateAllowedItemType(rulDescItemTypes, rulDescItemType);
-        // TODO: vyřešit
-        /*validateAllItemConstraintsBySpec(node, rulDescItemType, data, rulDescItemSpec, descItem);
-        validateAllItemConstraintsByType(node, rulDescItemType, data, descItem);*/
+
+        validateAllItemConstraintsBySpec(node, rulDescItemType, descItemExt, rulDescItemSpec, descItem);
+        validateAllItemConstraintsByType(node, rulDescItemType, descItemExt, descItem);
 
         // uložení
 
@@ -1454,7 +1450,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             }
 
             descItemRepository.save(descItemNew);
-            descItem = descItemNew;
+
+            BeanUtils.copyProperties(descItemNew, descItemExt);
+
+            descItem = descItemExt;
 
             descItemFactory.saveDescItem(descItem, true);
 
@@ -1574,26 +1573,26 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     /**
      * Pokud má typ atributu vyplněný constraint na délku textového řetězce, tak je potřeba zkontrolovat délku hodnoty
      *
-     * @param data                  Kontrolovaná data
+     * @param descItem                  Kontrolovaná data
      * @param rulDescItemConstraint Podmínka
      */
-    private void validateDataDescItemConstraintTextLenghtLimit(String data, RulDescItemConstraint rulDescItemConstraint) {
+    private void validateDataDescItemConstraintTextLenghtLimit(ArrDescItem descItem, RulDescItemConstraint rulDescItemConstraint) {
         Integer textLenghtLimit = rulDescItemConstraint.getTextLenghtLimit();
-        if (textLenghtLimit != null && data.length() > textLenghtLimit) {
-            throw new IllegalStateException("Hodnota je příliš dlouhá - " + data.length() + "/" + textLenghtLimit);
+        if (textLenghtLimit != null && descItem.toString().length() > textLenghtLimit) {
+            throw new IllegalStateException("Hodnota je příliš dlouhá - " + descItem.toString().length() + "/" + textLenghtLimit);
         }
     }
 
     /**
      * Pokud má typ atributu vyplněný constraint na regulární výraz, tak je potřeba hodnotu ověřit předaným regulárním výrazem
      *
-     * @param data                  Kontrolovaná data
+     * @param descItem                  Kontrolovaná data
      * @param rulDescItemConstraint Podmínka
      */
-    private void validateDataDescItemConstraintRegexp(String data, RulDescItemConstraint rulDescItemConstraint) {
+    private void validateDataDescItemConstraintRegexp(ArrDescItem descItem, RulDescItemConstraint rulDescItemConstraint) {
         String regexp = rulDescItemConstraint.getRegexp();
-        if (regexp != null && !data.matches(regexp)) {
-            throw new IllegalStateException("Hodnota '" + data + "' neodpovídá výrazu " + regexp);
+        if (regexp != null && !descItem.toString().matches(regexp)) {
+            throw new IllegalStateException("Hodnota '" + descItem.toString() + "' neodpovídá výrazu " + regexp);
         }
     }
 
@@ -1643,7 +1642,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      * @param data            Kontrolovaná data
      * @param rulDescItemSpec Specifický typ atributu
      */
-    private void validateAllItemConstraintsBySpec(ArrNode node, RulDescItemType rulDescItemType, String data, RulDescItemSpec rulDescItemSpec, ArrDescItem descItem) {
+    private void validateAllItemConstraintsBySpec(ArrNode node, RulDescItemType rulDescItemType, ArrDescItem data, RulDescItemSpec rulDescItemSpec, ArrDescItem descItem) {
         if (rulDescItemSpec != null) {
             validateSpecificationAttribute(rulDescItemType, rulDescItemSpec);
             List<RulDescItemConstraint> rulDescItemConstraints = descItemConstraintRepository.findByDescItemSpec(rulDescItemSpec);
@@ -1666,7 +1665,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      * @param rulDescItemType Typ atributu
      * @param data            Kontrolovaná data
      */
-    private void validateAllItemConstraintsByType(ArrNode node, RulDescItemType rulDescItemType, String data, ArrDescItem descItem) {
+    private void validateAllItemConstraintsByType(ArrNode node, RulDescItemType rulDescItemType, ArrDescItem data, ArrDescItem descItem) {
         List<RulDescItemConstraint> rulDescItemConstraints = descItemConstraintRepository.findByDescItemType(rulDescItemType);
         for (RulDescItemConstraint rulDescItemConstraint : rulDescItemConstraints) {
             validateRepeatableType(node, rulDescItemType, rulDescItemConstraint, descItem);
@@ -1674,232 +1673,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             validateDataDescItemConstraintRegexp(data, rulDescItemConstraint);
         }
     }
-
-
-    /**
-     * Uloží novou hodnotu attributu do tabulky podle jeho typu.
-     * @param rulDescItemType Typ atributu
-     * @param data            Hodnota attributu
-     * @param descItem        Spjatý objekt attributu
-     * @param descItemExt
-     */
-    /*private void saveNewDataValue(RulDescItemType rulDescItemType,
-                                  String data,
-                                  ArrDescItem descItem,
-                                  final ArrDescItem descItemExt) {
-        switch (rulDescItemType.getDataType().getCode()) {
-            case "INT":
-                ArrDataInteger valueInt = new ArrDataInteger();
-                valueInt.setDataType(rulDescItemType.getDataType());
-                valueInt.setDescItem(descItem);
-                try {
-                    valueInt.setValue(Integer.valueOf(data));
-                } catch (NumberFormatException e) {
-                    throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu");
-                }
-                dataIntegerRepository.save(valueInt);
-                break;
-
-            case "STRING":
-                ArrDataString valueString = new ArrDataString();
-                valueString.setDataType(rulDescItemType.getDataType());
-                valueString.setDescItem(descItem);
-                valueString.setValue(data);
-                dataStringRepository.save(valueString);
-                break;
-
-            case "FORMATTED_TEXT":
-            case "TEXT":
-                ArrDataText valueText = new ArrDataText();
-                valueText.setDataType(rulDescItemType.getDataType());
-                valueText.setDescItem(descItem);
-                valueText.setValue(data);
-                dataTextRepository.save(valueText);
-                break;
-
-            case "DATACE":
-                ArrDataDatace valueDatace = new ArrDataDatace();
-                valueDatace.setDataType(rulDescItemType.getDataType());
-                valueDatace.setDescItem(descItem);
-                valueDatace.setValue(data);
-                dataDataceRepository.save(valueDatace);
-                break;
-
-            case "REF":
-                ArrDataReference valueReference = new ArrDataReference();
-                valueReference.setDataType(rulDescItemType.getDataType());
-                valueReference.setDescItem(descItem);
-                valueReference.setValue(data);
-                dataReferenceRepository.save(valueReference);
-                break;
-
-
-            case "UNITDATE":
-                ArrDataUnitdate valueUnitdateNew = new ArrDataUnitdate();
-                valueUnitdateNew.setDataType(rulDescItemType.getDataType());
-                valueUnitdateNew.setDescItem(descItem);
-                valueUnitdateNew.setValue(data);
-                dataUnitdateRepository.save(valueUnitdateNew);
-                break;
-
-            case "UNITID":
-                ArrDataUnitid valueUnitid = new ArrDataUnitid();
-                valueUnitid.setDataType(rulDescItemType.getDataType());
-                valueUnitid.setDescItem(descItem);
-                valueUnitid.setValue(data);
-                dataUnitidRepository.save(valueUnitid);
-                break;
-
-            case "PARTY_REF":
-                ArrDataPartyRef valuePartyRef = new ArrDataPartyRef();
-                valuePartyRef.setDataType(rulDescItemType.getDataType());
-                valuePartyRef.setDescItem(descItem);
-                try {
-                    Integer partyId = descItemExt.getParty() == null
-                                              ? null : descItemExt.getParty().getPartyId();
-                    if (partyId == null || partyRepository.findOne(partyId) == null) {
-                        throw new IllegalArgumentException("Neplatný odkaz do tabulky");
-                    }
-
-                    valuePartyRef.setPartyId(partyId);
-                } catch (NumberFormatException e) {
-                    throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu (" + data + ")");
-                }
-                dataPartyRefRepository.save(valuePartyRef);
-                break;
-
-            case "RECORD_REF":
-                ArrDataRecordRef valueRecordRef = new ArrDataRecordRef();
-                valueRecordRef.setDataType(rulDescItemType.getDataType());
-                valueRecordRef.setDescItem(descItem);
-                try {
-                    Integer recordId = descItemExt.getRecord() == null ? null : descItemExt.getRecord().getRecordId();
-                    if (recordId == null || recordRepository.findOne(recordId) == null) {
-                        throw new IllegalArgumentException("Neplatný odkaz do tabulky");
-
-                    }
-                    valueRecordRef.setRecordId(recordId);
-                } catch (NumberFormatException e) {
-                    throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu (" + data + ")");
-                }
-                dataRecordRefRepository.save(valueRecordRef);
-                break;
-
-            case "COORDINATES":
-                ArrDataCoordinates valueCoordinates = new ArrDataCoordinates();
-                valueCoordinates.setDataType(rulDescItemType.getDataType());
-                valueCoordinates.setDescItem(descItem);
-                valueCoordinates.setValue(data);
-                dataCoordinatesRepository.save(valueCoordinates);
-                break;
-
-
-            default:
-                throw new IllegalStateException("Datový typ hodnoty není implementován");
-        }
-    }*/
-
-    /**
-     * Uloží upravenout hodnotu attributu do tabulky podle jeho typu.
-     * @param rulDescItemType Typ atributu
-     * @param data            Hodnota attributu
-     * @param arrData         Upravovaná položka hodnoty attributu
-     * @param descItemExt     upravená hodnota atributu.
-     */
-    /*private void saveUpdateDataValue(RulDescItemType rulDescItemType,
-                                     String data,
-                                     ArrData arrData,
-                                     final ArrDescItem descItemExt) {
-        switch (rulDescItemType.getDataType().getCode()) {
-            case "INT":
-                ArrDataInteger valueInt = (ArrDataInteger) arrData;
-                try {
-                    valueInt.setValue(Integer.valueOf(data));
-                } catch (NumberFormatException e) {
-                    throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu");
-                }
-                dataIntegerRepository.save(valueInt);
-                break;
-
-            case "STRING":
-                ArrDataString valueString = (ArrDataString) arrData;
-                valueString.setValue(data);
-                dataStringRepository.save(valueString);
-                break;
-
-            case "FORMATTED_TEXT":
-            case "TEXT":
-                ArrDataText valueText = (ArrDataText) arrData;
-                valueText.setValue(data);
-                dataTextRepository.save(valueText);
-                break;
-
-            case "DATACE":
-                ArrDataDatace valueDatace = (ArrDataDatace) arrData;
-                valueDatace.setValue(data);
-                dataDataceRepository.save(valueDatace);
-                break;
-
-            case "REF":
-                ArrDataReference valueReference = (ArrDataReference) arrData;
-                valueReference.setValue(data);
-                dataReferenceRepository.save(valueReference);
-                break;
-
-            case "UNITDATE":
-                ArrDataUnitdate valueUnitdate = (ArrDataUnitdate) arrData;
-                valueUnitdate.setValue(data);
-                dataUnitdateRepository.save(valueUnitdate);
-                break;
-
-            case "UNITID":
-                ArrDataUnitid valueUnitid = (ArrDataUnitid) arrData;
-                valueUnitid.setValue(data);
-                dataUnitidRepository.save(valueUnitid);
-                break;
-
-            case "PARTY_REF":
-                ArrDataPartyRef valuePartyRef = (ArrDataPartyRef) arrData;
-                try {
-                    Integer partyId = descItemExt.getParty() == null
-                                              ? null : descItemExt.getParty().getPartyId();
-                    if (partyId == null || partyRepository.findOne(partyId) == null) {
-                        throw new IllegalArgumentException("Neplatný odkaz do tabulky");
-                    }
-
-                    valuePartyRef.setPartyId(partyId);
-                } catch (NumberFormatException e) {
-                    throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu (" + data + ")");
-                }
-                dataPartyRefRepository.save(valuePartyRef);
-                break;
-
-            case "RECORD_REF":
-                ArrDataRecordRef valueRecordRef = (ArrDataRecordRef) arrData;
-                try {
-                    Integer recordId = descItemExt.getRecord() == null ? null : descItemExt.getRecord().getRecordId();
-                    if (recordId == null || recordRepository.findOne(recordId) == null) {
-                        throw new IllegalArgumentException("Neplatný odkaz do tabulky");
-
-                    }
-                    valueRecordRef.setRecordId(recordId);
-                } catch (NumberFormatException e) {
-                    throw new IllegalArgumentException("Hodnota neodpovídá datovému typu atributu (" + data + ")");
-                }
-                dataRecordRefRepository.save(valueRecordRef);
-                break;
-
-            case "COORDINATES":
-                ArrDataCoordinates valueCoordinates = (ArrDataCoordinates) arrData;
-                valueCoordinates.setValue(data);
-                dataCoordinatesRepository.save(valueCoordinates);
-                break;
-
-            default:
-                throw new IllegalStateException("Datový typ hodnoty není implementován");
-        }
-    }*/
-
 
     /**
      * Provede upravení pozic attribut/hodnot v zadaném intervalu.
@@ -1973,118 +1746,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             //copyDataValue(descItemUpdate, descItemNew);
         }
     }
-
-    /**
-     * Vytvoří kopie hodnot pro novou verzi hodnoty atributu.
-     *
-     * @param descItemUpdate Původní hodnota attributu
-     * @param descItemNew    Nová hodnota attributu
-     */
-    /*private void copyDataValue(ArrDescItem descItemUpdate, ArrDescItem descItemNew) {
-        List<ArrData> arrDataList = arrDataRepository.findByDescItem(descItemUpdate);
-        if (arrDataList.size() != 1) {
-            throw new IllegalStateException("Neplatný počet záznamů");
-        }
-
-        ArrData arrData = arrDataList.get(0);
-
-        switch (arrData.getDataType().getCode()) {
-            case "INT":
-                ArrDataInteger valueInt = (ArrDataInteger) arrData;
-                ArrDataInteger valueIntNew = new ArrDataInteger();
-                valueIntNew.setDataType(arrData.getDataType());
-                valueIntNew.setValue(valueInt.getValue());
-                valueIntNew.setDescItem(descItemNew);
-                dataIntegerRepository.save(valueIntNew);
-                break;
-
-            case "STRING":
-                ArrDataString valueString = (ArrDataString) arrData;
-                ArrDataString valueStringNew = new ArrDataString();
-                valueStringNew.setDataType(arrData.getDataType());
-                valueStringNew.setValue(valueString.getValue());
-                valueStringNew.setDescItem(descItemNew);
-                dataStringRepository.save(valueStringNew);
-                break;
-
-            case "FORMATTED_TEXT":
-            case "TEXT":
-                ArrDataText valueText = (ArrDataText) arrData;
-                ArrDataText valueTextNew = new ArrDataText();
-                valueTextNew.setDataType(arrData.getDataType());
-                valueTextNew.setValue(valueText.getValue());
-                valueTextNew.setDescItem(descItemNew);
-                dataTextRepository.save(valueTextNew);
-                break;
-
-            case "DATACE":
-                ArrDataDatace valueDatace = (ArrDataDatace) arrData;
-                ArrDataDatace valueDataceNew = new ArrDataDatace();
-                valueDataceNew.setDataType(arrData.getDataType());
-                valueDataceNew.setValue(valueDatace.getValue());
-                valueDataceNew.setDescItem(descItemNew);
-                dataDataceRepository.save(valueDataceNew);
-                break;
-
-            case "REF":
-                ArrDataReference valueReference = (ArrDataReference) arrData;
-                ArrDataReference valueReferenceNew = new ArrDataReference();
-                valueReferenceNew.setDataType(arrData.getDataType());
-                valueReferenceNew.setValue(valueReference.getValue());
-                valueReferenceNew.setDescItem(descItemNew);
-                dataReferenceRepository.save(valueReferenceNew);
-                break;
-
-            case "UNITDATE":
-                ArrDataUnitdate valueUnitdate = (ArrDataUnitdate) arrData;
-                ArrDataUnitdate valueUnitdateNew = new ArrDataUnitdate();
-                valueUnitdateNew.setDataType(arrData.getDataType());
-                valueUnitdateNew.setValue(valueUnitdate.getValue());
-                valueUnitdateNew.setDescItem(descItemNew);
-                dataUnitdateRepository.save(valueUnitdateNew);
-                break;
-
-            case "UNITID":
-                ArrDataUnitid valueUnitid = (ArrDataUnitid) arrData;
-                ArrDataUnitid valueUnitidNew = new ArrDataUnitid();
-                valueUnitidNew.setDataType(arrData.getDataType());
-                valueUnitidNew.setValue(valueUnitid.getValue());
-                valueUnitidNew.setDescItem(descItemNew);
-                dataUnitidRepository.save(valueUnitidNew);
-                break;
-
-            case "PARTY_REF":
-                ArrDataPartyRef valuePartyRef = (ArrDataPartyRef) arrData;
-                ArrDataPartyRef valuePartyRefNew = new ArrDataPartyRef();
-                valuePartyRefNew.setDataType(arrData.getDataType());
-                valuePartyRefNew.setPosition(valuePartyRef.getPosition());
-                valuePartyRefNew.setPartyId(valuePartyRef.getPartyId());
-                valuePartyRefNew.setDescItem(descItemNew);
-                dataPartyRefRepository.save(valuePartyRefNew);
-                break;
-
-            case "RECORD_REF":
-                ArrDataRecordRef valueRecordRef = (ArrDataRecordRef) arrData;
-                ArrDataRecordRef valueRecordRefNew = new ArrDataRecordRef();
-                valueRecordRefNew.setDataType(arrData.getDataType());
-                valueRecordRefNew.setRecordId(valueRecordRef.getRecordId());
-                valueRecordRefNew.setDescItem(descItemNew);
-                dataRecordRefRepository.save(valueRecordRefNew);
-                break;
-
-            case "COORDINATES":
-                ArrDataCoordinates valueCoordinates = (ArrDataCoordinates) arrData;
-                ArrDataCoordinates valueCoordinatesNew = new ArrDataCoordinates();
-                valueCoordinatesNew.setDataType(arrData.getDataType());
-                valueCoordinatesNew.setValue(valueCoordinates.getValue());
-                valueCoordinatesNew.setDescItem(descItemNew);
-                dataCoordinatesRepository.save(valueCoordinatesNew);
-                break;
-
-            default:
-                throw new IllegalStateException("Datový typ hodnoty není implementován");
-        }
-    }*/
 
     @Override
     @RequestMapping(value = "/getDescriptionItemsForAttribute", method = RequestMethod.GET)
