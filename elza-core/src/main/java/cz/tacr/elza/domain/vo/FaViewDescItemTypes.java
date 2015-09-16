@@ -2,6 +2,8 @@ package cz.tacr.elza.domain.vo;
 
 import java.util.List;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulFaView;
 
@@ -38,4 +40,8 @@ public class FaViewDescItemTypes implements cz.tacr.elza.api.vo.FaViewDescItemTy
         this.descItemTypes = descItemTypes;
     }
 
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this);
+    }
 }

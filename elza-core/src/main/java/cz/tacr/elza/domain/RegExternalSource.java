@@ -86,4 +86,8 @@ public class RegExternalSource implements  cz.tacr.elza.api.RegExternalSource {
         return new HashCodeBuilder().append(getExternalSourceId()).toHashCode();
     }
 
+    @Override
+    public String toString() {
+        return "RegExternalSource pk=" + externalSourceId;
+    }
 }

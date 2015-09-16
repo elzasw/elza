@@ -184,4 +184,8 @@ public class RegRecord extends AbstractVersionableEntity implements cz.tacr.elza
         return new HashCodeBuilder().append(recordId).toHashCode();
     }
 
+    @Override
+    public String toString() {
+        return "RegRecord pk=" + recordId;
+    }
 }

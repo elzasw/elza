@@ -102,4 +102,8 @@ public class ParPartyType implements cz.tacr.elza.api.ParPartyType {
         return new HashCodeBuilder().append(partyTypeId).toHashCode();
     }
 
+    @Override
+    public String toString() {
+        return "ParPartyType pk=" + partyTypeId;
+    }
 }

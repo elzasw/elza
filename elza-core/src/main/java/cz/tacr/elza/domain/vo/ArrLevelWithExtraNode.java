@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain.vo;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import cz.tacr.elza.api.vo.ArrLevelPack;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
@@ -79,5 +81,10 @@ public class ArrLevelWithExtraNode implements ArrLevelPack<ArrLevel, ArrNode> {
     @Override
     public ArrLevel getLevelTarget() {
         return levelTarget;
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this);
     }
 }

@@ -1,12 +1,13 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Seznam provedených změn v archivních pomůckách.
@@ -48,5 +49,4 @@ public class ArrChange implements cz.tacr.elza.api.ArrChange {
     public String toString() {
         return "ArrChange pk=" + changeId;
     }
-
 }

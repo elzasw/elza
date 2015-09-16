@@ -1,13 +1,14 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import java.io.Serializable;
-import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Archivní pomůcka. Archivní pomůcka je lineárně verzována pomocí {@link ArrFindingAidVersion}.
@@ -60,6 +61,6 @@ public class ArrFindingAid extends AbstractVersionableEntity implements cz.tacr.
 
     @Override
     public String toString() {
-        return "FindingAid pk=" + findingAidId;
+        return "ArrFindingAid pk=" + findingAidId;
     }
 }

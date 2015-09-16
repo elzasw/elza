@@ -1,10 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.springframework.data.rest.core.annotation.RestResource;
-
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -15,6 +10,12 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -88,7 +89,7 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
             return true;
         }
 
-        cz.tacr.elza.domain.ParParty other = (cz.tacr.elza.domain.ParParty) obj;
+        ParParty other = (ParParty) obj;
 
         return new EqualsBuilder().append(partyId, other.getPartyId()).isEquals();
     }
@@ -98,4 +99,8 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
         return new HashCodeBuilder().append(partyId).toHashCode();
     }
 
+    @Override
+    public String toString() {
+        return "ParParty pk=" + partyId;
+    }
 }

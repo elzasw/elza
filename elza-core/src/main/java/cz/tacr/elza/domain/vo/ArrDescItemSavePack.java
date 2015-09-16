@@ -2,6 +2,8 @@ package cz.tacr.elza.domain.vo;
 
 import java.util.List;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemExt;
 import cz.tacr.elza.domain.ArrNode;
@@ -74,4 +76,8 @@ public class ArrDescItemSavePack implements cz.tacr.elza.api.vo.ArrDescItemSaveP
         this.node = node;
     }
 
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this);
+    }
 }

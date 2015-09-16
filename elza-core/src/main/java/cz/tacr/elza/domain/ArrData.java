@@ -90,6 +90,11 @@ public abstract class ArrData extends AbstractVersionableEntity implements cz.ta
         return new HashCodeBuilder().append(dataId).toHashCode();
     }
 
+    @Override
+    public String toString() {
+        return "ArrData pk=" + dataId;
+    }
+
     public abstract String getData();
 
 }
