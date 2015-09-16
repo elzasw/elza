@@ -1,5 +1,30 @@
 package cz.tacr.elza.controller;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.domain.ArrChange;
@@ -55,29 +80,6 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -1255,6 +1257,19 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         List<ArrDescItemExt> descItems = descItemSavePack.getDescItems();
         Assert.notNull(descItems);
 
+        // seřazení podle position
+        descItems.sort((o1, o2) -> {
+            Integer pos1 = o1.getPosition();
+            Integer pos2 = o2.getPosition();
+            if (pos1 == null) {
+                return -1;
+            } else if (pos2 == null) {
+                return 1;
+            } else {
+                return pos1.compareTo(pos2);
+            }
+        });
+
         Integer versionId = descItemSavePack.getFaVersionId();
         Assert.notNull(versionId);
 
@@ -1266,36 +1281,18 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         node.setLastUpdate(LocalDateTime.now());
         nodeRepository.save(node);
 
-        List<ArrDescItemExt> descItemRet = new ArrayList<>();
+        List<ArrDescItemExt> descItemsRet = new ArrayList<>();
 
         // analýza vstupních dat, roztřídění
 
         List<ArrDescItemExt> createDescItems = new ArrayList<>();
         List<ArrDescItemExt> updateDescItems = new ArrayList<>();
+
+        // pouze informativní kvůli logice
         List<ArrDescItemExt> updatePositionDescItems = new ArrayList<>();
 
-        for (ArrDescItemExt descItem : descItems) {
-            Integer descItemObjectId = descItem.getDescItemObjectId();
-            if (descItemObjectId != null) {
-                updateDescItems.add(descItem);
-
-                List<ArrDescItem> descItemsOrig = descItemRepository.findByDescItemObjectIdAndDeleteChangeIsNull(descItemObjectId);
-
-                // musí být právě jeden
-                if (descItemsOrig.size() != 1) {
-                    throw new IllegalArgumentException("Neplatný počet záznamů (" + descItems.size() + ")");
-                }
-
-                ArrDescItem descItemOrig = descItemsOrig.get(0);
-
-                if (!descItemOrig.getPosition().equals(descItem.getPosition())) {
-                    updatePositionDescItems.add(descItem);
-                }
-
-            } else {
-                createDescItems.add(descItem);
-            }
-        }
+        // rozřazení
+        categorizeDescItems(descItems, createDescItems, updateDescItems, updatePositionDescItems);
 
         // validace
 
@@ -1320,31 +1317,76 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
             // mazání
             for (ArrDescItemExt descItem : deleteDescItems) {
-                descItemRet.add(deleteDescriptionsItemRaw(descItem, arrFaChange, false));
+                // smazání jedné hodnoty atributu
+                // přidání výsledného objektu do navratového seznamu
+                descItemsRet.add(deleteDescriptionsItemRaw(descItem, arrFaChange, false));
             }
 
             // vytvoření
             for (ArrDescItemExt descItem : createDescItems) {
-                descItemRet.add(createDescriptionItemRaw(descItem, versionId, arrFaChange, false));
+                // vytvoření jedné hodnoty atributu
+                // přidání výsledného objektu do navratového seznamu
+                descItemsRet.add(createDescriptionItemRaw(descItem, versionId, arrFaChange, false));
             }
 
             // úpravy s verzováním
             for (ArrDescItemExt descItem : updateDescItems) {
-                descItemRet.add(updateDescriptionItemRaw(descItem, versionId, true, arrFaChange, false));
+                // úprava jedné hodnoty atributu
+                // přidání výsledného objektu do navratového seznamu
+                descItemsRet.add(updateDescriptionItemRaw(descItem, versionId, true, arrFaChange, false));
             }
 
         } else {
             // úpravy bez verzování
             for (ArrDescItemExt descItem : updateDescItems) {
-                descItemRet.add(updateDescriptionItemRaw(descItem, versionId, false, null, false));
+                // úprava jedné hodnoty atributu
+                // přidání výsledného objektu do navratového seznamu
+                descItemsRet.add(updateDescriptionItemRaw(descItem, versionId, false, null, false));
             }
         }
 
-        for (ArrDescItemExt descItemExt : descItemRet) {
+        // nastavení správného nodu (optimistické zámky)
+        for (ArrDescItemExt descItemExt : descItemsRet) {
             descItemExt.setNode(node);
         }
 
-        return descItemRet;
+        return descItemsRet;
+    }
+
+    /**
+     * Rozdělí hodnoty atributu podle typu úpravy.
+     *
+     * @param descItems Seznam hodnot atributu
+     * @param createDescItems   Hodnoty atributu pro vytvoření
+     * @param updateDescItems   Hodnoty atributu pro úpravu
+     * @param updatePositionDescItems   Hodnoty atributu pro pro úpravu se změnou pozice (pouze informativní)
+     */
+    private void categorizeDescItems(List<ArrDescItemExt> descItems,
+                                     List<ArrDescItemExt> createDescItems,
+                                     List<ArrDescItemExt> updateDescItems,
+                                     List<ArrDescItemExt> updatePositionDescItems) {
+        for (ArrDescItemExt descItem : descItems) {
+            Integer descItemObjectId = descItem.getDescItemObjectId();
+            if (descItemObjectId != null) {
+                updateDescItems.add(descItem);
+
+                List<ArrDescItem> descItemsOrig = descItemRepository.findByDescItemObjectIdAndDeleteChangeIsNull(descItemObjectId);
+
+                // musí být právě jeden
+                if (descItemsOrig.size() != 1) {
+                    throw new IllegalArgumentException("Neplatný počet záznamů (" + descItems.size() + ")");
+                }
+
+                ArrDescItem descItemOrig = descItemsOrig.get(0);
+
+                if (!descItemOrig.getPosition().equals(descItem.getPosition())) {
+                    updatePositionDescItems.add(descItem);
+                }
+
+            } else {
+                createDescItems.add(descItem);
+            }
+        }
     }
 
     /**
@@ -1498,7 +1540,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             descItemNew.setNode(descItem.getNode());
 
             // provedla se změna pozice
-            if (positionUI != position) {
+            if (positionUI != null && positionUI != position) {
 
                 // kontrola spodní hranice
                 if (positionUI < 1) {
