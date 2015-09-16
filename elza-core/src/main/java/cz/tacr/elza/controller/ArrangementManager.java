@@ -30,11 +30,9 @@ import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataDatace;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataReference;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
@@ -59,11 +57,9 @@ import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataCoordinatesRepository;
-import cz.tacr.elza.repository.DataDataceRepository;
 import cz.tacr.elza.repository.DataIntegerRepository;
 import cz.tacr.elza.repository.DataPartyRefRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
-import cz.tacr.elza.repository.DataReferenceRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataStringRepository;
 import cz.tacr.elza.repository.DataTextRepository;
@@ -133,9 +129,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     private DataTextRepository dataTextRepository;
 
     @Autowired
-    private DataDataceRepository dataDataceRepository;
-
-    @Autowired
     private DataUnitdateRepository dataUnitdateRepository;
 
     @Autowired
@@ -149,9 +142,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Autowired
     private DataRecordRefRepository dataRecordRefRepository;
-
-    @Autowired
-    private DataReferenceRepository dataReferenceRepository;
 
     @Autowired
     private RuleManager ruleManager;
@@ -1179,14 +1169,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 ArrDataUnitid stringData = (ArrDataUnitid) arrData;
                 String stringValue = createFormatString(stringData.getValue(), formatData);
                 arrDescItemExt.setData(stringValue);
-            } else if (arrData instanceof ArrDataDatace) {
-                ArrDataDatace stringData = (ArrDataDatace) arrData;
-                String stringValue = createFormatString(stringData.getValue(), formatData);
-                arrDescItemExt.setData(stringValue);
-            } else if (arrData instanceof ArrDataReference) {
-                ArrDataReference stringData = (ArrDataReference) arrData;
-                String stringValue = createFormatString(stringData.getValue(), formatData);
-                arrDescItemExt.setData(stringValue);
             }
 
             levelExt.getDescItemList().add(arrDescItemExt);
@@ -1843,23 +1825,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 dataTextRepository.save(valueText);
                 break;
 
-            case "DATACE":
-                ArrDataDatace valueDatace = new ArrDataDatace();
-                valueDatace.setDataType(rulDescItemType.getDataType());
-                valueDatace.setDescItem(descItem);
-                valueDatace.setValue(data);
-                dataDataceRepository.save(valueDatace);
-                break;
-
-            case "REF":
-                ArrDataReference valueReference = new ArrDataReference();
-                valueReference.setDataType(rulDescItemType.getDataType());
-                valueReference.setDescItem(descItem);
-                valueReference.setValue(data);
-                dataReferenceRepository.save(valueReference);
-                break;
-
-
             case "UNITDATE":
                 ArrDataUnitdate valueUnitdateNew = new ArrDataUnitdate();
                 valueUnitdateNew.setDataType(rulDescItemType.getDataType());
@@ -1958,18 +1923,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 ArrDataText valueText = (ArrDataText) arrData;
                 valueText.setValue(data);
                 dataTextRepository.save(valueText);
-                break;
-
-            case "DATACE":
-                ArrDataDatace valueDatace = (ArrDataDatace) arrData;
-                valueDatace.setValue(data);
-                dataDataceRepository.save(valueDatace);
-                break;
-
-            case "REF":
-                ArrDataReference valueReference = (ArrDataReference) arrData;
-                valueReference.setValue(data);
-                dataReferenceRepository.save(valueReference);
                 break;
 
             case "UNITDATE":
@@ -2140,24 +2093,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 valueTextNew.setValue(valueText.getValue());
                 valueTextNew.setDescItem(descItemNew);
                 dataTextRepository.save(valueTextNew);
-                break;
-
-            case "DATACE":
-                ArrDataDatace valueDatace = (ArrDataDatace) arrData;
-                ArrDataDatace valueDataceNew = new ArrDataDatace();
-                valueDataceNew.setDataType(arrData.getDataType());
-                valueDataceNew.setValue(valueDatace.getValue());
-                valueDataceNew.setDescItem(descItemNew);
-                dataDataceRepository.save(valueDataceNew);
-                break;
-
-            case "REF":
-                ArrDataReference valueReference = (ArrDataReference) arrData;
-                ArrDataReference valueReferenceNew = new ArrDataReference();
-                valueReferenceNew.setDataType(arrData.getDataType());
-                valueReferenceNew.setValue(valueReference.getValue());
-                valueReferenceNew.setDescItem(descItemNew);
-                dataReferenceRepository.save(valueReferenceNew);
                 break;
 
             case "UNITDATE":
