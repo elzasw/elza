@@ -13,76 +13,80 @@ import java.util.List;
  * 
  * @author vavrejn
  *
- * @param <RR> {@link RegRecord}
- * @param <VR> {@link RegVariantRecord}
+ * @param <RR> {@link RegRecord} heslo rejstříku
+ * @param <VR> {@link RegVariantRecord} variantní heslo rejstříku
  */
 public interface RegistryManager<RR extends RegRecord, VR extends RegVariantRecord> {
 
     /**
-     * Vytvoření nového záznamu.
+     * Vytvoření nového hesla rejstříku.
      *
-     * @param regRecord         naplněný objekt
+     * @param regRecord     naplněný objekt s vyplněnou vazbou minimálně na typ
      * @return              nově vytvořený objekt
      */
     RR createRecord(RR regRecord);
 
     /**
-     * Update záznamu.
+     * Update hesla rejstříku.
      *
-     * @param record            naplněný objekt s vlastním ID
+     * @param record            naplněný objekt s vlastním ID vazbou minimálně na typ
      * @return                  změněný objekt
      */
     RegRecord updateRecord(RR record);
 
     /**
-     * Smaže entity které používají daný záznam a pak záznam samotný.
+     * Smaže entity které používají dané heslo (variantní hesla, odkazy, osoby) a pak heslo samotné.
      *
      * @param recordId  id záznamu rejstříku
      */
     void deleteRecord(Integer recordId);
 
     /**
-     * Vytvoří nový variantní záznam rejstříku.
+     * Vytvoří nový variantní heslo rejstříku.
      *
-     * @param variantRecord     vyplněný objekt bez vazeb
+     * @param variantRecord     vyplněný objekt var. hesla s vazbou na heslo
      * @return                  nově vytvořený objekt
      */
     RegVariantRecord createVariantRecord(VR variantRecord);
 
     /**
-     * Vytvoří nový variantní záznam rejstříku.
+     * Upraví variantní heslo rejstříku.
      *
-     * @param variantRecord     vyplněný objekt bez vazeb
-     * @return                  nově vytvořený objekt
+     * @param variantRecord     vyplněný objekt var. hesla s vazbou na heslo
+     * @return                  změněný objekt
      */
     RegVariantRecord updateVariantRecord(VR variantRecord);
 
     /**
-     * Smaže variantní záznam.
+     * Smaže variantní heslo rejstříku.
      *
-     * @param variantRecordId       id variantního záznamu
+     * @param variantRecordId       id variantního hesla
      */
     void deleteVariantRecord(Integer variantRecordId);
 
     /**
-     * @return  vrátí seznam typů registrů
+     * Vrátí seznam typů rejstříku (typů hesel).
+     *
+     * @return  seznam typů rejstříku (typů hesel)
      */
     List<? extends RegRegisterType> getRegisterTypes();
 
     /**
-     * @return  vrátí seznam externích zdrojů rejstříkových hesel
+     * Vrátí seznam externích zdrojů rejstříkových hesel.
+     *
+     * @return  seznam externích zdrojů rejstříkových hesel
      */
     List<? extends RegExternalSource> getExternalSources();
 
     /**
-     * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (record, charateristics, comment),
+     * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
      * nebo pole variantního záznamu obsahují hledaný řetězec. V případě, že hledaný řetězec je null, nevyhodnocuje se.
      *
      * @param search            hledaný řetězec, může být null
      * @param from              index prvního záznamu, začíná od 0
      * @param count             počet výsledků k vrácení
-     * @param registerTypeId    typ záznamu
-     * @return                  vybrané záznamy dle popisu seřazené za record, nebo prázdná množina
+     * @param registerTypeId    ID typ záznamu
+     * @return                  vybrané záznamy dle popisu seřazené za text hesla, nebo prázdná množina
      */
     List<? extends RegRecord> findRecord(String search, Integer from, Integer count, Integer registerTypeId);
 
@@ -90,15 +94,15 @@ public interface RegistryManager<RR extends RegRecord, VR extends RegVariantReco
      * Celkový počet záznamů v DB pro funkci {@link #findRecord(String, Integer, Integer, Integer)}
      *
      * @param search            hledaný řetězec, může být null
-     * @param registerTypeId    typ záznamu
+     * @param registerTypeId    ID typ záznamu
      * @return                  celkový počet záznamů, který je v db za dané parametry
      */
     long findRecordCount(String search, Integer registerTypeId);
 
     /**
-     * Vrátí jeden záznam dle id.
-     * @param recordId      id požadovaného záznamu
-     * @return              záznam
+     * Vrátí jedno heslo (s variantními hesly) dle id.
+     * @param recordId      id požadovaného hesla
+     * @return              heslo s vazbou na var. hesla
      */
     RegRecord getRecord(Integer recordId);
 

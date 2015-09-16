@@ -15,34 +15,33 @@ import java.util.List;
  */
 public interface PartyManager<PAPV extends ParParty> {
 
-
     /**
      * Vrátí všechny typy osob včetně podtypů.
      *
-     * @return typy osob včetně podtypu.
+     * @return typy osob včetně navázaných podtypů
      */
     List<? extends ParPartyTypeExt> getPartyTypes();
 
     /**
-     * Vloží záznam o osobě. Je umožněno vložit návázané rejstříkové heslo a podtyp.
+     * Vloží záznam o osobě. Je nutné vložit návázané rejstříkové heslo a podtyp.
      *
-     * @param party data o abstraktní osobě
-     * @return Založený záznam.
+     * @param party     data abstraktní osoby s vyplněnými vazbami na heslo a podtyp
+     * @return          založený záznam
      */
     ParParty insertParty(PAPV party);
 
     /**
-     * Upraví záznam abstraktní osoby. Je umožněna změna rejstříkového hesla a podtypu.
+     * Upraví záznam osoby. Je umožněna změna rejstříkového hesla a podtypu.
      *
-     * @param party záznamu pro aktualizaci.
-     * @return Aktualizovaný záznam.
+     * @param party     data abstraktní osoby s vyplněnými vazbami na heslo a podtyp
+     * @return          aktualizovaný záznam
      */
     ParParty updateParty(PAPV party);
 
     /**
      * Smaže abstraktní osobu.
      * 
-     * @param partyId id záznamu pro samzání.
+     * @param partyId id záznamu pro samzání
      */
     void deleteParty(Integer partyId);
 
@@ -51,32 +50,31 @@ public interface PartyManager<PAPV extends ParParty> {
      * Osobu vyhledává podle hesla v rejstříku včetně variantních hesel. Výsledek je stránkovaný, je
      * vrácen zadaný počet záznamů od from záznamu.
      *
-     * @param search fráze pro vyhledávání.
-     * @param from pořadí prvního záznamu.
-     * @param count počet záznamů pro vrácení.
-     * @param partyTypeId id typu.
-     * @param originator        původce - true, není původce - false, null - neaplikuje filtr - obě možnosti
-     * @return seznam osob vyhovující zadané frázi.
+     * @param search        fráze pro vyhledávání
+     * @param from          pořadí prvního záznamu
+     * @param count         počet záznamů pro vrácení
+     * @param partyTypeId   id typu.
+     * @param originator    původce - true, není původce - false, null - neaplikuje filtr - vrací obě možnosti
+     * @return              seznam osob (s vazbami na ostatní entity) vyhovující zadané frázi a podmínkám
      */
     List<? extends ParParty> findParty(String search, Integer from, Integer count,
                                        Integer partyTypeId, Boolean originator);
 
     /**
-     * Vrátí počet osob vyhovující zadané frázi. Osobu vyhledává podle hesla v rejstříku včetně
-     * variantních hesel.
+     * Vrátí počet osob vyhovující zadané frázi. Osobu vyhledává podle hesla v rejstříku včetně variantních hesel.
      *
-     * @param search fráze pro vyhledávání.
-     * @param partyTypeId id typu.
-     * @param originator        původce - true, není původce - false, null - neaplikuje filtr - obě možnosti
-     * @return počet osob vyhovující zadané frázi.
+     * @param search        fráze pro vyhledávání
+     * @param partyTypeId   id typu
+     * @param originator    původce - true, není původce - false, null - neaplikuje filtr - vrací obě možnosti
+     * @return              počet osob vyhovující zadané frázi
      */
     Long findPartyCount(String search, Integer partyTypeId, Boolean originator);
 
     /**
      * Vrátí abstraktní osobu na základě identifikátoru.
      * 
-     * @param partyId identifikátor osoby
-     * @return nalezená abstraktní osoba
+     * @param partyId   identifikátor osoby
+     * @return          nalezená abstraktní osoba (s vazbami na ostatní entity)
      */
     ParParty getParty(Integer partyId);
 }
