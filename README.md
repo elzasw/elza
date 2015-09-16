@@ -53,7 +53,7 @@ Aplikace je konfigurována pomocí souboru `elza.yaml`. Umístění konfiguračn
 * embed načítá v aktuální cestě nebo složce config
 
 ### Databázové připojení
-Do konfigura vložte nastavení datového zdroje. Při prvním připojení se datové struktury vytvoří automaticky.
+Do konfigurace vložte nastavení datového zdroje. Při prvním připojení se datové struktury vytvoří automaticky.
 
 ```
 elza:
@@ -68,3 +68,15 @@ V aplikačním serveru Tomcat ve složce logs jsou archivovány logy rozdělené
 
 * `elza-stdout-...` standardní informace událostí v aplikaci
 * `elza-stderr-...` chybové hlášeí v aplikaci
+
+### Nastavení úrovně logování
+Nastavení se provádí v souboru `elza.yaml`. Pro různé balíčky a třídy jdou nastavit odlišné úrovně logování. Standardně
+je nastaveno logování na úroveň INFO. 
+
+Toto nastavení zapne logování volání metod na kontrolerech:
+
+```
+logging:
+  level:
+    cz.tacr.elza: DEBUG
+```
