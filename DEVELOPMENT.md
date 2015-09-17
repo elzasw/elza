@@ -22,3 +22,19 @@ do celkové webové konfigurace aplikace, realizované pomocí lehkého webframe
 
 Aktualizace všech variant je možné realizovat vytvořením nástroje který rozpozná variantu serveru, provede stažení 
 nové verze (zip/war) a její rozbalení. Dále musí zajistit restart AS.
+
+## Nástroj na visualizaci aktuálního datového modelu
+
+Současně s aplikací je potřeba udržovat aktuální datový model ve formě diagramu, včetně popisků tabulek a sloupců.
+Vhodný nástroj či kombinace nástrojů, který zajistí visualizaci musí být volně dostupný a nejlépe opensource,
+pro uržitelnost případného dalšího rozvoje.
+
+Model bude dokumentován formou javadoc popisu v entitách, nástroj liquibase bude rozšířen pro přenos popisu
+do komentářů tabulek a sloupců v databázi. Tyto popisy jsou již další nástroje schopny reprezentovat.
+
+Jako vhodný nástroj pro vizualizaci považuji SchemaCrawler (http://sualeh.github.io/SchemaCrawler), který nabízí
+vizuální generování modelu dle databáze formou html textu, diagramu v obrázku/pdf, diff rozdíly dvou databází.
+Ukázka vygenerovaného diagramu se nachází v data-model.pdf, v současné podobě je vygenerována bez komentářů.
+Příkaz `./schemacrawler.sh -server=postgresql -host=... -database=elza -user=... -password=... -infolevel=standard \
+ -command=graph -outputformat=pdf -outputfile=data-model.pdf`.
+
