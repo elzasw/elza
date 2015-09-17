@@ -391,7 +391,7 @@ public class DescItemFactory implements InitializingBean {
 
     public ArrDescItem getDescItem(ArrDescItem descItem, String formatData) {
         ArrData data = getDataByDescItem(descItem);
-        ArrDescItem descItemTmp = createDescItemByType(descItem.getDescItemType().getDataType());
+        ArrDescItem descItemTmp = createDescItemByType(data.getDataType());
         BeanUtils.copyProperties(descItem, descItemTmp);
         Map<Object,Object> map = new HashMap<>();
         map.put(PROPERTY_FORMAT, formatData);

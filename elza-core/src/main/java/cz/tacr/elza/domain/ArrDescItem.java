@@ -152,7 +152,6 @@ public class ArrDescItem implements cz.tacr.elza.api.ArrDescItem<ArrChange, RulD
             return true;
         }
 
-        // TODO: zkontrolovat v UI
         if (getDescItemId() == null) {
             return false;
         }

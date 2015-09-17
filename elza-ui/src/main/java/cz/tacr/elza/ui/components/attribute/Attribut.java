@@ -5,9 +5,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import com.vaadin.event.dd.DragAndDropEvent;
@@ -37,7 +34,6 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.factory.DescItemFactory;
 
 
 /**

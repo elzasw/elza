@@ -1072,6 +1072,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
         Set<Integer> idItemTypeSet = createItemTypeSet(descItemTypeIds);
 
+        for (ArrData data : dataList) {
+            entityManager.refresh(data);
+        }
+
         ArrLevelExt levelExt = new ArrLevelExt();
         BeanUtils.copyProperties(level, levelExt);
         readItemData(levelExt, dataList, idItemTypeSet, null);
@@ -1197,7 +1201,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
                 // musí být právě jeden
                 if (descItemsOrig.size() != 1) {
-                    throw new IllegalArgumentException("Neplatný počet záznamů (" + descItems.size() + ")");
+                    throw new IllegalArgumentException("Neplatný počet záznamů (" + descItemsOrig.size() + ")");
                 }
 
                 ArrDescItem descItemOrig = descItemsOrig.get(0);
