@@ -4,6 +4,13 @@ import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDescItemCoordinates;
+import cz.tacr.elza.domain.ArrDescItemFormattedText;
+import cz.tacr.elza.domain.ArrDescItemInt;
+import cz.tacr.elza.domain.ArrDescItemPartyRef;
+import cz.tacr.elza.domain.ArrDescItemString;
+import cz.tacr.elza.domain.ArrDescItemText;
+import cz.tacr.elza.domain.ArrDescItemUnitdate;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
@@ -661,12 +668,12 @@ public class TestingDataController {
             Queue<ArrNode> newParents = new LinkedList<>();
             while (!parents.isEmpty()) {
                 ArrNode parent = parents.poll();
-                /*for (int position = 1; position <= nodesInLevel; position++) {
+                for (int position = 1; position <= nodesInLevel; position++) {
                     ArrLevel level = createLevel(change, parent, position);
                     ArrNode node = level.getNode();
                     createLevelAttributes(node, version, depth, parties);
                     newParents.add(node);
-                };*/
+                };
                 session.flush();
                 session.clear();
             }
@@ -675,15 +682,15 @@ public class TestingDataController {
         }
     }
 
-    /*private void createLevelAttributes(ArrNode node, ArrFindingAidVersion version, int depth, List<ParParty> parties) {
+    private void createLevelAttributes(ArrNode node, ArrFindingAidVersion version, int depth, List<ParParty> parties) {
         ArrDescItemSavePack descItemSavePack = new ArrDescItemSavePack();
         descItemSavePack.setCreateNewVersion(true);
         descItemSavePack.setFaVersionId(version.getFindingAidVersionId());
         descItemSavePack.setNode(node);
 
-        List<ArrDescItem> descItems = new LinkedList<ArrDescItem>();
+        List<ArrDescItem> descItems = new LinkedList<>();
         descItemSavePack.setDescItems(descItems);
-        descItemSavePack.setDeleteDescItems(new LinkedList<ArrDescItem>());
+        descItemSavePack.setDeleteDescItems(new LinkedList<>());
 
         List<RulDescItemTypeExt> descriptionItemTypes = ruleManager.getDescriptionItemTypes(version.getRuleSet().getRuleSetId());
         for (RulDescItemTypeExt rulDescItemTypeExt : descriptionItemTypes) {
@@ -727,9 +734,9 @@ public class TestingDataController {
                         }
                         break;
                     case DT_UNITDATE:
-                        descItems.add(createUnitDateValue(node, rulDescItemTypeExt));
+                        descItems.add(createUnitdateValue(node, rulDescItemTypeExt));
                         if (repeat(rulDescItemTypeExt)) {
-                            descItems.add(createUnitDateValue(node, rulDescItemTypeExt));
+                            descItems.add(createUnitdateValue(node, rulDescItemTypeExt));
                         }
                         break;
                     case DT_UNITID:
@@ -764,107 +771,103 @@ public class TestingDataController {
         return repeatable && RandomUtils.nextBoolean();
     }
 
-    private ArrDescItemExt createLevelTypeValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, int depth) {
-        ArrDescItemExt descItemExt = createValueWithoutspecification(node, rulDescItemTypeExt);
-        descItemExt.setData(COORDINATES_VALUE);
+    private ArrDescItem createLevelTypeValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, int depth) {
+        ArrDescItem descItem = new ArrDescItemCoordinates();
+        descItem = setValueWithoutspecification(descItem, node, rulDescItemTypeExt);
+        ((ArrDescItemCoordinates) descItem).setValue(COORDINATES_VALUE);
 
         //všude hodnota 1, kromě ZP2015_LEVEL_FOLDER (pro 2. úroveň = 1, pro 3. úroven = 2, ...)
         String value;
         switch (depth) {
             case 0: //první úroveň ZP2015_LEVEL_SERIES
-                chooseAndSetSpecification(descItemExt, rulDescItemTypeExt, LEVEL_TYPE_SERIES);
+                chooseAndSetSpecification(descItem, rulDescItemTypeExt, LEVEL_TYPE_SERIES);
                 value = "1";
                 break;
             case (MAX_DEPTH - 2): //předposlední úroveň ZP2015_LEVEL_ITEM
-                chooseAndSetSpecification(descItemExt, rulDescItemTypeExt, LEVEL_TYPE_ITEM);
+                chooseAndSetSpecification(descItem, rulDescItemTypeExt, LEVEL_TYPE_ITEM);
                 value = "1";
                 break;
             case (MAX_DEPTH - 1): //poslední úroveň ZP2015_LEVEL_PART
-                chooseAndSetSpecification(descItemExt, rulDescItemTypeExt, LEVEL_TYPE_PART);
+                chooseAndSetSpecification(descItem, rulDescItemTypeExt, LEVEL_TYPE_PART);
                 value = "1";
                 break;
             default: //druhá a další úroveň až po předpředposlední ZP2015_LEVEL_FOLDER
-                chooseAndSetSpecification(descItemExt, rulDescItemTypeExt, LEVEL_TYPE_FOLDER);
+                chooseAndSetSpecification(descItem, rulDescItemTypeExt, LEVEL_TYPE_FOLDER);
                 value = Integer.toString(depth);
         }
-        descItemExt.setData(value);
+        ((ArrDescItemCoordinates) descItem).setValue(value);
 
-        return descItemExt;
+        return descItem;
     }
 
-    private void chooseAndSetSpecification(ArrDescItemExt descItemExt, RulDescItemTypeExt rulDescItemTypeExt,
-            String specCode) {
+    private void chooseAndSetSpecification(ArrDescItem descItem, RulDescItemTypeExt rulDescItemTypeExt, String specCode) {
         for (RulDescItemSpec spec : rulDescItemTypeExt.getRulDescItemSpecList()) {
             if (spec.getCode().equals(specCode)) {
-                descItemExt.setDescItemSpec(spec);
+                descItem.setDescItemSpec(spec);
             }
         }
     }
 
-    private ArrDescItemExt createPartyRefValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, List<ParParty> parties) {
-        ArrDescItemExt descItemExt = createValue(node, rulDescItemTypeExt);
-
-        ParParty parParty = parties.get(RandomUtils.nextInt(parties.size()));
-        descItemExt.setParty(parParty);
-
-      return descItemExt;
+    private ArrDescItem createPartyRefValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, List<ParParty> parties) {
+        ArrDescItem descItem = new ArrDescItemPartyRef();
+        descItem = setValue(descItem, node, rulDescItemTypeExt);
+        ParParty party = parties.get(RandomUtils.nextInt(parties.size()));
+        ((ArrDescItemPartyRef) descItem).setParty(party);
+        return descItem;
     }
 
-    private ArrDescItemExt createCoordinatesValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
-        ArrDescItemExt descItemExt = createValue(node, rulDescItemTypeExt);
-        descItemExt.setData(COORDINATES_VALUE);
-
-        return descItemExt;
+    private ArrDescItem createCoordinatesValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
+        ArrDescItem descItem = new ArrDescItemCoordinates();
+        descItem = setValue(descItem, node, rulDescItemTypeExt);
+        ((ArrDescItemCoordinates) descItem).setValue(COORDINATES_VALUE);
+        return descItem;
     }
 
-    private ArrDescItemExt createUnitDateValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
-        ArrDescItemExt descItemExt = createValue(node, rulDescItemTypeExt);
-        descItemExt.setData(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
-
-        return descItemExt;
+    private ArrDescItem createUnitdateValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
+        ArrDescItem descItem = new ArrDescItemUnitdate();
+        descItem = setValue(descItem, node, rulDescItemTypeExt);
+        ((ArrDescItemUnitdate) descItem).setValue(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+        return descItem;
     }
 
-    private ArrDescItemExt createIntValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
-        ArrDescItemExt descItemExt = createValue(node, rulDescItemTypeExt);
-        descItemExt.setData(Integer.toString(RandomUtils.nextInt(MAX_INT_VALUE)));
-
-        return descItemExt;
+    private ArrDescItem createIntValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
+        ArrDescItem descItem = new ArrDescItemInt();
+        descItem = setValue(descItem, node, rulDescItemTypeExt);
+        ((ArrDescItemInt) descItem).setValue(RandomUtils.nextInt(MAX_INT_VALUE));
+        return descItem;
     }
 
-    private ArrDescItemExt createValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
-        ArrDescItemExt descItemExt = createValueWithoutspecification(node, rulDescItemTypeExt);
-        descItemExt.setDescItemSpec(chooseSpec(rulDescItemTypeExt.getRulDescItemSpecList()));
-
-        return descItemExt;
+    private ArrDescItem setValue(ArrDescItem descItem, ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
+        descItem = setValueWithoutspecification(descItem, node, rulDescItemTypeExt);
+        descItem.setDescItemSpec(chooseSpec(rulDescItemTypeExt.getRulDescItemSpecList()));
+        return descItem;
     }
 
-    private ArrDescItemExt createValueWithoutspecification(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
-        ArrDescItemExt descItemExt = new ArrDescItemExt();
-        descItemExt.setNode(node);
-        descItemExt.setDescItemType(rulDescItemTypeExt);
-
-        return descItemExt;
+    private ArrDescItem setValueWithoutspecification(ArrDescItem descItem, ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
+        descItem.setNode(node);
+        descItem.setDescItemType(rulDescItemTypeExt);
+        return descItem;
     }
 
-    private ArrDescItemExt createStringValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
-        ArrDescItemExt descItemExt = createValue(node, rulDescItemTypeExt);
-        descItemExt.setData(Integer.toString(RandomUtils.nextInt(MAX_INT_VALUE)));
-
-        return descItemExt;
+    private ArrDescItem createStringValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
+        ArrDescItem descItem = new ArrDescItemString();
+        descItem = setValue(descItem, node, rulDescItemTypeExt);
+        ((ArrDescItemString) descItem).setValue(Integer.toString(RandomUtils.nextInt(MAX_INT_VALUE)));
+        return descItem;
     }
 
-    private ArrDescItemExt createTextValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
-        ArrDescItemExt descItemExt = createValue(node, rulDescItemTypeExt);
-        descItemExt.setData(TEXT_VALUE);
-
-      return descItemExt;
+    private ArrDescItem createTextValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
+        ArrDescItem descItem = new ArrDescItemText();
+        descItem = setValue(descItem, node, rulDescItemTypeExt);
+        ((ArrDescItemText) descItem).setValue(TEXT_VALUE);
+        return descItem;
     }
 
-    private ArrDescItemExt createFormattedTextValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
-        ArrDescItemExt descItemExt = createValue(node, rulDescItemTypeExt);
-        descItemExt.setData(FORMATTED_TEXT_VALUE);
-
-      return descItemExt;
+    private ArrDescItem createFormattedTextValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
+        ArrDescItem descItem = new ArrDescItemFormattedText();
+        descItem = setValue(descItem, node, rulDescItemTypeExt);
+        ((ArrDescItemFormattedText) descItem).setValue(FORMATTED_TEXT_VALUE);
+        return descItem;
     }
 
     private RulDescItemSpec chooseSpec(List<RulDescItemSpecExt> rulDescItemSpecList) {
@@ -891,7 +894,7 @@ public class TestingDataController {
         ArrNode node = new ArrNode();
         node.setLastUpdate(LocalDateTime.now());
         return nodeRepository.save(node);
-    }*/
+    }
 
     /** Odstraní data z databáze, kromě tabulek s prefixem rul_. */
     @Transactional
