@@ -1,4 +1,4 @@
-package cz.tacr.elza.dbchangelog;
+package cz.tacr.elza.doc;
 
 import java.sql.Statement;
 
@@ -11,7 +11,7 @@ import liquibase.resource.ResourceAccessor;
 
 
 /**
- * Ukázkový příklad DbChangelog
+ * Ukázkový příklad DbChangelog. Pro třídy s db updatem je připraven balík cz.tacr.elza.dbchangelog v modulu elsa-core.
  *
  * Volání v XML <customChange class="cz.tacr.elza.dbchangelog.DbChangelog_1_0" />
  *
