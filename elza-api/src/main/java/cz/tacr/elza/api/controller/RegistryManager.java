@@ -29,7 +29,7 @@ public interface RegistryManager<RR extends RegRecord, VR extends RegVariantReco
     /**
      * Update hesla rejstříku.
      *
-     * @param record            naplněný objekt s vlastním ID vazbou minimálně na typ
+     * @param record            naplněný objekt s vlastním ID a vazbou minimálně na typ
      * @return                  změněný objekt
      */
     RegRecord updateRecord(RR record);
@@ -52,7 +52,7 @@ public interface RegistryManager<RR extends RegRecord, VR extends RegVariantReco
     /**
      * Upraví variantní heslo rejstříku.
      *
-     * @param variantRecord     vyplněný objekt var. hesla s vazbou na heslo
+     * @param variantRecord     vyplněný objekt var. hesla s ID a vazbou na heslo
      * @return                  změněný objekt
      */
     RegVariantRecord updateVariantRecord(VR variantRecord);

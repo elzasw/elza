@@ -16,6 +16,16 @@ import java.util.List;
 /**
  * Rozhraní operací pro archivní pomůcku a hierarchický přehled včetně atributů.
  *
+ * @param <FA> {@link ArrFindingAid} archivní pomůcka
+ * @param <FV> {@link ArrFindingAidVersion} verze archivní pomůcky
+ * @param <DIE> {@link ArrDescItemExt} archivní popis - rozšířený o hodnotu atributu, odkaz na osobu a heslo rejstříku
+ * @param <DISP> {@link ArrDescItemSavePack} zapouzdřuje archivní popisy k uložení spolu s těmi ke smazání,
+ *              id archivní pomůcky a příznakem, zdali vytvářet novou změnu
+ * @param <FL> {@link ArrLevel} úroveň hierarchického popisu
+ * @param <FLP> {@link ArrLevelPack} zapouzdření hierarchického popisu (úrovně), cílové úrovně pro operace, kořenového uzlu,
+ *             dodatečného uzlu (zámek pro úroveň) a id příslušné archivní pomůcky
+ * @param <N> {@link ArrNode} uzel jako zámek pro hierarchický popis
+ *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 12. 8. 2015
  */
@@ -53,9 +63,9 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
     List<? extends ArrFindingAid> getFindingAids();
 
     /**
-     * Aktualizace názvu archivní pomůcky.
+     * Aktualizace archivní pomůcky.
      *
-     * @param findingAid archivní pomůcka
+     * @param findingAid archivní pomůcka s vyplěnými údaji a ID
      * @return aktualizovaná archivní pomůcka
      * @throws ConcurrentUpdateException chyba při současné manipulaci s položkou více uživateli.
      */
@@ -89,60 +99,60 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
     ArrFindingAidVersion approveVersion(FV version, Integer arrangementTypeId, Integer ruleSetId) throws ConcurrentUpdateException;
 
     /**
-     * Vytvoří nový uzel před předaným uzlem.
+     * Vytvoří novou úroveň (level) před předanou úrovní (level).
      *
-     * @param node        object obsahující uzel a uzel(node) rodiče
-     * @return              nový uzel
+     * @param levelPack   object obsahující úroveň (level), její parent node (extra node) a id pomůcky
+     * @return            objekt obsahující novou úroveň (level) a parent node (jako extra node)
      */
-    FLP addLevelBefore(FLP node);
+    FLP addLevelBefore(FLP levelPack);
 
     /**
-     * Vytvoří nový uzel za předaným uzlem.
+     * Vytvoří novou úroveň (level) za předanou úrovní (level).
      *
-     * @param node        object obsahující uzel a uzel(node) rodiče
-     * @return              nový uzel
+     * @param levelPack        object obsahující úroveň (level), její parent node (extra node) a id pomůcky
+     * @return            objekt obsahující novou úroveň (level) a parent node (jako extra node)
      */
-    FLP addLevelAfter(FLP node);
+    FLP addLevelAfter(FLP levelPack);
 
     /**
-     * Vytvoří nový uzel na poslední pozici pod předaným uzlem.
+     * Vytvoří novou úroveň (level) na poslední pozici pod předanou úrovní.
      *
-     * @param node        object obsahující uzel a uzel(node) rodiče
-     * @return            object obsahující nový uzel a uzel(node) rodiče s upravenou verzí
+     * @param levelPack        object obsahující úroveň (level) a id pomůcky
+     * @return            objekt obsahující novou úroveň (level) a node (jako extra node)
      */
-    FLP addLevelChild(FLP node);
+    FLP addLevelChild(FLP levelPack);
 
     /**
-     * Přesune uzel před předaný uzel.
+     * Přesune úroveň před předanou úroveň.
      *
-     * @param node            uzel který se přesouvá s uzlem před který se přesouvá
-     * @return                  přesunutý uzel
+     * @param levelPack            úroveň která se přesouvá (level), před kterou se přesouvá (targetLevel) a id pomůcky
+     * @return                přesunutá úroveň (level) a původní cílová (targetLevel)
      */
-    FLP moveLevelBefore(FLP node);
+    FLP moveLevelBefore(FLP levelPack);
 
     /**
-     * Přesune uzel na poslední pozici pod předaným uzlem.
+     * Přesune úroveň na poslední pozici pod předaným uzlem.
      *
-     * @param node       uzel který se přesouvá s uzlem pod který se přesouvá
-     * @return             přesunutý uzel
+     * @param levelPack       úroveň která se přesouvá (level), uzel před která se přesouvá (extraNode) a id pomůcky
+     * @return           přesunutá úroveň (level) a původní uzel (extraNode)
      */
-    FLP moveLevelUnder(FLP node);
+    FLP moveLevelUnder(FLP levelPack);
 
     /**
-     * Přesune uzel za předaný uzel.
+     * Přesune úroveň za předanou úroveň.
      *
-     * @param node            uzel který se přesouvá s uzlem za který se přesouvá
-     * @return                   přesunutý uzel
+     * @param levelPack  úroveň která se přesouvá (level), před kterou se přesouvá (targetLevel) a id pomůcky
+     * @return      přesunutá úroveň (level) a původní úroveň (targetLevel)
      */
-    FLP moveLevelAfter(FLP node);
+    FLP moveLevelAfter(FLP levelPack);
 
     /**
-     * Smaže uzel.
+     * Smaže úroveň.
      *
-     * @param node            uzel který se maže s uzlem rodiče
-     * @return                  smazaný uzel
+     * @param levelPack            úroveň která se maže (level), uzel rodiče (extraNode) a id pomůcky
+     * @return                smazaná úroveň, původní uzel rodiče (extraNode)
      */
-    FLP deleteLevel(FLP node);
+    FLP deleteLevel(FLP levelPack);
 
     /**
      * Načte neuzavřenou verzi archivní pomůcky.
@@ -168,27 +178,27 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @param versionId       id verze, může být null
      * @param formatData      formátování dat, může být null - SHORT, FULL
      * @param descItemTypeIds typy atributů, může být null
-     * @return            potomci předaného uzlu
+     * @return                potomci předaného uzlu
      */
     List<? extends ArrLevelExt> findSubLevels(Integer nodeId, Integer versionId, String formatData, Integer[] descItemTypeIds);
 
     /**
-     * Načte potomky daného uzlu v konkrétní verzi. Pokud není identifikátor verze předaný načítají se potomci
+     * Načte potomky dané úrovně v konkrétní verzi. Pokud není identifikátor verze předaný načítají se potomci
      * z neuzavřené verze.
      *
-     * @param nodeId          id rodiče
+     * @param nodeId          id uzlu rodiče
      * @param versionId       id verze, může být null
-     * @return            potomci předaného uzlu
+     * @return                potomci předaného uzlu
      */
     List<? extends ArrLevel> findSubLevels(Integer nodeId, Integer versionId);
 
     /**
-     * Načte uzel podle identifikátoru. K uzlu doplní jeho Atributy.
+     * Načte úroveň podle identifikátoru. K ní doplní atributy.
      *
      * @param nodeId           id uzlu
      * @param versionId        id verze, může být null
      * @param descItemTypeIds  typy atributů, může být null
-     * @return uzel s daným identifikátorem
+     * @return                 uzel s daným identifikátorem
      */
     ArrLevelExt getLevel(Integer nodeId, Integer versionId, Integer[] descItemTypeIds);
 

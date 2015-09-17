@@ -1,28 +1,37 @@
 package cz.tacr.elza.domain.vo;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-
+import cz.tacr.elza.api.controller.ArrangementManager;
 import cz.tacr.elza.api.vo.ArrLevelPack;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
 
 /**
- * Zapouzdření {@link ArrLevel} a {@link ArrNode}.
+ * Zapouzdření {@link cz.tacr.elza.api.ArrLevel}, {@link cz.tacr.elza.api.ArrNode} a id archivní pomůcky.
+ * Pro operace ve stromu archivního popisu. Pro různé operace se předpokládá rúzné naplnění/užití tohoto objektu.
+ * Popis naplnění je vždy u API metod, viz {@link ArrangementManager}
+ *
  * @author Martin Šlapa
  * @since 28.8.2015
  */
 public class ArrLevelWithExtraNode implements ArrLevelPack<ArrLevel, ArrNode> {
 
+    /** Úroveň  - předmět operace. */
     private ArrLevel level;
 
+    /** Dodatečný uzel pro zámek. Většinou parent. */
     private ArrNode extraNode;
 
+    /** Kořenový uzel archivní pomůcky. */
     private ArrNode rootNode;
 
+    /** Cílová úroveň. */
     private ArrLevel levelTarget;
 
+    /** ID archivní pomůcky. */
     private Integer faVersionId;
+
 
     public ArrLevelWithExtraNode() {
     }
