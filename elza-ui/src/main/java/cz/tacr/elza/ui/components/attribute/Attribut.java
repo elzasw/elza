@@ -2,6 +2,7 @@ package cz.tacr.elza.ui.components.attribute;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -105,6 +106,10 @@ public class Attribut extends CssLayout implements Components {
     public List<ArrDescItem> getKeys() {
         List<ArrDescItem> collect = childs.getChils().stream().map(AttributValue::commit).collect(Collectors.toList());
         return collect;
+    }
+
+    public void revert() {
+        childs.getChils().forEach(components1 -> components1.revert());
     }
 
     public ArrNode getNode() {

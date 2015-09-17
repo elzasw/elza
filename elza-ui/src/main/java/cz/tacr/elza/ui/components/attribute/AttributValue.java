@@ -34,6 +34,8 @@ public class AttributValue extends CssLayout implements Components {
 
     private ComboBox specificationCombo;
 
+    private Integer bckDescItemObjectId;
+
     public AttributValue(ArrDescItem descItemExt, List<RulDescItemSpec> descItemSpecs, RulDataType dataType,
                          AxAction deleteAction, DragAndDropWrapper wrapper, final AttributeValuesLoader attributeValuesLoader) {
         this.wrapper = wrapper;
@@ -128,9 +130,15 @@ public class AttributValue extends CssLayout implements Components {
     }
 
     public ArrDescItem commit() {
-        return form.commit();
+        ArrDescItem descItem = form.commit();
+        bckDescItemObjectId = descItem.getDescItemObjectId();
+        return descItem;
     }
 
+    public void revert() {
+        ArrDescItem descItem = form.getValue();
+        descItem.setDescItemObjectId(bckDescItemObjectId);
+    }
 
     private class SpecificationValueChangeListener implements Property.ValueChangeListener{
 

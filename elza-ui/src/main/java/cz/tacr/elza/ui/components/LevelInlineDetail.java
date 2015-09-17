@@ -112,6 +112,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
                 attributWindow.close();
             }
         } catch (Exception e) {
+            attribut.revert();
             Notification.show(e.getMessage(), Notification.Type.ERROR_MESSAGE);
             e.printStackTrace();
         }
