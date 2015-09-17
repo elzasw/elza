@@ -33,7 +33,7 @@ public abstract class ArrData<T> implements cz.tacr.elza.api.ArrData<RulDataType
     private Integer dataId;
 
 
-    @ManyToOne(fetch = FetchType.EAGER, targetEntity = RulDataType.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulDataType.class)
     @JoinColumn(name = "dataTypeId", nullable = false)
     private RulDataType dataType;
 
@@ -88,6 +88,11 @@ public abstract class ArrData<T> implements cz.tacr.elza.api.ArrData<RulDataType
     @Override
     public int hashCode() {
         return new HashCodeBuilder().append(dataId).toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "ArrData pk=" + dataId;
     }
 
 }

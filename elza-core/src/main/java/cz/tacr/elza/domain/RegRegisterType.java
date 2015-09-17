@@ -89,4 +89,8 @@ public class RegRegisterType implements  cz.tacr.elza.api.RegRegisterType {
         return new HashCodeBuilder().append(registerTypeId).toHashCode();
     }
 
+    @Override
+    public String toString() {
+        return "RegRegisterType pk=" + registerTypeId;
+    }
 }

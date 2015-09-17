@@ -1,10 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.springframework.data.rest.core.annotation.RestResource;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -15,6 +10,12 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -136,4 +137,8 @@ public class ParPartySubtype implements cz.tacr.elza.api.ParPartySubtype<ParPart
         return new HashCodeBuilder().append(partySubtypeId).toHashCode();
     }
 
+    @Override
+    public String toString() {
+        return "ParPartySubtype pk=" + partySubtypeId;
+    }
 }

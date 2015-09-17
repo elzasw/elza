@@ -1,10 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.springframework.data.rest.core.annotation.RestResource;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -13,6 +8,12 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -159,5 +160,10 @@ public class ArrDescItem implements cz.tacr.elza.api.ArrDescItem<ArrChange, RulD
         ArrDescItem other = (ArrDescItem) obj;
 
         return new EqualsBuilder().append(descItemId, other.getDescItemId()).isEquals();
+    }
+
+    @Override
+    public String toString() {
+        return "ArrDescItem pk=" + descItemId;
     }
 }

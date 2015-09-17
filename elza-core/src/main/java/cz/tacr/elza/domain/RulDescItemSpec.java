@@ -165,4 +165,8 @@ public class RulDescItemSpec implements cz.tacr.elza.api.RulDescItemSpec<RulDesc
         return new HashCodeBuilder().append(descItemSpecId).append(name).append(code).toHashCode();
     }
 
+    @Override
+    public String toString() {
+        return "RulDescItemSpec pk=" + descItemSpecId;
+    }
 }

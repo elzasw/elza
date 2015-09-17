@@ -139,4 +139,8 @@ public class RulDataType implements cz.tacr.elza.api.RulDataType {
         return new HashCodeBuilder().append(dataTypeId).append(name).append(code).toHashCode();
     }
 
+    @Override
+    public String toString() {
+        return "RulDataType pk=" + dataTypeId;
+    }
 }

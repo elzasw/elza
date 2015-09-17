@@ -1037,7 +1037,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Override
     @RequestMapping(value = "/getLevel", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @Transactional
     public ArrLevelExt getLevel(@RequestParam(value = "nodeId") Integer nodeId,
             @RequestParam(value = "versionId", required = false) Integer versionId,
             @RequestParam(value = "descItemTypeIds", required = false) Integer[] descItemTypeIds) {
@@ -1100,10 +1099,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     /**
      * doplní do nodu jeho atributy. Pokud je potřeba dodělá formátování.
-     * @param levelExt      nod (level) do kterého se budou přidávat atributy.
-     * @param dataList      seznam atributů
+     * @param levelExt nod (level) do kterého se budou přidávat atributy.
+     * @param dataList seznam atributů
      * @param idItemTypeSet omezení na typ
-     * @param formatData    typ formátu pro text
+     * @param formatData typ formátu pro text
      */
     private void readItemData(final ArrLevelExt levelExt, final List<ArrData> dataList,
             final Set<Integer> idItemTypeSet, final String formatData) {
@@ -1173,6 +1172,22 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         List<ArrDescItem> descItems = descItemSavePack.getDescItems();
         Assert.notNull(descItems);
 
+        // seřazení podle position
+        descItems.sort((o1, o2) -> {
+            Integer pos1 = o1.getPosition();
+            Integer pos2 = o2.getPosition();
+            if (pos1 == null && pos2 == null) {
+                return 0;
+            } else
+            if (pos1 == null) {
+                return -1;
+            } else if (pos2 == null) {
+                return 1;
+            } else {
+                return pos1.compareTo(pos2);
+            }
+        });
+
         Integer versionId = descItemSavePack.getFaVersionId();
         Assert.notNull(versionId);
 
@@ -1190,6 +1205,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         List<ArrDescItem> createDescItems = new ArrayList<>();
         List<ArrDescItem> updateDescItems = new ArrayList<>();
+
+        // pouze informativní kvůli logice
         List<ArrDescItem> updatePositionDescItems = new ArrayList<>();
 
         for (ArrDescItem descItem : descItems) {
@@ -1417,7 +1434,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             descItemNew.setNode(descItem.getNode());
 
             // provedla se změna pozice
-            if (positionUI != position) {
+            if (positionUI != null && positionUI != position) {
 
                 // kontrola spodní hranice
                 if (positionUI < 1) {

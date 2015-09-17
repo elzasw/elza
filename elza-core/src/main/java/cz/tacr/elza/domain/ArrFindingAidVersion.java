@@ -1,14 +1,15 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.springframework.data.rest.core.annotation.RestResource;
-
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
@@ -133,7 +134,6 @@ public class ArrFindingAidVersion extends AbstractVersionableEntity implements
     public String toString() {
         return "ArrFindingAidVersion pk=" + findingAidVersionId;
     }
-
 
     @Override
     public boolean equals(final Object obj) {

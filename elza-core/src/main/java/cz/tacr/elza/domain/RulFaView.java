@@ -103,4 +103,9 @@ public class RulFaView extends AbstractVersionableEntity implements cz.tacr.elza
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this, Arrays.asList("arrangementType", "ruleSet"));
     }
+
+    @Override
+    public String toString() {
+        return "RulFaView pk=" + faViewId;
+    }
 }

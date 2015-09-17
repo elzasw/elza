@@ -19,6 +19,12 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
+            <groupId>cz.tacr.elza</groupId>
+            <artifactId>elza-doc</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>

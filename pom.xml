@@ -25,6 +25,7 @@
         <module>elza-core</module>
         <module>elza-ui</module>
         <module>elza-war</module>
+        <module>elza-doc</module>
     </modules>
 
     <dependencyManagement>
@@ -159,6 +160,7 @@
                                 -hide java.*
                                 -Xdoclint:none
                             </additionalparam>
+                            <sourcepath>elza-api/src/main/java/cz/tacr/elza/api:elza-core/src/main/java/cz/tacr/elza/domain</sourcepath>
                             <failOnError>false</failOnError>
                         </configuration>
                     </plugin>
@@ -180,12 +182,5 @@
     <scm>
         <connection>scm:git:http://git.marbes.cz/r/INET/ELZA/elza.git</connection>
     </scm>
-
-    <repositories>
-        <repository>
-            <id>sonatype-snapshots</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </repository>
-    </repositories>
 
 </project>
