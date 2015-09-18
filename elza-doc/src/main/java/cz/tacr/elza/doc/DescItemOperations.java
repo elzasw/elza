@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.domain.ArrDescItemExt;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
@@ -59,6 +61,122 @@ public class DescItemOperations {
         newDescItem.setDescItemSpec(descItemSpec);  // nastavení specifikace atributu (může být null pokud nemá vazbu z DescItemType)
         newDescItem.setNode(node);                  // nastavení uzlu
         newDescItem.setData("Hodnota atributu");    // nastavuje konkrétní hodnotu atributu, která se má uložit - konkrétní formát řetězce je závislý na DescItemType
+
+        descItems.add(newDescItem);                 // přidání nového objektu do seznamu
+
+        // vytvoření VO pro přenesení vstupních dat
+        ArrDescItemSavePack pack = new ArrDescItemSavePack();
+
+        // naplnění VO
+        pack.setDescItems(descItems);               // nastavení seznamu položek pro vytvoření/úpravu (v tomto případě jedna položka na vytvoření)
+        pack.setDeleteDescItems(deleteDescItems);   // nastavení seznamu položek pro smazání (je prázdný, ale nesmí být null)
+        pack.setCreateNewVersion(createNewVersion); // zda-li se má vytvářet nová verze (při vytváření hodnoty atributu musí být true)
+        pack.setFaVersionId(versionId);             // nastavení identifikátoru verze
+        pack.setNode(node);                         // nastavení uzlu
+
+        /* provedení operace v jádře
+           v result se vrátí všechny finální objekty - v našem případě jeden nově vytvořený */
+        List<ArrDescItemExt> result = arrangementManager.saveDescriptionItems(pack);
+
+    }
+
+    /**
+     * Příklad pro vytvoření nové hodnoty atributu - Odkaz na původce. Ukazuje postupné naplnění vstupních dat pro správné vytvoření.
+     */
+    public void createDescItemParty() {
+
+        // identifikátor verze - je nutné pro určení verze, do které se projeví změna (v našem případě to musí být poslední otevřená verze)
+        Integer versionId = 1;
+
+        /* uzel, který identifikuje zanoření (level uzlu) ve stromu - použivá se pro vzájemné vyloučení úpravy (optimistický zámek)
+           konkrétní správné získání reference je z objektu level */
+        ArrNode node = new ArrNode();
+
+        // určuje, zda-li se má vytvářet nová verze - při vytváření se musí vždy volat s true
+        Boolean createNewVersion = true;
+
+        /* určuje typ vytvářeného atributu
+           konkrétní správné získání reference je pomocí metody getDescriptionItemTypesForNodeId() z RuleManager */
+        RulDescItemType descItemType = new RulDescItemType();
+
+        /* určuje specifikaci vytvářeného atributu
+           konkrétní správné získání reference je pomocí metody getDescItemSpecsFortDescItemType() z RuleManager */
+        RulDescItemSpec descItemSpec = new RulDescItemSpec();
+
+        /* určuje vybranou hodnotu průvodce
+           konkrétní správné získání reference je pomocí metody findParty() z PartyManager */
+        ParParty party = new ParParty();
+
+        List<ArrDescItemExt> descItems = new ArrayList<>();
+        List<ArrDescItemExt> deleteDescItems = new ArrayList<>();
+
+        // vytvoření nového objektu, který chceme uložit
+        ArrDescItemExt newDescItem = new ArrDescItemExt();
+        newDescItem.setPosition(1);                             /* nastavení pozice (není vyžadováno, core doplní správnou; obecně se přidává na konec)
+                                                                   pokud by atributy již existovaly, provede se posun v jádře a nastaví se požadovaná z UI */
+        newDescItem.setDescItemType(descItemType);              // nastavení typu atributu (nesmí být null, musí odpovídat povoleným typům)
+        newDescItem.setDescItemSpec(descItemSpec);              // nastavení specifikace atributu (může být null pokud nemá vazbu z DescItemType)
+        newDescItem.setNode(node);                              // nastavení uzlu
+        newDescItem.setParty(party);                            // nastavení reference na původce
+        newDescItem.setData(party.getRecord().getRecord());     // nastavuje hodnotu atributu podle zvolené party - je pouze kvůli validaci neprázdného vyplnění
+
+        descItems.add(newDescItem);                 // přidání nového objektu do seznamu
+
+        // vytvoření VO pro přenesení vstupních dat
+        ArrDescItemSavePack pack = new ArrDescItemSavePack();
+
+        // naplnění VO
+        pack.setDescItems(descItems);               // nastavení seznamu položek pro vytvoření/úpravu (v tomto případě jedna položka na vytvoření)
+        pack.setDeleteDescItems(deleteDescItems);   // nastavení seznamu položek pro smazání (je prázdný, ale nesmí být null)
+        pack.setCreateNewVersion(createNewVersion); // zda-li se má vytvářet nová verze (při vytváření hodnoty atributu musí být true)
+        pack.setFaVersionId(versionId);             // nastavení identifikátoru verze
+        pack.setNode(node);                         // nastavení uzlu
+
+        /* provedení operace v jádře
+           v result se vrátí všechny finální objekty - v našem případě jeden nově vytvořený */
+        List<ArrDescItemExt> result = arrangementManager.saveDescriptionItems(pack);
+
+    }
+
+    /**
+     * Příklad pro vytvoření nové hodnoty atributu - Role entit. Ukazuje postupné naplnění vstupních dat pro správné vytvoření.
+     */
+    public void createDescItemRecord() {
+
+        // identifikátor verze - je nutné pro určení verze, do které se projeví změna (v našem případě to musí být poslední otevřená verze)
+        Integer versionId = 1;
+
+        /* uzel, který identifikuje zanoření (level uzlu) ve stromu - použivá se pro vzájemné vyloučení úpravy (optimistický zámek)
+           konkrétní správné získání reference je z objektu level */
+        ArrNode node = new ArrNode();
+
+        // určuje, zda-li se má vytvářet nová verze - při vytváření se musí vždy volat s true
+        Boolean createNewVersion = true;
+
+        /* určuje typ vytvářeného atributu
+           konkrétní správné získání reference je pomocí metody getDescriptionItemTypesForNodeId() z RuleManager */
+        RulDescItemType descItemType = new RulDescItemType();
+
+        /* určuje specifikaci vytvářeného atributu
+           konkrétní správné získání reference je pomocí metody getDescItemSpecsFortDescItemType() z RuleManager */
+        RulDescItemSpec descItemSpec = new RulDescItemSpec();
+
+        /* určuje vybranou hodnotu role entit
+           konkrétní správné získání reference je pomocí metody findRecord() z RegistryManager */
+        RegRecord record = new RegRecord();
+
+        List<ArrDescItemExt> descItems = new ArrayList<>();
+        List<ArrDescItemExt> deleteDescItems = new ArrayList<>();
+
+        // vytvoření nového objektu, který chceme uložit
+        ArrDescItemExt newDescItem = new ArrDescItemExt();
+        newDescItem.setPosition(1);                  /* nastavení pozice (není vyžadováno, core doplní správnou; obecně se přidává na konec)
+                                                        pokud by atributy již existovaly, provede se posun v jádře a nastaví se požadovaná z UI */
+        newDescItem.setDescItemType(descItemType);   // nastavení typu atributu (nesmí být null, musí odpovídat povoleným typům)
+        newDescItem.setDescItemSpec(descItemSpec);   // nastavení specifikace atributu (nesmí být null, odvíjí se na kombinaci s record)
+        newDescItem.setNode(node);                   // nastavení uzlu
+        newDescItem.setRecord(record);               // nastavení reference na Role entit
+        newDescItem.setData(record.getRecord());     // nastavuje hodnotu atributu podle zvoleného record - je pouze kvůli validaci neprázdného vyplnění
 
         descItems.add(newDescItem);                 // přidání nového objektu do seznamu
 
