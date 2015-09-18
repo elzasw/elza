@@ -1742,6 +1742,11 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     /**
      * Vrací další identifikátor objektu pro atribut (oproti PK se zachovává při nové verzi)
      *
+     * TODO:
+     * Není dořešené, může dojít k přidělení stejného object_id dvěma různýmhodnotám atributu.
+     * Řešit v budoucnu zrušením object_id (pravděpodobně GUID) nebo vytvořením nové entity,
+     * kde bude object_id primární klíč a bude tak generován pomocí sekvencí hibernate.
+     *
      * @return Identifikátor objektu
      */
     private Integer getNextDescItemObjectId() {
