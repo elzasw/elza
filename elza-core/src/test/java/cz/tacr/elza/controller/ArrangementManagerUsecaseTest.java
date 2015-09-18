@@ -163,7 +163,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
 
         // Odstranění hodnoty
         ArrDescItemExt arrDescItemExtToDelete = descItemList.get(0);
-        ArrDescItemExt deletedDescItemExt = deleteDescriptionItem(arrDescItemExtToDelete);
+        ArrDescItemExt deletedDescItemExt = deleteDescriptionItem(arrDescItemExtToDelete, version);
         Assert.notNull(deletedDescItemExt);
         Assert.notNull(deletedDescItemExt.getData());
         Assert.isTrue(deletedDescItemExt.getData().equals(arrDescItemExtToDelete.getData()));
@@ -354,8 +354,8 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return smazaná hodnota
      */
-    private ArrDescItemExt deleteDescriptionItem(ArrDescItemExt descItem) {
-        Response response = delete((spec) -> spec.body(descItem), DELETE_DESCRIPTION_ITEM_URL);
+    private ArrDescItemExt deleteDescriptionItem(ArrDescItemExt descItem, ArrFindingAidVersion version) {
+        Response response = delete((spec) -> spec.body(descItem).pathParameter(VERSION_ID_ATT, version.getFindingAidVersionId()), DELETE_DESCRIPTION_ITEM_URL );
 
         return response.getBody().as(ArrDescItemExt.class);
     }
