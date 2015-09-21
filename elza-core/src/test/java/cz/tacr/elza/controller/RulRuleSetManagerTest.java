@@ -103,7 +103,7 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
 
     @Test
     public void testRestSaveAndGetFaViewDescItemTypes() throws Exception {
-        Integer[] descItemTypeIds = IntStream.range(0, 7).map(i -> createDescItemType(i).getDescItemTypeId())
+        Integer[] descItemTypeIds = IntStream.range(0, 7).map(i -> createDescItemType(i, DATA_TYPE_INTEGER).getDescItemTypeId())
                 .boxed().toArray(Integer[]::new);
 
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);

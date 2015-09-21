@@ -487,7 +487,7 @@ public class DescItemFactory implements InitializingBean {
         ArrData dataNew = facade.map(data, data.getClass());
         dataNew.setDescItem(descItemTo);
         try {
-            mapRepository.get(dataNew.getClass()).save(data);
+            mapRepository.get(dataNew.getClass()).save(dataNew);
         } catch (NullPointerException e) {
             e.printStackTrace();
             throw new NotImplementedException("Nebyla namapována repozitory pro datový typ");

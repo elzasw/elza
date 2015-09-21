@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
+import cz.tacr.elza.domain.vo.ArrDescItems;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -77,7 +78,7 @@ import cz.tacr.elza.repository.RuleSetRepository;
 @RestController
 @RequestMapping("/api/arrangementManager")
 public class ArrangementManager implements cz.tacr.elza.api.controller.ArrangementManager<ArrFindingAid, ArrFindingAidVersion,
-    ArrDescItem, ArrDescItemSavePack, ArrLevel, ArrLevelWithExtraNode, ArrNode> {
+    ArrDescItem, ArrDescItemSavePack, ArrLevel, ArrLevelWithExtraNode, ArrNode, ArrDescItems> {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -1163,7 +1164,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @Override
     @RequestMapping(value = "/saveDescriptionItems", method = RequestMethod.POST)
     @Transactional
-    public List<ArrDescItem> saveDescriptionItems(@RequestBody ArrDescItemSavePack descItemSavePack) {
+    public ArrDescItems saveDescriptionItems(@RequestBody ArrDescItemSavePack descItemSavePack) {
         Assert.notNull(descItemSavePack);
 
         List<ArrDescItem> deleteDescItems = descItemSavePack.getDeleteDescItems();
@@ -1199,7 +1200,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         node.setLastUpdate(LocalDateTime.now());
         nodeRepository.save(node);
 
-        List<ArrDescItem> descItemRet = new ArrayList<>();
+        ArrayList<ArrDescItem> descItemsRet = new ArrayList<>();
 
         // analýza vstupních dat, roztřídění
 
@@ -1255,31 +1256,33 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
             // mazání
             for (ArrDescItem descItem : deleteDescItems) {
-                descItemRet.add(deleteDescriptionsItemRaw(descItem, arrFaChange, false));
+                descItemsRet.add(deleteDescriptionsItemRaw(descItem, arrFaChange, false));
             }
 
             // vytvoření
             for (ArrDescItem descItem : createDescItems) {
-                descItemRet.add(createDescriptionItemRaw(descItem, versionId, arrFaChange, false));
+                descItemsRet.add(createDescriptionItemRaw(descItem, versionId, arrFaChange, false));
             }
 
             // úpravy s verzováním
             for (ArrDescItem descItem : updateDescItems) {
-                descItemRet.add(updateDescriptionItemRaw(descItem, versionId, true, arrFaChange, false));
+                descItemsRet.add(updateDescriptionItemRaw(descItem, versionId, true, arrFaChange, false));
             }
 
         } else {
             // úpravy bez verzování
             for (ArrDescItem descItem : updateDescItems) {
-                descItemRet.add(updateDescriptionItemRaw(descItem, versionId, false, null, false));
+                descItemsRet.add(updateDescriptionItemRaw(descItem, versionId, false, null, false));
             }
         }
 
-        for (ArrDescItem descItemExt : descItemRet) {
+        for (ArrDescItem descItemExt : descItemsRet) {
             descItemExt.setNode(node);
         }
 
-        return descItemRet;
+        ArrDescItems descItemsContainer = new ArrDescItems();
+        descItemsContainer.setDescItems(descItemsRet);
+        return descItemsContainer;
     }
 
     /**
@@ -1393,6 +1396,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         Assert.notNull(descItem);
 
+        ArrDescItem descItemExtNew = descItemFactory.getDescItem(descItem);
+        BeanUtils.copyProperties(descItemExt, descItemExtNew);
+
         ArrNode node = descItem.getNode();
         Assert.notNull(node);
 
@@ -1462,13 +1468,11 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
             descItemRepository.save(descItemNew);
 
-            BeanUtils.copyProperties(descItemNew, descItemExt);
+            BeanUtils.copyProperties(descItemNew, descItemExtNew);
 
-            descItem = descItemExt;
+            descItem = descItemExtNew;
 
             descItemFactory.saveDescItem(descItem, true);
-
-            //saveNewDataValue(rulDescItemType, data, descItem, descItemExt);
 
         } else {
 

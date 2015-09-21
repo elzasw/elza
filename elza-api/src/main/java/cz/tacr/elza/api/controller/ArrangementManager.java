@@ -10,6 +10,7 @@ import cz.tacr.elza.api.ArrLevelExt;
 import cz.tacr.elza.api.ArrNode;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.ArrDescItemSavePack;
+import cz.tacr.elza.api.vo.ArrDescItems;
 import cz.tacr.elza.api.vo.ArrLevelPack;
 
 
@@ -20,7 +21,7 @@ import cz.tacr.elza.api.vo.ArrLevelPack;
  * @since 12. 8. 2015
  */
 public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFindingAidVersion, DI extends ArrDescItem,
-    DISP extends ArrDescItemSavePack, FL extends ArrLevel, FLP extends ArrLevelPack, N extends ArrNode> {
+    DISP extends ArrDescItemSavePack, FL extends ArrLevel, FLP extends ArrLevelPack, N extends ArrNode, DIS extends ArrDescItems> {
 
     /** Formát popisu atributu - dlouhá verze. */
     String FORMAT_ATTRIBUTE_FULL = "FULL";
@@ -226,7 +227,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @param descItemSavePack  object nesoucí předávané atributy archivního popisu k vytvoření/úpravě/smazání
      * @return                  upravené atributy archivního popisu
      */
-    List<DI> saveDescriptionItems(DISP descItemSavePack);
+    DIS saveDescriptionItems(DISP descItemSavePack);
 
     /**
      * Vrátí všechny hodnoty atributu archivního popisu k uzlu.

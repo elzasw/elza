@@ -54,6 +54,7 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
+import cz.tacr.elza.domain.vo.ArrDescItems;
 import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
@@ -379,8 +380,8 @@ public abstract class AbstractRestTest {
 
     @Transactional
     protected ArrDescItem createAttributs(final ArrNode node, final Integer position,
-                                          final ArrChange change, final int index, final String typ) {
-        RulDescItemType descItemType = createDescItemType(index);
+                                          final ArrChange change, final int index, final int dataTypeId) {
+        RulDescItemType descItemType = createDescItemType(index, dataTypeId);
         RulDescItemSpec rulDescItemSpec = createDescItemSpec(descItemType, index);
 
         ArrDescItem item = new ArrDescItem();
@@ -391,32 +392,32 @@ public abstract class AbstractRestTest {
         item.setDescItemType(descItemType);
         item.setDescItemSpec(rulDescItemSpec);
         item = descItemRepository.save(item);
-        createData(item, index, typ);
+        createData(item, index, dataTypeId);
         return item;
     }
 
     @Transactional
     protected RulDescItemConstraint createConstrain(final int index) {
-        RulDescItemType descItemType = createDescItemType(index);
+        RulDescItemType descItemType = createDescItemType(index, DATA_TYPE_INTEGER);
         RulDescItemSpec rulDescItemSpec = createDescItemSpec(descItemType, index);
         RulDescItemConstraint itemConstraint = createDescItemConstrain(descItemType, rulDescItemSpec);
         return itemConstraint;
     }
 
-    private ArrData createData(final ArrDescItem item, final int index, final String typ) {
-        if (typ == null || DATA_TYP_STRING.equalsIgnoreCase(typ)) {
+    private ArrData createData(final ArrDescItem item, final int index, final Integer dataTypeId) {
+        if (DATA_TYPE_STRING.equals(dataTypeId)) {
             ArrDataString dataStr = new ArrDataString();
             dataStr.setDescItem(item);
-            RulDataType dataType = dataTypeRepository.getOne(2);
+            RulDataType dataType = dataTypeRepository.getOne(dataTypeId);
             dataStr.setDataType(dataType);
             dataStr.setValue(TEST_NAME + index);
             arrDataStringRepository.save(dataStr);
             return dataStr;
-        } else if (DATA_TYP_RECORD.equalsIgnoreCase(typ)) {
+        } else if (DATA_TYPE_RECORD_REF.equals(dataTypeId)) {
             ArrDataRecordRef dataStr = new ArrDataRecordRef();
             RegRecord record = createRecord();
             dataStr.setDescItem(item);
-            RulDataType dataType = dataTypeRepository.getOne(2);
+            RulDataType dataType = dataTypeRepository.getOne(dataTypeId);
             dataStr.setDataType(dataType);
             dataStr.setRecordId(record.getRecordId());
             dataRecordRefRepository.save(dataStr);
@@ -425,9 +426,9 @@ public abstract class AbstractRestTest {
         return null;
     }
 
-    protected RulDescItemType createDescItemType(final int index) {
+    protected RulDescItemType createDescItemType(final int index, final int dataTypeId) {
         RulDescItemType itemType = new RulDescItemType();
-        RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
+        RulDataType dataType = getDataType(dataTypeId);
         itemType.setDataType(dataType);
         itemType.setCode("DI" + index);
         itemType.setName("Desc Item " + index);
@@ -809,7 +810,8 @@ public abstract class AbstractRestTest {
     protected List<ArrDescItem> storeSavePack(ArrDescItemSavePack savePack) {
         Response response = post((spec) -> spec.body(savePack), SAVE_DESCRIPTION_ITEMS_URL);
 
-        return Arrays.asList(response.getBody().as(ArrDescItem[].class));
+        ArrDescItems descItems = response.getBody().as(ArrDescItems.class);
+        return descItems.getDescItems();
     }
 
     /**

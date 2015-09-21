@@ -53,6 +53,7 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
+import cz.tacr.elza.domain.vo.ArrDescItems;
 import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
@@ -699,19 +700,19 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrChange createChange = createFaChange(startTime.minusSeconds(1));
         ArrLevel child = createLevel(2, parent, createChange);
-        createAttributs(child.getNode(), 1, createChange, 1, DATA_TYP_RECORD);
+        createAttributs(child.getNode(), 1, createChange, 1, DATA_TYPE_RECORD_REF);
         levelRepository.save(child);
 
         version.setLockChange(createFaChange(startTime.plusSeconds(2)));
         findingAidVersionRepository.save(version);
         child.setDeleteChange(createFaChange(startTime.plusSeconds(3)));
         createChange = createFaChange(startTime.plusSeconds(3));
-        createAttributs(child.getNode(), 2, createChange, 11, null);
+        createAttributs(child.getNode(), 2, createChange, 11, DATA_TYPE_STRING);
 
         createChange = createFaChange(startTime.plusSeconds(3));
         ArrLevel child2 = createLevel(2, parent, createChange);
-        ArrDescItem item = createAttributs(child2.getNode(), 1, createChange, 2, null);
-        ArrDescItem item2 = createAttributs(child2.getNode(), 2, createChange, 21, null);
+        ArrDescItem item = createAttributs(child2.getNode(), 1, createChange, 2, DATA_TYPE_STRING);
+        ArrDescItem item2 = createAttributs(child2.getNode(), 2, createChange, 21, DATA_TYPE_STRING);
         item2.setDeleteChange(createChange);
         descItemRepository.save(item2);
 
@@ -1195,7 +1196,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         arrDescItemExt = new ArrDescItemInt();
         BeanUtils.copyProperties(descItemNew, arrDescItemExt);
         arrDescItemExt.setValue(125);
-        descItemRet = arrangementManager.updateDescriptionItem(arrDescItemExt ,version.getFindingAidVersionId(), true);
+        descItemRet = arrangementManager.updateDescriptionItem(arrDescItemExt, version.getFindingAidVersionId(), true);
 
         // kontrola nové hodnoty attributu
 
@@ -1415,7 +1416,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItemSavePack.setDeleteDescItems(deleteDescItems);
         descItemSavePack.setNode(node);
 
-        List<ArrDescItem> descItemListSave = arrangementManager.saveDescriptionItems(descItemSavePack);
+        ArrDescItems descItemsContainer = arrangementManager.saveDescriptionItems(descItemSavePack);
+        List<ArrDescItem> descItemListSave = descItemsContainer.getDescItems();
 
         Assert.assertNotNull(descItemListSave);
         Assert.assertEquals(6, descItemListSave.size());
