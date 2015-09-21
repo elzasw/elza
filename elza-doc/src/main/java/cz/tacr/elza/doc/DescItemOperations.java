@@ -7,13 +7,18 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.controller.ArrangementManager;
-import cz.tacr.elza.domain.ArrDescItemExt;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDescItemInt;
+import cz.tacr.elza.domain.ArrDescItemPartyRef;
+import cz.tacr.elza.domain.ArrDescItemRecordRef;
+import cz.tacr.elza.domain.ArrDescItemString;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
+import cz.tacr.elza.domain.vo.ArrDescItems;
 
 
 /**
@@ -50,17 +55,17 @@ public class DescItemOperations {
            konkrétní správné získání reference je pomocí metody getDescItemSpecsFortDescItemType() z RuleManager */
         RulDescItemSpec descItemSpec = new RulDescItemSpec();
 
-        List<ArrDescItemExt> descItems = new ArrayList<>();
-        List<ArrDescItemExt> deleteDescItems = new ArrayList<>();
+        List<ArrDescItem> descItems = new ArrayList<>();
+        List<ArrDescItem> deleteDescItems = new ArrayList<>();
 
         // vytvoření nového objektu, který chceme uložit
-        ArrDescItemExt newDescItem = new ArrDescItemExt();
+        ArrDescItem newDescItem = new ArrDescItemInt();
         newDescItem.setPosition(1);                 /* nastavení pozice (není vyžadováno, core doplní správnou; obecně se přidává na konec)
                                                        pokud by atributy již existovaly, provede se posun v jádře a nastaví se požadovaná z UI */
         newDescItem.setDescItemType(descItemType);  // nastavení typu atributu (nesmí být null, musí odpovídat povoleným typům)
         newDescItem.setDescItemSpec(descItemSpec);  // nastavení specifikace atributu (může být null pokud nemá vazbu z DescItemType)
         newDescItem.setNode(node);                  // nastavení uzlu
-        newDescItem.setData("Hodnota atributu");    // nastavuje konkrétní hodnotu atributu, která se má uložit - konkrétní formát řetězce je závislý na DescItemType
+        ((ArrDescItemInt) newDescItem).setValue(1); // nastavuje konkrétní hodnotu atributu, která se má uložit
 
         descItems.add(newDescItem);                 // přidání nového objektu do seznamu
 
@@ -75,8 +80,8 @@ public class DescItemOperations {
         pack.setNode(node);                         // nastavení uzlu
 
         /* provedení operace v jádře
-           v result se vrátí všechny finální objekty - v našem případě jeden nově vytvořený */
-        List<ArrDescItemExt> result = arrangementManager.saveDescriptionItems(pack);
+           v result se vrátí VO se seznamem všech finálních objektů - v našem případě jeden nově vytvořený */
+        ArrDescItems result = arrangementManager.saveDescriptionItems(pack);
 
     }
 
@@ -107,18 +112,17 @@ public class DescItemOperations {
            konkrétní správné získání reference je pomocí metody findParty() z PartyManager */
         ParParty party = new ParParty();
 
-        List<ArrDescItemExt> descItems = new ArrayList<>();
-        List<ArrDescItemExt> deleteDescItems = new ArrayList<>();
+        List<ArrDescItem> descItems = new ArrayList<>();
+        List<ArrDescItem> deleteDescItems = new ArrayList<>();
 
         // vytvoření nového objektu, který chceme uložit
-        ArrDescItemExt newDescItem = new ArrDescItemExt();
+        ArrDescItem newDescItem = new ArrDescItemPartyRef();
         newDescItem.setPosition(1);                             /* nastavení pozice (není vyžadováno, core doplní správnou; obecně se přidává na konec)
                                                                    pokud by atributy již existovaly, provede se posun v jádře a nastaví se požadovaná z UI */
         newDescItem.setDescItemType(descItemType);              // nastavení typu atributu (nesmí být null, musí odpovídat povoleným typům)
         newDescItem.setDescItemSpec(descItemSpec);              // nastavení specifikace atributu (může být null pokud nemá vazbu z DescItemType)
         newDescItem.setNode(node);                              // nastavení uzlu
-        newDescItem.setParty(party);                            // nastavení reference na původce
-        newDescItem.setData(party.getRecord().getRecord());     // nastavuje hodnotu atributu podle zvolené party - je pouze kvůli validaci neprázdného vyplnění
+        ((ArrDescItemPartyRef) newDescItem).setParty(party);    // nastavení reference na původce
 
         descItems.add(newDescItem);                 // přidání nového objektu do seznamu
 
@@ -134,7 +138,7 @@ public class DescItemOperations {
 
         /* provedení operace v jádře
            v result se vrátí všechny finální objekty - v našem případě jeden nově vytvořený */
-        List<ArrDescItemExt> result = arrangementManager.saveDescriptionItems(pack);
+        ArrDescItems result = arrangementManager.saveDescriptionItems(pack);
 
     }
 
@@ -165,18 +169,17 @@ public class DescItemOperations {
            konkrétní správné získání reference je pomocí metody findRecord() z RegistryManager */
         RegRecord record = new RegRecord();
 
-        List<ArrDescItemExt> descItems = new ArrayList<>();
-        List<ArrDescItemExt> deleteDescItems = new ArrayList<>();
+        List<ArrDescItem> descItems = new ArrayList<>();
+        List<ArrDescItem> deleteDescItems = new ArrayList<>();
 
         // vytvoření nového objektu, který chceme uložit
-        ArrDescItemExt newDescItem = new ArrDescItemExt();
-        newDescItem.setPosition(1);                  /* nastavení pozice (není vyžadováno, core doplní správnou; obecně se přidává na konec)
-                                                        pokud by atributy již existovaly, provede se posun v jádře a nastaví se požadovaná z UI */
-        newDescItem.setDescItemType(descItemType);   // nastavení typu atributu (nesmí být null, musí odpovídat povoleným typům)
-        newDescItem.setDescItemSpec(descItemSpec);   // nastavení specifikace atributu (nesmí být null, odvíjí se na kombinaci s record)
-        newDescItem.setNode(node);                   // nastavení uzlu
-        newDescItem.setRecord(record);               // nastavení reference na Role entit
-        newDescItem.setData(record.getRecord());     // nastavuje hodnotu atributu podle zvoleného record - je pouze kvůli validaci neprázdného vyplnění
+        ArrDescItem newDescItem = new ArrDescItemRecordRef();
+        newDescItem.setPosition(1);                             /* nastavení pozice (není vyžadováno, core doplní správnou; obecně se přidává na konec)
+                                                                   pokud by atributy již existovaly, provede se posun v jádře a nastaví se požadovaná z UI */
+        newDescItem.setDescItemType(descItemType);              // nastavení typu atributu (nesmí být null, musí odpovídat povoleným typům)
+        newDescItem.setDescItemSpec(descItemSpec);              // nastavení specifikace atributu (nesmí být null, odvíjí se na kombinaci s record)
+        newDescItem.setNode(node);                              // nastavení uzlu
+        ((ArrDescItemRecordRef) newDescItem).setRecord(record); // nastavení reference na Role entit
 
         descItems.add(newDescItem);                 // přidání nového objektu do seznamu
 
@@ -192,7 +195,7 @@ public class DescItemOperations {
 
         /* provedení operace v jádře
            v result se vrátí všechny finální objekty - v našem případě jeden nově vytvořený */
-        List<ArrDescItemExt> result = arrangementManager.saveDescriptionItems(pack);
+        ArrDescItems result = arrangementManager.saveDescriptionItems(pack);
 
     }
 
@@ -211,11 +214,11 @@ public class DescItemOperations {
         // určuje, zda-li se má vytvářet nová verze - při mazání se musí vždy volat s true
         Boolean createNewVersion = true;
 
-        List<ArrDescItemExt> descItems = new ArrayList<>();
-        List<ArrDescItemExt> deleteDescItems = new ArrayList<>();
+        List<ArrDescItem> descItems = new ArrayList<>();
+        List<ArrDescItem> deleteDescItems = new ArrayList<>();
 
         // vytvoření nového objektu, který chceme smazat (obecně se předpokládá načtený objekt)
-        ArrDescItemExt deleteDescItem = new ArrDescItemExt();
+        ArrDescItem deleteDescItem = new ArrDescItemInt();
         deleteDescItem.setDescItemObjectId(1000);       /* nastavení identifikátoru, podle kterého se bude mazat položka z otevřené verze
                                                            hodnota 1000 je jen příkladná, záleží na konkrétní hodnotě atributu */
 
@@ -233,7 +236,7 @@ public class DescItemOperations {
 
         /* provedení operace v jádře
            v result se vrátí všechny finální objekty - v našem případě jeden po smazání */
-        List<ArrDescItemExt> result = arrangementManager.saveDescriptionItems(pack);
+        ArrDescItems result = arrangementManager.saveDescriptionItems(pack);
 
     }
 
@@ -261,17 +264,17 @@ public class DescItemOperations {
            konkrétní správné získání reference je pomocí metody getDescItemSpecsFortDescItemType() z RuleManager */
         RulDescItemSpec descItemSpec = new RulDescItemSpec();
 
-        List<ArrDescItemExt> descItems = new ArrayList<>();
-        List<ArrDescItemExt> deleteDescItems = new ArrayList<>();
+        List<ArrDescItem> descItems = new ArrayList<>();
+        List<ArrDescItem> deleteDescItems = new ArrayList<>();
 
         // vytvoření nového objektu, který chceme upravit (obecně se předpokládá načtený objekt s upravenými hodnotami v UI)
-        ArrDescItemExt updateDescItem = new ArrDescItemExt();
-        updateDescItem.setPosition(1);                 // pozice musí odpovídat hodnotě v databázi, jinak bude vyhozena výjimka kvůli změně pozice
-        updateDescItem.setDescItemObjectId(1000);      /* nastavení identifikátoru, podle kterého se bude upravovat položka
-                                                          hodnota 1000 je jen příkladná, záleží na konkrétní hodnotě atributu */
-        updateDescItem.setDescItemType(descItemType);  // nastavení typu atributu (nesmí být null, musí odpovídat povoleným typům)
-        updateDescItem.setDescItemSpec(descItemSpec);  // nastavení specifikace atributu (může být null pokud nemá vazbu z DescItemType)
-        updateDescItem.setData("Nová hodnota atr");    // nastavuje novou hodnotu atributu, která se má uložit - konkrétní formát řetězce je závislý na DescItemType
+        ArrDescItem updateDescItem = new ArrDescItemString();
+        updateDescItem.setPosition(1);                                      // pozice musí odpovídat hodnotě v databázi, jinak bude vyhozena výjimka kvůli změně pozice
+        updateDescItem.setDescItemObjectId(1000);                           /* nastavení identifikátoru, podle kterého se bude upravovat položka
+                                                                               hodnota 1000 je jen příkladná, záleží na konkrétní hodnotě atributu */
+        updateDescItem.setDescItemType(descItemType);                       // nastavení typu atributu (nesmí být null, musí odpovídat povoleným typům)
+        updateDescItem.setDescItemSpec(descItemSpec);                       // nastavení specifikace atributu (může být null pokud nemá vazbu z DescItemType)
+        ((ArrDescItemString) updateDescItem).setValue("Nová hodnota atr");  // nastavuje novou hodnotu atributu, která se má uložit
 
         descItems.add(updateDescItem);                 // přidání nového objektu do seznamu
 
@@ -287,7 +290,7 @@ public class DescItemOperations {
 
         /* provedení operace v jádře
            v result se vrátí všechny finální objekty - v našem případě jeden nově upravený */
-        List<ArrDescItemExt> result = arrangementManager.saveDescriptionItems(pack);
+        ArrDescItems result = arrangementManager.saveDescriptionItems(pack);
     }
 
     /**
@@ -314,17 +317,19 @@ public class DescItemOperations {
            konkrétní správné získání reference je pomocí metody getDescItemSpecsFortDescItemType() z RuleManager */
         RulDescItemSpec descItemSpec = new RulDescItemSpec();
 
-        List<ArrDescItemExt> descItems = new ArrayList<>();
-        List<ArrDescItemExt> deleteDescItems = new ArrayList<>();
+        List<ArrDescItem> descItems = new ArrayList<>();
+        List<ArrDescItem> deleteDescItems = new ArrayList<>();
 
         // vytvoření nového objektu, který chceme upravit (obecně se předpokládá načtený objekt s upravenými hodnotami v UI)
-        ArrDescItemExt updateDescItem = new ArrDescItemExt();
-        updateDescItem.setPosition(1);                 // pozice určuje reálnou pozici, na které má položka být (pokud je null, předpokládá se nezměnění pozice)
-        updateDescItem.setDescItemObjectId(1000);      /* nastavení identifikátoru, podle kterého se bude upravovat položka
-                                                          hodnota 1000 je jen příkladná, záleží na konkrétní hodnotě atributu */
-        updateDescItem.setDescItemType(descItemType);  // nastavení typu atributu (nesmí být null, musí odpovídat povoleným typům)
-        updateDescItem.setDescItemSpec(descItemSpec);  // nastavení specifikace atributu (může být null pokud nemá vazbu z DescItemType)
-        updateDescItem.setData("Nová hodnota atr");    // nastavuje novou hodnotu atributu, která se má uložit - konkrétní formát řetězce je závislý na DescItemType
+        ArrDescItem updateDescItem = new ArrDescItemString();
+        updateDescItem
+                .setPosition(1);                                      // pozice určuje reálnou pozici, na které má položka být (pokud je null, předpokládá se nezměnění pozice)
+        updateDescItem.setDescItemObjectId(1000);                           /* nastavení identifikátoru, podle kterého se bude upravovat položka
+                                                                               hodnota 1000 je jen příkladná, záleží na konkrétní hodnotě atributu */
+        updateDescItem.setDescItemType(descItemType);                       // nastavení typu atributu (nesmí být null, musí odpovídat povoleným typům)
+        updateDescItem.setDescItemSpec(descItemSpec);                       // nastavení specifikace atributu (může být null pokud nemá vazbu z DescItemType)
+        ((ArrDescItemString) updateDescItem)
+                .setValue("Nová hodnota atr");  // nastavuje novou hodnotu atributu, která se má uložit - konkrétní formát řetězce je závislý na DescItemType
 
         descItems.add(updateDescItem);                 // přidání nového objektu do seznamu
 
@@ -340,7 +345,7 @@ public class DescItemOperations {
 
         /* provedení operace v jádře
            v result se vrátí všechny finální objekty - v našem případě jeden nově upravený */
-        List<ArrDescItemExt> result = arrangementManager.saveDescriptionItems(pack);
+        ArrDescItems result = arrangementManager.saveDescriptionItems(pack);
     }
 
 }
