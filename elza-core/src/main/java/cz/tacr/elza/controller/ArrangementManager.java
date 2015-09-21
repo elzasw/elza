@@ -1153,12 +1153,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     }
 
     @Override
-    @RequestMapping(value = "/deleteDescriptionItem", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/deleteDescriptionItem/{versionId}", method = RequestMethod.DELETE)
     @Transactional
-    public ArrDescItem deleteDescriptionItem(@RequestBody ArrDescItem descItem) {
+    public ArrDescItem deleteDescriptionItem(@RequestBody ArrDescItem descItem, @PathVariable(value = "versionId") Integer versionId) {
         Assert.notNull(descItem);
         ArrChange arrFaChange = createChange();
-        return deleteDescriptionsItemRaw(descItem, arrFaChange, true);
+        return deleteDescriptionsItemRaw(descItem, versionId, arrFaChange, true);
     }
 
     @Override
@@ -1256,7 +1256,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
             // mazání
             for (ArrDescItem descItem : deleteDescItems) {
-                descItemsRet.add(deleteDescriptionsItemRaw(descItem, arrFaChange, false));
+                // smazání jedné hodnoty atributu
+                // přidání výsledného objektu do navratového seznamu
+                descItemsRet.add(deleteDescriptionsItemRaw(descItem, versionId, arrFaChange, false));
             }
 
             // vytvoření
@@ -1297,6 +1299,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         Assert.notNull(descItemExt);
         Assert.notNull(faVersionId);
         Assert.notNull(arrFaChange);
+
+        validateLockVersion(faVersionId);
 
         ArrNode node = descItemExt.getNode();
         Assert.notNull(node);
@@ -1355,6 +1359,21 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
 
         return descItem;
+    }
+
+    /**
+     * Kontroluje, že verze není zamčená.
+     *
+     * @param versionId id verze
+     */
+    private void validateLockVersion(Integer versionId) {
+        Assert.notNull(versionId);
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+
+        Assert.notNull(version);
+        if (version.getLockChange() != null) {
+            throw new IllegalArgumentException("Nelze provést verzovanou změnu v uzavřené verzi.");
+        }
     }
 
     /**
@@ -1499,13 +1518,17 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     /**
      * Vymaže atribut archivního popisu.
      *
-     * @param descItemExt objekt attributu
-     * @param arrFaChange společná změna
+     * @param descItemExt       objekt attributu
+     * @param arrFaChange      společná změna
+     * @param versionId         id verze
      * @return výsledný(smazaný) attribut
      */
-    private ArrDescItem deleteDescriptionsItemRaw(ArrDescItem descItemExt, ArrChange arrFaChange, boolean saveNode) {
+    private ArrDescItem deleteDescriptionsItemRaw(ArrDescItem descItemExt, Integer versionId, ArrChange arrFaChange, boolean saveNode) {
         Assert.notNull(descItemExt);
         Assert.notNull(arrFaChange);
+        Assert.notNull(versionId);
+
+        validateLockVersion(versionId);
 
         Integer descItemObjectId = descItemExt.getDescItemObjectId();
         Assert.notNull(descItemObjectId);
@@ -1626,6 +1649,11 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     /**
      * Vrací další identifikátor objektu pro atribut (oproti PK se zachovává při nové verzi)
+     *
+     * TODO:
+     * Není dořešené, může dojít k přidělení stejného object_id dvěma různýmhodnotám atributu.
+     * Řešit v budoucnu zrušením object_id (pravděpodobně GUID) nebo vytvořením nové entity,
+     * kde bude object_id primární klíč a bude tak generován pomocí sekvencí hibernate.
      *
      * @return Identifikátor objektu
      */

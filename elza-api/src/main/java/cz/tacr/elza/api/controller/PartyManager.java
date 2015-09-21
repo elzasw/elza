@@ -11,7 +11,7 @@ import java.util.List;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 12. 8. 2015
  *
- * @param <PAPV> {@link ParParty}
+ * @param <PAPV> {@link ParParty} osoba
  */
 public interface PartyManager<PAPV extends ParParty> {
 
@@ -25,7 +25,7 @@ public interface PartyManager<PAPV extends ParParty> {
     /**
      * Vloží záznam o osobě. Je nutné vložit návázané rejstříkové heslo a podtyp.
      *
-     * @param party     data abstraktní osoby s vyplněnými vazbami na heslo a podtyp
+     * @param party     data osoby s vyplněnými vazbami na heslo a podtyp
      * @return          založený záznam
      */
     ParParty insertParty(PAPV party);
@@ -33,7 +33,7 @@ public interface PartyManager<PAPV extends ParParty> {
     /**
      * Upraví záznam osoby. Je umožněna změna rejstříkového hesla a podtypu.
      *
-     * @param party     data abstraktní osoby s vyplněnými vazbami na heslo a podtyp
+     * @param party     data osoby s ID a vyplněnými vazbami na heslo a podtyp
      * @return          aktualizovaný záznam
      */
     ParParty updateParty(PAPV party);
