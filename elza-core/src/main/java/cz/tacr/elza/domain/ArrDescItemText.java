@@ -1,6 +1,8 @@
 package cz.tacr.elza.domain;
 
 /**
+ * Rozšiřuje atribut archivního popisu o jeho hodnotu.
+ *
  * @author Martin Šlapa
  * @since 15.9.15
  */

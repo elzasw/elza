@@ -43,7 +43,6 @@ import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataStringRepository;
 import cz.tacr.elza.repository.DataTextRepository;
-import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DataUnitdateRepository;
 import cz.tacr.elza.repository.DataUnitidRepository;
 import cz.tacr.elza.repository.DescItemRepository;
@@ -55,6 +54,12 @@ import ma.glasnost.orika.MappingContext;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
 
 
+/**
+ * Factory pro vytváření a manipulaci s atributama a jejich hodnotama.
+ *
+ * @author Martin Šlapa
+ * @since 16.9.2015
+ */
 @Component
 public class DescItemFactory implements InitializingBean {
 
@@ -95,9 +100,6 @@ public class DescItemFactory implements InitializingBean {
     private DataRepository dataRepository;
 
     @Autowired
-    private DataTypeRepository dataTypeRepository;
-
-    @Autowired
     private PartyRepository partyRepository;
 
     @Autowired
@@ -126,6 +128,9 @@ public class DescItemFactory implements InitializingBean {
         initMapRepository();
     }
 
+    /**
+     * Nadefinování pravidel pro převod formátu Coordinates.
+     */
     private void defineMapCoordinates() {
         factory.classMap(ArrDescItemCoordinates.class, ArrDataCoordinates.class).customize(new CustomMapper<ArrDescItemCoordinates, ArrDataCoordinates>() {
 
@@ -153,6 +158,9 @@ public class DescItemFactory implements InitializingBean {
         }).register();
     }
 
+    /**
+     * Nadefinování pravidel pro převod formátu FormattedText.
+     */
     private void defineMapFormattedText() {
         factory.classMap(ArrDescItemFormattedText.class, ArrDataText.class).customize(new CustomMapper<ArrDescItemFormattedText, ArrDataText>() {
 
@@ -180,6 +188,9 @@ public class DescItemFactory implements InitializingBean {
         }).register();
     }
 
+    /**
+     * Nadefinování pravidel pro převod formátu Int.
+     */
     private void defineMapInt() {
         factory.classMap(ArrDescItemInt.class, ArrDataInteger.class).customize(new CustomMapper<ArrDescItemInt, ArrDataInteger>() {
 
@@ -207,6 +218,9 @@ public class DescItemFactory implements InitializingBean {
         }).register();
     }
 
+    /**
+     * Nadefinování pravidel pro převod formátu PartyRef.
+     */
     private void defineMapPartyRef() {
         factory.classMap(ArrDescItemPartyRef.class, ArrDataPartyRef.class).customize(new CustomMapper<ArrDescItemPartyRef, ArrDataPartyRef>() {
 
@@ -235,6 +249,9 @@ public class DescItemFactory implements InitializingBean {
         }).register();
     }
 
+    /**
+     * Nadefinování pravidel pro převod formátu RecordRef.
+     */
     private void defineMapRecordRef() {
         factory.classMap(ArrDescItemRecordRef.class, ArrDataRecordRef.class).customize(new CustomMapper<ArrDescItemRecordRef, ArrDataRecordRef>() {
 
@@ -263,6 +280,9 @@ public class DescItemFactory implements InitializingBean {
         }).register();
     }
 
+    /**
+     * Nadefinování pravidel pro převod formátu String.
+     */
     private void defineMapString() {
         factory.classMap(ArrDescItemString.class, ArrDataString.class).customize(new CustomMapper<ArrDescItemString, ArrDataString>() {
 
@@ -290,6 +310,9 @@ public class DescItemFactory implements InitializingBean {
         }).register();
     }
 
+    /**
+     * Nadefinování pravidel pro převod formátu Text.
+     */
     private void defineMapText() {
         factory.classMap(ArrDescItemText.class, ArrDataText.class).customize(new CustomMapper<ArrDescItemText, ArrDataText>() {
 
@@ -317,6 +340,9 @@ public class DescItemFactory implements InitializingBean {
         }).register();
     }
 
+    /**
+     * Nadefinování pravidel pro převod formátu Unitdate.
+     */
     private void defineMapUnitdate() {
         factory.classMap(ArrDescItemUnitdate.class, ArrDataUnitdate.class).customize(new CustomMapper<ArrDescItemUnitdate, ArrDataUnitdate>() {
 
@@ -343,6 +369,9 @@ public class DescItemFactory implements InitializingBean {
         }).register();
     }
 
+    /**
+     * Nadefinování pravidel pro převod formátu Unitid.
+     */
     private void defineMapUnitid() {
         factory.classMap(ArrDescItemUnitid.class, ArrDataUnitid.class).customize(new CustomMapper<ArrDescItemUnitid, ArrDataUnitid>() {
 
@@ -369,6 +398,9 @@ public class DescItemFactory implements InitializingBean {
         }).register();
     }
 
+    /**
+     * Inicialuzace mapy pro všechny repository.
+     */
     private void initMapRepository() {
         mapRepository = new LinkedHashMap<>();
         mapRepository.put(ArrDataCoordinates.class, dataCoordinatesRepository);
@@ -381,6 +413,12 @@ public class DescItemFactory implements InitializingBean {
         mapRepository.put(ArrDataUnitid.class, dataUnitidRepository);
     }
 
+    /**
+     * Vytvoření objektu atributu s hodnotou atributu.
+     *
+     * @param descItem atributu bez dat
+     * @return výsledný atributu s daty
+     */
     public ArrDescItem getDescItem(ArrDescItem descItem) {
         ArrData data = getDataByDescItem(descItem);
         ArrDescItem descItemTmp = createDescItemByType(descItem.getDescItemType().getDataType());
@@ -389,17 +427,36 @@ public class DescItemFactory implements InitializingBean {
         return descItemTmp;
     }
 
+    /**
+     * Vytvoření objektu atributu s formátovanou hodnotou atributu.
+     *
+     * @param descItem   atributu bez dat
+     * @param formatData požadovaný formát dat
+     * @return výsledný atributu s daty
+     */
     public ArrDescItem getDescItem(ArrDescItem descItem, String formatData) {
         ArrData data = getDataByDescItem(descItem);
         ArrDescItem descItemTmp = createDescItemByType(data.getDataType());
         BeanUtils.copyProperties(descItem, descItemTmp);
-        Map<Object,Object> map = new HashMap<>();
-        map.put(PROPERTY_FORMAT, formatData);
-        MappingContext x = new MappingContext(map);
-        facade.map(data, descItemTmp, x);
+
+        if (formatData != null) {
+            Map<Object, Object> map = new HashMap<>();
+            map.put(PROPERTY_FORMAT, formatData);
+            MappingContext mappingContext = new MappingContext(map);
+            facade.map(data, descItemTmp, mappingContext);
+        } else {
+            facade.map(data, descItemTmp);
+        }
+
         return descItemTmp;
     }
 
+    /**
+     * Načte hodnotu k atributu.
+     *
+     * @param descItem atribut ke kterému hledáme data
+     * @return nalezená data k atributu
+     */
     private ArrData getDataByDescItem(ArrDescItem descItem) {
         List<ArrData> dataList = dataRepository.findByDescItem(descItem);
         if (dataList.size() != 1) {
@@ -408,13 +465,21 @@ public class DescItemFactory implements InitializingBean {
         return dataList.get(0);
     }
 
+    /**
+     * Uloží hodnotu atributu i s daty.
+     *
+     * @param descItem         hodnota atributu
+     * @param createNewVersion vytvořit novou verzi?
+     *                         true - vytvoří novou hodnoty atributu
+     *                         false - načte původní hodnotu a upraví jí podle nové
+     * @return                 uložená hodnota atributu
+     */
     public ArrDescItem saveDescItem(ArrDescItem descItem, Boolean createNewVersion) {
 
-        // TODO: nějak normálněj?
-        ArrDescItem x = new ArrDescItem();
-        BeanUtils.copyProperties(descItem, x);
-        x = descItemRepository.save(x);
-        BeanUtils.copyProperties(x, descItem);
+        ArrDescItem descItemRaw = new ArrDescItem();
+        BeanUtils.copyProperties(descItem, descItemRaw);
+        descItemRaw = descItemRepository.save(descItemRaw);
+        BeanUtils.copyProperties(descItemRaw, descItem);
 
         ArrData data;
 
@@ -455,6 +520,12 @@ public class DescItemFactory implements InitializingBean {
         return descItem;
     }
 
+    /**
+     * Vytvoření objektu podle datového typu.
+     *
+     * @param dataType zvolený datový typ
+     * @return nový objekt
+     */
     public ArrDescItem createDescItemByType(RulDataType dataType) {
         Assert.notNull(dataType);
 
@@ -482,6 +553,12 @@ public class DescItemFactory implements InitializingBean {
         }
     }
 
+    /**
+     * Vytvoření kopie dat hodnoty atributu.
+     *
+     * @param descItemFrom atribut ze kterého se kopíruje hodnota
+     * @param descItemTo   atribut do kterého se kopíruje hodnota
+     */
     public void copyDescItemValues(ArrDescItem descItemFrom, ArrDescItem descItemTo) {
         ArrData data = getDataByDescItem(descItemFrom);
         ArrData dataNew = facade.map(data, data.getClass());
@@ -494,6 +571,13 @@ public class DescItemFactory implements InitializingBean {
         }
     }
 
+    /**
+     * Formátuje výstupní hodnotu dat pokud je to vyžadováno (existuje podmínka v kontextu.
+     *
+     * @param context kontext
+     * @param value   hodnota pro naformátování
+     * @return upravená hodnota
+     */
     private String formatString(final MappingContext context, final String value) {
         String valueRet = value;
         if (context != null) {
@@ -507,8 +591,5 @@ public class DescItemFactory implements InitializingBean {
         }
         return valueRet;
     }
-
-
-
 
 }

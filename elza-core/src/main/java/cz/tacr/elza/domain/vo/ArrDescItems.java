@@ -6,7 +6,10 @@ import cz.tacr.elza.domain.ArrDescItem;
 
 
 /**
- * TODO
+ * Zapouzdření seznamu atributů.
+ *
+ * @author Martin Šlapa
+ * @since 18.9.2015
  */
 public class ArrDescItems implements cz.tacr.elza.api.vo.ArrDescItems<ArrDescItem> {
 
