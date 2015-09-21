@@ -38,6 +38,7 @@ import cz.tacr.elza.domain.ArrDescItemRecordRef;
 import cz.tacr.elza.domain.ArrDescItemString;
 import cz.tacr.elza.domain.ArrDescItemText;
 import cz.tacr.elza.domain.ArrDescItemUnitdate;
+import cz.tacr.elza.domain.ArrDescItemUnitid;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
@@ -1506,12 +1507,224 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         // smazání hodnoty attributu
 
-        /*ArrDescItem descItemDel = arrangementManager.deleteDescriptionItem(descItemNew);
+        ArrDescItem descItemDel = arrangementManager.deleteDescriptionItem(descItemNew, version.getFindingAidVersionId());
 
         Assert.assertEquals(descItemNew, descItemDel);
 
-        Assert.assertNotNull(descItemDel.getDeleteChange());*/
+        Assert.assertNotNull(descItemDel.getDeleteChange());
 
+    }
+
+    @Test
+    public void testRestAllTypesDescriptionItemValues() {
+
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
+
+        ArrChange createChangeVersion = createFaChange(LocalDateTime.now());
+        ArrLevel parent = createLevel(1, null, createChangeVersion);
+        ArrFindingAidVersion version = createFindingAidVersion(findingAid, parent, false, createChangeVersion);
+
+        LocalDateTime startTime = version.getCreateChange().getChangeDate();
+
+        ArrChange createChange = createFaChange(startTime.minusSeconds(1));
+        ArrLevel faLevel = createLevel(2, parent, createChange);
+        levelRepository.save(faLevel);
+
+        ArrNode node = faLevel.getNode();
+
+        RulDataType dataTypeCoordinates = getDataType(DATA_TYPE_COORDINATES);
+        Assert.assertNotNull("Neexistuje záznam pro datový typ COORDINATES", dataTypeCoordinates);
+
+        RulDataType dataTypeFormattedText = getDataType(DATA_TYPE_FORMATTED_TEXT);
+        Assert.assertNotNull("Neexistuje záznam pro datový typ FORMATTED_TEXT", dataTypeFormattedText);
+
+        RulDataType dataTypeInteger = getDataType(DATA_TYPE_INTEGER);
+        Assert.assertNotNull("Neexistuje záznam pro datový typ INTEGER", dataTypeInteger);
+
+        RulDataType dataTypePartyRef = getDataType(DATA_TYPE_PARTY_REF);
+        Assert.assertNotNull("Neexistuje záznam pro datový typ DATA_TYPE_PARTY_REF", dataTypePartyRef);
+
+        RulDataType dataTypeRecordRef = getDataType(DATA_TYPE_RECORD_REF);
+        Assert.assertNotNull("Neexistuje záznam pro datový typ DATA_TYPE_RECORD_REF", dataTypeRecordRef);
+
+        RulDataType dataTypeString = getDataType(DATA_TYPE_STRING);
+        Assert.assertNotNull("Neexistuje záznam pro datový typ DATA_TYPE_STRING", dataTypeString);
+
+        RulDataType dataTypeText = getDataType(DATA_TYPE_TEXT);
+        Assert.assertNotNull("Neexistuje záznam pro datový typ DATA_TYPE_TEXT", dataTypeText);
+
+        RulDataType dataTypeUnitdate = getDataType(DATA_TYPE_UNITDATE);
+        Assert.assertNotNull("Neexistuje záznam pro datový typ DATA_TYPE_UNITDATE", dataTypeUnitdate);
+
+        RulDataType dataTypeUnitid = getDataType(DATA_TYPE_UNITID);
+        Assert.assertNotNull("Neexistuje záznam pro datový typ DATA_TYPE_UNITID", dataTypeUnitid);
+
+        // vytvoření závislých dat
+
+        List<RulDescItemType> list = descItemTypeRepository.findAll();
+
+        RulDescItemType itemTypeCoordinates = createDescItemType(dataTypeCoordinates, "ITEM_TYPE_COORDINATES", "Item type COORDINATES", "SH COORDINATES", "Desc COORDINATES", false,
+                false, false, 1);
+        RulDescItemType itemTypeFormattedText = createDescItemType(dataTypeFormattedText, "ITEM_TYPE_FORMATTED_TEXT", "Item type FORMATTED_TEXT", "SH FORMATTED_TEXT",
+                "Desc FORMATTED_TEXT", false, false, false, 2);
+        RulDescItemType itemTypeInteger = createDescItemType(dataTypeInteger, "ITEM_TYPE_INTEGER", "Item type INTEGER", "SH INTEGER", "Desc INTEGER", false, false, false, 3);
+        RulDescItemType itemTypePartyRef = createDescItemType(dataTypePartyRef, "ITEM_TYPE_PARTY_REF", "Item type PARTY_REF", "SH PARTY_REF", "Desc PARTY_REF", false, false, false,
+                4);
+        RulDescItemType itemTypeRecordRef = createDescItemType(dataTypeRecordRef, "ITEM_TYPE_RECORD_REF", "Item type RECORD_REF", "SH RECORD_REF", "Desc RECORD_REF", false, false,
+                false, 5);
+        RulDescItemType itemTypeString = createDescItemType(dataTypeString, "ITEM_TYPE_STRING", "Item type STRING", "SH STRING", "Desc STRING", false, false, false, 6);
+        RulDescItemType itemTypeText = createDescItemType(dataTypeText, "ITEM_TYPE_TEXT", "Item type TEXT", "SH TEXT", "Desc TEXT", false, false, false, 7);
+        RulDescItemType itemTypeUnitdate = createDescItemType(dataTypeUnitdate, "ITEM_TYPE_UNITDATE", "Item type UNITDATE", "SH UNITDATE", "Desc UNITDATE", false, false, false, 8);
+        RulDescItemType itemTypeUnitid = createDescItemType(dataTypeUnitid, "ITEM_TYPE_UNITID", "Item type UNITID", "SH UNITID", "Desc UNITID", false, false, false, 9);
+
+        // přidání všech typů attributu
+
+        ArrDescItem descItemCoordinates = new ArrDescItemCoordinates();
+        descItemCoordinates.setDescItemType(itemTypeCoordinates);
+        ((ArrDescItemCoordinates) descItemCoordinates).setValue("Coordinates1");
+        descItemCoordinates.setNode(node);
+        descItemCoordinates.setPosition(1);
+
+        ArrDescItem descItemCoordinatesNew = arrangementManager.createDescriptionItem(descItemCoordinates, version.getFindingAidVersionId());
+        node = nodeRepository.findOne(node.getNodeId());
+
+        ArrDescItem descItemFormattedText = new ArrDescItemFormattedText();
+        descItemFormattedText.setDescItemType(itemTypeFormattedText);
+        ((ArrDescItemFormattedText) descItemFormattedText).setValue("FormattedText1");
+        descItemFormattedText.setNode(node);
+        descItemFormattedText.setPosition(2);
+
+        ArrDescItem descItemFormattedTextNew = arrangementManager.createDescriptionItem(descItemFormattedText, version.getFindingAidVersionId());
+        node = nodeRepository.findOne(node.getNodeId());
+
+        ArrDescItem descItemInt = new ArrDescItemInt();
+        descItemInt.setDescItemType(itemTypeInteger);
+        ((ArrDescItemInt) descItemInt).setValue(123);
+        descItemInt.setNode(node);
+        descItemInt.setPosition(3);
+
+        ArrDescItem descItemIntNew = arrangementManager.createDescriptionItem(descItemInt, version.getFindingAidVersionId());
+        node = nodeRepository.findOne(node.getNodeId());
+
+        ArrDescItem descItemPartyRef = new ArrDescItemPartyRef();
+        descItemPartyRef.setDescItemType(itemTypePartyRef);
+        ParParty party = restCreateParty();
+        ((ArrDescItemPartyRef) descItemPartyRef).setParty(party);
+        descItemPartyRef.setNode(node);
+        descItemPartyRef.setPosition(4);
+
+        ArrDescItem descItemPartyRefNew = arrangementManager.createDescriptionItem(descItemPartyRef, version.getFindingAidVersionId());
+        node = nodeRepository.findOne(node.getNodeId());
+
+        ArrDescItem descItemRecordRef = new ArrDescItemRecordRef();
+        descItemRecordRef.setDescItemType(itemTypeRecordRef);
+        RegRecord record = restCreateRecord();
+        ((ArrDescItemRecordRef) descItemRecordRef).setRecord(record);
+        descItemRecordRef.setNode(node);
+        descItemRecordRef.setPosition(5);
+
+        ArrDescItem descItemRecordRefNew = arrangementManager.createDescriptionItem(descItemRecordRef, version.getFindingAidVersionId());
+        node = nodeRepository.findOne(node.getNodeId());
+
+        ArrDescItem descItemString = new ArrDescItemString();
+        descItemString.setDescItemType(itemTypeString);
+        ((ArrDescItemString) descItemString).setValue("String1");
+        descItemString.setNode(node);
+        descItemString.setPosition(6);
+
+        ArrDescItem descItemStringNew = arrangementManager.createDescriptionItem(descItemString, version.getFindingAidVersionId());
+        node = nodeRepository.findOne(node.getNodeId());
+
+        ArrDescItem descItemText = new ArrDescItemText();
+        descItemText.setDescItemType(itemTypeText);
+        ((ArrDescItemText) descItemText).setValue("Text1");
+        descItemText.setNode(node);
+        descItemText.setPosition(7);
+
+        ArrDescItem descItemTextNew = arrangementManager.createDescriptionItem(descItemText, version.getFindingAidVersionId());
+        node = nodeRepository.findOne(node.getNodeId());
+
+        ArrDescItem descItemUnitdate = new ArrDescItemUnitdate();
+        descItemUnitdate.setDescItemType(itemTypeUnitdate);
+        ((ArrDescItemUnitdate) descItemUnitdate).setValue("Unitdate1");
+        descItemUnitdate.setNode(node);
+        descItemUnitdate.setPosition(8);
+
+        ArrDescItem descItemUnitdateNew = arrangementManager.createDescriptionItem(descItemUnitdate, version.getFindingAidVersionId());
+        node = nodeRepository.findOne(node.getNodeId());
+
+        ArrDescItem descItemUnitid = new ArrDescItemUnitid();
+        descItemUnitid.setDescItemType(itemTypeUnitid);
+        ((ArrDescItemUnitid) descItemUnitid).setValue("Unitid1");
+        descItemUnitid.setNode(node);
+        descItemUnitid.setPosition(9);
+
+        ArrDescItem descItemUnitidNew = arrangementManager.createDescriptionItem(descItemUnitid, version.getFindingAidVersionId());
+        node = nodeRepository.findOne(node.getNodeId());
+
+        ParParty partyUpdate = restCreateParty();
+        RegRecord recordUpdate = restCreateRecord();
+
+        ((ArrDescItemCoordinates) descItemCoordinatesNew).setValue("Coordinates2");
+        ((ArrDescItemFormattedText) descItemFormattedTextNew).setValue("FormattedText2");
+        ((ArrDescItemInt) descItemIntNew).setValue(124);
+        ((ArrDescItemPartyRef) descItemPartyRefNew).setParty(partyUpdate);
+        ((ArrDescItemRecordRef) descItemRecordRefNew).setRecord(recordUpdate);
+        ((ArrDescItemString) descItemStringNew).setValue("String2");
+        ((ArrDescItemText) descItemTextNew).setValue("Text2");
+        ((ArrDescItemUnitdate) descItemUnitdateNew).setValue("Unitdate2");
+        ((ArrDescItemUnitid) descItemUnitidNew).setValue("Unitid2");
+
+        List<ArrDescItem> descItems = new ArrayList<>();
+        descItems.add(descItemCoordinatesNew);
+        descItems.add(descItemFormattedTextNew);
+        descItems.add(descItemIntNew);
+        descItems.add(descItemPartyRefNew);
+        descItems.add(descItemRecordRefNew);
+        descItems.add(descItemStringNew);
+        descItems.add(descItemTextNew);
+        descItems.add(descItemUnitdateNew);
+        descItems.add(descItemUnitidNew);
+
+        List<ArrDescItem> deleteDescItems = new ArrayList<>();
+
+        ArrDescItemSavePack pack = new ArrDescItemSavePack();
+        pack.setNode(node);
+        pack.setFaVersionId(version.getFindingAidVersionId());
+        pack.setCreateNewVersion(true);
+        pack.setDescItems(descItems);
+        pack.setDeleteDescItems(deleteDescItems);
+
+        ArrDescItems result = arrangementManager.saveDescriptionItems(pack);
+
+        List<ArrDescItem> descItemsResult = result.getDescItems();
+
+        Assert.assertNotNull(descItemsResult);
+        Assert.assertEquals(9, descItemsResult.size());
+
+        for (ArrDescItem descItem : descItemsResult) {
+            if (descItem instanceof ArrDescItemCoordinates) {
+                Assert.assertEquals(descItemCoordinatesNew.toString(), descItem.toString());
+            } else if (descItem instanceof ArrDescItemFormattedText) {
+                Assert.assertEquals(descItemFormattedTextNew.toString(), descItem.toString());
+            } else if (descItem instanceof ArrDescItemInt) {
+                Assert.assertEquals(descItemIntNew.toString(), descItem.toString());
+            } else if (descItem instanceof ArrDescItemPartyRef) {
+                Assert.assertEquals(descItemPartyRefNew.toString(), descItem.toString());
+            } else if (descItem instanceof ArrDescItemRecordRef) {
+                Assert.assertEquals(descItemRecordRefNew.toString(), descItem.toString());
+            } else if (descItem instanceof ArrDescItemString) {
+                Assert.assertEquals(descItemStringNew.toString(), descItem.toString());
+            } else if (descItem instanceof ArrDescItemText) {
+                Assert.assertEquals(descItemTextNew.toString(), descItem.toString());
+            } else if (descItem instanceof ArrDescItemUnitdate) {
+                Assert.assertEquals(descItemUnitdateNew.toString(), descItem.toString());
+            } else if (descItem instanceof ArrDescItemUnitid) {
+                Assert.assertEquals(descItemUnitidNew.toString(), descItem.toString());
+            } else {
+                Assert.fail("Nedefinovaný datový typ hodnoty atributu");
+            }
+        }
     }
 
 }

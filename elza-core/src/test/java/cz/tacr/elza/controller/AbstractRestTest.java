@@ -191,8 +191,8 @@ public abstract class AbstractRestTest {
     protected static final Integer DATA_TYPE_INTEGER = 1;
     protected static final Integer DATA_TYPE_STRING = 2;
     protected static final Integer DATA_TYPE_TEXT = 3;
-    protected static final Integer DATA_TYPE_DATACE = 4;
-    protected static final Integer DATA_TYPE_REF = 5;
+    protected static final Integer DATA_TYPE_UNITDATE = 4;
+    protected static final Integer DATA_TYPE_UNITID = 5;
     protected static final Integer DATA_TYPE_FORMATTED_TEXT = 6;
     protected static final Integer DATA_TYPE_COORDINATES = 7;
     protected static final Integer DATA_TYPE_PARTY_REF = 8;
