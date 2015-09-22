@@ -1,13 +1,14 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrNode;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrNode;
 
 
 /**
@@ -78,4 +79,12 @@ public interface DescItemRepository extends JpaRepository<ArrDescItem, Integer> 
     @Query("SELECT i FROM arr_desc_item i JOIN i.descItemType t WHERE i.position > ?1 AND i.position <= ?2 AND i.node = ?3 AND i.deleteChange IS NULL AND t.descItemTypeId = ?4")
     List<ArrDescItem> findByNodeAndDescItemTypeIdAndDeleteChangeIsNullBetweenPositions(Integer position, Integer position2, ArrNode node, Integer descItemTypeId);
 
+
+    /**
+     * najde záznamy podle nodu seřazený podle změny
+     * @param node  zadaný nod
+     * @return  nalezené atributy archivního popisu
+     */
+    @Query("SELECT i FROM arr_desc_item i WHERE i.node = ?1 order by i.createChange.changeDate asc")
+    List<ArrDescItem> findByNodeOrderByCreateChangeAsc(ArrNode node);
 }

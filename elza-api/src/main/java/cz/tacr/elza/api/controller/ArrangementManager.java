@@ -12,8 +12,7 @@ import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.ArrDescItemSavePack;
 import cz.tacr.elza.api.vo.ArrDescItems;
 import cz.tacr.elza.api.vo.ArrLevelPack;
-
-import java.util.List;
+import cz.tacr.elza.api.vo.ArrNodeHistoryPack;
 
 
 /**
@@ -21,7 +20,7 @@ import java.util.List;
  *
  * @param <FA> {@link ArrFindingAid} archivní pomůcka
  * @param <FV> {@link ArrFindingAidVersion} verze archivní pomůcky
- * @param <DIE> {@link ArrDescItemExt} archivní popis - rozšířený o hodnotu atributu, odkaz na osobu a heslo rejstříku
+ * @param <DI> {@link ArrDescItem} archivní popis
  * @param <DISP> {@link ArrDescItemSavePack} zapouzdřuje archivní popisy k uložení spolu s těmi ke smazání,
  *              id archivní pomůcky a příznakem, zdali vytvářet novou změnu
  * @param <FL> {@link ArrLevel} úroveň hierarchického popisu
@@ -33,7 +32,7 @@ import java.util.List;
  * @since 12. 8. 2015
  */
 public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFindingAidVersion, DI extends ArrDescItem,
-    DISP extends ArrDescItemSavePack, FL extends ArrLevel, FLP extends ArrLevelPack, N extends ArrNode, DIS extends ArrDescItems> {
+    DISP extends ArrDescItemSavePack, FL extends ArrLevel, FLP extends ArrLevelPack, N extends ArrNode, DIS extends ArrDescItems, NHP extends ArrNodeHistoryPack> {
 
     /** Formát popisu atributu - dlouhá verze. */
     String FORMAT_ATTRIBUTE_FULL = "FULL";
@@ -251,4 +250,12 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      */
     List<DI> getDescriptionItemsForAttribute(Integer faVersionId, Integer nodeId, Integer rulDescItemTypeId);
 
+
+    /**
+     * Vrátí seznam změn uzlů a atributů v jednotlivých verzích.
+     * @param nodeId        Identifikátor uzlu
+     * @param findingAidId  Identifikátor archivní pomůcky
+     * @return              Seznam změn
+     */
+    NHP getHistoryForNode(Integer nodeId, Integer findingAidId);
 }

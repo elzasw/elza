@@ -199,6 +199,18 @@ $ax-main-focus: $color-app;
             display: table-row;
         }
     }
+
+    .change-attribute-before {
+        width: 450px;
+        color: red;
+        padding: 10px;
+    }
+
+    .change-attribute-after {
+        width: 450px;
+        color: green;
+        padding: 10px;
+    }
 }
 
 .v-overlay-container[aria-label="item-not-cut"] .v-menubar-menuitem-show-if-cut {

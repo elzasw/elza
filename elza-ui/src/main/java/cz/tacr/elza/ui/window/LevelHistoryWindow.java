@@ -1,29 +1,31 @@
 package cz.tacr.elza.ui.window;
 
-import com.vaadin.ui.CssLayout;
-import com.vaadin.ui.Label;
-import cz.req.ax.AxWindow;
-import cz.tacr.elza.controller.ArrangementManager;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import org.springframework.util.Assert;
-
-import javax.annotation.Nullable;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.util.Assert;
+
+import com.vaadin.ui.Component;
+import com.vaadin.ui.CssLayout;
+import com.vaadin.ui.Label;
+
+import cz.req.ax.AxWindow;
+import cz.tacr.elza.controller.ArrangementManager;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.vo.ArrNodeHistoryItem;
+import cz.tacr.elza.domain.vo.ArrNodeHistoryPack;
 
 
 /**
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 18.8.2015
  */
-
 public class LevelHistoryWindow extends AxWindow {
 
     private ArrangementManager arrangementManager;
@@ -51,151 +53,109 @@ public class LevelHistoryWindow extends AxWindow {
 
 
     private List<CssLayout> createVersionHistory(final ArrLevel level, final Integer findingAidId) {
-            final List<ArrFindingAidVersion> versionList = arrangementManager.getFindingAidVersions(findingAidId);
-            List<ArrLevel> allLevels = arrangementManager.findLevels(level.getNode().getNodeId());
-            List<CssLayout> resultList = new ArrayList<>();
+        List<CssLayout> resultList = new ArrayList<>();
 
-            final Map<ArrFindingAidVersion, List<ArrLevel>> versionMap = prepareVersionLevelMap(level, findingAidId);
-            ArrLevel firstLevel = allLevels.get(0);
-            ArrLevel lastLevel = allLevels.get(allLevels.size()-1);
+        ArrNodeHistoryPack nodeHistoryPack = arrangementManager.getHistoryForNode(level.getNode().getNodeId(), findingAidId);
 
+        Map<ArrFindingAidVersion, List<ArrNodeHistoryItem>> items = nodeHistoryPack.getItems();
 
-            int versionNumber = 0;
-            for (ArrFindingAidVersion version : versionList) {
-                versionNumber++;
+        List<ArrFindingAidVersion> versions = new ArrayList<>(items.keySet());
 
-                List<ArrLevel> levels = versionMap.get(version);
-                if(levels == null || levels.isEmpty()) {
-                    continue;
-                }
+        Collections.sort(versions, (o1, o2) -> o1.getCreateChange().getChangeDate().compareTo(o2.getCreateChange().getChangeDate()));
 
-                CssLayout layout = createVersionHistoryItem(versionNumber, version, levels, firstLevel, lastLevel);
+        for (ArrFindingAidVersion version : versions) {
+            List<ArrNodeHistoryItem> nodeHistoryItems = items.get(version);
+            if (nodeHistoryItems.size() > 0) {
+                CssLayout layout = createVersionHistoryItem(version, nodeHistoryItems);
                 resultList.add(layout);
             }
-
-            return resultList;
         }
 
-        private Map<ArrFindingAidVersion, List<ArrLevel>> prepareVersionLevelMap(final ArrLevel level, final Integer findingAidId) {
-            final List<ArrLevel> levelList = arrangementManager.findLevels(level.getNode().getNodeId());
-            final List<ArrFindingAidVersion> versionList = arrangementManager.getFindingAidVersions(findingAidId);
+        return resultList;
+    }
 
+    private CssLayout createVersionHistoryItem(ArrFindingAidVersion findingAidVersion, List<ArrNodeHistoryItem> nodeHistoryItems) {
 
-            ArrFindingAidVersion[] versions = new ArrFindingAidVersion[versionList.size()];
-            Integer[] versionEnds = new Integer[versionList.size()];
-            final Map<ArrFindingAidVersion, List<ArrLevel>> versionMap = new LinkedHashMap<ArrFindingAidVersion, List<ArrLevel>>();
+        CssLayout layout = new CssLayout();
+        layout.setSizeUndefined();
+        layout.setStyleName("version-header");
 
-            int index = 0;
-            for (ArrFindingAidVersion faVersion : versionList) {
-                versionEnds[index] = faVersion.getLockChange() == null ? Integer.MAX_VALUE
-                                                                       : faVersion.getLockChange().getChangeId();
-                versions[index] = faVersion;
-                index++;
-            }
-
-            boolean firstLevel = true;
-            for (ArrLevel faLevel : levelList) {
-                ArrFindingAidVersion version = getVersionByChangeId(firstLevel, faLevel, versionEnds, versions);
-                firstLevel = false;
-
-                List<ArrLevel> levels = versionMap.get(version);
-                if (levels == null) {
-                    levels = new LinkedList<ArrLevel>();
-                    versionMap.put(version, levels);
-                }
-                levels.add(faLevel);
-            }
-
-            return versionMap;
+        String lockDataStr = "aktuální";
+        if (findingAidVersion.getLockChange() != null) {
+            lockDataStr = "uzavřena k " + findingAidVersion.getLockChange().getChangeDate().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM));
         }
+        Label header = newLabel(findingAidVersion.getFindingAidVersionId() + " - " + lockDataStr, "h2");
+        layout.addComponent(header);
 
-        private ArrFindingAidVersion getVersionByChangeId(final boolean firstLevel,
-                                               @Nullable final ArrLevel faLevel,
-                                               final Integer[] versionEnds,
-                                               final ArrFindingAidVersion[] versions) {
-            Integer deleteId = faLevel.getDeleteChange() == null ? null : faLevel.getDeleteChange().getChangeId();
-            if (firstLevel || deleteId == null) {
-                Integer createId = faLevel.getCreateChange().getChangeId();
+        if (nodeHistoryItems.isEmpty()) {
+            layout.addComponent(cssLayout("", newLabel("Žádné změny")));
+        } else {
 
-                int index = Arrays.binarySearch(versionEnds, createId);
-                if (index < 0) {
-                    index = -index - 1;
-                }
-                return versions[index];
-            } else {
-                int index = Arrays.binarySearch(versionEnds, deleteId);
-                if (index < 0) {
-                    index = -index - 1;
-                }
-                return versions[index];
-            }
-        }
+            layout.addComponent(createVersionHistoryHeader());
 
+            Collections.sort(nodeHistoryItems, (o1, o2) -> o1.getChange().getChangeDate().compareTo(o2.getChange().getChangeDate()));
 
-        private CssLayout createVersionHistoryItem(final int versionNumber,
-                                                   ArrFindingAidVersion faVersion,
-                                                   List<ArrLevel> levelSublist,
-                                                   ArrLevel firstLevel,
-                                                   ArrLevel lastLevel) {
-         // pridani verze
-            CssLayout layout = new CssLayout();
-            layout.setSizeUndefined();
-            layout.setStyleName("version-header");
-    //        layout.addStyleName("vrItem");
+            Label text;
+            CssLayout layoutRow;
 
+            for (ArrNodeHistoryItem nodeHistoryItem : nodeHistoryItems) {
 
-            layout.setSizeUndefined();
-            String lockDataStr = "aktuální";
-            if (faVersion.getLockChange() != null) {
-                lockDataStr = "uzavřena k " + faVersion.getLockChange().getChangeDate()
-                        .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM));
-            }
-            Label header = newLabel(versionNumber+" - "+ lockDataStr, "h2");
-            layout.addComponent(header);
+                Component componentAkce;
 
-            if(levelSublist.isEmpty()){
-                layout.addComponent(cssLayout("", newLabel("Žádné změny")));
-            }
-            else{
-
-                layout.addComponent(createVersionHistoryHeader());
-
-                // pridani levlu
-                for (ArrLevel faLevel : levelSublist) {
-                    String typZmena = "změna";
-
-                    if (faLevel.equals(lastLevel) && lastLevel.getDeleteChange() != null) {
-                        typZmena = "smazání";
+                // pouze z důvodu načtení objektů do sessions
+                List<ArrDescItem> descItems = nodeHistoryItem.getDescItems();
+                if (descItems != null) {
+                    for (ArrDescItem descItem : descItems) {
+                        if (descItem.getDescItemSpec() != null) {
+                            descItem.getDescItemSpec().getName().toString();
+                        }
+                        descItem.toString();
                     }
-
-
-                    if (faLevel.equals(firstLevel)) {
-                        typZmena = "vytvoření";
-                    }
-
-                    Label labelTyp = newLabel(typZmena);
-
-                    String createDataStr = faLevel.getCreateChange().getChangeDate()
-                            .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM));
-                    Label labelChangeDate = newLabel(createDataStr);
-
-                    String parentNodeId = (faLevel.getNodeParent() == null) ? "" : faLevel.getNodeParent().getNodeId().toString();
-                    Label labelParent = newLabel(parentNodeId);
-
-                    String position = (faLevel.getPosition() == null) ? "" : faLevel.getPosition().toString();
-                    Label labelPosition = newLabel(position);
-
-                    CssLayout layoutChildern = new CssLayout(labelTyp, labelChangeDate, labelParent, labelPosition);
-                    //            layoutChildern.addStyleName("historie-content");
-                    layout.addComponent(layoutChildern);
                 }
+                // konec
+
+                switch (nodeHistoryItem.getType()) {
+                    case LEVEL_CREATE:
+                        componentAkce = newLabel("Vytvoření uzlu");
+                        break;
+                    case LEVEL_DELETE:
+                        componentAkce = newLabel("Smazání uzlu");
+                        break;
+                    case LEVEL_CHANGE:
+                        componentAkce = newLabel("Změna zařazení uzlu");
+                        break;
+                    case ATTRIBUTE_CHANGE:
+                        text = newLabel("Změna atributů");
+                        layoutRow = new CssLayout(text);
+                        layoutRow.addLayoutClickListener(event -> {
+                            showDetail(nodeHistoryItem);
+                        });
+                        componentAkce = layoutRow;
+                        break;
+                    default:
+                        throw new IllegalStateException("Nedefinovaný typ akce");
+                }
+
+                String createDataStr = nodeHistoryItem.getChange().getChangeDate().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM));
+                Label labelChangeDate = newLabel(createDataStr);
+                CssLayout layoutChildren = new CssLayout(labelChangeDate, componentAkce);
+                layout.addComponent(layoutChildren);
+
             }
 
-            return layout;
         }
 
-        private CssLayout createVersionHistoryHeader(){
-            CssLayout layout = cssLayout("version-table-header",newLabel("Akce"), newLabel("Datum změny"), newLabel("Nadřazený uzel"),  newLabel("Pozice"));
-            return layout;
-        }
+        return layout;
+    }
+
+    private CssLayout createVersionHistoryHeader() {
+        CssLayout layout = cssLayout("version-table-header", newLabel("Datum změny"), newLabel("Akce"));
+        return layout;
+    }
+
+    private LevelHistoryDetailWindow showDetail(ArrNodeHistoryItem nodeHistoryItem) {
+        LevelHistoryDetailWindow window = new LevelHistoryDetailWindow(arrangementManager);
+        window.show(nodeHistoryItem);
+        return window;
+    }
 }

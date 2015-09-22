@@ -2,13 +2,17 @@ package cz.tacr.elza.controller;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
@@ -27,7 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
-import cz.tacr.elza.domain.vo.ArrDescItems;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -44,7 +47,10 @@ import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
+import cz.tacr.elza.domain.vo.ArrDescItems;
 import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
+import cz.tacr.elza.domain.vo.ArrNodeHistoryItem;
+import cz.tacr.elza.domain.vo.ArrNodeHistoryPack;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataCoordinatesRepository;
@@ -78,7 +84,7 @@ import cz.tacr.elza.repository.RuleSetRepository;
 @RestController
 @RequestMapping("/api/arrangementManager")
 public class ArrangementManager implements cz.tacr.elza.api.controller.ArrangementManager<ArrFindingAid, ArrFindingAidVersion,
-    ArrDescItem, ArrDescItemSavePack, ArrLevel, ArrLevelWithExtraNode, ArrNode, ArrDescItems> {
+    ArrDescItem, ArrDescItemSavePack, ArrLevel, ArrLevelWithExtraNode, ArrNode, ArrDescItems, ArrNodeHistoryPack> {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -1824,4 +1830,244 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
         return descItems;
     }
+
+    @Override
+    @RequestMapping(value = "/getHistoryForNode/{findingAidId}/{nodeId}", method = RequestMethod.GET)
+    public ArrNodeHistoryPack getHistoryForNode(@PathVariable(value = "nodeId") Integer nodeId,
+                                                @PathVariable(value = "findingAidId") Integer findingAidId) {
+        Assert.notNull(nodeId);
+        Assert.notNull(findingAidId);
+
+        ArrNode node = nodeRepository.findOne(nodeId);
+        ArrFindingAid findingAid = findingAidRepository.findOne(findingAidId);
+
+        if (node == null) {
+            throw new IllegalArgumentException("Uzel s identifikátorem " + nodeId + " neexistuje");
+        }
+
+        if (findingAid == null) {
+            throw new IllegalArgumentException("Archivní pomůcka s identifikátorem " + findingAidId + " neexistuje");
+        }
+
+        List<ArrLevel> levels = levelRepository.findByNodeOrderByCreateChangeAsc(node);
+        List<ArrDescItem> descItems = new ArrayList<>();
+        for (ArrDescItem descItem : descItemRepository.findByNodeOrderByCreateChangeAsc(node)) {
+            descItems.add(descItemFactory.getDescItem(descItem));
+        }
+
+        List<ArrFindingAidVersion> findingAidVersions = findingAidVersionRepository.findVersionsByFindingAidIdOrderByCreateDateAsc(findingAid.getFindingAidId());
+
+        ArrLevel firstLevel = levels.get(0);
+        ArrLevel lastLevel = levels.get(levels.size() - 1);
+
+        Map<Integer, ArrDescItem> firstDescItems = new HashMap<>();
+        Map<Integer, ArrDescItem> lastDescItems = new HashMap<>();
+
+        for (ArrDescItem descItem : descItems) {
+            if (firstDescItems.get(descItem.getDescItemObjectId()) == null) {
+                firstDescItems.put(descItem.getDescItemObjectId(), descItem);
+                lastDescItems.put(descItem.getDescItemObjectId(), descItem);
+            } else {
+                lastDescItems.put(descItem.getDescItemObjectId(), descItem);
+            }
+        }
+
+        ArrFindingAidVersion[] versions = new ArrFindingAidVersion[findingAidVersions.size()];
+        Integer[] versionEnds = new Integer[findingAidVersions.size()];
+
+        Map<ArrFindingAidVersion, List<ArrLevel>> versionsLevelsMap = getVersionsLevelsMap(levels, findingAidVersions, versions, versionEnds);
+        Map<ArrFindingAidVersion, Map<ArrChange, List<ArrDescItem>>> versionsChangesDescItemsMap = getVersionsDescItemsMap(descItems, findingAidVersions);
+
+
+        Map<ArrFindingAidVersion, List<ArrNodeHistoryItem>> items = new HashMap<>();
+
+        for (ArrFindingAidVersion version : findingAidVersions) {
+            List<ArrNodeHistoryItem> nodeHistoryItems = new ArrayList<>();
+            List<ArrLevel> levelsByVersion = versionsLevelsMap.get(version);
+            Map<ArrChange, List<ArrDescItem>> changeDescItemsByVersion = versionsChangesDescItemsMap.get(version);
+
+            if (levelsByVersion != null) {
+                for (ArrLevel level : levelsByVersion) {
+                    ArrNodeHistoryItem item = new ArrNodeHistoryItem();
+
+                    item.setChange(level.getCreateChange());
+
+                    cz.tacr.elza.api.vo.ArrNodeHistoryItem.Type type = cz.tacr.elza.api.vo.ArrNodeHistoryItem.Type.LEVEL_CHANGE;
+
+                    if (level.equals(lastLevel) && lastLevel.getDeleteChange() != null) {
+                        type = cz.tacr.elza.api.vo.ArrNodeHistoryItem.Type.LEVEL_DELETE;
+                    }
+
+
+                    if (level.equals(firstLevel)) {
+                        type = cz.tacr.elza.api.vo.ArrNodeHistoryItem.Type.LEVEL_CREATE;
+                    }
+
+                    item.setType(type);
+                    nodeHistoryItems.add(item);
+                }
+            }
+
+            if (changeDescItemsByVersion != null) {
+                for (ArrChange change : changeDescItemsByVersion.keySet()) {
+                    ArrNodeHistoryItem item = new ArrNodeHistoryItem();
+                    item.setDescItems(changeDescItemsByVersion.get(change));
+                    item.setChange(change);
+                    item.setType(cz.tacr.elza.api.vo.ArrNodeHistoryItem.Type.ATTRIBUTE_CHANGE);
+                    nodeHistoryItems.add(item);
+                }
+            }
+
+            items.put(version, nodeHistoryItems);
+        }
+
+        ArrNodeHistoryPack nodeHistoryPack = new ArrNodeHistoryPack();
+        nodeHistoryPack.setItems(items);
+        return nodeHistoryPack;
+    }
+
+    /**
+     * Rozřazení levelů podle verze archivní pomůcky a změn.
+     *
+     * @param levels                seznam levelů
+     * @param findingAidVersions    seznam verzí archivní pomůcky
+     * @param versions              seznam verzí archivní pomůcky indexovaně
+     * @param versionEnds           seznam konců verzí archivní pomůcky indexovaně
+     * @return                      rozřazené data v mapě
+     */
+    private Map<ArrFindingAidVersion, List<ArrLevel>> getVersionsLevelsMap(List<ArrLevel> levels,
+                                                                            List<ArrFindingAidVersion> findingAidVersions,
+                                                                            ArrFindingAidVersion[] versions,
+                                                                            Integer[] versionEnds) {
+        final Map<ArrFindingAidVersion, List<ArrLevel>> versionLevelsMap = new LinkedHashMap<>();
+
+        int index = 0;
+        for (ArrFindingAidVersion faVersion : findingAidVersions) {
+            versionEnds[index] = faVersion.getLockChange() == null ? Integer.MAX_VALUE
+                                                                   : faVersion.getLockChange().getChangeId();
+            versions[index] = faVersion;
+            index++;
+        }
+
+        boolean firstLevelBool = true;
+        for (ArrLevel faLevel : levels) {
+            ArrFindingAidVersion version = getVersionLevelByChangeId(firstLevelBool, faLevel, versionEnds, versions);
+            firstLevelBool = false;
+
+            List<ArrLevel> levelList = versionLevelsMap.get(version);
+            if (levelList == null) {
+                levelList = new LinkedList<>();
+                versionLevelsMap.put(version, levelList);
+            }
+            levelList.add(faLevel);
+        }
+        return versionLevelsMap;
+    }
+
+    /**
+     * Vyhledání verze archivní pomůcky podle levelu.
+     * @param versions  verze archivní pomůcky
+     * @param faLevel   level zanorení
+     * @param versions              seznam verzí archivní pomůcky indexovaně
+     * @param versionEnds           seznam konců verzí archivní pomůcky indexovaně
+     * @return  nalezená archivní pomůcka
+     */
+    private ArrFindingAidVersion getVersionLevelByChangeId(final boolean firstLevel,
+                                                           @Nullable final ArrLevel faLevel,
+                                                           final Integer[] versionEnds,
+                                                           final ArrFindingAidVersion[] versions) {
+        Integer deleteId = faLevel.getDeleteChange() == null ? null : faLevel.getDeleteChange().getChangeId();
+        if (firstLevel || deleteId == null) {
+            Integer createId = faLevel.getCreateChange().getChangeId();
+
+            int index = Arrays.binarySearch(versionEnds, createId);
+            if (index < 0) {
+                index = -index - 1;
+            }
+            return versions[index];
+        } else {
+            int index = Arrays.binarySearch(versionEnds, deleteId);
+            if (index < 0) {
+                index = -index - 1;
+            }
+            return versions[index];
+        }
+    }
+
+    /**
+     * Rozřazení hodnot atributů podle verze archivní pomůcky a změn.
+     *
+     * @param descItems             seznam hodnot atributl
+     * @param findingAidVersions    seznam verzí archivní pomůcky
+     * @return                      rozřazené data v mapě
+     */
+    private Map<ArrFindingAidVersion, Map<ArrChange, List<ArrDescItem>>> getVersionsDescItemsMap(List<ArrDescItem> descItems,
+                                                                           List<ArrFindingAidVersion> findingAidVersions) {
+        Map<ArrFindingAidVersion, Map<ArrChange, List<ArrDescItem>>> versionDescItemsMap = new LinkedHashMap<>();
+        Map<ArrChange, List<ArrDescItem>> changeListMap = new HashMap<>();
+
+        // rozřazení hodnot atributů podle změny
+        for (ArrDescItem descItem : descItems) {
+            if (descItem.getCreateChange() != null) {
+                insertDescItemToMapChanges(changeListMap, descItem.getCreateChange(), descItem);
+            }
+            if (descItem.getDeleteChange() != null) {
+                insertDescItemToMapChanges(changeListMap, descItem.getDeleteChange(), descItem);
+            }
+        }
+
+        // rozřazení změn podle verzí
+        for (ArrChange change : changeListMap.keySet()) {
+            ArrFindingAidVersion version = getFindingAidVersionByChange(findingAidVersions, change);
+            Map<ArrChange, List<ArrDescItem>> changeListMapTmp = versionDescItemsMap.get(version);
+            List<ArrDescItem> descItemList = changeListMap.get(change);
+            if (changeListMapTmp == null) {
+                changeListMapTmp = new HashMap<>();
+                changeListMapTmp.put(change, descItemList);
+                versionDescItemsMap.put(version, changeListMapTmp);
+            } else {
+                changeListMapTmp.put(change, descItemList);
+            }
+        }
+
+        return versionDescItemsMap;
+    }
+
+    /**
+     * Vyhledání verze archivní pomůcky podle změny.
+     * @param versions  verze archivní pomůcky
+     * @param change    změna
+     * @return  nalezená archivní pomůcka
+     */
+    private ArrFindingAidVersion getFindingAidVersionByChange(List<ArrFindingAidVersion> versions, ArrChange change) {
+        ArrFindingAidVersion versionRet = null;
+        for (ArrFindingAidVersion version : versions) {
+            LocalDateTime createDateTime = version.getCreateChange().getChangeDate();
+            LocalDateTime lockDateTime = (version.getLockChange() == null) ? null : version.getLockChange().getChangeDate();
+            if (createDateTime.isBefore(change.getChangeDate()) &&
+                    (lockDateTime == null || lockDateTime.isAfter(change.getChangeDate()))) {
+                versionRet = version;
+            }
+        }
+        return versionRet;
+    }
+
+    /**
+     * Vložení hodnoty atributu do mapy podle změny.
+     *
+     * @param changeListMap mapa změn - hodnoty atributů
+     * @param change        změna
+     * @param descItem      hodnota atributu
+     */
+    private void insertDescItemToMapChanges(Map<ArrChange, List<ArrDescItem>> changeListMap, ArrChange change, ArrDescItem descItem) {
+        List<ArrDescItem> descItems = changeListMap.get(change);
+        if (descItems == null) {
+            descItems = new ArrayList<>();
+            descItems.add(descItem);
+            changeListMap.put(change, descItems);
+        } else {
+            descItems.add(descItem);
+        }
+    }
+
 }
