@@ -3,6 +3,7 @@ package cz.tacr.elza.controller;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +29,8 @@ import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
+import cz.tacr.elza.domain.vo.ArrNodeHistoryItem;
+import cz.tacr.elza.domain.vo.ArrNodeHistoryPack;
 
 /**
  * Kompletní test {@link ArrangementManager}.
@@ -79,6 +82,24 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         testMoveAndDeleteLevels(findingAid);
         testAttributeValues(findingAid);
         testArrangementTypeRelations(findingAid);
+        testShowHistoryByNode(findingAid);
+    }
+
+    /**
+     * Otestuje zobrazení navrácení hodnot pro historie podle uzlu
+     *
+     * @param findingAid    archivní pomůcka
+     */
+    private void testShowHistoryByNode(ArrFindingAid findingAid) {
+        ArrFindingAidVersion faVersion = getFindingAidOpenVersion(findingAid);
+        ArrNode node = faVersion.getRootLevel().getNode();
+        ArrNodeHistoryPack historyForNode = getHistoryForNode(node.getNodeId(), faVersion.getFindingAid().getFindingAidId());
+        Assert.notNull(historyForNode);
+        Assert.notNull(historyForNode.getItems());
+        Map<Integer, List<ArrNodeHistoryItem>> items = historyForNode.getItems();
+        Assert.isTrue(items.size() == 2);
+        Assert.isTrue(items.get(1).size() == 1);
+        Assert.isTrue(items.get(2).size() == 5);
     }
 
     /**

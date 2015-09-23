@@ -56,6 +56,7 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.domain.vo.ArrDescItems;
 import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
+import cz.tacr.elza.domain.vo.ArrNodeHistoryPack;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
@@ -161,6 +162,7 @@ public abstract class AbstractRestTest {
     protected static final String GET_OPEN_VERSION_BY_FA_ID_URL = ARRANGEMENT_MANAGER_URL + "/getOpenVersionByFindingAidId";
     protected static final String FIND_SUB_LEVELS_EXT_URL = ARRANGEMENT_MANAGER_URL + "/findSubLevelsExt";
     protected static final String FIND_SUB_LEVELS_URL = ARRANGEMENT_MANAGER_URL + "/findSubLevels";
+    protected static final String GET_HISTORY_FOR_NODE = ARRANGEMENT_MANAGER_URL + "/getHistoryForNode/{findingAidId}/{nodeId}";
 
     protected static final String ADD_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/addLevel";
     protected static final String ADD_LEVEL_BEFORE_URL = ARRANGEMENT_MANAGER_URL + "/addLevelBefore";
@@ -185,6 +187,7 @@ public abstract class AbstractRestTest {
     protected static final String PARENT_NODE_ID_ATT = "parentNodeId";
     protected static final String FOLLOWER_NODE_ID_ATT = "followerNodeId";
     protected static final String PREDECESSOR_NODE_ID_ATT = "predecessorNodeId";
+    protected static final String FINDING_AID_ID_ATT = "findingAidId";
     protected static final String VERSION_ID_ATT = "versionId";
     protected static final String CREATE_NEW_VERSION_ATT = "createNewVersion";
 
@@ -871,6 +874,18 @@ public abstract class AbstractRestTest {
         }
 
         return Arrays.asList(response.getBody().as(ArrLevel[].class));
+    }
+
+    /**
+     * Vrátí změny v uzlech a atributech podle uzlu.
+     *
+     * @param nodeId        identifikátor uzlu
+     * @param findingAidId  identifikátor archivní pomůcky
+     * @return  objekt se změnami
+     */
+    protected ArrNodeHistoryPack getHistoryForNode(Integer nodeId, Integer findingAidId) {
+        Response response = get((spec) -> spec.pathParameter(NODE_ID_ATT, nodeId).pathParameter(FINDING_AID_ID_ATT, findingAidId), GET_HISTORY_FOR_NODE);
+        return response.getBody().as(ArrNodeHistoryPack.class);
     }
 
     /**

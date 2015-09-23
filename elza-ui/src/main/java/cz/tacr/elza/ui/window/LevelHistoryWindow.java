@@ -57,14 +57,14 @@ public class LevelHistoryWindow extends AxWindow {
 
         ArrNodeHistoryPack nodeHistoryPack = arrangementManager.getHistoryForNode(level.getNode().getNodeId(), findingAidId);
 
-        Map<ArrFindingAidVersion, List<ArrNodeHistoryItem>> items = nodeHistoryPack.getItems();
+        Map<Integer, List<ArrNodeHistoryItem>> items = nodeHistoryPack.getItems();
 
-        List<ArrFindingAidVersion> versions = new ArrayList<>(items.keySet());
+        List<ArrFindingAidVersion> versions = arrangementManager.getFindingAidVersions(findingAidId);
 
         Collections.sort(versions, (o1, o2) -> o1.getCreateChange().getChangeDate().compareTo(o2.getCreateChange().getChangeDate()));
 
         for (ArrFindingAidVersion version : versions) {
-            List<ArrNodeHistoryItem> nodeHistoryItems = items.get(version);
+            List<ArrNodeHistoryItem> nodeHistoryItems = items.get(version.getFindingAidVersionId());
             if (nodeHistoryItems.size() > 0) {
                 CssLayout layout = createVersionHistoryItem(version, nodeHistoryItems);
                 resultList.add(layout);

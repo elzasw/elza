@@ -3,8 +3,6 @@ package cz.tacr.elza.domain.vo;
 import java.util.List;
 import java.util.Map;
 
-import cz.tacr.elza.domain.ArrFindingAidVersion;
-
 
 /**
  * Obsahuje seznam změn uzlů a atributů v jednotlivých verzích.
@@ -12,17 +10,17 @@ import cz.tacr.elza.domain.ArrFindingAidVersion;
  * @author Martin Šlapa
  * @since 22.9.2015
  */
-public class ArrNodeHistoryPack implements cz.tacr.elza.api.vo.ArrNodeHistoryPack<ArrNodeHistoryItem, ArrFindingAidVersion> {
+public class ArrNodeHistoryPack implements cz.tacr.elza.api.vo.ArrNodeHistoryPack<ArrNodeHistoryItem> {
 
-    private Map<ArrFindingAidVersion, List<ArrNodeHistoryItem>> items;
+    private Map<Integer, List<ArrNodeHistoryItem>> items;
 
     @Override
-    public Map<ArrFindingAidVersion, List<ArrNodeHistoryItem>> getItems() {
+    public Map<Integer, List<ArrNodeHistoryItem>> getItems() {
         return items;
     }
 
     @Override
-    public void setItems(final Map<ArrFindingAidVersion, List<ArrNodeHistoryItem>> items) {
+    public void setItems(final Map<Integer, List<ArrNodeHistoryItem>> items) {
         this.items = items;
     }
 }

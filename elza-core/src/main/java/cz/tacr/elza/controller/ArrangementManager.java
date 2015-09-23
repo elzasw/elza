@@ -1879,7 +1879,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         Map<ArrFindingAidVersion, Map<ArrChange, List<ArrDescItem>>> versionsChangesDescItemsMap = getVersionsDescItemsMap(descItems, findingAidVersions);
 
 
-        Map<ArrFindingAidVersion, List<ArrNodeHistoryItem>> items = new HashMap<>();
+        Map<Integer, List<ArrNodeHistoryItem>> items = new HashMap<>();
 
         for (ArrFindingAidVersion version : findingAidVersions) {
             List<ArrNodeHistoryItem> nodeHistoryItems = new ArrayList<>();
@@ -1918,7 +1918,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 }
             }
 
-            items.put(version, nodeHistoryItems);
+            items.put(version.getFindingAidVersionId(), nodeHistoryItems);
         }
 
         ArrNodeHistoryPack nodeHistoryPack = new ArrNodeHistoryPack();
