@@ -17,7 +17,6 @@ import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Label;
-import com.vaadin.ui.Notification;
 import com.vaadin.ui.UI;
 
 import cz.req.ax.AxAction;
@@ -34,12 +33,12 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.ui.components.attribute.Attribut;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesComparator;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesLoader;
 import cz.tacr.elza.ui.components.autocomplete.AutocompleteItem;
+import cz.tacr.elza.ui.utils.ConcurrentUpdateExceptionHandler;
 
 
 /**
@@ -113,10 +112,8 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             }
         } catch (Exception e) {
             attribut.revert();
-            Notification.show(e.getMessage(), Notification.Type.ERROR_MESSAGE);
-            e.printStackTrace();
+            throw e;
         }
-
     }
 
 
@@ -228,9 +225,10 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
                     .modal()
                     .style("window-detail").closeListener(e -> {
                 attributesComboBox.setValue(null);
-            }).menuActions(AxAction.of(attribut).caption("Uložit").action(this::saveAttributeWithVersion),
+            }).menuActions(AxAction.of(attribut).caption("Uložit").action(this::saveAttributeWithVersion)
+                    .exception(new ConcurrentUpdateExceptionHandler()),
                     AxAction.of(attribut).caption("Uložit bez uložení historie")
-                            .action(this::saveAttributeWithoutVersion)
+                            .action(this::saveAttributeWithoutVersion).exception(new ConcurrentUpdateExceptionHandler())
             );
 
             attributWindow.getWindow().center();
