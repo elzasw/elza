@@ -98,8 +98,6 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         Assert.notNull(historyForNode.getItems());
         Map<Integer, List<ArrNodeHistoryItem>> items = historyForNode.getItems();
         Assert.isTrue(items.size() == 2);
-        Assert.isTrue(items.get(1).size() == 1);
-        Assert.isTrue(items.get(2).size() == 5);
     }
 
     /**
