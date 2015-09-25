@@ -68,15 +68,19 @@ public class LevelHistoryDetailWindow extends AxWindow {
 
         FormGrid formGridBefore = createAttributeGrid(descItemsBefore);
         CssLayout layoutBefore = new CssLayout();
-        layoutBefore.addStyleName("change-attribute-before");
-        layoutBefore.addComponent(newLabel("Před změnou"));
+        Label l1 = newLabel("Před změnou");
+        layoutBefore.addStyleName("change-attribute");
+        l1.addStyleName("action-title");
+        layoutBefore.addComponent(l1);
         layoutBefore.addComponent(formGridBefore);
         layout.addComponent(layoutBefore);
 
         FormGrid formGridAfter = createAttributeGrid(descItemsAfter);
         CssLayout layoutAfter = new CssLayout();
-        layoutAfter.addStyleName("change-attribute-after");
-        layoutAfter.addComponent(newLabel("Po změně"));
+        layoutAfter.addStyleName("change-attribute");
+        Label l2 = newLabel("Po změně");
+        l2.addStyleName("action-title");
+        layoutAfter.addComponent(l2);
         layoutAfter.addComponent(formGridAfter);
         layout.addComponent(layoutAfter);
 

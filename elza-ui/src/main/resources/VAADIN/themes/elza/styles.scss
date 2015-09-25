@@ -118,7 +118,20 @@ $ax-main-focus: $color-app;
         margin-top: 10px;
     }
 
+    .link {
+        color: $color-app-alt;
+        text-decoration: underline;
+        cursor: pointer;
+    }
 
+    .action-title {
+        color: #000000;
+        font-weight: bold;
+    }
+
+    .action.value {
+        color: #000000;
+    }
 
     .level-detail {
         width: 50%;
@@ -200,15 +213,9 @@ $ax-main-focus: $color-app;
         }
     }
 
-    .change-attribute-before {
+    .change-attribute {
         width: 450px;
-        color: red;
-        padding: 10px;
-    }
-
-    .change-attribute-after {
-        width: 450px;
-        color: green;
+        color: #000000;
         padding: 10px;
     }
 }

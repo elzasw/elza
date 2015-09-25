@@ -126,6 +126,7 @@ public class LevelHistoryWindow extends AxWindow {
                         break;
                     case ATTRIBUTE_CHANGE:
                         text = newLabel("Změna atributů");
+                        text.addStyleName("link");
                         layoutRow = new CssLayout(text);
                         layoutRow.addLayoutClickListener(event -> {
                             showDetail(nodeHistoryItem);
