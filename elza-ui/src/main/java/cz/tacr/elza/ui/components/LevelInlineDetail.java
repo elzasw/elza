@@ -93,7 +93,11 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
     }
 
     private void saveAttributeWithoutVersion(Attribut attribut) {
-        saveAttribute(attribut, false);
+        try {
+            saveAttribute(attribut, false);
+        } catch (IllegalArgumentException e) {
+            ElzaNotifications.showError(e.getMessage());
+        }
     }
 
     private void saveAttribute(Attribut attribut, Boolean createNewVersion) {
