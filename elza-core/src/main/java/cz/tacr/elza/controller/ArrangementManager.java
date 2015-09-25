@@ -1268,6 +1268,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         // provedení akcí
 
+        // mapa dat, funguje jako cache při hromadných úpravách
         Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems = new HashMap<>();
 
         try {
@@ -1313,6 +1314,13 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return descItemsContainer;
     }
 
+    /**
+     * Vrácení změn u objektů.
+     *
+     * @param deleteDescItems seznam smazaných
+     * @param createDescItems seznam vytvořených
+     * @param updateDescItems seznam upravovaných
+     */
     private void rollbackDescItems(List<ArrDescItem> deleteDescItems, List<ArrDescItem> createDescItems, List<ArrDescItem> updateDescItems) {
         for (ArrDescItem deleteDescItem : deleteDescItems) {
             deleteDescItem.setDeleteChange(null);
@@ -1327,6 +1335,17 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
     }
 
+    /**
+     * Upraví hodnotu existujícího atributu archivního popisu.
+     *
+     * @param updateDescItem    upravovaná položka
+     * @param versionId         identifikátor verze
+     * @param change            změna
+     * @param saveNode          ukládat uzel? (optimictické zámky)
+     * @param createNewVersion  vytvořit novou verzi?
+     * @param mapDescItems      mapa cachovaných položek
+     * @return                  upravená položka
+     */
     private ArrDescItem updateDescriptionItemRaw(ArrDescItem updateDescItem,
                                                  Integer versionId,
                                                  ArrChange change,
@@ -1396,6 +1415,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                     descItemsToChange = findDescItemsBetweenPosition(descItemsGroup, positionOrig, positionNew);
                 }
 
+                // úpravení pozic, popřípadné vytvoření nových verzí
                 for (ArrDescItem descItem : descItemsToChange) {
                     if (descItem.getClass().equals(ArrDescItem.class)) {
                         descItemsGroup.remove(descItem);
@@ -1436,6 +1456,17 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return updateDescItemRet;
     }
 
+    /**
+     * Vytvoří hodnotu atributu archivního popisu.
+     *
+     * @param createDescItem    vytvářená položka
+     * @param versionId         identifikátor verze
+     * @param change            změna
+     * @param saveNode          ukládat uzel? (optimictické zámky)
+     * @param mapDescItems      mapa cachovaných položek
+     * @param objectId          identifikátor objektu
+     * @return                  vytvořená položka
+     */
     private ArrDescItem createDescriptionItemRaw(ArrDescItem createDescItem,
                                                  Integer versionId,
                                                  ArrChange change,
@@ -1488,6 +1519,16 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return createDescItemRet;
     }
 
+    /**
+     * Smaže hodnotu atributu archivního popisu.
+     *
+     * @param deleteDescItem    smazávaná položka
+     * @param versionId         identifikátor verze
+     * @param change            změna
+     * @param saveNode          ukládat uzel? (optimictické zámky)
+     * @param mapDescItems      mapa cachovaných položek
+     * @return                  smazaná položka
+     */
     private ArrDescItem deleteDescriptionItemRaw(ArrDescItem deleteDescItem,
                                                  Integer versionId,
                                                  ArrChange change,
@@ -1541,6 +1582,13 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return deleteDescItemRet;
     }
 
+    /**
+     * Uložení z cache změn do databáze.
+     *
+     * @param mapDescItems      mapa cachovaných položek
+     * @param descItemsRet      seznam návratových položek - provede refresh nově uložených položek
+     * @param createNewVersion  vytvořit novou verzi?
+     */
     private void saveChanges(Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems, List<ArrDescItem> descItemsRet, boolean createNewVersion) {
         for (Map<RulDescItemSpec, List<ArrDescItem>> descItemSpecsMap : mapDescItems.values()) {
             for (List<ArrDescItem> descItemList : descItemSpecsMap.values()) {
@@ -1548,6 +1596,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                     if (!(descItem.getClass().equals(ArrDescItem.class))) {
                         boolean added = false;
                         if (descItemsRet != null) {
+                            // vyhledá podle object id
                             for (ArrDescItem item : descItemsRet) {
                                 if (item.getDescItemObjectId().equals(descItem.getDescItemObjectId())) {
                                     descItemsRet.remove(item);
@@ -1567,6 +1616,14 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
     }
 
+    /**
+     * Provede validaci předená položky.
+     *
+     * @param versionId     identifikátor verze
+     * @param node          uzel
+     * @param mapDescItems  mapa cachovaných položek
+     * @param descItem      položka
+     */
     private void validationDescItem(Integer versionId, ArrNode node, Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems, ArrDescItem descItem) {
         List<RulDescItemTypeExt> rulDescItemTypes = ruleManager.getDescriptionItemTypesForNodeId(versionId, node.getNodeId(), null);
 
@@ -1586,6 +1643,13 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         validateAllItemConstraintsByType(rulDescItemType, descItem, mapDescItems);
     }
 
+    /**
+     * Provedení validace položky nad podmínkama.
+     *
+     * @param rulDescItemType   kontrolovaný typ
+     * @param data              položka
+     * @param mapDescItems      mapa cachovaných položek
+     */
     private void validateAllItemConstraintsByType(RulDescItemType rulDescItemType,
                                                   ArrDescItem data,
                                                   Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems) {
@@ -1597,6 +1661,13 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
     }
 
+    /**
+     * Provede validaci opakovatelnosti.
+     *
+     * @param rulDescItemType           kontrolovaný typ
+     * @param rulDescItemConstraint     podmínka
+     * @param mapDescItems              mapa cachovaných položek
+     */
     private void validateRepeatableType(RulDescItemType rulDescItemType,
                                         RulDescItemConstraint rulDescItemConstraint,
                                         Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems) {
@@ -1608,6 +1679,14 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
     }
 
+    /**
+     * Provede validaci podle specifikace.
+     *
+     * @param rulDescItemType   kontrolovaný typ
+     * @param data              položka
+     * @param rulDescItemSpec   specifický typ atributu
+     * @param mapDescItems      mapa cachovaných položek
+     */
     private void validateAllItemConstraintsBySpec(RulDescItemType rulDescItemType,
                                                   ArrDescItem data,
                                                   RulDescItemSpec rulDescItemSpec,
@@ -1627,6 +1706,14 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             }
     }
 
+    /**
+     * Provede validaci opakovatelnosti podle specifikace.
+     *
+     * @param rulDescItemType       kontrolovaný typ
+     * @param rulDescItemSpec       specifický typ atributu
+     * @param rulDescItemConstraint podmínka
+     * @param mapDescItems          mapa cachovaných položek
+     */
     private void validateRepeatableSpec(RulDescItemType rulDescItemType,
                                         RulDescItemSpec rulDescItemSpec,
                                         RulDescItemConstraint rulDescItemConstraint,
@@ -1639,6 +1726,14 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
     }
 
+    /**
+     * Vyhledá položky v seznam podle pozice.
+     *
+     * @param descItems     seznam hodnot atributů
+     * @param positionFrom  minimální pozice
+     * @param positionTo    maximální pozice
+     * @return              seznam nalezený položek
+     */
     private List<ArrDescItem> findDescItemsBetweenPosition(List<ArrDescItem> descItems, Integer positionFrom, Integer positionTo) {
         List<ArrDescItem> findDescItems = new ArrayList<>();
         for (ArrDescItem descItem : descItems) {
@@ -1649,6 +1744,13 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return findDescItems;
     }
 
+    /**
+     * Vyhledá položku v seznamu podle object id.
+     *
+     * @param descItems seznam hodnot atributů
+     * @param descItem  hledaná položka
+     * @return          nalezená položka
+     */
     private ArrDescItem getDescItemByObjectId(List<ArrDescItem> descItems, ArrDescItem descItem) {
         for (ArrDescItem item : descItems) {
             if (item.getDescItemObjectId().equals(descItem.getDescItemObjectId())) {
@@ -1658,6 +1760,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return null;
     }
 
+    /**
+     * Smaze položku v seznamu podle object id.
+     *
+     * @param descItems seznam hodnot atributů
+     * @param descItem  smazávaná položka
+     */
     private void deleteDescItemByObjectId(List<ArrDescItem> descItems, ArrDescItem descItem) {
         for (ArrDescItem item : descItems) {
             if (item.getDescItemObjectId().equals(descItem.getDescItemObjectId())) {
@@ -1667,6 +1775,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
     }
 
+    /**
+     * Existuje položka v seznamu? (podle object id)
+     * @param descItems seznam hodnot atributů
+     * @param descItem  hledaná položka
+     * @return
+     */
     private boolean existDescItemByObjectId(List<ArrDescItem> descItems, ArrDescItem descItem) {
         for (ArrDescItem item : descItems) {
             if (item.getDescItemObjectId().equals(descItem.getDescItemObjectId())) {
@@ -1676,6 +1790,13 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return false;
     }
 
+    /**
+     * Pomocná metoda při úpravě specifikace atributu. Přesouvá existující (se starou specifikací) do nové specifikace.
+     *
+     * @param mapDescItems      mapa cachovaných položek
+     * @param updateDescItem    upravovaná položka
+     * @return                  přesunuto
+     */
     private boolean findAndMoveDescItemByObjectId(Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems, ArrDescItem updateDescItem) {
 
         List<ArrDescItem> descItems = descItemRepository.findByDescItemObjectIdAndDeleteChangeIsNull(updateDescItem.getDescItemObjectId());
@@ -1689,6 +1810,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return true;
     }
 
+    /**
+     * Vyhledá nejvyšší pozici v předaném seznamu.
+     *
+     * @param descItems seznam hodnot atributů
+     * @return  maximální pozice
+     */
     private Integer getMaxPositionInDescItems(List<ArrDescItem> descItems) {
         Integer maxPosition = 0;
         for (ArrDescItem descItem : descItems) {
@@ -1699,6 +1826,15 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return maxPosition;
     }
 
+    /**
+     * Vyhledání hodnot atributů podle typu a specifikace. Pokud není nalezena v cache, je dotaženo z DB.
+     *
+     * @param mapDescItems  mapa cachovaných položek
+     * @param type          typ hodnoty atributu
+     * @param spec          specifikace hodnoty atributu
+     * @param node          uzel
+     * @return              seznam nalezený položek
+     */
     private List<ArrDescItem> getDescItemByTypeAndSpec(Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems, RulDescItemType type, RulDescItemSpec spec, ArrNode node) {
         List<ArrDescItem> descItems;
         Map<RulDescItemSpec, List<ArrDescItem>> map = mapDescItems.get(type);
@@ -1725,6 +1861,13 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return descItems;
     }
 
+    /**
+     * Vyhledá položky s pozici vyšší nez zadaná hodnota.
+     *
+     * @param descItems seznam hodnot atributů
+     * @param position  zadaná podnota pozice
+     * @return          seznam nalezených položek
+     */
     private List<ArrDescItem> findDescItemsAfterPosition(List<ArrDescItem> descItems, Integer position) {
         List<ArrDescItem> findDescItems = new ArrayList<>();
         for (ArrDescItem descItem : descItems) {
