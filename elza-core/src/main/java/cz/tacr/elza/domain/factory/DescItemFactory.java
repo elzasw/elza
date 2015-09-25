@@ -466,6 +466,19 @@ public class DescItemFactory implements InitializingBean {
     }
 
     /**
+     * Uloží hodnotu atributu bez dat.
+     * @param descItem  hodnota atributu
+     * @return          nova hodnota atributu
+     */
+    public ArrDescItem saveDescItem(ArrDescItem descItem) {
+        ArrDescItem descItemRaw = new ArrDescItem();
+        BeanUtils.copyProperties(descItem, descItemRaw);
+        descItemRaw = descItemRepository.save(descItemRaw);
+        BeanUtils.copyProperties(descItemRaw, descItem);
+        return descItem;
+    }
+
+    /**
      * Uloží hodnotu atributu i s daty.
      *
      * @param descItem         hodnota atributu
@@ -474,7 +487,7 @@ public class DescItemFactory implements InitializingBean {
      *                         false - načte původní hodnotu a upraví jí podle nové
      * @return                 uložená hodnota atributu
      */
-    public ArrDescItem saveDescItem(ArrDescItem descItem, Boolean createNewVersion) {
+    public ArrDescItem saveDescItemWithData(ArrDescItem descItem, Boolean createNewVersion) {
 
         ArrDescItem descItemRaw = new ArrDescItem();
         BeanUtils.copyProperties(descItem, descItemRaw);

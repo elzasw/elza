@@ -1291,13 +1291,14 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         // úprava pozicí
 
+        node = nodeRepository.findOne(node.getNodeId());
         descItem3.setPosition(1);
+        descItem3.setNode(node);
         ArrDescItem descItem3New = arrangementManager.updateDescriptionItem(descItem3, version.getFindingAidVersionId(), true);
 
         // kontrola pozice attributu
         checkChangePositionDescItem(descItem1, 2, true, null);
         checkChangePositionDescItem(descItem2, 3, true, null);
-        checkChangePositionDescItem(descItem3, 1, true, null);
         checkChangePositionDescItem(descItem4, 4, false, node);
 
         descItem3New.setPosition(3);
@@ -1306,7 +1307,6 @@ public class ArrangementManagerTest extends AbstractRestTest {
         // kontrola pozice attributu
         checkChangePositionDescItem(descItem1, 1, true, null);
         checkChangePositionDescItem(descItem2, 2, true, null);
-        checkChangePositionDescItem(descItem3, 3, true, null);
         checkChangePositionDescItem(descItem4, 4, false, node);
 
     }

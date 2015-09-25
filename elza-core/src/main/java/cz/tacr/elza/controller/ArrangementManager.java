@@ -1136,8 +1136,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                                                 @PathVariable(value = "versionId") Integer versionId) {
         Assert.notNull(descItem);
         Assert.notNull(versionId);
-        ArrChange arrFaChange = createChange();
-        return createDescriptionItemRaw(descItem, versionId, arrFaChange, true);
+        ArrChange change = createChange();
+        Integer objectId = getNextDescItemObjectId();
+        Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems = new HashMap<>();
+        ArrDescItem descItemRet = createDescriptionItemRaw(descItem, versionId, change, true, mapDescItems, objectId);
+        saveChanges(mapDescItems, null, true);
+        return descItemRet;
     }
 
     @Override
@@ -1150,12 +1154,16 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         Assert.notNull(versionId);
         Assert.notNull(createNewVersion);
 
-        ArrChange arrFaChange = null;
+        ArrChange change = null;
         if (createNewVersion) {
-            arrFaChange = createChange();
+            change = createChange();
         }
-
-        return updateDescriptionItemRaw(descItem, versionId, createNewVersion, arrFaChange, true);
+        Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems = new HashMap<>();
+        ArrDescItem descItemRet = updateDescriptionItemRaw(descItem, versionId, change, true, createNewVersion, mapDescItems);
+        List<ArrDescItem> descItems = new ArrayList<>();
+        descItems.add(descItemRet);
+        saveChanges(mapDescItems, descItems, createNewVersion);
+        return descItems.get(0);
     }
 
     @Override
@@ -1163,8 +1171,11 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @Transactional
     public ArrDescItem deleteDescriptionItem(@RequestBody ArrDescItem descItem, @PathVariable(value = "versionId") Integer versionId) {
         Assert.notNull(descItem);
-        ArrChange arrFaChange = createChange();
-        return deleteDescriptionsItemRaw(descItem, versionId, arrFaChange, true);
+        ArrChange change = createChange();
+        Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems = new HashMap<>();
+        ArrDescItem descItemRet = deleteDescriptionItemRaw(descItem, versionId, change, true, mapDescItems);
+        saveChanges(mapDescItems, null, true);
+        return descItemRet;
     }
 
     @Override
@@ -1239,7 +1250,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             }
         }
 
-        // validace
+        // zakladni validace
 
         if (deleteDescItems.size() + updateDescItems.size() + createDescItems.size() == 0) {
             throw new IllegalArgumentException("Žádné položky k vytvoření/smazání/změně");
@@ -1253,39 +1264,48 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             throw new IllegalArgumentException("Při změně pozice atributu musí být nastavená hodnota o verzování na true");
         }
 
-        ArrChange arrFaChange = null;
+        ArrChange change;
 
         // provedení akcí
 
-        if (createNewVersion) {
-            arrFaChange = createChange();
+        Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems = new HashMap<>();
 
-            // mazání
-            for (ArrDescItem descItem : deleteDescItems) {
-                // smazání jedné hodnoty atributu
-                // přidání výsledného objektu do navratového seznamu
-                descItemsRet.add(deleteDescriptionsItemRaw(descItem, versionId, arrFaChange, false));
+        try {
+
+            if (createNewVersion) {
+
+                change = createChange();
+
+                Integer objectId = getNextDescItemObjectId();
+
+                for (ArrDescItem deleteDescItem : deleteDescItems) {
+                    ArrDescItem deleteDescItemRet = deleteDescriptionItemRaw(deleteDescItem, versionId, change, false, mapDescItems);
+                    descItemsRet.add(deleteDescItemRet);
+                }
+
+                for (ArrDescItem createDescItem : createDescItems) {
+                    ArrDescItem createDescItemRet = createDescriptionItemRaw(createDescItem, versionId, change, false, mapDescItems, objectId);
+                    objectId++;
+                    descItemsRet.add(createDescItemRet);
+                }
+
+                for (ArrDescItem updateDescItem : updateDescItems) {
+                    ArrDescItem updateDescItemRet = updateDescriptionItemRaw(updateDescItem, versionId, change, false, true, mapDescItems);
+                    descItemsRet.add(updateDescItemRet);
+                }
+
+                saveChanges(mapDescItems, descItemsRet, true);
+
+            } else {
+                // úpravy bez verzování
+                for (ArrDescItem descItem : updateDescItems) {
+                    descItemsRet.add(updateDescriptionItemRaw(descItem, versionId, null, false, false, mapDescItems));
+                }
             }
 
-            // vytvoření
-            for (ArrDescItem descItem : createDescItems) {
-                descItemsRet.add(createDescriptionItemRaw(descItem, versionId, arrFaChange, false));
-            }
-
-            // úpravy s verzováním
-            for (ArrDescItem descItem : updateDescItems) {
-                descItemsRet.add(updateDescriptionItemRaw(descItem, versionId, true, arrFaChange, false));
-            }
-
-        } else {
-            // úpravy bez verzování
-            for (ArrDescItem descItem : updateDescItems) {
-                descItemsRet.add(updateDescriptionItemRaw(descItem, versionId, false, null, false));
-            }
-        }
-
-        for (ArrDescItem descItemExt : descItemsRet) {
-            descItemExt.setNode(node);
+        } catch (Exception e) {
+            rollbackDescItems(deleteDescItems, createDescItems, updateDescItems);
+            throw e;
         }
 
         ArrDescItems descItemsContainer = new ArrDescItems();
@@ -1293,78 +1313,426 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return descItemsContainer;
     }
 
-    /**
-     * Přidá atribut archivního popisu včetně hodnoty k existující jednotce archivního popisu.
-     *
-     * @param descItemExt vytvářená položka
-     * @param faVersionId identifikátor verze
-     * @param arrFaChange společná změna
-     * @return výsledný(vytvořený) attribut
-     */
-    private ArrDescItem createDescriptionItemRaw(ArrDescItem descItemExt, Integer faVersionId, ArrChange arrFaChange, boolean saveNode) {
-        Assert.notNull(descItemExt);
-        Assert.notNull(faVersionId);
-        Assert.notNull(arrFaChange);
+    private void rollbackDescItems(List<ArrDescItem> deleteDescItems, List<ArrDescItem> createDescItems, List<ArrDescItem> updateDescItems) {
+        for (ArrDescItem deleteDescItem : deleteDescItems) {
+            deleteDescItem.setDeleteChange(null);
+        }
+        for (ArrDescItem createDescItem : createDescItems) {
+            createDescItem.setCreateChange(null);
+            createDescItem.setDescItemObjectId(null);
+            createDescItem.setDescItemObjectId(null);
+        }
+        for (ArrDescItem updateDescItem : updateDescItems) {
+            updateDescItem.setDeleteChange(null);
+        }
+    }
 
-        validateLockVersion(faVersionId);
+    private ArrDescItem updateDescriptionItemRaw(ArrDescItem updateDescItem,
+                                                 Integer versionId,
+                                                 ArrChange change,
+                                                 boolean saveNode,
+                                                 boolean createNewVersion,
+                                                 Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems) {
 
-        ArrNode node = descItemExt.getNode();
-        Assert.notNull(node);
+        if (createNewVersion ^ change != null) {
+            throw new IllegalArgumentException("Pokud vytvářím novou verzi, musí být předaná reference změny. Pokud verzi nevytvářím, musí být reference změny null.");
+        }
 
-        List<RulDescItemTypeExt> rulDescItemTypes = ruleManager.getDescriptionItemTypesForNodeId(faVersionId, node.getNodeId(), null);
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
 
-        RulDescItemType rulDescItemType = descItemTypeRepository.findOne(descItemExt.getDescItemType().getDescItemTypeId());
+        Assert.notNull(version);
+        if (createNewVersion && version.getLockChange() != null) {
+            throw new IllegalArgumentException("Nelze provést verzovanou změnu v uzavřené verzi.");
+        }
+
+        List<ArrDescItem> descItemsGroup = getDescItemByTypeAndSpec(mapDescItems, updateDescItem.getDescItemType(), updateDescItem.getDescItemSpec(), updateDescItem.getNode());
+        Integer maxPosition = getMaxPositionInDescItems(descItemsGroup);
+
+        if (updateDescItem.getPosition() == null || updateDescItem.getPosition() > maxPosition) {
+            updateDescItem.setPosition(maxPosition+1);
+        }
+
+        ArrDescItem updateDescItemRet;
+
+        if (existDescItemByObjectId(descItemsGroup, updateDescItem) || findAndMoveDescItemByObjectId(mapDescItems, updateDescItem)) {
+            ArrDescItem updateDescItemOrig = getDescItemByObjectId(descItemsGroup, updateDescItem);
+
+            Integer positionNew = updateDescItem.getPosition();
+            Integer positionOrig = updateDescItemOrig.getPosition();
+
+            deleteDescItemByObjectId(descItemsGroup, updateDescItem);
+
+            ArrNode nodeDescItem = updateDescItemOrig.getNode();
+            validationDescItem(versionId, nodeDescItem, mapDescItems, updateDescItem);
+
+            if (createNewVersion) {
+
+                if (updateDescItemOrig.getClass().equals(ArrDescItem.class)) {
+                    updateDescItemOrig.setDeleteChange(change);
+                    updateDescItemRet = descItemFactory.saveDescItem(updateDescItemOrig);
+                } else {
+                    updateDescItemRet = updateDescItem;
+                }
+
+                updateDescItem.setDescItemId(null);
+                updateDescItem.setCreateChange(change);
+                updateDescItem.setDeleteChange(null);
+
+                ArrNode node = updateDescItem.getNode();
+                if (saveNode) {
+                    node.setLastUpdate(LocalDateTime.now());
+                    updateDescItem.setNode(nodeRepository.save(node));
+                }
+
+                List<ArrDescItem> descItemsToChange;
+
+                Integer diff;
+
+                if (positionNew < positionOrig) {
+                    diff = 1;
+                    descItemsToChange = findDescItemsBetweenPosition(descItemsGroup, positionNew, positionOrig);
+                } else {
+                    diff = -1;
+                    descItemsToChange = findDescItemsBetweenPosition(descItemsGroup, positionOrig, positionNew);
+                }
+
+                for (ArrDescItem descItem : descItemsToChange) {
+                    if (descItem.getClass().equals(ArrDescItem.class)) {
+                        descItemsGroup.remove(descItem);
+                        descItem.setDeleteChange(change);
+                        descItemFactory.saveDescItem(descItem);
+
+                        descItem = descItemFactory.getDescItem(descItem);
+                        descItem.setDescItemId(null);
+                        descItem.setCreateChange(change);
+                        descItem.setDeleteChange(null);
+                        descItem.setPosition(descItem.getPosition() + diff);
+                        descItemsGroup.add(descItem);
+                    } else {
+                        descItem.setPosition(descItem.getPosition() + diff);
+                    }
+                }
+
+                descItemsGroup.add(updateDescItem);
+
+            } else {
+
+                // provedla se změna pozice
+                if (positionNew != positionOrig) {
+                    // při změně pozice musí být vytvářená nová verze
+                    throw new IllegalArgumentException("Při změně pozice musí být vytvořena nová verze");
+                }
+
+                updateDescItemOrig = descItemFactory.getDescItem(updateDescItemOrig);
+                BeanUtils.copyProperties(updateDescItem, updateDescItemOrig);
+                updateDescItemRet = descItemFactory.saveDescItemWithData(updateDescItemOrig, false);
+
+                descItemsGroup.add(updateDescItemRet);
+            }
+        } else {
+            throw new IllegalStateException("Neplatny stav pro upraveni polozky. " + updateDescItem);
+        }
+
+        return updateDescItemRet;
+    }
+
+    private ArrDescItem createDescriptionItemRaw(ArrDescItem createDescItem,
+                                                 Integer versionId,
+                                                 ArrChange change,
+                                                 boolean saveNode,
+                                                 Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems,
+                                                 Integer objectId) {
+        List<ArrDescItem> descItemsGroup = getDescItemByTypeAndSpec(mapDescItems, createDescItem.getDescItemType(), createDescItem.getDescItemSpec(), createDescItem.getNode());
+        Integer maxPosition = getMaxPositionInDescItems(descItemsGroup);
+
+        ArrNode nodeDescItem = createDescItem.getNode();
+        validationDescItem(versionId, nodeDescItem, mapDescItems, createDescItem);
+
+        if (createDescItem.getPosition() == null || createDescItem.getPosition() > maxPosition) {
+            createDescItem.setPosition(maxPosition+1);
+        }
+
+        ArrDescItem createDescItemRet;
+
+        createDescItem.setDeleteChange(null);
+        createDescItem.setCreateChange(change);
+        createDescItem.setDescItemObjectId(objectId);
+
+        ArrNode node = createDescItem.getNode();
+        if (saveNode) {
+            node.setLastUpdate(LocalDateTime.now());
+            createDescItem.setNode(nodeRepository.save(node));
+        }
+
+        createDescItemRet = descItemFactory.saveDescItem(createDescItem);
+
+        List<ArrDescItem> descItemsToChange = findDescItemsAfterPosition(descItemsGroup, createDescItem.getPosition()-1);
+        for (ArrDescItem descItem : descItemsToChange) {
+            if (descItem.getClass().equals(ArrDescItem.class)) {
+                descItemsGroup.remove(descItem);
+                descItem.setDeleteChange(change);
+                descItemFactory.saveDescItem(descItem);
+
+                descItem = descItemFactory.getDescItem(descItem);
+                descItem.setDescItemId(null);
+                descItem.setCreateChange(change);
+                descItem.setDeleteChange(null);
+                descItem.setPosition(descItem.getPosition()+1);
+                descItemsGroup.add(descItem);
+            } else {
+                descItem.setPosition(descItem.getPosition()+1);
+            }
+        }
+
+        descItemsGroup.add(createDescItem);
+        return createDescItemRet;
+    }
+
+    private ArrDescItem deleteDescriptionItemRaw(ArrDescItem deleteDescItem,
+                                                 Integer versionId,
+                                                 ArrChange change,
+                                                 boolean saveNode,
+                                                 Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems) {
+        Assert.notNull(deleteDescItem);
+        Assert.notNull(versionId);
+        Assert.notNull(change);
+        Assert.notNull(mapDescItems);
+
+        validateLockVersion(versionId);
+
+        ArrDescItem deleteDescItemRet;
+
+        List<ArrDescItem> descItemsGroup = getDescItemByTypeAndSpec(mapDescItems, deleteDescItem.getDescItemType(), deleteDescItem.getDescItemSpec(), deleteDescItem.getNode());
+        if (existDescItemByObjectId(descItemsGroup, deleteDescItem)) {
+            deleteDescItemByObjectId(descItemsGroup, deleteDescItem);
+
+            deleteDescItem.setDeleteChange(change);
+
+            ArrNode node = deleteDescItem.getNode();
+            if (saveNode) {
+                node.setLastUpdate(LocalDateTime.now());
+                deleteDescItem.setNode(nodeRepository.save(node));
+            }
+
+            deleteDescItemRet = descItemFactory.saveDescItem(deleteDescItem);
+
+            List<ArrDescItem> descItemsToChange = findDescItemsAfterPosition(descItemsGroup, deleteDescItem.getPosition());
+            for (ArrDescItem descItem : descItemsToChange) {
+                if (descItem.getClass().equals(ArrDescItem.class)) {
+                    descItemsGroup.remove(descItem);
+                    descItem.setDeleteChange(change);
+                    descItemFactory.saveDescItem(descItem);
+
+                    descItem = descItemFactory.getDescItem(descItem);
+                    descItem.setDescItemId(null);
+                    descItem.setCreateChange(change);
+                    descItem.setDeleteChange(null);
+                    descItem.setPosition(descItem.getPosition() - 1);
+
+                    descItemsGroup.add(descItem);
+                } else {
+                    descItem.setPosition(descItem.getPosition() - 1);
+                }
+            }
+        } else {
+            throw new IllegalStateException("Neplatny stav pro smazani polozky. " + deleteDescItem);
+        }
+
+        return deleteDescItemRet;
+    }
+
+    private void saveChanges(Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems, List<ArrDescItem> descItemsRet, boolean createNewVersion) {
+        for (Map<RulDescItemSpec, List<ArrDescItem>> descItemSpecsMap : mapDescItems.values()) {
+            for (List<ArrDescItem> descItemList : descItemSpecsMap.values()) {
+                for (ArrDescItem descItem : descItemList) {
+                    if (!(descItem.getClass().equals(ArrDescItem.class))) {
+                        boolean added = false;
+                        if (descItemsRet != null) {
+                            for (ArrDescItem item : descItemsRet) {
+                                if (item.getDescItemObjectId().equals(descItem.getDescItemObjectId())) {
+                                    descItemsRet.remove(item);
+                                    added = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        ArrDescItem ret = descItemFactory.saveDescItemWithData(descItem, createNewVersion);
+
+                        if (descItemsRet != null && added)
+                            descItemsRet.add(ret);
+                    }
+                }
+            }
+        }
+    }
+
+    private void validationDescItem(Integer versionId, ArrNode node, Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems, ArrDescItem descItem) {
+        List<RulDescItemTypeExt> rulDescItemTypes = ruleManager.getDescriptionItemTypesForNodeId(versionId, node.getNodeId(), null);
+
+        RulDescItemType rulDescItemType = descItemTypeRepository.findOne(descItem.getDescItemType().getDescItemTypeId());
         Assert.notNull(rulDescItemType);
 
-        String data = descItemExt.toString();
+        String data = descItem.toString();
         Assert.notNull(data, "Není vyplněna hodnota");
         if (data.length() == 0) {
             throw new IllegalArgumentException("Není vyplněna hodnota");
         }
 
-        RulDescItemSpec rulDescItemSpec = (descItemExt.getDescItemSpec() != null) ? descItemSpecRepository.findOne(descItemExt.getDescItemSpec().getDescItemSpecId()) : null;
+        RulDescItemSpec rulDescItemSpec = (descItem.getDescItemSpec() != null) ? descItemSpecRepository.findOne(descItem.getDescItemSpec().getDescItemSpecId()) : null;
 
         validateAllowedItemType(rulDescItemTypes, rulDescItemType);
-        validateAllItemConstraintsBySpec(node, rulDescItemType, descItemExt, rulDescItemSpec, null);
-        validateAllItemConstraintsByType(node, rulDescItemType, descItemExt, null);
+        validateAllItemConstraintsBySpec(rulDescItemType, descItem, rulDescItemSpec, mapDescItems);
+        validateAllItemConstraintsByType(rulDescItemType, descItem, mapDescItems);
+    }
 
-        // uložení
-
-        ArrDescItem descItem = descItemExt;
-
-        descItem.setDeleteChange(null);
-        descItem.setCreateChange(arrFaChange);
-        descItem.setDescItemObjectId(getNextDescItemObjectId());
-
-        Integer position;
-        Integer maxPosition = descItemRepository.findMaxPositionByNodeAndDescItemTypeIdAndDeleteChangeIsNull(node, rulDescItemType.getDescItemTypeId());
-        if (maxPosition == null) {
-            position = 1; // ještě žádný neexistuje
-        } else {
-            position = maxPosition + 1;
+    private void validateAllItemConstraintsByType(RulDescItemType rulDescItemType,
+                                                  ArrDescItem data,
+                                                  Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems) {
+        List<RulDescItemConstraint> rulDescItemConstraints = descItemConstraintRepository.findByDescItemType(rulDescItemType);
+        for (RulDescItemConstraint rulDescItemConstraint : rulDescItemConstraints) {
+            validateRepeatableType(rulDescItemType, rulDescItemConstraint, mapDescItems);
+            validateDataDescItemConstraintTextLenghtLimit(data, rulDescItemConstraint);
+            validateDataDescItemConstraintRegexp(data, rulDescItemConstraint);
         }
+    }
 
-        Integer positionUI = descItemExt.getPosition();
-        // je definovaná pozice u UI
-        if (positionUI != null) {
-            if (positionUI < 1) {
-                throw new IllegalArgumentException("Pozice nemůže být menší než 1 (" + positionUI + ")");
-            } else if (positionUI < position) { // pokud existují nejaké položky k posunutí
-                position = positionUI;
-                updatePositionsAfter(position, node, arrFaChange, descItem, 1);
+    private void validateRepeatableType(RulDescItemType rulDescItemType,
+                                        RulDescItemConstraint rulDescItemConstraint,
+                                        Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems) {
+        if (rulDescItemConstraint.getRepeatable() != null && !rulDescItemConstraint.getRepeatable()) {
+            List<ArrDescItem> arrDescItems = mapDescItems.get(rulDescItemType).get(null);
+            if (arrDescItems != null && arrDescItems.size() > 0) {
+                throw new IllegalArgumentException("Pro daný uzel již existuje jiná hodnota stejného typu atributu");
             }
         }
+    }
 
-        descItem.setPosition(position);
+    private void validateAllItemConstraintsBySpec(RulDescItemType rulDescItemType,
+                                                  ArrDescItem data,
+                                                  RulDescItemSpec rulDescItemSpec,
+                                                  Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems) {
+        if (rulDescItemSpec != null) {
+            validateSpecificationAttribute(rulDescItemType, rulDescItemSpec);
+            List<RulDescItemConstraint> rulDescItemConstraints = descItemConstraintRepository.findByDescItemSpec(rulDescItemSpec);
+            for (RulDescItemConstraint rulDescItemConstraint : rulDescItemConstraints) {
+                validateRepeatableSpec(rulDescItemType, rulDescItemSpec, rulDescItemConstraint, mapDescItems);
+                validateDataDescItemConstraintTextLenghtLimit(data, rulDescItemConstraint);
+                validateDataDescItemConstraintRegexp(data, rulDescItemConstraint);
+            }
+        } else
+            // Specifikace musí být vyplněna, pokud typ atributu má vyplněno use_specification na true
+            if (rulDescItemType.getUseSpecification()) {
+                throw new IllegalArgumentException("Specifikace musí být vyplněna, pokud typ atributu má nastaveno use_specification na true");
+            }
+    }
 
-        descItem = descItemFactory.saveDescItem(descItem, true);
-
-        if (saveNode) {
-            node.setLastUpdate(LocalDateTime.now());
-            descItem.setNode(nodeRepository.save(node));
+    private void validateRepeatableSpec(RulDescItemType rulDescItemType,
+                                        RulDescItemSpec rulDescItemSpec,
+                                        RulDescItemConstraint rulDescItemConstraint,
+                                        Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems) {
+        if (rulDescItemConstraint.getRepeatable() != null && !rulDescItemConstraint.getRepeatable()) {
+            List<ArrDescItem> arrDescItems = mapDescItems.get(rulDescItemType).get(rulDescItemSpec);
+            if (arrDescItems.size() > 0) {
+                throw new IllegalArgumentException("Pro daný uzel již existuje jiná hodnota stejného typu atributu");
+            }
         }
+    }
 
-        return descItem;
+    private List<ArrDescItem> findDescItemsBetweenPosition(List<ArrDescItem> descItems, Integer positionFrom, Integer positionTo) {
+        List<ArrDescItem> findDescItems = new ArrayList<>();
+        for (ArrDescItem descItem : descItems) {
+            if (descItem.getPosition() >= positionFrom && descItem.getPosition() <= positionTo) {
+                findDescItems.add(descItem);
+            }
+        }
+        return findDescItems;
+    }
+
+    private ArrDescItem getDescItemByObjectId(List<ArrDescItem> descItems, ArrDescItem descItem) {
+        for (ArrDescItem item : descItems) {
+            if (item.getDescItemObjectId().equals(descItem.getDescItemObjectId())) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    private void deleteDescItemByObjectId(List<ArrDescItem> descItems, ArrDescItem descItem) {
+        for (ArrDescItem item : descItems) {
+            if (item.getDescItemObjectId().equals(descItem.getDescItemObjectId())) {
+                descItems.remove(item);
+                break;
+            }
+        }
+    }
+
+    private boolean existDescItemByObjectId(List<ArrDescItem> descItems, ArrDescItem descItem) {
+        for (ArrDescItem item : descItems) {
+            if (item.getDescItemObjectId().equals(descItem.getDescItemObjectId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean findAndMoveDescItemByObjectId(Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems, ArrDescItem updateDescItem) {
+
+        List<ArrDescItem> descItems = descItemRepository.findByDescItemObjectIdAndDeleteChangeIsNull(updateDescItem.getDescItemObjectId());
+        if (descItems.size() != 1) {
+            throw new IllegalStateException("Hodnota musí být právě jedna");
+        }
+        ArrDescItem descItem = descItems.get(0);
+
+        List<ArrDescItem> descItemsMove = getDescItemByTypeAndSpec(mapDescItems, updateDescItem.getDescItemType(), updateDescItem.getDescItemSpec(), updateDescItem.getNode());
+        descItemsMove.add(descItem);
+        return true;
+    }
+
+    private Integer getMaxPositionInDescItems(List<ArrDescItem> descItems) {
+        Integer maxPosition = 0;
+        for (ArrDescItem descItem : descItems) {
+            if (descItem.getPosition() > maxPosition) {
+                maxPosition = descItem.getPosition();
+            }
+        }
+        return maxPosition;
+    }
+
+    private List<ArrDescItem> getDescItemByTypeAndSpec(Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems, RulDescItemType type, RulDescItemSpec spec, ArrNode node) {
+        List<ArrDescItem> descItems;
+        Map<RulDescItemSpec, List<ArrDescItem>> map = mapDescItems.get(type);
+        if (map == null) {
+            map = new HashMap<>();
+            if (spec == null) {
+                descItems = descItemRepository.findByNodeAndDeleteChangeIsNullAndDescItemTypeAndSpecItemTypeIsNull(node, type);
+            } else {
+                descItems = descItemRepository.findByNodeAndDeleteChangeIsNullAndDescItemTypeAndSpecItemType(node, type, spec);
+            }
+            map.put(spec, descItems);
+            mapDescItems.put(type, map);
+        } else {
+            descItems = map.get(spec);
+            if (descItems == null) {
+                if (spec == null) {
+                    descItems = descItemRepository.findByNodeAndDeleteChangeIsNullAndDescItemTypeAndSpecItemTypeIsNull(node, type);
+                } else {
+                    descItems = descItemRepository.findByNodeAndDeleteChangeIsNullAndDescItemTypeAndSpecItemType(node, type, spec);
+                }
+                map.put(spec, descItems);
+            }
+        }
+        return descItems;
+    }
+
+    private List<ArrDescItem> findDescItemsAfterPosition(List<ArrDescItem> descItems, Integer position) {
+        List<ArrDescItem> findDescItems = new ArrayList<>();
+        for (ArrDescItem descItem : descItems) {
+            if (descItem.getPosition() > position) {
+                findDescItems.add(descItem);
+            }
+        }
+        return findDescItems;
     }
 
     /**
@@ -1382,188 +1750,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
     }
 
-    /**
-     * Upraví hodnotu existujícího atributu archivního popisu.
-     *
-     * @param descItemExt upravovaná položka
-     * @param faVersionId identifikátor verze
-     * @param arrFaChange společná změna
-     * @return výsledný(upravený) attribut
-     */
-    private ArrDescItem updateDescriptionItemRaw(ArrDescItem descItemExt, Integer faVersionId, Boolean createNewVersion, ArrChange arrFaChange, boolean saveNode) {
-        Assert.notNull(descItemExt);
-        Assert.notNull(faVersionId);
-        Assert.notNull(createNewVersion);
-
-        if (createNewVersion ^ arrFaChange != null) {
-            throw new IllegalArgumentException("Pokud vytvářím novou verzi, musí být předaná reference změny. Pokud verzi nevytvářím, musí být reference změny null.");
-        }
-
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
-
-        Assert.notNull(version);
-        if (createNewVersion && version.getLockChange() != null) {
-            throw new IllegalArgumentException("Nelze provést verzovanou změnu v uzavřené verzi.");
-        }
-
-        List<ArrDescItem> descItems;
-        if (version.getLockChange() == null) {
-            descItems = descItemRepository.findByDescItemObjectIdAndDeleteChangeIsNull(descItemExt.getDescItemObjectId());
-        } else {
-            descItems = descItemRepository.findByDescItemObjectIdAndLockChangeId(descItemExt.getDescItemObjectId(), version.getLockChange());
-        }
-
-        // musí být právě jeden
-        if (descItems.size() != 1) {
-            throw new IllegalArgumentException("Neplatný počet záznamů (" + descItems.size() + ")");
-        }
-        ArrDescItem descItem = descItems.get(0);
-
-        Assert.notNull(descItem);
-
-        ArrDescItem descItemExtNew = descItemFactory.getDescItem(descItem);
-        BeanUtils.copyProperties(descItemExt, descItemExtNew);
-
-        ArrNode node = descItem.getNode();
-        Assert.notNull(node);
-
-        List<RulDescItemTypeExt> rulDescItemTypes = ruleManager.getDescriptionItemTypesForNodeId(faVersionId, node.getNodeId(), null);
-
-        RulDescItemType rulDescItemType = descItem.getDescItemType();
-
-        String data = descItemExt.toString();
-        Assert.notNull(data);
-        if (data.length() == 0) {
-            throw new IllegalArgumentException("Není vyplněna hodnota");
-        }
-
-        RulDescItemSpec rulDescItemSpec = (descItemExt.getDescItemSpec() != null) ? descItemSpecRepository.findOne(descItemExt.getDescItemSpec().getDescItemSpecId()) : null;
-
-        validateAllowedItemType(rulDescItemTypes, rulDescItemType);
-
-        validateAllItemConstraintsBySpec(node, rulDescItemType, descItemExt, rulDescItemSpec, descItem);
-        validateAllItemConstraintsByType(node, rulDescItemType, descItemExt, descItem);
-
-        // uložení
-
-        Integer position = descItem.getPosition();
-        Integer positionUI = descItemExt.getPosition();
-
-        if (createNewVersion) {
-
-            Integer maxPosition = descItemRepository.findMaxPositionByNodeAndDescItemTypeIdAndDeleteChangeIsNull(node, rulDescItemType.getDescItemTypeId());
-
-            descItem.setDeleteChange(arrFaChange);
-            descItemRepository.save(descItem);
-
-            ArrDescItem descItemNew = new ArrDescItem();
-            descItemNew.setCreateChange(arrFaChange);
-            descItemNew.setDeleteChange(null);
-            descItemNew.setDescItemObjectId(descItem.getDescItemObjectId());
-            descItemNew.setDescItemType(rulDescItemType);
-            descItemNew.setDescItemSpec(rulDescItemSpec);
-            descItemNew.setNode(descItem.getNode());
-
-            // provedla se změna pozice
-            if (positionUI != null && positionUI != position) {
-
-                // kontrola spodní hranice
-                if (positionUI < 1) {
-                    throw new IllegalArgumentException("Pozice nemůže být menší než 1 (" + positionUI + ")");
-                }
-
-                // kontrola horní hranice
-                if (positionUI > maxPosition) {
-                    positionUI = maxPosition;
-                }
-
-                // typ posunu?
-                if (position < positionUI) {
-                    // posun níž
-                    updatePositionsBetween(position, positionUI, node, arrFaChange, descItem);
-                } else {
-                    // posun výš
-                    updatePositionsBefore(position, node, arrFaChange, descItem);
-                }
-
-                descItemNew.setPosition(positionUI);
-            } else {
-                descItemNew.setPosition(descItem.getPosition());
-            }
-
-            descItemRepository.save(descItemNew);
-
-            BeanUtils.copyProperties(descItemNew, descItemExtNew);
-
-            descItem = descItemExtNew;
-
-            descItemFactory.saveDescItem(descItem, true);
-
-        } else {
-
-            // provedla se změna pozice
-            if (positionUI != position) {
-                // při změně pozice musí být vytvářená nová verze
-                throw new IllegalArgumentException("Při změně pozice musí být vytvořena nová verze");
-            }
-
-            descItem = descItemFactory.getDescItem(descItem);
-            BeanUtils.copyProperties(descItemExt, descItem);
-            descItemFactory.saveDescItem(descItem, false);
-
-        }
-
-        if (saveNode) {
-            node.setLastUpdate(LocalDateTime.now());
-            descItem.setNode(nodeRepository.save(node));
-        }
-
-        return descItem;
-    }
-
-    /**
-     * Vymaže atribut archivního popisu.
-     *
-     * @param descItemExt       objekt attributu
-     * @param arrFaChange      společná změna
-     * @param versionId         id verze
-     * @return výsledný(smazaný) attribut
-     */
-    private ArrDescItem deleteDescriptionsItemRaw(ArrDescItem descItemExt, Integer versionId, ArrChange arrFaChange, boolean saveNode) {
-        Assert.notNull(descItemExt);
-        Assert.notNull(arrFaChange);
-        Assert.notNull(versionId);
-
-        validateLockVersion(versionId);
-
-        Integer descItemObjectId = descItemExt.getDescItemObjectId();
-        Assert.notNull(descItemObjectId);
-
-        List<ArrDescItem> descItems = descItemRepository.findByDescItemObjectIdAndDeleteChangeIsNull(descItemObjectId);
-
-        // musí být právě jeden
-        if (descItems.size() != 1) {
-            throw new IllegalArgumentException("Neplatný počet záznamů (" + descItems.size() + ")");
-        }
-
-        ArrDescItem descItem = descItemFactory.getDescItem(descItems.get(0));
-
-        deleteDescItemInner(descItem, arrFaChange);
-
-        Integer position = descItem.getPosition();
-        ArrNode node = descItem.getNode();
-
-        // position+1 protože nechci upravovat position u smazané položky
-        updatePositionsAfter(position + 1, node, arrFaChange, descItem, -1);
-
-        if (saveNode) {
-            node.setLastUpdate(LocalDateTime.now());
-            descItem.setNode(nodeRepository.save(node));
-        }
-
-        return descItem;
-    }
-
     private void deleteDescItemInner(final ArrDescItem descItem, final ArrChange deleteChange) {
         Assert.notNull(descItem);
 
@@ -1571,47 +1757,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         ArrDescItem descItemTmp = new ArrDescItem();
         BeanUtils.copyProperties(descItem, descItemTmp);
         descItemRepository.save(descItemTmp);
-    }
-
-    /**
-     * Pokud má typ atributu vyplněný constraint, který má repeatable false, tak je potřeba zkontrolovat, jestli pro daný node_id už neexistuje jiná hodnota stejného typu atributu
-     *
-     * @param node                  Uzel
-     * @param rulDescItemType       Typ atributu
-     * @param rulDescItemConstraint Podmínka
-     */
-    private void validateRepeatableType(ArrNode node, RulDescItemType rulDescItemType, RulDescItemConstraint rulDescItemConstraint, ArrDescItem descItem) {
-        if (rulDescItemConstraint.getRepeatable() != null && !rulDescItemConstraint.getRepeatable()) {
-            List<ArrDescItem> arrDescItems = descItemRepository.findByNodeAndDeleteChangeIsNullAndDescItemTypeId(node, rulDescItemType.getDescItemTypeId());
-            arrDescItems.remove(descItem); // odstraníme ten, co přidáváme / upravujeme
-            if (arrDescItems.size() > 0) {
-                throw new IllegalArgumentException("Pro daný uzel již existuje jiná hodnota stejného typu atributu");
-            }
-        }
-    }
-
-    /**
-     * Pokud má specifikace typu atributu vyplněný constraint, který má repeatable false, tak je potřeba zkontrolovat, jestli pro daný node_id a specifikaci už neexistuje jiná
-     * hodnota stejného typu atributu
-     *
-     * @param node                  Uzel
-     * @param rulDescItemType       Typ atributu
-     * @param rulDescItemSpec       Specifický typ atributu
-     * @param rulDescItemConstraint Podmínka
-     */
-    private void validateRepeatableSpec(ArrNode node,
-                                        RulDescItemType rulDescItemType,
-                                        RulDescItemSpec rulDescItemSpec,
-                                        RulDescItemConstraint rulDescItemConstraint,
-                                        ArrDescItem descItem) {
-        if (rulDescItemConstraint.getRepeatable() != null && !rulDescItemConstraint.getRepeatable()) {
-            List<ArrDescItem> arrDescItems = descItemRepository.findByNodeAndDeleteChangeIsNullAndDescItemTypeIdAndSpecItemTypeId(node, rulDescItemType.getDescItemTypeId(),
-                    rulDescItemSpec.getDescItemSpecId());
-            arrDescItems.remove(descItem); // odstraníme ten, co přidáváme / upravujeme
-            if (arrDescItems.size() > 0) {
-                throw new IllegalArgumentException("Pro daný uzel již existuje jiná hodnota stejného typu atributu");
-            }
-        }
     }
 
     /**
@@ -1680,119 +1825,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     private void validateSpecificationAttribute(RulDescItemType rulDescItemType, RulDescItemSpec rulDescItemSpec) {
         if (!rulDescItemSpec.getDescItemType().equals(rulDescItemType)) {
             throw new IllegalArgumentException("Specifikace musí patřit k typu atributu");
-        }
-    }
-
-    /**
-     * Kontroluje data vůči podmínkám specifického typu atributu.
-     *
-     * @param node            Uzel
-     * @param rulDescItemType Typ atributu
-     * @param data            Kontrolovaná data
-     * @param rulDescItemSpec Specifický typ atributu
-     */
-    private void validateAllItemConstraintsBySpec(ArrNode node, RulDescItemType rulDescItemType, ArrDescItem data, RulDescItemSpec rulDescItemSpec, ArrDescItem descItem) {
-        if (rulDescItemSpec != null) {
-            validateSpecificationAttribute(rulDescItemType, rulDescItemSpec);
-            List<RulDescItemConstraint> rulDescItemConstraints = descItemConstraintRepository.findByDescItemSpec(rulDescItemSpec);
-            for (RulDescItemConstraint rulDescItemConstraint : rulDescItemConstraints) {
-                validateRepeatableSpec(node, rulDescItemType, rulDescItemSpec, rulDescItemConstraint, descItem);
-                validateDataDescItemConstraintTextLenghtLimit(data, rulDescItemConstraint);
-                validateDataDescItemConstraintRegexp(data, rulDescItemConstraint);
-            }
-        } else
-            // Specifikace musí být vyplněna, pokud typ atributu má vyplněno use_specification na true
-            if (rulDescItemType.getUseSpecification()) {
-                throw new IllegalArgumentException("Specifikace musí být vyplněna, pokud typ atributu má nastaveno use_specification na true");
-            }
-    }
-
-    /**
-     * Kontroluje data vůči podmínkám typu atributu.
-     *
-     * @param node            Uzel
-     * @param rulDescItemType Typ atributu
-     * @param data            Kontrolovaná data
-     */
-    private void validateAllItemConstraintsByType(ArrNode node, RulDescItemType rulDescItemType, ArrDescItem data, ArrDescItem descItem) {
-        List<RulDescItemConstraint> rulDescItemConstraints = descItemConstraintRepository.findByDescItemType(rulDescItemType);
-        for (RulDescItemConstraint rulDescItemConstraint : rulDescItemConstraints) {
-            validateRepeatableType(node, rulDescItemType, rulDescItemConstraint, descItem);
-            validateDataDescItemConstraintTextLenghtLimit(data, rulDescItemConstraint);
-            validateDataDescItemConstraintRegexp(data, rulDescItemConstraint);
-        }
-    }
-
-    /**
-     * Provede upravení pozic attribut/hodnot v zadaném intervalu.
-     *
-     * @param position    začáteční pozice pro změnu
-     * @param position2   koncová pozice pro změnu
-     * @param node        uzel
-     * @param arrFaChange společná změna
-     * @param descItem    spjatý objekt attributu
-     */
-    private void updatePositionsBetween(Integer position, Integer position2, ArrNode node, ArrChange arrFaChange, ArrDescItem descItem) {
-        List<ArrDescItem> descItemListForUpdate = descItemRepository
-                .findByNodeAndDescItemTypeIdAndDeleteChangeIsNullBetweenPositions(position, position2, node, descItem.getDescItemType().getDescItemTypeId());
-        updatePositionsRaw(arrFaChange, descItemListForUpdate, -1);
-    }
-
-    /**
-     * Provede upravení pozic následujících attribut/hodnot po zvolené pozici.
-     *
-     * @param position    začáteční pozice pro změnu
-     * @param node        uzel
-     * @param arrFaChange společná změna
-     * @param descItem    spjatý objekt attributu
-     * @param diff        rozdíl pozice
-     */
-    private void updatePositionsAfter(Integer position, ArrNode node, ArrChange arrFaChange, ArrDescItem descItem, int diff) {
-        List<ArrDescItem> descItemListForUpdate = descItemRepository
-                .findByNodeAndDescItemTypeIdAndDeleteChangeIsNullAfterPosistion(position, node, descItem.getDescItemType().getDescItemTypeId());
-        updatePositionsRaw(arrFaChange, descItemListForUpdate, diff);
-    }
-
-    /**
-     * Provede upravení pozic předchozích attribut/hodnot před zvolenou pozicí.
-     *
-     * @param position    koncová pozice pro změnu
-     * @param node        uzel
-     * @param arrFaChange společná změna
-     * @param descItem    spjatý objekt attributu
-     */
-    private void updatePositionsBefore(Integer position, ArrNode node, ArrChange arrFaChange, ArrDescItem descItem) {
-        List<ArrDescItem> descItemListForUpdate = descItemRepository
-                .findByNodeAndDescItemTypeIdAndDeleteChangeIsNullBeforePosistion(position, node,
-                        descItem.getDescItemType().getDescItemTypeId());
-        updatePositionsRaw(arrFaChange, descItemListForUpdate, 1);
-    }
-
-    /**
-     * Upraví pozici s kopií dat u všech položek ze seznamu.
-     *
-     * @param arrFaChange           Změna
-     * @param descItemListForUpdate Seznam upravovaných položek
-     * @param diff                  Číselná změna (posun)
-     */
-    private void updatePositionsRaw(ArrChange arrFaChange, List<ArrDescItem> descItemListForUpdate, int diff) {
-        for (ArrDescItem descItemUpdate : descItemListForUpdate) {
-            descItemUpdate.setDeleteChange(arrFaChange);
-
-            ArrDescItem descItemNew = new ArrDescItem();
-            descItemNew.setCreateChange(arrFaChange);
-            descItemNew.setDeleteChange(null);
-            descItemNew.setDescItemObjectId(descItemUpdate.getDescItemObjectId());
-            descItemNew.setDescItemType(descItemUpdate.getDescItemType());
-            descItemNew.setDescItemSpec(descItemUpdate.getDescItemSpec());
-            descItemNew.setNode(descItemUpdate.getNode());
-            descItemNew.setPosition(descItemUpdate.getPosition() + diff);
-
-            descItemRepository.save(descItemUpdate);
-            descItemRepository.save(descItemNew);
-
-            descItemFactory.copyDescItemValues(descItemUpdate, descItemNew);
-            //copyDataValue(descItemUpdate, descItemNew);
         }
     }
 

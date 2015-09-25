@@ -9,6 +9,8 @@ import org.springframework.stereotype.Repository;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemType;
 
 
 /**
@@ -87,4 +89,11 @@ public interface DescItemRepository extends JpaRepository<ArrDescItem, Integer> 
      */
     @Query("SELECT i FROM arr_desc_item i WHERE i.node = ?1 order by i.createChange.changeDate asc")
     List<ArrDescItem> findByNodeOrderByCreateChangeAsc(ArrNode node);
+
+    @Query("SELECT i FROM arr_desc_item i WHERE i.node = ?1 AND i.deleteChange IS NULL AND i.descItemType = ?2 AND i.descItemSpec = ?3")
+    List<ArrDescItem> findByNodeAndDeleteChangeIsNullAndDescItemTypeAndSpecItemType(ArrNode node, RulDescItemType descItemType, RulDescItemSpec descItemSpec);
+
+    @Query("SELECT i FROM arr_desc_item i WHERE i.node = ?1 AND i.deleteChange IS NULL AND i.descItemType = ?2 AND i.descItemSpec is null")
+    List<ArrDescItem> findByNodeAndDeleteChangeIsNullAndDescItemTypeAndSpecItemTypeIsNull(ArrNode node, RulDescItemType descItemType);
+
 }

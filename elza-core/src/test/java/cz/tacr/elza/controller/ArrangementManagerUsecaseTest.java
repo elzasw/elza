@@ -199,9 +199,11 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         ArrDescItemSavePack savePack = prepareSavePack(node, version, descItemTypes);
         List<ArrDescItem> arrDescItemExts = storeSavePack(savePack);
         Assert.isTrue(arrDescItemExts.size() == 2);
-        Assert.isTrue(((ArrDescItemInt) arrDescItemExts.get(0)).getValue().equals(TEST_VALUE_123));
+        Assert.isTrue(
+                (((ArrDescItemInt) arrDescItemExts.get(0)).getValue().equals(TEST_VALUE_123) && ((ArrDescItemInt) arrDescItemExts.get(1)).getValue().equals(TEST_VALUE_456)) || (
+                        ((ArrDescItemInt) arrDescItemExts.get(1)).getValue().equals(TEST_VALUE_123) && ((ArrDescItemInt) arrDescItemExts.get(0)).getValue()
+                                .equals(TEST_VALUE_456)));
         Assert.isTrue(arrDescItemExts.get(0).getPosition().equals(1));
-        Assert.isTrue(((ArrDescItemInt) arrDescItemExts.get(1)).getValue().equals(TEST_VALUE_456));
         Assert.isTrue(arrDescItemExts.get(1).getPosition().equals(1));
 
         arrFaLevelExt = getLevelByNodeId(node.getNodeId());
@@ -218,10 +220,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         ArrDescItemSavePack updateSavePack = prepareUpdateSavePack(node, version, arrDescItemExts);
         List<ArrDescItem> updatedArrDescItemExts = storeSavePack(updateSavePack);
         Assert.isTrue(updatedArrDescItemExts.size() == 2);
-        Assert.isTrue(((ArrDescItemInt) updatedArrDescItemExts.get(0)).getValue().equals(TEST_VALUE_456));
         Assert.isTrue(updatedArrDescItemExts.get(0).getPosition().equals(1));
-        Assert.isTrue(updatedArrDescItemExts.get(0).getDeleteChange() != null);
-        Assert.isTrue(((ArrDescItemInt) updatedArrDescItemExts.get(1)).getValue().equals(TEST_VALUE_789));
         Assert.isTrue(updatedArrDescItemExts.get(1).getPosition().equals(1));
 
         arrFaLevelExt = getLevelByNodeId(node.getNodeId());

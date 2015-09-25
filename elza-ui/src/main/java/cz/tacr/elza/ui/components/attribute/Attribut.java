@@ -1,8 +1,9 @@
 package cz.tacr.elza.ui.components.attribute;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -195,6 +196,7 @@ public class Attribut extends CssLayout implements Components {
         a.setPosition(childs.getComponentCount() + 1);
         a.setNode(node);
         childs.addComponent(a, value);
+        precislujPoradi();
         return value;
     }
 
@@ -211,9 +213,23 @@ public class Attribut extends CssLayout implements Components {
     }
 
     public void precislujPoradi() {
+        Map<RulDescItemSpec, Integer> specIntegerMap = new HashMap<>();
         for (int i = 0; i < childs.getComponentCount(); i++) {
             AttributValue av = (AttributValue) childs.getComponent(i);
-            childs.getKey(av).setPosition(i + 1);
+            ArrDescItem descItem = childs.getKey(av);
+
+            if (descItem.getDescItemSpec() != null) {
+                Integer position = specIntegerMap.get(descItem.getDescItemSpec());
+                if (position == null) {
+                    position = 1;
+                } else {
+                    position++;
+                }
+                descItem.setPosition(position);
+                specIntegerMap.put(descItem.getDescItemSpec(), position);
+            } else {
+                descItem.setPosition(i + 1);
+            }
         }
     }
 
