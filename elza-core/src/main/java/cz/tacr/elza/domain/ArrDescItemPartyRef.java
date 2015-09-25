@@ -22,6 +22,6 @@ public class ArrDescItemPartyRef extends ArrDescItem  implements cz.tacr.elza.ap
 
     @Override
     public String toString() {
-        return party.getRecord().getRecord();
+        return (party != null && party.getRecord() != null) ? party.getRecord().getRecord() : null;
     }
 }

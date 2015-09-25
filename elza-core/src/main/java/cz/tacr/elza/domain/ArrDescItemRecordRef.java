@@ -22,6 +22,6 @@ public class ArrDescItemRecordRef extends ArrDescItem implements cz.tacr.elza.ap
 
     @Override
     public String toString() {
-        return record.getRecord();
+        return (record != null ) ? record.getRecord() : null;
     }
 }
