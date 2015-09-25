@@ -34,11 +34,13 @@ import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
+import cz.tacr.elza.ui.ElzaUI;
 import cz.tacr.elza.ui.components.attribute.Attribut;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesComparator;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesLoader;
 import cz.tacr.elza.ui.components.autocomplete.AutocompleteItem;
 import cz.tacr.elza.ui.utils.ConcurrentUpdateExceptionHandler;
+import cz.tacr.elza.ui.utils.ElzaNotifications;
 
 
 /**
@@ -83,7 +85,11 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
 
     private void saveAttributeWithVersion(Attribut attribut) {
-        saveAttribute(attribut, true);
+        try {
+            saveAttribute(attribut, true);
+        } catch (IllegalArgumentException e) {
+            ElzaNotifications.showError(e.getMessage());
+        }
     }
 
     private void saveAttributeWithoutVersion(Attribut attribut) {
@@ -218,18 +224,24 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             RulDataType dataType = ruleSetManager.getDataTypeForDescItemType(type);
             attribut = new Attribut(listItem, listSpec, type, dataType, level.getNode(), versionId, getAttributeValuesLoader());
 
-            attributWindow = new AxWindow();
-            attributWindow.caption("Detail atributu")
-                    .components(attribut)
-                    .buttonClose()
-                    .modal()
-                    .style("window-detail").closeListener(e -> {
-                attributesComboBox.setValue(null);
-            }).menuActions(AxAction.of(attribut).caption("Uložit").action(this::saveAttributeWithVersion)
-                    .exception(new ConcurrentUpdateExceptionHandler()),
-                    AxAction.of(attribut).caption("Uložit bez uložení historie")
-                            .action(this::saveAttributeWithoutVersion).exception(new ConcurrentUpdateExceptionHandler())
-            );
+            try {
+
+                attributWindow = new AxWindow();
+                attributWindow.caption("Detail atributu")
+                        .components(attribut)
+                        .buttonClose()
+                        .modal()
+                        .style("window-detail").closeListener(e -> {
+                    attributesComboBox.setValue(null);
+                }).menuActions(AxAction.of(attribut).caption("Uložit").action(this::saveAttributeWithVersion)
+                        .exception(new ConcurrentUpdateExceptionHandler()),
+                        AxAction.of(attribut).caption("Uložit bez uložení historie")
+                                .action(this::saveAttributeWithoutVersion).exception(new ConcurrentUpdateExceptionHandler())
+                );
+
+            } catch (Exception e) {
+                ElzaNotifications.showError(e.getMessage());
+            }
 
             attributWindow.getWindow().center();
             UI.getCurrent().addWindow(attributWindow.getWindow());

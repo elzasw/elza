@@ -297,6 +297,13 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
         } else {
             version = arrangementManager.getFaVersionById(versionId);
         }
+
+        fixVersionSessionClient();
+    }
+
+    private void fixVersionSessionClient() {
+        ArrFindingAid findingAidFix = version.getFindingAid();
+        findingAidFix.getFindingAidId();
     }
 
     private String getAttributeValue(final Integer nodeId, final Integer position) {
@@ -670,6 +677,8 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
 
     private void refreshTree(final HierarchicalCollapsibleBeanItemContainer container, final ArrLevel rootLevel) {
         version = arrangementManager.getFaVersionById(version.getFindingAidVersionId());
+        fixVersionSessionClient();
+
         int visibleIndex = table.getCurrentPageFirstItemIndex();
 
         container.removeAllItems();
@@ -953,6 +962,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
     private void approveVersion(final VOApproveVersion voApproveVersion) {
         version = arrangementManager.approveVersion(version, voApproveVersion.getArrangementTypeId(),
                 voApproveVersion.getRuleSetId());
+        fixVersionSessionClient();
     }
 
     private void cutNode(final ArrLevel itemId) {
