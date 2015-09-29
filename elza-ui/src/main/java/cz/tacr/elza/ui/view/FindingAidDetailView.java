@@ -254,6 +254,10 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
             public void nodeExpand(final Tree.ExpandEvent expandEvent) {
                 ArrLevel itemId = (ArrLevel) expandEvent.getItemId();
 
+                if (itemId == null) {
+                    return;
+                }
+
                 ArrLevel itemIdLast = itemId;
 
                 List<ArrLevel> faLevels = arrangementManager.findSubLevels(itemId.getNode().getNodeId(), version.getFindingAidVersionId());

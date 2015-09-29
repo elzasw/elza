@@ -36,6 +36,10 @@ public class HierarchicalCollapsibleBeanItemContainer extends BeanItemContainer<
     public void setCollapsed(Object itemId, boolean collapsed) {
         ArrLevel level = (ArrLevel) itemId;
 
+        if (level == null) {
+            return;
+        }
+
         if (collapsed) {
             isExpandedSet.remove(level.getNode());
         } else {
@@ -46,6 +50,9 @@ public class HierarchicalCollapsibleBeanItemContainer extends BeanItemContainer<
     @Override
     public boolean isCollapsed(Object itemId) {
         ArrLevel level = (ArrLevel) itemId;
+        if (level == null) {
+            return false;
+        }
         return !isExpandedSet.contains(level.getNode());
     }
 
