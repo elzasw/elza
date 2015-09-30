@@ -512,7 +512,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         levelWithExtraNode = new ArrLevelWithExtraNode();
         levelWithExtraNode.setLevel(child.getLevel());
-        child.getLevel().getNode().setVersion(child.getLevel().getNode().getVersion() + 1);
+        //child.getLevel().getNode().setVersion(child.getLevel().getNode().getVersion() + 1);
         child.getLevel().getNodeParent().setVersion(child.getLevel().getNodeParent().getVersion() + 1);
 
         ArrNode parentNode = parent.getLevel().getNode();

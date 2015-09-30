@@ -529,6 +529,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         level.getNodeParent().setLastUpdate(LocalDateTime.now());
         nodeRepository.save(level.getNodeParent());
 
+        level.getNode().setLastUpdate(LocalDateTime.now());
+        nodeRepository.save(level.getNode());
+
         targetLevel.getNodeParent().setLastUpdate(LocalDateTime.now());
         targetLevel.setNodeParent(nodeRepository.save(targetLevel.getNodeParent()));
 
@@ -575,12 +578,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     public ArrLevelWithExtraNode moveLevelUnder(@RequestBody ArrLevelWithExtraNode levelWithUnderNode) {
         Assert.notNull(levelWithUnderNode);
 
-        ArrLevel node = levelWithUnderNode.getLevel();
+        ArrLevel level = levelWithUnderNode.getLevel();
         ArrNode parentNode = levelWithUnderNode.getExtraNode();
         Integer versionId = levelWithUnderNode.getFaVersionId();
 
         isValidAndOpenVersion(versionId);
-        isValidArrFaLevel(node);
+        isValidArrFaLevel(level);
         isValidNode(parentNode);
 
         if (parentNode == null) {
@@ -588,23 +591,23 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
 
         ArrLevel parent = findNodeInRootTreeByNodeId(parentNode, levelWithUnderNode.getRootNode());
-        if (node == null || parent == null) {
+        if (level == null || parent == null) {
             throw new IllegalArgumentException("Přesun se nezdařil. Záznam byl pravděpodobně smazán jiným uživatelem. Aktualizujte stránku");
         }
 
-        if (node.equals(parent)) {
+        if (level.equals(parent)) {
             throw new IllegalStateException("Nelze vložit záznam sám do sebe");
         }
 
-        node.getNode().setLastUpdate(LocalDateTime.now());
-        node.setNode(nodeRepository.save(node.getNode()));
+        level.getNode().setLastUpdate(LocalDateTime.now());
+        level.setNode(nodeRepository.save(level.getNode()));
 
         // vkládaný nesmí být rodičem uzlu pod který ho vkládám
-        checkCycle(node, parent);
+        checkCycle(level, parent);
 
         ArrChange change = createChange();
-        shiftNodesUp(nodesToShift(node), change);
-        ArrLevel newLevel = createNewLevelVersion(node, change);
+        shiftNodesUp(nodesToShift(level), change);
+        ArrLevel newLevel = createNewLevelVersion(level, change);
 
         ArrLevel faLevelRet = addLastInLevel(newLevel, parent.getNode());
 
@@ -648,6 +651,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         level.getNodeParent().setLastUpdate(LocalDateTime.now());
         nodeRepository.save(level.getNodeParent());
+
+        level.getNode().setLastUpdate(LocalDateTime.now());
+        nodeRepository.save(level.getNode());
 
         predecessorLevel.getNodeParent().setLastUpdate(LocalDateTime.now());
         predecessorLevel.setNodeParent(nodeRepository.save(predecessorLevel.getNodeParent()));
