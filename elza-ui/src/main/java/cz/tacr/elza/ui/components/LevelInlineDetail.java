@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import com.vaadin.data.Validator;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.label.ContentMode;
@@ -22,6 +23,7 @@ import com.vaadin.ui.UI;
 import cz.req.ax.AxAction;
 import cz.req.ax.AxWindow;
 import cz.tacr.elza.api.controller.PartyManager;
+import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RegistryManager;
 import cz.tacr.elza.controller.RuleManager;
@@ -87,7 +89,9 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
     private void saveAttributeWithVersion(Attribut attribut) {
         try {
             saveAttribute(attribut, true);
-        } catch (IllegalArgumentException e) {
+        } catch (ConcurrentUpdateException e) {
+            throw e;
+        } catch (RuntimeException e) {
             ElzaNotifications.showError(e.getMessage());
         }
     }
@@ -95,7 +99,9 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
     private void saveAttributeWithoutVersion(Attribut attribut) {
         try {
             saveAttribute(attribut, false);
-        } catch (IllegalArgumentException e) {
+        } catch (ConcurrentUpdateException e) {
+            throw e;
+        } catch (RuntimeException e) {
             ElzaNotifications.showError(e.getMessage());
         }
     }

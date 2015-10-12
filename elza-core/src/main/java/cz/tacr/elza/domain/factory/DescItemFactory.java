@@ -16,6 +16,7 @@ import org.springframework.util.Assert;
 import cz.tacr.elza.api.controller.ArrangementManager;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDecimal;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
@@ -25,6 +26,7 @@ import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemCoordinates;
+import cz.tacr.elza.domain.ArrDescItemDecimal;
 import cz.tacr.elza.domain.ArrDescItemFormattedText;
 import cz.tacr.elza.domain.ArrDescItemInt;
 import cz.tacr.elza.domain.ArrDescItemPartyRef;
@@ -37,6 +39,7 @@ import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.repository.DataCoordinatesRepository;
+import cz.tacr.elza.repository.DataDecimalRepository;
 import cz.tacr.elza.repository.DataIntegerRepository;
 import cz.tacr.elza.repository.DataPartyRefRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
@@ -97,6 +100,9 @@ public class DescItemFactory implements InitializingBean {
     private DataUnitidRepository dataUnitidRepository;
 
     @Autowired
+    private DataDecimalRepository dataDecimalRepository;
+
+    @Autowired
     private DataRepository dataRepository;
 
     @Autowired
@@ -122,6 +128,7 @@ public class DescItemFactory implements InitializingBean {
         defineMapText();
         defineMapUnitdate();
         defineMapUnitid();
+        defineMapDecimal();
 
         facade = factory.getMapperFacade();
 
@@ -399,7 +406,36 @@ public class DescItemFactory implements InitializingBean {
     }
 
     /**
-     * Inicialuzace mapy pro všechny repository.
+     * Nadefinování pravidel pro převod formátu Decimal.
+     */
+    private void defineMapDecimal() {
+        factory.classMap(ArrDescItemDecimal.class, ArrDataDecimal.class).customize(new CustomMapper<ArrDescItemDecimal, ArrDataDecimal>() {
+
+            @Override
+            public void mapAtoB(ArrDescItemDecimal arrDescItemDecimal, ArrDataDecimal arrDataDecimal, MappingContext context) {
+                arrDataDecimal.setDataType(arrDescItemDecimal.getDescItemType().getDataType());
+                arrDataDecimal.setDescItem(arrDescItemDecimal);
+                arrDataDecimal.setValue(arrDescItemDecimal.getValue());
+            }
+
+            @Override
+            public void mapBtoA(ArrDataDecimal arrDataDecimal, ArrDescItemDecimal arrDescItemDecimal, MappingContext context) {
+                arrDescItemDecimal.setValue(arrDataDecimal.getValue());
+            }
+        }).register();
+
+        factory.classMap(ArrDataDecimal.class, ArrDataDecimal.class).customize(new CustomMapper<ArrDataDecimal, ArrDataDecimal>() {
+            @Override
+            public void mapAtoB(ArrDataDecimal arrDataDecimal, ArrDataDecimal arrDataDecimalNew, MappingContext context) {
+                arrDataDecimalNew.setDataType(arrDataDecimal.getDataType());
+                arrDataDecimalNew.setDescItem(arrDataDecimal.getDescItem());
+                arrDataDecimalNew.setValue(arrDataDecimal.getValue());
+            }
+        }).register();
+    }
+
+    /**
+     * Inicializace mapy pro všechny repository.
      */
     private void initMapRepository() {
         mapRepository = new LinkedHashMap<>();
@@ -411,6 +447,7 @@ public class DescItemFactory implements InitializingBean {
         mapRepository.put(ArrDataText.class, dataTextRepository);
         mapRepository.put(ArrDataUnitdate.class, dataUnitdateRepository);
         mapRepository.put(ArrDataUnitid.class, dataUnitidRepository);
+        mapRepository.put(ArrDataDecimal.class, dataDecimalRepository);
     }
 
     /**
@@ -515,6 +552,8 @@ public class DescItemFactory implements InitializingBean {
                 data = facade.map(descItem, ArrDataUnitdate.class);
             } else if (descItem instanceof ArrDescItemUnitid) {
                 data = facade.map(descItem, ArrDataUnitid.class);
+            } else if (descItem instanceof ArrDescItemDecimal) {
+                data = facade.map(descItem, ArrDataDecimal.class);
             } else {
                 throw new NotImplementedException("Nebyl namapován datový typ: " + descItem.getClass().getName());
             }
@@ -561,6 +600,8 @@ public class DescItemFactory implements InitializingBean {
                 return new ArrDescItemPartyRef();
             case "RECORD_REF":
                 return new ArrDescItemRecordRef();
+            case "DECIMAL":
+                return new ArrDescItemDecimal();
             default:
                 throw new NotImplementedException("Nebyl namapován datový typ");
         }

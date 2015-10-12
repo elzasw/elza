@@ -9,6 +9,7 @@ import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.DragAndDropWrapper;
 import com.vaadin.ui.TextArea;
+import com.vaadin.ui.TextField;
 
 import cz.req.ax.AxAction;
 import cz.req.ax.AxForm;
@@ -82,6 +83,11 @@ public class AttributValue extends CssLayout implements Components {
                     recordRefAutoc.reloadItems("");
                 });
 
+                break;
+            case "DECIMAL":
+                AxForm.AxField field = form.addField(null, "value", TextField.class);
+                ((TextField) field.field()).setConverter(new StringToBigDecimalConverter());
+                field.style("long-input");
                 break;
             default:
                 throw new IllegalStateException("Typ '" + dataType.getCode() + "' není implementován");
