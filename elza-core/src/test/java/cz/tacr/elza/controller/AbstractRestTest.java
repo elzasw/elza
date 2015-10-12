@@ -219,6 +219,7 @@ public abstract class AbstractRestTest {
     protected static final String DT_COORDINATES = "COORDINATES";
     protected static final String DT_FORMATTED_TEXT = "FORMATTED_TEXT";
     protected static final String DT_RECORD_REF = "RECORD_REF";
+    protected static final String DT_DECIMAL = "DECIMAL";
     // END RULE MANAGER CONSTANTS
 
     @Value("${local.server.port}")

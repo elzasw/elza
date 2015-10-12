@@ -2,6 +2,7 @@ package cz.tacr.elza.controller;
 
 import static com.jayway.restassured.RestAssured.given;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemCoordinates;
+import cz.tacr.elza.domain.ArrDescItemDecimal;
 import cz.tacr.elza.domain.ArrDescItemFormattedText;
 import cz.tacr.elza.domain.ArrDescItemInt;
 import cz.tacr.elza.domain.ArrDescItemPartyRef;
@@ -848,6 +850,9 @@ public class ArrangementManagerTest extends AbstractRestTest {
                 case DT_RECORD_REF:
                     descItems.add(createRecordRefValue(node, rulDescItemTypeExt, record));
                     break;
+                case DT_DECIMAL:
+                    descItems.add(createDecimalValue(node, rulDescItemTypeExt));
+                    break;
                 default:
                     throw new IllegalStateException("Není definován case pro datový typ " + dtCode + " doplňte jej.");
             }
@@ -977,6 +982,13 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ArrDescItem descItem = new ArrDescItemString();
         descItem = createValue(descItem, node, rulDescItemTypeExt);
         ((ArrDescItemString) descItem).setValue(Integer.toString(RandomUtils.nextInt(Integer.MAX_VALUE)));
+        return descItem;
+    }
+
+    private ArrDescItem createDecimalValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
+        ArrDescItem descItem = new ArrDescItemDecimal();
+        descItem = createValue(descItem, node, rulDescItemTypeExt);
+        ((ArrDescItemDecimal) descItem).setValue(new BigDecimal("12.345"));
         return descItem;
     }
 
