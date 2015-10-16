@@ -1,17 +1,5 @@
 package cz.tacr.elza.ui.components;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
-import com.vaadin.data.Validator;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.label.ContentMode;
@@ -19,7 +7,6 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
-
 import cz.req.ax.AxAction;
 import cz.req.ax.AxWindow;
 import cz.tacr.elza.api.controller.PartyManager;
@@ -29,20 +16,34 @@ import cz.tacr.elza.controller.RegistryManager;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemString;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevelExt;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
-import cz.tacr.elza.ui.ElzaUI;
 import cz.tacr.elza.ui.components.attribute.Attribut;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesComparator;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesLoader;
+import cz.tacr.elza.ui.components.attribute.NodeRegisterLink;
 import cz.tacr.elza.ui.components.autocomplete.AutocompleteItem;
 import cz.tacr.elza.ui.utils.ConcurrentUpdateExceptionHandler;
 import cz.tacr.elza.ui.utils.ElzaNotifications;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Consumer;
 
 
 /**
@@ -74,6 +75,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
     private AttributeValuesLoader attributeValuesLoader;
 
     private Attribut attribut;
+    private NodeRegisterLink nodeRegisterLink;
     private AxWindow attributWindow = null;
     private ComboBox attributesComboBox;
     private Label lblTitle;
@@ -104,6 +106,9 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         } catch (RuntimeException e) {
             ElzaNotifications.showError(e.getMessage());
         }
+    }
+
+    private void saveNodeRegisterLinkWithVersion(NodeRegisterLink nodeRegisterLink) {
     }
 
     private void saveAttribute(Attribut attribut, Boolean createNewVersion) {
@@ -182,7 +187,8 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
                 CssLayout captionLayout = cssLayoutExt(null);
                 captionLayout.addComponent(newLabel(caption));
                 if(versionOpen) {
-                    captionLayout.addComponent(createEditButton(level, item.getDescItemType(), versionId));
+                    captionLayout.addComponent(createEditButton(
+                            (thiz) -> thiz.showEditAttrWindow(level, item.getDescItemType(), versionId)));
                 }
 
                 Label lblValue = newLabel(value);
@@ -192,6 +198,52 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
                 lastDescItemTypeId = item.getDescItemType().getDescItemTypeId();
             }
+        }
+
+
+
+        detailContent.addComponent(grid);
+    }
+
+    public void showNodeRegisterLink(final ArrFindingAidVersion version, final ArrNode node) {
+        //TODO kuzel load z APi dodelat
+        ArrayList<RegRecord> regRecords = new ArrayList<>();
+
+        RegRecord regRecord = new RegRecord();
+        regRecord.setRecord("AAA");
+        regRecords.add(regRecord);
+        regRecord = new RegRecord();
+        regRecord.setRecord("BBB");
+        regRecords.add(regRecord);
+
+
+        FormGrid grid = new FormGrid().setRowSpacing(true).style("attr-detail");
+        boolean first = true;
+        for (final RegRecord record : regRecords) {
+
+            if (first) {
+
+                CssLayout captionLayout = cssLayoutExt(null);
+                captionLayout.addComponent(newLabel("Vazba na rejstříkové heslo"));
+                if (isVersionOpen(version.getFindingAidVersionId())) {
+                    captionLayout.addComponent(createEditButton(
+                            (thiz) -> thiz.showEditNodeRecordLinkWindow(node, version.getFindingAidVersionId())));
+                }
+
+                Label lblValue = newLabel(record.getRecord());
+                lblValue.setContentMode(ContentMode.HTML);
+                grid.addRow(captionLayout, lblValue);
+
+                first = false;
+
+            } else {
+
+                Label lblValue = newLabel(record.getRecord(), "multi-value");
+                lblValue.setContentMode(ContentMode.HTML);
+                grid.addRow("", lblValue);
+
+            }
+
         }
 
         detailContent.addComponent(grid);
@@ -259,8 +311,48 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         }
     }
 
+    private void showEditNodeRecordLinkWindow(final ArrNode node, final Integer versionId) {
 
-    private Button createEditButton(final ArrLevelExt level, final RulDescItemType type, final Integer versionId) {
+        //TODO kuzel load existujicich vazeb
+        List<ArrNodeRegister> data = new ArrayList<>();
+        ArrNodeRegister nr = new ArrNodeRegister();
+        RegRecord regRecord = new RegRecord();
+        regRecord.setRecord("AAA");
+        nr.setRecord(regRecord);
+        data.add(nr);
+        nr = new ArrNodeRegister();
+        regRecord = new RegRecord();
+        regRecord.setRecord("BBB");
+        nr.setRecord(regRecord);
+        data.add(nr);
+
+        nodeRegisterLink = new NodeRegisterLink(node, versionId, data, registryManager);
+
+        try {
+
+            attributWindow = new AxWindow();
+            attributWindow.caption("Detail vazeb na rejstřík")
+                    .components(nodeRegisterLink)
+                    .buttonClose()
+                    .modal()
+                    .style("window-detail").closeListener(e -> {
+                attributesComboBox.setValue(null);
+            }).menuActions(AxAction.of(nodeRegisterLink).caption("Uložit").action(this::saveNodeRegisterLinkWithVersion)
+                    .exception(new ConcurrentUpdateExceptionHandler())
+            );
+
+        } catch (Exception e) {
+            ElzaNotifications.showError(e.getMessage());
+        }
+
+        attributWindow.getWindow().center();
+        UI.getCurrent().addWindow(attributWindow.getWindow());
+    }
+
+
+    private Button createEditButton(final Consumer<LevelInlineDetail> function) {
+
+        LevelInlineDetail thiz = this;
 
         Button button = new Button(FontAwesome.EDIT);
         button.addStyleName("edit-btn");
@@ -268,8 +360,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         button.addClickListener(new Button.ClickListener() {
             @Override
             public void buttonClick(final Button.ClickEvent event) {
-                showEditAttrWindow(level, type, versionId);
-
+                function.accept(thiz);
             }
         });
 
