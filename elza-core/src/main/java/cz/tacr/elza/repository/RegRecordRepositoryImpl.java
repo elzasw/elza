@@ -1,5 +1,7 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -30,14 +32,17 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
     private EntityManager entityManager;
 
     @Override
-    public List<RegRecord> findRegRecordByTextAndType(final String searchRecord, final Integer registerTypeId,
+    public List<RegRecord> findRegRecordByTextAndType(final String searchRecord, final Collection<Integer> registerTypeIds,
                                                       final Integer firstReult, final Integer maxResults) {
+        if (registerTypeIds != null && registerTypeIds.isEmpty()) {
+            return new LinkedList<>();
+        }
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<RegRecord> query = builder.createQuery(RegRecord.class);
         Root<RegRecord> record = query.from(RegRecord.class);
 
-        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeId, record, builder);
+        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, record, builder);
 
         Order order = builder.asc(record.get(RegRecord.RECORD));
         query.select(record).where(condition).orderBy(order).distinct(true);
@@ -49,13 +54,16 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
     }
 
     @Override
-    public long findRegRecordByTextAndTypeCount(final String searchRecord, final Integer registerTypeId) {
+    public long findRegRecordByTextAndTypeCount(final String searchRecord, final Collection<Integer> registerTypeIds) {
+        if (registerTypeIds != null && registerTypeIds.isEmpty()) {
+            return 0;
+        }
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Long> query = builder.createQuery(Long.class);
         Root<RegRecord> record = query.from(RegRecord.class);
 
-        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeId, record, builder);
+        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, record, builder);
 
         query.select(builder.countDistinct(record)).where(condition);
 
@@ -72,7 +80,7 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
      * @param builder           buider pro vytváření podmínek
      * @return                  výsledné podmínky pro dotaz
      */
-    private Predicate preparefindRegRecordByTextAndType(final String searchRecord, final Integer registerTypeId,
+    private Predicate preparefindRegRecordByTextAndType(final String searchRecord, final Collection<Integer> registerTypeId,
                                                    final Root<RegRecord> record, final CriteriaBuilder builder) {
         Join<Object, Object> variantRecord = record.join(RegRecord.VARIANT_RECORD_LIST, JoinType.LEFT);
         Join<Object, Object> registerType = record.join(RegRecord.REGISTER_TYPE);
@@ -89,7 +97,7 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
         }
 
         if (registerTypeId != null) {
-            Predicate typePred = builder.equal(registerType.get(RegRegisterType.ID), registerTypeId);
+            Predicate typePred = registerType.get(RegRegisterType.ID).in(registerTypeId);
             conditon = conditon == null ? typePred : builder.and(conditon, typePred);
         }
 

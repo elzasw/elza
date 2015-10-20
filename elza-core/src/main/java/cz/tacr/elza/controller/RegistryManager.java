@@ -4,6 +4,10 @@ import cz.tacr.elza.domain.RegExternalSource;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemSpecRegister;
+import cz.tacr.elza.repository.DescItemSpecRegisterRepository;
+import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
@@ -20,7 +24,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Implementace Api pro práci s rejstříkem.
@@ -42,6 +52,12 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
 
     @Autowired
     private PartyRepository partyRepository;
+
+    @Autowired
+    private DescItemSpecRegisterRepository descItemSpecRegisterRepository;
+
+    @Autowired
+    private DescItemSpecRepository descItemSpecRepository;
 
     @Autowired
     private ExternalSourceRepository externalSourceRepository;
@@ -136,6 +152,18 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     }
 
     @Override
+    @RequestMapping(value = "/getRegisterTypesForDescItemSpec", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public List<RegRegisterType> getRegisterTypesForDescItemSpec(@RequestParam final Integer descItemSpecId) {
+        RulDescItemSpec descItemSpec =  descItemSpecRepository.findOne(descItemSpecId);
+        Set<RegRegisterType> registerSet = new HashSet<>();
+        List<RulDescItemSpecRegister> disRegisterList = descItemSpecRegisterRepository.findByDescItemSpecId(descItemSpec);
+        for (RulDescItemSpecRegister rulDescItemSpecRegister : disRegisterList) {
+            registerSet.add(rulDescItemSpecRegister.getRegisterType());
+        }
+        return new LinkedList<>(registerSet);
+    }
+
+    @Override
     @RequestMapping(value = "/getExternalSources", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
     public List<RegExternalSource> getExternalSources() {
         return externalSourceRepository.findAll();
@@ -144,9 +172,13 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     @Override
     @RequestMapping(value = "/findRecord", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
     public List<RegRecord> findRecord(@RequestParam @Nullable final String search, @RequestParam final Integer from,
-                                      @RequestParam final Integer count, @RequestParam final Integer registerTypeId) {
-
-        List<RegRecord> regRecords = regRecordRepository.findRegRecordByTextAndType(search, registerTypeId, from, count);
+                                      @RequestParam final Integer count, 
+                                      @RequestParam(value = "registerTypeIds") final Integer[] registerTypeIds) {
+        List<Integer> registerTypeIdList = null;
+        if (registerTypeIds != null) {
+            registerTypeIdList = Arrays.asList(registerTypeIds);
+        }
+        List<RegRecord> regRecords = regRecordRepository.findRegRecordByTextAndType(search, registerTypeIdList, from, count);
         regRecords.forEach((record) -> {
             record.getVariantRecordList().forEach((variantRecord) -> {
                 variantRecord.setRegRecord(null);
@@ -159,9 +191,13 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     @Override
     @RequestMapping(value = "/findRecordCount", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
     public long findRecordCount(@RequestParam @Nullable final String search,
-                                           @RequestParam final Integer registerTypeId) {
+                                @RequestParam(value = "registerTypeIds") Integer[] registerTypeIds) {
 
-        return regRecordRepository.findRegRecordByTextAndTypeCount(search, registerTypeId);
+        List<Integer> registerTypeIdList = null;
+        if (registerTypeIds != null) {
+            registerTypeIdList = Arrays.asList(registerTypeIds);
+        }
+        return regRecordRepository.findRegRecordByTextAndTypeCount(search, registerTypeIdList);
     }
 
     @Override

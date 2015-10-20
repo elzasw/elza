@@ -11,7 +11,7 @@ import java.io.Serializable;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
-public interface RulDescItemSpec<RIT extends RulDescItemType, RT extends RegRegisterType>
+public interface RulDescItemSpec<RIT extends RulDescItemType>
         extends
             Serializable {
 
@@ -61,15 +61,4 @@ public interface RulDescItemSpec<RIT extends RulDescItemType, RT extends RegRegi
      */
     void setViewOrder(final Integer viewOrder);
 
-    /**
-     *
-     * @return typ rejstříku specifikace atributu.
-     */
-    RT getRegisterType();
-
-    /**
-     *
-     * @param registerType typ rejstříku specifikace atributu.
-     */
-    void setRegisterType(RT registerType);
 }

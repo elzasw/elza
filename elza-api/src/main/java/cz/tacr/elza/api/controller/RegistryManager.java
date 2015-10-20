@@ -1,11 +1,11 @@
 package cz.tacr.elza.api.controller;
 
+import java.util.List;
+
 import cz.tacr.elza.api.RegExternalSource;
 import cz.tacr.elza.api.RegRecord;
 import cz.tacr.elza.api.RegRegisterType;
 import cz.tacr.elza.api.RegVariantRecord;
-
-import java.util.List;
 
 
 /**
@@ -85,19 +85,19 @@ public interface RegistryManager<RR extends RegRecord, VR extends RegVariantReco
      * @param search            hledaný řetězec, může být null
      * @param from              index prvního záznamu, začíná od 0
      * @param count             počet výsledků k vrácení
-     * @param registerTypeId    ID typ záznamu
+     * @param registerTypeIds    ID typ záznamu
      * @return                  vybrané záznamy dle popisu seřazené za text hesla, nebo prázdná množina
      */
-    List<? extends RegRecord> findRecord(String search, Integer from, Integer count, Integer registerTypeId);
+    List<? extends RegRecord> findRecord(String search, Integer from, Integer count, Integer[] registerTypeIds);
 
     /**
      * Celkový počet záznamů v DB pro funkci {@link #findRecord(String, Integer, Integer, Integer)}
      *
      * @param search            hledaný řetězec, může být null
-     * @param registerTypeId    ID typ záznamu
+     * @param registerTypeIds    ID typ záznamu
      * @return                  celkový počet záznamů, který je v db za dané parametry
      */
-    long findRecordCount(String search, Integer registerTypeId);
+    long findRecordCount(String search, Integer[] registerTypeIds);
 
     /**
      * Vrátí jedno heslo (s variantními hesly) dle id.
@@ -105,5 +105,12 @@ public interface RegistryManager<RR extends RegRecord, VR extends RegVariantReco
      * @return              heslo s vazbou na var. hesla
      */
     RegRecord getRecord(Integer recordId);
+
+    /**
+     * Vrátí záznamy patřící danému typu rejstříku podle id specifikace typů atributů archivního popisu.
+     * @param descItemSpecId id specifikace typů atributů archivního popisu
+     * @return záznamy patřící danému typu rejstříku.
+     */
+    List<? extends RegRegisterType> getRegisterTypesForDescItemSpec(Integer descItemSpecId);
 
 }

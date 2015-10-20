@@ -65,6 +65,7 @@ import cz.tacr.elza.repository.DataStringRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemConstraintRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.DescItemSpecRegisterRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
@@ -246,6 +247,8 @@ public abstract class AbstractRestTest {
     @Autowired
     private DescItemSpecRepository descItemSpecRepository;
     @Autowired
+    private DescItemSpecRegisterRepository descItemSpecRegisterRepository;
+    @Autowired
     private DescItemConstraintRepository descItemConstraintRepository;
     @Autowired
     private DataTypeRepository dataTypeRepository;
@@ -296,6 +299,7 @@ public abstract class AbstractRestTest {
         findingAidRepository.deleteAll();
         levelRepository.deleteAll();
         descItemRepository.deleteAll();
+        descItemSpecRegisterRepository.deleteAll();
         descItemSpecRepository.deleteAll();
         descItemTypeRepository.deleteAll();
         nodeRepository.deleteAll();

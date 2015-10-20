@@ -2,7 +2,9 @@ package cz.tacr.elza.ui.components;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -32,6 +34,7 @@ import cz.tacr.elza.domain.ArrDescItemString;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
@@ -299,10 +302,14 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
                         return Collections.EMPTY_LIST;
                     }
 
-                    RulDescItemSpec specDo = ruleSetManager.getDescItemSpecById(specification.getDescItemSpecId());
+                    Set<Integer> regTypeIdSet = new HashSet<>();
+                    List<RegRegisterType> registerTypeList = registryManager.getRegisterTypesForDescItemSpec(specification.getDescItemSpecId());
+                    for (RegRegisterType regRegisterType : registerTypeList) {
+                        regTypeIdSet.add(regRegisterType.getRegisterTypeId());
+                    }
 
                     List<RegRecord> recordList = registryManager
-                            .findRecord(text, 0, 50, specDo.getRegisterType().getRegisterTypeId());
+                            .findRecord(text, 0, 50, regTypeIdSet.toArray(new Integer[regTypeIdSet.size()]));
                     List<AutocompleteItem> result = new ArrayList<>(recordList.size());
 
                     for (RegRecord regRecord : recordList) {
