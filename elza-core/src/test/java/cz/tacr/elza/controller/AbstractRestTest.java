@@ -131,7 +131,7 @@ public abstract class AbstractRestTest {
     protected static final String SEARCH_ATT = "search";
     protected static final String FROM_ATT = "from";
     protected static final String COUNT_ATT = "count";
-    protected static final String REGISTER_TYPE_ID_ATT = "registerTypeId";
+    protected static final String REGISTER_TYPE_ID_ATT = "registerTypeIds";
 
     // END - REGISTRY MANAGER CONSTANTS
 
