@@ -826,7 +826,7 @@ public class TestingDataController {
     private ArrDescItem createUnitdateValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
         ArrDescItem descItem = new ArrDescItemUnitdate();
         descItem = setValue(descItem, node, rulDescItemTypeExt);
-        ((ArrDescItemUnitdate) descItem).setValue(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+        //((ArrDescItemUnitdate) descItem).setValue(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
         return descItem;
     }
 

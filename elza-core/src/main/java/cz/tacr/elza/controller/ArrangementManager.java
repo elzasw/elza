@@ -46,12 +46,14 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.factory.DescItemFactory;
+import cz.tacr.elza.domain.vo.ArrCalendarTypes;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.domain.vo.ArrDescItems;
 import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
 import cz.tacr.elza.domain.vo.ArrNodeHistoryItem;
 import cz.tacr.elza.domain.vo.ArrNodeHistoryPack;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
+import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataCoordinatesRepository;
 import cz.tacr.elza.repository.DataIntegerRepository;
@@ -84,7 +86,7 @@ import cz.tacr.elza.repository.RuleSetRepository;
 @RestController
 @RequestMapping("/api/arrangementManager")
 public class ArrangementManager implements cz.tacr.elza.api.controller.ArrangementManager<ArrFindingAid, ArrFindingAidVersion,
-    ArrDescItem, ArrDescItemSavePack, ArrLevel, ArrLevelWithExtraNode, ArrNode, ArrDescItems, ArrNodeHistoryPack> {
+    ArrDescItem, ArrDescItemSavePack, ArrLevel, ArrLevelWithExtraNode, ArrNode, ArrDescItems, ArrNodeHistoryPack, ArrCalendarTypes> {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -163,6 +165,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Autowired
     private RegRecordRepository regRecordRepository;
+
+    @Autowired
+    private CalendarTypeRepository calendarTypeRepository;
 
     @Autowired
     private DescItemFactory descItemFactory;
@@ -2249,6 +2254,14 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         } else {
             descItems.add(descItem);
         }
+    }
+
+    @Override
+    @RequestMapping(value = "/getCalendarTypes", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ArrCalendarTypes getCalendarTypes() {
+        ArrCalendarTypes calendarTypes = new ArrCalendarTypes();
+        calendarTypes.setCalendarTypes(calendarTypeRepository.findAll());
+        return calendarTypes;
     }
 
 }

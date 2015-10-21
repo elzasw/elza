@@ -194,6 +194,7 @@ $ax-main-focus: $color-app;
         .attribut-spec {
             margin-right: 10px;
         }
+
     }
 
     .label-name {
@@ -217,6 +218,17 @@ $ax-main-focus: $color-app;
         width: 450px;
         color: #000000;
         padding: 10px;
+    }
+
+
+    .datace {
+        line-height: 40px;
+
+        .v-caption, .v-checkbox {
+            margin-right: 10px;
+            margin-left: 10px;
+        }
+
     }
 }
 

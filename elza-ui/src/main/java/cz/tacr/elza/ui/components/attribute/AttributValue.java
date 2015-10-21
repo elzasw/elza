@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 
 import com.vaadin.data.Property;
+import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.DragAndDropWrapper;
@@ -15,7 +16,9 @@ import cz.req.ax.AxAction;
 import cz.req.ax.AxForm;
 import cz.req.ax.AxItemContainer;
 import cz.req.ax.Components;
+import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDescItemUnitdate;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.ui.components.autocomplete.Autocomplete;
@@ -38,7 +41,7 @@ public class AttributValue extends CssLayout implements Components {
     private Integer bckDescItemObjectId;
 
     public AttributValue(ArrDescItem descItemExt, List<RulDescItemSpec> descItemSpecs, RulDataType dataType,
-                         AxAction deleteAction, DragAndDropWrapper wrapper, final AttributeValuesLoader attributeValuesLoader) {
+                         AxAction deleteAction, DragAndDropWrapper wrapper, final AttributeValuesLoader attributeValuesLoader, List<ArrCalendarType> calendarTypes) {
         this.wrapper = wrapper;
         this.attributeValuesLoader = attributeValuesLoader;
         form = AxForm.init(descItemExt).layoutCss();
@@ -51,6 +54,9 @@ public class AttributValue extends CssLayout implements Components {
             specificationCombo.addStyleName("attribut-spec");
         }
 
+        AxItemContainer<ArrCalendarType> calendarTypesContainer = AxItemContainer.init(ArrCalendarType.class);
+        calendarTypesContainer.addAll(calendarTypes);
+
         switch (dataType.getCode()) {
             case "INT":
             case "UNITID":
@@ -62,7 +68,20 @@ public class AttributValue extends CssLayout implements Components {
             case "UNITDATE":
             case "TEXT":
             case "COORDINATES":
-                form.addField(null, "value", TextArea.class).field().setNullRepresentation("");
+                form.addStyleName("datace");
+                form.addCombo("Typ kalendare", "calendarType", calendarTypesContainer, "name").required().field().addStyleName("calendar");
+                AxForm.AxField odx = form.addField("Od", "valueFrom");
+                TextField odField = (TextField) odx.field();
+                odField.setNullSettingAllowed(true);
+
+                form.addField("Priblizne", "valueFromEstimated", CheckBox.class).field();
+
+                AxForm.AxField dox = form.addField("Do", "valueTo");
+                TextField doField = (TextField) dox.field();
+                doField.setNullSettingAllowed(true);
+
+
+                form.addField("Priblizne", "valueToEstimated", CheckBox.class);
                 break;
             case "FORMATTED_TEXT":
                 form.addRichtext(null, "value").field().setNullRepresentation("");
@@ -137,6 +156,13 @@ public class AttributValue extends CssLayout implements Components {
 
     public ArrDescItem commit() {
         ArrDescItem descItem = form.commit();
+        if (descItem instanceof ArrDescItemUnitdate) {
+            ArrDescItemUnitdate descItemUnitdate = (ArrDescItemUnitdate) descItem;
+            if (descItemUnitdate.getValueFromEstimated() == null)
+                descItemUnitdate.setValueFromEstimated(false);
+            if (descItemUnitdate.getValueToEstimated() == null)
+                descItemUnitdate.setValueToEstimated(false);
+        }
         bckDescItemObjectId = descItem.getDescItemObjectId();
         return descItem;
     }

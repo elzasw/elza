@@ -53,6 +53,7 @@ import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.vo.ArrCalendarTypes;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.domain.vo.ArrDescItems;
 import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
@@ -161,6 +162,7 @@ public abstract class AbstractRestTest {
     protected static final String APPROVE_VERSION_URL = ARRANGEMENT_MANAGER_URL + "/approveVersion";
     protected static final String GET_VERSION_ID_URL = ARRANGEMENT_MANAGER_URL + "/getVersion";
     protected static final String GET_OPEN_VERSION_BY_FA_ID_URL = ARRANGEMENT_MANAGER_URL + "/getOpenVersionByFindingAidId";
+    protected static final String GET_CALENDAR_TYPES = ARRANGEMENT_MANAGER_URL + "/getCalendarTypes";
     protected static final String FIND_SUB_LEVELS_EXT_URL = ARRANGEMENT_MANAGER_URL + "/findSubLevelsExt";
     protected static final String FIND_SUB_LEVELS_URL = ARRANGEMENT_MANAGER_URL + "/findSubLevels";
     protected static final String GET_HISTORY_FOR_NODE = ARRANGEMENT_MANAGER_URL + "/getHistoryForNode/{findingAidId}/{nodeId}";
@@ -1036,5 +1038,14 @@ public abstract class AbstractRestTest {
         Response response = put(spec -> spec.body(levelWithExtraNode), DELETE_LEVEL_URL);
 
         return response.getBody().as(ArrLevelWithExtraNode.class);
+    }
+
+    /**
+     * Načte dostupné typy kalendářů
+     * @return  dostupné typy kalendářů
+     */
+    protected ArrCalendarTypes getCalendarTypes() {
+        Response response = get(GET_CALENDAR_TYPES);
+        return response.getBody().as(ArrCalendarTypes.class);
     }
 }
