@@ -1468,6 +1468,59 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     }
 
     /**
+     * Vytvoření atributu - pro použití jádra.
+     *
+     * @param createDescItem    vytvářená položka
+     * @param version           verze archivní pomůcky
+     * @param change            změna
+     * @param saveNode          ukládat uzel? (optimictické zámky)
+     * @return                  vytvořená položka
+     */
+    public ArrDescItem createDescriptionItem(ArrDescItem createDescItem,
+                                             ArrFindingAidVersion version,
+                                             ArrChange change,
+                                             boolean saveNode) {
+        Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems = new HashMap<>();
+
+        ArrDescItem descItemRet = createDescriptionItemRaw(createDescItem, version.getFindingAidVersionId(), change, saveNode, mapDescItems, getNextDescItemObjectId());
+        saveChanges(mapDescItems, null, true);
+        return descItemRet;
+    }
+
+    /**
+     * Úprava atributu - pro použití jádra.
+     *
+     * @param descItem          upravovaná položka
+     * @param version           verze archivní pomůcky
+     * @param createNewVersion  vytvořit novou verzi?
+     * @param change            změna
+     * @return                  upravená položka
+     */
+    public ArrDescItem updateDescriptionItem(ArrDescItem descItem, ArrFindingAidVersion version, Boolean createNewVersion, ArrChange change) {
+        Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems = new HashMap<>();
+        ArrDescItem descItemRet = updateDescriptionItemRaw(descItem, version.getFindingAidVersionId(), change, true, createNewVersion, mapDescItems);
+        List<ArrDescItem> descItems = new ArrayList<>();
+        descItems.add(descItemRet);
+        saveChanges(mapDescItems, descItems, createNewVersion);
+        return descItems.get(0);
+    }
+
+    /**
+     * Smazání atrubutu - pro použití jádra.
+     *
+     * @param descItem      mazaná položka
+     * @param version       verze archivní pomůcky
+     * @param change        změna
+     * @return              smazaná položka
+     */
+    public ArrDescItem deleteDescriptionItem(ArrDescItem descItem, ArrFindingAidVersion version, ArrChange change) {
+        Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems = new HashMap<>();
+        ArrDescItem descItemRet = deleteDescriptionItemRaw(descItem, version.getFindingAidVersionId(), change, true, mapDescItems);
+        saveChanges(mapDescItems, null, true);
+        return descItemRet;
+    }
+
+    /**
      * Vytvoří hodnotu atributu archivního popisu.
      *
      * @param createDescItem    vytvářená položka
@@ -1962,7 +2015,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      *
      * @return Identifikátor objektu
      */
-    private Integer getNextDescItemObjectId() {
+    public Integer getNextDescItemObjectId() {
         Integer maxDescItemObjectId = descItemRepository.findMaxDescItemObjectId();
         if (maxDescItemObjectId == null) {
             maxDescItemObjectId = 0;

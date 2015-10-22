@@ -2,6 +2,7 @@ package cz.tacr.elza.ui.controller;
 
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleManager;
+import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemCoordinates;
@@ -27,6 +28,7 @@ import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
+import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
@@ -114,6 +116,8 @@ public class TestingDataController {
     private ArrangementTypeRepository arrangementTypeRepository;
     @Autowired
     private RuleSetRepository ruleSetRepository;
+    @Autowired
+    private CalendarTypeRepository calendarTypeRepository;
 
     private static final int MAX_DEPTH = 4;
     private static final int NODES_IN_LEVEL = 3;
@@ -692,6 +696,8 @@ public class TestingDataController {
         descItemSavePack.setDescItems(descItems);
         descItemSavePack.setDeleteDescItems(new LinkedList<>());
 
+        List<ArrCalendarType> calendarTypes = calendarTypeRepository.findAll();
+
         List<RulDescItemTypeExt> descriptionItemTypes = ruleManager.getDescriptionItemTypes(version.getRuleSet().getRuleSetId());
         for (RulDescItemTypeExt rulDescItemTypeExt : descriptionItemTypes) {
             if (Arrays.binarySearch(attCodes, rulDescItemTypeExt.getCode()) >= 0) {
@@ -734,9 +740,9 @@ public class TestingDataController {
                         }
                         break;
                     case DT_UNITDATE:
-                        descItems.add(createUnitdateValue(node, rulDescItemTypeExt));
+                        descItems.add(createUnitdateValue(node, rulDescItemTypeExt, calendarTypes.get(0)));
                         if (repeat(rulDescItemTypeExt)) {
-                            descItems.add(createUnitdateValue(node, rulDescItemTypeExt));
+                            descItems.add(createUnitdateValue(node, rulDescItemTypeExt, calendarTypes.get(0)));
                         }
                         break;
                     case DT_UNITID:
@@ -823,10 +829,12 @@ public class TestingDataController {
         return descItem;
     }
 
-    private ArrDescItem createUnitdateValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
+    private ArrDescItem createUnitdateValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, ArrCalendarType calendarType) {
         ArrDescItem descItem = new ArrDescItemUnitdate();
         descItem = setValue(descItem, node, rulDescItemTypeExt);
-        //((ArrDescItemUnitdate) descItem).setValue(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+        ((ArrDescItemUnitdate) descItem).setCalendarType(calendarType);
+        ((ArrDescItemUnitdate) descItem).setValueFromEstimated(false);
+        ((ArrDescItemUnitdate) descItem).setValueToEstimated(false);
         return descItem;
     }
 
