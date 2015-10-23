@@ -32,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
         @UniqueConstraint(columnNames = {"code"}),
         @UniqueConstraint(columnNames = {"viewOrder"})})
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class RulDescItemSpec implements cz.tacr.elza.api.RulDescItemSpec<RulDescItemType, RegRegisterType> {
+public class RulDescItemSpec implements cz.tacr.elza.api.RulDescItemSpec<RulDescItemType> {
 
     @Id
     @GeneratedValue
@@ -59,11 +59,6 @@ public class RulDescItemSpec implements cz.tacr.elza.api.RulDescItemSpec<RulDesc
 
     @Column(nullable = false)
     private Integer viewOrder;
-
-    @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRegisterType.class)
-    @JoinColumn(name = "registerTypeId", nullable = true)
-    private RegRegisterType registerType;
 
     @Override
     public Integer getDescItemSpecId() {
@@ -133,17 +128,6 @@ public class RulDescItemSpec implements cz.tacr.elza.api.RulDescItemSpec<RulDesc
     @Override
     public void setViewOrder(final Integer viewOrder) {
         this.viewOrder = viewOrder;
-    }
-
-    @Override
-    public RegRegisterType getRegisterType() {
-        return registerType;
-    }
-
-
-    @Override
-    public void setRegisterType(final RegRegisterType registerType) {
-        this.registerType = registerType;
     }
 
     @Override

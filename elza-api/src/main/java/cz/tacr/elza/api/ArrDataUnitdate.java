@@ -8,11 +8,26 @@ import java.io.Serializable;
  * @author Martin Šlapa
  * @since 1.9.2015
  */
-public interface ArrDataUnitdate extends Serializable{
+public interface ArrDataUnitdate<CT extends ArrCalendarType> extends Serializable {
 
+    String getValueFrom();
 
-    String getValue();
+    void setValueFrom(final String valueFrom);
 
+    Boolean getValueFromEstimated();
 
-    void setValue(final String value);
+    void setValueFromEstimated(final Boolean valueFromEstimated);
+
+    String getValueTo();
+
+    void setValueTo(final String valueTo);
+
+    Boolean getValueToEstimated();
+
+    void setValueToEstimated(final Boolean valueToEstimated);
+
+    Integer getCalendarTypeId();
+
+    void setCalendarTypeId(Integer calendarTypeId);
+
 }

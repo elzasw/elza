@@ -27,6 +27,7 @@ import org.springframework.http.HttpStatus;
 
 import com.jayway.restassured.response.Response;
 
+import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
@@ -55,10 +56,12 @@ import cz.tacr.elza.domain.RulDescItemSpecExt;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.vo.ArrCalendarTypes;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.domain.vo.ArrDescItems;
 import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
+import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemConstraintRepository;
@@ -104,6 +107,9 @@ public class ArrangementManagerTest extends AbstractRestTest {
     private RuleManager ruleManager;
     @Autowired
     private NodeRepository nodeRepository;
+
+    @Autowired
+    private CalendarTypeRepository calendarTypeRepository;
 
     @PersistenceContext
     EntityManager entityManager;
@@ -807,6 +813,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ParParty party = restCreateParty();
         Map<String, RulDescItemType> itemTypes = new HashMap<>();
         List<RulDataType> dataTypes = dataTypeRepository.findAll();
+        List<ArrCalendarType> calendarTypes = calendarTypeRepository.findAll();
         int order = 1;
         for (RulDataType dataType : dataTypes) {
             RulDescItemType descItemType = createRulDescItemType(dataType, order++);
@@ -842,7 +849,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
                     descItems.add(createTextValue(node, rulDescItemTypeExt));
                     break;
                 case DT_UNITDATE:
-                    descItems.add(createUnitdateValue(node, rulDescItemTypeExt));
+                    descItems.add(createUnitdateValue(node, rulDescItemTypeExt, calendarTypes.get(0)));
                     break;
                 case DT_UNITID:
                     descItems.add(createIntValue(node, rulDescItemTypeExt));
@@ -952,10 +959,12 @@ public class ArrangementManagerTest extends AbstractRestTest {
         return descItem;
     }
 
-    private ArrDescItem createUnitdateValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
+    private ArrDescItem createUnitdateValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, ArrCalendarType calendarType) {
         ArrDescItem descItem = new ArrDescItemUnitdate();
         descItem = createValue(descItem, node, rulDescItemTypeExt);
-        ((ArrDescItemUnitdate) descItem).setValue(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+        ((ArrDescItemUnitdate) descItem).setCalendarType(calendarType);
+        ((ArrDescItemUnitdate) descItem).setValueFromEstimated(false);
+        ((ArrDescItemUnitdate) descItem).setValueToEstimated(false);
         return descItem;
     }
 
@@ -1656,10 +1665,10 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ArrDescItem descItemTextNew = arrangementManager.createDescriptionItem(descItemText, version.getFindingAidVersionId());
         node = nodeRepository.findOne(node.getNodeId());
 
-        ArrDescItem descItemUnitdate = new ArrDescItemUnitdate();
-        descItemUnitdate.setDescItemType(itemTypeUnitdate);
-        ((ArrDescItemUnitdate) descItemUnitdate).setValue("Unitdate1");
-        descItemUnitdate.setNode(node);
+        RulDescItemTypeExt rulDescItemTypeExt = new RulDescItemTypeExt();
+        BeanUtils.copyProperties(itemTypeUnitdate, rulDescItemTypeExt);
+        List<ArrCalendarType> calendarTypes = calendarTypeRepository.findAll();
+        ArrDescItem descItemUnitdate = createUnitdateValue(node, rulDescItemTypeExt, calendarTypes.get(0));
         descItemUnitdate.setPosition(8);
 
         ArrDescItem descItemUnitdateNew = arrangementManager.createDescriptionItem(descItemUnitdate, version.getFindingAidVersionId());
@@ -1684,7 +1693,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ((ArrDescItemRecordRef) descItemRecordRefNew).setRecord(recordUpdate);
         ((ArrDescItemString) descItemStringNew).setValue("String2");
         ((ArrDescItemText) descItemTextNew).setValue("Text2");
-        ((ArrDescItemUnitdate) descItemUnitdateNew).setValue("Unitdate2");
+        //((ArrDescItemUnitdate) descItemUnitdateNew).setValue("Unitdate2");
         ((ArrDescItemUnitid) descItemUnitidNew).setValue("Unitid2");
 
         List<ArrDescItem> descItems = new ArrayList<>();
@@ -1737,6 +1746,14 @@ public class ArrangementManagerTest extends AbstractRestTest {
                 Assert.fail("Nedefinovaný datový typ hodnoty atributu");
             }
         }
+    }
+
+    @Test
+    public void testRestCalendarTypes() {
+        ArrCalendarTypes calendarTypes = getCalendarTypes();
+        Assert.assertNotNull(calendarTypes);
+        Assert.assertNotNull(calendarTypes.getCalendarTypes());
+        Assert.assertEquals(2, calendarTypes.getCalendarTypes().size());
     }
 
 }

@@ -1,5 +1,8 @@
 package cz.tacr.elza.domain.factory;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.api.controller.ArrangementManager;
+import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataDecimal;
@@ -38,6 +42,7 @@ import cz.tacr.elza.domain.ArrDescItemUnitid;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataCoordinatesRepository;
 import cz.tacr.elza.repository.DataDecimalRepository;
 import cz.tacr.elza.repository.DataIntegerRepository;
@@ -110,6 +115,9 @@ public class DescItemFactory implements InitializingBean {
 
     @Autowired
     private RegRecordRepository regRecordRepository;
+
+    @Autowired
+    private CalendarTypeRepository calendarTypeRepository;
 
     public DescItemFactory() {
     }
@@ -357,12 +365,44 @@ public class DescItemFactory implements InitializingBean {
             public void mapAtoB(ArrDescItemUnitdate arrDescItemUnitdate, ArrDataUnitdate arrDataUnitdate, MappingContext context) {
                 arrDataUnitdate.setDataType(arrDescItemUnitdate.getDescItemType().getDataType());
                 arrDataUnitdate.setDescItem(arrDescItemUnitdate);
-                arrDataUnitdate.setValue(arrDescItemUnitdate.getValue());
+                if (arrDescItemUnitdate.getCalendarType() == null) {
+                    throw new IllegalArgumentException("Nebyl zvolen kalendar");
+                }
+                arrDataUnitdate.setCalendarTypeId(arrDescItemUnitdate.getCalendarType().getCalendarTypeId());
+
+                try {
+                    String value = arrDescItemUnitdate.getValueFrom();
+                    if (value != null) {
+                        LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                    }
+                    arrDataUnitdate.setValueFrom(value);
+                } catch (DateTimeParseException e) {
+                    throw new IllegalArgumentException("Nebyl zadan platny format datumu 'od'", e);
+                }
+
+                arrDataUnitdate.setValueFromEstimated(arrDescItemUnitdate.getValueFromEstimated());
+
+                try {
+                    String value = arrDescItemUnitdate.getValueTo();
+                    if (value != null) {
+                        LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                    }
+                    arrDataUnitdate.setValueTo(value);
+                } catch (DateTimeParseException e) {
+                    throw new IllegalArgumentException("Nebyl zadan platny format datumu 'do'", e);
+                }
+
+                arrDataUnitdate.setValueToEstimated(arrDescItemUnitdate.getValueToEstimated());
             }
 
             @Override
             public void mapBtoA(ArrDataUnitdate arrDataUnitdate, ArrDescItemUnitdate arrDescItemUnitdate, MappingContext context) {
-                arrDescItemUnitdate.setValue(arrDataUnitdate.getValue());
+                ArrCalendarType calendarType = calendarTypeRepository.findOne(arrDataUnitdate.getCalendarTypeId());
+                arrDescItemUnitdate.setCalendarType(calendarType);
+                arrDescItemUnitdate.setValueFrom(arrDataUnitdate.getValueFrom());
+                arrDescItemUnitdate.setValueFromEstimated(arrDataUnitdate.getValueFromEstimated());
+                arrDescItemUnitdate.setValueTo(arrDataUnitdate.getValueTo());
+                arrDescItemUnitdate.setValueToEstimated(arrDataUnitdate.getValueToEstimated());
             }
         }).register();
 
@@ -371,7 +411,11 @@ public class DescItemFactory implements InitializingBean {
             public void mapAtoB(ArrDataUnitdate arrDataUnitdate, ArrDataUnitdate arrDataUnitdateNew, MappingContext context) {
                 arrDataUnitdateNew.setDataType(arrDataUnitdate.getDataType());
                 arrDataUnitdateNew.setDescItem(arrDataUnitdate.getDescItem());
-                arrDataUnitdateNew.setValue(arrDataUnitdate.getValue());
+                arrDataUnitdateNew.setCalendarTypeId(arrDataUnitdate.getCalendarTypeId());
+                arrDataUnitdateNew.setValueFrom(arrDataUnitdate.getValueFrom());
+                arrDataUnitdateNew.setValueFromEstimated(arrDataUnitdate.getValueFromEstimated());
+                arrDataUnitdateNew.setValueTo(arrDataUnitdate.getValueTo());
+                arrDataUnitdateNew.setValueToEstimated(arrDataUnitdate.getValueToEstimated());
             }
         }).register();
     }

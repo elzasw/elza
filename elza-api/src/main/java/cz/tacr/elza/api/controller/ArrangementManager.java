@@ -9,6 +9,7 @@ import cz.tacr.elza.api.ArrLevel;
 import cz.tacr.elza.api.ArrLevelExt;
 import cz.tacr.elza.api.ArrNode;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
+import cz.tacr.elza.api.vo.ArrCalendarTypes;
 import cz.tacr.elza.api.vo.ArrDescItemSavePack;
 import cz.tacr.elza.api.vo.ArrDescItems;
 import cz.tacr.elza.api.vo.ArrLevelPack;
@@ -32,7 +33,7 @@ import cz.tacr.elza.api.vo.ArrNodeHistoryPack;
  * @since 12. 8. 2015
  */
 public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFindingAidVersion, DI extends ArrDescItem,
-    DISP extends ArrDescItemSavePack, FL extends ArrLevel, FLP extends ArrLevelPack, N extends ArrNode, DIS extends ArrDescItems, NHP extends ArrNodeHistoryPack> {
+    DISP extends ArrDescItemSavePack, FL extends ArrLevel, FLP extends ArrLevelPack, N extends ArrNode, DIS extends ArrDescItems, NHP extends ArrNodeHistoryPack, CTL extends ArrCalendarTypes> {
 
     /** Formát popisu atributu - dlouhá verze. */
     String FORMAT_ATTRIBUTE_FULL = "FULL";
@@ -258,4 +259,11 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @return              Seznam změn
      */
     NHP getHistoryForNode(Integer nodeId, Integer findingAidId);
+
+
+    /**
+     * Vrátí seznam typů kalendářů.
+     * @return  Seznam typů kalendářů
+     */
+    CTL getCalendarTypes();
 }

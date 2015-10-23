@@ -20,4 +20,5 @@ public interface DescItemTypeRepository extends JpaRepository<RulDescItemType, I
     @Query("SELECT DISTINCT t.dataType FROM rul_desc_item_type t WHERE t = ?1")
     List<RulDataType> findRulDataType(RulDescItemType descItemType);
 
+    RulDescItemType getOneByCode(String code);
 }

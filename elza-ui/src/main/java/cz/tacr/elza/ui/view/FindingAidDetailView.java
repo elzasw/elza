@@ -30,6 +30,8 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
 import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
+import cz.tacr.elza.generator.SerialNumberGenerator;
+import cz.tacr.elza.generator.UnitIdGenerator;
 import cz.tacr.elza.ui.ElzaView;
 import cz.tacr.elza.ui.components.Callback;
 import cz.tacr.elza.ui.components.LevelInlineDetail;
@@ -76,6 +78,11 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
     @Autowired
     private RuleManager ruleSetManager;
 
+    @Autowired
+    private SerialNumberGenerator serialNumberGenerator;
+
+    @Autowired
+    private UnitIdGenerator unitIdGenerator;
 
     private Integer findingAidId;
     private ArrFindingAidVersion version;
@@ -929,7 +936,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                         }
                     }).exception(new ConcurrentUpdateExceptionHandler()),
                     new AxAction().caption("Zobrazit verze").icon(FontAwesome.HISTORY).run(() ->
-                    navigate(VersionListView.class, findingAidId)),
+                            navigate(VersionListView.class, findingAidId)),
                     new AxAction().caption("Uzavřít verzi").icon(FontAwesome.HISTORY).run(() -> {
                         AxForm<VOApproveVersion> formularApproveVersion = formularApproveVersion();
                         ArrFindingAidVersion version = arrangementManager
@@ -943,8 +950,21 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                     new AxAction().caption("Zobrazit detail AP").icon(FontAwesome.BOOK).run(() ->
                         showDetailAP()),
                     new AxAction().caption("Výběr sloupců").icon(FontAwesome.COG).run(() ->
-                        showDescItemTypeWindow())
-                    );
+                        showDescItemTypeWindow()),
+                    new AxAction().caption("Gen REBUILD").icon(FontAwesome.PLUS_CIRCLE).run(() -> {
+                        serialNumberGenerator.rebuild(version);
+                        unitIdGenerator.rebuild(version);
+
+                        HierarchicalCollapsibleBeanItemContainer container = (HierarchicalCollapsibleBeanItemContainer) table.getContainerDataSource();
+                        refreshTree(container, version.getRootLevel());
+                    }),
+                    new AxAction().caption("Gen CLEAN").icon(FontAwesome.TRASH_O).run(() -> {
+                        serialNumberGenerator.clean(version);
+                        unitIdGenerator.clean(version);
+
+                        HierarchicalCollapsibleBeanItemContainer container = (HierarchicalCollapsibleBeanItemContainer) table.getContainerDataSource();
+                        refreshTree(container, version.getRootLevel());
+                    }));
         }
     }
 

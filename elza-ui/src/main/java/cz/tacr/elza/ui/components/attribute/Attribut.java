@@ -22,6 +22,7 @@ import com.vaadin.ui.Label;
 import cz.req.ax.AxAction;
 import cz.req.ax.ChildComponentContainer;
 import cz.req.ax.Components;
+import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemCoordinates;
 import cz.tacr.elza.domain.ArrDescItemDecimal;
@@ -55,6 +56,7 @@ public class Attribut extends CssLayout implements Components {
     private RulDescItemType type;
     private AxAction newValueButton;
     private AttributeValuesLoader attributeValuesLoader;
+    private List<ArrCalendarType> calendarTypes;
 
     public Attribut(List<ArrDescItem> itemExtList,
                     List<RulDescItemSpec> descItemSpecs,
@@ -62,12 +64,14 @@ public class Attribut extends CssLayout implements Components {
                     RulDataType dataType,
                     ArrNode node,
                     Integer versionId,
-                    final AttributeValuesLoader attributeValuesLoader) {
+                    final AttributeValuesLoader attributeValuesLoader,
+                    List<ArrCalendarType> calendarTypes) {
         this.descItemSpecs = descItemSpecs;
         this.dataType = dataType;
         this.node = node;
         this.versionId = versionId;
         this.type = type;
+        this.calendarTypes = calendarTypes;
         this.attributeValuesLoader = attributeValuesLoader;
         deleteDescItems = new ArrayList<>();
         addStyleName("table-hierarchy");
@@ -195,7 +199,7 @@ public class Attribut extends CssLayout implements Components {
         wrapper.setDragStartMode(DragAndDropWrapper.DragStartMode.COMPONENT);
         wrapper.setSizeUndefined();
 
-        AttributValue value = new AttributValue(a, descItemSpecs, dataType, AxAction.of(a).icon(FontAwesome.TRASH_O).action(this::deleteAtributValue), wrapper, attributeValuesLoader);
+        AttributValue value = new AttributValue(a, descItemSpecs, dataType, AxAction.of(a).icon(FontAwesome.TRASH_O).action(this::deleteAtributValue), wrapper, attributeValuesLoader, calendarTypes);
         a.setPosition(childs.getComponentCount() + 1);
         a.setNode(node);
         childs.addComponent(a, value);

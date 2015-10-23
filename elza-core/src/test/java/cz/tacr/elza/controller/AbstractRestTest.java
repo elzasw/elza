@@ -53,6 +53,7 @@ import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.vo.ArrCalendarTypes;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.domain.vo.ArrDescItems;
 import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
@@ -65,6 +66,7 @@ import cz.tacr.elza.repository.DataStringRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemConstraintRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.DescItemSpecRegisterRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
@@ -130,7 +132,7 @@ public abstract class AbstractRestTest {
     protected static final String SEARCH_ATT = "search";
     protected static final String FROM_ATT = "from";
     protected static final String COUNT_ATT = "count";
-    protected static final String REGISTER_TYPE_ID_ATT = "registerTypeId";
+    protected static final String REGISTER_TYPE_ID_ATT = "registerTypeIds";
 
     // END - REGISTRY MANAGER CONSTANTS
 
@@ -160,6 +162,7 @@ public abstract class AbstractRestTest {
     protected static final String APPROVE_VERSION_URL = ARRANGEMENT_MANAGER_URL + "/approveVersion";
     protected static final String GET_VERSION_ID_URL = ARRANGEMENT_MANAGER_URL + "/getVersion";
     protected static final String GET_OPEN_VERSION_BY_FA_ID_URL = ARRANGEMENT_MANAGER_URL + "/getOpenVersionByFindingAidId";
+    protected static final String GET_CALENDAR_TYPES = ARRANGEMENT_MANAGER_URL + "/getCalendarTypes";
     protected static final String FIND_SUB_LEVELS_EXT_URL = ARRANGEMENT_MANAGER_URL + "/findSubLevelsExt";
     protected static final String FIND_SUB_LEVELS_URL = ARRANGEMENT_MANAGER_URL + "/findSubLevels";
     protected static final String GET_HISTORY_FOR_NODE = ARRANGEMENT_MANAGER_URL + "/getHistoryForNode/{findingAidId}/{nodeId}";
@@ -246,6 +249,8 @@ public abstract class AbstractRestTest {
     @Autowired
     private DescItemSpecRepository descItemSpecRepository;
     @Autowired
+    private DescItemSpecRegisterRepository descItemSpecRegisterRepository;
+    @Autowired
     private DescItemConstraintRepository descItemConstraintRepository;
     @Autowired
     private DataTypeRepository dataTypeRepository;
@@ -296,6 +301,7 @@ public abstract class AbstractRestTest {
         findingAidRepository.deleteAll();
         levelRepository.deleteAll();
         descItemRepository.deleteAll();
+        descItemSpecRegisterRepository.deleteAll();
         descItemSpecRepository.deleteAll();
         descItemTypeRepository.deleteAll();
         nodeRepository.deleteAll();
@@ -1032,5 +1038,14 @@ public abstract class AbstractRestTest {
         Response response = put(spec -> spec.body(levelWithExtraNode), DELETE_LEVEL_URL);
 
         return response.getBody().as(ArrLevelWithExtraNode.class);
+    }
+
+    /**
+     * Načte dostupné typy kalendářů
+     * @return  dostupné typy kalendářů
+     */
+    protected ArrCalendarTypes getCalendarTypes() {
+        Response response = get(GET_CALENDAR_TYPES);
+        return response.getBody().as(ArrCalendarTypes.class);
     }
 }
