@@ -1580,6 +1580,9 @@ public class ArrangementManagerTest extends AbstractRestTest {
         RulDataType dataTypeUnitid = getDataType(DATA_TYPE_UNITID);
         Assert.assertNotNull("Neexistuje záznam pro datový typ DATA_TYPE_UNITID", dataTypeUnitid);
 
+        RulDataType dataTypeDecimal = getDataType(DATA_TYPE_DECIMAL);
+        Assert.assertNotNull("Neexistuje záznam pro datový typ DATA_TYPE_DECIMAL", dataTypeDecimal);
+
         // vytvoření závislých dat
 
         List<RulDescItemType> list = descItemTypeRepository.findAll();
@@ -1597,6 +1600,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         RulDescItemType itemTypeText = createDescItemType(dataTypeText, "ITEM_TYPE_TEXT", "Item type TEXT", "SH TEXT", "Desc TEXT", false, false, false, 7);
         RulDescItemType itemTypeUnitdate = createDescItemType(dataTypeUnitdate, "ITEM_TYPE_UNITDATE", "Item type UNITDATE", "SH UNITDATE", "Desc UNITDATE", false, false, false, 8);
         RulDescItemType itemTypeUnitid = createDescItemType(dataTypeUnitid, "ITEM_TYPE_UNITID", "Item type UNITID", "SH UNITID", "Desc UNITID", false, false, false, 9);
+        RulDescItemType itemTypeDecimal = createDescItemType(dataTypeDecimal, "ITEM_TYPE_DECIMAL", "Item type DECIMAL", "SH DECIMAL", "Desc DECIMAL", false, false, false, 10);
 
         // přidání všech typů attributu
 
@@ -1683,6 +1687,15 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ArrDescItem descItemUnitidNew = arrangementManager.createDescriptionItem(descItemUnitid, version.getFindingAidVersionId());
         node = nodeRepository.findOne(node.getNodeId());
 
+        ArrDescItem descItemDecimal = new ArrDescItemDecimal();
+        descItemDecimal.setDescItemType(itemTypeDecimal);
+        ((ArrDescItemDecimal) descItemDecimal).setValue(new BigDecimal(10.55));
+        descItemDecimal.setNode(node);
+        descItemDecimal.setPosition(10);
+
+        ArrDescItem descItemDecimalNew = arrangementManager.createDescriptionItem(descItemDecimal, version.getFindingAidVersionId());
+        node = nodeRepository.findOne(node.getNodeId());
+
         ParParty partyUpdate = restCreateParty();
         RegRecord recordUpdate = restCreateRecord();
 
@@ -1695,6 +1708,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ((ArrDescItemText) descItemTextNew).setValue("Text2");
         //((ArrDescItemUnitdate) descItemUnitdateNew).setValue("Unitdate2");
         ((ArrDescItemUnitid) descItemUnitidNew).setValue("Unitid2");
+        ((ArrDescItemDecimal) descItemDecimalNew).setValue(new BigDecimal(11.556));
 
         List<ArrDescItem> descItems = new ArrayList<>();
         descItems.add(descItemCoordinatesNew);
@@ -1706,6 +1720,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItems.add(descItemTextNew);
         descItems.add(descItemUnitdateNew);
         descItems.add(descItemUnitidNew);
+        descItems.add(descItemDecimalNew);
 
         List<ArrDescItem> deleteDescItems = new ArrayList<>();
 
@@ -1721,7 +1736,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         List<ArrDescItem> descItemsResult = result.getDescItems();
 
         Assert.assertNotNull(descItemsResult);
-        Assert.assertEquals(9, descItemsResult.size());
+        Assert.assertEquals(10, descItemsResult.size());
 
         for (ArrDescItem descItem : descItemsResult) {
             if (descItem instanceof ArrDescItemCoordinates) {
@@ -1742,6 +1757,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
                 Assert.assertEquals(descItemUnitdateNew.toString(), descItem.toString());
             } else if (descItem instanceof ArrDescItemUnitid) {
                 Assert.assertEquals(descItemUnitidNew.toString(), descItem.toString());
+            } else if (descItem instanceof ArrDescItemDecimal) {
+                Assert.assertEquals(descItemDecimalNew.toString(), descItem.toString());
             } else {
                 Assert.fail("Nedefinovaný datový typ hodnoty atributu");
             }
