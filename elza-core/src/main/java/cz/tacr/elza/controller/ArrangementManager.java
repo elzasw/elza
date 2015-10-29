@@ -1,34 +1,5 @@
 package cz.tacr.elza.controller;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.domain.ArrChange;
@@ -39,6 +10,7 @@ import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulDescItemSpec;
@@ -46,14 +18,12 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.factory.DescItemFactory;
-import cz.tacr.elza.domain.vo.ArrCalendarTypes;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.domain.vo.ArrDescItems;
 import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
 import cz.tacr.elza.domain.vo.ArrNodeHistoryItem;
 import cz.tacr.elza.domain.vo.ArrNodeHistoryPack;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
-import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataCoordinatesRepository;
 import cz.tacr.elza.repository.DataIntegerRepository;
@@ -71,10 +41,38 @@ import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -86,7 +84,7 @@ import cz.tacr.elza.repository.RuleSetRepository;
 @RestController
 @RequestMapping("/api/arrangementManager")
 public class ArrangementManager implements cz.tacr.elza.api.controller.ArrangementManager<ArrFindingAid, ArrFindingAidVersion,
-    ArrDescItem, ArrDescItemSavePack, ArrLevel, ArrLevelWithExtraNode, ArrNode, ArrDescItems, ArrNodeHistoryPack, ArrCalendarTypes> {
+    ArrDescItem, ArrDescItemSavePack, ArrLevel, ArrLevelWithExtraNode, ArrNode, ArrDescItems, ArrNodeHistoryPack> {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -167,7 +165,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     private RegRecordRepository regRecordRepository;
 
     @Autowired
-    private CalendarTypeRepository calendarTypeRepository;
+    private NodeRegisterRepository nodeRegisterRepository;
 
     @Autowired
     private DescItemFactory descItemFactory;
@@ -1468,59 +1466,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     }
 
     /**
-     * Vytvoření atributu - pro použití jádra.
-     *
-     * @param createDescItem    vytvářená položka
-     * @param version           verze archivní pomůcky
-     * @param change            změna
-     * @param saveNode          ukládat uzel? (optimictické zámky)
-     * @return                  vytvořená položka
-     */
-    public ArrDescItem createDescriptionItem(ArrDescItem createDescItem,
-                                             ArrFindingAidVersion version,
-                                             ArrChange change,
-                                             boolean saveNode) {
-        Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems = new HashMap<>();
-
-        ArrDescItem descItemRet = createDescriptionItemRaw(createDescItem, version.getFindingAidVersionId(), change, saveNode, mapDescItems, getNextDescItemObjectId());
-        saveChanges(mapDescItems, null, true);
-        return descItemRet;
-    }
-
-    /**
-     * Úprava atributu - pro použití jádra.
-     *
-     * @param descItem          upravovaná položka
-     * @param version           verze archivní pomůcky
-     * @param createNewVersion  vytvořit novou verzi?
-     * @param change            změna
-     * @return                  upravená položka
-     */
-    public ArrDescItem updateDescriptionItem(ArrDescItem descItem, ArrFindingAidVersion version, Boolean createNewVersion, ArrChange change) {
-        Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems = new HashMap<>();
-        ArrDescItem descItemRet = updateDescriptionItemRaw(descItem, version.getFindingAidVersionId(), change, true, createNewVersion, mapDescItems);
-        List<ArrDescItem> descItems = new ArrayList<>();
-        descItems.add(descItemRet);
-        saveChanges(mapDescItems, descItems, createNewVersion);
-        return descItems.get(0);
-    }
-
-    /**
-     * Smazání atrubutu - pro použití jádra.
-     *
-     * @param descItem      mazaná položka
-     * @param version       verze archivní pomůcky
-     * @param change        změna
-     * @return              smazaná položka
-     */
-    public ArrDescItem deleteDescriptionItem(ArrDescItem descItem, ArrFindingAidVersion version, ArrChange change) {
-        Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems = new HashMap<>();
-        ArrDescItem descItemRet = deleteDescriptionItemRaw(descItem, version.getFindingAidVersionId(), change, true, mapDescItems);
-        saveChanges(mapDescItems, null, true);
-        return descItemRet;
-    }
-
-    /**
      * Vytvoří hodnotu atributu archivního popisu.
      *
      * @param createDescItem    vytvářená položka
@@ -2015,7 +1960,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      *
      * @return Identifikátor objektu
      */
-    public Integer getNextDescItemObjectId() {
+    private Integer getNextDescItemObjectId() {
         Integer maxDescItemObjectId = descItemRepository.findMaxDescItemObjectId();
         if (maxDescItemObjectId == null) {
             maxDescItemObjectId = 0;
@@ -2165,6 +2110,24 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return nodeHistoryPack;
     }
 
+    @RequestMapping(value = "/findArrNodeRegisterLinks", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<ArrNodeRegister> findArrNodeRegisterLinks(@RequestParam(value = "versionId") Integer versionId,
+                                                   @RequestParam(value = "nodeId") Integer nodeId) {
+        Assert.notNull(versionId);
+        Assert.notNull(nodeId);
+
+        ArrNode node = nodeRepository.getOne(nodeId);
+
+        ArrFindingAidVersion version = getFaVersionById(versionId);
+        boolean open = version.getLockChange() == null;
+
+        if (open) {
+            return nodeRegisterRepository.findByNodeAndDeleteChangeIsNull(node);
+        } else {
+            return nodeRegisterRepository.findClosedVersion(node, version.getLockChange().getChangeId())
+        }
+    }
+
     /**
      * Rozřazení levelů podle verze archivní pomůcky a změn.
      *
@@ -2307,14 +2270,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         } else {
             descItems.add(descItem);
         }
-    }
-
-    @Override
-    @RequestMapping(value = "/getCalendarTypes", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ArrCalendarTypes getCalendarTypes() {
-        ArrCalendarTypes calendarTypes = new ArrCalendarTypes();
-        calendarTypes.setCalendarTypes(calendarTypeRepository.findAll());
-        return calendarTypes;
     }
 
 }
