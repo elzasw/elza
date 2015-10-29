@@ -449,6 +449,7 @@ public abstract class AbstractRestTest {
         itemType.setIsValueUnique(false);
         itemType.setUseSpecification(false);
         itemType.setViewOrder(index);
+        itemType.setFaOnly(false);
         return descItemTypeRepository.save(itemType);
     }
 
@@ -483,6 +484,7 @@ public abstract class AbstractRestTest {
         dataTypeItem.setCanBeOrdered(canBeOrdered);
         dataTypeItem.setUseSpecification(useSpecification);
         dataTypeItem.setViewOrder(viewOrder);
+        dataTypeItem.setFaOnly(false);
         return descItemTypeRepository.save(dataTypeItem);
     }
 
