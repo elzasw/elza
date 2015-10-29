@@ -7,7 +7,7 @@ import java.io.Serializable;
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public interface ParParty<RR extends RegRecord, PS extends ParPartySubtype> extends Versionable, Serializable {
+public interface ParParty<RR extends RegRecord, PPT extends ParPartyType, PPN extends ParPartyName> extends Versionable, Serializable {
 
     /**
      * Primární ID.
@@ -34,14 +34,26 @@ public interface ParParty<RR extends RegRecord, PS extends ParPartySubtype> exte
     void setRecord(RR record);
 
     /**
-     * Podtyp osoby.
-     * @return  objekt navázaného podtypu osoby
+     * Jednoznačné určení preferovaného jména osoby vazbou na tabulku jmen osoby.
+     * @param preferredName
      */
-    PS getPartySubtype();
+    void setPreferredName(PPN preferredName);
 
     /**
-     * Podtyp osoby.
-     * @param partySubtype  objekt navázaného podtypu osoby
+     * Jednoznačné určení preferovaného jména osoby vazbou na tabulku jmen osoby.
+     * @return Jednoznačné určení preferovaného jména osoby vazbou na tabulku jmen osoby.
      */
-    void setPartySubtype(PS partySubtype);
+    PPN getPreferredName();
+
+    /**
+     * Typ osoby.
+     * @param partyType
+     */
+    void setPartyType(PPT partyType);
+
+    /**
+     * Typ osoby.
+     * @return typ osoby.
+     */
+    PPT getPartyType();
 }

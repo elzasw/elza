@@ -34,6 +34,7 @@ import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDescItemPartyRef;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
@@ -1096,6 +1097,14 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         ArrLevelExt levelExt = new ArrLevelExt();
         BeanUtils.copyProperties(level, levelExt);
         readItemData(levelExt, dataList, idItemTypeSet, null);
+
+        for (ArrDescItem descItem : levelExt.getDescItemList()) {
+            if (descItem instanceof ArrDescItemPartyRef) {
+                ArrDescItemPartyRef partyRef = (ArrDescItemPartyRef) descItem;
+                partyRef.getParty().getPreferredName().setParty(null);
+            }
+        }
+
         return levelExt;
     }
 

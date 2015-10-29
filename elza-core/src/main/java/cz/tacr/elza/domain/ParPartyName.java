@@ -15,6 +15,7 @@ import javax.persistence.Table;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -28,8 +29,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParPartyName extends AbstractVersionableEntity
+public class ParPartyName
         implements cz.tacr.elza.api.ParPartyName<ParParty> {
+
+    public static final String PARTY = "party";
 
     @Id
     @GeneratedValue
@@ -46,7 +49,7 @@ public class ParPartyName extends AbstractVersionableEntity
     private String otherPart;
 
     @Column()
-    private String anotation;
+    private String annotation;
 
     @Column(length = 50)
     private String degreeBefore;
@@ -102,13 +105,13 @@ public class ParPartyName extends AbstractVersionableEntity
     }
 
     @Override
-    public String getAnotation() {
-        return anotation;
+    public String getAnnotation() {
+        return annotation;
     }
 
     @Override
-    public void setAnotation(String anotation) {
-        this.anotation = anotation;
+    public void setAnnotation(String annotation) {
+        this.annotation = annotation;
     }
 
     @Override

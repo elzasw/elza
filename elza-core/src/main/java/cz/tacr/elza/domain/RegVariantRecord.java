@@ -92,7 +92,7 @@ public class RegVariantRecord extends AbstractVersionableEntity implements  cz.t
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.api.ParPartySubtype)) {
+        if (!(obj instanceof cz.tacr.elza.api.RegVariantRecord)) {
             return false;
         }
         if (this == obj) {

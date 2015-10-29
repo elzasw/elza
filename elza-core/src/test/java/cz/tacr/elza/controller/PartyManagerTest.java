@@ -31,7 +31,7 @@ public class PartyManagerTest extends AbstractRestTest {
         ParParty party = restCreateParty();
 
         Assert.assertNotNull("Nenalezena polozka ", party);
-        Assert.assertNotNull("Nenalezena polozka party subtype", party.getPartySubtype());
+        Assert.assertNotNull("Nenalezena polozka party type", party.getPartyType());
         Assert.assertNotNull("Nenalezena polozka record", party.getRecord());
     }
 
@@ -50,7 +50,7 @@ public class PartyManagerTest extends AbstractRestTest {
         ParParty party = response.getBody().as(ParParty.class);
 
         Assert.assertNotNull("Nenalezena polozka ", party);
-        Assert.assertNotNull("Nenalezena polozka party subtype", party.getPartySubtype());
+        Assert.assertNotNull("Nenalezena polozka party type", party.getPartyType());
         Assert.assertNotNull("Nenalezena polozka record", party.getRecord());
         Assert.assertEquals("Nenalezena spravna polozka record", record.getRecordId(),
                 party.getRecord().getRecordId());

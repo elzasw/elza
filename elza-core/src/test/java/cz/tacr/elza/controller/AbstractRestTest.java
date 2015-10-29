@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.IntegrationTest;
@@ -42,7 +43,8 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartySubtype;
+import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
@@ -75,8 +77,8 @@ import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.PartySubtypeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
@@ -271,13 +273,13 @@ public abstract class AbstractRestTest {
     @Autowired
     private RegRecordRepository recordRepository;
     @Autowired
-    private PartySubtypeRepository partySubtypeRepository;
-    @Autowired
     private PartyTypeRepository partyTypeRepository;
     @Autowired
     private DataRecordRefRepository dataRecordRefRepository;
     @Autowired
     private NodeRepository nodeRepository;
+    @Autowired
+    private PartyNameRepository partyNameRepository;
 
     @Before
     public void setUp() {
@@ -289,7 +291,10 @@ public abstract class AbstractRestTest {
 
         // potřebné delete, jen data, ne číselníky
         arrDataRepository.deleteAll();
+        partyNameRepository.unsetAllParty();
+
         partyRepository.deleteAll();
+        partyNameRepository.deleteAll();
         variantRecordRepository.deleteAll();
         recordRepository.deleteAll();
 
@@ -559,23 +564,33 @@ public abstract class AbstractRestTest {
         return recordRepository.save(record);
     }
 
-    protected ParPartySubtype findPartySubtype() {
-        return partySubtypeRepository.findOne(5);
+    protected ParPartyType findPartyType() {
+        return partyTypeRepository.findOne(2);
     }
 
     protected ParParty createParParty() {
-        final ParPartySubtype partySubtype = findPartySubtype();
-//        final ParPartyType partyType = partyTypeRepository.findOne(partySubtype.getPartyType().getPartyTypeId());
-        partySubtype.setPartyType(null);
+        final ParPartyType partyType = findPartyType();
         final RegRecord record = createRecord(1);
-        return createParParty(partySubtype, record);
+        final ParPartyName partyName = new ParPartyName();
+        return createParParty(partyType, record, partyName);
     }
 
-    protected ParParty createParParty(final ParPartySubtype partySubtype, final RegRecord record) {
+    protected ParParty createParParty(final ParPartyType partySubtype, final RegRecord record, final ParPartyName partyName) {
         ParParty party = new ParParty();
-        party.setPartySubtype(partySubtype);
+        if (partyName != null) {
+            partyNameRepository.save(partyName);
+            party.setPreferredName(partyName);
+        }
+
+        party.setPartyType(partySubtype);
         party.setRecord(record);
-        return partyRepository.save(party);
+        party = partyRepository.save(party);
+        if (partyName != null) {
+            partyName.setParty(party);
+            partyNameRepository.save(partyName);
+            partyName.setParty(null);
+        }
+        return party;
     }
 
     /**
@@ -621,13 +636,20 @@ public abstract class AbstractRestTest {
     @Transactional
     protected ParParty createParty(String obsah) {
         final RegRecord record = createRecord();
-        final ParPartySubtype partySubtype = findPartySubtype();
+        final ParPartyType partySubtype = findPartyType();
         createVariantRecord(obsah, record);
+
+        ParPartyName preferredName = new ParPartyName();
+        partyNameRepository.save(preferredName);
 
         ParParty party = new ParParty();
         party.setRecord(record);
-        party.setPartySubtype(partySubtype);
-        return partyRepository.save(party);
+        party.setPartyType(partySubtype);
+        party.setPreferredName(preferredName);
+        party = partyRepository.save(party);
+        preferredName.setParty(party);
+        partyNameRepository.save(preferredName);
+        return party;
     }
 
     protected RulFaView createFaView(RulRuleSet ruleSet, RulArrangementType arrangementType, Integer[] ids) {
@@ -849,13 +871,16 @@ public abstract class AbstractRestTest {
      * @return osoba
      */
     protected ParParty restCreateParty() {
-        final ParPartySubtype partySubtype = findPartySubtype();
-        partySubtype.setPartyType(null);
+        final ParPartyType partySubtype = findPartyType();
+
         final RegRecord record = restCreateRecord();
 
+        final ParPartyName partyName = new ParPartyName();
+
         ParParty requestBody = new ParParty();
-        requestBody.setPartySubtype(partySubtype);
+        requestBody.setPartyType(partySubtype);
         requestBody.setRecord(record);
+        requestBody.setPreferredName(partyName);
 
         Response response = put(spec -> spec.body(requestBody), INSERT_ABSTRACT_PARTY);
 

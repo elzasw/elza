@@ -17,7 +17,8 @@ import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartySubtype;
+import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RulArrangementType;
@@ -37,8 +38,9 @@ import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.PartySubtypeRepository;
+import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
@@ -88,6 +90,8 @@ public class TestingDataController {
     @Autowired
     private PartyRepository partyRepository;
     @Autowired
+    private PartyNameRepository partyNameRepository;
+    @Autowired
     private DataRepository dataRepository;
     @Autowired
     protected DescItemRepository descItemRepository;
@@ -102,7 +106,7 @@ public class TestingDataController {
     @Autowired
     private NodeRepository nodeRepository;
     @Autowired
-    private PartySubtypeRepository partySubtypeRepository;
+    private PartyTypeRepository partyTypeRepository;
     @Autowired
     private RegisterTypeRepository registerTypeRepository;
     @Autowired
@@ -121,6 +125,7 @@ public class TestingDataController {
 
     private static final int MAX_DEPTH = 4;
     private static final int NODES_IN_LEVEL = 3;
+    private static final String PARTY_NAME = "Testovací osoba";
     private static final String FA_NAME = "Testovací Archivní pomůcka";
     private static final String LEVEL_TYPE_ATT_CODE = "ZP2015_LEVEL_TYPE";
     private static final String[] attCodes = {"ZP2015_UNIT_ID",
@@ -489,8 +494,8 @@ public class TestingDataController {
     }
 
     private List<ParParty> createParties(List<RegRecord> records) {
-        Map<String, ParPartySubtype> partySubTypeMap = partySubtypeRepository.findAll().stream()
-            .collect(Collectors.toMap(ParPartySubtype::getCode, Function.identity()));
+        Map<String, ParPartyType> partySubTypeMap = partyTypeRepository.findAll().stream()
+            .collect(Collectors.toMap(ParPartyType::getCode, Function.identity()));
 
         List<ParParty> existingParties = partyRepository.findAll();
 
@@ -498,7 +503,7 @@ public class TestingDataController {
         for (PartyEnum partyEnum : PartyEnum.values()) {
             String subType = partyEnum.getSubType();
             int position = partyEnum.getRecordPosition();
-            ParPartySubtype partySubtype = partySubTypeMap.get(subType);
+            ParPartyType partySubtype = partySubTypeMap.get(subType);
             RegRecord regRecord = records.get(position);
             ParParty party = findParty(partySubtype, regRecord, existingParties);
             if (party == null) {
@@ -512,12 +517,12 @@ public class TestingDataController {
 
     private enum PartyEnum {
 
-        KOR_SPOL("KOR_SPOL", 0),
-        KOR_VEREJNE("KOR_VEREJNE", 1),
-        ROD("ROD", 2),
-        VETEV_ROD("VETEV_ROD", 3),
-        FYZ_OSOBA1("FYZ_OSOBA", 4),
-        FYZ_OSOBA2("FYZ_OSOBA", 5);
+        KOR_SPOL("PERSON", 0),
+        KOR_VEREJNE("PERSON", 1),
+        ROD("DYNASTY", 2),
+        VETEV_ROD("DYNASTY", 3),
+        FYZ_OSOBA1("PERSON", 4),
+        FYZ_OSOBA2("PERSON", 5);
 
         private String subType;
         private int recordPosition;
@@ -536,14 +541,14 @@ public class TestingDataController {
         }
     }
 
-    private ParParty findParty(ParPartySubtype parPartySubtype, RegRecord regRecord,
+    private ParParty findParty(ParPartyType parPartySubtype, RegRecord regRecord,
             List<ParParty> existingParties) {
         if (existingParties.isEmpty()) {
             return null;
         }
 
         for (ParParty party : existingParties) {
-            if (party.getPartySubtype().equals(parPartySubtype)
+            if (party.getPartyType().equals(parPartySubtype)
                     && party.getRecord().equals(regRecord)) {
                 return party;
             }
@@ -552,12 +557,18 @@ public class TestingDataController {
         return null;
     }
 
-    private ParParty createParParty(ParPartySubtype parPartySubtype, RegRecord regRecord) {
+    private ParParty createParParty(ParPartyType parPartyType, RegRecord regRecord) {
+        ParPartyName preferredName = new ParPartyName();
+        partyNameRepository.save(preferredName);
         ParParty parParty = new ParParty();
-        parParty.setPartySubtype(parPartySubtype);
+        parParty.setPartyType(parPartyType);
         parParty.setRecord(regRecord);
+        parParty.setPreferredName(preferredName);
+        parParty = partyRepository.save(parParty);
+        preferredName.setParty(parParty);
+        partyNameRepository.save(preferredName);
 
-        return partyRepository.save(parParty);
+        return parParty;
     }
 
     private List<RegRecord> createRegRecords() {
@@ -912,7 +923,9 @@ public class TestingDataController {
         findingAidRepository.deleteAllInBatch();
         dataRepository.deleteAllInBatch();
         descItemRepository.deleteAllInBatch();
+        partyNameRepository.unsetAllParty();
         partyRepository.deleteAllInBatch();
+        partyNameRepository.deleteAllInBatch();
         externalSourceRepository.deleteAllInBatch();
         variantRecordRepository.deleteAllInBatch();
         recordRepository.deleteAllInBatch();

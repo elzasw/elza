@@ -10,17 +10,17 @@ import java.util.List;
  * @author Martin Kužel [<a href="mailto:martin.kuzel@marbes.cz">martin.kuzel@marbes.cz</a>]
  * @since 21.8.2015
  */
-public class ParPartyTypeExt extends ParPartyType implements cz.tacr.elza.api.ParPartyTypeExt<ParPartySubtype> {
+public class ParPartyTypeExt extends ParPartyType implements cz.tacr.elza.api.ParPartyTypeExt {
 
-    private List<ParPartySubtype> partySubTypeList = new ArrayList<>();
-
-    @Override
-    public List<ParPartySubtype> getPartySubTypeList() {
-        return partySubTypeList;
-    }
-
-    @Override
-    public void setPartySubTypeList(final List<ParPartySubtype> partySubTypeList) {
-        this.partySubTypeList = partySubTypeList;
-    }
+//    private List<ParPartyType> partySubTypeList = new ArrayList<>();
+//
+//    @Override
+//    public List<ParPartySubtype> getPartySubTypeList() {
+//        return partySubTypeList;
+//    }
+//
+//    @Override
+//    public void setPartySubTypeList(final List<ParPartySubtype> partySubTypeList) {
+//        this.partySubTypeList = partySubTypeList;
+//    }
 }

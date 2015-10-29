@@ -12,23 +12,30 @@ import java.util.List;
 public interface PartyRepositoryCustom {
 
     /**
-     * 
-     * @param searchRecord
-     * @param registerTypeId
-     * @param firstResult
-     * @param maxResults
-     * @param originator        původce - true, není původce - false, null - neaplikuje filtr - obě možnosti
+     * Vyhledá osobu daného typu podle zadaného názvu. Vrátí seznam osob vyhovující zadané frázi.
+     * Osobu vyhledává podle hesla v rejstříku včetně variantních hesel. Výsledek je stránkovaný, je
+     * vrácen zadaný počet záznamů od from záznamu.
+     * @param searchRecord hledaný řetězec, může být null
+     * @param registerTypeId typ záznamu
+     * @param firstResult id prvního záznamu
+     * @param maxResults max počet záznamů
+     * @param originator původce - true, není původce - false, null - neaplikuje filtr - obě možnosti
      * @return
      */
     List<ParParty> findPartyByTextAndType(String searchRecord, Integer registerTypeId,
                                                           Integer firstResult, Integer maxResults, Boolean originator);
 
     /**
-     * 
-     * @param searchRecord
-     * @param registerTypeId
-     * @param originator        původce - true, není původce - false, null - neaplikuje filtr - obě možnosti
+     * Vrátí počet osob vyhovující zadané frázi. Osobu vyhledává podle hesla v rejstříku včetně variantních hesel.
+     * @param searchRecord hledaný řetězec, může být null
+     * @param registerTypeId typ záznamu
+     * @param originator původce - true, není původce - false, null - neaplikuje filtr - obě možnosti
      * @return
      */
     long findPartyByTextAndTypeCount(String searchRecord, Integer registerTypeId, Boolean originator);
+
+    /**
+     * Nastavi všechny preferred_name na null.
+     */
+    void unsetAllPreferredName();
 }
