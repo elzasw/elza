@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller;
 
+import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegExternalSource;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
@@ -62,6 +63,9 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     @Autowired
     private ExternalSourceRepository externalSourceRepository;
 
+    @Autowired
+    private PartyManager partyManager;
+
 
     @RequestMapping(value = "/createRecord", method = RequestMethod.PUT)
     @Override
@@ -99,7 +103,10 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
         }
 
         variantRecordRepository.delete(variantRecordRepository.findByRegRecordId(recordId));
-        partyRepository.delete(partyRepository.findParPartyByRecordId(recordId));
+        List<ParParty> partyList = partyRepository.findParPartyByRecordId(recordId);
+        for (ParParty parParty : partyList) {
+            partyManager.deleteParty(parParty.getPartyId());
+        }
 
         regRecordRepository.delete(recordId);
     }
