@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://v1_0_0.suzap.elza.tacr.cz" targetNamespace="http://v1_0_0.suzap.elza.tacr.cz" version="1.0">
+
+  <xs:element name="findinig-aid" type="tns:findinig-aid"/>
+
+  <xs:complexType name="findinig-aid">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string"/>
+      <xs:element name="rootLevel" type="tns:level"/>
+      <xs:element minOccurs="0" name="record-list">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="records" type="tns:record"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element minOccurs="0" name="party-list">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="parties" type="tns:party"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="level">
+    <xs:sequence>
+      <xs:element name="position" type="xs:int"/>
+      <xs:element minOccurs="0" name="sub-levels">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" name="levels" type="tns:level"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element minOccurs="0" name="values">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:choice maxOccurs="unbounded" minOccurs="0">
+              <xs:element name="value-coordinates" type="tns:value-coordinates"/>
+              <xs:element name="value-decimal" type="tns:value-decimal"/>
+              <xs:element name="value-formatted-text" type="tns:value-formatted-text"/>
+              <xs:element name="value-integer" type="tns:value-integer"/>
+              <xs:element name="value-party-ref" type="tns:value-party-ref"/>
+              <xs:element name="value-record-ref" type="tns:value-record-ref"/>
+              <xs:element name="value-string" type="tns:value-string"/>
+              <xs:element name="value-text" type="tns:value-text"/>
+              <xs:element name="value-unit-date" type="tns:value-unit-date"/>
+              <xs:element name="value-unit-id" type="tns:value-unit-id"/>
+            </xs:choice>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element minOccurs="0" name="records">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" name="records" type="xs:IDREF"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="value-coordinates">
+    <xs:complexContent>
+      <xs:extension base="tns:abstract-value">
+        <xs:sequence>
+          <xs:element name="value" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType abstract="true" name="abstract-value">
+    <xs:sequence>
+      <xs:element name="descItemTypeCode" type="xs:string"/>
+      <xs:element name="descItemSpecCode" type="xs:string"/>
+      <xs:element name="position" type="xs:int"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="value-decimal">
+    <xs:complexContent>
+      <xs:extension base="tns:abstract-value">
+        <xs:sequence>
+          <xs:element name="value" type="xs:decimal"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="value-formatted-text">
+    <xs:complexContent>
+      <xs:extension base="tns:abstract-value">
+        <xs:sequence>
+          <xs:element name="value" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="value-integer">
+    <xs:complexContent>
+      <xs:extension base="tns:abstract-value">
+        <xs:sequence>
+          <xs:element name="value" type="xs:int"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="value-party-ref">
+    <xs:complexContent>
+      <xs:extension base="tns:abstract-value">
+        <xs:sequence>
+          <xs:element name="party" type="xs:IDREF"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="party">
+    <xs:sequence>
+      <xs:element name="partyId" type="xs:ID"/>
+      <xs:element name="record" type="xs:IDREF"/>
+      <xs:element name="partyTypeCode" type="xs:string"/>
+      <xs:element minOccurs="0" name="prefferedName" type="tns:party-name"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="record">
+    <xs:sequence>
+      <xs:element name="recordId" type="xs:ID"/>
+      <xs:element name="registerTypeCode" type="xs:string"/>
+      <xs:element minOccurs="0" name="externalSourceCode" type="xs:string"/>
+      <xs:element name="record" type="xs:string"/>
+      <xs:element name="characteristics" type="xs:string"/>
+      <xs:element minOccurs="0" name="comment" type="xs:string"/>
+      <xs:element name="local" type="xs:boolean"/>
+      <xs:element name="externalId" type="xs:string"/>
+      <xs:element minOccurs="0" name="variant-record-list">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="variantRecords" type="tns:variant-record"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="variant-record">
+    <xs:sequence>
+      <xs:element name="record" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="party-name">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="mainPart" type="xs:string"/>
+      <xs:element minOccurs="0" name="otherPart" type="xs:string"/>
+      <xs:element minOccurs="0" name="anotation" type="xs:string"/>
+      <xs:element minOccurs="0" name="degreeBefore" type="xs:string"/>
+      <xs:element minOccurs="0" name="degreeAfter" type="xs:string"/>
+      <xs:element minOccurs="0" name="validFrom" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="validTo" type="xs:dateTime"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="value-record-ref">
+    <xs:complexContent>
+      <xs:extension base="tns:abstract-value">
+        <xs:sequence>
+          <xs:element name="record" type="xs:IDREF"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="value-string">
+    <xs:complexContent>
+      <xs:extension base="tns:abstract-value">
+        <xs:sequence>
+          <xs:element name="value" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="value-text">
+    <xs:complexContent>
+      <xs:extension base="tns:abstract-value">
+        <xs:sequence>
+          <xs:element name="value" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="value-unit-date">
+    <xs:complexContent>
+      <xs:extension base="tns:abstract-value">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="valueFrom" type="xs:string"/>
+          <xs:element minOccurs="0" name="valueFromEstimated" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="valueTo" type="xs:string"/>
+          <xs:element minOccurs="0" name="valueToEstimated" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="calendarTypeCode" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="value-unit-id">
+    <xs:complexContent>
+      <xs:extension base="tns:abstract-value">
+        <xs:sequence>
+          <xs:element name="value" type="xs:string"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+</xs:schema>

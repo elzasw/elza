@@ -135,6 +135,36 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
+            <!-- Suzap XSD -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxb2-maven-plugin</artifactId>
+                <version>2.2</version>
+                <executions>
+                    <execution>
+                        <id>hierarchical-structure</id>
+                        <phase>compile</phase>
+
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/xsd/</outputDirectory>
+                            <sources>
+                                <source>src/main/java/cz/tacr/elza/suzap/v1/xml/FindingAid.java</source>
+                            </sources>
+                            <createJavaDocAnnotations>true</createJavaDocAnnotations>
+                            <xsdPathWithinArtifact>src/main/resources/xsd/suzap</xsdPathWithinArtifact>
+                            <transformSchemas>
+                                <transformSchema>
+                                    <uri>http://v1_0_0.suzap.elza.tacr.cz</uri>
+                                    <toFile>suzap.xsd</toFile>
+                                </transformSchema>
+                            </transformSchemas>
+                        </configuration>
+                        <goals>
+                            <goal>schemagen</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>            
         </plugins>
     </build>
 
