@@ -85,7 +85,7 @@ public class NodeRegisterLinkValue extends CssLayout implements Components {
 
     private List<AutocompleteItem> loadRegRecords(final String text, final RegRegisterType registerType) {
 
-        List<RegRecord> recordList = registryManager.findRecord(text, 0, 50, registerType.getRegisterTypeId());
+        List<RegRecord> recordList = registryManager.findRecord(text, 0, 50, new Integer[] {registerType.getRegisterTypeId()});
 
         List<AutocompleteItem> result = new ArrayList<>(recordList.size());
         for (final RegRecord regRecord : recordList) {

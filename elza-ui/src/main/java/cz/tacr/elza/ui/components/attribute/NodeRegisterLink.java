@@ -48,7 +48,7 @@ public class NodeRegisterLink extends CssLayout implements Components {
         addComponent(childs);
         vazby.sort(new NodeRegisterLinkValuesComparator());
 
-        for (ArrNodeRegister nodeRegister : vazby) {
+        for (final ArrNodeRegister nodeRegister : vazby) {
             newRegisterLinkValue(nodeRegister);
         }
 
