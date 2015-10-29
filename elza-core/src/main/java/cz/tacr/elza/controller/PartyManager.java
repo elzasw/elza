@@ -5,6 +5,7 @@ import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParPartyTypeExt;
 import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.repository.DataPartyRefRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
@@ -44,6 +45,8 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
     private PartyTypeRepository partyTypeRepository;
     @Autowired
     private PartyNameRepository partyNameRepository;
+    @Autowired
+    private DataPartyRefRepository dataPartyRefRepository;
 
 
     @RequestMapping(value = "/getPartyTypes", method = RequestMethod.GET)
@@ -164,11 +167,20 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
             return;
         }
 
+        checkPartyUsage(party);
         ParPartyName partyName = party.getPreferredName();
         partyName.setParty(null);
         partyNameRepository.save(partyName);
         partyRepository.delete(partyId);
         partyNameRepository.delete(partyName);
+    }
+
+    private void checkPartyUsage(ParParty party) {
+        // vazby ( arr_node_register, ArrDataRecordRef, ArrDataPartyRef),
+        Long pocet = dataPartyRefRepository.getCountByParty(party.getPartyId());
+        if (pocet > 0) {
+            throw new IllegalStateException("Nalezeno použití party v tabulce ArrDataPartyRef.");
+        }
     }
 
     @RequestMapping(value = "/findParty", method = RequestMethod.GET)
