@@ -106,4 +106,16 @@ public interface RulDescItemType<RT extends RulDataType> extends Serializable {
      */
     void setViewOrder(final Integer viewOrder);
 
+
+    /**
+     * @return příznak udává, zda je příslušný atribut platný jen pro jednu konkrétní AP
+     */
+    Boolean getFaOnly();
+
+    /**
+     * Příznak udává, zda je příslušný atribut platný jen pro jednu konkrétní AP. Pokud je příznak nastaven, tak hodnoty těchto atributů nejsou sdíleny, ale mohou být zobrazeny.
+     * @param faOnly hodnota příznaku
+     */
+    void setFaOnly(Boolean faOnly);
+
 }

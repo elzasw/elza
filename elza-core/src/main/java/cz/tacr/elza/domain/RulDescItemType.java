@@ -66,6 +66,9 @@ public class RulDescItemType implements cz.tacr.elza.api.RulDescItemType<RulData
     @Column(nullable = false)
     private Integer viewOrder;
 
+    @Column(nullable = false)
+    private Boolean faOnly;
+
 
     @Override
     public Integer getDescItemTypeId() {
@@ -165,6 +168,16 @@ public class RulDescItemType implements cz.tacr.elza.api.RulDescItemType<RulData
     @Override
     public void setViewOrder(final Integer viewOrder) {
         this.viewOrder = viewOrder;
+    }
+
+    @Override
+    public Boolean getFaOnly() {
+        return faOnly;
+    }
+
+    @Override
+    public void setFaOnly(Boolean faOnly) {
+        this.faOnly = faOnly;
     }
 
     @Override

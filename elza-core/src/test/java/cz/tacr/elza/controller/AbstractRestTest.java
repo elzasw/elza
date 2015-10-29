@@ -205,6 +205,7 @@ public abstract class AbstractRestTest {
     protected static final Integer DATA_TYPE_COORDINATES = 7;
     protected static final Integer DATA_TYPE_PARTY_REF = 8;
     protected static final Integer DATA_TYPE_RECORD_REF = 9;
+    protected static final Integer DATA_TYPE_DECIMAL = 10;
     // END ARRANGEMENT MANAGER CONSTANTS
 
     // RULE MANAGER CONSTANTS
@@ -453,6 +454,7 @@ public abstract class AbstractRestTest {
         itemType.setIsValueUnique(false);
         itemType.setUseSpecification(false);
         itemType.setViewOrder(index);
+        itemType.setFaOnly(false);
         return descItemTypeRepository.save(itemType);
     }
 
@@ -487,6 +489,7 @@ public abstract class AbstractRestTest {
         dataTypeItem.setCanBeOrdered(canBeOrdered);
         dataTypeItem.setUseSpecification(useSpecification);
         dataTypeItem.setViewOrder(viewOrder);
+        dataTypeItem.setFaOnly(false);
         return descItemTypeRepository.save(dataTypeItem);
     }
 
