@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <!-- Verze 1.5 - přidání typu atributu pro typ DECIMAL -->
+    <changeSet id="6" author="slapa">
+
+        <insert tableName="rul_desc_item_type">
+            <column name="desc_item_type_id" value="48"/>
+            <column name="data_type_id" value="10"/>
+            <column name="code" value="ZP2015_COLL_EXTENT_LENGTH"/>
+            <column name="name" value="Rozsah archivního souboru"/>
+            <column name="shortcut" value="Rozsah souboru"/>
+            <column name="description" value="Rozsah archivního souboru"/>
+            <column name="is_value_unique" value="false"/>
+            <column name="can_be_ordered" value="false"/>
+            <column name="use_specification" value="false"/>
+            <column name="view_order" value="48"/>
+            <column name="fa_only" value="false"/>
+        </insert>
+
+        <update tableName="db_hibernate_sequences">
+            <column name="next_val" value="49"/>
+            <where>sequence_name = 'rul_desc_item_type|desc_item_type_id'</where>
+        </update>
+
+    </changeSet>
+
+</databaseChangeLog>
