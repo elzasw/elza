@@ -202,7 +202,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="view_order" type="int">
-                <constraints unique="true" nullable="false"/>
+                <constraints unique="true" uniqueConstraintName="rul_desc_item_type_view_order_key" nullable="false"/>
             </column>
             <column name="fa_only" type="boolean"/>
         </createTable>
