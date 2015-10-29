@@ -161,8 +161,8 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         Assert.assertEquals("Nalezeny osoby. ", 0, osoby.size());
         Assert.assertEquals("Neodpovídá počet. ", 0, osobyCount);
 
-        osoby = findParty("V1", partySubTypeUdalost, false);
-        osobyCount = findPartyCount("V1", partySubTypeUdalost, false);
+//        osoby = findParty("V1", partySubTypeUdalost, false);
+//        osobyCount = findPartyCount("V1", partySubTypeUdalost, false);
 //        Assert.assertEquals("Nenalezeny osoby. ", 1, osoby.size());
 //        Assert.assertTrue("Není očekávané heslo.", osoby.get(0).getRecord().equals(heslo2));
 //        Assert.assertEquals("Neodpovídá počet. ", 1, osobyCount);

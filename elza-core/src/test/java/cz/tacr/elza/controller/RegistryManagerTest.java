@@ -13,6 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.jayway.restassured.response.Response;
 
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.RegExternalSource;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
@@ -96,6 +99,9 @@ public class RegistryManagerTest extends AbstractRestTest {
     @Test
     public void testRestDeleteRecord() {
         RegRecord record = createRecord();
+        final ParPartyType partyType = findPartyType();
+        final ParPartyName partyName = new ParPartyName();
+        ParParty party = createParParty(partyType, record, partyName);
 
         long countStart = recordRepository.count();
 
