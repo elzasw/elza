@@ -6,14 +6,14 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 /**
- * Krátký text.
+ * Referenční označení.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 27. 10. 2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "value-string", namespace = NamespaceInfo.NAMESPACE)
-public class ValueString extends AbstractValue {
+@XmlType(name = "desc-item-unit-id", namespace = NamespaceInfo.NAMESPACE)
+public class DescItemUnitId extends AbstractDescItem {
 
     @XmlElement(required = true)
     private String value;

@@ -34,20 +34,20 @@
           </xs:sequence>
         </xs:complexType>
       </xs:element>
-      <xs:element minOccurs="0" name="values">
+      <xs:element minOccurs="0" name="desc-items">
         <xs:complexType>
           <xs:sequence>
             <xs:choice maxOccurs="unbounded" minOccurs="0">
-              <xs:element name="value-coordinates" type="tns:value-coordinates"/>
-              <xs:element name="value-decimal" type="tns:value-decimal"/>
-              <xs:element name="value-formatted-text" type="tns:value-formatted-text"/>
-              <xs:element name="value-integer" type="tns:value-integer"/>
-              <xs:element name="value-party-ref" type="tns:value-party-ref"/>
-              <xs:element name="value-record-ref" type="tns:value-record-ref"/>
-              <xs:element name="value-string" type="tns:value-string"/>
-              <xs:element name="value-text" type="tns:value-text"/>
-              <xs:element name="value-unit-date" type="tns:value-unit-date"/>
-              <xs:element name="value-unit-id" type="tns:value-unit-id"/>
+              <xs:element name="desc-item-coordinates" type="tns:desc-item-coordinates"/>
+              <xs:element name="desc-item-decimal" type="tns:desc-item-decimal"/>
+              <xs:element name="desc-item-formatted-text" type="tns:desc-item-formatted-text"/>
+              <xs:element name="desc-item-integer" type="tns:desc-item-integer"/>
+              <xs:element name="desc-item-party-ref" type="tns:desc-item-party-ref"/>
+              <xs:element name="desc-item-record-ref" type="tns:desc-item-record-ref"/>
+              <xs:element name="desc-item-string" type="tns:desc-item-string"/>
+              <xs:element name="desc-item-text" type="tns:desc-item-text"/>
+              <xs:element name="desc-item-unit-date" type="tns:desc-item-unit-date"/>
+              <xs:element name="desc-item-unit-id" type="tns:desc-item-unit-id"/>
             </xs:choice>
           </xs:sequence>
         </xs:complexType>
@@ -62,9 +62,9 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="value-coordinates">
+  <xs:complexType name="desc-item-coordinates">
     <xs:complexContent>
-      <xs:extension base="tns:abstract-value">
+      <xs:extension base="tns:abstract-desc-item">
         <xs:sequence>
           <xs:element name="value" type="xs:string"/>
         </xs:sequence>
@@ -72,7 +72,7 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType abstract="true" name="abstract-value">
+  <xs:complexType abstract="true" name="abstract-desc-item">
     <xs:sequence>
       <xs:element name="descItemTypeCode" type="xs:string"/>
       <xs:element name="descItemSpecCode" type="xs:string"/>
@@ -80,9 +80,9 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="value-decimal">
+  <xs:complexType name="desc-item-decimal">
     <xs:complexContent>
-      <xs:extension base="tns:abstract-value">
+      <xs:extension base="tns:abstract-desc-item">
         <xs:sequence>
           <xs:element name="value" type="xs:decimal"/>
         </xs:sequence>
@@ -90,9 +90,9 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="value-formatted-text">
+  <xs:complexType name="desc-item-formatted-text">
     <xs:complexContent>
-      <xs:extension base="tns:abstract-value">
+      <xs:extension base="tns:abstract-desc-item">
         <xs:sequence>
           <xs:element name="value" type="xs:string"/>
         </xs:sequence>
@@ -100,9 +100,9 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="value-integer">
+  <xs:complexType name="desc-item-integer">
     <xs:complexContent>
-      <xs:extension base="tns:abstract-value">
+      <xs:extension base="tns:abstract-desc-item">
         <xs:sequence>
           <xs:element name="value" type="xs:int"/>
         </xs:sequence>
@@ -110,9 +110,9 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="value-party-ref">
+  <xs:complexType name="desc-item-party-ref">
     <xs:complexContent>
-      <xs:extension base="tns:abstract-value">
+      <xs:extension base="tns:abstract-desc-item">
         <xs:sequence>
           <xs:element name="party" type="xs:IDREF"/>
         </xs:sequence>
@@ -167,9 +167,9 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="value-record-ref">
+  <xs:complexType name="desc-item-record-ref">
     <xs:complexContent>
-      <xs:extension base="tns:abstract-value">
+      <xs:extension base="tns:abstract-desc-item">
         <xs:sequence>
           <xs:element name="record" type="xs:IDREF"/>
         </xs:sequence>
@@ -177,9 +177,9 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="value-string">
+  <xs:complexType name="desc-item-string">
     <xs:complexContent>
-      <xs:extension base="tns:abstract-value">
+      <xs:extension base="tns:abstract-desc-item">
         <xs:sequence>
           <xs:element name="value" type="xs:string"/>
         </xs:sequence>
@@ -187,9 +187,9 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="value-text">
+  <xs:complexType name="desc-item-text">
     <xs:complexContent>
-      <xs:extension base="tns:abstract-value">
+      <xs:extension base="tns:abstract-desc-item">
         <xs:sequence>
           <xs:element name="value" type="xs:string"/>
         </xs:sequence>
@@ -197,9 +197,9 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="value-unit-date">
+  <xs:complexType name="desc-item-unit-date">
     <xs:complexContent>
-      <xs:extension base="tns:abstract-value">
+      <xs:extension base="tns:abstract-desc-item">
         <xs:sequence>
           <xs:element minOccurs="0" name="valueFrom" type="xs:string"/>
           <xs:element minOccurs="0" name="valueFromEstimated" type="xs:boolean"/>
@@ -211,9 +211,9 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="value-unit-id">
+  <xs:complexType name="desc-item-unit-id">
     <xs:complexContent>
-      <xs:extension base="tns:abstract-value">
+      <xs:extension base="tns:abstract-desc-item">
         <xs:sequence>
           <xs:element name="value" type="xs:string"/>
         </xs:sequence>

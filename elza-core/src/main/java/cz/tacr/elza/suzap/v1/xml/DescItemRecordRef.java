@@ -13,8 +13,8 @@ import javax.xml.bind.annotation.XmlType;
  * @since 27. 10. 2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "value-record-ref", namespace = NamespaceInfo.NAMESPACE)
-public class ValueRecordRef extends AbstractValue {
+@XmlType(name = "desc-item-record-ref", namespace = NamespaceInfo.NAMESPACE)
+public class DescItemRecordRef extends AbstractDescItem {
 
     /** Odkaz do seznamu rejstříkových hesel. */
     @XmlIDREF

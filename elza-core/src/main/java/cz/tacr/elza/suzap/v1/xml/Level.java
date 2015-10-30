@@ -33,20 +33,20 @@ public class Level {
     private List<Level> levels;
 
     /** Hodnoty archivního popisu. */
-    @XmlElementWrapper(name = "values")
+    @XmlElementWrapper(name = "desc-items")
     @XmlElements(value = {
-            @XmlElement(name = "value-coordinates", type = ValueCoordinates.class),
-            @XmlElement(name = "value-decimal", type = ValueDecimal.class),
-            @XmlElement(name = "value-formatted-text", type = ValueFormattedText.class),
-            @XmlElement(name = "value-integer", type = ValueInteger.class),
-            @XmlElement(name = "value-party-ref", type = ValuePartyRef.class),
-            @XmlElement(name = "value-record-ref", type = ValueRecordRef.class),
-            @XmlElement(name = "value-string", type = ValueString.class),
-            @XmlElement(name = "value-text", type = ValueText.class),
-            @XmlElement(name = "value-unit-date", type = ValueUnitDate.class),
-            @XmlElement(name = "value-unit-id", type = ValueUnitId.class)
+            @XmlElement(name = "desc-item-coordinates", type = DescItemCoordinates.class),
+            @XmlElement(name = "desc-item-decimal", type = DescItemDecimal.class),
+            @XmlElement(name = "desc-item-formatted-text", type = DescItemFormattedText.class),
+            @XmlElement(name = "desc-item-integer", type = DescItemInteger.class),
+            @XmlElement(name = "desc-item-party-ref", type = DescItemPartyRef.class),
+            @XmlElement(name = "desc-item-record-ref", type = DescItemRecordRef.class),
+            @XmlElement(name = "desc-item-string", type = DescItemString.class),
+            @XmlElement(name = "desc-item-text", type = DescItemText.class),
+            @XmlElement(name = "desc-item-unit-date", type = DescItemUnitDate.class),
+            @XmlElement(name = "desc-item-unit-id", type = DescItemUnitId.class)
     })
-    private List<AbstractValue> values;
+    private List<AbstractDescItem> descItems;
 
     /** Vazba na rejstřík. */
     @XmlIDREF
@@ -70,12 +70,12 @@ public class Level {
         this.levels = levels;
     }
 
-    public List<AbstractValue> getValues() {
-        return values;
+    public List<AbstractDescItem> getDescItems() {
+        return descItems;
     }
 
-    public void setValues(List<AbstractValue> values) {
-        this.values = values;
+    public void setDescItems(List<AbstractDescItem> descItems) {
+        this.descItems = descItems;
     }
 
     public List<Record> getRecords() {

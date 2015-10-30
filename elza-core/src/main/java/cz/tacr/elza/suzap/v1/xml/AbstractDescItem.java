@@ -15,8 +15,8 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  * @since 27. 10. 2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "abstract-value", namespace = NamespaceInfo.NAMESPACE)
-public abstract class AbstractValue {
+@XmlType(name = "abstract-desc-item", namespace = NamespaceInfo.NAMESPACE)
+public abstract class AbstractDescItem {
 
     @XmlElement(required = true)
     private String descItemTypeCode;

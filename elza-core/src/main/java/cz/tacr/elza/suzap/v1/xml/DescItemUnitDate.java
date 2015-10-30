@@ -12,8 +12,8 @@ import javax.xml.bind.annotation.XmlType;
  * @since 27. 10. 2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "value-unit-date", namespace = NamespaceInfo.NAMESPACE)
-public class ValueUnitDate extends AbstractValue {
+@XmlType(name = "desc-item-unit-date", namespace = NamespaceInfo.NAMESPACE)
+public class DescItemUnitDate extends AbstractDescItem {
 
     @XmlElement
     private String valueFrom;

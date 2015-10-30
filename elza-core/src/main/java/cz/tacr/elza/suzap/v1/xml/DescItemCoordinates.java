@@ -6,14 +6,14 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 /**
- * Formátovaný text.
+ * Souřadnice.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 27. 10. 2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "value-formatted-text", namespace = NamespaceInfo.NAMESPACE)
-public class ValueFormattedText extends AbstractValue {
+@XmlType(name = "desc-item-coordinates", namespace = NamespaceInfo.NAMESPACE)
+public class DescItemCoordinates extends AbstractDescItem {
 
     @XmlElement(required = true)
     private String value;

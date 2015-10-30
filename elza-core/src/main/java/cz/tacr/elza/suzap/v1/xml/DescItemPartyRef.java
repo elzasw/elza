@@ -3,26 +3,29 @@ package cz.tacr.elza.suzap.v1.xml;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlType;
 
 /**
- * Celé číslo.
+ * Odkaz na osobu.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 27. 10. 2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "value-integer", namespace = NamespaceInfo.NAMESPACE)
-public class ValueInteger extends AbstractValue {
+@XmlType(name = "desc-item-party-ref", namespace = NamespaceInfo.NAMESPACE)
+public class DescItemPartyRef extends AbstractDescItem {
 
+    /** Odkaz do seznamu osob. */
+    @XmlIDREF
     @XmlElement(required = true)
-    private Integer value;
+    private Party party;
 
-    public Integer getValue() {
-        return value;
+    public Party getParty() {
+        return party;
     }
 
-    public void setValue(Integer value) {
-        this.value = value;
+    public void setParty(Party party) {
+        this.party = party;
     }
 }
