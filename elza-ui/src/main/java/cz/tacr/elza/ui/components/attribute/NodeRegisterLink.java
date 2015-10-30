@@ -23,6 +23,7 @@ public class NodeRegisterLink extends CssLayout implements Components {
 
     ChildComponentContainer<ArrNodeRegister, NodeRegisterLinkValue> childs;
     ArrNode node;
+    private List<ArrNodeRegister> toDelete;
     private Integer versionId;
     private RegistryManager registryManager;
     private AxAction newValueButton;
@@ -68,10 +69,13 @@ public class NodeRegisterLink extends CssLayout implements Components {
         }
     }
 
-
     public List<ArrNodeRegister> getKeys() {
         List<ArrNodeRegister> collect = childs.getChils().stream().map(NodeRegisterLinkValue::commit).collect(Collectors.toList());
         return collect;
+    }
+
+    public List<ArrNodeRegister> getLinksToDelete() {
+        return toDelete;
     }
 
     public ArrNode getNode() {

@@ -115,6 +115,16 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
     }
 
     private void saveNodeRegisterLinkWithVersion(final NodeRegisterLink nodeRegisterLink) {
+        List<ArrNodeRegister> links = nodeRegisterLink.getKeys();
+        List<ArrNodeRegister> linksToDelete = nodeRegisterLink.getLinksToDelete();
+
+        if (CollectionUtils.isNotEmpty(links)) {
+            arrangementManager.addArrNodeRegisterLinks(links);
+        }
+
+        if (CollectionUtils.isNotEmpty(linksToDelete)) {
+            arrangementManager.delArrNodeRegisterLinks(linksToDelete);
+        }
     }
 
     private void saveAttribute(final Attribut attribut, final Boolean createNewVersion) {
