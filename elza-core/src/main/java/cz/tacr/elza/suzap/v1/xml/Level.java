@@ -28,12 +28,12 @@ public class Level {
     private Integer position;
 
     /** Potomci. */
-    @XmlElement(required = true)
-    @XmlElementWrapper(name = "sub-levels")
-    private List<Level> levels;
+    @XmlElement(required = true, name = "level")
+    @XmlElementWrapper(name = "sub-level-list")
+    private List<Level> subLevels;
 
     /** Hodnoty archivního popisu. */
-    @XmlElementWrapper(name = "desc-items")
+    @XmlElementWrapper(name = "desc-item-list")
     @XmlElements(value = {
             @XmlElement(name = "desc-item-coordinates", type = DescItemCoordinates.class),
             @XmlElement(name = "desc-item-decimal", type = DescItemDecimal.class),
@@ -50,8 +50,8 @@ public class Level {
 
     /** Vazba na rejstřík. */
     @XmlIDREF
-    @XmlElement(required = true)
-    @XmlElementWrapper(name = "records")
+    @XmlElement(required = true, name = "record")
+    @XmlElementWrapper(name = "record-list")
     private List<Record> records;
 
     public Integer getPosition() {
@@ -62,12 +62,12 @@ public class Level {
         this.position = position;
     }
 
-    public List<Level> getLevels() {
-        return levels;
+    public List<Level> getSubLevels() {
+        return subLevels;
     }
 
-    public void setLevels(List<Level> levels) {
-        this.levels = levels;
+    public void setSubLevels(List<Level> subLevels) {
+        this.subLevels = subLevels;
     }
 
     public List<AbstractDescItem> getDescItems() {

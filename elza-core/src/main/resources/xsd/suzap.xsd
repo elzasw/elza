@@ -10,14 +10,14 @@
       <xs:element minOccurs="0" name="record-list">
         <xs:complexType>
           <xs:sequence>
-            <xs:element maxOccurs="unbounded" minOccurs="0" name="records" type="tns:record"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="record" type="tns:record"/>
           </xs:sequence>
         </xs:complexType>
       </xs:element>
       <xs:element minOccurs="0" name="party-list">
         <xs:complexType>
           <xs:sequence>
-            <xs:element maxOccurs="unbounded" minOccurs="0" name="parties" type="tns:party"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="party" type="tns:party"/>
           </xs:sequence>
         </xs:complexType>
       </xs:element>
@@ -27,14 +27,14 @@
   <xs:complexType name="level">
     <xs:sequence>
       <xs:element name="position" type="xs:int"/>
-      <xs:element minOccurs="0" name="sub-levels">
+      <xs:element minOccurs="0" name="sub-level-list">
         <xs:complexType>
           <xs:sequence>
-            <xs:element maxOccurs="unbounded" name="levels" type="tns:level"/>
+            <xs:element maxOccurs="unbounded" name="level" type="tns:level"/>
           </xs:sequence>
         </xs:complexType>
       </xs:element>
-      <xs:element minOccurs="0" name="desc-items">
+      <xs:element minOccurs="0" name="desc-item-list">
         <xs:complexType>
           <xs:sequence>
             <xs:choice maxOccurs="unbounded" minOccurs="0">
@@ -52,10 +52,10 @@
           </xs:sequence>
         </xs:complexType>
       </xs:element>
-      <xs:element minOccurs="0" name="records">
+      <xs:element minOccurs="0" name="record-list">
         <xs:complexType>
           <xs:sequence>
-            <xs:element maxOccurs="unbounded" name="records" type="xs:IDREF"/>
+            <xs:element maxOccurs="unbounded" name="record" type="xs:IDREF"/>
           </xs:sequence>
         </xs:complexType>
       </xs:element>
@@ -142,7 +142,7 @@
       <xs:element minOccurs="0" name="variant-record-list">
         <xs:complexType>
           <xs:sequence>
-            <xs:element maxOccurs="unbounded" minOccurs="0" name="variantRecords" type="tns:variant-record"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="variant-record" type="tns:variant-record"/>
           </xs:sequence>
         </xs:complexType>
       </xs:element>

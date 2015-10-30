@@ -142,7 +142,7 @@ public class SuzapTest implements ApplicationContextAware {
         Level rootLevel = new Level();
         rootLevel.setPosition(1);
 
-        rootLevel.setLevels(createChildren(TREE_DEPTH_COUNT, records, parties));
+        rootLevel.setSubLevels(createChildren(TREE_DEPTH_COUNT, records, parties));
         rootLevel.setDescItems(createDescItems(records, parties));
 
         return rootLevel;
@@ -271,9 +271,14 @@ public class SuzapTest implements ApplicationContextAware {
         List<Level> children = new ArrayList<Level>(CHILD_COUNT);
         for (int i = 0; i < CHILD_COUNT; i++) {
             Level child = new Level();
-            child.setLevels(createChildren(--depth, records, parties));
+            child.setSubLevels(createChildren(--depth, records, parties));
             child.setPosition(i);
             child.setDescItems(createDescItems(records, parties));
+            if (RandomUtils.nextBoolean()) {
+                List<Record> levelRecords = new ArrayList<Record>(1);
+                levelRecords.add(records.get(RandomUtils.nextInt(records.size())));
+                child.setRecords(levelRecords);
+            }
 
             children.add(child);
         }

@@ -23,23 +23,6 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 @XmlRootElement(name = "findinig-aid", namespace = NamespaceInfo.NAMESPACE)
 public class FindingAid {
 
-//    finding aid
-//    - level + node
-//     - attr desc item
-//       - integer
-//       - string
-//       - party ref
-//       - record ref   - proč má position?
-//       - decimal
-//       - coordinates
-//       - text
-//       - form. text
-//       - unit date
-//       - unit id
-//    - party
-//    - reg record
-//      - reg variant record?
-
     /** Název archivní pomůcky. */
     @XmlElement(required = true)
     private String name;
@@ -49,12 +32,12 @@ public class FindingAid {
     private Level rootLevel;
 
     /** Seznam rejstříkových hesel. */
-    @XmlElement
+    @XmlElement(name = "record")
     @XmlElementWrapper(name = "record-list")
     private List<Record> records;
 
     /** Seznam osob. */
-    @XmlElement
+    @XmlElement(name = "party")
     @XmlElementWrapper(name = "party-list")
     private List<Party> parties;
 

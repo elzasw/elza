@@ -59,7 +59,7 @@ public class Record {
     private String externalId;
 
     /** Seznam variantních rejstříků. */
-    @XmlElement
+    @XmlElement(name = "variant-record")
     @XmlElementWrapper(name = "variant-record-list")
     private List<VariantRecord> variantRecords;
 
