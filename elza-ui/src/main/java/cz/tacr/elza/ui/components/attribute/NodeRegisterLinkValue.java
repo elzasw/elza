@@ -1,5 +1,6 @@
 package cz.tacr.elza.ui.components.attribute;
 
+import com.vaadin.data.util.BeanItem;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.CssLayout;
 import cz.req.ax.AxAction;
@@ -43,6 +44,12 @@ public class NodeRegisterLinkValue extends CssLayout implements Components {
             specificationCombo = new ComboBox("", registerTypesContainer);
             specificationCombo.setItemCaptionPropertyId("name");
             specificationCombo.addStyleName("attribut-spec");
+
+            // předvýběr typou u existující položky
+            RegRecord record = registryManager.getRecord(nodeRegister.getRecord().getRecordId());
+            BeanItem<RegRegisterType> typeItem = registerTypesContainer.getItem(record.getRegisterType());
+            specificationCombo.setValue(typeItem.getBean());
+
             form.addComponent(specificationCombo);
         }
 
