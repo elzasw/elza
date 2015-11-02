@@ -1,23 +1,5 @@
 package cz.tacr.elza.ui.view;
 
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.util.BeanItem;
@@ -31,7 +13,6 @@ import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.Tree;
 import com.vaadin.ui.UI;
-
 import cz.req.ax.AxAction;
 import cz.req.ax.AxComboBox;
 import cz.req.ax.AxContainer;
@@ -60,7 +41,24 @@ import cz.tacr.elza.ui.utils.ElzaNotifications;
 import cz.tacr.elza.ui.window.DescItemTypeWindow;
 import cz.tacr.elza.ui.window.LevelHistoryWindow;
 import cz.tacr.elza.ui.window.PosAction;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import ru.xpoft.vaadin.VaadinView;
+
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -213,6 +211,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                 ArrLevel node = (ArrLevel) event.getItemId();
                 ArrLevelExt level = arrangementManager.getLevel(node.getNode().getNodeId(), version.getFindingAidVersionId(), null);
                 levelDetailConteiner.showLevelDetail(level, level.getDescItemList(), version.getFindingAidVersionId(), creteAttributeEditCallback());
+                levelDetailConteiner.showNodeRegisterLink(version.getFindingAidVersionId(), level.getNode());
             }
         });
 
@@ -330,6 +329,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
         table.select(null);
         ArrLevelExt level = arrangementManager.getLevel(rootNode.getNode().getNodeId(), version.getFindingAidVersionId(), null);
         levelDetailConteiner.showLevelDetail(level, level.getDescItemList(), version.getFindingAidVersionId(),null);
+        levelDetailConteiner.showNodeRegisterLink(version.getFindingAidVersionId(), level.getNode());
     }
 
     private Callback<ArrLevelExt> creteAttributeEditCallback() {

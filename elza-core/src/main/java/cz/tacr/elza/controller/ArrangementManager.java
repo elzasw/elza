@@ -1,34 +1,5 @@
 package cz.tacr.elza.controller;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.domain.ArrChange;
@@ -40,6 +11,7 @@ import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulDescItemSpec;
@@ -72,10 +44,38 @@ import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -87,7 +87,8 @@ import cz.tacr.elza.repository.RuleSetRepository;
 @RestController
 @RequestMapping("/api/arrangementManager")
 public class ArrangementManager implements cz.tacr.elza.api.controller.ArrangementManager<ArrFindingAid, ArrFindingAidVersion,
-    ArrDescItem, ArrDescItemSavePack, ArrLevel, ArrLevelWithExtraNode, ArrNode, ArrDescItems, ArrNodeHistoryPack, ArrCalendarTypes> {
+    ArrDescItem, ArrDescItemSavePack, ArrLevel, ArrLevelWithExtraNode, ArrNode, ArrDescItems, ArrNodeHistoryPack,
+    ArrCalendarTypes, ArrNodeRegister> {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -172,6 +173,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Autowired
     private DescItemFactory descItemFactory;
+
+    @Autowired
+    private NodeRegisterRepository nodeRegisterRepository;
+
 
     /**
      * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.
@@ -2324,6 +2329,96 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         ArrCalendarTypes calendarTypes = new ArrCalendarTypes();
         calendarTypes.setCalendarTypes(calendarTypeRepository.findAll());
         return calendarTypes;
+    }
+
+    @Override
+    @RequestMapping(value = "/findNodeRegisterLinks", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<ArrNodeRegister> findNodeRegisterLinks(final @RequestParam(value = "versionId") Integer versionId,
+                                                       final @RequestParam(value = "nodeId") Integer nodeId) {
+        Assert.notNull(versionId);
+        Assert.notNull(nodeId);
+
+        ArrNode node = nodeRepository.getOne(nodeId);
+
+        ArrFindingAidVersion version = getFaVersionById(versionId);
+        boolean open = version.getLockChange() == null;
+
+        if (open) {
+            return nodeRegisterRepository.findByNodeAndDeleteChangeIsNull(node);
+        } else {
+            return nodeRegisterRepository.findClosedVersion(node, version.getLockChange().getChangeId());
+        }
+    }
+
+    @Override
+    @Transactional
+    @RequestMapping(value = "/modifyArrNodeRegisterLinks", method = RequestMethod.PUT)
+    public void modifyArrNodeRegisterLinks(final @RequestBody List<ArrNodeRegister> saveNodeRegisterList,
+                           final @RequestParam("deleteNodeRegisterList") List<ArrNodeRegister> deleteNodeRegisterList) {
+
+        Assert.notNull(saveNodeRegisterList);
+        Assert.notNull(deleteNodeRegisterList);
+
+        saveNodeRegisterLinks(saveNodeRegisterList);
+        delArrNodeRegisterLinks(deleteNodeRegisterList);
+    }
+
+    private void delArrNodeRegisterLinks(final @RequestBody List<ArrNodeRegister> arrNodeRegisterList) {
+        Assert.notNull(arrNodeRegisterList);
+
+        ArrChange change = createChange();
+        for (final ArrNodeRegister nodeRegister : arrNodeRegisterList) {
+            if (nodeRegister.getDeleteChange() != null) {
+                throw new IllegalStateException("Nelze vytvářet či modifikovat změnu," +
+                        " která již byla smazána (má delete change).");
+            }
+
+            ArrNode node = nodeRegister.getNode();
+            node.setLastUpdate(LocalDateTime.now());  // change kvůli locking
+            nodeRepository.save(node);
+
+            nodeRegister.setDeleteChange(change);
+            nodeRegisterRepository.save(nodeRegister);
+        }
+    }
+
+    /**
+     * Create či update vazby heslo na node.
+     *
+     * @param arrNodeRegisterList   list vazeb ke create či update
+     */
+    private void saveNodeRegisterLinks(final List<ArrNodeRegister> arrNodeRegisterList) {
+        ArrChange change = createChange();
+        for (final ArrNodeRegister nodeRegister : arrNodeRegisterList) {
+
+            validateNodeRegisterLink(nodeRegister);
+
+            ArrNode node = nodeRegister.getNode();
+            node.setLastUpdate(LocalDateTime.now());  // change kvůli locking
+            nodeRepository.save(node);
+
+            nodeRegister.setCreateChange(change);
+            nodeRegisterRepository.save(nodeRegister);
+        }
+    }
+
+    /**
+     * Validuje entitu před uložením.
+     *
+     * @param nodeRegister  entita
+     */
+    private void validateNodeRegisterLink(final ArrNodeRegister nodeRegister) {
+        if (nodeRegister.getDeleteChange() != null) {
+            throw new IllegalStateException("Nelze vytvářet či modifikovat změnu," +
+                    " která již byla smazána (má delete change).");
+        }
+
+        if (nodeRegister.getNode() == null) {
+            throw new IllegalArgumentException("Není vyplněn uzel.");
+        }
+        if (nodeRegister.getRecord() == null) {
+            throw new IllegalArgumentException("Není vyplněno rejstříkové heslo.");
+        }
     }
 
 }
