@@ -45,10 +45,12 @@ public class NodeRegisterLinkValue extends CssLayout implements Components {
             specificationCombo.setItemCaptionPropertyId("name");
             specificationCombo.addStyleName("attribut-spec");
 
-            // předvýběr typou u existující položky
-            RegRecord record = registryManager.getRecord(nodeRegister.getRecord().getRecordId());
-            BeanItem<RegRegisterType> typeItem = registerTypesContainer.getItem(record.getRegisterType());
-            specificationCombo.setValue(typeItem.getBean());
+            // předvýběr typu u existující položky, pokud není převytvořená (prázdná)
+            if (nodeRegister.getRecord() != null) {
+                RegRecord record = registryManager.getRecord(nodeRegister.getRecord().getRecordId());
+                BeanItem<RegRegisterType> typeItem = registerTypesContainer.getItem(record.getRegisterType());
+                specificationCombo.setValue(typeItem.getBean());
+            }
 
             form.addComponent(specificationCombo);
         }

@@ -125,6 +125,10 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         if (CollectionUtils.isNotEmpty(linksToDelete)) {
             arrangementManager.delArrNodeRegisterLinks(linksToDelete);
         }
+
+        if (attributWindow != null) {
+            attributWindow.close();
+        }
     }
 
     private void saveAttribute(final Attribut attribut, final Boolean createNewVersion) {
@@ -143,6 +147,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             arrangementManager.saveDescriptionItems(pack);
             ArrLevelExt level = arrangementManager.getLevel(attribut.getNode().getNodeId(), attribut.getVersionId(), null);
             showLevelDetail(level, level.getDescItemList(), attribut.getVersionId(), attributeEditCallback);
+//            showNodeRegisterLink(version, level.getNode());
             sendEditCallback(level);
             if (attributWindow != null) {
                 attributWindow.close();

@@ -12,6 +12,7 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.RegRegisterType;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,7 +24,7 @@ public class NodeRegisterLink extends CssLayout implements Components {
 
     ChildComponentContainer<ArrNodeRegister, NodeRegisterLinkValue> childs;
     ArrNode node;
-    private List<ArrNodeRegister> toDelete;
+    private List<ArrNodeRegister> toDelete = new ArrayList<>();
     private Integer versionId;
     private RegistryManager registryManager;
     private AxAction newValueButton;
@@ -100,6 +101,7 @@ public class NodeRegisterLink extends CssLayout implements Components {
 
     private void deleteAtributValue(final ArrNodeRegister nodeRegister) {
         childs.removeComponent(nodeRegister);
+        toDelete.add(nodeRegister);
     }
 
 }

@@ -2395,9 +2395,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                         " která již byla smazána (má delete change).");
             }
 
-            ArrNode node = nodeRegister.getNode();
-            node.setLastUpdate(LocalDateTime.now());  // change kvůli locking
-            nodeRepository.save(node);
+            //TODO kuzel tohle jak ?
+//            ArrNode node = nodeRegister.getNode();
+//            node.setLastUpdate(LocalDateTime.now());  // change kvůli locking
+//            nodeRepository.save(node);
 
             nodeRegister.setCreateChange(change);
             nodeRegisterRepository.save(nodeRegister);
