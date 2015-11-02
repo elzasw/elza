@@ -282,22 +282,10 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
     /**
      * Uloží vazby mezi uzlem a hesly rejstříku. Provede založení změny.
      *
-     * @param arrNodeRegisterList   vazby - bez zakládací verze
+     * @param saveNodeRegisterList      vazby k vytvoření či update - bez zakládací verze,
+     * @param deleteNodeRegisterList    vazby ke smazání - bez zakládací verze
      */
-    void addArrNodeRegisterLinks(List<ANR> arrNodeRegisterList);
-
-    /**
-     * Uloží vazby mezi uzlem a hesly rejstříku. Provede založení změny.
-     *
-     * @param arrNodeRegisterList   vazby - bez zakládací verze
-     */
-    void modifyArrNodeRegisterLinks(List<ANR> arrNodeRegisterList);
-
-    /**
-     * Smaže (zneplatní) vazby mezi uzlem a hesly rejstříku. Provede založení změny.
-     *
-     * @param arrNodeRegisterList   vazby - bez zakládací verze
-     */
-    void delArrNodeRegisterLinks(List<ANR> arrNodeRegisterList);
+    void modifyArrNodeRegisterLinks(List<ANR> saveNodeRegisterList,
+                                    List<ANR> deleteNodeRegisterList);
 
 }

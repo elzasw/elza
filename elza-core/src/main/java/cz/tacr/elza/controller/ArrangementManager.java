@@ -2343,26 +2343,18 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Override
     @Transactional
-    @RequestMapping(value = "/addArrNodeRegisterLinks", method = RequestMethod.PUT)
-    public void addArrNodeRegisterLinks(final @RequestBody List<ArrNodeRegister> arrNodeRegisterList) {
-        Assert.notNull(arrNodeRegisterList);
-
-        saveNodeRegisterLinks(arrNodeRegisterList);
-    }
-
-    @Override
-    @Transactional
     @RequestMapping(value = "/modifyArrNodeRegisterLinks", method = RequestMethod.PUT)
-    public void modifyArrNodeRegisterLinks(final @RequestBody List<ArrNodeRegister> arrNodeRegisterList) {
-        Assert.notNull(arrNodeRegisterList);
+    public void modifyArrNodeRegisterLinks(final @RequestBody List<ArrNodeRegister> saveNodeRegisterList,
+                           final @RequestParam("deleteNodeRegisterList") List<ArrNodeRegister> deleteNodeRegisterList) {
 
-        saveNodeRegisterLinks(arrNodeRegisterList);
+        Assert.notNull(saveNodeRegisterList);
+        Assert.notNull(deleteNodeRegisterList);
+
+        saveNodeRegisterLinks(saveNodeRegisterList);
+        delArrNodeRegisterLinks(deleteNodeRegisterList);
     }
 
-    @Override
-    @Transactional
-    @RequestMapping(value = "/delArrNodeRegisterLinks", method = RequestMethod.PUT)
-    public void delArrNodeRegisterLinks(final @RequestBody List<ArrNodeRegister> arrNodeRegisterList) {
+    private void delArrNodeRegisterLinks(final @RequestBody List<ArrNodeRegister> arrNodeRegisterList) {
         Assert.notNull(arrNodeRegisterList);
 
         ArrChange change = createChange();
@@ -2381,7 +2373,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
     }
 
-
     /**
      * Create či update vazby heslo na node.
      *
@@ -2393,10 +2384,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
             validateNodeRegisterLink(nodeRegister);
 
-            //TODO kuzel tohle jak ?
-//            ArrNode node = nodeRegister.getNode();
-//            node.setLastUpdate(LocalDateTime.now());  // change kvůli locking
-//            nodeRepository.save(node);
+            ArrNode node = nodeRegister.getNode();
+            node.setLastUpdate(LocalDateTime.now());  // change kvůli locking
+            nodeRepository.save(node);
 
             nodeRegister.setCreateChange(change);
             nodeRegisterRepository.save(nodeRegister);

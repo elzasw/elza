@@ -119,13 +119,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             List<ArrNodeRegister> links = nodeRegisterLink.getKeys();
             List<ArrNodeRegister> linksToDelete = nodeRegisterLink.getLinksToDelete();
 
-            if (CollectionUtils.isNotEmpty(links)) {
-                arrangementManager.addArrNodeRegisterLinks(links);
-            }
-
-            if (CollectionUtils.isNotEmpty(linksToDelete)) {
-                arrangementManager.delArrNodeRegisterLinks(linksToDelete);
-            }
+            arrangementManager.modifyArrNodeRegisterLinks(links, linksToDelete);
 
             // obnova atributu vpravo
             ArrLevelExt level = arrangementManager.getLevel(nodeRegisterLink.getNode().getNodeId(),
