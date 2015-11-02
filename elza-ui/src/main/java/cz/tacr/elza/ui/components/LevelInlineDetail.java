@@ -17,7 +17,6 @@ import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemString;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
@@ -126,6 +125,11 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             arrangementManager.delArrNodeRegisterLinks(linksToDelete);
         }
 
+        // obnova atributu vpravo
+        ArrLevelExt level = arrangementManager.getLevel(attribut.getNode().getNodeId(), attribut.getVersionId(), null);
+        showLevelDetail(level, level.getDescItemList(), attribut.getVersionId(), attributeEditCallback);
+        showNodeRegisterLink(attribut.getVersionId(), level.getNode());
+
         if (attributWindow != null) {
             attributWindow.close();
         }
@@ -147,7 +151,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             arrangementManager.saveDescriptionItems(pack);
             ArrLevelExt level = arrangementManager.getLevel(attribut.getNode().getNodeId(), attribut.getVersionId(), null);
             showLevelDetail(level, level.getDescItemList(), attribut.getVersionId(), attributeEditCallback);
-//            showNodeRegisterLink(version, level.getNode());
+            showNodeRegisterLink(attribut.getVersionId(), level.getNode());
             sendEditCallback(level);
             if (attributWindow != null) {
                 attributWindow.close();
@@ -226,10 +230,10 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         detailContent.addComponent(grid);
     }
 
-    public void showNodeRegisterLink(final ArrFindingAidVersion version, final ArrNode node) {
+    public void showNodeRegisterLink(final Integer versionId, final ArrNode node) {
 
         List<ArrNodeRegister> data
-                = arrangementManager.findNodeRegisterLinks(version.getFindingAidVersionId(), node.getNodeId());
+                = arrangementManager.findNodeRegisterLinks(versionId, node.getNodeId());
 
         List<RegRecord> records = data.stream().map(ArrNodeRegister::getRecord).collect(Collectors.toList());
 
@@ -237,9 +241,9 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
         CssLayout captionLayout = cssLayoutExt(null);
         captionLayout.addComponent(newLabel("Vazba na rejstříkové heslo"));
-        if (isVersionOpen(version.getFindingAidVersionId())) {
+        if (isVersionOpen(versionId)) {
             captionLayout.addComponent(createEditButton(
-                    (thiz) -> thiz.showEditNodeRecordLinkWindow(node, version.getFindingAidVersionId(), data)));
+                    (thiz) -> thiz.showEditNodeRecordLinkWindow(node, versionId, data)));
         }
 
         if (CollectionUtils.isEmpty(records)) {
