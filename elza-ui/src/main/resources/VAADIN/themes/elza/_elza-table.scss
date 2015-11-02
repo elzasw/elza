@@ -23,7 +23,7 @@
         background-color: $color-app-alt;
 
         :not(:first-child) {
-//            border-left: 3px solid white;
+            border-left: 3px solid white;
         }
     }
 
@@ -68,7 +68,7 @@
         max-width: 2000px;
 
         max-height: 30px;
-        height: 30px;
+        //height: 30px;
         line-height: 15px;
         white-space: normal;
     }

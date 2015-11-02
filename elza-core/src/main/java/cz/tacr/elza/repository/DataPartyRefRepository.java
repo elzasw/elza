@@ -1,9 +1,11 @@
 package cz.tacr.elza.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ParParty;
 
 
 /**
@@ -13,4 +15,11 @@ import cz.tacr.elza.domain.ArrDataPartyRef;
 @Repository
 public interface DataPartyRefRepository extends JpaRepository<ArrDataPartyRef, Integer> {
 
+    /**
+     * Najde počet záznamů podle par party.
+     * @param party
+     * @return
+     */
+    @Query("SELECT count(*) FROM arr_data_party_ref i WHERE i.partyId = ?1")
+    Long getCountByParty(Integer partyId);
 }

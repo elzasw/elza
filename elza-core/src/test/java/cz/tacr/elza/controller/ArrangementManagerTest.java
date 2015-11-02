@@ -1706,7 +1706,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ((ArrDescItemRecordRef) descItemRecordRefNew).setRecord(recordUpdate);
         ((ArrDescItemString) descItemStringNew).setValue("String2");
         ((ArrDescItemText) descItemTextNew).setValue("Text2");
-        //((ArrDescItemUnitdate) descItemUnitdateNew).setValue("Unitdate2");
+        ((ArrDescItemUnitdate) descItemUnitdateNew).setCalendarType(calendarTypes.get(1));
         ((ArrDescItemUnitid) descItemUnitidNew).setValue("Unitid2");
         ((ArrDescItemDecimal) descItemDecimalNew).setValue(new BigDecimal(11.556));
 

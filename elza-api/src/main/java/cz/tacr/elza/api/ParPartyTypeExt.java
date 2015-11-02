@@ -8,17 +8,17 @@ import java.util.List;
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public interface ParPartyTypeExt<PS extends ParPartySubtype> extends Serializable, ParPartyType {
+public interface ParPartyTypeExt extends Serializable, ParPartyType {
 
-    /**
-     * Podtypy daného typu.
-     * @return  množina objekty podtypů, může být prázdná
-     */
-    List<PS> getPartySubTypeList();
-
-    /**
-     * Podtypy daného typu.
-     * @param partySubTypeList  množina objekty podtypů, může být prázdná
-     */
-    void setPartySubTypeList(List<PS> partySubTypeList);
+//    /**
+//     * Podtypy daného typu.
+//     * @return  množina objekty podtypů, může být prázdná
+//     */
+//    List<PS> getPartySubTypeList();
+//
+//    /**
+//     * Podtypy daného typu.
+//     * @param partySubTypeList  množina objekty podtypů, může být prázdná
+//     */
+//    void setPartySubTypeList(List<PS> partySubTypeList);
 }

@@ -84,7 +84,7 @@ public interface RegRecord<RT extends RegRegisterType, ES extends RegExternalSou
     void setComment(String comment);
 
     /**
-     * Příznak, zda se jedná o lokální nebo globální rejstříkové heslo. lokální heslo je přiřazené pouze konkrétnímu
+     * Příznak, zda se jedná o lokální nebo globální rejstříkové heslo. Lokální heslo je přiřazené pouze konkrétnímu
      * archivnímu popisu/pomůcce.
      *
      * @return příznak, zda se jedná o lokální nebo globální rejstříkové heslo
@@ -92,7 +92,7 @@ public interface RegRecord<RT extends RegRegisterType, ES extends RegExternalSou
     Boolean getLocal();
 
     /**
-     * Příznak, zda se jedná o lokální nebo globální rejstříkové heslo. lokální heslo je přiřazené pouze konkrétnímu
+     * Příznak, zda se jedná o lokální nebo globální rejstříkové heslo. Lokální heslo je přiřazené pouze konkrétnímu
      * archivnímu popisu/pomůcce.
      *
      * @param local příznak, zda se jedná o lokální nebo globální rejstříkové heslo

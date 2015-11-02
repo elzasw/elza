@@ -28,12 +28,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.api.ParParty<RegRecord, ParPartySubtype> {
+public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.api.ParParty<RegRecord, ParPartyType, ParPartyName> {
 
     /* Konstanty pro vazby a fieldy. */
     public static final String ABSTRACT_PARTY_ID = "partyId";
     public static final String RECORD = "record";
-    public static final String PARTY_SUBTYPE = "partySubtype";
+    public static final String PARTY_TYPE = "partyType";
+    public static final String PARTY_PREFERRED_NAME = "preferredName";
 
     @Id
     @GeneratedValue
@@ -45,10 +46,14 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
     private RegRecord record;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParPartySubtype.class)
-    @JoinColumn(name = "partySubtypeId", nullable = false)
-    private ParPartySubtype partySubtype;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParPartyType.class)
+    @JoinColumn(name = "partyTypeId", nullable = false)
+    private ParPartyType partyType;
 
+    @RestResource(exported = false)
+    @OneToOne(fetch = FetchType.LAZY, targetEntity = ParPartyName.class)
+    @JoinColumn(name = "preferredNameId", nullable = true)
+    private ParPartyName preferredName;
 
     @Override
     public Integer getPartyId() {
@@ -71,13 +76,23 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
     }
 
     @Override
-    public ParPartySubtype getPartySubtype() {
-        return partySubtype;
+    public ParPartyType getPartyType() {
+        return partyType;
     }
 
     @Override
-    public void setPartySubtype(final ParPartySubtype partySubtype) {
-        this.partySubtype = partySubtype;
+    public void setPartyType(ParPartyType partyType) {
+        this.partyType = partyType;
+    }
+
+    @Override
+    public ParPartyName getPreferredName() {
+        return preferredName;
+    }
+
+    @Override
+    public void setPreferredName(ParPartyName preferredName) {
+        this.preferredName = preferredName;
     }
 
     @Override
@@ -89,7 +104,7 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
             return true;
         }
 
-        ParParty other = (ParParty) obj;
+        cz.tacr.elza.api.ParParty<RegRecord, ParPartyType, ParPartyName> other = (cz.tacr.elza.api.ParParty<RegRecord, ParPartyType, ParPartyName>) obj;
 
         return new EqualsBuilder().append(partyId, other.getPartyId()).isEquals();
     }

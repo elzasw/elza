@@ -1,7 +1,7 @@
 package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartySubtype;
+import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegVariantRecord;
@@ -11,11 +11,15 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.CriteriaUpdate;
+import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.transaction.Transactional;
+
 import java.util.List;
 
 /**
@@ -31,7 +35,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 
     @Override
     public List<ParParty> findPartyByTextAndType(final String searchRecord, final Integer registerTypeId,
-                                         final Integer firstResult, final Integer maxResults, final Boolean originator) {
+                                         final Integer firstResult, final Integer maxResults, Boolean originator) {
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<ParParty> query = builder.createQuery(ParParty.class);
@@ -49,8 +53,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
     }
 
     @Override
-    public long findPartyByTextAndTypeCount(final String searchRecord, final Integer registerTypeId,
-                                                    final Boolean originator) {
+    public long findPartyByTextAndTypeCount(final String searchRecord, final Integer registerTypeId, Boolean originator) {
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Long> query = builder.createQuery(Long.class);
@@ -74,15 +77,14 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
      * @return                  výsledné podmínky pro dotaz
      */
     private Predicate preparefindRegRecordByTextAndType(final String searchRecord, final Integer partyTypeId,
-                        final Root<ParParty> party, final CriteriaBuilder builder, final Boolean originator) {
+                        final Root<ParParty> party, final CriteriaBuilder builder, Boolean originator) {
 
         final String searchString = (searchRecord != null ? searchRecord.toLowerCase() : null);
 
         Join<Object, Object> record = party.join(ParParty.RECORD, JoinType.LEFT);
         Join<Object, Object> variantRecord = record.join(RegRecord.VARIANT_RECORD_LIST, JoinType.LEFT);
 
-        Join<Object, Object> partySubtype = party.join(ParParty.PARTY_SUBTYPE);
-        Join<Object, Object> partyType = partySubtype.join(ParPartySubtype.PARTY_TYPE);
+        Join<Object, Object> partyType = party.join(ParParty.PARTY_TYPE);
 
         String searchValue = "%" + searchString + "%";
 
@@ -97,11 +99,18 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
         }
 
         if (originator != null) {
-            condition = builder.and(
+            if (originator) {
+                condition = builder.and(
                     condition,
-                    builder.equal(partySubtype.get(ParPartySubtype.ORIGINATOR), originator)
-            );
-        }
+                    builder.isNotNull(partyType.get(ParPartyType.PARTY_TYPE_ID))
+                );
+            } else {
+                condition = builder.and(
+                    condition,
+                    builder.isNull(partyType.get(ParPartyType.PARTY_TYPE_ID))
+                );
+            }
+        } 
 
         if (partyTypeId != null) {
             condition = builder.and(
@@ -111,5 +120,11 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
         }
 
         return condition;
+    }
+
+    @Override
+    @Transactional
+    public void unsetAllPreferredName() {
+        entityManager.createQuery("update par_party set " + ParParty.PARTY_PREFERRED_NAME + " = null").executeUpdate();
     }
 }

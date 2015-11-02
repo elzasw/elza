@@ -1,12 +1,13 @@
 package cz.tacr.elza.controller;
 
 import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartySubtype;
+import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParPartyTypeExt;
 import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.repository.DataPartyRefRepository;
+import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.PartySubtypeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import org.springframework.beans.BeanUtils;
@@ -41,32 +42,22 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
     @Autowired
     private RegRecordRepository recordRepository;
     @Autowired
-    private PartySubtypeRepository partySubtypeRepository;
-    @Autowired
     private PartyTypeRepository partyTypeRepository;
+    @Autowired
+    private PartyNameRepository partyNameRepository;
+    @Autowired
+    private DataPartyRefRepository dataPartyRefRepository;
 
 
     @RequestMapping(value = "/getPartyTypes", method = RequestMethod.GET)
     @Override
     public List<ParPartyTypeExt> getPartyTypes() {
         List<ParPartyType> all = partyTypeRepository.findAll();
-        List<ParPartySubtype> allSubtype = partySubtypeRepository.findAll();
-        Map<ParPartyType, List<ParPartySubtype>> map = new HashMap<>();
-
-        all.forEach((partyType) -> {
-            map.put(partyType, new ArrayList<>());
-        });
-
-        allSubtype.forEach((partySubtype) -> {
-            List<ParPartySubtype> list = map.get(partySubtype.getPartyType());
-            list.add(partySubtype);
-        });
 
         List<ParPartyTypeExt> result = new ArrayList<>();
-        map.forEach((partyType, subtypes) -> {
+        all.forEach((partyType) -> {
             ParPartyTypeExt partyTypeExt = new ParPartyTypeExt();
             BeanUtils.copyProperties(partyType, partyTypeExt);
-            partyTypeExt.setPartySubTypeList(subtypes);
             result.add(partyTypeExt);
         });
 
@@ -75,22 +66,45 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
 
     @Transactional
     private void updateParty(final ParParty source, final ParParty target) {
-        Assert.notNull(source.getPartySubtype(), "Není vyplněné partySubtype");
+        Assert.notNull(source.getPartyType(), "Není vyplněné partyType");
         Assert.notNull(source.getRecord(), "Není vyplněné record");
         Integer recordId = source.getRecord().getRecordId();
-        Integer partySubtypeId = source.getPartySubtype().getPartySubtypeId();
-        Assert.notNull(partySubtypeId, "Není vyplněné partySubtypeId");
+        Integer partyTypeId = source.getPartyType().getPartyTypeId();
+        ParPartyName preferredName = source.getPreferredName();
+        
+        Assert.notNull(partyTypeId, "Není vyplněné partyTypeId");
         Assert.notNull(recordId, "Není vyplněné recordId");
 
-        final ParPartySubtype partySubtype =
-                partySubtypeRepository.findOne(partySubtypeId);
+        final ParPartyType partyType =
+                partyTypeRepository.findOne(partyTypeId);
         final RegRecord record = recordRepository.findOne(recordId);
-        Assert.notNull(partySubtype,
-                "Nebyla nalezena ParPartySubtype s id " + partySubtypeId);
+
+        ParPartyName newPreferredName = null;
+        if (preferredName != null) {
+            Integer preferredNameId = preferredName.getPartyNameId();
+            if (preferredNameId != null) {
+                preferredName = partyNameRepository.findOne(preferredNameId);
+                Assert.notNull(preferredName, "Nebylo nalezeno preferredName s id " + preferredNameId);
+            } else {
+                newPreferredName = preferredName;
+                partyNameRepository.save(preferredName);
+            }
+        } else {
+            throw new IllegalArgumentException("Není vyplněné  preferredName.");
+        }
+
+        Assert.notNull(partyType,
+                "Nebyla nalezena ParPartyType s id " + partyTypeId);
         Assert.notNull(record, "Nebyla nalezena RegRecord s id " + recordId);
 
-        target.setPartySubtype(partySubtype);
+        target.setPartyType(partyType);
+        target.setPreferredName(preferredName);
         target.setRecord(record);
+        partyRepository.save(target);
+        if (newPreferredName != null) {
+            newPreferredName.setParty(target);
+            partyNameRepository.save(newPreferredName);
+        }
     }
 
     @RequestMapping(value = "/insertParty", method = RequestMethod.PUT)
@@ -103,6 +117,9 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
                 variantRecord.setRegRecord(null);
             });
         }
+        if (newParty.getPreferredName() != null) {
+            newParty.getPreferredName().setParty(null);
+        }
         return newParty;
     }
 
@@ -110,7 +127,6 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
     private ParParty insertPartyInternal(final ParParty party) {
         ParParty newParty = new ParParty();
         updateParty(party, newParty);
-        partyRepository.save(newParty);
         return newParty;
     }
 
@@ -123,6 +139,9 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
                 variantRecord.setRegRecord(null);
             });
         }
+        if (party.getPreferredName() != null) {
+            party.setPreferredName(null);
+        }
 
         return party;
     }
@@ -134,7 +153,6 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
         partyRepository.findOne(partyId);
         Assert.notNull(party, "Nebyla nalezena ParParty s id " + partyId);
         updateParty(party, party);
-        partyRepository.save(party);
         return party;
     }
 
@@ -143,12 +161,26 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
     @Transactional
     @Override
     public void deleteParty(@RequestParam("partyId") final Integer partyId) {
+        Assert.notNull(partyId);
         ParParty party = partyRepository.findOne(partyId);
         if (party == null) {
             return;
         }
-        Assert.notNull(partyId);
+
+        checkPartyUsage(party);
+        ParPartyName partyName = party.getPreferredName();
+        partyName.setParty(null);
+        partyNameRepository.save(partyName);
         partyRepository.delete(partyId);
+        partyNameRepository.delete(partyName);
+    }
+
+    private void checkPartyUsage(ParParty party) {
+        // vazby ( arr_node_register, ArrDataRecordRef, ArrDataPartyRef),
+        Long pocet = dataPartyRefRepository.getCountByParty(party.getPartyId());
+        if (pocet > 0) {
+            throw new IllegalStateException("Nalezeno použití party v tabulce ArrDataPartyRef.");
+        }
     }
 
     @RequestMapping(value = "/findParty", method = RequestMethod.GET)
@@ -165,6 +197,9 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
                 party.getRecord().getVariantRecordList().forEach((variantRecord) -> {
                     variantRecord.setRegRecord(null);
                 });
+            }
+            if (party.getPreferredName() != null) {
+                party.setPreferredName(null);
             }
         });
         return resultList;
@@ -189,6 +224,9 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
             party.getRecord().getVariantRecordList().forEach((variantRecord) -> {
                 variantRecord.setRegRecord(null);
             });
+        }
+        if (party.getPreferredName() != null) {
+            party.setPreferredName(null);
         }
 
         return party;

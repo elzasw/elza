@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public interface ParPartyName<AB extends ParParty> extends Versionable, Serializable {
+public interface ParPartyName<AB extends ParParty> extends Serializable {
 
     /**
      * Vlastní ID.
@@ -62,13 +62,13 @@ public interface ParPartyName<AB extends ParParty> extends Versionable, Serializ
      * Poznámka - využije se v případě nutnosti doplnit informaci uvedenou v prvcích.
      * @return poznámka - využije se v případě nutnosti doplnit informaci uvedenou v prvcích
      */
-    String getAnotation();
+    String getAnnotation();
 
     /**
      * Poznámka - využije se v případě nutnosti doplnit informaci uvedenou v prvcích.
      * @param anotation poznámka - využije se v případě nutnosti doplnit informaci uvedenou v prvcích
      */
-    void setAnotation(String anotation);
+    void setAnnotation(String anotation);
 
     /**
      * Titul před jménem.

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <!-- Verze 1.7 - přidání vazební tabulky rul_desc_item_spec_register -->
+    <changeSet id="8" author="vavrejn">
+        <renameColumn
+                columnDataType="int"
+                newColumnName="party_name_id"
+                oldColumnName="abstract_party_name_id"
+                tableName="par_party_name"/>
+        <dropNotNullConstraint
+            columnDataType="int"
+            columnName="party_id"
+            tableName="par_party_name"/>
+
+        <addColumn tableName="reg_register_type">
+            <column name="parent_register_type_id" type="int">
+                <constraints nullable="true"/>
+            </column>
+            <column name="hierarchical" type="boolean">
+                <constraints nullable="true"/>
+            </column>
+            <column name="add_record" type="boolean">
+                <constraints nullable="true"/>
+            </column>
+            <column name="party_type_id" type="int">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint
+            constraintName="fk_regRegisterType_parPartyType"
+            baseTableName="reg_register_type" baseColumnNames="party_type_id"
+            referencedTableName="par_party_type"
+            referencedColumnNames="party_type_id" onDelete="NO ACTION" />
+        <addForeignKeyConstraint
+            constraintName="fk_regRegisterType_regRegisterType"
+            baseTableName="reg_register_type" baseColumnNames="parent_register_type_id"
+            referencedTableName="reg_register_type"
+            referencedColumnNames="register_type_id" onDelete="NO ACTION" />
+
+        <addColumn tableName="par_party">
+            <column name="party_type_id" type="int">
+                <constraints nullable="true"/>
+            </column>
+            <column name="preferred_name_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+           <!--  prevazbeni -->
+        <sql dbms="postgresql" splitStatements="true" stripComments="true">
+            update par_party p set party_type_id = (SELECT ps.party_type_id FROM par_party_subtype ps where ps.party_subtype_id = p.party_subtype_id);
+        </sql>
+
+        <addNotNullConstraint
+            columnDataType="int"
+            columnName="party_type_id"
+            tableName="par_party"/>
+
+        <addForeignKeyConstraint
+            constraintName="fk_parParty_parPartyType"
+            baseTableName="par_party" baseColumnNames="party_type_id"
+            referencedTableName="par_party_type"
+            referencedColumnNames="party_type_id" onDelete="NO ACTION" />
+        <addForeignKeyConstraint
+            constraintName="fk_parParty_parPartyName"
+            baseTableName="par_party" baseColumnNames="preferred_name_id"
+            referencedTableName="par_party_name"
+            referencedColumnNames="party_name_id" onDelete="NO ACTION" />
+
+        <dropForeignKeyConstraint baseTableName="par_party" constraintName="fk_party_parPartySubtype"/>
+        <dropColumn columnName="party_subtype_id" tableName="par_party" />
+        <dropTable cascadeConstraints="false" tableName="par_party_subtype"/>
+
+        <sql splitStatements="true" stripComments="true">
+            delete from arr_data_party_ref;
+            delete from arr_data_record_ref;
+            delete from arr_desc_item;
+            delete from reg_variant_record;
+            delete from par_party;
+            delete from rul_desc_item_spec_register;
+            delete from reg_record;
+            delete from reg_register_type;
+        </sql>
+
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="1" /><column name="code" value="PARTY_GROUP" /><column name="name" value="Rejstřík korporativní" /><column name="hierarchical" value="false" /><column name="add_record" value="false" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="2" /><column name="code" value="REGION" /><column name="name" value="administrativně vymezená území s vlastní správou" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="1" /><column name="party_type_id" value="3" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="3" /><column name="code" value="PUBLIC_ADMINISTRATION" /><column name="name" value="orgány, organizační složky a příspěvkové organizace veřejné správy" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="1" /><column name="party_type_id" value="3" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="4" /><column name="code" value="ORGANIZATION" /><column name="name" value="sdružení organizací" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="1" /><column name="party_type_id" value="3" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="5" /><column name="code" value="ARMY" /><column name="name" value="vojenské a bezpečnostní jednotky" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="1" /><column name="party_type_id" value="3" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="6" /><column name="code" value="COMPANY" /><column name="name" value="organizace založené za účelem podnikání" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="1" /><column name="party_type_id" value="3" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="7" /><column name="code" value="POLITICAL_PARTY" /><column name="name" value="politické organizace" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="1" /><column name="party_type_id" value="3" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="8" /><column name="code" value="CHURCH" /><column name="name" value="náboženské organizace a instituce" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="1" /><column name="party_type_id" value="3" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="9" /><column name="code" value="HEALTH_AND_EDU" /><column name="name" value="kulturní, výchovné, výzkumné a zdravotnické organizace a instituce" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="1" /><column name="party_type_id" value="3" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="10" /><column name="code" value="CHARITY" /><column name="name" value="nadace a nadační fondy" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="1" /><column name="party_type_id" value="3" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="11" /><column name="code" value="GUILD" /><column name="name" value="profesní a zájmové organizace" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="1" /><column name="party_type_id" value="3" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="12" /><column name="code" value="CLUB" /><column name="name" value="spolky, společenské organizace" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="1" /><column name="party_type_id" value="3" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="13" /><column name="code" value="BRANCH" /><column name="name" value="pojmenované části korporací" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="1" /><column name="party_type_id" value="3" /></insert>
+
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="14" /><column name="code" value="PERSON" /><column name="name" value="Rejstřík osobní" /><column name="hierarchical" value="false" /><column name="add_record" value="false" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="15" /><column name="code" value="PERSON_INDIVIDUAL" /><column name="name" value="fyzická osoba" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="14" /><column name="party_type_id" value="1" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="16" /><column name="code" value="FICTIVE_INDIVIDUAL" /><column name="name" value="fiktivní fyzická osoba" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="14" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="17" /><column name="code" value="PERSON_BEING" /><column name="name" value="bytost" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="14" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="18" /><column name="code" value="PERSON_ANIMAL" /><column name="name" value="zvíře" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="14" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="19" /><column name="code" value="FAMILY" /><column name="name" value="rodina, rod" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="14" /><column name="party_type_id" value="2" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="20" /><column name="code" value="FAMILY_BRANCH" /><column name="name" value="větev rodu" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="14" /><column name="party_type_id" value="2" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="21" /><column name="code" value="FICTIVE_DYNASTY" /><column name="name" value="fiktivní rod" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="14" /></insert>
+
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="22" /><column name="code" value="GEO" /><column name="name" value="Rejstřík zeměpisný" /><column name="hierarchical" value="false" /><column name="add_record" value="false" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="23" /><column name="code" value="GET_UNIT" /><column name="name" value="administrativně či jinak lidmi vymezená území" /><column name="hierarchical" value="true" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="22" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="24" /><column name="code" value="GEO_NATURE_RES" /><column name="name" value="administrativně vymezené části přírody" /><column name="hierarchical" value="true" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="22" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="25" /><column name="code" value="GEO_ADMIN_UNIT" /><column name="name" value="vymezené obvody a správní celky" /><column name="hierarchical" value="true" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="22" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="26" /><column name="code" value="GEO_SEA_FORMATION" /><column name="name" value="geomorfologické útvary na dně moře" /><column name="hierarchical" value="true" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="22" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="27" /><column name="code" value="GEO_FORMATION" /><column name="name" value="geomorfologické útvary na zemském povrchu" /><column name="hierarchical" value="true" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="22" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="28" /><column name="code" value="GEO_WATERS" /><column name="name" value="vodstvo a vodní plocha, vodní tok" /><column name="hierarchical" value="true" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="22" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="29" /><column name="code" value="GEO_SHAPES" /><column name="name" value="pojmenované útvary" /><column name="hierarchical" value="true" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="22" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="30" /><column name="code" value="GEO_CLIMATIC_PHEN" /><column name="name" value="pojmenované trvalé klimatické jevy" /><column name="hierarchical" value="true" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="22" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="31" /><column name="code" value="GEO_SPACE" /><column name="name" value="Vesmír a jeho části" /><column name="hierarchical" value="true" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="22" /></insert>
+
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="32" /><column name="code" value="EVENT" /><column name="name" value="Rejstřík událostí" /><column name="hierarchical" value="false" /><column name="add_record" value="false" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="33" /><column name="code" value="EVENT_EVENT" /><column name="name" value="organizované akce a události" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="32" /><column name="party_type_id" value="2" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="34" /><column name="code" value="EVENT_MILITARY" /><column name="name" value="ozbrojené střety (bitvy, války, obléhání…)" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="32" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="35" /><column name="code" value="EVENT_TRADITION" /><column name="name" value="lidové zvyky, významné dny a svátky" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="32" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="36" /><column name="code" value="EVENT_NATURE" /><column name="name" value="dočasné přírodní jevy" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="32" /></insert>
+
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="37" /><column name="code" value="ARTWORK" /><column name="name" value="Rejstřík děl" /><column name="hierarchical" value="false" /><column name="add_record" value="false" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="38" /><column name="code" value="ARTWORK_ARTWORK" /><column name="name" value="autorská a umělecká díla" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="37" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="39" /><column name="code" value="ARTWORK_CHARTER" /><column name="name" value="všeobecně známé dokumenty, smlouvy, zákony, předpisy, normy" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="37" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="40" /><column name="code" value="ARTWORK_AWARD" /><column name="name" value="vyznamenání, ceny, soutěžní trofeje" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="37" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="41" /><column name="code" value="ARTWORK_PROD" /><column name="name" value="výrobky a jejich typová označení, obchodní značky, odrůdy, plemena vytvořená člověkem" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="37" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="42" /><column name="code" value="ARTWORK_" /><column name="name" value="názvy společenských, dětských her" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="37" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="43" /><column name="code" value="ARTWORK_PROJ" /><column name="name" value="programy, projekty, granty" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="37" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="44" /><column name="code" value="ARTWORK_CONSTR" /><column name="name" value="stavby, trasy, zásahy do přírodních útvarů s vlastním jménem nebo jinou identifikací" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="37" /></insert>
+
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="45" /><column name="code" value="TERM" /><column name="name" value="Rejstřík věcný" /><column name="hierarchical" value="false" /><column name="add_record" value="false" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="46" /><column name="code" value="TERM_GENERAL" /><column name="name" value="nepojmenované objekty a jejich fyzické části" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="45" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="47" /><column name="code" value="TERM_PERSON" /><column name="name" value="kategorie a skupiny nepojmenovaných osob" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="45" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="48" /><column name="code" value="TERM_CORP" /><column name="name" value="kategorie a skupiny nepojmenovaných korporací" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="45" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="49" /><column name="code" value="TERM_MATER" /><column name="name" value="materiály a techniky" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="45" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="50" /><column name="code" value="TERM_GENRE" /><column name="name" value="formy a žánry" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="45" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="51" /><column name="code" value="TERM_NOMENC" /><column name="name" value="systematická nomenklatura" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="45" /></insert>
+        <insert tableName="reg_register_type" ><column name="register_type_id" value="52" /><column name="code" value="TERM_ABSTRACT" /><column name="name" value="abstraktní entity" /><column name="hierarchical" value="false" /><column name="add_record" value="true" /><column name="parent_register_type_id" value="45" /></insert>
+
+        <update tableName="db_hibernate_sequences">
+            <column name="next_val" value="53"/>
+            <where>sequence_name = 'reg_register_type|register_type_id'</where>
+        </update>
+    </changeSet>
+</databaseChangeLog>

@@ -28,6 +28,10 @@ $ax-main-focus: $color-app;
     @import "elza-common";
     @import "elza-table";
 
+    .v-treetable [class*="cell-content"] {
+        padding-left: 2px;
+    }
+
     .history-window-detail {
         box-shadow: 0 0 10px 1px $color-app-alt;
         background-color: white;
