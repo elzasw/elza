@@ -83,6 +83,10 @@ public class NodeRegisterLink extends CssLayout implements Components {
         return node;
     }
 
+    public Integer getVersionId() {
+        return versionId;
+    }
+
     public NodeRegisterLinkValue newRegisterLinkValue(final ArrNodeRegister nodeRegister) {
 
         Label sortIcon = new Label();

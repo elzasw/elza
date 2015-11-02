@@ -2390,10 +2390,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     private void saveNodeRegisterLinks(final List<ArrNodeRegister> arrNodeRegisterList) {
         ArrChange change = createChange();
         for (final ArrNodeRegister nodeRegister : arrNodeRegisterList) {
-            if (nodeRegister.getDeleteChange() != null) {
-                throw new IllegalStateException("Nelze vytvářet či modifikovat změnu," +
-                        " která již byla smazána (má delete change).");
-            }
+
+            validateNodeRegisterLink(nodeRegister);
 
             //TODO kuzel tohle jak ?
 //            ArrNode node = nodeRegister.getNode();
@@ -2402,6 +2400,25 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
             nodeRegister.setCreateChange(change);
             nodeRegisterRepository.save(nodeRegister);
+        }
+    }
+
+    /**
+     * Validuje entitu před uložením.
+     *
+     * @param nodeRegister  entita
+     */
+    private void validateNodeRegisterLink(final ArrNodeRegister nodeRegister) {
+        if (nodeRegister.getDeleteChange() != null) {
+            throw new IllegalStateException("Nelze vytvářet či modifikovat změnu," +
+                    " která již byla smazána (má delete change).");
+        }
+
+        if (nodeRegister.getNode() == null) {
+            throw new IllegalArgumentException("Není vyplněn uzel.");
+        }
+        if (nodeRegister.getRecord() == null) {
+            throw new IllegalArgumentException("Není vyplněno rejstříkové heslo.");
         }
     }
 

@@ -114,24 +114,33 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
     }
 
     private void saveNodeRegisterLinkWithVersion(final NodeRegisterLink nodeRegisterLink) {
-        List<ArrNodeRegister> links = nodeRegisterLink.getKeys();
-        List<ArrNodeRegister> linksToDelete = nodeRegisterLink.getLinksToDelete();
+        try {
 
-        if (CollectionUtils.isNotEmpty(links)) {
-            arrangementManager.addArrNodeRegisterLinks(links);
-        }
+            List<ArrNodeRegister> links = nodeRegisterLink.getKeys();
+            List<ArrNodeRegister> linksToDelete = nodeRegisterLink.getLinksToDelete();
 
-        if (CollectionUtils.isNotEmpty(linksToDelete)) {
-            arrangementManager.delArrNodeRegisterLinks(linksToDelete);
-        }
+            if (CollectionUtils.isNotEmpty(links)) {
+                arrangementManager.addArrNodeRegisterLinks(links);
+            }
 
-        // obnova atributu vpravo
-        ArrLevelExt level = arrangementManager.getLevel(attribut.getNode().getNodeId(), attribut.getVersionId(), null);
-        showLevelDetail(level, level.getDescItemList(), attribut.getVersionId(), attributeEditCallback);
-        showNodeRegisterLink(attribut.getVersionId(), level.getNode());
+            if (CollectionUtils.isNotEmpty(linksToDelete)) {
+                arrangementManager.delArrNodeRegisterLinks(linksToDelete);
+            }
 
-        if (attributWindow != null) {
-            attributWindow.close();
+            // obnova atributu vpravo
+            ArrLevelExt level = arrangementManager.getLevel(nodeRegisterLink.getNode().getNodeId(),
+                                                            nodeRegisterLink.getVersionId(), null);
+            showLevelDetail(level, level.getDescItemList(), nodeRegisterLink.getVersionId(), attributeEditCallback);
+            showNodeRegisterLink(nodeRegisterLink.getVersionId(), level.getNode());
+
+            if (attributWindow != null) {
+                attributWindow.close();
+            }
+
+        } catch (final ConcurrentUpdateException e) {
+            throw e;
+        } catch (final RuntimeException e) {
+            ElzaNotifications.showError(e.getMessage());
         }
     }
 
@@ -247,7 +256,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         }
 
         if (CollectionUtils.isEmpty(records)) {
-            grid.addRow("", captionLayout);
+            grid.addRow(captionLayout, newLabel(""));
         }
 
         boolean first = true;
