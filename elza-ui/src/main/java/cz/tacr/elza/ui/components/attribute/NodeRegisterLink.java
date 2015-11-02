@@ -105,7 +105,9 @@ public class NodeRegisterLink extends CssLayout implements Components {
 
     private void deleteAtributValue(final ArrNodeRegister nodeRegister) {
         childs.removeComponent(nodeRegister);
-        toDelete.add(nodeRegister);
+        if (nodeRegister.getNodeRegisterId() != null) {
+            toDelete.add(nodeRegister);
+        }
     }
 
 }
