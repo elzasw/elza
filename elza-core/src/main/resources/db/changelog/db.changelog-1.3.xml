@@ -1,61 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<databaseChangeLog
-        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-    <!--Verze 1.3 - vazba node na heslo -->
-    <changeSet id="4" author="kuzel" >
+    <!-- Verze 1.3 - přidání vazební tabulky rul_desc_item_spec_register -->
+    <changeSet id="4" author="vavrejn">
 
-        <createTable tableName="arr_node_register">
-            <column name="node_register_id" type="int">
-                <constraints primaryKey="true" nullable="false" />
+        <createTable tableName="rul_desc_item_spec_register">
+            <column name="desc_item_spec_register_id" type="int">
+                <constraints primaryKey="true" />
             </column>
-
-            <column name="record_id" type="int">
+            <column name="register_type_id" type="int">
                 <constraints nullable="false" />
             </column>
-
-            <column name="node_id" type="int">
+            <column name="desc_item_spec_id" type="int">
                 <constraints nullable="false" />
             </column>
-
-            <column name="create_change_id" type="int">
-                <constraints nullable="false" />
-            </column>
-
-            <column name="delete_change_id" type="int"/>
-
         </createTable>
 
-        <addForeignKeyConstraint constraintName="fk_nodeRegister_record"
-                                 baseTableName="arr_node_register"
-                                 baseColumnNames="record_id"
-                                 referencedTableName="reg_record"
-                                 referencedColumnNames="record_id"
-                                 onDelete="NO ACTION"/>
+        <addForeignKeyConstraint
+            constraintName="fk_rulDescItemSpecRegister_registerType"
+            baseTableName="rul_desc_item_spec_register" baseColumnNames="register_type_id"
+            referencedTableName="reg_register_type"
+            referencedColumnNames="register_type_id" onDelete="NO ACTION" />
 
-        <addForeignKeyConstraint constraintName="fk_nodeRegister_node"
-                                 baseTableName="arr_node_register"
-                                 baseColumnNames="node_id"
-                                 referencedTableName="arr_node"
-                                 referencedColumnNames="node_id"
-                                 onDelete="NO ACTION"/>
+        <addForeignKeyConstraint
+            constraintName="fk_rulDescItemSpecRegister_descItemSpec"
+            baseTableName="rul_desc_item_spec_register" baseColumnNames="desc_item_spec_id"
+            referencedTableName="rul_desc_item_spec"
+            referencedColumnNames="desc_item_spec_id" onDelete="NO ACTION" />
 
-        <addForeignKeyConstraint constraintName="fk_nodeRegister_crChange"
-                                 baseTableName="arr_node_register"
-                                 baseColumnNames="create_change_id"
-                                 referencedTableName="arr_change"
-                                 referencedColumnNames="change_id"
-                                 onDelete="NO ACTION"/>
+        <!-- migrace dat -->
+        <customChange class="cz.tacr.elza.dbchangelog.DbUpgrade1_3">
+        </customChange>
 
-        <addForeignKeyConstraint constraintName="fk_nodeRegister_delChange"
-                                 baseTableName="arr_node_register"
-                                 baseColumnNames="delete_change_id"
-                                 referencedTableName="arr_change"
-                                 referencedColumnNames="change_id"
-                                 onDelete="NO ACTION"/>
-
+        <dropForeignKeyConstraint baseTableName="rul_desc_item_spec" constraintName="fk_itmSpec_regType"/>
+        <dropColumn columnName="register_type_id" tableName="rul_desc_item_spec" />
     </changeSet>
 
 </databaseChangeLog>

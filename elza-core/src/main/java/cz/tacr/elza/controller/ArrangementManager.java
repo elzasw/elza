@@ -19,12 +19,14 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.factory.DescItemFactory;
+import cz.tacr.elza.domain.vo.ArrCalendarTypes;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.domain.vo.ArrDescItems;
 import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
 import cz.tacr.elza.domain.vo.ArrNodeHistoryItem;
 import cz.tacr.elza.domain.vo.ArrNodeHistoryPack;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
+import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataCoordinatesRepository;
 import cz.tacr.elza.repository.DataIntegerRepository;
@@ -85,7 +87,8 @@ import java.util.Set;
 @RestController
 @RequestMapping("/api/arrangementManager")
 public class ArrangementManager implements cz.tacr.elza.api.controller.ArrangementManager<ArrFindingAid, ArrFindingAidVersion,
-    ArrDescItem, ArrDescItemSavePack, ArrLevel, ArrLevelWithExtraNode, ArrNode, ArrDescItems, ArrNodeHistoryPack> {
+    ArrDescItem, ArrDescItemSavePack, ArrLevel, ArrLevelWithExtraNode, ArrNode, ArrDescItems, ArrNodeHistoryPack,
+    ArrCalendarTypes, ArrNodeRegister> {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -166,10 +169,14 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     private RegRecordRepository regRecordRepository;
 
     @Autowired
-    private NodeRegisterRepository nodeRegisterRepository;
+    private CalendarTypeRepository calendarTypeRepository;
 
     @Autowired
     private DescItemFactory descItemFactory;
+
+    @Autowired
+    private NodeRegisterRepository nodeRegisterRepository;
+
 
     /**
      * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.
@@ -1475,6 +1482,59 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     }
 
     /**
+     * Vytvoření atributu - pro použití jádra.
+     *
+     * @param createDescItem    vytvářená položka
+     * @param version           verze archivní pomůcky
+     * @param change            změna
+     * @param saveNode          ukládat uzel? (optimictické zámky)
+     * @return                  vytvořená položka
+     */
+    public ArrDescItem createDescriptionItem(ArrDescItem createDescItem,
+                                             ArrFindingAidVersion version,
+                                             ArrChange change,
+                                             boolean saveNode) {
+        Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems = new HashMap<>();
+
+        ArrDescItem descItemRet = createDescriptionItemRaw(createDescItem, version.getFindingAidVersionId(), change, saveNode, mapDescItems, getNextDescItemObjectId());
+        saveChanges(mapDescItems, null, true);
+        return descItemRet;
+    }
+
+    /**
+     * Úprava atributu - pro použití jádra.
+     *
+     * @param descItem          upravovaná položka
+     * @param version           verze archivní pomůcky
+     * @param createNewVersion  vytvořit novou verzi?
+     * @param change            změna
+     * @return                  upravená položka
+     */
+    public ArrDescItem updateDescriptionItem(ArrDescItem descItem, ArrFindingAidVersion version, Boolean createNewVersion, ArrChange change) {
+        Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems = new HashMap<>();
+        ArrDescItem descItemRet = updateDescriptionItemRaw(descItem, version.getFindingAidVersionId(), change, true, createNewVersion, mapDescItems);
+        List<ArrDescItem> descItems = new ArrayList<>();
+        descItems.add(descItemRet);
+        saveChanges(mapDescItems, descItems, createNewVersion);
+        return descItems.get(0);
+    }
+
+    /**
+     * Smazání atrubutu - pro použití jádra.
+     *
+     * @param descItem      mazaná položka
+     * @param version       verze archivní pomůcky
+     * @param change        změna
+     * @return              smazaná položka
+     */
+    public ArrDescItem deleteDescriptionItem(ArrDescItem descItem, ArrFindingAidVersion version, ArrChange change) {
+        Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems = new HashMap<>();
+        ArrDescItem descItemRet = deleteDescriptionItemRaw(descItem, version.getFindingAidVersionId(), change, true, mapDescItems);
+        saveChanges(mapDescItems, null, true);
+        return descItemRet;
+    }
+
+    /**
      * Vytvoří hodnotu atributu archivního popisu.
      *
      * @param createDescItem    vytvářená položka
@@ -1969,7 +2029,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      *
      * @return Identifikátor objektu
      */
-    private Integer getNextDescItemObjectId() {
+    public Integer getNextDescItemObjectId() {
         Integer maxDescItemObjectId = descItemRepository.findMaxDescItemObjectId();
         if (maxDescItemObjectId == null) {
             maxDescItemObjectId = 0;
@@ -2119,24 +2179,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return nodeHistoryPack;
     }
 
-    @RequestMapping(value = "/findArrNodeRegisterLinks", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<ArrNodeRegister> findArrNodeRegisterLinks(@RequestParam(value = "versionId") Integer versionId,
-                                                   @RequestParam(value = "nodeId") Integer nodeId) {
-        Assert.notNull(versionId);
-        Assert.notNull(nodeId);
-
-        ArrNode node = nodeRepository.getOne(nodeId);
-
-        ArrFindingAidVersion version = getFaVersionById(versionId);
-        boolean open = version.getLockChange() == null;
-
-        if (open) {
-            return nodeRegisterRepository.findByNodeAndDeleteChangeIsNull(node);
-        } else {
-            return nodeRegisterRepository.findClosedVersion(node, version.getLockChange().getChangeId())
-        }
-    }
-
     /**
      * Rozřazení levelů podle verze archivní pomůcky a změn.
      *
@@ -2278,6 +2320,104 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             changeListMap.put(change, descItems);
         } else {
             descItems.add(descItem);
+        }
+    }
+
+    @Override
+    @RequestMapping(value = "/getCalendarTypes", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ArrCalendarTypes getCalendarTypes() {
+        ArrCalendarTypes calendarTypes = new ArrCalendarTypes();
+        calendarTypes.setCalendarTypes(calendarTypeRepository.findAll());
+        return calendarTypes;
+    }
+
+    @Override
+    @RequestMapping(value = "/findNodeRegisterLinks", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<ArrNodeRegister> findNodeRegisterLinks(final @RequestParam(value = "versionId") Integer versionId,
+                                                       final @RequestParam(value = "nodeId") Integer nodeId) {
+        Assert.notNull(versionId);
+        Assert.notNull(nodeId);
+
+        ArrNode node = nodeRepository.getOne(nodeId);
+
+        ArrFindingAidVersion version = getFaVersionById(versionId);
+        boolean open = version.getLockChange() == null;
+
+        if (open) {
+            return nodeRegisterRepository.findByNodeAndDeleteChangeIsNull(node);
+        } else {
+            return nodeRegisterRepository.findClosedVersion(node, version.getLockChange().getChangeId());
+        }
+    }
+
+    @Override
+    @Transactional
+    @RequestMapping(value = "/modifyArrNodeRegisterLinks", method = RequestMethod.PUT)
+    public void modifyArrNodeRegisterLinks(final @RequestBody List<ArrNodeRegister> saveNodeRegisterList,
+                           final @RequestParam("deleteNodeRegisterList") List<ArrNodeRegister> deleteNodeRegisterList) {
+
+        Assert.notNull(saveNodeRegisterList);
+        Assert.notNull(deleteNodeRegisterList);
+
+        saveNodeRegisterLinks(saveNodeRegisterList);
+        delArrNodeRegisterLinks(deleteNodeRegisterList);
+    }
+
+    private void delArrNodeRegisterLinks(final @RequestBody List<ArrNodeRegister> arrNodeRegisterList) {
+        Assert.notNull(arrNodeRegisterList);
+
+        ArrChange change = createChange();
+        for (final ArrNodeRegister nodeRegister : arrNodeRegisterList) {
+            if (nodeRegister.getDeleteChange() != null) {
+                throw new IllegalStateException("Nelze vytvářet či modifikovat změnu," +
+                        " která již byla smazána (má delete change).");
+            }
+
+            ArrNode node = nodeRegister.getNode();
+            node.setLastUpdate(LocalDateTime.now());  // change kvůli locking
+            nodeRepository.save(node);
+
+            nodeRegister.setDeleteChange(change);
+            nodeRegisterRepository.save(nodeRegister);
+        }
+    }
+
+    /**
+     * Create či update vazby heslo na node.
+     *
+     * @param arrNodeRegisterList   list vazeb ke create či update
+     */
+    private void saveNodeRegisterLinks(final List<ArrNodeRegister> arrNodeRegisterList) {
+        ArrChange change = createChange();
+        for (final ArrNodeRegister nodeRegister : arrNodeRegisterList) {
+
+            validateNodeRegisterLink(nodeRegister);
+
+            ArrNode node = nodeRegister.getNode();
+            node.setLastUpdate(LocalDateTime.now());  // change kvůli locking
+            nodeRepository.save(node);
+
+            nodeRegister.setCreateChange(change);
+            nodeRegisterRepository.save(nodeRegister);
+        }
+    }
+
+    /**
+     * Validuje entitu před uložením.
+     *
+     * @param nodeRegister  entita
+     */
+    private void validateNodeRegisterLink(final ArrNodeRegister nodeRegister) {
+        if (nodeRegister.getDeleteChange() != null) {
+            throw new IllegalStateException("Nelze vytvářet či modifikovat změnu," +
+                    " která již byla smazána (má delete change).");
+        }
+
+        if (nodeRegister.getNode() == null) {
+            throw new IllegalArgumentException("Není vyplněn uzel.");
+        }
+        if (nodeRegister.getRecord() == null) {
+            throw new IllegalArgumentException("Není vyplněno rejstříkové heslo.");
         }
     }
 

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <!--Verze 1.9 - vazba node na heslo -->
+    <changeSet id="10" author="kuzel" >
+
+        <createTable tableName="arr_node_register">
+            <column name="node_register_id" type="int">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+
+            <column name="record_id" type="int">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="node_id" type="int">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="create_change_id" type="int">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="delete_change_id" type="int"/>
+
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="fk_nodeRegister_record"
+                                 baseTableName="arr_node_register"
+                                 baseColumnNames="record_id"
+                                 referencedTableName="reg_record"
+                                 referencedColumnNames="record_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_nodeRegister_node"
+                                 baseTableName="arr_node_register"
+                                 baseColumnNames="node_id"
+                                 referencedTableName="arr_node"
+                                 referencedColumnNames="node_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_nodeRegister_crChange"
+                                 baseTableName="arr_node_register"
+                                 baseColumnNames="create_change_id"
+                                 referencedTableName="arr_change"
+                                 referencedColumnNames="change_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_nodeRegister_delChange"
+                                 baseTableName="arr_node_register"
+                                 baseColumnNames="delete_change_id"
+                                 referencedTableName="arr_change"
+                                 referencedColumnNames="change_id"
+                                 onDelete="NO ACTION"/>
+
+    </changeSet>
+
+</databaseChangeLog>

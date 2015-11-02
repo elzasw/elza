@@ -1,19 +1,20 @@
 package cz.tacr.elza.api.controller;
 
-import java.util.List;
-
 import cz.tacr.elza.api.ArrDescItem;
 import cz.tacr.elza.api.ArrFindingAid;
 import cz.tacr.elza.api.ArrFindingAidVersion;
 import cz.tacr.elza.api.ArrLevel;
 import cz.tacr.elza.api.ArrLevelExt;
 import cz.tacr.elza.api.ArrNode;
+import cz.tacr.elza.api.ArrNodeRegister;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.ArrCalendarTypes;
 import cz.tacr.elza.api.vo.ArrDescItemSavePack;
 import cz.tacr.elza.api.vo.ArrDescItems;
 import cz.tacr.elza.api.vo.ArrLevelPack;
 import cz.tacr.elza.api.vo.ArrNodeHistoryPack;
+
+import java.util.List;
 
 
 /**
@@ -28,12 +29,14 @@ import cz.tacr.elza.api.vo.ArrNodeHistoryPack;
  * @param <FLP> {@link ArrLevelPack} zapouzdření hierarchického popisu (úrovně), cílové úrovně pro operace, kořenového uzlu,
  *             dodatečného uzlu (zámek pro úroveň) a id příslušné archivní pomůcky
  * @param <N> {@link ArrNode} uzel jako zámek pro hierarchický popis
+ * @param <ANR> {@link ArrNodeRegister} vazba uzlu na rejstříkové heslo
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 12. 8. 2015
  */
 public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFindingAidVersion, DI extends ArrDescItem,
-    DISP extends ArrDescItemSavePack, FL extends ArrLevel, FLP extends ArrLevelPack, N extends ArrNode, DIS extends ArrDescItems, NHP extends ArrNodeHistoryPack, CTL extends ArrCalendarTypes> {
+    DISP extends ArrDescItemSavePack, FL extends ArrLevel, FLP extends ArrLevelPack, N extends ArrNode,
+    DIS extends ArrDescItems, NHP extends ArrNodeHistoryPack, CTL extends ArrCalendarTypes, ANR extends ArrNodeRegister> {
 
     /** Formát popisu atributu - dlouhá verze. */
     String FORMAT_ATTRIBUTE_FULL = "FULL";
@@ -266,4 +269,23 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @return  Seznam typů kalendářů
      */
     CTL getCalendarTypes();
+
+    /**
+     * Vrátí vazby mezi uzlem a rejstříkovými hesly za danou verzi.
+     *
+     * @param versionId     id verze
+     * @param nodeId        id uzlu
+     * @return              seznam vazeb, může být prázdný
+     */
+    List<ANR> findNodeRegisterLinks(Integer versionId, Integer nodeId);
+
+    /**
+     * Uloží vazby mezi uzlem a hesly rejstříku. Provede založení změny.
+     *
+     * @param saveNodeRegisterList      vazby k vytvoření či update - bez zakládací verze,
+     * @param deleteNodeRegisterList    vazby ke smazání - bez zakládací verze
+     */
+    void modifyArrNodeRegisterLinks(List<ANR> saveNodeRegisterList,
+                                    List<ANR> deleteNodeRegisterList);
+
 }
