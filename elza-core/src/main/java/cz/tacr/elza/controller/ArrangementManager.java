@@ -12,6 +12,8 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulDescItemSpec;
@@ -46,6 +48,7 @@ import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
@@ -88,7 +91,7 @@ import java.util.Set;
 @RequestMapping("/api/arrangementManager")
 public class ArrangementManager implements cz.tacr.elza.api.controller.ArrangementManager<ArrFindingAid, ArrFindingAidVersion,
     ArrDescItem, ArrDescItemSavePack, ArrLevel, ArrLevelWithExtraNode, ArrNode, ArrDescItems, ArrNodeHistoryPack,
-    ArrCalendarTypes, ArrNodeRegister> {
+    ArrCalendarTypes, ArrNodeRegister, ArrPacket> {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -176,6 +179,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Autowired
     private NodeRegisterRepository nodeRegisterRepository;
+
+    @Autowired
+    private PacketRepository packetRepository;
 
 
     /**
@@ -2421,4 +2427,27 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
     }
 
+    @RequestMapping(value = "/findPacket", method = RequestMethod.GET)
+    @Override
+    public List<ArrPacket> findPacket(@RequestParam("search") final String search,
+                                    @RequestParam("from") final Integer from, @RequestParam("count") final Integer count,
+                                    @RequestParam(value = "packetTypeId", required = false) final Integer packetTypeId) {
+
+        List<ArrPacket> resultList = packetRepository.findAll();
+//        List<ParParty> resultList = partyRepository
+//                .findPartyByTextAndType(search, partyTypeId, from, count, originator);
+//        resultList.forEach((party) -> {
+//            if (party.getRecord() != null) {
+//                party.getRecord().getVariantRecordList().forEach((variantRecord) -> {
+//                    variantRecord.setRegRecord(null);
+//                });
+//            }
+//            if (party.getPreferredName() != null) {
+//                party.setPreferredName(null);
+//            }
+//        });
+        return resultList;
+    }
+    
+    -- vytvorit metody create a update packet
 }

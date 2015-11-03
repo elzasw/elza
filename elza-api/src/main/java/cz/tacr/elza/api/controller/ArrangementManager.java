@@ -7,6 +7,7 @@ import cz.tacr.elza.api.ArrLevel;
 import cz.tacr.elza.api.ArrLevelExt;
 import cz.tacr.elza.api.ArrNode;
 import cz.tacr.elza.api.ArrNodeRegister;
+import cz.tacr.elza.api.ArrPacket;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.ArrCalendarTypes;
 import cz.tacr.elza.api.vo.ArrDescItemSavePack;
@@ -36,7 +37,8 @@ import java.util.List;
  */
 public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFindingAidVersion, DI extends ArrDescItem,
     DISP extends ArrDescItemSavePack, FL extends ArrLevel, FLP extends ArrLevelPack, N extends ArrNode,
-    DIS extends ArrDescItems, NHP extends ArrNodeHistoryPack, CTL extends ArrCalendarTypes, ANR extends ArrNodeRegister> {
+    DIS extends ArrDescItems, NHP extends ArrNodeHistoryPack, CTL extends ArrCalendarTypes, ANR extends ArrNodeRegister,
+    AP extends ArrPacket> {
 
     /** Formát popisu atributu - dlouhá verze. */
     String FORMAT_ATTRIBUTE_FULL = "FULL";
@@ -288,4 +290,14 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
     void modifyArrNodeRegisterLinks(List<ANR> saveNodeRegisterList,
                                     List<ANR> deleteNodeRegisterList);
 
+    /**
+     * Vyhledá obal daného typu podle zadaného názvu. Vrátí seznam obalů vyhovující zadané frázi. 
+     * Výsledek je stránkovaný, je vrácen zadaný počet záznamů od from záznamu.
+     * @param search
+     * @param from
+     * @param count
+     * @param packetTypeId
+     * @return
+     */
+    List<AP> findPacket(String search, Integer from, Integer count, Integer packetTypeId);
 }

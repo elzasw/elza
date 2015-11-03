@@ -28,6 +28,7 @@ import cz.tacr.elza.domain.ArrDescItemCoordinates;
 import cz.tacr.elza.domain.ArrDescItemDecimal;
 import cz.tacr.elza.domain.ArrDescItemFormattedText;
 import cz.tacr.elza.domain.ArrDescItemInt;
+import cz.tacr.elza.domain.ArrDescItemPacketRef;
 import cz.tacr.elza.domain.ArrDescItemPartyRef;
 import cz.tacr.elza.domain.ArrDescItemRecordRef;
 import cz.tacr.elza.domain.ArrDescItemString;
@@ -146,6 +147,8 @@ public class Attribut extends CssLayout implements Components {
                 return new ArrDescItemRecordRef();
             case "DECIMAL":
                 return new ArrDescItemDecimal();
+            case "PACKET_REF":
+                return new ArrDescItemPacketRef();
             default:
                 throw new NotImplementedException("Nebyl namapován datový typ");
         }

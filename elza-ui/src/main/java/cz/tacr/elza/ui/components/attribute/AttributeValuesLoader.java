@@ -16,5 +16,7 @@ public interface AttributeValuesLoader {
 
     List<AutocompleteItem> loadRecordRefItemsFulltext(String text, RulDescItemSpec specification);
 
+    List<AutocompleteItem> loadPacketRefItemsFulltext(String text);
+
 
 }

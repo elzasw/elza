@@ -22,6 +22,7 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataDecimal;
 import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
@@ -33,12 +34,14 @@ import cz.tacr.elza.domain.ArrDescItemCoordinates;
 import cz.tacr.elza.domain.ArrDescItemDecimal;
 import cz.tacr.elza.domain.ArrDescItemFormattedText;
 import cz.tacr.elza.domain.ArrDescItemInt;
+import cz.tacr.elza.domain.ArrDescItemPacketRef;
 import cz.tacr.elza.domain.ArrDescItemPartyRef;
 import cz.tacr.elza.domain.ArrDescItemRecordRef;
 import cz.tacr.elza.domain.ArrDescItemString;
 import cz.tacr.elza.domain.ArrDescItemText;
 import cz.tacr.elza.domain.ArrDescItemUnitdate;
 import cz.tacr.elza.domain.ArrDescItemUnitid;
+import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulDataType;
@@ -46,6 +49,7 @@ import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataCoordinatesRepository;
 import cz.tacr.elza.repository.DataDecimalRepository;
 import cz.tacr.elza.repository.DataIntegerRepository;
+import cz.tacr.elza.repository.DataPacketRefRepository;
 import cz.tacr.elza.repository.DataPartyRefRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.DataRepository;
@@ -54,6 +58,7 @@ import cz.tacr.elza.repository.DataTextRepository;
 import cz.tacr.elza.repository.DataUnitdateRepository;
 import cz.tacr.elza.repository.DataUnitidRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import ma.glasnost.orika.CustomMapper;
@@ -114,7 +119,13 @@ public class DescItemFactory implements InitializingBean {
     private PartyRepository partyRepository;
 
     @Autowired
+    private PacketRepository packetRepository;
+    
+    @Autowired
     private RegRecordRepository regRecordRepository;
+
+    @Autowired
+    private DataPacketRefRepository dataPacketRefRepository;
 
     @Autowired
     private CalendarTypeRepository calendarTypeRepository;
@@ -137,6 +148,7 @@ public class DescItemFactory implements InitializingBean {
         defineMapUnitdate();
         defineMapUnitid();
         defineMapDecimal();
+        defineMapPacketRef();
 
         facade = factory.getMapperFacade();
 
@@ -260,6 +272,37 @@ public class DescItemFactory implements InitializingBean {
                 arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
                 arrDataPartyRefNew.setDescItem(arrDataPartyRef.getDescItem());
                 arrDataPartyRefNew.setPartyId(arrDataPartyRef.getPartyId());
+            }
+        }).register();
+    }
+    
+    /**
+     * Nadefinování pravidel pro převod formátu PacketRef.
+     */
+    private void defineMapPacketRef() {
+        factory.classMap(ArrDescItemPacketRef.class, ArrDataPacketRef.class).customize(new CustomMapper<ArrDescItemPacketRef, ArrDataPacketRef>() {
+
+            @Override
+            public void mapAtoB(ArrDescItemPacketRef arrDescItemPartyRef, ArrDataPacketRef arrDataPartyRef, MappingContext context) {
+                arrDataPartyRef.setDataType(arrDescItemPartyRef.getDescItemType().getDataType());
+                arrDataPartyRef.setDescItem(arrDescItemPartyRef);
+                arrDataPartyRef.setPacketId(arrDescItemPartyRef.getPacket().getPacketId());
+            }
+
+            @Override
+            public void mapBtoA(ArrDataPacketRef arrDataPartyRef, ArrDescItemPacketRef arrDescItemPartyRef, MappingContext context) {
+                ArrPacket party = packetRepository.findOne(arrDataPartyRef.getPacketId());
+                arrDescItemPartyRef.setPacket(party);
+            }
+
+        }).register();
+
+        factory.classMap(ArrDataPacketRef.class, ArrDataPacketRef.class).customize(new CustomMapper<ArrDataPacketRef, ArrDataPacketRef>() {
+            @Override
+            public void mapAtoB(ArrDataPacketRef arrDataPartyRef, ArrDataPacketRef arrDataPartyRefNew, MappingContext context) {
+                arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
+                arrDataPartyRefNew.setDescItem(arrDataPartyRef.getDescItem());
+                arrDataPartyRefNew.setPacketId(arrDataPartyRef.getPacketId());
             }
         }).register();
     }
@@ -492,6 +535,7 @@ public class DescItemFactory implements InitializingBean {
         mapRepository.put(ArrDataUnitdate.class, dataUnitdateRepository);
         mapRepository.put(ArrDataUnitid.class, dataUnitidRepository);
         mapRepository.put(ArrDataDecimal.class, dataDecimalRepository);
+        mapRepository.put(ArrDataPacketRef.class, dataPacketRefRepository);
     }
 
     /**
@@ -598,6 +642,8 @@ public class DescItemFactory implements InitializingBean {
                 data = facade.map(descItem, ArrDataUnitid.class);
             } else if (descItem instanceof ArrDescItemDecimal) {
                 data = facade.map(descItem, ArrDataDecimal.class);
+            } else if (descItem instanceof ArrDescItemPacketRef) {
+                data = facade.map(descItem, ArrDataPacketRef.class);
             } else {
                 throw new NotImplementedException("Nebyl namapován datový typ: " + descItem.getClass().getName());
             }
@@ -646,6 +692,8 @@ public class DescItemFactory implements InitializingBean {
                 return new ArrDescItemRecordRef();
             case "DECIMAL":
                 return new ArrDescItemDecimal();
+            case "PACKET_REF":
+                return new ArrDescItemPacketRef();
             default:
                 throw new NotImplementedException("Nebyl namapován datový typ");
         }

@@ -108,6 +108,11 @@ public class AttributValue extends CssLayout implements Components {
                 ((TextField) field.field()).setConverter(new StringToBigDecimalConverter());
                 field.style("long-input");
                 break;
+            case "PACKET_REF":
+                Autocomplete paketRefAutoc = createPacketRefAutocomplete();
+                form.getFieldGroup().bind(paketRefAutoc, "packet");
+                form.addComponent(paketRefAutoc);
+                  break;
             default:
                 throw new IllegalStateException("Typ '" + dataType.getCode() + "' není implementován");
         }
@@ -120,6 +125,15 @@ public class AttributValue extends CssLayout implements Components {
     private Autocomplete createPartyRefAutocomplete(){
         Autocomplete autocomplete = new Autocomplete((text)->{
             return attributeValuesLoader.loadPartyRefItemsFulltext(text);
+        });
+        initAutocomplete(autocomplete);
+
+        return autocomplete;
+    }
+
+    private Autocomplete createPacketRefAutocomplete(){
+        Autocomplete autocomplete = new Autocomplete((text)->{
+            return attributeValuesLoader.loadPacketRefItemsFulltext(text);
         });
         initAutocomplete(autocomplete);
 

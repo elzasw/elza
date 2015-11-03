@@ -20,6 +20,7 @@ import cz.tacr.elza.domain.ArrDescItemString;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
@@ -395,6 +396,18 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
                     for (final ParParty partyItem : partyList) {
                         result.add(new AutocompleteItem(partyItem, partyItem.getRecord().getRecord()));
+                    }
+
+                    return result;
+                }
+
+                @Override
+                public List<AutocompleteItem> loadPacketRefItemsFulltext(final String text) {
+                    List<ArrPacket> packetList = arrangementManager.findPacket(text, 0, 50, null);
+                    List<AutocompleteItem> result = new ArrayList<>(packetList.size());
+
+                    for (final ArrPacket packetItem : packetList) {
+                        result.add(new AutocompleteItem(packetItem, packetItem.getStorageNumber()));
                     }
 
                     return result;
