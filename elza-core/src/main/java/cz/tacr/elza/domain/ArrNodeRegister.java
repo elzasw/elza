@@ -21,10 +21,12 @@ public class ArrNodeRegister implements cz.tacr.elza.api.ArrNodeRegister<ArrNode
     @GeneratedValue
     private Integer nodeRegisterId;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
     @JoinColumn(name = "nodeId", nullable = false)
     private ArrNode node;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRecord.class)
     @JoinColumn(name = "recordId", nullable = false)
     private RegRecord record;

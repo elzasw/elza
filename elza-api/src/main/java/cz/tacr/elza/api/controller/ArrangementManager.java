@@ -13,6 +13,7 @@ import cz.tacr.elza.api.vo.ArrDescItemSavePack;
 import cz.tacr.elza.api.vo.ArrDescItems;
 import cz.tacr.elza.api.vo.ArrLevelPack;
 import cz.tacr.elza.api.vo.ArrNodeHistoryPack;
+import cz.tacr.elza.api.vo.ArrNodeRegisterPack;
 
 import java.util.List;
 
@@ -36,7 +37,8 @@ import java.util.List;
  */
 public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFindingAidVersion, DI extends ArrDescItem,
     DISP extends ArrDescItemSavePack, FL extends ArrLevel, FLP extends ArrLevelPack, N extends ArrNode,
-    DIS extends ArrDescItems, NHP extends ArrNodeHistoryPack, CTL extends ArrCalendarTypes, ANR extends ArrNodeRegister> {
+    DIS extends ArrDescItems, NHP extends ArrNodeHistoryPack, CTL extends ArrCalendarTypes, ANR extends ArrNodeRegister,
+        ANRP extends ArrNodeRegisterPack> {
 
     /** Formát popisu atributu - dlouhá verze. */
     String FORMAT_ATTRIBUTE_FULL = "FULL";
@@ -282,10 +284,8 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
     /**
      * Uloží vazby mezi uzlem a hesly rejstříku. Provede založení změny.
      *
-     * @param saveNodeRegisterList      vazby k vytvoření či update - bez zakládací verze,
-     * @param deleteNodeRegisterList    vazby ke smazání - bez zakládací verze
+     * @param   arrNodeRegisterPack zapouzření kolekece k uložení či smazání vazeb
      */
-    void modifyArrNodeRegisterLinks(List<ANR> saveNodeRegisterList,
-                                    List<ANR> deleteNodeRegisterList);
+    void modifyArrNodeRegisterLinks(ANRP arrNodeRegisterPack);
 
 }

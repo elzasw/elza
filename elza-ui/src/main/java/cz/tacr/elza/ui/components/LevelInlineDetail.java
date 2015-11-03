@@ -27,6 +27,7 @@ import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
+import cz.tacr.elza.domain.vo.ArrNodeRegisterPack;
 import cz.tacr.elza.ui.components.attribute.Attribut;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesComparator;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesLoader;
@@ -119,7 +120,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             List<ArrNodeRegister> links = nodeRegisterLink.getKeys();
             List<ArrNodeRegister> linksToDelete = nodeRegisterLink.getLinksToDelete();
 
-            arrangementManager.modifyArrNodeRegisterLinks(links, linksToDelete);
+            arrangementManager.modifyArrNodeRegisterLinks(new ArrNodeRegisterPack(links, linksToDelete));
 
             // obnova atributu vpravo
             ArrLevelExt level = arrangementManager.getLevel(nodeRegisterLink.getNode().getNodeId(),

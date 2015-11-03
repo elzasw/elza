@@ -25,6 +25,7 @@ import cz.tacr.elza.domain.vo.ArrDescItems;
 import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
 import cz.tacr.elza.domain.vo.ArrNodeHistoryItem;
 import cz.tacr.elza.domain.vo.ArrNodeHistoryPack;
+import cz.tacr.elza.domain.vo.ArrNodeRegisterPack;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
@@ -88,7 +89,7 @@ import java.util.Set;
 @RequestMapping("/api/arrangementManager")
 public class ArrangementManager implements cz.tacr.elza.api.controller.ArrangementManager<ArrFindingAid, ArrFindingAidVersion,
     ArrDescItem, ArrDescItemSavePack, ArrLevel, ArrLevelWithExtraNode, ArrNode, ArrDescItems, ArrNodeHistoryPack,
-    ArrCalendarTypes, ArrNodeRegister> {
+    ArrCalendarTypes, ArrNodeRegister, ArrNodeRegisterPack> {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -2353,14 +2354,17 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @Override
     @Transactional
     @RequestMapping(value = "/modifyArrNodeRegisterLinks", method = RequestMethod.PUT)
-    public void modifyArrNodeRegisterLinks(final @RequestBody List<ArrNodeRegister> saveNodeRegisterList,
-                           final @RequestParam("deleteNodeRegisterList") List<ArrNodeRegister> deleteNodeRegisterList) {
+    public void modifyArrNodeRegisterLinks(final @RequestBody ArrNodeRegisterPack arrNodeRegisterPack) {
 
-        Assert.notNull(saveNodeRegisterList);
-        Assert.notNull(deleteNodeRegisterList);
+        Assert.notNull(arrNodeRegisterPack);
 
-        saveNodeRegisterLinks(saveNodeRegisterList);
-        delArrNodeRegisterLinks(deleteNodeRegisterList);
+        if (CollectionUtils.isNotEmpty(arrNodeRegisterPack.getSaveList())) {
+            saveNodeRegisterLinks(arrNodeRegisterPack.getSaveList());
+        }
+
+        if (CollectionUtils.isNotEmpty(arrNodeRegisterPack.getDeleteList())) {
+            delArrNodeRegisterLinks(arrNodeRegisterPack.getDeleteList());
+        }
     }
 
     private void delArrNodeRegisterLinks(final @RequestBody List<ArrNodeRegister> arrNodeRegisterList) {
