@@ -16,19 +16,33 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 /**
- *
+ * Okno editace vazeb na rejstříková hesla.
  */
 public class NodeRegisterLink extends CssLayout implements Components {
 
+    /** Mapa entitt vazeb na hodnoty ve formuláři. */
     ChildComponentContainer<ArrNodeRegister, NodeRegisterLinkValue> childs;
+    /** Uzel. */
     ArrNode node;
+    /** Položky vazeb ke smazání. */
     private List<ArrNodeRegister> toDelete = new ArrayList<>();
+    /** ID verze. */
     private Integer versionId;
+    /** Manager. */
     private RegistryManager registryManager;
+    /** Tlačítko nového záznamu. */
     private AxAction newValueButton;
 
+
+    /**
+     * Konstruktor.
+     *
+     * @param node              uzel
+     * @param versionId         id verze
+     * @param vazby             vazby existující
+     * @param registryManager   manager
+     */
     public NodeRegisterLink(final ArrNode node, final Integer versionId, final List<ArrNodeRegister> vazby,
                             final RegistryManager registryManager) {
 
@@ -70,23 +84,45 @@ public class NodeRegisterLink extends CssLayout implements Components {
         }
     }
 
+    /**
+     * Vrací objekty pro uložení.
+     * @return objekty pro uložení
+     */
     public List<ArrNodeRegister> getKeys() {
         List<ArrNodeRegister> collect = childs.getChils().stream().map(NodeRegisterLinkValue::commit).collect(Collectors.toList());
         return collect;
     }
 
+    /**
+     * Objekty ke smazání.
+     * @return  objekty ke smazání
+     */
     public List<ArrNodeRegister> getLinksToDelete() {
         return toDelete;
     }
 
+    /**
+     * Uzel.
+     * @return  uzel
+     */
     public ArrNode getNode() {
         return node;
     }
 
+    /**
+     * ID verze.
+     * @return  id verze
+     */
     public Integer getVersionId() {
         return versionId;
     }
 
+    /**
+     * Nová hodnota - jeden řádek pro zobrazení náhledu před editací.
+     *
+     * @param nodeRegister  vazba
+     * @return              jedna vazba jako jeden layout
+     */
     public NodeRegisterLinkValue newRegisterLinkValue(final ArrNodeRegister nodeRegister) {
 
         Label sortIcon = new Label();
@@ -103,6 +139,10 @@ public class NodeRegisterLink extends CssLayout implements Components {
         return value;
     }
 
+    /**
+     * Příprava smazání. Dá objekt do delete listu a dejme ho z běžného listu pro save.
+     * @param nodeRegister  vazba ke smazání
+     */
     private void deleteAtributValue(final ArrNodeRegister nodeRegister) {
         childs.removeComponent(nodeRegister);
         if (nodeRegister.getNodeRegisterId() != null) {

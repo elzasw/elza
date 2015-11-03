@@ -28,6 +28,7 @@ import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
+import cz.tacr.elza.domain.vo.ArrNodeRegisterPack;
 import cz.tacr.elza.ui.components.attribute.Attribut;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesComparator;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesLoader;
@@ -56,7 +57,6 @@ import java.util.stream.Collectors;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 21.8.2015
  */
-
 @Component
 @Scope("prototype")
 public class LevelInlineDetail extends CssLayout implements Components, InitializingBean {
@@ -114,13 +114,18 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         }
     }
 
+    /**
+     * Vyzvedne objekty pro save a delete z podkladového objektu layoutu a uloží.
+     *
+     * @param nodeRegisterLink  komponenta s objekty pro akce
+     */
     private void saveNodeRegisterLinkWithVersion(final NodeRegisterLink nodeRegisterLink) {
         try {
 
             List<ArrNodeRegister> links = nodeRegisterLink.getKeys();
             List<ArrNodeRegister> linksToDelete = nodeRegisterLink.getLinksToDelete();
 
-            arrangementManager.modifyArrNodeRegisterLinks(links, linksToDelete);
+            arrangementManager.modifyArrNodeRegisterLinks(new ArrNodeRegisterPack(links, linksToDelete));
 
             // obnova atributu vpravo
             ArrLevelExt level = arrangementManager.getLevel(nodeRegisterLink.getNode().getNodeId(),
@@ -234,6 +239,12 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         detailContent.addComponent(grid);
     }
 
+    /**
+     * Vytvoří komponentu pro vazbu rejstříkových hesel. ZObrazí existující hesla a možnost editace.
+     *
+     * @param versionId     id verze
+     * @param node          node
+     */
     public void showNodeRegisterLink(final Integer versionId, final ArrNode node) {
 
         List<ArrNodeRegister> data
@@ -305,8 +316,6 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         }
     }
 
-
-
     private void showEditAttrWindow(final ArrLevelExt level, final RulDescItemType type, final Integer versionId) {
         if (type != null) {
             List<ArrDescItem> listItem = arrangementManager
@@ -341,6 +350,13 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         }
     }
 
+    /**
+     * Otevře okno pro editaci vazeb na hesla.
+     *
+     * @param node          uzel
+     * @param versionId     id verze
+     * @param data          existující vazby pro daný uzel a verzi
+     */
     private void showEditNodeRecordLinkWindow(final ArrNode node, final Integer versionId, final List<ArrNodeRegister> data) {
 
         nodeRegisterLink = new NodeRegisterLink(node, versionId, data, registryManager);
@@ -381,10 +397,8 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             }
         });
 
-
         return button;
     }
-
 
     private AttributeValuesLoader getAttributeValuesLoader() {
         if (attributeValuesLoader == null) {

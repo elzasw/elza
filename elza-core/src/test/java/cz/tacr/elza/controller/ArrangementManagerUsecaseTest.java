@@ -1,18 +1,6 @@
 package cz.tacr.elza.controller;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.BeanUtils;
-import org.springframework.http.HttpStatus;
-import org.springframework.util.Assert;
-
 import com.jayway.restassured.response.Response;
-
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemInt;
 import cz.tacr.elza.domain.ArrFindingAid;
@@ -20,6 +8,8 @@ import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
@@ -31,6 +21,17 @@ import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
 import cz.tacr.elza.domain.vo.ArrNodeHistoryItem;
 import cz.tacr.elza.domain.vo.ArrNodeHistoryPack;
+import cz.tacr.elza.domain.vo.ArrNodeRegisterPack;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.BeanUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.util.Assert;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Kompletní test {@link ArrangementManager}.
@@ -43,6 +44,10 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
     private static final Integer TEST_VALUE_123 = 123;
     private static final Integer TEST_VALUE_456 = 456;
     private static final Integer TEST_VALUE_789 = 789;
+
+    private static final Integer PRVNI = 0;
+    private static final Integer DRUHY = 1;
+    private static final Integer TRETI = 2;
 
     private RulRuleSet ruleSet;
     private RulArrangementType arrangementType;
@@ -83,6 +88,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         testAttributeValues(findingAid);
         testArrangementTypeRelations(findingAid);
         testShowHistoryByNode(findingAid);
+        testNodeRecordLink(findingAid);
     }
 
     /**
@@ -90,7 +96,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @param findingAid    archivní pomůcka
      */
-    private void testShowHistoryByNode(ArrFindingAid findingAid) {
+    private void testShowHistoryByNode(final ArrFindingAid findingAid) {
         ArrFindingAidVersion faVersion = getFindingAidOpenVersion(findingAid);
         ArrNode node = faVersion.getRootLevel().getNode();
         ArrNodeHistoryPack historyForNode = getHistoryForNode(node.getNodeId(), faVersion.getFindingAid().getFindingAidId());
@@ -105,9 +111,9 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @param findingAid archivní pomůcka
      */
-    private void testArrangementTypeRelations(ArrFindingAid findingAid) {
+    private void testArrangementTypeRelations(final ArrFindingAid findingAid) {
         List<ArrFindingAidVersion> versions = getFindingAidVersions(findingAid);
-        for (ArrFindingAidVersion version : versions) {
+        for (final ArrFindingAidVersion version : versions) {
             RulRuleSet versionRuleSet = version.getRuleSet();
             RulArrangementType versionArrangementType = version.getArrangementType();
 
@@ -147,7 +153,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @param findingAid archivní pomůcka
      */
-    private void testAttributeValues(ArrFindingAid findingAid) {
+    private void testAttributeValues(final ArrFindingAid findingAid) {
         ArrFindingAidVersion version = getFindingAidOpenVersion(findingAid);
         ArrNode node = version.getRootLevel().getNode();
 
@@ -231,7 +237,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         Assert.isTrue(descItemList.get(0).getDescItemObjectId().equals(updatedArrDescItemExts.get(1).getDescItemObjectId()));
     }
 
-    private void storeSavePackWithError(ArrDescItemSavePack savePack) {
+    private void storeSavePackWithError(final ArrDescItemSavePack savePack) {
         post((spec) -> spec.body(savePack), SAVE_DESCRIPTION_ITEMS_URL, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -244,7 +250,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return balík hodnot
      */
-    private ArrDescItemSavePack prepareSavePack(ArrNode node, ArrFindingAidVersion version, List<RulDescItemTypeExt> descItemTypes) {
+    private ArrDescItemSavePack prepareSavePack(final ArrNode node, final ArrFindingAidVersion version, final List<RulDescItemTypeExt> descItemTypes) {
         ArrDescItemSavePack savePack = new ArrDescItemSavePack();
         savePack.setCreateNewVersion(true);
         savePack.setFaVersionId(version.getFindingAidVersionId());
@@ -272,7 +278,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return balík hodnot
      */
-    private ArrDescItemSavePack prepareUpdateSavePack(ArrNode node, ArrFindingAidVersion version, List<ArrDescItem> originalValues) {
+    private ArrDescItemSavePack prepareUpdateSavePack(final ArrNode node, final ArrFindingAidVersion version, final List<ArrDescItem> originalValues) {
         ArrDescItemSavePack updateSavePack = new ArrDescItemSavePack();
         updateSavePack.setCreateNewVersion(true);
         updateSavePack.setFaVersionId(version.getFindingAidVersionId());
@@ -299,7 +305,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return hodnota atributu
      */
-    private ArrDescItem createArrDescItemExt(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, Integer value) {
+    private ArrDescItem createArrDescItemExt(final ArrNode node, final RulDescItemTypeExt rulDescItemTypeExt, final Integer value) {
         RulDescItemType rulDescItemType = new RulDescItemType();
         BeanUtils.copyProperties(rulDescItemTypeExt, rulDescItemType);
 
@@ -325,8 +331,8 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return vytvořená hodnota
      */
-    private ArrDescItem createArrDescItem(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, ArrFindingAidVersion version,
-                                             Integer value) {
+    private ArrDescItem createArrDescItem(final ArrNode node, final RulDescItemTypeExt rulDescItemTypeExt, final ArrFindingAidVersion version,
+                                             final Integer value) {
         RulDescItemType rulDescItemType = new RulDescItemType();
         BeanUtils.copyProperties(rulDescItemTypeExt, rulDescItemType);
 
@@ -356,8 +362,8 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return vytvořená hodnota
      */
-    private ArrDescItem updateArrDescItem(ArrDescItem descItem, Integer value, ArrFindingAidVersion version,
-                                             boolean createNewVersion) {
+    private ArrDescItem updateArrDescItem(final ArrDescItem descItem, final Integer value, final ArrFindingAidVersion version,
+                                             final boolean createNewVersion) {
         ((ArrDescItemInt) descItem).setValue(value);
 
         Response response = post((spec) -> spec.body(descItem).pathParameter(VERSION_ID_ATT, version.getFindingAidVersionId())
@@ -373,7 +379,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return smazaná hodnota
      */
-    private ArrDescItem deleteDescriptionItem(ArrDescItem descItem, ArrFindingAidVersion version) {
+    private ArrDescItem deleteDescriptionItem(final ArrDescItem descItem, final ArrFindingAidVersion version) {
         Response response = delete((spec) -> spec.body(descItem).pathParameter(VERSION_ID_ATT, version.getFindingAidVersionId()), DELETE_DESCRIPTION_ITEM_URL );
 
         return response.getBody().as(ArrDescItem.class);
@@ -391,7 +397,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @param findingAid archivní pomůcka
      */
-    private void testMoveAndDeleteLevels(ArrFindingAid findingAid) {
+    private void testMoveAndDeleteLevels(final ArrFindingAid findingAid) {
         ArrFindingAidVersion version = getFindingAidOpenVersion(findingAid);
         ArrNode rootNode = version.getRootLevel().getNode();
 
@@ -475,7 +481,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @param findingAid archivní pomůcka
      */
-    private void testAddLevels(ArrFindingAid findingAid) {
+    private void testAddLevels(final ArrFindingAid findingAid) {
         ArrFindingAidVersion version = getFindingAidOpenVersion(findingAid);
         ArrNode rootNode = version.getRootLevel().getNode();
         ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
@@ -566,7 +572,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @param findingAid archivní pomůcka
      */
-    private void testApproveFindingAidVersion(ArrFindingAid findingAid) {
+    private void testApproveFindingAidVersion(final ArrFindingAid findingAid) {
         ArrFindingAidVersion openVersion = getFindingAidOpenVersion(findingAid);
 
         ArrFindingAidVersion newOpenVersion = approveVersion(openVersion);
@@ -599,7 +605,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return seznam verzí archivní pomůcky
      */
-    private List<ArrFindingAidVersion> getFindingAidVersions(ArrFindingAid findingAid) {
+    private List<ArrFindingAidVersion> getFindingAidVersions(final ArrFindingAid findingAid) {
         Response response = get(spec -> spec.parameter(FA_ID_ATT, findingAid.getFindingAidId()),
                 GET_FINDING_AID_VERSIONS_URL);
 
@@ -613,7 +619,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return verze archivní pomůcky
      */
-    private ArrFindingAidVersion getVersionById(Integer versionId) {
+    private ArrFindingAidVersion getVersionById(final Integer versionId) {
         Response response = get(spec -> spec.parameter(VERSION_ID_ATT, versionId), GET_VERSION_ID_URL);
 
         return response.getBody().as(ArrFindingAidVersion.class);
@@ -626,7 +632,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return nová otevřená verze archivní pomůcky
      */
-    private ArrFindingAidVersion approveVersion(ArrFindingAidVersion openVersion) {
+    private ArrFindingAidVersion approveVersion(final ArrFindingAidVersion openVersion) {
         return approveVersion(openVersion, ruleSet, arrangementType, HttpStatus.OK);
     }
 
@@ -640,8 +646,8 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return nová otevřená verze archivní pomůcky
      */
-    private ArrFindingAidVersion approveVersion(ArrFindingAidVersion openVersion, RulRuleSet ruleSet, RulArrangementType arrangementType,
-            HttpStatus httpStatus) {
+    private ArrFindingAidVersion approveVersion(final ArrFindingAidVersion openVersion, final RulRuleSet ruleSet, final RulArrangementType arrangementType,
+            final HttpStatus httpStatus) {
         Response response = put(spec -> spec.body(openVersion).
                 parameter(ARRANGEMENT_TYPE_ID_ATT, arrangementType.getArrangementTypeId()).
                 parameter(RULE_SET_ID_ATT, ruleSet.getRuleSetId())
@@ -661,7 +667,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return nová otevřená verze archivní pomůcky
      */
-    private void approveVersionWithError(ArrFindingAidVersion openVersion) {
+    private void approveVersionWithError(final ArrFindingAidVersion openVersion) {
         put(spec -> spec.body(openVersion).
                 parameter(ARRANGEMENT_TYPE_ID_ATT, arrangementType.getArrangementTypeId()).
                 parameter(RULE_SET_ID_ATT, ruleSet.getRuleSetId())
@@ -675,7 +681,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return archivní pomůcka
      */
-    private ArrFindingAid testUpdateFindingAid(ArrFindingAid findingAid) {
+    private ArrFindingAid testUpdateFindingAid(final ArrFindingAid findingAid) {
         ArrFindingAid updatedFindingAid = updateFindingAid(findingAid, TEST_UPDATE_NAME);
         testChangedFindingAid(updatedFindingAid, TEST_UPDATE_NAME, 1);
 
@@ -687,7 +693,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      *
      * @return aktualizovaná archivní pomůcka
      */
-    private ArrFindingAid updateFindingAid(ArrFindingAid findingAid, String testUpdateName) {
+    private ArrFindingAid updateFindingAid(final ArrFindingAid findingAid, final String testUpdateName) {
         findingAid.setName(testUpdateName);
         Response response = put(spec -> spec.body(findingAid), UPDATE_FA_URL);
 
@@ -713,7 +719,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      * @param testName předpokládaný název archivní pomůcky
      * @param findingAidsCount předpokládaný počet archivních pomůcek
      */
-    private void testChangedFindingAid(ArrFindingAid findingAid, String testName, int findingAidsCount) {
+    private void testChangedFindingAid(ArrFindingAid findingAid, final String testName, final int findingAidsCount) {
         Assert.notNull(findingAid);
         Assert.notNull(findingAid.getFindingAidId());
 
@@ -747,4 +753,106 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
     private ArrFindingAid createFindingAid() {
         return createFindingAid(ruleSet, arrangementType, HttpStatus.OK);
     }
+
+    /**
+     * Vazby meziuzlem a hesly rejštříku. Zkouší vytvoření tří vazeb od jednoho uzlu na tři různá hesla.
+     * Samotné smazání třetí a dále: update první a smazání druhé.
+     *
+     * @param findingAid    archivní pomůcka
+     */
+    private void testNodeRecordLink(final ArrFindingAid findingAid) {
+        ArrFindingAidVersion version = getFindingAidOpenVersion(findingAid);
+        ArrNode node = version.getRootLevel().getNode();
+
+        RegRecord record1 = createRecord();
+        RegRecord record2 = createRecord();
+        RegRecord record3 = createRecord();
+
+        // just create
+        restCreateNodeRegister(node, record1, record2, record3);
+
+        List<ArrNodeRegister> nodeRegisters = findNodeRegisters(version.getFindingAidVersionId(), node.getNodeId());
+        Assert.isTrue(nodeRegisters.size() == 3);
+        Assert.isTrue(nodeRegisters.get(PRVNI).getCreateChange() != null);
+        Assert.isTrue(nodeRegisters.get(DRUHY).getCreateChange() != null);
+        Assert.isTrue(nodeRegisters.get(TRETI).getCreateChange() != null);
+
+        Assert.isTrue(nodeRegisters.get(PRVNI).getNode().equals(node));
+        Assert.isTrue(nodeRegisters.get(DRUHY).getNode().equals(node));
+        Assert.isTrue(nodeRegisters.get(TRETI).getNode().equals(node));
+
+        Assert.isTrue(nodeRegisters.get(PRVNI).getRecord().equals(record1));
+        Assert.isTrue(nodeRegisters.get(DRUHY).getRecord().equals(record2));
+        Assert.isTrue(nodeRegisters.get(TRETI).getRecord().equals(record3));
+
+        // just delete - TRETI
+        restModifyNodeRegister(new ArrNodeRegisterPack(null, Arrays.asList(nodeRegisters.get(TRETI))));
+
+        nodeRegisters = findNodeRegisters(version.getFindingAidVersionId(), node.getNodeId());
+        Assert.isTrue(nodeRegisters.size() == 2);
+
+        // update and delete  PRVNI, DRUHY
+        nodeRegisters.get(PRVNI).setRecord(record3); // změna pro update
+        List<ArrNodeRegister> delete = Arrays.asList(nodeRegisters.get(DRUHY)); // DRUHY ke smazání
+        nodeRegisters.remove(DRUHY);                                            // a pryč ze save
+
+        restModifyNodeRegister(new ArrNodeRegisterPack(nodeRegisters, delete));
+
+        nodeRegisters = findNodeRegisters(version.getFindingAidVersionId(), node.getNodeId());
+        Assert.isTrue(nodeRegisters.size() == 1);
+        Assert.isTrue(nodeRegisters.get(PRVNI).getRecord().equals(record3));  //zbyde PRVNI změněný
+
+    }
+
+    /**
+     * Vytvoří tři vazby mezi uzlem a danými hesly.
+     * @param node          uzel
+     * @param record1       heslo 1
+     * @param record2       heslo 2
+     * @param record3       heslo 3
+     */
+    protected void restCreateNodeRegister(final ArrNode node, final RegRecord record1, final RegRecord record2,
+                                          final RegRecord record3) {
+
+        ArrNodeRegister nodeRegister1 = new ArrNodeRegister();
+        nodeRegister1.setNode(node);
+        nodeRegister1.setRecord(record1);
+
+        ArrNodeRegister nodeRegister2 = new ArrNodeRegister();
+        nodeRegister2.setNode(node);
+        nodeRegister2.setRecord(record2);
+
+        ArrNodeRegister nodeRegister3 = new ArrNodeRegister();
+        nodeRegister3.setNode(node);
+        nodeRegister3.setRecord(record3);
+
+        List<ArrNodeRegister> modifyNodeRegisters = Arrays.asList(nodeRegister1, nodeRegister2, nodeRegister3);
+
+        restModifyNodeRegister(new ArrNodeRegisterPack(modifyNodeRegisters, null));
+    }
+
+    /**
+     * Volání úprav vazeb přes rest.
+     * @param arrNodeRegisterPack   obalení kolekcí s úpravami vazeb či smazáním
+     */
+    protected void restModifyNodeRegister(final ArrNodeRegisterPack arrNodeRegisterPack) {
+
+        put(spec -> spec.body(arrNodeRegisterPack), MODIFY_NODE_REGISTER_LINKS_URL);
+    }
+
+    /**
+     * Hledá vazby.
+     * @param versionId     id verze
+     * @param nodeId        id uzlu
+     * @return              nalezené vazby
+     */
+    protected List<ArrNodeRegister> findNodeRegisters(final Integer versionId, final Integer nodeId) {
+        Response response = get(spec -> spec
+                .parameter(VERSION_ID_ATT, versionId)
+                .parameter(NODE_ID_ATT, nodeId)
+                , FIND_NODE_REGISTER_LINKS_URL);
+
+        return new ArrayList<ArrNodeRegister>(Arrays.asList(response.getBody().as(ArrNodeRegister[].class)));
+    }
+
 }

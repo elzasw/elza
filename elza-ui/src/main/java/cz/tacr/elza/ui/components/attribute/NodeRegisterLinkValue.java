@@ -24,12 +24,22 @@ import java.util.List;
  */
 public class NodeRegisterLinkValue extends CssLayout implements Components {
 
+    /** Formulář. */
     AxForm<ArrNodeRegister> form;
 
+    /** kombo typu hesla. */
     private ComboBox specificationCombo;
 
+    /** Manager. */
     private RegistryManager registryManager;
 
+    /**
+     * Konstruktor pro dané nastavení.
+     * @param nodeRegister      objekt vazby
+     * @param registerTypes     dostupné typy hesel pro první kombo
+     * @param deleteAction      akce pro smazání
+     * @param registryManager   manager
+     */
     public NodeRegisterLinkValue(final ArrNodeRegister nodeRegister, final List<RegRegisterType> registerTypes,
                                  final AxAction deleteAction, final RegistryManager registryManager) {
 
@@ -69,6 +79,11 @@ public class NodeRegisterLinkValue extends CssLayout implements Components {
         addComponent(deleteAction.button());
     }
 
+    /**
+     * Příprava výběru hesel a jejich načtení dle zvoleného typu v prvním kombu.
+     *
+     * @return      kombo
+     */
     private Autocomplete createRecordRefAutocomplete() {
         Autocomplete autocomplete = new Autocomplete((text) -> {
             if (specificationCombo == null) {
@@ -83,6 +98,11 @@ public class NodeRegisterLinkValue extends CssLayout implements Components {
         return autocomplete;
     }
 
+    /**
+     * Načtení položek pravého komba.
+     *
+     * @param autocomplete  kombo
+     */
     private void initAutocomplete(final Autocomplete autocomplete) {
         autocomplete.reloadItems("");
         autocomplete.addTextChangeListener((event) -> {
@@ -92,6 +112,12 @@ public class NodeRegisterLinkValue extends CssLayout implements Components {
         });
     }
 
+    /**
+     * Load hesel pro výběr v kombu.
+     * @param text              text
+     * @param registerType      typ
+     * @return      hesla pro autocomplete combobox
+     */
     private List<AutocompleteItem> loadRegRecords(final String text, final RegRegisterType registerType) {
 
         Integer[] typy;
@@ -112,6 +138,10 @@ public class NodeRegisterLinkValue extends CssLayout implements Components {
         return result;
     }
 
+    /**
+     * Komit formuláře, přepsání hodnoty do entity.
+     * @return  naplněná entita
+     */
     public ArrNodeRegister commit() {
         ArrNodeRegister nodeRegister = form.commit();
         return nodeRegister;
