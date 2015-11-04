@@ -18,7 +18,6 @@ import cz.tacr.elza.api.vo.ArrNodeRegisterPack;
 
 import java.util.List;
 
-
 /**
  * Rozhraní operací pro archivní pomůcku a hierarchický přehled včetně atributů.
  *
@@ -299,4 +298,18 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @return
      */
     List<AP> findPacket(String search, Integer from, Integer count, Integer packetTypeId);
+
+    /**
+     * Vloží záznam o obalu s vyplněnou archyvní pomůckou a podtypem.
+     * @param packet data obalu s vyplněnými vazbami na archyvní pomůcku a podtyp.
+     * @return založený záznam
+     */
+    AP insertPacket(AP packet);
+
+    /**
+     * Upravý záznam obalu.
+     * @param packet data obalu s ID a vyplněnými vazbami na archyvní pomůcku a podtyp.
+     * @return aktualizovaný záznam
+     */
+    AP updatePacket(AP packet);
 }

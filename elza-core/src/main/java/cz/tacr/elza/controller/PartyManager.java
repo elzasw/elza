@@ -150,8 +150,8 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
     private ParParty updatePartyInternal(final ParParty party) {
         Integer partyId = party.getPartyId();
         Assert.notNull(partyId);
-        partyRepository.findOne(partyId);
-        Assert.notNull(party, "Nebyla nalezena ParParty s id " + partyId);
+        ParParty checkParty = partyRepository.findOne(partyId);
+        Assert.notNull(checkParty, "Nebyla nalezena ParParty s id " + partyId);
         updateParty(party, party);
         return party;
     }

@@ -36,6 +36,7 @@ import cz.tacr.elza.domain.ArrDescItemCoordinates;
 import cz.tacr.elza.domain.ArrDescItemDecimal;
 import cz.tacr.elza.domain.ArrDescItemFormattedText;
 import cz.tacr.elza.domain.ArrDescItemInt;
+import cz.tacr.elza.domain.ArrDescItemPacketRef;
 import cz.tacr.elza.domain.ArrDescItemPartyRef;
 import cz.tacr.elza.domain.ArrDescItemRecordRef;
 import cz.tacr.elza.domain.ArrDescItemString;
@@ -47,6 +48,7 @@ import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulArrangementType;
@@ -811,6 +813,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         RegRecord record = restCreateRecord();
         ParParty party = restCreateParty();
+        ArrPacket packet = restCreatePacket(findingAid);
         Map<String, RulDescItemType> itemTypes = new HashMap<>();
         List<RulDataType> dataTypes = dataTypeRepository.findAll();
         List<ArrCalendarType> calendarTypes = calendarTypeRepository.findAll();
@@ -859,6 +862,9 @@ public class ArrangementManagerTest extends AbstractRestTest {
                     break;
                 case DT_DECIMAL:
                     descItems.add(createDecimalValue(node, rulDescItemTypeExt));
+                    break;
+                case DT_PACKET_REF:
+                    descItems.add(createPacketRefValue(node, rulDescItemTypeExt, packet));
                     break;
                 default:
                     throw new IllegalStateException("Není definován case pro datový typ " + dtCode + " doplňte jej.");
@@ -949,6 +955,13 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ArrDescItem descItem = new ArrDescItemPartyRef();
         descItem = createValue(descItem, node, rulDescItemTypeExt);
         ((ArrDescItemPartyRef) descItem).setParty(party);
+        return descItem;
+    }
+
+    private ArrDescItem createPacketRefValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, ArrPacket packet) {
+        ArrDescItem descItem = new ArrDescItemPacketRef();
+        descItem = createValue(descItem, node, rulDescItemTypeExt);
+        ((ArrDescItemPacketRef) descItem).setPacket(packet);
         return descItem;
     }
 

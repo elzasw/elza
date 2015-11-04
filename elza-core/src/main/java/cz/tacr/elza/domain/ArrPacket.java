@@ -10,6 +10,7 @@ import javax.persistence.ManyToOne;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -26,10 +27,12 @@ public class ArrPacket implements cz.tacr.elza.api.ArrPacket<ArrPacketType, ArrF
     @GeneratedValue
     private Integer packetId;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrPacketType.class)
     @JoinColumn(name = "packetTypeId", nullable = true)
     private ArrPacketType packetType;
 
+    @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFindingAid.class)
     @JoinColumn(name = "findingAidId", nullable = false)
     private ArrFindingAid findingAid;

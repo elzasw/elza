@@ -1,5 +1,35 @@
 package cz.tacr.elza.controller;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.domain.ArrChange;
@@ -13,6 +43,7 @@ import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ArrPacketType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDescItemConstraint;
@@ -31,15 +62,7 @@ import cz.tacr.elza.domain.vo.ArrNodeRegisterPack;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
-import cz.tacr.elza.repository.DataCoordinatesRepository;
-import cz.tacr.elza.repository.DataIntegerRepository;
-import cz.tacr.elza.repository.DataPartyRefRepository;
-import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.DataStringRepository;
-import cz.tacr.elza.repository.DataTextRepository;
-import cz.tacr.elza.repository.DataUnitdateRepository;
-import cz.tacr.elza.repository.DataUnitidRepository;
 import cz.tacr.elza.repository.DescItemConstraintRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
@@ -50,36 +73,8 @@ import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PacketRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -125,30 +120,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     private DescItemConstraintRepository descItemConstraintRepository;
 
     @Autowired
-    private DataIntegerRepository dataIntegerRepository;
-
-    @Autowired
-    private DataStringRepository dataStringRepository;
-
-    @Autowired
-    private DataTextRepository dataTextRepository;
-
-    @Autowired
-    private DataUnitdateRepository dataUnitdateRepository;
-
-    @Autowired
-    private DataUnitidRepository dataUnitidRepository;
-
-    @Autowired
-    private DataCoordinatesRepository dataCoordinatesRepository;
-
-    @Autowired
-    private DataPartyRefRepository dataPartyRefRepository;
-
-    @Autowired
-    private DataRecordRefRepository dataRecordRefRepository;
-
-    @Autowired
     private RuleManager ruleManager;
 
     @Autowired
@@ -158,19 +129,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     private DescItemSpecRepository descItemSpecRepository;
 
     @Autowired
-    private PartyRepository partyRepository;
-
-    @Autowired
-    private RegRecordRepository recordRepository;
-
-    @Autowired
     private NodeRepository nodeRepository;
-
-    @Autowired
-    private DataRepository dataRepository;
-
-    @Autowired
-    private RegRecordRepository regRecordRepository;
 
     @Autowired
     private CalendarTypeRepository calendarTypeRepository;
@@ -183,6 +142,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Autowired
     private PacketRepository packetRepository;
+
+    @Autowired
+    private PacketTypeRepository packetTypeRepository;
 
 
     /**
@@ -2452,4 +2414,51 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 //        });
         return resultList;
     }
+
+    @Override
+    @RequestMapping(value = "/insertPacket", method = RequestMethod.PUT)
+    public ArrPacket insertPacket(@RequestBody final ArrPacket packet) {
+        ArrPacket newPacket = new ArrPacket();
+        updateParty(packet, newPacket);
+        return newPacket;
+    }
+
+    @RequestMapping(value = "/updatePacket", method = RequestMethod.PUT)
+    @Override
+    @Transactional
+    public ArrPacket updatePacket(@RequestBody final ArrPacket packet) {
+        Integer packetId = packet.getPacketId();
+        Assert.notNull(packetId);
+        ArrPacket checkPacket = packetRepository.findOne(packetId);
+        Assert.notNull(checkPacket, "Nebyla nalezena ArrPacket s id " + packetId);
+        updateParty(packet, packet);
+        return packet;
+    }
+
+    @Transactional
+    private void updateParty(final ArrPacket source, final ArrPacket target) {
+        Assert.notNull(source.getPacketType(), "Není vyplněné packet type");
+        Assert.notNull(source.getFindingAid(), "Není vyplněné finding aid");
+        Assert.notNull(source.getStorageNumber(), "Není vyplněné storage number");
+
+        Integer findingAidId = source.getFindingAid().getFindingAidId();
+        Integer packetTypeId = source.getPacketType().getPacketTypeId();
+
+        Assert.notNull(packetTypeId, "Není vyplněné packetTypeId");
+        Assert.notNull(findingAidId, "Není vyplněné findingAidId");
+
+        final ArrPacketType partyType = packetTypeRepository.findOne(packetTypeId);
+        final ArrFindingAid findingAid = findingAidRepository.findOne(findingAidId);
+
+        Assert.notNull(partyType, "Nebyla nalezena ArrPacketType s id " + packetTypeId);
+        Assert.notNull(findingAid, "Nebyla nalezena ArrFindingAid s id " + findingAidId);
+
+        target.setPacketType(partyType);
+        target.setFindingAid(findingAid);
+        target.setInvalidPacket(BooleanUtils.isTrue(source.getInvalidPacket()));
+        target.setStorageNumber(source.getStorageNumber());
+        packetRepository.save(target);
+    }
+
+//    -- vytvorit metody create a update packet
 }

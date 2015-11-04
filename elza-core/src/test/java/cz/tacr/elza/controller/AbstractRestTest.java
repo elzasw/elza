@@ -17,6 +17,8 @@ import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ArrPacketType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyType;
@@ -53,6 +55,8 @@ import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.PacketRepository;
+import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
@@ -182,6 +186,7 @@ public abstract class AbstractRestTest {
     protected static final String SAVE_DESCRIPTION_ITEMS_URL = ARRANGEMENT_MANAGER_URL + "/saveDescriptionItems";
     protected static final String MODIFY_NODE_REGISTER_LINKS_URL = ARRANGEMENT_MANAGER_URL + "/modifyArrNodeRegisterLinks";
     protected static final String FIND_NODE_REGISTER_LINKS_URL = ARRANGEMENT_MANAGER_URL + "/findNodeRegisterLinks";
+    protected static final String INSERT_ABSTRACT_PACKET = ARRANGEMENT_MANAGER_URL + "/insertPacket";
 
     protected static final String FA_NAME_ATT = "name";
     protected static final String FA_ID_ATT = "findingAidId";
@@ -225,6 +230,7 @@ public abstract class AbstractRestTest {
     protected static final String DT_FORMATTED_TEXT = "FORMATTED_TEXT";
     protected static final String DT_RECORD_REF = "RECORD_REF";
     protected static final String DT_DECIMAL = "DECIMAL";
+    protected static final String DT_PACKET_REF = "PACKET_REF";
     // END RULE MANAGER CONSTANTS
 
     @Value("${local.server.port}")
@@ -275,6 +281,8 @@ public abstract class AbstractRestTest {
     @Autowired
     private PartyTypeRepository partyTypeRepository;
     @Autowired
+    private PacketTypeRepository packetTypeRepository;
+    @Autowired
     private DataRecordRefRepository dataRecordRefRepository;
     @Autowired
     private NodeRepository nodeRepository;
@@ -282,6 +290,8 @@ public abstract class AbstractRestTest {
     private PartyNameRepository partyNameRepository;
     @Autowired
     private NodeRegisterRepository nodeRegisterRepository;
+    @Autowired
+    private PacketRepository packetRepository;
 
     @Before
     public void setUp() {
@@ -294,6 +304,8 @@ public abstract class AbstractRestTest {
         // potřebné delete, jen data, ne číselníky
         arrDataRepository.deleteAll();
         partyNameRepository.unsetAllParty();
+
+        packetRepository.deleteAll();
 
         partyRepository.deleteAll();
         partyNameRepository.deleteAll();
@@ -573,6 +585,10 @@ public abstract class AbstractRestTest {
         return partyTypeRepository.findOne(2);
     }
 
+    protected ArrPacketType findPacketType() {
+        return packetTypeRepository.findOne(1);
+    }
+    
     protected ParParty createParParty() {
         final ParPartyType partyType = findPartyType();
         final RegRecord record = createRecord(1);
@@ -892,6 +908,24 @@ public abstract class AbstractRestTest {
         return response.getBody().as(ParParty.class);
     }
 
+    /**
+     * Vytvoří přes REST obal.
+     *
+     * @return obal
+     */
+    protected ArrPacket restCreatePacket(ArrFindingAid findingAid) {
+        final ArrPacketType partySubtype = findPacketType();
+
+        ArrPacket requestBody = new ArrPacket();
+        requestBody.setPacketType(partySubtype);
+        requestBody.setInvalidPacket(false);
+        requestBody.setFindingAid(findingAid);
+        requestBody.setStorageNumber("123456789");
+
+        Response response = put(spec -> spec.body(requestBody), INSERT_ABSTRACT_PACKET);
+
+        return response.getBody().as(ArrPacket.class);
+    }
 
     /**
      * Najde podřízené úrovně.
