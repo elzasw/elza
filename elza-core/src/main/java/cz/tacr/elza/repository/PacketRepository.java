@@ -11,6 +11,6 @@ import cz.tacr.elza.domain.ArrPacket;
  * @since 1.9.2015
  */
 @Repository
-public interface PacketRepository extends JpaRepository<ArrPacket, Integer> {
+public interface PacketRepository extends JpaRepository<ArrPacket, Integer>, PacketRepositoryCustom {
 
 }

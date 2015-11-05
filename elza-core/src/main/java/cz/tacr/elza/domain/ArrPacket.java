@@ -22,6 +22,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity(name = "arr_packet")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ArrPacket implements cz.tacr.elza.api.ArrPacket<ArrPacketType, ArrFindingAid> {
+    public final static String PACKET_ID = "packetId";
+    public final static String PACKET_TYPE = "packetType";
+    public final static String STORAGE_NUMBER = "storageNumber";
 
     @Id
     @GeneratedValue

@@ -19,6 +19,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ArrPacketType implements cz.tacr.elza.api.ArrPacketType {
 
+    public final static String PACKET_TYPE_ID = "packetTypeId";
+
     @Id
     @GeneratedValue
     private Integer packetTypeId;
