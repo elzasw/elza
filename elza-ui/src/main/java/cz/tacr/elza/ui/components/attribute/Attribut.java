@@ -42,23 +42,74 @@ import cz.tacr.elza.domain.RulDescItemType;
 
 
 /**
+ * Komponenta pro atribut.
+ *
  * @author Martin Šlapa
  * @since 2.10.2015
  */
 public class Attribut extends CssLayout implements Components {
 
+    /**
+     * Kontejner pro atribut.
+     */
     ChildComponentContainer<ArrDescItem, AttributValue> childs;
+
+    /**
+     * Seznam specifikací.
+     */
     List<RulDescItemSpec> descItemSpecs;
+
+    /**
+     * Typ dat.
+     */
     RulDataType dataType;
+
+    /**
+     * Uzel.
+     */
     ArrNode node;
 
+    /**
+     * Seznam smazaných atributů.
+     */
     List<ArrDescItem> deleteDescItems;
+
+    /**
+     * Identifikátor verze.
+     */
     private Integer versionId;
+
+    /**
+     * Typ atrubutu.
+     */
     private RulDescItemType type;
+
+    /**
+     * Akce pro přidání dalšího atributu.
+     */
     private AxAction newValueButton;
+
+    /**
+     * Loader hodnot atrubutu.
+     */
     private AttributeValuesLoader attributeValuesLoader;
+
+    /**
+     * Seznam typů kalendárů.
+     */
     private List<ArrCalendarType> calendarTypes;
 
+    /**
+     * Konstruktor pro nový atribut.
+     * @param itemExtList   seznam hodnot atrubutu
+     * @param descItemSpecs seznam specifikací
+     * @param type          typ atributu
+     * @param dataType      datový typ
+     * @param node          uzel
+     * @param versionId     identifikátor verze
+     * @param attributeValuesLoader loader hodnot atributu
+     * @param calendarTypes seznam kalendářů
+     */
     public Attribut(List<ArrDescItem> itemExtList,
                     List<RulDescItemSpec> descItemSpecs,
                     RulDescItemType type,
@@ -110,19 +161,35 @@ public class Attribut extends CssLayout implements Components {
     }
 
 
+    /**
+     * Vrací seznam hodnot atributů
+     * @return  seznam hodnot atributů
+     */
     public List<ArrDescItem> getKeys() {
         List<ArrDescItem> collect = childs.getChils().stream().map(AttributValue::commit).collect(Collectors.toList());
         return collect;
     }
 
+    /**
+     * Obnovení hodnot atributů
+     */
     public void revert() {
         childs.getChils().forEach(components1 -> components1.revert());
     }
 
+    /**
+     * Vrací uzel
+     * @return uzel
+     */
     public ArrNode getNode() {
         return node;
     }
 
+    /**
+     * Vytvoření hodnoty atributu podle datového typu
+     * @param dataType  datový typ
+     * @return  vytvořená hodnota atributu
+     */
     public ArrDescItem createDescItemByType(RulDataType dataType) {
         Assert.notNull(dataType);
 
@@ -154,6 +221,11 @@ public class Attribut extends CssLayout implements Components {
         }
     }
 
+    /**
+     * Vytvoření gui objektu pro hodnotu atributu.
+     * @param a hodnota atributu
+     * @return  gui objekt
+     */
     public AttributValue newAtributValue(final ArrDescItem a) {
 
         Label sortIcon = new Label();
@@ -210,6 +282,10 @@ public class Attribut extends CssLayout implements Components {
         return value;
     }
 
+    /**
+     * Smazání gui objektu podle hodnoty atributu
+     * @param a hodnota atributu
+     */
     private void deleteAtributValue(final ArrDescItem a) {
         childs.removeComponent(a);
         if (a.getDescItemObjectId() != null) {
@@ -218,10 +294,17 @@ public class Attribut extends CssLayout implements Components {
         precislujPoradi();
     }
 
+    /**
+     * Vrací smazané hodnoty atributu
+     * @return smazané hodnoty atributu
+     */
     public List<ArrDescItem> getDeleteDescItems() {
         return deleteDescItems;
     }
 
+    /**
+     * Provede přečíslování pořadí u hodnot atributů
+     */
     public void precislujPoradi() {
         Map<RulDescItemSpec, Integer> specIntegerMap = new HashMap<>();
         for (int i = 0; i < childs.getComponentCount(); i++) {
@@ -243,6 +326,10 @@ public class Attribut extends CssLayout implements Components {
         }
     }
 
+    /**
+     * Vrací identifikátor verze
+     * @return  identifikátor verze
+     */
     public Integer getVersionId() {
         return versionId;
     }

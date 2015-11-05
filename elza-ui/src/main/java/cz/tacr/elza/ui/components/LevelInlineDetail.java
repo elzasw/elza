@@ -1,5 +1,21 @@
 package cz.tacr.elza.ui.components;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.label.ContentMode;
@@ -7,6 +23,7 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
+
 import cz.req.ax.AxAction;
 import cz.req.ax.AxWindow;
 import cz.tacr.elza.api.controller.PartyManager;
@@ -36,24 +53,11 @@ import cz.tacr.elza.ui.components.attribute.NodeRegisterLink;
 import cz.tacr.elza.ui.components.autocomplete.AutocompleteItem;
 import cz.tacr.elza.ui.utils.ConcurrentUpdateExceptionHandler;
 import cz.tacr.elza.ui.utils.ElzaNotifications;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 
 /**
+ * Detail uzlu - výpis hodnot atributů
+ *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 21.8.2015
  */
@@ -61,8 +65,14 @@ import java.util.stream.Collectors;
 @Scope("prototype")
 public class LevelInlineDetail extends CssLayout implements Components, InitializingBean {
 
+    /**
+     * Kód nadpisu
+     */
     public static final String TITLE_CODE = "ZP2015_TITLE";
 
+    /**
+     * Detail obsahu
+     */
     private CssLayout detailContent;
 
     @Autowired
@@ -77,23 +87,48 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
     @Autowired
     private RegistryManager registryManager;
 
-
+    /**
+     * Loader hodnot atributu
+     */
     private AttributeValuesLoader attributeValuesLoader;
 
+    /**
+     * Atribut
+     */
     private Attribut attribut;
+
+    /**
+     * Okno editace vazeb na rejstříková hesla
+     */
     private NodeRegisterLink nodeRegisterLink;
+
+    /**
+     * Okno atributu pro vytvoření / editaci
+     */
     private AxWindow attributWindow = null;
+
+    /**
+     * Kombobox pro atributy
+     */
     private ComboBox attributesComboBox;
+
+    /**
+     * Label pro nadpis
+     */
     private Label lblTitle;
 
+    /**
+     * Callback zařazení uzlu
+     */
     private Callback<ArrLevelExt> attributeEditCallback;
-
-
 
     public LevelInlineDetail() {
     }
 
-
+    /**
+     * Uložení hodnot atributu
+     * @param attribut  atribut
+     */
     private void saveAttributeWithVersion(final Attribut attribut) {
         try {
             saveAttribute(attribut, true);
@@ -104,6 +139,10 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         }
     }
 
+    /**
+     * Uložení hodnot atributu bez verzování
+     * @param attribut  atribut
+     */
     private void saveAttributeWithoutVersion(final Attribut attribut) {
         try {
             saveAttribute(attribut, false);
@@ -117,7 +156,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
     /**
      * Vyzvedne objekty pro save a delete z podkladového objektu layoutu a uloží.
      *
-     * @param nodeRegisterLink  komponenta s objekty pro akce
+     * @param nodeRegisterLink komponenta s objekty pro akce
      */
     private void saveNodeRegisterLinkWithVersion(final NodeRegisterLink nodeRegisterLink) {
         try {
@@ -129,7 +168,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
             // obnova atributu vpravo
             ArrLevelExt level = arrangementManager.getLevel(nodeRegisterLink.getNode().getNodeId(),
-                                                            nodeRegisterLink.getVersionId(), null);
+                    nodeRegisterLink.getVersionId(), null);
             showLevelDetail(level, level.getDescItemList(), nodeRegisterLink.getVersionId(), attributeEditCallback);
             showNodeRegisterLink(nodeRegisterLink.getVersionId(), level.getNode());
 
@@ -144,6 +183,11 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         }
     }
 
+    /**
+     * Uložení hodnot atributu
+     * @param attribut  atribut
+     * @param createNewVersion  vytvoření nové verze
+     */
     private void saveAttribute(final Attribut attribut, final Boolean createNewVersion) {
         List<ArrDescItem> descItems = attribut.getKeys();
         List<ArrDescItem> deleteDescItems = attribut.getDeleteDescItems();
@@ -171,7 +215,13 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         }
     }
 
-
+    /**
+     *
+     * @param level                 zařazení uzlu
+     * @param descItemList          seznam hodnot atributu
+     * @param versionId             identifikátor verze
+     * @param attributeEditCallback callback attributu
+     */
     public void showLevelDetail(final ArrLevelExt level,
                                 final List<ArrDescItem> descItemList,
                                 final Integer versionId, final Callback<ArrLevelExt> attributeEditCallback) {
@@ -210,17 +260,17 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
                 value = specName + ": " + value;
             }
 
-            if(item.getDescItemType().getDescItemTypeId().equals(lastDescItemTypeId)){
+            if (item.getDescItemType().getDescItemTypeId().equals(lastDescItemTypeId)) {
                 caption = "";
                 Label lblValue = newLabel(value, "multi-value");
                 lblValue.setContentMode(ContentMode.HTML);
                 grid.addRow(caption, lblValue);
-            }else{
+            } else {
                 caption = item.getDescItemType().getName();
 
                 CssLayout captionLayout = cssLayoutExt(null);
                 captionLayout.addComponent(newLabel(caption));
-                if(versionOpen) {
+                if (versionOpen) {
                     captionLayout.addComponent(createEditButton(
                             (thiz) -> thiz.showEditAttrWindow(level, item.getDescItemType(), versionId)));
                 }
@@ -235,15 +285,14 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         }
 
 
-
         detailContent.addComponent(grid);
     }
 
     /**
      * Vytvoří komponentu pro vazbu rejstříkových hesel. ZObrazí existující hesla a možnost editace.
      *
-     * @param versionId     id verze
-     * @param node          node
+     * @param versionId id verze
+     * @param node      node
      */
     public void showNodeRegisterLink(final Integer versionId, final ArrNode node) {
 
@@ -289,19 +338,33 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         detailContent.addComponent(grid);
     }
 
-    private void sendEditCallback(final ArrLevelExt level){
-        if(attributeEditCallback != null){
+    /**
+     * Spuštění callbacku pro zařazení uzlu
+     * @param level zařazení uzlu
+     */
+    private void sendEditCallback(final ArrLevelExt level) {
+        if (attributeEditCallback != null) {
             attributeEditCallback.callback(level);
         }
     }
 
+    /**
+     * Je verze otevřená?
+     * @param versionId identifikátor verze
+     * @return Je verze otevřená?
+     */
     private boolean isVersionOpen(final Integer versionId) {
         Assert.notNull(versionId);
 
         return arrangementManager.getFaVersionById(versionId).getLockChange() == null;
     }
 
-    public void initContentTitle(final ArrLevelExt level, final List<ArrDescItem> descItems){
+    /**
+     * Inicializace nadpisu
+     * @param level      zařazení uzlu
+     * @param descItems  seznam hodnot atributu
+     */
+    public void initContentTitle(final ArrLevelExt level, final List<ArrDescItem> descItems) {
         Assert.notNull(descItems);
 
         lblTitle.setValue("Detail archivního popisu s id=" + level.getNode().getNodeId());
@@ -309,13 +372,20 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         for (final ArrDescItem descItem : descItems) {
             if (descItem.getDescItemType().getCode().equals(TITLE_CODE)) {
                 ArrDescItemString descItemString = (ArrDescItemString) descItem;
-                if (StringUtils.isNotBlank(descItemString.getValue()))
-                lblTitle.setValue(descItemString.getValue());
+                if (StringUtils.isNotBlank(descItemString.getValue())) {
+                    lblTitle.setValue(descItemString.getValue());
+                }
                 break;
             }
         }
     }
 
+    /**
+     * Zobrazit editační okno
+     * @param level         zařazení uzlu
+     * @param type          typ hodnoty atributu
+     * @param versionId     identifikátor verze
+     */
     private void showEditAttrWindow(final ArrLevelExt level, final RulDescItemType type, final Integer versionId) {
         if (type != null) {
             List<ArrDescItem> listItem = arrangementManager
@@ -353,9 +423,9 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
     /**
      * Otevře okno pro editaci vazeb na hesla.
      *
-     * @param node          uzel
-     * @param versionId     id verze
-     * @param data          existující vazby pro daný uzel a verzi
+     * @param node      uzel
+     * @param versionId id verze
+     * @param data      existující vazby pro daný uzel a verzi
      */
     private void showEditNodeRecordLinkWindow(final ArrNode node, final Integer versionId, final List<ArrNodeRegister> data) {
 
@@ -371,7 +441,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
                     .style("window-detail").closeListener(e -> {
                 attributesComboBox.setValue(null);
             }).menuActions(AxAction.of(nodeRegisterLink).caption("Uložit").action(this::saveNodeRegisterLinkWithVersion)
-                    .exception(new ConcurrentUpdateExceptionHandler())
+                            .exception(new ConcurrentUpdateExceptionHandler())
             );
 
         } catch (final Exception e) {
@@ -382,7 +452,11 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         UI.getCurrent().addWindow(attributWindow.getWindow());
     }
 
-
+    /**
+     * Vytvoření tlačítka pro editaci
+     * @param function  funkce
+     * @return  editační tlačítko
+     */
     private Button createEditButton(final Consumer<LevelInlineDetail> function) {
 
         LevelInlineDetail thiz = this;
@@ -400,6 +474,10 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         return button;
     }
 
+    /**
+     * Vrací loader hodnot atributu
+     * @return  loader hodnot atributu
+     */
     private AttributeValuesLoader getAttributeValuesLoader() {
         if (attributeValuesLoader == null) {
             attributeValuesLoader = new AttributeValuesLoader() {
@@ -429,7 +507,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
                 @Override
                 public List<AutocompleteItem> loadRecordRefItemsFulltext(final String text, final RulDescItemSpec specification) {
-                    if(specification == null){
+                    if (specification == null) {
                         return Collections.EMPTY_LIST;
                     }
 

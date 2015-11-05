@@ -25,21 +25,48 @@ import cz.tacr.elza.ui.components.autocomplete.Autocomplete;
 
 
 /**
+ * Komponenta pro hodnotu atributu.
+ *
  * @author Martin Šlapa
  * @since 2.10.2015
  */
 public class AttributValue extends CssLayout implements Components {
 
+    /**
+     * Formulář hodnoty atributu
+     */
     AxForm<ArrDescItem> form;
 
+    /**
+     * Wrapper pro jednoduchou změnu pozice
+     */
     private DragAndDropWrapper wrapper;
 
+    /**
+     * Loader hodnot atributu
+     */
     private AttributeValuesLoader attributeValuesLoader;
 
+    /**
+     * Kombobox pro specifikaci atributu
+     */
     private ComboBox specificationCombo;
 
+    /**
+     * Pomocná proměnná pro zálohování identifikátor hodnoty atributu.
+     */
     private Integer bckDescItemObjectId;
 
+    /**
+     * Konstruktor pro novou hodnotu atributu
+     * @param descItemExt   hodnota atributu
+     * @param descItemSpecs specifikace atributu
+     * @param dataType      typ atributu
+     * @param deleteAction  akce při smazání
+     * @param wrapper       obalení pro pozicování
+     * @param attributeValuesLoader loader hodnot atributu
+     * @param calendarTypes typy kalendářů
+     */
     public AttributValue(ArrDescItem descItemExt, List<RulDescItemSpec> descItemSpecs, RulDataType dataType,
                          AxAction deleteAction, DragAndDropWrapper wrapper, final AttributeValuesLoader attributeValuesLoader, List<ArrCalendarType> calendarTypes) {
         this.wrapper = wrapper;
@@ -122,6 +149,10 @@ public class AttributValue extends CssLayout implements Components {
         addComponent(deleteAction.button());
     }
 
+    /**
+     * Vytvoření autocomplete objektu pro partyRef
+     * @return  autocomplete objekt
+     */
     private Autocomplete createPartyRefAutocomplete(){
         Autocomplete autocomplete = new Autocomplete((text)->{
             return attributeValuesLoader.loadPartyRefItemsFulltext(text);
@@ -131,6 +162,10 @@ public class AttributValue extends CssLayout implements Components {
         return autocomplete;
     }
 
+    /**
+     * Vytvoření autocomplete objektu pro packetRef
+     * @return autocomplete objekt
+     */
     private Autocomplete createPacketRefAutocomplete(){
         Autocomplete autocomplete = new Autocomplete((text)->{
             return attributeValuesLoader.loadPacketRefItemsFulltext(text);
@@ -140,6 +175,10 @@ public class AttributValue extends CssLayout implements Components {
         return autocomplete;
     }
 
+    /**
+     * Vytvoření autocomplete objektu pro recordRef
+     * @return autocomplete objekt
+     */
     private Autocomplete createRecordRefAutocomplete(){
         Autocomplete autocomplete = new Autocomplete((text)->{
             if(specificationCombo == null){
@@ -154,6 +193,10 @@ public class AttributValue extends CssLayout implements Components {
         return autocomplete;
     }
 
+    /**
+     * Inicializace autocomplete objektu
+     * @param autocomplete inicializovaný autocomplete objekt
+     */
     private void initAutocomplete(final Autocomplete autocomplete) {
         autocomplete.reloadItems("");
         autocomplete.addTextChangeListener((event) -> {
@@ -163,11 +206,18 @@ public class AttributValue extends CssLayout implements Components {
         });
     }
 
-
+    /**
+     * Navrací wrapper
+     * @return  wrapper
+     */
     public DragAndDropWrapper getWrapper() {
         return wrapper;
     }
 
+    /**
+     * Provede validaci dat a navrací výslednou hodnotu atributu
+     * @return  hodnota atributu
+     */
     public ArrDescItem commit() {
         ArrDescItem descItem = form.commit();
         if (descItem instanceof ArrDescItemUnitdate) {
@@ -181,11 +231,17 @@ public class AttributValue extends CssLayout implements Components {
         return descItem;
     }
 
+    /**
+     * Revertování hodnoty atributu
+     */
     public void revert() {
         ArrDescItem descItem = form.getValue();
         descItem.setDescItemObjectId(bckDescItemObjectId);
     }
 
+    /**
+     * Listener pro změnu hodnoty
+     */
     private class SpecificationValueChangeListener implements Property.ValueChangeListener{
 
         @Override
