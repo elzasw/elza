@@ -15,11 +15,15 @@ import com.vaadin.event.dd.acceptcriteria.AcceptAll;
 import com.vaadin.event.dd.acceptcriteria.AcceptCriterion;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.ui.Button;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.DragAndDropWrapper;
 import com.vaadin.ui.Label;
 
 import cz.req.ax.AxAction;
+import cz.req.ax.AxForm;
+import cz.req.ax.AxItemContainer;
+import cz.req.ax.AxWindow;
 import cz.req.ax.ChildComponentContainer;
 import cz.req.ax.Components;
 import cz.tacr.elza.domain.ArrCalendarType;
@@ -36,6 +40,8 @@ import cz.tacr.elza.domain.ArrDescItemText;
 import cz.tacr.elza.domain.ArrDescItemUnitdate;
 import cz.tacr.elza.domain.ArrDescItemUnitid;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ArrPacketType;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
@@ -47,7 +53,7 @@ import cz.tacr.elza.domain.RulDescItemType;
  * @author Martin Šlapa
  * @since 2.10.2015
  */
-public class Attribut extends CssLayout implements Components {
+public abstract class Attribut extends CssLayout implements Components {
 
     /**
      * Kontejner pro atribut.
@@ -133,6 +139,10 @@ public class Attribut extends CssLayout implements Components {
         nadpis.addStyleName("label-name");
 
         addComponent(nadpis);
+        
+        if (dataType.getCode().equalsIgnoreCase("PACKET_REF")) {
+            addComponent(cssLayout("", createPacketButton()));
+        }
 
         childs = new ChildComponentContainer<>();
         childs.addStyleName("container-values");
@@ -275,6 +285,7 @@ public class Attribut extends CssLayout implements Components {
         wrapper.setSizeUndefined();
 
         AttributValue value = new AttributValue(a, descItemSpecs, dataType, AxAction.of(a).icon(FontAwesome.TRASH_O).action(this::deleteAtributValue), wrapper, attributeValuesLoader, calendarTypes);
+
         a.setPosition(childs.getComponentCount() + 1);
         a.setNode(node);
         childs.addComponent(a, value);
@@ -332,5 +343,42 @@ public class Attribut extends CssLayout implements Components {
      */
     public Integer getVersionId() {
         return versionId;
+    }
+
+    private void createFormularPacket() {
+        AxForm<ArrPacket> form = AxForm.init(ArrPacket.class);
+        form.addStyleName("form");
+        AxItemContainer<ArrPacketType> container = AxItemContainer.init(ArrPacketType.class);
+        container.addAll(getPacketTypes());
+        form.addCombo("Typ obalu", "packetType", container, "name");
+        form.addField("Číslo", "storageNumber").required();
+        form.addField("Zneplatněný", "invalidPacket");
+
+        new AxWindow().caption("Vytvoření obalu").components(form).buttonClose().buttonPrimary(
+            new AxAction<ArrPacket>().caption("Uložit")
+            .value(form::commit).action(this::createPacket)
+            .exception(ex -> ex.printStackTrace())
+            ).modal().style("window-detail").show();
+    }
+
+    private void createPacket(final ArrPacket packet) {
+        createPacket(packet, versionId);
+    }
+
+    protected abstract void createPacket(ArrPacket packet, Integer versionId);
+
+    protected abstract List<ArrPacketType> getPacketTypes();
+
+    private Button createPacketButton() {
+        Button button = new Button(FontAwesome.PLUS);
+        button.setCaption("Vytvořit obal");
+        button.addClickListener(new Button.ClickListener() {
+            @Override
+            public void buttonClick(final Button.ClickEvent event) {
+                createFormularPacket();
+            }
+        });
+
+        return button;
     }
 }

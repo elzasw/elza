@@ -34,10 +34,13 @@ import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemString;
+import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ArrPacketType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
@@ -46,6 +49,7 @@ import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.domain.vo.ArrNodeRegisterPack;
+import cz.tacr.elza.suzap.v1.xml.FindingAid;
 import cz.tacr.elza.ui.components.attribute.Attribut;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesComparator;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesLoader;
@@ -224,7 +228,8 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
      */
     public void showLevelDetail(final ArrLevelExt level,
                                 final List<ArrDescItem> descItemList,
-                                final Integer versionId, final Callback<ArrLevelExt> attributeEditCallback) {
+                                final Integer versionId,
+                                final Callback<ArrLevelExt> attributeEditCallback) {
         this.attributeEditCallback = attributeEditCallback;
         detailContent.removeAllComponents();
         initContentTitle(level, descItemList);
@@ -393,7 +398,22 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             List<RulDescItemSpec> listSpec = ruleSetManager.getDescItemSpecsFortDescItemType(type);
             List<ArrCalendarType> calendarTypes = arrangementManager.getCalendarTypes().getCalendarTypes();
             RulDataType dataType = ruleSetManager.getDataTypeForDescItemType(type);
-            attribut = new Attribut(listItem, listSpec, type, dataType, level.getNode(), versionId, getAttributeValuesLoader(), calendarTypes);
+            
+            attribut = new Attribut(listItem, listSpec, type, dataType, level.getNode(), versionId, getAttributeValuesLoader(), calendarTypes) {
+                
+                @Override
+                public List<ArrPacketType> getPacketTypes() {
+                    List<ArrPacketType> packetTypes = arrangementManager.getPacketTypes();
+                    return packetTypes;
+                }
+
+                @Override
+                public void createPacket(ArrPacket packet, Integer versionId) {
+                    ArrFindingAidVersion version = arrangementManager.getFaVersionById(versionId);
+                    packet.setFindingAid(version.getFindingAid());
+                    arrangementManager.insertPacket(packet);
+                }
+            };
 
             try {
 

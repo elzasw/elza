@@ -38,7 +38,7 @@ import java.util.List;
 public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFindingAidVersion, DI extends ArrDescItem,
     DISP extends ArrDescItemSavePack, FL extends ArrLevel, FLP extends ArrLevelPack, N extends ArrNode,
     DIS extends ArrDescItems, NHP extends ArrNodeHistoryPack, CTL extends ArrCalendarTypes, ANR extends ArrNodeRegister,
-        ANRP extends ArrNodeRegisterPack, AP extends ArrPacket> {
+        ANRP extends ArrNodeRegisterPack, AP extends ArrPacket, APT extends cz.tacr.elza.api.ArrPacketType> {
 
     /** Formát popisu atributu - dlouhá verze. */
     String FORMAT_ATTRIBUTE_FULL = "FULL";
@@ -320,4 +320,16 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @return aktualizovaný záznam
      */
     AP updatePacket(AP packet);
+
+    /**
+     * Zneaktivní obal.
+     * @param packetId id obalu.
+     */
+    void deactivatePacket(Integer packetId);
+
+    /**
+     * Vrátí všechny typy obalů.
+     * @return všechny typy obalů.
+     */
+    List<APT> getPacketTypes();
 }

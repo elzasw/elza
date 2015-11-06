@@ -78,18 +78,14 @@ public class PacketRepositoryImpl implements PacketRepositoryCustom {
 
         String searchValue = "%" + searchString + "%";
 
-        Predicate condition = null;
+        Predicate condition = builder.notEqual(packet.get(ArrPacket.INVALID_PACKET), Boolean.TRUE);
         if (searchString != null) {
-            condition = builder.like(builder.lower(packet.get(ArrPacket.STORAGE_NUMBER)), searchValue);
+            condition = builder.and(condition, builder.like(builder.lower(packet.get(ArrPacket.STORAGE_NUMBER)), searchValue));
         }
 
         if (packetTypeId != null) {
             Predicate conditionType = builder.equal(partyType.get(ArrPacketType.PACKET_TYPE_ID), packetTypeId);
-            if (condition == null) {
-                condition = conditionType;
-            } else {
-                condition = builder.and(condition, conditionType);
-            }
+            condition = builder.and(condition, conditionType);
         }
 
         return condition;

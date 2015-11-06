@@ -25,6 +25,7 @@ public class ArrPacket implements cz.tacr.elza.api.ArrPacket<ArrPacketType, ArrF
     public final static String PACKET_ID = "packetId";
     public final static String PACKET_TYPE = "packetType";
     public final static String STORAGE_NUMBER = "storageNumber";
+    public final static String INVALID_PACKET = "invalidPacket";
 
     @Id
     @GeneratedValue

@@ -44,6 +44,7 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ArrPacketType;
+import cz.tacr.elza.domain.ParPartyTypeExt;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulDescItemSpec;
@@ -86,7 +87,7 @@ import cz.tacr.elza.repository.RuleSetRepository;
 @RequestMapping("/api/arrangementManager")
 public class ArrangementManager implements cz.tacr.elza.api.controller.ArrangementManager<ArrFindingAid, ArrFindingAidVersion,
     ArrDescItem, ArrDescItemSavePack, ArrLevel, ArrLevelWithExtraNode, ArrNode, ArrDescItems, ArrNodeHistoryPack,
-    ArrCalendarTypes, ArrNodeRegister, ArrNodeRegisterPack, ArrPacket> {
+    ArrCalendarTypes, ArrNodeRegister, ArrNodeRegisterPack, ArrPacket, ArrPacketType> {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -2413,7 +2414,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @RequestMapping(value = "/insertPacket", method = RequestMethod.PUT)
     public ArrPacket insertPacket(@RequestBody final ArrPacket packet) {
         ArrPacket newPacket = new ArrPacket();
-        updateParty(packet, newPacket);
+        updatePacket(packet, newPacket);
         return newPacket;
     }
 
@@ -2425,12 +2426,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         Assert.notNull(packetId);
         ArrPacket checkPacket = packetRepository.findOne(packetId);
         Assert.notNull(checkPacket, "Nebyla nalezena ArrPacket s id " + packetId);
-        updateParty(packet, packet);
+        updatePacket(packet, packet);
         return packet;
     }
 
     @Transactional
-    private void updateParty(final ArrPacket source, final ArrPacket target) {
+    private void updatePacket(final ArrPacket source, final ArrPacket target) {
         Assert.notNull(source.getPacketType(), "Není vyplněné packet type");
         Assert.notNull(source.getFindingAid(), "Není vyplněné finding aid");
         Assert.notNull(source.getStorageNumber(), "Není vyplněné storage number");
@@ -2454,5 +2455,18 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         packetRepository.save(target);
     }
 
-//    -- vytvorit metody create a update packet
+    @Override
+    @RequestMapping(value = "/insertPacket", method = RequestMethod.GET)
+    public void deactivatePacket(@RequestParam("packetId") final Integer packetId) {
+        final ArrPacket packet = packetRepository.findOne(packetId);
+        packet.setInvalidPacket(Boolean.FALSE);
+        packetRepository.save(packet);
+    }
+
+    @RequestMapping(value = "/getPacketTypes", method = RequestMethod.GET)
+    @Override
+    public List<ArrPacketType> getPacketTypes() {
+        List<ArrPacketType> result = packetTypeRepository.findAll();
+        return result;
+    }
 }

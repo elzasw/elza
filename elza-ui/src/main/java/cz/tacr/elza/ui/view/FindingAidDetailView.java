@@ -210,7 +210,8 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
             public void itemClick(final ItemClickEvent event) {
                 ArrLevel node = (ArrLevel) event.getItemId();
                 ArrLevelExt level = arrangementManager.getLevel(node.getNode().getNodeId(), version.getFindingAidVersionId(), null);
-                levelDetailConteiner.showLevelDetail(level, level.getDescItemList(), version.getFindingAidVersionId(), creteAttributeEditCallback());
+                levelDetailConteiner.showLevelDetail(level, level.getDescItemList(), version.getFindingAidVersionId(),
+                    creteAttributeEditCallback());
                 levelDetailConteiner.showNodeRegisterLink(version.getFindingAidVersionId(), level.getNode());
             }
         });
@@ -328,7 +329,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
     private void showDetailAP() {
         table.select(null);
         ArrLevelExt level = arrangementManager.getLevel(rootNode.getNode().getNodeId(), version.getFindingAidVersionId(), null);
-        levelDetailConteiner.showLevelDetail(level, level.getDescItemList(), version.getFindingAidVersionId(),null);
+        levelDetailConteiner.showLevelDetail(level, level.getDescItemList(), version.getFindingAidVersionId(), null);
         levelDetailConteiner.showNodeRegisterLink(version.getFindingAidVersionId(), level.getNode());
     }
 
