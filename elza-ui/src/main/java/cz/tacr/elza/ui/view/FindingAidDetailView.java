@@ -21,6 +21,7 @@ import cz.req.ax.AxWindow;
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDescItemUnitdate;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
@@ -38,6 +39,7 @@ import cz.tacr.elza.ui.components.LevelInlineDetail;
 import cz.tacr.elza.ui.components.TreeTable;
 import cz.tacr.elza.ui.utils.ConcurrentUpdateExceptionHandler;
 import cz.tacr.elza.ui.utils.ElzaNotifications;
+import cz.tacr.elza.ui.utils.UnitDateConvertor;
 import cz.tacr.elza.ui.window.DescItemTypeWindow;
 import cz.tacr.elza.ui.window.LevelHistoryWindow;
 import cz.tacr.elza.ui.window.PosAction;
@@ -785,6 +787,11 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
         for (ArrDescItem arrDescItemExt : descItemList) {
             Integer descItemTypeId = arrDescItemExt.getDescItemType().getDescItemTypeId();
             String dataStr = arrDescItemExt.toString();
+
+            if(arrDescItemExt instanceof ArrDescItemUnitdate) {
+                dataStr = UnitDateConvertor.convertToString((ArrDescItemUnitdate) arrDescItemExt);
+            }
+
             if (arrDescItemExt.getDescItemSpec() != null) {
                 String specShortcut = arrDescItemExt.getDescItemSpec().getShortcut();
                 dataStr = specShortcut + "(" + StringUtils.defaultString(dataStr) + ")";

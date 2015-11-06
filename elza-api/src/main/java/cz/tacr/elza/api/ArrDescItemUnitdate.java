@@ -10,21 +10,27 @@ public interface ArrDescItemUnitdate<FC extends ArrChange, RT extends RulDescIte
 
     String getValueFrom();
 
-    void setValueFrom(final String valueFrom);
+    void setValueFrom(String valueFrom);
 
     Boolean getValueFromEstimated();
 
-    void setValueFromEstimated(final Boolean valueFromEstimated);
+    void setValueFromEstimated(Boolean valueFromEstimated);
 
     String getValueTo();
 
-    void setValueTo(final String valueTo);
+    void setValueTo(String valueTo);
 
     Boolean getValueToEstimated();
 
-    void setValueToEstimated(final Boolean valueToEstimated);
+    void setValueToEstimated(Boolean valueToEstimated);
 
     CT getCalendarType();
 
     void setCalendarType(CT calendarType);
+
+    String getFormat();
+
+    void setFormat(String format);
+
+    void formatAppend(String format);
 }

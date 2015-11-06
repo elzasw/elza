@@ -78,6 +78,16 @@ public class DescItemFactory implements InitializingBean {
 
     private final String PROPERTY_FORMAT = "format";
 
+    /**
+     * Povolenoné zkratky
+     */
+    public final String PATTERN_UNIT_DATA = "(C|Y|YM|D|DT|)";
+
+    /**
+     * Oddělovač intervalu datace
+     */
+    public final String INTERVAL_DELIMITER_UNIT_DATA = "-";
+
     private DefaultMapperFactory factory;
     private MapperFacade facade;
     private LinkedHashMap<Class, JpaRepository> mapRepository;
@@ -408,6 +418,17 @@ public class DescItemFactory implements InitializingBean {
             public void mapAtoB(ArrDescItemUnitdate arrDescItemUnitdate, ArrDataUnitdate arrDataUnitdate, MappingContext context) {
                 arrDataUnitdate.setDataType(arrDescItemUnitdate.getDescItemType().getDataType());
                 arrDataUnitdate.setDescItem(arrDescItemUnitdate);
+
+                if (arrDescItemUnitdate.getFormat() == null) {
+                    throw new IllegalArgumentException("Nebyl odeslán formát dat");
+                } else {
+                    String format = arrDescItemUnitdate.getFormat();
+                    if (!format.matches("(" + PATTERN_UNIT_DATA + ")|(" + PATTERN_UNIT_DATA + INTERVAL_DELIMITER_UNIT_DATA + PATTERN_UNIT_DATA + ")")) {
+                        throw new IllegalArgumentException("Neplatný formát dat");
+                    }
+                }
+                arrDataUnitdate.setFormat(arrDescItemUnitdate.getFormat());
+
                 if (arrDescItemUnitdate.getCalendarType() == null) {
                     throw new IllegalArgumentException("Nebyl zvolen kalendar");
                 }
@@ -416,7 +437,7 @@ public class DescItemFactory implements InitializingBean {
                 try {
                     String value = arrDescItemUnitdate.getValueFrom();
                     if (value != null) {
-                        LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                        value = LocalDateTime.parse(value, DateTimeFormatter.ISO_DATE_TIME).toString();
                     }
                     arrDataUnitdate.setValueFrom(value);
                 } catch (DateTimeParseException e) {
@@ -428,11 +449,21 @@ public class DescItemFactory implements InitializingBean {
                 try {
                     String value = arrDescItemUnitdate.getValueTo();
                     if (value != null) {
-                        LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                        value = LocalDateTime.parse(value, DateTimeFormatter.ISO_DATE_TIME).toString();
                     }
                     arrDataUnitdate.setValueTo(value);
                 } catch (DateTimeParseException e) {
                     throw new IllegalArgumentException("Nebyl zadan platny format datumu 'do'", e);
+                }
+
+                if (arrDescItemUnitdate.getValueFrom() != null && arrDescItemUnitdate.getValueTo() != null) {
+                    LocalDateTime from = LocalDateTime.parse(arrDescItemUnitdate.getValueFrom(), DateTimeFormatter.ISO_DATE_TIME);
+                    LocalDateTime to = LocalDateTime.parse(arrDescItemUnitdate.getValueTo(), DateTimeFormatter.ISO_DATE_TIME);
+                    if (from.isAfter(to)) {
+                        throw new IllegalArgumentException("Neplatný interval ISO datumů: od > do");
+                    }
+                } else if (arrDescItemUnitdate.getValueFrom() == null && arrDescItemUnitdate.getValueTo() == null) {
+                    throw new IllegalArgumentException("Nebyl zadán interval ISO datumů");
                 }
 
                 arrDataUnitdate.setValueToEstimated(arrDescItemUnitdate.getValueToEstimated());
@@ -446,6 +477,7 @@ public class DescItemFactory implements InitializingBean {
                 arrDescItemUnitdate.setValueFromEstimated(arrDataUnitdate.getValueFromEstimated());
                 arrDescItemUnitdate.setValueTo(arrDataUnitdate.getValueTo());
                 arrDescItemUnitdate.setValueToEstimated(arrDataUnitdate.getValueToEstimated());
+                arrDescItemUnitdate.setFormat(arrDataUnitdate.getFormat());
             }
         }).register();
 
@@ -459,6 +491,7 @@ public class DescItemFactory implements InitializingBean {
                 arrDataUnitdateNew.setValueFromEstimated(arrDataUnitdate.getValueFromEstimated());
                 arrDataUnitdateNew.setValueTo(arrDataUnitdate.getValueTo());
                 arrDataUnitdateNew.setValueToEstimated(arrDataUnitdate.getValueToEstimated());
+                arrDataUnitdateNew.setFormat(arrDataUnitdate.getFormat());
             }
         }).register();
     }

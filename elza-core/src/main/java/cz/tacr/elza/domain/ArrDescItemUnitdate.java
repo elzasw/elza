@@ -19,6 +19,8 @@ public class ArrDescItemUnitdate extends ArrDescItem implements cz.tacr.elza.api
 
     private ArrCalendarType calendarType;
 
+    private String format;
+
     @Override
     public String getValueFrom() {
         return this.valueFrom;
@@ -67,6 +69,21 @@ public class ArrDescItemUnitdate extends ArrDescItem implements cz.tacr.elza.api
     @Override
     public void setCalendarType(final ArrCalendarType calendarType) {
         this.calendarType = calendarType;
+    }
+
+    @Override
+    public String getFormat() {
+        return format;
+    }
+
+    @Override
+    public void setFormat(final String format) {
+        this.format = format;
+    }
+
+    @Override
+    public void formatAppend(final String format) {
+        this.format += format;
     }
 
     @Override

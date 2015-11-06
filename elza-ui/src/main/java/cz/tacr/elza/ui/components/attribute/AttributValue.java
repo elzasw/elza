@@ -9,6 +9,7 @@ import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.DragAndDropWrapper;
+import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 
 import cz.req.ax.AxAction;
@@ -21,6 +22,7 @@ import cz.tacr.elza.domain.ArrDescItemUnitdate;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.ui.components.autocomplete.Autocomplete;
+import cz.tacr.elza.ui.utils.UnitDateConvertor;
 
 
 /**
@@ -92,22 +94,17 @@ public class AttributValue extends CssLayout implements Components {
                 form.addField(null, "value").style("long-input");
                 break;
             case "UNITDATE":
+                ArrDescItemUnitdate descItemUnitDate = (ArrDescItemUnitdate) descItemExt;
+                if (descItemUnitDate.getFormat() != null) {
+                    descItemUnitDate.setFormat(UnitDateConvertor.convertToString(descItemUnitDate));
+                }
+                form.addStyleName("datace");
+                form.addCombo("Typ kalendare", "calendarType", calendarTypesContainer, "name").required();
+                form.addField("Hodnota", "format");
+                break;
             case "TEXT":
             case "COORDINATES":
-                form.addStyleName("datace");
-                form.addCombo("Typ kalendare", "calendarType", calendarTypesContainer, "name").required().field().addStyleName("calendar");
-                AxForm.AxField odx = form.addField("Od", "valueFrom");
-                TextField odField = (TextField) odx.field();
-                odField.setNullSettingAllowed(true);
-
-                form.addField("Priblizne", "valueFromEstimated", CheckBox.class).field();
-
-                AxForm.AxField dox = form.addField("Do", "valueTo");
-                TextField doField = (TextField) dox.field();
-                doField.setNullSettingAllowed(true);
-
-
-                form.addField("Priblizne", "valueToEstimated", CheckBox.class);
+                form.addField(null, "value", TextArea.class).field().setNullRepresentation("");
                 break;
             case "FORMATTED_TEXT":
                 form.addRichtext(null, "value").field().setNullRepresentation("");
@@ -221,10 +218,7 @@ public class AttributValue extends CssLayout implements Components {
         ArrDescItem descItem = form.commit();
         if (descItem instanceof ArrDescItemUnitdate) {
             ArrDescItemUnitdate descItemUnitdate = (ArrDescItemUnitdate) descItem;
-            if (descItemUnitdate.getValueFromEstimated() == null)
-                descItemUnitdate.setValueFromEstimated(false);
-            if (descItemUnitdate.getValueToEstimated() == null)
-                descItemUnitdate.setValueToEstimated(false);
+            UnitDateConvertor.convertToUnitDate(descItemUnitdate.getFormat(), descItemUnitdate);
         }
         bckDescItemObjectId = descItem.getDescItemObjectId();
         return descItem;

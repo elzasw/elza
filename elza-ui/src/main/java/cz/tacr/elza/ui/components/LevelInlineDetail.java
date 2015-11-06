@@ -36,6 +36,7 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemString;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrDescItemUnitdate;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
@@ -57,6 +58,7 @@ import cz.tacr.elza.ui.components.attribute.NodeRegisterLink;
 import cz.tacr.elza.ui.components.autocomplete.AutocompleteItem;
 import cz.tacr.elza.ui.utils.ConcurrentUpdateExceptionHandler;
 import cz.tacr.elza.ui.utils.ElzaNotifications;
+import cz.tacr.elza.ui.utils.UnitDateConvertor;
 
 
 /**
@@ -259,6 +261,10 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         for (final ArrDescItem item : descItemList) {
             String caption;
             String value = item.toString();
+
+            if (item instanceof ArrDescItemUnitdate) {
+                value = UnitDateConvertor.convertToString((ArrDescItemUnitdate) item);
+            }
 
             if (item.getDescItemSpec() != null) {
                 String specName = item.getDescItemSpec().getName();

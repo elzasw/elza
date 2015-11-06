@@ -976,8 +976,11 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ArrDescItem descItem = new ArrDescItemUnitdate();
         descItem = createValue(descItem, node, rulDescItemTypeExt);
         ((ArrDescItemUnitdate) descItem).setCalendarType(calendarType);
+        ((ArrDescItemUnitdate) descItem).setValueFrom("2000-01-01T00:00:00");
         ((ArrDescItemUnitdate) descItem).setValueFromEstimated(false);
+        ((ArrDescItemUnitdate) descItem).setValueTo("2000-01-01T23:59:59");
         ((ArrDescItemUnitdate) descItem).setValueToEstimated(false);
+        ((ArrDescItemUnitdate) descItem).setFormat("D");
         return descItem;
     }
 

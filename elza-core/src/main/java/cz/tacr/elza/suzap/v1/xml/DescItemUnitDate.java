@@ -30,6 +30,9 @@ public class DescItemUnitDate extends AbstractDescItem {
     @XmlElement
     private String calendarTypeCode;
 
+    @XmlElement
+    private String format;
+
     public String getValueFrom() {
         return valueFrom;
     }
@@ -68,5 +71,13 @@ public class DescItemUnitDate extends AbstractDescItem {
 
     public void setCalendarTypeCode(String calendarTypeCode) {
         this.calendarTypeCode = calendarTypeCode;
+    }
+
+    public String getFormat() {
+        return format;
+    }
+
+    public void setFormat(String format) {
+        this.format = format;
     }
 }
