@@ -5,7 +5,7 @@
 
   <xs:complexType name="findinig-aid-import">
     <xs:sequence>
-      <xs:element name="findingAid" type="tns:findinig-aid"/>
+      <xs:element minOccurs="0" name="findingAid" type="tns:findinig-aid"/>
       <xs:element minOccurs="0" name="record-list">
         <xs:complexType>
           <xs:sequence>
@@ -139,7 +139,7 @@
       <xs:element name="record" type="xs:string"/>
       <xs:element name="characteristics" type="xs:string"/>
       <xs:element minOccurs="0" name="comment" type="xs:string"/>
-      <xs:element minOccurs="0" name="record-list">
+      <xs:element minOccurs="0" name="sub-record-list">
         <xs:complexType>
           <xs:sequence>
             <xs:element maxOccurs="unbounded" minOccurs="0" name="record" type="tns:record"/>

@@ -17,7 +17,6 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
 import org.apache.commons.lang.math.RandomUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.BeansException;
@@ -301,7 +300,7 @@ public class XmlImportTest implements ApplicationContextAware {
         List<Record> records = new ArrayList<Record>(RECORD_COUNT);
 
         for (int i = 0; i < RECORD_COUNT; i++) {
-            Record record = createRecord(valid, i, 0);
+            Record record = createRecord(valid, i, null);
 
             records.add(record);
         }
@@ -314,11 +313,11 @@ public class XmlImportTest implements ApplicationContextAware {
      *
      * @param valid příznak zda má být heslo validní nebo ne, kvůli testu oproti xsd
      * @param index číslo vytvářeného rejstříkového hesla
-     * @param depth hloubka zanoření v hierarchii hesel
+     * @param parentId id rodiče, null pro kořenový prvek
      *
      * @return rejstříkové heslo
      */
-    private Record createRecord(boolean valid, int index, int depth) {
+    private Record createRecord(boolean valid, int index, String parentId) {
         Record record = new Record();
         record.setCharacteristics("characteristics " + index);
         record.setComment("comment " + index);
@@ -326,11 +325,17 @@ public class XmlImportTest implements ApplicationContextAware {
         record.setExternalSourceCode("externalSourceCode " + index);
         record.setLocal(RandomUtils.nextBoolean());
         record.setRecord("record " + index);
-        String idPrefix = StringUtils.repeat("sub-", depth);
-        if (valid) {
-            record.setRecordId(idPrefix + "recordId-" + index);
+
+        String idPrefix;
+        if (parentId == null) {
+            idPrefix = "recordId";
         } else {
-            record.setRecordId(idPrefix + "recordId " + index);
+            idPrefix = parentId;
+        }
+        if (valid) {
+            record.setRecordId(idPrefix + "-" + index);
+        } else {
+            record.setRecordId(idPrefix + " " + index);
         }
         record.setRegisterTypeCode("registerTypeCode " + index);
         record.setVariantRecords(createVariantRecords());
@@ -339,7 +344,7 @@ public class XmlImportTest implements ApplicationContextAware {
             List<Record> subRecords = new ArrayList<Record>(1);
             record.setRecords(subRecords);
 
-            subRecords.add(createRecord(valid, 1, ++depth));
+            subRecords.add(createRecord(valid, 1, record.getRecordId()));
         }
         return record;
     }

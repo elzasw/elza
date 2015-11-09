@@ -61,7 +61,7 @@ public class Record {
 
     /** Seznam podřízených rejstříků. */
     @XmlElement(name = "record")
-    @XmlElementWrapper(name = "record-list")
+    @XmlElementWrapper(name = "sub-record-list")
     private List<Record> records;
 
     /** Seznam variantních rejstříků. */
