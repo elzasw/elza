@@ -1,4 +1,4 @@
-package cz.tacr.elza.suzap.v1.xml;
+package cz.tacr.elza.xmlimport.v1.vo;
 
 import java.util.Date;
 

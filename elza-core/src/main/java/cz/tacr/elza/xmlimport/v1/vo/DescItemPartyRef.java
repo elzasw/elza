@@ -1,8 +1,8 @@
-package cz.tacr.elza.suzap.v1.xml;
+package cz.tacr.elza.xmlimport.v1.vo;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlType;
 
@@ -18,7 +18,7 @@ public class DescItemPartyRef extends AbstractDescItem {
 
     /** Odkaz do seznamu osob. */
     @XmlIDREF
-    @XmlElement(required = true)
+    @XmlAttribute(required = true)
     private Party party;
 
     public Party getParty() {

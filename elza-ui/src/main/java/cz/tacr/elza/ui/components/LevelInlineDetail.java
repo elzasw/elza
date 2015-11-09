@@ -34,9 +34,8 @@ import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemString;
-import cz.tacr.elza.domain.ArrFindingAid;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrDescItemUnitdate;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
@@ -50,7 +49,6 @@ import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.domain.vo.ArrNodeRegisterPack;
-import cz.tacr.elza.suzap.v1.xml.FindingAid;
 import cz.tacr.elza.ui.components.attribute.Attribut;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesComparator;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesLoader;
@@ -404,9 +402,9 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             List<RulDescItemSpec> listSpec = ruleSetManager.getDescItemSpecsFortDescItemType(type);
             List<ArrCalendarType> calendarTypes = arrangementManager.getCalendarTypes().getCalendarTypes();
             RulDataType dataType = ruleSetManager.getDataTypeForDescItemType(type);
-            
+
             attribut = new Attribut(listItem, listSpec, type, dataType, level.getNode(), versionId, getAttributeValuesLoader(), calendarTypes) {
-                
+
                 @Override
                 public List<ArrPacketType> getPacketTypes() {
                     List<ArrPacketType> packetTypes = arrangementManager.getPacketTypes();

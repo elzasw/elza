@@ -1,4 +1,6 @@
-package cz.tacr.elza.suzap.v1.xml;
+package cz.tacr.elza.xmlimport.v1.vo;
+
+import java.math.BigDecimal;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -6,23 +8,23 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 /**
- * Krátký text.
+ * Desetinné číslo.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 27. 10. 2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "desc-item-string", namespace = NamespaceInfo.NAMESPACE)
-public class DescItemString extends AbstractDescItem {
+@XmlType(name = "desc-item-decimal", namespace = NamespaceInfo.NAMESPACE)
+public class DescItemDecimal extends AbstractDescItem {
 
     @XmlElement(required = true)
-    private String value;
+    private BigDecimal value;
 
-    public String getValue() {
+    public BigDecimal getValue() {
         return value;
     }
 
-    public void setValue(String value) {
+    public void setValue(BigDecimal value) {
         this.value = value;
     }
 }

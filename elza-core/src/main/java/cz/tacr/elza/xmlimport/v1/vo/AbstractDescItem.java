@@ -1,7 +1,8 @@
-package cz.tacr.elza.suzap.v1.xml;
+package cz.tacr.elza.xmlimport.v1.vo;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -18,10 +19,10 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 @XmlType(name = "abstract-desc-item", namespace = NamespaceInfo.NAMESPACE)
 public abstract class AbstractDescItem {
 
-    @XmlElement(required = true)
+    @XmlAttribute(required = true)
     private String descItemTypeCode;
 
-    @XmlElement(required = true)
+    @XmlAttribute(required = true)
     private String descItemSpecCode;
 
     @XmlElement(required = true)

@@ -1,9 +1,10 @@
-package cz.tacr.elza.suzap.v1.xml;
+package cz.tacr.elza.xmlimport.v1.vo;
 
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlID;
@@ -24,15 +25,15 @@ public class Record {
 
     /** Pro vazbu z osoby a hodnoty record_ref. */
     @XmlID
-    @XmlElement(required = true)
+    @XmlAttribute(required = true)
     private String recordId;
 
     /** Kód podtypu rejstříku. */
-    @XmlElement(required = true)
+    @XmlAttribute(required = true)
     private String registerTypeCode;
 
     /** Kód externího zdroje. */
-    @XmlElement
+    @XmlAttribute
     private String externalSourceCode;
 
     /** Rejstříkové heslo. */
@@ -51,12 +52,17 @@ public class Record {
      * Příznak, zda se jedná o lokální nebo globální rejstříkové heslo. Lokální heslo je přiřazené pouze konkrétnímu
      * archivnímu popisu/pomůcce.
      */
-    @XmlElement(required = true)
+    @XmlAttribute(required = true)
     private boolean local;
 
     /** Externí identifikátor rejstříkového hesla v externím zdroji záznamů, například interpi. */
-    @XmlElement(required = true)
+    @XmlAttribute(required = true)
     private String externalId;
+
+    /** Seznam podřízených rejstříků. */
+    @XmlElement(name = "record")
+    @XmlElementWrapper(name = "record-list")
+    private List<Record> records;
 
     /** Seznam variantních rejstříků. */
     @XmlElement(name = "variant-record")
@@ -125,6 +131,14 @@ public class Record {
 
     public void setExternalId(String externalId) {
         this.externalId = externalId;
+    }
+
+    public List<Record> getRecords() {
+        return records;
+    }
+
+    public void setRecords(List<Record> records) {
+        this.records = records;
     }
 
     public List<VariantRecord> getVariantRecords() {

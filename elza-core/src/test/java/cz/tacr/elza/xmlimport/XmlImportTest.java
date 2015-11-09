@@ -1,4 +1,4 @@
-package cz.tacr.elza.suzap;
+package cz.tacr.elza.xmlimport;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +17,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
 import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.BeansException;
@@ -30,23 +31,24 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import cz.tacr.elza.ElzaCore;
-import cz.tacr.elza.suzap.v1.xml.AbstractDescItem;
-import cz.tacr.elza.suzap.v1.xml.DescItemCoordinates;
-import cz.tacr.elza.suzap.v1.xml.DescItemDecimal;
-import cz.tacr.elza.suzap.v1.xml.DescItemFormattedText;
-import cz.tacr.elza.suzap.v1.xml.DescItemInteger;
-import cz.tacr.elza.suzap.v1.xml.DescItemPartyRef;
-import cz.tacr.elza.suzap.v1.xml.DescItemRecordRef;
-import cz.tacr.elza.suzap.v1.xml.DescItemString;
-import cz.tacr.elza.suzap.v1.xml.DescItemText;
-import cz.tacr.elza.suzap.v1.xml.DescItemUnitDate;
-import cz.tacr.elza.suzap.v1.xml.DescItemUnitId;
-import cz.tacr.elza.suzap.v1.xml.FindingAid;
-import cz.tacr.elza.suzap.v1.xml.Level;
-import cz.tacr.elza.suzap.v1.xml.Party;
-import cz.tacr.elza.suzap.v1.xml.PartyName;
-import cz.tacr.elza.suzap.v1.xml.Record;
-import cz.tacr.elza.suzap.v1.xml.VariantRecord;
+import cz.tacr.elza.xmlimport.v1.vo.AbstractDescItem;
+import cz.tacr.elza.xmlimport.v1.vo.DescItemCoordinates;
+import cz.tacr.elza.xmlimport.v1.vo.DescItemDecimal;
+import cz.tacr.elza.xmlimport.v1.vo.DescItemFormattedText;
+import cz.tacr.elza.xmlimport.v1.vo.DescItemInteger;
+import cz.tacr.elza.xmlimport.v1.vo.DescItemPartyRef;
+import cz.tacr.elza.xmlimport.v1.vo.DescItemRecordRef;
+import cz.tacr.elza.xmlimport.v1.vo.DescItemString;
+import cz.tacr.elza.xmlimport.v1.vo.DescItemText;
+import cz.tacr.elza.xmlimport.v1.vo.DescItemUnitDate;
+import cz.tacr.elza.xmlimport.v1.vo.DescItemUnitId;
+import cz.tacr.elza.xmlimport.v1.vo.FindingAid;
+import cz.tacr.elza.xmlimport.v1.vo.FindingAidImport;
+import cz.tacr.elza.xmlimport.v1.vo.Level;
+import cz.tacr.elza.xmlimport.v1.vo.Party;
+import cz.tacr.elza.xmlimport.v1.vo.PartyName;
+import cz.tacr.elza.xmlimport.v1.vo.Record;
+import cz.tacr.elza.xmlimport.v1.vo.VariantRecord;
 
 /**
  * Testy na suzap.
@@ -56,7 +58,7 @@ import cz.tacr.elza.suzap.v1.xml.VariantRecord;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = ElzaCore.class)
-public class SuzapTest implements ApplicationContextAware {
+public class XmlImportTest implements ApplicationContextAware {
 
     private static final int RECORD_COUNT = 10;
 
@@ -75,14 +77,14 @@ public class SuzapTest implements ApplicationContextAware {
     /** Test na zápis dat do xml, jejich načtení a porovnání. */
     @Test
     public void testDataIntegrity() throws JAXBException, IOException {
-        FindingAid fa = createFindingAid(true);
+        FindingAidImport fa = createFindingAid(true);
 
         File out = File.createTempFile("fa-export", ".xml");
         out.deleteOnExit();
 
         createMarshaller().marshal(fa, out);
 
-        FindingAid faFromFile = (FindingAid) createUnmarshaller().unmarshal(out);
+        FindingAidImport faFromFile = (FindingAidImport) createUnmarshaller().unmarshal(out);
 
         Assert.isTrue(fa.equals(faFromFile));
     }
@@ -90,7 +92,7 @@ public class SuzapTest implements ApplicationContextAware {
     /** Test na validaci dat oproti vygenerovanému xsd. */
     @Test
     public void testValidity() throws JAXBException, SAXException, IOException {
-        FindingAid fa = createFindingAid(true);
+        FindingAidImport fa = createFindingAid(true);
 
         Marshaller marshaller = createMarshaller();
         marshaller.setSchema(createSchema());
@@ -102,7 +104,7 @@ public class SuzapTest implements ApplicationContextAware {
     /** Test na validaci dat oproti vygenerovanému xsd. Data nejsou validní. */
     @Test(expected = MarshalException.class)
     public void testValidityWithInvalidData() throws JAXBException, SAXException, IOException {
-        FindingAid fa = createFindingAid(false);
+        FindingAidImport fa = createFindingAid(false);
 
         Marshaller marshaller = createMarshaller();
         marshaller.setSchema(createSchema());
@@ -118,16 +120,19 @@ public class SuzapTest implements ApplicationContextAware {
      *
      * @return archivní pomůcka
      */
-    private FindingAid createFindingAid(boolean valid) {
+    private FindingAidImport createFindingAid(boolean valid) {
+        FindingAidImport findingAidImport = new FindingAidImport();
         FindingAid fa = new FindingAid();
         fa.setName("Import ze SUZAP");
 
+        findingAidImport.setFindingAid(fa);
         List<Record> records = createRecords(valid);
-        fa.setRecords(records);
+        findingAidImport.setRecords(records);
         List<Party> parties = createParties(records);
-        fa.setParties(parties);
+        findingAidImport.setParties(parties);
         fa.setRootLevel(createLevelTree(records, parties));
-        return fa;
+
+        return findingAidImport;
     }
 
     /**
@@ -296,7 +301,7 @@ public class SuzapTest implements ApplicationContextAware {
         List<Record> records = new ArrayList<Record>(RECORD_COUNT);
 
         for (int i = 0; i < RECORD_COUNT; i++) {
-            Record record = createRecord(valid, i);
+            Record record = createRecord(valid, i, 0);
 
             records.add(record);
         }
@@ -309,10 +314,11 @@ public class SuzapTest implements ApplicationContextAware {
      *
      * @param valid příznak zda má být heslo validní nebo ne, kvůli testu oproti xsd
      * @param index číslo vytvářeného rejstříkového hesla
+     * @param depth hloubka zanoření v hierarchii hesel
      *
      * @return rejstříkové heslo
      */
-    private Record createRecord(boolean valid, int index) {
+    private Record createRecord(boolean valid, int index, int depth) {
         Record record = new Record();
         record.setCharacteristics("characteristics " + index);
         record.setComment("comment " + index);
@@ -320,13 +326,21 @@ public class SuzapTest implements ApplicationContextAware {
         record.setExternalSourceCode("externalSourceCode " + index);
         record.setLocal(RandomUtils.nextBoolean());
         record.setRecord("record " + index);
+        String idPrefix = StringUtils.repeat("sub-", depth);
         if (valid) {
-            record.setRecordId("recordId-" + index);
+            record.setRecordId(idPrefix + "recordId-" + index);
         } else {
-            record.setRecordId("recordId " + index);
+            record.setRecordId(idPrefix + "recordId " + index);
         }
         record.setRegisterTypeCode("registerTypeCode " + index);
         record.setVariantRecords(createVariantRecords());
+
+        if (RandomUtils.nextBoolean()) {
+            List<Record> subRecords = new ArrayList<Record>(1);
+            record.setRecords(subRecords);
+
+            subRecords.add(createRecord(valid, 1, ++depth));
+        }
         return record;
     }
 
@@ -413,7 +427,7 @@ public class SuzapTest implements ApplicationContextAware {
      * @return marshaller
      */
     private Marshaller createMarshaller() throws JAXBException {
-        JAXBContext jaxbContext = JAXBContext.newInstance(FindingAid.class);
+        JAXBContext jaxbContext = JAXBContext.newInstance(FindingAidImport.class);
         Marshaller marshaller = jaxbContext.createMarshaller();
         return marshaller;
     }
@@ -424,7 +438,7 @@ public class SuzapTest implements ApplicationContextAware {
      * @return unmarshaller
      */
     private Unmarshaller createUnmarshaller() throws JAXBException {
-        JAXBContext jaxbContext = JAXBContext.newInstance(FindingAid.class);
+        JAXBContext jaxbContext = JAXBContext.newInstance(FindingAidImport.class);
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         return unmarshaller;
     }
@@ -436,7 +450,7 @@ public class SuzapTest implements ApplicationContextAware {
      */
     private Schema createSchema() throws SAXException, IOException {
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        Resource resource = applicationContext.getResource("classpath:xsd/suzap.xsd");
+        Resource resource = applicationContext.getResource("classpath:xsd/fa-import.xsd");
         Schema schema = schemaFactory.newSchema(resource.getFile());
         return schema;
     }

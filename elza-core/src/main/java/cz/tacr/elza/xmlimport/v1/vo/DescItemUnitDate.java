@@ -1,7 +1,8 @@
-package cz.tacr.elza.suzap.v1.xml;
+package cz.tacr.elza.xmlimport.v1.vo;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -27,7 +28,7 @@ public class DescItemUnitDate extends AbstractDescItem {
     @XmlElement
     private Boolean valueToEstimated;
 
-    @XmlElement
+    @XmlAttribute
     private String calendarTypeCode;
 
     @XmlElement

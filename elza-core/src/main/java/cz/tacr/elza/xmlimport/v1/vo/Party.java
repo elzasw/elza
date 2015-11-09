@@ -1,7 +1,8 @@
-package cz.tacr.elza.suzap.v1.xml;
+package cz.tacr.elza.xmlimport.v1.vo;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlIDREF;
@@ -22,12 +23,12 @@ public class Party {
 
     /** Pro vazbu z hodnoty party_ref. */
     @XmlID
-    @XmlElement(required = true)
+    @XmlAttribute(required = true)
     private String partyId;
 
     /** Vazba na rejstřík. */
     @XmlIDREF
-    @XmlElement(required = true)
+    @XmlAttribute(required = true)
     private Record record;
 
     /** Kód typu osoby. */

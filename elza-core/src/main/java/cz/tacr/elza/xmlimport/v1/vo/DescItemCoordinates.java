@@ -1,4 +1,4 @@
-package cz.tacr.elza.suzap.v1.xml;
+package cz.tacr.elza.xmlimport.v1.vo;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -6,14 +6,14 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 /**
- * Referenční označení.
+ * Souřadnice.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 27. 10. 2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "desc-item-unit-id", namespace = NamespaceInfo.NAMESPACE)
-public class DescItemUnitId extends AbstractDescItem {
+@XmlType(name = "desc-item-coordinates", namespace = NamespaceInfo.NAMESPACE)
+public class DescItemCoordinates extends AbstractDescItem {
 
     @XmlElement(required = true)
     private String value;

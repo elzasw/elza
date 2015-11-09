@@ -148,14 +148,14 @@
                         <configuration>
                             <outputDirectory>${project.build.directory}/xsd/</outputDirectory>
                             <sources>
-                                <source>src/main/java/cz/tacr/elza/suzap/v1/xml/FindingAid.java</source>
+                                <source>src/main/java/cz/tacr/elza/xmlimport/v1/vo/FindingAidImport.java</source>
                             </sources>
                             <createJavaDocAnnotations>true</createJavaDocAnnotations>
                             <xsdPathWithinArtifact>src/main/resources/xsd/suzap</xsdPathWithinArtifact>
                             <transformSchemas>
                                 <transformSchema>
-                                    <uri>http://v1_0_0.suzap.elza.tacr.cz</uri>
-                                    <toFile>suzap.xsd</toFile>
+                                    <uri>http://v1_0_0.import.elza.tacr.cz</uri>
+                                    <toFile>fa-import.xsd</toFile>
                                 </transformSchema>
                             </transformSchemas>
                         </configuration>
