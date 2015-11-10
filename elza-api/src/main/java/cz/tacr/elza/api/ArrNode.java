@@ -1,6 +1,7 @@
 package cz.tacr.elza.api;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 
 /**
@@ -15,4 +16,11 @@ public interface ArrNode extends Versionable, Serializable {
 
     void setNodeId(Integer nodeId);
 
+    LocalDateTime getLastUpdate();
+
+    void setLastUpdate(LocalDateTime lastUpdate);
+
+    String getUuid();
+
+    void setUuid(String uuid);
 }

@@ -1,11 +1,35 @@
 package cz.tacr.elza.controller;
 
+import static com.jayway.restassured.RestAssured.given;
+
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+
+import javax.transaction.Transactional;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.IntegrationTest;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.EncoderConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
 import com.jayway.restassured.response.Header;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
+
 import cz.tacr.elza.ElzaCore;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -64,27 +88,6 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-
-import javax.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Function;
-
-import static com.jayway.restassured.RestAssured.given;
 
 /**
  * Abstraktní předek pro testy. Nastavuje REST prostředí.
@@ -398,14 +401,8 @@ public abstract class AbstractRestTest {
             level.setNodeParent(parent.getNode());
         }
         level.setCreateChange(change);
-        level.setNode(createNode());
+        level.setNode(arrangementManager.createNode());
         return levelRepository.save(level);
-    }
-
-    protected ArrNode createNode() {
-        ArrNode node = new ArrNode();
-        node.setLastUpdate(LocalDateTime.now());
-        return nodeRepository.save(node);
     }
 
     @Transactional
@@ -588,7 +585,7 @@ public abstract class AbstractRestTest {
     protected ArrPacketType findPacketType() {
         return packetTypeRepository.findOne(1);
     }
-    
+
     protected ParParty createParParty() {
         final ParPartyType partyType = findPartyType();
         final RegRecord record = createRecord(1);

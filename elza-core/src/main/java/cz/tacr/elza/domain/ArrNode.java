@@ -29,6 +29,9 @@ public class ArrNode extends AbstractVersionableEntity implements cz.tacr.elza.a
     @Column(nullable = true)
     private LocalDateTime lastUpdate;
 
+    @Column(nullable = false)
+    private String uuid;
+
     @Override
     public Integer getNodeId() {
         return nodeId;
@@ -39,12 +42,24 @@ public class ArrNode extends AbstractVersionableEntity implements cz.tacr.elza.a
         this.nodeId = nodeId;
     }
 
+    @Override
     public LocalDateTime getLastUpdate() {
         return lastUpdate;
     }
 
+    @Override
     public void setLastUpdate(LocalDateTime lastUpdate) {
         this.lastUpdate = lastUpdate;
+    }
+
+    @Override
+    public String getUuid() {
+        return uuid;
+    }
+
+    @Override
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     @Override
@@ -66,6 +81,6 @@ public class ArrNode extends AbstractVersionableEntity implements cz.tacr.elza.a
 
     @Override
     public String toString() {
-        return "ArrNode{" + "nodeId=" + nodeId + ", lastUpdate=" + lastUpdate + '}';
+        return "ArrNode{" + "nodeId=" + nodeId + ", lastUpdate=" + lastUpdate + "uuid=" + uuid +'}';
     }
 }

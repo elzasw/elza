@@ -11,6 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
@@ -44,7 +45,6 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ArrPacketType;
-import cz.tacr.elza.domain.ParPartyTypeExt;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulDescItemSpec;
@@ -199,9 +199,11 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return levelRepository.save(level);
     }
 
-    private ArrNode createNode() {
+    @Override
+    public ArrNode createNode() {
         ArrNode node = new ArrNode();
         node.setLastUpdate(LocalDateTime.now());
+        node.setUuid(UUID.randomUUID().toString());
         return nodeRepository.save(node);
     }
 

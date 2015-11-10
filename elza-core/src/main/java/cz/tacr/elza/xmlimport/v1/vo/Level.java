@@ -27,6 +27,10 @@ public class Level {
     @XmlElement(required = true)
     private Integer position;
 
+    /** Univerzální unikátní identifikátor. */
+    @XmlElement(required = true)
+    private String uuid;
+
     /** Potomci. */
     @XmlElement(required = true, name = "level")
     @XmlElementWrapper(name = "sub-level-list")
@@ -60,6 +64,14 @@ public class Level {
 
     public void setPosition(Integer position) {
         this.position = position;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public List<Level> getSubLevels() {

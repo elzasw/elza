@@ -1,5 +1,27 @@
 package cz.tacr.elza.ui.controller;
 
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.sql.DataSource;
+import javax.transaction.Transactional;
+
+import org.apache.commons.lang.math.RandomUtils;
+import org.hibernate.Session;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrCalendarType;
@@ -45,27 +67,6 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
-import org.apache.commons.lang.math.RandomUtils;
-import org.hibernate.Session;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.sql.DataSource;
-import javax.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Kontroler pro testovací data.
@@ -905,14 +906,8 @@ public class TestingDataController {
         level.setPosition(position);
         level.setCreateChange(createChange);
         level.setNodeParent(parentNode);
-        level.setNode(createNode());
+        level.setNode(arrangementManager.createNode());
         return levelRepository.save(level);
-    }
-
-    private ArrNode createNode() {
-        ArrNode node = new ArrNode();
-        node.setLastUpdate(LocalDateTime.now());
-        return nodeRepository.save(node);
     }
 
     /** Odstraní data z databáze, kromě tabulek s prefixem rul_. */

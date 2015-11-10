@@ -1,5 +1,7 @@
 package cz.tacr.elza.api.controller;
 
+import java.util.List;
+
 import cz.tacr.elza.api.ArrDescItem;
 import cz.tacr.elza.api.ArrFindingAid;
 import cz.tacr.elza.api.ArrFindingAidVersion;
@@ -15,8 +17,6 @@ import cz.tacr.elza.api.vo.ArrDescItems;
 import cz.tacr.elza.api.vo.ArrLevelPack;
 import cz.tacr.elza.api.vo.ArrNodeHistoryPack;
 import cz.tacr.elza.api.vo.ArrNodeRegisterPack;
-
-import java.util.List;
 
 /**
  * Rozhraní operací pro archivní pomůcku a hierarchický přehled včetně atributů.
@@ -289,7 +289,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
     void modifyArrNodeRegisterLinks(ANRP arrNodeRegisterPack);
 
     /**
-     * Vyhledá obal daného typu podle zadaného názvu. Vrátí seznam obalů vyhovující zadané frázi. 
+     * Vyhledá obal daného typu podle zadaného názvu. Vrátí seznam obalů vyhovující zadané frázi.
      * Výsledek je stránkovaný, je vrácen zadaný počet záznamů od from záznamu.
      * @param search fráze pro vyhledávání
      * @param from pořadí prvního záznamu
@@ -332,4 +332,11 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @return všechny typy obalů.
      */
     List<APT> getPacketTypes();
+
+    /**
+     * Vytvoří nový uzel.
+     *
+     * @return uzel
+     */
+    N createNode();
 }
