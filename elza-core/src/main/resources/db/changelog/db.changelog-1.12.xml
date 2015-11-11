@@ -6,7 +6,7 @@
     <!-- Verze 1.12 - pridani sloupce uuid do tabulky arr_node -->
     <changeSet id="13" author="vanek">
         <addColumn tableName="arr_node">
-            <column name="uuid" defaultValue="" type="varchar(50)" />
+            <column name="uuid" defaultValue="" type="char(36)" />
         </addColumn>
 
         <customChange class="cz.tacr.elza.dbchangelog.DbUpgrade1_12" />
