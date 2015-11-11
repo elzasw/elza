@@ -845,8 +845,11 @@ public class TestingDataController {
         ArrDescItem descItem = new ArrDescItemUnitdate();
         descItem = setValue(descItem, node, rulDescItemTypeExt);
         ((ArrDescItemUnitdate) descItem).setCalendarType(calendarType);
+        ((ArrDescItemUnitdate) descItem).setValueFrom("1950-01-01T00:00:00");
         ((ArrDescItemUnitdate) descItem).setValueFromEstimated(false);
+        ((ArrDescItemUnitdate) descItem).setValueTo("1950-12-31T23:59:59");
         ((ArrDescItemUnitdate) descItem).setValueToEstimated(false);
+        ((ArrDescItemUnitdate) descItem).setFormat("Y");
         return descItem;
     }
 
