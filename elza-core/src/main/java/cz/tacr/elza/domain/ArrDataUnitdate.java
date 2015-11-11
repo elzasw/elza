@@ -31,7 +31,7 @@ public class ArrDataUnitdate extends ArrData implements cz.tacr.elza.api.ArrData
     @Column(nullable = false)
     private Boolean valueToEstimated;
 
-    @Column(length = 20, nullable = false)
+    @Column(length = 50, nullable = false)
     private String format;
 
     @Override

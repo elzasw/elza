@@ -437,7 +437,7 @@ public class DescItemFactory implements InitializingBean {
                 try {
                     String value = arrDescItemUnitdate.getValueFrom();
                     if (value != null) {
-                        value = LocalDateTime.parse(value, DateTimeFormatter.ISO_DATE_TIME).toString();
+                        value = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME));
                     }
                     arrDataUnitdate.setValueFrom(value);
                 } catch (DateTimeParseException e) {
@@ -449,7 +449,7 @@ public class DescItemFactory implements InitializingBean {
                 try {
                     String value = arrDescItemUnitdate.getValueTo();
                     if (value != null) {
-                        value = LocalDateTime.parse(value, DateTimeFormatter.ISO_DATE_TIME).toString();
+                        value = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME));
                     }
                     arrDataUnitdate.setValueTo(value);
                 } catch (DateTimeParseException e) {
@@ -457,8 +457,8 @@ public class DescItemFactory implements InitializingBean {
                 }
 
                 if (arrDescItemUnitdate.getValueFrom() != null && arrDescItemUnitdate.getValueTo() != null) {
-                    LocalDateTime from = LocalDateTime.parse(arrDescItemUnitdate.getValueFrom(), DateTimeFormatter.ISO_DATE_TIME);
-                    LocalDateTime to = LocalDateTime.parse(arrDescItemUnitdate.getValueTo(), DateTimeFormatter.ISO_DATE_TIME);
+                    LocalDateTime from = LocalDateTime.parse(arrDescItemUnitdate.getValueFrom(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                    LocalDateTime to = LocalDateTime.parse(arrDescItemUnitdate.getValueTo(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
                     if (from.isAfter(to)) {
                         throw new IllegalArgumentException("Neplatný interval ISO datumů: od > do");
                     }

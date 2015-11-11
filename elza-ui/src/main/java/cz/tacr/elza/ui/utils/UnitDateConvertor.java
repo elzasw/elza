@@ -78,6 +78,7 @@ public class UnitDateConvertor {
     private static final DateTimeFormatter FORMATTER_DATE = DateTimeFormatter.ofPattern(FORMAT_DATE);
     private static final DateTimeFormatter FORMATTER_DATE_TIME = DateTimeFormatter.ofPattern(FORMAT_DATE_TIME);
     private static final DateTimeFormatter FORMATTER_YEAR_MONTH = DateTimeFormatter.ofPattern(FORMAT_YEAR_MONTH);
+    private static final DateTimeFormatter FORMATTER_ISO = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     /**
      * Provede konverzi textového vstupu a doplní intervaly do objektu.
@@ -94,9 +95,9 @@ public class UnitDateConvertor {
                 parseInterval(input, unitdate);
             } else {
                 Token token = parseToken(input, unitdate);
-                unitdate.setValueFrom(token.dateFrom.toString());
+                unitdate.setValueFrom(FORMATTER_ISO.format(token.dateFrom));
                 unitdate.setValueFromEstimated(token.opt);
-                unitdate.setValueTo(token.dateTo.toString());
+                unitdate.setValueTo(FORMATTER_ISO.format(token.dateTo));
                 unitdate.setValueToEstimated(token.opt);
             }
 
@@ -339,7 +340,7 @@ public class UnitDateConvertor {
         switch (data.length) {
             case 1:
                 token = parseToken(data[0], unitdate);
-                unitdate.setValueFrom(token.dateFrom.toString());
+                unitdate.setValueFrom(FORMATTER_ISO.format(token.dateFrom));
                 unitdate.setValueFromEstimated(token.opt);
                 unitdate.setValueTo(null);
                 unitdate.setValueToEstimated(false);
@@ -347,11 +348,11 @@ public class UnitDateConvertor {
                 break;
             case 2:
                 token = parseToken(data[0], unitdate);
-                unitdate.setValueFrom(token.dateFrom == null ? null : token.dateFrom.toString());
+                unitdate.setValueFrom(token.dateFrom == null ? null : FORMATTER_ISO.format(token.dateFrom));
                 unitdate.setValueFromEstimated(token.opt);
                 unitdate.formatAppend(INTERVAL_DELIMITER);
                 token = parseToken(data[1], unitdate);
-                unitdate.setValueTo(token.dateTo.toString());
+                unitdate.setValueTo(FORMATTER_ISO.format(token.dateTo));
                 unitdate.setValueToEstimated(token.opt);
                 break;
             default:
