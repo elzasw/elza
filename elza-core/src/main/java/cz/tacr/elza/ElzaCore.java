@@ -1,6 +1,5 @@
 package cz.tacr.elza;
 
-import com.google.common.eventbus.EventBus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -11,9 +10,15 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import com.google.common.eventbus.EventBus;
+
 
 /**
  * Spouštěcí třída pro modul elza-core.
+ *
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
@@ -23,6 +28,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EnableJpaRepositories(basePackageClasses = {ElzaCore.class})
 @EnableAutoConfiguration
 @EnableAspectJAutoProxy(proxyTargetClass = true)
+@EnableTransactionManagement
 public class ElzaCore {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -43,6 +49,16 @@ public class ElzaCore {
         return new EventBus((exception, context) -> {
             logger.error("Subscriber exception " + context.getSubscriberMethod(), exception);
         });
+    }
+
+    @Bean
+    public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(10);
+        threadPoolTaskExecutor.setMaxPoolSize(48);
+        threadPoolTaskExecutor.setQueueCapacity(512);
+        threadPoolTaskExecutor.afterPropertiesSet();
+        return threadPoolTaskExecutor;
     }
 
 }
