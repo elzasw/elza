@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -54,6 +56,8 @@ public class BulkActionConfigManager {
             dir.mkdirs();
         }
 
+        copyDefaultFromResources(dir);
+
         // vyhledání souborů v adresáři
         File[] files = dir.listFiles((dir1, name) -> name.endsWith(extension));
 
@@ -66,6 +70,22 @@ public class BulkActionConfigManager {
             bulkActionConfigMap.put(bulkActionConfig.getCode(), bulkActionConfig);
         }
 
+    }
+
+    /**
+     * Zkopíruje (+nahradí) výchozí nastavení hromadných akcí.
+     *
+     * @param dir složka pro uložení
+     */
+    private void copyDefaultFromResources(final File dir) throws IOException {
+        ClassLoader classLoader = getClass().getClassLoader();
+        File defaultDir = new File(classLoader.getResource("bulkactions").getFile());
+        File[] files = defaultDir.listFiles((dir1, name) -> name.endsWith(extension));
+        for (File file : files) {
+            File fileCopy = new File(
+                    dir.toString() + File.separator + FilenameUtils.getBaseName(file.getName()) + extension);
+            Files.copy(file.toPath(), fileCopy.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
     }
 
     /**
@@ -182,7 +202,8 @@ public class BulkActionConfigManager {
 
     /**
      * Vrací cestu k souboru podle nastavení hromadné akce.
-     * @param bulkActionConfig  nastavení hromadné akce
+     *
+     * @param bulkActionConfig nastavení hromadné akce
      * @return cesta k souboru
      */
     private String getFileName(final BulkActionConfig bulkActionConfig) {

@@ -15,9 +15,11 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemInt;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 
 
@@ -61,11 +63,24 @@ public class SerialNumberBulkAction extends BulkAction {
      */
     private BulkActionState bulkActionState;
 
+    /**
+     * Typ atributu pro zastaveni
+     */
+    private RulDescItemType descItemEndType;
+
+    /**
+     * Specifikace atributu pro zastaveni
+     */
+    private RulDescItemSpec descItemEndSpec;
+
     @Autowired
     private DescItemTypeRepository descItemTypeRepository;
 
     @Autowired
     private DescItemRepository descItemRepository;
+
+    @Autowired
+    private DescItemSpecRepository descItemSpecRepository;
 
     @Autowired
     private DescItemFactory descItemFactory;
@@ -85,12 +100,24 @@ public class SerialNumberBulkAction extends BulkAction {
         descItemType = descItemTypeRepository.getOneByCode(serialIdCode);
         Assert.notNull(descItemType);
 
+        String levelTypeCode = (String) bulkActionConfig.getProperty("level_type_code");
+        if (levelTypeCode != null) {
+            descItemEndType = descItemTypeRepository.getOneByCode(levelTypeCode);
+            Assert.notNull(descItemEndType);
+
+            String levelTypeEndGenerationForArrType = (String) bulkActionConfig.getProperty(
+                    "level_type_end_generation_for_arr_type");
+            Assert.notNull(levelTypeEndGenerationForArrType);
+            descItemEndSpec = descItemSpecRepository.getOneByCode(levelTypeEndGenerationForArrType);
+            Assert.notNull(descItemEndSpec);
+        }
+
     }
 
     /**
      * Generování hodnot - rekurzivní volání pro procházení celého stromu
      *
-     * @param level        uzel
+     * @param level uzel
      */
     private void generate(final ArrLevel level) {
 
@@ -116,6 +143,13 @@ public class SerialNumberBulkAction extends BulkAction {
             level.setNode(ret.getNode());
         }
 
+        if (descItemEndType != null) {
+            ArrDescItem descItemLevel = loadDescItem(level, descItemEndType, descItemEndSpec);
+            if (descItemLevel != null) {
+                return;
+            }
+        }
+
         List<ArrLevel> childLevels = getChildren(level);
 
         for (ArrLevel childLevel : childLevels) {
@@ -131,20 +165,47 @@ public class SerialNumberBulkAction extends BulkAction {
      * @return nalezený atribut
      */
     private ArrDescItem loadDescItem(final ArrLevel level) {
-        List<ArrDescItem> descItems = descItemRepository.findByNodeAndDeleteChangeIsNullAndDescItemTypeId(level.getNode(), descItemType.getDescItemTypeId());
+        List<ArrDescItem> descItems = descItemRepository.findByNodeAndDeleteChangeIsNullAndDescItemTypeId(
+                level.getNode(), descItemType.getDescItemTypeId());
         if (descItems.size() == 0) {
             return null;
         }
         if (descItems.size() > 1) {
-            throw new IllegalStateException(descItemType.getCode() + " nemuže být více než jeden (" + descItems.size() + ")");
+            throw new IllegalStateException(
+                    descItemType.getCode() + " nemuže být více než jeden (" + descItems.size() + ")");
         }
         return descItemFactory.getDescItem(descItems.get(0));
     }
 
+    /**
+     * Načtení atributu.
+     *
+     * @param level           uzel
+     * @param rulDescItemSpec specifikace atributu
+     * @param rulDescItemType typ atributu
+     * @return nalezený atribut
+     */
+    private ArrDescItem loadDescItem(final ArrLevel level,
+                                     final RulDescItemType rulDescItemType,
+                                     final RulDescItemSpec rulDescItemSpec) {
+        List<ArrDescItem> descItems = descItemRepository
+                .findByNodeAndDeleteChangeIsNullAndDescItemTypeIdAndSpecItemTypeId(
+                        level.getNode(), rulDescItemType.getDescItemTypeId(), rulDescItemSpec.getDescItemSpecId());
+        if (descItems.size() == 0) {
+            return null;
+        }
+        if (descItems.size() > 1) {
+            throw new IllegalStateException(
+                    descItemType.getCode() + " nemuže být více než jeden (" + descItems.size() + ")");
+        }
+        return descItemFactory.getDescItem(descItems.get(0));
+    }
 
     @Override
     @Transactional
-    public void run(final Integer faVersionId, final BulkActionConfig bulkAction, final BulkActionState bulkActionState) {
+    public void run(final Integer faVersionId,
+                    final BulkActionConfig bulkAction,
+                    final BulkActionState bulkActionState) {
         this.bulkActionState = bulkActionState;
         init(bulkAction);
 

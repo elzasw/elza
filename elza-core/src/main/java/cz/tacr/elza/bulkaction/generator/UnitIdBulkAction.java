@@ -1,5 +1,6 @@
 package cz.tacr.elza.bulkaction.generator;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,12 +13,15 @@ import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionState;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDescItemString;
 import cz.tacr.elza.domain.ArrDescItemUnitid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 
 
@@ -57,6 +61,16 @@ public class UnitIdBulkAction extends BulkAction {
     private RulDescItemType descItemLevelType;
 
     /**
+     * Typ atributu pro předchozí uložení
+     */
+    private RulDescItemType descItemPreviousType;
+
+    /**
+     * Specifikace atributu pro předchozí uložení
+     */
+    private RulDescItemSpec descItemPreviousSpec;
+
+    /**
      * Vedlejší oddělovač
      */
     private String delimiterMinor;
@@ -67,12 +81,20 @@ public class UnitIdBulkAction extends BulkAction {
     private String delimiterMajor;
 
     /**
+     * Seznam kódů typů uzlů při které se nepoužije major oddělovač.
+     */
+    private List<String> delimiterMajorLevelTypeNotUseList;
+
+    /**
      * Stav hromadné akce
      */
     private BulkActionState bulkActionState;
 
     @Autowired
     private DescItemTypeRepository descItemTypeRepository;
+
+    @Autowired
+    private DescItemSpecRepository descItemSpecRepository;
 
     @Autowired
     private DescItemRepository descItemRepository;
@@ -92,18 +114,14 @@ public class UnitIdBulkAction extends BulkAction {
         String unitIdCode = (String) bulkActionConfig.getProperty("unit_id_code");
         Assert.notNull(unitIdCode);
 
-        if (descItemType == null) {
-            descItemType = descItemTypeRepository.getOneByCode(unitIdCode);
-            Assert.notNull(descItemType);
-        }
+        descItemType = descItemTypeRepository.getOneByCode(unitIdCode);
+        Assert.notNull(descItemType);
 
         String levelTypeCode = (String) bulkActionConfig.getProperty("level_type_code");
         Assert.notNull(levelTypeCode);
 
-        if (descItemLevelType == null) {
-            descItemLevelType = descItemTypeRepository.getOneByCode(levelTypeCode);
-            Assert.notNull(descItemLevelType);
-        }
+        descItemLevelType = descItemTypeRepository.getOneByCode(levelTypeCode);
+        Assert.notNull(descItemLevelType);
 
         String delimiterMajor = (String) bulkActionConfig.getProperty("delimiter_major");
         Assert.notNull(delimiterMajor);
@@ -112,6 +130,18 @@ public class UnitIdBulkAction extends BulkAction {
         String delimiterMinor = (String) bulkActionConfig.getProperty("delimiter_minor");
         Assert.notNull(delimiterMinor);
         this.delimiterMinor = delimiterMinor;
+
+        String previousIdCode = (String) bulkActionConfig.getProperty("previous_id_code");
+        descItemPreviousType = descItemTypeRepository.getOneByCode(previousIdCode);
+        Assert.notNull(descItemPreviousType);
+
+        String previousIdSpecCode = (String) bulkActionConfig.getProperty("previous_id_spec_code");
+        descItemPreviousSpec = descItemSpecRepository.getOneByCode(previousIdSpecCode);
+        Assert.notNull(descItemPreviousSpec);
+
+        String delimiterMajorLevelTypeNotUse = (String) bulkActionConfig
+                .getProperty("delimiter_major_level_type_not_use");
+        delimiterMajorLevelTypeNotUseList = Arrays.asList(delimiterMajorLevelTypeNotUse.split("\\|"));
 
     }
 
@@ -134,7 +164,8 @@ public class UnitIdBulkAction extends BulkAction {
 
             if ((specCode == null && parentSpecCode == null)
                     || (specCode != null && specCode.equals(parentSpecCode))
-                    || (parentSpecCode != null && parentSpecCode.equals(specCode))) {
+                    || (parentSpecCode != null && parentSpecCode.equals(specCode))
+                    || (delimiterMajorLevelTypeNotUseList.contains(specCode))) {
                 unitId.setSeparator(delimiterMinor);
             } else {
                 unitId.setSeparator(delimiterMajor);
@@ -157,9 +188,33 @@ public class UnitIdBulkAction extends BulkAction {
         // uložit pouze při rozdílu
         if (((ArrDescItemUnitid) descItem).getValue() == null || !unitId.getData()
                 .equals(((ArrDescItemUnitid) descItem).getValue())) {
+
+            ArrDescItem ret;
+
+            // uložit původní hodnotu pouze při první změně z předchozí verze
+            if (descItem.getDescItemObjectId() != null && descItem.getCreateChange().getChangeId() < version
+                    .getCreateChange().getChangeId()) {
+                ArrDescItem descItemPrev = descItemFactory.createDescItemByType(descItemPreviousType.getDataType());
+                descItemPrev.setDescItemType(descItemPreviousType);
+                descItemPrev.setDescItemSpec(descItemPreviousSpec);
+                descItemPrev.setNode(level.getNode());
+
+                if (descItemPrev instanceof ArrDescItemString) {
+                    ((ArrDescItemString) descItemPrev).setValue(((ArrDescItemUnitid) descItem).getValue());
+                } else {
+                    throw new IllegalStateException(
+                            descItemPrev.getClass().getName() + " nema definovany prevod hodnoty");
+                }
+
+                ret = saveDescItem(descItemPrev, version, change);
+                level.setNode(ret.getNode());
+
+            }
+
             ((ArrDescItemUnitid) descItem).setValue(unitId.getData());
-            ArrDescItem ret = saveDescItem(descItem, version, change);
+            ret = saveDescItem(descItem, version, change);
             level.setNode(ret.getNode());
+
         }
 
         List<ArrLevel> childLevels = getChildren(level);

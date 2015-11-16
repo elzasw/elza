@@ -38,3 +38,5 @@ org.eclipse.m2e.core.prefs
 com.vaadin.integration.eclipse.prefs
 org.eclipse.jdt.core.prefs
 .settings
+/elza-ui/bulkactions
+/elza-core/bulkactions
