@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -51,7 +52,7 @@ import cz.tacr.elza.xmlimport.v1.vo.record.Record;
 import cz.tacr.elza.xmlimport.v1.vo.record.VariantRecord;
 
 /**
- * Testy na suzap.
+ * Testy na xml import.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 27. 10. 2015
@@ -79,7 +80,7 @@ public class XmlImportTest implements ApplicationContextAware {
     public void testDataIntegrity() throws JAXBException, IOException {
         XmlImport fa = createFindingAid(true);
 
-        File out = File.createTempFile("fa-export", ".xml");
+        File out = File.createTempFile("xml-export", ".xml");
         out.deleteOnExit();
 
         createMarshaller().marshal(fa, out);
@@ -123,7 +124,7 @@ public class XmlImportTest implements ApplicationContextAware {
     private XmlImport createFindingAid(boolean valid) {
         XmlImport findingAidImport = new XmlImport();
         FindingAid fa = new FindingAid();
-        fa.setName("Import ze SUZAP");
+        fa.setName("Import z XML");
 
         findingAidImport.setFindingAid(fa);
         List<Record> records = createRecords(valid);
@@ -146,6 +147,7 @@ public class XmlImportTest implements ApplicationContextAware {
     private Level createLevelTree(List<Record> records, List<AbstractParty> parties) {
         Level rootLevel = new Level();
         rootLevel.setPosition(1);
+        rootLevel.setUuid(UUID.randomUUID().toString());
 
         rootLevel.setSubLevels(createChildren(TREE_DEPTH_COUNT, records, parties));
         rootLevel.setDescItems(createDescItems(records, parties));
@@ -279,6 +281,7 @@ public class XmlImportTest implements ApplicationContextAware {
             child.setSubLevels(createChildren(--depth, records, parties));
             child.setPosition(i);
             child.setDescItems(createDescItems(records, parties));
+            child.setUuid(UUID.randomUUID().toString());
             if (RandomUtils.nextBoolean()) {
                 List<Record> levelRecords = new ArrayList<Record>(1);
                 levelRecords.add(records.get(RandomUtils.nextInt(records.size())));
@@ -409,22 +412,42 @@ public class XmlImportTest implements ApplicationContextAware {
         party.setPartyTypeCode("partyTypeCode " + index);
 
         party.setRecord(records.get(RandomUtils.nextInt(records.size())));
+        party.setPrefferedName(createPartyName(index));
 
         if (RandomUtils.nextBoolean()) {
-            PartyName partyName = new PartyName();
-            partyName.setAnotation("anotation " + index);
-            partyName.setDegreeAfter("degreeAfter " + index);
-            partyName.setDegreeBefore("degreeBefore " + index);
-            partyName.setMainPart("mainPart " + index);
-            partyName.setOtherPart("otherPart " + index);
-            partyName.setValidFrom(new Date());
-            partyName.setValidTo(new Date());
+            int namesCount = RandomUtils.nextInt(5) + 1;
+            List<PartyName> otherNames = new ArrayList<>(namesCount);
+            for (int i = 0; i < namesCount; i++) {
+                PartyName partyName = createPartyName(index);
+                otherNames.add(partyName);
+            }
+
+            party.setOtherNames(otherNames);
+        }
+
+        return party;
+    }
+
+    /**
+     * Vytvoří jméno osoby.
+     *
+     * @param index pořadí jména osoby
+     *
+     * @return jméno osoby
+     */
+    private PartyName createPartyName(int index) {
+        PartyName partyName = new PartyName();
+        partyName.setAnotation("anotation " + index);
+        partyName.setDegreeAfter("degreeAfter " + index);
+        partyName.setDegreeBefore("degreeBefore " + index);
+        partyName.setMainPart("mainPart " + index);
+        partyName.setOtherPart("otherPart " + index);
+        partyName.setValidFrom(new Date());
+        partyName.setValidTo(new Date());
+        partyName.setPartyNameFormTypeCode("partyNameFormTypeCode " + index);
 //                partyName.setValidFrom(LocalDateTime.now());
 //                partyName.setValidTo(LocalDateTime.now());
-
-            party.setPrefferedName(partyName);
-        }
-        return party;
+        return partyName;
     }
 
     /**
@@ -456,7 +479,7 @@ public class XmlImportTest implements ApplicationContextAware {
      */
     private Schema createSchema() throws SAXException, IOException {
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        Resource resource = applicationContext.getResource("classpath:xsd/fa-import.xsd");
+        Resource resource = applicationContext.getResource("classpath:xsd/xml-import.xsd");
         Schema schema = schemaFactory.newSchema(resource.getFile());
         return schema;
     }
