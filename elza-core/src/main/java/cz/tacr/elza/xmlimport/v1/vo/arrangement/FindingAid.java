@@ -1,4 +1,4 @@
-package cz.tacr.elza.xmlimport.v1.vo;
+package cz.tacr.elza.xmlimport.v1.vo.arrangement;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -8,26 +8,40 @@ import javax.xml.bind.annotation.XmlType;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
+
 /**
- * Variantní rejstříkové heslo.
+ * Archivní pomůcka.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 27. 10. 2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "variant-record", namespace = NamespaceInfo.NAMESPACE)
-public class VariantRecord {
+@XmlType(name = "findinig-aid", namespace = NamespaceInfo.NAMESPACE)
+public class FindingAid {
 
-    /** Obsah hesla. */
+    /** Název archivní pomůcky. */
     @XmlElement(required = true)
-    private String record;
+    private String name;
 
-    public String getRecord() {
-        return record;
+    /** Kořenový uzel. */
+    @XmlElement(required = true)
+    private Level rootLevel;
+
+    public String getName() {
+        return name;
     }
 
-    public void setRecord(String record) {
-        this.record = record;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Level getRootLevel() {
+        return rootLevel;
+    }
+
+    public void setRootLevel(Level rootLevel) {
+        this.rootLevel = rootLevel;
     }
 
     @Override

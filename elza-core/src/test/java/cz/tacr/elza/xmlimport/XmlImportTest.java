@@ -30,24 +30,25 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import cz.tacr.elza.ElzaCore;
-import cz.tacr.elza.xmlimport.v1.vo.AbstractDescItem;
-import cz.tacr.elza.xmlimport.v1.vo.DescItemCoordinates;
-import cz.tacr.elza.xmlimport.v1.vo.DescItemDecimal;
-import cz.tacr.elza.xmlimport.v1.vo.DescItemFormattedText;
-import cz.tacr.elza.xmlimport.v1.vo.DescItemInteger;
-import cz.tacr.elza.xmlimport.v1.vo.DescItemPartyRef;
-import cz.tacr.elza.xmlimport.v1.vo.DescItemRecordRef;
-import cz.tacr.elza.xmlimport.v1.vo.DescItemString;
-import cz.tacr.elza.xmlimport.v1.vo.DescItemText;
-import cz.tacr.elza.xmlimport.v1.vo.DescItemUnitDate;
-import cz.tacr.elza.xmlimport.v1.vo.DescItemUnitId;
-import cz.tacr.elza.xmlimport.v1.vo.FindingAid;
-import cz.tacr.elza.xmlimport.v1.vo.FindingAidImport;
-import cz.tacr.elza.xmlimport.v1.vo.Level;
-import cz.tacr.elza.xmlimport.v1.vo.Party;
-import cz.tacr.elza.xmlimport.v1.vo.PartyName;
-import cz.tacr.elza.xmlimport.v1.vo.Record;
-import cz.tacr.elza.xmlimport.v1.vo.VariantRecord;
+import cz.tacr.elza.xmlimport.v1.vo.XmlImport;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.AbstractDescItem;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemCoordinates;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemDecimal;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemFormattedText;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemInteger;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemPartyRef;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemRecordRef;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemString;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemText;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemUnitDate;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemUnitId;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.FindingAid;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.Level;
+import cz.tacr.elza.xmlimport.v1.vo.party.AbstractParty;
+import cz.tacr.elza.xmlimport.v1.vo.party.PartyName;
+import cz.tacr.elza.xmlimport.v1.vo.party.Person;
+import cz.tacr.elza.xmlimport.v1.vo.record.Record;
+import cz.tacr.elza.xmlimport.v1.vo.record.VariantRecord;
 
 /**
  * Testy na suzap.
@@ -76,14 +77,14 @@ public class XmlImportTest implements ApplicationContextAware {
     /** Test na zápis dat do xml, jejich načtení a porovnání. */
     @Test
     public void testDataIntegrity() throws JAXBException, IOException {
-        FindingAidImport fa = createFindingAid(true);
+        XmlImport fa = createFindingAid(true);
 
         File out = File.createTempFile("fa-export", ".xml");
         out.deleteOnExit();
 
         createMarshaller().marshal(fa, out);
 
-        FindingAidImport faFromFile = (FindingAidImport) createUnmarshaller().unmarshal(out);
+        XmlImport faFromFile = (XmlImport) createUnmarshaller().unmarshal(out);
 
         Assert.isTrue(fa.equals(faFromFile));
     }
@@ -91,7 +92,7 @@ public class XmlImportTest implements ApplicationContextAware {
     /** Test na validaci dat oproti vygenerovanému xsd. */
     @Test
     public void testValidity() throws JAXBException, SAXException, IOException {
-        FindingAidImport fa = createFindingAid(true);
+        XmlImport fa = createFindingAid(true);
 
         Marshaller marshaller = createMarshaller();
         marshaller.setSchema(createSchema());
@@ -103,7 +104,7 @@ public class XmlImportTest implements ApplicationContextAware {
     /** Test na validaci dat oproti vygenerovanému xsd. Data nejsou validní. */
     @Test(expected = MarshalException.class)
     public void testValidityWithInvalidData() throws JAXBException, SAXException, IOException {
-        FindingAidImport fa = createFindingAid(false);
+        XmlImport fa = createFindingAid(false);
 
         Marshaller marshaller = createMarshaller();
         marshaller.setSchema(createSchema());
@@ -119,15 +120,15 @@ public class XmlImportTest implements ApplicationContextAware {
      *
      * @return archivní pomůcka
      */
-    private FindingAidImport createFindingAid(boolean valid) {
-        FindingAidImport findingAidImport = new FindingAidImport();
+    private XmlImport createFindingAid(boolean valid) {
+        XmlImport findingAidImport = new XmlImport();
         FindingAid fa = new FindingAid();
         fa.setName("Import ze SUZAP");
 
         findingAidImport.setFindingAid(fa);
         List<Record> records = createRecords(valid);
         findingAidImport.setRecords(records);
-        List<Party> parties = createParties(records);
+        List<AbstractParty> parties = createParties(records);
         findingAidImport.setParties(parties);
         fa.setRootLevel(createLevelTree(records, parties));
 
@@ -142,7 +143,7 @@ public class XmlImportTest implements ApplicationContextAware {
      *
      * @return kořenový uzel
      */
-    private Level createLevelTree(List<Record> records, List<Party> parties) {
+    private Level createLevelTree(List<Record> records, List<AbstractParty> parties) {
         Level rootLevel = new Level();
         rootLevel.setPosition(1);
 
@@ -160,7 +161,7 @@ public class XmlImportTest implements ApplicationContextAware {
      *
      * @return hodnoty uzlu
      */
-    private List<AbstractDescItem> createDescItems(List<Record> records, List<Party> parties) {
+    private List<AbstractDescItem> createDescItems(List<Record> records, List<AbstractParty> parties) {
         List<AbstractDescItem> values = new ArrayList<AbstractDescItem>(DESC_ITEMS_COUNT);
         int position = 1;
         values.add(createValueCoordinates(position++));
@@ -209,7 +210,7 @@ public class XmlImportTest implements ApplicationContextAware {
         return value;
     }
 
-    private DescItemPartyRef createValuePartyRef(int position, List<Party> parties) {
+    private DescItemPartyRef createValuePartyRef(int position, List<AbstractParty> parties) {
         DescItemPartyRef value = new DescItemPartyRef();
         fillCommonValueFields(value ,position);
 
@@ -268,7 +269,7 @@ public class XmlImportTest implements ApplicationContextAware {
         value.setPosition(position);
     }
 
-    private List<Level> createChildren(int depth, List<Record> records, List<Party> parties) {
+    private List<Level> createChildren(int depth, List<Record> records, List<AbstractParty> parties) {
         if (depth < 1) {
             return null;
         }
@@ -384,10 +385,10 @@ public class XmlImportTest implements ApplicationContextAware {
      *
      * @return seznam osob
      */
-    private List<Party> createParties(List<Record> records) {
-        List<Party> parties = new ArrayList<Party>(PARTY_COUNT);
+    private List<AbstractParty> createParties(List<Record> records) {
+        List<AbstractParty> parties = new ArrayList<AbstractParty>(PARTY_COUNT);
         for (int i = 0; i < PARTY_COUNT; i++) {
-            Party party = createParty(records, i);
+            Person party = createParty(records, i);
 
             parties.add(party);
         }
@@ -402,8 +403,8 @@ public class XmlImportTest implements ApplicationContextAware {
      *
      * @return osoba
      */
-    private Party createParty(List<Record> records, int index) {
-        Party party = new Party();
+    private Person createParty(List<Record> records, int index) {
+        Person party = new Person();
         party.setPartyId("partyId-" + index);
         party.setPartyTypeCode("partyTypeCode " + index);
 
@@ -432,7 +433,7 @@ public class XmlImportTest implements ApplicationContextAware {
      * @return marshaller
      */
     private Marshaller createMarshaller() throws JAXBException {
-        JAXBContext jaxbContext = JAXBContext.newInstance(FindingAidImport.class);
+        JAXBContext jaxbContext = JAXBContext.newInstance(XmlImport.class);
         Marshaller marshaller = jaxbContext.createMarshaller();
         return marshaller;
     }
@@ -443,7 +444,7 @@ public class XmlImportTest implements ApplicationContextAware {
      * @return unmarshaller
      */
     private Unmarshaller createUnmarshaller() throws JAXBException {
-        JAXBContext jaxbContext = JAXBContext.newInstance(FindingAidImport.class);
+        JAXBContext jaxbContext = JAXBContext.newInstance(XmlImport.class);
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         return unmarshaller;
     }

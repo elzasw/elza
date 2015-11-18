@@ -12,6 +12,10 @@ import javax.xml.bind.annotation.XmlType;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.FindingAid;
+import cz.tacr.elza.xmlimport.v1.vo.party.AbstractParty;
+import cz.tacr.elza.xmlimport.v1.vo.record.Record;
+
 /**
  * Kořenový prvek entit pro import archivní pomůcky.
  *
@@ -19,9 +23,9 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  * @since 9. 11. 2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "findinig-aid-import", namespace = NamespaceInfo.NAMESPACE)
-@XmlRootElement(name = "findinig-aid-import", namespace = NamespaceInfo.NAMESPACE)
-public class FindingAidImport {
+@XmlType(name = "xml-import", namespace = NamespaceInfo.NAMESPACE)
+@XmlRootElement(name = "xml-import", namespace = NamespaceInfo.NAMESPACE)
+public class XmlImport {
 
     /** Archivní pomůcka. */
     @XmlElement
@@ -35,7 +39,7 @@ public class FindingAidImport {
     /** Seznam osob. */
     @XmlElement(name = "party")
     @XmlElementWrapper(name = "party-list")
-    private List<Party> parties;
+    private List<AbstractParty> parties;
 
     public FindingAid getFindingAid() {
         return findingAid;
@@ -53,11 +57,11 @@ public class FindingAidImport {
         this.records = records;
     }
 
-    public List<Party> getParties() {
+    public List<AbstractParty> getParties() {
         return parties;
     }
 
-    public void setParties(List<Party> parties) {
+    public void setParties(List<AbstractParty> parties) {
         this.parties = parties;
     }
 

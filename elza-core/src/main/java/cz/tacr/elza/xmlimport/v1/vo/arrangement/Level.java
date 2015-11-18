@@ -1,4 +1,4 @@
-package cz.tacr.elza.xmlimport.v1.vo;
+package cz.tacr.elza.xmlimport.v1.vo.arrangement;
 
 import java.util.List;
 
@@ -12,6 +12,9 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
+import cz.tacr.elza.xmlimport.v1.vo.record.Record;
 
 /**
  * Uzel archivní pomůcky.

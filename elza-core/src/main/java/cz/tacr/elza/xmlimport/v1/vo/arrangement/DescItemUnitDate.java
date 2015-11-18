@@ -1,10 +1,12 @@
-package cz.tacr.elza.xmlimport.v1.vo;
+package cz.tacr.elza.xmlimport.v1.vo.arrangement;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+
+import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 
 /**
  * Datace.

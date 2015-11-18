@@ -1,10 +1,13 @@
-package cz.tacr.elza.xmlimport.v1.vo;
+package cz.tacr.elza.xmlimport.v1.vo.arrangement;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlType;
+
+import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
+import cz.tacr.elza.xmlimport.v1.vo.party.AbstractParty;
 
 /**
  * Odkaz na osobu.
@@ -19,13 +22,13 @@ public class DescItemPartyRef extends AbstractDescItem {
     /** Odkaz do seznamu osob. */
     @XmlIDREF
     @XmlAttribute(required = true)
-    private Party party;
+    private AbstractParty party;
 
-    public Party getParty() {
+    public AbstractParty getParty() {
         return party;
     }
 
-    public void setParty(Party party) {
+    public void setParty(AbstractParty party) {
         this.party = party;
     }
 }

@@ -1,28 +1,30 @@
-package cz.tacr.elza.xmlimport.v1.vo;
+package cz.tacr.elza.xmlimport.v1.vo.arrangement;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
+import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
+
 /**
- * Formátovaný text.
+ * Celé číslo.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 27. 10. 2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "desc-item-formatted-text", namespace = NamespaceInfo.NAMESPACE)
-public class DescItemFormattedText extends AbstractDescItem {
+@XmlType(name = "desc-item-integer", namespace = NamespaceInfo.NAMESPACE)
+public class DescItemInteger extends AbstractDescItem {
 
     @XmlElement(required = true)
-    private String value;
+    private Integer value;
 
-    public String getValue() {
+    public Integer getValue() {
         return value;
     }
 
-    public void setValue(String value) {
+    public void setValue(Integer value) {
         this.value = value;
     }
 }

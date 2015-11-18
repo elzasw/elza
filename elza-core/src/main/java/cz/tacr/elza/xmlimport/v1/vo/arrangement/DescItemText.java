@@ -1,30 +1,30 @@
-package cz.tacr.elza.xmlimport.v1.vo;
-
-import java.math.BigDecimal;
+package cz.tacr.elza.xmlimport.v1.vo.arrangement;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
+import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
+
 /**
- * Desetinné číslo.
+ * Text.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 27. 10. 2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "desc-item-decimal", namespace = NamespaceInfo.NAMESPACE)
-public class DescItemDecimal extends AbstractDescItem {
+@XmlType(name = "desc-item-text", namespace = NamespaceInfo.NAMESPACE)
+public class DescItemText extends AbstractDescItem {
 
     @XmlElement(required = true)
-    private BigDecimal value;
+    private String value;
 
-    public BigDecimal getValue() {
+    public String getValue() {
         return value;
     }
 
-    public void setValue(BigDecimal value) {
+    public void setValue(String value) {
         this.value = value;
     }
 }

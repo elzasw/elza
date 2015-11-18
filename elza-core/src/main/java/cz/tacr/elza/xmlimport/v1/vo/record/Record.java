@@ -1,4 +1,4 @@
-package cz.tacr.elza.xmlimport.v1.vo;
+package cz.tacr.elza.xmlimport.v1.vo.record;
 
 import java.util.List;
 
@@ -12,6 +12,8 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 
 /**
  * Rejstříkové heslo.
@@ -36,6 +38,10 @@ public class Record {
     @XmlAttribute
     private String externalSourceCode;
 
+    /** Externí identifikátor rejstříkového hesla v externím zdroji záznamů, například interpi. */
+    @XmlAttribute(required = true)
+    private String externalId;
+
     /** Rejstříkové heslo. */
     @XmlElement(required = true)
     private String record;
@@ -54,10 +60,6 @@ public class Record {
      */
     @XmlAttribute(required = true)
     private boolean local;
-
-    /** Externí identifikátor rejstříkového hesla v externím zdroji záznamů, například interpi. */
-    @XmlAttribute(required = true)
-    private String externalId;
 
     /** Seznam podřízených rejstříků. */
     @XmlElement(name = "record")
@@ -93,6 +95,14 @@ public class Record {
         this.externalSourceCode = externalSourceCode;
     }
 
+    public String getExternalId() {
+        return externalId;
+    }
+
+    public void setExternalId(String externalId) {
+        this.externalId = externalId;
+    }
+
     public String getRecord() {
         return record;
     }
@@ -123,14 +133,6 @@ public class Record {
 
     public void setLocal(boolean local) {
         this.local = local;
-    }
-
-    public String getExternalId() {
-        return externalId;
-    }
-
-    public void setExternalId(String externalId) {
-        this.externalId = externalId;
     }
 
     public List<Record> getRecords() {
