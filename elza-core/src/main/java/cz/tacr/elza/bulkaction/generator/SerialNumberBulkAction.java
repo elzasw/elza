@@ -196,7 +196,7 @@ public class SerialNumberBulkAction extends BulkAction {
         }
         if (descItems.size() > 1) {
             throw new IllegalStateException(
-                    descItemType.getCode() + " nemuže být více než jeden (" + descItems.size() + ")");
+                    rulDescItemType.getCode() + " nemuže být více než jeden (" + descItems.size() + ")");
         }
         return descItemFactory.getDescItem(descItems.get(0));
     }

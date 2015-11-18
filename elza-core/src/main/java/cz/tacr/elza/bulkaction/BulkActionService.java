@@ -121,11 +121,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * @param bulkActionConfig nastavení hromadné akce
      */
     public void delete(final BulkActionConfig bulkActionConfig) {
-        try {
-            bulkActionConfigManager.update(bulkActionConfig);
-        } catch (IOException e) {
-            throw new IllegalStateException("Problém při mazání hromadné akce", e);
-        }
+        bulkActionConfigManager.delete(bulkActionConfig);
     }
 
     /**

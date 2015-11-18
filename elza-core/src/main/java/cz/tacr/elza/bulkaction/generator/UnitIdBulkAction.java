@@ -1,5 +1,6 @@
 package cz.tacr.elza.bulkaction.generator;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -141,7 +142,11 @@ public class UnitIdBulkAction extends BulkAction {
 
         String delimiterMajorLevelTypeNotUse = (String) bulkActionConfig
                 .getProperty("delimiter_major_level_type_not_use");
-        delimiterMajorLevelTypeNotUseList = Arrays.asList(delimiterMajorLevelTypeNotUse.split("\\|"));
+        if (delimiterMajorLevelTypeNotUse == null) {
+            delimiterMajorLevelTypeNotUseList = new ArrayList<>();
+        } else {
+            delimiterMajorLevelTypeNotUseList = Arrays.asList(delimiterMajorLevelTypeNotUse.split("\\|"));
+        }
 
     }
 

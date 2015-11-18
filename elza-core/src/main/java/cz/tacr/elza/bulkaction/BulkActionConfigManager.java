@@ -167,6 +167,7 @@ public class BulkActionConfigManager {
         }
 
         file.delete();
+        bulkActionConfigMap.remove(bulkActionConfig.getCode());
     }
 
     /**

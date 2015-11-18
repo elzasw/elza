@@ -73,6 +73,7 @@ import cz.tacr.elza.repository.DescItemSpecRegisterRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
+import cz.tacr.elza.repository.FaBulkActionRepository;
 import cz.tacr.elza.repository.FaViewRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
@@ -109,6 +110,7 @@ public abstract class AbstractRestTest {
     protected static final String RULE_MANAGER_URL = "/api/ruleSetManager";
     protected static final String REGISTRY_MANAGER_URL = "/api/registryManager";
     protected static final String PARTY_MANAGER_URL = "/api/partyManager";
+    protected static final String BULK_ACTION_MANAGER_URL = "/api/bulkActionManager";
 
     protected static final String TEST_CODE = "Tcode";
     protected static final String TEST_NAME = "Test name";
@@ -120,6 +122,21 @@ public abstract class AbstractRestTest {
     protected static final String CONTENT_TYPE_HEADER = "content-type";
     protected static final String JSON_CONTENT_TYPE = "application/json";
     private static final Header JSON_CT_HEADER = new Header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE);
+
+    // BULK ACTION MANAGER CONSTATNS
+
+    protected static final String GET_BULK_ACTION_TYPES = BULK_ACTION_MANAGER_URL + "/bulkactiontypes";
+    protected static final String CREATE_BULK_ACTION = BULK_ACTION_MANAGER_URL + "/bulkaction";
+    protected static final String DELETE_BULK_ACTION = BULK_ACTION_MANAGER_URL + "/bulkaction";
+    protected static final String UPDATE_BULK_ACTION = BULK_ACTION_MANAGER_URL + "/bulkaction";
+    protected static final String RELOAD_BULK_ACTIONS = BULK_ACTION_MANAGER_URL + "/reload";
+    protected static final String GET_ALL_BULK_ACTIONS = BULK_ACTION_MANAGER_URL + "/bulkactions/{versionId}";
+    protected static final String GET_MANDATORY_BULK_ACTIONS = BULK_ACTION_MANAGER_URL + "/bulkactions/{versionId}/mandatory";
+    protected static final String GET_BULK_ACTION = BULK_ACTION_MANAGER_URL + "/bulkaction/{bulkActionCode}";
+    protected static final String GET_BULK_ACTION_STATES = BULK_ACTION_MANAGER_URL + "/bulkaction/{versionId}/states";
+    protected static final String RUN_BULK_ACTION = BULK_ACTION_MANAGER_URL + "/run/{versionId}";
+
+    // END - BULK ACTION MANAGER CONSTATNS
 
     // REGISTRY MANAGER CONSTANTS
     protected static final String GET_REGISTER_TYPES_URL = REGISTRY_MANAGER_URL + "/getRegisterTypes";
@@ -201,6 +218,7 @@ public abstract class AbstractRestTest {
     protected static final String PREDECESSOR_NODE_ID_ATT = "predecessorNodeId";
     protected static final String FINDING_AID_ID_ATT = "findingAidId";
     protected static final String VERSION_ID_ATT = "versionId";
+    protected static final String BULK_ACTION_CODE = "bulkActionCode";
     protected static final String CREATE_NEW_VERSION_ATT = "createNewVersion";
 
     protected static final Integer DATA_TYPE_INTEGER = 1;
@@ -295,6 +313,8 @@ public abstract class AbstractRestTest {
     private NodeRegisterRepository nodeRegisterRepository;
     @Autowired
     private PacketRepository packetRepository;
+    @Autowired
+    private FaBulkActionRepository faBulkActionRepository;
 
     @Before
     public void setUp() {
@@ -307,6 +327,8 @@ public abstract class AbstractRestTest {
         // potřebné delete, jen data, ne číselníky
         arrDataRepository.deleteAll();
         partyNameRepository.unsetAllParty();
+
+        faBulkActionRepository.deleteAll();
 
         packetRepository.deleteAll();
 
