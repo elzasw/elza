@@ -30,6 +30,7 @@ import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemCoordinates;
 import cz.tacr.elza.domain.ArrDescItemDecimal;
+import cz.tacr.elza.domain.ArrDescItemEnum;
 import cz.tacr.elza.domain.ArrDescItemFormattedText;
 import cz.tacr.elza.domain.ArrDescItemInt;
 import cz.tacr.elza.domain.ArrDescItemPacketRef;
@@ -226,6 +227,8 @@ public abstract class Attribut extends CssLayout implements Components {
                 return new ArrDescItemDecimal();
             case "PACKET_REF":
                 return new ArrDescItemPacketRef();
+            case "ENUM":
+                return new ArrDescItemEnum();
             default:
                 throw new NotImplementedException("Nebyl namapován datový typ");
         }

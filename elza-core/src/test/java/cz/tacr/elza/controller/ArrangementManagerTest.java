@@ -17,6 +17,7 @@ import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 
 import org.apache.commons.lang.math.RandomUtils;
+import org.hibernate.Session;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -34,6 +35,7 @@ import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemCoordinates;
 import cz.tacr.elza.domain.ArrDescItemDecimal;
+import cz.tacr.elza.domain.ArrDescItemEnum;
 import cz.tacr.elza.domain.ArrDescItemFormattedText;
 import cz.tacr.elza.domain.ArrDescItemInt;
 import cz.tacr.elza.domain.ArrDescItemPacketRef;
@@ -400,7 +402,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ArrLevelWithExtraNode first = response.getBody().as(ArrLevelWithExtraNode.class);
 
         List<ArrLevelExt> subLevels = arrangementManager
-                .findSubLevels(version.getRootLevel().getNode().getNodeId(), version.getFindingAidVersionId(), null, null);
+                .findSubLevels(version.getRootLevel().getNode().getNodeId(), version.getFindingAidVersionId(), null,
+                        null);
         Assert.assertTrue(subLevels.size() == 2);
 
         Iterator<ArrLevelExt> iterator = subLevels.iterator();
@@ -628,7 +631,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrLevelWithExtraNode movedChild = response.getBody().as(ArrLevelWithExtraNode.class);
 
-        List<ArrLevelExt> subLevels = arrangementManager.findSubLevels(version.getRootLevel().getNode().getNodeId(), version.getFindingAidVersionId(), null, null);
+        List<ArrLevelExt> subLevels = arrangementManager.findSubLevels(version.getRootLevel().getNode().getNodeId(),
+                version.getFindingAidVersionId(), null, null);
 
         Assert.assertTrue(subLevels.size() == 2);
         Assert.assertTrue(movedChild.getLevel().getNodeParent().getNodeId().equals(parent.getLevel().getNodeParent().getNodeId()));
@@ -645,7 +649,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         levelWithExtraNode.setLevel(version.getRootLevel());
         levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
 
-        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(
+                ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
@@ -738,7 +743,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         Integer[] descItemTypeIds = {1, testLevel.getDescItemTypeId1(), testLevel.getDescItemTypeId2()};
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
-                parameter(NODE_ID_ATT, testLevel.getChildNodeId2()).parameter("descItemTypeIds", descItemTypeIds).get(GET_LEVEL_URL);
+                parameter(NODE_ID_ATT, testLevel.getChildNodeId2()).parameter("descItemTypeIds", descItemTypeIds).get(
+                GET_LEVEL_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
         ArrLevelExt level = response.getBody().as(ArrLevelExt.class);
@@ -818,10 +824,37 @@ public class ArrangementManagerTest extends AbstractRestTest {
         List<RulDataType> dataTypes = dataTypeRepository.findAll();
         List<ArrCalendarType> calendarTypes = calendarTypeRepository.findAll();
         int order = 1;
+
+        List<RulDescItemSpecExt> rulDescItemSpecExtList = new ArrayList<>();
+        RulDescItemSpec descItemSpec;
+        RulDescItemSpecExt rulDescItemSpecExt;
+
+        entityManager = entityManager.getEntityManagerFactory().createEntityManager();
+        Session session = (Session) entityManager.unwrap(Session.class);
+
         for (RulDataType dataType : dataTypes) {
             RulDescItemType descItemType = createRulDescItemType(dataType, order++);
             descItemType.setDataType(dataType);
             itemTypes.put(dataType.getCode(), descItemType);
+            if (dataType.getCode().equals("ENUM")) {
+                descItemSpec = createRulDescItemSpec(descItemType, "SPEC1", "Spec1", "Spec 1", 1);
+                descItemSpec = entityManager.find(RulDescItemSpec.class, descItemSpec.getDescItemSpecId());
+                rulDescItemSpecExt = new RulDescItemSpecExt();
+                BeanUtils.copyProperties(descItemSpec, rulDescItemSpecExt);
+                rulDescItemSpecExtList.add(rulDescItemSpecExt);
+
+                descItemSpec = createRulDescItemSpec(descItemType, "SPEC2", "Spec2", "Spec 2", 2);
+                descItemSpec = entityManager.find(RulDescItemSpec.class, descItemSpec.getDescItemSpecId());
+                rulDescItemSpecExt = new RulDescItemSpecExt();
+                BeanUtils.copyProperties(descItemSpec, rulDescItemSpecExt);
+                rulDescItemSpecExtList.add(rulDescItemSpecExt);
+
+                descItemSpec = createRulDescItemSpec(descItemType, "SPEC3", "Spec3", "Spec 3", 3);
+                descItemSpec = entityManager.find(RulDescItemSpec.class, descItemSpec.getDescItemSpecId());
+                rulDescItemSpecExt = new RulDescItemSpecExt();
+                BeanUtils.copyProperties(descItemSpec, rulDescItemSpecExt);
+                rulDescItemSpecExtList.add(rulDescItemSpecExt);
+            }
         }
 
         int valuesCount = 0;
@@ -865,6 +898,10 @@ public class ArrangementManagerTest extends AbstractRestTest {
                     break;
                 case DT_PACKET_REF:
                     descItems.add(createPacketRefValue(node, rulDescItemTypeExt, packet));
+                    break;
+                case DT_ENUM:
+                    rulDescItemTypeExt.setRulDescItemSpecList(rulDescItemSpecExtList);
+                    descItems.add(createEnumValue(node, rulDescItemTypeExt));
                     break;
                 default:
                     throw new IllegalStateException("Není definován case pro datový typ " + dtCode + " doplňte jej.");
@@ -991,6 +1028,12 @@ public class ArrangementManagerTest extends AbstractRestTest {
         return descItem;
     }
 
+    private ArrDescItem createEnumValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
+        ArrDescItem descItem = new ArrDescItemEnum();
+        descItem = createValue(descItem, node, rulDescItemTypeExt);
+        return descItem;
+    }
+
     private ArrDescItem createValue(ArrDescItem descItem, ArrNode node, RulDescItemTypeExt rulDescItemTypeExt) {
         descItem = createValueWithoutspecification(descItem, node, rulDescItemTypeExt);
         descItem.setDescItemSpec(chooseSpec(rulDescItemTypeExt.getRulDescItemSpecList()));
@@ -1053,6 +1096,14 @@ public class ArrangementManagerTest extends AbstractRestTest {
         createDescItemConstrain(descItemType, null);
 
         return descItemType;
+    }
+
+    private RulDescItemSpec createRulDescItemSpec(RulDescItemType descItemType, String code, String name, String description, int order) {
+        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, code, name, code, description, order);
+
+        descItemSpec = descItemSpecRepository.save(descItemSpec);
+
+        return descItemSpec;
     }
 
     @Test

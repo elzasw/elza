@@ -136,6 +136,8 @@ public class AttributValue extends CssLayout implements Components {
                 form.getFieldGroup().bind(paketRefAutoc, "packet");
                 form.addComponent(paketRefAutoc);
                   break;
+            case "ENUM":
+                break;
             default:
                 throw new IllegalStateException("Typ '" + dataType.getCode() + "' není implementován");
         }

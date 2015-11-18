@@ -28,6 +28,7 @@ import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemCoordinates;
+import cz.tacr.elza.domain.ArrDescItemEnum;
 import cz.tacr.elza.domain.ArrDescItemFormattedText;
 import cz.tacr.elza.domain.ArrDescItemInt;
 import cz.tacr.elza.domain.ArrDescItemPartyRef;
@@ -790,30 +791,23 @@ public class TestingDataController {
     }
 
     private ArrDescItem createLevelTypeValue(ArrNode node, RulDescItemTypeExt rulDescItemTypeExt, int depth) {
-        ArrDescItem descItem = new ArrDescItemCoordinates();
+        ArrDescItem descItem = new ArrDescItemEnum();
         descItem = setValueWithoutspecification(descItem, node, rulDescItemTypeExt);
-        ((ArrDescItemCoordinates) descItem).setValue(COORDINATES_VALUE);
 
         //všude hodnota 1, kromě ZP2015_LEVEL_FOLDER (pro 2. úroveň = 1, pro 3. úroven = 2, ...)
-        String value;
         switch (depth) {
             case 0: //první úroveň ZP2015_LEVEL_SERIES
                 chooseAndSetSpecification(descItem, rulDescItemTypeExt, LEVEL_TYPE_SERIES);
-                value = "1";
                 break;
             case (MAX_DEPTH - 2): //předposlední úroveň ZP2015_LEVEL_ITEM
                 chooseAndSetSpecification(descItem, rulDescItemTypeExt, LEVEL_TYPE_ITEM);
-                value = "1";
                 break;
             case (MAX_DEPTH - 1): //poslední úroveň ZP2015_LEVEL_PART
                 chooseAndSetSpecification(descItem, rulDescItemTypeExt, LEVEL_TYPE_PART);
-                value = "1";
                 break;
             default: //druhá a další úroveň až po předpředposlední ZP2015_LEVEL_FOLDER
                 chooseAndSetSpecification(descItem, rulDescItemTypeExt, LEVEL_TYPE_FOLDER);
-                value = Integer.toString(depth);
         }
-        ((ArrDescItemCoordinates) descItem).setValue(value);
 
         return descItem;
     }

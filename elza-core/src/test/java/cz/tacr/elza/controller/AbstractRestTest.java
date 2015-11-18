@@ -252,6 +252,7 @@ public abstract class AbstractRestTest {
     protected static final String DT_RECORD_REF = "RECORD_REF";
     protected static final String DT_DECIMAL = "DECIMAL";
     protected static final String DT_PACKET_REF = "PACKET_REF";
+    protected static final String DT_ENUM = "ENUM";
     // END RULE MANAGER CONSTANTS
 
     @Value("${local.server.port}")

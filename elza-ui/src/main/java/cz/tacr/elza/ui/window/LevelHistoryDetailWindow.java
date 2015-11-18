@@ -13,6 +13,7 @@ import com.vaadin.ui.Label;
 import cz.req.ax.AxWindow;
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDescItemEnum;
 import cz.tacr.elza.domain.vo.ArrNodeHistoryItem;
 import cz.tacr.elza.ui.components.FormGrid;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesComparator;
@@ -97,7 +98,9 @@ public class LevelHistoryDetailWindow extends AxWindow {
 
             if (item.getDescItemSpec() != null) {
                 String specName = item.getDescItemSpec().getName();
-                value = specName + ": " + value;
+                if (!(item instanceof ArrDescItemEnum)) {
+                    value = specName + ": " + value;
+                }
             }
 
             if (item.getDescItemType().getDescItemTypeId().equals(lastDescItemTypeId)) {

@@ -22,6 +22,7 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataDecimal;
 import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
@@ -32,6 +33,7 @@ import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemCoordinates;
 import cz.tacr.elza.domain.ArrDescItemDecimal;
+import cz.tacr.elza.domain.ArrDescItemEnum;
 import cz.tacr.elza.domain.ArrDescItemFormattedText;
 import cz.tacr.elza.domain.ArrDescItemInt;
 import cz.tacr.elza.domain.ArrDescItemPacketRef;
@@ -49,6 +51,7 @@ import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataCoordinatesRepository;
 import cz.tacr.elza.repository.DataDecimalRepository;
 import cz.tacr.elza.repository.DataIntegerRepository;
+import cz.tacr.elza.repository.DataNullRepository;
 import cz.tacr.elza.repository.DataPacketRefRepository;
 import cz.tacr.elza.repository.DataPartyRefRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
@@ -130,12 +133,15 @@ public class DescItemFactory implements InitializingBean {
 
     @Autowired
     private PacketRepository packetRepository;
-    
+
     @Autowired
     private RegRecordRepository regRecordRepository;
 
     @Autowired
     private DataPacketRefRepository dataPacketRefRepository;
+
+    @Autowired
+    private DataNullRepository dataNullRepository;
 
     @Autowired
     private CalendarTypeRepository calendarTypeRepository;
@@ -159,6 +165,7 @@ public class DescItemFactory implements InitializingBean {
         defineMapUnitid();
         defineMapDecimal();
         defineMapPacketRef();
+        defineMapEnum();
 
         facade = factory.getMapperFacade();
 
@@ -169,51 +176,64 @@ public class DescItemFactory implements InitializingBean {
      * Nadefinování pravidel pro převod formátu Coordinates.
      */
     private void defineMapCoordinates() {
-        factory.classMap(ArrDescItemCoordinates.class, ArrDataCoordinates.class).customize(new CustomMapper<ArrDescItemCoordinates, ArrDataCoordinates>() {
+        factory.classMap(ArrDescItemCoordinates.class, ArrDataCoordinates.class)
+                .customize(new CustomMapper<ArrDescItemCoordinates, ArrDataCoordinates>() {
 
-            @Override
-            public void mapAtoB(ArrDescItemCoordinates arrDescItemCoordinates, ArrDataCoordinates arrDataCoordinates, MappingContext context) {
-                arrDataCoordinates.setDataType(arrDescItemCoordinates.getDescItemType().getDataType());
-                arrDataCoordinates.setDescItem(arrDescItemCoordinates);
-                arrDataCoordinates.setValue(arrDescItemCoordinates.getValue());
-            }
+                    @Override
+                    public void mapAtoB(ArrDescItemCoordinates arrDescItemCoordinates,
+                                        ArrDataCoordinates arrDataCoordinates,
+                                        MappingContext context) {
+                        arrDataCoordinates.setDataType(arrDescItemCoordinates.getDescItemType().getDataType());
+                        arrDataCoordinates.setDescItem(arrDescItemCoordinates);
+                        arrDataCoordinates.setValue(arrDescItemCoordinates.getValue());
+                    }
 
-            @Override
-            public void mapBtoA(ArrDataCoordinates arrDataCoordinates, ArrDescItemCoordinates arrDescItemExtCoordinates, MappingContext context) {
-                arrDescItemExtCoordinates.setValue(arrDataCoordinates.getValue());
-            }
+                    @Override
+                    public void mapBtoA(ArrDataCoordinates arrDataCoordinates,
+                                        ArrDescItemCoordinates arrDescItemExtCoordinates,
+                                        MappingContext context) {
+                        arrDescItemExtCoordinates.setValue(arrDataCoordinates.getValue());
+                    }
 
-        }).register();
+                }).register();
 
-        factory.classMap(ArrDataCoordinates.class, ArrDataCoordinates.class).customize(new CustomMapper<ArrDataCoordinates, ArrDataCoordinates>() {
-            @Override
-            public void mapAtoB(ArrDataCoordinates arrDataCoordinates, ArrDataCoordinates arrDataCoordinatesNew, MappingContext context) {
-                arrDataCoordinatesNew.setDataType(arrDataCoordinates.getDataType());
-                arrDataCoordinatesNew.setDescItem(arrDataCoordinates.getDescItem());
-                arrDataCoordinatesNew.setValue(arrDataCoordinates.getValue());
-            }
-        }).register();
+        factory.classMap(ArrDataCoordinates.class, ArrDataCoordinates.class)
+                .customize(new CustomMapper<ArrDataCoordinates, ArrDataCoordinates>() {
+                    @Override
+                    public void mapAtoB(ArrDataCoordinates arrDataCoordinates,
+                                        ArrDataCoordinates arrDataCoordinatesNew,
+                                        MappingContext context) {
+                        arrDataCoordinatesNew.setDataType(arrDataCoordinates.getDataType());
+                        arrDataCoordinatesNew.setDescItem(arrDataCoordinates.getDescItem());
+                        arrDataCoordinatesNew.setValue(arrDataCoordinates.getValue());
+                    }
+                }).register();
     }
 
     /**
      * Nadefinování pravidel pro převod formátu FormattedText.
      */
     private void defineMapFormattedText() {
-        factory.classMap(ArrDescItemFormattedText.class, ArrDataText.class).customize(new CustomMapper<ArrDescItemFormattedText, ArrDataText>() {
+        factory.classMap(ArrDescItemFormattedText.class, ArrDataText.class)
+                .customize(new CustomMapper<ArrDescItemFormattedText, ArrDataText>() {
 
-            @Override
-            public void mapAtoB(ArrDescItemFormattedText arrDescItemFormattedText, ArrDataText arrDataText, MappingContext context) {
-                arrDataText.setDataType(arrDescItemFormattedText.getDescItemType().getDataType());
-                arrDataText.setDescItem(arrDescItemFormattedText);
-                arrDataText.setValue(arrDescItemFormattedText.getValue());
-            }
+                    @Override
+                    public void mapAtoB(ArrDescItemFormattedText arrDescItemFormattedText,
+                                        ArrDataText arrDataText,
+                                        MappingContext context) {
+                        arrDataText.setDataType(arrDescItemFormattedText.getDescItemType().getDataType());
+                        arrDataText.setDescItem(arrDescItemFormattedText);
+                        arrDataText.setValue(arrDescItemFormattedText.getValue());
+                    }
 
-            @Override
-            public void mapBtoA(ArrDataText arrDataText, ArrDescItemFormattedText arrDescItemFormattedText, MappingContext context) {
-                String formattedValue = formatString(context, arrDataText.getValue());
-                arrDescItemFormattedText.setValue(formattedValue);
-            }
-        }).register();
+                    @Override
+                    public void mapBtoA(ArrDataText arrDataText,
+                                        ArrDescItemFormattedText arrDescItemFormattedText,
+                                        MappingContext context) {
+                        String formattedValue = formatString(context, arrDataText.getValue());
+                        arrDescItemFormattedText.setValue(formattedValue);
+                    }
+                }).register();
 
         factory.classMap(ArrDataText.class, ArrDataText.class).customize(new CustomMapper<ArrDataText, ArrDataText>() {
             @Override
@@ -229,174 +249,219 @@ public class DescItemFactory implements InitializingBean {
      * Nadefinování pravidel pro převod formátu Int.
      */
     private void defineMapInt() {
-        factory.classMap(ArrDescItemInt.class, ArrDataInteger.class).customize(new CustomMapper<ArrDescItemInt, ArrDataInteger>() {
+        factory.classMap(ArrDescItemInt.class, ArrDataInteger.class)
+                .customize(new CustomMapper<ArrDescItemInt, ArrDataInteger>() {
 
-            @Override
-            public void mapAtoB(ArrDescItemInt arrDescItemInt, ArrDataInteger arrDataInteger, MappingContext context) {
-                arrDataInteger.setDataType(arrDescItemInt.getDescItemType().getDataType());
-                arrDataInteger.setDescItem(arrDescItemInt);
-                arrDataInteger.setValue(arrDescItemInt.getValue());
-            }
+                    @Override
+                    public void mapAtoB(ArrDescItemInt arrDescItemInt,
+                                        ArrDataInteger arrDataInteger,
+                                        MappingContext context) {
+                        arrDataInteger.setDataType(arrDescItemInt.getDescItemType().getDataType());
+                        arrDataInteger.setDescItem(arrDescItemInt);
+                        arrDataInteger.setValue(arrDescItemInt.getValue());
+                    }
 
-            @Override
-            public void mapBtoA(ArrDataInteger arrDataInteger, ArrDescItemInt arrDescItemInt, MappingContext context) {
-                arrDescItemInt.setValue(arrDataInteger.getValue());
-            }
+                    @Override
+                    public void mapBtoA(ArrDataInteger arrDataInteger,
+                                        ArrDescItemInt arrDescItemInt,
+                                        MappingContext context) {
+                        arrDescItemInt.setValue(arrDataInteger.getValue());
+                    }
 
-        }).register();
+                }).register();
 
-        factory.classMap(ArrDataInteger.class, ArrDataInteger.class).customize(new CustomMapper<ArrDataInteger, ArrDataInteger>() {
-            @Override
-            public void mapAtoB(ArrDataInteger arrDataInteger, ArrDataInteger arrDataIntegerNew, MappingContext context) {
-                arrDataIntegerNew.setDataType(arrDataInteger.getDataType());
-                arrDataIntegerNew.setDescItem(arrDataInteger.getDescItem());
-                arrDataIntegerNew.setValue(arrDataInteger.getValue());
-            }
-        }).register();
+        factory.classMap(ArrDataInteger.class, ArrDataInteger.class)
+                .customize(new CustomMapper<ArrDataInteger, ArrDataInteger>() {
+                    @Override
+                    public void mapAtoB(ArrDataInteger arrDataInteger,
+                                        ArrDataInteger arrDataIntegerNew,
+                                        MappingContext context) {
+                        arrDataIntegerNew.setDataType(arrDataInteger.getDataType());
+                        arrDataIntegerNew.setDescItem(arrDataInteger.getDescItem());
+                        arrDataIntegerNew.setValue(arrDataInteger.getValue());
+                    }
+                }).register();
     }
 
     /**
      * Nadefinování pravidel pro převod formátu PartyRef.
      */
     private void defineMapPartyRef() {
-        factory.classMap(ArrDescItemPartyRef.class, ArrDataPartyRef.class).customize(new CustomMapper<ArrDescItemPartyRef, ArrDataPartyRef>() {
+        factory.classMap(ArrDescItemPartyRef.class, ArrDataPartyRef.class)
+                .customize(new CustomMapper<ArrDescItemPartyRef, ArrDataPartyRef>() {
 
-            @Override
-            public void mapAtoB(ArrDescItemPartyRef arrDescItemPartyRef, ArrDataPartyRef arrDataPartyRef, MappingContext context) {
-                arrDataPartyRef.setDataType(arrDescItemPartyRef.getDescItemType().getDataType());
-                arrDataPartyRef.setDescItem(arrDescItemPartyRef);
-                arrDataPartyRef.setPartyId(arrDescItemPartyRef.getParty().getPartyId());
-            }
+                    @Override
+                    public void mapAtoB(ArrDescItemPartyRef arrDescItemPartyRef,
+                                        ArrDataPartyRef arrDataPartyRef,
+                                        MappingContext context) {
+                        arrDataPartyRef.setDataType(arrDescItemPartyRef.getDescItemType().getDataType());
+                        arrDataPartyRef.setDescItem(arrDescItemPartyRef);
+                        arrDataPartyRef.setPartyId(arrDescItemPartyRef.getParty().getPartyId());
+                    }
 
-            @Override
-            public void mapBtoA(ArrDataPartyRef arrDataPartyRef, ArrDescItemPartyRef arrDescItemPartyRef, MappingContext context) {
-                ParParty party = partyRepository.findOne(arrDataPartyRef.getPartyId());
-                arrDescItemPartyRef.setParty(party);
-            }
+                    @Override
+                    public void mapBtoA(ArrDataPartyRef arrDataPartyRef,
+                                        ArrDescItemPartyRef arrDescItemPartyRef,
+                                        MappingContext context) {
+                        ParParty party = partyRepository.findOne(arrDataPartyRef.getPartyId());
+                        arrDescItemPartyRef.setParty(party);
+                    }
 
-        }).register();
+                }).register();
 
-        factory.classMap(ArrDataPartyRef.class, ArrDataPartyRef.class).customize(new CustomMapper<ArrDataPartyRef, ArrDataPartyRef>() {
-            @Override
-            public void mapAtoB(ArrDataPartyRef arrDataPartyRef, ArrDataPartyRef arrDataPartyRefNew, MappingContext context) {
-                arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
-                arrDataPartyRefNew.setDescItem(arrDataPartyRef.getDescItem());
-                arrDataPartyRefNew.setPartyId(arrDataPartyRef.getPartyId());
-            }
-        }).register();
+        factory.classMap(ArrDataPartyRef.class, ArrDataPartyRef.class)
+                .customize(new CustomMapper<ArrDataPartyRef, ArrDataPartyRef>() {
+                    @Override
+                    public void mapAtoB(ArrDataPartyRef arrDataPartyRef,
+                                        ArrDataPartyRef arrDataPartyRefNew,
+                                        MappingContext context) {
+                        arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
+                        arrDataPartyRefNew.setDescItem(arrDataPartyRef.getDescItem());
+                        arrDataPartyRefNew.setPartyId(arrDataPartyRef.getPartyId());
+                    }
+                }).register();
     }
-    
+
     /**
      * Nadefinování pravidel pro převod formátu PacketRef.
      */
     private void defineMapPacketRef() {
-        factory.classMap(ArrDescItemPacketRef.class, ArrDataPacketRef.class).customize(new CustomMapper<ArrDescItemPacketRef, ArrDataPacketRef>() {
+        factory.classMap(ArrDescItemPacketRef.class, ArrDataPacketRef.class)
+                .customize(new CustomMapper<ArrDescItemPacketRef, ArrDataPacketRef>() {
 
-            @Override
-            public void mapAtoB(ArrDescItemPacketRef arrDescItemPartyRef, ArrDataPacketRef arrDataPartyRef, MappingContext context) {
-                arrDataPartyRef.setDataType(arrDescItemPartyRef.getDescItemType().getDataType());
-                arrDataPartyRef.setDescItem(arrDescItemPartyRef);
-                arrDataPartyRef.setPacketId(arrDescItemPartyRef.getPacket().getPacketId());
-            }
+                    @Override
+                    public void mapAtoB(ArrDescItemPacketRef arrDescItemPartyRef,
+                                        ArrDataPacketRef arrDataPartyRef,
+                                        MappingContext context) {
+                        arrDataPartyRef.setDataType(arrDescItemPartyRef.getDescItemType().getDataType());
+                        arrDataPartyRef.setDescItem(arrDescItemPartyRef);
+                        arrDataPartyRef.setPacketId(arrDescItemPartyRef.getPacket().getPacketId());
+                    }
 
-            @Override
-            public void mapBtoA(ArrDataPacketRef arrDataPartyRef, ArrDescItemPacketRef arrDescItemPartyRef, MappingContext context) {
-                ArrPacket party = packetRepository.findOne(arrDataPartyRef.getPacketId());
-                arrDescItemPartyRef.setPacket(party);
-            }
+                    @Override
+                    public void mapBtoA(ArrDataPacketRef arrDataPartyRef,
+                                        ArrDescItemPacketRef arrDescItemPartyRef,
+                                        MappingContext context) {
+                        ArrPacket party = packetRepository.findOne(arrDataPartyRef.getPacketId());
+                        arrDescItemPartyRef.setPacket(party);
+                    }
 
-        }).register();
+                }).register();
 
-        factory.classMap(ArrDataPacketRef.class, ArrDataPacketRef.class).customize(new CustomMapper<ArrDataPacketRef, ArrDataPacketRef>() {
-            @Override
-            public void mapAtoB(ArrDataPacketRef arrDataPartyRef, ArrDataPacketRef arrDataPartyRefNew, MappingContext context) {
-                arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
-                arrDataPartyRefNew.setDescItem(arrDataPartyRef.getDescItem());
-                arrDataPartyRefNew.setPacketId(arrDataPartyRef.getPacketId());
-            }
-        }).register();
+        factory.classMap(ArrDataPacketRef.class, ArrDataPacketRef.class)
+                .customize(new CustomMapper<ArrDataPacketRef, ArrDataPacketRef>() {
+                    @Override
+                    public void mapAtoB(ArrDataPacketRef arrDataPartyRef,
+                                        ArrDataPacketRef arrDataPartyRefNew,
+                                        MappingContext context) {
+                        arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
+                        arrDataPartyRefNew.setDescItem(arrDataPartyRef.getDescItem());
+                        arrDataPartyRefNew.setPacketId(arrDataPartyRef.getPacketId());
+                    }
+                }).register();
     }
 
     /**
      * Nadefinování pravidel pro převod formátu RecordRef.
      */
     private void defineMapRecordRef() {
-        factory.classMap(ArrDescItemRecordRef.class, ArrDataRecordRef.class).customize(new CustomMapper<ArrDescItemRecordRef, ArrDataRecordRef>() {
+        factory.classMap(ArrDescItemRecordRef.class, ArrDataRecordRef.class)
+                .customize(new CustomMapper<ArrDescItemRecordRef, ArrDataRecordRef>() {
 
-            @Override
-            public void mapAtoB(ArrDescItemRecordRef arrDescItemRecordRef, ArrDataRecordRef arrDataRecordRef, MappingContext context) {
-                arrDataRecordRef.setDataType(arrDescItemRecordRef.getDescItemType().getDataType());
-                arrDataRecordRef.setDescItem(arrDescItemRecordRef);
-                arrDataRecordRef.setRecordId(arrDescItemRecordRef.getRecord().getRecordId());
-            }
+                    @Override
+                    public void mapAtoB(ArrDescItemRecordRef arrDescItemRecordRef,
+                                        ArrDataRecordRef arrDataRecordRef,
+                                        MappingContext context) {
+                        arrDataRecordRef.setDataType(arrDescItemRecordRef.getDescItemType().getDataType());
+                        arrDataRecordRef.setDescItem(arrDescItemRecordRef);
+                        arrDataRecordRef.setRecordId(arrDescItemRecordRef.getRecord().getRecordId());
+                    }
 
-            @Override
-            public void mapBtoA(ArrDataRecordRef arrDataRecordRef, ArrDescItemRecordRef arrDescItemRecordRef, MappingContext context) {
-                RegRecord record = regRecordRepository.findOne(arrDataRecordRef.getRecordId());
-                arrDescItemRecordRef.setRecord(record);
-            }
+                    @Override
+                    public void mapBtoA(ArrDataRecordRef arrDataRecordRef,
+                                        ArrDescItemRecordRef arrDescItemRecordRef,
+                                        MappingContext context) {
+                        RegRecord record = regRecordRepository.findOne(arrDataRecordRef.getRecordId());
+                        arrDescItemRecordRef.setRecord(record);
+                    }
 
-        }).register();
+                }).register();
 
-        factory.classMap(ArrDataRecordRef.class, ArrDataRecordRef.class).customize(new CustomMapper<ArrDataRecordRef, ArrDataRecordRef>() {
-            @Override
-            public void mapAtoB(ArrDataRecordRef arrDataRecordRef, ArrDataRecordRef arrDataRecordRefNew, MappingContext context) {
-                arrDataRecordRefNew.setDataType(arrDataRecordRef.getDataType());
-                arrDataRecordRefNew.setDescItem(arrDataRecordRef.getDescItem());
-                arrDataRecordRefNew.setRecordId(arrDataRecordRef.getRecordId());
-            }
-        }).register();
+        factory.classMap(ArrDataRecordRef.class, ArrDataRecordRef.class)
+                .customize(new CustomMapper<ArrDataRecordRef, ArrDataRecordRef>() {
+                    @Override
+                    public void mapAtoB(ArrDataRecordRef arrDataRecordRef,
+                                        ArrDataRecordRef arrDataRecordRefNew,
+                                        MappingContext context) {
+                        arrDataRecordRefNew.setDataType(arrDataRecordRef.getDataType());
+                        arrDataRecordRefNew.setDescItem(arrDataRecordRef.getDescItem());
+                        arrDataRecordRefNew.setRecordId(arrDataRecordRef.getRecordId());
+                    }
+                }).register();
     }
 
     /**
      * Nadefinování pravidel pro převod formátu String.
      */
     private void defineMapString() {
-        factory.classMap(ArrDescItemString.class, ArrDataString.class).customize(new CustomMapper<ArrDescItemString, ArrDataString>() {
+        factory.classMap(ArrDescItemString.class, ArrDataString.class).customize(
+                new CustomMapper<ArrDescItemString, ArrDataString>() {
 
-            @Override
-            public void mapAtoB(ArrDescItemString arrDescItemString, ArrDataString arrDataString, MappingContext context) {
-                arrDataString.setDataType(arrDescItemString.getDescItemType().getDataType());
-                arrDataString.setDescItem(arrDescItemString);
-                arrDataString.setValue(arrDescItemString.getValue());
-            }
+                    @Override
+                    public void mapAtoB(ArrDescItemString arrDescItemString,
+                                        ArrDataString arrDataString,
+                                        MappingContext context) {
+                        arrDataString.setDataType(arrDescItemString.getDescItemType().getDataType());
+                        arrDataString.setDescItem(arrDescItemString);
+                        arrDataString.setValue(arrDescItemString.getValue());
+                    }
 
-            @Override
-            public void mapBtoA(ArrDataString arrDataString, ArrDescItemString arrDescItemString, MappingContext context) {
-                String formattedValue = formatString(context, arrDataString.getValue());
-                arrDescItemString.setValue(formattedValue);
-            }
-        }).register();
+                    @Override
+                    public void mapBtoA(ArrDataString arrDataString,
+                                        ArrDescItemString arrDescItemString,
+                                        MappingContext context) {
+                        String formattedValue = formatString(context, arrDataString.getValue());
+                        arrDescItemString.setValue(formattedValue);
+                    }
+                }).register();
 
-        factory.classMap(ArrDataString.class, ArrDataString.class).customize(new CustomMapper<ArrDataString, ArrDataString>() {
-            @Override
-            public void mapAtoB(ArrDataString arrDataString, ArrDataString arrDataStringNew, MappingContext context) {
-                arrDataStringNew.setDataType(arrDataString.getDataType());
-                arrDataStringNew.setDescItem(arrDataString.getDescItem());
-                arrDataStringNew.setValue(arrDataString.getValue());
-            }
-        }).register();
+        factory.classMap(ArrDataString.class, ArrDataString.class)
+                .customize(new CustomMapper<ArrDataString, ArrDataString>() {
+                    @Override
+                    public void mapAtoB(ArrDataString arrDataString,
+                                        ArrDataString arrDataStringNew,
+                                        MappingContext context) {
+                        arrDataStringNew.setDataType(arrDataString.getDataType());
+                        arrDataStringNew.setDescItem(arrDataString.getDescItem());
+                        arrDataStringNew.setValue(arrDataString.getValue());
+                    }
+                }).register();
     }
 
     /**
      * Nadefinování pravidel pro převod formátu Text.
      */
     private void defineMapText() {
-        factory.classMap(ArrDescItemText.class, ArrDataText.class).customize(new CustomMapper<ArrDescItemText, ArrDataText>() {
+        factory.classMap(ArrDescItemText.class, ArrDataText.class)
+                .customize(new CustomMapper<ArrDescItemText, ArrDataText>() {
 
-            @Override
-            public void mapAtoB(ArrDescItemText arrDescItemText, ArrDataText arrDataText, MappingContext context) {
-                arrDataText.setDataType(arrDescItemText.getDescItemType().getDataType());
-                arrDataText.setDescItem(arrDescItemText);
-                arrDataText.setValue(arrDescItemText.getValue());
-            }
+                    @Override
+                    public void mapAtoB(ArrDescItemText arrDescItemText,
+                                        ArrDataText arrDataText,
+                                        MappingContext context) {
+                        arrDataText.setDataType(arrDescItemText.getDescItemType().getDataType());
+                        arrDataText.setDescItem(arrDescItemText);
+                        arrDataText.setValue(arrDescItemText.getValue());
+                    }
 
-            @Override
-            public void mapBtoA(ArrDataText arrDataText, ArrDescItemText arrDescItemText, MappingContext context) {
-                String formattedValue = formatString(context, arrDataText.getValue());
-                arrDescItemText.setValue(formattedValue);
-            }
-        }).register();
+                    @Override
+                    public void mapBtoA(ArrDataText arrDataText,
+                                        ArrDescItemText arrDescItemText,
+                                        MappingContext context) {
+                        String formattedValue = formatString(context, arrDataText.getValue());
+                        arrDescItemText.setValue(formattedValue);
+                    }
+                }).register();
 
         factory.classMap(ArrDataText.class, ArrDataText.class).customize(new CustomMapper<ArrDataText, ArrDataText>() {
             @Override
@@ -412,144 +477,208 @@ public class DescItemFactory implements InitializingBean {
      * Nadefinování pravidel pro převod formátu Unitdate.
      */
     private void defineMapUnitdate() {
-        factory.classMap(ArrDescItemUnitdate.class, ArrDataUnitdate.class).customize(new CustomMapper<ArrDescItemUnitdate, ArrDataUnitdate>() {
+        factory.classMap(ArrDescItemUnitdate.class, ArrDataUnitdate.class)
+                .customize(new CustomMapper<ArrDescItemUnitdate, ArrDataUnitdate>() {
 
-            @Override
-            public void mapAtoB(ArrDescItemUnitdate arrDescItemUnitdate, ArrDataUnitdate arrDataUnitdate, MappingContext context) {
-                arrDataUnitdate.setDataType(arrDescItemUnitdate.getDescItemType().getDataType());
-                arrDataUnitdate.setDescItem(arrDescItemUnitdate);
+                    @Override
+                    public void mapAtoB(ArrDescItemUnitdate arrDescItemUnitdate,
+                                        ArrDataUnitdate arrDataUnitdate,
+                                        MappingContext context) {
+                        arrDataUnitdate.setDataType(arrDescItemUnitdate.getDescItemType().getDataType());
+                        arrDataUnitdate.setDescItem(arrDescItemUnitdate);
 
-                if (arrDescItemUnitdate.getFormat() == null) {
-                    throw new IllegalArgumentException("Nebyl odeslán formát dat");
-                } else {
-                    String format = arrDescItemUnitdate.getFormat();
-                    if (!format.matches("(" + PATTERN_UNIT_DATA + ")|(" + PATTERN_UNIT_DATA + INTERVAL_DELIMITER_UNIT_DATA + PATTERN_UNIT_DATA + ")")) {
-                        throw new IllegalArgumentException("Neplatný formát dat");
+                        if (arrDescItemUnitdate.getFormat() == null) {
+                            throw new IllegalArgumentException("Nebyl odeslán formát dat");
+                        } else {
+                            String format = arrDescItemUnitdate.getFormat();
+                            if (!format.matches(
+                                    "(" + PATTERN_UNIT_DATA + ")|(" + PATTERN_UNIT_DATA + INTERVAL_DELIMITER_UNIT_DATA
+                                            + PATTERN_UNIT_DATA + ")")) {
+                                throw new IllegalArgumentException("Neplatný formát dat");
+                            }
+                        }
+                        arrDataUnitdate.setFormat(arrDescItemUnitdate.getFormat());
+
+                        if (arrDescItemUnitdate.getCalendarType() == null) {
+                            throw new IllegalArgumentException("Nebyl zvolen kalendar");
+                        }
+                        arrDataUnitdate.setCalendarTypeId(arrDescItemUnitdate.getCalendarType().getCalendarTypeId());
+
+                        try {
+                            String value = arrDescItemUnitdate.getValueFrom();
+                            if (value != null) {
+                                value = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+                                        .format(LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+                            }
+                            arrDataUnitdate.setValueFrom(value);
+                        } catch (DateTimeParseException e) {
+                            throw new IllegalArgumentException("Nebyl zadan platny format datumu 'od'", e);
+                        }
+
+                        arrDataUnitdate.setValueFromEstimated(arrDescItemUnitdate.getValueFromEstimated());
+
+                        try {
+                            String value = arrDescItemUnitdate.getValueTo();
+                            if (value != null) {
+                                value = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+                                        .format(LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+                            }
+                            arrDataUnitdate.setValueTo(value);
+                        } catch (DateTimeParseException e) {
+                            throw new IllegalArgumentException("Nebyl zadan platny format datumu 'do'", e);
+                        }
+
+                        if (arrDescItemUnitdate.getValueFrom() != null && arrDescItemUnitdate.getValueTo() != null) {
+                            LocalDateTime from = LocalDateTime
+                                    .parse(arrDescItemUnitdate.getValueFrom(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                            LocalDateTime to = LocalDateTime
+                                    .parse(arrDescItemUnitdate.getValueTo(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                            if (from.isAfter(to)) {
+                                throw new IllegalArgumentException("Neplatný interval ISO datumů: od > do");
+                            }
+                        } else if (arrDescItemUnitdate.getValueFrom() == null
+                                && arrDescItemUnitdate.getValueTo() == null) {
+                            throw new IllegalArgumentException("Nebyl zadán interval ISO datumů");
+                        }
+
+                        arrDataUnitdate.setValueToEstimated(arrDescItemUnitdate.getValueToEstimated());
                     }
-                }
-                arrDataUnitdate.setFormat(arrDescItemUnitdate.getFormat());
 
-                if (arrDescItemUnitdate.getCalendarType() == null) {
-                    throw new IllegalArgumentException("Nebyl zvolen kalendar");
-                }
-                arrDataUnitdate.setCalendarTypeId(arrDescItemUnitdate.getCalendarType().getCalendarTypeId());
-
-                try {
-                    String value = arrDescItemUnitdate.getValueFrom();
-                    if (value != null) {
-                        value = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+                    @Override
+                    public void mapBtoA(ArrDataUnitdate arrDataUnitdate,
+                                        ArrDescItemUnitdate arrDescItemUnitdate,
+                                        MappingContext context) {
+                        ArrCalendarType calendarType = calendarTypeRepository
+                                .findOne(arrDataUnitdate.getCalendarTypeId());
+                        arrDescItemUnitdate.setCalendarType(calendarType);
+                        arrDescItemUnitdate.setValueFrom(arrDataUnitdate.getValueFrom());
+                        arrDescItemUnitdate.setValueFromEstimated(arrDataUnitdate.getValueFromEstimated());
+                        arrDescItemUnitdate.setValueTo(arrDataUnitdate.getValueTo());
+                        arrDescItemUnitdate.setValueToEstimated(arrDataUnitdate.getValueToEstimated());
+                        arrDescItemUnitdate.setFormat(arrDataUnitdate.getFormat());
                     }
-                    arrDataUnitdate.setValueFrom(value);
-                } catch (DateTimeParseException e) {
-                    throw new IllegalArgumentException("Nebyl zadan platny format datumu 'od'", e);
-                }
+                }).register();
 
-                arrDataUnitdate.setValueFromEstimated(arrDescItemUnitdate.getValueFromEstimated());
-
-                try {
-                    String value = arrDescItemUnitdate.getValueTo();
-                    if (value != null) {
-                        value = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        factory.classMap(ArrDataUnitdate.class, ArrDataUnitdate.class)
+                .customize(new CustomMapper<ArrDataUnitdate, ArrDataUnitdate>() {
+                    @Override
+                    public void mapAtoB(ArrDataUnitdate arrDataUnitdate,
+                                        ArrDataUnitdate arrDataUnitdateNew,
+                                        MappingContext context) {
+                        arrDataUnitdateNew.setDataType(arrDataUnitdate.getDataType());
+                        arrDataUnitdateNew.setDescItem(arrDataUnitdate.getDescItem());
+                        arrDataUnitdateNew.setCalendarTypeId(arrDataUnitdate.getCalendarTypeId());
+                        arrDataUnitdateNew.setValueFrom(arrDataUnitdate.getValueFrom());
+                        arrDataUnitdateNew.setValueFromEstimated(arrDataUnitdate.getValueFromEstimated());
+                        arrDataUnitdateNew.setValueTo(arrDataUnitdate.getValueTo());
+                        arrDataUnitdateNew.setValueToEstimated(arrDataUnitdate.getValueToEstimated());
+                        arrDataUnitdateNew.setFormat(arrDataUnitdate.getFormat());
                     }
-                    arrDataUnitdate.setValueTo(value);
-                } catch (DateTimeParseException e) {
-                    throw new IllegalArgumentException("Nebyl zadan platny format datumu 'do'", e);
-                }
-
-                if (arrDescItemUnitdate.getValueFrom() != null && arrDescItemUnitdate.getValueTo() != null) {
-                    LocalDateTime from = LocalDateTime.parse(arrDescItemUnitdate.getValueFrom(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                    LocalDateTime to = LocalDateTime.parse(arrDescItemUnitdate.getValueTo(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                    if (from.isAfter(to)) {
-                        throw new IllegalArgumentException("Neplatný interval ISO datumů: od > do");
-                    }
-                } else if (arrDescItemUnitdate.getValueFrom() == null && arrDescItemUnitdate.getValueTo() == null) {
-                    throw new IllegalArgumentException("Nebyl zadán interval ISO datumů");
-                }
-
-                arrDataUnitdate.setValueToEstimated(arrDescItemUnitdate.getValueToEstimated());
-            }
-
-            @Override
-            public void mapBtoA(ArrDataUnitdate arrDataUnitdate, ArrDescItemUnitdate arrDescItemUnitdate, MappingContext context) {
-                ArrCalendarType calendarType = calendarTypeRepository.findOne(arrDataUnitdate.getCalendarTypeId());
-                arrDescItemUnitdate.setCalendarType(calendarType);
-                arrDescItemUnitdate.setValueFrom(arrDataUnitdate.getValueFrom());
-                arrDescItemUnitdate.setValueFromEstimated(arrDataUnitdate.getValueFromEstimated());
-                arrDescItemUnitdate.setValueTo(arrDataUnitdate.getValueTo());
-                arrDescItemUnitdate.setValueToEstimated(arrDataUnitdate.getValueToEstimated());
-                arrDescItemUnitdate.setFormat(arrDataUnitdate.getFormat());
-            }
-        }).register();
-
-        factory.classMap(ArrDataUnitdate.class, ArrDataUnitdate.class).customize(new CustomMapper<ArrDataUnitdate, ArrDataUnitdate>() {
-            @Override
-            public void mapAtoB(ArrDataUnitdate arrDataUnitdate, ArrDataUnitdate arrDataUnitdateNew, MappingContext context) {
-                arrDataUnitdateNew.setDataType(arrDataUnitdate.getDataType());
-                arrDataUnitdateNew.setDescItem(arrDataUnitdate.getDescItem());
-                arrDataUnitdateNew.setCalendarTypeId(arrDataUnitdate.getCalendarTypeId());
-                arrDataUnitdateNew.setValueFrom(arrDataUnitdate.getValueFrom());
-                arrDataUnitdateNew.setValueFromEstimated(arrDataUnitdate.getValueFromEstimated());
-                arrDataUnitdateNew.setValueTo(arrDataUnitdate.getValueTo());
-                arrDataUnitdateNew.setValueToEstimated(arrDataUnitdate.getValueToEstimated());
-                arrDataUnitdateNew.setFormat(arrDataUnitdate.getFormat());
-            }
-        }).register();
+                }).register();
     }
 
     /**
      * Nadefinování pravidel pro převod formátu Unitid.
      */
     private void defineMapUnitid() {
-        factory.classMap(ArrDescItemUnitid.class, ArrDataUnitid.class).customize(new CustomMapper<ArrDescItemUnitid, ArrDataUnitid>() {
+        factory.classMap(ArrDescItemUnitid.class, ArrDataUnitid.class)
+                .customize(new CustomMapper<ArrDescItemUnitid, ArrDataUnitid>() {
 
-            @Override
-            public void mapAtoB(ArrDescItemUnitid arrDescItemUnitid, ArrDataUnitid arrDataUnitid, MappingContext context) {
-                arrDataUnitid.setDataType(arrDescItemUnitid.getDescItemType().getDataType());
-                arrDataUnitid.setDescItem(arrDescItemUnitid);
-                arrDataUnitid.setValue(arrDescItemUnitid.getValue());
-            }
+                    @Override
+                    public void mapAtoB(ArrDescItemUnitid arrDescItemUnitid,
+                                        ArrDataUnitid arrDataUnitid,
+                                        MappingContext context) {
+                        arrDataUnitid.setDataType(arrDescItemUnitid.getDescItemType().getDataType());
+                        arrDataUnitid.setDescItem(arrDescItemUnitid);
+                        arrDataUnitid.setValue(arrDescItemUnitid.getValue());
+                    }
 
-            @Override
-            public void mapBtoA(ArrDataUnitid arrDataUnitid, ArrDescItemUnitid arrDescItemUnitid, MappingContext context) {
-                arrDescItemUnitid.setValue(arrDataUnitid.getValue());
-            }
-        }).register();
+                    @Override
+                    public void mapBtoA(ArrDataUnitid arrDataUnitid,
+                                        ArrDescItemUnitid arrDescItemUnitid,
+                                        MappingContext context) {
+                        arrDescItemUnitid.setValue(arrDataUnitid.getValue());
+                    }
+                }).register();
 
-        factory.classMap(ArrDataUnitid.class, ArrDataUnitid.class).customize(new CustomMapper<ArrDataUnitid, ArrDataUnitid>() {
-            @Override
-            public void mapAtoB(ArrDataUnitid arrDataUnitid, ArrDataUnitid arrDataUnitidNew, MappingContext context) {
-                arrDataUnitidNew.setDataType(arrDataUnitid.getDataType());
-                arrDataUnitidNew.setDescItem(arrDataUnitid.getDescItem());
-                arrDataUnitidNew.setValue(arrDataUnitid.getValue());
-            }
-        }).register();
+        factory.classMap(ArrDataUnitid.class, ArrDataUnitid.class)
+                .customize(new CustomMapper<ArrDataUnitid, ArrDataUnitid>() {
+                    @Override
+                    public void mapAtoB(ArrDataUnitid arrDataUnitid,
+                                        ArrDataUnitid arrDataUnitidNew,
+                                        MappingContext context) {
+                        arrDataUnitidNew.setDataType(arrDataUnitid.getDataType());
+                        arrDataUnitidNew.setDescItem(arrDataUnitid.getDescItem());
+                        arrDataUnitidNew.setValue(arrDataUnitid.getValue());
+                    }
+                }).register();
     }
 
     /**
      * Nadefinování pravidel pro převod formátu Decimal.
      */
     private void defineMapDecimal() {
-        factory.classMap(ArrDescItemDecimal.class, ArrDataDecimal.class).customize(new CustomMapper<ArrDescItemDecimal, ArrDataDecimal>() {
+        factory.classMap(ArrDescItemDecimal.class, ArrDataDecimal.class)
+                .customize(new CustomMapper<ArrDescItemDecimal, ArrDataDecimal>() {
 
-            @Override
-            public void mapAtoB(ArrDescItemDecimal arrDescItemDecimal, ArrDataDecimal arrDataDecimal, MappingContext context) {
-                arrDataDecimal.setDataType(arrDescItemDecimal.getDescItemType().getDataType());
-                arrDataDecimal.setDescItem(arrDescItemDecimal);
-                arrDataDecimal.setValue(arrDescItemDecimal.getValue());
-            }
+                    @Override
+                    public void mapAtoB(ArrDescItemDecimal arrDescItemDecimal,
+                                        ArrDataDecimal arrDataDecimal,
+                                        MappingContext context) {
+                        arrDataDecimal.setDataType(arrDescItemDecimal.getDescItemType().getDataType());
+                        arrDataDecimal.setDescItem(arrDescItemDecimal);
+                        arrDataDecimal.setValue(arrDescItemDecimal.getValue());
+                    }
 
-            @Override
-            public void mapBtoA(ArrDataDecimal arrDataDecimal, ArrDescItemDecimal arrDescItemDecimal, MappingContext context) {
-                arrDescItemDecimal.setValue(arrDataDecimal.getValue());
-            }
-        }).register();
+                    @Override
+                    public void mapBtoA(ArrDataDecimal arrDataDecimal,
+                                        ArrDescItemDecimal arrDescItemDecimal,
+                                        MappingContext context) {
+                        arrDescItemDecimal.setValue(arrDataDecimal.getValue());
+                    }
+                }).register();
 
-        factory.classMap(ArrDataDecimal.class, ArrDataDecimal.class).customize(new CustomMapper<ArrDataDecimal, ArrDataDecimal>() {
+        factory.classMap(ArrDataDecimal.class, ArrDataDecimal.class)
+                .customize(new CustomMapper<ArrDataDecimal, ArrDataDecimal>() {
+                    @Override
+                    public void mapAtoB(ArrDataDecimal arrDataDecimal,
+                                        ArrDataDecimal arrDataDecimalNew,
+                                        MappingContext context) {
+                        arrDataDecimalNew.setDataType(arrDataDecimal.getDataType());
+                        arrDataDecimalNew.setDescItem(arrDataDecimal.getDescItem());
+                        arrDataDecimalNew.setValue(arrDataDecimal.getValue());
+                    }
+                }).register();
+    }
+
+    /**
+     * Nadefinování pravidel pro převod formátu Enum.
+     */
+    private void defineMapEnum() {
+        factory.classMap(ArrDescItemEnum.class, ArrDataNull.class)
+                .customize(new CustomMapper<ArrDescItemEnum, ArrDataNull>() {
+
+                    @Override
+                    public void mapAtoB(ArrDescItemEnum arrDescItemEnum,
+                                        ArrDataNull arrDataNull,
+                                        MappingContext context) {
+                        arrDataNull.setDataType(arrDescItemEnum.getDescItemType().getDataType());
+                        arrDataNull.setDescItem(arrDescItemEnum);
+                    }
+
+                    @Override
+                    public void mapBtoA(ArrDataNull arrDataNull,
+                                        ArrDescItemEnum arrDescItemEnum,
+                                        MappingContext context) {
+
+                    }
+                }).register();
+
+        factory.classMap(ArrDataNull.class, ArrDataNull.class).customize(new CustomMapper<ArrDataNull, ArrDataNull>() {
             @Override
-            public void mapAtoB(ArrDataDecimal arrDataDecimal, ArrDataDecimal arrDataDecimalNew, MappingContext context) {
-                arrDataDecimalNew.setDataType(arrDataDecimal.getDataType());
-                arrDataDecimalNew.setDescItem(arrDataDecimal.getDescItem());
-                arrDataDecimalNew.setValue(arrDataDecimal.getValue());
+            public void mapAtoB(ArrDataNull arrDataNull, ArrDataNull arrDataNullNew, MappingContext context) {
+                arrDataNullNew.setDataType(arrDataNull.getDataType());
+                arrDataNullNew.setDescItem(arrDataNull.getDescItem());
             }
         }).register();
     }
@@ -569,6 +698,7 @@ public class DescItemFactory implements InitializingBean {
         mapRepository.put(ArrDataUnitid.class, dataUnitidRepository);
         mapRepository.put(ArrDataDecimal.class, dataDecimalRepository);
         mapRepository.put(ArrDataPacketRef.class, dataPacketRefRepository);
+        mapRepository.put(ArrDataNull.class, dataNullRepository);
     }
 
     /**
@@ -625,8 +755,9 @@ public class DescItemFactory implements InitializingBean {
 
     /**
      * Uloží hodnotu atributu bez dat.
-     * @param descItem  hodnota atributu
-     * @return          nova hodnota atributu
+     *
+     * @param descItem hodnota atributu
+     * @return nova hodnota atributu
      */
     public ArrDescItem saveDescItem(ArrDescItem descItem) {
         ArrDescItem descItemRaw = new ArrDescItem();
@@ -643,7 +774,7 @@ public class DescItemFactory implements InitializingBean {
      * @param createNewVersion vytvořit novou verzi?
      *                         true - vytvoří novou hodnoty atributu
      *                         false - načte původní hodnotu a upraví jí podle nové
-     * @return                 uložená hodnota atributu
+     * @return uložená hodnota atributu
      */
     public ArrDescItem saveDescItemWithData(ArrDescItem descItem, Boolean createNewVersion) {
 
@@ -677,6 +808,8 @@ public class DescItemFactory implements InitializingBean {
                 data = facade.map(descItem, ArrDataDecimal.class);
             } else if (descItem instanceof ArrDescItemPacketRef) {
                 data = facade.map(descItem, ArrDataPacketRef.class);
+            } else if (descItem instanceof ArrDescItemEnum) {
+                data = facade.map(descItem, ArrDataNull.class);
             } else {
                 throw new NotImplementedException("Nebyl namapován datový typ: " + descItem.getClass().getName());
             }
@@ -727,6 +860,8 @@ public class DescItemFactory implements InitializingBean {
                 return new ArrDescItemDecimal();
             case "PACKET_REF":
                 return new ArrDescItemPacketRef();
+            case "ENUM":
+                return new ArrDescItemEnum();
             default:
                 throw new NotImplementedException("Nebyl namapován datový typ");
         }
@@ -763,7 +898,8 @@ public class DescItemFactory implements InitializingBean {
             String format = (String) context.getProperty(PROPERTY_FORMAT);
             if (format != null) {
                 String stringValue = value;
-                if (stringValue != null && stringValue.length() > 250 && format != null && ArrangementManager.FORMAT_ATTRIBUTE_SHORT.equals(format)) {
+                if (stringValue != null && stringValue.length() > 250 && format != null
+                        && ArrangementManager.FORMAT_ATTRIBUTE_SHORT.equals(format)) {
                     valueRet = stringValue.substring(0, 250);
                 }
             }

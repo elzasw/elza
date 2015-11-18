@@ -33,6 +33,7 @@ import cz.tacr.elza.controller.RegistryManager;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDescItemEnum;
 import cz.tacr.elza.domain.ArrDescItemString;
 import cz.tacr.elza.domain.ArrDescItemUnitdate;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
@@ -266,7 +267,9 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
             if (item.getDescItemSpec() != null) {
                 String specName = item.getDescItemSpec().getName();
-                value = specName + ": " + value;
+                if (!(item instanceof ArrDescItemEnum)) {
+                    value = specName + ": " + value;
+                }
             }
 
             if (item.getDescItemType().getDescItemTypeId().equals(lastDescItemTypeId)) {
