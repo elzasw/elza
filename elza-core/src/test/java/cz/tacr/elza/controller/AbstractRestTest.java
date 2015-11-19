@@ -413,6 +413,7 @@ public abstract class AbstractRestTest {
         version.setFindingAid(findingAid);
         version.setRootLevel(root);
         version.setRuleSet(ruleSet);
+        version.setLastChange(createChange);
 
         return findingAidVersionRepository.save(version);
     }

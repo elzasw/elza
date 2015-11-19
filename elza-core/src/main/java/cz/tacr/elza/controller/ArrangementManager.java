@@ -291,6 +291,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         version.setFindingAid(findingAid);
         version.setRuleSet(ruleSet);
         version.setRootLevel(rootNode);
+        version.setLastChange(createChange);
         return findingAidVersionRepository.save(version);
     }
 
@@ -1702,7 +1703,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     private void validateAllItemConstraintsByType(RulDescItemType rulDescItemType,
                                                   ArrDescItem data,
                                                   Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems) {
-        List<RulDescItemConstraint> rulDescItemConstraints = descItemConstraintRepository.findByDescItemType(rulDescItemType);
+        List<RulDescItemConstraint> rulDescItemConstraints = descItemConstraintRepository.findByDescItemType(
+                rulDescItemType);
         for (RulDescItemConstraint rulDescItemConstraint : rulDescItemConstraints) {
             validateRepeatableType(rulDescItemType, rulDescItemConstraint, mapDescItems);
             validateDataDescItemConstraintTextLenghtLimit(data, rulDescItemConstraint);

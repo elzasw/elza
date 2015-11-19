@@ -84,4 +84,14 @@ public interface ArrFindingAidVersion<FA extends ArrFindingAid, FC extends ArrCh
      * @param ruleSet odkaz na pravidla tvorby.
      */
     void setRuleSet(RS ruleSet);
+
+    /**
+     * @return poslední uživatelská změna nad verzí AP
+     */
+    FC getLastChange();
+
+    /**
+     * @param change poslední uživatelská změna nad verzí AP
+     */
+    void setLastChange(FC change);
 }
