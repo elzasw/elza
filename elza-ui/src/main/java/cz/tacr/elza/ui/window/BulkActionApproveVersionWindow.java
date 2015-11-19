@@ -53,8 +53,8 @@ public class BulkActionApproveVersionWindow extends AxWindow {
             }).caption("Spustit").icon(FontAwesome.PLAY);
 
             bulkActionLayout.addComponent(runBulkAction.button());
-
-            Label bulkActionLabel = newLabel(bulkActionConfig.getCode());
+            String name = (String) bulkActionConfig.getProperty("name");
+            Label bulkActionLabel = newLabel(name == null ? "[" + bulkActionConfig.getCode() + "]" : name + " [" + bulkActionConfig.getCode() + "]");
             bulkActionLabel.addStyleName("bulkaction-name");
             bulkActionLayout.addComponent(bulkActionLabel);
 
