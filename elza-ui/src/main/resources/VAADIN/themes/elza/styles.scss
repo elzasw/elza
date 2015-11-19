@@ -32,6 +32,23 @@ $ax-main-focus: $color-app;
         padding-left: 2px;
     }
 
+    .bulkaction-window-detail {
+        .bulkaction-box {
+            .bulkaction-line {
+                display: block;
+                padding: 10px;
+
+                .v-widget {
+                    vertical-align: middle;
+                }
+
+                .bulkaction-name {
+                    margin-left: 10px;
+                }
+            }
+        }
+    }
+
     .history-window-detail {
         box-shadow: 0 0 10px 1px $color-app-alt;
         background-color: white;

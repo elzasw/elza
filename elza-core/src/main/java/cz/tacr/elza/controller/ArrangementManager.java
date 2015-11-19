@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
+import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -146,6 +147,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @Autowired
     private PacketTypeRepository packetTypeRepository;
 
+    @Autowired
+    private BulkActionService bulkActionService;
 
     /**
      * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.
@@ -291,6 +294,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         version.setFindingAid(findingAid);
         version.setRuleSet(ruleSet);
         version.setRootLevel(rootNode);
+        version.setLastChange(createChange);
         return findingAidVersionRepository.save(version);
     }
 
@@ -422,6 +426,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         levelWithParentNodeRet.setLevel(faLevelRet);
         levelWithParentNodeRet.setExtraNode(parentNode);
 
+        saveLastChangeFaVersion(change, versionId);
+
         return levelWithParentNodeRet;
     }
 
@@ -451,6 +457,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         levelWithParentNodeRet.setLevel(faLevelRet);
         levelWithParentNodeRet.setExtraNode(parentNode);
 
+        saveLastChangeFaVersion(change, versionId);
+
         return levelWithParentNodeRet;
     }
 
@@ -475,6 +483,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         ArrLevelWithExtraNode levelWithParentNodeRet = new ArrLevelWithExtraNode();
         levelWithParentNodeRet.setLevel(faLevelRet);
         levelWithParentNodeRet.setExtraNode(node.getNode());
+
+        saveLastChangeFaVersion(change, versionId);
 
         return levelWithParentNodeRet;
     }
@@ -551,6 +561,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         levelWithFollowerNodeRet.setLevel(levelRet);
         levelWithFollowerNodeRet.setLevelTarget(targetLevel);
 
+        saveLastChangeFaVersion(change, versionId);
+
         return levelWithFollowerNodeRet;
     }
 
@@ -599,6 +611,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         ArrLevelWithExtraNode levelWithPredecessorNodeRet = new ArrLevelWithExtraNode();
         levelWithPredecessorNodeRet.setLevel(faLevelRet);
         levelWithPredecessorNodeRet.setExtraNode(parentNode);
+
+        saveLastChangeFaVersion(change, versionId);
 
         return levelWithPredecessorNodeRet;
     }
@@ -674,6 +688,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         ArrLevelWithExtraNode levelWithPredecessorNodeRet = new ArrLevelWithExtraNode();
         levelWithPredecessorNodeRet.setLevel(faLevelRet);
         levelWithPredecessorNodeRet.setLevelTarget(predecessorLevel);
+
+        saveLastChangeFaVersion(change, versionId);
 
         return levelWithPredecessorNodeRet;
     }
@@ -872,6 +888,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         levelWithParentNodeRet.setLevel(level);
         levelWithParentNodeRet.setExtraNode(parentNode);
+
+        saveLastChangeFaVersion(change, versionId);
 
         return levelWithParentNodeRet;
     }
@@ -1137,6 +1155,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems = new HashMap<>();
         ArrDescItem descItemRet = createDescriptionItemRaw(descItem, versionId, change, true, mapDescItems, objectId);
         saveChanges(mapDescItems, null, true);
+        saveLastChangeFaVersion(change, versionId);
         return descItemRet;
     }
 
@@ -1159,6 +1178,11 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         List<ArrDescItem> descItems = new ArrayList<>();
         descItems.add(descItemRet);
         saveChanges(mapDescItems, descItems, createNewVersion);
+
+        if (createNewVersion) {
+            saveLastChangeFaVersion(change, versionId);
+        }
+
         return descItems.get(0);
     }
 
@@ -1171,6 +1195,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems = new HashMap<>();
         ArrDescItem descItemRet = deleteDescriptionItemRaw(descItem, versionId, change, true, mapDescItems);
         saveChanges(mapDescItems, null, true);
+        saveLastChangeFaVersion(change, versionId);
         return descItemRet;
     }
 
@@ -1292,6 +1317,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 }
 
                 saveChanges(mapDescItems, descItemsRet, true);
+                saveLastChangeFaVersion(change, versionId);
 
             } else {
                 // úpravy bez verzování
@@ -1546,7 +1572,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         createDescItemRet = descItemFactory.saveDescItem(createDescItem);
 
-        List<ArrDescItem> descItemsToChange = findDescItemsAfterPosition(descItemsGroup, createDescItem.getPosition()-1);
+        List<ArrDescItem> descItemsToChange = findDescItemsAfterPosition(descItemsGroup,
+                createDescItem.getPosition() - 1);
         for (ArrDescItem descItem : descItemsToChange) {
             if (descItem.getClass().equals(ArrDescItem.class)) {
                 descItemsGroup.remove(descItem);
@@ -1592,7 +1619,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrDescItem deleteDescItemRet;
 
-        List<ArrDescItem> descItemsGroup = getDescItemByTypeAndSpec(mapDescItems, deleteDescItem.getDescItemType(), deleteDescItem.getDescItemSpec(), deleteDescItem.getNode());
+        List<ArrDescItem> descItemsGroup = getDescItemByTypeAndSpec(mapDescItems, deleteDescItem.getDescItemType(),
+                deleteDescItem.getDescItemSpec(), deleteDescItem.getNode());
         if (existDescItemByObjectId(descItemsGroup, deleteDescItem)) {
             deleteDescItemByObjectId(descItemsGroup, deleteDescItem);
 
@@ -1674,7 +1702,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      * @param descItem      položka
      */
     private void validationDescItem(Integer versionId, ArrNode node, Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems, ArrDescItem descItem) {
-        List<RulDescItemTypeExt> rulDescItemTypes = ruleManager.getDescriptionItemTypesForNodeId(versionId, node.getNodeId(), null);
+        List<RulDescItemTypeExt> rulDescItemTypes = ruleManager.getDescriptionItemTypesForNodeId(versionId,
+                node.getNodeId(), null);
 
         RulDescItemType rulDescItemType = descItemTypeRepository.findOne(descItem.getDescItemType().getDescItemTypeId());
         Assert.notNull(rulDescItemType);
@@ -1702,7 +1731,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     private void validateAllItemConstraintsByType(RulDescItemType rulDescItemType,
                                                   ArrDescItem data,
                                                   Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems) {
-        List<RulDescItemConstraint> rulDescItemConstraints = descItemConstraintRepository.findByDescItemType(rulDescItemType);
+        List<RulDescItemConstraint> rulDescItemConstraints = descItemConstraintRepository.findByDescItemType(
+                rulDescItemType);
         for (RulDescItemConstraint rulDescItemConstraint : rulDescItemConstraints) {
             validateRepeatableType(rulDescItemType, rulDescItemConstraint, mapDescItems);
             validateDataDescItemConstraintTextLenghtLimit(data, rulDescItemConstraint);
@@ -1742,7 +1772,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                                                   Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems) {
         if (rulDescItemSpec != null) {
             validateSpecificationAttribute(rulDescItemType, rulDescItemSpec);
-            List<RulDescItemConstraint> rulDescItemConstraints = descItemConstraintRepository.findByDescItemSpec(rulDescItemSpec);
+            List<RulDescItemConstraint> rulDescItemConstraints = descItemConstraintRepository.findByDescItemSpec(
+                    rulDescItemSpec);
             for (RulDescItemConstraint rulDescItemConstraint : rulDescItemConstraints) {
                 validateRepeatableSpec(rulDescItemType, rulDescItemSpec, rulDescItemConstraint, mapDescItems);
                 validateDataDescItemConstraintTextLenghtLimit(data, rulDescItemConstraint);
@@ -2471,4 +2502,35 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         List<ArrPacketType> result = packetTypeRepository.findAll();
         return result;
     }
+
+    /**
+     * Uložení poslední uživatelské změny nad AP k verzi AP
+     *
+     * @param change    ukládaná změna
+     * @param versionId identifikátor verze AP
+     * @return aktuální verze AP
+     */
+    private ArrFindingAidVersion saveLastChangeFaVersion(final ArrChange change, final Integer versionId) {
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+        return saveLastChangeFaVersion(change, version);
+    }
+
+    /**
+     * Uložení poslední uživatelské změny nad AP k verzi AP
+     *
+     * @param change  ukládaná změna
+     * @param version verze AP
+     * @return aktuální verze AP
+     */
+    private ArrFindingAidVersion saveLastChangeFaVersion(final ArrChange change, final ArrFindingAidVersion version) {
+
+        if (!bulkActionService.existsChangeInWorkers(change)) {
+            version.setLastChange(change);
+            return findingAidVersionRepository.save(version);
+        }
+
+        return version;
+
+    }
+
 }

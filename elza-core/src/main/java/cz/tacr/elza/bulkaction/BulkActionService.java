@@ -22,6 +22,7 @@ import cz.tacr.elza.bulkaction.generator.BulkAction;
 import cz.tacr.elza.bulkaction.generator.CleanDescriptionItemBulkAction;
 import cz.tacr.elza.bulkaction.generator.SerialNumberBulkAction;
 import cz.tacr.elza.bulkaction.generator.UnitIdBulkAction;
+import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFaBulkAction;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.repository.FaBulkActionRepository;
@@ -370,7 +371,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         ArrFindingAidVersion version = findingAidVersionRepository.findOne(findingAidVersionId);
 
         if (version == null) {
-            throw new IllegalArgumentException("Verze archivní neexistuje!");
+            throw new IllegalArgumentException("Verze archivní pomůcky neexistuje!");
         }
 
         final String arrangmentTypeCode = version.getArrangementType().getCode();
@@ -410,5 +411,64 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
             throw new IllegalArgumentException("Hromadná akce neexistuje");
         }
         return bulkActionConfig;
+    }
+
+    /**
+     * Zjišťuje, zda-li některý z vláken nepoužívá změnu
+     *
+     * @param change změna
+     * @return true - některé z vláken používá tuto změnu
+     */
+    public boolean existsChangeInWorkers(final ArrChange change) {
+        for (BulkActionWorker worker : workers) {
+            if (change.equals(worker.getBulkActionState().getRunChange())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Spustí validaci verze AP.
+     *
+     * @param findingAidVersionId identifikátor verze archivní pomůcky
+     * @return seznam konfigurací hromadných akcí, které je nutné ještě spustit před uzavřením verze
+     */
+    public List<BulkActionConfig> runValidation(final Integer findingAidVersionId) {
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(findingAidVersionId);
+
+        if (version == null) {
+            throw new IllegalArgumentException("Verze archivní pomůcky neexistuje!");
+        }
+
+        if (version.getLockChange() != null) {
+            throw new IllegalArgumentException("Verze archivní je již uzavřená!");
+        }
+
+        ArrChange lastUserChange = version.getLastChange();
+
+        List<BulkActionConfig> bulkActionConfigReturnList = new ArrayList<>();
+
+        List<BulkActionConfig> bulkActionConfigMandatoryList = getBulkActions(findingAidVersionId, true);
+        List<ArrFaBulkAction> faBulkActions = faBulkActionRepository.findByFaVersionId(findingAidVersionId);
+
+        for (BulkActionConfig bulkActionConfig : bulkActionConfigMandatoryList) {
+
+            boolean isValidate = false;
+            for (ArrFaBulkAction bulkAction : faBulkActions) {
+                if (bulkAction.getBulkActionCode().equals(bulkActionConfig.getCode())) {
+                    if (bulkAction.getChange().getChangeId() > lastUserChange.getChangeId()) {
+                        isValidate = true;
+                    }
+                    break;
+                }
+            }
+
+            if (!isValidate) {
+                bulkActionConfigReturnList.add(bulkActionConfig);
+            }
+        }
+
+        return bulkActionConfigReturnList;
     }
 }

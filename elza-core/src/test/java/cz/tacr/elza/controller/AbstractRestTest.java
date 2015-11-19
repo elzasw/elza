@@ -135,6 +135,7 @@ public abstract class AbstractRestTest {
     protected static final String GET_BULK_ACTION = BULK_ACTION_MANAGER_URL + "/bulkaction/{bulkActionCode}";
     protected static final String GET_BULK_ACTION_STATES = BULK_ACTION_MANAGER_URL + "/bulkaction/{versionId}/states";
     protected static final String RUN_BULK_ACTION = BULK_ACTION_MANAGER_URL + "/run/{versionId}";
+    protected static final String VALIDATE_BULK_ACTION = BULK_ACTION_MANAGER_URL + "/validate/{versionId}";
 
     // END - BULK ACTION MANAGER CONSTATNS
 
@@ -413,6 +414,7 @@ public abstract class AbstractRestTest {
         version.setFindingAid(findingAid);
         version.setRootLevel(root);
         version.setRuleSet(ruleSet);
+        version.setLastChange(createChange);
 
         return findingAidVersionRepository.save(version);
     }

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <!-- Verze 1.16 - pridani last_arr_fa_change_id do tabulky arr_finding_aid_version -->
+    <changeSet id="17" author="slapa">
+
+        <addColumn tableName="arr_finding_aid_version">
+            <column name="last_arr_fa_change_id"  type="int" />
+        </addColumn>
+
+        <sql dbms="postgresql" splitStatements="true" stripComments="true">
+            UPDATE arr_finding_aid_version SET last_arr_fa_change_id = (SELECT MAX(change_id) FROM arr_change);
+        </sql>
+
+        <addNotNullConstraint columnDataType="int"
+                              columnName="last_arr_fa_change_id"
+                              tableName="arr_finding_aid_version"/>
+
+    </changeSet>
+</databaseChangeLog>

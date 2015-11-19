@@ -60,6 +60,11 @@ public class ArrFindingAidVersion extends AbstractVersionableEntity implements
     @JoinColumn(name = "ruleSetId", nullable = false)
     private RulRuleSet ruleSet;
 
+    @RestResource(exported = false)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
+    @JoinColumn(name = "lastArrFaChangeId", nullable = false)
+    private ArrChange lastChange;
+
     @Override
     public Integer getFindingAidVersionId() {
         return findingAidVersionId;
@@ -128,6 +133,16 @@ public class ArrFindingAidVersion extends AbstractVersionableEntity implements
     @Override
     public void setRuleSet(final RulRuleSet ruleSet) {
         this.ruleSet = ruleSet;
+    }
+
+    @Override
+    public ArrChange getLastChange() {
+        return lastChange;
+    }
+
+    @Override
+    public void setLastChange(final ArrChange change) {
+        this.lastChange = change;
     }
 
     @Override

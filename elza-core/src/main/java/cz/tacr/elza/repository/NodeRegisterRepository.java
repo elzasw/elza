@@ -32,8 +32,8 @@ public interface NodeRegisterRepository extends JpaRepository<ArrNodeRegister, I
     @Query("SELECT nr FROM arr_node_register nr" +
             " JOIN nr.createChange cc" +
             " JOIN nr.deleteChange dc" +
-            " WHERE cc.changeId < ?1" +
-            " AND (dc.changeId > ?1 OR dc.changeId is null)")
+            " WHERE cc.changeId < ?2" +
+            " AND (dc.changeId > ?2 OR dc.changeId is null) AND nr.node = ?1")
     List<ArrNodeRegister> findClosedVersion(ArrNode node, Integer versionLockChangeId);
 
 }
