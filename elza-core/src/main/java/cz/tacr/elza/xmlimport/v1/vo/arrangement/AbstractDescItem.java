@@ -21,13 +21,13 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 @XmlType(name = "abstract-desc-item", namespace = NamespaceInfo.NAMESPACE)
 public abstract class AbstractDescItem {
 
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "desc-item-type-code", required = true)
     private String descItemTypeCode;
 
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "desc-item-spec-code", required = true)
     private String descItemSpecCode;
 
-    @XmlElement(required = true)
+    @XmlElement(name = "position", required = true)
     private Integer position;
 
     public String getDescItemTypeCode() {

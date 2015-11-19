@@ -20,29 +20,29 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
  * @since 12. 11. 2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "corporation", namespace = NamespaceInfo.NAMESPACE)
-public class Corporation extends AbstractParty {
+@XmlType(name = "party-group", namespace = NamespaceInfo.NAMESPACE)
+public class PartyGroup extends AbstractParty {
 
     /** Funkce korporace. */
-    @XmlElement
+    @XmlElement(name = "scope")
     private String scope;
 
     /** Normy konstitutivní. */
-    @XmlElement
+    @XmlElement(name = "founding-norm")
     private String foundingNorm;
 
     /** Normy působnosti. */
-    @XmlElement
+    @XmlElement(name = "scope-norm")
     private String scopeNorm;
 
     /** Vnitřní struktury. */
-    @XmlElement
+    @XmlElement(name = "organization")
     private String organization;
 
     /** Identifikátory organizace. */
-    @XmlElement(name = "corporation-id")
-    @XmlElementWrapper(name = "corporation-id-list")
-    private List<CorporationId> corporationIds;
+    @XmlElement(name = "party-group-id")
+    @XmlElementWrapper(name = "party-group-id-list")
+    private List<PartyGroupId> partyGroupIds;
 
     public String getScope() {
         return scope;
@@ -76,12 +76,12 @@ public class Corporation extends AbstractParty {
         this.organization = organization;
     }
 
-    public List<CorporationId> getCorporationIds() {
-        return corporationIds;
+    public List<PartyGroupId> getPartyGroupIds() {
+        return partyGroupIds;
     }
 
-    public void setCorporationIds(List<CorporationId> corporationIds) {
-        this.corporationIds = corporationIds;
+    public void setPartyGroupIds(List<PartyGroupId> partyGroupIds) {
+        this.partyGroupIds = partyGroupIds;
     }
 
     @Override

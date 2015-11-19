@@ -19,7 +19,7 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 @XmlType(name = "desc-item-decimal", namespace = NamespaceInfo.NAMESPACE)
 public class DescItemDecimal extends AbstractDescItem {
 
-    @XmlElement(required = true)
+    @XmlElement(name = "value", required = true)
     private BigDecimal value;
 
     public BigDecimal getValue() {

@@ -1,7 +1,5 @@
 package cz.tacr.elza.xmlimport.v1.vo.party;
 
-import java.util.Date;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -11,6 +9,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
+import cz.tacr.elza.xmlimport.v1.vo.date.ComplexDate;
 
 /**
  * Působnost osoby.
@@ -23,26 +22,26 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 public class PartyTimeRange {
 
     /** Od. */
-    @XmlElement(required = true)
-    private Date fromDate;
+    @XmlElement(name = "from-date", required = true)
+    private ComplexDate fromDate;
 
     /** Do. */
-    @XmlElement
-    private Date toDate;
+    @XmlElement(name = "to-date")
+    private ComplexDate toDate;
 
-    public Date getFromDate() {
+    public ComplexDate getFromDate() {
         return fromDate;
     }
 
-    public void setFromDate(Date fromDate) {
+    public void setFromDate(ComplexDate fromDate) {
         this.fromDate = fromDate;
     }
 
-    public Date getToDate() {
+    public ComplexDate getToDate() {
         return toDate;
     }
 
-    public void setToDate(Date toDate) {
+    public void setToDate(ComplexDate toDate) {
         this.toDate = toDate;
     }
 

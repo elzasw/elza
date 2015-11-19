@@ -27,15 +27,15 @@ import cz.tacr.elza.xmlimport.v1.vo.record.Record;
 public class Level {
 
     /** Pozice uzlu ve své úrovni. */
-    @XmlElement(required = true)
+    @XmlElement(name = "position", required = true)
     private Integer position;
 
     /** Univerzální unikátní identifikátor. */
-    @XmlElement(required = true)
+    @XmlElement(name = "uuid", required = true)
     private String uuid;
 
     /** Potomci. */
-    @XmlElement(required = true, name = "level")
+    @XmlElement(name = "level", required = true)
     @XmlElementWrapper(name = "sub-level-list")
     private List<Level> subLevels;
 
@@ -57,7 +57,7 @@ public class Level {
 
     /** Vazba na rejstřík. */
     @XmlIDREF
-    @XmlElement(required = true, name = "record")
+    @XmlElement(name = "record", required = true)
     @XmlElementWrapper(name = "record-list")
     private List<Record> records;
 

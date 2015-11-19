@@ -18,22 +18,22 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 @XmlType(name = "desc-item-unit-date", namespace = NamespaceInfo.NAMESPACE)
 public class DescItemUnitDate extends AbstractDescItem {
 
-    @XmlElement
+    @XmlElement(name = "value-from")
     private String valueFrom;
 
-    @XmlElement
+    @XmlElement(name = "value-from-estimated")
     private Boolean valueFromEstimated;
 
-    @XmlElement
+    @XmlElement(name = "value-to")
     private String valueTo;
 
-    @XmlElement
+    @XmlElement(name = "value-to-estimated")
     private Boolean valueToEstimated;
 
-    @XmlAttribute
+    @XmlAttribute(name = "calendar-type-code")
     private String calendarTypeCode;
 
-    @XmlElement
+    @XmlElement(name = "format")
     private String format;
 
     public String getValueFrom() {

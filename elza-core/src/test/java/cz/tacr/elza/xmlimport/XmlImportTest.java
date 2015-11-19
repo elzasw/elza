@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,7 +44,9 @@ import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemUnitDate;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemUnitId;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.FindingAid;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Level;
+import cz.tacr.elza.xmlimport.v1.vo.date.ComplexDate;
 import cz.tacr.elza.xmlimport.v1.vo.party.AbstractParty;
+import cz.tacr.elza.xmlimport.v1.vo.party.Dynasty;
 import cz.tacr.elza.xmlimport.v1.vo.party.PartyName;
 import cz.tacr.elza.xmlimport.v1.vo.party.Person;
 import cz.tacr.elza.xmlimport.v1.vo.record.Record;
@@ -324,11 +325,11 @@ public class XmlImportTest implements ApplicationContextAware {
     private Record createRecord(boolean valid, int index, String parentId) {
         Record record = new Record();
         record.setCharacteristics("characteristics " + index);
-        record.setComment("comment " + index);
+        record.setNote("comment " + index);
         record.setExternalId("externalId " + index);
         record.setExternalSourceCode("externalSourceCode " + index);
         record.setLocal(RandomUtils.nextBoolean());
-        record.setRecord("record " + index);
+        record.setPreferredName("record " + index);
 
         String idPrefix;
         if (parentId == null) {
@@ -342,7 +343,7 @@ public class XmlImportTest implements ApplicationContextAware {
             record.setRecordId(idPrefix + " " + index);
         }
         record.setRegisterTypeCode("registerTypeCode " + index);
-        record.setVariantRecords(createVariantRecords());
+        record.setVariantNames(createVariantRecords());
 
         if (RandomUtils.nextBoolean()) {
             List<Record> subRecords = new ArrayList<Record>(1);
@@ -377,7 +378,7 @@ public class XmlImportTest implements ApplicationContextAware {
      */
     private VariantRecord createVariantRecord(int index) {
         VariantRecord variantRecord = new VariantRecord();
-        variantRecord.setRecord("variantRecord " + index);
+        variantRecord.setVariantName("variantRecord " + index);
         return variantRecord;
     }
 
@@ -392,8 +393,26 @@ public class XmlImportTest implements ApplicationContextAware {
         List<AbstractParty> parties = new ArrayList<AbstractParty>(PARTY_COUNT);
         for (int i = 0; i < PARTY_COUNT; i++) {
             Person party = createParty(records, i);
+            Dynasty dynasty = new Dynasty();
+            dynasty.setPartyId("dynastyId-" + i);
+            dynasty.setPartyTypeCode("partyTypeCode " + i);
+
+            dynasty.setRecord(records.get(RandomUtils.nextInt(records.size())));
+            dynasty.setPreferredName(createPartyName(i));
+            dynasty.setGenealogy("rod");
+            if (RandomUtils.nextBoolean()) {
+                int namesCount = RandomUtils.nextInt(5) + 1;
+                List<PartyName> otherNames = new ArrayList<>(namesCount);
+                for (int ii = 0; ii < namesCount; ii++) {
+                    PartyName partyName = createPartyName(ii);
+                    otherNames.add(partyName);
+                }
+
+                dynasty.setVariantNames(otherNames);
+            }
 
             parties.add(party);
+            parties.add(dynasty);
         }
         return parties;
     }
@@ -412,7 +431,7 @@ public class XmlImportTest implements ApplicationContextAware {
         party.setPartyTypeCode("partyTypeCode " + index);
 
         party.setRecord(records.get(RandomUtils.nextInt(records.size())));
-        party.setPrefferedName(createPartyName(index));
+        party.setPreferredName(createPartyName(index));
 
         if (RandomUtils.nextBoolean()) {
             int namesCount = RandomUtils.nextInt(5) + 1;
@@ -422,7 +441,7 @@ public class XmlImportTest implements ApplicationContextAware {
                 otherNames.add(partyName);
             }
 
-            party.setOtherNames(otherNames);
+            party.setVariantNames(otherNames);
         }
 
         return party;
@@ -437,16 +456,14 @@ public class XmlImportTest implements ApplicationContextAware {
      */
     private PartyName createPartyName(int index) {
         PartyName partyName = new PartyName();
-        partyName.setAnotation("anotation " + index);
+        partyName.setNote("anotation " + index);
         partyName.setDegreeAfter("degreeAfter " + index);
         partyName.setDegreeBefore("degreeBefore " + index);
         partyName.setMainPart("mainPart " + index);
         partyName.setOtherPart("otherPart " + index);
-        partyName.setValidFrom(new Date());
-        partyName.setValidTo(new Date());
+        partyName.setValidFrom(new ComplexDate());
+        partyName.setValidTo(new ComplexDate());
         partyName.setPartyNameFormTypeCode("partyNameFormTypeCode " + index);
-//                partyName.setValidFrom(LocalDateTime.now());
-//                partyName.setValidTo(LocalDateTime.now());
         return partyName;
     }
 

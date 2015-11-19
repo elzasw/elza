@@ -5,7 +5,7 @@
 
   <xs:complexType name="xml-import">
     <xs:sequence>
-      <xs:element minOccurs="0" name="findingAid" type="tns:findinig-aid"/>
+      <xs:element minOccurs="0" name="finding-aid" type="tns:findinig-aid"/>
       <xs:element minOccurs="0" name="record-list">
         <xs:complexType>
           <xs:sequence>
@@ -16,7 +16,12 @@
       <xs:element minOccurs="0" name="party-list">
         <xs:complexType>
           <xs:sequence>
-            <xs:element maxOccurs="unbounded" minOccurs="0" name="party" type="tns:abstract-party"/>
+            <xs:choice maxOccurs="unbounded" minOccurs="0">
+              <xs:element name="person" type="tns:person"/>
+              <xs:element name="dynasty" type="tns:dynasty"/>
+              <xs:element name="corporation" type="tns:party-group"/>
+              <xs:element name="tmp-corporation" type="tns:tmp-corporation"/>
+            </xs:choice>
           </xs:sequence>
         </xs:complexType>
       </xs:element>
@@ -26,7 +31,7 @@
   <xs:complexType name="findinig-aid">
     <xs:sequence>
       <xs:element name="name" type="xs:string"/>
-      <xs:element name="rootLevel" type="tns:level"/>
+      <xs:element name="root-level" type="tns:level"/>
     </xs:sequence>
   </xs:complexType>
 
@@ -83,8 +88,8 @@
     <xs:sequence>
       <xs:element name="position" type="xs:int"/>
     </xs:sequence>
-    <xs:attribute name="descItemTypeCode" type="xs:string" use="required"/>
-    <xs:attribute name="descItemSpecCode" type="xs:string" use="required"/>
+    <xs:attribute name="desc-item-type-code" type="xs:string" use="required"/>
+    <xs:attribute name="desc-item-spec-code" type="xs:string" use="required"/>
   </xs:complexType>
 
   <xs:complexType name="desc-item-decimal">
@@ -121,22 +126,23 @@
     <xs:complexContent>
       <xs:extension base="tns:abstract-desc-item">
         <xs:sequence/>
-        <xs:attribute name="party" type="xs:IDREF" use="required"/>
+        <xs:attribute name="party-id" type="xs:IDREF" use="required"/>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType abstract="true" name="abstract-party">
     <xs:sequence>
-      <xs:element name="prefferedName" type="tns:party-name"/>
-      <xs:element minOccurs="0" name="other-name-list">
+      <xs:element name="preferred-name" type="tns:party-name"/>
+      <xs:element minOccurs="0" name="variant-name-list">
         <xs:complexType>
           <xs:sequence>
-            <xs:element maxOccurs="unbounded" minOccurs="0" name="other-name" type="tns:party-name"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="variant-name" type="tns:party-name"/>
           </xs:sequence>
         </xs:complexType>
       </xs:element>
       <xs:element minOccurs="0" name="history" type="xs:string"/>
+      <xs:element minOccurs="0" name="source-informations" type="xs:string"/>
       <xs:element minOccurs="0" name="creator-name-list">
         <xs:complexType>
           <xs:sequence>
@@ -152,17 +158,16 @@
         </xs:complexType>
       </xs:element>
     </xs:sequence>
-    <xs:attribute name="partyId" type="xs:ID" use="required"/>
-    <xs:attribute name="record" type="xs:IDREF" use="required"/>
-    <xs:attribute name="partyTypeCode" type="xs:string" use="required"/>
-    <xs:attribute name="externalSystemCode" type="xs:string"/>
+    <xs:attribute name="party-id" type="xs:ID" use="required"/>
+    <xs:attribute name="record-id" type="xs:IDREF" use="required"/>
+    <xs:attribute name="party-type-code" type="xs:string" use="required"/>
   </xs:complexType>
 
   <xs:complexType name="record">
     <xs:sequence>
-      <xs:element name="record" type="xs:string"/>
+      <xs:element name="preferred-name" type="xs:string"/>
       <xs:element name="characteristics" type="xs:string"/>
-      <xs:element minOccurs="0" name="comment" type="xs:string"/>
+      <xs:element minOccurs="0" name="note" type="xs:string"/>
       <xs:element minOccurs="0" name="sub-record-list">
         <xs:complexType>
           <xs:sequence>
@@ -170,36 +175,65 @@
           </xs:sequence>
         </xs:complexType>
       </xs:element>
-      <xs:element minOccurs="0" name="variant-record-list">
+      <xs:element minOccurs="0" name="variant-name-list">
         <xs:complexType>
           <xs:sequence>
-            <xs:element maxOccurs="unbounded" minOccurs="0" name="variant-record" type="tns:variant-record"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="variant-name" type="tns:variant-name"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element minOccurs="0" name="record-coordinate-list">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="record-coordinates" type="tns:record-coordinates"/>
           </xs:sequence>
         </xs:complexType>
       </xs:element>
     </xs:sequence>
-    <xs:attribute name="recordId" type="xs:ID" use="required"/>
-    <xs:attribute name="registerTypeCode" type="xs:string" use="required"/>
-    <xs:attribute name="externalSourceCode" type="xs:string"/>
-    <xs:attribute name="externalId" type="xs:string" use="required"/>
+    <xs:attribute name="record-id" type="xs:ID" use="required"/>
+    <xs:attribute name="register-type-code" type="xs:string" use="required"/>
+    <xs:attribute name="external-source-code" type="xs:string"/>
+    <xs:attribute name="external-id" type="xs:string" use="required"/>
     <xs:attribute name="local" type="xs:boolean" use="required"/>
   </xs:complexType>
 
-  <xs:complexType name="variant-record">
+  <xs:complexType name="variant-name">
     <xs:sequence>
-      <xs:element name="record" type="xs:string"/>
+      <xs:element name="variant-name" type="xs:string"/>
     </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="record-coordinates">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="note" type="xs:string"/>
+      <xs:element minOccurs="0" name="coordinate-list">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="coordinate" type="tns:coordinate"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="area-type" type="xs:string"/>
+    <xs:attribute name="system" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="coordinate">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="coordinate" type="xs:string"/>
+    </xs:sequence>
+    <xs:attribute name="position" type="xs:int"/>
   </xs:complexType>
 
   <xs:complexType name="party-name">
     <xs:sequence>
-      <xs:element minOccurs="0" name="mainPart" type="xs:string"/>
-      <xs:element minOccurs="0" name="otherPart" type="xs:string"/>
-      <xs:element minOccurs="0" name="anotation" type="xs:string"/>
-      <xs:element minOccurs="0" name="degreeBefore" type="xs:string"/>
-      <xs:element minOccurs="0" name="degreeAfter" type="xs:string"/>
-      <xs:element minOccurs="0" name="validFrom" type="xs:dateTime"/>
-      <xs:element minOccurs="0" name="validTo" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="main-part" type="xs:string"/>
+      <xs:element minOccurs="0" name="other-part" type="xs:string"/>
+      <xs:element minOccurs="0" name="note" type="xs:string"/>
+      <xs:element minOccurs="0" name="degree-before" type="xs:string"/>
+      <xs:element minOccurs="0" name="degree-after" type="xs:string"/>
+      <xs:element minOccurs="0" name="valid-from" type="tns:complex-date"/>
+      <xs:element minOccurs="0" name="valid-to" type="tns:complex-date"/>
       <xs:element minOccurs="0" name="party-name-complement-list">
         <xs:complexType>
           <xs:sequence>
@@ -208,15 +242,23 @@
         </xs:complexType>
       </xs:element>
     </xs:sequence>
-    <xs:attribute name="partyNameFormTypeCode" type="xs:string" use="required"/>
+    <xs:attribute name="party-name-form-type-code" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="complex-date">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="specific-date" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="text-date" type="xs:string"/>
+      <xs:element minOccurs="0" name="specific-date-from" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="specific-date-to" type="xs:dateTime"/>
+    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="party-name-complement">
     <xs:sequence>
       <xs:element name="complement" type="xs:string"/>
     </xs:sequence>
-    <xs:attribute name="position" type="xs:int" use="required"/>
-    <xs:attribute name="partyNameComplementTypeName" type="xs:string" use="required"/>
+    <xs:attribute name="party-name-complement-type-name" type="xs:string" use="required"/>
   </xs:complexType>
 
   <xs:complexType name="person">
@@ -229,9 +271,9 @@
 
   <xs:complexType name="event">
     <xs:sequence>
-      <xs:element minOccurs="0" name="fromDate" type="xs:dateTime"/>
-      <xs:element minOccurs="0" name="toDate" type="xs:dateTime"/>
-      <xs:element minOccurs="0" name="source" type="xs:string"/>
+      <xs:element minOccurs="0" name="from-date" type="tns:complex-date"/>
+      <xs:element minOccurs="0" name="to-date" type="tns:complex-date"/>
+      <xs:element minOccurs="0" name="date-note" type="xs:string"/>
       <xs:element minOccurs="0" name="note" type="xs:string"/>
       <xs:element minOccurs="0" name="role-type-list">
         <xs:complexType>
@@ -241,15 +283,16 @@
         </xs:complexType>
       </xs:element>
     </xs:sequence>
-    <xs:attribute name="classTypeCode" type="xs:string"/>
-    <xs:attribute name="relationTypeCode" type="xs:string"/>
+    <xs:attribute name="class-type-code" type="xs:string"/>
+    <xs:attribute name="relation-type-code" type="xs:string"/>
   </xs:complexType>
 
   <xs:complexType name="role-type">
-    <xs:sequence/>
-    <xs:attribute name="externId" type="xs:string"/>
-    <xs:attribute name="roleTypeCode" type="xs:string"/>
-    <xs:attribute name="record" type="xs:IDREF" use="required"/>
+    <xs:sequence>
+      <xs:element minOccurs="0" name="source" type="xs:string"/>
+    </xs:sequence>
+    <xs:attribute name="role-type-code" type="xs:string"/>
+    <xs:attribute name="record-id" type="xs:IDREF" use="required"/>
   </xs:complexType>
 
   <xs:complexType name="dynasty">
@@ -262,18 +305,18 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="corporation">
+  <xs:complexType name="party-group">
     <xs:complexContent>
       <xs:extension base="tns:abstract-party">
         <xs:sequence>
           <xs:element minOccurs="0" name="scope" type="xs:string"/>
-          <xs:element minOccurs="0" name="foundingNorm" type="xs:string"/>
-          <xs:element minOccurs="0" name="scopeNorm" type="xs:string"/>
+          <xs:element minOccurs="0" name="founding-norm" type="xs:string"/>
+          <xs:element minOccurs="0" name="scope-norm" type="xs:string"/>
           <xs:element minOccurs="0" name="organization" type="xs:string"/>
-          <xs:element minOccurs="0" name="corporation-id-list">
+          <xs:element minOccurs="0" name="party-group-id-list">
             <xs:complexType>
               <xs:sequence>
-                <xs:element maxOccurs="unbounded" minOccurs="0" name="corporation-id" type="tns:corporation-id"/>
+                <xs:element maxOccurs="unbounded" minOccurs="0" name="party-group-id" type="tns:party-group-id"/>
               </xs:sequence>
             </xs:complexType>
           </xs:element>
@@ -282,12 +325,12 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="corporation-id">
+  <xs:complexType name="party-group-id">
     <xs:sequence>
       <xs:element minOccurs="0" name="source" type="xs:string"/>
       <xs:element minOccurs="0" name="note" type="xs:string"/>
-      <xs:element minOccurs="0" name="fromDate" type="xs:dateTime"/>
-      <xs:element minOccurs="0" name="toDate" type="xs:dateTime"/>
+      <xs:element minOccurs="0" name="valid-from" type="tns:complex-date"/>
+      <xs:element minOccurs="0" name="valid-to" type="tns:complex-date"/>
     </xs:sequence>
     <xs:attribute name="id" type="xs:string" use="required"/>
   </xs:complexType>
@@ -312,7 +355,7 @@
     <xs:complexContent>
       <xs:extension base="tns:abstract-desc-item">
         <xs:sequence/>
-        <xs:attribute name="record" type="xs:IDREF" use="required"/>
+        <xs:attribute name="record-id" type="xs:IDREF" use="required"/>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -341,13 +384,13 @@
     <xs:complexContent>
       <xs:extension base="tns:abstract-desc-item">
         <xs:sequence>
-          <xs:element minOccurs="0" name="valueFrom" type="xs:string"/>
-          <xs:element minOccurs="0" name="valueFromEstimated" type="xs:boolean"/>
-          <xs:element minOccurs="0" name="valueTo" type="xs:string"/>
-          <xs:element minOccurs="0" name="valueToEstimated" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="value-from" type="xs:string"/>
+          <xs:element minOccurs="0" name="value-from-estimated" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="value-to" type="xs:string"/>
+          <xs:element minOccurs="0" name="value-to-estimated" type="xs:boolean"/>
           <xs:element minOccurs="0" name="format" type="xs:string"/>
         </xs:sequence>
-        <xs:attribute name="calendarTypeCode" type="xs:string"/>
+        <xs:attribute name="calendar-type-code" type="xs:string"/>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

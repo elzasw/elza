@@ -21,7 +21,7 @@ public class DescItemRecordRef extends AbstractDescItem {
 
     /** Odkaz do seznamu rejstříkových hesel. */
     @XmlIDREF
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "record-id", required = true)
     private Record record;
 
     public Record getRecord() {

@@ -27,38 +27,38 @@ public class Record {
 
     /** Pro vazbu z osoby a hodnoty record_ref. */
     @XmlID
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "record-id", required = true)
     private String recordId;
 
     /** Kód podtypu rejstříku. */
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "register-type-code", required = true)
     private String registerTypeCode;
 
     /** Kód externího zdroje. */
-    @XmlAttribute
+    @XmlAttribute(name = "external-source-code")
     private String externalSourceCode;
 
     /** Externí identifikátor rejstříkového hesla v externím zdroji záznamů, například interpi. */
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "external-id", required = true)
     private String externalId;
 
     /** Rejstříkové heslo. */
-    @XmlElement(required = true)
-    private String record;
+    @XmlElement(name = "preferred-name", required = true)
+    private String preferredName;
 
     /** Podrobná charakteristika rejstříkového hesla. */
-    @XmlElement(required = true)
+    @XmlElement(name = "characteristics", required = true)
     private String characteristics;
 
     /** Poznámka k heslu v rejstříku. */
-    @XmlElement
-    private String comment;
+    @XmlElement(name = "note")
+    private String note;
 
     /**
      * Příznak, zda se jedná o lokální nebo globální rejstříkové heslo. Lokální heslo je přiřazené pouze konkrétnímu
      * archivnímu popisu/pomůcce.
      */
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "local", required = true)
     private boolean local;
 
     /** Seznam podřízených rejstříků. */
@@ -67,9 +67,14 @@ public class Record {
     private List<Record> records;
 
     /** Seznam variantních rejstříků. */
-    @XmlElement(name = "variant-record")
-    @XmlElementWrapper(name = "variant-record-list")
-    private List<VariantRecord> variantRecords;
+    @XmlElement(name = "variant-name")
+    @XmlElementWrapper(name = "variant-name-list")
+    private List<VariantRecord> variantNames;
+
+    /** Souřadnice. */
+    @XmlElement(name = "record-coordinates")
+    @XmlElementWrapper(name = "record-coordinate-list")
+    private List<RecordCoordinates> recordCoordinates;
 
     public String getRecordId() {
         return recordId;
@@ -103,12 +108,12 @@ public class Record {
         this.externalId = externalId;
     }
 
-    public String getRecord() {
-        return record;
+    public String getPreferredName() {
+        return preferredName;
     }
 
-    public void setRecord(String record) {
-        this.record = record;
+    public void setPreferredName(String preferredName) {
+        this.preferredName = preferredName;
     }
 
     public String getCharacteristics() {
@@ -119,12 +124,12 @@ public class Record {
         this.characteristics = characteristics;
     }
 
-    public String getComment() {
-        return comment;
+    public String getNote() {
+        return note;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setNote(String note) {
+        this.note = note;
     }
 
     public boolean isLocal() {
@@ -143,12 +148,20 @@ public class Record {
         this.records = records;
     }
 
-    public List<VariantRecord> getVariantRecords() {
-        return variantRecords;
+    public List<VariantRecord> getVariantNames() {
+        return variantNames;
     }
 
-    public void setVariantRecords(List<VariantRecord> variantRecords) {
-        this.variantRecords = variantRecords;
+    public void setVariantNames(List<VariantRecord> variantNames) {
+        this.variantNames = variantNames;
+    }
+
+    public List<RecordCoordinates> getRecordCoordinates() {
+        return recordCoordinates;
+    }
+
+    public void setRecordCoordinates(List<RecordCoordinates> recordCoordinates) {
+        this.recordCoordinates = recordCoordinates;
     }
 
     @Override

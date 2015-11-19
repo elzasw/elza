@@ -17,7 +17,7 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 @XmlType(name = "desc-item-integer", namespace = NamespaceInfo.NAMESPACE)
 public class DescItemInteger extends AbstractDescItem {
 
-    @XmlElement(required = true)
+    @XmlElement(name = "value", required = true)
     private Integer value;
 
     public Integer getValue() {

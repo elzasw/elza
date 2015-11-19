@@ -21,25 +21,13 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 @XmlType(name = "party-name-complement", namespace = NamespaceInfo.NAMESPACE)
 public class PartyNameComplement {
 
-    /** Pořadí. */
-    @XmlAttribute(required = true)
-    private Integer position;
-
     /** Kód typu doplňku jména. */
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "party-name-complement-type-name", required = true)
     private String partyNameComplementTypeName;
 
     /** Doplněk*/
-    @XmlElement(required = true)
+    @XmlElement(name = "complement", required = true)
     private String complement;
-
-    public Integer getPosition() {
-        return position;
-    }
-
-    public void setPosition(Integer position) {
-        this.position = position;
-    }
 
     public String getPartyNameComplementTypeName() {
         return partyNameComplementTypeName;

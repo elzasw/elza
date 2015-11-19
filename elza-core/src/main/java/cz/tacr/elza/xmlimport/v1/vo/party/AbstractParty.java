@@ -26,39 +26,39 @@ import cz.tacr.elza.xmlimport.v1.vo.record.Record;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "abstract-party", namespace = NamespaceInfo.NAMESPACE)
-@XmlSeeAlso(value = {Person.class, Dynasty.class, Corporation.class, TemporaryCorporation.class, TemporaryEvent.class})
+@XmlSeeAlso(value = {Person.class, Dynasty.class, PartyGroup.class, TemporaryCorporation.class, TemporaryEvent.class})
 public abstract class AbstractParty {
 
     /** Pro vazbu z hodnoty party_ref. */
     @XmlID
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "party-id", required = true)
     private String partyId;
 
     /** Vazba na rejstřík. */
     @XmlIDREF
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "record-id", required = true)
     private Record record;
 
     /** Kód typu osoby. */
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "party-type-code", required = true)
     private String partyTypeCode;
 
     /** Preferované jméno osoby. */
-    @XmlElement(required = true)
-    private PartyName prefferedName;
+    @XmlElement(name = "preferred-name", required = true)
+    private PartyName preferredName;
 
     /** Ostatní jména. */
-    @XmlElement(name = "other-name")
-    @XmlElementWrapper(name = "other-name-list")
-    private List<PartyName> otherNames;
+    @XmlElement(name = "variant-name")
+    @XmlElementWrapper(name = "variant-name-list")
+    private List<PartyName> variantNames;
 
     /** Dějiny. */
-    @XmlElement
+    @XmlElement(name = "history")
     private String history;
 
-    /** Zdroj informací. */
-    @XmlAttribute
-    private String externalSystemCode;
+    /** Zdroje informací. */
+    @XmlElement(name = "source-informations")
+    private String sourceInformations;
 
     /** Autoři. */
     @XmlElement(name = "creator")
@@ -94,12 +94,12 @@ public abstract class AbstractParty {
         this.partyTypeCode = partyTypeCode;
     }
 
-    public PartyName getPrefferedName() {
-        return prefferedName;
+    public PartyName getPreferredName() {
+        return preferredName;
     }
 
-    public void setPrefferedName(PartyName prefferedName) {
-        this.prefferedName = prefferedName;
+    public void setPreferredName(PartyName prefferedName) {
+        this.preferredName = prefferedName;
     }
 
     public String getHistory() {
@@ -110,20 +110,20 @@ public abstract class AbstractParty {
         this.history = history;
     }
 
-    public String getExternalSystemCode() {
-        return externalSystemCode;
+    public String getSourceInformations() {
+        return sourceInformations;
     }
 
-    public void setExternalSystemCode(String externalSystemCode) {
-        this.externalSystemCode = externalSystemCode;
+    public void setSourceInformations(String sourceInformations) {
+        this.sourceInformations = sourceInformations;
     }
 
-    public List<PartyName> getOtherNames() {
-        return otherNames;
+    public List<PartyName> getVariantNames() {
+        return variantNames;
     }
 
-    public void setOtherNames(List<PartyName> otherNames) {
-        this.otherNames = otherNames;
+    public void setVariantNames(List<PartyName> variantNames) {
+        this.variantNames = variantNames;
     }
 
     public List<Person> getCreators() {

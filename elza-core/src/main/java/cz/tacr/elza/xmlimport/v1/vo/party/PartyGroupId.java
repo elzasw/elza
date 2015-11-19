@@ -1,7 +1,5 @@
 package cz.tacr.elza.xmlimport.v1.vo.party;
 
-import java.util.Date;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -12,6 +10,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
+import cz.tacr.elza.xmlimport.v1.vo.date.ComplexDate;
 
 /**
  * Identifikátor korporace.
@@ -20,28 +19,28 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
  * @since 12. 11. 2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "corporation-id", namespace = NamespaceInfo.NAMESPACE)
-public class CorporationId {
+@XmlType(name = "party-group-id", namespace = NamespaceInfo.NAMESPACE)
+public class PartyGroupId {
 
     /** Zdroj kódu. */
-    @XmlElement
+    @XmlElement(name = "source")
     private String source;
 
     /** Identifikátor. */
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "id", required = true)
     private String id;
 
     /** Poznámka. */
-    @XmlElement
+    @XmlElement(name = "note")
     private String note;
 
     /** Datum od. */
-    @XmlElement
-    private Date fromDate;
+    @XmlElement(name = "valid-from")
+    private ComplexDate validFrom;
 
     /** Datum do. */
-    @XmlElement
-    private Date toDate;
+    @XmlElement(name = "valid-to")
+    private ComplexDate validTo;
 
     public String getSource() {
         return source;
@@ -67,20 +66,20 @@ public class CorporationId {
         this.note = note;
     }
 
-    public Date getFromDate() {
-        return fromDate;
+    public ComplexDate getValidFrom() {
+        return validFrom;
     }
 
-    public void setFromDate(Date fromDate) {
-        this.fromDate = fromDate;
+    public void setValidFrom(ComplexDate validFrom) {
+        this.validFrom = validFrom;
     }
 
-    public Date getToDate() {
-        return toDate;
+    public ComplexDate getValidTo() {
+        return validTo;
     }
 
-    public void setToDate(Date toDate) {
-        this.toDate = toDate;
+    public void setValidTo(ComplexDate validTo) {
+        this.validTo = validTo;
     }
 
     @Override

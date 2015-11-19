@@ -6,6 +6,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -14,6 +15,10 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.FindingAid;
 import cz.tacr.elza.xmlimport.v1.vo.party.AbstractParty;
+import cz.tacr.elza.xmlimport.v1.vo.party.Dynasty;
+import cz.tacr.elza.xmlimport.v1.vo.party.PartyGroup;
+import cz.tacr.elza.xmlimport.v1.vo.party.Person;
+import cz.tacr.elza.xmlimport.v1.vo.party.TemporaryCorporation;
 import cz.tacr.elza.xmlimport.v1.vo.record.Record;
 
 /**
@@ -28,7 +33,7 @@ import cz.tacr.elza.xmlimport.v1.vo.record.Record;
 public class XmlImport {
 
     /** Archivní pomůcka. */
-    @XmlElement
+    @XmlElement(name = "finding-aid")
     private FindingAid findingAid;
 
     /** Seznam rejstříkových hesel. */
@@ -37,8 +42,13 @@ public class XmlImport {
     private List<Record> records;
 
     /** Seznam osob. */
-    @XmlElement(name = "party")
     @XmlElementWrapper(name = "party-list")
+    @XmlElements(value = {
+            @XmlElement(name = "person", type = Person.class),
+            @XmlElement(name = "dynasty", type = Dynasty.class),
+            @XmlElement(name = "corporation", type = PartyGroup.class),
+            @XmlElement(name = "tmp-corporation", type = TemporaryCorporation.class)
+    })
     private List<AbstractParty> parties;
 
     public FindingAid getFindingAid() {

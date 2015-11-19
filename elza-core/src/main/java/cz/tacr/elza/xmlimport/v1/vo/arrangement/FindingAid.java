@@ -21,11 +21,11 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 public class FindingAid {
 
     /** Název archivní pomůcky. */
-    @XmlElement(required = true)
+    @XmlElement(name = "name", required = true)
     private String name;
 
     /** Kořenový uzel. */
-    @XmlElement(required = true)
+    @XmlElement(name = "root-level", required = true)
     private Level rootLevel;
 
     public String getName() {

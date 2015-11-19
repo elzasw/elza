@@ -1,6 +1,5 @@
 package cz.tacr.elza.xmlimport.v1.vo.party;
 
-import java.util.Date;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -8,13 +7,13 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
+import cz.tacr.elza.xmlimport.v1.vo.date.ComplexDate;
 
 /**
  * Jméno osoby.
@@ -26,28 +25,26 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 @XmlType(name = "party-name", namespace = NamespaceInfo.NAMESPACE)
 public class PartyName {
 
-    @XmlElement
+    @XmlElement(name = "main-part")
     private String mainPart;
 
-    @XmlElement
+    @XmlElement(name = "other-part")
     private String otherPart;
 
-    @XmlElement
-    private String anotation;
+    @XmlElement(name = "note")
+    private String note;
 
-    @XmlElement
+    @XmlElement(name = "degree-before")
     private String degreeBefore;
 
-    @XmlElement
+    @XmlElement(name = "degree-after")
     private String degreeAfter;
 
-    @XmlSchemaType(name="dateTime", type = Date.class)
-    @XmlElement
-    private Date validFrom;
+    @XmlElement(name="valid-from")
+    private ComplexDate validFrom;
 
-    @XmlSchemaType(name="dateTime", type = Date.class)
-    @XmlElement
-    private Date validTo;
+    @XmlElement(name="valid-to")
+    private ComplexDate validTo;
 
     /** Doplňky jména osoby. */
     @XmlElement(name = "party-name-complement")
@@ -55,7 +52,7 @@ public class PartyName {
     private List<PartyNameComplement> partyNameComplements;
 
     /** Kód typu formy jména. */
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "party-name-form-type-code", required = true)
     private String partyNameFormTypeCode;
 
     public String getMainPart() {
@@ -74,12 +71,12 @@ public class PartyName {
         this.otherPart = otherPart;
     }
 
-    public String getAnotation() {
-        return anotation;
+    public String getNote() {
+        return note;
     }
 
-    public void setAnotation(String anotation) {
-        this.anotation = anotation;
+    public void setNote(String note) {
+        this.note = note;
     }
 
     public String getDegreeBefore() {
@@ -98,19 +95,19 @@ public class PartyName {
         this.degreeAfter = degreeAfter;
     }
 
-    public Date getValidFrom() {
+    public ComplexDate getValidFrom() {
         return validFrom;
     }
 
-    public void setValidFrom(Date validFrom) {
+    public void setValidFrom(ComplexDate validFrom) {
         this.validFrom = validFrom;
     }
 
-    public Date getValidTo() {
+    public ComplexDate getValidTo() {
         return validTo;
     }
 
-    public void setValidTo(Date validTo) {
+    public void setValidTo(ComplexDate validTo) {
         this.validTo = validTo;
     }
 

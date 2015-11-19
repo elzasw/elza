@@ -18,7 +18,7 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 public class Dynasty extends AbstractParty {
 
     /** Genealogie. */
-    @XmlElement
+    @XmlElement(name = "genealogy")
     private String genealogy;
 
     public String getGenealogy() {

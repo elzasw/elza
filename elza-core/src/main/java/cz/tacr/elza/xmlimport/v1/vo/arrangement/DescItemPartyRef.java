@@ -21,7 +21,7 @@ public class DescItemPartyRef extends AbstractDescItem {
 
     /** Odkaz do seznamu osob. */
     @XmlIDREF
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "party-id", required = true)
     private AbstractParty party;
 
     public AbstractParty getParty() {

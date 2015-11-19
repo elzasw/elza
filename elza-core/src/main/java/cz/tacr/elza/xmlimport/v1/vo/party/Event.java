@@ -1,6 +1,5 @@
 package cz.tacr.elza.xmlimport.v1.vo.party;
 
-import java.util.Date;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -14,6 +13,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
+import cz.tacr.elza.xmlimport.v1.vo.date.ComplexDate;
 
 /**
  * Vztah a událost.
@@ -26,27 +26,27 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 public class Event {
 
     /** Třída vztahu. */
-    @XmlAttribute
+    @XmlAttribute(name = "class-type-code")
     private String classTypeCode;
 
     /** Typ vztahu. */
-    @XmlAttribute
+    @XmlAttribute(name = "relation-type-code")
     private String relationTypeCode;
 
     /** Datum počátku. */
-    @XmlElement
-    private Date fromDate;
+    @XmlElement(name = "from-date")
+    private ComplexDate fromDate;
 
     /** Datum konce. */
-    @XmlElement
-    private Date toDate;
+    @XmlElement(name = "to-date")
+    private ComplexDate toDate;
+
+    /** Poznámka k dataci. */
+    @XmlElement(name = "date-note")
+    private String dateNote;
 
     /** Zdroj informace. */
-    @XmlElement
-    private String source;
-
-    /** Zdroj informace. */
-    @XmlElement
+    @XmlElement(name = "note")
     private String note;
 
     /** Typy rolí. */
@@ -70,28 +70,28 @@ public class Event {
         this.relationTypeCode = relationTypeCode;
     }
 
-    public Date getFromDate() {
+    public ComplexDate getFromDate() {
         return fromDate;
     }
 
-    public void setFromDate(Date fromDate) {
+    public void setFromDate(ComplexDate fromDate) {
         this.fromDate = fromDate;
     }
 
-    public Date getToDate() {
+    public ComplexDate getToDate() {
         return toDate;
     }
 
-    public void setToDate(Date toDate) {
+    public void setToDate(ComplexDate toDate) {
         this.toDate = toDate;
     }
 
-    public String getSource() {
-        return source;
+    public String getDateNote() {
+        return dateNote;
     }
 
-    public void setSource(String source) {
-        this.source = source;
+    public void setDateNote(String dateNote) {
+        this.dateNote = dateNote;
     }
 
     public String getNote() {

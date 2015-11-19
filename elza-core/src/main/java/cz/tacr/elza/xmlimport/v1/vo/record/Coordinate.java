@@ -2,6 +2,7 @@ package cz.tacr.elza.xmlimport.v1.vo.record;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -11,25 +12,37 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 
 /**
- * Variantní rejstříkové heslo.
+ * Souřadnice.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
- * @since 27. 10. 2015
+ * @since 19. 11. 2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "variant-name", namespace = NamespaceInfo.NAMESPACE)
-public class VariantRecord {
+@XmlType(name = "coordinate", namespace = NamespaceInfo.NAMESPACE)
+public class Coordinate {
 
-    /** Obsah hesla. */
-    @XmlElement(name = "variant-name", required = true)
-    private String variantName;
+    /** Pořadí. */
+    @XmlAttribute(name = "position")
+    private Integer position;
 
-    public String getVariantName() {
-        return variantName;
+    /** Souřadnice. */
+    @XmlElement(name = "coordinate")
+    private String coordinate;
+
+    public Integer getPosition() {
+        return position;
     }
 
-    public void setVariantName(String variantName) {
-        this.variantName = variantName;
+    public void setPosition(Integer position) {
+        this.position = position;
+    }
+
+    public String getCoordinate() {
+        return coordinate;
+    }
+
+    public void setCoordinate(String coordinate) {
+        this.coordinate = coordinate;
     }
 
     @Override

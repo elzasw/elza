@@ -17,7 +17,7 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 @XmlType(name = "desc-item-formatted-text", namespace = NamespaceInfo.NAMESPACE)
 public class DescItemFormattedText extends AbstractDescItem {
 
-    @XmlElement(required = true)
+    @XmlElement(name = "value", required = true)
     private String value;
 
     public String getValue() {
