@@ -498,6 +498,55 @@ public class BulkActionManagerTest extends AbstractRestTest {
 
     }
 
+    @Test
+    public void testRestRunValidation() throws Exception {
+        ArrFindingAidVersion version = createTestStructure();
+
+        BulkActionConfig bulkActionConfigMandatory = new BulkActionConfig();
+        bulkActionConfigMandatory.setCode("TEST");
+        bulkActionConfigMandatory.setConfiguration("code_type_bulk_action: GENERATOR_UNIT_ID\n"
+                + "rule_code: " + TEST_CODE + "\n"
+                + "mandatory_arrangement_type: INV|" + TEST_CODE + "\n"
+                + "unit_id_code: ZP2015_UNIT_ID\n"
+                + "previous_id_code: ZP2015_OTHER_ID\n"
+                + "previous_id_spec_code: ZP2015_OTHERID_SIG\n"
+                + "delimiter_major: //\n"
+                + "delimiter_minor: /\n"
+                + "level_type_code: ZP2015_LEVEL_TYPE\n"
+                + "delimiter_major_level_type_not_use: ZP2015_LEVEL_PART\n"
+                + "name: generátor referenčního označení");
+
+        try {
+            bulkActionService.createBulkAction(bulkActionConfigMandatory);
+
+            Response response = get((spec) -> spec.pathParameter(VERSION_ID_ATT, version.getFindingAidVersionId()),
+                    VALIDATE_BULK_ACTION);
+
+            logger.info(response.asString());
+            Assert.assertEquals(200, response.statusCode());
+
+            List<BulkActionConfig> bulkActionConfigs = Arrays
+                    .asList(response.getBody().as(BulkActionConfig[].class));
+
+            Assert.assertEquals(1, bulkActionConfigs.size());
+
+            runBulkActionAndWaitForResult(version, bulkActionConfigMandatory, 0);
+
+            response = get((spec) -> spec.pathParameter(VERSION_ID_ATT, version.getFindingAidVersionId()),
+                    VALIDATE_BULK_ACTION);
+
+            logger.info(response.asString());
+            Assert.assertEquals(200, response.statusCode());
+
+            bulkActionConfigs = Arrays.asList(response.getBody().as(BulkActionConfig[].class));
+
+            Assert.assertEquals(0, bulkActionConfigs.size());
+
+        } finally {
+            cleanUpBulkActionConfig(bulkActionConfigMandatory);
+        }
+    }
+
     /**
      * Spustí a čeká na dokončení hromadné akce.
      *

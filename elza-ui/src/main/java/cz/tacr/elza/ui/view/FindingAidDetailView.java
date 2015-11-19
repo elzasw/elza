@@ -37,7 +37,9 @@ import cz.req.ax.AxComboBox;
 import cz.req.ax.AxContainer;
 import cz.req.ax.AxForm;
 import cz.req.ax.AxWindow;
+import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.controller.ArrangementManager;
+import cz.tacr.elza.controller.BulkActionManager;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemUnitdate;
@@ -57,6 +59,7 @@ import cz.tacr.elza.ui.components.TreeTable;
 import cz.tacr.elza.ui.utils.ConcurrentUpdateExceptionHandler;
 import cz.tacr.elza.ui.utils.ElzaNotifications;
 import cz.tacr.elza.ui.utils.UnitDateConvertor;
+import cz.tacr.elza.ui.window.BulkActionApproveVersionWindow;
 import cz.tacr.elza.ui.window.DescItemTypeWindow;
 import cz.tacr.elza.ui.window.LevelHistoryWindow;
 import cz.tacr.elza.ui.window.PosAction;
@@ -79,6 +82,9 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
 
     @Autowired
     private RuleManager ruleSetManager;
+
+    @Autowired
+    private BulkActionManager bulkActionManager;
 
     private Integer findingAidId;
     private ArrFindingAidVersion version;
@@ -966,20 +972,33 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                     new AxAction().caption("Zobrazit verze").icon(FontAwesome.HISTORY).run(() ->
                             navigate(VersionListView.class, findingAidId)),
                     new AxAction().caption("Uzavřít verzi").icon(FontAwesome.HISTORY).run(() -> {
-                        AxForm<VOApproveVersion> formularApproveVersion = formularApproveVersion();
-                        ArrFindingAidVersion version = arrangementManager
-                                .getOpenVersionByFindingAidId(findingAid.getFindingAidId());
-                        VOApproveVersion appVersion = new VOApproveVersion();
-                        appVersion.setArrangementTypeId(version.getArrangementType().getArrangementTypeId());
-                        appVersion.setRuleSetId(version.getRuleSet().getRuleSetId());
 
-                        approveVersion(formularApproveVersion, appVersion);
+                        List<BulkActionConfig> bulkActionConfigs = bulkActionManager
+                                .runValidation(version.getFindingAidVersionId());
+
+                        if (bulkActionConfigs.size() == 0) {
+                            approveVersionDialog();
+                        } else {
+                            showBulkActionApproveVersionWindow(bulkActionConfigs);
+                        }
+
                     }),
                     new AxAction().caption("Zobrazit detail AP").icon(FontAwesome.BOOK).run(() ->
                             showDetailAP()),
                     new AxAction().caption("Výběr sloupců").icon(FontAwesome.COG).run(() ->
                             showDescItemTypeWindow()));
         }
+    }
+
+    private void approveVersionDialog() {
+        AxForm<VOApproveVersion> formularApproveVersion = formularApproveVersion();
+        ArrFindingAidVersion version = arrangementManager
+                .getOpenVersionByFindingAidId(findingAid.getFindingAidId());
+        VOApproveVersion appVersion = new VOApproveVersion();
+        appVersion.setArrangementTypeId(version.getArrangementType().getArrangementTypeId());
+        appVersion.setRuleSetId(version.getRuleSet().getRuleSetId());
+
+        approveVersion(formularApproveVersion, appVersion);
     }
 
     private void approveVersion(final AxForm<VOApproveVersion> form, final VOApproveVersion appVersion) {
@@ -1052,6 +1071,12 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
         DescItemTypeWindow window = new DescItemTypeWindow(ruleSetManager);
         ArrFindingAidVersion arrFaVersion = arrangementManager.getFaVersionById(version.getFindingAidVersionId());
         window.show(arrFaVersion, this);
+        return window;
+    }
+
+    private BulkActionApproveVersionWindow showBulkActionApproveVersionWindow(final List<BulkActionConfig> bulkActionConfigs) {
+        BulkActionApproveVersionWindow window = new BulkActionApproveVersionWindow(bulkActionManager);
+        window.show(version.getFindingAidVersionId(), bulkActionConfigs, () -> approveVersionDialog());
         return window;
     }
 

@@ -99,4 +99,11 @@ public class BulkActionManager
         bulkActionService.run(bulkActionConfig, findingAidVersionId);
     }
 
+    @Override
+    @RequestMapping(value = "/validate/{versionId}", method = RequestMethod.GET)
+    public List<BulkActionConfig> runValidation(@PathVariable(value = "versionId") final Integer findingAidVersionId) {
+        Assert.notNull(findingAidVersionId);
+        return bulkActionService.runValidation(findingAidVersionId);
+    }
+
 }

@@ -98,4 +98,13 @@ public interface BulkActionManager<BAC extends BulkActionConfig, BAS extends Bul
      */
     void run(BAC bulkActionConfig, Integer findingAidVersionId);
 
+
+    /**
+     * Spustí validaci verze AP.
+     *
+     * @param findingAidVersionId identifikátor verze archivní pomůcky
+     * @return seznam konfigurací hromadných akcí, které je nutné ještě spustit před uzavřením verze
+     */
+    List<BAC> runValidation(Integer findingAidVersionId);
+
 }
