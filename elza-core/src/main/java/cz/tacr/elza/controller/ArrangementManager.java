@@ -2354,21 +2354,33 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Override
     @Transactional
-    @RequestMapping(value = "/modifyArrNodeRegisterLinks", method = RequestMethod.PUT)
-    public void modifyArrNodeRegisterLinks(final @RequestBody ArrNodeRegisterPack arrNodeRegisterPack) {
-
+    @RequestMapping(value = "/modifyArrNodeRegisterLinks/{versionId}", method = RequestMethod.PUT)
+    public void modifyArrNodeRegisterLinks(final @RequestBody ArrNodeRegisterPack arrNodeRegisterPack,
+                                           @PathVariable(value = "versionId") final Integer versionId) {
+        Assert.notNull(versionId);
         Assert.notNull(arrNodeRegisterPack);
 
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+
+        if (version == null) {
+            throw new IllegalArgumentException("Verze archivni pomucky neexistuje");
+        }
+
+        if (version.getLockChange() != null) {
+            throw new IllegalArgumentException("Verze archivni pomucky je uzamcena");
+        }
+
         if (CollectionUtils.isNotEmpty(arrNodeRegisterPack.getSaveList())) {
-            saveNodeRegisterLinks(arrNodeRegisterPack.getSaveList());
+            saveNodeRegisterLinks(arrNodeRegisterPack.getSaveList(), version);
         }
 
         if (CollectionUtils.isNotEmpty(arrNodeRegisterPack.getDeleteList())) {
-            delArrNodeRegisterLinks(arrNodeRegisterPack.getDeleteList());
+            delArrNodeRegisterLinks(arrNodeRegisterPack.getDeleteList(), version);
         }
     }
 
-    private void delArrNodeRegisterLinks(final @RequestBody List<ArrNodeRegister> arrNodeRegisterList) {
+    private void delArrNodeRegisterLinks(final @RequestBody List<ArrNodeRegister> arrNodeRegisterList,
+                                         final ArrFindingAidVersion version) {
         Assert.notNull(arrNodeRegisterList);
 
         ArrChange change = createChange();
@@ -2385,14 +2397,17 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             nodeRegister.setDeleteChange(change);
             nodeRegisterRepository.save(nodeRegister);
         }
+        saveLastChangeFaVersion(change, version);
     }
 
     /**
      * Create či update vazby heslo na node.
      *
      * @param arrNodeRegisterList   list vazeb ke create či update
+     * @param version
      */
-    private void saveNodeRegisterLinks(final List<ArrNodeRegister> arrNodeRegisterList) {
+    private void saveNodeRegisterLinks(final List<ArrNodeRegister> arrNodeRegisterList,
+                                       final ArrFindingAidVersion version) {
         ArrChange change = createChange();
         for (final ArrNodeRegister nodeRegister : arrNodeRegisterList) {
 
@@ -2405,6 +2420,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             nodeRegister.setCreateChange(change);
             nodeRegisterRepository.save(nodeRegister);
         }
+        saveLastChangeFaVersion(change, version);
     }
 
     /**

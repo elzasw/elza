@@ -769,7 +769,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         RegRecord record3 = createRecord();
 
         // just create
-        restCreateNodeRegister(node, record1, record2, record3);
+        restCreateNodeRegister(node, record1, record2, record3, version.getFindingAidVersionId());
 
         List<ArrNodeRegister> nodeRegisters = findNodeRegisters(version.getFindingAidVersionId(), node.getNodeId());
         Assert.isTrue(nodeRegisters.size() == 3);
@@ -786,7 +786,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         Assert.isTrue(nodeRegisters.get(TRETI).getRecord().equals(record3));
 
         // just delete - TRETI
-        restModifyNodeRegister(new ArrNodeRegisterPack(null, Arrays.asList(nodeRegisters.get(TRETI))));
+        restModifyNodeRegister(new ArrNodeRegisterPack(null, Arrays.asList(nodeRegisters.get(TRETI))), version.getFindingAidVersionId());
 
         nodeRegisters = findNodeRegisters(version.getFindingAidVersionId(), node.getNodeId());
         Assert.isTrue(nodeRegisters.size() == 2);
@@ -796,7 +796,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         List<ArrNodeRegister> delete = Arrays.asList(nodeRegisters.get(DRUHY)); // DRUHY ke smazání
         nodeRegisters.remove(DRUHY);                                            // a pryč ze save
 
-        restModifyNodeRegister(new ArrNodeRegisterPack(nodeRegisters, delete));
+        restModifyNodeRegister(new ArrNodeRegisterPack(nodeRegisters, delete), version.getFindingAidVersionId());
 
         nodeRegisters = findNodeRegisters(version.getFindingAidVersionId(), node.getNodeId());
         Assert.isTrue(nodeRegisters.size() == 1);
@@ -812,7 +812,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
      * @param record3       heslo 3
      */
     protected void restCreateNodeRegister(final ArrNode node, final RegRecord record1, final RegRecord record2,
-                                          final RegRecord record3) {
+                                          final RegRecord record3, final Integer versionId) {
 
         ArrNodeRegister nodeRegister1 = new ArrNodeRegister();
         nodeRegister1.setNode(node);
@@ -828,16 +828,16 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
 
         List<ArrNodeRegister> modifyNodeRegisters = Arrays.asList(nodeRegister1, nodeRegister2, nodeRegister3);
 
-        restModifyNodeRegister(new ArrNodeRegisterPack(modifyNodeRegisters, null));
+        restModifyNodeRegister(new ArrNodeRegisterPack(modifyNodeRegisters, null), versionId);
     }
 
     /**
      * Volání úprav vazeb přes rest.
      * @param arrNodeRegisterPack   obalení kolekcí s úpravami vazeb či smazáním
      */
-    protected void restModifyNodeRegister(final ArrNodeRegisterPack arrNodeRegisterPack) {
+    protected void restModifyNodeRegister(final ArrNodeRegisterPack arrNodeRegisterPack, final Integer versionId) {
 
-        put(spec -> spec.body(arrNodeRegisterPack), MODIFY_NODE_REGISTER_LINKS_URL);
+        put(spec -> spec.body(arrNodeRegisterPack).pathParameter(VERSION_ID_ATT, versionId), MODIFY_NODE_REGISTER_LINKS_URL);
     }
 
     /**
@@ -852,7 +852,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
                 .parameter(NODE_ID_ATT, nodeId)
                 , FIND_NODE_REGISTER_LINKS_URL);
 
-        return new ArrayList<ArrNodeRegister>(Arrays.asList(response.getBody().as(ArrNodeRegister[].class)));
+        return new ArrayList<>(Arrays.asList(response.getBody().as(ArrNodeRegister[].class)));
     }
 
 }
