@@ -205,7 +205,7 @@ public abstract class AbstractRestTest {
     protected static final String UPDATE_DESCRIPTION_ITEM_URL = ARRANGEMENT_MANAGER_URL + "/updateDescriptionItem/{versionId}/{createNewVersion}";
     protected static final String DELETE_DESCRIPTION_ITEM_URL = ARRANGEMENT_MANAGER_URL + "/deleteDescriptionItem/{versionId}";
     protected static final String SAVE_DESCRIPTION_ITEMS_URL = ARRANGEMENT_MANAGER_URL + "/saveDescriptionItems";
-    protected static final String MODIFY_NODE_REGISTER_LINKS_URL = ARRANGEMENT_MANAGER_URL + "/modifyArrNodeRegisterLinks";
+    protected static final String MODIFY_NODE_REGISTER_LINKS_URL = ARRANGEMENT_MANAGER_URL + "/modifyArrNodeRegisterLinks/{versionId}";
     protected static final String FIND_NODE_REGISTER_LINKS_URL = ARRANGEMENT_MANAGER_URL + "/findNodeRegisterLinks";
     protected static final String INSERT_ABSTRACT_PACKET = ARRANGEMENT_MANAGER_URL + "/insertPacket";
 
