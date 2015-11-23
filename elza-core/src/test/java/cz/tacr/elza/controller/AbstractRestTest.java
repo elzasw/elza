@@ -41,6 +41,9 @@ import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformityErrors;
+import cz.tacr.elza.domain.ArrNodeConformityInfo;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ArrPacketType;
 import cz.tacr.elza.domain.ParParty;
@@ -78,6 +81,9 @@ import cz.tacr.elza.repository.FaViewRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeConformityErrorsRepository;
+import cz.tacr.elza.repository.NodeConformityInfoRepository;
+import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PacketRepository;
@@ -102,7 +108,8 @@ import cz.tacr.elza.repository.VariantRecordRepository;
 @WebAppConfiguration
 public abstract class AbstractRestTest {
 
-    private static final RestAssuredConfig UTF8_ENCODER_CONFIG = RestAssuredConfig.newConfig().encoderConfig(EncoderConfig.encoderConfig().defaultContentCharset("UTF-8"));
+    private static final RestAssuredConfig UTF8_ENCODER_CONFIG = RestAssuredConfig.newConfig().encoderConfig(
+            EncoderConfig.encoderConfig().defaultContentCharset("UTF-8"));
 
     private static final Logger logger = LoggerFactory.getLogger(ArrangementManagerTest.class);
 
@@ -308,7 +315,7 @@ public abstract class AbstractRestTest {
     @Autowired
     private DataRecordRefRepository dataRecordRefRepository;
     @Autowired
-    private NodeRepository nodeRepository;
+    protected NodeRepository nodeRepository;
     @Autowired
     private PartyNameRepository partyNameRepository;
     @Autowired
@@ -317,6 +324,13 @@ public abstract class AbstractRestTest {
     private PacketRepository packetRepository;
     @Autowired
     private FaBulkActionRepository faBulkActionRepository;
+    @Autowired
+    protected NodeConformityInfoRepository nodeConformityInfoRepository;
+    @Autowired
+    protected NodeConformityErrorsRepository nodeConformityErrorsRepository;
+    @Autowired
+    protected NodeConformityMissingRepository nodeConformityMissingRepository;
+
 
     @Before
     public void setUp() {
@@ -340,6 +354,9 @@ public abstract class AbstractRestTest {
         nodeRegisterRepository.deleteAll();
         recordRepository.deleteAll();
 
+        nodeConformityErrorsRepository.deleteAll();
+        nodeConformityMissingRepository.deleteAll();
+        nodeConformityInfoRepository.deleteAll();
         descItemConstraintRepository.deleteAll();
         faViewRepository.deleteAll();
         findingAidVersionRepository.deleteAll();
@@ -349,6 +366,7 @@ public abstract class AbstractRestTest {
         levelRepository.deleteAll();
         descItemRepository.deleteAll();
         descItemSpecRegisterRepository.deleteAll();
+
         descItemSpecRepository.deleteAll();
         descItemTypeRepository.deleteAll();
         nodeRepository.deleteAll();
@@ -849,7 +867,8 @@ public abstract class AbstractRestTest {
      * @return typy výstupů
      */
     protected List<RulArrangementType> getArrangementTypes(RulRuleSet ruleSet) {
-        Response response = get(spec -> spec.parameter(RULE_SET_ID_ATT, ruleSet.getRuleSetId()), GET_ARRANGEMENT_TYPES_URL);
+        Response response = get(spec -> spec.parameter(RULE_SET_ID_ATT, ruleSet.getRuleSetId()),
+                GET_ARRANGEMENT_TYPES_URL);
 
         return Arrays.asList(response.getBody().as(RulArrangementType[].class));
     }
@@ -977,7 +996,9 @@ public abstract class AbstractRestTest {
      * @return  objekt se změnami
      */
     protected ArrNodeHistoryPack getHistoryForNode(Integer nodeId, Integer findingAidId) {
-        Response response = get((spec) -> spec.pathParameter(NODE_ID_ATT, nodeId).pathParameter(FINDING_AID_ID_ATT, findingAidId), GET_HISTORY_FOR_NODE);
+        Response response = get(
+                (spec) -> spec.pathParameter(NODE_ID_ATT, nodeId).pathParameter(FINDING_AID_ID_ATT, findingAidId),
+                GET_HISTORY_FOR_NODE);
         return response.getBody().as(ArrNodeHistoryPack.class);
     }
 
@@ -1030,6 +1051,51 @@ public abstract class AbstractRestTest {
         ArrLevelWithExtraNode parent = response.getBody().as(ArrLevelWithExtraNode.class);
 
         return parent;
+    }
+
+    /**
+     * Vytvoří objekt {@link ArrNodeConformityInfo}.
+     *
+     * @param node    uzel
+     * @param version verze uzlu
+     * @return info
+     */
+    protected ArrNodeConformityInfo createNodeConformityInfo(final ArrNode node, final ArrFindingAidVersion version){
+        ArrNodeConformityInfo info = new ArrNodeConformityInfo();
+        info.setNode(node);
+        info.setFaVersion(version);
+        info.setState(cz.tacr.elza.api.ArrNodeConformityInfo.State.OK);
+        return nodeConformityInfoRepository.save(info);
+    }
+
+    /**
+     * Vytvoří objekt {@link ArrNodeConformityMissing}.
+     *
+     * @param info    stav
+     * @param type typ
+     * @return chybějící data
+     */
+    protected ArrNodeConformityMissing createNodeConformityMissing(final ArrNodeConformityInfo info,
+                                                                   final RulDescItemType type) {
+        ArrNodeConformityMissing result = new ArrNodeConformityMissing();
+        result.setNodeConformityInfo(info);
+        result.setDescItemType(type);
+        return nodeConformityMissingRepository.save(result);
+    }
+
+    /**
+     * Vytvoří objekt {@link ArrNodeConformityErrors}.
+     *
+     * @param info     stav
+     * @param descItem atribut
+     * @return chyba
+     */
+    protected ArrNodeConformityErrors createNodeConformityError(final ArrNodeConformityInfo info,
+                                                                final ArrDescItem descItem) {
+        ArrNodeConformityErrors result = new ArrNodeConformityErrors();
+        result.setNodeConformityInfo(info);
+        result.setDescItem(descItem);
+        return result;
     }
 
     /**
