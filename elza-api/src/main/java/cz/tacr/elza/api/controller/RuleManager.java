@@ -3,7 +3,6 @@ package cz.tacr.elza.api.controller;
 import java.util.Collection;
 import java.util.List;
 
-import com.sun.istack.internal.Nullable;
 
 import cz.tacr.elza.api.RulArrangementType;
 import cz.tacr.elza.api.RulDataType;
@@ -109,5 +108,5 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      */
     void deleteConformityInfo(Integer faVersionId,
                               Collection<Integer> nodeIds,
-                              @Nullable Collection<RelatedNodeDirection> deleteDirections);
+                              Collection<RelatedNodeDirection> deleteDirections);
 }
