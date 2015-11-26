@@ -141,6 +141,8 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
         for (RulDescItemType rulDescItemType : itemTypeList) {
             if (rulDescItemType.getCode().equals("ZP2015_LEVEL_TYPE")) {
                 rulDescItemType.setRequired(true);
+            } else {
+                rulDescItemType.setRequired(false);
             }
         }
 
@@ -149,20 +151,26 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
         // projde všechny typy atributů
         for (RulDescItemTypeExt rulDescItemTypeExt : rulDescItemTypeExtList) {
 
+            rulDescItemTypeExt.setRepeatable(true);
+
             // projde všechny podmínky typů
             for (RulDescItemConstraint rulDescItemConstraint : rulDescItemTypeExt.getRulDescItemConstraintList()) {
                 if (rulDescItemConstraint.getRepeatable() != null && rulDescItemConstraint.getRepeatable().equals(false)) {
                     rulDescItemTypeExt.setRepeatable(false);
+                    break;
                 }
             }
 
             // projde všechny specifikace typů atributů
             for (RulDescItemSpecExt rulDescItemSpecExt : rulDescItemTypeExt.getRulDescItemSpecList()) {
 
+                rulDescItemSpecExt.setRepeatable(true);
+
                 // projde všechny podmínky specifikací
                 for (RulDescItemConstraint rulDescItemConstraint : rulDescItemSpecExt.getRulDescItemConstraintList()) {
                     if (rulDescItemConstraint.getRepeatable() != null && rulDescItemConstraint.getRepeatable().equals(false)) {
                         rulDescItemSpecExt.setRepeatable(false);
+                        break;
                     }
                 }
             }
