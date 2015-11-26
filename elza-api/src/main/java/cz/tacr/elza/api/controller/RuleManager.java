@@ -1,5 +1,9 @@
 package cz.tacr.elza.api.controller;
 
+import java.util.Collection;
+import java.util.List;
+
+
 import cz.tacr.elza.api.RulArrangementType;
 import cz.tacr.elza.api.RulDataType;
 import cz.tacr.elza.api.RulDescItemSpec;
@@ -7,8 +11,7 @@ import cz.tacr.elza.api.RulDescItemType;
 import cz.tacr.elza.api.RulFaView;
 import cz.tacr.elza.api.RulRuleSet;
 import cz.tacr.elza.api.vo.FaViewDescItemTypes;
-
-import java.util.List;
+import cz.tacr.elza.api.vo.RelatedNodeDirection;
 
 
 /**
@@ -59,10 +62,10 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      * Vrátí všechny typy hodnot atributů archivního popisu k uzlu.
      * @param faVersionId   Identifikátor verze
      * @param nodeId        Identifikátor uzlu
-     * @param mandatory     true - vrací všechny povinné typy, false - vrací všechny nepovinné typy, null - vrací všechno
      * @return  Seznam typů hodnot atributů
      */
-    List<? extends RulDescItemType> getDescriptionItemTypesForNodeId(Integer faVersionId, Integer nodeId, Boolean mandatory);
+    List<? extends RulDescItemType> getDescriptionItemTypesForNode(Integer faVersionId,
+                                                                   Integer nodeId);
 
     /**
      * Vrací specifikace podle typu atributu.
@@ -94,4 +97,16 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      * @return descItemTypeIds
      */
     List<Integer> saveFaViewDescItemTypes(RFV rulFaView, Integer[] descItemTypeIds);
+
+
+    /**
+     * Pro vybrané nody s danou verzí smaže všechny stavy v daných směrech od nodů.
+     *
+     * @param faVersionId      verze nodů
+     * @param nodeIds          seznam id nodů, od kterých se má prohledávat
+     * @param deleteDirections směry prohledávání (null pokud se mají smazat stavy zadaných nodů .
+     */
+    void deleteConformityInfo(Integer faVersionId,
+                              Collection<Integer> nodeIds,
+                              Collection<RelatedNodeDirection> deleteDirections);
 }

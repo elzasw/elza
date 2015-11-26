@@ -3,14 +3,12 @@ package cz.tacr.elza.api;
 import java.io.Serializable;
 
 
-
 /**
  * evidence typů atributů archivního popisu. evidence je společná pro všechny archivní pomůcky.
  *
+ * @param <RT> {@link RulDataType}
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
- *
- * @param <RT> {@link RulDataType}
  */
 public interface RulDescItemType<RT extends RulDataType> extends Serializable {
 
@@ -25,6 +23,7 @@ public interface RulDescItemType<RT extends RulDataType> extends Serializable {
 
 
     void setDataType(final RT dataType);
+
 
     String getCode();
 
@@ -43,45 +42,56 @@ public interface RulDescItemType<RT extends RulDataType> extends Serializable {
 
     void setShortcut(final String shortcut);
 
+
     /**
      * @return popis atributu, který slouží zároveň jako nápověda v aplikaci o jaký typ se jedná a jak se sním zachází.
      */
     String getDescription();
 
+
     /**
      * popis atributu, který slouží zároveň jako nápověda v aplikaci o jaký typ se jedná a jak se sním zachází.
+     *
      * @param description popis atributu.
      */
     void setDescription(final String description);
+
 
     /**
      * @return příznak, zda je hodnota atributu při použití tohoto typu jedinečná v rámci celé archivní pomůcky.
      */
     Boolean getIsValueUnique();
 
+
     /**
      * příznak, zda je hodnota atributu při použití tohoto typu jedinečná v rámci celé archivní pomůcky.
+     *
      * @param isValueUnique příznak.
      */
     void setIsValueUnique(final Boolean isValueUnique);
+
 
     /**
      * @return příznak, zda je možné dle tohoto typu atributu setřídit archivní popis. zatím nebude aplikačně využíváno
      */
     Boolean getCanBeOrdered();
 
+
     /**
      * nastaví příznak, zda je možné dle tohoto typu atributu setřídit archivní popis.
+     *
      * @param canBeOrdered příznak, zda je možné dle tohoto typu atributu setřídit archivní popis.
      */
     void setCanBeOrdered(final Boolean canBeOrdered);
 
+
     /**
      * @return příznak, zda se u typu atributu používají specifikace hodnot jako např. u druhů
-     *         jednotek popisu nebo u rolí entit. true = povinná specifikace, false = specifikace
-     *         neexistují. specifikace jsou uvedeny v číselníku rul_desc_item_spe.
+     * jednotek popisu nebo u rolí entit. true = povinná specifikace, false = specifikace
+     * neexistují. specifikace jsou uvedeny v číselníku rul_desc_item_spe.
      */
     Boolean getUseSpecification();
+
 
     /**
      * příznak, zda se u typu atributu používají specifikace hodnot jako např. u druhů jednotek
@@ -92,11 +102,13 @@ public interface RulDescItemType<RT extends RulDataType> extends Serializable {
      */
     void setUseSpecification(final Boolean useSpecification);
 
+
     /**
      * @return pořadí typu atributu pro zobrazení v ui. pokud není pořadí uvedeno nebo je u více
-     *         typů uvedeno stejné pořadí, bude výsledné pořadí náhodné.
+     * typů uvedeno stejné pořadí, bude výsledné pořadí náhodné.
      */
     Integer getViewOrder();
+
 
     /**
      * nastaví pořadí typu atributu pro zobrazení v ui. pokud není pořadí uvedeno nebo je u více
@@ -112,10 +124,42 @@ public interface RulDescItemType<RT extends RulDataType> extends Serializable {
      */
     Boolean getFaOnly();
 
+
     /**
-     * Příznak udává, zda je příslušný atribut platný jen pro jednu konkrétní AP. Pokud je příznak nastaven, tak hodnoty těchto atributů nejsou sdíleny, ale mohou být zobrazeny.
+     * Příznak udává, zda je příslušný atribut platný jen pro jednu konkrétní AP. Pokud je příznak nastaven, tak
+     * hodnoty
+     * těchto atributů nejsou sdíleny, ale mohou být zobrazeny.
+     *
      * @param faOnly hodnota příznaku
      */
     void setFaOnly(Boolean faOnly);
+
+
+    /**
+     * @return příznak udává, zda je povinné vyplnit hodnotu atributu.
+     */
+    Boolean getRequired();
+
+
+    /**
+     * Příznak udává, zda je povinné vyplnit hodnotu atributu.
+     *
+     * @param required povinnost
+     */
+    void setRequired(Boolean required);
+
+
+    /**
+     * @return příznak udává, zda je atribut opakovatelný
+     */
+    Boolean getRepeatable();
+
+
+    /**
+     * Příznak udává, zda je atribut opakovatelný.
+     *
+     * @param repeatable opakovatelnost
+     */
+    void setRepeatable(Boolean repeatable);
 
 }

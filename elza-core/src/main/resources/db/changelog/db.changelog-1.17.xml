@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <!-- Verze 1.17 - pridani tebulek arr_node_conformity_info, arr_node_conformity_missing, arr_node_conformity_errors -->
+    <changeSet id="18" author="kubovy">
+
+        <createTable tableName="arr_node_conformity_info">
+            <column name="node_conformity_info_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="node_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fa_version_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state" type="char(3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(1000)"/>
+            <column name="date" type="timestamp"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_arrNodeConfInfo_faNode"
+                baseTableName="arr_node_conformity_info" baseColumnNames="node_id"
+                referencedTableName="arr_node"
+                referencedColumnNames="node_id" onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_arrNodeConfInfo_faVersion"
+                baseTableName="arr_node_conformity_info" baseColumnNames="fa_version_id"
+                referencedTableName="arr_finding_aid_version"
+                referencedColumnNames="finding_aid_version_id" onDelete="NO ACTION"/>
+
+
+        <createTable tableName="arr_node_conformity_missing">
+            <column name="node_conformity_missing_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="node_conformity_info_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="desc_item_type_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="desc_item_spec_id" type="int"/>
+            <column name="description" type="varchar(1000)"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_arrNodeConfMiss_nodConfInf"
+                baseTableName="arr_node_conformity_missing" baseColumnNames="node_conformity_info_id"
+                referencedTableName="arr_node_conformity_info"
+                referencedColumnNames="node_conformity_info_id" onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_arrNodeConfMiss_descItmTyp"
+                baseTableName="arr_node_conformity_missing" baseColumnNames="desc_item_type_id"
+                referencedTableName="rul_desc_item_type"
+                referencedColumnNames="desc_item_type_id" onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_arrNodeConfMiss_descItmSpc"
+                baseTableName="arr_node_conformity_missing" baseColumnNames="desc_item_spec_id"
+                referencedTableName="rul_desc_item_spec"
+                referencedColumnNames="desc_item_spec_id" onDelete="NO ACTION"/>
+
+        <createTable tableName="arr_node_conformity_errors">
+            <column name="node_conformity_errors_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="node_conformity_info_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="desc_item_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(1000)"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_arrNodeConfErr_nodConfInf"
+                baseTableName="arr_node_conformity_errors" baseColumnNames="node_conformity_info_id"
+                referencedTableName="arr_node_conformity_info"
+                referencedColumnNames="node_conformity_info_id" onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint
+                constraintName="fk_arrNodeConfErr_descItem"
+                baseTableName="arr_node_conformity_errors" baseColumnNames="desc_item_id"
+                referencedTableName="arr_desc_item"
+                referencedColumnNames="desc_item_id" onDelete="NO ACTION"/>
+
+    </changeSet>
+</databaseChangeLog>

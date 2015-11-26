@@ -104,7 +104,7 @@ public abstract class BulkAction {
      * @return nalezený potomci
      */
     protected List<ArrLevel> getChildren(final ArrLevel level) {
-        return levelRepository.findByNodeParentAndDeleteChangeIsNullOrderByPositionAsc(level.getNode());
+        return levelRepository.findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(level.getNode());
     }
 
     /**

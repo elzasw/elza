@@ -12,6 +12,6 @@ import cz.tacr.elza.domain.ArrNode;
  * @since 4. 9. 2015
  */
 @Repository
-public interface NodeRepository extends JpaRepository<ArrNode, Integer> {
+public interface NodeRepository extends JpaRepository<ArrNode, Integer>, NodeRepositoryCustom {
 
 }

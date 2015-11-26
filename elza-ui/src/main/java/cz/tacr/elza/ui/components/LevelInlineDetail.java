@@ -169,7 +169,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             List<ArrNodeRegister> links = nodeRegisterLink.getKeys();
             List<ArrNodeRegister> linksToDelete = nodeRegisterLink.getLinksToDelete();
 
-            arrangementManager.modifyArrNodeRegisterLinks(new ArrNodeRegisterPack(links, linksToDelete));
+            arrangementManager.modifyArrNodeRegisterLinks(new ArrNodeRegisterPack(links, linksToDelete), nodeRegisterLink.getVersionId());
 
             // obnova atributu vpravo
             ArrLevelExt level = arrangementManager.getLevel(nodeRegisterLink.getNode().getNodeId(),
@@ -241,7 +241,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             BeanItemContainer<RulDescItemType> descItemTypeBeanItemContainer = new BeanItemContainer<>(
                     RulDescItemType.class);
             descItemTypeBeanItemContainer.addAll(ruleSetManager
-                    .getDescriptionItemTypesForNodeId(versionId, level.getNode().getNodeId(), null));
+                    .getDescriptionItemTypesForNode(versionId, level.getNode().getNodeId()));
             attributesComboBox = new ComboBox(null, descItemTypeBeanItemContainer);
             attributesComboBox.setItemCaptionPropertyId("name");
 

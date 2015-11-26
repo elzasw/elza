@@ -1,8 +1,28 @@
 package cz.tacr.elza.controller;
 
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.IntStream;
+
+import javax.transaction.Transactional;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.jayway.restassured.response.Response;
+
+import cz.tacr.elza.api.vo.RelatedNodeDirection;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformityInfo;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemSpecExt;
@@ -11,14 +31,6 @@ import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.IntStream;
 
 /**
  * Testy pro {@link RuleManager}.
@@ -29,6 +41,9 @@ import java.util.stream.IntStream;
 public class RulRuleSetManagerTest extends AbstractRestTest {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    @Autowired
+    private RuleManager ruleManager;
 
     @Test
     public void testRestGetDescItemSpecById() throws Exception{
@@ -84,8 +99,8 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
     public void testRestGetDescriptionItemTypesForNodeId() throws Exception {
         createConstrain(2);
 
-        Response response = get((spec) -> spec.parameter("faVersionId", 2).parameter(NODE_ID_ATT , 1)
-                .parameter("mandatory", Boolean.FALSE), GET_DIT_FOR_NODE_ID_URL);
+        Response response = get((spec) -> spec.parameter("faVersionId", 2).parameter(NODE_ID_ATT, 1),
+                GET_DIT_FOR_NODE_ID_URL);
 
         List<RulDescItemTypeExt> ruleSets =
                 Arrays.asList(response.getBody().as(RulDescItemTypeExt[].class));
@@ -124,5 +139,58 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
         for (int i = 0; i < descItemTypeIds.length; i++) {
             Assert.assertEquals(descItemTypeIds[i], ruleSets.get(i).getDescItemTypeId());
         }
+    }
+
+    @Test
+    @Transactional
+    public void testDeleteConformityInfo() throws Exception{
+
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
+        ArrFindingAidVersion version = createFindingAidVersion(findingAid, false, null);
+
+        ArrChange faChange = createFaChange(LocalDateTime.now());
+        ArrLevel level1 = createLevel(1, version.getRootLevel(), faChange);
+        ArrLevel level2 = createLevel(1, level1, faChange);
+        ArrLevel level21 = createLevel(2, level1, faChange);
+        ArrLevel level3 = createLevel(1, level2, faChange);
+
+        ArrNode rootNode = version.getRootLevel().getNode();
+        ArrNode node1 = level1.getNode();
+        ArrNode node2 = level2.getNode();
+        ArrNode node21 = level21.getNode();
+        ArrNode node3 = level3.getNode();
+
+
+        List<ArrNode> result = nodeRepository.findNodesByDirection(level2.getNode(), version, RelatedNodeDirection.PARENTS);
+        Assert.assertTrue(result.size() == 1 && result.contains(node1));
+
+        result = nodeRepository.findNodesByDirection(level2.getNode(), version, RelatedNodeDirection.ASCENDATNS);
+        Assert.assertTrue(result.size() == 2 && result.contains(rootNode) && result.contains(node1));
+
+        result = nodeRepository.findNodesByDirection(level1.getNode(), version, RelatedNodeDirection.CHILDREN);
+        Assert.assertTrue(result.size() == 2 && result.contains(node2) && result.contains(node21));
+
+        result = nodeRepository.findNodesByDirection(level1.getNode(), version, RelatedNodeDirection.DESCENDANTS);
+        Assert.assertTrue(result.size() == 3 && result.contains(node2) && result.contains(node21) && result.contains(node3));
+
+        result = nodeRepository.findNodesByDirection(level2.getNode(), version, RelatedNodeDirection.SIBLINGS);
+        Assert.assertTrue(result.size() == 1 && result.contains(node21));
+
+
+        ArrDescItem attributs = createAttributs(node21, 1, faChange, 2, DATA_TYPE_STRING);
+        RulDescItemType descItemType = createDescItemType(1, getDataType(DATA_TYPE_TEXT).getDataTypeId());
+
+
+        ArrNodeConformityInfo nodeConformityInfo = createNodeConformityInfo(node21, version);
+        createNodeConformityMissing(nodeConformityInfo, descItemType);
+        createNodeConformityError(nodeConformityInfo, attributs);
+
+
+        Assert.assertTrue(nodeConformityInfoRepository.findAll().size() > 0);
+
+        ruleManager.deleteConformityInfo(version.getFindingAidVersionId(), Arrays.asList(node2.getNodeId()),
+                Arrays.asList(RelatedNodeDirection.SIBLINGS));
+
+        Assert.assertTrue(nodeConformityInfoRepository.findAll().size() == 0);
     }
 }

@@ -1,13 +1,14 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
 
 
 /**
@@ -16,9 +17,12 @@ import java.util.List;
  * @since 22.7.15
  */
 @Repository
-public interface LevelRepository extends JpaRepository<ArrLevel, Integer> {
+public interface LevelRepository extends JpaRepository<ArrLevel, Integer>, LevelRepositoryCustom {
 
-    List<ArrLevel> findByNodeParentAndDeleteChangeIsNullOrderByPositionAsc(ArrNode nodeParent);
+    @Query("SELECT c FROM arr_level c WHERE c.nodeParent = ?1 "
+            + "and c.deleteChange is null"
+            + " order by c.position asc")
+    List<ArrLevel> findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(ArrNode nodeParent);
 
     /**
      * nalezna levely podle přímého předka po zadaném číslu změny a seřadí podle pozice.
@@ -51,7 +55,7 @@ public interface LevelRepository extends JpaRepository<ArrLevel, Integer> {
     @Query("SELECT c FROM arr_level c WHERE c.node = ?1 "
             + "and c.createChange < ?2 and (c.deleteChange is null or c.deleteChange > ?2)"
             + " order by c.position asc")
-    ArrLevel findByNodeOrderByPositionAsc(ArrNode nodeParent, ArrChange change);
+    List<ArrLevel> findByNodeOrderByPositionAsc(ArrNode nodeParent, ArrChange change);
 
     @Query("SELECT l FROM arr_level l WHERE l.node = ?1 order by l.createChange.changeDate asc")
     List<ArrLevel> findByNodeOrderByCreateChangeAsc(ArrNode node);

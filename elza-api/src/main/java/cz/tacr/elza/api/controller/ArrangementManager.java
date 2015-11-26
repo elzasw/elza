@@ -285,8 +285,9 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * Uloží vazby mezi uzlem a hesly rejstříku. Provede založení změny.
      *
      * @param   arrNodeRegisterPack zapouzření kolekece k uložení či smazání vazeb
+     * @param versionId id verze
      */
-    void modifyArrNodeRegisterLinks(ANRP arrNodeRegisterPack);
+    void modifyArrNodeRegisterLinks(ANRP arrNodeRegisterPack, Integer versionId);
 
     /**
      * Vyhledá obal daného typu podle zadaného názvu. Vrátí seznam obalů vyhovující zadané frázi.

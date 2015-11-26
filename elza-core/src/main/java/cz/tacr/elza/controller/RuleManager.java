@@ -2,14 +2,18 @@ package cz.tacr.elza.controller;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.transaction.Transactional;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +26,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
+import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformityErrors;
+import cz.tacr.elza.domain.ArrNodeConformityInfo;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemConstraint;
@@ -39,6 +48,10 @@ import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FaViewRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
+import cz.tacr.elza.repository.NodeConformityErrorsRepository;
+import cz.tacr.elza.repository.NodeConformityInfoRepository;
+import cz.tacr.elza.repository.NodeConformityMissingRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 
 /**
@@ -75,6 +88,18 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     @Autowired
     private FaViewRepository faViewRepository;
 
+    @Autowired
+    private NodeRepository nodeRepository;
+
+    @Autowired
+    private NodeConformityInfoRepository nodeConformityInfoRepository;
+
+    @Autowired
+    private NodeConformityErrorsRepository nodeConformityErrorsRepository;
+
+    @Autowired
+    private NodeConformityMissingRepository nodeConformityMissingRepository;
+
     @Override
     @RequestMapping(value = "/getDescItemSpecById", method = RequestMethod.GET)
     public RulDescItemSpec getDescItemSpecById(@RequestParam(value = "descItemSpecId") Integer descItemSpecId) {
@@ -106,13 +131,52 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     }
 
     @Override
-    @RequestMapping(value = "/getDescriptionItemTypesForNodeId", method = RequestMethod.GET)
-    public List<RulDescItemTypeExt> getDescriptionItemTypesForNodeId(
+    @RequestMapping(value = "/getDescriptionItemTypesForNode", method = RequestMethod.GET)
+    public List<RulDescItemTypeExt> getDescriptionItemTypesForNode(
             @RequestParam(value = "faVersionId") Integer faVersionId,
-            @RequestParam(value = "nodeId") Integer nodeId,
-            @RequestParam(value = "mandatory") Boolean mandatory) {
+            @RequestParam(value = "nodeId") Integer nodeId) {
         List<RulDescItemType> itemTypeList = descItemTypeRepository.findAll();
-        return createExt(itemTypeList);
+
+        // dočasné řešení - než budou pravidla
+        for (RulDescItemType rulDescItemType : itemTypeList) {
+            if (rulDescItemType.getCode().equals("ZP2015_LEVEL_TYPE")) {
+                rulDescItemType.setRequired(true);
+            } else {
+                rulDescItemType.setRequired(false);
+            }
+        }
+
+        List<RulDescItemTypeExt> rulDescItemTypeExtList = createExt(itemTypeList);
+
+        // projde všechny typy atributů
+        for (RulDescItemTypeExt rulDescItemTypeExt : rulDescItemTypeExtList) {
+
+            rulDescItemTypeExt.setRepeatable(true);
+
+            // projde všechny podmínky typů
+            for (RulDescItemConstraint rulDescItemConstraint : rulDescItemTypeExt.getRulDescItemConstraintList()) {
+                if (rulDescItemConstraint.getRepeatable() != null && rulDescItemConstraint.getRepeatable().equals(false)) {
+                    rulDescItemTypeExt.setRepeatable(false);
+                    break;
+                }
+            }
+
+            // projde všechny specifikace typů atributů
+            for (RulDescItemSpecExt rulDescItemSpecExt : rulDescItemTypeExt.getRulDescItemSpecList()) {
+
+                rulDescItemSpecExt.setRepeatable(true);
+
+                // projde všechny podmínky specifikací
+                for (RulDescItemConstraint rulDescItemConstraint : rulDescItemSpecExt.getRulDescItemConstraintList()) {
+                    if (rulDescItemConstraint.getRepeatable() != null && rulDescItemConstraint.getRepeatable().equals(false)) {
+                        rulDescItemSpecExt.setRepeatable(false);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return rulDescItemTypeExtList;
     }
 
     @Override
@@ -256,5 +320,62 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
         faViewRepository.save(rulFaView);
 
         return Arrays.asList(descItemTypeIds);
+    }
+
+
+    @Override
+    @Transactional
+    public void deleteConformityInfo(final Integer faVersionId,
+                                     final Collection<Integer> nodeIds,
+                                     final Collection<RelatedNodeDirection> deleteDirections) {
+        Assert.notNull(faVersionId);
+        Assert.notEmpty(nodeIds);
+
+        List<ArrNode> nodes = nodeRepository.findAll(nodeIds);
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
+
+        Set<ArrNode> deleteNodes = new HashSet<ArrNode>();
+
+        if (CollectionUtils.isEmpty(deleteDirections)) {
+            deleteNodes.addAll(nodes);
+        } else {
+
+            for (RelatedNodeDirection deleteDirection : deleteDirections) {
+                for (ArrNode node : nodes) {
+                    deleteNodes.addAll(nodeRepository.findNodesByDirection(node, version, deleteDirection));
+                }
+            }
+        }
+
+
+        if (!deleteNodes.isEmpty()) {
+            List<ArrNodeConformityInfo> deleteInfos = nodeConformityInfoRepository
+                    .findByNodesAndVersion(deleteNodes, version);
+
+            deleteConformityInfo(deleteInfos);
+        }
+    }
+
+    /**
+     * Smaže všechny vybrané stavy.
+     *
+     * @param infos stavy ke smazání
+     */
+    private void deleteConformityInfo(final Collection<ArrNodeConformityInfo> infos) {
+
+        if (CollectionUtils.isNotEmpty(infos)) {
+            List<ArrNodeConformityMissing> missing = nodeConformityMissingRepository
+                    .findByNodeConformityInfos(infos);
+            if (CollectionUtils.isNotEmpty(missing)) {
+                nodeConformityMissingRepository.delete(missing);
+            }
+
+            List<ArrNodeConformityErrors> errors = nodeConformityErrorsRepository.findByNodeConformityInfos(infos);
+            if (CollectionUtils.isNotEmpty(errors)) {
+                nodeConformityErrorsRepository.delete(errors);
+            }
+
+            nodeConformityInfoRepository.delete(infos);
+        }
     }
 }

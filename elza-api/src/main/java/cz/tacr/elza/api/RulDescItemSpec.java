@@ -13,7 +13,7 @@ import java.io.Serializable;
  */
 public interface RulDescItemSpec<RIT extends RulDescItemType>
         extends
-            Serializable {
+        Serializable {
 
 
     Integer getDescItemSpecId();
@@ -51,14 +51,44 @@ public interface RulDescItemSpec<RIT extends RulDescItemType>
 
     void setDescription(final String description);
 
+
     /**
      * @return pořadí zobrazení.
      */
     Integer getViewOrder();
 
+
     /**
      * @param viewOrder pořadí zobrazení.
      */
     void setViewOrder(final Integer viewOrder);
+
+
+    /**
+     * @return příznak udává, zda je povinné vyplnit specifikaci atributu.
+     */
+    Boolean getRequired();
+
+
+    /**
+     * Příznak udává, zda je povinné vyplnit specifikaci atributu.
+     *
+     * @param required povinnost
+     */
+    void setRequired(Boolean required);
+
+
+    /**
+     * @return příznak udává, zda je atribut opakovatelný
+     */
+    Boolean getRepeatable();
+
+
+    /**
+     * Příznak udává, zda je atribut opakovatelný.
+     *
+     * @param repeatable opakovatelnost
+     */
+    void setRepeatable(Boolean repeatable);
 
 }
