@@ -9,6 +9,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -69,6 +70,11 @@ public class RulDescItemType implements cz.tacr.elza.api.RulDescItemType<RulData
     @Column(nullable = false)
     private Boolean faOnly;
 
+    @Transient
+    private Boolean required;
+
+    @Transient
+    private Boolean repeatable;
 
     @Override
     public Integer getDescItemTypeId() {
@@ -178,6 +184,26 @@ public class RulDescItemType implements cz.tacr.elza.api.RulDescItemType<RulData
     @Override
     public void setFaOnly(Boolean faOnly) {
         this.faOnly = faOnly;
+    }
+
+    @Override
+    public Boolean getRequired() {
+        return required;
+    }
+
+    @Override
+    public void setRequired(final Boolean required) {
+        this.required = required;
+    }
+
+    @Override
+    public Boolean getRepeatable() {
+        return repeatable;
+    }
+
+    @Override
+    public void setRepeatable(final Boolean repeatable) {
+        this.repeatable = repeatable;
     }
 
     @Override

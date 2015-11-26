@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
-import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -1656,8 +1655,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      * @param descItem      položka
      */
     private void validationDescItem(Integer versionId, ArrNode node, Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems, ArrDescItem descItem) {
-        List<RulDescItemTypeExt> rulDescItemTypes = ruleManager.getDescriptionItemTypesForNodeId(versionId,
-                node.getNodeId(), null);
+        List<RulDescItemTypeExt> rulDescItemTypes = ruleManager.getDescriptionItemTypesForNode(versionId,
+                node.getNodeId());
 
         RulDescItemType rulDescItemType = descItemTypeRepository.findOne(descItem.getDescItemType().getDescItemTypeId());
         Assert.notNull(rulDescItemType);

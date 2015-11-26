@@ -48,7 +48,7 @@ public class DescItemOperations {
         Boolean createNewVersion = true;
 
         /* určuje typ vytvářeného atributu
-           konkrétní správné získání reference je pomocí metody getDescriptionItemTypesForNodeId() z RuleManager */
+           konkrétní správné získání reference je pomocí metody getDescriptionItemTypesForNode() z RuleManager */
         RulDescItemType descItemType = new RulDescItemType();
 
         /* určuje specifikaci vytvářeného atributu
@@ -101,7 +101,7 @@ public class DescItemOperations {
         Boolean createNewVersion = true;
 
         /* určuje typ vytvářeného atributu
-           konkrétní správné získání reference je pomocí metody getDescriptionItemTypesForNodeId() z RuleManager */
+           konkrétní správné získání reference je pomocí metody getDescriptionItemTypesForNode() z RuleManager */
         RulDescItemType descItemType = new RulDescItemType();
 
         /* určuje specifikaci vytvářeného atributu
@@ -158,7 +158,7 @@ public class DescItemOperations {
         Boolean createNewVersion = true;
 
         /* určuje typ vytvářeného atributu
-           konkrétní správné získání reference je pomocí metody getDescriptionItemTypesForNodeId() z RuleManager */
+           konkrétní správné získání reference je pomocí metody getDescriptionItemTypesForNode() z RuleManager */
         RulDescItemType descItemType = new RulDescItemType();
 
         /* určuje specifikaci vytvářeného atributu
@@ -257,7 +257,7 @@ public class DescItemOperations {
         Boolean createNewVersion = false;
 
         /* určuje typ upravovaného atributu
-           konkrétní správné získání reference je pomocí metody getDescriptionItemTypesForNodeId() z RuleManager */
+           konkrétní správné získání reference je pomocí metody getDescriptionItemTypesForNode() z RuleManager */
         RulDescItemType descItemType = new RulDescItemType();
 
         /* určuje specifikaci vytvářeného atributu
@@ -310,7 +310,7 @@ public class DescItemOperations {
         Boolean createNewVersion = true;
 
         /* určuje typ upravovaného atributu
-           konkrétní správné získání reference je pomocí metody getDescriptionItemTypesForNodeId() z RuleManager */
+           konkrétní správné získání reference je pomocí metody getDescriptionItemTypesForNode() z RuleManager */
         RulDescItemType descItemType = new RulDescItemType();
 
         /* určuje specifikaci vytvářeného atributu

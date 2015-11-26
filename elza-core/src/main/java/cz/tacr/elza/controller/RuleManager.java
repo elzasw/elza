@@ -131,13 +131,44 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     }
 
     @Override
-    @RequestMapping(value = "/getDescriptionItemTypesForNodeId", method = RequestMethod.GET)
-    public List<RulDescItemTypeExt> getDescriptionItemTypesForNodeId(
+    @RequestMapping(value = "/getDescriptionItemTypesForNode", method = RequestMethod.GET)
+    public List<RulDescItemTypeExt> getDescriptionItemTypesForNode(
             @RequestParam(value = "faVersionId") Integer faVersionId,
-            @RequestParam(value = "nodeId") Integer nodeId,
-            @RequestParam(value = "mandatory") Boolean mandatory) {
+            @RequestParam(value = "nodeId") Integer nodeId) {
         List<RulDescItemType> itemTypeList = descItemTypeRepository.findAll();
-        return createExt(itemTypeList);
+
+        // dočasné řešení - než budou pravidla
+        for (RulDescItemType rulDescItemType : itemTypeList) {
+            if (rulDescItemType.getCode().equals("ZP2015_LEVEL_TYPE")) {
+                rulDescItemType.setRequired(true);
+            }
+        }
+
+        List<RulDescItemTypeExt> rulDescItemTypeExtList = createExt(itemTypeList);
+
+        // projde všechny typy atributů
+        for (RulDescItemTypeExt rulDescItemTypeExt : rulDescItemTypeExtList) {
+
+            // projde všechny podmínky typů
+            for (RulDescItemConstraint rulDescItemConstraint : rulDescItemTypeExt.getRulDescItemConstraintList()) {
+                if (rulDescItemConstraint.getRepeatable() != null && rulDescItemConstraint.getRepeatable().equals(false)) {
+                    rulDescItemTypeExt.setRepeatable(false);
+                }
+            }
+
+            // projde všechny specifikace typů atributů
+            for (RulDescItemSpecExt rulDescItemSpecExt : rulDescItemTypeExt.getRulDescItemSpecList()) {
+
+                // projde všechny podmínky specifikací
+                for (RulDescItemConstraint rulDescItemConstraint : rulDescItemSpecExt.getRulDescItemConstraintList()) {
+                    if (rulDescItemConstraint.getRepeatable() != null && rulDescItemConstraint.getRepeatable().equals(false)) {
+                        rulDescItemSpecExt.setRepeatable(false);
+                    }
+                }
+            }
+        }
+
+        return rulDescItemTypeExtList;
     }
 
     @Override

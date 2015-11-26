@@ -62,10 +62,10 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      * Vrátí všechny typy hodnot atributů archivního popisu k uzlu.
      * @param faVersionId   Identifikátor verze
      * @param nodeId        Identifikátor uzlu
-     * @param mandatory     true - vrací všechny povinné typy, false - vrací všechny nepovinné typy, null - vrací všechno
      * @return  Seznam typů hodnot atributů
      */
-    List<? extends RulDescItemType> getDescriptionItemTypesForNodeId(Integer faVersionId, Integer nodeId, Boolean mandatory);
+    List<? extends RulDescItemType> getDescriptionItemTypesForNode(Integer faVersionId,
+                                                                   Integer nodeId);
 
     /**
      * Vrací specifikace podle typu atributu.

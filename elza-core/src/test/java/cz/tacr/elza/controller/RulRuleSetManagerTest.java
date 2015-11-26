@@ -99,8 +99,8 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
     public void testRestGetDescriptionItemTypesForNodeId() throws Exception {
         createConstrain(2);
 
-        Response response = get((spec) -> spec.parameter("faVersionId", 2).parameter(NODE_ID_ATT , 1)
-                .parameter("mandatory", Boolean.FALSE), GET_DIT_FOR_NODE_ID_URL);
+        Response response = get((spec) -> spec.parameter("faVersionId", 2).parameter(NODE_ID_ATT, 1),
+                GET_DIT_FOR_NODE_ID_URL);
 
         List<RulDescItemTypeExt> ruleSets =
                 Arrays.asList(response.getBody().as(RulDescItemTypeExt[].class));
