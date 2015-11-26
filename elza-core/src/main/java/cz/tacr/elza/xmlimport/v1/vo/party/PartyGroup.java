@@ -8,9 +8,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlType;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-
 import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 
 /**
@@ -82,15 +79,5 @@ public class PartyGroup extends AbstractParty {
 
     public void setPartyGroupIds(List<PartyGroupId> partyGroupIds) {
         this.partyGroupIds = partyGroupIds;
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-        return EqualsBuilder.reflectionEquals(this, obj);
-    }
-
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
     }
 }

@@ -24,7 +24,7 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 @XmlType(name = "record-coordinates", namespace = NamespaceInfo.NAMESPACE)
 public class RecordCoordinates {
 
-    /** Typ oblasti.TODO  výčet point|line|geoarea|polygon*/
+    /** Typ oblasti. //TODO  výčet point|line|geoarea|polygon*/
     @XmlAttribute(name = "area-type")
     private String areaType;
 

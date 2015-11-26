@@ -26,7 +26,7 @@ import cz.tacr.elza.xmlimport.v1.vo.record.Record;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "abstract-party", namespace = NamespaceInfo.NAMESPACE)
-@XmlSeeAlso(value = {Person.class, Dynasty.class, PartyGroup.class, TemporaryCorporation.class, TemporaryEvent.class})
+@XmlSeeAlso(value = {Person.class, Dynasty.class, PartyGroup.class, Event.class})
 public abstract class AbstractParty {
 
     /** Pro vazbu z hodnoty party_ref. */
@@ -61,14 +61,20 @@ public abstract class AbstractParty {
     private String sourceInformations;
 
     /** Autoři. */
+    @XmlIDREF
     @XmlElement(name = "creator")
     @XmlElementWrapper(name = "creator-name-list")
-    private List<Person> creators;
+    private List<AbstractParty> creators;
 
-    /** Události. */
-    @XmlElement(name = "event")
-    @XmlElementWrapper(name = "event-list")
-    private List<Event> events;
+    /** Vztahy. */
+    @XmlElement(name = "relation")
+    @XmlElementWrapper(name = "relation-list")
+    private List<Relation> events;
+
+    /** Působnosti osoby. */
+    @XmlElement(name = "party-time-range")
+    @XmlElementWrapper(name = "party-time-range-list")
+    private List<PartyTimeRange> partyTimeRanges;
 
     public String getPartyId() {
         return partyId;
@@ -126,20 +132,28 @@ public abstract class AbstractParty {
         this.variantNames = variantNames;
     }
 
-    public List<Person> getCreators() {
+    public List<AbstractParty> getCreators() {
         return creators;
     }
 
-    public void setCreators(List<Person> creators) {
+    public void setCreators(List<AbstractParty> creators) {
         this.creators = creators;
     }
 
-    public List<Event> getEvents() {
+    public List<Relation> getEvents() {
         return events;
     }
 
-    public void setEvents(List<Event> events) {
+    public void setEvents(List<Relation> events) {
         this.events = events;
+    }
+
+    public List<PartyTimeRange> getPartyTimeRanges() {
+        return partyTimeRanges;
+    }
+
+    public void setPartyTimeRanges(List<PartyTimeRange> partyTimeRanges) {
+        this.partyTimeRanges = partyTimeRanges;
     }
 
     @Override

@@ -19,8 +19,8 @@
             <xs:choice maxOccurs="unbounded" minOccurs="0">
               <xs:element name="person" type="tns:person"/>
               <xs:element name="dynasty" type="tns:dynasty"/>
-              <xs:element name="corporation" type="tns:party-group"/>
-              <xs:element name="tmp-corporation" type="tns:tmp-corporation"/>
+              <xs:element name="party-group" type="tns:party-group"/>
+              <xs:element name="event" type="tns:event"/>
             </xs:choice>
           </xs:sequence>
         </xs:complexType>
@@ -146,14 +146,21 @@
       <xs:element minOccurs="0" name="creator-name-list">
         <xs:complexType>
           <xs:sequence>
-            <xs:element maxOccurs="unbounded" minOccurs="0" name="creator" type="tns:person"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="creator" type="xs:IDREF"/>
           </xs:sequence>
         </xs:complexType>
       </xs:element>
-      <xs:element minOccurs="0" name="event-list">
+      <xs:element minOccurs="0" name="relation-list">
         <xs:complexType>
           <xs:sequence>
-            <xs:element maxOccurs="unbounded" minOccurs="0" name="event" type="tns:event"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="relation" type="tns:relation"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element minOccurs="0" name="party-time-range-list">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="party-time-range" type="tns:party-time-range"/>
           </xs:sequence>
         </xs:complexType>
       </xs:element>
@@ -182,13 +189,7 @@
           </xs:sequence>
         </xs:complexType>
       </xs:element>
-      <xs:element minOccurs="0" name="record-coordinate-list">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element maxOccurs="unbounded" minOccurs="0" name="record-coordinates" type="tns:record-coordinates"/>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
+      <xs:element minOccurs="0" name="record-coordinates" type="tns:record-coordinates"/>
     </xs:sequence>
     <xs:attribute name="record-id" type="xs:ID" use="required"/>
     <xs:attribute name="register-type-code" type="xs:string" use="required"/>
@@ -261,15 +262,7 @@
     <xs:attribute name="party-name-complement-type-name" type="xs:string" use="required"/>
   </xs:complexType>
 
-  <xs:complexType name="person">
-    <xs:complexContent>
-      <xs:extension base="tns:abstract-party">
-        <xs:sequence/>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-
-  <xs:complexType name="event">
+  <xs:complexType name="relation">
     <xs:sequence>
       <xs:element minOccurs="0" name="from-date" type="tns:complex-date"/>
       <xs:element minOccurs="0" name="to-date" type="tns:complex-date"/>
@@ -293,6 +286,21 @@
     </xs:sequence>
     <xs:attribute name="role-type-code" type="xs:string"/>
     <xs:attribute name="record-id" type="xs:IDREF" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="party-time-range">
+    <xs:sequence>
+      <xs:element name="from-date" type="tns:complex-date"/>
+      <xs:element minOccurs="0" name="to-date" type="tns:complex-date"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="person">
+    <xs:complexContent>
+      <xs:extension base="tns:abstract-party">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="dynasty">
@@ -335,15 +343,7 @@
     <xs:attribute name="id" type="xs:string" use="required"/>
   </xs:complexType>
 
-  <xs:complexType name="tmp-corporation">
-    <xs:complexContent>
-      <xs:extension base="tns:abstract-party">
-        <xs:sequence/>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-
-  <xs:complexType name="tmp-event">
+  <xs:complexType name="event">
     <xs:complexContent>
       <xs:extension base="tns:abstract-party">
         <xs:sequence/>

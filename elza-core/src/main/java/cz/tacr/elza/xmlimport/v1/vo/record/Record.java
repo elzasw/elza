@@ -73,8 +73,7 @@ public class Record {
 
     /** Souřadnice. */
     @XmlElement(name = "record-coordinates")
-    @XmlElementWrapper(name = "record-coordinate-list")
-    private List<RecordCoordinates> recordCoordinates;
+    private RecordCoordinates recordCoordinates;
 
     public String getRecordId() {
         return recordId;
@@ -156,11 +155,11 @@ public class Record {
         this.variantNames = variantNames;
     }
 
-    public List<RecordCoordinates> getRecordCoordinates() {
+    public RecordCoordinates getRecordCoordinates() {
         return recordCoordinates;
     }
 
-    public void setRecordCoordinates(List<RecordCoordinates> recordCoordinates) {
+    public void setRecordCoordinates(RecordCoordinates recordCoordinates) {
         this.recordCoordinates = recordCoordinates;
     }
 
