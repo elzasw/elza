@@ -1,0 +1,67 @@
+package ZP2015;
+
+import cz.tacr.elza.domain.RulDescItemTypeExt;
+import cz.tacr.elza.domain.RulDescItemSpecExt;
+import cz.tacr.elza.domain.RulArrangementType;
+
+import java.util.Arrays;
+
+global java.util.List results;
+global cz.tacr.elza.domain.RulArrangementType arrangementType;
+
+function void requiredForTypes(RulDescItemTypeExt descItemType, RulArrangementType arrangementType, String[] types) {
+    if (Arrays.asList(types).contains(arrangementType.getCode())) {
+        descItemType.setRequired(true);
+    } else {
+        descItemType.setRequired(false);
+    }
+}
+
+rule "Atribut ZP2015_LEVEL_TYPE je povinný vždy"
+when
+	descItemType : RulDescItemTypeExt(code == "ZP2015_LEVEL_TYPE")
+then
+    descItemType.setRequired(true);
+	results.add(descItemType);
+end
+
+rule "Atribut ZP2015_SERIAL_NUMBER je povinný vždy, pokud typ výstupu je MAN"
+when
+	descItemType : RulDescItemTypeExt(code == "ZP2015_SERIAL_NUMBER")
+then
+    requiredForTypes(descItemType, arrangementType, new String[] {"MAN"});
+	results.add(descItemType);
+end
+
+rule "Atribut ZP2015_UNIT_ID je povinný vždy, pokud typ výstupu je INV nebo KAT"
+when
+	descItemType : RulDescItemTypeExt(code == "ZP2015_UNIT_ID")
+then
+    requiredForTypes(descItemType, arrangementType, new String[] {"INV", "KAT"});
+	results.add(descItemType);
+end
+
+rule "Atributy jsou vždy možné: {ZP2015_TITLE, ZP2015_FORMAL_TITLE, ZP2015_UNIT_DATE_PRE, ZP2015_UNIT_DATE, ZP2015_UNIT_DATE_POST, ZP2015_ORIGINATOR}"
+when
+	descItemType : (RulDescItemTypeExt(code == "ZP2015_TITLE")
+                 	            or RulDescItemTypeExt(code == "ZP2015_FORMAL_TITLE")
+                 	            or RulDescItemTypeExt(code == "ZP2015_UNIT_DATE_PRE")
+                 	            or RulDescItemTypeExt(code == "ZP2015_UNIT_DATE")
+                 	            or RulDescItemTypeExt(code == "ZP2015_UNIT_DATE_POST")
+                 	            or RulDescItemTypeExt(code == "ZP2015_ORIGINATOR")
+                 	            )
+then
+	results.add(descItemType);
+end
+
+rule "Atribut ZP2015_OTHER_ID a jeho specifikace ZP2015_OTHERID_SIG_ORIG jsou možný vždy"
+when
+	descItemType : RulDescItemTypeExt(code == "ZP2015_OTHER_ID")
+	(
+		descItemSpec : RulDescItemSpecExt(code == "ZP2015_OTHERID_SIG_ORIG") from descItemType.rulDescItemSpecList
+	)
+
+then
+	descItemType.setRulDescItemSpecList(Arrays.asList(descItemSpec));
+	results.add(descItemType);
+end

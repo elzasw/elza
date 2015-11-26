@@ -31,6 +31,8 @@ import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
+import cz.tacr.elza.repository.FindingAidVersionRepository;
+
 
 /**
  * Testy pro {@link RuleManager}.
@@ -44,6 +46,9 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
 
     @Autowired
     private RuleManager ruleManager;
+
+    @Autowired
+    private FindingAidVersionRepository findingAidVersionRepository;
 
     @Test
     public void testRestGetDescItemSpecById() throws Exception{
@@ -97,9 +102,14 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
 
     @Test
     public void testRestGetDescriptionItemTypesForNodeId() throws Exception {
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
+
+        ArrFindingAidVersion version = findingAidVersionRepository
+                .findByFindingAidIdAndLockChangeIsNull(findingAid.getFindingAidId());
+
         createConstrain(2);
 
-        Response response = get((spec) -> spec.parameter("faVersionId", 2).parameter(NODE_ID_ATT, 1),
+        Response response = get((spec) -> spec.parameter("faVersionId", version.getFindingAidVersionId()).parameter(NODE_ID_ATT, 1),
                 GET_DIT_FOR_NODE_ID_URL);
 
         List<RulDescItemTypeExt> ruleSets =

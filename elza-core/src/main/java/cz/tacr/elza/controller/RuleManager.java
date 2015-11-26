@@ -42,6 +42,7 @@ import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
+import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.DescItemConstraintRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
@@ -100,6 +101,9 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     @Autowired
     private NodeConformityMissingRepository nodeConformityMissingRepository;
 
+    @Autowired
+    private RulesExecutor rulesExecutor;
+
     @Override
     @RequestMapping(value = "/getDescItemSpecById", method = RequestMethod.GET)
     public RulDescItemSpec getDescItemSpecById(@RequestParam(value = "descItemSpecId") Integer descItemSpecId) {
@@ -137,13 +141,14 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
             @RequestParam(value = "nodeId") Integer nodeId) {
         List<RulDescItemType> itemTypeList = descItemTypeRepository.findAll();
 
-        // dočasné řešení - než budou pravidla
         for (RulDescItemType rulDescItemType : itemTypeList) {
-            if (rulDescItemType.getCode().equals("ZP2015_LEVEL_TYPE")) {
-                rulDescItemType.setRequired(true);
-            } else {
-                rulDescItemType.setRequired(false);
-            }
+            rulDescItemType.setRequired(false);
+        }
+
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
+
+        if (version == null) {
+            throw new IllegalArgumentException("Verze archivni pomucky neexistuje");
         }
 
         List<RulDescItemTypeExt> rulDescItemTypeExtList = createExt(itemTypeList);
@@ -176,7 +181,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
             }
         }
 
-        return rulDescItemTypeExtList;
+        return rulesExecutor.executeDescItemTypesRules(rulDescItemTypeExtList, version);
     }
 
     @Override
