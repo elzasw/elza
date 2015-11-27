@@ -21,6 +21,15 @@ import cz.tacr.elza.domain.ArrNodeConformityMissing;
 public interface NodeConformityMissingRepository extends JpaRepository<ArrNodeConformityMissing, Integer> {
 
     /**
+     * Najde seznam chybějících atributů daného ArrNodeConformityInfo.
+     *
+     * @param info informace o chybě
+     * @return seznam chybějících atributů
+     */
+    List<ArrNodeConformityMissing> findByNodeConformityInfo(ArrNodeConformityInfo info);
+
+
+    /**
      * Najde všechny záznamy pro dané stavy.
      *
      * @param infos hledané stavy záznamů

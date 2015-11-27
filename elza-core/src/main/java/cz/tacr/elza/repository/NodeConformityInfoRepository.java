@@ -22,6 +22,16 @@ import cz.tacr.elza.domain.ArrNodeConformityInfo;
 public interface NodeConformityInfoRepository extends JpaRepository<ArrNodeConformityInfo, Integer> {
 
     /**
+     * Najde stav pro daný uzel a vybranou verzi.
+     *
+     * @param node    daný uzel
+     * @param faVersion daná verze
+     * @return stavy pro daný uzel a vybranou verzi
+     */
+    ArrNodeConformityInfo findByNodeAndFaVersion(ArrNode node, ArrFindingAidVersion faVersion);
+
+
+    /**
      * Najde stavy pro dané uzly a vybranou verzi.
      *
      * @param nodes   seznam uzlů

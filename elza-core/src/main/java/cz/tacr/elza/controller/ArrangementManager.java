@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -34,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.bulkaction.BulkActionService;
+import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -43,6 +45,8 @@ import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformityInfo;
+import cz.tacr.elza.domain.ArrNodeConformityInfoExt;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ArrPacketType;
@@ -71,6 +75,7 @@ import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeConformityInfoRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PacketRepository;
@@ -149,6 +154,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Autowired
     private BulkActionService bulkActionService;
+
+    @Autowired
+    private NodeConformityInfoRepository nodeConformityInfoRepository;
+
+    @Autowired
+    private ExtendedObjectsFactory extendedObjectsFactory;
 
     /**
      * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.
@@ -908,22 +919,20 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @RequestMapping(value = "/findSubLevelsExt", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     public List<ArrLevelExt> findSubLevels(@RequestParam(value = "nodeId") Integer nodeId,
-            @RequestParam(value = "versionId", required = false)  Integer versionId,
+            @RequestParam(value = "versionId", required = true)  Integer versionId,
             @RequestParam(value = "formatData", required = false)  String formatData,
             @RequestParam(value = "descItemTypeIds", required = false) Integer[] descItemTypeIds) {
         Assert.notNull(nodeId);
+        Assert.notNull(versionId);
 
         ArrNode node = nodeRepository.findOne(nodeId);
-
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
         if (node == null) {
             throw new IllegalArgumentException("Záznam neexistuje");
         }
 
-        ArrChange change = null;
-        if (versionId != null) {
-            ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
-            change = version.getLockChange();
-        }
+        ArrChange change = version.getLockChange();
+
         final List<ArrLevel> levelList = levelRepository.findByParentNode(node, change);
 
         Set<ArrNode> nodes = new HashSet<>();
@@ -942,6 +951,17 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         Map<Integer, List<ArrData>> dataMap =
                 ElzaTools.createGroupMap(dataList, p -> p.getDescItem().getNode().getNodeId());
 
+
+        Map<Integer, ArrNodeConformityInfo> conformityInfoMap = Collections.EMPTY_MAP;
+        if (CollectionUtils.isNotEmpty(nodes)) {
+            List<ArrNodeConformityInfo> conformityInfos = nodeConformityInfoRepository
+                    .findByNodesAndVersion(nodes, version);
+            conformityInfoMap = ElzaTools.createEntityMap(conformityInfos, conformityInfo ->
+                            conformityInfo.getNode().getNodeId()
+            );
+        }
+
+
         Set<Integer> idItemTypeSet = createItemTypeSet(descItemTypeIds);
         final List<ArrLevelExt> resultList = new LinkedList<ArrLevelExt>();
         for (ArrLevel arrFaLevel : levelList) {
@@ -950,7 +970,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             List<ArrData> dataNodeList = dataMap.get(arrFaLevel.getNode().getNodeId());
             readItemData(levelExt, dataNodeList, idItemTypeSet, formatData);
             resultList.add(levelExt);
+
+            ArrNodeConformityInfo conformityInfo = conformityInfoMap.get(arrFaLevel.getNode().getNodeId());
+            levelExt.setNodeConformityInfo(extendedObjectsFactory.createNodeConformityInfoExt(conformityInfo, false));
         }
+
+
         return resultList;
     }
 
@@ -1002,9 +1027,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @Override
     @RequestMapping(value = "/getLevel", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ArrLevelExt getLevel(@RequestParam(value = "nodeId") Integer nodeId,
-            @RequestParam(value = "versionId", required = false) Integer versionId,
+            @RequestParam(value = "versionId", required = true) Integer versionId,
             @RequestParam(value = "descItemTypeIds", required = false) Integer[] descItemTypeIds) {
         Assert.notNull(nodeId);
+        Assert.notNull(versionId);
 
         ArrNode node = nodeRepository.findOne(nodeId);
 
@@ -1013,11 +1039,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
 
         ArrChange change = null;
-        ArrFindingAidVersion version = null;
-        if (versionId != null) {
-            version = findingAidVersionRepository.findOne(versionId);
-            change = version.getLockChange();
-        }
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+        change = version.getLockChange();
 
         final ArrLevel level;
         final List<ArrData> dataList;
@@ -1051,6 +1074,17 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 partyRef.getParty().getPreferredName().setParty(null);
             }
         }
+
+
+
+        ArrNodeConformityInfo conformityInfo = nodeConformityInfoRepository.findByNodeAndFaVersion(node, version);
+        ArrNodeConformityInfoExt conformityInfoExt = extendedObjectsFactory.createNodeConformityInfoExt(conformityInfo,
+                true);
+
+        levelExt.setNodeConformityInfo(conformityInfoExt);
+
+
+
 
         return levelExt;
     }

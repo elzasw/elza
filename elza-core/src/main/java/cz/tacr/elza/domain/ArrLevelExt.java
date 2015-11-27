@@ -12,6 +12,8 @@ import java.util.List;
 
 public class ArrLevelExt extends ArrLevel implements cz.tacr.elza.api.ArrLevelExt<ArrChange, ArrNode, ArrDescItem> {
 
+    private ArrNodeConformityInfoExt nodeConformityInfo;
+
     private List<ArrDescItem> descItemList = new LinkedList<>();
 
     public List<ArrDescItem> getDescItemList() {
@@ -20,6 +22,15 @@ public class ArrLevelExt extends ArrLevel implements cz.tacr.elza.api.ArrLevelEx
 
     public void setDescItemList(List<ArrDescItem> descItemList) {
         this.descItemList = descItemList;
+    }
+
+
+    public ArrNodeConformityInfoExt getNodeConformityInfo() {
+        return nodeConformityInfo;
+    }
+
+    public void setNodeConformityInfo(final ArrNodeConformityInfoExt nodeConformityInfo) {
+        this.nodeConformityInfo = nodeConformityInfo;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package cz.tacr.elza;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,5 +36,23 @@ public class ElzaTools {
             itemConstrainList.add(itemConstraint);
         }
         return itemConstrainMap;
+    }
+
+    /**
+     * Vytvoří mapu z listu podle zadaného klíče.
+     *
+     * @param entities       seznam entit
+     * @param getKeyFunction funkce pro získání klíče z entity (typicky id entity)
+     * @return mapa
+     */
+    public static <T> Map<Integer, T> createEntityMap(final Collection<T> entities,
+                                                      final Function<T, Integer> getKeyFunction) {
+        Map<Integer, T> result = new HashMap<>();
+        for (T entity : entities) {
+
+            Integer key = getKeyFunction.apply(entity);
+            result.put(key, entity);
+        }
+        return result;
     }
 }

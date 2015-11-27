@@ -167,7 +167,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         Assert.notNull(((ArrDescItemInt) descItemExt).getValue());
         Assert.isTrue(((ArrDescItemInt) descItemExt).getValue().equals(TEST_VALUE_123));
 
-        ArrLevelExt arrFaLevelExt = getLevelByNodeId(node.getNodeId());
+        ArrLevelExt arrFaLevelExt = getLevelByNodeId(node.getNodeId(), version.getFindingAidVersionId());
         List<ArrDescItem> descItemList = arrFaLevelExt.getDescItemList();
         Assert.isTrue(descItemList.size() == 1);
         Assert.isTrue(((ArrDescItemInt) descItemList.get(0)).getValue().equals(TEST_VALUE_123));
@@ -180,7 +180,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         Assert.notNull(((ArrDescItemInt) updatedDescItemExt).getValue());
         Assert.isTrue(((ArrDescItemInt) updatedDescItemExt).getValue().equals(TEST_VALUE_456));
 
-        arrFaLevelExt = getLevelByNodeId(node.getNodeId());
+        arrFaLevelExt = getLevelByNodeId(node.getNodeId(), version.getFindingAidVersionId());
         descItemList = arrFaLevelExt.getDescItemList();
         Assert.isTrue(descItemList.size() == 1);
         Assert.isTrue(((ArrDescItemInt) descItemList.get(0)).getValue().equals(TEST_VALUE_456));
@@ -195,7 +195,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         Assert.isTrue(((ArrDescItemInt) deletedDescItemExt).getValue().equals(((ArrDescItemInt) arrDescItemExtToDelete).getValue()));
         Assert.isTrue(deletedDescItemExt.getDeleteChange() != null);
 
-        arrFaLevelExt = getLevelByNodeId(node.getNodeId());
+        arrFaLevelExt = getLevelByNodeId(node.getNodeId(), version.getFindingAidVersionId());
         descItemList = arrFaLevelExt.getDescItemList();
         Assert.isTrue(descItemList.isEmpty());
 
@@ -212,7 +212,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         Assert.isTrue(arrDescItemExts.get(0).getPosition().equals(1));
         Assert.isTrue(arrDescItemExts.get(1).getPosition().equals(1));
 
-        arrFaLevelExt = getLevelByNodeId(node.getNodeId());
+        arrFaLevelExt = getLevelByNodeId(node.getNodeId(), version.getFindingAidVersionId());
         descItemList = arrFaLevelExt.getDescItemList();
         Assert.isTrue(descItemList.size() == 2);
 
@@ -229,7 +229,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         Assert.isTrue(updatedArrDescItemExts.get(0).getPosition().equals(1));
         Assert.isTrue(updatedArrDescItemExts.get(1).getPosition().equals(1));
 
-        arrFaLevelExt = getLevelByNodeId(node.getNodeId());
+        arrFaLevelExt = getLevelByNodeId(node.getNodeId(), version.getFindingAidVersionId());
         descItemList = arrFaLevelExt.getDescItemList();
         Assert.isTrue(descItemList.size() == 1);
         Assert.isTrue(((ArrDescItemInt) descItemList.get(0)).getValue().equals(TEST_VALUE_789));
@@ -507,7 +507,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
 
         // přidání druhého levelu pod root
         levelWithExtraNode = new ArrLevelWithExtraNode();
-        levelWithExtraNode.setLevel(getLevelByNodeId(rootNode.getNodeId()));
+        levelWithExtraNode.setLevel(getLevelByNodeId(rootNode.getNodeId(), version.getFindingAidVersionId()));
         levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
 
         childLevelWithExtraNode = createLevelChild(levelWithExtraNode);
@@ -523,7 +523,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
 
         // přidání třetího levelu na první pozici pod root
         levelWithExtraNode = new ArrLevelWithExtraNode();
-        child1 = getLevelByNodeId(child1.getNode().getNodeId());
+        child1 = getLevelByNodeId(child1.getNode().getNodeId(), version.getFindingAidVersionId());
         levelWithExtraNode.setLevel(child1);
         levelWithExtraNode.setExtraNode(child1.getNodeParent());
         levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
@@ -739,7 +739,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         Assert.isNull(openVersion.getLockChange());
 
         Integer nodeId = openVersion.getRootLevel().getNode().getNodeId();
-        ArrLevelExt rootLevel = getLevelByNodeId(nodeId);
+        ArrLevelExt rootLevel = getLevelByNodeId(nodeId, openVersion.getFindingAidVersionId());
         Assert.notNull(rootLevel);
         Assert.isTrue(rootLevel.getNode().getNodeId().equals(nodeId));
         Assert.isNull(rootLevel.getNodeParent());

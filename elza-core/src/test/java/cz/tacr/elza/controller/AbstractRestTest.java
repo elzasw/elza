@@ -851,10 +851,12 @@ public abstract class AbstractRestTest {
      *
      * @param nodeId id uzlu
      *
+     * @param findingAidVersionId id verze uzlu
      * @return level
      */
-    protected ArrLevelExt getLevelByNodeId(Integer nodeId) {
-        Response response = get(spec -> spec.parameter(NODE_ID_ATT, nodeId), GET_LEVEL_URL);
+    protected ArrLevelExt getLevelByNodeId(Integer nodeId, final Integer findingAidVersionId) {
+        Response response = get(spec -> spec.parameter(NODE_ID_ATT, nodeId)
+                .parameter(VERSION_ID_ATT, findingAidVersionId), GET_LEVEL_URL);
 
         return response.getBody().as(ArrLevelExt.class);
     }
