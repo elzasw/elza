@@ -47,7 +47,9 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemSpecExt;
 import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.domain.vo.ArrNodeRegisterPack;
 import cz.tacr.elza.ui.components.attribute.Attribut;
@@ -169,14 +171,15 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             List<ArrNodeRegister> links = nodeRegisterLink.getKeys();
             List<ArrNodeRegister> linksToDelete = nodeRegisterLink.getLinksToDelete();
 
-            arrangementManager.modifyArrNodeRegisterLinks(new ArrNodeRegisterPack(links, linksToDelete), nodeRegisterLink.getVersionId());
+            arrangementManager.modifyArrNodeRegisterLinks(new ArrNodeRegisterPack(links, linksToDelete),
+                    nodeRegisterLink.getVersionId());
 
             // obnova atributu vpravo
             ArrLevelExt level = arrangementManager.getLevel(nodeRegisterLink.getNode().getNodeId(),
                     nodeRegisterLink.getVersionId(), null);
             showLevelDetail(level, level.getDescItemList(), nodeRegisterLink.getVersionId(), attributeEditCallback);
             showNodeRegisterLink(nodeRegisterLink.getVersionId(), level.getNode());
-
+            showDescriptionItemTypesAndSpecsForNode(attribut.getVersionId(), level.getNode());
             if (attributWindow != null) {
                 attributWindow.close();
             }
@@ -207,9 +210,11 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
         try {
             arrangementManager.saveDescriptionItems(pack);
-            ArrLevelExt level = arrangementManager.getLevel(attribut.getNode().getNodeId(), attribut.getVersionId(), null);
+            ArrLevelExt level = arrangementManager.getLevel(attribut.getNode().getNodeId(), attribut.getVersionId(),
+                    null);
             showLevelDetail(level, level.getDescItemList(), attribut.getVersionId(), attributeEditCallback);
             showNodeRegisterLink(attribut.getVersionId(), level.getNode());
+            showDescriptionItemTypesAndSpecsForNode(attribut.getVersionId(), level.getNode());
             sendEditCallback(level);
             if (attributWindow != null) {
                 attributWindow.close();
@@ -218,6 +223,45 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             attribut.revert();
             throw e;
         }
+    }
+
+    /**
+     * Vytvoří komponentu, které zobrazuje možné a povinné typy/specifikace atributů podle pravidel.
+     *
+     * @param versionId identifikátor verze
+     * @param node      uzel
+     */
+    public void showDescriptionItemTypesAndSpecsForNode(final Integer versionId, final ArrNode node) {
+        List<RulDescItemTypeExt> descItemTypeExts = ruleSetManager.getDescriptionItemTypesForNode(versionId,
+                node.getNodeId());
+
+        detailContent.addComponent(newLabel("Typy a specifikace atributů podle pravidel", "h3"));
+
+        FormGrid grid = new FormGrid().setRowSpacing(true).style("attr-detail");
+        grid.setMarginTop(true);
+
+        for (RulDescItemTypeExt descItemTypeExt : descItemTypeExts) {
+            CssLayout typesLayout = cssLayoutExt(null);
+            typesLayout.addComponent(newLabel(descItemTypeExt.getName()));
+            if (descItemTypeExt.getRequired()) {
+                typesLayout.addComponent(newLabel("*", "required"));
+            }
+
+            CssLayout specsLayout = cssLayoutExt(null);
+
+            for (RulDescItemSpecExt descItemSpecExt : descItemTypeExt.getRulDescItemSpecList()) {
+                Label lblValue = newLabel(descItemSpecExt.getName(), "spec");
+                specsLayout.addComponent(lblValue);
+                if (descItemSpecExt.getRequired()) {
+                    typesLayout.addComponent(newLabel("*", "required"));
+                }
+            }
+
+            grid.addRow(typesLayout, specsLayout);
+        }
+
+        detailContent.addComponent(grid);
+
     }
 
     /**
@@ -240,8 +284,9 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         if (versionOpen) {
             BeanItemContainer<RulDescItemType> descItemTypeBeanItemContainer = new BeanItemContainer<>(
                     RulDescItemType.class);
+            ArrFindingAidVersion version = arrangementManager.getFaVersionById(versionId);
             descItemTypeBeanItemContainer.addAll(ruleSetManager
-                    .getDescriptionItemTypesForNode(versionId, level.getNode().getNodeId()));
+                    .getDescriptionItemTypes(version.getRuleSet().getRuleSetId()));
             attributesComboBox = new ComboBox(null, descItemTypeBeanItemContainer);
             attributesComboBox.setItemCaptionPropertyId("name");
 

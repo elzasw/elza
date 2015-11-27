@@ -141,10 +141,6 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
             @RequestParam(value = "nodeId") Integer nodeId) {
         List<RulDescItemType> itemTypeList = descItemTypeRepository.findAll();
 
-        for (RulDescItemType rulDescItemType : itemTypeList) {
-            rulDescItemType.setRequired(false);
-        }
-
         ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
 
         if (version == null) {
@@ -156,6 +152,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
         // projde všechny typy atributů
         for (RulDescItemTypeExt rulDescItemTypeExt : rulDescItemTypeExtList) {
 
+            rulDescItemTypeExt.setRequired(false);
             rulDescItemTypeExt.setRepeatable(true);
 
             // projde všechny podmínky typů
@@ -169,6 +166,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
             // projde všechny specifikace typů atributů
             for (RulDescItemSpecExt rulDescItemSpecExt : rulDescItemTypeExt.getRulDescItemSpecList()) {
 
+                rulDescItemSpecExt.setRequired(false);
                 rulDescItemSpecExt.setRepeatable(true);
 
                 // projde všechny podmínky specifikací
