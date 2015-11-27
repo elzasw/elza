@@ -26,6 +26,7 @@ import com.vaadin.ui.UI;
 
 import cz.req.ax.AxAction;
 import cz.req.ax.AxWindow;
+import cz.tacr.elza.api.ArrNodeConformityInfo;
 import cz.tacr.elza.api.controller.PartyManager;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.controller.ArrangementManager;
@@ -39,6 +40,9 @@ import cz.tacr.elza.domain.ArrDescItemUnitdate;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformityErrors;
+import cz.tacr.elza.domain.ArrNodeConformityInfoExt;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ArrPacketType;
@@ -178,8 +182,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             ArrLevelExt level = arrangementManager.getLevel(nodeRegisterLink.getNode().getNodeId(),
                     nodeRegisterLink.getVersionId(), null);
             showLevelDetail(level, level.getDescItemList(), nodeRegisterLink.getVersionId(), attributeEditCallback);
-            showNodeRegisterLink(nodeRegisterLink.getVersionId(), level.getNode());
-            showDescriptionItemTypesAndSpecsForNode(attribut.getVersionId(), level.getNode());
+
             if (attributWindow != null) {
                 attributWindow.close();
             }
@@ -213,8 +216,6 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             ArrLevelExt level = arrangementManager.getLevel(attribut.getNode().getNodeId(), attribut.getVersionId(),
                     null);
             showLevelDetail(level, level.getDescItemList(), attribut.getVersionId(), attributeEditCallback);
-            showNodeRegisterLink(attribut.getVersionId(), level.getNode());
-            showDescriptionItemTypesAndSpecsForNode(attribut.getVersionId(), level.getNode());
             sendEditCallback(level);
             if (attributWindow != null) {
                 attributWindow.close();
@@ -341,8 +342,12 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             }
         }
 
-
         detailContent.addComponent(grid);
+
+        showNodeRegisterLink(versionId, level.getNode());
+        showDescriptionItemTypesAndSpecsForNode(versionId, level.getNode());
+        showConformityInfo(level.getNodeConformityInfo());
+
     }
 
     /**
@@ -602,6 +607,41 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             };
         }
         return attributeValuesLoader;
+    }
+
+    private void showConformityInfo(final ArrNodeConformityInfoExt conformityInfo){
+        if(conformityInfo != null && conformityInfo.getState().equals(ArrNodeConformityInfo.State.ERR)){
+            detailContent.addComponent(newLabel("Chybný stav uzlu", "h2 error-text margin-top"));
+
+
+            FormGrid formGrid = new FormGrid();
+
+            if (CollectionUtils.isNotEmpty(conformityInfo.getMissingList())) {
+                String caption = "Seznam chybějících hodnot";
+                for (ArrNodeConformityMissing missing : conformityInfo.getMissingList()) {
+                    String value = missing.getDescItemType().getName();
+                    if (missing.getDescItemSpec() != null) {
+                        value += ": " + missing.getDescItemSpec().getName();
+                    }
+                    formGrid.addRow(newLabel(caption, "error-text"), newLabel(value));
+                    caption = "";
+                }
+            }
+
+            if(CollectionUtils.isNotEmpty(conformityInfo.getErrorList())){
+                String caption = "Seznam špatně zadaných hodnot";
+                for (ArrNodeConformityErrors errors : conformityInfo.getErrorList()) {
+                    String value = errors.getDescItem().getDescItemType().getName();
+                    if (errors.getDescItem().getDescItemSpec() != null) {
+                        value += ": " + errors.getDescItem().getDescItemSpec().getName();
+                    }
+                    formGrid.addRow(newLabel(caption, "error-text"), newLabel(value));
+                    caption = "";
+                }
+            }
+            detailContent.addComponent(formGrid);
+        }
+
     }
 
     @Override

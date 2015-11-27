@@ -217,9 +217,6 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                         .getLevel(node.getNode().getNodeId(), version.getFindingAidVersionId(), null);
                 levelDetailConteiner.showLevelDetail(level, level.getDescItemList(), version.getFindingAidVersionId(),
                         creteAttributeEditCallback());
-                levelDetailConteiner.showNodeRegisterLink(version.getFindingAidVersionId(), level.getNode());
-                levelDetailConteiner.showDescriptionItemTypesAndSpecsForNode(version.getFindingAidVersionId(),
-                        level.getNode());
             }
         });
 
@@ -341,8 +338,6 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
         ArrLevelExt level = arrangementManager
                 .getLevel(rootNode.getNode().getNodeId(), version.getFindingAidVersionId(), null);
         levelDetailConteiner.showLevelDetail(level, level.getDescItemList(), version.getFindingAidVersionId(), null);
-        levelDetailConteiner.showNodeRegisterLink(version.getFindingAidVersionId(), level.getNode());
-        levelDetailConteiner.showDescriptionItemTypesAndSpecsForNode(version.getFindingAidVersionId(), level.getNode());
     }
 
     private Callback<ArrLevelExt> creteAttributeEditCallback() {

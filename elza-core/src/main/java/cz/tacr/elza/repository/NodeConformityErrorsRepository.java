@@ -21,6 +21,15 @@ import cz.tacr.elza.domain.ArrNodeConformityInfo;
 public interface NodeConformityErrorsRepository extends JpaRepository<ArrNodeConformityErrors, Integer> {
 
     /**
+     * Najde seznam chybně vyplněných atributů daného ArrNodeConformityInfo.
+     *
+     * @param info informace o chybě
+     * @return seznam chybně vyplněných atributů
+     */
+    List<ArrNodeConformityErrors> findByNodeConformityInfo(ArrNodeConformityInfo info);
+
+
+    /**
      * Najde všechny záznamy pro dané stavy.
      *
      * @param infos hledané stavy záznamů

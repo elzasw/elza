@@ -367,7 +367,8 @@ public class BulkActionManagerTest extends AbstractRestTest {
 
             // kontrola root uzlu
 
-            ArrLevelExt levelExt = getLevelByNodeId(version.getRootLevel().getNode().getNodeId());
+            ArrLevelExt levelExt = getLevelByNodeId(version.getRootLevel().getNode().getNodeId(),
+                    version.getFindingAidVersionId());
             Assert.assertEquals(1, levelExt.getDescItemList().size());
 
             ArrDescItemInt descItemInt = (ArrDescItemInt) levelExt.getDescItemList().get(0);
@@ -378,13 +379,13 @@ public class BulkActionManagerTest extends AbstractRestTest {
             List<ArrLevel> levels = getSubLevels(version.getRootLevel().getNode(), version);
             Assert.assertEquals(2, levels.size());
 
-            levelExt = getLevelByNodeId(levels.get(0).getNode().getNodeId());
+            levelExt = getLevelByNodeId(levels.get(0).getNode().getNodeId(), version.getFindingAidVersionId());
             Assert.assertEquals(1, levelExt.getDescItemList().size());
 
             descItemInt = (ArrDescItemInt) levelExt.getDescItemList().get(0);
             Assert.assertEquals(2, (long) descItemInt.getValue());
 
-            levelExt = getLevelByNodeId(levels.get(1).getNode().getNodeId());
+            levelExt = getLevelByNodeId(levels.get(1).getNode().getNodeId(), version.getFindingAidVersionId());
             Assert.assertEquals(1, levelExt.getDescItemList().size());
 
             descItemInt = (ArrDescItemInt) levelExt.getDescItemList().get(0);
@@ -395,13 +396,13 @@ public class BulkActionManagerTest extends AbstractRestTest {
             List<ArrLevel> sublevels = getSubLevels(levels.get(0).getNode(), version);
             Assert.assertEquals(2, sublevels.size());
 
-            levelExt = getLevelByNodeId(sublevels.get(0).getNode().getNodeId());
+            levelExt = getLevelByNodeId(sublevels.get(0).getNode().getNodeId(), version.getFindingAidVersionId());
             Assert.assertEquals(1, levelExt.getDescItemList().size());
 
             descItemInt = (ArrDescItemInt) levelExt.getDescItemList().get(0);
             Assert.assertEquals(3, (long) descItemInt.getValue());
 
-            levelExt = getLevelByNodeId(sublevels.get(1).getNode().getNodeId());
+            levelExt = getLevelByNodeId(sublevels.get(1).getNode().getNodeId(), version.getFindingAidVersionId());
             Assert.assertEquals(1, levelExt.getDescItemList().size());
 
             descItemInt = (ArrDescItemInt) levelExt.getDescItemList().get(0);
@@ -416,7 +417,7 @@ public class BulkActionManagerTest extends AbstractRestTest {
 
             // kontrola root uzlu
 
-            levelExt = getLevelByNodeId(version.getRootLevel().getNode().getNodeId());
+            levelExt = getLevelByNodeId(version.getRootLevel().getNode().getNodeId(), version.getFindingAidVersionId());
             Assert.assertEquals(0, levelExt.getDescItemList().size());
 
             // kontrola prvni urovne uzlu
@@ -424,10 +425,10 @@ public class BulkActionManagerTest extends AbstractRestTest {
             levels = getSubLevels(version.getRootLevel().getNode(), version);
             Assert.assertEquals(2, levels.size());
 
-            levelExt = getLevelByNodeId(levels.get(0).getNode().getNodeId());
+            levelExt = getLevelByNodeId(levels.get(0).getNode().getNodeId(), version.getFindingAidVersionId());
             Assert.assertEquals(0, levelExt.getDescItemList().size());
 
-            levelExt = getLevelByNodeId(levels.get(1).getNode().getNodeId());
+            levelExt = getLevelByNodeId(levels.get(1).getNode().getNodeId(), version.getFindingAidVersionId());
             Assert.assertEquals(0, levelExt.getDescItemList().size());
 
             // kontrola druhe urovni prvniho uzlu
@@ -435,10 +436,10 @@ public class BulkActionManagerTest extends AbstractRestTest {
             sublevels = getSubLevels(levels.get(0).getNode(), version);
             Assert.assertEquals(2, sublevels.size());
 
-            levelExt = getLevelByNodeId(sublevels.get(0).getNode().getNodeId());
+            levelExt = getLevelByNodeId(sublevels.get(0).getNode().getNodeId(), version.getFindingAidVersionId());
             Assert.assertEquals(0, levelExt.getDescItemList().size());
 
-            levelExt = getLevelByNodeId(sublevels.get(1).getNode().getNodeId());
+            levelExt = getLevelByNodeId(sublevels.get(1).getNode().getNodeId(), version.getFindingAidVersionId());
             Assert.assertEquals(0, levelExt.getDescItemList().size());
 
             //
@@ -450,7 +451,7 @@ public class BulkActionManagerTest extends AbstractRestTest {
 
             // kontrola root uzlu
 
-            levelExt = getLevelByNodeId(version.getRootLevel().getNode().getNodeId());
+            levelExt = getLevelByNodeId(version.getRootLevel().getNode().getNodeId(), version.getFindingAidVersionId());
             Assert.assertEquals(1, levelExt.getDescItemList().size());
 
             ArrDescItemUnitid descItemUnitid = (ArrDescItemUnitid) levelExt.getDescItemList().get(0);
@@ -461,13 +462,13 @@ public class BulkActionManagerTest extends AbstractRestTest {
             levels = getSubLevels(version.getRootLevel().getNode(), version);
             Assert.assertEquals(2, levels.size());
 
-            levelExt = getLevelByNodeId(levels.get(0).getNode().getNodeId());
+            levelExt = getLevelByNodeId(levels.get(0).getNode().getNodeId(), version.getFindingAidVersionId());
             Assert.assertEquals(1, levelExt.getDescItemList().size());
 
             descItemUnitid = (ArrDescItemUnitid) levelExt.getDescItemList().get(0);
             Assert.assertEquals("1/1", descItemUnitid.getValue());
 
-            levelExt = getLevelByNodeId(levels.get(1).getNode().getNodeId());
+            levelExt = getLevelByNodeId(levels.get(1).getNode().getNodeId(), version.getFindingAidVersionId());
             Assert.assertEquals(1, levelExt.getDescItemList().size());
 
             descItemUnitid = (ArrDescItemUnitid) levelExt.getDescItemList().get(0);
@@ -478,13 +479,13 @@ public class BulkActionManagerTest extends AbstractRestTest {
             sublevels = getSubLevels(levels.get(0).getNode(), version);
             Assert.assertEquals(2, sublevels.size());
 
-            levelExt = getLevelByNodeId(sublevels.get(0).getNode().getNodeId());
+            levelExt = getLevelByNodeId(sublevels.get(0).getNode().getNodeId(), version.getFindingAidVersionId());
             Assert.assertEquals(1, levelExt.getDescItemList().size());
 
             descItemUnitid = (ArrDescItemUnitid) levelExt.getDescItemList().get(0);
             Assert.assertEquals("1/1/1", descItemUnitid.getValue());
 
-            levelExt = getLevelByNodeId(sublevels.get(1).getNode().getNodeId());
+            levelExt = getLevelByNodeId(sublevels.get(1).getNode().getNodeId(), version.getFindingAidVersionId());
             Assert.assertEquals(1, levelExt.getDescItemList().size());
 
             descItemUnitid = (ArrDescItemUnitid) levelExt.getDescItemList().get(0);

@@ -4,7 +4,6 @@ import static com.jayway.restassured.RestAssured.given;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -678,14 +677,16 @@ public class ArrangementManagerTest extends AbstractRestTest {
         private Integer childNodeId1;
         private Integer childNodeId2;
         private Integer versionId;
+        private Integer versionId2;
 
         public TestLevelData(Integer descItemTypeId1, Integer descItemTypeId2, Integer childNodeId1,
-                Integer childNodeId2, Integer versionId) {
+                             Integer childNodeId2, Integer versionId, final Integer versionId2) {
             this.descItemTypeId1 = descItemTypeId1;
             this.descItemTypeId2 = descItemTypeId2;
             this.childNodeId1 = childNodeId1;
             this.childNodeId2 = childNodeId2;
             this.versionId = versionId;
+            this.versionId2 = versionId2;
         }
         public Integer getDescItemTypeId1() {
             return descItemTypeId1;
@@ -702,6 +703,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         public Integer getVersionId() {
             return versionId;
         }
+        public Integer getVersionId2() {return versionId2;}
     }
 
     @Transactional
@@ -719,8 +721,11 @@ public class ArrangementManagerTest extends AbstractRestTest {
         createAttributs(child.getNode(), 1, createChange, 1, DATA_TYPE_RECORD_REF);
         levelRepository.save(child);
 
-        version.setLockChange(createFaChange(startTime.plusSeconds(2)));
+        ArrChange lockChange = createFaChange(startTime.plusSeconds(2));
+        version.setLockChange(lockChange);
         findingAidVersionRepository.save(version);
+        ArrFindingAidVersion version2 = createFindingAidVersion(findingAid, parent, false, lockChange);
+
         child.setDeleteChange(createFaChange(startTime.plusSeconds(3)));
         createChange = createFaChange(startTime.plusSeconds(3));
         createAttributs(child.getNode(), 2, createChange, 11, DATA_TYPE_STRING);
@@ -733,7 +738,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItemRepository.save(item2);
 
         TestLevelData result = new TestLevelData(item.getDescItemType().getDescItemTypeId(),
-            item2.getDescItemType().getDescItemTypeId(), child.getNode().getNodeId(), child2.getNode().getNodeId(), version.getFindingAidVersionId());
+                item2.getDescItemType().getDescItemTypeId(), child.getNode().getNodeId(), child2.getNode().getNodeId(),
+                version.getFindingAidVersionId(), version2.getFindingAidVersionId());
         return result;
     }
 
@@ -743,7 +749,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         Integer[] descItemTypeIds = {1, testLevel.getDescItemTypeId1(), testLevel.getDescItemTypeId2()};
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
-                parameter(NODE_ID_ATT, testLevel.getChildNodeId2()).parameter("descItemTypeIds", descItemTypeIds).get(
+                parameter(NODE_ID_ATT, testLevel.getChildNodeId2()).parameter(VERSION_ID_ATT, testLevel.getVersionId2())
+                .parameter("descItemTypeIds", descItemTypeIds).get(
                 GET_LEVEL_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
@@ -918,7 +925,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         }
 
         // načtení hodnot
-        ArrLevelExt rootLevel = getLevelByNodeId(node.getNodeId());
+        ArrLevelExt rootLevel = getLevelByNodeId(node.getNodeId(), openVersion.getFindingAidVersionId());
         List<ArrDescItem> descItemList = rootLevel.getDescItemList();
         Assert.assertTrue(arrDescItemsExt.size() == descItemList.size());
         for (ArrDescItem descItem : descItemList) {
@@ -944,7 +951,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         arrDescItemsExt = storeSavePack(savePack);
 
         // více hodnot u jednoho atributu -> změna pořadí
-        rootLevel = getLevelByNodeId(node.getNodeId());
+        rootLevel = getLevelByNodeId(node.getNodeId(), openVersion.getFindingAidVersionId());
         ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
         levelWithExtraNode.setLevel(rootLevel);
         levelWithExtraNode.setFaVersionId(openVersion.getFindingAidVersionId());
@@ -969,7 +976,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         arrDescItemsExt = storeSavePack(savePack);
 
-        ArrLevelExt childLevel = getLevelByNodeId(childNode.getNodeId());
+        ArrLevelExt childLevel = getLevelByNodeId(childNode.getNodeId(), openVersion.getFindingAidVersionId());
         ArrDescItem value1 = arrDescItemsExt.get(0);
         ArrDescItem value2 = arrDescItemsExt.get(1);
         Integer p1 = value1.getPosition();
