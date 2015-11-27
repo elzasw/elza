@@ -236,7 +236,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         List<RulDescItemTypeExt> descItemTypeExts = ruleSetManager.getDescriptionItemTypesForNode(versionId,
                 node.getNodeId());
 
-        detailContent.addComponent(newLabel("Typy a specifikace atributů podle pravidel", "h3"));
+        detailContent.addComponent(newLabel("Typy a specifikace atributů podle pravidel", "h3 margin-top"));
 
         FormGrid grid = new FormGrid().setRowSpacing(true).style("attr-detail");
         grid.setMarginTop(true);
@@ -611,7 +611,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
     private void showConformityInfo(final ArrNodeConformityInfoExt conformityInfo){
         if(conformityInfo != null && conformityInfo.getState().equals(ArrNodeConformityInfo.State.ERR)){
-            detailContent.addComponent(newLabel("Chybný stav uzlu", "h2 error-text margin-top"));
+            detailContent.addComponent(newLabel("Chybný stav uzlu", "h3 error-text margin-top"));
 
 
             FormGrid formGrid = new FormGrid();
