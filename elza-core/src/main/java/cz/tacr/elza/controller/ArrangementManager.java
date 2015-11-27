@@ -1689,8 +1689,11 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      * @param descItem      položka
      */
     private void validationDescItem(Integer versionId, ArrNode node, Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems, ArrDescItem descItem) {
-        List<RulDescItemTypeExt> rulDescItemTypes = ruleManager.getDescriptionItemTypesForNode(versionId,
-                node.getNodeId());
+
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+
+        List<RulDescItemTypeExt> rulDescItemTypes = ruleManager.getDescriptionItemTypes(
+                version.getRuleSet().getRuleSetId());
 
         RulDescItemType rulDescItemType = descItemTypeRepository.findOne(descItem.getDescItemType().getDescItemTypeId());
         Assert.notNull(rulDescItemType);
