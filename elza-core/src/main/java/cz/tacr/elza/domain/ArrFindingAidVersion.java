@@ -1,6 +1,9 @@
 package cz.tacr.elza.domain;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -10,6 +13,9 @@ import javax.persistence.ManyToOne;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.tacr.elza.api.*;
+import cz.tacr.elza.api.ArrNodeConformityInfo;
 
 
 /**
@@ -64,6 +70,10 @@ public class ArrFindingAidVersion extends AbstractVersionableEntity implements
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = "lastArrFaChangeId", nullable = false)
     private ArrChange lastChange;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 3, nullable = true)
+    private ArrFindingAidVersion.State state;
 
     @Override
     public Integer getFindingAidVersionId() {
@@ -143,6 +153,16 @@ public class ArrFindingAidVersion extends AbstractVersionableEntity implements
     @Override
     public void setLastChange(final ArrChange change) {
         this.lastChange = change;
+    }
+
+    @Override
+    public State getState() {
+        return state;
+    }
+
+    @Override
+    public void setState(final State state) {
+        this.state = state;
     }
 
     @Override

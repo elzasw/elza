@@ -125,7 +125,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
         discardNodeCut();
 
 
-        pageTitle(findingAid.getName());
+        pageTitle(findingAid.getName() + " (stav: "+ (version.getState() == null ? "Neznámý" : version.getState().name())+")");
         addActionsButtons(version.getLockChange() != null);
 
         rootNode = version.getRootLevel();

@@ -21,6 +21,11 @@ public interface ArrFindingAidVersion<FA extends ArrFindingAid, FC extends ArrCh
             Versionable,
             Serializable {
 
+    enum State {
+        OK,
+        ERR;
+    }
+
     Integer getFindingAidVersionId();
 
     void setFindingAidVersionId(Integer versionId);
@@ -94,4 +99,16 @@ public interface ArrFindingAidVersion<FA extends ArrFindingAid, FC extends ArrCh
      * @param change poslední uživatelská změna nad verzí AP
      */
     void setLastChange(FC change);
+
+
+    /**
+     * @return Stav verze.
+     */
+    State getState();
+
+
+    /**
+     * @param state Stav verze.
+     */
+    void setState(State state);
 }

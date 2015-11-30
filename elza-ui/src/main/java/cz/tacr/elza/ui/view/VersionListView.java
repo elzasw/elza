@@ -57,10 +57,18 @@ public class VersionListView extends ElzaView {
         Table table = new Table();
         table.setWidth("100%");
         table.setColumnHeader(ID_TABLE, "Pořadí");
+        table.addContainerProperty("state", cz.tacr.elza.api.ArrFindingAidVersion.State.class, "Neznámý");
         table.addContainerProperty("createChange", LocalDateTime.class, null, "Datum vytvoření", null, null);
         table.addContainerProperty("lockChange", LocalDateTime.class, null, "Datum uzavření", null, null);
         table.setSortEnabled(false);
         AtomicInteger poradi = new AtomicInteger(0);
+        table.addGeneratedColumn("state", new Table.ColumnGenerator() {
+            @Override
+            public Object generateCell(final Table table, final Object itemId, final Object colId) {
+                ArrFindingAidVersion version = (ArrFindingAidVersion) itemId;
+                return version.getState() == null ? "Neznámý" : version.getState().name();
+            }
+        });
         table.addGeneratedColumn(ID_TABLE, new Table.ColumnGenerator() {
             @Override
             public Object generateCell(final Table source, final Object itemId, final Object columnId) {
@@ -107,7 +115,7 @@ public class VersionListView extends ElzaView {
 
         table.addStyleName("table");
         table.setContainerDataSource(container);
-        table.setVisibleColumns(ID_TABLE, "createChange", "lockChange");
+        table.setVisibleColumns(ID_TABLE,"state", "createChange", "lockChange");
 
         components(table);
     }
