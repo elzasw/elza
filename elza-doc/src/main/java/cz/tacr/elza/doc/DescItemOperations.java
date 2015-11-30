@@ -19,6 +19,7 @@ import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.domain.vo.ArrDescItems;
+import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithDescItems;
 
 
 /**
@@ -81,7 +82,9 @@ public class DescItemOperations {
 
         /* provedení operace v jádře
            v result se vrátí VO se seznamem všech finálních objektů - v našem případě jeden nově vytvořený */
-        ArrDescItems result = arrangementManager.saveDescriptionItems(pack);
+        RelatedNodeDirectionWithDescItems relatedNodeDirectionWithDescItems = arrangementManager
+                .saveDescriptionItems(pack);
+        ArrDescItems result = relatedNodeDirectionWithDescItems.getArrDescItems();
 
     }
 
@@ -138,7 +141,9 @@ public class DescItemOperations {
 
         /* provedení operace v jádře
            v result se vrátí všechny finální objekty - v našem případě jeden nově vytvořený */
-        ArrDescItems result = arrangementManager.saveDescriptionItems(pack);
+        RelatedNodeDirectionWithDescItems relatedNodeDirectionWithDescItems = arrangementManager
+                .saveDescriptionItems(pack);
+        ArrDescItems result = relatedNodeDirectionWithDescItems.getArrDescItems();
 
     }
 
@@ -195,7 +200,9 @@ public class DescItemOperations {
 
         /* provedení operace v jádře
            v result se vrátí všechny finální objekty - v našem případě jeden nově vytvořený */
-        ArrDescItems result = arrangementManager.saveDescriptionItems(pack);
+        RelatedNodeDirectionWithDescItems relatedNodeDirectionWithDescItems = arrangementManager
+                .saveDescriptionItems(pack);
+        ArrDescItems result = relatedNodeDirectionWithDescItems.getArrDescItems();
 
     }
 
@@ -236,7 +243,9 @@ public class DescItemOperations {
 
         /* provedení operace v jádře
            v result se vrátí všechny finální objekty - v našem případě jeden po smazání */
-        ArrDescItems result = arrangementManager.saveDescriptionItems(pack);
+        RelatedNodeDirectionWithDescItems relatedNodeDirectionWithDescItems = arrangementManager
+                .saveDescriptionItems(pack);
+        ArrDescItems result = relatedNodeDirectionWithDescItems.getArrDescItems();
 
     }
 
@@ -290,7 +299,9 @@ public class DescItemOperations {
 
         /* provedení operace v jádře
            v result se vrátí všechny finální objekty - v našem případě jeden nově upravený */
-        ArrDescItems result = arrangementManager.saveDescriptionItems(pack);
+        RelatedNodeDirectionWithDescItems relatedNodeDirectionWithDescItems = arrangementManager
+                .saveDescriptionItems(pack);
+        ArrDescItems result = relatedNodeDirectionWithDescItems.getArrDescItems();
     }
 
     /**
@@ -345,7 +356,9 @@ public class DescItemOperations {
 
         /* provedení operace v jádře
            v result se vrátí všechny finální objekty - v našem případě jeden nově upravený */
-        ArrDescItems result = arrangementManager.saveDescriptionItems(pack);
+        RelatedNodeDirectionWithDescItems relatedNodeDirectionWithDescItems = arrangementManager
+                .saveDescriptionItems(pack);
+        ArrDescItems result = relatedNodeDirectionWithDescItems.getArrDescItems();
     }
 
 }

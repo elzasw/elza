@@ -56,6 +56,7 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.domain.vo.ArrNodeRegisterPack;
+import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithDescItems;
 import cz.tacr.elza.ui.components.attribute.Attribut;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesComparator;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesLoader;
@@ -64,6 +65,7 @@ import cz.tacr.elza.ui.components.autocomplete.AutocompleteItem;
 import cz.tacr.elza.ui.utils.ConcurrentUpdateExceptionHandler;
 import cz.tacr.elza.ui.utils.ElzaNotifications;
 import cz.tacr.elza.ui.utils.UnitDateConvertor;
+import cz.tacr.elza.ui.view.FindingAidDetailView;
 
 
 /**
@@ -212,7 +214,14 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         pack.setNode(attribut.getNode());
 
         try {
-            arrangementManager.saveDescriptionItems(pack);
+            RelatedNodeDirectionWithDescItems relatedNodeDirectionWithDescItems = arrangementManager
+                    .saveDescriptionItems(pack);
+
+            List relateds = new ArrayList<>();
+            relateds.add(relatedNodeDirectionWithDescItems.getRelatedNodeDirections());
+
+            FindingAidDetailView.showRelatedNodeDirection(relateds);
+
             ArrLevelExt level = arrangementManager.getLevel(attribut.getNode().getNodeId(), attribut.getVersionId(),
                     null);
             showLevelDetail(level, level.getDescItemList(), attribut.getVersionId(), attributeEditCallback);

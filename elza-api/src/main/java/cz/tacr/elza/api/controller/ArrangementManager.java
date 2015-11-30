@@ -10,6 +10,7 @@ import cz.tacr.elza.api.ArrLevelExt;
 import cz.tacr.elza.api.ArrNode;
 import cz.tacr.elza.api.ArrNodeRegister;
 import cz.tacr.elza.api.ArrPacket;
+import cz.tacr.elza.api.ArrPacketType;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.ArrCalendarTypes;
 import cz.tacr.elza.api.vo.ArrDescItemSavePack;
@@ -17,6 +18,10 @@ import cz.tacr.elza.api.vo.ArrDescItems;
 import cz.tacr.elza.api.vo.ArrLevelPack;
 import cz.tacr.elza.api.vo.ArrNodeHistoryPack;
 import cz.tacr.elza.api.vo.ArrNodeRegisterPack;
+import cz.tacr.elza.api.vo.RelatedNodeDirectionWithDescItem;
+import cz.tacr.elza.api.vo.RelatedNodeDirectionWithDescItems;
+import cz.tacr.elza.api.vo.RelatedNodeDirectionWithLevelPack;
+
 
 /**
  * Rozhraní operací pro archivní pomůcku a hierarchický přehled včetně atributů.
@@ -36,9 +41,11 @@ import cz.tacr.elza.api.vo.ArrNodeRegisterPack;
  * @since 12. 8. 2015
  */
 public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFindingAidVersion, DI extends ArrDescItem,
-    DISP extends ArrDescItemSavePack, FL extends ArrLevel, FLP extends ArrLevelPack, N extends ArrNode,
-    DIS extends ArrDescItems, NHP extends ArrNodeHistoryPack, CTL extends ArrCalendarTypes, ANR extends ArrNodeRegister,
-        ANRP extends ArrNodeRegisterPack, AP extends ArrPacket, APT extends cz.tacr.elza.api.ArrPacketType> {
+        DISP extends ArrDescItemSavePack, FL extends ArrLevel, FLP extends ArrLevelPack, N extends ArrNode,
+        DIS extends ArrDescItems, NHP extends ArrNodeHistoryPack, CTL extends ArrCalendarTypes, ANR extends ArrNodeRegister,
+        ANRP extends ArrNodeRegisterPack, AP extends ArrPacket, APT extends ArrPacketType,
+        RNDWDIS extends RelatedNodeDirectionWithDescItems, RNDWDI extends RelatedNodeDirectionWithDescItem,
+        RNDWLFP extends RelatedNodeDirectionWithLevelPack> {
 
     /** Formát popisu atributu - dlouhá verze. */
     String FORMAT_ATTRIBUTE_FULL = "FULL";
@@ -112,7 +119,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @param levelPack   object obsahující úroveň (level), její parent node (extra node) a id pomůcky
      * @return            objekt obsahující novou úroveň (level) a parent node (jako extra node)
      */
-    FLP addLevelBefore(FLP levelPack);
+    RNDWLFP addLevelBefore(FLP levelPack);
 
     /**
      * Vytvoří novou úroveň (level) za předanou úrovní (level).
@@ -120,7 +127,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @param levelPack        object obsahující úroveň (level), její parent node (extra node) a id pomůcky
      * @return            objekt obsahující novou úroveň (level) a parent node (jako extra node)
      */
-    FLP addLevelAfter(FLP levelPack);
+    RNDWLFP addLevelAfter(FLP levelPack);
 
     /**
      * Vytvoří novou úroveň (level) na poslední pozici pod předanou úrovní.
@@ -128,7 +135,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @param levelPack        object obsahující úroveň (level) a id pomůcky
      * @return            objekt obsahující novou úroveň (level) a node (jako extra node)
      */
-    FLP addLevelChild(FLP levelPack);
+    RNDWLFP addLevelChild(FLP levelPack);
 
     /**
      * Přesune úroveň před předanou úroveň.
@@ -136,7 +143,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @param levelPack            úroveň která se přesouvá (level), před kterou se přesouvá (targetLevel) a id pomůcky
      * @return                přesunutá úroveň (level) a původní cílová (targetLevel)
      */
-    FLP moveLevelBefore(FLP levelPack);
+    RNDWLFP moveLevelBefore(FLP levelPack);
 
     /**
      * Přesune úroveň na poslední pozici pod předaným uzlem.
@@ -144,7 +151,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @param levelPack       úroveň která se přesouvá (level), uzel před která se přesouvá (extraNode) a id pomůcky
      * @return           přesunutá úroveň (level) a původní uzel (extraNode)
      */
-    FLP moveLevelUnder(FLP levelPack);
+    RNDWLFP moveLevelUnder(FLP levelPack);
 
     /**
      * Přesune úroveň za předanou úroveň.
@@ -152,7 +159,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @param levelPack  úroveň která se přesouvá (level), před kterou se přesouvá (targetLevel) a id pomůcky
      * @return      přesunutá úroveň (level) a původní úroveň (targetLevel)
      */
-    FLP moveLevelAfter(FLP levelPack);
+    RNDWLFP moveLevelAfter(FLP levelPack);
 
     /**
      * Smaže úroveň.
@@ -160,7 +167,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @param levelPack            úroveň která se maže (level), uzel rodiče (extraNode) a id pomůcky
      * @return                smazaná úroveň, původní uzel rodiče (extraNode)
      */
-    FLP deleteLevel(FLP levelPack);
+    RNDWLFP deleteLevel(FLP levelPack);
 
     /**
      * Načte neuzavřenou verzi archivní pomůcky.
@@ -217,7 +224,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @param faVersionId       id verze
      * @return                  vytvořený atribut archivního popisu
      */
-    DI createDescriptionItem(DI descItemExt, Integer faVersionId);
+    RNDWDI createDescriptionItem(DI descItemExt, Integer faVersionId);
 
     /**
      * Upraví hodnotu existujícího atributu archivního popisu.
@@ -227,7 +234,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @param createNewVersion  zda-li se má vytvářet nová verze
      * @return                  upravený atribut archivního popisu
      */
-    DI updateDescriptionItem(DI descItemExt, Integer faVersionId, Boolean createNewVersion);
+    RNDWDI updateDescriptionItem(DI descItemExt, Integer faVersionId, Boolean createNewVersion);
 
     /**
      * Vymaže atribut archivního popisu.
@@ -236,7 +243,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @param faVersionId       id verze
      * @return                  upravený(smazaný) atribut archivního popisu
      */
-    DI deleteDescriptionItem(DI descItemExt, Integer faVersionId);
+    RNDWDI deleteDescriptionItem(DI descItemExt, Integer faVersionId);
 
 
     /**
@@ -245,7 +252,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @param descItemSavePack  object nesoucí předávané atributy archivního popisu k vytvoření/úpravě/smazání
      * @return                  upravené atributy archivního popisu
      */
-    DIS saveDescriptionItems(DISP descItemSavePack);
+    RNDWDIS saveDescriptionItems(DISP descItemSavePack);
 
     /**
      * Vrátí všechny hodnoty atributu archivního popisu k uzlu.

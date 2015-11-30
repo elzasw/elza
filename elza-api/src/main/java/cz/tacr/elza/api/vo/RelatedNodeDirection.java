@@ -8,6 +8,10 @@ package cz.tacr.elza.api.vo;
  */
 public enum RelatedNodeDirection {
     /**
+     * Samotný uzel.
+     */
+    NODE,
+    /**
      * Všechny přímé rodiče.
      */
     PARENTS,
@@ -26,5 +30,9 @@ public enum RelatedNodeDirection {
     /**
      * Všechny sourozence.
      */
-    SIBLINGS;
+    SIBLINGS,
+    /**
+     * Všechny uzly ve verzi.
+     */
+    ALL;
 }

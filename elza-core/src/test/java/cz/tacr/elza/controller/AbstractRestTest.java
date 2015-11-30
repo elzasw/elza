@@ -64,6 +64,8 @@ import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.domain.vo.ArrDescItems;
 import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
 import cz.tacr.elza.domain.vo.ArrNodeHistoryPack;
+import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithDescItems;
+import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithLevelPack;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
@@ -906,8 +908,9 @@ public abstract class AbstractRestTest {
     protected List<ArrDescItem> storeSavePack(ArrDescItemSavePack savePack) {
         Response response = post((spec) -> spec.body(savePack), SAVE_DESCRIPTION_ITEMS_URL);
 
-        ArrDescItems descItems = response.getBody().as(ArrDescItems.class);
-        return descItems.getDescItems();
+        RelatedNodeDirectionWithDescItems as = response.getBody().as(RelatedNodeDirectionWithDescItems.class);
+
+        return as.getArrDescItems().getDescItems();
     }
 
     /**
@@ -1013,7 +1016,8 @@ public abstract class AbstractRestTest {
      */
     protected ArrLevelWithExtraNode createLevelChild(ArrLevelWithExtraNode levelWithExtraNode) {
         Response response = put(spec -> spec.body(levelWithExtraNode), ADD_LEVEL_CHILD_URL);
-        ArrLevelWithExtraNode parent = response.getBody().as(ArrLevelWithExtraNode.class);
+        RelatedNodeDirectionWithLevelPack related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
+        ArrLevelWithExtraNode parent = related.getArrLevelPack();
 
         return parent;
     }
@@ -1036,8 +1040,8 @@ public abstract class AbstractRestTest {
      */
     protected ArrLevelWithExtraNode createLevelBefore(ArrLevelWithExtraNode levelWithExtraNode) {
         Response response = put(spec -> spec.body(levelWithExtraNode), ADD_LEVEL_BEFORE_URL);
-        ArrLevelWithExtraNode parent = response.getBody().as(ArrLevelWithExtraNode.class);
-
+        RelatedNodeDirectionWithLevelPack related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
+        ArrLevelWithExtraNode parent = related.getArrLevelPack();
         return parent;
     }
 
@@ -1050,8 +1054,8 @@ public abstract class AbstractRestTest {
      */
     protected ArrLevelWithExtraNode createLevelAfter(ArrLevelWithExtraNode levelWithExtraNode) {
         Response response = put(spec -> spec.body(levelWithExtraNode), ADD_LEVEL_AFTER_URL);
-        ArrLevelWithExtraNode parent = response.getBody().as(ArrLevelWithExtraNode.class);
-
+        RelatedNodeDirectionWithLevelPack related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
+        ArrLevelWithExtraNode parent = related.getArrLevelPack();
         return parent;
     }
 
@@ -1117,7 +1121,8 @@ public abstract class AbstractRestTest {
 
         Response response = put(spec -> spec.body(levelWithExtraNode), MOVE_LEVEL_BEFORE_URL);
 
-        return response.getBody().as(ArrLevelWithExtraNode.class);
+        RelatedNodeDirectionWithLevelPack related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
+        return related.getArrLevelPack();
     }
 
     /**
@@ -1153,7 +1158,8 @@ public abstract class AbstractRestTest {
 
         Response response = put(spec -> spec.body(levelWithExtraNode), MOVE_LEVEL_UNDER_URL);
 
-        return response.getBody().as(ArrLevelWithExtraNode.class);
+        RelatedNodeDirectionWithLevelPack related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
+        return related.getArrLevelPack();
     }
 
     /**
@@ -1173,7 +1179,8 @@ public abstract class AbstractRestTest {
 
         Response response = put(spec -> spec.body(levelWithExtraNode), MOVE_LEVEL_AFTER_URL);
 
-        return response.getBody().as(ArrLevelWithExtraNode.class);
+        RelatedNodeDirectionWithLevelPack related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
+        return related.getArrLevelPack();
     }
 
     /**
@@ -1191,7 +1198,8 @@ public abstract class AbstractRestTest {
 
         Response response = put(spec -> spec.body(levelWithExtraNode), DELETE_LEVEL_URL);
 
-        return response.getBody().as(ArrLevelWithExtraNode.class);
+        RelatedNodeDirectionWithLevelPack related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
+        return related.getArrLevelPack();
     }
 
     /**

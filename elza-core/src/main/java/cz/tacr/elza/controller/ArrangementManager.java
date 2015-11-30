@@ -34,6 +34,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
+import cz.tacr.elza.api.vo.NodeTypeOperation;
+import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
 import cz.tacr.elza.domain.ArrChange;
@@ -64,6 +66,10 @@ import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
 import cz.tacr.elza.domain.vo.ArrNodeHistoryItem;
 import cz.tacr.elza.domain.vo.ArrNodeHistoryPack;
 import cz.tacr.elza.domain.vo.ArrNodeRegisterPack;
+import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithDescItem;
+import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithDescItems;
+import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithLevelPack;
+import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
@@ -93,7 +99,8 @@ import cz.tacr.elza.repository.RuleSetRepository;
 @RequestMapping("/api/arrangementManager")
 public class ArrangementManager implements cz.tacr.elza.api.controller.ArrangementManager<ArrFindingAid, ArrFindingAidVersion,
     ArrDescItem, ArrDescItemSavePack, ArrLevel, ArrLevelWithExtraNode, ArrNode, ArrDescItems, ArrNodeHistoryPack,
-    ArrCalendarTypes, ArrNodeRegister, ArrNodeRegisterPack, ArrPacket, ArrPacketType> {
+    ArrCalendarTypes, ArrNodeRegister, ArrNodeRegisterPack, ArrPacket, ArrPacketType, RelatedNodeDirectionWithDescItems,
+        RelatedNodeDirectionWithDescItem, RelatedNodeDirectionWithLevelPack> {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -415,7 +422,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @Override
     @Transactional
     @RequestMapping(value = "/addLevelBefore", method = RequestMethod.PUT)
-    public ArrLevelWithExtraNode addLevelBefore(@RequestBody ArrLevelWithExtraNode levelWithParentNode) {
+    public RelatedNodeDirectionWithLevelPack addLevelBefore(@RequestBody ArrLevelWithExtraNode levelWithParentNode) {
         Assert.notNull(levelWithParentNode);
         ArrLevel node = levelWithParentNode.getLevel();
         ArrNode parentNode = levelWithParentNode.getExtraNode();
@@ -439,13 +446,22 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         saveLastChangeFaVersion(change, versionId);
 
-        return levelWithParentNodeRet;
+        Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
+                .conformityInfo(versionId, Arrays.asList(node.getNode().getNodeId()), NodeTypeOperation.CREATE_NODE,
+                        null, null, null);
+
+        RelatedNodeDirectionWithLevelPack ret = new RelatedNodeDirectionWithLevelPack();
+        ret.setArrLevelPack(levelWithParentNodeRet);
+        List relatedList = new ArrayList<>();
+        relatedList.add(relatedNodeDirections);
+        ret.setRelatedNodeDirections(relatedList);
+        return ret;
     }
 
     @Override
     @Transactional
     @RequestMapping(value = "/addLevelAfter", method = RequestMethod.PUT)
-    public ArrLevelWithExtraNode addLevelAfter(@RequestBody ArrLevelWithExtraNode levelWithParentNode) {
+    public RelatedNodeDirectionWithLevelPack addLevelAfter(@RequestBody ArrLevelWithExtraNode levelWithParentNode) {
         Assert.notNull(levelWithParentNode);
         ArrLevel node = levelWithParentNode.getLevel();
         ArrNode parentNode = levelWithParentNode.getExtraNode();
@@ -470,13 +486,22 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         saveLastChangeFaVersion(change, versionId);
 
-        return levelWithParentNodeRet;
+        Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
+                .conformityInfo(versionId, Arrays.asList(node.getNode().getNodeId()), NodeTypeOperation.CREATE_NODE,
+                        null, null, null);
+
+        RelatedNodeDirectionWithLevelPack ret = new RelatedNodeDirectionWithLevelPack();
+        List relatedList = new ArrayList<>();
+        relatedList.add(relatedNodeDirections);
+        ret.setArrLevelPack(levelWithParentNodeRet);
+        ret.setRelatedNodeDirections(relatedList);
+        return ret;
     }
 
     @Override
     @Transactional
     @RequestMapping(value = "/addLevelChild", method = RequestMethod.PUT)
-    public ArrLevelWithExtraNode addLevelChild(@RequestBody ArrLevelWithExtraNode levelWithParentNode) {
+    public RelatedNodeDirectionWithLevelPack addLevelChild(@RequestBody ArrLevelWithExtraNode levelWithParentNode) {
         Assert.notNull(levelWithParentNode);
 
         ArrLevel node = levelWithParentNode.getLevel();
@@ -497,13 +522,22 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         saveLastChangeFaVersion(change, versionId);
 
-        return levelWithParentNodeRet;
+        Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
+                .conformityInfo(versionId, Arrays.asList(node.getNode().getNodeId()), NodeTypeOperation.CREATE_NODE,
+                        null, null, null);
+
+        RelatedNodeDirectionWithLevelPack ret = new RelatedNodeDirectionWithLevelPack();
+        List relatedList = new ArrayList<>();
+        relatedList.add(relatedNodeDirections);
+        ret.setArrLevelPack(levelWithParentNodeRet);
+        ret.setRelatedNodeDirections(relatedList);
+        return ret;
     }
 
     @Override
     @Transactional
     @RequestMapping(value = "/moveLevelBefore", method = RequestMethod.PUT)
-    public ArrLevelWithExtraNode moveLevelBefore(@RequestBody ArrLevelWithExtraNode levelWithFollowerNode) {
+    public RelatedNodeDirectionWithLevelPack moveLevelBefore(@RequestBody ArrLevelWithExtraNode levelWithFollowerNode) {
         Assert.notNull(levelWithFollowerNode);
 
         ArrLevel level = levelWithFollowerNode.getLevel();
@@ -574,13 +608,37 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         saveLastChangeFaVersion(change, versionId);
 
-        return levelWithFollowerNodeRet;
+        List relatedList = new ArrayList<>();
+
+        if (level.getNodeParent().equals(follower.getNodeParent())) {
+            Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
+                    .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.CHANGE_NODE_POSITION,
+                            null, null, null);
+
+            relatedList.add(relatedNodeDirections);
+        } else {
+            Set<RelatedNodeDirection> relatedNodeDirectionsDisconnect = ruleManager
+                    .conformityInfo(versionId, Arrays.asList(follower.getNode().getNodeId()), NodeTypeOperation.DISCONNECT_NODE,
+                            null, null, null);
+
+            Set<RelatedNodeDirection> relatedNodeDirectionsConnect = ruleManager
+                    .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.CONNECT_NODE,
+                            null, null, null);
+
+            relatedList.add(relatedNodeDirectionsDisconnect);
+            relatedList.add(relatedNodeDirectionsConnect);
+        }
+
+        RelatedNodeDirectionWithLevelPack ret = new RelatedNodeDirectionWithLevelPack();
+        ret.setRelatedNodeDirections(relatedList);
+        ret.setArrLevelPack(levelWithFollowerNodeRet);
+        return ret;
     }
 
     @Override
     @Transactional
     @RequestMapping(value = "/moveLevelUnder", method = RequestMethod.PUT)
-    public ArrLevelWithExtraNode moveLevelUnder(@RequestBody ArrLevelWithExtraNode levelWithUnderNode) {
+    public RelatedNodeDirectionWithLevelPack moveLevelUnder(@RequestBody ArrLevelWithExtraNode levelWithUnderNode) {
         Assert.notNull(levelWithUnderNode);
 
         ArrLevel level = levelWithUnderNode.getLevel();
@@ -625,13 +683,27 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         saveLastChangeFaVersion(change, versionId);
 
-        return levelWithPredecessorNodeRet;
+        Set<RelatedNodeDirection> relatedNodeDirectionsDisconnect = ruleManager
+                .conformityInfo(versionId, Arrays.asList(parentNode.getNodeId()), NodeTypeOperation.DISCONNECT_NODE,
+                        null, null, null);
+
+        Set<RelatedNodeDirection> relatedNodeDirectionsConnect = ruleManager
+                .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.CONNECT_NODE,
+                        null, null, null);
+
+        RelatedNodeDirectionWithLevelPack ret = new RelatedNodeDirectionWithLevelPack();
+        List relatedList = new ArrayList<>();
+        relatedList.add(relatedNodeDirectionsDisconnect);
+        relatedList.add(relatedNodeDirectionsConnect);
+        ret.setRelatedNodeDirections(relatedList);
+        ret.setArrLevelPack(levelWithPredecessorNodeRet);
+        return ret;
     }
 
     @Override
     @Transactional
     @RequestMapping(value = "/moveLevelAfter", method = RequestMethod.PUT)
-    public ArrLevelWithExtraNode moveLevelAfter(@RequestBody ArrLevelWithExtraNode levelWithPredecessorNode) {
+    public RelatedNodeDirectionWithLevelPack moveLevelAfter(@RequestBody ArrLevelWithExtraNode levelWithPredecessorNode) {
         Assert.notNull(levelWithPredecessorNode);
 
         ArrLevel level = levelWithPredecessorNode.getLevel();
@@ -703,7 +775,32 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         saveLastChangeFaVersion(change, versionId);
 
-        return levelWithPredecessorNodeRet;
+        List relatedList = new ArrayList<>();
+
+        if (level.getNodeParent().equals(predecessor.getNodeParent())) {
+            Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
+                    .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.CHANGE_NODE_POSITION,
+                            null, null, null);
+
+            relatedList.add(relatedNodeDirections);
+        } else {
+            Set<RelatedNodeDirection> relatedNodeDirectionsDisconnect = ruleManager
+                    .conformityInfo(versionId, Arrays.asList(predecessor.getNode().getNodeId()), NodeTypeOperation.DISCONNECT_NODE,
+                            null, null, null);
+
+            Set<RelatedNodeDirection> relatedNodeDirectionsConnect = ruleManager
+                    .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.CONNECT_NODE,
+                            null, null, null);
+
+            relatedList.add(relatedNodeDirectionsDisconnect);
+            relatedList.add(relatedNodeDirectionsConnect);
+        }
+
+
+        RelatedNodeDirectionWithLevelPack ret = new RelatedNodeDirectionWithLevelPack();
+        ret.setRelatedNodeDirections(relatedList);
+        ret.setArrLevelPack(levelWithPredecessorNodeRet);
+        return ret;
     }
 
     /**
@@ -823,7 +920,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @Override
     @Transactional
     @RequestMapping(value = "/deleteLevel", method = RequestMethod.PUT)
-    public ArrLevelWithExtraNode deleteLevel(@RequestBody ArrLevelWithExtraNode levelWithParentNode) {
+    public RelatedNodeDirectionWithLevelPack deleteLevel(@RequestBody ArrLevelWithExtraNode levelWithParentNode) {
         Assert.notNull(levelWithParentNode);
 
         ArrLevel faLevel = levelWithParentNode.getLevel();
@@ -843,6 +940,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrChange change = createChange();
 
+        Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
+                .conformityInfo(versionId, Arrays.asList(node.getNodeId()), NodeTypeOperation.DELETE_NODE,
+                        null, null, null);
+
         level = deleteLevelCascade(level, change);
         shiftNodesUp(nodesToShift(level), change);
 
@@ -858,7 +959,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         saveLastChangeFaVersion(change, versionId);
 
-        return levelWithParentNodeRet;
+        RelatedNodeDirectionWithLevelPack ret = new RelatedNodeDirectionWithLevelPack();
+        List relatedList = new ArrayList<>();
+        relatedList.add(relatedNodeDirections);
+        ret.setArrLevelPack(levelWithParentNodeRet);
+        ret.setRelatedNodeDirections(relatedList);
+        return ret;
     }
 
     public ArrLevel deleteLevelCascade(final ArrLevel level, final ArrChange deleteChange) {
@@ -1133,7 +1239,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @Override
     @RequestMapping(value = "/createDescriptionItem/{versionId}", method = RequestMethod.POST)
     @Transactional
-    public ArrDescItem createDescriptionItem(@RequestBody ArrDescItem descItem,
+    public RelatedNodeDirectionWithDescItem createDescriptionItem(@RequestBody ArrDescItem descItem,
                                                 @PathVariable(value = "versionId") Integer versionId) {
         Assert.notNull(descItem);
         Assert.notNull(versionId);
@@ -1143,13 +1249,24 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         ArrDescItem descItemRet = createDescriptionItemRaw(descItem, versionId, change, true, mapDescItems, objectId);
         saveChanges(mapDescItems, null, true);
         saveLastChangeFaVersion(change, versionId);
-        return descItemRet;
+
+        List<ArrDescItem> createDescItems = new ArrayList<>();
+        createDescItems.add(descItem);
+
+        Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
+                .conformityInfo(versionId, Arrays.asList(descItem.getNode().getNodeId()), NodeTypeOperation.SAVE_DESC_ITEM,
+                        createDescItems, null, null);
+
+        RelatedNodeDirectionWithDescItem ret = new RelatedNodeDirectionWithDescItem();
+        ret.setRelatedNodeDirections(relatedNodeDirections);
+        ret.setArrDescItem(descItemRet);
+        return ret;
     }
 
     @Override
     @RequestMapping(value = "/updateDescriptionItem/{versionId}/{createNewVersion}", method = RequestMethod.POST)
     @Transactional
-    public ArrDescItem updateDescriptionItem(@RequestBody ArrDescItem descItem,
+    public RelatedNodeDirectionWithDescItem updateDescriptionItem(@RequestBody ArrDescItem descItem,
                                                 @PathVariable(value = "versionId") Integer versionId,
                                                 @PathVariable(value = "createNewVersion") Boolean createNewVersion) {
         Assert.notNull(descItem);
@@ -1170,26 +1287,48 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             saveLastChangeFaVersion(change, versionId);
         }
 
-        return descItems.get(0);
+        List<ArrDescItem> updateDescItems = new ArrayList<>();
+        updateDescItems.add(descItem);
+
+        Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
+                .conformityInfo(versionId, Arrays.asList(descItem.getNode().getNodeId()), NodeTypeOperation.SAVE_DESC_ITEM,
+                        null, updateDescItems, null);
+
+        RelatedNodeDirectionWithDescItem ret = new RelatedNodeDirectionWithDescItem();
+        ret.setRelatedNodeDirections(relatedNodeDirections);
+        ret.setArrDescItem(descItems.get(0));
+        return ret;
     }
 
     @Override
     @RequestMapping(value = "/deleteDescriptionItem/{versionId}", method = RequestMethod.DELETE)
     @Transactional
-    public ArrDescItem deleteDescriptionItem(@RequestBody ArrDescItem descItem, @PathVariable(value = "versionId") Integer versionId) {
+    public RelatedNodeDirectionWithDescItem deleteDescriptionItem(@RequestBody ArrDescItem descItem, @PathVariable(value = "versionId") Integer versionId) {
         Assert.notNull(descItem);
         ArrChange change = createChange();
         Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems = new HashMap<>();
         ArrDescItem descItemRet = deleteDescriptionItemRaw(descItem, versionId, change, true, mapDescItems);
         saveChanges(mapDescItems, null, true);
         saveLastChangeFaVersion(change, versionId);
-        return descItemRet;
+
+        List<ArrDescItem> deleteDescItems = new ArrayList<>();
+        deleteDescItems.add(descItem);
+
+        Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
+                .conformityInfo(versionId, Arrays.asList(descItem.getNode().getNodeId()), NodeTypeOperation.SAVE_DESC_ITEM,
+                        null, null, deleteDescItems);
+
+
+        RelatedNodeDirectionWithDescItem ret = new RelatedNodeDirectionWithDescItem();
+        ret.setRelatedNodeDirections(relatedNodeDirections);
+        ret.setArrDescItem(descItemRet);
+        return ret;
     }
 
     @Override
     @RequestMapping(value = "/saveDescriptionItems", method = RequestMethod.POST)
     @Transactional
-    public ArrDescItems saveDescriptionItems(@RequestBody ArrDescItemSavePack descItemSavePack) {
+    public RelatedNodeDirectionWithDescItems saveDescriptionItems(@RequestBody ArrDescItemSavePack descItemSavePack) {
         Assert.notNull(descItemSavePack);
 
         List<ArrDescItem> deleteDescItems = descItemSavePack.getDeleteDescItems();
@@ -1318,9 +1457,18 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             throw e;
         }
 
+        Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
+                .conformityInfo(versionId, Arrays.asList(node.getNodeId()), NodeTypeOperation.SAVE_DESC_ITEM,
+                        createDescItems, updateDescItems, deleteDescItems);
+
         ArrDescItems descItemsContainer = new ArrDescItems();
         descItemsContainer.setDescItems(descItemsRet);
-        return descItemsContainer;
+
+        RelatedNodeDirectionWithDescItems ret = new RelatedNodeDirectionWithDescItems();
+        ret.setArrDescItems(descItemsContainer);
+        ret.setRelatedNodeDirections(relatedNodeDirections);
+
+        return ret;
     }
 
     /**

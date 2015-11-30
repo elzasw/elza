@@ -26,7 +26,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
+import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformityErrors;
@@ -63,7 +65,7 @@ import cz.tacr.elza.repository.RuleSetRepository;
  */
 @RestController
 @RequestMapping("/api/ruleSetManager")
-public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulDataType, RulDescItemType, RulDescItemSpec, RulFaView> {
+public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulDataType, RulDescItemType, RulDescItemSpec, RulFaView, NodeTypeOperation, RelatedNodeDirection, ArrDescItem> {
 
     private static final String VIEW_SPECIFICATION_SEPARATOR = "|";
     private static final String VIEW_SPECIFICATION_SEPARATOR_REGEX = "\\|";
@@ -325,10 +327,40 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
         return Arrays.asList(descItemTypeIds);
     }
 
+    /**
+     * Provede úpravů (smazání) stavů uzlů podle pravidel.
+     *
+     * @param faVersionId verze nodů
+     * @param nodeIds seznam id nodů, od kterých se má prohledávat
+     * @param nodeTypeOperation typ operace
+     * @param createDescItems hodnoty atributů k vytvoření
+     * @param updateDescItems hodnoty atributů k upravení
+     * @param deleteDescItems hodnoty atributů ke smazání
+     * @return seznam dopadů
+     */
+    public Set<RelatedNodeDirection> conformityInfo(final Integer faVersionId,
+                                                       final Collection<Integer> nodeIds,
+                                                       final NodeTypeOperation nodeTypeOperation,
+                                                       final List<ArrDescItem> createDescItems,
+                                                       final List<ArrDescItem> updateDescItems,
+                                                       final List<ArrDescItem> deleteDescItems) {
 
-    @Override
-    @Transactional
-    public void deleteConformityInfo(final Integer faVersionId,
+        Set<RelatedNodeDirection> impactOnConformityInfo = getImpactOnConformityInfo(faVersionId, nodeTypeOperation,
+                createDescItems, updateDescItems, deleteDescItems);
+
+        deleteConformityInfo(faVersionId, nodeIds, impactOnConformityInfo);
+
+        return impactOnConformityInfo;
+    }
+
+    /**
+     * Pro vybrané nody s danou verzí smaže všechny stavy v daných směrech od nodů.
+     *
+     * @param faVersionId      verze nodů
+     * @param nodeIds          seznam id nodů, od kterých se má prohledávat
+     * @param deleteDirections směry prohledávání (null pokud se mají smazat stavy zadaných nodů .
+     */
+    private void deleteConformityInfo(final Integer faVersionId,
                                      final Collection<Integer> nodeIds,
                                      final Collection<RelatedNodeDirection> deleteDirections) {
         Assert.notNull(faVersionId);
@@ -337,7 +369,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
         List<ArrNode> nodes = nodeRepository.findAll(nodeIds);
         ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
 
-        Set<ArrNode> deleteNodes = new HashSet<ArrNode>();
+        Set<ArrNode> deleteNodes = new HashSet<>();
 
         if (CollectionUtils.isEmpty(deleteDirections)) {
             deleteNodes.addAll(nodes);
@@ -357,6 +389,33 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
 
             deleteConformityInfo(deleteInfos);
         }
+    }
+
+    /**
+     * Zjistí podle pravidel dopad na změnu stavů uzlů.
+     *
+     * @param faVersionId verze nodů
+     * @param nodeTypeOperation typ operace
+     * @param createDescItems hodnoty atributů k vytvoření
+     * @param updateDescItems hodnoty atributů k upravení
+     * @param deleteDescItems hodnoty atributů ke smazání
+     * @return seznam dopadů
+     */
+    private Set<RelatedNodeDirection> getImpactOnConformityInfo(final Integer faVersionId,
+                                                                final NodeTypeOperation nodeTypeOperation,
+                                                                final List<ArrDescItem> createDescItems,
+                                                                final List<ArrDescItem> updateDescItems,
+                                                                final List<ArrDescItem> deleteDescItems) {
+
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
+
+        if (version == null) {
+            throw new IllegalArgumentException("Verze archivni pomucky neexistuje");
+        }
+
+        return rulesExecutor
+                .executeImpactOfChangesLevelStateRules(createDescItems, updateDescItems, deleteDescItems,
+                        nodeTypeOperation, version);
     }
 
     /**

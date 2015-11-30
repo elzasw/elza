@@ -63,6 +63,9 @@ import cz.tacr.elza.domain.vo.ArrCalendarTypes;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.domain.vo.ArrDescItems;
 import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
+import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithDescItem;
+import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithDescItems;
+import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithLevelPack;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
@@ -387,7 +390,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         Assert.assertEquals(200, response.statusCode());
         levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
 
-        ArrLevelWithExtraNode second = response.getBody().as(ArrLevelWithExtraNode.class);
+        RelatedNodeDirectionWithLevelPack related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
+        ArrLevelWithExtraNode second = related.getArrLevelPack();
 
         levelWithExtraNode = new ArrLevelWithExtraNode();
         levelWithExtraNode.setLevel(second.getLevel());
@@ -398,7 +402,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        ArrLevelWithExtraNode first = response.getBody().as(ArrLevelWithExtraNode.class);
+        related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
+        ArrLevelWithExtraNode first = related.getArrLevelPack();
 
         List<ArrLevelExt> subLevels = arrangementManager
                 .findSubLevels(version.getRootLevel().getNode().getNodeId(), version.getFindingAidVersionId(), null,
@@ -425,7 +430,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        ArrLevelWithExtraNode first = response.getBody().as(ArrLevelWithExtraNode.class);
+        RelatedNodeDirectionWithLevelPack related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
+        ArrLevelWithExtraNode first = related.getArrLevelPack();
 
         levelWithExtraNode = new ArrLevelWithExtraNode();
         levelWithExtraNode.setLevel(first.getLevel());
@@ -436,7 +442,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        ArrLevelWithExtraNode second = response.getBody().as(ArrLevelWithExtraNode.class);
+        related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
+        ArrLevelWithExtraNode second = related.getArrLevelPack();
 
         List<ArrLevelExt> subLevels = arrangementManager.findSubLevels(version.getRootLevel().getNode().getNodeId(), version.getFindingAidVersionId(), null, null);
         Assert.assertTrue(subLevels.size() == 2);
@@ -461,7 +468,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        ArrLevelWithExtraNode parent = response.getBody().as(ArrLevelWithExtraNode.class);
+        RelatedNodeDirectionWithLevelPack related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
+        ArrLevelWithExtraNode parent = related.getArrLevelPack();
 
         Integer parentNodeId = parent.getLevel().getNode().getNodeId();
         levelWithExtraNode = new ArrLevelWithExtraNode();
@@ -472,7 +480,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        ArrLevelWithExtraNode child = response.getBody().as(ArrLevelWithExtraNode.class);
+        related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
+        ArrLevelWithExtraNode child = related.getArrLevelPack();
 
         List<ArrLevelExt> subLevels = arrangementManager.findSubLevels(parentNodeId, version.getFindingAidVersionId(), null, null);
         Assert.assertTrue(subLevels.size() == 1);
@@ -510,7 +519,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(response.print(), 200, response.statusCode());
 
-        ArrLevelWithExtraNode parent = response.getBody().as(ArrLevelWithExtraNode.class);
+        RelatedNodeDirectionWithLevelPack related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
+        ArrLevelWithExtraNode parent = related.getArrLevelPack();
 
         levelWithExtraNode = new ArrLevelWithExtraNode();
         levelWithExtraNode.setLevel(parent.getLevel());
@@ -520,7 +530,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        ArrLevelWithExtraNode child = response.getBody().as(ArrLevelWithExtraNode.class);
+        related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
+        ArrLevelWithExtraNode child = related.getArrLevelPack();
 
         levelWithExtraNode = new ArrLevelWithExtraNode();
         levelWithExtraNode.setLevel(child.getLevel());
@@ -537,7 +548,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        ArrLevelWithExtraNode movedChild = response.getBody().as(ArrLevelWithExtraNode.class);
+        related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
+        ArrLevelWithExtraNode movedChild = related.getArrLevelPack();
 
         List<ArrLevelExt> subLevels = arrangementManager.findSubLevels(version.getRootLevel().getNode().getNodeId(), version.getFindingAidVersionId(), null, null);
 
@@ -560,7 +572,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        ArrLevelWithExtraNode first = response.getBody().as(ArrLevelWithExtraNode.class);
+        RelatedNodeDirectionWithLevelPack related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
+        ArrLevelWithExtraNode first = related.getArrLevelPack();
 
         levelWithExtraNode = new ArrLevelWithExtraNode();
         levelWithExtraNode.setLevel(version.getRootLevel());
@@ -572,7 +585,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        ArrLevelWithExtraNode second = response.getBody().as(ArrLevelWithExtraNode.class);
+        related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
+        ArrLevelWithExtraNode second = related.getArrLevelPack();
 
         levelWithExtraNode.setLevel(first.getLevel());
         levelWithExtraNode.setExtraNode(second.getLevel().getNode());
@@ -580,7 +594,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        ArrLevelWithExtraNode child = response.getBody().as(ArrLevelWithExtraNode.class);
+        related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
+        ArrLevelWithExtraNode child = related.getArrLevelPack();
         Assert.assertTrue(child.getLevel().getNodeParent().getNodeId().equals(second.getLevel().getNode().getNodeId()));
 
         List<ArrLevelExt> subLevels = arrangementManager.findSubLevels(second.getLevel().getNode().getNodeId(), version.getFindingAidVersionId(), null, null);
@@ -603,7 +618,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        ArrLevelWithExtraNode parent = response.getBody().as(ArrLevelWithExtraNode.class);
+        RelatedNodeDirectionWithLevelPack related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
+        ArrLevelWithExtraNode parent = related.getArrLevelPack();
 
         levelWithExtraNode = new ArrLevelWithExtraNode();
         levelWithExtraNode.setLevel(parent.getLevel());
@@ -613,7 +629,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        ArrLevelWithExtraNode child = response.getBody().as(ArrLevelWithExtraNode.class);
+        related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
+        ArrLevelWithExtraNode child = related.getArrLevelPack();
 
         levelWithExtraNode = new ArrLevelWithExtraNode();
         levelWithExtraNode.setLevel(child.getLevel());
@@ -628,7 +645,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        ArrLevelWithExtraNode movedChild = response.getBody().as(ArrLevelWithExtraNode.class);
+        related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
+        ArrLevelWithExtraNode movedChild = related.getArrLevelPack();
 
         List<ArrLevelExt> subLevels = arrangementManager.findSubLevels(version.getRootLevel().getNode().getNodeId(),
                 version.getFindingAidVersionId(), null, null);
@@ -653,7 +671,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        ArrLevelWithExtraNode node = response.getBody().as(ArrLevelWithExtraNode.class);
+        RelatedNodeDirectionWithLevelPack related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
+        ArrLevelWithExtraNode node = related.getArrLevelPack();
 
         levelWithExtraNode = new ArrLevelWithExtraNode();
         levelWithExtraNode.setLevel(node.getLevel());
@@ -664,7 +683,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        ArrLevelWithExtraNode deletedNode = response.getBody().as(ArrLevelWithExtraNode.class);
+        related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
+        ArrLevelWithExtraNode deletedNode = related.getArrLevelPack();
 
         Assert.assertTrue(deletedNode.getLevel().getDeleteChange() != null);
         Assert.assertTrue(node.getLevel().getNode().getNodeId().equals(deletedNode.getLevel().getNode().getNodeId()));
@@ -1151,7 +1171,9 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItem.setValue(123);
         descItem.setNode(node);
 
-        ArrDescItem descItemRet = arrangementManager.createDescriptionItem(descItem, version.getFindingAidVersionId());
+        RelatedNodeDirectionWithDescItem relatedNodeDirectionWithDescItem = arrangementManager.createDescriptionItem(
+                descItem, version.getFindingAidVersionId());
+        ArrDescItem descItemRet = relatedNodeDirectionWithDescItem.getArrDescItem();
 
         // kontrola attributu a hodnoty
 
@@ -1191,7 +1213,9 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItem.setValue(123);
         descItem.setNode(node);
 
-        ArrDescItem descItemRet1 = arrangementManager.createDescriptionItem(descItem, version.getFindingAidVersionId());
+        RelatedNodeDirectionWithDescItem relatedNodeDirectionWithDescItem1 = arrangementManager.createDescriptionItem(
+                descItem, version.getFindingAidVersionId());
+        ArrDescItem descItemRet1 = relatedNodeDirectionWithDescItem1.getArrDescItem();
 
         node = nodeRepository.findOne(node.getNodeId());
         descItem = new ArrDescItemInt();
@@ -1201,7 +1225,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItem.setPosition(1);
         descItem.setNode(node);
 
-        ArrDescItem descItemRet2 = arrangementManager.createDescriptionItem(descItem, version.getFindingAidVersionId());
+        RelatedNodeDirectionWithDescItem relatedNodeDirectionWithDescItem2 = arrangementManager.createDescriptionItem(descItem, version.getFindingAidVersionId());
+        ArrDescItem descItemRet2 = relatedNodeDirectionWithDescItem2.getArrDescItem();
 
         Assert.assertNotNull(descItemRepository.findOne(descItemRet1.getDescItemId()).getDeleteChange());
         Assert.assertEquals(new Integer(1), descItemRepository.findOne(descItemRet2.getDescItemId()).getPosition());
@@ -1214,7 +1239,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItem.setPosition(10);
         descItem.setNode(node);
 
-        ArrDescItem descItemRet3 = arrangementManager.createDescriptionItem(descItem, version.getFindingAidVersionId());
+        RelatedNodeDirectionWithDescItem relatedNodeDirectionWithDescItem3 = arrangementManager.createDescriptionItem(descItem, version.getFindingAidVersionId());
+        ArrDescItem descItemRet3 = relatedNodeDirectionWithDescItem3.getArrDescItem();
 
         Assert.assertEquals(new Integer(3), descItemRepository.findOne(descItemRet3.getDescItemId()).getPosition());
 
@@ -1256,14 +1282,17 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItem.setValue(123);
         descItem.setNode(node);
 
-        ArrDescItem descItemNew = arrangementManager.createDescriptionItem(descItem, version.getFindingAidVersionId());
+        RelatedNodeDirectionWithDescItem relatedNodeDirectionWithDescItem = arrangementManager.createDescriptionItem(descItem, version.getFindingAidVersionId());
+        ArrDescItem descItemNew = relatedNodeDirectionWithDescItem.getArrDescItem();
 
-        // upravení hodnoty bez vytvoření verze
+                // upravení hodnoty bez vytvoření verze
 
         ArrDescItemInt arrDescItemExt = new ArrDescItemInt();
         BeanUtils.copyProperties(descItemNew, arrDescItemExt);
         arrDescItemExt.setValue(124);
-        ArrDescItem descItemRet = arrangementManager.updateDescriptionItem(arrDescItemExt ,version.getFindingAidVersionId(), false);
+        RelatedNodeDirectionWithDescItem relatedNodeDirectionWithDescItemRet = arrangementManager.updateDescriptionItem(
+                arrDescItemExt, version.getFindingAidVersionId(), false);
+        ArrDescItem descItemRet = relatedNodeDirectionWithDescItemRet.getArrDescItem();
 
         // kontrola nové hodnoty attributu
 
@@ -1292,7 +1321,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         arrDescItemExt = new ArrDescItemInt();
         BeanUtils.copyProperties(descItemNew, arrDescItemExt);
         arrDescItemExt.setValue(125);
-        descItemRet = arrangementManager.updateDescriptionItem(arrDescItemExt, version.getFindingAidVersionId(), true);
+        relatedNodeDirectionWithDescItemRet = arrangementManager.updateDescriptionItem(arrDescItemExt, version.getFindingAidVersionId(), true);
+        descItemRet = relatedNodeDirectionWithDescItemRet.getArrDescItem();
 
         // kontrola nové hodnoty attributu
 
@@ -1355,7 +1385,9 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ((ArrDescItemInt) descItem1).setValue(1);
         descItem1.setNode(node);
 
-        descItem1 = arrangementManager.createDescriptionItem(descItem1, version.getFindingAidVersionId());
+        RelatedNodeDirectionWithDescItem relatedNodeDirectionWithDescItem = arrangementManager
+                .createDescriptionItem(descItem1, version.getFindingAidVersionId());
+        descItem1 = relatedNodeDirectionWithDescItem.getArrDescItem();
 
         node = nodeRepository.findOne(node.getNodeId());
         ArrDescItem descItem2 = new ArrDescItemInt();
@@ -1364,7 +1396,9 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ((ArrDescItemInt) descItem2).setValue(2);
         descItem2.setNode(node);
 
-        descItem2 = arrangementManager.createDescriptionItem(descItem2, version.getFindingAidVersionId());
+        relatedNodeDirectionWithDescItem = arrangementManager
+                .createDescriptionItem(descItem2, version.getFindingAidVersionId());
+        descItem2 = relatedNodeDirectionWithDescItem.getArrDescItem();
 
         node = nodeRepository.findOne(node.getNodeId());
         ArrDescItem descItem3 = new ArrDescItemInt();
@@ -1373,7 +1407,9 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ((ArrDescItemInt) descItem3).setValue(3);
         descItem3.setNode(node);
 
-        descItem3 = arrangementManager.createDescriptionItem(descItem3, version.getFindingAidVersionId());
+        relatedNodeDirectionWithDescItem = arrangementManager
+                .createDescriptionItem(descItem3, version.getFindingAidVersionId());
+        descItem3 = relatedNodeDirectionWithDescItem.getArrDescItem();
 
         node = nodeRepository.findOne(node.getNodeId());
         ArrDescItem descItem4 = new ArrDescItemInt();
@@ -1382,14 +1418,18 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ((ArrDescItemInt) descItem4).setValue(4);
         descItem4.setNode(node);
 
-        descItem4 = arrangementManager.createDescriptionItem(descItem4, version.getFindingAidVersionId());
+        relatedNodeDirectionWithDescItem = arrangementManager
+                .createDescriptionItem(descItem4, version.getFindingAidVersionId());
+        descItem4 = relatedNodeDirectionWithDescItem.getArrDescItem();
 
         // úprava pozicí
 
         node = nodeRepository.findOne(node.getNodeId());
         descItem3.setPosition(1);
         descItem3.setNode(node);
-        ArrDescItem descItem3New = arrangementManager.updateDescriptionItem(descItem3, version.getFindingAidVersionId(), true);
+        relatedNodeDirectionWithDescItem = arrangementManager
+                .updateDescriptionItem(descItem3, version.getFindingAidVersionId(), true);
+        ArrDescItem descItem3New = relatedNodeDirectionWithDescItem.getArrDescItem();
 
         // kontrola pozice attributu
         checkChangePositionDescItem(descItem1, 2, true, null);
@@ -1397,7 +1437,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         checkChangePositionDescItem(descItem4, 4, false, node);
 
         descItem3New.setPosition(3);
-        ArrDescItem descItem3New2 = arrangementManager.updateDescriptionItem(descItem3New, version.getFindingAidVersionId(), true);
+        relatedNodeDirectionWithDescItem = arrangementManager.updateDescriptionItem(descItem3New, version.getFindingAidVersionId(), true);
+        ArrDescItem descItem3New2 = relatedNodeDirectionWithDescItem.getArrDescItem();
 
         // kontrola pozice attributu
         checkChangePositionDescItem(descItem1, 1, true, null);
@@ -1442,7 +1483,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ((ArrDescItemInt) descItem1).setValue(1);
         descItem1.setNode(node);
 
-        ArrDescItem descItem1Save = arrangementManager.createDescriptionItem(descItem1, version.getFindingAidVersionId());
+        ArrDescItem descItem1Save = (arrangementManager.createDescriptionItem(descItem1, version.getFindingAidVersionId())).getArrDescItem();
 
         node = nodeRepository.findOne(node.getNodeId());
         ArrDescItem descItem2 = new ArrDescItemInt();
@@ -1451,7 +1492,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ((ArrDescItemInt) descItem2).setValue(2);
         descItem2.setNode(node);
 
-        ArrDescItem descItem2Save = arrangementManager.createDescriptionItem(descItem2, version.getFindingAidVersionId());
+        ArrDescItem descItem2Save = (arrangementManager.createDescriptionItem(descItem2, version.getFindingAidVersionId())).getArrDescItem();
 
         node = nodeRepository.findOne(node.getNodeId());
         ArrDescItem descItem3 = new ArrDescItemInt();
@@ -1460,7 +1501,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ((ArrDescItemInt) descItem3).setValue(3);
         descItem3.setNode(node);
 
-        ArrDescItem descItem3Save = arrangementManager.createDescriptionItem(descItem3, version.getFindingAidVersionId());
+        ArrDescItem descItem3Save = (arrangementManager.createDescriptionItem(descItem3, version.getFindingAidVersionId())).getArrDescItem();
 
         node = nodeRepository.findOne(node.getNodeId());
         ArrDescItem descItem4 = new ArrDescItemInt();
@@ -1469,7 +1510,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ((ArrDescItemInt) descItem4).setValue(4);
         descItem4.setNode(node);
 
-        ArrDescItem descItem4Save = arrangementManager.createDescriptionItem(descItem4, version.getFindingAidVersionId());
+        ArrDescItem descItem4Save = (arrangementManager.createDescriptionItem(descItem4, version.getFindingAidVersionId())).getArrDescItem();
 
         // vytvoření změn k odeslání
 
@@ -1512,7 +1553,10 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItemSavePack.setDeleteDescItems(deleteDescItems);
         descItemSavePack.setNode(node);
 
-        ArrDescItems descItemsContainer = arrangementManager.saveDescriptionItems(descItemSavePack);
+        RelatedNodeDirectionWithDescItems relatedNodeDirectionWithDescItems = arrangementManager
+                .saveDescriptionItems(descItemSavePack);
+
+        ArrDescItems descItemsContainer = relatedNodeDirectionWithDescItems.getArrDescItems();
         List<ArrDescItem> descItemListSave = descItemsContainer.getDescItems();
 
         Assert.assertNotNull(descItemListSave);
@@ -1598,11 +1642,11 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ((ArrDescItemInt) descItem).setValue(123);
         descItem.setNode(node);
 
-        ArrDescItem descItemNew = arrangementManager.createDescriptionItem(descItem, version.getFindingAidVersionId());
+        ArrDescItem descItemNew = (arrangementManager.createDescriptionItem(descItem, version.getFindingAidVersionId())).getArrDescItem();
 
         // smazání hodnoty attributu
 
-        ArrDescItem descItemDel = arrangementManager.deleteDescriptionItem(descItemNew, version.getFindingAidVersionId());
+        ArrDescItem descItemDel = (arrangementManager.deleteDescriptionItem(descItemNew, version.getFindingAidVersionId())).getArrDescItem();
 
         Assert.assertEquals(descItemNew, descItemDel);
 
@@ -1684,7 +1728,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItemCoordinates.setNode(node);
         descItemCoordinates.setPosition(1);
 
-        ArrDescItem descItemCoordinatesNew = arrangementManager.createDescriptionItem(descItemCoordinates, version.getFindingAidVersionId());
+        ArrDescItem descItemCoordinatesNew = (arrangementManager.createDescriptionItem(descItemCoordinates, version.getFindingAidVersionId())).getArrDescItem();
         node = nodeRepository.findOne(node.getNodeId());
 
         ArrDescItem descItemFormattedText = new ArrDescItemFormattedText();
@@ -1693,7 +1737,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItemFormattedText.setNode(node);
         descItemFormattedText.setPosition(2);
 
-        ArrDescItem descItemFormattedTextNew = arrangementManager.createDescriptionItem(descItemFormattedText, version.getFindingAidVersionId());
+        ArrDescItem descItemFormattedTextNew = (arrangementManager.createDescriptionItem(descItemFormattedText, version.getFindingAidVersionId())).getArrDescItem();
         node = nodeRepository.findOne(node.getNodeId());
 
         ArrDescItem descItemInt = new ArrDescItemInt();
@@ -1702,7 +1746,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItemInt.setNode(node);
         descItemInt.setPosition(3);
 
-        ArrDescItem descItemIntNew = arrangementManager.createDescriptionItem(descItemInt, version.getFindingAidVersionId());
+        ArrDescItem descItemIntNew = (arrangementManager.createDescriptionItem(descItemInt, version.getFindingAidVersionId())).getArrDescItem();
         node = nodeRepository.findOne(node.getNodeId());
 
         ArrDescItem descItemPartyRef = new ArrDescItemPartyRef();
@@ -1712,7 +1756,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItemPartyRef.setNode(node);
         descItemPartyRef.setPosition(4);
 
-        ArrDescItem descItemPartyRefNew = arrangementManager.createDescriptionItem(descItemPartyRef, version.getFindingAidVersionId());
+        ArrDescItem descItemPartyRefNew = (arrangementManager.createDescriptionItem(descItemPartyRef, version.getFindingAidVersionId())).getArrDescItem();
         node = nodeRepository.findOne(node.getNodeId());
 
         ArrDescItem descItemRecordRef = new ArrDescItemRecordRef();
@@ -1722,7 +1766,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItemRecordRef.setNode(node);
         descItemRecordRef.setPosition(5);
 
-        ArrDescItem descItemRecordRefNew = arrangementManager.createDescriptionItem(descItemRecordRef, version.getFindingAidVersionId());
+        ArrDescItem descItemRecordRefNew = (arrangementManager.createDescriptionItem(descItemRecordRef, version.getFindingAidVersionId())).getArrDescItem();
         node = nodeRepository.findOne(node.getNodeId());
 
         ArrDescItem descItemString = new ArrDescItemString();
@@ -1731,7 +1775,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItemString.setNode(node);
         descItemString.setPosition(6);
 
-        ArrDescItem descItemStringNew = arrangementManager.createDescriptionItem(descItemString, version.getFindingAidVersionId());
+        ArrDescItem descItemStringNew = (arrangementManager.createDescriptionItem(descItemString, version.getFindingAidVersionId())).getArrDescItem();
         node = nodeRepository.findOne(node.getNodeId());
 
         ArrDescItem descItemText = new ArrDescItemText();
@@ -1740,7 +1784,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItemText.setNode(node);
         descItemText.setPosition(7);
 
-        ArrDescItem descItemTextNew = arrangementManager.createDescriptionItem(descItemText, version.getFindingAidVersionId());
+        ArrDescItem descItemTextNew = (arrangementManager.createDescriptionItem(descItemText, version.getFindingAidVersionId())).getArrDescItem();
         node = nodeRepository.findOne(node.getNodeId());
 
         RulDescItemTypeExt rulDescItemTypeExt = new RulDescItemTypeExt();
@@ -1749,7 +1793,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ArrDescItem descItemUnitdate = createUnitdateValue(node, rulDescItemTypeExt, calendarTypes.get(0));
         descItemUnitdate.setPosition(8);
 
-        ArrDescItem descItemUnitdateNew = arrangementManager.createDescriptionItem(descItemUnitdate, version.getFindingAidVersionId());
+        ArrDescItem descItemUnitdateNew = (arrangementManager.createDescriptionItem(descItemUnitdate, version.getFindingAidVersionId())).getArrDescItem();
         node = nodeRepository.findOne(node.getNodeId());
 
         ArrDescItem descItemUnitid = new ArrDescItemUnitid();
@@ -1758,7 +1802,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItemUnitid.setNode(node);
         descItemUnitid.setPosition(9);
 
-        ArrDescItem descItemUnitidNew = arrangementManager.createDescriptionItem(descItemUnitid, version.getFindingAidVersionId());
+        ArrDescItem descItemUnitidNew = (arrangementManager.createDescriptionItem(descItemUnitid, version.getFindingAidVersionId())).getArrDescItem();
         node = nodeRepository.findOne(node.getNodeId());
 
         ArrDescItem descItemDecimal = new ArrDescItemDecimal();
@@ -1767,7 +1811,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItemDecimal.setNode(node);
         descItemDecimal.setPosition(10);
 
-        ArrDescItem descItemDecimalNew = arrangementManager.createDescriptionItem(descItemDecimal, version.getFindingAidVersionId());
+        ArrDescItem descItemDecimalNew = (arrangementManager.createDescriptionItem(descItemDecimal, version.getFindingAidVersionId())).getArrDescItem();
         node = nodeRepository.findOne(node.getNodeId());
 
         ParParty partyUpdate = restCreateParty();
@@ -1805,7 +1849,10 @@ public class ArrangementManagerTest extends AbstractRestTest {
         pack.setDescItems(descItems);
         pack.setDeleteDescItems(deleteDescItems);
 
-        ArrDescItems result = arrangementManager.saveDescriptionItems(pack);
+        RelatedNodeDirectionWithDescItems relatedNodeDirectionWithDescItems = arrangementManager
+                .saveDescriptionItems(pack);
+
+        ArrDescItems result = relatedNodeDirectionWithDescItems.getArrDescItems();
 
         List<ArrDescItem> descItemsResult = result.getDescItems();
 

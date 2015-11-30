@@ -22,6 +22,8 @@ import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
 import cz.tacr.elza.domain.vo.ArrNodeHistoryItem;
 import cz.tacr.elza.domain.vo.ArrNodeHistoryPack;
 import cz.tacr.elza.domain.vo.ArrNodeRegisterPack;
+import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithDescItem;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.BeanUtils;
@@ -349,7 +351,9 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         Response response = post((spec) -> spec.body(descItem).pathParameter(VERSION_ID_ATT, version.getFindingAidVersionId()),
                 CREATE_DESCRIPTION_ITEM_URL);
 
-        return response.getBody().as(ArrDescItem.class);
+        RelatedNodeDirectionWithDescItem related = response.getBody().as(
+                RelatedNodeDirectionWithDescItem.class);
+        return related.getArrDescItem();
     }
 
     /**
@@ -369,7 +373,9 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         Response response = post((spec) -> spec.body(descItem).pathParameter(VERSION_ID_ATT, version.getFindingAidVersionId())
                 .pathParameter(CREATE_NEW_VERSION_ATT, createNewVersion), UPDATE_DESCRIPTION_ITEM_URL);
 
-        return response.getBody().as(ArrDescItem.class);
+        RelatedNodeDirectionWithDescItem related = response.getBody().as(
+                RelatedNodeDirectionWithDescItem.class);
+        return related.getArrDescItem();
     }
 
     /**
@@ -382,7 +388,9 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
     private ArrDescItem deleteDescriptionItem(final ArrDescItem descItem, final ArrFindingAidVersion version) {
         Response response = delete((spec) -> spec.body(descItem).pathParameter(VERSION_ID_ATT, version.getFindingAidVersionId()), DELETE_DESCRIPTION_ITEM_URL );
 
-        return response.getBody().as(ArrDescItem.class);
+        RelatedNodeDirectionWithDescItem related = response.getBody().as(
+                RelatedNodeDirectionWithDescItem.class);
+        return related.getArrDescItem();
     }
 
     /** @return všechny typy atributů */

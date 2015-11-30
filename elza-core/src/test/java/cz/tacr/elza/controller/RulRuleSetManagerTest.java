@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.jayway.restassured.response.Response;
 
+import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -153,7 +154,7 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
 
     @Test
     @Transactional
-    public void testDeleteConformityInfo() throws Exception{
+    public void testConformityInfo() throws Exception{
 
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);
         ArrFindingAidVersion version = createFindingAidVersion(findingAid, false, null);
@@ -198,8 +199,8 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
 
         Assert.assertTrue(nodeConformityInfoRepository.findAll().size() > 0);
 
-        ruleManager.deleteConformityInfo(version.getFindingAidVersionId(), Arrays.asList(node2.getNodeId()),
-                Arrays.asList(RelatedNodeDirection.SIBLINGS));
+        ruleManager.conformityInfo(version.getFindingAidVersionId(), Arrays.asList(node21.getNodeId()),
+                NodeTypeOperation.DELETE_NODE, null, null, null);
 
         Assert.assertTrue(nodeConformityInfoRepository.findAll().size() == 0);
     }

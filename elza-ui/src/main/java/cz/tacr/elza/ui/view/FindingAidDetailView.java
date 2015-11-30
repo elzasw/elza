@@ -37,6 +37,7 @@ import cz.req.ax.AxComboBox;
 import cz.req.ax.AxContainer;
 import cz.req.ax.AxForm;
 import cz.req.ax.AxWindow;
+import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.BulkActionManager;
@@ -52,6 +53,7 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
 import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
+import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithLevelPack;
 import cz.tacr.elza.ui.ElzaView;
 import cz.tacr.elza.ui.components.Callback;
 import cz.tacr.elza.ui.components.LevelInlineDetail;
@@ -374,8 +376,11 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                             faLevelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
 
                             try {
-                                ArrLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager
+                                RelatedNodeDirectionWithLevelPack relatedNodeDirectionWithLevelPack = arrangementManager
                                         .addLevelBefore(faLevelWithExtraNode);
+                                ArrLevelWithExtraNode faLevelWithExtraNodeRet = relatedNodeDirectionWithLevelPack.getArrLevelPack();
+
+                                showRelatedNodeDirection(relatedNodeDirectionWithLevelPack.getRelatedNodeDirections());
 
                                 refreshTree(container, version.getRootLevel());
 
@@ -411,8 +416,12 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                         faLevelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
 
                         try {
-                            ArrLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager
+                            RelatedNodeDirectionWithLevelPack relatedNodeDirectionWithLevelPack = arrangementManager
                                     .addLevelAfter(faLevelWithExtraNode);
+                            ArrLevelWithExtraNode faLevelWithExtraNodeRet = relatedNodeDirectionWithLevelPack.getArrLevelPack();
+
+                            showRelatedNodeDirection(relatedNodeDirectionWithLevelPack.getRelatedNodeDirections());
+
                             refreshTree(container, version.getRootLevel());
 
                             /*
@@ -447,8 +456,13 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                     faLevelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
 
                     try {
-                        ArrLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager
+                        RelatedNodeDirectionWithLevelPack relatedNodeDirectionWithLevelPack = arrangementManager
                                 .addLevelChild(faLevelWithExtraNode);
+                        ArrLevelWithExtraNode faLevelWithExtraNodeRet = relatedNodeDirectionWithLevelPack.getArrLevelPack();
+
+
+                        showRelatedNodeDirection(relatedNodeDirectionWithLevelPack.getRelatedNodeDirections());
+
                         ArrLevel newFaLevel = faLevelWithExtraNodeRet.getLevel();
 
                         Collection<?> children = container.getChildren(itemIdLast);
@@ -483,8 +497,11 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                             faLevelWithExtraNode.setRootNode(version.getRootLevel().getNode());
                             faLevelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
 
-                            ArrLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager
+                            RelatedNodeDirectionWithLevelPack relatedNodeDirectionWithLevelPack = arrangementManager
                                     .deleteLevel(faLevelWithExtraNode);
+                            ArrLevelWithExtraNode faLevelWithExtraNodeRet = relatedNodeDirectionWithLevelPack.getArrLevelPack();
+
+                            showRelatedNodeDirection(relatedNodeDirectionWithLevelPack.getRelatedNodeDirections());
 
                             refreshTree(container, version.getRootLevel());
 
@@ -527,8 +544,11 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                             faLevelWithExtraNode.setRootNode(version.getRootLevel().getNode());
                             faLevelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
 
-                            ArrLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager.moveLevelBefore(
-                                    faLevelWithExtraNode);
+                            RelatedNodeDirectionWithLevelPack relatedNodeDirectionWithLevelPack = arrangementManager
+                                    .moveLevelBefore(
+                                            faLevelWithExtraNode);
+                            ArrLevelWithExtraNode faLevelWithExtraNodeRet = relatedNodeDirectionWithLevelPack.getArrLevelPack();
+                            showRelatedNodeDirection(relatedNodeDirectionWithLevelPack.getRelatedNodeDirections());
 
                             refreshTree(container, version.getRootLevel());
 
@@ -564,8 +584,11 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                             faLevelWithExtraNode.setRootNode(version.getRootLevel().getNode());
                             faLevelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
 
-                            ArrLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager.moveLevelAfter(
-                                    faLevelWithExtraNode);
+                            RelatedNodeDirectionWithLevelPack relatedNodeDirectionWithLevelPack = arrangementManager
+                                    .moveLevelAfter(
+                                            faLevelWithExtraNode);
+                            ArrLevelWithExtraNode faLevelWithExtraNodeRet = relatedNodeDirectionWithLevelPack.getArrLevelPack();
+                            showRelatedNodeDirection(relatedNodeDirectionWithLevelPack.getRelatedNodeDirections());
                             refreshTree(container, version.getRootLevel());
 
                             discardNodeCut();
@@ -599,8 +622,11 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                             faLevelWithExtraNode.setExtraNode(((ArrLevel) itemId).getNode());
                             faLevelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
 
-                            ArrLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager
+                            RelatedNodeDirectionWithLevelPack relatedNodeDirectionWithLevelPack = arrangementManager
                                     .moveLevelUnder(faLevelWithExtraNode);
+                            ArrLevelWithExtraNode faLevelWithExtraNodeRet = relatedNodeDirectionWithLevelPack.getArrLevelPack();
+
+                            showRelatedNodeDirection(relatedNodeDirectionWithLevelPack.getRelatedNodeDirections());
                             container.setCollapsed(((ArrLevel) itemId), false);
                             refreshTree(container, version.getRootLevel());
 
@@ -939,10 +965,14 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                         faLevelWithExtraNode.setRootNode(version.getRootLevel().getNode());
                         faLevelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
                         try {
-                            ArrLevelWithExtraNode faLevelWithExtraNodeRet = arrangementManager
+                            RelatedNodeDirectionWithLevelPack relatedNodeDirectionWithLevelPack = arrangementManager
                                     .addLevelChild(faLevelWithExtraNode);
+                            ArrLevelWithExtraNode faLevelWithExtraNodeRet = relatedNodeDirectionWithLevelPack
+                                    .getArrLevelPack();
                             ArrLevel newFaLevel = faLevelWithExtraNodeRet.getLevel();
                             version.getRootLevel().setNode(faLevelWithExtraNodeRet.getExtraNode());
+
+                            showRelatedNodeDirection(relatedNodeDirectionWithLevelPack.getRelatedNodeDirections());
 
                             // refresh uzlu - vygenerovaná nová verze (zámky)
                             version.getRootLevel().setNodeParent(faLevelWithExtraNodeRet.getExtraNode());
@@ -985,6 +1015,20 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                             showDetailAP()),
                     new AxAction().caption("Výběr sloupců").icon(FontAwesome.COG).run(() ->
                             showDescItemTypeWindow()));
+        }
+    }
+
+    /**
+     * Zobrazení dopadů levelů na notifikaci do UI.
+     * @param relatedNodeDirections
+     */
+    public static void showRelatedNodeDirection(final Collection<Collection<RelatedNodeDirection>> relatedNodeDirections) {
+        if (relatedNodeDirections != null) {
+            for (Collection<RelatedNodeDirection> relatedNodeDirection : relatedNodeDirections) {
+                if (relatedNodeDirection != null && !relatedNodeDirection.isEmpty()) {
+                    ElzaNotifications.show(relatedNodeDirection.toString());
+                }
+            }
         }
     }
 

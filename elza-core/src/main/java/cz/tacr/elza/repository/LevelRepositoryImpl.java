@@ -181,7 +181,15 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         Assert.notNull(direction);
 
         switch (direction) {
+            case NODE:
+                return Arrays.asList(level);
             case PARENTS:
+
+                // pokud je to root level, nemuze mit rodice
+                if (level.getNode().equals(version.getRootLevel().getNode())) {
+                    return Arrays.asList();
+                }
+
                 return Arrays.asList(levelRepository
                         .findNodeInRootTreeByNodeId(level.getNodeParent(), version.getRootLevel().getNode(),
                                 version.getLockChange()));
@@ -196,6 +204,8 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
                         .findByParentNode(level.getNodeParent(), version.getLockChange());
                 siblings.remove(level); //chceme pouze sourozence, bez nas
                 return siblings;
+            case ALL:
+                return levelRepository.findAllChildrenByNode(version.getRootLevel().getNode(), version.getLockChange());
             default:
                 throw new NotImplementedException(
                         "Chybi implementace pro smer prohledavani stromu " + direction.name());

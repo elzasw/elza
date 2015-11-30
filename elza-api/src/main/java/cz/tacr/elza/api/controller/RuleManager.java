@@ -2,8 +2,9 @@ package cz.tacr.elza.api.controller;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
-
+import cz.tacr.elza.api.ArrDescItem;
 import cz.tacr.elza.api.RulArrangementType;
 import cz.tacr.elza.api.RulDataType;
 import cz.tacr.elza.api.RulDescItemSpec;
@@ -11,6 +12,7 @@ import cz.tacr.elza.api.RulDescItemType;
 import cz.tacr.elza.api.RulFaView;
 import cz.tacr.elza.api.RulRuleSet;
 import cz.tacr.elza.api.vo.FaViewDescItemTypes;
+import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 
 
@@ -25,7 +27,8 @@ import cz.tacr.elza.api.vo.RelatedNodeDirection;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 12. 8. 2015
  */
-public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType, DIS extends RulDescItemSpec, RFV extends RulFaView> {
+public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType, DIS extends RulDescItemSpec,
+        RFV extends RulFaView, NTO extends NodeTypeOperation, RND extends RelatedNodeDirection, DI extends ArrDescItem> {
 
     /**
      * Najde specifikaci podle id.
@@ -98,15 +101,4 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      */
     List<Integer> saveFaViewDescItemTypes(RFV rulFaView, Integer[] descItemTypeIds);
 
-
-    /**
-     * Pro vybrané nody s danou verzí smaže všechny stavy v daných směrech od nodů.
-     *
-     * @param faVersionId      verze nodů
-     * @param nodeIds          seznam id nodů, od kterých se má prohledávat
-     * @param deleteDirections směry prohledávání (null pokud se mají smazat stavy zadaných nodů .
-     */
-    void deleteConformityInfo(Integer faVersionId,
-                              Collection<Integer> nodeIds,
-                              Collection<RelatedNodeDirection> deleteDirections);
 }
