@@ -225,7 +225,8 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
     @Transactional
     public void testSetConformityInfo() {
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);
-        ArrFindingAidVersion version = createFindingAidVersion(findingAid, false, null);
+        ArrChange faVersionChange = createFaChange(LocalDateTime.now());
+        ArrFindingAidVersion version = createFindingAidVersion(findingAid, false, faVersionChange);
 
         ArrChange faChange = createFaChange(LocalDateTime.now());
         ArrLevel level = createLevel(1, version.getRootLevel(), faChange);
@@ -256,7 +257,7 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
         data.setValue(123456);
         dataRepository.save(data);
 
-        ruleManager.setConformityInfo(level.getLevelId(), version.getRootLevel().getLevelId());
+        ruleManager.setConformityInfo(level.getLevelId(), version.getFindingAidVersionId());
 
         Assert.assertTrue(nodeConformityInfoRepository.findAll().size() > 0);
         Assert.assertTrue(nodeConformityErrorsRepository.findAll().size() > 0);
