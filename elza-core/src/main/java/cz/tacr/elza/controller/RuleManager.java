@@ -1,10 +1,12 @@
 package cz.tacr.elza.controller;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,11 +27,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.api.ArrNodeConformityInfoExt;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
+import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformityErrors;
 import cz.tacr.elza.domain.ArrNodeConformityInfo;
@@ -44,6 +49,7 @@ import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
+import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.DescItemConstraintRepository;
@@ -51,11 +57,14 @@ import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FaViewRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
+import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeConformityErrorsRepository;
 import cz.tacr.elza.repository.NodeConformityInfoRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.validation.ArrDescItemsPostValidator;
+
 
 /**
  * Implementace API pro práci s pravidly.
@@ -92,6 +101,9 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     private FaViewRepository faViewRepository;
 
     @Autowired
+    private LevelRepository levelRepository;
+
+    @Autowired
     private NodeRepository nodeRepository;
 
     @Autowired
@@ -105,6 +117,15 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
 
     @Autowired
     private RulesExecutor rulesExecutor;
+
+    @Autowired
+    private ArrDescItemsPostValidator descItemsPostValidator;
+
+    @Autowired
+    private ArrangementManager arrangementManager;
+
+    @Autowired
+    private ExtendedObjectsFactory extendedObjectsFactory;
 
     @Override
     @RequestMapping(value = "/getDescItemSpecById", method = RequestMethod.GET)
@@ -326,6 +347,89 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
 
         return Arrays.asList(descItemTypeIds);
     }
+
+    @Override
+    public ArrNodeConformityInfoExt setConformityInfo(final Integer faLevelId, final Integer faVersionId) {
+        Assert.notNull(faLevelId);
+        Assert.notNull(faVersionId);
+
+        ArrLevel level = levelRepository.findOne(faLevelId);
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
+
+        if (!arrangementManager.validLevelInVersion(level, version)) {
+            throw new IllegalArgumentException("Level s id " + faLevelId + " nespadá do verze s id " + faVersionId);
+        }
+
+        List<DataValidationResult> validationResults = descItemsPostValidator.postValidateNodeDescItems(level, version);
+        ArrNodeConformityInfoExt result = updateNodeConformityInfo(level, version, validationResults);
+
+        level.getNode().setLastUpdate(LocalDateTime.now());
+        nodeRepository.save(level.getNode());
+
+        return result;
+    }
+
+
+    /**
+     * Provede uložení stavu pro daný uzel podle výsledku validace.
+     * @param level validaovaný uzel
+     * @param version verze, do které spadá uzel
+     * @param validationResults seznam validačních chyb
+     */
+    private ArrNodeConformityInfoExt updateNodeConformityInfo(final ArrLevel level,
+                                          final ArrFindingAidVersion version,
+                                          final List<DataValidationResult> validationResults) {
+
+        ArrNodeConformityInfo conformityInfo = nodeConformityInfoRepository
+                .findByNodeAndFaVersion(level.getNode(), version);
+
+        if (conformityInfo != null && conformityInfo.getState().equals(ArrNodeConformityInfo.State.OK)) {
+            conformityInfo.setDate(new Date());
+        } else {
+            if(conformityInfo != null){
+                deleteConformityInfo(Arrays.asList(conformityInfo));
+            }
+            conformityInfo = new ArrNodeConformityInfo();
+            conformityInfo.setNode(level.getNode());
+            conformityInfo.setFaVersion(version);
+            conformityInfo.setDate(new Date());
+        }
+
+
+        if (validationResults.isEmpty()) {
+            conformityInfo.setState(ArrNodeConformityInfo.State.OK);
+            nodeConformityInfoRepository.save(conformityInfo);
+        } else {
+            conformityInfo.setState(ArrNodeConformityInfo.State.ERR);
+            nodeConformityInfoRepository.save(conformityInfo);
+
+            for (DataValidationResult validationResult : validationResults) {
+                switch (validationResult.getResultType()) {
+                    case MISSING:
+                        ArrNodeConformityMissing missing = new ArrNodeConformityMissing();
+                        missing.setNodeConformityInfo(conformityInfo);
+                        missing.setDescItemType(validationResult.getType());
+                        missing.setDescItemSpec(validationResult.getSpec());
+                        missing.setDescription(validationResult.getMessage());
+                        nodeConformityMissingRepository.save(missing);
+                        break;
+                    case ERROR:
+                        ArrNodeConformityErrors error = new ArrNodeConformityErrors();
+                        error.setNodeConformityInfo(conformityInfo);
+                        error.setDescItem(validationResult.getDescItem());
+                        error.setDescription(validationResult.getMessage());
+                        nodeConformityErrorsRepository.save(error);
+                        break;
+                }
+            }
+        }
+
+        return extendedObjectsFactory.createNodeConformityInfoExt(conformityInfo, true);
+    }
+
+
+
+
 
     /**
      * Provede úpravů (smazání) stavů uzlů podle pravidel.

@@ -347,4 +347,14 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @return uzel
      */
     N createNode();
+
+
+    /**
+     * Zjistí, jestli patří vybraný level do dané verze.
+     *
+     * @param level   level
+     * @param version verze
+     * @return true pokud patří uzel do verze, jinak false
+     */
+    boolean validLevelInVersion(FL level, FV version);
 }

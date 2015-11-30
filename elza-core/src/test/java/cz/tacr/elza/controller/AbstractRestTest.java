@@ -293,7 +293,7 @@ public abstract class AbstractRestTest {
     @Autowired
     private DescItemConstraintRepository descItemConstraintRepository;
     @Autowired
-    private DataTypeRepository dataTypeRepository;
+    protected DataTypeRepository dataTypeRepository;
     @Autowired
     private FaViewRepository faViewRepository;
     @Autowired

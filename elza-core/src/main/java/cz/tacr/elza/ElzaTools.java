@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.apache.commons.collections4.CollectionUtils;
+
+
 /**
  * Obecné pomocné metody.
  *
@@ -48,10 +51,36 @@ public class ElzaTools {
     public static <T> Map<Integer, T> createEntityMap(final Collection<T> entities,
                                                       final Function<T, Integer> getKeyFunction) {
         Map<Integer, T> result = new HashMap<>();
+        if(CollectionUtils.isEmpty(entities)){
+            return result;
+        }
+
         for (T entity : entities) {
 
             Integer key = getKeyFunction.apply(entity);
             result.put(key, entity);
+        }
+        return result;
+    }
+
+    /**
+     * Vytvoří nový filtrovaný seznam podle filtru.
+     *
+     * @param entities       seznam hodnot, které budeme filtrovat
+     * @param filterFunction funkce pro filtrování
+     * @param <T>            typ entity
+     * @return vyfiltrovaný seznam
+     */
+    public static <T> List<T> filter(final Collection<T> entities, final Function<T, Boolean> filterFunction) {
+
+        List<T> result = new LinkedList<>();
+        if (entities == null) {
+            return result;
+        }
+        for (T entity : entities) {
+            if (filterFunction.apply(entity)) {
+                result.add(entity);
+            }
         }
         return result;
     }

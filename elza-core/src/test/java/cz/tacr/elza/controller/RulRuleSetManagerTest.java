@@ -18,6 +18,7 @@ import com.jayway.restassured.response.Response;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
@@ -31,8 +32,12 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
+import cz.tacr.elza.domain.vo.DataValidationResult;
+import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
+import cz.tacr.elza.validation.ArrDescItemsPostValidator;
 
 
 /**
@@ -50,6 +55,16 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
 
     @Autowired
     private FindingAidVersionRepository findingAidVersionRepository;
+    @Autowired
+    private ArrangementManager arrangementManager;
+
+    @Autowired
+    private ArrDescItemsPostValidator descItemsPostValidator;
+
+    @Autowired
+    private DataRepository dataRepository;
+    @Autowired
+    private DescItemFactory descItemFactory;
 
     @Test
     public void testRestGetDescItemSpecById() throws Exception{
@@ -110,7 +125,8 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
 
         createConstrain(2);
 
-        Response response = get((spec) -> spec.parameter("faVersionId", version.getFindingAidVersionId()).parameter(NODE_ID_ATT, 1),
+        Response response = get((spec) -> spec.parameter("faVersionId", version.getFindingAidVersionId()).parameter(
+                NODE_ID_ATT, 1),
                 GET_DIT_FOR_NODE_ID_URL);
 
         List<RulDescItemTypeExt> ruleSets =
@@ -203,5 +219,47 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
                 NodeTypeOperation.DELETE_NODE, null, null, null);
 
         Assert.assertTrue(nodeConformityInfoRepository.findAll().size() == 0);
+    }
+
+    @Test
+    @Transactional
+    public void testSetConformityInfo() {
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
+        ArrFindingAidVersion version = createFindingAidVersion(findingAid, false, null);
+
+        ArrChange faChange = createFaChange(LocalDateTime.now());
+        ArrLevel level = createLevel(1, version.getRootLevel(), faChange);
+
+
+        RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
+        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false,
+                false, true, 1);
+        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2",
+                1);
+
+        createDescItemConstrain(descItemType, null, version, null, "[0-9]*", null);
+        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 5);
+
+        ArrDescItem descItem = createArrDescItem(faChange, null, null, descItemType, descItemSpec, level.getNode(), 1);
+
+        ArrDataInteger dataInteger = new ArrDataInteger();
+        dataInteger.setValue(123);
+        dataInteger.setDescItem(descItem);
+        dataInteger.setDataType(dataTypeRepository.getOne(DATA_TYPE_INTEGER));
+        dataRepository.save(dataInteger);
+
+
+        List<DataValidationResult> validationResults = descItemsPostValidator.postValidateNodeDescItems(level, version);
+        Assert.assertTrue(validationResults.isEmpty());
+
+        ArrDataInteger data = (ArrDataInteger) dataRepository.findByDescItem(descItem).iterator().next();
+        data.setValue(123456);
+        dataRepository.save(data);
+
+        ruleManager.setConformityInfo(level.getLevelId(), version.getRootLevel().getLevelId());
+
+        Assert.assertTrue(nodeConformityInfoRepository.findAll().size() > 0);
+        Assert.assertTrue(nodeConformityErrorsRepository.findAll().size() > 0);
+
     }
 }

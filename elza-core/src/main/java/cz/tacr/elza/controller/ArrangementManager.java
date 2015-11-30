@@ -1521,7 +1521,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             throw new IllegalArgumentException("Nelze provést verzovanou změnu v uzavřené verzi.");
         }
 
-        List<ArrDescItem> descItemsGroup = getDescItemByTypeAndSpec(mapDescItems, updateDescItem.getDescItemType(), updateDescItem.getDescItemSpec(), updateDescItem.getNode());
+        List<ArrDescItem> descItemsGroup = getDescItemByTypeAndSpec(mapDescItems, updateDescItem.getDescItemType(),
+                updateDescItem.getDescItemSpec(), updateDescItem.getNode());
         Integer maxPosition = getMaxPositionInDescItems(descItemsGroup);
 
         if (updateDescItem.getPosition() == null || updateDescItem.getPosition() > maxPosition) {
@@ -1628,7 +1629,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                                              boolean saveNode) {
         Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems = new HashMap<>();
 
-        ArrDescItem descItemRet = createDescriptionItemRaw(createDescItem, version.getFindingAidVersionId(), change, saveNode, mapDescItems, getNextDescItemObjectId());
+        ArrDescItem descItemRet = createDescriptionItemRaw(createDescItem, version.getFindingAidVersionId(), change,
+                saveNode, mapDescItems, getNextDescItemObjectId());
         saveChanges(mapDescItems, null, true);
         return descItemRet;
     }
@@ -2656,6 +2658,25 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         List<ArrPacketType> result = packetTypeRepository.findAll();
         return result;
     }
+
+
+    @Override
+    public boolean validLevelInVersion(final ArrLevel level, final ArrFindingAidVersion version) {
+        Assert.notNull(level);
+        Assert.notNull(version);
+        Integer lockChange = version.getLockChange() == null
+                             ? Integer.MAX_VALUE : version.getLockChange().getChangeId();
+
+        Integer levelDeleteChange = level.getDeleteChange() == null ?
+                                    Integer.MAX_VALUE : level.getDeleteChange().getChangeId();
+
+        if (level.getCreateChange().getChangeId() < lockChange && levelDeleteChange >= lockChange) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 
     /**
      * Uložení poslední uživatelské změny nad AP k verzi AP

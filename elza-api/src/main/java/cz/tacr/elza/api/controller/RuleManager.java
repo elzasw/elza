@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import cz.tacr.elza.api.ArrDescItem;
+import cz.tacr.elza.api.ArrNodeConformityInfoExt;
 import cz.tacr.elza.api.RulArrangementType;
 import cz.tacr.elza.api.RulDataType;
 import cz.tacr.elza.api.RulDescItemSpec;
@@ -100,5 +101,15 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      * @return descItemTypeIds
      */
     List<Integer> saveFaViewDescItemTypes(RFV rulFaView, Integer[] descItemTypeIds);
+
+
+    /**
+     * Provede validaci atributů vybraného uzlu a nastaví jejich validační hodnoty.
+     *
+     * @param faLevelId   id uzlu
+     * @param faVersionId id verze
+     * @return stav validovaného uzlu
+     */
+    ArrNodeConformityInfoExt setConformityInfo(Integer faLevelId, Integer faVersionId);
 
 }
