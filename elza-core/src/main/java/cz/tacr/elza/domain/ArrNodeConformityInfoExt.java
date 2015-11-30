@@ -10,7 +10,7 @@ import java.util.List;
  * @since 26.11.2015
  */
 public class ArrNodeConformityInfoExt extends ArrNodeConformityInfo
-        implements cz.tacr.elza.api.ArrNodeConformityInfoExt<ArrNodeConformityMissing, ArrNodeConformityErrors> {
+        implements cz.tacr.elza.api.ArrNodeConformityInfoExt<ArrNode, ArrFindingAidVersion, ArrNodeConformityMissing, ArrNodeConformityErrors> {
 
     /**
      * Seznam chybějících hodnot.

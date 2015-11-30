@@ -492,6 +492,8 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
                     .findByNodesAndVersion(deleteNodes, version);
 
             deleteConformityInfo(deleteInfos);
+            version.setState(null);
+            findingAidVersionRepository.save(version);
         }
     }
 

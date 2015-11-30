@@ -19,6 +19,7 @@ import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.BulkActionState;
 import cz.tacr.elza.bulkaction.generator.CleanDescriptionItemBulkAction;
+import cz.tacr.elza.bulkaction.generator.FindingAidValidationBulkAction;
 import cz.tacr.elza.bulkaction.generator.SerialNumberBulkAction;
 import cz.tacr.elza.bulkaction.generator.UnitIdBulkAction;
 import cz.tacr.elza.domain.ArrDescItemInt;
@@ -50,7 +51,7 @@ public class BulkActionManagerTest extends AbstractRestTest {
 
         List<String> types = Arrays.asList(response.getBody().as(String[].class));
 
-        Assert.assertEquals(3, types.size());
+        Assert.assertEquals(4, types.size());
 
         if (!types.contains(CleanDescriptionItemBulkAction.TYPE)) {
             Assert.fail("Hromadna akce " + CleanDescriptionItemBulkAction.TYPE + " neni v seznamu");
@@ -62,6 +63,10 @@ public class BulkActionManagerTest extends AbstractRestTest {
 
         if (!types.contains(SerialNumberBulkAction.TYPE)) {
             Assert.fail("Hromadna akce " + SerialNumberBulkAction.TYPE + " neni v seznamu");
+        }
+
+        if (!types.contains(FindingAidValidationBulkAction.TYPE)) {
+            Assert.fail("Hromadna akce " + FindingAidValidationBulkAction.TYPE + " neni v seznamu");
         }
 
     }
