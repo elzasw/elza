@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.jayway.restassured.response.Response;
 
+import cz.tacr.elza.api.ArrNodeConformityInfo;
 import cz.tacr.elza.api.vo.BulkActionState.State;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionService;
@@ -358,10 +359,18 @@ public class BulkActionManagerTest extends AbstractRestTest {
                 + "delimiter_minor: /\n"
                 + "level_type_code: ZP2015_LEVEL_TYPE");
 
+        BulkActionConfig bulkActionConfigFinding = new BulkActionConfig();
+        bulkActionConfigFinding.setCode("FINDING");
+
+        bulkActionConfigFinding.setConfiguration("code_type_bulk_action: FINDING_AID_VALIDATION\n"
+                + "rule_code: " + TEST_CODE + "\n"
+                + "mandatory_arrangement_type: INV|MAN|KAT");
+
         try {
             bulkActionService.createBulkAction(bulkActionConfigSerial);
             bulkActionService.createBulkAction(bulkActionConfigClean);
             bulkActionService.createBulkAction(bulkActionConfigUnit);
+            bulkActionService.createBulkAction(bulkActionConfigFinding);
 
             //
             //  Spusteni prvni hromadne akce
@@ -496,10 +505,48 @@ public class BulkActionManagerTest extends AbstractRestTest {
             descItemUnitid = (ArrDescItemUnitid) levelExt.getDescItemList().get(0);
             Assert.assertEquals("1/1/2", descItemUnitid.getValue());
 
+            //
+            //  Spusteni ctvrte hromadne akce
+            //
+
+            bulkActionStates = runBulkActionAndWaitForResult(version, bulkActionConfigFinding, 3);
+            Assert.assertEquals(4, bulkActionStates.size());
+
+            // kontrola root uzlu
+
+            levelExt = getLevelByNodeId(version.getRootLevel().getNode().getNodeId(), version.getFindingAidVersionId());
+            Assert.assertEquals(ArrNodeConformityInfo.State.OK, levelExt.getNodeConformityInfo().getState());
+
+            // kontrola prvni urovne uzlu
+
+            levels = getSubLevels(version.getRootLevel().getNode(), version);
+            Assert.assertEquals(2, levels.size());
+
+            levelExt = getLevelByNodeId(levels.get(0).getNode().getNodeId(), version.getFindingAidVersionId());
+            Assert.assertEquals(ArrNodeConformityInfo.State.OK, levelExt.getNodeConformityInfo().getState());
+
+            levelExt = getLevelByNodeId(levels.get(1).getNode().getNodeId(), version.getFindingAidVersionId());
+            Assert.assertEquals(ArrNodeConformityInfo.State.OK, levelExt.getNodeConformityInfo().getState());
+
+            // kontrola druhe urovni prvniho uzlu
+
+            sublevels = getSubLevels(levels.get(0).getNode(), version);
+            Assert.assertEquals(2, sublevels.size());
+
+            levelExt = getLevelByNodeId(sublevels.get(0).getNode().getNodeId(), version.getFindingAidVersionId());
+            Assert.assertEquals(ArrNodeConformityInfo.State.OK, levelExt.getNodeConformityInfo().getState());
+
+            levelExt = getLevelByNodeId(sublevels.get(1).getNode().getNodeId(), version.getFindingAidVersionId());
+            Assert.assertEquals(ArrNodeConformityInfo.State.OK, levelExt.getNodeConformityInfo().getState());
+
+            version = getFindingAidOpenVersion(version.getFindingAid());
+            Assert.assertEquals(ArrFindingAidVersion.State.OK, version.getState());
+
         } finally {
             cleanUpBulkActionConfig(bulkActionConfigSerial);
             cleanUpBulkActionConfig(bulkActionConfigClean);
             cleanUpBulkActionConfig(bulkActionConfigUnit);
+            cleanUpBulkActionConfig(bulkActionConfigFinding);
         }
 
     }

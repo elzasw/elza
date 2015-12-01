@@ -2,9 +2,6 @@ package cz.tacr.elza.bulkaction.generator;
 
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -50,9 +47,6 @@ public class FindingAidValidationBulkAction extends BulkAction {
      * Stav hromadné akce
      */
     private BulkActionState bulkActionState;
-
-    @PersistenceContext
-    private EntityManager entityManager;
 
     @Autowired
     private RuleManager ruleManager;
@@ -117,7 +111,6 @@ public class FindingAidValidationBulkAction extends BulkAction {
         this.bulkActionState.setRunChange(this.change);
 
         ArrFindingAidVersion.State state = generate(version.getRootLevel());
-        //entityManager.refresh(version);
         version.setState(state);
         findingAidVersionRepository.save(version);
     }
