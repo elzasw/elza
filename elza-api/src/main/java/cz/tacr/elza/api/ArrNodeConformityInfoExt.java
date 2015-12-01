@@ -9,7 +9,7 @@ import java.util.List;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 26.11.2015
  */
-public interface ArrNodeConformityInfoExt<MIS extends ArrNodeConformityMissing, ERR extends ArrNodeConformityErrors> {
+public interface ArrNodeConformityInfoExt<AN extends ArrNode, AFAV extends ArrFindingAidVersion, MIS extends ArrNodeConformityMissing, ERR extends ArrNodeConformityErrors> extends ArrNodeConformityInfo<AN, AFAV> {
 
     /**
      * @return Seznam chybějících hodnot.

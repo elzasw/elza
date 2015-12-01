@@ -20,6 +20,7 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 import cz.tacr.elza.bulkaction.factory.BulkActionFactory;
 import cz.tacr.elza.bulkaction.generator.BulkAction;
 import cz.tacr.elza.bulkaction.generator.CleanDescriptionItemBulkAction;
+import cz.tacr.elza.bulkaction.generator.FindingAidValidationBulkAction;
 import cz.tacr.elza.bulkaction.generator.SerialNumberBulkAction;
 import cz.tacr.elza.bulkaction.generator.UnitIdBulkAction;
 import cz.tacr.elza.domain.ArrChange;
@@ -71,6 +72,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         bulkActionTypes.add(CleanDescriptionItemBulkAction.TYPE);
         bulkActionTypes.add(SerialNumberBulkAction.TYPE);
         bulkActionTypes.add(UnitIdBulkAction.TYPE);
+        bulkActionTypes.add(FindingAidValidationBulkAction.TYPE);
         bulkActionConfigManager.load();
     }
 
