@@ -27,6 +27,11 @@ public class BulkActionState implements cz.tacr.elza.api.vo.BulkActionState<ArrC
      */
     private Integer processId = 0;
 
+    /**
+     * Kód hromadné akce
+     */
+    private String bulkActionCode;
+
     @Override
     public synchronized ArrChange getRunChange() {
         return runChange;
@@ -64,5 +69,15 @@ public class BulkActionState implements cz.tacr.elza.api.vo.BulkActionState<ArrC
                 ", state=" + state +
                 ", processId=" + processId +
                 '}';
+    }
+
+    @Override
+    public String getBulkActionCode() {
+        return bulkActionCode;
+    }
+
+    @Override
+    public void setBulkActionCode(final String bulkActionCode) {
+        this.bulkActionCode = bulkActionCode;
     }
 }

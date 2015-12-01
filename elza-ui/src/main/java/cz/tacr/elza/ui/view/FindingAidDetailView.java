@@ -62,6 +62,7 @@ import cz.tacr.elza.ui.utils.ConcurrentUpdateExceptionHandler;
 import cz.tacr.elza.ui.utils.ElzaNotifications;
 import cz.tacr.elza.ui.utils.UnitDateConvertor;
 import cz.tacr.elza.ui.window.BulkActionApproveVersionWindow;
+import cz.tacr.elza.ui.window.BulkActionsWindow;
 import cz.tacr.elza.ui.window.DescItemTypeWindow;
 import cz.tacr.elza.ui.window.LevelHistoryWindow;
 import cz.tacr.elza.ui.window.PosAction;
@@ -1011,6 +1012,9 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                         }
 
                     }),
+                    new AxAction().caption("Hromadné akce").icon(FontAwesome.PLAY_CIRCLE).run(() -> {
+                        showBulkActionsWindow();
+                    }),
                     new AxAction().caption("Zobrazit detail AP").icon(FontAwesome.BOOK).run(() ->
                             showDetailAP()),
                     new AxAction().caption("Výběr sloupců").icon(FontAwesome.COG).run(() ->
@@ -1119,6 +1123,12 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
     private BulkActionApproveVersionWindow showBulkActionApproveVersionWindow(final List<BulkActionConfig> bulkActionConfigs) {
         BulkActionApproveVersionWindow window = new BulkActionApproveVersionWindow(bulkActionManager);
         window.show(version.getFindingAidVersionId(), bulkActionConfigs, () -> approveVersionDialog());
+        return window;
+    }
+
+    private BulkActionsWindow showBulkActionsWindow() {
+        BulkActionsWindow window = new BulkActionsWindow(bulkActionManager);
+        window.show(version.getFindingAidVersionId());
         return window;
     }
 

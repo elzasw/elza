@@ -74,4 +74,20 @@ public interface BulkActionState<FC extends ArrChange> {
      */
     void setProcessId(Integer processId);
 
+
+    /**
+     * Vrací kód hromadné akce.
+     *
+     * @return kód hromadné akce
+     */
+    String getBulkActionCode();
+
+
+    /**
+     * Nastavení kódu hromadné akce.
+     *
+     * @param bulkActionCode kód hromadné akce
+     */
+    void setBulkActionCode(String bulkActionCode);
+
 }

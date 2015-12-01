@@ -335,6 +335,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
                 BulkActionState state = new BulkActionState();
                 state.setState(State.FINISH);
                 state.setRunChange(arrFaBulkAction.getChange());
+                state.setBulkActionCode(arrFaBulkAction.getBulkActionCode());
                 bulkActionStates.add(state);
             }
         }

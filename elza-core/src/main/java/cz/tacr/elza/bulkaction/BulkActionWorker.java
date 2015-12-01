@@ -52,6 +52,7 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
                             final BulkActionConfig bulkActionConfig,
                             final Integer versionId) {
         bulkActionState = new BulkActionState();
+        bulkActionState.setBulkActionCode(bulkActionConfig.getCode());
         this.bulkAction = bulkAction;
         this.bulkActionConfig = bulkActionConfig;
         this.versionId = versionId;

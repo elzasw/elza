@@ -45,6 +45,19 @@ $ax-main-focus: $color-app;
                 .bulkaction-name {
                     margin-left: 10px;
                 }
+
+                .bulkaction-code {
+                    margin-left: 10px;
+                    width: 400px;
+                }
+
+                .bulkaction-state {
+                    margin-left: 10px;
+                }
+
+                .action-button {
+                    width: 150px;
+                }
             }
         }
     }
@@ -251,6 +264,7 @@ $ax-main-focus: $color-app;
         }
 
     }
+
 }
 
 .v-overlay-container[aria-label="item-not-cut"] .v-menubar-menuitem-show-if-cut {
