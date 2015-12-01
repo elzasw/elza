@@ -85,6 +85,7 @@ public class ArrDescItemsPostValidatorImpl implements ArrDescItemsPostValidator 
                 result.add(DataValidationResult
                         .createError(descItem, "Atribut " + descItem.getDescItemType().getName()
                                 + " není možné evidovat u této jednotky archivního popisu."));
+                continue;
             }
 
             List<ArrDescItem> itemsInType = descItemsInTypeMap.get(descItem.getDescItemType().getDescItemTypeId());
@@ -98,9 +99,10 @@ public class ArrDescItemsPostValidatorImpl implements ArrDescItemsPostValidator 
 
         for (Integer destItemTypeId : descItemsInTypeMap.keySet()) {
             RulDescItemTypeExt extType = extNodeTypes.get(destItemTypeId);
-            requiredTypes.remove(extType);
-
-            result.addAll(postValidateDescItemsInType(descItemsInTypeMap.get(destItemTypeId), extType));
+            if(extType != null){
+                requiredTypes.remove(extType);
+                result.addAll(postValidateDescItemsInType(descItemsInTypeMap.get(destItemTypeId), extType));
+            }
         }
 
         //smazání hodnot, které jsou povinné a nejsou zadány
