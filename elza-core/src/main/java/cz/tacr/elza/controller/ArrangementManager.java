@@ -2529,6 +2529,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
     }
 
+    /**
+     * Smazání vazeb uzlu na rejstř. heslo.
+     *
+     * @param arrNodeRegisterList   seznam vazeb pro create, update i delete
+     * @param version               verze archivní pomůcky
+     */
     private void delArrNodeRegisterLinks(final @RequestBody List<ArrNodeRegister> arrNodeRegisterList,
                                          final ArrFindingAidVersion version) {
         Assert.notNull(arrNodeRegisterList);
@@ -2554,7 +2560,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      * Create či update vazby heslo na node.
      *
      * @param arrNodeRegisterList   list vazeb ke create či update
-     * @param version
+     * @param version               verze archivní pomůcky
      */
     private void saveNodeRegisterLinks(final List<ArrNodeRegister> arrNodeRegisterList,
                                        final ArrFindingAidVersion version) {
