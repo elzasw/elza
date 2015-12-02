@@ -10,6 +10,7 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.api.ArrNodeConformityInfo;
 import cz.tacr.elza.api.ArrNodeConformityInfoExt;
+import cz.tacr.elza.api.vo.RuleEvaluationType;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionState;
 import cz.tacr.elza.controller.RuleManager;
@@ -48,6 +49,11 @@ public class FindingAidValidationBulkAction extends BulkAction {
      */
     private BulkActionState bulkActionState;
 
+    /**
+     * Typ pravidel, které se mají pro vyhodnocení použít
+     */
+    private RuleEvaluationType evaluationType;
+
     @Autowired
     private RuleManager ruleManager;
 
@@ -59,6 +65,10 @@ public class FindingAidValidationBulkAction extends BulkAction {
     private void init(final BulkActionConfig bulkActionConfig) {
 
         Assert.notNull(bulkActionConfig);
+
+        String evaluationTypeString = (String) bulkActionConfig.getProperty("evaluation_type");
+        evaluationType = RuleEvaluationType.valueOf(evaluationTypeString);
+        Assert.notNull(evaluationType);
 
     }
 
@@ -74,7 +84,7 @@ public class FindingAidValidationBulkAction extends BulkAction {
         ArrFindingAidVersion.State state = ArrFindingAidVersion.State.OK;
 
         ArrNodeConformityInfoExt nodeConformityInfoExt = ruleManager
-                .setConformityInfo(level.getLevelId(), version.getFindingAidVersionId());
+                .setConformityInfo(level.getLevelId(), version.getFindingAidVersionId(), evaluationType);
 
         ArrNodeConformityInfo.State stateLevel = nodeConformityInfoExt.getState();
 

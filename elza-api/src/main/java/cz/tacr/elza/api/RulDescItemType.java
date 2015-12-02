@@ -12,6 +12,22 @@ import java.io.Serializable;
  */
 public interface RulDescItemType<RT extends RulDataType> extends Serializable {
 
+    enum Type {
+        /**
+         * Povinný
+         */
+        REQUIRED,
+
+        /**
+         * Doporučený
+         */
+        RECOMMENDED,
+
+        /**
+         * Možný
+         */
+        POSSIBLE
+    }
 
     Integer getDescItemTypeId();
 
@@ -136,17 +152,17 @@ public interface RulDescItemType<RT extends RulDataType> extends Serializable {
 
 
     /**
-     * @return příznak udává, zda je povinné vyplnit hodnotu atributu.
+     * @return typ udává, zda je povinné/doporučené/... vyplnit hodnotu atributu.
      */
-    Boolean getRequired();
+    Type getType();
 
 
     /**
-     * Příznak udává, zda je povinné vyplnit hodnotu atributu.
+     * Typ udává, zda je povinné/doporučené/... vyplnit hodnotu atributu.
      *
-     * @param required povinnost
+     * @param type typ
      */
-    void setRequired(Boolean required);
+    void setType(Type type);
 
 
     /**

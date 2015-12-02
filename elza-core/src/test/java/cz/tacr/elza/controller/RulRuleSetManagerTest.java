@@ -17,6 +17,7 @@ import com.jayway.restassured.response.Response;
 
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
+import cz.tacr.elza.api.vo.RuleEvaluationType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -126,7 +127,7 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
         createConstrain(2);
 
         Response response = get((spec) -> spec.parameter("faVersionId", version.getFindingAidVersionId()).parameter(
-                NODE_ID_ATT, 1),
+                NODE_ID_ATT, 1).parameter("evaluationType", RuleEvaluationType.COMPLETE),
                 GET_DIT_FOR_NODE_ID_URL);
 
         List<RulDescItemTypeExt> ruleSets =
@@ -250,14 +251,15 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
         dataRepository.save(dataInteger);
 
 
-        List<DataValidationResult> validationResults = descItemsPostValidator.postValidateNodeDescItems(level, version);
+        List<DataValidationResult> validationResults = descItemsPostValidator.postValidateNodeDescItems(level, version,
+                RuleEvaluationType.NORMAL);
         Assert.assertTrue(validationResults.isEmpty());
 
         ArrDataInteger data = (ArrDataInteger) dataRepository.findByDescItem(descItem).iterator().next();
         data.setValue(123456);
         dataRepository.save(data);
 
-        ruleManager.setConformityInfo(level.getLevelId(), version.getFindingAidVersionId());
+        ruleManager.setConformityInfo(level.getLevelId(), version.getFindingAidVersionId(), RuleEvaluationType.NORMAL);
 
         Assert.assertTrue(nodeConformityInfoRepository.findAll().size() > 0);
         Assert.assertTrue(nodeConformityErrorsRepository.findAll().size() > 0);

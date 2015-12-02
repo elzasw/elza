@@ -14,6 +14,7 @@ import cz.tacr.elza.api.RulRuleSet;
 import cz.tacr.elza.api.vo.FaViewDescItemTypes;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
+import cz.tacr.elza.api.vo.RuleEvaluationType;
 
 
 /**
@@ -29,7 +30,7 @@ import cz.tacr.elza.api.vo.RelatedNodeDirection;
  */
 public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType, DIS extends RulDescItemSpec,
         RFV extends RulFaView, NTO extends NodeTypeOperation, RND extends RelatedNodeDirection, DI extends ArrDescItem,
-        FAV extends ArrFindingAidVersion> {
+        FAV extends ArrFindingAidVersion, RET extends RuleEvaluationType> {
 
     /**
      * Najde specifikaci podle id.
@@ -69,7 +70,8 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      * @return  Seznam typů hodnot atributů
      */
     List<? extends RulDescItemType> getDescriptionItemTypesForNode(Integer faVersionId,
-                                                                   Integer nodeId);
+                                                                   Integer nodeId,
+                                                                   RET evaluationType);
 
     /**
      * Vrací specifikace podle typu atributu.
@@ -106,11 +108,12 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
     /**
      * Provede validaci atributů vybraného uzlu a nastaví jejich validační hodnoty.
      *
-     * @param faLevelId   id uzlu
-     * @param faVersionId id verze
+     * @param faLevelId      id uzlu
+     * @param faVersionId    id verze
+     * @param evaluationType typ pravidel, které se mají pro vyhodnocení použít
      * @return stav validovaného uzlu
      */
-    ArrNodeConformityInfoExt setConformityInfo(Integer faLevelId, Integer faVersionId);
+    ArrNodeConformityInfoExt setConformityInfo(Integer faLevelId, Integer faVersionId, RET evaluationType);
 
     /**
      * Nastavení stavu u verze archivní pomůcky.

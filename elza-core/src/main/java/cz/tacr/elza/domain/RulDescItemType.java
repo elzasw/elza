@@ -14,7 +14,6 @@ import javax.persistence.UniqueConstraint;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.hibernate.annotations.Type;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -52,7 +51,7 @@ public class RulDescItemType implements cz.tacr.elza.api.RulDescItemType<RulData
 
     @Column(nullable = false)
     @Lob
-    @Type(type = "org.hibernate.type.TextType")
+    @org.hibernate.annotations.Type(type = "org.hibernate.type.TextType")
     private String description;
 
     @Column(nullable = false)
@@ -71,7 +70,7 @@ public class RulDescItemType implements cz.tacr.elza.api.RulDescItemType<RulData
     private Boolean faOnly;
 
     @Transient
-    private Boolean required;
+    private Type type;
 
     @Transient
     private Boolean repeatable;
@@ -187,13 +186,13 @@ public class RulDescItemType implements cz.tacr.elza.api.RulDescItemType<RulData
     }
 
     @Override
-    public Boolean getRequired() {
-        return required;
+    public Type getType() {
+        return type;
     }
 
     @Override
-    public void setRequired(final Boolean required) {
-        this.required = required;
+    public void setType(final Type type) {
+        this.type = type;
     }
 
     @Override

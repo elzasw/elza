@@ -5,15 +5,16 @@ import cz.tacr.elza.domain.RulDescItemSpecExt;
 import cz.tacr.elza.domain.RulArrangementType;
 
 import java.util.Arrays;
+import cz.tacr.elza.api.RulDescItemType;
+import cz.tacr.elza.api.vo.RuleEvaluationType;
 
 global java.util.List results;
 global cz.tacr.elza.domain.RulArrangementType arrangementType;
+global cz.tacr.elza.api.vo.RuleEvaluationType evaluationType;
 
 function void requiredForTypes(RulDescItemTypeExt descItemType, RulArrangementType arrangementType, String[] types) {
     if (Arrays.asList(types).contains(arrangementType.getCode())) {
-        descItemType.setRequired(true);
-    } else {
-        descItemType.setRequired(false);
+        descItemType.setType(RulDescItemType.Type.REQUIRED);
     }
 }
 
@@ -21,7 +22,7 @@ rule "Atribut ZP2015_LEVEL_TYPE je povinný vždy"
 when
 	descItemType : RulDescItemTypeExt(code == "ZP2015_LEVEL_TYPE")
 then
-    descItemType.setRequired(true);
+    descItemType.setType(RulDescItemType.Type.REQUIRED);
 	results.add(descItemType);
 end
 
@@ -36,6 +37,7 @@ end
 rule "Atribut ZP2015_UNIT_ID je povinný vždy, pokud typ výstupu je INV nebo KAT"
 when
 	descItemType : RulDescItemTypeExt(code == "ZP2015_UNIT_ID")
+	eval (evaluationType.equals(RuleEvaluationType.COMPLETE))
 then
     requiredForTypes(descItemType, arrangementType, new String[] {"INV", "KAT"});
 	results.add(descItemType);

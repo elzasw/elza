@@ -1,4 +1,5 @@
 code_type_bulk_action: FINDING_AID_VALIDATION
 rule_code: ZP
 mandatory_arrangement_type: INV|MAN|KAT
-name: generátor pro kontrolu validace (stavů popisu) celé archivní pomůcky
+evaluation_type: COMPLETE
+name: generátor pro kontrolu validace (stavů popisu) celé archivní pomůcky (povinná)

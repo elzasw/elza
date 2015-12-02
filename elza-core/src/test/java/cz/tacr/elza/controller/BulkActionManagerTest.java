@@ -364,6 +364,7 @@ public class BulkActionManagerTest extends AbstractRestTest {
 
         bulkActionConfigFinding.setConfiguration("code_type_bulk_action: FINDING_AID_VALIDATION\n"
                 + "rule_code: " + TEST_CODE + "\n"
+                + "evaluation_type: COMPLETE\n"
                 + "mandatory_arrangement_type: INV|MAN|KAT");
 
         try {
