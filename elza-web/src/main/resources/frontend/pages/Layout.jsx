@@ -1,18 +1,16 @@
 /**
- * Layout stránek - podle přepnuté hlavní oblasti, např. Archivní pomůcky, Rejstříky atp.
+ * Globální layout stránek - obsahuje komponenty podle přepnuté hlavní oblasti, např. Archivní pomůcky, Rejstříky atp.
  */
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-module.exports = React.createClass({
+module.exports = class Layout extends React.Component {
     render() {
         return (
             <div>
-                111
                 {this.props.children}
-                222
             </div>
-        );
+        )
     }
-});
+}

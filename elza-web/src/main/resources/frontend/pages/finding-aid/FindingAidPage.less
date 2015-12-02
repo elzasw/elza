@@ -1,0 +1,59 @@
+@import "~bootstrap/less/variables.less";
+
+@header-height: 64px;
+@header-minimized-height: 12px;
+
+.finding-aid-page {
+    &.app-container.noRibbon {
+        .app-header {
+            height: @header-minimized-height;
+        }
+        .app-content {
+            top: @header-minimized-height;
+        }
+    }
+    &.app-container {
+        .app-header {
+            width: 100%;
+            height: @header-height;
+        }
+        .app-content {
+            position: absolute;
+            top: @header-height;
+            left: 0;
+            bottom: 0;
+            right: 0;        
+
+            .split-pane-divider {
+                background: #aaa;
+            }        
+
+            #left-component {
+                width: 20em;
+            }
+            #my-divider {
+                left: 20em; /* Same as left component width */
+                width: 5px;
+            }
+            #right-component-container {
+                left: 20em;  /* Same as left component width */
+                margin-left: 5px;  /* Same as divider width */
+
+                #inner-left-component {
+                    min-width: 10em;
+                    right: 10em;
+                    margin-right: 5px;
+                }
+                #inner-my-divider {
+                    right: 15em;
+                    width: 5px;
+                }
+                #inner-right-component {
+                    width: 15em;
+                    min-width: 15em;
+                }
+            }
+        }
+    }
+
+}

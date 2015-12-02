@@ -1,13 +1,13 @@
-import React from 'react';
+/**
+ * Komunikace se serverem přes WebSocket.
+ */
 
-import {EmailSettingsActions, ApplicationActions} from 'actions';
+import React from 'react';
 
 var SockJS = require('sockjs-client');
 var Stomp = require('stompjs');
-var socket = new SockJS(serverContextPath + '/config/websock');
+var socket = new SockJS(serverContextPath + '/web/websock');
 var client = Stomp.over(socket);
-
-import {Toastr, i18n} from 'mc';
 
 client.heartbeat.outgoing = 5000;
 client.heartbeat.incoming = 0;
@@ -17,24 +17,13 @@ client.connect('guest', 'guest',
             var changes = JSON.parse(body.body);
             changes.forEach(ch => {
                 switch (ch.area) {
-                    case 'EMAIL_SETTINGS':
-                        EmailSettingsActions.changed(ch);
-                    break;
-                    case 'APPLICATION':
-                        ApplicationActions.changed(ch);
+                    case 'xxx_SETTINGS':
                     break;
                 }
             });
         });
     },
     function(error) {
-        var message = new Array();
-        message.push(<p>{i18n('global.server.connection.lost.message')}</p>);
-        message.push(<a href="#" onClick={function(){location.reload()}}>{i18n('global.action.document.reload')}</a>);
-
-        Toastr.Actions.danger({
-            title: i18n('global.server.connection.lost.title'),
-            message: message
-        });
+        console.log(error);
     }
 );

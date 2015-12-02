@@ -16,7 +16,7 @@ import { Route, Link, History, Lifecycle } from 'react-router'
 // Globální init
 //Utils.init();
 //var es5Shim = require('es5-shim');
-
+import {SplitPane} from 'components';
 
 // Aplikace
 var Router = require('./router');

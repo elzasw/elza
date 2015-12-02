@@ -35,13 +35,19 @@ public class ElzaWebController {
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    public String configIndex(final HttpServletRequest request, final Model model) {
+    public String indexPage(final HttpServletRequest request, final Model model) {
         initDefaults(request, model);
         return "web";
     }
 
-    @RequestMapping(value = "/home", method = RequestMethod.GET)
-    public String configApplications(final HttpServletRequest request, final Model model) {
+    @RequestMapping(value = "/record", method = RequestMethod.GET)
+    public String recordPage(final HttpServletRequest request, final Model model) {
+        initDefaults(request, model);
+        return "web";
+    }
+
+    @RequestMapping(value = "/party", method = RequestMethod.GET)
+    public String partyPage(final HttpServletRequest request, final Model model) {
         initDefaults(request, model);
         return "web";
     }
