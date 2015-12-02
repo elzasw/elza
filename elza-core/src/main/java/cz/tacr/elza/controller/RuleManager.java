@@ -31,6 +31,7 @@ import cz.tacr.elza.api.ArrNodeConformityInfoExt;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
+import cz.tacr.elza.api.vo.RuleEvaluationType;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
@@ -75,7 +76,8 @@ import cz.tacr.elza.validation.ArrDescItemsPostValidator;
 @RestController
 @RequestMapping("/api/ruleSetManager")
 public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulDataType, RulDescItemType,
-        RulDescItemSpec, RulFaView, NodeTypeOperation, RelatedNodeDirection, ArrDescItem, ArrFindingAidVersion> {
+        RulDescItemSpec, RulFaView, NodeTypeOperation, RelatedNodeDirection, ArrDescItem, ArrFindingAidVersion,
+        RuleEvaluationType> {
 
     private static final String VIEW_SPECIFICATION_SEPARATOR = "|";
     private static final String VIEW_SPECIFICATION_SEPARATOR_REGEX = "\\|";
@@ -162,7 +164,9 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     @RequestMapping(value = "/getDescriptionItemTypesForNode", method = RequestMethod.GET)
     public List<RulDescItemTypeExt> getDescriptionItemTypesForNode(
             @RequestParam(value = "faVersionId") Integer faVersionId,
-            @RequestParam(value = "nodeId") Integer nodeId) {
+            @RequestParam(value = "nodeId") Integer nodeId,
+            @RequestParam(value = "evaluationType") RuleEvaluationType evaluationType) {
+        Assert.notNull(evaluationType);
         List<RulDescItemType> itemTypeList = descItemTypeRepository.findAll();
 
         ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
@@ -176,7 +180,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
         // projde všechny typy atributů
         for (RulDescItemTypeExt rulDescItemTypeExt : rulDescItemTypeExtList) {
 
-            rulDescItemTypeExt.setRequired(false);
+            rulDescItemTypeExt.setType(RulDescItemType.Type.POSSIBLE);
             rulDescItemTypeExt.setRepeatable(true);
 
             // projde všechny podmínky typů
@@ -190,7 +194,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
             // projde všechny specifikace typů atributů
             for (RulDescItemSpecExt rulDescItemSpecExt : rulDescItemTypeExt.getRulDescItemSpecList()) {
 
-                rulDescItemSpecExt.setRequired(false);
+                rulDescItemSpecExt.setType(RulDescItemSpec.Type.POSSIBLE);
                 rulDescItemSpecExt.setRepeatable(true);
 
                 // projde všechny podmínky specifikací
@@ -203,7 +207,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
             }
         }
 
-        return rulesExecutor.executeDescItemTypesRules(rulDescItemTypeExtList, version);
+        return rulesExecutor.executeDescItemTypesRules(rulDescItemTypeExtList, version, evaluationType);
     }
 
     @Override
@@ -350,9 +354,11 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     }
 
     @Override
-    public ArrNodeConformityInfoExt setConformityInfo(final Integer faLevelId, final Integer faVersionId) {
+    public ArrNodeConformityInfoExt setConformityInfo(final Integer faLevelId, final Integer faVersionId,
+                                                      final RuleEvaluationType evaluationType) {
         Assert.notNull(faLevelId);
         Assert.notNull(faVersionId);
+        Assert.notNull(evaluationType);
 
         ArrLevel level = levelRepository.findOne(faLevelId);
         ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
@@ -361,10 +367,10 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
             throw new IllegalArgumentException("Level s id " + faLevelId + " nespadá do verze s id " + faVersionId);
         }
 
-        List<DataValidationResult> validationResults = descItemsPostValidator.postValidateNodeDescItems(level, version);
-        List<DataValidationResult> scriptResults = rulesExecutor.executeDescItemValidationRules(level, version);
+        List<DataValidationResult> validationResults = descItemsPostValidator.postValidateNodeDescItems(level, version, evaluationType);
+        List<DataValidationResult> scriptResults = rulesExecutor.executeDescItemValidationRules(level, version, evaluationType);
         validationResults.addAll(scriptResults);
-
+        
         ArrNodeConformityInfoExt result = updateNodeConformityInfo(level, version, validationResults);
 
         level.getNode().setLastUpdate(LocalDateTime.now());

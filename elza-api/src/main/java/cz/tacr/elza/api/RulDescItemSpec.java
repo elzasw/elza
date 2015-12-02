@@ -15,6 +15,22 @@ public interface RulDescItemSpec<RIT extends RulDescItemType>
         extends
         Serializable {
 
+    enum Type {
+        /**
+         * Povinný
+         */
+        REQUIRED,
+
+        /**
+         * Doporučený
+         */
+        RECOMMENDED,
+
+        /**
+         * Možný
+         */
+        POSSIBLE
+    }
 
     Integer getDescItemSpecId();
 
@@ -65,17 +81,17 @@ public interface RulDescItemSpec<RIT extends RulDescItemType>
 
 
     /**
-     * @return příznak udává, zda je povinné vyplnit specifikaci atributu.
+     * @return typ udává, zda je povinné/doporučené/... vyplnit hodnotu atributu.
      */
-    Boolean getRequired();
+    Type getType();
 
 
     /**
-     * Příznak udává, zda je povinné vyplnit specifikaci atributu.
+     * Typ udává, zda je povinné/doporučené/... vyplnit hodnotu atributu.
      *
-     * @param required povinnost
+     * @param type typ
      */
-    void setRequired(Boolean required);
+    void setType(Type type);
 
 
     /**

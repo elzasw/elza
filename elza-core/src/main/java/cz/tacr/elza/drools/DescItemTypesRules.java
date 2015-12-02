@@ -6,6 +6,7 @@ import java.util.List;
 import org.kie.api.runtime.StatelessKieSession;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.api.vo.RuleEvaluationType;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
@@ -30,7 +31,8 @@ public class DescItemTypesRules extends Rules {
     // TODO: je nutné používat synchronized?
     public synchronized List<RulDescItemTypeExt> execute(final List<RulDescItemTypeExt> rulDescItemTypeExtList,
                                                          final RulArrangementType arrangementType,
-                                                         final RulRuleSet rulRuleSet)
+                                                         final RulRuleSet rulRuleSet,
+                                                         final RuleEvaluationType evaluationType)
             throws Exception {
         StatelessKieSession session = createNewStatelessKieSession(rulRuleSet);
 
@@ -38,6 +40,7 @@ public class DescItemTypesRules extends Rules {
 
         // přidání globálních proměnných
         session.setGlobal("results", rulDescItemTypeExtResultList);
+        session.setGlobal("evaluationType", evaluationType);
         session.setGlobal("arrangementType", arrangementType);
 
         execute(session, rulRuleSet, rulDescItemTypeExtList);

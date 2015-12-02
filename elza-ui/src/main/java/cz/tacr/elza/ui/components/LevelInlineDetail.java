@@ -29,6 +29,7 @@ import cz.req.ax.AxWindow;
 import cz.tacr.elza.api.ArrNodeConformityInfo;
 import cz.tacr.elza.api.controller.PartyManager;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
+import cz.tacr.elza.api.vo.RuleEvaluationType;
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RegistryManager;
 import cz.tacr.elza.controller.RuleManager;
@@ -243,7 +244,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
      */
     public void showDescriptionItemTypesAndSpecsForNode(final Integer versionId, final ArrNode node) {
         List<RulDescItemTypeExt> descItemTypeExts = ruleSetManager.getDescriptionItemTypesForNode(versionId,
-                node.getNodeId());
+                node.getNodeId(), RuleEvaluationType.NORMAL);
 
         detailContent.addComponent(newLabel("Typy a specifikace atributů podle pravidel", "h3 margin-top"));
 
@@ -252,19 +253,19 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
         for (RulDescItemTypeExt descItemTypeExt : descItemTypeExts) {
             CssLayout typesLayout = cssLayoutExt(null);
+            Label type = newLabel(descItemTypeExt.getType().toString().substring(0, 1), "required");
+            type.setDescription(descItemTypeExt.getType().toString());
+            typesLayout.addComponent(type);
             typesLayout.addComponent(newLabel(descItemTypeExt.getName()));
-            if (descItemTypeExt.getRequired()) {
-                typesLayout.addComponent(newLabel("*", "required"));
-            }
 
             CssLayout specsLayout = cssLayoutExt(null);
 
             for (RulDescItemSpecExt descItemSpecExt : descItemTypeExt.getRulDescItemSpecList()) {
+                type = newLabel(descItemSpecExt.getType().toString().substring(0, 1), "required");
+                type.setDescription(descItemSpecExt.getType().toString());
                 Label lblValue = newLabel(descItemSpecExt.getName(), "spec");
+                specsLayout.addComponent(type);
                 specsLayout.addComponent(lblValue);
-                if (descItemSpecExt.getRequired()) {
-                    typesLayout.addComponent(newLabel("*", "required"));
-                }
             }
 
             grid.addRow(typesLayout, specsLayout);
