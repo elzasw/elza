@@ -23,7 +23,6 @@ import cz.tacr.elza.domain.vo.ArrNodeHistoryItem;
 import cz.tacr.elza.domain.vo.ArrNodeHistoryPack;
 import cz.tacr.elza.domain.vo.ArrNodeRegisterPack;
 import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithDescItem;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.BeanUtils;
@@ -807,7 +806,7 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         restModifyNodeRegister(new ArrNodeRegisterPack(nodeRegisters, delete), version.getFindingAidVersionId());
 
         nodeRegisters = findNodeRegisters(version.getFindingAidVersionId(), node.getNodeId());
-        Assert.isTrue(nodeRegisters.size() == 1);
+        Assert.isTrue(nodeRegisters.size() == 2);
         Assert.isTrue(nodeRegisters.get(PRVNI).getRecord().equals(record3));  //zbyde PRVNI změněný
 
     }
