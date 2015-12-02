@@ -1,10 +1,9 @@
 package cz.tacr.elza.api.controller;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import cz.tacr.elza.api.ArrDescItem;
+import cz.tacr.elza.api.ArrFindingAidVersion;
 import cz.tacr.elza.api.ArrNodeConformityInfoExt;
 import cz.tacr.elza.api.RulArrangementType;
 import cz.tacr.elza.api.RulDataType;
@@ -29,7 +28,8 @@ import cz.tacr.elza.api.vo.RelatedNodeDirection;
  * @since 12. 8. 2015
  */
 public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType, DIS extends RulDescItemSpec,
-        RFV extends RulFaView, NTO extends NodeTypeOperation, RND extends RelatedNodeDirection, DI extends ArrDescItem> {
+        RFV extends RulFaView, NTO extends NodeTypeOperation, RND extends RelatedNodeDirection, DI extends ArrDescItem,
+        FAV extends ArrFindingAidVersion> {
 
     /**
      * Najde specifikaci podle id.
@@ -111,5 +111,14 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      * @return stav validovaného uzlu
      */
     ArrNodeConformityInfoExt setConformityInfo(Integer faLevelId, Integer faVersionId);
+
+    /**
+     * Nastavení stavu u verze archivní pomůcky.
+     *
+     * @param state            stav
+     * @param stateDescription popis stavu
+     * @param version          verze ap
+     */
+    void setVersionConformityInfo(FAV.State state, String stateDescription, FAV version);
 
 }

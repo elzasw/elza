@@ -74,7 +74,8 @@ import cz.tacr.elza.validation.ArrDescItemsPostValidator;
  */
 @RestController
 @RequestMapping("/api/ruleSetManager")
-public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulDataType, RulDescItemType, RulDescItemSpec, RulFaView, NodeTypeOperation, RelatedNodeDirection, ArrDescItem> {
+public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulDataType, RulDescItemType,
+        RulDescItemSpec, RulFaView, NodeTypeOperation, RelatedNodeDirection, ArrDescItem, ArrFindingAidVersion> {
 
     private static final String VIEW_SPECIFICATION_SEPARATOR = "|";
     private static final String VIEW_SPECIFICATION_SEPARATOR_REGEX = "\\|";
@@ -369,6 +370,15 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
         return result;
     }
 
+    @Override
+    public void setVersionConformityInfo(final ArrFindingAidVersion.State state,
+                                         final String stateDescription,
+                                         final ArrFindingAidVersion version) {
+        Assert.notNull(version);
+        version.setState(state);
+        version.setStateDescription(stateDescription);
+        findingAidVersionRepository.save(version);
+    }
 
     /**
      * Provede uložení stavu pro daný uzel podle výsledku validace.
@@ -549,19 +559,4 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
         }
     }
 
-    /**
-     * Nastavení stavu u verze archivní pomůcky.
-     *
-     * @param state            stav
-     * @param stateDescription popis stavu
-     * @param version          verze ap
-     */
-    private void setVersionConformityInfo(final ArrFindingAidVersion.State state,
-                                          final String stateDescription,
-                                          final ArrFindingAidVersion version) {
-        Assert.notNull(version);
-        version.setState(state);
-        version.setStateDescription(stateDescription);
-        findingAidVersionRepository.save(version);
-    }
 }

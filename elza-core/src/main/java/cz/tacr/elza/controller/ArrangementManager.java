@@ -36,6 +36,7 @@ import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
+import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
 import cz.tacr.elza.domain.ArrChange;
@@ -404,6 +405,18 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         if (version.getLockChange() != null) {
             throw new ConcurrentUpdateException("Verze byla již uzavřena");
+        }
+
+        List<BulkActionConfig> bulkActionConfigs = bulkActionService.runValidation(version.getFindingAidVersionId());
+        if (bulkActionConfigs.size() > 0) {
+            List<String> codes = new LinkedList<>();
+
+            for (BulkActionConfig bulkActionConfig : bulkActionConfigs) {
+                codes.add(bulkActionConfig.getCode());
+            }
+
+            ruleManager.setVersionConformityInfo(ArrFindingAidVersion.State.ERR,
+                    "Nebyly provedeny povinné hromadné akce " + codes + " před uzavřením verze", version);
         }
 
         ArrChange change = createChange();
