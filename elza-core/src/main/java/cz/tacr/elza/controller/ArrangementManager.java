@@ -1,37 +1,5 @@
 package cz.tacr.elza.controller;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
@@ -70,7 +38,6 @@ import cz.tacr.elza.domain.vo.ArrNodeRegisterPack;
 import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithDescItem;
 import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithDescItems;
 import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithLevelPack;
-import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
@@ -88,6 +55,36 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 
 /**
@@ -2561,7 +2558,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      */
     private void saveNodeRegisterLinks(final List<ArrNodeRegister> arrNodeRegisterList,
                                        final ArrFindingAidVersion version) {
+
         ArrChange change = createChange();
+
         for (final ArrNodeRegister nodeRegister : arrNodeRegisterList) {
 
             validateNodeRegisterLink(nodeRegister);
@@ -2570,9 +2569,26 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             node.setLastUpdate(LocalDateTime.now());  // change kvůli locking
             nodeRepository.save(node);
 
-            nodeRegister.setCreateChange(change);
-            nodeRegisterRepository.save(nodeRegister);
+            if (nodeRegister.getNodeRegisterId() == null) { // create
+
+                nodeRegister.setCreateChange(change);
+                nodeRegisterRepository.save(nodeRegister);
+
+            } else {                                        // update
+
+                ArrNodeRegister newNodeRegister = new ArrNodeRegister();
+                BeanUtils.copyProperties(nodeRegister, newNodeRegister);
+
+                nodeRegister.setDeleteChange(change);
+                nodeRegisterRepository.save(nodeRegister);
+
+                newNodeRegister.setCreateChange(change);
+                newNodeRegister.setNodeRegisterId(null);
+                nodeRegisterRepository.save(newNodeRegister);
+
+            }
         }
+
         saveLastChangeFaVersion(change, version);
     }
 
