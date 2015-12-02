@@ -1,19 +1,22 @@
 package cz.tacr.elza.drools;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.kie.api.runtime.StatelessKieSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.drools.model.DescItemChange;
 import cz.tacr.elza.drools.model.DescItemVO;
+import cz.tacr.elza.drools.service.ScriptModelFactory;
 
 
 /**
@@ -22,11 +25,11 @@ import cz.tacr.elza.drools.model.DescItemVO;
  * @author Martin Šlapa
  * @since 27.11.2015
  */
+@Component
 public class ImpactOfChangesLevelStateRules extends Rules {
 
-    public ImpactOfChangesLevelStateRules(Path ruleFile) {
-        super(ruleFile);
-    }
+    @Autowired
+    private ScriptModelFactory factory;
 
 
     /**
@@ -41,13 +44,12 @@ public class ImpactOfChangesLevelStateRules extends Rules {
     public synchronized Set<RelatedNodeDirection> execute(final List<ArrDescItem> createDescItem,
                                                           final List<ArrDescItem> updateDescItem,
                                                           final List<ArrDescItem> deleteDescItem,
-                                                          final NodeTypeOperation nodeTypeOperation)
+                                                          final NodeTypeOperation nodeTypeOperation,
+                                                          final RulRuleSet rulRuleSet)
             throws Exception {
-        preExecute(); // kontrola nového souboru
-
         List<DescItemVO> descItemVOList = prepareDescItemVOList(createDescItem, updateDescItem, deleteDescItem);
 
-        StatelessKieSession session = kbase.newStatelessKieSession();
+        StatelessKieSession session = createNewStatelessKieSession(rulRuleSet);
 
         Set<RelatedNodeDirection> relatedNodeDirections = new HashSet<>();
 
@@ -55,7 +57,7 @@ public class ImpactOfChangesLevelStateRules extends Rules {
         session.setGlobal("results", relatedNodeDirections);
         session.setGlobal("nodeTypeOperation", nodeTypeOperation);
 
-        session.execute(descItemVOList);
+        execute(session, rulRuleSet, descItemVOList);
 
         return relatedNodeDirections;
     }
@@ -72,33 +74,23 @@ public class ImpactOfChangesLevelStateRules extends Rules {
                                                    final List<ArrDescItem> deleteDescItem) {
         List<DescItemVO> list = new ArrayList<>();
         if (!CollectionUtils.isEmpty(createDescItem)) {
-            for (ArrDescItem descItem : createDescItem) {
-                DescItemVO item = new DescItemVO();
-                item.setChange(DescItemChange.CREATE);
-                item.setType(descItem.getDescItemType().getCode());
-                list.add(item);
-            }
+            list.addAll(factory.createDescItems(createDescItem, (t)->t.setChange(DescItemChange.CREATE)));
         }
 
         if (!CollectionUtils.isEmpty(updateDescItem)) {
-            for (ArrDescItem descItem : updateDescItem) {
-                DescItemVO item = new DescItemVO();
-                item.setChange(DescItemChange.UPDATE);
-                item.setType(descItem.getDescItemType().getCode());
-                list.add(item);
-            }
+            factory.createDescItems(updateDescItem, (t) -> t.setChange(DescItemChange.UPDATE));
         }
 
         if (!CollectionUtils.isEmpty(deleteDescItem)) {
-            for (ArrDescItem descItem : deleteDescItem) {
-                DescItemVO item = new DescItemVO();
-                item.setChange(DescItemChange.DELETE);
-                item.setType(descItem.getDescItemType().getCode());
-                list.add(item);
-            }
+            factory.createDescItems(deleteDescItem, (t) -> t.setChange(DescItemChange.DELETE));
         }
 
         return list;
     }
 
+
+    @Override
+    protected String getFileName() {
+        return "states" + RulesExecutor.FILE_EXTENSION;
+    }
 }

@@ -1,15 +1,22 @@
 package cz.tacr.elza.drools;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
+import java.util.List;
 
 import org.kie.api.io.ResourceType;
+import org.kie.api.runtime.StatelessKieSession;
 import org.kie.internal.KnowledgeBase;
 import org.kie.internal.KnowledgeBaseFactory;
 import org.kie.internal.builder.KnowledgeBuilder;
 import org.kie.internal.builder.KnowledgeBuilderFactory;
 import org.kie.internal.io.ResourceFactory;
+
+import cz.tacr.elza.domain.RulRuleSet;
 
 
 /**
@@ -23,7 +30,7 @@ public abstract class Rules {
     /**
      * cesta k souboru
      */
-    private final Path ruleFile;
+    private Path ruleFile;
 
     /**
      * znalostní báze
@@ -35,14 +42,6 @@ public abstract class Rules {
      */
     private FileTime lastModifiedTime;
 
-    /**
-     * Kontruktor třídy.
-     *
-     * @param ruleFile cesta k souboru
-     */
-    public Rules(Path ruleFile) {
-        this.ruleFile = ruleFile;
-    }
 
     /**
      * Metoda pro kontrolu aktuálnosti souboru s pravidly.
@@ -60,7 +59,10 @@ public abstract class Rules {
      */
     private void reloadRules() throws Exception {
         KnowledgeBuilder kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
-        kbuilder.add(ResourceFactory.newFileResource(ruleFile.toFile()), ResourceType.DRL);
+
+        kbuilder.add(ResourceFactory.newInputStreamResource(new FileInputStream(ruleFile.toFile()), "UTF-8"),
+                ResourceType.DRL);
+
         if (kbuilder.hasErrors()) {
             throw new RuntimeException("Fail to parse rule: " + kbuilder.getErrors());
         }
@@ -70,9 +72,49 @@ public abstract class Rules {
     }
 
     /**
+     * Vytvoří novou session.
+     *
+     * @param rulRuleSet typ pravidel verze
+     * @return nová session
+     */
+    public synchronized StatelessKieSession createNewStatelessKieSession(final RulRuleSet rulRuleSet) throws Exception {
+        if (kbase == null) {
+            getRuleFile(rulRuleSet);
+            preExecute();
+        }
+        return kbase.newStatelessKieSession();
+    }
+
+    /**
+     * Provede vyvolání scriptu.
+     *
+     * @param session session
+     * @param ruleSet typ pravidel verze
+     * @param objects vstupní data
+     */
+    protected final synchronized void execute(final StatelessKieSession session, RulRuleSet ruleSet, final List objects)
+            throws Exception {
+        this.ruleFile = getRuleFile(ruleSet);
+        preExecute();
+
+        session.execute(objects);
+    }
+
+    /**
+     * Název scriptu i s příponou.
+     *
+     * @return název scriptu
+     */
+    abstract protected String getFileName();
+
+    /**
      * @return vrací cestu k souboru
      */
-    public Path getRuleFile() {
+    public Path getRuleFile(final RulRuleSet ruleSet) {
+        if (ruleFile == null) {
+            ruleFile = Paths.get(RulesExecutor.ROOT_PATH + File.separator + ruleSet.getCode() + "_" + getFileName());
+        }
+
         return ruleFile;
     }
 }
