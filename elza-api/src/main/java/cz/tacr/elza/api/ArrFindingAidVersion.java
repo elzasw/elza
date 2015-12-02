@@ -111,4 +111,16 @@ public interface ArrFindingAidVersion<FA extends ArrFindingAid, FC extends ArrCh
      * @param state Stav verze.
      */
     void setState(State state);
+
+
+    /**
+     * @return popis stavu
+     */
+    String getStateDescription();
+
+
+    /**
+     * @param stateDescription popis stavu
+     */
+    void setStateDescription(String stateDescription);
 }

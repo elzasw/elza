@@ -75,6 +75,9 @@ public class ArrFindingAidVersion extends AbstractVersionableEntity implements
     @Column(length = 3, nullable = true)
     private ArrFindingAidVersion.State state;
 
+    @Column(length = 1000, nullable = true)
+    private String stateDescription;
+
     @Override
     public Integer getFindingAidVersionId() {
         return findingAidVersionId;
@@ -163,6 +166,16 @@ public class ArrFindingAidVersion extends AbstractVersionableEntity implements
     @Override
     public void setState(final State state) {
         this.state = state;
+    }
+
+    @Override
+    public String getStateDescription() {
+        return stateDescription;
+    }
+
+    @Override
+    public void setStateDescription(final String stateDescription) {
+        this.stateDescription = stateDescription;
     }
 
     @Override

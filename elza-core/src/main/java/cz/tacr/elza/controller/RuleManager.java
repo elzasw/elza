@@ -48,8 +48,8 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
 import cz.tacr.elza.domain.vo.DataValidationResult;
+import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.DescItemConstraintRepository;
@@ -422,6 +422,9 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
                         break;
                 }
             }
+
+            setVersionConformityInfo(ArrFindingAidVersion.State.ERR,
+                    "Nejméně jedna jednotka popisu se nachází v chybovém stavu", version);
         }
 
         return extendedObjectsFactory.createNodeConformityInfoExt(conformityInfo, true);
@@ -492,8 +495,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
                     .findByNodesAndVersion(deleteNodes, version);
 
             deleteConformityInfo(deleteInfos);
-            version.setState(null);
-            findingAidVersionRepository.save(version);
+            setVersionConformityInfo(null, null, version);
         }
     }
 
@@ -545,5 +547,21 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
 
             nodeConformityInfoRepository.delete(infos);
         }
+    }
+
+    /**
+     * Nastavení stavu u verze archivní pomůcky.
+     *
+     * @param state            stav
+     * @param stateDescription popis stavu
+     * @param version          verze ap
+     */
+    private void setVersionConformityInfo(final ArrFindingAidVersion.State state,
+                                          final String stateDescription,
+                                          final ArrFindingAidVersion version) {
+        Assert.notNull(version);
+        version.setState(state);
+        version.setStateDescription(stateDescription);
+        findingAidVersionRepository.save(version);
     }
 }
