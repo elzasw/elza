@@ -9,6 +9,8 @@ spring:
   data:
     rest:
       base-uri: /rest
+  app:
+      buildType: REL      
   jpa:
     # Logovani SQL dotazu
     #show-sql: true
