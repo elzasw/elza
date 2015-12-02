@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorator="layout"
+      >
+
+    <head>
+        <title>ELZA</title>
+
+        <script type="text/javascript" src="" th:src="@{/res/js/messages_cs.js}"></script>
+        <script>
+        </script>
+
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            var serverContextPath = [[${contextPath}]];
+                    /*]]>*/
+        </script>        
+    </head>
+
+    <body>
+        <section layout:fragment="page-content" th:remove="tag">
+            <div id="content">
+            </div>
+        </section>
+        <section layout:fragment="page-js" th:remove="tag">
+            <script th:if="${isDevBuild}" src="http://localhost:8090/webpack-dev-server.js"></script>
+            <script th:if="${isDevBuild}" type="text/javascript" src="http://localhost:8090/assets/bundle.js"></script>   
+
+            <script th:if="${!isDevBuild}" type="text/javascript" src="" th:src="@{/res/ui/js/config.js}"></script>
+        </section>
+    </body>
+</html>

@@ -41,3 +41,4 @@ org.eclipse.jdt.core.prefs
 /elza-ui/bulkactions
 /elza-core/bulkactions
 /elza-ui/rules
+/elza-web/src/main/resources/frontend/node_modules/

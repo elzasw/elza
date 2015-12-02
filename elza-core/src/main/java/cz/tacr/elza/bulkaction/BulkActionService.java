@@ -28,6 +28,7 @@ import cz.tacr.elza.domain.ArrFaBulkAction;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.repository.FaBulkActionRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 
 /**
@@ -42,6 +43,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
+    @Qualifier("threadPoolTaskExecutor")
     private ThreadPoolTaskExecutor taskExecutor;
 
     @Autowired
