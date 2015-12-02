@@ -643,6 +643,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
                     String value = errors.getDescItem().getDescItemType().getName();
                     if (errors.getDescItem().getDescItemSpec() != null) {
                         value += ": " + errors.getDescItem().getDescItemSpec().getName();
+                        value += "\n (" + errors.getDescription() + ")";
                     }
                     formGrid.addRow(newLabel(caption, "error-text"), newLabel(value));
                     caption = "";

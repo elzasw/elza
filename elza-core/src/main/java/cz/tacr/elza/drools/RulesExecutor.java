@@ -5,24 +5,24 @@ import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
-import java.nio.file.Paths;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
-import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.vo.DataValidationResult;
 import liquibase.util.file.FilenameUtils;
 
 
@@ -37,21 +37,27 @@ public class RulesExecutor implements InitializingBean {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+
+    @Autowired
+    private DescItemValidationRules descItemValidationRules;
+
+    @Autowired
+    private DescItemTypesRules descItemTypesRules;
+
+    @Autowired
+    private ImpactOfChangesLevelStateRules impactOfChangesLevelStateRules;
+
     /**
      * Cesta adresáře pro konfiguraci pravidel
      * TODO: napojit na spring konfiguraci
      */
-    private String path = "rules";
+    public static String ROOT_PATH = "rules";
 
     /**
      * Přípona souborů pravidel
      */
-    public final String FILE_EXTENSION = ".drl";
+    public static final String FILE_EXTENSION = ".drl";
 
-    /**
-     * Mapa pravidel
-     */
-    private Map<String, Rules> rulesMap = new HashMap<>();
 
     /**
      * Spustí pravidla nad typy atributů a jejich specifikacema.
@@ -62,24 +68,12 @@ public class RulesExecutor implements InitializingBean {
      */
     public List<RulDescItemTypeExt> executeDescItemTypesRules(final List<RulDescItemTypeExt> rulDescItemTypeExtList,
                                                               final ArrFindingAidVersion version) {
-        final String TYPE = "types";
-
-        RulRuleSet ruleSet = version.getRuleSet();
-
-        DescItemTypesRules rules = (DescItemTypesRules) getRules(ruleSet, TYPE);
-
-        // pokud ještě neexistuje, vytvořit nové
-        if (rules == null) {
-            rules = new DescItemTypesRules(Paths.get(getPath(ruleSet, TYPE)));
-            addRule(ruleSet, rules, TYPE);
-        }
 
         try {
-            return rules.execute(rulDescItemTypeExtList, version.getArrangementType());
+            return descItemTypesRules
+                    .execute(rulDescItemTypeExtList, version.getArrangementType(), version.getRuleSet());
         } catch (NoSuchFileException e) {
-            logger.warn(
-                    "Neexistuje soubor (" + rules.getRuleFile().toAbsolutePath().getFileName() + ") " + e.getMessage(),
-                    e);
+            logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
             return rulDescItemTypeExtList;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -101,24 +95,11 @@ public class RulesExecutor implements InitializingBean {
                                                                            final List<ArrDescItem> deleteDescItem,
                                                                            final NodeTypeOperation nodeTypeOperation,
                                                                            final ArrFindingAidVersion version) {
-        final String TYPE = "states";
-
-        RulRuleSet ruleSet = version.getRuleSet();
-
-        ImpactOfChangesLevelStateRules rules = (ImpactOfChangesLevelStateRules) getRules(ruleSet, TYPE);
-
-        // pokud ještě neexistuje, vytvořit nové
-        if (rules == null) {
-            rules = new ImpactOfChangesLevelStateRules(Paths.get(getPath(ruleSet, TYPE)));
-            addRule(ruleSet, rules, TYPE);
-        }
-
         try {
-            return rules.execute(createDescItem, updateDescItem, deleteDescItem, nodeTypeOperation);
+            return impactOfChangesLevelStateRules
+                    .execute(createDescItem, updateDescItem, deleteDescItem, nodeTypeOperation, version.getRuleSet());
         } catch (NoSuchFileException e) {
-            logger.warn(
-                    "Neexistuje soubor (" + rules.getRuleFile().toAbsolutePath().getFileName() + ") " + e.getMessage(),
-                    e);
+            logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
             return new HashSet<>();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -126,35 +107,24 @@ public class RulesExecutor implements InitializingBean {
     }
 
     /**
-     * Vytvoří cestu k souboru pravidel.
+     * Vyvolání validace hodnot atributů daného uzlu.
      *
-     * @param ruleSet pravidla tvorby AP
-     * @param type    typ pravidla
-     * @return cesta k souboru
+     * @param level   validovaný uzel
+     * @param version verze uzlu
+     * @return seznam validačních chyb nebo prázdný seznam
      */
-    private String getPath(final RulRuleSet ruleSet, final String type) {
-        return path + File.separator + ruleSet.getCode() + "_" + type + FILE_EXTENSION;
+    public List<DataValidationResult> executeDescItemValidationRules(final ArrLevel level,
+                                                                     final ArrFindingAidVersion version) {
+        try {
+            return descItemValidationRules.execute(level, version);
+        } catch (NoSuchFileException e) {
+            logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
+            return Collections.emptyList();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    /**
-     * Vyhledání pravidel.
-     *
-     * @param ruleSet pravidla tvorby AP
-     * @return nalezené pravidlo
-     */
-    private Rules getRules(final RulRuleSet ruleSet, final String type) {
-        return rulesMap.get(ruleSet.getCode() + "_" + type);
-    }
-
-    /**
-     * Přidání nových pravidel.
-     *
-     * @param ruleSet pravidla tvorby AP
-     * @param rules   pravidla
-     */
-    private void addRule(final RulRuleSet ruleSet, final Rules rules, final String type) {
-        rulesMap.put(ruleSet.getCode() + "_" + type, rules);
-    }
 
     /**
      * Zkopíruje výchozí pravidla.
@@ -178,7 +148,7 @@ public class RulesExecutor implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        File dir = new File(path);
+        File dir = new File(ROOT_PATH);
 
         if (!dir.exists()) {
             dir.mkdirs();

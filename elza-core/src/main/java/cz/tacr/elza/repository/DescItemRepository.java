@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,7 +19,14 @@ import cz.tacr.elza.domain.RulDescItemType;
  * @since 20.8.2015
  */
 @Repository
-public interface DescItemRepository extends JpaRepository<ArrDescItem, Integer> {
+public interface DescItemRepository extends JpaRepository<ArrDescItem, Integer>, DescItemRepositoryCustom {
+
+    @Query("SELECT i FROM arr_desc_item i WHERE i.node in (?1) AND i.deleteChange IS NULL")
+    List<ArrDescItem> findByNodesAndDeleteChangeIsNull(Collection<ArrNode> nodes);
+
+    @Query("SELECT i FROM arr_desc_item i WHERE i.node in (?1) AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
+    List<ArrDescItem> findByNodesAndDeleteChange(Collection<ArrNode> nodes, ArrChange deleteChange);
+
 
     @Query("SELECT i FROM arr_desc_item i WHERE i.node = ?1 AND i.deleteChange IS NULL")
     List<ArrDescItem> findByNodeAndDeleteChangeIsNull(ArrNode node);

@@ -26,10 +26,21 @@ public class DataValidationResult {
      * Hodnota atributu.
      */
     private ArrDescItem descItem;
+
+    /**
+     * Id atributu, ke kterému se vztahuje chyba.
+     */
+    private Integer descItemId;
+
     /**
      * Typ atributu.
      */
     private RulDescItemType type;
+    /**
+     * Kód typu atributu, který chybí
+     */
+    private String typeCode;
+
     /**
      * Specifikace atributu.
      */
@@ -49,7 +60,7 @@ public class DataValidationResult {
         return message;
     }
 
-    protected void setMessage(final String message) {
+    public void setMessage(final String message) {
         this.message = message;
     }
 
@@ -57,7 +68,7 @@ public class DataValidationResult {
         return descItem;
     }
 
-    protected void setDescItem(final ArrDescItem descItem) {
+    public void setDescItem(final ArrDescItem descItem) {
         this.descItem = descItem;
     }
 
@@ -65,7 +76,7 @@ public class DataValidationResult {
         return type;
     }
 
-    protected void setType(final RulDescItemType type) {
+    public void setType(final RulDescItemType type) {
         this.type = type;
     }
 
@@ -77,6 +88,22 @@ public class DataValidationResult {
         this.spec = spec;
     }
 
+    public Integer getDescItemId() {
+        return descItemId;
+    }
+
+    protected void setDescItemId(final Integer descItemId) {
+        this.descItemId = descItemId;
+    }
+
+    public String getTypeCode() {
+        return typeCode;
+    }
+
+    protected void setTypeCode(final String typeCode) {
+        this.typeCode = typeCode;
+    }
+
     public enum ValidationResultType {
         MISSING,
         ERROR;
@@ -86,6 +113,13 @@ public class DataValidationResult {
     public static DataValidationResult createError(final ArrDescItem item, final String errorMsg) {
         DataValidationResult result = new DataValidationResult(ValidationResultType.ERROR);
         result.setDescItem(item);
+        result.setMessage(errorMsg);
+        return result;
+    }
+
+    public static DataValidationResult createError(final Integer descItemId, final String errorMsg){
+        DataValidationResult result = new DataValidationResult(ValidationResultType.ERROR);
+        result.setDescItemId(descItemId);
         result.setMessage(errorMsg);
         return result;
     }
@@ -102,6 +136,14 @@ public class DataValidationResult {
             result.setMessage("Atribut " + type.getName() + " se specifikací " + spec.getName()
                     + " musí být vyplněn u této jednotky archivního popisu.");
         }
+        return result;
+    }
+
+    public static DataValidationResult createMissing(final String typeCode, final String message){
+        DataValidationResult result = new DataValidationResult(ValidationResultType.MISSING);
+        result.setTypeCode(typeCode);
+        result.setMessage(message);
+
         return result;
     }
 }

@@ -362,6 +362,9 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
         }
 
         List<DataValidationResult> validationResults = descItemsPostValidator.postValidateNodeDescItems(level, version);
+        List<DataValidationResult> scriptResults = rulesExecutor.executeDescItemValidationRules(level, version);
+        validationResults.addAll(scriptResults);
+
         ArrNodeConformityInfoExt result = updateNodeConformityInfo(level, version, validationResults);
 
         level.getNode().setLastUpdate(LocalDateTime.now());
