@@ -5,6 +5,8 @@ import static com.jayway.restassured.RestAssured.given;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import javax.transaction.Transactional;
@@ -20,6 +22,7 @@ import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
@@ -31,6 +34,7 @@ import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 
 import cz.tacr.elza.ElzaCore;
+import cz.tacr.elza.ElzaCoreTest;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
@@ -61,7 +65,6 @@ import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.ArrCalendarTypes;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
-import cz.tacr.elza.domain.vo.ArrDescItems;
 import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
 import cz.tacr.elza.domain.vo.ArrNodeHistoryPack;
 import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithDescItems;
@@ -106,7 +109,7 @@ import cz.tacr.elza.repository.VariantRecordRepository;
  * @since 31. 7. 2015
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = ElzaCore.class)
+@SpringApplicationConfiguration(classes = ElzaCoreTest.class)
 @IntegrationTest("server.port:0") // zvoli volny port, lze spustit i s aktivni Elzou
 @WebAppConfiguration
 public abstract class AbstractRestTest {
@@ -913,7 +916,6 @@ public abstract class AbstractRestTest {
         Response response = post((spec) -> spec.body(savePack), SAVE_DESCRIPTION_ITEMS_URL);
 
         RelatedNodeDirectionWithDescItems as = response.getBody().as(RelatedNodeDirectionWithDescItems.class);
-
         return as.getArrDescItems().getDescItems();
     }
 
@@ -1161,7 +1163,6 @@ public abstract class AbstractRestTest {
         levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
 
         Response response = put(spec -> spec.body(levelWithExtraNode), MOVE_LEVEL_UNDER_URL);
-
         RelatedNodeDirectionWithLevelPack related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
         return related.getArrLevelPack();
     }
