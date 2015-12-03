@@ -14,11 +14,6 @@ import {ButtonToolbar, ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
 var RibbonMenu = class RibbonMenu extends React.Component {
     constructor(props) {
         super(props);
-
-        this.handleToggle = this.handleToggle.bind(this);
-        this.state = {
-            opened: typeof this.props.opened == 'undefined' ? true : this.props.opened
-        };        
     }
 
     renderStatic() {
@@ -31,24 +26,14 @@ var RibbonMenu = class RibbonMenu extends React.Component {
         );
     }
 
-    handleToggle() {
-        this.setState({ opened: !this.state.opened });
-        this.props.onShowHide && this.props.onShowHide(!this.state.opened);
-    }
-
     render() {
-        var toggleGlyph = this.state.opened ? "chevron-up" : "chevron-down";
-        var cls = "ribbon-menu";
-        cls += this.state.opened ? " opened" : " closed";
-
         return (
-            <ButtonToolbar className={cls}>
+            <ButtonToolbar className="ribbon-menu">
                 <div className="content">
                     {this.renderStatic()}
                 </div>
-                <Button className="showHideToggle" onClick={this.handleToggle}><Glyphicon glyph={toggleGlyph} /></Button>
             </ButtonToolbar>
-        )
+        );
     }
 }
 

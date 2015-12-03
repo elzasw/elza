@@ -7,7 +7,7 @@ import ReactDOM from 'react-dom';
 
 require ('./FindingAidPage.less');
 
-import {RibbonMenu} from 'components';
+import {RibbonMenu, ToggleContent, FindindAidFileTree} from 'components';
 
 var FindingAidPage = class FindingAidPage extends React.Component {
     constructor(props) {
@@ -40,9 +40,14 @@ var FindingAidPage = class FindingAidPage extends React.Component {
         return (
             <div className={mainCls}>
                 <div className='app-header'>
-                    <RibbonMenu opened={this.state.ribbonOpened} onShowHide={this.handleRibbonShowHide} />
+                    <ToggleContent className="ribbon-toggle-container" opened={this.state.ribbonOpened} onShowHide={this.handleRibbonShowHide}>
+                        <RibbonMenu opened={this.state.ribbonOpened} onShowHide={this.handleRibbonShowHide} />
+                    </ToggleContent>
                 </div>
                 <div className='app-content'>
+                    <ToggleContent className="finding-aid-file-toggle-container" alwaysRender opened={false} closedIcon="chevron-right" openedIcon="chevron-left">
+                        <FindindAidFileTree />
+                    </ToggleContent>
                     <div ref="splitPane1" className="split-pane fixed-left">
                         <div className="split-pane-component" id="left-component">
                             FINDING_AID-left

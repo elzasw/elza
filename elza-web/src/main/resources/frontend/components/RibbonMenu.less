@@ -1,8 +1,6 @@
 @import "~bootstrap/less/variables.less";
 
-@ribbon-font-size: (@font-size-base * 1.3);
 @ribbon-font-size: 20px;
-@ribbon-show-hide-toggle-font-size: 11px;
 
 .ribbon-menu {
     .content {
@@ -18,35 +16,4 @@
             }
         }
     }
-
-    position: relative;
-    .showHideToggle {
-        &.btn {
-            height: 12px;
-            line-height: 12px;
-            padding: 0;
-            margin: 0;
-            border: none;
-            position:absolute;
-            bottom:0;
-            right:0;
-            .glyphicon {
-                padding: 0;
-                margin: 0;
-                font-size: @ribbon-show-hide-toggle-font-size;
-            }
-        }
-    }
-
-    &.closed {
-        .content {
-            display: none;
-        }
-        .showHideToggle {
-            &.btn {
-                top:0;
-            }
-        }
-    }
-
 }

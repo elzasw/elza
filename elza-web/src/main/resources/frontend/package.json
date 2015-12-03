@@ -23,6 +23,7 @@
         "sockjs-client": "~1.0.3",
         "array.from": "~0.2.0",
         "es5-shim": "~4.1.14",
+        "classnames": "^2.2.1",
         "split-pane": "^0.5.1"
     },
     "devDependencies": {

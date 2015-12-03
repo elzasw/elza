@@ -3,5 +3,8 @@ var messages = {
     "ribbon.action.record": "Rejstříky",
     "ribbon.action.party": "Uživatelé",
     
+    "toggle.action.minimize": "Minimalizovat",
+    "toggle.action.restore": "Zobrazit",
+    
     "____": ""
 };
