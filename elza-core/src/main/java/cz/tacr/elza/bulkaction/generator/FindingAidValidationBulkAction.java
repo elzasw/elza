@@ -55,6 +55,11 @@ public class FindingAidValidationBulkAction extends BulkAction {
      */
     private RuleEvaluationType evaluationType;
 
+    /**
+     * Počet chybných uzlů
+     */
+    private Integer errorCount;
+
     @Autowired
     private RuleManager ruleManager;
 
@@ -70,6 +75,8 @@ public class FindingAidValidationBulkAction extends BulkAction {
         String evaluationTypeString = (String) bulkActionConfig.getProperty("evaluation_type");
         evaluationType = RuleEvaluationType.valueOf(evaluationTypeString);
         Assert.notNull(evaluationType);
+
+        errorCount = 0;
 
     }
 
@@ -90,6 +97,7 @@ public class FindingAidValidationBulkAction extends BulkAction {
         ArrNodeConformityInfo.State stateLevel = nodeConformityInfoExt.getState();
 
         if (stateLevel.equals(ArrNodeConformityInfo.State.ERR)) {
+            errorCount++;
             state = ArrFindingAidVersionConformityInfo.State.ERR;
         }
 
@@ -122,7 +130,15 @@ public class FindingAidValidationBulkAction extends BulkAction {
         this.bulkActionState.setRunChange(this.change);
 
         ArrFindingAidVersionConformityInfo.State state = generate(version.getRootLevel());
-        ruleManager.setVersionConformityInfo(state, null, version);
+
+        String stateDescription;
+        if (state.equals(ArrFindingAidVersionConformityInfo.State.ERR)) {
+            stateDescription = "Validace uzlů archivní pomůcky zjistila nejméně jednu chybu: " + errorCount;
+        } else {
+            stateDescription = null;
+        }
+
+        ruleManager.setVersionConformityInfo(state, stateDescription, version);
     }
 
     @Override
