@@ -18,6 +18,21 @@ function void requiredForTypes(RulDescItemTypeExt descItemType, RulArrangementTy
     }
 }
 
+function void requiredForEvalTypes(RulDescItemTypeExt descItemType, RuleEvaluationType evaluationType,
+                                   RuleEvaluationType evaluationTypeRequire) {
+    if (evaluationType.equals(evaluationTypeRequire)) {
+        descItemType.setType(RulDescItemType.Type.REQUIRED);
+    }
+}
+
+function void requiredForTypesAndEvalType(RulDescItemTypeExt descItemType, RulArrangementType arrangementType,
+                                          String[] types, RuleEvaluationType evaluationType,
+                                   RuleEvaluationType evaluationTypeRequire) {
+    if (evaluationType.equals(evaluationTypeRequire) && Arrays.asList(types).contains(arrangementType.getCode())) {
+        descItemType.setType(RulDescItemType.Type.REQUIRED);
+    }
+}
+
 rule "Atribut ZP2015_LEVEL_TYPE je povinný vždy"
 when
 	descItemType : RulDescItemTypeExt(code == "ZP2015_LEVEL_TYPE")
@@ -37,9 +52,9 @@ end
 rule "Atribut ZP2015_UNIT_ID je povinný vždy, pokud typ výstupu je INV nebo KAT"
 when
 	descItemType : RulDescItemTypeExt(code == "ZP2015_UNIT_ID")
-	eval (evaluationType.equals(RuleEvaluationType.COMPLETE))
 then
-    requiredForTypes(descItemType, arrangementType, new String[] {"INV", "KAT"});
+    requiredForTypesAndEvalType(descItemType, arrangementType, new String[] {"INV", "KAT"},
+                                evaluationType, RuleEvaluationType.COMPLETE);
 	results.add(descItemType);
 end
 

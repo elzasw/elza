@@ -11,6 +11,7 @@ import org.springframework.util.Assert;
 import cz.tacr.elza.api.ArrNodeConformityInfo;
 import cz.tacr.elza.api.ArrNodeConformityInfoExt;
 import cz.tacr.elza.api.vo.RuleEvaluationType;
+import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionState;
 import cz.tacr.elza.controller.RuleManager;
@@ -62,6 +63,9 @@ public class FindingAidValidationBulkAction extends BulkAction {
 
     @Autowired
     private RuleManager ruleManager;
+
+    @Autowired
+    private UpdateConformityInfoService updateConformityInfoService;
 
     /**
      * Inicializace hromadné akce.
@@ -128,6 +132,9 @@ public class FindingAidValidationBulkAction extends BulkAction {
 
         this.change = createChange();
         this.bulkActionState.setRunChange(this.change);
+
+        // v případě, že existuje nějaké přepočítávání uzlů, je nutné to ukončit
+        updateConformityInfoService.terminateWorkerInVersion(version);
 
         ArrFindingAidVersionConformityInfo.State state = generate(version.getRootLevel());
 
