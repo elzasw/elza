@@ -71,7 +71,7 @@
 
     <profiles>
         <profile>
-            <id>exec</id>
+            <id>exec2</id>
             <build>
                 <plugins>
                     <plugin>
