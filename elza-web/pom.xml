@@ -84,7 +84,7 @@
                                     <goal>java</goal>
                                 </goals>
                                 <configuration>
-                                    <mainClass>cz.tacr.elza.ElzaApp</mainClass>
+                                    <mainClass>cz.tacr.elza.ElzaWebApp</mainClass>
                                 </configuration>
                             </execution>
                         </executions>
@@ -144,7 +144,34 @@
                                 <argument>run</argument>
                                 <argument>dev</argument>
                             </arguments>
-                            <workingDirectory>src/main/resources/frontend/config</workingDirectory>
+                            <workingDirectory>src/main/resources/frontend</workingDirectory>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>exec-npm-run-dev</id>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>                    
+                </plugins>
+            </build>
+        </profile>        
+        <profile>
+            <id>npm-install</id>
+            <build>
+                <plugins>
+                    <!-- Frontend webpack dev server -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <configuration>
+                            <executable>npm</executable>
+                            <arguments>
+                                <argument>install</argument>
+                            </arguments>
+                            <workingDirectory>src/main/resources/frontend</workingDirectory>
                         </configuration>
                         <executions>
                             <execution>
