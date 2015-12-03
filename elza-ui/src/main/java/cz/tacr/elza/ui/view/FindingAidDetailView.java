@@ -10,6 +10,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -46,6 +49,7 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemUnitdate;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrFindingAidVersionConformityInfo;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.RulArrangementType;
@@ -54,6 +58,7 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
 import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
 import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithLevelPack;
+import cz.tacr.elza.repository.FindingAidVersionConformityInfoRepository;
 import cz.tacr.elza.ui.ElzaView;
 import cz.tacr.elza.ui.components.Callback;
 import cz.tacr.elza.ui.components.LevelInlineDetail;
@@ -88,6 +93,12 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
 
     @Autowired
     private BulkActionManager bulkActionManager;
+
+    @Autowired
+    private FindingAidVersionConformityInfoRepository findingAidVersionConformityInfoRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     private Integer findingAidId;
     private ArrFindingAidVersion version;
@@ -127,8 +138,11 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
         this.findingAid = arrangementManager.getFindingAid(findingAidId);
         discardNodeCut();
 
-
-        pageTitle(findingAid.getName() + " (stav: "+ (version.getState() == null ? "Neznámý" : version.getState().name())+")");
+        ArrFindingAidVersionConformityInfo conformityInfo = findingAidVersionConformityInfoRepository
+                .findByFaVersion(version);
+        pageTitle(
+                findingAid.getName() + " (stav: " + ((conformityInfo == null || conformityInfo.getState() == null) ? "Neznámý" : conformityInfo.getState().name())
+                        + ")");
         addActionsButtons(version.getLockChange() != null);
 
         rootNode = version.getRootLevel();
@@ -340,7 +354,8 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
         table.select(null);
         ArrLevelExt level = arrangementManager
                 .getLevel(rootNode.getNode().getNodeId(), version.getFindingAidVersionId(), null);
-        levelDetailConteiner.showLevelDetail(level, level.getDescItemList(), version.getFindingAidVersionId(), null);
+        levelDetailConteiner.showLevelDetail(level, level.getDescItemList(), version.getFindingAidVersionId(),
+                item -> FindingAidDetailView.this.refreshVersionLock());
     }
 
     private Callback<ArrLevelExt> creteAttributeEditCallback() {
@@ -353,6 +368,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
 
             addAttributeToCache(item);
             table.refreshRowCache();
+            refreshVersionLock();
         };
     }
 
@@ -749,6 +765,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
         }
 
         table.setCurrentPageFirstItemIndex(visibleIndex);
+        entityManager.refresh(version);
     }
 
     /**
@@ -994,6 +1011,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                             container.addBean(newFaLevel);
                             table.refreshRowCache();
                             ElzaNotifications.show("Přidáno...");
+                            refreshVersionLock();
                         } catch (IllegalStateException | IllegalArgumentException e) {
                             ElzaNotifications.showError(e.getMessage());
                         }
@@ -1020,6 +1038,14 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                     new AxAction().caption("Výběr sloupců").icon(FontAwesome.COG).run(() ->
                             showDescItemTypeWindow()));
         }
+    }
+
+    /**
+     * Načte aktuální verzi optimistických zámků
+     */
+    private void refreshVersionLock() {
+        ArrFindingAidVersion versiontmp = entityManager.find(ArrFindingAidVersion.class, version.getFindingAidVersionId());
+        version.setVersion(versiontmp.getVersion());
     }
 
     /**

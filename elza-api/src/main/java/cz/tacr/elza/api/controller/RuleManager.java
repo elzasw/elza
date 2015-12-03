@@ -4,6 +4,7 @@ import java.util.List;
 
 import cz.tacr.elza.api.ArrDescItem;
 import cz.tacr.elza.api.ArrFindingAidVersion;
+import cz.tacr.elza.api.ArrFindingAidVersionConformityInfo;
 import cz.tacr.elza.api.ArrNodeConformityInfoExt;
 import cz.tacr.elza.api.RulArrangementType;
 import cz.tacr.elza.api.RulDataType;
@@ -30,7 +31,8 @@ import cz.tacr.elza.api.vo.RuleEvaluationType;
  */
 public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType, DIS extends RulDescItemSpec,
         RFV extends RulFaView, NTO extends NodeTypeOperation, RND extends RelatedNodeDirection, DI extends ArrDescItem,
-        FAV extends ArrFindingAidVersion, RET extends RuleEvaluationType> {
+        FAV extends ArrFindingAidVersion, RET extends RuleEvaluationType,
+        FAVCI extends ArrFindingAidVersionConformityInfo> {
 
     /**
      * Najde specifikaci podle id.
@@ -122,6 +124,6 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      * @param stateDescription popis stavu
      * @param version          verze ap
      */
-    void setVersionConformityInfo(FAV.State state, String stateDescription, FAV version);
+    void setVersionConformityInfo(FAVCI.State state, String stateDescription, FAV version);
 
 }

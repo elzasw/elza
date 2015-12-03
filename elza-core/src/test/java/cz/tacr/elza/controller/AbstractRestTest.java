@@ -81,6 +81,7 @@ import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.FaBulkActionRepository;
 import cz.tacr.elza.repository.FaViewRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
+import cz.tacr.elza.repository.FindingAidVersionConformityInfoRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeConformityErrorsRepository;
@@ -332,6 +333,8 @@ public abstract class AbstractRestTest {
     protected NodeConformityErrorsRepository nodeConformityErrorsRepository;
     @Autowired
     protected NodeConformityMissingRepository nodeConformityMissingRepository;
+    @Autowired
+    protected FindingAidVersionConformityInfoRepository findingAidVersionConformityInfoRepository;
 
 
     @Before
@@ -361,6 +364,7 @@ public abstract class AbstractRestTest {
         nodeConformityInfoRepository.deleteAll();
         descItemConstraintRepository.deleteAll();
         faViewRepository.deleteAll();
+        findingAidVersionConformityInfoRepository.deleteAll();
         findingAidVersionRepository.deleteAll();
         arrangementTypeRepository.deleteAll();
         ruleSetRepository.deleteAll();

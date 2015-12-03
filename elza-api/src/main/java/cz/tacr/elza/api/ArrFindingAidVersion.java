@@ -21,11 +21,6 @@ public interface ArrFindingAidVersion<FA extends ArrFindingAid, FC extends ArrCh
             Versionable,
             Serializable {
 
-    enum State {
-        OK,
-        ERR;
-    }
-
     Integer getFindingAidVersionId();
 
     void setFindingAidVersionId(Integer versionId);
@@ -100,27 +95,4 @@ public interface ArrFindingAidVersion<FA extends ArrFindingAid, FC extends ArrCh
      */
     void setLastChange(FC change);
 
-
-    /**
-     * @return Stav verze.
-     */
-    State getState();
-
-
-    /**
-     * @param state Stav verze.
-     */
-    void setState(State state);
-
-
-    /**
-     * @return popis stavu
-     */
-    String getStateDescription();
-
-
-    /**
-     * @param stateDescription popis stavu
-     */
-    void setStateDescription(String stateDescription);
 }
