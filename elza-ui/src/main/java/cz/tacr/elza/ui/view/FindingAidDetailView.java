@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import com.google.common.eventbus.Subscribe;
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.util.BeanItem;
@@ -58,9 +59,12 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
 import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
 import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithLevelPack;
+import cz.tacr.elza.events.ConformityInfoUpdatedEvent;
+import cz.tacr.elza.ui.ElzaUI;
 import cz.tacr.elza.repository.FindingAidVersionConformityInfoRepository;
 import cz.tacr.elza.ui.ElzaView;
 import cz.tacr.elza.ui.components.Callback;
+import cz.tacr.elza.ui.components.ConformityInfoChangeNotificator;
 import cz.tacr.elza.ui.components.LevelInlineDetail;
 import cz.tacr.elza.ui.components.TreeTable;
 import cz.tacr.elza.ui.utils.ConcurrentUpdateExceptionHandler;
@@ -95,6 +99,12 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
     private BulkActionManager bulkActionManager;
 
     @Autowired
+    private LevelInlineDetail levelDetailConteiner;
+
+    @Autowired
+    private ConformityInfoChangeNotificator conformityInfoChangeNotificator;
+
+    @Autowired
     private FindingAidVersionConformityInfoRepository findingAidVersionConformityInfoRepository;
 
     @PersistenceContext
@@ -111,9 +121,6 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
     AxContainer<RulRuleSet> ruleSetContainer;
 
     private TreeTable table;
-
-    @Autowired
-    private LevelInlineDetail levelDetailConteiner;
 
     public static final String LEVEL = "Úroveň";
     public static final String LEVEL_POSITION = "Pozice";
@@ -234,6 +241,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
                         .getLevel(node.getNode().getNodeId(), version.getFindingAidVersionId(), null);
                 levelDetailConteiner.showLevelDetail(level, level.getDescItemList(), version.getFindingAidVersionId(),
                         creteAttributeEditCallback());
+                conformityInfoChangeNotificator.setSelectedNodeID(node.getNode().getNodeId());
             }
         });
 
@@ -317,6 +325,16 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
             components(table, levelDetailConteiner);
         }
         showDetailAP();
+
+
+        ElzaUI.getCurrent().setPollInterval(1000);
+        ElzaUI.getCurrent().addPollListener(conformityInfoChangeNotificator);
+    }
+
+
+    @Subscribe
+    public void onConformityInfoChange(final ConformityInfoUpdatedEvent event) {
+        conformityInfoChangeNotificator.onConformityInfoChange(event);
     }
 
     private void loadVersion(Integer[] params) {

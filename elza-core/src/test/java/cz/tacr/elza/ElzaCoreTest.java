@@ -1,10 +1,12 @@
 package cz.tacr.elza;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.orm.jpa.EntityScan;
@@ -20,10 +22,8 @@ import com.google.common.eventbus.EventBus;
 
 
 /**
- * Spouštěcí třída pro modul elza-core.
- *
- * @author by Ondřej Buriánek, burianek@marbes.cz.
- * @since 22.7.15
+ * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
+ * @since 3.12.2015
  */
 @Configuration
 @EntityScan(basePackageClasses = {ElzaCore.class})
@@ -32,8 +32,7 @@ import com.google.common.eventbus.EventBus;
 @EnableAutoConfiguration
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @EnableTransactionManagement
-public class ElzaCore {
-
+public class ElzaCoreTest {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public static void main(String[] args) {
@@ -54,7 +53,7 @@ public class ElzaCore {
         });
     }
 
-    @Bean @Qualifier(value = "threadPoolTaskExecutor")
+    @Bean
     public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setCorePoolSize(10);
@@ -64,9 +63,17 @@ public class ElzaCore {
         return threadPoolTaskExecutor;
     }
 
-    @Bean @Qualifier(value = "conformityUpdateTaskExecutor")
+
+
+    @Bean
     public Executor conformityUpdateTaskExecutor() {
-        return threadPoolTaskExecutor();
+        return new Executor() {
+            @Override
+            public void execute(final Runnable command) {
+                //TODO kubovy zprovoznit testy se spouštěním vlákna
+                //nebudeme spouštět vlákno pro aktualizaci conformityInfo
+            }
+        };
     }
 
 }

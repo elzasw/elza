@@ -32,6 +32,7 @@ import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.api.vo.RuleEvaluationType;
+import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
@@ -131,6 +132,9 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
 
     @Autowired
     private ExtendedObjectsFactory extendedObjectsFactory;
+
+    @Autowired
+    private UpdateConformityInfoService updateConformityInfoService;
 
     @Autowired
     private FindingAidVersionConformityInfoRepository findingAidVersionConformityInfoRepository;
@@ -528,6 +532,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
 
             deleteConformityInfo(deleteInfos);
             setVersionConformityInfo(null, null, version);
+            updateConformityInfoService.updateInfoForNodes(deleteNodes, version);
         }
     }
 

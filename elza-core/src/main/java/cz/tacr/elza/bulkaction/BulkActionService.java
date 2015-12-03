@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -42,6 +43,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
+    @Qualifier("threadPoolTaskExecutor")
     private ThreadPoolTaskExecutor taskExecutor;
 
     @Autowired
