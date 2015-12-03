@@ -27,6 +27,7 @@ import cz.tacr.elza.domain.ArrDescItemInt;
 import cz.tacr.elza.domain.ArrDescItemUnitid;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrFindingAidVersionConformityInfo;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.RulDescItemType;
@@ -541,7 +542,9 @@ public class BulkActionManagerTest extends AbstractRestTest {
             Assert.assertEquals(ArrNodeConformityInfo.State.OK, levelExt.getNodeConformityInfo().getState());
 
             version = getFindingAidOpenVersion(version.getFindingAid());
-            Assert.assertEquals(ArrFindingAidVersion.State.OK, version.getState());
+            ArrFindingAidVersionConformityInfo conformityInfo = findingAidVersionConformityInfoRepository
+                    .findByFaVersion(version);
+            Assert.assertEquals(ArrFindingAidVersionConformityInfo.State.OK, conformityInfo.getState());
 
         } finally {
             cleanUpBulkActionConfig(bulkActionConfigSerial);

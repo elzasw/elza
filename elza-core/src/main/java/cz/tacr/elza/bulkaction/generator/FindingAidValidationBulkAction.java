@@ -16,6 +16,7 @@ import cz.tacr.elza.bulkaction.BulkActionState;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrFindingAidVersionConformityInfo;
 import cz.tacr.elza.domain.ArrLevel;
 
 
@@ -77,11 +78,11 @@ public class FindingAidValidationBulkAction extends BulkAction {
      *
      * @param level uzel
      */
-    private ArrFindingAidVersion.State generate(final ArrLevel level) {
+    private ArrFindingAidVersionConformityInfo.State generate(final ArrLevel level) {
 
         List<ArrLevel> childLevels = getChildren(level);
 
-        ArrFindingAidVersion.State state = ArrFindingAidVersion.State.OK;
+        ArrFindingAidVersionConformityInfo.State state = ArrFindingAidVersionConformityInfo.State.OK;
 
         ArrNodeConformityInfoExt nodeConformityInfoExt = ruleManager
                 .setConformityInfo(level.getLevelId(), version.getFindingAidVersionId(), evaluationType);
@@ -89,13 +90,13 @@ public class FindingAidValidationBulkAction extends BulkAction {
         ArrNodeConformityInfo.State stateLevel = nodeConformityInfoExt.getState();
 
         if (stateLevel.equals(ArrNodeConformityInfo.State.ERR)) {
-            state = ArrFindingAidVersion.State.ERR;
+            state = ArrFindingAidVersionConformityInfo.State.ERR;
         }
 
         for (ArrLevel childLevel : childLevels) {
-            ArrFindingAidVersion.State stateChild = generate(childLevel);
-            if (!stateChild.equals(ArrFindingAidVersion.State.OK)) {
-                state = ArrFindingAidVersion.State.ERR;
+            ArrFindingAidVersionConformityInfo.State stateChild = generate(childLevel);
+            if (!stateChild.equals(ArrFindingAidVersionConformityInfo.State.OK)) {
+                state = ArrFindingAidVersionConformityInfo.State.ERR;
             }
         }
 
@@ -120,9 +121,8 @@ public class FindingAidValidationBulkAction extends BulkAction {
         this.change = createChange();
         this.bulkActionState.setRunChange(this.change);
 
-        ArrFindingAidVersion.State state = generate(version.getRootLevel());
-        version.setState(state);
-        findingAidVersionRepository.save(version);
+        ArrFindingAidVersionConformityInfo.State state = generate(version.getRootLevel());
+        ruleManager.setVersionConformityInfo(state, null, version);
     }
 
     @Override

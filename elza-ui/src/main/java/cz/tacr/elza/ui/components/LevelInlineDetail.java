@@ -186,6 +186,8 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
                     nodeRegisterLink.getVersionId(), null);
             showLevelDetail(level, level.getDescItemList(), nodeRegisterLink.getVersionId(), attributeEditCallback);
 
+            sendEditCallback(level);
+
             if (attributWindow != null) {
                 attributWindow.close();
             }
@@ -379,7 +381,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         captionLayout.addComponent(newLabel("Vazba na rejstříkové heslo"));
         if (isVersionOpen(versionId)) {
             captionLayout.addComponent(createEditButton(
-                    (thiz) -> thiz.showEditNodeRecordLinkWindow(node, versionId, data)));
+                    (thiz) -> thiz.showEditNodeRecordLinkWindow(node, versionId, data, attributeEditCallback)));
         }
 
         if (CollectionUtils.isEmpty(records)) {
@@ -509,12 +511,15 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
     /**
      * Otevře okno pro editaci vazeb na hesla.
-     *
-     * @param node      uzel
+     *  @param node      uzel
      * @param versionId id verze
      * @param data      existující vazby pro daný uzel a verzi
+     * @param attributeEditCallback
      */
-    private void showEditNodeRecordLinkWindow(final ArrNode node, final Integer versionId, final List<ArrNodeRegister> data) {
+    private void showEditNodeRecordLinkWindow(final ArrNode node,
+                                              final Integer versionId,
+                                              final List<ArrNodeRegister> data,
+                                              final Callback<ArrLevelExt> attributeEditCallback) {
 
         nodeRegisterLink = new NodeRegisterLink(node, versionId, data, registryManager);
 

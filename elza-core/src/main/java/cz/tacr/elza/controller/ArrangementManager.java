@@ -13,6 +13,7 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemPartyRef;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrFindingAidVersionConformityInfo;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ArrNode;
@@ -412,7 +413,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 codes.add(bulkActionConfig.getCode());
             }
 
-            ruleManager.setVersionConformityInfo(ArrFindingAidVersion.State.ERR,
+            ruleManager.setVersionConformityInfo(ArrFindingAidVersionConformityInfo.State.ERR,
                     "Nebyly provedeny povinné hromadné akce " + codes + " před uzavřením verze", version);
         }
 

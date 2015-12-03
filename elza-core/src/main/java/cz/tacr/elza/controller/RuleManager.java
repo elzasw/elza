@@ -35,6 +35,7 @@ import cz.tacr.elza.api.vo.RuleEvaluationType;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrFindingAidVersionConformityInfo;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformityErrors;
@@ -57,6 +58,7 @@ import cz.tacr.elza.repository.DescItemConstraintRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FaViewRepository;
+import cz.tacr.elza.repository.FindingAidVersionConformityInfoRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeConformityErrorsRepository;
@@ -77,7 +79,7 @@ import cz.tacr.elza.validation.ArrDescItemsPostValidator;
 @RequestMapping("/api/ruleSetManager")
 public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulDataType, RulDescItemType,
         RulDescItemSpec, RulFaView, NodeTypeOperation, RelatedNodeDirection, ArrDescItem, ArrFindingAidVersion,
-        RuleEvaluationType> {
+        RuleEvaluationType, ArrFindingAidVersionConformityInfo> {
 
     private static final String VIEW_SPECIFICATION_SEPARATOR = "|";
     private static final String VIEW_SPECIFICATION_SEPARATOR_REGEX = "\\|";
@@ -129,6 +131,9 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
 
     @Autowired
     private ExtendedObjectsFactory extendedObjectsFactory;
+
+    @Autowired
+    private FindingAidVersionConformityInfoRepository findingAidVersionConformityInfoRepository;
 
     @Override
     @RequestMapping(value = "/getDescItemSpecById", method = RequestMethod.GET)
@@ -380,13 +385,21 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     }
 
     @Override
-    public void setVersionConformityInfo(final ArrFindingAidVersion.State state,
+    public void setVersionConformityInfo(final ArrFindingAidVersionConformityInfo.State state,
                                          final String stateDescription,
                                          final ArrFindingAidVersion version) {
         Assert.notNull(version);
-        version.setState(state);
-        version.setStateDescription(stateDescription);
-        findingAidVersionRepository.save(version);
+        ArrFindingAidVersionConformityInfo conformityInfo = findingAidVersionConformityInfoRepository
+                .findByFaVersion(version);
+
+        if (conformityInfo == null) {
+            conformityInfo = new ArrFindingAidVersionConformityInfo();
+        }
+
+        conformityInfo.setFaVersion(version);
+        conformityInfo.setState(state);
+        conformityInfo.setStateDescription(stateDescription);
+        findingAidVersionConformityInfoRepository.save(conformityInfo);
     }
 
     /**
@@ -442,7 +455,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
                 }
             }
 
-            setVersionConformityInfo(ArrFindingAidVersion.State.ERR,
+            setVersionConformityInfo(ArrFindingAidVersionConformityInfo.State.ERR,
                     "Nejméně jedna jednotka popisu se nachází v chybovém stavu", version);
         }
 
