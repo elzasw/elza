@@ -23,7 +23,6 @@ import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ArrPacketType;
 import cz.tacr.elza.domain.RulArrangementType;
-import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
@@ -43,7 +42,6 @@ import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.DescItemConstraintRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
@@ -127,9 +125,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Autowired
     private DescItemRepository descItemRepository;
-
-    @Autowired
-    private DescItemConstraintRepository descItemConstraintRepository;
 
     @Autowired
     private RuleManager ruleManager;
@@ -1868,93 +1863,13 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         RulDescItemSpec rulDescItemSpec = (descItem.getDescItemSpec() != null) ? descItemSpecRepository.findOne(descItem.getDescItemSpec().getDescItemSpecId()) : null;
 
         validateAllowedItemType(rulDescItemTypes, rulDescItemType);
-        validateAllItemConstraintsBySpec(rulDescItemType, descItem, rulDescItemSpec, mapDescItems);
-        validateAllItemConstraintsByType(rulDescItemType, descItem, mapDescItems);
-    }
 
-    /**
-     * Provedení validace položky nad podmínkama.
-     *
-     * @param rulDescItemType   kontrolovaný typ
-     * @param data              položka
-     * @param mapDescItems      mapa cachovaných položek
-     */
-    private void validateAllItemConstraintsByType(RulDescItemType rulDescItemType,
-                                                  ArrDescItem data,
-                                                  Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems) {
-        List<RulDescItemConstraint> rulDescItemConstraints = descItemConstraintRepository.findByDescItemType(
-                rulDescItemType);
-        for (RulDescItemConstraint rulDescItemConstraint : rulDescItemConstraints) {
-            validateRepeatableType(rulDescItemType, rulDescItemConstraint, mapDescItems);
-            validateDataDescItemConstraintTextLenghtLimit(data, rulDescItemConstraint);
-            validateDataDescItemConstraintRegexp(data, rulDescItemConstraint);
-        }
-    }
-
-    /**
-     * Provede validaci opakovatelnosti.
-     *
-     * @param rulDescItemType           kontrolovaný typ
-     * @param rulDescItemConstraint     podmínka
-     * @param mapDescItems              mapa cachovaných položek
-     */
-    private void validateRepeatableType(RulDescItemType rulDescItemType,
-                                        RulDescItemConstraint rulDescItemConstraint,
-                                        Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems) {
-        if (rulDescItemConstraint.getRepeatable() != null && !rulDescItemConstraint.getRepeatable()) {
-            List<ArrDescItem> arrDescItems = mapDescItems.get(rulDescItemType).get(null);
-            if (arrDescItems != null && arrDescItems.size() > 0) {
-                throw new IllegalArgumentException("Pro daný uzel již existuje jiná hodnota stejného typu atributu");
-            }
-        }
-    }
-
-    /**
-     * Provede validaci podle specifikace.
-     *
-     * @param rulDescItemType   kontrolovaný typ
-     * @param data              položka
-     * @param rulDescItemSpec   specifický typ atributu
-     * @param mapDescItems      mapa cachovaných položek
-     */
-    private void validateAllItemConstraintsBySpec(RulDescItemType rulDescItemType,
-                                                  ArrDescItem data,
-                                                  RulDescItemSpec rulDescItemSpec,
-                                                  Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems) {
-        if (rulDescItemSpec != null) {
+        if (rulDescItemSpec == null && BooleanUtils.isTrue(rulDescItemType.getUseSpecification())) {
+            throw new IllegalArgumentException("Specifikace musí být vyplněna, pokud typ atributu má nastaveno use_specification na true");
+        } else if(rulDescItemSpec != null) {
             validateSpecificationAttribute(rulDescItemType, rulDescItemSpec);
-            List<RulDescItemConstraint> rulDescItemConstraints = descItemConstraintRepository.findByDescItemSpec(
-                    rulDescItemSpec);
-            for (RulDescItemConstraint rulDescItemConstraint : rulDescItemConstraints) {
-                validateRepeatableSpec(rulDescItemType, rulDescItemSpec, rulDescItemConstraint, mapDescItems);
-                validateDataDescItemConstraintTextLenghtLimit(data, rulDescItemConstraint);
-                validateDataDescItemConstraintRegexp(data, rulDescItemConstraint);
-            }
-        } else
-            // Specifikace musí být vyplněna, pokud typ atributu má vyplněno use_specification na true
-            if (rulDescItemType.getUseSpecification()) {
-                throw new IllegalArgumentException("Specifikace musí být vyplněna, pokud typ atributu má nastaveno use_specification na true");
-            }
-    }
-
-    /**
-     * Provede validaci opakovatelnosti podle specifikace.
-     *
-     * @param rulDescItemType       kontrolovaný typ
-     * @param rulDescItemSpec       specifický typ atributu
-     * @param rulDescItemConstraint podmínka
-     * @param mapDescItems          mapa cachovaných položek
-     */
-    private void validateRepeatableSpec(RulDescItemType rulDescItemType,
-                                        RulDescItemSpec rulDescItemSpec,
-                                        RulDescItemConstraint rulDescItemConstraint,
-                                        Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems) {
-        if (rulDescItemConstraint.getRepeatable() != null && !rulDescItemConstraint.getRepeatable()) {
-            List<ArrDescItem> arrDescItems = mapDescItems.get(rulDescItemType).get(rulDescItemSpec);
-            if (arrDescItems.size() > 0) {
-                throw new IllegalArgumentException("Pro daný uzel již existuje jiná hodnota stejného typu atributu");
-            }
         }
+
     }
 
     /**
@@ -2131,32 +2046,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         ArrDescItem descItemTmp = new ArrDescItem();
         BeanUtils.copyProperties(descItem, descItemTmp);
         descItemRepository.save(descItemTmp);
-    }
-
-    /**
-     * Pokud má typ atributu vyplněný constraint na délku textového řetězce, tak je potřeba zkontrolovat délku hodnoty
-     *
-     * @param descItem                  Kontrolovaná data
-     * @param rulDescItemConstraint Podmínka
-     */
-    private void validateDataDescItemConstraintTextLenghtLimit(ArrDescItem descItem, RulDescItemConstraint rulDescItemConstraint) {
-        Integer textLenghtLimit = rulDescItemConstraint.getTextLenghtLimit();
-        if (textLenghtLimit != null && descItem.toString().length() > textLenghtLimit) {
-            throw new IllegalStateException("Hodnota je příliš dlouhá - " + descItem.toString().length() + "/" + textLenghtLimit);
-        }
-    }
-
-    /**
-     * Pokud má typ atributu vyplněný constraint na regulární výraz, tak je potřeba hodnotu ověřit předaným regulárním výrazem
-     *
-     * @param descItem                  Kontrolovaná data
-     * @param rulDescItemConstraint Podmínka
-     */
-    private void validateDataDescItemConstraintRegexp(ArrDescItem descItem, RulDescItemConstraint rulDescItemConstraint) {
-        String regexp = rulDescItemConstraint.getRegexp();
-        if (regexp != null && !descItem.toString().matches(regexp)) {
-            throw new IllegalStateException("Hodnota '" + descItem.toString() + "' neodpovídá výrazu " + regexp);
-        }
     }
 
     /**
