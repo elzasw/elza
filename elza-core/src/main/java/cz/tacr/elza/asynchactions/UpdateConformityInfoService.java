@@ -1,24 +1,35 @@
 package cz.tacr.elza.asynchactions;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorCompletionService;
+
+import javax.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
+import com.google.common.eventbus.EventBus;
+
+import cz.tacr.elza.api.vo.RuleEvaluationType;
+import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformityInfo;
+import cz.tacr.elza.events.ConformityInfoUpdatedEvent;
 
 
 /**
@@ -31,9 +42,18 @@ import cz.tacr.elza.domain.ArrNodeConformityInfo;
 @Configuration
 public class UpdateConformityInfoService {
 
+    private Log logger = LogFactory.getLog(UpdateConformityInfoWorker.class);
+
     @Autowired
     @Qualifier(value = "conformityUpdateTaskExecutor")
     private Executor taskExecutor;
+
+    @Autowired
+    private RuleManager ruleManager;
+
+    @Autowired
+    private EventBus eventBus;
+
 
 
     /**
@@ -96,6 +116,27 @@ public class UpdateConformityInfoService {
         versionWorkers.put(version, updateConformityInfoWorker);
 
         taskExecutor.execute(updateConformityInfoWorker);
+    }
+
+
+    @Transactional(value = Transactional.TxType.REQUIRES_NEW)
+    public void updateConformityInfo(final Integer nodeId, final Integer levelId, final Integer versionId) {
+        logger.info("Aktualizace stavu " + nodeId + " ve verzi " + versionId);
+
+        registerAfterCommitListener(nodeId);
+        ruleManager.setConformityInfo(levelId, versionId, RuleEvaluationType.NORMAL);
+    }
+
+    /**
+     * Registruje listener, který po úspěšném commitu transakce odešle aktualizované nody.
+     */
+    private void registerAfterCommitListener(final Integer nodeId) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                eventBus.post(new ConformityInfoUpdatedEvent(nodeId));
+            }
+        });
     }
 
 

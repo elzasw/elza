@@ -3,7 +3,6 @@ package cz.tacr.elza.ui.components;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -50,11 +49,9 @@ public class ConformityInfoChangeNotificator implements UIEvents.PollListener{
     }
 
 
-    public void onConformityInfoChange(final ConformityInfoUpdatedEvent event){
-        if(CollectionUtils.isNotEmpty(event.getNodeIds())){
-            synchronized (this){
-                recentlyUpdatedInfoIds.addAll(event.getNodeIds());
-            }
+    public void onConformityInfoChange(final ConformityInfoUpdatedEvent event) {
+        synchronized (this) {
+            recentlyUpdatedInfoIds.add(event.getNodeId());
         }
     }
 }
