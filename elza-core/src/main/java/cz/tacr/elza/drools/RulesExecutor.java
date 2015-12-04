@@ -139,13 +139,15 @@ public class RulesExecutor implements InitializingBean {
         ClassLoader classLoader = getClass().getClassLoader();
         File defaultDir = new File(classLoader.getResource("rules").getFile());
         File[] files = defaultDir.listFiles((dir1, name) -> name.endsWith(FILE_EXTENSION));
-        for (File file : files) {
-            File fileCopy = new File(
-                    dir.toString() + File.separator + FilenameUtils.getBaseName(file.getName()) + FILE_EXTENSION);
-            try {
-                Files.copy(file.toPath(), fileCopy.toPath());
-            } catch (FileAlreadyExistsException e) {
-                logger.info("Soubor již existuje: " + e.getMessage());
+        if (files != null) {
+            for (File file : files) {
+                File fileCopy = new File(
+                        dir.toString() + File.separator + FilenameUtils.getBaseName(file.getName()) + FILE_EXTENSION);
+                try {
+                    Files.copy(file.toPath(), fileCopy.toPath());
+                } catch (FileAlreadyExistsException e) {
+                    logger.info("Soubor již existuje: " + e.getMessage());
+                }
             }
         }
     }

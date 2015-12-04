@@ -81,10 +81,12 @@ public class BulkActionConfigManager {
         ClassLoader classLoader = getClass().getClassLoader();
         File defaultDir = new File(classLoader.getResource("bulkactions").getFile());
         File[] files = defaultDir.listFiles((dir1, name) -> name.endsWith(extension));
-        for (File file : files) {
-            File fileCopy = new File(
-                    dir.toString() + File.separator + FilenameUtils.getBaseName(file.getName()) + extension);
-            Files.copy(file.toPath(), fileCopy.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        if (files != null) {
+            for (File file : files) {
+                File fileCopy = new File(
+                        dir.toString() + File.separator + FilenameUtils.getBaseName(file.getName()) + extension);
+                Files.copy(file.toPath(), fileCopy.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
         }
     }
 
