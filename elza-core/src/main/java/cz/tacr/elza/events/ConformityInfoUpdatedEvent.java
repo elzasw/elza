@@ -9,13 +9,13 @@ import java.util.Set;
  */
 public class ConformityInfoUpdatedEvent {
 
-    private Set<Integer> nodeIds;
+    private Integer nodeId;
 
-    public ConformityInfoUpdatedEvent(final Set<Integer> nodeIds) {
-        this.nodeIds = nodeIds;
+    public ConformityInfoUpdatedEvent(final Integer nodeId) {
+        this.nodeId = nodeId;
     }
 
-    public Set<Integer> getNodeIds() {
-        return nodeIds;
+    public Integer getNodeId() {
+        return nodeId;
     }
 }
