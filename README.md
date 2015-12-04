@@ -25,6 +25,18 @@ Pro sestavení dokumentace včetně UML diagramů modelu použijte profil jdocum
 
 
 ### Sestavení a spuštění embed (UI pro testovací účely - Vaadin)
+
+Zkopírování hromadných akcí:
+z "elza-core/src/main/resources/bulkactions" do "elza-ui/bulkactions"
+
+Zkopírování pravidel:
+z "elza-core/src/main/resources/rules" do "elza-ui/rules"
+
+Přepnutí do elza UI před spuštěním
+```
+cd elza-ui
+```
+
 ```
 mvn -Pexec,skiptest install
 ```
