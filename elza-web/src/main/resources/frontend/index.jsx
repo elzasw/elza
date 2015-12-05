@@ -12,9 +12,10 @@ import ReactDOM from 'react-dom';
 
 import { createHistory, useBasename } from 'history'
 import { Route, Link, History, Lifecycle } from 'react-router'
+import { Utils } from 'components'
 
 // Globální init
-//Utils.init();
+Utils.init();
 //var es5Shim = require('es5-shim');
 import {SplitPane} from 'components';
 

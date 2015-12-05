@@ -5,6 +5,23 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+var appState = {
+    findingAids: {
+        selId: 111,
+        items: [
+            {
+                id: 111,
+                name: 'xxx1',
+                
+            },
+            {
+                id: 222,
+                name: 'xxx2'
+            },
+        ]
+    }
+};
+
 module.exports = class Layout extends React.Component {
     render() {
         return (

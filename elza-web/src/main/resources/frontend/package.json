@@ -24,7 +24,10 @@
         "array.from": "~0.2.0",
         "es5-shim": "~4.1.14",
         "classnames": "^2.2.1",
-        "split-pane": "^0.5.1"
+        "split-pane": "^0.5.1",
+        "reflux": "^0.3.0",
+        "reflux-promise": "^1.0.2",
+        "airflux": "^0.3.0-alpha1"
     },
     "devDependencies": {
         "webpack": "~1.10.1",
