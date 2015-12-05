@@ -22,10 +22,12 @@ var appState = {
     }
 };
 
+require('./Layout.less');
+
 module.exports = class Layout extends React.Component {
     render() {
         return (
-            <div>
+            <div className='root-container'>
                 {this.props.children}
             </div>
         )

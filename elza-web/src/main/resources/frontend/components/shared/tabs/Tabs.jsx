@@ -5,6 +5,8 @@ import React from 'react';
 
 import {Button, Glyphicon, Nav, NavItem} from 'react-bootstrap';
 
+require ('./Tabs.less');
+
 var EntityTabs = class EntityTabs extends React.Component {
     constructor(props) {
         super(props);

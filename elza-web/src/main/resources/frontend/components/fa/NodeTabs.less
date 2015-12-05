@@ -1,1 +1,15 @@
-@import "~bootstrap/less/variables.less";
+@import "~variables.less";
+
+@tabs-height: 54px;
+
+.node-tabs-container {
+    height: 100%;
+    
+    .tabs-container {
+        height: @tabs-height;
+    }
+    
+    .tab-content {
+        height: calc(~"100% - "@tabs-height);
+    }
+}

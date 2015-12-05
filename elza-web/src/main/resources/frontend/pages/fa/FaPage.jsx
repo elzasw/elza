@@ -37,7 +37,7 @@ var FaPage = class FaPage extends React.Component {
     }
 
     render() {
-        var mainCls = 'finding-aid-page app-container';
+        var mainCls = 'fa-page app-container';
         if (!this.state.ribbonOpened) {
             mainCls += " noRibbon";
         }
@@ -56,7 +56,7 @@ var FaPage = class FaPage extends React.Component {
                     </ToggleContent>
                 </div>
                 <div className='app-content'>
-                    <ToggleContent className="finding-aid-file-toggle-container" alwaysRender opened={false} closedIcon="chevron-right" openedIcon="chevron-left">
+                    <ToggleContent className="fa-file-toggle-container" alwaysRender opened={false} closedIcon="chevron-right" openedIcon="chevron-left">
                         <FindindAidFileTree />
                     </ToggleContent>
                     <div ref="splitPane1" className="split-pane fixed-left">
