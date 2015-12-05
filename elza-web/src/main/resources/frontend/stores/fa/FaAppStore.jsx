@@ -174,6 +174,8 @@ var store = class FaAppStore extends airflux.Store {
             } else {
                 this.activeFa.setActiveNode(newActiveNode);
             }
+        } else {
+            this.activeFa.setActiveNode(null);
         }
 
         this.trigger(this);
