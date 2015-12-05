@@ -7,7 +7,43 @@ import {Button, Glyphicon, Nav, NavItem} from 'react-bootstrap';
 
 require ('./Tabs.less');
 
-var EntityTabs = class EntityTabs extends React.Component {
+var TabsContainer = class TabsContainer extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        var cls = "tabs-container";
+        if (this.props.className) {
+            cls += " " + this.props.className;
+        }
+        return (
+            <div className={cls}>
+                {this.props.children}
+            </div>
+        );
+    }
+}
+
+var TabContent = class TabContent extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        var cls = "tab-content";
+        if (this.props.className) {
+            cls += " " + this.props.className;
+        }
+        return (
+            <div className={cls}>
+                {this.props.children}
+            </div>
+        );
+    }
+}
+
+var Tabs = class Tabs extends React.Component {
     constructor(props) {
         super(props);
 
@@ -58,11 +94,15 @@ var EntityTabs = class EntityTabs extends React.Component {
         });
 
         return (
-            <Nav className='tabs-container' bsStyle="tabs" onSelect={this.handleTabSelect} activeKey={this.props.activeItem ? this.props.activeItem.id : null}>
+            <Nav className='tabs-tabs-container' bsStyle="tabs" onSelect={this.handleTabSelect} activeKey={this.props.activeItem ? this.props.activeItem.id : null}>
                 {tabs}
             </Nav>
         );
     }
 }
 
-module.exports = EntityTabs;
+module.exports = {
+    Container: TabsContainer,
+    Tabs: Tabs,
+    Content: TabContent,
+}

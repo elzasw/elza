@@ -30,6 +30,29 @@ var FaPage = class FaPage extends React.Component {
         var splitPane2 = $(this.refs.splitPane2);
         splitPane1.splitPane();
         splitPane2.splitPane();
+
+        // Ukázka nastavení šířek, které budou předány, ve verzi 0.6.0 je již na toto funkce, zatím tato verze ale není v npm
+        this.setLeftSplitterWidth(220);
+        this.setRightSplitterWidth(100);
+    }
+
+    setLeftSplitterWidth(width) {
+        var splitPane = $(this.refs.splitPane1);
+
+        var size = width + "px";
+        $('.split-pane-component', splitPane)[0].style.width = size
+        $('.split-pane-component', splitPane)[1].style.left = size
+        $('.split-pane-divider', splitPane)[0].style.left = size
+        splitPane.resize()
+    }
+
+    setRightSplitterWidth(width) {
+        var splitPane = $(this.refs.splitPane2);
+        var size = width + "px";
+        $('.split-pane-component', splitPane)[1].style.width = size
+        $('.split-pane-component', splitPane)[0].style.right = size
+        $('.split-pane-divider', splitPane)[0].style.right = size
+        splitPane.resize()
     }
 
     handleRibbonShowHide(opened) {

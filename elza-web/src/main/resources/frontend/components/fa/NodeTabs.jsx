@@ -54,12 +54,12 @@ var NodeTabs = class NodeTabs extends React.Component {
         });
 
         return (
-            <div className='node-tabs-container'>
-                <Tabs items={tabs} activeItem={this.state.activeNode} onSelect={this.handleNodeSelect} onClose={this.handleNodeClose}/>
-                <div className='tab-content'>
+            <Tabs.Container className='node-tabs-container'>
+                <Tabs.Tabs items={tabs} activeItem={this.state.activeNode} onSelect={this.handleNodeSelect} onClose={this.handleNodeClose}/>
+                <Tabs.Content>
                     {this.state.activeNode && <NodePanel node={this.state.activeNode} />}
-                </div>
-            </div>
+                </Tabs.Content>
+            </Tabs.Container>
         );
     }
 }

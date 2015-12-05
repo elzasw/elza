@@ -46,12 +46,12 @@ var FaTreeTabs = class FaTreeTabs extends React.Component {
         });
 
         return (
-            <div className='fa-tabs-container'>
-                <Tabs items={tabs} activeItem={this.state.activeFa} onSelect={this.handleFaSelect} onClose={this.handleFaClose}/>
-                <div className='tab-content'>
+            <Tabs.Container className='fa-tabs-container'>
+                <Tabs.Tabs items={tabs} activeItem={this.state.activeFa} onSelect={this.handleFaSelect} onClose={this.handleFaClose}/>
+                <Tabs.Content>
                     FA {this.state.activeFa && this.state.activeFa.id}
-                </div>
-            </div>
+                </Tabs.Content>
+            </Tabs.Container>
         );
     }
 }

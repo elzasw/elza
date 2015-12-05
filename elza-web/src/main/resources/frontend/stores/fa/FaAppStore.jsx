@@ -20,18 +20,14 @@ class Fa {
     constructor(id) {
         this.id = id;
         this.nodes = new Array();
-        var node = new Node(1);
-        this.activeNode = node;
-        this.nodes.push(node);
 
-        node = new Node(2);
-        this.nodes.push(node);
-        node = new Node(3);
-        this.nodes.push(node);
-        node = new Node(4);
-        this.nodes.push(node);
-        node = new Node(5);
-        this.nodes.push(node);
+        for (var a=0; a<id * 3; a++) {
+            var node = new Node(a);
+            this.nodes.push(node);
+            if (a == 0) {
+                this.activeNode = node;
+            }
+        }
     }
 
     getAllNodes() {
@@ -105,8 +101,6 @@ var store = class FaAppStore extends airflux.Store {
         this.activeFa = fa;
         this.fas.push(fa);
         fa = new Fa(2);
-        this.fas.push(fa);
-        fa = new Fa(3);
         this.fas.push(fa);
     }
 
