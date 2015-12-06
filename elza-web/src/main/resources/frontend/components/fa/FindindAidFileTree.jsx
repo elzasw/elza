@@ -15,7 +15,7 @@ var FindindAidFileTree = class FindindAidFileTree extends React.Component {
     renderOpened() {
         return (
             <div className='finding-aid-file-tree-conteiner opened'>
-                STROM
+                STROM všechny AP a jejich verze, zobrazené graficky
             </div>
         );
     }
