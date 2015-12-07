@@ -11,7 +11,7 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {i18n} from 'components';
 import {RibbonMenu, ToggleContent, FindindAidFileTree} from 'components';
-import {NodeTabs, FaTreeTabs} from 'components';
+import {ModalDialog, NodeTabs, FaTreeTabs} from 'components';
 import {ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
 
 var FaPage = class FaPage extends React.Component {
@@ -91,6 +91,9 @@ var FaPage = class FaPage extends React.Component {
                             <div ref="splitPane2" className="split-pane fixed-right">
                                 <div className="split-pane-component" id="inner-left-component">
                                     <NodeTabs/>
+                                    {false && <ModalDialog title="Upraveni osoby">
+nnn
+                                    </ModalDialog>}
                                 </div>
                                 <div className="split-pane-divider" id="inner-my-divider"></div>
                                 <div className="split-pane-component" id="inner-right-component">

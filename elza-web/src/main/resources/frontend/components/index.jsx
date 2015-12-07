@@ -10,3 +10,5 @@ exports.RibbonMenu = require('./shared/ribbon-menu/RibbonMenu');
 exports.ToggleContent = require('./shared/toggle-content/ToggleContent');
 exports.SplitPane = require('./shared/split-pane/SplitPane');
 exports.Tabs = require('./shared/tabs/Tabs');
+
+exports.ModalDialog = require('./shared/dialog/ModalDialog');
