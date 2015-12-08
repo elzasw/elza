@@ -6,6 +6,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import { ResizeStore } from 'stores';
+import {Toastr} from 'components';
 
 //var Ukazky = require('./../components/Ukazky.jsx');
 
@@ -19,6 +20,10 @@ module.exports = class Layout extends React.Component {
         return (
             <div className='root-container'>
                 {this.props.children}
+                <div style={{overflow:'hidden'}}>
+                    <Toastr.Toastr />
+                </div>
+                
             </div>
         )
     }
