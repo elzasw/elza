@@ -14,12 +14,19 @@ import {RibbonMenu, ToggleContent, FindindAidFileTree} from 'components';
 import {ModalDialog, NodeTabs, FaTreeTabs} from 'components';
 import {ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
+import {MainNodesStore, FaAppStore} from 'stores';
 
 var FaPage = class FaPage extends React.Component {
     constructor(props) {
         super(props);
 
         this.buildRibbon = this.buildRibbon.bind(this);
+
+        this.state = {store: FaAppStore};
+
+        FaAppStore.listen(status => {
+            this.setState( {store: status});
+        });
     }
 
     buildRibbon() {
@@ -35,18 +42,25 @@ var FaPage = class FaPage extends React.Component {
     }
 
     render() {
+        var mainFas = this.state.store ? this.state.store.getMainFas() : {};
+        var activeFa = mainFas.activeFa;
+
         var leftPanel = (
-            <FaTreeTabs/>
+            <FaTreeTabs fas={mainFas.fas} activeFa={mainFas.activeFa} />
         )
 
-        var centerPanel = (
-            <div>
-                <NodeTabs/>
-                {false && <ModalDialog title="Upraveni osoby">
-                    nnn
-                </ModalDialog>}
-            </div>
-        )
+        var mainNodes = activeFa ? activeFa.getMainNodes() : null;
+        var centerPanel;
+        if (mainNodes) {
+            centerPanel = (
+                <div>
+                    <NodeTabs nodes={mainNodes.nodes} activeNode={mainNodes.activeNode}/>
+                    {false && <ModalDialog title="Upraveni osoby">
+                        nnn
+                    </ModalDialog>}
+                </div>
+            )
+        }
 
         var rightPanel = (
             <div>

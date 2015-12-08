@@ -6,7 +6,6 @@ import React from 'react';
 
 import {Button, Glyphicon, Nav, NavItem} from 'react-bootstrap';
 import {Tabs} from 'components';
-import {FaAppStore} from 'stores';
 import {FaAppStoreActions} from 'actions';
 
 require ('./FaTreeTabs.less');
@@ -14,31 +13,18 @@ require ('./FaTreeTabs.less');
 var FaTreeTabs = class FaTreeTabs extends React.Component {
     constructor(props) {
         super(props);
-
-        this.state = this.getStateFromStore(FaAppStore);
-
-        FaAppStore.listen(status => {
-            this.setState(this.getStateFromStore(status));
-        });
-    }
-
-    getStateFromStore(store) {
-        return {
-            activeFa: store.getActiveFa(),
-            fas: store.getAllFas()
-        };
     }
 
     handleFaSelect(item) {
         FaAppStoreActions.selectFa.asFunction(item.id);
     }
 
-    handleFaClose(item, newActiveItem) {
-        FaAppStoreActions.closeFa.asFunction(item.id, newActiveItem ? newActiveItem.id : null);
+    handleFaClose(item) {
+        FaAppStoreActions.closeFa.asFunction(item.id);
     }
 
     render() {
-        var tabs = this.state.fas.map((fa) => {
+        var tabs = this.props.fas.map((fa) => {
             return {
                 id: fa.id,
                 title: "Fa " + fa.id
@@ -47,9 +33,9 @@ var FaTreeTabs = class FaTreeTabs extends React.Component {
 
         return (
             <Tabs.Container className='fa-tabs-container'>
-                <Tabs.Tabs items={tabs} activeItem={this.state.activeFa} onSelect={this.handleFaSelect} onClose={this.handleFaClose}/>
+                <Tabs.Tabs items={tabs} activeItem={this.props.activeFa} onSelect={this.handleFaSelect} onClose={this.handleFaClose}/>
                 <Tabs.Content>
-                    FA {this.state.activeFa && this.state.activeFa.id}
+                    FA {this.props.activeFa && this.props.activeFa.id}
                 </Tabs.Content>
             </Tabs.Container>
         );

@@ -1,6 +1,7 @@
 @import "~variables.less";
 
 @header-height: 64px;
+@header-minimized-height: 12px;
 @finding-tree-minimized-width: 32px;
 @finding-tree-toggle-width: 12px;
 @finding-tree-toggle-height: 120px;
@@ -56,5 +57,12 @@
                 }
             }                
         }        
+    }
+}
+.fa-page.app-container {
+    &.noRibbon {
+        .fa-file-toggle-container {
+            top: @header-minimized-height;
+        }
     }
 }
