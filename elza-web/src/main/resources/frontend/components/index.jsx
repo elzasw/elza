@@ -1,4 +1,6 @@
+exports.AjaxUtils = require('./AjaxUtils');
 exports.i18n = require('./i18n');
+exports.LongText = require('./LongText');
 exports.Utils = require('./Utils');
 
 exports.FindindAidFileTree = require('./fa/FindindAidFileTree');
