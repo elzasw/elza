@@ -6,6 +6,7 @@ exports.NodePanel = require('./fa/NodePanel');
 exports.NodeTabs = require('./fa/NodeTabs');
 exports.FaTreeTabs = require('./fa/FaTreeTabs');
 
+exports.Toastr = require('./shared/toastr/index');
 exports.RibbonMenu = require('./shared/ribbon-menu/RibbonMenu');
 exports.ToggleContent = require('./shared/toggle-content/ToggleContent');
 exports.SplitPane = require('./shared/split-pane/SplitPane');
