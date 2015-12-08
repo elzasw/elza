@@ -47,7 +47,7 @@ public class Record {
     private String preferredName;
 
     /** Podrobná charakteristika rejstříkového hesla. */
-    @XmlElement(name = "characteristics", required = true)
+    @XmlElement(name = "characteristics")
     private String characteristics;
 
     /** Poznámka k heslu v rejstříku. */
@@ -61,11 +61,6 @@ public class Record {
     @XmlAttribute(name = "local", required = true)
     private boolean local;
 
-    /** Seznam podřízených rejstříků. */
-    @XmlElement(name = "record")
-    @XmlElementWrapper(name = "sub-record-list")
-    private List<Record> records;
-
     /** Seznam variantních rejstříků. */
     @XmlElement(name = "variant-name")
     @XmlElementWrapper(name = "variant-name-list")
@@ -74,6 +69,11 @@ public class Record {
     /** Souřadnice. */
     @XmlElement(name = "record-coordinates")
     private RecordCoordinates recordCoordinates;
+
+    /** Seznam podřízených rejstříků. */
+    @XmlElement(name = "record")
+    @XmlElementWrapper(name = "sub-record-list")
+    private List<Record> records;
 
     public String getRecordId() {
         return recordId;
@@ -139,14 +139,6 @@ public class Record {
         this.local = local;
     }
 
-    public List<Record> getRecords() {
-        return records;
-    }
-
-    public void setRecords(List<Record> records) {
-        this.records = records;
-    }
-
     public List<VariantRecord> getVariantNames() {
         return variantNames;
     }
@@ -161,6 +153,14 @@ public class Record {
 
     public void setRecordCoordinates(RecordCoordinates recordCoordinates) {
         this.recordCoordinates = recordCoordinates;
+    }
+
+    public List<Record> getRecords() {
+        return records;
+    }
+
+    public void setRecords(List<Record> records) {
+        this.records = records;
     }
 
     @Override
