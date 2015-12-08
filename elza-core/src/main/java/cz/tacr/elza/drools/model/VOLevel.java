@@ -1,6 +1,5 @@
 package cz.tacr.elza.drools.model;
 
-import java.util.LinkedList;
 import java.util.List;
 
 
@@ -27,21 +26,15 @@ public class VOLevel {
     private VOLevel parent;
 
     /**
-     * Seznam potomků.
+     * Má uzel potomky?
      */
-    private List<VOLevel> childs;
+    private boolean hasChilds = false;
 
     /**
-     * Přidá potomka.
-     *
-     * @param child potomek
+     * Počet potomků.
      */
-    public void addChild(final VOLevel child) {
-        if (childs == null) {
-            childs = new LinkedList<>();
-        }
-        childs.add(child);
-    }
+    private int childCount = 0;
+
 
     public Integer getNodeId() {
         return nodeId;
@@ -67,11 +60,20 @@ public class VOLevel {
         this.parent = parent;
     }
 
-    public List<VOLevel> getChilds() {
-        return childs;
+    public boolean isHasChilds() {
+        return hasChilds;
     }
 
-    public void setChilds(final List<VOLevel> childs) {
-        this.childs = childs;
+    public void setHasChilds(final boolean hasChilds) {
+        this.hasChilds = hasChilds;
+    }
+
+    public int getChildCount() {
+        return childCount;
+    }
+
+    public void setChildCount(final int childCount) {
+        this.childCount = childCount;
+        this.hasChilds = childCount == 0 ? false : true;
     }
 }

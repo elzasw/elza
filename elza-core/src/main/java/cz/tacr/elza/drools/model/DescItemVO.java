@@ -26,6 +26,11 @@ public class DescItemVO {
      */
     private String specCode;
 
+    /**
+     * Obal.
+     */
+    private VOPacket packet;
+
 
     /**
      * Typ zm�ny atributu.
@@ -62,5 +67,13 @@ public class DescItemVO {
 
     public void setSpecCode(final String specCode) {
         this.specCode = specCode;
+    }
+
+    public VOPacket getPacket() {
+        return packet;
+    }
+
+    public void setPacket(final VOPacket packet) {
+        this.packet = packet;
     }
 }

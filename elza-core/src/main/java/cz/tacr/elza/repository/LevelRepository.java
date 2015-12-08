@@ -47,6 +47,27 @@ public interface LevelRepository extends JpaRepository<ArrLevel, Integer>, Level
     @Query("SELECT count(l) FROM arr_level l WHERE l.node = ?1 AND l.deleteChange is null")
     Integer countByNode(ArrNode node);
 
+
+    /**
+     * Vrací počet potomků daného uzlu.
+     *
+     * @param node uzel
+     * @return počet potomků daného uzlu
+     */
+    @Query("SELECT count(l) FROM arr_level l WHERE l.nodeParent = ?1 AND l.deleteChange is null")
+    Integer countChildsByParent(ArrNode node);
+
+
+    /**
+     * Vrací počet potomků daného uzlu.
+     *
+     * @param node       uzel
+     * @param lockChange datum uzamčení uzlu
+     * @return počet potomků daného uzlu
+     */
+    @Query("SELECT count(l) FROM arr_level l WHERE l.nodeParent = ?1 and l.createChange < ?2 and (l.deleteChange is null or l.deleteChange > ?2)")
+    Integer countChildsByParentAndChange(ArrNode node, ArrChange lockChange);
+
     default ArrLevel findFirstByNodeAndDeleteChangeIsNull(ArrNode node) {
         List<ArrLevel> levels = findByNodeAndDeleteChangeIsNull(node);
         return levels.isEmpty() ? null : levels.iterator().next();

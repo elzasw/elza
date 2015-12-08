@@ -17,13 +17,20 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDescItemPacketRef;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ArrPacketType;
+import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.model.DescItemVO;
 import cz.tacr.elza.drools.model.VOLevel;
+import cz.tacr.elza.drools.model.VOPacket;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
 
 
@@ -40,6 +47,12 @@ public class ScriptModelFactory {
     private LevelRepository levelRepository;
     @Autowired
     private DataRepository arrDataRepository;
+
+    @Autowired
+    private DescItemFactory descItemFactory;
+
+    @Autowired
+    private DescItemTypeRepository descItemTypeRepository;
 
     @Autowired
     private DescItemRepository descItemRepository;
@@ -61,26 +74,17 @@ public class ScriptModelFactory {
         for (ArrLevel parent : parents) {
             VOLevel newParent = createLevel(parent, version);
             voParent.setParent(newParent);
-            newParent.addChild(voParent);
+            newParent.setChildCount(1);
             voParent = newParent;
 
             nodes.add(parent.getNode());
         }
 
-        List<ArrLevel> childs = levelRepository.findByParentNode(level.getNode(), version.getLockChange());
-        List<VOLevel> levelChilds = new ArrayList<>(childs.size());
-        for (ArrLevel child : childs) {
-            VOLevel voChild = createLevel(child, version);
-            voChild.setParent(mainLevel);
-            mainLevel.addChild(voChild);
-            levelChilds.add(voChild);
 
-            nodes.add(child.getNode());
-        }
+        Integer childsCount = levelRepository.countChildsByParent(level.getNode(), version.getLockChange());
+        mainLevel.setChildCount(childsCount);
 
-        mainLevel.setChilds(levelChilds);
-        assignDescItems(voParent, version, nodes);
-
+        assignDescItems(mainLevel, version, nodes);
 
         return mainLevel;
     }
@@ -88,15 +92,12 @@ public class ScriptModelFactory {
     /**
      * Pro kořenový level projde celou jeho strukturu a přiřadí na ni hodnoty atributů.
      *
-     * @param rootLevel kořenový uzel verze
+     * @param mainLevel level, pro který je struktura sestavena
      * @param version   verze
      * @param nodes     seznam nodů, pro které se budou hledat atributy
      */
-    public void assignDescItems(final VOLevel rootLevel, final ArrFindingAidVersion version, final Set<ArrNode> nodes) {
-        Assert.notNull(rootLevel);
-        if (rootLevel.getParent() != null) {
-            throw new IllegalArgumentException("Zadaný uzel není root.");
-        }
+    public void assignDescItems(final VOLevel mainLevel, final ArrFindingAidVersion version, final Set<ArrNode> nodes) {
+        Assert.notNull(mainLevel);
 
 
         List<ArrDescItem> descItems = descItemRepository.findByNodes(nodes, version.getLockChange());
@@ -105,7 +106,7 @@ public class ScriptModelFactory {
                 ElzaTools.createGroupMap(descItems, p -> p.getNode().getNodeId());
 
         List<VOLevel> levels = new LinkedList<>();
-        structureToList(rootLevel, levels);
+        structureToList(mainLevel, levels);
 
         for (VOLevel level : levels) {
             List<ArrDescItem> levelDescItems = descItemsMap.get(level.getNodeId());
@@ -113,20 +114,20 @@ public class ScriptModelFactory {
         }
     }
 
+
     /**
      * Převede stromovou strukturu na seznam.
      *
-     * @param rootLevel  kořen struktury
+     * @param mainLevel  level, pro který je struktura sestavena
      * @param resultList seznam
      */
-    private void structureToList(final VOLevel rootLevel, final List<VOLevel> resultList) {
-        resultList.add(rootLevel);
-
-        if (rootLevel.getChilds() != null) {
-            for (VOLevel child : rootLevel.getChilds()) {
-                structureToList(child, resultList);
-            }
+    private void structureToList(final VOLevel mainLevel, final List<VOLevel> resultList) {
+        if (mainLevel == null) {
+            return;
         }
+
+        resultList.add(mainLevel);
+        structureToList(mainLevel.getParent(), resultList);
     }
 
     /**
@@ -140,10 +141,23 @@ public class ScriptModelFactory {
             return Collections.EMPTY_LIST;
         }
 
+        Set<RulDescItemType> descItemTypesForPackets = descItemTypeRepository.findDescItemTypesForPackets();
+
         List<DescItemVO> result = new ArrayList<>(descItems.size());
         for (ArrDescItem descItem : descItems) {
-            result.add(createDescItem(descItem));
+            DescItemVO voDescItem = createDescItem(descItem);
+            result.add(voDescItem);
+
+            if (descItemTypesForPackets.contains(descItem.getDescItemType())) {
+                ArrDescItemPacketRef packetRef = (ArrDescItemPacketRef) descItemFactory.getDescItem(descItem);
+
+                ArrPacket packet = packetRef.getPacket();
+                if (packet != null) {
+                    voDescItem.setPacket(createPacket(packet));
+                }
+            }
         }
+
         return result;
     }
 
@@ -194,6 +208,23 @@ public class ScriptModelFactory {
         VOLevel result = new VOLevel();
         result.setNodeId(level.getNode().getNodeId());
 
+        return result;
+    }
+
+    private VOPacket createPacket(final ArrPacket packet) {
+
+        VOPacket result = new VOPacket();
+        result.setStorageNumber(packet.getStorageNumber());
+        result.setInvalidPacket(packet.getInvalidPacket());
+
+        if (packet.getPacketType() != null) {
+            ArrPacketType packetType = packet.getPacketType();
+            VOPacket.VOPacketType voPacketType = new VOPacket.VOPacketType();
+            voPacketType.setCode(packetType.getCode());
+            voPacketType.setName(packetType.getName());
+            voPacketType.setShortcut(packetType.getShortcut());
+            result.setPacketType(voPacketType);
+        }
         return result;
     }
 
