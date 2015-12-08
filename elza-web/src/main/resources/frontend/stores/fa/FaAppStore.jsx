@@ -19,33 +19,31 @@ class Node {
 class Fa {
     constructor(id) {
         this.id = id;
-        this.nodes = new Array();
+        this.mainNodes = {
+            nodes: new Array(),
+            activeNode: null
+        }
 
         for (var a=0; a<id * 3; a++) {
             var node = new Node(a);
-            this.nodes.push(node);
+            this.mainNodes.nodes.push(node);
             if (a == 0) {
-                this.activeNode = node;
+                this.mainNodes.activeNode = node;
             }
         }
     }
 
-    getAllNodes() {
-        return this.nodes;
-    }
-
-
-    getActiveNode() {
-        return this.activeNode;
+    getMainNodes() {
+        return this.mainNodes;
     }
 
     isNodeSelected(node) {
-        return this.activeNode  && this.activeNode.id === node.id;
+        return this.mainNodes.activeNode  && this.mainNodes.activeNode.id === node.id;
     }
 
     getNode(index) {
-        if (index >=0 && index < this.nodes.length) {
-            return this.nodes[index];
+        if (index >=0 && index < this.mainNodes.nodes.length) {
+            return this.mainNodes.nodes[index];
         } else {
             return null;
         }
@@ -53,7 +51,7 @@ class Fa {
 
     getNodeIndex(node) {
         var index = 0;
-        return this.nodes.one(n => {
+        return this.mainNodes.nodes.one(n => {
             if (n.id == node.id) {
                 return index;
             }
@@ -62,18 +60,18 @@ class Fa {
     }
 
     setActiveNode(node) {
-        this.activeNode = node;
+        this.mainNodes.activeNode = node;
     }
 
     removeNode(index) {
         var node = this.getNode(index);
         if (node != null) {
-            this.nodes.splice(index, 1);
+            this.mainNodes.nodes.splice(index, 1);
         }
     }
 
     findNodeById(nodeId) {
-        return this.nodes.one(node => {
+        return this.mainNodes.nodes.one(node => {
             if (node.id == nodeId) {
                 return node;
             } else {
@@ -96,16 +94,20 @@ var store = class FaAppStore extends airflux.Store {
         this.listenTo(FaAppStoreActions.selectFa, this.onSelectFa);
         this.listenTo(FaAppStoreActions.closeFa, this.onCloseFa);
 
-        this.fas = new Array();
+        this.mainFas = {
+            fas: new Array(),
+            activeFa: null
+        }
+        this.mainFas.fas = new Array();
         var fa = new Fa(1);
-        this.activeFa = fa;
-        this.fas.push(fa);
+        this.mainFas.activeFa = fa;
+        this.mainFas.fas.push(fa);
         fa = new Fa(2);
-        this.fas.push(fa);
+        this.mainFas.fas.push(fa);
     }
 
     findFaById(faId) {
-        return this.fas.one(fa => {
+        return this.mainFas.fas.one(fa => {
             if (fa.id == faId) {
                 return fa;
             } else {
@@ -129,7 +131,7 @@ var store = class FaAppStore extends airflux.Store {
     }
 
     checkActiveFa() {
-        if (!this.activeFa) {
+        if (!this.mainFas.activeFa) {
             console.error("No active fa exists.");
             return false;
         }
@@ -141,21 +143,17 @@ var store = class FaAppStore extends airflux.Store {
             return null;
         }
 
-        var node = this.activeFa.findNodeById(nodeId);
+        var node = this.mainFas.activeFa.findNodeById(nodeId);
         if (node == null) {
-            console.error("Cannot find node " + nodeId + " in fa " + this.activeFa.id + ".");
+            console.error("Cannot find node " + nodeId + " in fa " + this.mainFas.activeFa.id + ".");
             return null;
         }
 
         return node;
     }
 
-    getAllFas() {
-        return this.fas;
-    }
-
-    getActiveFa() {
-        return this.activeFa;
+    getMainFas() {
+        return this.mainFas;
     }
 
     onCloseNode(nodeId, newActiveNodeId) {
@@ -164,18 +162,19 @@ var store = class FaAppStore extends airflux.Store {
             return;
         }
 
-        var index = this.activeFa.getNodeIndex(node);
-        this.activeFa.removeNode(index);
+        var wasSelected = this.mainFas.activeFa.mainNodes.activeNode && this.mainFas.activeFa.mainNodes.activeNode.id === nodeId;
 
-        if (newActiveNodeId != null) {
-            var newActiveNode = this.getNodeById(newActiveNodeId);
-            if (newActiveNode == null) {
-                console.error("Cannot find node " + newActiveNodeId + " in fa " + this.activeFa.id + ".");
+        var index = this.mainFas.activeFa.getNodeIndex(node);
+        this.mainFas.activeFa.removeNode(index);
+
+        if (wasSelected) {
+            if (index < this.mainFas.activeFa.mainNodes.nodes.length) {
+                this.mainFas.activeFa.setActiveNode(this.mainFas.activeFa.mainNodes.nodes[index]);
+            } else if (index - 1 >= 0) {
+                this.mainFas.activeFa.setActiveNode(this.mainFas.activeFa.mainNodes.nodes[index - 1]);
             } else {
-                this.activeFa.setActiveNode(newActiveNode);
+                this.mainFas.activeFa.setActiveNode(null);
             }
-        } else {
-            this.activeFa.setActiveNode(null);
         }
 
         this.trigger(this);
@@ -187,29 +186,30 @@ var store = class FaAppStore extends airflux.Store {
             return;
         }
 
-        this.activeFa.setActiveNode(node);
+        this.mainFas.activeFa.setActiveNode(node);
 
         this.trigger(this);
     }
 
-    onCloseFa(faId, newActiveFaId) {
+    onCloseFa(faId) {
         var fa = this.getFaById(faId);
         if (fa == null) {
             return;
         }
 
+        var wasSelected = this.mainFas.activeFa && this.mainFas.activeFa.id === faId;
+
         var index = this.getFaIndex(fa);
         this.removeFa(index);
 
-        if (newActiveFaId != null) {
-            var newActiveFa = this.getFaById(newActiveFaId);
-            if (newActiveFa == null) {
-                console.error("Cannot find fa " + newActiveFaIdc+ ".");
+        if (wasSelected) {
+            if (index < this.mainFas.fas.length) {
+                this.setActiveFa(this.mainFas.fas[index]);
+            } else if (index - 1 >= 0) {
+                this.setActiveFa(this.mainFas.fas[index - 1]);
             } else {
-                this.setActiveFa(newActiveFa);
+                this.setActiveFa(null);
             }
-        } else {
-            this.setActiveFa(null);
         }
 
         this.trigger(this);
@@ -227,12 +227,12 @@ var store = class FaAppStore extends airflux.Store {
     }
 
     setActiveFa(fa) {
-        this.activeFa = fa;
+        this.mainFas.activeFa = fa;
     }
 
     getFaIndex(fa) {
         var index = 0;
-        return this.fas.one(f => {
+        return this.mainFas.fas.one(f => {
             if (f.id == fa.id) {
                 return index;
             }
@@ -243,13 +243,13 @@ var store = class FaAppStore extends airflux.Store {
     removeFa(index) {
         var fa = this.getFa(index);
         if (fa != null) {
-            this.fas.splice(index, 1);
+            this.mainFas.fas.splice(index, 1);
         }
     }
 
     getFa(index) {
-        if (index >=0 && index < this.fas.length) {
-            return this.fas[index];
+        if (index >=0 && index < this.mainFas.fas.length) {
+            return this.mainFas.fas[index];
         } else {
             return null;
         }

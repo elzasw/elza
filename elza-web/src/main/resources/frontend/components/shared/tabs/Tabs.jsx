@@ -64,25 +64,7 @@ var Tabs = class Tabs extends React.Component {
     }
 
     handleTabClose(item, e) {
-        var newActiveItem = null;
-
-        var isSelected = this.props.activeItem && this.props.activeItem.id === item.id;
-        if (isSelected) {
-            var index = 0;
-            var fi = this.props.items.one(i => {
-                if (i.id == item.id) {
-                    return index;
-                }
-                index++;
-            });
-            if (fi + 1 < this.props.items.length) {
-                newActiveItem = this.props.items[fi + 1];
-            } else if (fi - 1 >= 0) {
-                newActiveItem = this.props.items[fi - 1];
-            }
-        }
-
-        this.props.onClose(item, newActiveItem);
+        this.props.onClose(item);
 
         e.preventDefault();
         e.stopPropagation();

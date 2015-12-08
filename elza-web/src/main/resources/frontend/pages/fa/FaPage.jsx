@@ -10,100 +10,112 @@ require ('./FaPage.less');
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {i18n, Toastr} from 'components';
-import {RibbonMenu, ToggleContent, FindindAidFileTree} from 'components';
+import {RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FindindAidFileTree} from 'components';
 import {ModalDialog, NodeTabs, FaTreeTabs} from 'components';
-import {ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
+import {ButtonGroup, Button, DropdownButton, MenuItem, Glyphicon} from 'react-bootstrap';
+import {PageLayout} from 'pages';
+import {MainNodesStore, FaAppStore} from 'stores';
 
 var FaPage = class FaPage extends React.Component {
     constructor(props) {
         super(props);
 
-        this.handleRibbonShowHide = this.handleRibbonShowHide.bind(this);
+        this.buildRibbon = this.buildRibbon.bind(this);
 
-        this.state = {
-            ribbonOpened: true
-        };
+        this.state = {store: FaAppStore};
+
+        FaAppStore.listen(status => {
+            this.setState( {store: status});
+        });
     }
 
-    componentDidMount() {
-        var splitPane1 = $(this.refs.splitPane1);
-        var splitPane2 = $(this.refs.splitPane2);
-        splitPane1.splitPane();
-        splitPane2.splitPane();
+    buildRibbon() {
+        return (
+                <RibbonMenu opened={this.state.ribbonOpened} onShowHide={this.handleRibbonShowHide}>
+                    <RibbonGroup className="large">
+                        <IndexLinkContainer to="/"><Button><Glyphicon glyph="film" /><div><span className="btnText"> hdiuas ihdu asiud asiu d{i18n('ribbon.action.findingAid')}</span></div></Button></IndexLinkContainer>
+                        <LinkContainer to="/record"><Button><Glyphicon glyph="th-list" /><div><span className="btnText">{i18n('ribbon.action.record')}</span></div></Button></LinkContainer>
 
-        // Ukázka nastavení šířek, které budou předány, ve verzi 0.6.0 je již na toto funkce, zatím tato verze ale není v npm
-        this.setLeftSplitterWidth(220);
-        this.setRightSplitterWidth(100);
-    }
+                        <DropdownButton title={<span className="dropContent"><Glyphicon glyph='film' /><div><span className="btnText">{i18n('ribbon.action.findingAid')}</span></div></span>}>
+                          <MenuItem eventKey="1">Action</MenuItem>
+                          <MenuItem eventKey="2">Another action jdoias djaos ijdoas i</MenuItem>
+                          <MenuItem eventKey="3">Active Item</MenuItem>
+                        </DropdownButton>
 
-    setLeftSplitterWidth(width) {
-        var splitPane = $(this.refs.splitPane1);
 
-        var size = width + "px";
-        $('.split-pane-component', splitPane)[0].style.width = size
-        $('.split-pane-component', splitPane)[1].style.left = size
-        $('.split-pane-divider', splitPane)[0].style.left = size
-        splitPane.resize()
-    }
+                    </RibbonGroup>
 
-    setRightSplitterWidth(width) {
-        var splitPane = $(this.refs.splitPane2);
-        var size = width + "px";
-        $('.split-pane-component', splitPane)[1].style.width = size
-        $('.split-pane-component', splitPane)[0].style.right = size
-        $('.split-pane-divider', splitPane)[0].style.right = size
-        splitPane.resize()
-    }
+                    <RibbonSplit />
 
-    handleRibbonShowHide(opened) {
-        this.setState({ribbonOpened: opened});
+                    <RibbonGroup className="small">
+                        <DropdownButton title={<span className="dropContent"><Glyphicon glyph='film' /><div><span className="btnText">{i18n('ribbon.action.findingAid')}</span></div></span>}>
+                            <MenuItem eventKey="1">Action</MenuItem>
+                            <MenuItem eventKey="2">Another action</MenuItem>
+                            <MenuItem eventKey="3">Active Item</MenuItem>
+                          </DropdownButton>
+                        <IndexLinkContainer to="/"><Button><Glyphicon glyph="film" /><div><span className="btnText">{i18n('ribbon.action.findingAid')}</span></div></Button></IndexLinkContainer>
+                        <LinkContainer to="/party"><Button><Glyphicon glyph="user" /><div><span className="btnText">{i18n('ribbon.action.party')}</span></div></Button></LinkContainer>
+                    </RibbonGroup>
+
+                    <RibbonSplit />
+
+                    <RibbonGroup className="small">
+                        <DropdownButton title={<span className="dropContent"><Glyphicon glyph='film' /><div><span className="btnText">{i18n('ribbon.action.findingAid')}</span></div></span>}>
+                          <MenuItem eventKey="1">Action</MenuItem>
+                          <MenuItem eventKey="2">Another action</MenuItem>
+                          <MenuItem eventKey="3">Active Item</MenuItem>
+                        </DropdownButton>
+                        <LinkContainer to="/record"><Button><Glyphicon glyph="th-list" /><div><span className="btnText">{i18n('ribbon.action.record')}</span></div></Button></LinkContainer>
+
+                    </RibbonGroup>
+
+
+                </RibbonMenu>
+        )
     }
 
     render() {
-        var mainCls = 'fa-page app-container';
-        if (!this.state.ribbonOpened) {
-            mainCls += " noRibbon";
+        var mainFas = this.state.store ? this.state.store.getMainFas() : {};
+        var activeFa = mainFas.activeFa;
+
+        var leftPanel = (
+            <FaTreeTabs fas={mainFas.fas} activeFa={mainFas.activeFa} />
+        )
+
+        var mainNodes = activeFa ? activeFa.getMainNodes() : null;
+        var centerPanel;
+        if (mainNodes) {
+            centerPanel = (
+                <div>
+                    <NodeTabs nodes={mainNodes.nodes} activeNode={mainNodes.activeNode}/>
+                    {false && <ModalDialog title="Upraveni osoby">
+                        nnn
+                    </ModalDialog>}
+                </div>
+            )
         }
 
-        return (
-            <div className={mainCls}>
-                <div className='app-header'>
-                    <ToggleContent className="ribbon-toggle-container" opened={this.state.ribbonOpened} onShowHide={this.handleRibbonShowHide}>
-                        <RibbonMenu opened={this.state.ribbonOpened} onShowHide={this.handleRibbonShowHide}>
-                            <ButtonGroup>
-                                <IndexLinkContainer to="/"><Button><Glyphicon glyph="film" /><span>{i18n('ribbon.action.findingAid')}</span></Button></IndexLinkContainer>
-                                <LinkContainer to="/record"><Button><Glyphicon glyph="th-list" /><span>{i18n('ribbon.action.record')}</span></Button></LinkContainer>
-                                <LinkContainer to="/party"><Button><Glyphicon glyph="user" /><span>{i18n('ribbon.action.party')}</span></Button></LinkContainer>
-                            </ButtonGroup>
-                        </RibbonMenu>
-                    </ToggleContent>
-                </div>
-                <div className='app-content'>
-                    <ToggleContent className="fa-file-toggle-container" alwaysRender opened={false} closedIcon="chevron-right" openedIcon="chevron-left">
-                        <FindindAidFileTree />
-                    </ToggleContent>
-                    <div ref="splitPane1" className="split-pane fixed-left">
-                        <div className="split-pane-component" id="left-component">
-                            <FaTreeTabs/>
-                        </div>
-                        <div className="split-pane-divider" id="my-divider"></div>
-                        <div className="split-pane-component" id="right-component-container">
-                            <div ref="splitPane2" className="split-pane fixed-right">
-                                <div className="split-pane-component" id="inner-left-component">
-                                    <NodeTabs/>
-                                    {false && <ModalDialog title="Upraveni osoby">
-nnn
-                                    </ModalDialog>}
-                                </div>
-                                <div className="split-pane-divider" id="inner-my-divider"></div>
-                                <div className="split-pane-component" id="inner-right-component">
-                                    FINDING_AID-right
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        var rightPanel = (
+            <div>
+                FINDING_AID-right
             </div>
+        )
+
+        var appContentExt = (
+            <ToggleContent className="fa-file-toggle-container" alwaysRender opened={false} closedIcon="chevron-right" openedIcon="chevron-left">
+                <FindindAidFileTree />
+            </ToggleContent>
+        )
+
+        return (
+            <PageLayout
+                className='fa-page'
+                ribbon={this.buildRibbon()}
+                leftPanel={leftPanel}
+                centerPanel={centerPanel}
+                rightPanel={rightPanel}
+                appContentExt={appContentExt}
+            />
         )
     }
 }

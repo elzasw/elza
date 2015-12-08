@@ -9,6 +9,9 @@ import {ButtonToolbar} from 'react-bootstrap';
 
 require ('./RibbonMenu.less');
 
+/**
+ * Ribbon menu v pro záhlaví aplikace
+ */
 var RibbonMenu = class RibbonMenu extends React.Component {
     constructor(props) {
         super(props);
