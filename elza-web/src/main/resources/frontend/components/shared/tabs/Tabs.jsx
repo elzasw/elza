@@ -4,6 +4,8 @@
 import React from 'react';
 
 import {Button, Glyphicon, Nav, NavItem} from 'react-bootstrap';
+import {ResizeStore} from 'stores';
+import ReactDOM from 'react-dom';
 
 require ('./Tabs.less');
 
@@ -49,6 +51,16 @@ var Tabs = class Tabs extends React.Component {
 
         this.handleTabSelect = this.handleTabSelect.bind(this);
         this.handleTabClose = this.handleTabClose.bind(this);
+        this.handleResize = this.handleResize.bind(this);
+
+        ResizeStore.listen(status => {
+            this.handleResize();
+        });
+    }
+
+    handleResize() {
+        var el = ReactDOM.findDOMNode(this.refs.tabs);
+        var width = el.offsetWidth;
     }
 
     handleTabClose(item, e) {
@@ -94,7 +106,7 @@ var Tabs = class Tabs extends React.Component {
         });
 
         return (
-            <Nav className='tabs-tabs-container' bsStyle="tabs" onSelect={this.handleTabSelect} activeKey={this.props.activeItem ? this.props.activeItem.id : null}>
+            <Nav ref="tabs" className='tabs-tabs-container' bsStyle="tabs" onSelect={this.handleTabSelect} activeKey={this.props.activeItem ? this.props.activeItem.id : null}>
                 {tabs}
             </Nav>
         );

@@ -5,26 +5,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-var appState = {
-    findingAids: {
-        selId: 111,
-        items: [
-            {
-                id: 111,
-                name: 'xxx1',
-                
-            },
-            {
-                id: 222,
-                name: 'xxx2'
-            },
-        ]
-    }
-};
+import { ResizeStore } from 'stores';
+
+//var Ukazky = require('./../components/Ukazky.jsx');
 
 require('./Layout.less');
 
 module.exports = class Layout extends React.Component {
+    render1() {
+        return <Ukazky/>
+    }
     render() {
         return (
             <div className='root-container'>

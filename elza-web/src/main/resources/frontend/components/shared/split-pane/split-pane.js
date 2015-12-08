@@ -9,13 +9,29 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
 
 */
 
+// TODO stanekpa toto je dočasné řešení
+var _splitPaneListeners = [];
 (function ($) {
 
 	'use strict';
 
 	var methods = {};
 
+        methods.addResizeListener = function(listener) {
+            _splitPaneListeners.push(listener);
+        }
+        
+        methods.removeResizeListener = function(listener) {
+            _splitPaneListeners.push(listener);
+        }
+        
+        function fireResizeListeners() {
+            _splitPaneListeners.forEach(l => l());
+        }
+        
 	methods.init = function() {
+                fireResizeListeners = fireResizeListeners.bind(this);
+            
 		var $splitPanes = this;
 		$splitPanes.each(setMinHeightAndMinWidth);
 		$splitPanes.append('<div class="split-pane-resize-shim">');
@@ -137,6 +153,7 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
 			$(document).off('touchmove mousemove', moveEventHandler);
 			$divider.removeClass('dragged touch');
 			$resizeShim.hide();
+                        fireResizeListeners();
 		});
 	}
 

@@ -5,6 +5,10 @@ module.exports = {
     entry: [
         './index.jsx',
     ],
+    debug: true,
+    //devtool: '#eval-source-map',
+    //devtool: 'eval', //init compile fast, recompile also very fast
+    devtool: 'eval-source-map',
     output: {
         publicPath: 'http://localhost:8090/assets'
     },
@@ -21,11 +25,11 @@ module.exports = {
             },
             {
                 test: /\.css$/,
-                loader: 'style-loader!css-loader'
+                loader: 'style-loader!css-loader?outputStyle=expanded&indentedSyntax'
             },
             {
                 test: /\.less$/,
-                loader: "style!css!less"
+                loader: "style!css!less?outputStyle=expanded&indentedSyntax"
             },
             {test: /\.woff(\?v=\d+\.\d+\.\d+)?$/, loader: "file"},
             {test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/, loader: "file"},
