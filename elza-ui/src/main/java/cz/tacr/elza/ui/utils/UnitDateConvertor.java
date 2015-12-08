@@ -23,7 +23,7 @@ public class UnitDateConvertor {
     /**
      * Výraz pro detekci stolení
      */
-    public static final String EXP_CENTURY = "(\\d+)\\.st";
+    public static final String EXP_CENTURY = "(\\d+)\\.st\\.";
 
     /**
      * Zkratka století
@@ -315,12 +315,12 @@ public class UnitDateConvertor {
         if (first) {
             if (unitdate.getValueFrom() != null) {
                 LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom());
-                return format.replaceFirst("(" + CENTURY + ")", (date.getYear() / 100 + 1) + ".st");
+                return format.replaceFirst("(" + CENTURY + ")", (date.getYear() / 100 + 1) + ".st.");
             }
         } else {
             if (unitdate.getValueTo() != null) {
                 LocalDateTime date = LocalDateTime.parse(unitdate.getValueTo());
-                return format.replaceFirst("(" + CENTURY + ")", (date.getYear() / 100) + ".st");
+                return format.replaceFirst("(" + CENTURY + ")", (date.getYear() / 100) + ".st.");
             }
         }
         return format;

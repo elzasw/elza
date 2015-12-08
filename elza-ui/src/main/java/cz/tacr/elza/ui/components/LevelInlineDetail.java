@@ -26,7 +26,6 @@ import com.vaadin.ui.UI;
 
 import cz.req.ax.AxAction;
 import cz.req.ax.AxWindow;
-import cz.tacr.elza.api.ArrNodeConformityInfo;
 import cz.tacr.elza.api.controller.PartyManager;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.RuleEvaluationType;
@@ -36,6 +35,7 @@ import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemEnum;
+import cz.tacr.elza.domain.ArrDescItemPacketRef;
 import cz.tacr.elza.domain.ArrDescItemString;
 import cz.tacr.elza.domain.ArrDescItemUnitdate;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
@@ -248,7 +248,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         List<RulDescItemTypeExt> descItemTypeExts = ruleSetManager.getDescriptionItemTypesForNode(versionId,
                 node.getNodeId(), RuleEvaluationType.NORMAL);
 
-        detailContent.addComponent(newLabel("Typy a specifikace atributů podle pravidel", "h3 margin-top"));
+        detailContent.addComponent(newLabel("Typy a specifikace atributů podle pravidel", "h2 margin-top"));
 
         FormGrid grid = new FormGrid().setRowSpacing(true).style("attr-detail");
         grid.setMarginTop(true);
@@ -323,6 +323,14 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
                 value = UnitDateConvertor.convertToString((ArrDescItemUnitdate) item);
             }
 
+            if (item instanceof ArrDescItemPacketRef) {
+                ArrDescItemPacketRef packetRef = (ArrDescItemPacketRef) item;
+                ArrPacketType packetType = packetRef.getPacket().getPacketType();
+                String packetName = packetType == null ? "" : " (" + packetType.getName() + ")";
+                value += packetName;
+            }
+
+
             if (item.getDescItemSpec() != null) {
                 String specName = item.getDescItemSpec().getName();
                 if (!(item instanceof ArrDescItemEnum)) {
@@ -357,9 +365,8 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         detailContent.addComponent(grid);
 
         showNodeRegisterLink(versionId, level.getNode());
-        showDescriptionItemTypesAndSpecsForNode(versionId, level.getNode());
         showConformityInfo(level.getNodeConformityInfo());
-
+        showDescriptionItemTypesAndSpecsForNode(versionId, level.getNode());
     }
 
     /**
@@ -591,7 +598,9 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
                     List<AutocompleteItem> result = new ArrayList<>(packetList.size());
 
                     for (final ArrPacket packetItem : packetList) {
-                        result.add(new AutocompleteItem(packetItem, packetItem.getStorageNumber()));
+                        String packetType = packetItem.getPacketType() == null ? "" : " (" + packetItem.getPacketType()
+                                .getName() + ")";
+                        result.add(new AutocompleteItem(packetItem, packetItem.getStorageNumber() + packetType));
                     }
 
                     return result;
@@ -624,11 +633,13 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         return attributeValuesLoader;
     }
 
-    private void showConformityInfo(final ArrNodeConformityInfoExt conformityInfo){
-        if(conformityInfo != null && conformityInfo.getState().equals(ArrNodeConformityInfo.State.ERR)){
-            detailContent.addComponent(newLabel("Chybný stav uzlu", "h3 error-text margin-top"));
+    private void showConformityInfo(final ArrNodeConformityInfoExt conformityInfo) {
 
+        String state = conformityInfo == null ? "Undefined" : conformityInfo.getState().name();
 
+        detailContent.addComponent(newLabel("Stav uzlu - " + state, "h2 error-text margin-top"));
+
+        if (conformityInfo != null) {
             FormGrid formGrid = new FormGrid();
 
             if (CollectionUtils.isNotEmpty(conformityInfo.getMissingList())) {
@@ -643,7 +654,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
                 }
             }
 
-            if(CollectionUtils.isNotEmpty(conformityInfo.getErrorList())){
+            if (CollectionUtils.isNotEmpty(conformityInfo.getErrorList())) {
                 String caption = "Seznam špatně zadaných hodnot";
                 for (ArrNodeConformityErrors errors : conformityInfo.getErrorList()) {
                     String value = errors.getDescItem().getDescItemType().getName();
@@ -657,7 +668,6 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             }
             detailContent.addComponent(formGrid);
         }
-
     }
 
     @Override
