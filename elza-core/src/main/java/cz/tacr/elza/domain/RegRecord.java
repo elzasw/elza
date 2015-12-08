@@ -55,7 +55,7 @@ public class RegRecord extends AbstractVersionableEntity implements cz.tacr.elza
     @Column(length = 1000, nullable = false)
     private String record;
 
-    @Column(nullable = false)
+    @Column
     private String characteristics;
 
     @Column()
