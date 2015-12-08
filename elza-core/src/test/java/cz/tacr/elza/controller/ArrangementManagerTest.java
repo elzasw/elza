@@ -694,6 +694,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
     private static class TestLevelData {
         private Integer descItemTypeId1;
         private Integer descItemTypeId2;
+        private ArrLevel parentLevel;
         private Integer childNodeId1;
         private Integer childNodeId2;
         private Integer versionId;
@@ -724,6 +725,14 @@ public class ArrangementManagerTest extends AbstractRestTest {
             return versionId;
         }
         public Integer getVersionId2() {return versionId2;}
+
+        public ArrLevel getParentLevel() {
+            return parentLevel;
+        }
+
+        public void setParentLevel(final ArrLevel parentLevel) {
+            this.parentLevel = parentLevel;
+        }
     }
 
     @Transactional
@@ -760,6 +769,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         TestLevelData result = new TestLevelData(item.getDescItemType().getDescItemTypeId(),
                 item2.getDescItemType().getDescItemTypeId(), child.getNode().getNodeId(), child2.getNode().getNodeId(),
                 version.getFindingAidVersionId(), version2.getFindingAidVersionId());
+        result.setParentLevel(parent);
         return result;
     }
 
@@ -1892,6 +1902,17 @@ public class ArrangementManagerTest extends AbstractRestTest {
         Assert.assertNotNull(calendarTypes);
         Assert.assertNotNull(calendarTypes.getCalendarTypes());
         Assert.assertEquals(2, calendarTypes.getCalendarTypes().size());
+    }
+
+
+    @Test
+    @Transactional
+    public void testCountChildsByParent(){
+
+        TestLevelData testLevelData = createTestLevelData();
+        ArrLevel parentLevel = testLevelData.getParentLevel();
+        ArrFindingAidVersion version = findingAidVersionRepository.getOne(testLevelData.getVersionId());
+        Assert.assertTrue(levelRepository.countChildsByParent(parentLevel.getNode(), version.getLockChange()) > 0);
     }
 
 }

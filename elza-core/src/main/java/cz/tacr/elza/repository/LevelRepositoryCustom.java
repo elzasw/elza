@@ -56,6 +56,16 @@ public interface LevelRepositoryCustom {
 
 
     /**
+     * Vrací počet potomků daného uzlu.
+     *
+     * @param node       uzel
+     * @param lockChange datum uzamčení uzlu
+     * @return počet potomků daného uzlu
+     */
+    Integer countChildsByParent(ArrNode node, @Nullable ArrChange lockChange);
+
+
+    /**
      * Najde všechny uzly v daném směru prohledávání.
      *
      * @param level     level, od kterého prohledáváme

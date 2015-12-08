@@ -13,7 +13,7 @@ global cz.tacr.elza.domain.RulArrangementType arrType;
 global cz.tacr.elza.api.vo.RuleEvaluationType evaluationType;
 
 function boolean isLeaf(VOLevel level){
-    return level.getChilds() == null || level.getChilds().isEmpty();
+    return !level.isHasChilds();
 }
 
 function boolean hasParentsAttribute(VOLevel level, String attributeName){
