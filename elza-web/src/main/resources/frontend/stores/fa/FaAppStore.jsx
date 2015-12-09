@@ -4,6 +4,48 @@ import React from 'react';
 
 import {FaAppStoreActions} from 'actions';
 
+require ('./FaStore')
+/*
+import { combineReducers, createStore } from 'redux'
+
+function items(state = {active: null, items: [{id:1}, {id:2}, {id:3}]}, action) {
+  switch (action.type) {
+    case 'SELECT':
+        var active;
+        for (var a=0; a<state.items.length; a++) {
+            if (state.items[a].id === action.id) {
+                active = state.items[a].id;
+                break;
+            }
+        }
+      return {
+        ...state,
+        active: active
+        }
+    default:
+      return state
+  }
+}
+
+function selectItem(id) {
+  return {
+    type: 'SELECT',
+    id
+  }
+}
+
+let reducer = combineReducers({ items });
+let sss = createStore(reducer);
+console.log(sss.getState());
+console.log(sss.getState().items.active);
+sss.dispatch(selectItem(2));
+console.log(sss.getState());
+console.log(sss.getState().items.active);
+
+*/
+
+
+
 /**
  * Data pro JP.
  */

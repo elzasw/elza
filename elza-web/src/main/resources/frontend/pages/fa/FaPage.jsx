@@ -15,6 +15,7 @@ import {ModalDialog, NodeTabs, FaTreeTabs} from 'components';
 import {ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {MainNodesStore, FaAppStore} from 'stores';
+import { AppStore } from 'stores'
 
 var FaPage = class FaPage extends React.Component {
     constructor(props) {
@@ -32,6 +33,7 @@ var FaPage = class FaPage extends React.Component {
     buildRibbon() {
         return (
             <RibbonMenu>
+<Button onClick={() => {AppStore.test()}}>xxxxxxx</Button>
                 <ButtonGroup>
                     <IndexLinkContainer to="/"><Button><Glyphicon glyph="film" /><span>{i18n('ribbon.action.findingAid')}</span></Button></IndexLinkContainer>
                     <LinkContainer to="/record"><Button><Glyphicon glyph="th-list" /><span>{i18n('ribbon.action.record')}</span></Button></LinkContainer>
