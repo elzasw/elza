@@ -32,6 +32,7 @@ module.exports = class Toastr extends React.Component {
     constructor(props) {
         super(props);
         this.state = assign({}, {toasters: ToastrStore.getInitialData()});
+        this.lastId = 1;
     }
     componentDidMount() {
         this.unsubscribe = ToastrStore.listen(this.onToastr.bind(this));
@@ -67,9 +68,10 @@ module.exports = class Toastr extends React.Component {
                 <Alert
                     bsStyle={t.type}
                     bsSize="lg"
+                    key={t.key}
                     className={t.visible && "fade"}
                     closeLabel={i18n('global.action.close')}
-                    onDismiss={this.handleAlertDismiss.bind(null, t)}
+                    onDismiss={this.handleAlertDismiss.bind(null,t)}
                     dismissAfter={t.dismissAfter}
                 >
                     {icon}

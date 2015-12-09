@@ -9,24 +9,33 @@ var ToastrActions = require('./ToastrActions');
 var ToastrStore = Reflux.createStore({
     listenables: [ToastrActions],
     id: 1,
+    lastKey: 1,
     toasters : [],
     getInitialData: function() {
         return this.toasters;
     },
     onClear: function(id) {
         var fi = null;
+        this.removeOldToasts();
         this.toasters.forEach((t, i) => {
             if (t.id === id) {
                 t.visible = false;
-                fi = i;
             }
         });
 
-        if (fi != null) {
-           this.toasters.splice(fi, 1);
-        }
+        this.trigger(this.toasters);
+    },
+    removeOldToasts: function(id){
+        this.toasters.forEach((t, i) => {
+            if (t.visible === false) {
+                this.toasters.splice(i, 1);
+            }
+        });
+    },
 
-       this.trigger(this.toasters);
+    getLastKey: function(){
+        this.lastKey++
+        return this.lastKey;
     },
     onDanger: function(data) {
         var toastr = {
@@ -34,7 +43,8 @@ var ToastrStore = Reflux.createStore({
             title: data.title,
             message: data.message,
             type: 'danger',
-            dismissAfter: null
+            dismissAfter: null,
+            key: this.getLastKey()
         };
         this.add(toastr);
     },
@@ -44,7 +54,8 @@ var ToastrStore = Reflux.createStore({
             title: data.title,
             message: data.message,
             type: 'success',
-            dismissAfter: 2000
+            dismissAfter: 2000,
+            key: this.getLastKey()
         };
         this.add(toastr);
     },
@@ -54,7 +65,8 @@ var ToastrStore = Reflux.createStore({
             title: data.title,
             message: data.message,
             type: 'warning',
-            dismissAfter: null
+            dismissAfter: null,
+            key: this.getLastKey()
         };
         this.add(toastr);
     },
@@ -64,15 +76,15 @@ var ToastrStore = Reflux.createStore({
             title: data.title,
             message: data.message,
             type: 'info',
-            dismissAfter: 2000
+            dismissAfter: 2000,
+            key: this.getLastKey()
         };
         this.add(toastr);
     },
     add: function(toastr) {
-
+        this.removeOldToasts();
         this.toasters.push(toastr);
         this.trigger(this.toasters);
-
         setTimeout(function(toastr) {
             toastr.visible = true;
             this.trigger(this.toasters);
