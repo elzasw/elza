@@ -1,26 +1,7 @@
 import { combineReducers, createStore } from 'redux'
-import {SELECT_NODE, SELECT_FA, ADD_NODE, CLOSE_NODE, FIRST_FA_SELECT, CLOSE_FA, ADD_FA, AppActions} from './AppActions.jsx';
+import {SELECT_NODE, SELECT_FA, CLOSE_NODE, CLOSE_FA, AppActions} from './AppActions.jsx';
 
 var {faActions} = AppActions;
-
-function nodes(state = {activeIndex: null, items: []}, action) {
-    switch (action.type) {
-        case SELECT_NODE:
-            var activeIndex;
-            for (var a=0; a<state.items.length; a++) {
-                if (state.items[a].id === action.id) {
-                    activeIndex = a;
-                    break;
-                }
-            }
-            return {
-                ...state,
-                activeIndex: activeIndex
-            }
-        default:
-            return state
-    }
-}
 
 function indexById(arr, id) {
     if (arr == null) {
@@ -35,10 +16,82 @@ function indexById(arr, id) {
     return null;
 }
 
-function fas(state = {activeIndex: null, items: []}, action) {
-    console.log("fas::", "STATE", state, "ACTION", action);
+function selectedAfterClose(arr, index) {
+    if (index >= arr.length - 1) {
+        if (index - 1 > 0) {
+            return index - 1;
+        } else {
+            return null;
+        }
+    } else {
+        return index;
+    }
+}
+
+function nodes(state = {activeIndex: null, items: []}, action) {
     switch (action.type) {
-        case ADD_NODE:
+        case CLOSE_NODE:
+            var index = indexById(state.items, action.node.id);
+            var newActiveIndex = state.activeIndex;
+            if (state.activeIndex == index) {   // byl vybrán, budeme řešit novou vybranou záložku
+                newActiveIndex = selectedAfterClose(state.items, index);
+            }
+            return {
+                ...state,
+                items: [
+                    ...state.items.slice(0, index),
+                    ...state.items.slice(index + 1)
+                ],
+                activeIndex: newActiveIndex
+            }
+        case SELECT_NODE:
+            var index = indexById(state.items, action.node.id);
+            if (index == null) {    // není zatím v seznamu, přidáme ho tam
+                if (action.moveToBegin) {
+                    return {
+                        ...state,
+                        items: [
+                            Object.assign({}, action.node),
+                            ...state.items
+                        ],
+                        activeIndex: 0
+                    }
+                } else {
+                    return {
+                        ...state,
+                        items: [
+                            ...state.items,
+                            Object.assign({}, action.node)
+                        ],
+                        activeIndex: state.items.length
+                    }
+                }
+            } else {
+                if (action.moveToBegin) {
+                    return {
+                        ...state,
+                        items: [
+                            state.items[index],
+                            ...state.items.slice(0, index),
+                            ...state.items.slice(index + 1)
+                        ],
+                        activeIndex: 0
+                    }
+                } else {
+                    return {
+                        ...state,
+                        activeIndex: index
+                    }
+                }
+            }
+        default:
+            return state
+    }
+}
+
+function fas(state = {activeIndex: null, items: []}, action) {
+    console.log("[fas]", "STATE", state, "ACTION", action);
+    switch (action.type) {
         case CLOSE_NODE:
         case SELECT_NODE:
             return {
@@ -49,26 +102,11 @@ function fas(state = {activeIndex: null, items: []}, action) {
                     ...state.items.slice(state.activeIndex + 1)
                 ]
             }
-        case ADD_FA:
-            return {
-                ...state,
-                items: [
-                    ...state.items,
-                    Object.assign({}, action.fa)
-                ],
-                activeIndex: activeIndex != null ? activeIndex : 0
-            }
         case CLOSE_FA:
-            var index = indexById(state.items, action.faId);
+            var index = indexById(state.items, action.fa.id);
             var newActiveIndex = state.activeIndex;
             if (state.activeIndex == index) {   // byl vybrán, budeme řešit novou vybranou záložku
-                if (index >= state.items.length - 1) {
-                    if (index - 1 > 0) {
-                        newActiveIndex = index - 1;
-                    } else {
-                        newActiveIndex = null;
-                    }
-                }
+                newActiveIndex = selectedAfterClose(state.items, index);
             }
             return {
                 ...state,
@@ -79,21 +117,44 @@ function fas(state = {activeIndex: null, items: []}, action) {
                 activeIndex: newActiveIndex
             }
         case SELECT_FA:
-            var activeIndex = indexById(state.items, action.faId);
-            return {
-                ...state,
-                activeIndex: activeIndex
-            }
-        case FIRST_FA_SELECT:
-            var index = indexById(state.items, action.faId);
-            return {
-                ...state,
-                items: [
-                    state.items[index],
-                    ...state.items.slice(0, index),
-                    ...state.items.slice(index + 1)
-                ],
-                activeIndex: 0
+            var index = indexById(state.items, action.fa.id);
+            if (index == null) {    // není zatím v seznamu, přidáme jí tam
+                if (action.moveToBegin) {
+                    return {
+                        ...state,
+                        items: [
+                            Object.assign({}, action.fa),
+                            ...state.items
+                        ],
+                        activeIndex: 0
+                    }
+                } else {
+                    return {
+                        ...state,
+                        items: [
+                            ...state.items,
+                            Object.assign({}, action.fa)
+                        ],
+                        activeIndex: state.items.length
+                    }
+                }
+            } else {
+                if (action.moveToBegin) {
+                    return {
+                        ...state,
+                        items: [
+                            state.items[index],
+                            ...state.items.slice(0, index),
+                            ...state.items.slice(index + 1)
+                        ],
+                        activeIndex: 0
+                    }
+                } else {
+                    return {
+                        ...state,
+                        activeIndex: index
+                    }
+                }
             }
         default:
             return state
@@ -103,17 +164,27 @@ function fas(state = {activeIndex: null, items: []}, action) {
 let reducer = combineReducers({ fas });
 let store = createStore(reducer);
 
-var test = function() {
+var test1 = function() {
     console.log('---------');
     console.log('STORE: ', store.getState());
-    store.dispatch(faActions.addFa({id:'fa1', name:'nazev fa1'}));
-    store.dispatch(faActions.addFa({id:'fa2', name:'nazev fa2'}));
-    store.dispatch(faActions.addFa({id:'fa3', name:'nazev fa3'}));
-    store.dispatch(faActions.firstFaSelect('fa3'));
+    store.dispatch(faActions.selectFa({id:'fa1', name:'nazev fa1'}));
+    store.dispatch(faActions.selectFa({id:'fa2', name:'nazev fa2'}));
+    store.dispatch(faActions.selectFa({id:'fa3', name:'nazev fa3'}));
+    store.dispatch(faActions.selectFa({id:'fa2'}, false));
+    console.log('STORE: ', store.getState());
+    store.dispatch(faActions.closeFa({id:'fa2'}));
+    console.log('STORE: ', store.getState());
+}
+var test2 = function() {
+    console.log('---------');
+    console.log('STORE: ', store.getState());
+    store.dispatch(faActions.selectFa({id:'fa1', name:'nazev fa1'}));
+    store.dispatch(faActions.selectNode({id:'node1', name:'nazev node1'}));
+    store.dispatch(faActions.selectNode({id:'node2', name:'nazev node2'}));
     console.log('STORE: ', store.getState());
 }
 module.exports = {
         test: function() {
-            test();
+            test2();
         }
 }
