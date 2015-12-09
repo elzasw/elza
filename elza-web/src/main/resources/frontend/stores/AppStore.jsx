@@ -1,7 +1,7 @@
 import { combineReducers, createStore } from 'redux'
-import {SELECT_NODE, SELECT_FA, CLOSE_NODE, CLOSE_FA, AppActions} from './AppActions.jsx';
+import {SELECT_NODE, SELECT_FA, CLOSE_NODE, CLOSE_FA, GET_OBJECT_INFO, AppActions} from './AppActions.jsx';
 
-var {faActions} = AppActions;
+var {faActions, ObjectInfo} = AppActions;
 
 function indexById(arr, id) {
     if (arr == null) {
@@ -30,6 +30,11 @@ function selectedAfterClose(arr, index) {
 
 function nodes(state = {activeIndex: null, items: []}, action) {
     switch (action.type) {
+        case GET_OBJECT_INFO:
+            state.items.forEach(node => {
+                action.objectInfo.addNode(node);
+            });
+            return state
         case CLOSE_NODE:
             var index = indexById(state.items, action.node.id);
             var newActiveIndex = state.activeIndex;
@@ -92,6 +97,12 @@ function nodes(state = {activeIndex: null, items: []}, action) {
 function fas(state = {activeIndex: null, items: []}, action) {
     console.log("[fas]", "STATE", state, "ACTION", action);
     switch (action.type) {
+        case GET_OBJECT_INFO:
+            state.items.forEach(fa => {
+                action.objectInfo.addFa(fa);
+                nodes(fa.nodes, action);
+            });
+            return state
         case CLOSE_NODE:
         case SELECT_NODE:
             return {
@@ -182,6 +193,10 @@ var test2 = function() {
     store.dispatch(faActions.selectNode({id:'node1', name:'nazev node1'}));
     store.dispatch(faActions.selectNode({id:'node2', name:'nazev node2'}));
     console.log('STORE: ', store.getState());
+
+    var objectInfo = new ObjectInfo();
+    store.dispatch(faActions.getObjectInfo(objectInfo));
+    console.log(objectInfo);
 }
 module.exports = {
         test: function() {
