@@ -1,6 +1,5 @@
 package cz.tacr.elza.controller;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -13,10 +12,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
@@ -54,6 +56,7 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
 import cz.tacr.elza.drools.RulesExecutor;
+import cz.tacr.elza.exception.LockVersionChangeException;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.DescItemConstraintRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
@@ -129,6 +132,9 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
 
     @Autowired
     private ArrangementManager arrangementManager;
+
+    @Autowired
+    private EntityManager entityManager;
 
     @Autowired
     private ExtendedObjectsFactory extendedObjectsFactory;
@@ -370,6 +376,11 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
         Assert.notNull(evaluationType);
 
         ArrLevel level = levelRepository.findOne(faLevelId);
+        Integer nodeId = level.getNode().getNodeId();
+
+        ArrNode nodeBeforeValidation = nodeRepository.getOne(nodeId);
+        Integer nodeVersionBeforeValidation = nodeBeforeValidation.getVersion();
+
         ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
 
         if (!arrangementManager.validLevelInVersion(level, version)) {
@@ -382,8 +393,13 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
         
         ArrNodeConformityInfoExt result = updateNodeConformityInfo(level, version, validationResults);
 
-        level.getNode().setLastUpdate(LocalDateTime.now());
-        nodeRepository.save(level.getNode());
+        entityManager.detach(nodeBeforeValidation);
+        ArrNode nodeAfterValidation = nodeRepository.getOne(nodeId);
+        Integer nodeVersionAfterValidation = nodeAfterValidation.getVersion();
+
+        if (!nodeVersionBeforeValidation.equals(nodeVersionAfterValidation)) {
+            throw new LockVersionChangeException("Behem validace doslo ke zmene verze uzlu " + nodeId);
+        }
 
         return result;
     }

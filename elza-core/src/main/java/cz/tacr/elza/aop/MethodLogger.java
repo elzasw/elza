@@ -52,7 +52,7 @@ public class MethodLogger {
                 if (result != null && isTopLevel()) {
                     logger.debug("Výsledek volání metody " + methodHeader + ": " + result);
                 }
-            } else if (isTopLevel()) {
+            } else if (isTopLevel() && !(throwable instanceof MethodLoggerIgnoreException)) {
                 logger.error("Nastala chyba při volání metody " + methodHeader, throwable);
             }
         }
