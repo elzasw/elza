@@ -24,7 +24,6 @@ public class ArrDescItemDecimal extends ArrDescItem implements cz.tacr.elza.api.
     }
 
     @Override
-    public String toString() {
-        return value.toPlainString();
+    public String toString() {return value == null ? null : value.toPlainString();
     }
 }

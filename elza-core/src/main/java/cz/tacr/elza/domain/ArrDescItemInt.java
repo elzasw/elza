@@ -22,6 +22,6 @@ public class ArrDescItemInt extends ArrDescItem implements cz.tacr.elza.api.ArrD
 
     @Override
     public String toString() {
-        return value.toString();
+        return value == null ? null : value.toString();
     }
 }
