@@ -16,6 +16,7 @@ import org.springframework.util.Assert;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.exception.LockVersionChangeException;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 
@@ -83,8 +84,15 @@ public class UpdateConformityInfoWorker implements Runnable {
                 //bylo by lepší přepsat metodu setConformityInfo, aby brala node
                 ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootLevel().getNode(),
                         version.getLockChange());
-
-                updateConformityInfoService.updateConformityInfo(node.getNodeId(), level.getLevelId(), versionId);
+                try {
+                    updateConformityInfoService.updateConformityInfo(node.getNodeId(), level.getLevelId(), versionId);
+                } catch (LockVersionChangeException e) {
+                    logger.info(
+                            "Node " + node.getNodeId() + " nema aktualizovany stav. Behem validace ke zmene uzlu.");
+                } catch (Exception e) {
+                    logger.warn("Node " + node.getNodeId() + " nema aktualizovany stav. Behem validace došlo k chybě.",
+                            e);
+                }
             }
             logger.info("Konec vlakna pro aktualizaci stavu ve verzi" + versionId);
         } catch (Exception e) {
