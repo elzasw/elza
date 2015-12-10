@@ -546,7 +546,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
 
             deleteConformityInfo(deleteInfos);
             setVersionConformityInfo(null, null, version);
-            updateConformityInfoService.updateInfoForNodes(deleteNodes, version);
+            updateConformityInfoService.updateInfoForNodesAfterCommit(deleteNodes, version);
         }
     }
 

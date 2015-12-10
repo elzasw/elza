@@ -2,7 +2,9 @@ package cz.tacr.elza.asynchactions;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 import javax.transaction.Transactional;
@@ -54,12 +56,42 @@ public class UpdateConformityInfoService {
 
     @Autowired
     private ElzaRules elzaRules;
+    
+    private ThreadLocal<Set<ArrNode>> nodesToUpdate = new ThreadLocal<>();
 
     /**
      * Mapa workerů pro dané verze.
      */
     private final Map<ArrFindingAidVersion, UpdateConformityInfoWorker> versionWorkers = new HashMap<>();
 
+    /**
+     * Zapamatuje se uzly k přepočítání stavu a po dokončení transakce spustí jejich přepočet.
+     *
+     * @param updateNodes seznam nodů, které budou přepočítány.
+     * @param version     verze, ve které probíhá výpočet
+     */
+    public void updateInfoForNodesAfterCommit(final Collection<ArrNode> updateNodes,
+                                              final ArrFindingAidVersion version) {
+
+        if (CollectionUtils.isEmpty(updateNodes)) {
+            return;
+        }
+
+        if (CollectionUtils.isEmpty(nodesToUpdate.get())) {
+            Set<ArrNode> nodes = new HashSet<>(updateNodes);
+            nodesToUpdate.set(nodes);
+
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() {
+                    updateInfoForNodes(nodesToUpdate.get(), version);
+                    nodesToUpdate.set(null);
+                }
+            });
+        } else {
+            nodesToUpdate.get().addAll(updateNodes);
+        }
+    }
 
     /**
      * Provede spuštění vlákna pro výpočet nového stavu nad nody.
@@ -67,8 +99,9 @@ public class UpdateConformityInfoService {
      * @param updatedNodes seznam nodů k aktualizaci
      * @param version      verze, do které spadají nody
      */
-    synchronized public void updateInfoForNodes(final Collection<ArrNode> updatedNodes,
+    synchronized private void updateInfoForNodes(final Collection<ArrNode> updatedNodes,
                                                 final ArrFindingAidVersion version) {
+
         if (CollectionUtils.isEmpty(updatedNodes)) {
             return;
         }
@@ -87,6 +120,19 @@ public class UpdateConformityInfoService {
             }
         }
     }
+
+    /**
+     * Registruje listener, který po úspěšném commitu transakce spustí výpočet stavu nodů.
+     */
+    private void registerAfterCommitListener() {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+
+            }
+        });
+    }
+
 
 
     /**
