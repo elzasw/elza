@@ -4,6 +4,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { connect } from 'react-redux'
 
 require ('./FaPage.less');
 
@@ -44,6 +45,8 @@ var FaPage = class FaPage extends React.Component {
     }
 
     render() {
+        console.log("FA_PAGE:::PROPS", this.props);
+
         var mainFas = this.state.store ? this.state.store.getMainFas() : {};
         var activeFa = mainFas.activeFa;
 
@@ -89,5 +92,12 @@ var FaPage = class FaPage extends React.Component {
     }
 }
 
-module.exports = FaPage;
+function mapStateToProps(state) {
+    const { fas } = state
+    return {
+        fas
+    }
+}
+
+module.exports = connect(mapStateToProps)(FaPage);
 

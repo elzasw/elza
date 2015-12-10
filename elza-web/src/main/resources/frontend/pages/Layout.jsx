@@ -4,14 +4,12 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-
 import { ResizeStore } from 'stores';
 
+require('./Layout.less');
 //var Ukazky = require('./../components/Ukazky.jsx');
 
-require('./Layout.less');
-
-module.exports = class Layout extends React.Component {
+var Layout = class Layout extends React.Component {
     render1() {
         return <Ukazky/>
     }
@@ -23,3 +21,5 @@ module.exports = class Layout extends React.Component {
         )
     }
 }
+
+module.exports = Layout

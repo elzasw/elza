@@ -1,12 +1,14 @@
+import {Utils} from 'components'
+
 export const SELECT_FA = 'SELECT_FA'
 export const CLOSE_FA = 'CLOSE_FA'
 
 export const SELECT_NODE = 'SELECT_NODE'
 export const CLOSE_NODE = 'CLOSE_NODE'
 
-export const GET_OBJECT_INFO = 'GET_OBJECT_INFO'
+export const FETCH_PARTIES = 'FETCH_PARTIES'
 
-import {Utils} from 'components'
+export const GET_OBJECT_INFO = 'GET_OBJECT_INFO'
 
 var ObjectInfo = class ObjectInfo {
     constructor() {
@@ -25,6 +27,12 @@ var ObjectInfo = class ObjectInfo {
     addFa(fa) {
         console.log('addFa', fa);
         this.faIds.add(fa.id);
+    }
+}
+
+function fetchParties() {
+    return {
+        type: FETCH_PARTIES
     }
 }
 

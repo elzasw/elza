@@ -26,6 +26,7 @@
         "es5-shim": "~4.1.14",
         "classnames": "^2.2.1",
         "split-pane": "^0.5.1",
+        "react-redux": "^4.0.0",
         "reflux": "^0.3.0",
         "reflux-promise": "^1.0.2",
         "airflux": "^0.3.0-alpha1"

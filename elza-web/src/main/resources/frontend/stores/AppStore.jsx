@@ -201,5 +201,12 @@ var test2 = function() {
 module.exports = {
         test: function() {
             test2();
-        }
+        },
+        store
 }
+
+/*
+
+
+
+*/
