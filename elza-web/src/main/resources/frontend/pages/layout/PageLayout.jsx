@@ -27,16 +27,13 @@ var PageLayout = class PageLayout extends React.Component {
     }
 
     componentDidMount() {
-        console.log(this.refs.splitPane1);
-        console.log(this.refs.splitPane2);
-
         var splitPane1 = $(this.refs.splitPane1);
         var splitPane2 = $(this.refs.splitPane2);
         splitPane1.splitPane();
         splitPane2.splitPane();
 
         // Ukázka nastavení šířek, které budou předány, ve verzi 0.6.0 je již na toto funkce, zatím tato verze ale není v npm
-        this.setLeftSplitterWidth(220);
+        this.setLeftSplitterWidth(260);
         this.setRightSplitterWidth(100);
     }
 

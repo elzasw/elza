@@ -1,3 +1,5 @@
+exports.AbstractReactComponent = require('./AbstractReactComponent');
+
 exports.AjaxUtils = require('./AjaxUtils');
 exports.i18n = require('./i18n');
 exports.LongText = require('./LongText');
@@ -17,3 +19,4 @@ exports.SplitPane = require('./shared/split-pane/SplitPane');
 exports.Tabs = require('./shared/tabs/Tabs');
 
 exports.ModalDialog = require('./shared/dialog/ModalDialog');
+

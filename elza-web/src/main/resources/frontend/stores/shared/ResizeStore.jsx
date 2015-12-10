@@ -12,7 +12,6 @@ var store = class ResizeStore extends airflux.Store {
 
     constructor() {
         super();
-        console.log("Initialising resize store.");
 
         this.handleResize.bind(this);
     }

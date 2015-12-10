@@ -2,25 +2,18 @@
  * Komponenta záložek otevřených JP.
  */
 
-import React from 'react';
-
-import {Button, Glyphicon, Nav, NavItem} from 'react-bootstrap';
-import {NodePanel, Tabs} from 'components';
-import {FaAppStoreActions} from 'actions';
-
 require ('./NodeTabs.less');
 
-var NodeTabs = class NodeTabs extends React.Component {
+import React from 'react';
+import { connect } from 'react-redux'
+import {AbstractReactComponent, NodePanel, Tabs} from 'components';
+import {AppActions} from 'stores';
+
+var {faActions} = AppActions.AppActions;
+
+var NodeTabs = class NodeTabs extends AbstractReactComponent {
     constructor(props) {
         super(props);
-    }
-
-    handleNodeSelect(item) {
-        FaAppStoreActions.selectNode.asFunction(item.id);
-    }
-
-    handleNodeClose(item) {
-        FaAppStoreActions.closeNode.asFunction(item.id);
     }
 
     render() {
@@ -33,7 +26,10 @@ var NodeTabs = class NodeTabs extends React.Component {
 
         return (
             <Tabs.Container className='node-tabs-container'>
-                <Tabs.Tabs items={tabs} activeItem={this.props.activeNode} onSelect={this.handleNodeSelect} onClose={this.handleNodeClose}/>
+                <Tabs.Tabs items={tabs} activeItem={this.props.activeNode}
+                    onSelect={item=>this.dispatch(faActions.selectNode(item))}
+                    onClose={item=>this.dispatch(faActions.closeNode(item))}
+                />
                 <Tabs.Content>
                     {this.props.activeNode && <NodePanel node={this.props.activeNode} />}
                 </Tabs.Content>
@@ -42,4 +38,4 @@ var NodeTabs = class NodeTabs extends React.Component {
     }
 }
 
-module.exports = NodeTabs;
+module.exports = connect()(NodeTabs);

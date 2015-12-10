@@ -2,33 +2,27 @@
  * Stránka archivních pomůcek.
  */
 
-import React from 'react';
-import ReactDOM from 'react-dom';
-import { connect } from 'react-redux'
-
 require ('./FaPage.less');
 
+import React from 'react';
+import ReactDOM from 'react-dom';
+import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {i18n} from 'components';
 import {RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FindindAidFileTree} from 'components';
-import {ModalDialog, NodeTabs, FaTreeTabs} from 'components';
+import {AbstractReactComponent, ModalDialog, NodeTabs, FaTreeTabs} from 'components';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
-import {MainNodesStore, FaAppStore} from 'stores';
-import { AppStore } from 'stores'
+import {AppStore} from 'stores'
 
-var FaPage = class FaPage extends React.Component {
+var FaPage = class FaPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.buildRibbon = this.buildRibbon.bind(this);
+        this.bindMethods('buildRibbon');
 
-        this.state = {store: FaAppStore};
-
-        FaAppStore.listen(status => {
-            this.setState( {store: status});
-        });
+        this.state = {};
     }
 
     buildRibbon() {
@@ -80,19 +74,19 @@ var FaPage = class FaPage extends React.Component {
     render() {
         console.log("FA_PAGE:::PROPS", this.props);
 
-        var mainFas = this.state.store ? this.state.store.getMainFas() : {};
-        var activeFa = mainFas.activeFa;
-
+        var fas = this.props.fas.items;
+        var activeFa = this.props.fas.activeIndex != null ? this.props.fas.items[this.props.fas.activeIndex] : null;
         var leftPanel = (
-            <FaTreeTabs fas={mainFas.fas} activeFa={mainFas.activeFa} />
+            <FaTreeTabs fas={fas} activeFa={activeFa} />
         )
 
-        var mainNodes = activeFa ? activeFa.getMainNodes() : null;
         var centerPanel;
-        if (mainNodes) {
+        if (activeFa && activeFa.nodes) {
+            var nodes = activeFa.nodes.items;
+            var activeNode = activeFa.nodes.activeIndex != null ? nodes[activeFa.nodes.activeIndex] : null;
             centerPanel = (
                 <div>
-                    <NodeTabs nodes={mainNodes.nodes} activeNode={mainNodes.activeNode}/>
+                    <NodeTabs nodes={nodes} activeNode={activeNode}/>
                     {false && <ModalDialog title="Upraveni osoby">
                         nnn
                     </ModalDialog>}

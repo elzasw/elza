@@ -18,7 +18,7 @@ function indexById(arr, id) {
 
 function selectedAfterClose(arr, index) {
     if (index >= arr.length - 1) {
-        if (index - 1 > 0) {
+        if (index - 1 >= 0) {
             return index - 1;
         } else {
             return null;
@@ -40,6 +40,8 @@ function nodes(state = {activeIndex: null, items: []}, action) {
             var newActiveIndex = state.activeIndex;
             if (state.activeIndex == index) {   // byl vybrán, budeme řešit novou vybranou záložku
                 newActiveIndex = selectedAfterClose(state.items, index);
+            } else if (index < state.activeIndex) {
+                newActiveIndex--;
             }
             return {
                 ...state,
@@ -118,6 +120,8 @@ function fas(state = {activeIndex: null, items: []}, action) {
             var newActiveIndex = state.activeIndex;
             if (state.activeIndex == index) {   // byl vybrán, budeme řešit novou vybranou záložku
                 newActiveIndex = selectedAfterClose(state.items, index);
+            } else if (index < state.activeIndex) {
+                newActiveIndex--;
             }
             return {
                 ...state,
@@ -190,6 +194,7 @@ var test2 = function() {
     console.log('---------');
     console.log('STORE: ', store.getState());
     store.dispatch(faActions.selectFa({id:'fa1', name:'nazev fa1'}));
+    store.dispatch(faActions.selectFa({id:'fa2', name:'nazev fa2'}));
     store.dispatch(faActions.selectNode({id:'node1', name:'nazev node1'}));
     store.dispatch(faActions.selectNode({id:'node2', name:'nazev node2'}));
     console.log('STORE: ', store.getState());
