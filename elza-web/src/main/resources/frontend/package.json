@@ -34,7 +34,7 @@
         "airflux": "^0.3.0-alpha1"
     },
     "devDependencies": {
-        "webpack": "~1.10.1",
+        "webpack": "~1.10.5",
         "webpack-dev-server": "~1.10.1",
         "babel-loader": "^5.3.2",
         "babel": "^5.5.8",
@@ -50,6 +50,8 @@
         "style-loader": "^0.12.1",
         "less": "^2.5.3",
         "less-loader": "^2.2.1",
+        "sass-loader": "^3.1.2",
+        "node-sass": "^3.4.2",
         "bootstrap": "^3.3.5"
     }
 }

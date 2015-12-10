@@ -1,20 +1,19 @@
 /**
- * Stránka archivních pomůcek.
+ * Home stránka
  */
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-require ('./RecordPage.less');
-
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {i18n} from 'components';
-import {Ribbon, ModalDialog, NodeTabs, FaTreeTabs} from 'components';
+import {Ribbon, ToggleContent, FindindAidFileTree} from 'components';
+import {ModalDialog, NodeTabs, FaTreeTabs} from 'components';
 import {ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 
-var RecordPage = class RecordPage extends React.Component {
+var HomePage = class HomePage extends React.Component {
     constructor(props) {
         super(props);
 
@@ -23,38 +22,26 @@ var RecordPage = class RecordPage extends React.Component {
 
     buildRibbon() {
         return (
-            <Ribbon record {...this.props} />
+            <Ribbon home {...this.props} />
         )
     }
 
     render() {
-        var leftPanel = (
-            <div>LEFT - record</div>
-        )
-
         var centerPanel = (
             <div>
-                CENTER - record
-            </div>
-        )
-
-        var rightPanel = (
-            <div>
-                RIGHT - record
+                HOME
             </div>
         )
 
         return (
             <PageLayout
-                className='record-page'
+                className='party-page'
                 ribbon={this.buildRibbon()}
-                leftPanel={leftPanel}
                 centerPanel={centerPanel}
-                rightPanel={rightPanel}
             />
         )
     }
 }
 
-module.exports = RecordPage;
+module.exports = HomePage;
 

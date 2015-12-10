@@ -16,7 +16,7 @@ exports.Loading = require('./shared/loading/Loading');
 
 exports.ModalDialog = require('./shared/dialog/ModalDialog');
 
-
+exports.Ribbon = require('./page/Ribbon');
 
 exports.FindindAidFileTree = require('./fa/FindindAidFileTree');
 exports.NodePanel = require('./fa/NodePanel');

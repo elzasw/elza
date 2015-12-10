@@ -67,35 +67,51 @@ var PageLayout = class PageLayout extends React.Component {
             [this.props.className]: true
         });
 
-        return (
-            <div className={cls}>
-                <div className='app-header'>
-                    <ToggleContent className="ribbon-toggle-container" opened={this.state.ribbonOpened} onShowHide={this.handleRibbonShowHide}>
-                        {this.props.ribbon}
-                    </ToggleContent>
-                </div>
-                <div className='app-content'>
-                    {this.props.appContentExt}
-                    <div ref="splitPane1" className="split-pane fixed-left">
-                        <div className="split-pane-component" id="left-component">
-                            {this.props.leftPanel}
-                        </div>
-                        <div className="split-pane-divider" id="my-divider"></div>
-                        <div className="split-pane-component" id="right-component-container">
-                            <div ref="splitPane2" className="split-pane fixed-right">
-                                <div className="split-pane-component" id="inner-left-component">
-                                    {this.props.centerPanel}
-                                </div>
-                                <div className="split-pane-divider" id="inner-my-divider"></div>
-                                <div className="split-pane-component" id="inner-right-component">
-                                    {this.props.rightPanel}
+        if (this.props.leftPanel && this.props.rightPanel) {
+            return (
+                <div className={cls}>
+                    <div className='app-header'>
+                        <ToggleContent className="ribbon-toggle-container" opened={this.state.ribbonOpened} onShowHide={this.handleRibbonShowHide}>
+                            {this.props.ribbon}
+                        </ToggleContent>
+                    </div>
+                    <div className='app-content'>
+                        {this.props.appContentExt}
+                        <div ref="splitPane1" className="split-pane fixed-left">
+                            <div className="split-pane-component" id="left-component">
+                                {this.props.leftPanel}
+                            </div>
+                            <div className="split-pane-divider" id="my-divider"></div>
+                            <div className="split-pane-component" id="right-component-container">
+                                <div ref="splitPane2" className="split-pane fixed-right">
+                                    <div className="split-pane-component" id="inner-left-component">
+                                        {this.props.centerPanel}
+                                    </div>
+                                    <div className="split-pane-divider" id="inner-my-divider"></div>
+                                    <div className="split-pane-component" id="inner-right-component">
+                                        {this.props.rightPanel}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        )
+            )
+        } else if (!this.props.leftPanel && !this.props.rightPanel) {
+            return (
+                <div className={cls}>
+                    <div className='app-header'>
+                        <ToggleContent className="ribbon-toggle-container" opened={this.state.ribbonOpened} onShowHide={this.handleRibbonShowHide}>
+                            {this.props.ribbon}
+                        </ToggleContent>
+                    </div>
+                    <div className='app-content'>
+                        {this.props.appContentExt}
+                        {this.props.centerPanel}
+                    </div>
+                </div>
+            )
+        }
     }
 }
 

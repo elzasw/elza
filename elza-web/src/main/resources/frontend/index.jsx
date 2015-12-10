@@ -6,6 +6,7 @@
 
 // Import css Bootstrapu
 require ('bootstrap/less/bootstrap.less');
+require ('./variables.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';

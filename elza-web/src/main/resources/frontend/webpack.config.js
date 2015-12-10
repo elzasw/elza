@@ -31,11 +31,16 @@ module.exports = {
                 test: /\.less$/,
                 loader: "style!css!less?outputStyle=expanded&indentedSyntax"
             },
+            {
+                test: /\.scss$/,
+                loader: "style!css!sass?outputStyle=expanded&indentedSyntax"
+            },
             {test: /\.woff(\?v=\d+\.\d+\.\d+)?$/, loader: "file"},
             {test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/, loader: "file"},
             {test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/, loader: "file"},
             {test: /\.eot(\?v=\d+\.\d+\.\d+)?$/, loader: "file"},
-            {test: /\.svg(\?v=\d+\.\d+\.\d+)?$/, loader: "file"}
+            {test: /\.svg(\?v=\d+\.\d+\.\d+)?$/, loader: "file"},
+            {test: /\.png(\?v=\d+\.\d+\.\d+)?$/, loader: "file"}
         ]
     },
     node: {
