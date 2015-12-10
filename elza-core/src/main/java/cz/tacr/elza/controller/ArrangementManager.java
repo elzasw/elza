@@ -70,6 +70,9 @@ import cz.tacr.elza.domain.vo.ArrNodeRegisterPack;
 import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithDescItem;
 import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithDescItems;
 import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithLevelPack;
+import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
+import cz.tacr.elza.drools.DirectionLevel;
+import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
@@ -99,7 +102,7 @@ import cz.tacr.elza.repository.RuleSetRepository;
 public class ArrangementManager implements cz.tacr.elza.api.controller.ArrangementManager<ArrFindingAid, ArrFindingAidVersion,
     ArrDescItem, ArrDescItemSavePack, ArrLevel, ArrLevelWithExtraNode, ArrNode, ArrDescItems, ArrNodeHistoryPack,
     ArrCalendarTypes, ArrNodeRegister, ArrNodeRegisterPack, ArrPacket, ArrPacketType, RelatedNodeDirectionWithDescItems,
-        RelatedNodeDirectionWithDescItem, RelatedNodeDirectionWithLevelPack> {
+        RelatedNodeDirectionWithDescItem, RelatedNodeDirectionWithLevelPack, ScenarioOfNewLevel> {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -163,6 +166,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Autowired
     private ExtendedObjectsFactory extendedObjectsFactory;
+
+    @Autowired
+    private RulesExecutor rulesExecutor;
 
     /**
      * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.
@@ -436,7 +442,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         ArrNode parentNode = levelWithParentNode.getExtraNode();
         Integer versionId = levelWithParentNode.getFaVersionId();
 
-        isValidAndOpenVersion(versionId);
+        ArrFindingAidVersion version = isValidAndOpenVersion(versionId);
         isValidArrFaLevel(node);
         isValidNode(parentNode);
 
@@ -458,12 +464,33 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 .conformityInfo(versionId, Arrays.asList(node.getNode().getNodeId()), NodeTypeOperation.CREATE_NODE,
                         null, null, null);
 
+        createDescItemsAfterLevelCreate(levelWithParentNode, version, change, faLevelRet);
+
         RelatedNodeDirectionWithLevelPack ret = new RelatedNodeDirectionWithLevelPack();
         ret.setArrLevelPack(levelWithParentNodeRet);
         List relatedList = new ArrayList<>();
         relatedList.add(relatedNodeDirections);
         ret.setRelatedNodeDirections(relatedList);
         return ret;
+    }
+
+    /**
+     * Vytvoření hodnot atributů po vytvoření levelu ve stromu.
+     * @param levelWithParentNode
+     * @param version   verze AP
+     * @param change    ukládaná změna
+     * @param level     nový level, pro který se přidávají hodnoty atributů
+     */
+    private void createDescItemsAfterLevelCreate(final ArrLevelWithExtraNode levelWithParentNode,
+                                                 final ArrFindingAidVersion version,
+                                                 final ArrChange change,
+                                                 final ArrLevel level) {
+        if (CollectionUtils.isNotEmpty(levelWithParentNode.getDescItems())) {
+            for (ArrDescItem descItem : levelWithParentNode.getDescItems()) {
+                descItem.setNode(level.getNode());
+                createDescriptionItem(descItem, version, change, false);
+            }
+        }
     }
 
     @Override
@@ -475,7 +502,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         ArrNode parentNode = levelWithParentNode.getExtraNode();
         Integer versionId = levelWithParentNode.getFaVersionId();
 
-        isValidAndOpenVersion(versionId);
+        ArrFindingAidVersion version = isValidAndOpenVersion(versionId);
         isValidArrFaLevel(node);
         isValidNode(parentNode);
 
@@ -498,6 +525,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 .conformityInfo(versionId, Arrays.asList(node.getNode().getNodeId()), NodeTypeOperation.CREATE_NODE,
                         null, null, null);
 
+        createDescItemsAfterLevelCreate(levelWithParentNode, version, change, faLevelRet);
+
         RelatedNodeDirectionWithLevelPack ret = new RelatedNodeDirectionWithLevelPack();
         List relatedList = new ArrayList<>();
         relatedList.add(relatedNodeDirections);
@@ -515,7 +544,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         ArrLevel node = levelWithParentNode.getLevel();
         Integer versionId = levelWithParentNode.getFaVersionId();
 
-        isValidAndOpenVersion(versionId);
+        ArrFindingAidVersion version = isValidAndOpenVersion(versionId);
         isValidArrFaLevel(node);
 
         ArrChange change = createChange();
@@ -533,6 +562,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
                 .conformityInfo(versionId, Arrays.asList(node.getNode().getNodeId()), NodeTypeOperation.CREATE_NODE,
                         null, null, null);
+
+        createDescItemsAfterLevelCreate(levelWithParentNode, version, change, faLevelRet);
 
         RelatedNodeDirectionWithLevelPack ret = new RelatedNodeDirectionWithLevelPack();
         List relatedList = new ArrayList<>();
@@ -838,8 +869,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     /**
      * Kontrola verze, že existuje v DB a není uzavřena.
      * @param versionId Identifikátor verze
+     * @return verze archivni pomucky
      */
-    private void isValidAndOpenVersion(Integer versionId) {
+    private ArrFindingAidVersion isValidAndOpenVersion(Integer versionId) {
         Assert.notNull(versionId);
         ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
         if (version == null) {
@@ -848,6 +880,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         if (version.getLockChange() != null) {
             throw new IllegalArgumentException("Aktuální verze je zamčená");
         }
+        return version;
     }
 
 
@@ -2612,6 +2645,54 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         }
     }
 
+    @RequestMapping(value = "/getDescriptionItemTypesForNewLevelBefore", method = RequestMethod.GET)
+    @Override
+    public List<ScenarioOfNewLevel> getDescriptionItemTypesForNewLevelBefore(@RequestParam("nodeId") final Integer nodeId,
+                                                                             @RequestParam("faVersionId") final Integer faVersionId) {
+        Assert.notNull(nodeId);
+        Assert.notNull(faVersionId);
+        return getDescriptionItemTypesForNewLevel(nodeId, DirectionLevel.BEFORE, faVersionId);
+    }
+
+    @RequestMapping(value = "/getDescriptionItemTypesForNewLevelAfter", method = RequestMethod.GET)
+    @Override
+    public List<ScenarioOfNewLevel> getDescriptionItemTypesForNewLevelAfter(@RequestParam("nodeId") final Integer nodeId,
+                                                                            @RequestParam("faVersionId") final Integer faVersionId) {
+        Assert.notNull(nodeId);
+        Assert.notNull(faVersionId);
+        return getDescriptionItemTypesForNewLevel(nodeId, DirectionLevel.AFTER, faVersionId);
+    }
+
+    @RequestMapping(value = "/getDescriptionItemTypesForNewLevelChild", method = RequestMethod.GET)
+    @Override
+    public List<ScenarioOfNewLevel> getDescriptionItemTypesForNewLevelChild(@RequestParam("nodeId") final Integer nodeId,
+                                                                            @RequestParam("faVersionId") final Integer faVersionId) {
+        Assert.notNull(nodeId);
+        Assert.notNull(faVersionId);
+        return getDescriptionItemTypesForNewLevel(nodeId, DirectionLevel.CHILD, faVersionId);
+    }
+
+
+    /**
+     * Informace o možných scénářích založení nového uzlu
+     * @param nodeId            id uzlu
+     * @param directionLevel    typ vladani
+     * @param faVersionId       id verze
+     * @return seznam možných scénařů
+     */
+    private List<ScenarioOfNewLevel> getDescriptionItemTypesForNewLevel(final Integer nodeId, final DirectionLevel directionLevel, final Integer faVersionId) {
+
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
+        ArrNode node = nodeRepository.findOne(nodeId);
+        ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootLevel().getNode(),
+                version.getLockChange());
+
+        Assert.notNull(version);
+        Assert.notNull(node);
+        Assert.notNull(level);
+
+        return rulesExecutor.executeScenarioOfNewLevelRules(level, directionLevel, version);
+    }
 
     /**
      * Uložení poslední uživatelské změny nad AP k verzi AP

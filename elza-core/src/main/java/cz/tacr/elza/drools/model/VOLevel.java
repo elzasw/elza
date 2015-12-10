@@ -35,6 +35,15 @@ public class VOLevel {
      */
     private int childCount = 0;
 
+    /**
+     * Uzel sourozence před.
+     */
+    private VOLevel siblingBefore;
+
+    /**
+     * Uzel sourozence po.
+     */
+    private VOLevel siblingAfter;
 
     public Integer getNodeId() {
         return nodeId;
@@ -75,5 +84,21 @@ public class VOLevel {
     public void setChildCount(final int childCount) {
         this.childCount = childCount;
         this.hasChilds = childCount == 0 ? false : true;
+    }
+
+    public VOLevel getSiblingBefore() {
+        return siblingBefore;
+    }
+
+    public void setSiblingBefore(final VOLevel siblingBefore) {
+        this.siblingBefore = siblingBefore;
+    }
+
+    public VOLevel getSiblingAfter() {
+        return siblingAfter;
+    }
+
+    public void setSiblingAfter(final VOLevel siblingAfter) {
+        this.siblingAfter = siblingAfter;
     }
 }

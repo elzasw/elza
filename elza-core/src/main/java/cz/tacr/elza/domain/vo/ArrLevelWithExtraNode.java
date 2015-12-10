@@ -1,7 +1,10 @@
 package cz.tacr.elza.domain.vo;
 
+import java.util.List;
+
 import cz.tacr.elza.api.controller.ArrangementManager;
 import cz.tacr.elza.api.vo.ArrLevelPack;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -15,7 +18,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @author Martin Šlapa
  * @since 28.8.2015
  */
-public class ArrLevelWithExtraNode implements ArrLevelPack<ArrLevel, ArrNode> {
+public class ArrLevelWithExtraNode implements ArrLevelPack<ArrLevel, ArrNode, ArrDescItem> {
 
     /** Úroveň  - předmět operace. */
     private ArrLevel level;
@@ -32,6 +35,8 @@ public class ArrLevelWithExtraNode implements ArrLevelPack<ArrLevel, ArrNode> {
     /** ID archivní pomůcky. */
     private Integer faVersionId;
 
+    /** Seznam hodnot atributu k vytvoreni */
+    private List<ArrDescItem> descItems;
 
     public ArrLevelWithExtraNode() {
     }
@@ -85,6 +90,16 @@ public class ArrLevelWithExtraNode implements ArrLevelPack<ArrLevel, ArrNode> {
     @Override
     public void setFaVersionId(Integer faVersionId) {
         this.faVersionId = faVersionId;
+    }
+
+    @Override
+    public List<ArrDescItem> getDescItems() {
+        return descItems;
+    }
+
+    @Override
+    public void setDescItems(final List<ArrDescItem> descItems) {
+        this.descItems = descItems;
     }
 
     @Override
