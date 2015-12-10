@@ -6,11 +6,10 @@ import cz.tacr.elza.drools.model.VOLevel
 import cz.tacr.elza.domain.vo.DataValidationResult
 import cz.tacr.elza.drools.model.DescItemVO;
 import cz.tacr.elza.domain.RulArrangementType;
-import cz.tacr.elza.api.vo.RuleEvaluationType;
 
 global java.util.List results;
 global cz.tacr.elza.domain.RulArrangementType arrType;
-global cz.tacr.elza.api.vo.RuleEvaluationType evaluationType;
+global java.util.Set strategies;
 
 function boolean isLeaf(VOLevel level){
     return !level.isHasChilds();
@@ -68,7 +67,7 @@ function boolean hasLevelRequiredTypeSpec(VOLevel level, String typeCode, String
 rule "Kontrola u posledního node/levelu stromu (listu), zda je v jeho větvi (od něj až po root) alespoň jednou uveden atribut ZP2015_TITLE"
 when
     level: VOLevel()
-    eval (evaluationType.equals(RuleEvaluationType.COMPLETE))
+    eval(strategies.contains("COMPLETE"))
     eval(isLeaf(level))
     eval(!hasLevelAttribute(level, "ZP2015_TITLE") && !hasParentsAttribute(level, "ZP2015_TITLE"))
 then

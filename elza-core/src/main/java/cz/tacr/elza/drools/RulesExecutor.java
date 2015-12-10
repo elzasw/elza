@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
-import cz.tacr.elza.api.vo.RuleEvaluationType;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
@@ -69,15 +68,16 @@ public class RulesExecutor implements InitializingBean {
      *
      * @param rulDescItemTypeExtList seznam všech atributů
      * @param version                verze AP
+     * @param strategies             strategie vyhodnocování
      * @return seznam typů atributů odpovídající pravidlům
      */
     public List<RulDescItemTypeExt> executeDescItemTypesRules(final List<RulDescItemTypeExt> rulDescItemTypeExtList,
                                                               final ArrFindingAidVersion version,
-                                                              final RuleEvaluationType evaluationType) {
+                                                              final Set<String> strategies) {
 
         try {
             return descItemTypesRules
-                    .execute(rulDescItemTypeExtList, version.getArrangementType(), version.getRuleSet(), evaluationType);
+                    .execute(rulDescItemTypeExtList, version.getArrangementType(), version.getRuleSet(), strategies);
         } catch (NoSuchFileException e) {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
             return rulDescItemTypeExtList;
@@ -117,14 +117,14 @@ public class RulesExecutor implements InitializingBean {
      *
      * @param level   validovaný uzel
      * @param version verze uzlu
-     * @param evaluationType typ pravidel, které se mají pro vyhodnocení použít
+     * @param strategies
      * @return seznam validačních chyb nebo prázdný seznam
      */
     public List<DataValidationResult> executeDescItemValidationRules(final ArrLevel level,
                                                                      final ArrFindingAidVersion version,
-                                                                     final RuleEvaluationType evaluationType) {
+                                                                     final Set<String> strategies) {
         try {
-            return descItemValidationRules.execute(level, version, evaluationType);
+            return descItemValidationRules.execute(level, version, strategies);
         } catch (NoSuchFileException e) {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
             return Collections.emptyList();

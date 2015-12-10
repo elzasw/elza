@@ -3,12 +3,12 @@ package cz.tacr.elza.drools;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.kie.api.runtime.StatelessKieSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.api.vo.RuleEvaluationType;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.vo.DataValidationResult;
@@ -42,18 +42,18 @@ public class DescItemValidationRules extends Rules {
      *
      * @param level          level, na kterým spouštíme validaci
      * @param version        verze, do které spadá uzel
-     * @param evaluationType typ pravidel, které se mají pro vyhodnocení použít
+     * @param strategies     strategie vyhodnocování
      * @return seznam validačních chyb nebo prázdný seznam
      */
     public synchronized List<DataValidationResult> execute(final ArrLevel level, final ArrFindingAidVersion version,
-                                                           final RuleEvaluationType evaluationType)
+                                                           final Set<String> strategies)
             throws Exception {
 
         StatelessKieSession session = createNewStatelessKieSession(version.getRuleSet());
         List<DataValidationResult> result = new LinkedList<>();
 
         session.setGlobal("results", result);
-        session.setGlobal("evaluationType", evaluationType);
+        session.setGlobal("strategies", strategies);
         session.setGlobal("arrType", version.getArrangementType());
 
         VOLevel voLevel = scriptModelFactory.createLevelStructure(level, version);

@@ -1,6 +1,7 @@
 package cz.tacr.elza.api.controller;
 
 import java.util.List;
+import java.util.Set;
 
 import cz.tacr.elza.api.ArrDescItem;
 import cz.tacr.elza.api.ArrFindingAidVersion;
@@ -15,7 +16,6 @@ import cz.tacr.elza.api.RulRuleSet;
 import cz.tacr.elza.api.vo.FaViewDescItemTypes;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
-import cz.tacr.elza.api.vo.RuleEvaluationType;
 
 
 /**
@@ -31,8 +31,7 @@ import cz.tacr.elza.api.vo.RuleEvaluationType;
  */
 public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType, DIS extends RulDescItemSpec,
         RFV extends RulFaView, NTO extends NodeTypeOperation, RND extends RelatedNodeDirection, DI extends ArrDescItem,
-        FAV extends ArrFindingAidVersion, RET extends RuleEvaluationType,
-        FAVCI extends ArrFindingAidVersionConformityInfo> {
+        FAV extends ArrFindingAidVersion, FAVCI extends ArrFindingAidVersionConformityInfo> {
 
     /**
      * Najde specifikaci podle id.
@@ -73,7 +72,7 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      */
     List<? extends RulDescItemType> getDescriptionItemTypesForNode(Integer faVersionId,
                                                                    Integer nodeId,
-                                                                   RET evaluationType);
+                                                                   Set<String> strategies);
 
     /**
      * Vrací specifikace podle typu atributu.
@@ -112,10 +111,10 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      *
      * @param faLevelId      id uzlu
      * @param faVersionId    id verze
-     * @param evaluationType typ pravidel, které se mají pro vyhodnocení použít
+     * @param strategies     strategie vyhodnocovani
      * @return stav validovaného uzlu
      */
-    ArrNodeConformityInfoExt setConformityInfo(Integer faLevelId, Integer faVersionId, RET evaluationType);
+    ArrNodeConformityInfoExt setConformityInfo(Integer faLevelId, Integer faVersionId, Set<String> strategies);
 
     /**
      * Nastavení stavu u verze archivní pomůcky.

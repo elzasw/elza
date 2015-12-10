@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.api.vo.RuleEvaluationType;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -57,7 +56,7 @@ public class ArrDescItemsPostValidatorImpl implements ArrDescItemsPostValidator 
     @Override
     public List<DataValidationResult> postValidateNodeDescItems(final ArrLevel level,
                                                             final ArrFindingAidVersion version,
-                                                                final RuleEvaluationType evaluationType) {
+                                                                final Set<String> strategies) {
         List<DataValidationResult> result = new LinkedList<>();
 
         List<ArrData> levelData;
@@ -70,7 +69,7 @@ public class ArrDescItemsPostValidatorImpl implements ArrDescItemsPostValidator 
 
 
         List<RulDescItemTypeExt> nodeTypes = ruleManager.getDescriptionItemTypesForNode(
-                version.getFindingAidVersionId(), level.getNode().getNodeId(), evaluationType);
+                version.getFindingAidVersionId(), level.getNode().getNodeId(), strategies);
 
 
         Set<RulDescItemTypeExt> requiredTypes = new HashSet<>(nodeTypes);

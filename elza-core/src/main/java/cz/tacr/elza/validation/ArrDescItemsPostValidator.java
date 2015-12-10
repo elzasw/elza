@@ -1,8 +1,8 @@
 package cz.tacr.elza.validation;
 
 import java.util.List;
+import java.util.Set;
 
-import cz.tacr.elza.api.vo.RuleEvaluationType;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.vo.DataValidationResult;
@@ -27,5 +27,5 @@ public interface ArrDescItemsPostValidator {
      * @return seznam chybných hodnot
      */
     List<DataValidationResult> postValidateNodeDescItems(ArrLevel level, ArrFindingAidVersion version,
-                                                         RuleEvaluationType evaluationType);
+                                                         Set<String> strategies);
 }

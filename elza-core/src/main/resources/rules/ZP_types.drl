@@ -5,12 +5,12 @@ import cz.tacr.elza.domain.RulDescItemSpecExt;
 import cz.tacr.elza.domain.RulArrangementType;
 
 import java.util.Arrays;
+import java.util.Set;
 import cz.tacr.elza.api.RulDescItemType;
-import cz.tacr.elza.api.vo.RuleEvaluationType;
 
 global java.util.List results;
 global cz.tacr.elza.domain.RulArrangementType arrangementType;
-global cz.tacr.elza.api.vo.RuleEvaluationType evaluationType;
+global java.util.Set strategies;
 
 function void requiredForTypes(RulDescItemTypeExt descItemType, RulArrangementType arrangementType, String[] types) {
     if (Arrays.asList(types).contains(arrangementType.getCode())) {
@@ -18,17 +18,9 @@ function void requiredForTypes(RulDescItemTypeExt descItemType, RulArrangementTy
     }
 }
 
-function void requiredForEvalTypes(RulDescItemTypeExt descItemType, RuleEvaluationType evaluationType,
-                                   RuleEvaluationType evaluationTypeRequire) {
-    if (evaluationType.equals(evaluationTypeRequire)) {
-        descItemType.setType(RulDescItemType.Type.REQUIRED);
-    }
-}
-
-function void requiredForTypesAndEvalType(RulDescItemTypeExt descItemType, RulArrangementType arrangementType,
-                                          String[] types, RuleEvaluationType evaluationType,
-                                   RuleEvaluationType evaluationTypeRequire) {
-    if (evaluationType.equals(evaluationTypeRequire) && Arrays.asList(types).contains(arrangementType.getCode())) {
+function void requiredForTypesAndStrategy(RulDescItemTypeExt descItemType, RulArrangementType arrangementType,
+                                          String[] types, Set strategies, String strategy) {
+    if (Arrays.asList(types).contains(arrangementType.getCode()) && strategies.contains(strategy)) {
         descItemType.setType(RulDescItemType.Type.REQUIRED);
     }
 }
@@ -53,8 +45,7 @@ rule "Atribut ZP2015_UNIT_ID je povinný vždy, pokud typ výstupu je INV nebo K
 when
 	descItemType : RulDescItemTypeExt(code == "ZP2015_UNIT_ID")
 then
-    requiredForTypesAndEvalType(descItemType, arrangementType, new String[] {"INV", "KAT"},
-                                evaluationType, RuleEvaluationType.COMPLETE);
+    requiredForTypesAndStrategy(descItemType, arrangementType, new String[] {"INV", "KAT"}, strategies, "COMPLETE");
 	results.add(descItemType);
 end
 

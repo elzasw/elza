@@ -26,9 +26,9 @@ import com.vaadin.ui.UI;
 
 import cz.req.ax.AxAction;
 import cz.req.ax.AxWindow;
+import cz.tacr.elza.ElzaRules;
 import cz.tacr.elza.api.controller.PartyManager;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
-import cz.tacr.elza.api.vo.RuleEvaluationType;
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RegistryManager;
 import cz.tacr.elza.controller.RuleManager;
@@ -100,6 +100,9 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
     @Autowired
     private RegistryManager registryManager;
+
+    @Autowired
+    private ElzaRules elzaRules;
 
     /**
      * Loader hodnot atributu
@@ -246,7 +249,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
      */
     public void showDescriptionItemTypesAndSpecsForNode(final Integer versionId, final ArrNode node) {
         List<RulDescItemTypeExt> descItemTypeExts = ruleSetManager.getDescriptionItemTypesForNode(versionId,
-                node.getNodeId(), RuleEvaluationType.NORMAL);
+                node.getNodeId(), elzaRules.getStrategies(versionId));
 
         detailContent.addComponent(newLabel("Typy a specifikace atributů podle pravidel", "h2 margin-top"));
 
