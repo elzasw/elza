@@ -2,6 +2,7 @@ package cz.tacr.elza.controller;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -17,7 +18,6 @@ import com.jayway.restassured.response.Response;
 
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
-import cz.tacr.elza.api.vo.RuleEvaluationType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -126,8 +126,9 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
 
         createConstrain(2);
 
-        Response response = get((spec) -> spec.parameter("faVersionId", version.getFindingAidVersionId()).parameter(
-                NODE_ID_ATT, 1).parameter("evaluationType", RuleEvaluationType.COMPLETE),
+        Response response = post(
+                (spec) -> spec.pathParameter("faVersionId", version.getFindingAidVersionId()).pathParameter(
+                        NODE_ID_ATT, 1).body(new HashSet<String>()),
                 GET_DIT_FOR_NODE_ID_URL);
 
         List<RulDescItemTypeExt> ruleSets =
@@ -252,14 +253,14 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
 
 
         List<DataValidationResult> validationResults = descItemsPostValidator.postValidateNodeDescItems(level, version,
-                RuleEvaluationType.NORMAL);
+                new HashSet<String>());
         Assert.assertTrue(validationResults.isEmpty());
 
         ArrDataInteger data = (ArrDataInteger) dataRepository.findByDescItem(descItem).iterator().next();
         data.setValue(123456);
         dataRepository.save(data);
 
-        ruleManager.setConformityInfo(level.getLevelId(), version.getFindingAidVersionId(), RuleEvaluationType.NORMAL);
+        ruleManager.setConformityInfo(level.getLevelId(), version.getFindingAidVersionId(), new HashSet<String>());
 
         Assert.assertTrue(nodeConformityInfoRepository.findAll().size() > 0);
         Assert.assertTrue(nodeConformityErrorsRepository.findAll().size() > 0);

@@ -24,7 +24,7 @@ import org.springframework.util.Assert;
 
 import com.google.common.eventbus.EventBus;
 
-import cz.tacr.elza.api.vo.RuleEvaluationType;
+import cz.tacr.elza.ElzaRules;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrNode;
@@ -54,8 +54,10 @@ public class UpdateConformityInfoService {
     @Autowired
     private EventBus eventBus;
 
+    @Autowired
+    private ElzaRules elzaRules;
+    
     private ThreadLocal<Set<ArrNode>> nodesToUpdate = new ThreadLocal<>();
-
 
     /**
      * Mapa workerů pro dané verze.
@@ -120,7 +122,7 @@ public class UpdateConformityInfoService {
     }
 
     /**
-     * Registruje listener, který po úspěšném commitu transakce odešle aktualizované nody.
+     * Registruje listener, který po úspěšném commitu transakce spustí výpočet stavu nodů.
      */
     private void registerAfterCommitListener() {
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
@@ -167,7 +169,7 @@ public class UpdateConformityInfoService {
         logger.info("Aktualizace stavu " + nodeId + " ve verzi " + versionId);
 
         registerAfterCommitListener(nodeId);
-        ruleManager.setConformityInfo(levelId, versionId, RuleEvaluationType.NORMAL);
+        ruleManager.setConformityInfo(levelId, versionId, elzaRules.getStrategies(versionId));
     }
 
     /**
