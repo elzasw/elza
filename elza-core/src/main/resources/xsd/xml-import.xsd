@@ -5,7 +5,7 @@
 
   <xs:complexType name="xml-import">
     <xs:sequence>
-      <xs:element minOccurs="0" name="finding-aid" type="tns:findinig-aid"/>
+      <xs:element minOccurs="0" name="finding-aid" type="tns:finding-aid"/>
       <xs:element minOccurs="0" name="record-list">
         <xs:complexType>
           <xs:sequence>
@@ -28,7 +28,7 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="findinig-aid">
+  <xs:complexType name="finding-aid">
     <xs:sequence>
       <xs:element name="name" type="xs:string"/>
       <xs:element name="root-level" type="tns:level"/>
