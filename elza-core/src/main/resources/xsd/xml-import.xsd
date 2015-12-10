@@ -5,7 +5,7 @@
 
   <xs:complexType name="xml-import">
     <xs:sequence>
-      <xs:element minOccurs="0" name="finding-aid" type="tns:findinig-aid"/>
+      <xs:element minOccurs="0" name="finding-aid" type="tns:finding-aid"/>
       <xs:element minOccurs="0" name="record-list">
         <xs:complexType>
           <xs:sequence>
@@ -28,7 +28,7 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="findinig-aid">
+  <xs:complexType name="finding-aid">
     <xs:sequence>
       <xs:element name="name" type="xs:string"/>
       <xs:element name="root-level" type="tns:level"/>
@@ -173,15 +173,8 @@
   <xs:complexType name="record">
     <xs:sequence>
       <xs:element name="preferred-name" type="xs:string"/>
-      <xs:element name="characteristics" type="xs:string"/>
+      <xs:element minOccurs="0" name="characteristics" type="xs:string"/>
       <xs:element minOccurs="0" name="note" type="xs:string"/>
-      <xs:element minOccurs="0" name="sub-record-list">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element maxOccurs="unbounded" minOccurs="0" name="record" type="tns:record"/>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
       <xs:element minOccurs="0" name="variant-name-list">
         <xs:complexType>
           <xs:sequence>
@@ -190,6 +183,13 @@
         </xs:complexType>
       </xs:element>
       <xs:element minOccurs="0" name="record-coordinates" type="tns:record-coordinates"/>
+      <xs:element minOccurs="0" name="sub-record-list">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="record" type="tns:record"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
     </xs:sequence>
     <xs:attribute name="record-id" type="xs:ID" use="required"/>
     <xs:attribute name="register-type-code" type="xs:string" use="required"/>

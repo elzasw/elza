@@ -29,14 +29,13 @@ var FindindAidFileTree = class FindindAidFileTree extends React.Component {
     }
 
     render() {
-        var opened = this.context.opened;
-
+        var opened = this.context.isParentOpened;
         return opened ? this.renderOpened() : this.renderClosed();
     }
 }
 
 FindindAidFileTree.contextTypes = {
-    opened: React.PropTypes.bool
+    isParentOpened: React.PropTypes.bool
 }
 
 module.exports = FindindAidFileTree;

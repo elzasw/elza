@@ -21,6 +21,7 @@ import cz.tacr.elza.api.vo.ArrNodeRegisterPack;
 import cz.tacr.elza.api.vo.RelatedNodeDirectionWithDescItem;
 import cz.tacr.elza.api.vo.RelatedNodeDirectionWithDescItems;
 import cz.tacr.elza.api.vo.RelatedNodeDirectionWithLevelPack;
+import cz.tacr.elza.api.vo.ScenarioOfNewLevel;
 
 
 /**
@@ -45,7 +46,7 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
         DIS extends ArrDescItems, NHP extends ArrNodeHistoryPack, CTL extends ArrCalendarTypes, ANR extends ArrNodeRegister,
         ANRP extends ArrNodeRegisterPack, AP extends ArrPacket, APT extends ArrPacketType,
         RNDWDIS extends RelatedNodeDirectionWithDescItems, RNDWDI extends RelatedNodeDirectionWithDescItem,
-        RNDWLFP extends RelatedNodeDirectionWithLevelPack> {
+        RNDWLFP extends RelatedNodeDirectionWithLevelPack, SONL extends ScenarioOfNewLevel> {
 
     /** Formát popisu atributu - dlouhá verze. */
     String FORMAT_ATTRIBUTE_FULL = "FULL";
@@ -357,4 +358,34 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      * @return true pokud patří uzel do verze, jinak false
      */
     boolean validLevelInVersion(FL level, FV version);
+
+
+    /**
+     * Informace o možných scénářích založení nového uzlu - před.
+     *
+     * @param nodeId      id uzlu
+     * @param faVersionId id verze
+     * @return seznam možných scénařů
+     */
+    List<SONL> getDescriptionItemTypesForNewLevelBefore(Integer nodeId, Integer faVersionId);
+
+
+    /**
+     * Informace o možných scénářích založení nového uzlu - po.
+     *
+     * @param nodeId      id uzlu
+     * @param faVersionId id verze
+     * @return seznam možných scénařů
+     */
+    List<SONL> getDescriptionItemTypesForNewLevelAfter(Integer nodeId, Integer faVersionId);
+
+
+    /**
+     * Informace o možných scénářích založení nového uzlu - pod.
+     *
+     * @param nodeId      id uzlu
+     * @param faVersionId id verze
+     * @return seznam možných scénařů
+     */
+    List<SONL> getDescriptionItemTypesForNewLevelChild(Integer nodeId, Integer faVersionId);
 }

@@ -24,6 +24,7 @@ import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.vo.DataValidationResult;
+import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import liquibase.util.file.FilenameUtils;
 
 
@@ -47,6 +48,9 @@ public class RulesExecutor implements InitializingBean {
 
     @Autowired
     private ImpactOfChangesLevelStateRules impactOfChangesLevelStateRules;
+
+    @Autowired
+    private ScenarioOfNewLevelRules scenarioOfNewLevelRules;
 
     /**
      * Cesta adresáře pro konfiguraci pravidel
@@ -121,6 +125,19 @@ public class RulesExecutor implements InitializingBean {
                                                                      final RuleEvaluationType evaluationType) {
         try {
             return descItemValidationRules.execute(level, version, evaluationType);
+        } catch (NoSuchFileException e) {
+            logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
+            return Collections.emptyList();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<ScenarioOfNewLevel> executeScenarioOfNewLevelRules(final ArrLevel level,
+                                                                   final DirectionLevel directionLevel,
+                                                                   final ArrFindingAidVersion version) {
+        try {
+            return scenarioOfNewLevelRules.execute(level, directionLevel, version);
         } catch (NoSuchFileException e) {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
             return Collections.emptyList();

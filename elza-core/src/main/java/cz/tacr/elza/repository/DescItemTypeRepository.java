@@ -1,6 +1,7 @@
 package cz.tacr.elza.repository;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,6 +20,25 @@ public interface DescItemTypeRepository extends JpaRepository<RulDescItemType, I
 
     @Query("SELECT DISTINCT t.dataType FROM rul_desc_item_type t WHERE t = ?1")
     List<RulDataType> findRulDataType(RulDescItemType descItemType);
+
+
+    /**
+     * Najde všechny typy, které mají obal. (Jsou typu s kódem "PACKET_REF".
+     *
+     * @return všechny typy, které mají obal
+     */
+    @Query(value = "SELECT t FROM rul_desc_item_type t join t.dataType dt "
+            + "WHERE dt.code = 'PACKET_REF'")
+    Set<RulDescItemType> findDescItemTypesForPackets();
+
+    /**
+     * Najde všechny typy, které mají int. (Jsou typu s kódem "INT".
+     *
+     * @return všechny typy, které mají obal
+     */
+    @Query(value = "SELECT t FROM rul_desc_item_type t join t.dataType dt "
+            + "WHERE dt.code = 'INT'")
+    Set<RulDescItemType> findDescItemTypesForIntegers();
 
     RulDescItemType getOneByCode(String code);
 }

@@ -1,10 +1,12 @@
 package cz.tacr.elza.api.vo;
 
+import cz.tacr.elza.api.ArrDescItem;
 import cz.tacr.elza.api.ArrLevel;
 import cz.tacr.elza.api.ArrNode;
 import cz.tacr.elza.api.controller.ArrangementManager;
 
 import java.io.Serializable;
+import java.util.List;
 
 
 /**
@@ -17,7 +19,7 @@ import java.io.Serializable;
  * @param <FL> {@link ArrLevel}
  * @param <N> {@link ArrNode}
  */
-public interface ArrLevelPack<FL extends ArrLevel, N extends ArrNode> extends Serializable {
+public interface ArrLevelPack<FL extends ArrLevel, N extends ArrNode, DI extends ArrDescItem> extends Serializable {
 
     /**
      * Úroveň  - předmět operace.
@@ -78,5 +80,19 @@ public interface ArrLevelPack<FL extends ArrLevel, N extends ArrNode> extends Se
      * @param faVersionId id archivní pomůcky
      */
     void  setFaVersionId(Integer faVersionId);
+
+
+    /**
+     * Seznam hodnot atrubutů.
+     * @return seznam hodnot atrubutů
+     */
+    List<DI> getDescItems();
+
+
+    /**
+     * Nastaví seznam hodnot atrubutů.
+     * @param descItems seznam hodnot atrubutů
+     */
+    void setDescItems(List<DI> descItems);
 
 }

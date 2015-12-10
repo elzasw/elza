@@ -1,5 +1,17 @@
 /**
- * Komponenta umožňující minimalizování a opětovné zvětšení na tlačítko.
+ *
+ * Komponenta umožňující minimalizování a opětovné zvětšení bloku na tlačítko.
+ * !!! Je nutné si oblast celou nastylovat. Komponenta nemá vlastní css a je ho při použítí nutné napsat vlastní. (className)
+ * @param opened boolean default true: zda se má při inicializaci zobrazit rozbalený (true) nebo zabaleny (false).
+ * @param onShowHide handler: co se má stát po kliknutí
+ * @param alwaysRender bolean default false zda se ma vzdycky vyrenderovat objekt
+ * @param openedIcon String default 'chevron-up' ikona pro rozbaleni
+ * @param closedIcon String default 'chevron-down' ikona pro sbaleni 
+ *
+ * v kontextu je přístupný isParentOpened boolen - this.context.isParentOpened.
+ * příklad použití
+ * <ToggleContent className="fa-file-toggle-container" alwaysRender opened={false} closedIcon="chevron-right" openedIcon="chevron-left">...</ToggleContent>
+ *
  */
 
 import React from 'react';
@@ -15,7 +27,7 @@ var ToggleContent = class ToggleContent extends React.Component {
 
         this.handleToggle = this.handleToggle.bind(this);
         this.state = {
-            opened: typeof this.props.opened == 'undefined' ? true : this.props.opened,
+            isParentOpened: typeof this.props.opened == 'undefined' ? true : this.props.opened,
             openedIcon: this.props.openedIcon || "chevron-up",
             closedIcon: this.props.closedIcon || "chevron-down",
             alwaysRender: typeof this.props.alwaysRender == 'undefined' ? false : this.props.alwaysRender
@@ -23,27 +35,27 @@ var ToggleContent = class ToggleContent extends React.Component {
     }
 
     getChildContext() {
-        return { opened: this.state.opened };
+        return { isParentOpened: this.state.isParentOpened };
     }
 
     handleToggle() {
-        this.setState({ opened: !this.state.opened });
-        this.props.onShowHide && this.props.onShowHide(!this.state.opened);
+        this.setState({ isParentOpened: !this.state.isParentOpened });
+        this.props.onShowHide && this.props.onShowHide(!this.state.isParentOpened);
     }
 
     render() {
-        var toggleGlyph = this.state.opened ? this.state.openedIcon : this.state.closedIcon;
+        var toggleGlyph = this.state.isParentOpened ? this.state.openedIcon : this.state.closedIcon;
 
         var cls = classNames({
             "toggle-content-container": true,
-            opened: this.state.opened,
-            closed: !this.state.opened,
+            opened: this.state.isParentOpened,
+            closed: !this.state.isParentOpened,
             [this.props.className]: true
         });
 
-        var title = this.state.opened ? i18n('toggle.action.minimize') : i18n('toggle.action.restore');
+        var title = this.state.isParentOpened ? i18n('toggle.action.minimize') : i18n('toggle.action.restore');
 
-        var render = this.state.opened || this.state.alwaysRender;
+        var render = this.state.isParentOpened || this.state.alwaysRender;
         var child = null;
         if (render) {
             child = this.props.children;
@@ -63,7 +75,7 @@ var ToggleContent = class ToggleContent extends React.Component {
 }
 
 ToggleContent.childContextTypes = {
-    opened: React.PropTypes.bool
+    isParentOpened: React.PropTypes.bool
 }
 
 module.exports = ToggleContent;

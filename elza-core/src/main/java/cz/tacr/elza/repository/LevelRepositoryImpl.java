@@ -53,6 +53,15 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     }
 
     @Override
+    public Integer countChildsByParent(final ArrNode node, @Nullable final ArrChange lockChange) {
+        if(lockChange == null){
+            return levelRepository.countChildsByParent(node);
+        }else{
+            return levelRepository.countChildsByParentAndChange(node, lockChange);
+        }
+    }
+
+    @Override
     public List<ArrLevel> findAllParentsByNodeAndVersion(final ArrNode node, final ArrFindingAidVersion version) {
         Assert.notNull(node);
         Assert.notNull(version);

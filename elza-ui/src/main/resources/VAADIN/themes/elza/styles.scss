@@ -62,6 +62,27 @@ $ax-main-focus: $color-app;
         }
     }
 
+    .level-window-detail {
+        .level-box {
+            .level-line {
+                display: block;
+                padding: 10px;
+
+                .v-widget {
+                    vertical-align: middle;
+                }
+
+                .level-name {
+                    margin-left: 10px;
+                }
+
+                .action-button {
+                    width: 150px;
+                }
+            }
+        }
+    }
+
     .history-window-detail {
         box-shadow: 0 0 10px 1px $color-app-alt;
         background-color: white;

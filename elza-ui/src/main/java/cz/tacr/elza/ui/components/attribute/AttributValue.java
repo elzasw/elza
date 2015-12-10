@@ -5,10 +5,10 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 
 import com.vaadin.data.Property;
-import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.DragAndDropWrapper;
+import com.vaadin.ui.Field;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 
@@ -100,7 +100,19 @@ public class AttributValue extends CssLayout implements Components {
                 }
                 form.addStyleName("datace");
                 form.addCombo("Typ kalendare", "calendarType", calendarTypesContainer, "name").required();
-                form.addField("Hodnota", "format");
+                TextField textField = (TextField) form.addField("Hodnota", "format").field();
+                textField.setDescription("<b>Možnosti zadání:</b>"
+                                + "<br />Století: 19.st."
+                                + "<br />Rok: 1958"
+                                + "<br />Rok/měsíc: 1958/5"
+                                + "<br />Datum: 25.3.1958"
+                                + "<br />Datum a čas: 25.3.1958 18:23"
+                                + "<br />"
+                                + "<br />Hodnotu lze zadat jednotlivě (např. <b>1958</b>)."
+                                + "<br />Hodnotu lze zadat jako interval (např. <b>1958-1960</b>)."
+                                + "<br />Hodnotu lze zadat jako polointerval (např. <b>1958-</b>)."
+                                + "<br />Definovat odhad lze tak, že se hodnota dá do kulatých závorek (např. <b>(1918)-2000</b>)."
+                );
                 break;
             case "TEXT":
             case "COORDINATES":

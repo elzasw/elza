@@ -11,9 +11,9 @@ require ('./FaPage.less');
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {i18n} from 'components';
-import {RibbonMenu, ToggleContent, FindindAidFileTree} from 'components';
+import {RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FindindAidFileTree} from 'components';
 import {ModalDialog, NodeTabs, FaTreeTabs} from 'components';
-import {ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
+import {ButtonGroup, Button, DropdownButton, MenuItem, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {MainNodesStore, FaAppStore} from 'stores';
 import { AppStore } from 'stores'
@@ -33,14 +33,47 @@ var FaPage = class FaPage extends React.Component {
 
     buildRibbon() {
         return (
-            <RibbonMenu>
+                <RibbonMenu opened={this.state.ribbonOpened} onShowHide={this.handleRibbonShowHide}>
 <Button onClick={() => {AppStore.test()}}>xxxxxxx</Button>
-                <ButtonGroup>
-                    <IndexLinkContainer to="/"><Button><Glyphicon glyph="film" /><span>{i18n('ribbon.action.findingAid')}</span></Button></IndexLinkContainer>
-                    <LinkContainer to="/record"><Button><Glyphicon glyph="th-list" /><span>{i18n('ribbon.action.record')}</span></Button></LinkContainer>
-                    <LinkContainer to="/party"><Button><Glyphicon glyph="user" /><span>{i18n('ribbon.action.party')}</span></Button></LinkContainer>
-                </ButtonGroup>
-            </RibbonMenu>
+                    <RibbonGroup className="large">
+                        <IndexLinkContainer to="/"><Button><Glyphicon glyph="film" /><div><span className="btnText"> hdiuas ihdu asiud asiu d{i18n('ribbon.action.findingAid')}</span></div></Button></IndexLinkContainer>
+                        <LinkContainer to="/record"><Button><Glyphicon glyph="th-list" /><div><span className="btnText">{i18n('ribbon.action.record')}</span></div></Button></LinkContainer>
+
+                        <DropdownButton title={<span className="dropContent"><Glyphicon glyph='film' /><div><span className="btnText">{i18n('ribbon.action.findingAid')}</span></div></span>}>
+                          <MenuItem eventKey="1">Action</MenuItem>
+                          <MenuItem eventKey="2">Another action jdoias djaos ijdoas i</MenuItem>
+                          <MenuItem eventKey="3">Active Item</MenuItem>
+                        </DropdownButton>
+
+
+                    </RibbonGroup>
+
+                    <RibbonSplit />
+
+                    <RibbonGroup className="small">
+                        <DropdownButton title={<span className="dropContent"><Glyphicon glyph='film' /><div><span className="btnText">{i18n('ribbon.action.findingAid')}</span></div></span>}>
+                            <MenuItem eventKey="1">Action</MenuItem>
+                            <MenuItem eventKey="2">Another action</MenuItem>
+                            <MenuItem eventKey="3">Active Item</MenuItem>
+                          </DropdownButton>
+                        <IndexLinkContainer to="/"><Button><Glyphicon glyph="film" /><div><span className="btnText">{i18n('ribbon.action.findingAid')}</span></div></Button></IndexLinkContainer>
+                        <LinkContainer to="/party"><Button><Glyphicon glyph="user" /><div><span className="btnText">{i18n('ribbon.action.party')}</span></div></Button></LinkContainer>
+                    </RibbonGroup>
+
+                    <RibbonSplit />
+
+                    <RibbonGroup className="small">
+                        <DropdownButton title={<span className="dropContent"><Glyphicon glyph='film' /><div><span className="btnText">{i18n('ribbon.action.findingAid')}</span></div></span>}>
+                          <MenuItem eventKey="1">Action</MenuItem>
+                          <MenuItem eventKey="2">Another action</MenuItem>
+                          <MenuItem eventKey="3">Active Item</MenuItem>
+                        </DropdownButton>
+                        <LinkContainer to="/record"><Button><Glyphicon glyph="th-list" /><div><span className="btnText">{i18n('ribbon.action.record')}</span></div></Button></LinkContainer>
+
+                    </RibbonGroup>
+
+
+                </RibbonMenu>
         )
     }
 

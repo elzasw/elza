@@ -70,9 +70,11 @@ import cz.tacr.elza.ui.components.TreeTable;
 import cz.tacr.elza.ui.utils.ConcurrentUpdateExceptionHandler;
 import cz.tacr.elza.ui.utils.ElzaNotifications;
 import cz.tacr.elza.ui.utils.UnitDateConvertor;
+import cz.tacr.elza.ui.window.AddLevelScenariosWindow;
 import cz.tacr.elza.ui.window.BulkActionApproveVersionWindow;
 import cz.tacr.elza.ui.window.BulkActionsWindow;
 import cz.tacr.elza.ui.window.DescItemTypeWindow;
+import cz.tacr.elza.ui.window.DirectionLevel;
 import cz.tacr.elza.ui.window.LevelHistoryWindow;
 import cz.tacr.elza.ui.window.PosAction;
 import ru.xpoft.vaadin.VaadinView;
@@ -401,10 +403,58 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
 
                 MenuBar.MenuItem parent = menuBar.addItem("", FontAwesome.ALIGN_JUSTIFY, null);
                 MenuBar.MenuItem child = new AxAction().caption("Přidat záznam před").icon(FontAwesome.PLUS).run(() -> {
-                            discardNodeCut();
 
+                            AddLevelScenariosWindow addLevelScenariosWindow = new AddLevelScenariosWindow(arrangementManager);
+
+                            addLevelScenariosWindow.show("Přidat záznam před", (ArrLevel) itemId,
+                                    version, DirectionLevel.BEFORE, scenarioOfNewLevel -> {
+
+                                        discardNodeCut();
+
+                                        ArrLevel node = (ArrLevel) itemId;
+                                        ArrLevelWithExtraNode faLevelWithExtraNode = new ArrLevelWithExtraNode();
+                                        faLevelWithExtraNode.setDescItems(scenarioOfNewLevel.getDescItems());
+                                        faLevelWithExtraNode.setLevel(node);
+                                        faLevelWithExtraNode.setExtraNode(node.getNodeParent());
+                                        faLevelWithExtraNode.setRootNode(version.getRootLevel().getNode());
+                                        faLevelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
+
+                                        try {
+                                            RelatedNodeDirectionWithLevelPack relatedNodeDirectionWithLevelPack
+                                                    = arrangementManager
+                                                    .addLevelBefore(faLevelWithExtraNode);
+                                            ArrLevelWithExtraNode faLevelWithExtraNodeRet
+                                                    = relatedNodeDirectionWithLevelPack.getArrLevelPack();
+
+                                            showRelatedNodeDirection(
+                                                    relatedNodeDirectionWithLevelPack.getRelatedNodeDirections());
+
+                                            refreshTree(container, version.getRootLevel());
+
+                                            ElzaNotifications.show("Přidáno...");
+                                        } catch (IllegalStateException | IllegalArgumentException e) {
+                                            ElzaNotifications.showError(e.getMessage());
+                                        }
+
+                                    });
+                        }
+                ).exception(new ConcurrentUpdateExceptionHandler()).menuItem(parent);
+
+                child = new AxAction().caption("Přidat záznam za").icon(FontAwesome.PLUS).run(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        AddLevelScenariosWindow addLevelScenariosWindow = new AddLevelScenariosWindow(arrangementManager);
+
+                        addLevelScenariosWindow.show("Přidat záznam za", (ArrLevel) itemId,
+                                version, DirectionLevel.AFTER, scenarioOfNewLevel -> {
+
+                            discardNodeCut();
                             ArrLevel node = (ArrLevel) itemId;
+                            ArrLevel lastId = getItemIdAfterChilds(node, container);
+
                             ArrLevelWithExtraNode faLevelWithExtraNode = new ArrLevelWithExtraNode();
+                            faLevelWithExtraNode.setDescItems(scenarioOfNewLevel.getDescItems());
                             faLevelWithExtraNode.setLevel(node);
                             faLevelWithExtraNode.setExtraNode(node.getNodeParent());
                             faLevelWithExtraNode.setRootNode(version.getRootLevel().getNode());
@@ -412,112 +462,69 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
 
                             try {
                                 RelatedNodeDirectionWithLevelPack relatedNodeDirectionWithLevelPack = arrangementManager
-                                        .addLevelBefore(faLevelWithExtraNode);
+                                        .addLevelAfter(faLevelWithExtraNode);
                                 ArrLevelWithExtraNode faLevelWithExtraNodeRet = relatedNodeDirectionWithLevelPack.getArrLevelPack();
 
                                 showRelatedNodeDirection(relatedNodeDirectionWithLevelPack.getRelatedNodeDirections());
 
                                 refreshTree(container, version.getRootLevel());
 
-                        /*ArrLevel level = faLevelWithExtraNodeRet.getLevel();
-                        node.setNodeParent(faLevelWithExtraNodeRet.getExtraNode());
-
-                        BeanItem item = (BeanItem) container.addItemAt(container.indexOfId(node), level);
-
-                        initNewItemInContainer(item, level, container);
-                        repositionLowerSiblings(level, level.getPosition() + 1 , container);
-
-                        refreshParentReferences(node, faLevelWithExtraNodeRet, container);
-
-                        table.refreshRowCache();*/
                                 ElzaNotifications.show("Přidáno...");
                             } catch (IllegalStateException | IllegalArgumentException e) {
                                 ElzaNotifications.showError(e.getMessage());
                             }
-                        }
-                ).exception(new ConcurrentUpdateExceptionHandler()).menuItem(parent);
 
-                child = new AxAction().caption("Přidat záznam za").icon(FontAwesome.PLUS).run(new Runnable() {
-                    @Override
-                    public void run() {
-                        discardNodeCut();
-                        ArrLevel node = (ArrLevel) itemId;
-                        ArrLevel lastId = getItemIdAfterChilds(node, container);
-
-                        ArrLevelWithExtraNode faLevelWithExtraNode = new ArrLevelWithExtraNode();
-                        faLevelWithExtraNode.setLevel(node);
-                        faLevelWithExtraNode.setExtraNode(node.getNodeParent());
-                        faLevelWithExtraNode.setRootNode(version.getRootLevel().getNode());
-                        faLevelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
-
-                        try {
-                            RelatedNodeDirectionWithLevelPack relatedNodeDirectionWithLevelPack = arrangementManager
-                                    .addLevelAfter(faLevelWithExtraNode);
-                            ArrLevelWithExtraNode faLevelWithExtraNodeRet = relatedNodeDirectionWithLevelPack.getArrLevelPack();
-
-                            showRelatedNodeDirection(relatedNodeDirectionWithLevelPack.getRelatedNodeDirections());
-
-                            refreshTree(container, version.getRootLevel());
-
-                            /*
-                            ArrLevel newFaLevel = faLevelWithExtraNodeRet.getLevel();
-                            node.setNodeParent(faLevelWithExtraNodeRet.getExtraNode());
-
-                            repositionLowerSiblings(node, node.getPosition() + 2, container);
-
-                            addItemAfterToContainer(newFaLevel, container, lastId);
-
-                            refreshParentReferences(node, faLevelWithExtraNodeRet, container);
-
-
-                            table.refreshRowCache();*/
-
-                            ElzaNotifications.show("Přidáno...");
-                        } catch (IllegalStateException | IllegalArgumentException e) {
-                            ElzaNotifications.showError(e.getMessage());
-                        }
+                        });
                     }
                 }).exception(new ConcurrentUpdateExceptionHandler()).menuItem(parent);
 
                 child = new AxAction().caption("Přidat podřízený záznam").icon(FontAwesome.PLUS).run(() -> {
-                    discardNodeCut();
-                    if (table.isCollapsed(itemId)) {
-                        table.setCollapsed(itemId, false);
-                    }
 
-                    ArrLevel itemIdLast = (ArrLevel) itemId;
-                    ArrLevelWithExtraNode faLevelWithExtraNode = new ArrLevelWithExtraNode();
-                    faLevelWithExtraNode.setLevel(itemIdLast);
-                    faLevelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
+                    AddLevelScenariosWindow addLevelScenariosWindow = new AddLevelScenariosWindow(arrangementManager);
 
-                    try {
-                        RelatedNodeDirectionWithLevelPack relatedNodeDirectionWithLevelPack = arrangementManager
-                                .addLevelChild(faLevelWithExtraNode);
-                        ArrLevelWithExtraNode faLevelWithExtraNodeRet = relatedNodeDirectionWithLevelPack.getArrLevelPack();
+                    addLevelScenariosWindow.show("Přidat podřízený záznam", (ArrLevel) itemId,
+                            version, DirectionLevel.CHILD, scenarioOfNewLevel -> {
+
+                                discardNodeCut();
+                                if (table.isCollapsed(itemId)) {
+                                    table.setCollapsed(itemId, false);
+                                }
+
+                                ArrLevel itemIdLast = (ArrLevel) itemId;
+                                ArrLevelWithExtraNode faLevelWithExtraNode = new ArrLevelWithExtraNode();
+                                faLevelWithExtraNode.setDescItems(scenarioOfNewLevel.getDescItems());
+                                faLevelWithExtraNode.setLevel(itemIdLast);
+                                faLevelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
+
+                                try {
+                                    RelatedNodeDirectionWithLevelPack relatedNodeDirectionWithLevelPack = arrangementManager
+                                            .addLevelChild(faLevelWithExtraNode);
+                                    ArrLevelWithExtraNode faLevelWithExtraNodeRet = relatedNodeDirectionWithLevelPack.getArrLevelPack();
 
 
-                        showRelatedNodeDirection(relatedNodeDirectionWithLevelPack.getRelatedNodeDirections());
+                                    showRelatedNodeDirection(relatedNodeDirectionWithLevelPack.getRelatedNodeDirections());
 
-                        ArrLevel newFaLevel = faLevelWithExtraNodeRet.getLevel();
+                                    ArrLevel newFaLevel = faLevelWithExtraNodeRet.getLevel();
 
-                        Collection<?> children = container.getChildren(itemIdLast);
-                        if (!CollectionUtils.isEmpty(children)) {
-                            Iterator<?> iterator = children.iterator();
-                            while (iterator.hasNext()) {
-                                itemIdLast = (ArrLevel) iterator.next();
-                            }
-                        }
+                                    Collection<?> children = container.getChildren(itemIdLast);
+                                    if (!CollectionUtils.isEmpty(children)) {
+                                        Iterator<?> iterator = children.iterator();
+                                        while (iterator.hasNext()) {
+                                            itemIdLast = (ArrLevel) iterator.next();
+                                        }
+                                    }
 
-                        BeanItem item = (BeanItem) table.addItemAfter(itemIdLast, newFaLevel);
-                        itemIdLast = newFaLevel;
-                        initNewItemInContainer(item, newFaLevel, container);
+                                    BeanItem item = (BeanItem) table.addItemAfter(itemIdLast, newFaLevel);
+                                    itemIdLast = newFaLevel;
+                                    initNewItemInContainer(item, newFaLevel, container);
 
-                        refreshParentReferences(itemIdLast, faLevelWithExtraNodeRet, container);
+                                    refreshParentReferences(itemIdLast, faLevelWithExtraNodeRet, container);
 
-                        ElzaNotifications.show("Přidáno...");
-                    } catch (IllegalStateException | IllegalArgumentException e) {
-                        ElzaNotifications.showError(e.getMessage());
-                    }
+                                    ElzaNotifications.show("Přidáno...");
+                                } catch (IllegalStateException | IllegalArgumentException e) {
+                                    ElzaNotifications.showError(e.getMessage());
+                                }
+                            });
                 }).exception(new ConcurrentUpdateExceptionHandler()).menuItem(parent);
 
                 child = new AxAction().caption("Smazat").icon(FontAwesome.TRASH_O).run(new Runnable() {
@@ -996,43 +1003,50 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
             actions(
                     new AxAction().caption("Přidat záznam").icon(FontAwesome.PLUS).run(() -> {
 
-                        ArrLevelWithExtraNode faLevelWithExtraNode = new ArrLevelWithExtraNode();
-                        faLevelWithExtraNode.setLevel(version.getRootLevel());
-                        faLevelWithExtraNode.setRootNode(version.getRootLevel().getNode());
-                        faLevelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
-                        try {
-                            RelatedNodeDirectionWithLevelPack relatedNodeDirectionWithLevelPack = arrangementManager
-                                    .addLevelChild(faLevelWithExtraNode);
-                            ArrLevelWithExtraNode faLevelWithExtraNodeRet = relatedNodeDirectionWithLevelPack
-                                    .getArrLevelPack();
-                            ArrLevel newFaLevel = faLevelWithExtraNodeRet.getLevel();
-                            version.getRootLevel().setNode(faLevelWithExtraNodeRet.getExtraNode());
+                        AddLevelScenariosWindow addLevelScenariosWindow = new AddLevelScenariosWindow(arrangementManager);
 
-                            showRelatedNodeDirection(relatedNodeDirectionWithLevelPack.getRelatedNodeDirections());
+                        addLevelScenariosWindow.show("Přidat záznam", version.getRootLevel(),
+                                version, DirectionLevel.CHILD,
+                                scenarioOfNewLevel -> {
+                                    ArrLevelWithExtraNode faLevelWithExtraNode = new ArrLevelWithExtraNode();
+                                    faLevelWithExtraNode.setDescItems(scenarioOfNewLevel.getDescItems());
+                                    faLevelWithExtraNode.setLevel(version.getRootLevel());
+                                    faLevelWithExtraNode.setRootNode(version.getRootLevel().getNode());
+                                    faLevelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
+                                    try {
+                                        RelatedNodeDirectionWithLevelPack relatedNodeDirectionWithLevelPack = arrangementManager
+                                                .addLevelChild(faLevelWithExtraNode);
+                                        ArrLevelWithExtraNode faLevelWithExtraNodeRet = relatedNodeDirectionWithLevelPack
+                                                .getArrLevelPack();
+                                        ArrLevel newFaLevel = faLevelWithExtraNodeRet.getLevel();
+                                        version.getRootLevel().setNode(faLevelWithExtraNodeRet.getExtraNode());
 
-                            // refresh uzlu - vygenerovaná nová verze (zámky)
-                            version.getRootLevel().setNodeParent(faLevelWithExtraNodeRet.getExtraNode());
+                                        showRelatedNodeDirection(relatedNodeDirectionWithLevelPack.getRelatedNodeDirections());
 
-                            Item item = table.addItem(newFaLevel);
+                                        // refresh uzlu - vygenerovaná nová verze (zámky)
+                                        version.getRootLevel().setNodeParent(faLevelWithExtraNodeRet.getExtraNode());
 
-                            HierarchicalCollapsibleBeanItemContainer container
-                                    = (HierarchicalCollapsibleBeanItemContainer) table
-                                    .getContainerDataSource();
+                                        Item item = table.addItem(newFaLevel);
 
-                            refreshParentReferences(version.getRootLevel(), faLevelWithExtraNodeRet, container);
+                                        HierarchicalCollapsibleBeanItemContainer container
+                                                = (HierarchicalCollapsibleBeanItemContainer) table
+                                                .getContainerDataSource();
 
-                            if (newFaLevel.getNodeParent() != null) {
-                                container.setParent(newFaLevel, rootNode);
-                            }
-                            container.setChildrenAllowed(newFaLevel, true);
-                            container.setCollapsed(newFaLevel, true);
-                            container.addBean(newFaLevel);
-                            table.refreshRowCache();
-                            ElzaNotifications.show("Přidáno...");
-                            refreshVersionLock();
-                        } catch (IllegalStateException | IllegalArgumentException e) {
-                            ElzaNotifications.showError(e.getMessage());
-                        }
+                                        refreshParentReferences(version.getRootLevel(), faLevelWithExtraNodeRet, container);
+
+                                        if (newFaLevel.getNodeParent() != null) {
+                                            container.setParent(newFaLevel, rootNode);
+                                        }
+                                        container.setChildrenAllowed(newFaLevel, true);
+                                        container.setCollapsed(newFaLevel, true);
+                                        container.addBean(newFaLevel);
+                                        table.refreshRowCache();
+                                        ElzaNotifications.show("Přidáno...");
+                                        refreshVersionLock();
+                                    } catch (IllegalStateException | IllegalArgumentException e) {
+                                        ElzaNotifications.showError(e.getMessage());
+                                    }
+                                });
                     }).exception(new ConcurrentUpdateExceptionHandler()),
                     new AxAction().caption("Zobrazit verze").icon(FontAwesome.HISTORY).run(() ->
                             navigate(VersionListView.class, findingAidId)),
