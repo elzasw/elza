@@ -46,6 +46,7 @@ import cz.tacr.elza.domain.ArrPacketType;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.ui.utils.ElzaNotifications;
 
 
 /**
@@ -358,10 +359,14 @@ public abstract class Attribut extends CssLayout implements Components {
         form.addField("Zneplatněný", "invalidPacket");
 
         new AxWindow().caption("Vytvoření obalu").components(form).buttonClose().buttonPrimary(
-            new AxAction<ArrPacket>().caption("Uložit")
-            .value(form::commit).action(this::createPacket)
-            .exception(ex -> ex.printStackTrace())
-            ).modal().style("window-detail").show();
+                new AxAction<ArrPacket>().caption("Uložit")
+                        .value(form::commit).action(this::createPacket)
+                        .exception(ex -> {
+                            ex.printStackTrace();
+                            String message = ex.getCause() == null ? ex.getMessage() : ex.getCause().getMessage();
+                            ElzaNotifications.showError(message);
+                        })
+                        ).modal().style("window-detail").show();
     }
 
     private void createPacket(final ArrPacket packet) {
