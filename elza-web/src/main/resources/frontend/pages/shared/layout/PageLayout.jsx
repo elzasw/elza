@@ -27,14 +27,16 @@ var PageLayout = class PageLayout extends React.Component {
     }
 
     componentDidMount() {
-        var splitPane1 = $(this.refs.splitPane1);
-        var splitPane2 = $(this.refs.splitPane2);
-        splitPane1.splitPane();
-        splitPane2.splitPane();
+        if (this.refs.splitPane1) {
+            var splitPane1 = $(this.refs.splitPane1);
+            var splitPane2 = $(this.refs.splitPane2);
+            splitPane1.splitPane();
+            splitPane2.splitPane();
 
-        // Ukázka nastavení šířek, které budou předány, ve verzi 0.6.0 je již na toto funkce, zatím tato verze ale není v npm
-        this.setLeftSplitterWidth(260);
-        this.setRightSplitterWidth(100);
+            // Ukázka nastavení šířek, které budou předány, ve verzi 0.6.0 je již na toto funkce, zatím tato verze ale není v npm
+            this.setLeftSplitterWidth(260);
+            this.setRightSplitterWidth(100);
+        }
     }
 
     setLeftSplitterWidth(width) {
