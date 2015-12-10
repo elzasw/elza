@@ -1,6 +1,9 @@
 package cz.tacr.elza.bulkaction.generator;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -10,7 +13,6 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.api.ArrNodeConformityInfo;
 import cz.tacr.elza.api.ArrNodeConformityInfoExt;
-import cz.tacr.elza.api.vo.RuleEvaluationType;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionState;
@@ -52,9 +54,9 @@ public class FindingAidValidationBulkAction extends BulkAction {
     private BulkActionState bulkActionState;
 
     /**
-     * Typ pravidel, které se mají pro vyhodnocení použít
+     * Strategie vyhodnocování
      */
-    private RuleEvaluationType evaluationType;
+    private Set<String> strategies;
 
     /**
      * Počet chybných uzlů
@@ -76,12 +78,15 @@ public class FindingAidValidationBulkAction extends BulkAction {
 
         Assert.notNull(bulkActionConfig);
 
-        String evaluationTypeString = (String) bulkActionConfig.getProperty("evaluation_type");
-        evaluationType = RuleEvaluationType.valueOf(evaluationTypeString);
-        Assert.notNull(evaluationType);
+        String evaluationTypeString = (String) bulkActionConfig.getProperty("evaluation_strategies");
+
+        if (evaluationTypeString == null) {
+            strategies = new HashSet<>();
+        } else {
+            strategies = new HashSet<>(Arrays.asList(evaluationTypeString.split("\\|")));
+        }
 
         errorCount = 0;
-
     }
 
     /**
@@ -96,7 +101,7 @@ public class FindingAidValidationBulkAction extends BulkAction {
         ArrFindingAidVersionConformityInfo.State state = ArrFindingAidVersionConformityInfo.State.OK;
 
         ArrNodeConformityInfoExt nodeConformityInfoExt = ruleManager
-                .setConformityInfo(level.getLevelId(), version.getFindingAidVersionId(), evaluationType);
+                .setConformityInfo(level.getLevelId(), version.getFindingAidVersionId(), strategies);
 
         ArrNodeConformityInfo.State stateLevel = nodeConformityInfoExt.getState();
 

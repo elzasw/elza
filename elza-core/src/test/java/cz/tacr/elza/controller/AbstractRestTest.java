@@ -251,7 +251,7 @@ public abstract class AbstractRestTest {
     protected static final String GET_DESC_ITEM_SPEC = RULE_MANAGER_URL + "/getDescItemSpecById";
     protected static final String GET_RS_URL = RULE_MANAGER_URL + "/getRuleSets";
     protected static final String GET_DIT_URL = RULE_MANAGER_URL + "/getDescriptionItemTypes";
-    protected static final String GET_DIT_FOR_NODE_ID_URL = RULE_MANAGER_URL + "/getDescriptionItemTypesForNode";
+    protected static final String GET_DIT_FOR_NODE_ID_URL = RULE_MANAGER_URL + "/getDescriptionItemTypesForNode/{faVersionId}/{nodeId}";
     protected static final String GET_FVDIT_URL = RULE_MANAGER_URL + "/getFaViewDescItemTypes";
     protected static final String SAVE_FVDIT_URL = RULE_MANAGER_URL + "/saveFaViewDescItemTypes";
 
