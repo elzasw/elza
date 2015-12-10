@@ -1,13 +1,10 @@
 package cz.tacr.elza.drools.model;
 
-import java.util.List;
-
-
 /**
  * Value object pro hodnotu atributu.
- * Obsahuje pouze typ atributu a typ zm�ny.
+ * Obsahuje pouze typ atributu a typ změny.
  *
- * @author Martin �lapa
+ * @author Martin Šlapa
  * @since 27.11.2015
  */
 public class DescItemVO {
@@ -27,15 +24,29 @@ public class DescItemVO {
     private String specCode;
 
     /**
+     * Hodnota.
+     */
+    private Integer integerValue;
+
+    /**
      * Obal.
      */
     private VOPacket packet;
 
 
     /**
-     * Typ zm�ny atributu.
+     * Typ změny atributu.
      */
     private DescItemChange change;
+
+    public DescItemVO() {
+
+    }
+
+    public DescItemVO(final String type, final String spec) {
+        this.type = type;
+        this.specCode = spec;
+    }
 
     public Integer getDescItemId() {
         return descItemId;
@@ -67,6 +78,14 @@ public class DescItemVO {
 
     public void setSpecCode(final String specCode) {
         this.specCode = specCode;
+    }
+
+    public Integer getInteger() {
+        return integerValue;
+    }
+
+    public void setInteger(final Integer value) {
+        this.integerValue = value;
     }
 
     public VOPacket getPacket() {

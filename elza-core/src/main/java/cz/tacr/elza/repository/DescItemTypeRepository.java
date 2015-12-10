@@ -31,5 +31,14 @@ public interface DescItemTypeRepository extends JpaRepository<RulDescItemType, I
             + "WHERE dt.code = 'PACKET_REF'")
     Set<RulDescItemType> findDescItemTypesForPackets();
 
+    /**
+     * Najde všechny typy, které mají int. (Jsou typu s kódem "INT".
+     *
+     * @return všechny typy, které mají obal
+     */
+    @Query(value = "SELECT t FROM rul_desc_item_type t join t.dataType dt "
+            + "WHERE dt.code = 'INT'")
+    Set<RulDescItemType> findDescItemTypesForIntegers();
+
     RulDescItemType getOneByCode(String code);
 }
