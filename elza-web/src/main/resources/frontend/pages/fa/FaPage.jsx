@@ -28,18 +28,16 @@ var FaPage = class FaPage extends AbstractReactComponent {
     buildRibbon() {
         return (
                 <RibbonMenu opened onShowHide={this.handleRibbonShowHide}>
-<Button onClick={() => {AppStore.test()}}>xxxxxxx</Button>
                     <RibbonGroup className="large">
-                        <IndexLinkContainer to="/"><Button><Glyphicon glyph="film" /><div><span className="btnText"> hdiuas ihdu asiud asiu d{i18n('ribbon.action.findingAid')}</span></div></Button></IndexLinkContainer>
+                        <IndexLinkContainer to="/"><Button><Glyphicon glyph="film" /><div><span className="btnText">{i18n('ribbon.action.findingAid')}</span></div></Button></IndexLinkContainer>
                         <LinkContainer to="/record"><Button><Glyphicon glyph="th-list" /><div><span className="btnText">{i18n('ribbon.action.record')}</span></div></Button></LinkContainer>
+                        <LinkContainer to="/party"><Button><Glyphicon glyph="th-list" /><div><span className="btnText">{i18n('ribbon.action.party')}</span></div></Button></LinkContainer>
 
                         <DropdownButton title={<span className="dropContent"><Glyphicon glyph='film' /><div><span className="btnText">{i18n('ribbon.action.findingAid')}</span></div></span>}>
                           <MenuItem eventKey="1">Action</MenuItem>
                           <MenuItem eventKey="2">Another action jdoias djaos ijdoas i</MenuItem>
                           <MenuItem eventKey="3">Active Item</MenuItem>
                         </DropdownButton>
-
-
                     </RibbonGroup>
 
                     <RibbonSplit />
@@ -63,10 +61,7 @@ var FaPage = class FaPage extends AbstractReactComponent {
                           <MenuItem eventKey="3">Active Item</MenuItem>
                         </DropdownButton>
                         <LinkContainer to="/record"><Button><Glyphicon glyph="th-list" /><div><span className="btnText">{i18n('ribbon.action.record')}</span></div></Button></LinkContainer>
-
                     </RibbonGroup>
-
-
                 </RibbonMenu>
         )
     }

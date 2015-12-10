@@ -8,7 +8,7 @@ console.log(AjaxUtils);
 
 AjaxUtils.ajaxGet('/api/arrangementManager/getFindingAids')
     .then(json=>{
-console.log(json);
+        [{id:1}]
     });
 
 class WebApi {
@@ -16,6 +16,12 @@ class WebApi {
     }
 
     getFaFileTree() {
+        return AjaxUtils.ajaxGet('/api/arrangementManager/getFindingAids')
+            .then(json=>{
+                return json.map(i=>{return {id:i.findingAidId, name:i.name}});
+            });
+    }
+    getFaFileTree2() {
         return new Promise(function (resolve, reject) {
             setTimeout(function() {
                 resolve([

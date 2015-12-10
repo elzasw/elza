@@ -36,7 +36,7 @@ var FindindAidFileTree = class FindindAidFileTree extends AbstractReactComponent
     renderOpened() {
         var rows = this.props.items.map(item=>{
             return (
-                <div onClick={this.handleSelect.bind(this, item)}>
+                <div key={item.id} onClick={this.handleSelect.bind(this, item)}>
                     {item.name}
                 </div>
             )
