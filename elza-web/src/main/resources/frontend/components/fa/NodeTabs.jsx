@@ -5,7 +5,7 @@
 require ('./NodeTabs.less');
 
 import React from 'react';
-import { connect } from 'react-redux'
+import {connect} from 'react-redux'
 import {AbstractReactComponent, NodePanel, Tabs} from 'components';
 import {AppActions} from 'stores';
 

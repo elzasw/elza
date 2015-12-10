@@ -1,5 +1,8 @@
-import { combineReducers, createStore } from 'redux'
-import {SELECT_NODE, SELECT_FA, CLOSE_NODE, CLOSE_FA, GET_OBJECT_INFO, AppActions} from './AppActions.jsx';
+import { combineReducers, createStore, applyMiddleware } from 'redux'
+import thunkMiddleware from 'redux-thunk'
+import createLogger from 'redux-logger'
+
+import {REQUEST_FA_FILE_TREE, RECEIVE_FA_FILE_TREE, SELECT_NODE, SELECT_FA, CLOSE_NODE, CLOSE_FA, GET_OBJECT_INFO, AppActions} from './AppActions.jsx';
 
 var {faActions, ObjectInfo} = AppActions;
 
@@ -97,7 +100,7 @@ function nodes(state = {activeIndex: null, items: []}, action) {
 }
 
 function fas(state = {activeIndex: null, items: []}, action) {
-    console.log("[fas]", "STATE", state, "ACTION", action);
+    //console.log("[fas]", "STATE", state, "ACTION", action);
     switch (action.type) {
         case GET_OBJECT_INFO:
             state.items.forEach(fa => {
@@ -176,8 +179,37 @@ function fas(state = {activeIndex: null, items: []}, action) {
     }
 }
 
-let reducer = combineReducers({ fas });
-let store = createStore(reducer);
+function faFileTree(state = {isFetching: false, fetched: false, items: []}, action) {
+    //console.log("[faFileTree]", "STATE", state, "ACTION", action);
+    switch (action.type) {
+        case REQUEST_FA_FILE_TREE:
+            return Object.assign({}, state, {
+                isFetching: true,
+            })
+        case RECEIVE_FA_FILE_TREE:
+            return Object.assign({}, state, {
+                isFetching: false,
+                fetched: true,
+                items: action.items,
+                lastUpdated: action.receivedAt
+            })
+        default:
+            return state
+    }
+}
+
+let reducer = combineReducers({ fas, faFileTree });
+//let store = createStore(reducer);
+
+const loggerMiddleware = createLogger()
+const createStoreWithMiddleware = applyMiddleware(
+    thunkMiddleware,
+    loggerMiddleware
+)(createStore)
+var xx = function configureStore(initialState) {
+    return createStoreWithMiddleware(reducer, initialState)
+}
+var store = xx();
 
 var test1 = function() {
     console.log('---------');
@@ -191,6 +223,10 @@ var test1 = function() {
     console.log('STORE: ', store.getState());
 }
 var test2 = function() {
+    const dispath = store.dispath;
+    store.dispatch(faActions.fetchFaFileTreeIfNeeded());
+
+/*
     console.log('---------');
     console.log('STORE: ', store.getState());
     store.dispatch(faActions.selectFa({id:'fa1', name:'nazev fa1'}));
@@ -201,7 +237,7 @@ var test2 = function() {
 
     var objectInfo = new ObjectInfo();
     store.dispatch(faActions.getObjectInfo(objectInfo));
-    console.log(objectInfo);
+    console.log(objectInfo);*/
 }
 module.exports = {
         test: function() {

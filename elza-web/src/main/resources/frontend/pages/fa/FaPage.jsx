@@ -22,12 +22,12 @@ var FaPage = class FaPage extends AbstractReactComponent {
 
         this.bindMethods('buildRibbon');
 
-        this.state = {};
+        this.state = {faFileTreeOpened: false};
     }
 
     buildRibbon() {
         return (
-                <RibbonMenu opened={this.state.ribbonOpened} onShowHide={this.handleRibbonShowHide}>
+                <RibbonMenu opened onShowHide={this.handleRibbonShowHide}>
 <Button onClick={() => {AppStore.test()}}>xxxxxxx</Button>
                     <RibbonGroup className="large">
                         <IndexLinkContainer to="/"><Button><Glyphicon glyph="film" /><div><span className="btnText"> hdiuas ihdu asiud asiu d{i18n('ribbon.action.findingAid')}</span></div></Button></IndexLinkContainer>
@@ -72,7 +72,7 @@ var FaPage = class FaPage extends AbstractReactComponent {
     }
 
     render() {
-        console.log("FA_PAGE:::PROPS", this.props);
+        //console.log("FA_PAGE:::PROPS", this.props, "STATE", this.state);
 
         var fas = this.props.fas.items;
         var activeFa = this.props.fas.activeIndex != null ? this.props.fas.items[this.props.fas.activeIndex] : null;
@@ -101,8 +101,8 @@ var FaPage = class FaPage extends AbstractReactComponent {
         )
 
         var appContentExt = (
-            <ToggleContent className="fa-file-toggle-container" alwaysRender opened={false} closedIcon="chevron-right" openedIcon="chevron-left">
-                <FindindAidFileTree />
+            <ToggleContent className="fa-file-toggle-container" alwaysRender opened={this.state.faFileTreeOpened} onShowHide={(opened)=>this.setState({faFileTreeOpened: opened})} closedIcon="chevron-right" openedIcon="chevron-left">
+                <FindindAidFileTree {...this.props.faFileTree} onSelect={()=>this.setState({faFileTreeOpened: false})}/>
             </ToggleContent>
         )
 
@@ -120,9 +120,10 @@ var FaPage = class FaPage extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const { fas } = state
+    const {fas, faFileTree} = state
     return {
-        fas
+        fas,
+        faFileTree
     }
 }
 

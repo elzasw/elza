@@ -1,8 +1,9 @@
 @import "~variables.less";
 
-@header-height: 68px;
+@header-height: 64px;
 @header-minimized-height: 12px;
 @finding-tree-minimized-width: 32px;
+@finding-tree-maximized-width: 320px;
 @finding-tree-toggle-width: 12px;
 @finding-tree-toggle-height: 120px;
 @finding-tree-toggle-font-size: 11px;
@@ -19,6 +20,7 @@
             background: red;
             z-index: 1000;
             &.opened {
+                width: @finding-tree-maximized-width;
             }
             &.closed {
                 width: @finding-tree-minimized-width;

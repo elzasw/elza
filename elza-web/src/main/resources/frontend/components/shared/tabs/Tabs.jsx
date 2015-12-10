@@ -84,7 +84,7 @@ var Tabs = class Tabs extends React.Component {
     render() {
         var tabs = this.props.items.map((item) => {
             var title = item.title || "Tab " + item.id;
-            return <NavItem eventKey={item.id}>{title}<Button onClick={this.handleTabClose.bind(this, item)}><Glyphicon glyph="remove" /></Button></NavItem>
+            return <NavItem key={item.id} eventKey={item.id}>{title}<Button onClick={this.handleTabClose.bind(this, item)}><Glyphicon glyph="remove" /></Button></NavItem>
         });
 
         return (

@@ -1,4 +1,8 @@
 import {Utils} from 'components'
+import {WebApi} from 'actions'
+
+export const REQUEST_FA_FILE_TREE = 'REQUEST_FA_FILE_TREE'
+export const RECEIVE_FA_FILE_TREE = 'RECEIVE_FA_FILE_TREE'
 
 export const SELECT_FA = 'SELECT_FA'
 export const CLOSE_FA = 'CLOSE_FA'
@@ -9,6 +13,37 @@ export const CLOSE_NODE = 'CLOSE_NODE'
 export const FETCH_PARTIES = 'FETCH_PARTIES'
 
 export const GET_OBJECT_INFO = 'GET_OBJECT_INFO'
+
+function fetchFaFileTreeIfNeeded() {
+    return (dispatch, getState) => {
+        var state = getState();
+        if (!state.faFileTree.fetched && !state.faFileTree.isFetching) {
+            return dispatch(fetchFaFileTree());
+        }
+    }
+}
+
+function fetchFaFileTree() {
+    return dispatch => {
+        dispatch(requestFaFileTree())
+        return WebApi.getFaFileTree()
+            .then(json => dispatch(receiveFaFileTree(json)));
+    }
+}
+
+function receiveFaFileTree(json) {
+    return {
+        type: RECEIVE_FA_FILE_TREE,
+        items: json,
+        receivedAt: Date.now()
+    }
+}
+
+function requestFaFileTree() {
+    return {
+        type: REQUEST_FA_FILE_TREE
+    }
+}
 
 var ObjectInfo = class ObjectInfo {
     constructor() {
@@ -79,6 +114,8 @@ var fa = {
     selectNode: selectNode,
     closeNode: closeNode,
     getObjectInfo: getObjectInfo,
+    fetchFaFileTree: fetchFaFileTree,
+    fetchFaFileTreeIfNeeded: fetchFaFileTreeIfNeeded,
 }
 
 export const AppActions = {

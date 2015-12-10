@@ -18,6 +18,9 @@
         "react-router-bootstrap": "^0.19.2",
         "history": "^1.12.5",
         "redux": "^3.0.4",
+        "redux-thunk": "^1.0.0",
+        "redux-logger": "^2.2.1",
+        "react-redux": "^4.0.0",
         "es6-promise": "~3.0.2",
         "stomp": "~0.1.1",
         "stomp-client": "~0.8.0",
@@ -26,7 +29,6 @@
         "es5-shim": "~4.1.14",
         "classnames": "^2.2.1",
         "split-pane": "^0.5.1",
-        "react-redux": "^4.0.0",
         "reflux": "^0.3.0",
         "reflux-promise": "^1.0.2",
         "airflux": "^0.3.0-alpha1"

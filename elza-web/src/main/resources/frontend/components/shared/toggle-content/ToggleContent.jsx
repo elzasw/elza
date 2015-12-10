@@ -38,6 +38,12 @@ var ToggleContent = class ToggleContent extends React.Component {
         return { isParentOpened: this.state.isParentOpened };
     }
 
+    componentWillReceiveProps(nextProps) {
+        if (this.props.opened !== nextProps.opened) {
+            this.setState({isParentOpened: nextProps.opened});
+        }
+    }
+
     handleToggle() {
         this.setState({ isParentOpened: !this.state.isParentOpened });
         this.props.onShowHide && this.props.onShowHide(!this.state.isParentOpened);
@@ -56,15 +62,17 @@ var ToggleContent = class ToggleContent extends React.Component {
         var title = this.state.isParentOpened ? i18n('toggle.action.minimize') : i18n('toggle.action.restore');
 
         var render = this.state.isParentOpened || this.state.alwaysRender;
-        var child = null;
+        var children = null;
         if (render) {
-            child = this.props.children;
+            children = React.Children.map(this.props.children, child => {
+                return React.cloneElement(child, {isParentOpened: this.state.isParentOpened});
+            })
         }
 
         return (
             <div className={cls}>
                 <div className="content">
-                    {child}
+                    {children}
                 </div>
                 <div className="toggle-container">
                     <Button className="toggle" title={title} onClick={this.handleToggle}><Glyphicon glyph={toggleGlyph} /></Button>
