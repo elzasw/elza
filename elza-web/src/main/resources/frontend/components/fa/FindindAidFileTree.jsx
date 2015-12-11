@@ -17,13 +17,13 @@ var FindindAidFileTree = class FindindAidFileTree extends AbstractReactComponent
 
         this.bindMethods('handleSelect');
 
-        if (props.isParentOpened) {
+        if (props.opened) {
             this.dispatch(faActions.fetchFaFileTreeIfNeeded());
         }
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.isParentOpened) {
+        if (nextProps.opened) {
             this.dispatch(faActions.fetchFaFileTreeIfNeeded());
         }
     }
@@ -59,7 +59,7 @@ var FindindAidFileTree = class FindindAidFileTree extends AbstractReactComponent
     }
 
     render() {
-        return this.props.isParentOpened ? this.renderOpened() : this.renderClosed();
+        return this.props.opened ? this.renderOpened() : this.renderClosed();
     }
 }
 

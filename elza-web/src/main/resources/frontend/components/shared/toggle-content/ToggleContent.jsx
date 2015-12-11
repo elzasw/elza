@@ -27,7 +27,7 @@ var ToggleContent = class ToggleContent extends React.Component {
 
         this.handleToggle = this.handleToggle.bind(this);
         this.state = {
-            isParentOpened: typeof this.props.opened == 'undefined' ? true : this.props.opened,
+            opened: typeof this.props.opened == 'undefined' ? true : this.props.opened,
             openedIcon: this.props.openedIcon || "chevron-up",
             closedIcon: this.props.closedIcon || "chevron-down",
             alwaysRender: typeof this.props.alwaysRender == 'undefined' ? false : this.props.alwaysRender
@@ -35,37 +35,37 @@ var ToggleContent = class ToggleContent extends React.Component {
     }
 
     getChildContext() {
-        return { isParentOpened: this.state.isParentOpened };
+        return { isParentOpened: this.state.opened };
     }
 
     componentWillReceiveProps(nextProps) {
         if (this.props.opened !== nextProps.opened) {
-            this.setState({isParentOpened: nextProps.opened});
+            this.setState({opened: nextProps.opened});
         }
     }
 
     handleToggle() {
-        this.setState({ isParentOpened: !this.state.isParentOpened });
-        this.props.onShowHide && this.props.onShowHide(!this.state.isParentOpened);
+        this.setState({ opened: !this.state.opened });
+        this.props.onShowHide && this.props.onShowHide(!this.state.opened);
     }
 
     render() {
-        var toggleGlyph = this.state.isParentOpened ? this.state.openedIcon : this.state.closedIcon;
+        var toggleGlyph = this.state.opened ? this.state.openedIcon : this.state.closedIcon;
 
         var cls = classNames({
             "toggle-content-container": true,
-            opened: this.state.isParentOpened,
-            closed: !this.state.isParentOpened,
+            opened: this.state.opened,
+            closed: !this.state.opened,
             [this.props.className]: true
         });
 
-        var title = this.state.isParentOpened ? i18n('toggle.action.minimize') : i18n('toggle.action.restore');
+        var title = this.state.opened ? i18n('toggle.action.minimize') : i18n('toggle.action.restore');
 
-        var render = this.state.isParentOpened || this.state.alwaysRender;
+        var render = this.state.opened || this.state.alwaysRender;
         var children = null;
         if (render) {
             children = React.Children.map(this.props.children, child => {
-                return React.cloneElement(child, {isParentOpened: this.state.isParentOpened});
+                return React.cloneElement(child, {opened: this.state.opened});
             })
         }
 
