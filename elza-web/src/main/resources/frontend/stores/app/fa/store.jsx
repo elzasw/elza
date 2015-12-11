@@ -1,35 +1,6 @@
-import { combineReducers, createStore, applyMiddleware } from 'redux'
-import thunkMiddleware from 'redux-thunk'
-import createLogger from 'redux-logger'
-
-import {REQUEST_FA_FILE_TREE, RECEIVE_FA_FILE_TREE, SELECT_NODE, SELECT_FA, CLOSE_NODE, CLOSE_FA, GET_OBJECT_INFO, AppActions} from './AppActions.jsx';
-
-var {faActions, ObjectInfo} = AppActions;
-
-function indexById(arr, id) {
-    if (arr == null) {
-        return null;
-    }
-
-    for (var a=0; a<arr.length; a++) {
-        if (arr[a].id === id) {
-            return a;
-        }
-    }
-    return null;
-}
-
-function selectedAfterClose(arr, index) {
-    if (index >= arr.length - 1) {
-        if (index - 1 >= 0) {
-            return index - 1;
-        } else {
-            return null;
-        }
-    } else {
-        return index;
-    }
-}
+import {faActions, FA_REQUEST_FA_FILE_TREE, FA_RECEIVE_FA_FILE_TREE, FA_SELECT_NODE, FA_SELECT_FA, FA_CLOSE_NODE, FA_CLOSE_FA} from './actions.jsx';
+import {GLOBAL_GET_OBJECT_INFO, ObjectInfo} from 'stores/app/global/actions.jsx';
+import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
 
 function nodes(state = {activeIndex: null, items: []}, action) {
     switch (action.type) {
@@ -38,7 +9,7 @@ function nodes(state = {activeIndex: null, items: []}, action) {
                 action.objectInfo.addNode(node);
             });
             return state
-        case CLOSE_NODE:
+        case FA_CLOSE_NODE:
             var index = indexById(state.items, action.node.id);
             var newActiveIndex = state.activeIndex;
             if (state.activeIndex == index) {   // byl vybrán, budeme řešit novou vybranou záložku
@@ -54,7 +25,7 @@ function nodes(state = {activeIndex: null, items: []}, action) {
                 ],
                 activeIndex: newActiveIndex
             }
-        case SELECT_NODE:
+        case FA_SELECT_NODE:
             var index = indexById(state.items, action.node.id);
             if (index == null) {    // není zatím v seznamu, přidáme ho tam
                 if (action.moveToBegin) {
@@ -98,18 +69,19 @@ function nodes(state = {activeIndex: null, items: []}, action) {
             return state
     }
 }
+exports.nodes = nodes;
 
 function fas(state = {activeIndex: null, items: []}, action) {
     //console.log("[fas]", "STATE", state, "ACTION", action);
     switch (action.type) {
-        case GET_OBJECT_INFO:
+        case GLOBAL_GET_OBJECT_INFO:
             state.items.forEach(fa => {
                 action.objectInfo.addFa(fa);
                 nodes(fa.nodes, action);
             });
             return state
-        case CLOSE_NODE:
-        case SELECT_NODE:
+        case FA_CLOSE_NODE:
+        case FA_SELECT_NODE:
             return {
                 ...state,
                 items: [
@@ -118,7 +90,7 @@ function fas(state = {activeIndex: null, items: []}, action) {
                     ...state.items.slice(state.activeIndex + 1)
                 ]
             }
-        case CLOSE_FA:
+        case FA_CLOSE_FA:
             var index = indexById(state.items, action.fa.id);
             var newActiveIndex = state.activeIndex;
             if (state.activeIndex == index) {   // byl vybrán, budeme řešit novou vybranou záložku
@@ -134,7 +106,7 @@ function fas(state = {activeIndex: null, items: []}, action) {
                 ],
                 activeIndex: newActiveIndex
             }
-        case SELECT_FA:
+        case FA_SELECT_FA:
             var index = indexById(state.items, action.fa.id);
             if (index == null) {    // není zatím v seznamu, přidáme jí tam
                 if (action.moveToBegin) {
@@ -178,15 +150,16 @@ function fas(state = {activeIndex: null, items: []}, action) {
             return state
     }
 }
+exports.fas = fas;
 
 function faFileTree(state = {isFetching: false, fetched: false, items: []}, action) {
     //console.log("[faFileTree]", "STATE", state, "ACTION", action);
     switch (action.type) {
-        case REQUEST_FA_FILE_TREE:
+        case FA_REQUEST_FA_FILE_TREE:
             return Object.assign({}, state, {
                 isFetching: true,
             })
-        case RECEIVE_FA_FILE_TREE:
+        case FA_RECEIVE_FA_FILE_TREE:
             return Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,
@@ -197,57 +170,4 @@ function faFileTree(state = {isFetching: false, fetched: false, items: []}, acti
             return state
     }
 }
-
-let reducer = combineReducers({ fas, faFileTree });
-//let store = createStore(reducer);
-
-const loggerMiddleware = createLogger()
-const createStoreWithMiddleware = applyMiddleware(
-    thunkMiddleware,
-    loggerMiddleware
-)(createStore)
-var xx = function configureStore(initialState) {
-    return createStoreWithMiddleware(reducer, initialState)
-}
-var store = xx();
-
-var test1 = function() {
-    console.log('---------');
-    console.log('STORE: ', store.getState());
-    store.dispatch(faActions.selectFa({id:'fa1', name:'nazev fa1'}));
-    store.dispatch(faActions.selectFa({id:'fa2', name:'nazev fa2'}));
-    store.dispatch(faActions.selectFa({id:'fa3', name:'nazev fa3'}));
-    store.dispatch(faActions.selectFa({id:'fa2'}, false));
-    console.log('STORE: ', store.getState());
-    store.dispatch(faActions.closeFa({id:'fa2'}));
-    console.log('STORE: ', store.getState());
-}
-var test2 = function() {
-    const dispath = store.dispath;
-    store.dispatch(faActions.fetchFaFileTreeIfNeeded());
-
-/*
-    console.log('---------');
-    console.log('STORE: ', store.getState());
-    store.dispatch(faActions.selectFa({id:'fa1', name:'nazev fa1'}));
-    store.dispatch(faActions.selectFa({id:'fa2', name:'nazev fa2'}));
-    store.dispatch(faActions.selectNode({id:'node1', name:'nazev node1'}));
-    store.dispatch(faActions.selectNode({id:'node2', name:'nazev node2'}));
-    console.log('STORE: ', store.getState());
-
-    var objectInfo = new ObjectInfo();
-    store.dispatch(faActions.getObjectInfo(objectInfo));
-    console.log(objectInfo);*/
-}
-module.exports = {
-        test: function() {
-            test2();
-        },
-        store
-}
-
-/*
-
-
-
-*/
+exports.faFileTree = faFileTree;
