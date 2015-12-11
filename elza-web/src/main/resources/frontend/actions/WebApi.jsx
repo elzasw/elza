@@ -4,12 +4,12 @@
 
 import {AjaxUtils} from 'components';
 
-console.log(AjaxUtils);
-
+/*
 AjaxUtils.ajaxGet('/api/arrangementManager/getFindingAids')
     .then(json=>{
-        [{id:1}]
+        console.log(1111, json);
     });
+*/
 
 class WebApi {
     constructor() {
