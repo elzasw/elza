@@ -10,6 +10,7 @@ import cz.tacr.elza.domain.ParPartyTypeExt;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.vo.ParPartyWithCount;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -473,7 +474,8 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
                 FIND_ABSTRACT_PARTY
         );
 
-        return (List<ParParty>) Arrays.asList(response.getBody().as(ParParty[].class));
+        ParPartyWithCount partyWithCount = response.getBody().as(ParPartyWithCount.class);
+        return partyWithCount.getPartyList();
     }
 
     /**
@@ -487,13 +489,16 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .parameter(SEARCH_ATT, searchString)
+                .parameter(FROM_ATT, 0)
+                .parameter(COUNT_ATT, 0)
                 .parameter(PARTY_TYPE_ID_ATT, partyType.getPartyTypeId())
                 .parameter(ORIGINATOR_ATT, originator)
-                .get(FIND_ABSTRACT_PARTY_COUNT);
+                .get(FIND_ABSTRACT_PARTY);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        return response.getBody().as(long.class);
+        ParPartyWithCount partyWithCount = response.getBody().as(ParPartyWithCount.class);
+        return partyWithCount.getCount();
     }
 
     /**

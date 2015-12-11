@@ -5,6 +5,7 @@ import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParPartyTypeExt;
 import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.vo.ParPartyWithCount;
 import cz.tacr.elza.repository.DataPartyRefRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
@@ -22,9 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -185,7 +184,7 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
 
     @RequestMapping(value = "/findParty", method = RequestMethod.GET)
     @Override
-    public List<ParParty> findParty(@RequestParam("search") final String search,
+    public ParPartyWithCount findParty(@RequestParam("search") final String search,
                                     @RequestParam("from") final Integer from, @RequestParam("count") final Integer count,
                                     @RequestParam(value = "partyTypeId", required = false) final Integer partyTypeId,
                                     @Nullable @RequestParam(value = "originator", required = false) final Boolean originator) {
@@ -202,16 +201,10 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
                 party.setPreferredName(null);
             }
         });
-        return resultList;
-    }
 
-    @RequestMapping(value = "/findPartyCount", method = RequestMethod.GET)
-    @Override
-    public Long findPartyCount(@RequestParam("search") final String search,
-                               @RequestParam("partyTypeId") final Integer partyTypeId,
-                               @Nullable @RequestParam(value = "originator", required = false) final Boolean originator) {
+        long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, originator);
 
-        return partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, originator);
+        return new ParPartyWithCount(resultList, countAll);
     }
 
     @RequestMapping(value = "/getParty", method = RequestMethod.GET)

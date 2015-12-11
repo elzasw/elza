@@ -1,21 +1,5 @@
 package cz.tacr.elza.ui.components;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.shared.ui.label.ContentMode;
@@ -23,12 +7,12 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
-
 import cz.req.ax.AxAction;
 import cz.req.ax.AxWindow;
 import cz.tacr.elza.ElzaRules;
 import cz.tacr.elza.api.controller.PartyManager;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
+import cz.tacr.elza.api.vo.ParPartyWithCount;
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RegistryManager;
 import cz.tacr.elza.controller.RuleManager;
@@ -67,6 +51,21 @@ import cz.tacr.elza.ui.utils.ConcurrentUpdateExceptionHandler;
 import cz.tacr.elza.ui.utils.ElzaNotifications;
 import cz.tacr.elza.ui.utils.UnitDateConvertor;
 import cz.tacr.elza.ui.view.FindingAidDetailView;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 
 /**
@@ -585,7 +584,8 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             attributeValuesLoader = new AttributeValuesLoader() {
                 @Override
                 public List<AutocompleteItem> loadPartyRefItemsFulltext(final String text) {
-                    List<ParParty> partyList = partyManager.findParty(text, 0, 50, null, true);
+                    ParPartyWithCount partyWithCount = partyManager.findParty(text, 0, 50, null, true);
+                    List<ParParty> partyList = partyWithCount.getPartyList();
                     List<AutocompleteItem> result = new ArrayList<>(partyList.size());
 
                     for (final ParParty partyItem : partyList) {

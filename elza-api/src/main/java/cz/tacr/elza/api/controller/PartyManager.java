@@ -2,6 +2,7 @@ package cz.tacr.elza.api.controller;
 
 import cz.tacr.elza.api.ParParty;
 import cz.tacr.elza.api.ParPartyTypeExt;
+import cz.tacr.elza.api.vo.ParPartyWithCount;
 
 import java.util.List;
 
@@ -55,20 +56,11 @@ public interface PartyManager<PAPV extends ParParty> {
      * @param count         počet záznamů pro vrácení
      * @param partyTypeId   id typu.
      * @param originator    původce - true, není původce - false, null - neaplikuje filtr - vrací obě možnosti
-     * @return              seznam osob (s vazbami na ostatní entity) vyhovující zadané frázi a podmínkám
+     * @return              vo se seznamem osob (s vazbami na ostatní entity) vyhovující zadané frázi a podmínkám
+     *                      s uvedeným celkovým počtem
      */
-    List<? extends ParParty> findParty(String search, Integer from, Integer count,
-                                       Integer partyTypeId, Boolean originator);
-
-    /**
-     * Vrátí počet osob vyhovující zadané frázi. Osobu vyhledává podle hesla v rejstříku včetně variantních hesel.
-     *
-     * @param search        fráze pro vyhledávání
-     * @param partyTypeId   id typu
-     * @param originator    původce - true, není původce - false, null - neaplikuje filtr - vrací obě možnosti
-     * @return              počet osob vyhovující zadané frázi
-     */
-    Long findPartyCount(String search, Integer partyTypeId, Boolean originator);
+    ParPartyWithCount findParty(String search, Integer from, Integer count,
+                                Integer partyTypeId, Boolean originator);
 
     /**
      * Vrátí abstraktní osobu na základě identifikátoru.

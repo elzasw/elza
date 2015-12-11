@@ -1,20 +1,19 @@
 package cz.tacr.elza.controller;
 
-import static com.jayway.restassured.RestAssured.given;
-
-import java.util.Arrays;
-import java.util.List;
-
+import com.jayway.restassured.response.Response;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyTypeExt;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.vo.ParPartyWithCount;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jayway.restassured.response.Response;
+import java.util.Arrays;
+import java.util.List;
 
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyTypeExt;
-import cz.tacr.elza.domain.RegRecord;
+import static com.jayway.restassured.RestAssured.given;
 
 /**
  * Testy pro {@link PartyManager}.
@@ -114,10 +113,9 @@ public class PartyManagerTest extends AbstractRestTest {
                 .get(FIND_ABSTRACT_PARTY);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
-        List<ParParty> partyList =
-                Arrays.asList(response.getBody().as(ParParty[].class));
+        ParPartyWithCount partyWithCount = response.getBody().as(ParPartyWithCount.class);
 
-        Assert.assertTrue("Nenalezena polozka ", partyList.size() == 1);
+        Assert.assertTrue("Nenalezena polozka ", partyWithCount.getPartyList().size() == 1);
 
         partyInput = createParty("varianta");
         partyInput = createParty("vr 2");
@@ -129,9 +127,9 @@ public class PartyManagerTest extends AbstractRestTest {
                 .get(FIND_ABSTRACT_PARTY);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
-        partyList = Arrays.asList(response.getBody().as(ParParty[].class));
+        partyWithCount = response.getBody().as(ParPartyWithCount.class);
 
-        Assert.assertEquals("Nenalezena polozka ", 2, partyList.size());
+        Assert.assertEquals("Nenalezena polozka ", 2, partyWithCount.getPartyList().size());
 
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .parameter("search", "varianta")
@@ -141,9 +139,9 @@ public class PartyManagerTest extends AbstractRestTest {
                 .get(FIND_ABSTRACT_PARTY);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
-        partyList = Arrays.asList(response.getBody().as(ParParty[].class));
+        partyWithCount = response.getBody().as(ParPartyWithCount.class);
 
-        Assert.assertEquals("Nenalezena polozka ", 1, partyList.size());
+        Assert.assertEquals("Nenalezena polozka ", 1, partyWithCount.getPartyList().size());
 
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .parameter("search", "varianta")
@@ -153,9 +151,9 @@ public class PartyManagerTest extends AbstractRestTest {
                 .get(FIND_ABSTRACT_PARTY);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
-        partyList = Arrays.asList(response.getBody().as(ParParty[].class));
+        partyWithCount = response.getBody().as(ParPartyWithCount.class);
 
-        Assert.assertEquals("Nenalezena polozka ", 1, partyList.size());
+        Assert.assertEquals("Nenalezena polozka ", 1, partyWithCount.getPartyList().size());
     }
 
     @Test
@@ -163,12 +161,14 @@ public class PartyManagerTest extends AbstractRestTest {
         ParParty partyInput = createParty("varianta");
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .parameter("search", partyInput.getRecord().getRecord())
+                .parameter("from", 0)
+                .parameter("count", 1)
                 .parameter("partyTypeId", 2)
-                .get(FIND_ABSTRACT_PARTY_COUNT);
+                .get(FIND_ABSTRACT_PARTY);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
-        Long partyCount = response.getBody().as(Long.class);
+        ParPartyWithCount partyWithCount = response.getBody().as(ParPartyWithCount.class);
 
-        Assert.assertEquals("Nenalezena polozka ", 1, partyCount.intValue());
+        Assert.assertEquals("Nenalezena polozka ", 1, partyWithCount.getCount().intValue());
     }
 }
