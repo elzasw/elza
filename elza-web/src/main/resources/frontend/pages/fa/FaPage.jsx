@@ -34,8 +34,8 @@ var FaPage = class FaPage extends AbstractReactComponent {
     render() {
         //console.log("FA_PAGE:::PROPS", this.props, "STATE", this.state);
 
-        var fas = this.props.fas.items;
-        var activeFa = this.props.fas.activeIndex != null ? this.props.fas.items[this.props.fas.activeIndex] : null;
+        var fas = this.props.arrangementRegion.items;
+        var activeFa = this.props.arrangementRegion.activeIndex != null ? this.props.arrangementRegion.items[this.props.arrangementRegion.activeIndex] : null;
         var leftPanel = (
             <FaTreeTabs fas={fas} activeFa={activeFa} />
         )
@@ -80,9 +80,9 @@ var FaPage = class FaPage extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {fas, faFileTree} = state
+    const {arrangementRegion, faFileTree} = state
     return {
-        fas,
+        arrangementRegion,
         faFileTree
     }
 }

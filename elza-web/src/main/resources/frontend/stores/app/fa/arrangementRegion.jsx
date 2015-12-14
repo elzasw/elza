@@ -8,7 +8,7 @@ const initialState = {
     items: []
 }
 
-export default function fas(state = initialState, action) {
+export default function arrangementRegion(state = initialState, action) {
     switch (action.type) {
         case types.GLOBAL_GET_OBJECT_INFO:
             state.items.forEach(fa => {
