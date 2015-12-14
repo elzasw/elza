@@ -7,6 +7,7 @@ import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemSpecRegister;
+import cz.tacr.elza.domain.vo.RegRecordWithCount;
 import cz.tacr.elza.repository.DescItemSpecRegisterRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
@@ -25,8 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
-
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -178,9 +177,10 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
 
     @Override
     @RequestMapping(value = "/findRecord", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public List<RegRecord> findRecord(@RequestParam @Nullable final String search, @RequestParam final Integer from,
-                                      @RequestParam final Integer count, 
-                                      @RequestParam(value = "registerTypeIds") final Integer[] registerTypeIds) {
+    public RegRecordWithCount findRecord(@RequestParam @Nullable final String search, @RequestParam final Integer from,
+                                         @RequestParam final Integer count,
+                                         @RequestParam(value = "registerTypeIds") final Integer[] registerTypeIds) {
+
         List<Integer> registerTypeIdList = null;
         if (registerTypeIds != null) {
             registerTypeIdList = Arrays.asList(registerTypeIds);
@@ -192,19 +192,9 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
             });
         });
 
-        return regRecords;
-    }
+        long countAll = regRecordRepository.findRegRecordByTextAndTypeCount(search, registerTypeIdList);
 
-    @Override
-    @RequestMapping(value = "/findRecordCount", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public long findRecordCount(@RequestParam @Nullable final String search,
-                                @RequestParam(value = "registerTypeIds") Integer[] registerTypeIds) {
-
-        List<Integer> registerTypeIdList = null;
-        if (registerTypeIds != null) {
-            registerTypeIdList = Arrays.asList(registerTypeIds);
-        }
-        return regRecordRepository.findRegRecordByTextAndTypeCount(search, registerTypeIdList);
+        return new RegRecordWithCount(regRecords, countAll);
     }
 
     @Override
@@ -225,8 +215,6 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
      * Uložení či update záznamu.
      *
      * @param record            naplněný objekt, bez vazeb
-     * @param registerTypeId    id typu rejstříku
-     * @param externalSourceId  id externího zdroje, může být null
      * @return      výslendný objekt
      */
     @Transactional
@@ -261,7 +249,6 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
      * Uložení či update variantního záznamu.
      *
      * @param variantRecord     variantní záznam, bez vazeb
-     * @param regRecordId       id záznamu rejstříku
      * @return      výslendný objekt uložený do db
      */
     @Transactional

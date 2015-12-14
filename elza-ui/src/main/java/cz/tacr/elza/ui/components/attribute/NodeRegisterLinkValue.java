@@ -11,6 +11,7 @@ import cz.tacr.elza.controller.RegistryManager;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.vo.RegRecordWithCount;
 import cz.tacr.elza.ui.components.autocomplete.Autocomplete;
 import cz.tacr.elza.ui.components.autocomplete.AutocompleteItem;
 import org.apache.commons.lang.StringUtils;
@@ -128,10 +129,10 @@ public class NodeRegisterLinkValue extends CssLayout implements Components {
             typy = new Integer[] {registerType.getRegisterTypeId()};
         }
 
-        List<RegRecord> recordList = registryManager.findRecord(text, 0, 50, typy);
+        RegRecordWithCount recordWithCount = registryManager.findRecord(text, 0, 50, typy);
 
-        List<AutocompleteItem> result = new ArrayList<>(recordList.size());
-        for (final RegRecord regRecord : recordList) {
+        List<AutocompleteItem> result = new ArrayList<>(recordWithCount.getRecordList().size());
+        for (final RegRecord regRecord : recordWithCount.getRecordList()) {
             result.add(new AutocompleteItem(regRecord, regRecord.getRecord()));
         }
 

@@ -41,6 +41,7 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
 import cz.tacr.elza.domain.vo.ArrNodeRegisterPack;
+import cz.tacr.elza.domain.vo.RegRecordWithCount;
 import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithDescItems;
 import cz.tacr.elza.ui.components.attribute.Attribut;
 import cz.tacr.elza.ui.components.attribute.AttributeValuesComparator;
@@ -585,7 +586,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
                 @Override
                 public List<AutocompleteItem> loadPartyRefItemsFulltext(final String text) {
                     ParPartyWithCount partyWithCount = partyManager.findParty(text, 0, 50, null, true);
-                    List<ParParty> partyList = partyWithCount.getPartyList();
+                    List<ParParty> partyList = partyWithCount.getRecordList();
                     List<AutocompleteItem> result = new ArrayList<>(partyList.size());
 
                     for (final ParParty partyItem : partyList) {
@@ -621,11 +622,11 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
                         regTypeIdSet.add(regRegisterType.getRegisterTypeId());
                     }
 
-                    List<RegRecord> recordList = registryManager
+                    RegRecordWithCount recordWithCount = registryManager
                             .findRecord(text, 0, 50, regTypeIdSet.toArray(new Integer[regTypeIdSet.size()]));
-                    List<AutocompleteItem> result = new ArrayList<>(recordList.size());
+                    List<AutocompleteItem> result = new ArrayList<>(recordWithCount.getRecordList().size());
 
-                    for (final RegRecord regRecord : recordList) {
+                    for (final RegRecord regRecord : recordWithCount.getRecordList()) {
                         result.add(new AutocompleteItem(regRecord, regRecord.getRecord()));
                     }
 

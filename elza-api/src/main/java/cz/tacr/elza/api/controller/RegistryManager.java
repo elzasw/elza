@@ -1,11 +1,12 @@
 package cz.tacr.elza.api.controller;
 
-import java.util.List;
-
 import cz.tacr.elza.api.RegExternalSource;
 import cz.tacr.elza.api.RegRecord;
 import cz.tacr.elza.api.RegRegisterType;
 import cz.tacr.elza.api.RegVariantRecord;
+import cz.tacr.elza.api.vo.RegRecordWithCount;
+
+import java.util.List;
 
 
 /**
@@ -88,16 +89,7 @@ public interface RegistryManager<RR extends RegRecord, VR extends RegVariantReco
      * @param registerTypeIds    ID typ záznamu
      * @return                  vybrané záznamy dle popisu seřazené za text hesla, nebo prázdná množina
      */
-    List<? extends RegRecord> findRecord(String search, Integer from, Integer count, Integer[] registerTypeIds);
-
-    /**
-     * Celkový počet záznamů v DB pro funkci {@link #findRecord(String, Integer, Integer, Integer)}
-     *
-     * @param search            hledaný řetězec, může být null
-     * @param registerTypeIds    ID typ záznamu
-     * @return                  celkový počet záznamů, který je v db za dané parametry
-     */
-    long findRecordCount(String search, Integer[] registerTypeIds);
+    RegRecordWithCount findRecord(String search, Integer from, Integer count, Integer[] registerTypeIds);
 
     /**
      * Vrátí jedno heslo (s variantními hesly) dle id.

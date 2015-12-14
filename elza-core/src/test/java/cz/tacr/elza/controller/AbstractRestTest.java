@@ -150,7 +150,6 @@ public abstract class AbstractRestTest {
     protected static final String CREATE_RECORD_URL = REGISTRY_MANAGER_URL + "/createRecord";
     protected static final String CREATE_VARIANT_RECORD_URL = REGISTRY_MANAGER_URL + "/createVariantRecord";
     protected static final String FIND_RECORD_URL = REGISTRY_MANAGER_URL + "/findRecord";
-    protected static final String FIND_RECORD_COUNT_URL = REGISTRY_MANAGER_URL + "/findRecordCount";
     protected static final String UPDATE_RECORD_URL = REGISTRY_MANAGER_URL + "/updateRecord";
     protected static final String DELETE_RECORD_URL = REGISTRY_MANAGER_URL + "/deleteRecord";
     protected static final String UPDATE_VARIANT_RECORD_URL = REGISTRY_MANAGER_URL + "/updateVariantRecord";

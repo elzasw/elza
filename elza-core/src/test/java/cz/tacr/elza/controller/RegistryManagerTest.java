@@ -1,18 +1,6 @@
 package cz.tacr.elza.controller;
 
-import static com.jayway.restassured.RestAssured.given;
-
-import java.util.Arrays;
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.jayway.restassured.response.Response;
-
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyType;
@@ -20,10 +8,21 @@ import cz.tacr.elza.domain.RegExternalSource;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.vo.RegRecordWithCount;
 import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static com.jayway.restassured.RestAssured.given;
 
 /**
  * Test pro operace s rejstříkem.
@@ -231,10 +230,10 @@ public class RegistryManagerTest extends AbstractRestTest {
                 .get(FIND_RECORD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
+        RegRecordWithCount recordWithCount = response.getBody().as(RegRecordWithCount.class);
 
-        List<RegRecord> records = Arrays.asList(response.getBody().as(RegRecord[].class));
-        Assert.assertEquals("Nenalezena polozka: " + TEST_NAME, 1, records.size());
-        Assert.assertEquals("Nenalezena variantní polozka: " + TEST_NAME, 1, records.get(0).getVariantRecordList().size());
+        Assert.assertEquals("Nenalezena polozka: " + TEST_NAME, 1, recordWithCount.getRecordList().size());
+        Assert.assertEquals("Nenalezena variantní polozka: " + TEST_NAME, 1, recordWithCount.getRecordList().get(0).getVariantRecordList().size());
 
         createVariantRecord("varianta", record);
 
@@ -246,10 +245,10 @@ public class RegistryManagerTest extends AbstractRestTest {
                 .get(FIND_RECORD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
+        recordWithCount = response.getBody().as(RegRecordWithCount.class);
 
-        records = Arrays.asList(response.getBody().as(RegRecord[].class));
-        Assert.assertEquals("Nenalezena polozka: " + "varianta", 1, records.size());
-        Assert.assertEquals("Nenalezena variantní polozka: " + TEST_NAME, 2, records.get(0).getVariantRecordList().size());
+        Assert.assertEquals("Nenalezena polozka: " + "varianta", 1, recordWithCount.getRecordList().size());
+        Assert.assertEquals("Nenalezena variantní polozka: " + TEST_NAME, 2, recordWithCount.getRecordList().get(0).getVariantRecordList().size());
     }
 
     /**
@@ -264,24 +263,30 @@ public class RegistryManagerTest extends AbstractRestTest {
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .parameter(SEARCH_ATT, TEST_NAME)
+                .parameter(FROM_ATT, 0)
+                .parameter(COUNT_ATT, 1)
                 .parameter(REGISTER_TYPE_ID_ATT, record.getRegisterType().getRegisterTypeId())
-                .get(FIND_RECORD_COUNT_URL);
+                .get(FIND_RECORD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
+        RegRecordWithCount recordWithCount = response.getBody().as(RegRecordWithCount.class);
 
-        long recordsCount = response.getBody().as(long.class);
+        long recordsCount = recordWithCount.getCount();
         Assert.assertEquals("Nenalezena polozka: " + TEST_NAME, 1, recordsCount);
 
         createRecord();
 
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .parameter(SEARCH_ATT, "varianta")
+                .parameter(FROM_ATT, 0)
+                .parameter(COUNT_ATT, 1)
                 .parameter(REGISTER_TYPE_ID_ATT, record.getRegisterType().getRegisterTypeId())
-                .get(FIND_RECORD_COUNT_URL);
+                .get(FIND_RECORD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
+        recordWithCount = response.getBody().as(RegRecordWithCount.class);
 
-        recordsCount = response.getBody().as(long.class);
+        recordsCount = recordWithCount.getCount();
         Assert.assertEquals("Nenalezena polozka: varianta", 1, recordsCount);
     }
 

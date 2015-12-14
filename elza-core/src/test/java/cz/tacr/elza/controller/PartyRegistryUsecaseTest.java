@@ -11,6 +11,7 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.vo.ParPartyWithCount;
+import cz.tacr.elza.domain.vo.RegRecordWithCount;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -394,7 +395,8 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
                 , FIND_RECORD_URL
         );
 
-        return (List<RegRecord>) Arrays.asList(response.getBody().as(RegRecord[].class));
+        RegRecordWithCount recordWithCount = response.getBody().as(RegRecordWithCount.class);
+        return recordWithCount.getRecordList();
     }
 
     /**
@@ -407,12 +409,15 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
     private long findRecordsCount(final String searchString, final RegRegisterType registerType) {
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .parameter(SEARCH_ATT, searchString)
+                .parameter(FROM_ATT, 0)
+                .parameter(COUNT_ATT, 1)
                 .parameter(REGISTER_TYPE_ID_ATT, registerType.getRegisterTypeId())
-                .get(FIND_RECORD_COUNT_URL);
+                .get(FIND_RECORD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
-        return response.getBody().as(long.class);
+        RegRecordWithCount recordWithCount = response.getBody().as(RegRecordWithCount.class);
+        return recordWithCount.getCount();
     }
 
     /**
@@ -475,7 +480,7 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         );
 
         ParPartyWithCount partyWithCount = response.getBody().as(ParPartyWithCount.class);
-        return partyWithCount.getPartyList();
+        return partyWithCount.getRecordList();
     }
 
     /**

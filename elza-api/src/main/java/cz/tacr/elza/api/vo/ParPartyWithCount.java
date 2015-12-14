@@ -12,9 +12,9 @@ import java.util.List;
  */
 public interface ParPartyWithCount<PPA extends ParParty> {
 
-    void setPartyList(List<PPA> partyList);
+    void setRecordList(List<PPA> partyList);
 
-    List<PPA> getPartyList();
+    List<PPA> getRecordList();
 
     Long getCount();
 }

@@ -115,7 +115,7 @@ public class PartyManagerTest extends AbstractRestTest {
         Assert.assertEquals(200, response.statusCode());
         ParPartyWithCount partyWithCount = response.getBody().as(ParPartyWithCount.class);
 
-        Assert.assertTrue("Nenalezena polozka ", partyWithCount.getPartyList().size() == 1);
+        Assert.assertTrue("Nenalezena polozka ", partyWithCount.getRecordList().size() == 1);
 
         partyInput = createParty("varianta");
         partyInput = createParty("vr 2");
@@ -129,7 +129,7 @@ public class PartyManagerTest extends AbstractRestTest {
         Assert.assertEquals(200, response.statusCode());
         partyWithCount = response.getBody().as(ParPartyWithCount.class);
 
-        Assert.assertEquals("Nenalezena polozka ", 2, partyWithCount.getPartyList().size());
+        Assert.assertEquals("Nenalezena polozka ", 2, partyWithCount.getRecordList().size());
 
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .parameter("search", "varianta")
@@ -141,7 +141,7 @@ public class PartyManagerTest extends AbstractRestTest {
         Assert.assertEquals(200, response.statusCode());
         partyWithCount = response.getBody().as(ParPartyWithCount.class);
 
-        Assert.assertEquals("Nenalezena polozka ", 1, partyWithCount.getPartyList().size());
+        Assert.assertEquals("Nenalezena polozka ", 1, partyWithCount.getRecordList().size());
 
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .parameter("search", "varianta")
@@ -153,7 +153,7 @@ public class PartyManagerTest extends AbstractRestTest {
         Assert.assertEquals(200, response.statusCode());
         partyWithCount = response.getBody().as(ParPartyWithCount.class);
 
-        Assert.assertEquals("Nenalezena polozka ", 1, partyWithCount.getPartyList().size());
+        Assert.assertEquals("Nenalezena polozka ", 1, partyWithCount.getRecordList().size());
     }
 
     @Test
