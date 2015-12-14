@@ -6,7 +6,7 @@ require ('./FaTreeTabs.less');
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, Tabs} from 'components';
+import {AbstractReactComponent, Tabs, FaTree} from 'components';
 import {AppActions} from 'stores';
 
 import {selectFa, closeFa} from 'actions/fa/fa'
@@ -32,7 +32,14 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
                     onClose={item=>this.dispatch(closeFa(item))}
                 />
                 <Tabs.Content>
-                    FA {this.props.activeFa && this.props.activeFa.id}
+                    {this.props.activeFa && 
+                        <FaTree 
+                            {...this.props.activeFa.faTree}
+                            {...this.props.faTreeData}
+                            faId={this.props.activeFa.id}
+                            versionId={this.props.activeFa.versionId}
+                        /> 
+                    }
                 </Tabs.Content>
             </Tabs.Container>
         );

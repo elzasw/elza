@@ -10,7 +10,7 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Ribbon, i18n} from 'components';
-import {RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FindindAidFileTree} from 'components';
+import {RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FaFileTree} from 'components';
 import {AbstractReactComponent, ModalDialog, NodeTabs, FaTreeTabs} from 'components'; 
 import {ButtonGroup, Button, DropdownButton, MenuItem, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
@@ -32,12 +32,14 @@ var FaPage = class FaPage extends AbstractReactComponent {
     }
 
     render() {
-        //console.log("FA_PAGE:::PROPS", this.props, "STATE", this.state);
-
         var fas = this.props.arrangementRegion.items;
         var activeFa = this.props.arrangementRegion.activeIndex != null ? this.props.arrangementRegion.items[this.props.arrangementRegion.activeIndex] : null;
         var leftPanel = (
-            <FaTreeTabs fas={fas} activeFa={activeFa} />
+            <FaTreeTabs
+                fas={fas}
+                activeFa={activeFa}
+                faTreeData={this.props.arrangementRegion.faTreeData}
+            />
         )
 
         var centerPanel;
@@ -62,7 +64,7 @@ var FaPage = class FaPage extends AbstractReactComponent {
 
         var appContentExt = (
             <ToggleContent className="fa-file-toggle-container" alwaysRender opened={this.state.faFileTreeOpened} onShowHide={(opened)=>this.setState({faFileTreeOpened: opened})} closedIcon="chevron-right" openedIcon="chevron-left">
-                <FindindAidFileTree {...this.props.faFileTree} onSelect={()=>this.setState({faFileTreeOpened: false})}/>
+                <FaFileTree {...this.props.faFileTree} onSelect={()=>this.setState({faFileTreeOpened: false})}/>
             </ToggleContent>
         )
 

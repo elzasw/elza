@@ -9,7 +9,7 @@ import {connect} from 'react-redux'
 import {AbstractReactComponent, NodePanel, Tabs} from 'components';
 import {AppActions} from 'stores';
 
-import {selectNode, closeNode} from 'actions/fa/fa'
+import {selectNode, closeNode} from 'actions/fa/nodes'
 
 var NodeTabs = class NodeTabs extends AbstractReactComponent {
     constructor(props) {

@@ -2,15 +2,17 @@
  * Strom archivních souborů.
  */
 
-require ('./FindindAidFileTree.less');
+require ('./FaFileTree.less');
 
 import React from 'react';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Loading} from 'components';
+import {Nav, NavItem} from 'react-bootstrap';
 
-import {fetchFaFileTreeIfNeeded, selectFa} from 'actions/fa/fa'
+import {fetchFaFileTreeIfNeeded} from 'actions/fa/faFileTree'
+import {selectFa} from 'actions/fa/fa'
 
-var FindindAidFileTree = class FindindAidFileTree extends AbstractReactComponent {
+var FaFileTree = class FaFileTree extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -27,24 +29,36 @@ var FindindAidFileTree = class FindindAidFileTree extends AbstractReactComponent
         }
     }
 
-    handleSelect(item) {
-        this.dispatch(selectFa(item));
-        this.props.onSelect(item);
+    handleSelect(fa, version) {
+        var fa = Object.assign({}, fa, {versionId: version.id});
+
+        this.dispatch(selectFa(fa));
+        this.props.onSelect(fa);
     }
 
     renderOpened() {
         var rows = this.props.items.map(item=>{
+            var verRows = item.versions.map(ver => {
+                return <NavItem key={ver.id} onClick={this.handleSelect.bind(this, item, ver)}>{ver.name}</NavItem>
+            });
             return (
-                <div key={item.id} onClick={this.handleSelect.bind(this, item)}>
+                <NavItem key={item.id} disabled>
                     {item.name}
-                </div>
+                    {verRows}
+                </NavItem>
             )
         });
 
+        var navRows = (
+            <Nav>
+                {rows}
+            </Nav>
+        )
+
         return (
             <div className='finding-aid-file-tree-conteiner'>
-                {this.props.isFetching && <Loading/>}
-                {!this.props.isFetching && rows}
+                {(this.props.isFetching || !this.props.fetched) && <Loading/>}
+                {(!this.props.isFetching && this.props.fetched) && navRows}
             </div>
         );
     }
@@ -62,4 +76,4 @@ var FindindAidFileTree = class FindindAidFileTree extends AbstractReactComponent
     }
 }
 
-module.exports = connect()(FindindAidFileTree);
+module.exports = connect()(FaFileTree);
