@@ -11,7 +11,7 @@ AjaxUtils.ajaxGet('/api/arrangementManager/getFindingAids')
     });
 */
 
-class WebApi {
+class WebApiRest {
     constructor() {
     }
 
@@ -21,17 +21,38 @@ class WebApi {
                 return json.map(i=>{return {id:i.findingAidId, name:i.name}});
             });
     }
-    getFaFileTree2() {
+}
+
+class WebApiFake {
+    constructor() {
+    }
+
+    getData(data, timeout = 1000) {
         return new Promise(function (resolve, reject) {
             setTimeout(function() {
-                resolve([
-                    {id:1, name:'name1'},
-                    {id:2, name:'name2'},
-                    {id:3, name:'name3'},
-                ]);
-            }, 1);
+                resolve(data);
+            }, timeout);
         });
+    }
+
+    getFaFileTree() {
+        var data = 
+            [
+                {
+                    id: 1, 
+                    name: 'AP1',
+                    versions: [{id: 1, name: 'verze 1'}, {id: 2, name: 'verze 2'}]
+                },
+                {
+                    id: 2,
+                    name: 'AP2',
+                    versions: [{id: 3, name: 'verze 3'}, {id: 4, name: 'verze 4'}]
+                }
+            ]
+        
+        return this.getData(data);
     }
 }
 
-module.exports = new WebApi();
+//module.exports = new WebApiRest();
+module.exports = new WebApiFake();
