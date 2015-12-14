@@ -59,9 +59,9 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {fas, faFileTree} = state
+    const {arrangementRegion, faFileTree} = state
     return {
-        fas,
+        arrangementRegion,
         faFileTree
     }
 }

@@ -5,11 +5,11 @@ import createLogger from 'redux-logger'
 /**
  * Sestavení reducerů.
  */
-import fas from './fa/fas';
+import arrangementRegion from './fa/arrangementRegion';
 import faFileTree from './fa/faFileTree';
 
 let reducer = combineReducers({
-    fas,
+    arrangementRegion,
     faFileTree
 });
 
