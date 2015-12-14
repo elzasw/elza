@@ -81,7 +81,7 @@ var Tabs = class Tabs extends React.Component {
         this.state = {                                                  // inicializace stavu komponenty
             tabPanelWidth: 0,                                           // šířka panelu záložek 
             tabWidth: 0,                                                // šířka jednotlivé záložky   
-            tabDropdownWidth: 45,                                       // šířka rozbalovacího tlačítka se všemi záložkami  
+            tabDropdownWidth: 50,                                       // šířka rozbalovacího tlačítka se všemi záložkami  
         } 
     }
 
@@ -148,11 +148,14 @@ var Tabs = class Tabs extends React.Component {
     **/
     render() {
         // zobrazované založky
+        
         var tmpTabs = [
             {title : "Záložka číslo 1", "desc" : "55", id: "1", "key": "1"},
             {title : "bbbb", "desc" : "#47", id: "2", "key": "3"},
         ];
         var tabs = tmpTabs;
+        var tabs = this.props.items;
+
         var displayedTabs = tabs.map((item, i) => {                                                     // procházení všech záložek
             if(                                                                                         // zobrazení jen omezeného počtu zálozek (viz maxDisplayedTabs)
                 (i+1)*this.state.tabWidth < (this.state.tabPanelWidth - this.state.tabDropdownWidth)    // pokud je jeste v panule žáložek pro záložku dost místa, bude přidána
@@ -163,7 +166,7 @@ var Tabs = class Tabs extends React.Component {
         });
   
         // rozbalovaci seznam všech záložek 
-        var allTabs = tabs.map((item) => {                                                  // procházení všech záložek
+        var allTabs = tabs.map((item) => {                                                              // procházení všech záložek
                 var title = item.title || "Tab " + item.id;                                             // vytvoření popisku záložky
                 return <NavItem eventKey={item.id}>{title}</NavItem>                                    // přidání záložky
         });
