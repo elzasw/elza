@@ -1,6 +1,6 @@
 import {Utils} from 'components'
 
-export const GLOBAL_GET_OBJECT_INFO = 'GLOBAL_GET_OBJECT_INFO'
+import * as types from 'actions/constants/actionTypes';
 
 var ObjectInfo = class ObjectInfo {
     constructor() {
@@ -21,15 +21,11 @@ var ObjectInfo = class ObjectInfo {
         this.faIds.add(fa.id);
     }
 }
+export const ObjectInfo
 
-function getObjectInfo(objectInfo) {
+export function getObjectInfo(objectInfo) {
     return {
-        type: GET_OBJECT_INFO,
+        type: types.GET_OBJECT_INFO,
         objectInfo
     }
-}
-
-export const globalActions = {
-    getObjectInfo: getObjectInfo,
-    ObjectInfo: ObjectInfo
 }

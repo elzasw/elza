@@ -7,9 +7,8 @@ require ('./FindindAidFileTree.less');
 import React from 'react';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Loading} from 'components';
-import {AppActions} from 'stores';
 
-var {faActions} = AppActions.AppActions;
+import {fetchFaFileTreeIfNeeded, selectFa} from 'actions/fa/fa'
 
 var FindindAidFileTree = class FindindAidFileTree extends AbstractReactComponent {
     constructor(props) {
@@ -18,18 +17,18 @@ var FindindAidFileTree = class FindindAidFileTree extends AbstractReactComponent
         this.bindMethods('handleSelect');
 
         if (props.opened) {
-            this.dispatch(faActions.fetchFaFileTreeIfNeeded());
+            this.dispatch(fetchFaFileTreeIfNeeded());
         }
     }
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.opened) {
-            this.dispatch(faActions.fetchFaFileTreeIfNeeded());
+            this.dispatch(fetchFaFileTreeIfNeeded());
         }
     }
 
     handleSelect(item) {
-        this.dispatch(faActions.selectFa(item));
+        this.dispatch(selectFa(item));
         this.props.onSelect(item);
     }
 

@@ -9,7 +9,7 @@ import {connect} from 'react-redux'
 import {AbstractReactComponent, NodePanel, Tabs} from 'components';
 import {AppActions} from 'stores';
 
-var {faActions} = AppActions.AppActions;
+import {selectNode, closeNode} from 'actions/fa/fa'
 
 var NodeTabs = class NodeTabs extends AbstractReactComponent {
     constructor(props) {
@@ -27,8 +27,8 @@ var NodeTabs = class NodeTabs extends AbstractReactComponent {
         return (
             <Tabs.Container className='node-tabs-container'>
                 <Tabs.Tabs items={tabs} activeItem={this.props.activeNode}
-                    onSelect={item=>this.dispatch(faActions.selectNode(item))}
-                    onClose={item=>this.dispatch(faActions.closeNode(item))}
+                    onSelect={item=>this.dispatch(selectNode(item))}
+                    onClose={item=>this.dispatch(closeNode(item))}
                 />
                 <Tabs.Content>
                     {this.props.activeNode && <NodePanel node={this.props.activeNode} />}
