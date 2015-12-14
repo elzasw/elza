@@ -7,6 +7,7 @@ import createLogger from 'redux-logger'
  */
 import arrangementRegion from './fa/arrangementRegion';
 import faFileTree from './fa/faFileTree';
+import partyRegion from './party/partyRegion';
 
 let reducer = combineReducers({
     arrangementRegion,

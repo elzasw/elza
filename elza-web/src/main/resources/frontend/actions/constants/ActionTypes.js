@@ -18,7 +18,7 @@ export const FA_CLOSE_NODE = 'FA_CLOSE_NODE'
 /**
  * Party.
  */
-export const PARTY_XXX = 'PARTY_XXX'
+export const PARTY_SEARCH = 'PARTY_SEARCH'  // hledani textu
 
 /**
  * Record.

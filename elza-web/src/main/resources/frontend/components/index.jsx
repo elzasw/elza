@@ -12,6 +12,7 @@ exports.RibbonSplit = require('./shared/ribbon-menu/RibbonSplit');
 exports.ToggleContent = require('./shared/toggle-content/ToggleContent');
 exports.SplitPane = require('./shared/split-pane/SplitPane');
 exports.Tabs = require('./shared/tabs/Tabs');
+exports.Search = require('./shared/search/Search');
 exports.Loading = require('./shared/loading/Loading');
 
 exports.ModalDialog = require('./shared/dialog/ModalDialog');
@@ -23,5 +24,7 @@ exports.NodePanel = require('./fa/NodePanel');
 exports.NodeTabs = require('./fa/NodeTabs');
 exports.FaTreeTabs = require('./fa/FaTreeTabs');
 exports.FaTree = require('./fa/FaTree');
+
+exports.PartySearch = require('./party/PartySearch');
 
 

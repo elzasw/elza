@@ -92,7 +92,11 @@ var Tabs = class Tabs extends React.Component {
     **/
     handleResize() {   
         var el = ReactDOM.findDOMNode(this.refs.tabs);              // načtení objektu obalující záložky
-        var tabPanelWidth = el.offsetWidth;                         // zjištění šířky objektu
+        if(el){
+            var tabPanelWidth = el.offsetWidth;                     // zjištění šířky objektu
+        }else{
+            var tabPanelWidth = 0;
+        }
         var el = ReactDOM.findDOMNode(this.refs.tab0);              // načtení objektu první záložky
         if(this.state.tabWidth==0){                                 // šířka položky ještě nebyla zjištěna
             if(el){
@@ -148,12 +152,6 @@ var Tabs = class Tabs extends React.Component {
     **/
     render() {
         // zobrazované založky
-        
-        var tmpTabs = [
-            {title : "Záložka číslo 1", "desc" : "55", id: "1", "key": "1"},
-            {title : "bbbb", "desc" : "#47", id: "2", "key": "3"},
-        ];
-        var tabs = tmpTabs;
         var tabs = this.props.items;
 
         var displayedTabs = tabs.map((item, i) => {                                                     // procházení všech záložek

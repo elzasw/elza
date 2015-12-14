@@ -10,7 +10,7 @@ require ('./PartyPage.less');
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {i18n} from 'components';
-import {Ribbon, ModalDialog, NodeTabs, FaTreeTabs} from 'components';
+import {Ribbon, ModalDialog, NodeTabs, PartySearch} from 'components';
 import {ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 
@@ -28,10 +28,13 @@ var PartyPage = class PartyPage extends React.Component {
     }
 
     render() {
+        
+        var filterText = "aaa";
+        var activeParty = 25;
         var leftPanel = (
-            <div>LEFT - party</div>
+            <PartySearch filterText={filterText} activeParty={activeParty} />
         )
-
+        
         var centerPanel = (
             <div>
                 CENTER - party
