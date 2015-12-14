@@ -11,5 +11,7 @@ var messages = {
     
     "tabs.action.closeTab": "Zavřít záložku",
     
+    "search.action.search": "Najít",
+    
     "____": ""
 };

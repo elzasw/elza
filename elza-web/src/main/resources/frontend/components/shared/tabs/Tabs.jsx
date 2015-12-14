@@ -92,7 +92,11 @@ var Tabs = class Tabs extends React.Component {
     **/
     handleResize() {   
         var el = ReactDOM.findDOMNode(this.refs.tabs);              // načtení objektu obalující záložky
-        var tabPanelWidth = el.offsetWidth;                         // zjištění šířky objektu
+        if(el){
+            var tabPanelWidth = el.offsetWidth;                     // zjištění šířky objektu
+        }else{
+            var tabPanelWidth = 0;
+        }
         var el = ReactDOM.findDOMNode(this.refs.tab0);              // načtení objektu první záložky
         if(this.state.tabWidth==0){                                 // šířka položky ještě nebyla zjištěna
             if(el){
