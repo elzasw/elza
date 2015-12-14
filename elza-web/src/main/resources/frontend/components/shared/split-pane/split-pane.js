@@ -16,7 +16,6 @@ var _splitPaneListeners = [];
 	'use strict';
 
 	var methods = {};
-
         methods.addResizeListener = function(listener) {
             _splitPaneListeners.push(listener);
         }
@@ -37,8 +36,20 @@ var _splitPaneListeners = [];
 		$splitPanes.append('<div class="split-pane-resize-shim">');
 		$splitPanes.children('.split-pane-divider').html('<div class="split-pane-divider-inner"></div>');
 		$splitPanes.children('.split-pane-divider').on('touchstart mousedown', mousedownHandler);
+                var disableResizeEvent = false;
+                $splitPanes.children('.split-pane-component').resize( function(){ 
+                    if(!disableResizeEvent){
+                        disableResizeEvent = true;
+                        //console.log("resized");
+                        fireResizeListeners();
+                        setTimeout(function(){ 
+                            fireResizeListeners();
+                            disableResizeEvent = false; 
+                        }, 50);
+                    }
+                } );
 		setTimeout(function() {
-			// Doing this later because of an issue with Chrome (v23.0.1271.64) returning split-pane width = 0
+			// Doing this later because of an issue with Chrome (v23.   0.1271.64) returning split-pane width = 0
 			// and triggering multiple resize events when page is being opened from an <a target="_blank"> .
 			$splitPanes.each(function() {
 				$(this).on('_splitpaneparentresize', createParentresizeHandler($(this)));
@@ -94,6 +105,7 @@ var _splitPaneListeners = [];
 	};
 
 	$.fn.splitPane = function(method) {
+            
 		if (!method) {
 			method = 'init';
 		}
@@ -138,6 +150,25 @@ var _splitPaneListeners = [];
 		}
 	}
 
+	function createMousemove($splitPane, pageX, pageY) {""
+            
+		var components = getComponents($splitPane);
+		if ($splitPane.is('.fixed-top')) {
+			return fixedTopHandler(components, pageY);
+		} else if ($splitPane.is('.fixed-bottom')) {
+			return fixedBottomHandler(components, pageY);
+		} else if ($splitPane.is('.horizontal-percent')) {
+			return horizontalPercentHandler(components, pageY);
+		} else if ($splitPane.is('.fixed-left')) {
+			return fixedLeftHandler(components, pageX);
+		} else if ($splitPane.is('.fixed-right')) {
+			return fixedRightHandler(components, pageX);
+		} else if ($splitPane.is('.vertical-percent')) {
+			return verticalPercentHandler(components, pageX);
+		}
+	}
+       
+        
 	function mousedownHandler(event) {
 		var $divider = $(this),
 			$splitPane = $divider.parent(),
@@ -223,23 +254,6 @@ var _splitPaneListeners = [];
 				}
 				$splitPane.resize();
 			};
-		}
-	}
-
-	function createMousemove($splitPane, pageX, pageY) {
-		var components = getComponents($splitPane);
-		if ($splitPane.is('.fixed-top')) {
-			return fixedTopHandler(components, pageY);
-		} else if ($splitPane.is('.fixed-bottom')) {
-			return fixedBottomHandler(components, pageY);
-		} else if ($splitPane.is('.horizontal-percent')) {
-			return horizontalPercentHandler(components, pageY);
-		} else if ($splitPane.is('.fixed-left')) {
-			return fixedLeftHandler(components, pageX);
-		} else if ($splitPane.is('.fixed-right')) {
-			return fixedRightHandler(components, pageX);
-		} else if ($splitPane.is('.vertical-percent')) {
-			return verticalPercentHandler(components, pageX);
 		}
 	}
 

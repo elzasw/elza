@@ -9,5 +9,7 @@ var messages = {
     "toggle.action.minimize": "Minimalizovat",
     "toggle.action.restore": "Zobrazit",
     
+    "tabs.action.closeTab": "Zavřít záložku",
+    
     "____": ""
 };
