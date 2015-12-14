@@ -148,12 +148,6 @@ var Tabs = class Tabs extends React.Component {
     **/
     render() {
         // zobrazované založky
-        
-        var tmpTabs = [
-            {title : "Záložka číslo 1", "desc" : "55", id: "1", "key": "1"},
-            {title : "bbbb", "desc" : "#47", id: "2", "key": "3"},
-        ];
-        var tabs = tmpTabs;
         var tabs = this.props.items;
 
         var displayedTabs = tabs.map((item, i) => {                                                     // procházení všech záložek
