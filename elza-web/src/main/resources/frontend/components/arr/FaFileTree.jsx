@@ -37,16 +37,18 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
     }
 
     renderOpened() {
-        var rows = this.props.items.map(item=>{
-            var verRows = item.versions.map(ver => {
-                return <NavItem key={ver.id} onClick={this.handleSelect.bind(this, item, ver)}>{ver.name}</NavItem>
-            });
-            return (
+        var rows = [];
+        this.props.items.each(item=>{
+            rows.push(
                 <NavItem key={item.id} disabled>
                     {item.name}
-                    {verRows}
                 </NavItem>
             )
+            item.versions.each(ver => {
+                rows.push(
+                    <NavItem key={item.id + '_' + ver.id} onClick={this.handleSelect.bind(this, item, ver)}>{ver.name}</NavItem>
+                )
+            });
         });
 
         var navRows = (

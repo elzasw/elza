@@ -159,14 +159,14 @@ var Tabs = class Tabs extends React.Component {
                 (i+1)*this.state.tabWidth < (this.state.tabPanelWidth - this.state.tabDropdownWidth)    // pokud je jeste v panule žáložek pro záložku dost místa, bude přidána
             ){                                           
                 var closeTitle = i18n('tabs.action.closeTab');                                          // popisek ikony zavírající záložku
-                return <NavItem ref={"tab"+i} eventKey={item.id}><span>{item.title}</span><small>{item.desc}</small><Button title={closeTitle} onClick={this.handleTabClose.bind(this, item)}><Glyphicon glyph="remove" /></Button></NavItem>    // vlastni kod založky 
+                return <NavItem key={item.id} ref={"tab"+i} eventKey={item.id}><span>{item.title}</span><small>{item.desc}</small><Button title={closeTitle} onClick={this.handleTabClose.bind(this, item)}><Glyphicon glyph="remove" /></Button></NavItem>    // vlastni kod založky 
             }
         });
   
         // rozbalovaci seznam všech záložek 
         var allTabs = tabs.map((item) => {                                                              // procházení všech záložek
                 var title = item.title || "Tab " + item.id;                                             // vytvoření popisku záložky
-                return <NavItem eventKey={item.id}>{title}</NavItem>                                    // přidání záložky
+                return <NavItem key={item.id} eventKey={item.id}>{title}</NavItem>                                    // přidání záložky
         });
         if(tabs.length>0){
             allTabs = <NavDropdown pullRight title="" ref="tabDropdown">{allTabs}</NavDropdown>
