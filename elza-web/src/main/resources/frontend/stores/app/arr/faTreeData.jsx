@@ -11,13 +11,13 @@ const initialState = {
 
 export default function faTreeData(state = initialState, action) {
     switch (action.type) {
-        case types.FA_REQUEST_FA_TREE:
+        case types.FA_FA_TREE_REQUEST:
             return Object.assign({}, state, {
                 isFetching: true,
                 faId: action.faId,
                 versionId: action.versionId,
             })
-        case types.FA_RECEIVE_FA_TREE:
+        case types.FA_FA_TREE_RECEIVE:
             return Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,

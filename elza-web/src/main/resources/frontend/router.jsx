@@ -14,13 +14,13 @@ const history = useBasename(createHistory)({
     basename: serverContextPath + ''
 })
 
-import {FaPage, HomePage, RecordPage, PartyPage, Layout} from 'pages';
+import {ArrPage, HomePage, RegistryPage, PartyPage, Layout} from 'pages';
 
 var routes = (
     <Route name="layout" path="/" component={Layout}>
         <IndexRoute component={HomePage} />
-        <Route path="fa" component={FaPage} />
-        <Route path="record" component={RecordPage} />
+        <Route path="arr" component={ArrPage} />
+        <Route path="registry" component={RegistryPage} />
         <Route path="party" component={PartyPage} />
     </Route>
 );

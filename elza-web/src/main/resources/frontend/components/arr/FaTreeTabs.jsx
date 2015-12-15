@@ -9,7 +9,7 @@ import {connect} from 'react-redux'
 import {AbstractReactComponent, Tabs, FaTree} from 'components';
 import {AppActions} from 'stores';
 
-import {selectFa, closeFa} from 'actions/fa/fa'
+import {selectFa, closeFa} from 'actions/arr/fa'
 
 
 var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {

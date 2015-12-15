@@ -5,7 +5,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-require ('./RecordPage.less');
+require ('./RegistryPage.less');
 
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
@@ -14,7 +14,7 @@ import {Ribbon, ModalDialog, NodeTabs, FaTreeTabs} from 'components';
 import {ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 
-var RecordPage = class RecordPage extends React.Component {
+var RegistryPage = class RegistryPage extends React.Component {
     constructor(props) {
         super(props);
 
@@ -56,5 +56,5 @@ var RecordPage = class RecordPage extends React.Component {
     }
 }
 
-module.exports = RecordPage;
+module.exports = RegistryPage;
 

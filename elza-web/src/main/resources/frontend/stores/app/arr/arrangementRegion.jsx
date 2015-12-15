@@ -19,8 +19,8 @@ export default function arrangementRegion(state = initialState, action) {
                 nodes(fa.nodes, action);
             });
             return state
-        case types.FA_EXPAND_FA_TREE:
-        case types.FA_COLLAPSE_FA_TREE:
+        case types.FA_FA_TREE_EXPAND_NODE:
+        case types.FA_FA_TREE_COLLAPSE_NODE:
             return {
                 ...state,
                 fas: [
@@ -29,18 +29,18 @@ export default function arrangementRegion(state = initialState, action) {
                     ...state.fas.slice(state.activeIndex + 1)
                 ]
             }
-        case types.FA_REQUEST_FA_TREE:
+        case types.FA_FA_TREE_REQUEST:
             return {
                 ...state,
                 faTreeData: faTreeData(state.faTreeData, action)
             }
-        case types.FA_RECEIVE_FA_TREE:
+        case types.FA_FA_TREE_RECEIVE:
             return {
                 ...state,
                 faTreeData: faTreeData(state.faTreeData, action)
             }
-        case types.FA_CLOSE_NODE:
-        case types.FA_SELECT_NODE:
+        case types.FA_FA_CLOSE_NODE:
+        case types.FA_FA_SELECT_NODE:
             return {
                 ...state,
                 fas: [

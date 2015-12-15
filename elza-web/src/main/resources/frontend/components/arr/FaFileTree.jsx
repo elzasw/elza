@@ -9,8 +9,8 @@ import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Loading} from 'components';
 import {Nav, NavItem} from 'react-bootstrap';
 
-import {fetchFaFileTreeIfNeeded} from 'actions/fa/faFileTree'
-import {selectFa} from 'actions/fa/fa'
+import {faFileTreeFetchIfNeeded} from 'actions/arr/faFileTree'
+import {selectFa} from 'actions/arr/fa'
 
 var FaFileTree = class FaFileTree extends AbstractReactComponent {
     constructor(props) {
@@ -19,13 +19,13 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
         this.bindMethods('handleSelect');
 
         if (props.opened) {
-            this.dispatch(fetchFaFileTreeIfNeeded());
+            this.dispatch(faFileTreeFetchIfNeeded());
         }
     }
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.opened) {
-            this.dispatch(fetchFaFileTreeIfNeeded());
+            this.dispatch(faFileTreeFetchIfNeeded());
         }
     }
 

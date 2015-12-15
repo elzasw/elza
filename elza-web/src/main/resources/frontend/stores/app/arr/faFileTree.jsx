@@ -8,11 +8,11 @@ const initialState = {
 
 export default function faFileTree(state = initialState, action) {
     switch (action.type) {
-        case types.FA_REQUEST_FA_FILE_TREE:
+        case types.FA_FA_FILE_TREE_REQUEST:
             return Object.assign({}, state, {
                 isFetching: true,
             })
-        case types.FA_RECEIVE_FA_FILE_TREE:
+        case types.FA_FA_FILE_TREE_RECEIVE:
             return Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,

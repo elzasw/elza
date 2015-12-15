@@ -19,11 +19,11 @@ exports.ModalDialog = require('./shared/dialog/ModalDialog');
 
 exports.Ribbon = require('./page/Ribbon');
 
-exports.FaFileTree = require('./fa/FaFileTree');
-exports.NodePanel = require('./fa/NodePanel');
-exports.NodeTabs = require('./fa/NodeTabs');
-exports.FaTreeTabs = require('./fa/FaTreeTabs');
-exports.FaTree = require('./fa/FaTree');
+exports.FaFileTree = require('./arr/FaFileTree');
+exports.NodePanel = require('./arr/NodePanel');
+exports.NodeTabs = require('./arr/NodeTabs');
+exports.FaTreeTabs = require('./arr/FaTreeTabs');
+exports.FaTree = require('./arr/FaTree');
 
 exports.PartySearch = require('./party/PartySearch');
 

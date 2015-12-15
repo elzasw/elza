@@ -2,7 +2,7 @@
  * Stránka archivních pomůcek.
  */
 
-require ('./FaPage.less');
+require ('./ArrPage.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -16,7 +16,7 @@ import {ButtonGroup, Button, DropdownButton, MenuItem, Glyphicon} from 'react-bo
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
 
-var FaPage = class FaPage extends AbstractReactComponent {
+var ArrPage = class ArrPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -89,5 +89,5 @@ function mapStateToProps(state) {
     }
 }
 
-module.exports = connect(mapStateToProps)(FaPage);
+module.exports = connect(mapStateToProps)(ArrPage);
 

@@ -5,8 +5,8 @@ import createLogger from 'redux-logger'
 /**
  * Sestavení reducerů.
  */
-import arrangementRegion from './fa/arrangementRegion';
-import faFileTree from './fa/faFileTree';
+import arrangementRegion from './arr/arrangementRegion';
+import faFileTree from './arr/faFileTree';
 import partyRegion from './party/partyRegion';
 
 let reducer = combineReducers({
