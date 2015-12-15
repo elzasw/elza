@@ -32,8 +32,8 @@ var FaPage = class FaPage extends AbstractReactComponent {
     }
 
     render() {
-        var fas = this.props.arrangementRegion.items;
-        var activeFa = this.props.arrangementRegion.activeIndex != null ? this.props.arrangementRegion.items[this.props.arrangementRegion.activeIndex] : null;
+        var fas = this.props.arrangementRegion.fas;
+        var activeFa = this.props.arrangementRegion.activeIndex != null ? this.props.arrangementRegion.fas[this.props.arrangementRegion.activeIndex] : null;
         var leftPanel = (
             <FaTreeTabs
                 fas={fas}
@@ -44,7 +44,7 @@ var FaPage = class FaPage extends AbstractReactComponent {
 
         var centerPanel;
         if (activeFa && activeFa.nodes) {
-            var nodes = activeFa.nodes.items;
+            var nodes = activeFa.nodes.nodes;
             var activeNode = activeFa.nodes.activeIndex != null ? nodes[activeFa.nodes.activeIndex] : null;
             centerPanel = (
                 <div>

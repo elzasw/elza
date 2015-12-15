@@ -8,13 +8,13 @@ import faTreeData from './faTreeData'
 const initialState = {
     activeIndex: null,
     faTreeData: faTreeData(undefined, {}),
-    items: []
+    fas: []
 }
 
 export default function arrangementRegion(state = initialState, action) {
     switch (action.type) {
         case types.GLOBAL_GET_OBJECT_INFO:
-            state.items.forEach(fa => {
+            state.fas.forEach(fa => {
                 action.objectInfo.addFa(fa);
                 nodes(fa.nodes, action);
             });
@@ -23,10 +23,10 @@ export default function arrangementRegion(state = initialState, action) {
         case types.FA_COLLAPSE_FA_TREE:
             return {
                 ...state,
-                items: [
-                    ...state.items.slice(0, state.activeIndex),
-                    Object.assign({}, state.items[state.activeIndex], {faTree: faTree(state.items[state.activeIndex].faTree, action)}),
-                    ...state.items.slice(state.activeIndex + 1)
+                fas: [
+                    ...state.fas.slice(0, state.activeIndex),
+                    Object.assign({}, state.fas[state.activeIndex], {faTree: faTree(state.fas[state.activeIndex].faTree, action)}),
+                    ...state.fas.slice(state.activeIndex + 1)
                 ]
             }
         case types.FA_REQUEST_FA_TREE:
@@ -43,59 +43,59 @@ export default function arrangementRegion(state = initialState, action) {
         case types.FA_SELECT_NODE:
             return {
                 ...state,
-                items: [
-                    ...state.items.slice(0, state.activeIndex),
-                    Object.assign({}, state.items[state.activeIndex], {nodes: nodes(state.items[state.activeIndex].nodes, action)}),
-                    ...state.items.slice(state.activeIndex + 1)
+                fas: [
+                    ...state.fas.slice(0, state.activeIndex),
+                    Object.assign({}, state.fas[state.activeIndex], {nodes: nodes(state.fas[state.activeIndex].nodes, action)}),
+                    ...state.fas.slice(state.activeIndex + 1)
                 ]
             }
         case types.FA_CLOSE_FA:
-            var index = indexById(state.items, action.fa.id);
+            var index = indexById(state.fas, action.fa.id);
             var newActiveIndex = state.activeIndex;
             if (state.activeIndex == index) {   // byl vybrán, budeme řešit novou vybranou záložku
-                newActiveIndex = selectedAfterClose(state.items, index);
+                newActiveIndex = selectedAfterClose(state.fas, index);
             } else if (index < state.activeIndex) {
                 newActiveIndex--;
             }
             return {
                 ...state,
-                items: [
-                    ...state.items.slice(0, index),
-                    ...state.items.slice(index + 1)
+                fas: [
+                    ...state.fas.slice(0, index),
+                    ...state.fas.slice(index + 1)
                 ],
                 activeIndex: newActiveIndex
             }
         case types.FA_SELECT_FA:
             var faItem = Object.assign({}, action.fa, {faTree: faTree(action.fa.faTree, action)});
-            var index = indexById(state.items, action.fa.id);
+            var index = indexById(state.fas, action.fa.id);
             if (index == null) {    // není zatím v seznamu, přidáme jí tam
                 if (action.moveToBegin) {
                     return {
                         ...state,
-                        items: [
+                        fas: [
                             faItem,
-                            ...state.items
+                            ...state.fas
                         ],
                         activeIndex: 0
                     }
                 } else {
                     return {
                         ...state,
-                        items: [
-                            ...state.items,
+                        fas: [
+                            ...state.fas,
                             faItem
                         ],
-                        activeIndex: state.items.length
+                        activeIndex: state.fas.length
                     }
                 }
             } else {
                 if (action.moveToBegin) {
                     return {
                         ...state,
-                        items: [
-                            state.items[index],
-                            ...state.items.slice(0, index),
-                            ...state.items.slice(index + 1)
+                        fas: [
+                            state.fas[index],
+                            ...state.fas.slice(0, index),
+                            ...state.fas.slice(index + 1)
                         ],
                         activeIndex: 0
                     }
