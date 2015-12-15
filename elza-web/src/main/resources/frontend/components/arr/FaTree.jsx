@@ -69,9 +69,11 @@ var FaTree = class FaTree extends AbstractReactComponent {
         })
 
         return (
-            <div key={node.id} className={cls}>
-                {expCol}
-                <span onClick={this.handleNodeClick.bind(this, node)} onDoubleClick={this.handleNodeDoubleClick.bind(this, node)}>{node.name}</span>
+            <div>
+                <div key={node.id} className={cls}>
+                    {expCol}
+                    <span onClick={this.handleNodeClick.bind(this, node)} onDoubleClick={this.handleNodeDoubleClick.bind(this, node)}>{node.name}</span>
+                </div>
                 {children}
             </div>
         )

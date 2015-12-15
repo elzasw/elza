@@ -4,10 +4,12 @@ import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
 import nodes from './nodes'
 import faTree from './faTree'
 import faTreeData from './faTreeData'
+import nodeForm from './nodeForm'
 
 const initialState = {
     activeIndex: null,
     faTreeData: faTreeData(undefined, {}),
+    nodeForm: nodeForm(undefined, {}),
     fas: []
 }
 
@@ -62,6 +64,9 @@ export default function arrangementRegion(state = initialState, action) {
                 nodes(fa.nodes, action);
             });
             return state
+        case types.FA_NODE_FORM_REQUEST:
+        case types.FA_NODE_FORM_RECEIVE:
+            return Object.assign({}, state, {nodeForm: nodeForm(state.nodeForm, action)});
         case types.FA_FA_TREE_EXPAND_NODE:
         case types.FA_FA_TREE_COLLAPSE_NODE:
             return {

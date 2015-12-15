@@ -48,7 +48,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             var activeNode = activeFa.nodes.activeIndex != null ? nodes[activeFa.nodes.activeIndex] : null;
             centerPanel = (
                 <div>
-                    <NodeTabs nodes={nodes} activeNode={activeNode}/>
+                    <NodeTabs nodes={nodes} activeNode={activeNode} nodeForm={this.props.arrangementRegion.nodeForm}/>
                     {false && <ModalDialog title="Upraveni osoby">
                         nnn
                     </ModalDialog>}
@@ -85,7 +85,7 @@ function mapStateToProps(state) {
     const {arrangementRegion, faFileTree} = state
     return {
         arrangementRegion,
-        faFileTree
+        faFileTree,
     }
 }
 

@@ -84,10 +84,13 @@ class WebApiFake {
                 parents = [child3, root];
                 children = [];
             break;
-            case 32:
+            case 33:
                 parents = [child3, root];
                 children = [];
             break;
+            default:
+                parents = [];
+                children = [];
         }
         var data = {
             parents: parents,
