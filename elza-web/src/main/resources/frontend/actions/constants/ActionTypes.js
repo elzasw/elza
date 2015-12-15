@@ -17,6 +17,7 @@ export const FA_CLOSE_FA_TAB = 'FA_CLOSE_FA_TAB'
 
 export const FA_FA_SELECT_NODE_TAB = 'FA_FA_SELECT_NODE_TAB'
 export const FA_FA_CLOSE_NODE_TAB = 'FA_FA_CLOSE_NODE_TAB'
+export const FA_FA_SELECT_SUBNODE = 'FA_FA_SELECT_SUBNODE'
 
 /**
  * Party.

@@ -11,13 +11,13 @@ import {Nav, NavItem} from 'react-bootstrap';
 var classNames = require('classnames');
 import {faTreeFetchIfNeeded} from 'actions/arr/faTreeData'
 import {faTreeNodeExpand, faTreeNodeCollapse} from 'actions/arr/faTree'
-import {faSelectNodeTab} from 'actions/arr/nodes'
+import {faSelectNodeTab, faSelectSubNode} from 'actions/arr/nodes'
 
 var FaTree = class FaTree extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderNode', 'handleToggle', 'handleNodeClick');
+        this.bindMethods('renderNode', 'handleToggle', 'handleNodeClick', 'handleNodeDoubleClick');
 
         this.dispatch(faTreeFetchIfNeeded(props.faId, props.versionId));
     }
@@ -30,10 +30,19 @@ var FaTree = class FaTree extends AbstractReactComponent {
         expand ? this.dispatch(faTreeNodeExpand(node)) : this.dispatch(faTreeNodeCollapse(node));
     }
 
+    handleNodeDoubleClick(node) {
+        var parentNode = this.props.nodeMap[node.parentId];
+        if (parentNode != null) {
+            //this.dispatch(faSelectNodeTab(parentNode));
+            this.dispatch(faSelectSubNode(node.id, parentNode, true));
+        }
+    }
+
     handleNodeClick(node) {
         var parentNode = this.props.nodeMap[node.parentId];
         if (parentNode != null) {
-            this.dispatch(faSelectNodeTab(parentNode));
+            //this.dispatch(faSelectNodeTab(parentNode));
+            this.dispatch(faSelectSubNode(node.id, parentNode, false));
         }
     }
 
@@ -62,7 +71,7 @@ var FaTree = class FaTree extends AbstractReactComponent {
         return (
             <div key={node.id} className={cls}>
                 {expCol}
-                <span onClick={this.handleNodeClick.bind(this, node)}>{node.name}</span>
+                <span onClick={this.handleNodeClick.bind(this, node)} onDoubleClick={this.handleNodeDoubleClick.bind(this, node)}>{node.name}</span>
                 {children}
             </div>
         )

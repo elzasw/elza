@@ -14,7 +14,7 @@ var NodePanel = class NodePanel extends React.Component {
     render() {
         return (
             <div className='node-panel-container'>
-                <div className='actions'>NODE [{this.props.node.id}] actions</div>
+                <div className='actions'>NODE [{this.props.node.id}] actions.......SUB NODE: {this.props.node.selectedSubNodeId}</div>
                 <div className='parents'>parents<br/>parents<br/>parents<br/>parents<br/></div>
                 <div className='content'>content</div>
                 <div className='children'>children</div>

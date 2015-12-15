@@ -11,6 +11,49 @@ const initialState = {
     fas: []
 }
 
+function selectFaTab(state, action) {
+    var faItem = Object.assign({}, action.fa, {faTree: faTree(action.fa.faTree, action), nodes: nodes(undefined, action)});
+    var index = indexById(state.fas, action.fa.id);
+    if (index == null) {    // není zatím v seznamu, přidáme jí tam
+        if (action.moveTabToBegin) {
+            return {
+                ...state,
+                fas: [
+                    faItem,
+                    ...state.fas
+                ],
+                activeIndex: 0
+            }
+        } else {
+            return {
+                ...state,
+                fas: [
+                    ...state.fas,
+                    faItem
+                ],
+                activeIndex: state.fas.length
+            }
+        }
+    } else {
+        if (action.moveTabToBegin) {
+            return {
+                ...state,
+                fas: [
+                    state.fas[index],
+                    ...state.fas.slice(0, index),
+                    ...state.fas.slice(index + 1)
+                ],
+                activeIndex: 0
+            }
+        } else {
+            return {
+                ...state,
+                activeIndex: index
+            }
+        }
+    }
+}
+
 export default function arrangementRegion(state = initialState, action) {
     switch (action.type) {
         case types.GLOBAL_GET_OBJECT_INFO:
@@ -39,13 +82,14 @@ export default function arrangementRegion(state = initialState, action) {
                 ...state,
                 faTreeData: faTreeData(state.faTreeData, action)
             }
+        case types.FA_FA_SELECT_SUBNODE:
         case types.FA_FA_CLOSE_NODE_TAB:
         case types.FA_FA_SELECT_NODE_TAB:
             return {
                 ...state,
                 fas: [
                     ...state.fas.slice(0, state.activeIndex),
-                    Object.assign({}, state.fas[state.activeIndex], {nodes: nodes(state.fas[state.activeIndex].nodes, action)}),
+                    Object.assign({}, state.fas[state.activeIndex], {nodes: nodes(state.fas[state.activeIndex].nodes, action), faTree: faTree(state.fas[state.activeIndex].faTree, action)}),
                     ...state.fas.slice(state.activeIndex + 1)
                 ]
             }
@@ -66,46 +110,7 @@ export default function arrangementRegion(state = initialState, action) {
                 activeIndex: newActiveIndex
             }
         case types.FA_SELECT_FA_TAB:
-            var faItem = Object.assign({}, action.fa, {faTree: faTree(action.fa.faTree, action)});
-            var index = indexById(state.fas, action.fa.id);
-            if (index == null) {    // není zatím v seznamu, přidáme jí tam
-                if (action.moveToBegin) {
-                    return {
-                        ...state,
-                        fas: [
-                            faItem,
-                            ...state.fas
-                        ],
-                        activeIndex: 0
-                    }
-                } else {
-                    return {
-                        ...state,
-                        fas: [
-                            ...state.fas,
-                            faItem
-                        ],
-                        activeIndex: state.fas.length
-                    }
-                }
-            } else {
-                if (action.moveToBegin) {
-                    return {
-                        ...state,
-                        fas: [
-                            state.fas[index],
-                            ...state.fas.slice(0, index),
-                            ...state.fas.slice(index + 1)
-                        ],
-                        activeIndex: 0
-                    }
-                } else {
-                    return {
-                        ...state,
-                        activeIndex: index
-                    }
-                }
-            }
+            return selectFaTab(state, action);
         default:
             return state
     }
