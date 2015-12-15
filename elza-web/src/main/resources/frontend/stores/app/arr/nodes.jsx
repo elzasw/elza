@@ -13,7 +13,7 @@ export default function nodes(state = initialState, action) {
                 action.objectInfo.addNode(node);
             });
             return state
-        case types.FA_FA_CLOSE_NODE:
+        case types.FA_FA_CLOSE_NODE_TAB:
             var index = indexById(state.nodes, action.node.id);
             var newActiveIndex = state.activeIndex;
             if (state.activeIndex == index) {   // byl vybrán, budeme řešit novou vybranou záložku
@@ -29,7 +29,7 @@ export default function nodes(state = initialState, action) {
                 ],
                 activeIndex: newActiveIndex
             }
-        case types.FA_FA_SELECT_NODE:
+        case types.FA_FA_SELECT_NODE_TAB:
             var index = indexById(state.nodes, action.node.id);
             if (index == null) {    // není zatím v seznamu, přidáme ho tam
                 if (action.moveToBegin) {

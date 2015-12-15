@@ -11,7 +11,7 @@ import {Nav, NavItem} from 'react-bootstrap';
 var classNames = require('classnames');
 import {faTreeFetchIfNeeded} from 'actions/arr/faTreeData'
 import {faTreeNodeExpand, faTreeNodeCollapse} from 'actions/arr/faTree'
-import {faSelectNode} from 'actions/arr/nodes'
+import {faSelectNodeTab} from 'actions/arr/nodes'
 
 var FaTree = class FaTree extends AbstractReactComponent {
     constructor(props) {
@@ -33,7 +33,7 @@ var FaTree = class FaTree extends AbstractReactComponent {
     handleNodeClick(node) {
         var parentNode = this.props.nodeMap[node.parentId];
         if (parentNode != null) {
-            this.dispatch(faSelectNode(parentNode));
+            this.dispatch(faSelectNodeTab(parentNode));
         }
     }
 

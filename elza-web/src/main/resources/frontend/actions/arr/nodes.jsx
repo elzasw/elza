@@ -2,17 +2,17 @@ import {WebApi} from 'actions'
 
 import * as types from 'actions/constants/actionTypes';
 
-export function faSelectNode(node, moveToBegin=false) {
+export function faSelectNodeTab(node, moveToBegin=false) {
     return {
-        type: types.FA_FA_SELECT_NODE,
+        type: types.FA_FA_SELECT_NODE_TAB,
         node,
         moveToBegin
     }
 }
 
-export function faCloseNode(node) {
+export function faCloseNodeTab(node) {
     return {
-        type: types.FA_FA_CLOSE_NODE,
+        type: types.FA_FA_CLOSE_NODE_TAB,
         node
     }
 }

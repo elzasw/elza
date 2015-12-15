@@ -39,8 +39,8 @@ export default function arrangementRegion(state = initialState, action) {
                 ...state,
                 faTreeData: faTreeData(state.faTreeData, action)
             }
-        case types.FA_FA_CLOSE_NODE:
-        case types.FA_FA_SELECT_NODE:
+        case types.FA_FA_CLOSE_NODE_TAB:
+        case types.FA_FA_SELECT_NODE_TAB:
             return {
                 ...state,
                 fas: [
@@ -49,7 +49,7 @@ export default function arrangementRegion(state = initialState, action) {
                     ...state.fas.slice(state.activeIndex + 1)
                 ]
             }
-        case types.FA_CLOSE_FA:
+        case types.FA_CLOSE_FA_TAB:
             var index = indexById(state.fas, action.fa.id);
             var newActiveIndex = state.activeIndex;
             if (state.activeIndex == index) {   // byl vybrán, budeme řešit novou vybranou záložku
@@ -65,7 +65,7 @@ export default function arrangementRegion(state = initialState, action) {
                 ],
                 activeIndex: newActiveIndex
             }
-        case types.FA_SELECT_FA:
+        case types.FA_SELECT_FA_TAB:
             var faItem = Object.assign({}, action.fa, {faTree: faTree(action.fa.faTree, action)});
             var index = indexById(state.fas, action.fa.id);
             if (index == null) {    // není zatím v seznamu, přidáme jí tam

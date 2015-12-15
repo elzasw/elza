@@ -10,7 +10,7 @@ import {AbstractReactComponent, i18n, Loading} from 'components';
 import {Nav, NavItem} from 'react-bootstrap';
 
 import {faFileTreeFetchIfNeeded} from 'actions/arr/faFileTree'
-import {selectFa} from 'actions/arr/fa'
+import {selectFaTab} from 'actions/arr/fa'
 
 var FaFileTree = class FaFileTree extends AbstractReactComponent {
     constructor(props) {
@@ -32,7 +32,7 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
     handleSelect(fa, version) {
         var fa = Object.assign({}, fa, {versionId: version.id});
 
-        this.dispatch(selectFa(fa));
+        this.dispatch(selectFaTab(fa));
         this.props.onSelect(fa);
     }
 
