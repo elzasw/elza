@@ -21,6 +21,13 @@ class WebApiRest {
                 return json.map(i=>{return {id:i.findingAidId, name:i.name}});
             });
     }
+
+    getRecord(){
+        return AjaxUtils.ajaxGet('/api/registryManager/findRecord', [{key: 'search', value: 'test'},{key: 'from', value: '0'},{key: 'count', value: '200'}, {key: 'registerTypeIds', value: ''}])
+            .then(json=>{
+                return json.recordList.map(i=>{return {id:i.recordId, name:i.name}});
+            });
+    }
 }
 
 class WebApiFake {
@@ -47,6 +54,34 @@ class WebApiFake {
                     id: 2,
                     name: 'AP2',
                     versions: [{id: 3, name: 'verze 3'}, {id: 4, name: 'verze 4'}]
+                }
+            ]
+        
+        return this.getData(data, 1);
+    }
+
+    getRecord() {
+        var data = 
+            [
+                {
+                    id: 1, 
+                    name: 'Záznam 1',
+                },
+                {
+                    id: 2, 
+                    name: 'Záznam 2',
+                },
+                {
+                    id: 3, 
+                    name: 'Záznam 3',
+                },
+                {
+                    id: 4, 
+                    name: 'Záznam 4',
+                },
+                {
+                    id: 5,
+                    name: 'Záznam 5',
                 }
             ]
         

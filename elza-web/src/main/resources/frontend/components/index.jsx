@@ -19,6 +19,8 @@ exports.ModalDialog = require('./shared/dialog/ModalDialog');
 
 exports.Ribbon = require('./page/Ribbon');
 
+exports.RecordPanel = require('./record/RecordPanel');
+
 exports.FaFileTree = require('./fa/FaFileTree');
 exports.NodePanel = require('./fa/NodePanel');
 exports.NodeTabs = require('./fa/NodeTabs');

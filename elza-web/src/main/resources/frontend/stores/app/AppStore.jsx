@@ -7,11 +7,13 @@ import createLogger from 'redux-logger'
  */
 import arrangementRegion from './fa/arrangementRegion';
 import faFileTree from './fa/faFileTree';
+import record from './record/record';
 import partyRegion from './party/partyRegion';
 
 let reducer = combineReducers({
     arrangementRegion,
-    faFileTree
+    faFileTree,
+    record
 });
 
 // Store a middleware
