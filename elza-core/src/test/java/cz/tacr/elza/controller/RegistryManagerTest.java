@@ -219,6 +219,7 @@ public class RegistryManagerTest extends AbstractRestTest {
      */
     @Test
     public void testRestFindRecords() {
+        createRecord2();
         RegRecord record = createRecord();
         createVariantRecord("varianta", record);
 
@@ -258,7 +259,7 @@ public class RegistryManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
         recordWithCount = response.getBody().as(RegRecordWithCount.class);
-        Assert.assertEquals("Nenalezena polozka: " + TEST_NAME, 1, recordWithCount.getRecordList().size());
+        Assert.assertEquals("Nenalezena polozka.", 2, recordWithCount.getRecordList().size());
 
         // prázdné
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
@@ -270,7 +271,21 @@ public class RegistryManagerTest extends AbstractRestTest {
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
         recordWithCount = response.getBody().as(RegRecordWithCount.class);
-        Assert.assertEquals("Nenalezena polozka: " + TEST_NAME, 1, recordWithCount.getRecordList().size());
+        Assert.assertEquals("Nenalezena polozka.", 2, recordWithCount.getRecordList().size());
+    }
+
+    /**
+     * Vytvoření jednoho záznamu rejstříku defaultního typu.
+     * @return  vytvořený objekt, zapsaný do db
+     */
+    protected RegRecord createRecord2() {
+        RegRecord regRecord = new RegRecord();
+        regRecord.setRecord("XXX");
+        regRecord.setCharacteristics("CHAR");
+        regRecord.setLocal(false);
+        regRecord.setRegisterType(createRegisterType());
+
+        return recordRepository.save(regRecord);
     }
 
     /**
