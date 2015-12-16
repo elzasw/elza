@@ -35,6 +35,30 @@ class WebApiFake {
         });
     }
 
+    getFindParty(filterText){
+        var data = 
+            [
+                {
+                    id: 1, 
+                    name: 'Kněžna Libuše',
+                },{
+                    id: 2,
+                    name: 'Jan Lucemburský',
+                },{
+                    id: 3,
+                    name: 'Marie Terezie',
+                },{
+                    id: 4,
+                    name: 'Svatý Václav',
+                },{
+                    id: 5,
+                    name: 'Albrecht z Valdštejna',
+                }
+            ]
+            
+        return this.getData(data, 1);
+    }
+
     getNodeForm(nodeId, versionId) {
         var faId = 'x';
         var str = " {" + faId + "_" + versionId + "}";

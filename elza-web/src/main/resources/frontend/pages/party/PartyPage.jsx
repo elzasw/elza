@@ -29,10 +29,8 @@ var PartyPage = class PartyPage extends React.Component {
 
     render() {
         
-        var filterText = "aaa";
-        var activeParty = 25;
         var leftPanel = (
-            <PartySearch filterText={filterText} activeParty={activeParty} />
+            <PartySearch {...this.props} />
         )
         
         var centerPanel = (
