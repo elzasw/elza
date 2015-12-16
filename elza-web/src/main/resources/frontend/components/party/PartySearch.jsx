@@ -13,10 +13,15 @@ import {AppActions} from 'stores';
 var PartySearch = class PartySearch extends AbstractReactComponent {
     constructor(props) {
         super(props);
+        this.handleSearch = this.handleSearch.bind(this);               // funkce pro akci spoustící vyhledávání
+    }
+
+    
+    handleSearch(filterText){
     }
 
     render() {
-        return <Search filterText={"AAA"}/>
+        return <Search onSearch={this.handleSearch} filterText={"AAA"}/>
     }
 }
 

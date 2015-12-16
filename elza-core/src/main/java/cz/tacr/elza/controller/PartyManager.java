@@ -184,9 +184,9 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
 
     @RequestMapping(value = "/findParty", method = RequestMethod.GET)
     @Override
-    public ParPartyWithCount findParty(@RequestParam("search") final String search,
+    public ParPartyWithCount findParty(@Nullable @RequestParam(value = "search", required = false) final String search,
                                     @RequestParam("from") final Integer from, @RequestParam("count") final Integer count,
-                                    @RequestParam(value = "partyTypeId", required = false) final Integer partyTypeId,
+                                    @Nullable @RequestParam(value = "partyTypeId", required = false) final Integer partyTypeId,
                                     @Nullable @RequestParam(value = "originator", required = false) final Boolean originator) {
 
         List<ParParty> resultList = partyRepository
