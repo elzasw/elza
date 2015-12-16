@@ -5,7 +5,7 @@
 
 export function searchParty(searchedText) {
     return {
-        type: types.FA_SELECT_NODE,
+        type: types.FA_FA_SELECT_NODE,
         node,
         moveToBegin
     }

@@ -2,33 +2,33 @@ import {WebApi} from 'actions'
 
 import * as types from 'actions/constants/actionTypes';
 
-export function fetchFaFileTreeIfNeeded() {
+export function faFileTreeFetchIfNeeded() {
     return (dispatch, getState) => {
         var state = getState();
         if (!state.faFileTree.fetched && !state.faFileTree.isFetching) {
-            return dispatch(fetchFaFileTree());
+            return dispatch(faFileTreeFetch());
         }
     }
 }
 
-export function fetchFaFileTree() {
+export function faFileTreeFetch() {
     return dispatch => {
-        dispatch(requestFaFileTree())
+        dispatch(faFileTreeRequest())
         return WebApi.getFaFileTree()
-            .then(json => dispatch(receiveFaFileTree(json)));
+            .then(json => dispatch(faFileTreeReceive(json)));
     }
 }
 
-export function receiveFaFileTree(json) {
+export function faFileTreeReceive(json) {
     return {
-        type: types.FA_RECEIVE_FA_FILE_TREE,
+        type: types.FA_FA_FILE_TREE_RECEIVE,
         items: json,
         receivedAt: Date.now()
     }
 }
 
-export function requestFaFileTree() {
+export function faFileTreeRequest() {
     return {
-        type: types.FA_REQUEST_FA_FILE_TREE
+        type: types.FA_FA_FILE_TREE_REQUEST
     }
 }

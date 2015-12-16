@@ -20,8 +20,8 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
             <RibbonMenu opened onShowHide={this.handleRibbonShowHide}>
                 <RibbonGroup className="large">
                     <IndexLinkContainer to="/"><Button><Glyphicon glyph="film" /><div><span className="btnText">{i18n('ribbon.action.home')}</span></div></Button></IndexLinkContainer>
-                    <LinkContainer to="/fa"><Button><Glyphicon glyph="th-list" /><div><span className="btnText">{i18n('ribbon.action.findingAid')}</span></div></Button></LinkContainer>
-                    <LinkContainer to="/record"><Button><Glyphicon glyph="th-list" /><div><span className="btnText">{i18n('ribbon.action.record')}</span></div></Button></LinkContainer>
+                    <LinkContainer to="/arr"><Button><Glyphicon glyph="th-list" /><div><span className="btnText">{i18n('ribbon.action.arr')}</span></div></Button></LinkContainer>
+                    <LinkContainer to="/registry"><Button><Glyphicon glyph="th-list" /><div><span className="btnText">{i18n('ribbon.action.registry')}</span></div></Button></LinkContainer>
                     <LinkContainer to="/party"><Button><Glyphicon glyph="th-list" /><div><span className="btnText">{i18n('ribbon.action.party')}</span></div></Button></LinkContainer>
 
                     <DropdownButton title={<span className="dropContent"><Glyphicon glyph='film' /><div><span className="btnText">{i18n('ribbon.action.findingAid')}</span></div></span>}>
@@ -51,7 +51,7 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
                       <MenuItem eventKey="2">Another action</MenuItem>
                       <MenuItem eventKey="3">Active Item</MenuItem>
                     </DropdownButton>
-                    <LinkContainer to="/record"><Button><Glyphicon glyph="th-list" /><div><span className="btnText">{i18n('ribbon.action.record')}</span></div></Button></LinkContainer>
+                    <LinkContainer to="/registry"><Button><Glyphicon glyph="th-list" /><div><span className="btnText">{i18n('ribbon.action.record')}</span></div></Button></LinkContainer>
                 </RibbonGroup>
             </RibbonMenu>
         )

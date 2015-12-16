@@ -9,8 +9,8 @@ import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Loading} from 'components';
 import {Nav, NavItem} from 'react-bootstrap';
 
-import {fetchFaFileTreeIfNeeded} from 'actions/fa/faFileTree'
-import {selectFa} from 'actions/fa/fa'
+import {faFileTreeFetchIfNeeded} from 'actions/arr/faFileTree'
+import {selectFaTab} from 'actions/arr/fa'
 
 var FaFileTree = class FaFileTree extends AbstractReactComponent {
     constructor(props) {
@@ -19,34 +19,36 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
         this.bindMethods('handleSelect');
 
         if (props.opened) {
-            this.dispatch(fetchFaFileTreeIfNeeded());
+            this.dispatch(faFileTreeFetchIfNeeded());
         }
     }
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.opened) {
-            this.dispatch(fetchFaFileTreeIfNeeded());
+            this.dispatch(faFileTreeFetchIfNeeded());
         }
     }
 
     handleSelect(fa, version) {
         var fa = Object.assign({}, fa, {versionId: version.id});
 
-        this.dispatch(selectFa(fa));
+        this.dispatch(selectFaTab(fa));
         this.props.onSelect(fa);
     }
 
     renderOpened() {
-        var rows = this.props.items.map(item=>{
-            var verRows = item.versions.map(ver => {
-                return <NavItem key={ver.id} onClick={this.handleSelect.bind(this, item, ver)}>{ver.name}</NavItem>
-            });
-            return (
+        var rows = [];
+        this.props.items.each(item=>{
+            rows.push(
                 <NavItem key={item.id} disabled>
                     {item.name}
-                    {verRows}
                 </NavItem>
             )
+            item.versions.each(ver => {
+                rows.push(
+                    <NavItem key={item.id + '_' + ver.id} onClick={this.handleSelect.bind(this, item, ver)}>{ver.name}</NavItem>
+                )
+            });
         });
 
         var navRows = (

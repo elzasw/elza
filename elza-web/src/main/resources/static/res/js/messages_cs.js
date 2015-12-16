@@ -2,8 +2,8 @@ var messages = {
     "global.data.loading": "Načítání dat...",
     
     "ribbon.action.home": "Domů",
-    "ribbon.action.findingAid": "Archivní pomůcky",
-    "ribbon.action.record": "Rejstříky",
+    "ribbon.action.arr": "Archivní pomůcky",
+    "ribbon.action.registry": "Rejstříky",
     "ribbon.action.party": "Osoby",
     
     "toggle.action.minimize": "Minimalizovat",

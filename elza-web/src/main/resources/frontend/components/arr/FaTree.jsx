@@ -9,31 +9,40 @@ import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Loading} from 'components';
 import {Nav, NavItem} from 'react-bootstrap';
 var classNames = require('classnames');
-import {fetchFaTreeIfNeeded} from 'actions/fa/faTreeData'
-import {expandFaTreeNode, collapseFaTreeNode} from 'actions/fa/faTree'
-import {selectNode} from 'actions/fa/nodes'
+import {faTreeFetchIfNeeded} from 'actions/arr/faTreeData'
+import {faTreeNodeExpand, faTreeNodeCollapse} from 'actions/arr/faTree'
+import {faSelectNodeTab, faSelectSubNode} from 'actions/arr/nodes'
 
 var FaTree = class FaTree extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderNode', 'handleToggle', 'handleNodeClick');
+        this.bindMethods('renderNode', 'handleToggle', 'handleNodeClick', 'handleNodeDoubleClick');
 
-        this.dispatch(fetchFaTreeIfNeeded(props.faId, props.versionId));
+        this.dispatch(faTreeFetchIfNeeded(props.faId, props.versionId));
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(fetchFaTreeIfNeeded(nextProps.faId, nextProps.versionId));
+        this.dispatch(faTreeFetchIfNeeded(nextProps.faId, nextProps.versionId));
     }
 
     handleToggle(node, expand) {
-        expand ? this.dispatch(expandFaTreeNode(node)) : this.dispatch(collapseFaTreeNode(node));
+        expand ? this.dispatch(faTreeNodeExpand(node)) : this.dispatch(faTreeNodeCollapse(node));
+    }
+
+    handleNodeDoubleClick(node) {
+        var parentNode = this.props.nodeMap[node.parentId];
+        if (parentNode != null) {
+            //this.dispatch(faSelectNodeTab(parentNode));
+            this.dispatch(faSelectSubNode(node.id, parentNode, true));
+        }
     }
 
     handleNodeClick(node) {
         var parentNode = this.props.nodeMap[node.parentId];
         if (parentNode != null) {
-            this.dispatch(selectNode(parentNode));
+            //this.dispatch(faSelectNodeTab(parentNode));
+            this.dispatch(faSelectSubNode(node.id, parentNode, false));
         }
     }
 
@@ -60,9 +69,11 @@ var FaTree = class FaTree extends AbstractReactComponent {
         })
 
         return (
-            <div className={cls}>
-                {expCol}
-                <span onClick={this.handleNodeClick.bind(this, node)}>{node.name}</span>
+            <div>
+                <div key={node.id} className={cls}>
+                    {expCol}
+                    <span onClick={this.handleNodeClick.bind(this, node)} onDoubleClick={this.handleNodeDoubleClick.bind(this, node)}>{node.name}</span>
+                </div>
                 {children}
             </div>
         )

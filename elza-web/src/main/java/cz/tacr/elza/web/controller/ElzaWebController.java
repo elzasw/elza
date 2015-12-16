@@ -40,13 +40,13 @@ public class ElzaWebController {
         return "web";
     }
 
-    @RequestMapping(value = "/fa", method = RequestMethod.GET)
-    public String faPage(final HttpServletRequest request, final Model model) {
+    @RequestMapping(value = "/arr", method = RequestMethod.GET)
+    public String arrPage(final HttpServletRequest request, final Model model) {
         initDefaults(request, model);
         return "web";
     }
 
-    @RequestMapping(value = "/record", method = RequestMethod.GET)
+    @RequestMapping(value = "/registry", method = RequestMethod.GET)
     public String recordPage(final HttpServletRequest request, final Model model) {
         initDefaults(request, model);
         return "web";

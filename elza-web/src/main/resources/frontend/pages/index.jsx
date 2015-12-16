@@ -1,5 +1,5 @@
-exports.FaPage = require('./fa/FaPage');
-exports.RecordPage = require('./record/RecordPage');
+exports.ArrPage = require('./arr/ArrPage');
+exports.RegistryPage = require('./registry/RegistryPage');
 exports.PartyPage = require('./party/PartyPage');
 exports.HomePage = require('./home/HomePage');
 

@@ -2,7 +2,7 @@
  * Stránka archivních pomůcek.
  */
 
-require ('./FaPage.less');
+require ('./ArrPage.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -16,7 +16,7 @@ import {ButtonGroup, Button, DropdownButton, MenuItem, Glyphicon} from 'react-bo
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
 
-var FaPage = class FaPage extends AbstractReactComponent {
+var ArrPage = class ArrPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
@@ -32,8 +32,8 @@ var FaPage = class FaPage extends AbstractReactComponent {
     }
 
     render() {
-        var fas = this.props.arrangementRegion.items;
-        var activeFa = this.props.arrangementRegion.activeIndex != null ? this.props.arrangementRegion.items[this.props.arrangementRegion.activeIndex] : null;
+        var fas = this.props.arrangementRegion.fas;
+        var activeFa = this.props.arrangementRegion.activeIndex != null ? this.props.arrangementRegion.fas[this.props.arrangementRegion.activeIndex] : null;
         var leftPanel = (
             <FaTreeTabs
                 fas={fas}
@@ -44,11 +44,11 @@ var FaPage = class FaPage extends AbstractReactComponent {
 
         var centerPanel;
         if (activeFa && activeFa.nodes) {
-            var nodes = activeFa.nodes.items;
+            var nodes = activeFa.nodes.nodes;
             var activeNode = activeFa.nodes.activeIndex != null ? nodes[activeFa.nodes.activeIndex] : null;
             centerPanel = (
                 <div>
-                    <NodeTabs nodes={nodes} activeNode={activeNode}/>
+                    <NodeTabs nodes={nodes} activeNode={activeNode} nodeForm={this.props.arrangementRegion.nodeForm}/>
                     {false && <ModalDialog title="Upraveni osoby">
                         nnn
                     </ModalDialog>}
@@ -85,9 +85,9 @@ function mapStateToProps(state) {
     const {arrangementRegion, faFileTree} = state
     return {
         arrangementRegion,
-        faFileTree
+        faFileTree,
     }
 }
 
-module.exports = connect(mapStateToProps)(FaPage);
+module.exports = connect(mapStateToProps)(ArrPage);
 

@@ -3,7 +3,6 @@ package cz.tacr.elza.repository;
 import cz.tacr.elza.domain.RegRecord;
 
 import javax.annotation.Nullable;
-
 import java.util.Collection;
 import java.util.List;
 
@@ -24,7 +23,7 @@ public interface RegRecordRepositoryCustom {
      * @param maxResults        počet výsledků k vrácení
      * @return                  vybrané záznamy dle popisu seřazené za record, nbeo prázdná množina
      */
-    List<RegRecord> findRegRecordByTextAndType(@Nullable String searchRecord, Collection<Integer> registerTypeIds,
+    List<RegRecord> findRegRecordByTextAndType(@Nullable String searchRecord, @Nullable Collection<Integer> registerTypeIds,
                                                Integer firstResult, Integer maxResults);
 
     /**

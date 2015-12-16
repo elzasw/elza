@@ -9,7 +9,7 @@ import {connect} from 'react-redux'
 import {AbstractReactComponent, Tabs, FaTree} from 'components';
 import {AppActions} from 'stores';
 
-import {selectFa, closeFa} from 'actions/fa/fa'
+import {selectFaTab, closeFaTab} from 'actions/arr/fa'
 
 
 var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
@@ -28,8 +28,8 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
         return (
             <Tabs.Container className='fa-tabs-container'>
                 <Tabs.Tabs items={tabs} activeItem={this.props.activeFa}
-                    onSelect={item=>this.dispatch(selectFa(item))}
-                    onClose={item=>this.dispatch(closeFa(item))}
+                    onSelect={item=>this.dispatch(selectFaTab(item))}
+                    onClose={item=>this.dispatch(closeFaTab(item))}
                 />
                 <Tabs.Content>
                     {this.props.activeFa && 

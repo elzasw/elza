@@ -3,16 +3,23 @@ import * as types from 'actions/constants/actionTypes';
 const initialState = {
     isFetching: false,
     fetched: false,
+    selectedId: null,
+    
     items: []
 }
 
-export default function faFileTree(state = initialState, action) {
+export default function record(state = initialState, action) {
     switch (action.type) {
-        case types.FA_REQUEST_FA_FILE_TREE:
+        case types.RECORD_SELECT_RECORD:
+console.log(action);
+            return Object.assign({}, state, {
+                selectedId: action.record.selectedId,
+            })
+        case types.RECORD_REQUEST_RECORD_LIST:
             return Object.assign({}, state, {
                 isFetching: true,
             })
-        case types.FA_RECEIVE_FA_FILE_TREE:
+        case types.RECORD_RECEIVE_RECORD_LIST:
             return Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,
