@@ -29,7 +29,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
         @UniqueConstraint(columnNames = {"code"}),
         @UniqueConstraint(columnNames = {"viewOrder"})})
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulDescItemType implements cz.tacr.elza.api.RulDescItemType<RulDataType> {
+public class RulDescItemType implements cz.tacr.elza.api.RulDescItemType<RulDataType, RulPackage> {
 
     @Id
     @GeneratedValue
@@ -74,6 +74,10 @@ public class RulDescItemType implements cz.tacr.elza.api.RulDescItemType<RulData
 
     @Transient
     private Boolean repeatable;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
+    @JoinColumn(name = "packageId", nullable = false)
+    private RulPackage rulPackage;
 
     @Override
     public Integer getDescItemTypeId() {
@@ -203,6 +207,16 @@ public class RulDescItemType implements cz.tacr.elza.api.RulDescItemType<RulData
     @Override
     public void setRepeatable(final Boolean repeatable) {
         this.repeatable = repeatable;
+    }
+
+    @Override
+    public RulPackage getPackage() {
+        return rulPackage;
+    }
+
+    @Override
+    public void setPackage(final RulPackage rulPackage) {
+        this.rulPackage = rulPackage;
     }
 
     @Override

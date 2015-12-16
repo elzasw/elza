@@ -10,7 +10,8 @@ import java.io.Serializable;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
-public interface RulDescItemConstraint<RIT extends RulDescItemType, RIS extends RulDescItemSpec, AV extends ArrFindingAidVersion>
+public interface RulDescItemConstraint<RIT extends RulDescItemType, RIS extends RulDescItemSpec, AV extends ArrFindingAidVersion,
+        P extends RulPackage>
         extends
             Serializable {
 
@@ -19,6 +20,18 @@ public interface RulDescItemConstraint<RIT extends RulDescItemType, RIS extends 
 
 
     void setDescItemConstraintId(final Integer descItemConstraintId);
+
+
+    /**
+     * @return kód entity
+     */
+    String getCode();
+
+
+    /**
+     * @param code kód entity
+     */
+    void setCode(String code);
 
 
     RIT getDescItemType();
@@ -84,5 +97,17 @@ public interface RulDescItemConstraint<RIT extends RulDescItemType, RIS extends 
      * @param textLenghtLimit maximální možná délka textového řetězce.
      */
     void setTextLenghtLimit(final Integer textLenghtLimit);
+
+
+    /**
+     * @return balíček
+     */
+    P getPackage();
+
+
+    /**
+     * @param rulPackage balíček
+     */
+    void setPackage(P rulPackage);
 
 }

@@ -44,6 +44,20 @@ public class BulkActionConfigManager {
     private Map<String, BulkActionConfig> bulkActionConfigMap = new HashMap<>();
 
     /**
+     * @return cesta
+     */
+    public String getPath() {
+        return path;
+    }
+
+    /**
+     * @return přípona
+     */
+    public String getExtension() {
+        return extension;
+    }
+
+    /**
      * Načtení hromadných akcí z adresáře.
      */
     public void load() throws IOException {
@@ -56,7 +70,7 @@ public class BulkActionConfigManager {
             dir.mkdirs();
         }
 
-        copyDefaultFromResources(dir);
+        //copyDefaultFromResources(dir);
 
         // vyhledání souborů v adresáři
         File[] files = dir.listFiles((dir1, name) -> name.endsWith(extension));

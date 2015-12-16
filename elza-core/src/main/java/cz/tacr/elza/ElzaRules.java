@@ -60,6 +60,11 @@ public class ElzaRules {
 
         String ruleCode = version.getRuleSet().getCode();
 
+        if (rules == null) {
+            logger.warn("Nejsou nastavené strategie");
+            return new HashSet<>();
+        }
+
         Map<String, List<String>> ruleMap = rules.get(ruleCode);
 
         if (ruleMap == null) {

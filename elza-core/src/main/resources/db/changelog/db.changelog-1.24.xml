@@ -5,7 +5,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <!-- Verze 1.24 - promazani a naplneni novymi daty -->
-    <changeSet id="24" author="bendik">
+    <changeSet id="25" author="bendik">
 
         <delete tableName="arr_data_decimal"></delete>
         <delete tableName="arr_data_unitdate"></delete>

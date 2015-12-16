@@ -4,8 +4,11 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 
@@ -18,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @Entity(name = "rul_rule_set")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class RulRuleSet implements cz.tacr.elza.api.RulRuleSet, Serializable {
+public class RulRuleSet implements cz.tacr.elza.api.RulRuleSet<RulPackage>, Serializable {
 
     @Id
     @GeneratedValue
@@ -29,6 +32,10 @@ public class RulRuleSet implements cz.tacr.elza.api.RulRuleSet, Serializable {
 
     @Column(length = 250, nullable = false)
     private String name;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
+    @JoinColumn(name = "packageId", nullable = false)
+    private RulPackage rulPackage;
 
     @Override
     public Integer getRuleSetId() {
@@ -58,6 +65,16 @@ public class RulRuleSet implements cz.tacr.elza.api.RulRuleSet, Serializable {
     @Override
     public void setName(final String name) {
         this.name = name;
+    }
+
+    @Override
+    public RulPackage getPackage() {
+        return rulPackage;
+    }
+
+    @Override
+    public void setPackage(final RulPackage rulPackage) {
+        this.rulPackage = rulPackage;
     }
 
     @Override

@@ -9,7 +9,7 @@ import java.io.Serializable;
  * @author vavrejn
  *
  */
-public interface RulArrangementType<RS extends RulRuleSet> extends Serializable {
+public interface RulArrangementType<RS extends RulRuleSet, P extends RulPackage> extends Serializable {
 
     Integer getArrangementTypeId();
 
@@ -42,4 +42,18 @@ public interface RulArrangementType<RS extends RulRuleSet> extends Serializable 
      * @param ruleSet pravidla tvorby
      */
     void setRuleSet(RS ruleSet);
+
+
+    /**
+     * Vrací balíček.
+     * @return balíček
+     */
+    P getPackage();
+
+
+    /**
+     * Nastavé balíček.
+     * @param rulPackage balíček
+     */
+    void setPackage(P rulPackage);
 }
