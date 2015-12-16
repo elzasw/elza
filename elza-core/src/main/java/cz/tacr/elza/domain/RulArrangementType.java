@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @Entity(name = "rul_arrangement_type")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class RulArrangementType implements cz.tacr.elza.api.RulArrangementType<RulRuleSet> {
+public class RulArrangementType implements cz.tacr.elza.api.RulArrangementType<RulRuleSet, RulPackage> {
 
     @Id
     @GeneratedValue
@@ -40,6 +40,10 @@ public class RulArrangementType implements cz.tacr.elza.api.RulArrangementType<R
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
     @JoinColumn(name = "ruleSetId", nullable = false)
     private RulRuleSet ruleSet;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
+    @JoinColumn(name = "packageId", nullable = false)
+    private RulPackage rulPackage;
 
     @Override
     public Integer getArrangementTypeId() {
@@ -79,6 +83,16 @@ public class RulArrangementType implements cz.tacr.elza.api.RulArrangementType<R
     @Override
     public void setRuleSet(RulRuleSet ruleSet) {
         this.ruleSet = ruleSet;
+    }
+
+    @Override
+    public RulPackage getPackage() {
+        return rulPackage;
+    }
+
+    @Override
+    public void setPackage(final RulPackage rulPackage) {
+        this.rulPackage = rulPackage;
     }
 
     @Override

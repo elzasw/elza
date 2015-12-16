@@ -1,5 +1,8 @@
 package cz.tacr.elza.drools;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -10,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.RulPackageRules;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.model.VOLevel;
 import cz.tacr.elza.drools.model.VOScenarioOfNewLevel;
@@ -32,14 +36,22 @@ public class ScenarioOfNewLevelRules extends Rules {
                                                          final ArrFindingAidVersion version)
             throws Exception {
 
-        StatelessKieSession session = createNewStatelessKieSession(version.getRuleSet());
         List<VOScenarioOfNewLevel> voScenarioOfNewLevelList = new LinkedList<>();
 
-        session.setGlobal("results", voScenarioOfNewLevelList);
 
         VOLevel voLevel = scriptModelFactory.createLevelStructure(level, directionLevel, version);
 
-        execute(session, version.getRuleSet(), Arrays.asList(voLevel));
+        Path path;
+        List<RulPackageRules> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
+                version.getRuleSet(), RulPackageRules.RuleType.NEW_LEVEL);
+
+        for (RulPackageRules rulPackageRule : rulPackageRules) {
+            path = Paths.get(RulesExecutor.ROOT_PATH + File.separator + rulPackageRule.getFilename());
+
+            StatelessKieSession session = createNewStatelessKieSession(version.getRuleSet(), path);
+            session.setGlobal("results", voScenarioOfNewLevelList);
+            execute(session, Arrays.asList(voLevel), path);
+        }
 
         List<ScenarioOfNewLevel> scenarioOfNewLevelList = new LinkedList<>();
         for (VOScenarioOfNewLevel voScenarioOfNewLevel : voScenarioOfNewLevelList) {
@@ -49,9 +61,4 @@ public class ScenarioOfNewLevelRules extends Rules {
         return scenarioOfNewLevelList;
     }
 
-
-    @Override
-    protected String getFileName() {
-        return "scenarioOfNewLevel" + RulesExecutor.FILE_EXTENSION;
-    }
 }

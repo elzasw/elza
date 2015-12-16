@@ -1,5 +1,8 @@
 package cz.tacr.elza.drools;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -10,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import cz.tacr.elza.domain.RulPackageRules;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -49,16 +53,23 @@ public class ImpactOfChangesLevelStateRules extends Rules {
             throws Exception {
         List<DescItemVO> descItemVOList = prepareDescItemVOList(createDescItem, updateDescItem, deleteDescItem);
 
-        StatelessKieSession session = createNewStatelessKieSession(rulRuleSet);
-
         Set<RelatedNodeDirection> relatedNodeDirections = new HashSet<>();
 
-        // přidání globálních proměnných
-        session.setGlobal("results", relatedNodeDirections);
-        session.setGlobal("nodeTypeOperation", nodeTypeOperation);
+        Path path;
+        List<RulPackageRules> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
+                rulRuleSet, RulPackageRules.RuleType.CONFORMITY_IMPACT);
 
-        execute(session, rulRuleSet, descItemVOList);
+        for (RulPackageRules rulPackageRule : rulPackageRules) {
+            path = Paths.get(RulesExecutor.ROOT_PATH + File.separator + rulPackageRule.getFilename());
 
+            StatelessKieSession session = createNewStatelessKieSession(rulRuleSet, path);
+
+            // přidání globálních proměnných
+            session.setGlobal("results", relatedNodeDirections);
+            session.setGlobal("nodeTypeOperation", nodeTypeOperation);
+
+            execute(session, descItemVOList, path);
+        }
         return relatedNodeDirections;
     }
 
@@ -89,8 +100,4 @@ public class ImpactOfChangesLevelStateRules extends Rules {
     }
 
 
-    @Override
-    protected String getFileName() {
-        return "states" + RulesExecutor.FILE_EXTENSION;
-    }
 }

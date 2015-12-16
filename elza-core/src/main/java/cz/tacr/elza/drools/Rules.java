@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.util.List;
 
@@ -15,8 +14,10 @@ import org.kie.internal.KnowledgeBaseFactory;
 import org.kie.internal.builder.KnowledgeBuilder;
 import org.kie.internal.builder.KnowledgeBuilderFactory;
 import org.kie.internal.io.ResourceFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.repository.PackageRulesRepository;
 
 
 /**
@@ -26,6 +27,9 @@ import cz.tacr.elza.domain.RulRuleSet;
  * @since 26.11.2015
  */
 public abstract class Rules {
+
+    @Autowired
+    protected PackageRulesRepository packageRulesRepository;
 
     /**
      * cesta k souboru
@@ -46,13 +50,13 @@ public abstract class Rules {
     /**
      * Metoda pro kontrolu aktuálnosti souboru s pravidly.
      */
-    protected void preExecute() throws Exception {
+    /*protected void preExecute() throws Exception {
         FileTime ft = Files.getLastModifiedTime(ruleFile);
         if (lastModifiedTime == null || ft.compareTo(lastModifiedTime) > 0) {
             reloadRules();
             lastModifiedTime = ft;
         }
-    }
+    }*/
 
     /**
      * Přenačtení souboru s pravidly.
@@ -75,46 +79,30 @@ public abstract class Rules {
      * Vytvoří novou session.
      *
      * @param rulRuleSet typ pravidel verze
+     * @param path
      * @return nová session
      */
-    public synchronized StatelessKieSession createNewStatelessKieSession(final RulRuleSet rulRuleSet) throws Exception {
+    public synchronized StatelessKieSession createNewStatelessKieSession(final RulRuleSet rulRuleSet, final Path path) throws Exception {
         if (kbase == null) {
-            getRuleFile(rulRuleSet);
-            preExecute();
+            ruleFile = path;
+            reloadRules();
         }
         return kbase.newStatelessKieSession();
     }
 
     /**
      * Provede vyvolání scriptu.
-     *
-     * @param session session
-     * @param ruleSet typ pravidel verze
+     *  @param session session
      * @param objects vstupní data
+     * @param ruleFile
      */
-    protected final synchronized void execute(final StatelessKieSession session, RulRuleSet ruleSet, final List objects)
+    protected final synchronized void execute(final StatelessKieSession session,
+                                              final List objects,
+                                              final Path ruleFile)
             throws Exception {
-        this.ruleFile = getRuleFile(ruleSet);
-        preExecute();
-
+        this.ruleFile = ruleFile;
+        reloadRules();
         session.execute(objects);
     }
 
-    /**
-     * Název scriptu i s příponou.
-     *
-     * @return název scriptu
-     */
-    abstract protected String getFileName();
-
-    /**
-     * @return vrací cestu k souboru
-     */
-    public Path getRuleFile(final RulRuleSet ruleSet) {
-        if (ruleFile == null) {
-            ruleFile = Paths.get(RulesExecutor.ROOT_PATH + File.separator + ruleSet.getCode() + "_" + getFileName());
-        }
-
-        return ruleFile;
-    }
 }

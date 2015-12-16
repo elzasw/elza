@@ -11,7 +11,7 @@ import java.util.List;
  * @param <RC> {@link RulDescItemConstraint}
  */
 public interface RulDescItemSpecExt<RIT extends RulDescItemType, RC extends RulDescItemConstraint,
-        RT extends RegRegisterType> extends RulDescItemSpec<RIT> {
+        RT extends RegRegisterType, P extends RulPackage> extends RulDescItemSpec<RIT, P> {
 
     List<RC> getRulDescItemConstraintList();
 

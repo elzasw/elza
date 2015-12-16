@@ -24,11 +24,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity(name = "rul_desc_item_constraint")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulDescItemConstraint implements cz.tacr.elza.api.RulDescItemConstraint<RulDescItemType, RulDescItemSpec, ArrFindingAidVersion> {
+public class RulDescItemConstraint implements cz.tacr.elza.api.RulDescItemConstraint<RulDescItemType, RulDescItemSpec,
+        ArrFindingAidVersion, RulPackage> {
 
     @Id
     @GeneratedValue
     private Integer descItemConstraintId;
+
+    @Column(length = 50, nullable = false)
+    private String code;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulDescItemType.class)
     @JoinColumn(name = "descItemTypeId", nullable = false)
@@ -51,6 +55,10 @@ public class RulDescItemConstraint implements cz.tacr.elza.api.RulDescItemConstr
     @Column(nullable = true)
     private Integer textLenghtLimit;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
+    @JoinColumn(name = "packageId", nullable = false)
+    private RulPackage rulPackage;
+
     @Override
     public Integer getDescItemConstraintId() {
         return descItemConstraintId;
@@ -59,6 +67,16 @@ public class RulDescItemConstraint implements cz.tacr.elza.api.RulDescItemConstr
     @Override
     public void setDescItemConstraintId(final Integer descItemConstraintId) {
         this.descItemConstraintId = descItemConstraintId;
+    }
+
+    @Override
+    public String getCode() {
+        return code;
+    }
+
+    @Override
+    public void setCode(final String code) {
+        this.code = code;
     }
 
     @Override
@@ -119,6 +137,16 @@ public class RulDescItemConstraint implements cz.tacr.elza.api.RulDescItemConstr
     @Override
     public void setTextLenghtLimit(final Integer textLenghtLimit) {
         this.textLenghtLimit = textLenghtLimit;
+    }
+
+    @Override
+    public RulPackage getPackage() {
+        return rulPackage;
+    }
+
+    @Override
+    public void setPackage(final RulPackage rulPackage) {
+        this.rulPackage = rulPackage;
     }
 
     @Override

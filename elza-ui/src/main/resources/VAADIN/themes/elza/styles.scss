@@ -32,6 +32,10 @@ $ax-main-focus: $color-app;
         padding-left: 2px;
     }
 
+    .package-upload {
+        display: block;
+    }
+
     .bulkaction-window-detail {
         .bulkaction-box {
             .bulkaction-line {
@@ -74,6 +78,16 @@ $ax-main-focus: $color-app;
 
                 .level-name {
                     margin-left: 10px;
+                }
+
+                .level-version {
+                    margin-left: 10px;
+                    width: 30px;
+                }
+
+                .level-code {
+                    margin-left: 10px;
+                    width: 30px;
                 }
 
                 .action-button {

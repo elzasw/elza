@@ -177,6 +177,6 @@ public class RulesExecutor implements InitializingBean {
             dir.mkdirs();
         }
 
-        copyDefaultFromResources(dir);
+        //copyDefaultFromResources(dir);
     }
 }

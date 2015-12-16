@@ -10,7 +10,7 @@ import java.io.Serializable;
  * @author vavrejn
  *
  */
-public interface RulRuleSet extends Serializable {
+public interface RulRuleSet<P extends RulPackage> extends Serializable {
 
     Integer getRuleSetId();
 
@@ -23,4 +23,8 @@ public interface RulRuleSet extends Serializable {
     String getName();
 
     void setName(String name);
+
+    P getPackage();
+
+    void setPackage(P rulPackage);
 }

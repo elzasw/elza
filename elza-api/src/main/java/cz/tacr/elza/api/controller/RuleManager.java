@@ -1,5 +1,6 @@
 package cz.tacr.elza.api.controller;
 
+import java.io.File;
 import java.util.List;
 import java.util.Set;
 
@@ -12,6 +13,7 @@ import cz.tacr.elza.api.RulDataType;
 import cz.tacr.elza.api.RulDescItemSpec;
 import cz.tacr.elza.api.RulDescItemType;
 import cz.tacr.elza.api.RulFaView;
+import cz.tacr.elza.api.RulPackage;
 import cz.tacr.elza.api.RulRuleSet;
 import cz.tacr.elza.api.vo.FaViewDescItemTypes;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
@@ -31,7 +33,7 @@ import cz.tacr.elza.api.vo.RelatedNodeDirection;
  */
 public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType, DIS extends RulDescItemSpec,
         RFV extends RulFaView, NTO extends NodeTypeOperation, RND extends RelatedNodeDirection, DI extends ArrDescItem,
-        FAV extends ArrFindingAidVersion, FAVCI extends ArrFindingAidVersionConformityInfo> {
+        FAV extends ArrFindingAidVersion, FAVCI extends ArrFindingAidVersionConformityInfo, P extends RulPackage> {
 
     /**
      * Najde specifikaci podle id.
@@ -125,4 +127,24 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      */
     void setVersionConformityInfo(FAVCI.State state, String stateDescription, FAV version);
 
+
+    /**
+     * Vrací seznam naimportovaných balíčlů.
+     * @return seznam balíčlů
+     */
+    List<P> getPackages();
+
+
+    /**
+     * Provede import balíčku s konfigurací.
+     * @param file soubor balíčku
+     */
+    void importPackage(File file);
+
+
+    /**
+     * Smaže balíček s konfigurací
+     * @param code kód balíčku
+     */
+    void deletePackage(String code);
 }
