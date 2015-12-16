@@ -56,7 +56,7 @@ var RecordPage = class RecordPage extends AbstractReactComponent {
 
             return (
                 <div className={cls} onClick={this.handleSelect.bind(this, item)}>
-                    <span key={item.id}>{item.name}</span>
+                    <span key={item.id}>{item.record}</span>
                 </div>
             )
         });
@@ -76,7 +76,7 @@ var RecordPage = class RecordPage extends AbstractReactComponent {
 
         var centerPanel = (
             <div>
-                <RecordPanel />
+                <RecordPanel selectedId={this.props.record.selectedId}/>
             </div>
         )
 

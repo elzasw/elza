@@ -8,12 +8,16 @@ import {i18n} from 'components';
 var RecordPanel = class RecordPanel extends AbstractReactComponent {
     constructor(props) {
         super(props);
+console.log('test');
+console.log(props);
     }
 
     render() {
+console.log('tady');
+console.log(this.props.selectedId);
         return (
             <div>
-                testovaci data
+                testovaci data {this.props.selectedId}
             </div>
         )
     }

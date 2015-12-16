@@ -25,7 +25,7 @@ class WebApiRest {
     getRecord(){
         return AjaxUtils.ajaxGet('/api/registryManager/findRecord', [{key: 'search', value: 'test'},{key: 'from', value: '0'},{key: 'count', value: '200'}, {key: 'registerTypeIds', value: ''}])
             .then(json=>{
-                return json.recordList.map(i=>{return {id:i.recordId, name:i.name}});
+                return json.recordList;
             });
     }
 }
@@ -129,23 +129,23 @@ class WebApiFake {
             [
                 {
                     id: 1, 
-                    name: 'Záznam 1',
+                    record: 'Záznam 1',
                 },
                 {
                     id: 2, 
-                    name: 'Záznam 2',
+                    record: 'Záznam 2',
                 },
                 {
                     id: 3, 
-                    name: 'Záznam 3',
+                    record: 'Záznam 3',
                 },
                 {
                     id: 4, 
-                    name: 'Záznam 4',
+                    record: 'Záznam 4',
                 },
                 {
                     id: 5,
-                    name: 'Záznam 5',
+                    record: 'Záznam 5',
                 }
             ]
         
