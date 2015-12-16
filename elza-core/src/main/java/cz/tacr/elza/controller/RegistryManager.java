@@ -177,9 +177,9 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
 
     @Override
     @RequestMapping(value = "/findRecord", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public RegRecordWithCount findRecord(@RequestParam @Nullable final String search, @RequestParam final Integer from,
-                                         @RequestParam final Integer count,
-                                         @RequestParam(value = "registerTypeIds") final Integer[] registerTypeIds) {
+    public RegRecordWithCount findRecord(@RequestParam(required = false) @Nullable final String search,
+                 @RequestParam final Integer from, @RequestParam final Integer count,
+                 @RequestParam(value = "registerTypeIds", required = false) @Nullable final Integer[] registerTypeIds) {
 
         List<Integer> registerTypeIdList = null;
         if (registerTypeIds != null) {

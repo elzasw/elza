@@ -1,8 +1,11 @@
 package cz.tacr.elza.repository;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegVariantRecord;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -13,13 +16,8 @@ import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-
-import org.apache.commons.lang.StringUtils;
-import org.springframework.stereotype.Component;
-
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegVariantRecord;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Implementace respozitory pro regrecord.
@@ -34,9 +32,6 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
     @Override
     public List<RegRecord> findRegRecordByTextAndType(final String searchRecord, final Collection<Integer> registerTypeIds,
                                                       final Integer firstReult, final Integer maxResults) {
-        if (registerTypeIds != null && registerTypeIds.isEmpty()) {
-            return new LinkedList<>();
-        }
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<RegRecord> query = builder.createQuery(RegRecord.class);
@@ -44,8 +39,11 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
 
         Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, record, builder);
 
-        Order order = builder.asc(record.get(RegRecord.RECORD));
-        query.select(record).where(condition).orderBy(order).distinct(true);
+        query.select(record).distinct(true);
+        if (condition != null) {
+            Order order = builder.asc(record.get(RegRecord.RECORD));
+            query.where(condition).orderBy(order);
+        }
 
         return entityManager.createQuery(query)
                 .setFirstResult(firstReult)
@@ -55,9 +53,6 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
 
     @Override
     public long findRegRecordByTextAndTypeCount(final String searchRecord, final Collection<Integer> registerTypeIds) {
-        if (registerTypeIds != null && registerTypeIds.isEmpty()) {
-            return 0;
-        }
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Long> query = builder.createQuery(Long.class);
@@ -65,7 +60,10 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
 
         Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, record, builder);
 
-        query.select(builder.countDistinct(record)).where(condition);
+        query.select(builder.countDistinct(record));
+        if (condition != null) {
+            query.where(condition);
+        }
 
         return entityManager.createQuery(query)
                 .getSingleResult();
@@ -78,7 +76,7 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
      * @param registerTypeId    ty záznamu
      * @param record            kořen dotazu pro danou entitu
      * @param builder           buider pro vytváření podmínek
-     * @return                  výsledné podmínky pro dotaz
+     * @return                  výsledné podmínky pro dotaz, nebo null pokud není za co filtrovat
      */
     private Predicate preparefindRegRecordByTextAndType(final String searchRecord, final Collection<Integer> registerTypeId,
                                                    final Root<RegRecord> record, final CriteriaBuilder builder) {
@@ -96,7 +94,7 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
             );
         }
 
-        if (registerTypeId != null) {
+        if (CollectionUtils.isNotEmpty(registerTypeId)) {
             Predicate typePred = registerType.get(RegRegisterType.ID).in(registerTypeId);
             conditon = conditon == null ? typePred : builder.and(conditon, typePred);
         }

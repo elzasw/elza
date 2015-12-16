@@ -225,7 +225,7 @@ public class RegistryManagerTest extends AbstractRestTest {
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .parameter(SEARCH_ATT, TEST_NAME)
                 .parameter(FROM_ATT, 0)
-                .parameter(COUNT_ATT, 1)
+                .parameter(COUNT_ATT, 10)
                 .parameter(REGISTER_TYPE_ID_ATT, record.getRegisterType().getRegisterTypeId())
                 .get(FIND_RECORD_URL);
         logger.info(response.asString());
@@ -240,7 +240,7 @@ public class RegistryManagerTest extends AbstractRestTest {
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .parameter(SEARCH_ATT, "varianta")
                 .parameter(FROM_ATT, 0)
-                .parameter(COUNT_ATT, 1)
+                .parameter(COUNT_ATT, 10)
                 .parameter(REGISTER_TYPE_ID_ATT, record.getRegisterType().getRegisterTypeId())
                 .get(FIND_RECORD_URL);
         logger.info(response.asString());
@@ -249,6 +249,28 @@ public class RegistryManagerTest extends AbstractRestTest {
 
         Assert.assertEquals("Nenalezena polozka: " + "varianta", 1, recordWithCount.getRecordList().size());
         Assert.assertEquals("Nenalezena variantní polozka: " + TEST_NAME, 2, recordWithCount.getRecordList().get(0).getVariantRecordList().size());
+
+        // null
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
+                .parameter(FROM_ATT, 0)
+                .parameter(COUNT_ATT, 10)
+                .get(FIND_RECORD_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+        recordWithCount = response.getBody().as(RegRecordWithCount.class);
+        Assert.assertEquals("Nenalezena polozka: " + TEST_NAME, 1, recordWithCount.getRecordList().size());
+
+        // prázdné
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
+                .parameter(SEARCH_ATT, "")
+                .parameter(FROM_ATT, 0)
+                .parameter(COUNT_ATT, 10)
+                .parameter(REGISTER_TYPE_ID_ATT, new Integer[] {})
+                .get(FIND_RECORD_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+        recordWithCount = response.getBody().as(RegRecordWithCount.class);
+        Assert.assertEquals("Nenalezena polozka: " + TEST_NAME, 1, recordWithCount.getRecordList().size());
     }
 
     /**

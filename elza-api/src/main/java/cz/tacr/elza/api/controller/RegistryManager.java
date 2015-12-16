@@ -83,10 +83,10 @@ public interface RegistryManager<RR extends RegRecord, VR extends RegVariantReco
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
      * nebo pole variantního záznamu obsahují hledaný řetězec. V případě, že hledaný řetězec je null, nevyhodnocuje se.
      *
-     * @param search            hledaný řetězec, může být null
+     * @param search            hledaný řetězec, může být null či prázdný (pak vrací vše)
      * @param from              index prvního záznamu, začíná od 0
      * @param count             počet výsledků k vrácení
-     * @param registerTypeIds    ID typ záznamu
+     * @param registerTypeIds   IDčka typu záznamu, může být null či prázdné (pak vrací vše)
      * @return                  vybrané záznamy dle popisu seřazené za text hesla, nebo prázdná množina
      */
     RegRecordWithCount findRecord(String search, Integer from, Integer count, Integer[] registerTypeIds);
