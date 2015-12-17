@@ -1,6 +1,8 @@
 package cz.tacr.elza.domain;
 
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,12 +15,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.springframework.data.rest.core.annotation.RestResource;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 
 /**
  * Jméno abstraktní osoby.
@@ -30,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ParPartyName
-        implements cz.tacr.elza.api.ParPartyName<ParParty> {
+        implements cz.tacr.elza.api.ParPartyName<ParParty, ParUnitdate, ParPartyNameFormType> {
 
     public static final String PARTY = "party";
 
@@ -38,18 +34,30 @@ public class ParPartyName
     @GeneratedValue
     private Integer partyNameId;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParUnitdate.class)
+    @JoinColumn(name = "validFromUnitdateId")
+    private ParUnitdate validFrom;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParUnitdate.class)
+    @JoinColumn(name = "validToUnitdateId")
+    private ParUnitdate validTo;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParPartyNameFormType.class)
+    @JoinColumn(name = "nameFormTypeId", nullable = false)
+    private ParPartyNameFormType nameFormType;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParParty.class)
     @JoinColumn(name = "partyId", nullable = false)
     private ParParty party;
 
-    @Column(length = 255)
+    @Column(length = 250, nullable = false)
     private String mainPart;
 
-    @Column(length = 255)
+    @Column(length = 250)
     private String otherPart;
 
     @Column()
-    private String annotation;
+    private String note;
 
     @Column(length = 50)
     private String degreeBefore;
@@ -57,11 +65,6 @@ public class ParPartyName
     @Column(length = 50)
     private String degreeAfter;
 
-    @Column()
-    private LocalDateTime validFrom;
-
-    @Column()
-    private LocalDateTime validTo;
 
 
     @Override
@@ -90,7 +93,7 @@ public class ParPartyName
     }
 
     @Override
-    public void setMainPart(String mainPart) {
+    public void setMainPart(final String mainPart) {
         this.mainPart = mainPart;
     }
 
@@ -100,18 +103,8 @@ public class ParPartyName
     }
 
     @Override
-    public void setOtherPart(String otherPart) {
+    public void setOtherPart(final String otherPart) {
         this.otherPart = otherPart;
-    }
-
-    @Override
-    public String getAnnotation() {
-        return annotation;
-    }
-
-    @Override
-    public void setAnnotation(String annotation) {
-        this.annotation = annotation;
     }
 
     @Override
@@ -120,7 +113,7 @@ public class ParPartyName
     }
 
     @Override
-    public void setDegreeBefore(String degreeBefore) {
+    public void setDegreeBefore(final String degreeBefore) {
         this.degreeBefore = degreeBefore;
     }
 
@@ -130,28 +123,48 @@ public class ParPartyName
     }
 
     @Override
-    public void setDegreeAfter(String degreeAfter) {
+    public void setDegreeAfter(final String degreeAfter) {
         this.degreeAfter = degreeAfter;
     }
 
     @Override
-    public LocalDateTime getValidFrom() {
+    public ParUnitdate getValidFrom() {
         return validFrom;
     }
 
     @Override
-    public void setValidFrom(LocalDateTime validFrom) {
+    public void setValidFrom(final ParUnitdate validFrom) {
         this.validFrom = validFrom;
     }
 
     @Override
-    public LocalDateTime getValidTo() {
+    public ParUnitdate getValidTo() {
         return validTo;
     }
 
     @Override
-    public void setValidTo(LocalDateTime validTo) {
+    public void setValidTo(final ParUnitdate validTo) {
         this.validTo = validTo;
+    }
+
+    @Override
+    public ParPartyNameFormType getNameFormType() {
+        return nameFormType;
+    }
+
+    @Override
+    public void setNameFormType(final ParPartyNameFormType nameFormType) {
+        this.nameFormType = nameFormType;
+    }
+
+    @Override
+    public String getNote() {
+        return note;
+    }
+
+    @Override
+    public void setNote(final String note) {
+        this.note = note;
     }
 
     @Override

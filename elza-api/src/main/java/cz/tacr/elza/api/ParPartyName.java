@@ -1,14 +1,13 @@
 package cz.tacr.elza.api;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 /**
  * Jméno abstraktní osoby.
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public interface ParPartyName<AB extends ParParty> extends Serializable {
+public interface ParPartyName<PP extends ParParty, PU extends ParUnitdate, PNFT extends ParPartyNameFormType> extends Serializable {
 
     /**
      * Vlastní ID.
@@ -26,13 +25,13 @@ public interface ParPartyName<AB extends ParParty> extends Serializable {
      * Vazba na osobu.
      * @return osoba
      */
-    AB getParty();
+    PP getParty();
 
     /**
      * Vazba na osobu.
      * @param party osoba
      */
-    void setParty(AB party);
+    void setParty(PP party);
 
     /**
      * Hlavní část jména.
@@ -62,13 +61,13 @@ public interface ParPartyName<AB extends ParParty> extends Serializable {
      * Poznámka - využije se v případě nutnosti doplnit informaci uvedenou v prvcích.
      * @return poznámka - využije se v případě nutnosti doplnit informaci uvedenou v prvcích
      */
-    String getAnnotation();
+    String getNote();
 
     /**
      * Poznámka - využije se v případě nutnosti doplnit informaci uvedenou v prvcích.
-     * @param anotation poznámka - využije se v případě nutnosti doplnit informaci uvedenou v prvcích
+     * @param note poznámka - využije se v případě nutnosti doplnit informaci uvedenou v prvcích
      */
-    void setAnnotation(String anotation);
+    void setNote(String note);
 
     /**
      * Titul před jménem.
@@ -98,24 +97,28 @@ public interface ParPartyName<AB extends ParParty> extends Serializable {
      * Platnost jména od.
      * @return platnost jména od
      */
-    LocalDateTime getValidFrom();
+    PU getValidFrom();
 
     /**
      * Platnost jména od.
      * @param validFrom platnost jména od
      */
-    void setValidFrom(LocalDateTime validFrom);
+    void setValidFrom(PU validFrom);
 
     /**
      * Platnost jména do.
      * @return platnost jména do
      */
-    LocalDateTime getValidTo();
+    PU getValidTo();
 
     /**
      * Platnost jména do.
      * @param validTo platnost jména do
      */
-    void setValidTo(LocalDateTime validTo);
+    void setValidTo(PU validTo);
+
+    PNFT getNameFormType();
+
+    void setNameFormType(PNFT nameFormType);
 
 }

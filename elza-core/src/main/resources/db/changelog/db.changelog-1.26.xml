@@ -30,6 +30,186 @@
         </addColumn>
         <dropNotNullConstraint tableName="par_party" columnName="preferred_name_id" />
 
+        <createTable tableName="par_unitdate">
+            <column name="unitdate_id" type="int">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="calendar_type_id" type="int" />
+            <column name="value_from" type="varchar(19)" />
+            <column name="value_from_estimated" type="booolean" />
+            <column name="value_to" type="varchar(19)" />
+            <column name="value_to_estimated" type="booolean" />
+            <column name="format" type="varchar(50)" />
+            <column name="text_date" type="varchar(250)" />
+        </createTable>
+        <addForeignKeyConstraint
+                constraintName="fk_parUnitdate_arrCalendarType"
+                baseTableName="par_unitdate" baseColumnNames="calendar_type_id"
+                referencedTableName="arr_calendar_type" referencedColumnNames="calendar_type_id"
+                onDelete="NO ACTION" />
+
+        <createTable tableName="par_party_name_form_type">
+            <column name="name_form_type_id" type="int">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="code" type="varchar(50)" >
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="name" type="varchar(250)" />
+        </createTable>
+
+        <createTable tableName="par_complement_type">
+            <column name="complement_type_id" type="int">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="code" type="varchar(50)" >
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="name" type="varchar(250)">
+                <constraints nullable="false" />
+            </column>
+            <column name="view_order" type="int">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createTable tableName="par_party_name_complement">
+            <column name="party_name_complement_id" type="int">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="complement_type_id" type="int" >
+                <constraints nullable="false" />
+            </column>
+            <column name="party_name_id" type="int" >
+                <constraints nullable="false" />
+            </column>
+            <column name="complement" type="varchar(1000)">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+                constraintName="fk_parPartynameComplement_parComplementType"
+                baseTableName="par_party_name_complement" baseColumnNames="complement_type_id"
+                referencedTableName="par_complement_type" referencedColumnNames="complement_type_id"
+                onDelete="NO ACTION" />
+        <addForeignKeyConstraint
+                constraintName="fk_parPartynameComplement_parPartyName"
+                baseTableName="par_party_name_complement" baseColumnNames="party_name_id"
+                referencedTableName="par_party_name" referencedColumnNames="party_name_id"
+                onDelete="NO ACTION" />
+
+        <dropTable tableName="par_party_name" />
+        <createTable tableName="par_party_name">
+            <column name="par_party_name_id" type="int">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="valid_from_unitdate_id" type="int" />
+            <column name="valid_to_unitdate_id" type="int" />
+            <column name="name_form_type_id" type="int" >
+                <constraints nullable="false" />
+            </column>
+            <column name="party_id" type="int" >
+                <constraints nullable="false" />
+            </column>
+            <column name="main_part" type="varchar(250)">
+                <constraints nullable="false" />
+            </column>
+            <column name="other_part" type="varchar(250)" />
+            <column name="note" type="text" />
+            <column name="degree_before" type="varchar(50)" />
+            <column name="degree_after" type="varchar(50)" />
+        </createTable>
+        <addForeignKeyConstraint
+                constraintName="fk_parPartyName_fromParUnitdate"
+                baseTableName="par_party_name" baseColumnNames="valid_from_unitdate_id"
+                referencedTableName="par_unitdate" referencedColumnNames="unitdate_id"
+                onDelete="NO ACTION" />
+        <addForeignKeyConstraint
+                constraintName="fk_parPartyName_toParUnitdate"
+                baseTableName="par_party_name" baseColumnNames="valid_to_unitdate_id"
+                referencedTableName="par_unitdate" referencedColumnNames="unitdate_id"
+                onDelete="NO ACTION" />
+        <addForeignKeyConstraint
+                constraintName="fk_parPartyName_parPartyNameFormType"
+                baseTableName="par_party_name" baseColumnNames="name_form_type_id"
+                referencedTableName="par_party_name_form_type" referencedColumnNames="name_form_type_id"
+                onDelete="NO ACTION" />
+        <addForeignKeyConstraint
+                constraintName="fk_parPartyName_parParty"
+                baseTableName="par_party_name" baseColumnNames="party_id"
+                referencedTableName="par_party" referencedColumnNames="party_id"
+                onDelete="NO ACTION" />
+
+        <createTable tableName="par_creator">
+            <column name="creator_id" type="int">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="creator_party_id" type="int" >
+                <constraints nullable="false" />
+            </column>
+            <column name="party_id" type="int" >
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+                constraintName="fk_parCreator_creatorParParty"
+                baseTableName="par_creator" baseColumnNames="creator_party_id"
+                referencedTableName="par_party" referencedColumnNames="party_id"
+                onDelete="NO ACTION" />
+        <addForeignKeyConstraint
+                constraintName="fk_parCreator_parParty"
+                baseTableName="par_creator" baseColumnNames="party_id"
+                referencedTableName="par_party" referencedColumnNames="party_id"
+                onDelete="NO ACTION" />
+
+        <createTable tableName="par_party_time_range">
+            <column name="par_party_time_range_id" type="int">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="party_id" type="int" >
+                <constraints nullable="false" />
+            </column>
+            <column name="from_unitdate_id" type="int" />
+            <column name="to_unitdate_id" type="int" />
+        </createTable>
+        <addForeignKeyConstraint
+                constraintName="fk_parPartyTimeRange_parParty"
+                baseTableName="par_party_time_range" baseColumnNames="party_id"
+                referencedTableName="par_party" referencedColumnNames="party_id"
+                onDelete="NO ACTION" />
+        <addForeignKeyConstraint
+                constraintName="fk_parPartyTimeRange_fromParUnitdate"
+                baseTableName="par_party_time_range" baseColumnNames="from_unitdate_id"
+                referencedTableName="par_unitdate" referencedColumnNames="unitdate_id"
+                onDelete="NO ACTION" />
+        <addForeignKeyConstraint
+                constraintName="fk_parPartyTimeRange_toParUnitdate"
+                baseTableName="par_party_time_range" baseColumnNames="to_unitdate_id"
+                referencedTableName="par_unitdate" referencedColumnNames="unitdate_id"
+                onDelete="NO ACTION" />
+
+        <createTable tableName="par_party_type_complement_type">
+            <column name="par_party_type_complement_type_id" type="int">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="complement_type_id" type="int" >
+                <constraints nullable="false" />
+            </column>
+            <column name="party_type_id" type="int" >
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+                constraintName="fk_parPartyTypeComplementType_parComplementType"
+                baseTableName="par_party_type_complement_type" baseColumnNames="complement_type_id"
+                referencedTableName="par_complement_type" referencedColumnNames="complement_type_id"
+                onDelete="NO ACTION" />
+        <addForeignKeyConstraint
+                constraintName="fk_parPartyTypeComplementType_parPartyType"
+                baseTableName="par_party_type_complement_type" baseColumnNames="party_type_id"
+                referencedTableName="par_party_type" referencedColumnNames="party_type_id"
+                onDelete="NO ACTION" />
+
 
     </changeSet>
 </databaseChangeLog>
