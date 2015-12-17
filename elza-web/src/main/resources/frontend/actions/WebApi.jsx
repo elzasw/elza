@@ -22,10 +22,16 @@ class WebApiRest {
             });
     }
 
-    getRecord(){
-        return AjaxUtils.ajaxGet('/api/registryManager/findRecord', [{key: 'search', value: 'test'},{key: 'from', value: '0'},{key: 'count', value: '200'}, {key: 'registerTypeIds', value: ''}])
+    findRecord(search = ''){
+        return AjaxUtils.ajaxGet('/api/registryManager/findRecord', [{key: 'search', value: search},{key: 'from', value: '0'},{key: 'count', value: '200'}, {key: 'registerTypeIds', value: ''}])
             .then(json=>{
-                return json.recordList;
+                return json;
+            });
+    }
+    getRecord(recordId){
+        return AjaxUtils.ajaxGet('/api/registryManager/getRecord', [{key: 'recordId', value: recordId}])
+            .then(json=>{
+                return json;
             });
     }
 }
@@ -148,31 +154,58 @@ class WebApiFake {
         return this.getData(data, 1);
     }
 
-    getRecord() {
-        var data = 
-            [
-                {
-                    id: 1, 
-                    record: 'Záznam 1',
-                },
-                {
-                    id: 2, 
-                    record: 'Záznam 2',
-                },
-                {
-                    id: 3, 
-                    record: 'Záznam 3',
-                },
-                {
-                    id: 4, 
-                    record: 'Záznam 4',
-                },
-                {
-                    id: 5,
-                    record: 'Záznam 5',
-                }
-            ]
+    findRecord(search = '') {
+        var data = {
+                recordList: [
+                    {
+                        id: 1, 
+                        record: 'Záznam 1',
+                    },
+                    {
+                        id: 2, 
+                        record: 'Záznam 2',
+                    },
+                    {
+                        id: 3, 
+                        record: 'Záznam 3',
+                    },
+                    {
+                        id: 4, 
+                        record: 'Záznam 4',
+                    },
+                    {
+                        id: 5,
+                        record: 'Záznam 5',
+                    }
+                ],
+                count: 152
+            }
         
+        return this.getData(data, 1);
+    }
+
+    getRecord(idRecord) {
+        var data = {
+            recordId: idRecord,
+            registerType: 'text',
+            externalSource: 'text1',
+            variantRecordList: [{
+                    variantRecordId: 1,
+                    regRecord: 1,
+                    record: 'Záznam variant 2'
+                },
+                {
+                    variantRecordId: 2,
+                    regRecord: 2,
+                    record: 'Záznam variant 2'
+                }
+            ],
+            record: 'Záznam s názvem id='+idRecord,
+            characteristics: 'Charakteristika záznamu s id='+idRecord,
+            comment: 'Komentář záznamu s id='+idRecord,
+            local: false,
+            externalId: ''
+        }
         return this.getData(data, 1);
     }
 
