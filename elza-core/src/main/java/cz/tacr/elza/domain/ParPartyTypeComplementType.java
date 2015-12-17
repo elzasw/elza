@@ -83,18 +83,18 @@ public class ParPartyTypeComplementType implements ParPartyPartyTypeComplementTy
             return true;
         }
 
-        cz.tacr.elza.api.ParParty<RegRecord, ParPartyType, ParPartyName> other = (cz.tacr.elza.api.ParParty<RegRecord, ParPartyType, ParPartyName>) obj;
+        ParPartyPartyTypeComplementType other = (ParPartyPartyTypeComplementType) obj;
 
-        return new EqualsBuilder().append(partyId, other.getPartyId()).isEquals();
+        return new EqualsBuilder().append(parPartyTypeComplementTypeId, other.getParPartyTypeComplementTypeId()).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(partyId).toHashCode();
+        return new HashCodeBuilder().append(parPartyTypeComplementTypeId).toHashCode();
     }
 
     @Override
     public String toString() {
-        return "ParParty pk=" + partyId;
+        return "ParPartyTypeComplementType pk=" + parPartyTypeComplementTypeId;
     }
 }

@@ -13,6 +13,16 @@ public interface ParPartyPartyTypeComplementType<PPT extends ParPartyType, PCT e
      * Primární ID.
      * @return      id objektu
      */
+    Integer getParPartyTypeComplementTypeId();
 
+    void setParPartyTypeComplementTypeId(Integer parPartyTypeComplementTypeId);
+
+    PCT getComplementType();
+
+    void setComplementType(PCT complementType);
+
+    PPT getPartyType();
+
+    void setPartyType(PPT partyType);
 
 }
