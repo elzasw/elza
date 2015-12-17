@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet id="26" author="kuzel">
+
+        <addColumn tableName="reg_record">
+            <column name="parent_record_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <renameColumn tableName="reg_record" oldColumnName="comment" newColumnName="note" />
+        <addForeignKeyConstraint
+                constraintName="fk_regRecord_regRecord"
+                baseTableName="reg_record" baseColumnNames="parent_record_id"
+                referencedTableName="reg_record" referencedColumnNames="record_id"
+                onDelete="NO ACTION" />
+
+        <addUniqueConstraint tableName="reg_register_type" columnNames="code" />
+
+        <addUniqueConstraint tableName="reg_external_source" columnNames="code" />
+
+        <addUniqueConstraint tableName="par_party_type" columnNames="code" />
+
+        <addColumn tableName="par_party">
+            <column name="history" type="text" />
+            <column name="source_information" type="text" />
+        </addColumn>
+        <dropNotNullConstraint tableName="par_party" columnName="preferred_name_id" />
+
+
+    </changeSet>
+</databaseChangeLog>

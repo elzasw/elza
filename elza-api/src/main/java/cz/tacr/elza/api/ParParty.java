@@ -56,4 +56,28 @@ public interface ParParty<RR extends RegRecord, PPT extends ParPartyType, PPN ex
      * @return typ osoby.
      */
     PPT getPartyType();
+
+    /**
+     * Dějiny osoby.
+     * @return dějiny osoby
+     */
+    String getHistory();
+
+    /**
+     * Dějiny osoby.
+     * @param history dějiny osoby
+     */
+    void setHistory(String history);
+
+    /**
+     * Zdroje informací.
+     * @return  zdroje informací
+     */
+    String getSourceInformation();
+
+    /**
+     * Zdroje informací.
+     * @param sourceInformation zdroje informací
+     */
+    void setSourceInformation(String sourceInformation);
 }

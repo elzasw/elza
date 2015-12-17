@@ -8,7 +8,8 @@ import java.util.List;
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public interface RegRecord<RT extends RegRegisterType, ES extends RegExternalSource, VR extends RegVariantRecord>
+public interface RegRecord<RT extends RegRegisterType, ES extends RegExternalSource, VR extends RegVariantRecord,
+        RR extends RegRecord>
     extends Versionable, Serializable {
 
     /**
@@ -34,6 +35,18 @@ public interface RegRecord<RT extends RegRegisterType, ES extends RegExternalSou
      * @param registerType typ rejstříku
      */
     void setRegisterType(RT registerType);
+
+    /**
+     * Nadřazený záznam rejstříku.
+     * @return  nadřazený záznam rejstříku
+     */
+    RR getParentRecord();
+
+    /**
+     * Nadřazený záznam rejstříku.
+     * @param parentRecord nadřazený záznam rejstříku
+     */
+    void setParentRecord(RR parentRecord);
 
     /**
      * Externí zdroj hesel.
@@ -75,13 +88,13 @@ public interface RegRecord<RT extends RegRegisterType, ES extends RegExternalSou
      * Poznámka k heslu v rejstříku.
      * @return poznámka k heslu v rejstříku
      */
-    String getComment();
+    String getNote();
 
     /**
      * Poznámka k heslu v rejstříku.
-     * @param comment poznámka k heslu v rejstříku
+     * @param note poznámka k heslu v rejstříku
      */
-    void setComment(String comment);
+    void setNote(String note);
 
     /**
      * Příznak, zda se jedná o lokální nebo globální rejstříkové heslo. Lokální heslo je přiřazené pouze konkrétnímu

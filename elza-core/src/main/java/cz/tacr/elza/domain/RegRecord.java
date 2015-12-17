@@ -1,7 +1,9 @@
 package cz.tacr.elza.domain;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,12 +16,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.springframework.data.rest.core.annotation.RestResource;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -32,7 +30,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RegRecord extends AbstractVersionableEntity implements cz.tacr.elza.api.RegRecord<RegRegisterType, RegExternalSource, RegVariantRecord> {
+public class RegRecord extends AbstractVersionableEntity
+        implements cz.tacr.elza.api.RegRecord<RegRegisterType, RegExternalSource, RegVariantRecord, RegRecord> {
 
     @Id
     @GeneratedValue
@@ -42,6 +41,11 @@ public class RegRecord extends AbstractVersionableEntity implements cz.tacr.elza
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRegisterType.class)
     @JoinColumn(name = "registerTypeId", nullable = false)
     private RegRegisterType registerType;
+
+    @RestResource(exported = false)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRecord.class)
+    @JoinColumn(name = "parentRecordId")
+    private RegRecord parentRecord;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegExternalSource.class)
@@ -59,7 +63,7 @@ public class RegRecord extends AbstractVersionableEntity implements cz.tacr.elza
     private String characteristics;
 
     @Column()
-    private String comment;
+    private String note;
 
     @Column(nullable = false)
     private Boolean local;
@@ -70,9 +74,10 @@ public class RegRecord extends AbstractVersionableEntity implements cz.tacr.elza
     /* Konstanty pro vazby a fieldy. */
     public static final String VARIANT_RECORD_LIST = "variantRecordList";
     public static final String REGISTER_TYPE = "registerType";
+    public static final String PARENT_RECORD = "parentRecord";
     public static final String RECORD = "record";
     public static final String CHARACTERISTICS = "characteristics";
-    public static final String COMMENT = "comment";
+    public static final String NOTE = "note";
 
 
     @Override
@@ -93,6 +98,16 @@ public class RegRecord extends AbstractVersionableEntity implements cz.tacr.elza
     @Override
     public void setRegisterType(final RegRegisterType registerType) {
         this.registerType = registerType;
+    }
+
+    @Override
+    public RegRecord getParentRecord() {
+        return parentRecord;
+    }
+
+    @Override
+    public void setParentRecord(final RegRecord parentRecord) {
+        this.parentRecord = parentRecord;
     }
 
     @Override
@@ -126,13 +141,13 @@ public class RegRecord extends AbstractVersionableEntity implements cz.tacr.elza
     }
 
     @Override
-    public String getComment() {
-        return comment;
+    public String getNote() {
+        return note;
     }
 
     @Override
-    public void setComment(final String comment) {
-        this.comment = comment;
+    public void setNote(final String note) {
+        this.note = note;
     }
 
     @Override

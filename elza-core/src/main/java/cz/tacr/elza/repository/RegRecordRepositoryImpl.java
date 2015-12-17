@@ -89,7 +89,7 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
             conditon =  builder.or(
                     builder.like(builder.lower(record.get(RegRecord.RECORD)), searchValue),
                     builder.like(builder.lower(record.get(RegRecord.CHARACTERISTICS)), searchValue),
-                    builder.like(builder.lower(record.get(RegRecord.COMMENT)), searchValue),
+                    builder.like(builder.lower(record.get(RegRecord.NOTE)), searchValue),
                     builder.like(builder.lower(variantRecord.get(RegVariantRecord.RECORD)), searchValue)
             );
         }
