@@ -315,6 +315,101 @@
                 referencedTableName="par_relation_role_type" referencedColumnNames="role_type_id"
                 onDelete="NO ACTION" />
 
+        <createTable tableName="par_relation_entity">
+            <column name="relation_entity_id" type="int">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="relation_id" type="int" >
+                <constraints nullable="false" />
+            </column>
+            <column name="record_id" type="int" >
+                <constraints nullable="false" />
+            </column>
+            <column name="role_type_id" type="int" >
+                <constraints nullable="false" />
+            </column>
+            <column name="source" type="text" />
+        </createTable>
+        <addForeignKeyConstraint
+                constraintName="fk_parRelationEntity_parRelationType"
+                baseTableName="par_relation_entity" baseColumnNames="relation_id"
+                referencedTableName="par_relation" referencedColumnNames="relation_id"
+                onDelete="NO ACTION" />
+        <addForeignKeyConstraint
+                constraintName="fk_parRelationEntity_regRecord"
+                baseTableName="par_relation_entity" baseColumnNames="record_id"
+                referencedTableName="reg_record" referencedColumnNames="record_id"
+                onDelete="NO ACTION" />
+        <addForeignKeyConstraint
+                constraintName="fk_parRelationEntity_parRelationRoleType"
+                baseTableName="par_relation_entity" baseColumnNames="role_type_id"
+                referencedTableName="par_relation_role_type" referencedColumnNames="role_type_id"
+                onDelete="NO ACTION" />
+
+        <createTable tableName="par_party_group">
+            <column name="party_id" type="int">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="scope" type="varchar(1000)" >
+                <constraints nullable="false" />
+            </column>
+            <column name="founding_norm" type="varchar(50)" />
+            <column name="scope_norm" type="varchar(250)" />
+            <column name="organization" type="varchar(1000)" />
+        </createTable>
+
+        <createTable tableName="par_party_group_identifier">
+            <column name="party_group_identifier_id" type="int">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="to_unitdate_id" type="int" />
+            <column name="from_unitdate_id" type="int" />
+            <column name="party_id" type="int" >
+                <constraints nullable="false"/>
+            </column>
+            <column name="source" type="varchar(50)" />
+            <column name="note" type="text" />
+            <column name="identifier" type="varchar(50)" >
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+                constraintName="fk_parPartyGroupIdentifier_toParUnitdate"
+                baseTableName="par_party_group_identifier" baseColumnNames="to_unitdate_id"
+                referencedTableName="par_unitdate" referencedColumnNames="unitdate_id"
+                onDelete="NO ACTION" />
+        <addForeignKeyConstraint
+                constraintName="fk_parPartyGroupIdentifier_fromParUnitdate"
+                baseTableName="par_party_group_identifier" baseColumnNames="from_unitdate_id"
+                referencedTableName="par_unitdate" referencedColumnNames="unitdate_id"
+                onDelete="NO ACTION" />
+        <addForeignKeyConstraint
+                constraintName="fk_parPartyGroupIdentifier_parPartyGroup"
+                baseTableName="par_party_group_identifier" baseColumnNames="party_id"
+                referencedTableName="par_party_group" referencedColumnNames="party_id"
+                onDelete="NO ACTION" />
+
+        <createTable tableName="par_dynasty">
+            <column name="party_id" type="int">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="genealogy" type="text" >
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createTable tableName="par_event">
+            <column name="party_id" type="int">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+        </createTable>
+
+        <createTable tableName="par_person">
+            <column name="party_id" type="int">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+        </createTable>
+
 
     </changeSet>
 </databaseChangeLog>

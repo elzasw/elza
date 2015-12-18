@@ -5,6 +5,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.springframework.data.rest.core.annotation.RestResource;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -22,45 +23,62 @@ import javax.persistence.Table;
  *
  * @author Martin Kužel [<a href="mailto:martin.kuzel@marbes.cz">martin.kuzel@marbes.cz</a>]
  */
-@Entity(name = "par_relation_type_role_type")
+@Entity(name = "par_relation_entity")
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParRelationTypeRoleType implements cz.tacr.elza.api.ParRelationTypeRoleType<ParRelationType, ParRelationRoleType> {
+public class ParRelationEntity implements cz.tacr.elza.api.ParRelationEntity<ParRelation, RegRecord, ParRelationRoleType> {
 
     @Id
     @GeneratedValue
-    private Integer relationTypeRoleTypeId;
+    private Integer relationEntityId;
 
     @RestResource(exported = false)
-    @OneToOne(fetch = FetchType.LAZY, targetEntity = ParRelationType.class)
-    @JoinColumn(name = "relationTypeId", nullable = false)
-    private ParRelationType relationType;
+    @OneToOne(fetch = FetchType.LAZY, targetEntity = ParRelation.class)
+    @JoinColumn(name = "relationId", nullable = false)
+    private ParRelation relation;
+
+    @RestResource(exported = false)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegRecord.class)
+    @JoinColumn(name = "recordId", nullable = false)
+    private RegRecord record;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParRelationRoleType.class)
     @JoinColumn(name = "roleTypeId", nullable = false)
     private ParRelationRoleType roleType;
 
+    @Column()
+    private String source;
 
     @Override
-    public Integer getRelationTypeRoleTypeId() {
-        return relationTypeRoleTypeId;
+    public Integer getRelationEntityId() {
+        return relationEntityId;
     }
 
     @Override
-    public void setRelationTypeRoleTypeId(final Integer relationTypeRoleTypeId) {
-        this.relationTypeRoleTypeId = relationTypeRoleTypeId;
+    public void setRelationEntityId(final Integer relationEntityId) {
+        this.relationEntityId = relationEntityId;
     }
 
     @Override
-    public ParRelationType getRelationType() {
-        return relationType;
+    public ParRelation getRelation() {
+        return relation;
     }
 
     @Override
-    public void setRelationType(final ParRelationType relationType) {
-        this.relationType = relationType;
+    public void setRelation(final ParRelation relation) {
+        this.relation = relation;
+    }
+
+    @Override
+    public RegRecord getRecord() {
+        return record;
+    }
+
+    @Override
+    public void setRecord(final RegRecord record) {
+        this.record = record;
     }
 
     @Override
@@ -74,26 +92,36 @@ public class ParRelationTypeRoleType implements cz.tacr.elza.api.ParRelationType
     }
 
     @Override
+    public String getSource() {
+        return source;
+    }
+
+    @Override
+    public void setSource(final String source) {
+        this.source = source;
+    }
+
+    @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof ParRelationTypeRoleType)) {
+        if (!(obj instanceof ParRelationEntity)) {
             return false;
         }
         if (this == obj) {
             return true;
         }
 
-        ParRelationTypeRoleType other = (ParRelationTypeRoleType) obj;
+        ParRelationEntity other = (ParRelationEntity) obj;
 
-        return new EqualsBuilder().append(relationTypeRoleTypeId, other.getRelationTypeRoleTypeId()).isEquals();
+        return new EqualsBuilder().append(relationEntityId, other.getRelationEntityId()).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(relationTypeRoleTypeId).toHashCode();
+        return new HashCodeBuilder().append(relationEntityId).toHashCode();
     }
 
     @Override
     public String toString() {
-        return "ParRelationTypeRoleType pk=" + relationTypeRoleTypeId;
+        return "ParRelationEntity pk=" + relationEntityId;
     }
 }
