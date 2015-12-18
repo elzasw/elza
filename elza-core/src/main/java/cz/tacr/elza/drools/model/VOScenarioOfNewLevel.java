@@ -4,20 +4,20 @@ import java.util.List;
 
 
 /**
- * Value object scénáøe.
+ * Value object scÃ©nÃ¡Å™e.
  *
- * @author Martin Šlapa
+ * @author Martin Slapa
  * @since 9.12.2015
  */
 public class VOScenarioOfNewLevel {
 
     /**
-     * jméno scénáøe
+     * jmÃ©no scÃ©nÃ¡Å™e
      */
     private String name;
 
     /**
-     * seznam hodnot atrubutù
+     * seznam hodnot atrubutÅ¯
      */
     private List<DescItemVO> descItems;
 
