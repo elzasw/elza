@@ -1,0 +1,18 @@
+<package-rules>
+    <package-rule filename="ZP_descItemValidation.drl" rule-set="ZP">
+        <rule-type>CONFORMITY_INFO</rule-type>
+        <priority>1</priority>
+    </package-rule>
+    <package-rule filename="ZP_scenarioOfNewLevel.drl" rule-set="ZP">
+        <rule-type>NEW_LEVEL</rule-type>
+        <priority>1</priority>
+    </package-rule>
+    <package-rule filename="ZP_states.drl" rule-set="ZP">
+        <rule-type>CONFORMITY_IMPACT</rule-type>
+        <priority>1</priority>
+    </package-rule>
+    <package-rule filename="ZP_types.drl" rule-set="ZP">
+        <rule-type>ATTRIBUTE_TYPES</rule-type>
+        <priority>1</priority>
+    </package-rule>
+</package-rules>
