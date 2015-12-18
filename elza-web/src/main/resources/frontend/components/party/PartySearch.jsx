@@ -10,39 +10,33 @@ import {Button} from 'react-bootstrap';
 import {AbstractReactComponent, Search} from 'components';
 import {AppActions} from 'stores';
 
-import {findPartyFetchIfNeeded} from 'actions/party/party.jsx'
+import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
 
 var PartySearch = class PartySearch extends AbstractReactComponent {
     constructor(props) {
         super(props);
         this.handleSearch = this.handleSearch.bind(this);               // funkce pro akci spoustící vyhledávání
-        this.state = {                                                  // inicializace stavu komponenty
-            filterText: this.props.filterText,                          // hledaný text
-            partyList: this.props.partyList                             // seznam vyhledaných osob
-        } 
-
-        //this.dispatch(findPartyFetchIfNeeded("aa"));
-
+        this.handlePartyDetail = this.handlePartyDetail.bind(this);     // funkce vyberu osoby zobrazeni detailu
+        this.dispatch(findPartyFetchIfNeeded(this.props.filterText));
     }
     
     handleSearch(filterText){
-        this.setState({
-            filterText: filterText,                                     // uložení zadaného řezezce ve stavu komponenty
-            partyList: null
-        });
+        this.dispatch(findPartyFetchIfNeeded(filterText));
+    }
+
+    handlePartyDetail(e){
+        this.dispatch(partyDetailFetchIfNeeded(3));
     }
 
     render() {
-        /*
-        var partyList = this.state.partyList((item) => {                                               // procházení všech nazelenýcch osob
-                return  <li key={item.id} eventKey={item.id}>                                          // přidání osoby do seznamu
-                            <span class="title">{title}</span>
+        var partyList = this.props.items.map((item) => {                                               // přidání všech nazelených osob
+                return  <li key={item.id} eventKey={item.id} onClick={this.handlePartyDetail}>                                          
+                            <span className="name">{item.name}</span>
                         </li>                          
         });
-        */
-var partyList = "aa";
+
         return  <div>
-                    <Search onSearch={this.handleSearch} filterText={this.state.filterText}/>
+                    <Search onSearch={this.handleSearch} filterText={this.props.filterText}/>
                     <ul>
                         {partyList}
                     </ul>

@@ -27,5 +27,6 @@ exports.FaTreeTabs = require('./arr/FaTreeTabs');
 exports.FaTree = require('./arr/FaTree');
 
 exports.PartySearch = require('./party/PartySearch');
+exports.PartyDetail = require('./party/PartyDetail');
 
 

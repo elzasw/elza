@@ -31,8 +31,12 @@ var Search = class Search extends React.Component {
     }
 
     handleSearch(e){
-       this.props.onSearch(this.state.filterText);
-       
+       this.props.onSearch(this.state.filterText);  
+    }
+
+    handleKeyDown(e){
+        console.log(e)
+        
     }
 
     handleChange(e){

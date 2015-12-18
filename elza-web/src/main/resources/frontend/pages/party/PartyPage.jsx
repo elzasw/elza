@@ -2,17 +2,18 @@
  * Stránka archivních pomůcek.
  */
 
-import React from 'react';
-import ReactDOM from 'react-dom';
-
 require ('./PartyPage.less');
 
+import React from 'react';
+import ReactDOM from 'react-dom';
+import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {i18n} from 'components';
-import {Ribbon, ModalDialog, NodeTabs, PartySearch} from 'components';
+import {Ribbon, PartySearch, PartyDetail} from 'components';
 import {ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
+import {AppStore} from 'stores'
 
 var PartyPage = class PartyPage extends React.Component {
     constructor(props) {
@@ -28,15 +29,15 @@ var PartyPage = class PartyPage extends React.Component {
     }
 
     render() {
-        
         var leftPanel = (
-            <PartySearch {...this.props} />
+            <PartySearch 
+                items={this.props.partyRegion.items} 
+                filterText={this.props.partyRegion.filterText} 
+            />
         )
         
         var centerPanel = (
-            <div>
-                CENTER - party
-            </div>
+            <PartyDetail selectedPartyData={this.props.partyRegion.selectedPartyData} />
         )
 
         var rightPanel = (
@@ -57,5 +58,13 @@ var PartyPage = class PartyPage extends React.Component {
     }
 }
 
-module.exports = PartyPage;
+
+function mapStateToProps(state) {
+    const {partyRegion} = state
+    return {
+        partyRegion
+    }
+}
+
+module.exports = connect(mapStateToProps)(PartyPage);
 

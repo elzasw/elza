@@ -46,25 +46,39 @@ class WebApiFake {
         var data = 
             [
                 {
-                    id: 1, 
-                    name: 'Kněžna Libuše',
+                    id: 1, name: 'Kněžna Libuše',
                 },{
-                    id: 2,
-                    name: 'Jan Lucemburský',
+                    id: 2, name: 'Jan Lucemburský',
                 },{
-                    id: 3,
-                    name: 'Marie Terezie',
+                    id: 3, name: 'Marie Terezie',
                 },{
-                    id: 4,
-                    name: 'Svatý Václav',
+                    id: 4, name: 'Svatý Václav',
                 },{
-                    id: 5,
-                    name: 'Albrecht z Valdštejna',
+                    id: 5, name: 'Albrecht z Valdštejna',
+                },{
+                    id: 6, name: 'Kouzelník Žito',
+                },{
+                    id: 7, name: 'Čachtická paní',
+                },{
+                    id: 8, name: 'Jan "Sladký" Kozina',
                 }
             ]
-            
-        return this.getData(data, 1);
+        var filteredData = [];
+        for(var i=0; i<data.length; i++){
+            if(data[i].name.indexOf(filterText) > -1){
+                filteredData[filteredData.length] = data[i]; 
+            }
+        }
+        return this.getData(filteredData, 1);
     }
+
+    getPartyDetail(selectedPartyID){
+        var data = {
+            "id" : selectedPartyID,
+            "name": "Jmeno "
+        };
+        return this.getData(data, 1);
+    }   
 
     getNodeForm(nodeId, versionId) {
         var faId = 'x';

@@ -13,7 +13,8 @@ import partyRegion from './party/partyRegion';
 let reducer = combineReducers({
     arrangementRegion,
     faFileTree,
-    record
+    record,
+    partyRegion
 });
 
 // Store a middleware
