@@ -1,5 +1,8 @@
 package cz.tacr.elza.drools;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -7,6 +10,7 @@ import java.util.Set;
 import org.kie.api.runtime.StatelessKieSession;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.domain.RulPackageRules;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
@@ -21,7 +25,6 @@ import cz.tacr.elza.domain.RulRuleSet;
 @Component
 public class DescItemTypesRules extends Rules {
 
-
     /**
      * Spuštění zpracování pravidel.
      *
@@ -34,22 +37,24 @@ public class DescItemTypesRules extends Rules {
                                                          final RulRuleSet rulRuleSet,
                                                          final Set<String> strategies)
             throws Exception {
-        StatelessKieSession session = createNewStatelessKieSession(rulRuleSet);
+
 
         List<RulDescItemTypeExt> rulDescItemTypeExtResultList = new ArrayList<>();
 
-        // přidání globálních proměnných
-        session.setGlobal("results", rulDescItemTypeExtResultList);
-        session.setGlobal("strategies", strategies);
-        session.setGlobal("arrangementType", arrangementType);
+        Path path;
+        List<RulPackageRules> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
+                rulRuleSet, RulPackageRules.RuleType.ATTRIBUTE_TYPES);
 
-        execute(session, rulRuleSet, rulDescItemTypeExtList);
+        for (RulPackageRules rulPackageRule : rulPackageRules) {
+            path = Paths.get(RulesExecutor.ROOT_PATH + File.separator + rulPackageRule.getFilename());
+            StatelessKieSession session = createNewStatelessKieSession(rulRuleSet, path);
+            session.setGlobal("results", rulDescItemTypeExtResultList);
+            session.setGlobal("strategies", strategies);
+            session.setGlobal("arrangementType", arrangementType);
+            execute(session, rulDescItemTypeExtList, path);
+        }
 
         return rulDescItemTypeExtResultList;
     }
 
-    @Override
-    protected String getFileName() {
-        return "types" + RulesExecutor.FILE_EXTENSION;
-    }
 }

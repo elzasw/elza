@@ -21,4 +21,7 @@ public interface DescItemSpecRegisterRepository extends JpaRepository<RulDescIte
      */
     @Query("SELECT ap FROM rul_desc_item_spec_register ap WHERE ap.descItemSpec = ?1")
     List<RulDescItemSpecRegister> findByDescItemSpecId(RulDescItemSpec descItemSpec);
+
+
+    void deleteByDescItemSpec(RulDescItemSpec descItemSpec);
 }

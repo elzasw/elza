@@ -5,7 +5,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <!-- Verze 1.23 - promazani a naplneni novymi daty -->
-    <changeSet id="23" author="bendik">
+    <changeSet id="24" author="bendik">
         <update tableName="par_party_name">
             <column name="party_id" value="NULL"/>
         </update>
@@ -28,8 +28,8 @@
         <delete tableName="arr_data"></delete>
         <delete tableName="arr_desc_item"></delete>
         <delete tableName="rul_desc_item_constraint"></delete>
-        <delete tableName="rul_desc_item_spec"></delete>
         <delete tableName="rul_desc_item_spec_register"></delete>
+        <delete tableName="rul_desc_item_spec"></delete>
         <delete tableName="rul_desc_item_type"></delete>
 
         <insert tableName="rul_desc_item_type" ><column name="desc_item_type_id" value="1" /><column name="data_type_id" value="12" /><column name="code" value="ZP2015_LEVEL_TYPE" /><column name="name" value="Úroveň popisu" /><column name="shortcut" value="Úroveň" /><column name="description" value="ZP4.2.7 Úroveň popisu" /><column name="is_value_unique" value="false" /><column name="can_be_ordered" value="false" /><column name="use_specification" value="true" /><column name="view_order" value="1" /><column name="FA_ONLY" value="false" /></insert>

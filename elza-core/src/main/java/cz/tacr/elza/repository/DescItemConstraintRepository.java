@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulPackage;
 
 
 /**
@@ -31,4 +32,10 @@ public interface DescItemConstraintRepository extends JpaRepository<RulDescItemC
 
 
     List<RulDescItemConstraint> findByDescItemType(RulDescItemType rulDescItemType);
+
+
+    List<RulDescItemConstraint> findByRulPackage(RulPackage rulPackage);
+
+
+    void deleteByRulPackage(RulPackage rulPackage);
 }

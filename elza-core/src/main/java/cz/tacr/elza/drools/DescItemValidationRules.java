@@ -1,5 +1,8 @@
 package cz.tacr.elza.drools;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -9,6 +12,7 @@ import org.kie.api.runtime.StatelessKieSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.domain.RulPackageRules;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.vo.DataValidationResult;
@@ -49,16 +53,22 @@ public class DescItemValidationRules extends Rules {
                                                            final Set<String> strategies)
             throws Exception {
 
-        StatelessKieSession session = createNewStatelessKieSession(version.getRuleSet());
         List<DataValidationResult> result = new LinkedList<>();
-
-        session.setGlobal("results", result);
-        session.setGlobal("strategies", strategies);
-        session.setGlobal("arrType", version.getArrangementType());
-
         VOLevel voLevel = scriptModelFactory.createLevelStructure(level, version);
 
-        execute(session, version.getRuleSet(), Arrays.asList(voLevel));
+        Path path;
+        List<RulPackageRules> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
+                version.getRuleSet(), RulPackageRules.RuleType.CONFORMITY_INFO);
+
+        for (RulPackageRules rulPackageRule : rulPackageRules) {
+            path = Paths.get(RulesExecutor.ROOT_PATH + File.separator + rulPackageRule.getFilename());
+            StatelessKieSession session = createNewStatelessKieSession(version.getRuleSet(), path);
+            session.setGlobal("results", result);
+            session.setGlobal("strategies", strategies);
+            session.setGlobal("arrType", version.getArrangementType());
+            execute(session, Arrays.asList(voLevel), path);
+        }
+
         finalizeValidationResults(result);
 
         return result;
@@ -95,8 +105,4 @@ public class DescItemValidationRules extends Rules {
         }
     }
 
-    @Override
-    protected String getFileName() {
-        return "descItemValidation" + RulesExecutor.FILE_EXTENSION;
-    }
 }

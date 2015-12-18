@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulPackage;
 
 
 /**
@@ -41,4 +42,10 @@ public interface DescItemTypeRepository extends JpaRepository<RulDescItemType, I
     Set<RulDescItemType> findDescItemTypesForIntegers();
 
     RulDescItemType getOneByCode(String code);
+
+
+    List<RulDescItemType> findByRulPackage(RulPackage rulPackage);
+
+
+    void deleteByRulPackage(RulPackage rulPackage);
 }

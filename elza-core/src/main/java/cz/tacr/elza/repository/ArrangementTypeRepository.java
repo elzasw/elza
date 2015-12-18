@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.RulArrangementType;
+import cz.tacr.elza.domain.RulPackage;
+
 
 /**
  * @author by Ondřej Buriánek, burianek@marbes.cz.
@@ -18,4 +20,9 @@ public interface ArrangementTypeRepository extends JpaRepository<RulArrangementT
     @Query(value = "select rat from rul_arrangement_type rat join rat.ruleSet rrs where rrs.ruleSetId = ?1")
     List<RulArrangementType> findByRuleSetId(Integer ruleSetId);
 
+
+    List<RulArrangementType> findByRulPackage(RulPackage rulPackage);
+
+
+    void deleteByRulPackage(RulPackage rulPackage);
 }

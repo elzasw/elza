@@ -1,5 +1,6 @@
 /**
  * Stránka rejstříků.
+ * Zobrazuje stranku s vyberem rejstriku a jeho detailem/editaci
  */
 
 import React from 'react';
@@ -15,7 +16,7 @@ import {Ribbon, ModalDialog, NodeTabs, Search, RecordPanel} from 'components';
 import {ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {Nav, NavItem} from 'react-bootstrap';
-import {recordData} from 'actions/record/recordData'
+import {recordData, recordSearchData} from 'actions/record/recordData'
 
 import {fetchRecordIfNeeded} from 'actions/record/recordList'
 
@@ -24,15 +25,14 @@ var RecordPage = class RecordPage extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('handleSelect');
+        this.bindMethods('handleSearch');
         this.buildRibbon = this.buildRibbon.bind(this);
-        this.dispatch(fetchRecordIfNeeded());
+        this.dispatch(fetchRecordIfNeeded(props.record.search));
 
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.opened) {
-            this.dispatch(fetchRecordIfNeeded());
-        }
+            this.dispatch(fetchRecordIfNeeded(nextProps.record.search));
     }
 
     buildRibbon() {
@@ -44,28 +44,38 @@ var RecordPage = class RecordPage extends AbstractReactComponent {
     handleSelect(record, event) {
         var record = Object.assign({}, record,{selectedId: record.id});
         this.dispatch(recordData(record));
+    }
 
-
+    handleSearch(search, event) {
+        var record = Object.assign({}, record,{search: search});
+        this.dispatch(recordSearchData(record));
     }
 
     render() {
-        var navRows = this.props.record.items.map(item=>{
-            var cls = classNames({
-                        active: this.props.record.selectedId === item.id
-                        })
+        
+        var navRows = (
+            <div>
+                <div key='recordsList'>
+                    {this.props.record.items.map(item=>{
+                        var cls = classNames({
+                                    active: this.props.record.selectedId === item.id
+                                    })
 
-            return (
-                <div className={cls} onClick={this.handleSelect.bind(this, item)}>
-                    <span key={item.id}>{item.record}</span>
+                        return (
+                            <div key={item.id} className={cls} onClick={this.handleSelect.bind(this, item)}>
+                                <span>{item.record}</span>
+                            </div>
+                        )
+                    })}
                 </div>
-            )
-        });
-
+                <div key='recordsCouns' className='seznamRejstrikuCelkem'>Zobrazeno {this.props.record.items.length} z celkoveho poctu {this.props.record.countItems}</div>
+            </div>
+        )
 
         var leftPanel = (
             <div>
                 <div>
-                    <Search />
+                    <Search onSearch={this.handleSearch.bind(this)} filterText={this.props.record.search}/>
                 </div>
                 <div>
                     {(this.props.record.isFetching || !this.props.record.fetched) && <Loading/>}
@@ -76,7 +86,7 @@ var RecordPage = class RecordPage extends AbstractReactComponent {
 
         var centerPanel = (
             <div>
-                <RecordPanel selectedId={this.props.record.selectedId}/>
+                <RecordPanel selectedId = {this.props.record.selectedId}/>
             </div>
         )
 

@@ -26,12 +26,6 @@ Pro sestavení dokumentace včetně UML diagramů modelu použijte profil jdocum
 
 ### Sestavení a spuštění embed (UI pro testovací účely - Vaadin)
 
-Zkopírování hromadných akcí:
-z "elza-core/src/main/resources/bulkactions" do "elza-ui/bulkactions"
-
-Zkopírování pravidel:
-z "elza-core/src/main/resources/rules" do "elza-ui/rules"
-
 Přepnutí do elza UI před spuštěním
 ```
 cd elza-ui
@@ -44,13 +38,26 @@ mvn -Pexec,skiptest install
 Po sestavení dojde ke spuštění embedded aplikačního serveru Tomcat.
 Uživatelské rozhranní najdete na adrese http://localhost:8080/ui.
 
-### Sestavení a spuštění embed (finální UI - React), určeno pro vývoj
-Spouštení je nutné v modulu elza-web a je nutné spustit dva servery.
-1. Spuštění aplikačního serveru
+### Sestavení a spuštění embed (UI - React), určeno pro vývoj
+
+1. Nastavení připojení k DB
+V projektu elza-web je nutné v adresáři config založit soubor elza.yaml s připojením k databázi.
+Podrobnosti o nastavení viz sekce 'Databázové připojení'.
+
+2. Přeložení projektu (root celého projektu) (pokud již nebylo přeloženo kvůli dokumentaci - sekce 'Sestavení vč dokumentace')
+mvn install -Pskiptest
+
+3. Aktualizace NPM balíčků (v adresáři elza-web)
+```
+mvn exec:exec -Pnpm-install
+```
+
+4. Spuštění aplikačního serveru (v adresáři elza-web)
 ```
 mvn spring-boot:run
 ```
-2. Spuštění serveru pro frontend
+
+5. Spuštění serveru pro frontend (v adresáři elza-web)
 ```
 mvn exec:exec -Pfrontend-dev
 ```
@@ -72,7 +79,7 @@ Pro spuštění jádra aplikace obsahující rest služby spusťte `cz.tacr.elza
 Pro spuštění uživatelského rozhranní spusťte `cz.tacr.elza.ElzaApp`.
 Uživatelské rozhranní najdete na adrese http://localhost:8080/ui.
 
-### Spuštění v IDE (finální UI - React), určeno pro vývoj
+### Spuštění v IDE (UI - React), určeno pro vývoj
 Importujte projekt maven.
 Pro spuštění jádra aplikace obsahující rest služby spusťte `cz.tacr.elza.ElzaCore`.
 Pro spuštění uživatelského rozhranní spusťte `cz.tacr.elza.ElzaWebApp`.
@@ -117,3 +124,6 @@ logging:
   level:
     cz.tacr.elza: DEBUG
 ```
+
+### Import balíčku s pravidly
+Po spuštění je potřeba naimportovat základní pravidla - soubor package-default.zip

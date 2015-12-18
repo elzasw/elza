@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import cz.tacr.elza.ui.window.PackagesWindow;
 import ru.xpoft.vaadin.VaadinView;
 
 import com.vaadin.data.Validator;
@@ -76,9 +77,11 @@ public class FindingAidListView extends ElzaView {
                 )).done();
 
         actions(new AxAction().caption("Nový").icon(FontAwesome.PLUS_CIRCLE)
-                .run(() -> novyFA(formularNewFA())),
+                        .run(() -> novyFA(formularNewFA())),
+                new AxAction().caption("Packages").icon(FontAwesome.PLUS_CIRCLE)
+                        .run(() -> showPackagesWindow()),
                 new AxAction().caption("Testovací data").icon(FontAwesome.DATABASE)
-                .run(() -> navigate(TestingDataView.class)));
+                        .run(() -> navigate(TestingDataView.class)));
 
         components(tableFA.getTable());
         refresh();
@@ -94,6 +97,12 @@ public class FindingAidListView extends ElzaView {
                 .value(form::commit).action(this::vytvoritFA)
                 .exception(ex -> ex.printStackTrace())
                 ).modal().style("window-detail").show();
+    }
+
+    private PackagesWindow showPackagesWindow() {
+        PackagesWindow window = new PackagesWindow(ruleSetManager);
+        window.show();
+        return window;
     }
 
     private void upravitFA(final ArrFindingAid findingAid) {

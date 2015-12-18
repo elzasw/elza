@@ -1,5 +1,7 @@
 package cz.tacr.elza.controller;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.ArrNodeConformityInfoExt;
@@ -50,11 +53,13 @@ import cz.tacr.elza.domain.RulDescItemSpecExt;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulFaView;
+import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.LockVersionChangeException;
+import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.DescItemConstraintRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
@@ -81,7 +86,7 @@ import cz.tacr.elza.validation.ArrDescItemsPostValidator;
 @RequestMapping("/api/ruleSetManager")
 public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulDataType, RulDescItemType,
         RulDescItemSpec, RulFaView, NodeTypeOperation, RelatedNodeDirection, ArrDescItem, ArrFindingAidVersion,
-        ArrFindingAidVersionConformityInfo> {
+        ArrFindingAidVersionConformityInfo, RulPackage> {
 
     private static final String VIEW_SPECIFICATION_SEPARATOR = "|";
     private static final String VIEW_SPECIFICATION_SEPARATOR_REGEX = "\\|";
@@ -142,6 +147,9 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
 
     @Autowired
     private FindingAidVersionConformityInfoRepository findingAidVersionConformityInfoRepository;
+
+    @Autowired
+    private PackageService packageService;
 
     @Override
     @RequestMapping(value = "/getDescItemSpecById", method = RequestMethod.GET)
@@ -306,9 +314,18 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
                     + ") podle RuleSetId " + ruleSet.getRuleSetId() + " a ArrangementTypeId "
                     + arrangementType.getArrangementTypeId());
         } else if (faViewList.isEmpty()) {
-            throw new IllegalStateException(
+            RulFaView faView = new RulFaView();
+            faView.setRuleSet(ruleSet);
+            faView.setArrangementType(arrangementType);
+            faView.setViewSpecification("");
+
+            FaViewDescItemTypes result = new FaViewDescItemTypes();
+            result.setDescItemTypes(new LinkedList<>());
+            result.setRulFaView(faViewRepository.save(faView));
+            return result;
+            /*throw new IllegalStateException(
                     "Nebyl nalezen záznam podle RuleSetId " + ruleSet.getRuleSetId()
-                            + " a ArrangementTypeId " + arrangementType.getArrangementTypeId());
+                            + " a ArrangementTypeId " + arrangementType.getArrangementTypeId());*/
         }
         RulFaView faView = faViewList.get(0);
 
@@ -418,6 +435,45 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
         conformityInfo.setState(state);
         conformityInfo.setStateDescription(stateDescription);
         findingAidVersionConformityInfoRepository.save(conformityInfo);
+    }
+
+    @Override
+    @Transactional
+    public List<RulPackage> getPackages() {
+        return packageService.getPackages();
+    }
+
+    @Override
+    @Transactional
+    public void importPackage(final File file) {
+        Assert.notNull(file);
+        packageService.importPackage(file);
+    }
+
+    @RequestMapping(value = "/deletePackage/{code}", method = RequestMethod.GET)
+    @Override
+    @Transactional
+    public void deletePackage(@PathVariable(value = "code") final String code) {
+        Assert.notNull(code);
+        packageService.deletePackage(code);
+    }
+
+    @RequestMapping(value="/importPackage", method=RequestMethod.POST)
+    @Transactional
+    public void importPackageRest(@RequestParam("file") final MultipartFile file){
+        Assert.notNull(file);
+        File temp = null;
+        try {
+            temp = File.createTempFile("importPackage", ".zip");
+            file.transferTo(temp);
+            importPackage(temp);
+        } catch (IOException e) {
+            throw new IllegalStateException("Nepodařilo se vytvořit dočasný soubor pro import", e);
+        } finally {
+            if (temp != null) {
+                temp.deleteOnExit();
+            }
+        }
     }
 
     /**
