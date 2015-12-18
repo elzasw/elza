@@ -18,24 +18,24 @@ import javax.persistence.Table;
 
 
 /**
- * Vazba M:N mezi typem osoby a typem doplňku jména.
+ * //TODO marik missing comment
  *
  * @author Martin Kužel [<a href="mailto:martin.kuzel@marbes.cz">martin.kuzel@marbes.cz</a>]
  */
-@Entity(name = "par_party_type_complement_type")
+@Entity(name = "par_party_type_relation")
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParPartyTypeComplementType implements cz.tacr.elza.api.ParPartyTypeComplementType<ParPartyType, ParComplementType> {
+public class ParPartyTypeRelation implements cz.tacr.elza.api.ParPartyTypeRelation<ParPartyType, ParRelationType> {
 
     @Id
     @GeneratedValue
-    private Integer partyTypeComplementTypeId;
+    private Integer partyTypeRelationId;
 
     @RestResource(exported = false)
-    @OneToOne(fetch = FetchType.LAZY, targetEntity = ParComplementType.class)
-    @JoinColumn(name = "complementTypeId", nullable = false)
-    private ParComplementType complementType;
+    @OneToOne(fetch = FetchType.LAZY, targetEntity = ParRelationType.class)
+    @JoinColumn(name = "relationTypeId", nullable = false)
+    private ParRelationType relationType;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParPartyType.class)
@@ -44,23 +44,23 @@ public class ParPartyTypeComplementType implements cz.tacr.elza.api.ParPartyType
 
 
     @Override
-    public Integer getPartyTypeComplementTypeId() {
-        return partyTypeComplementTypeId;
+    public Integer getPartyTypeRelationId() {
+        return partyTypeRelationId;
     }
 
     @Override
-    public void setPartyTypeComplementTypeId(final Integer parPartyTypeComplementTypeId) {
-        this.partyTypeComplementTypeId = parPartyTypeComplementTypeId;
+    public void setPartyTypeRelationId(final Integer partyTypeRelationId) {
+        this.partyTypeRelationId = partyTypeRelationId;
     }
 
     @Override
-    public ParComplementType getComplementType() {
-        return complementType;
+    public ParRelationType getRelationType() {
+        return relationType;
     }
 
     @Override
-    public void setComplementType(final ParComplementType complementType) {
-        this.complementType = complementType;
+    public void setRelationType(ParRelationType relationType) {
+        this.relationType = relationType;
     }
 
     @Override
@@ -75,25 +75,25 @@ public class ParPartyTypeComplementType implements cz.tacr.elza.api.ParPartyType
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof cz.tacr.elza.api.ParPartyTypeComplementType)) {
+        if (!(obj instanceof ParPartyTypeRelation)) {
             return false;
         }
         if (this == obj) {
             return true;
         }
 
-        cz.tacr.elza.api.ParPartyTypeComplementType other = (cz.tacr.elza.api.ParPartyTypeComplementType) obj;
+        ParPartyTypeRelation other = (ParPartyTypeRelation) obj;
 
-        return new EqualsBuilder().append(partyTypeComplementTypeId, other.getPartyTypeComplementTypeId()).isEquals();
+        return new EqualsBuilder().append(partyTypeRelationId, other.getPartyTypeRelationId()).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(partyTypeComplementTypeId).toHashCode();
+        return new HashCodeBuilder().append(partyTypeRelationId).toHashCode();
     }
 
     @Override
     public String toString() {
-        return "ParPartyTypeComplementType pk=" + partyTypeComplementTypeId;
+        return "ParPartyTypeRelation pk=" + partyTypeRelationId;
     }
 }

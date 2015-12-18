@@ -189,7 +189,7 @@
                 onDelete="NO ACTION" />
 
         <createTable tableName="par_party_type_complement_type">
-            <column name="par_party_type_complement_type_id" type="int">
+            <column name="party_type_complement_type_id" type="int">
                 <constraints primaryKey="true" nullable="false" />
             </column>
             <column name="complement_type_id" type="int" >
@@ -208,6 +208,111 @@
                 constraintName="fk_parPartyTypeComplementType_parPartyType"
                 baseTableName="par_party_type_complement_type" baseColumnNames="party_type_id"
                 referencedTableName="par_party_type" referencedColumnNames="party_type_id"
+                onDelete="NO ACTION" />
+
+        <createTable tableName="par_party_type_relation">
+            <column name="party_type_relation_id" type="int">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="relation_type_id" type="int" >
+                <constraints nullable="false" />
+            </column>
+            <column name="party_type_id" type="int" >
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+                constraintName="fk_parPartyTypeRelation_parRelationType"
+                baseTableName="par_party_type_relation" baseColumnNames="relation_type_id"
+                referencedTableName="par_relation_type" referencedColumnNames="relation_type_id"
+                onDelete="NO ACTION" />
+        <addForeignKeyConstraint
+                constraintName="fk_parPartyTypeRelation_parPartyType"
+                baseTableName="par_party_type_relation" baseColumnNames="party_type_id"
+                referencedTableName="par_party_type" referencedColumnNames="party_type_id"
+                onDelete="NO ACTION" />
+
+        <createTable tableName="par_relation_type">
+            <column name="relation_type_id" type="int">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="name" type="varchar(250)" >
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="varchar(50)" >
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="class_type" type="varchar(50)" />
+        </createTable>
+
+        <createTable tableName="par_relation">
+            <column name="relation_id" type="int">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="party_id" type="int" >
+                <constraints nullable="false"/>
+            </column>
+            <column name="relation_type_id" type="int" >
+                <constraints nullable="false"/>
+            </column>
+            <column name="from_unitdate_id" type="int" />
+            <column name="to_unitdate_id" type="int" />
+            <column name="date_note" type="varchar(1000)" />
+            <column name="note" type="varchar(1000)" />
+        </createTable>
+        <addForeignKeyConstraint
+                constraintName="fk_parRelation_parParty"
+                baseTableName="par_relation" baseColumnNames="party_id"
+                referencedTableName="par_party" referencedColumnNames="party_id"
+                onDelete="NO ACTION" />
+        <addForeignKeyConstraint
+                constraintName="fk_parRelation_parRelationType"
+                baseTableName="par_relation" baseColumnNames="relation_type_id"
+                referencedTableName="par_relation_type" referencedColumnNames="relation_type_id"
+                onDelete="NO ACTION" />
+        <addForeignKeyConstraint
+                constraintName="fk_parRelation_fromParUnitdate"
+                baseTableName="par_relation" baseColumnNames="from_unitdate_id"
+                referencedTableName="par_unitdate" referencedColumnNames="unitdate_id"
+                onDelete="NO ACTION" />
+        <addForeignKeyConstraint
+                constraintName="fk_parRelation_toParUnitdate"
+                baseTableName="par_relation" baseColumnNames="to_unitdate_id"
+                referencedTableName="par_unitdate" referencedColumnNames="unitdate_id"
+                onDelete="NO ACTION" />
+
+        <createTable tableName="par_relation_role_type">
+            <column name="role_type_id" type="int">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="name" type="varchar(250)" >
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="varchar(50)" >
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="par_relation_type_role_type">
+            <column name="relation_type_role_type_id" type="int">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="relation_type_id" type="int" >
+                <constraints nullable="false" />
+            </column>
+            <column name="role_type_id" type="int" >
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+                constraintName="fk_parRelationTypeRoleType_parRelationType"
+                baseTableName="par_relation_type_role_type" baseColumnNames="relation_type_id"
+                referencedTableName="par_relation_type" referencedColumnNames="relation_type_id"
+                onDelete="NO ACTION" />
+        <addForeignKeyConstraint
+                constraintName="fk_parRelationTypeRoleType_parRelationRoleType"
+                baseTableName="par_relation_type_role_type" baseColumnNames="role_type_id"
+                referencedTableName="par_relation_role_type" referencedColumnNames="role_type_id"
                 onDelete="NO ACTION" />
 
 

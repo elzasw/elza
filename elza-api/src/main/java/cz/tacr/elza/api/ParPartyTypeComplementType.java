@@ -7,15 +7,15 @@ import java.io.Serializable;
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public interface ParPartyPartyTypeComplementType<PPT extends ParPartyType, PCT extends ParComplementType> extends Serializable {
+public interface ParPartyTypeComplementType<PPT extends ParPartyType, PCT extends ParComplementType> extends Serializable {
 
     /**
      * Primární ID.
      * @return      id objektu
      */
-    Integer getParPartyTypeComplementTypeId();
+    Integer getPartyTypeComplementTypeId();
 
-    void setParPartyTypeComplementTypeId(Integer parPartyTypeComplementTypeId);
+    void setPartyTypeComplementTypeId(Integer parPartyTypeComplementTypeId);
 
     PCT getComplementType();
 
