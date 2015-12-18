@@ -4,12 +4,11 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-    <changeSet id="26" author="kuzel">
+    <!-- Verze 1.26  -->
+    <changeSet id="27" author="kuzel">
 
         <addColumn tableName="reg_record">
-            <column name="parent_record_id" type="int">
-                <constraints nullable="false"/>
-            </column>
+            <column name="parent_record_id" type="int"/>
         </addColumn>
         <renameColumn tableName="reg_record" oldColumnName="comment" newColumnName="note" />
         <addForeignKeyConstraint
