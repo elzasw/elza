@@ -20,7 +20,7 @@ export function findPartyFetchIfNeeded(filterText) {
 export function findPartyFetch(filterText) {
     return dispatch => {
         dispatch(findPartyRequest(filterText))
-        return WebApi.getFindParty(filterText)
+        return WebApi.findParty(filterText)
             .then(json => dispatch(findPartyReceive(filterText, json)));
     }
 }
@@ -54,7 +54,7 @@ export function partyDetailFetchIfNeeded(selectedPartyID) {
 export function partyDetailFetch(selectedPartyID) {
     return dispatch => {
         dispatch(partyDetailRequest(selectedPartyID))
-        return WebApi.getPartyDetail(selectedPartyID)
+        return WebApi.getParty(selectedPartyID)
             .then(json => dispatch(partyDetailReceive(selectedPartyID, json)));
     }
 }

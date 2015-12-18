@@ -32,6 +32,7 @@ var PartyPage = class PartyPage extends React.Component {
         var leftPanel = (
             <PartySearch 
                 items={this.props.partyRegion.items} 
+                selectedPartyID={this.props.partyRegion.selectedPartyID}
                 filterText={this.props.partyRegion.filterText} 
             />
         )

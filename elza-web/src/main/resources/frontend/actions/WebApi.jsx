@@ -34,6 +34,25 @@ class WebApiRest {
                 return json;
             });
     }
+
+    findParty(search = ''){
+        return AjaxUtils.ajaxGet('/api/partyManager/findParty', [{
+            'search': search,
+            'from': 0,
+            'count' : 200,
+            'partyTypeId': null,
+            'originator': false
+        }]).then(json=>{
+            return json;
+        });
+    }
+
+    getParty(partyId){
+        return AjaxUtils.ajaxGet('/api/partyManager/getParty', [{key: 'partyId', value: partyId}])
+            .then(json=>{
+                return json;
+            });
+    }
 }
 
 class WebApiFake {
@@ -48,7 +67,7 @@ class WebApiFake {
         });
     }
 
-    getFindParty(filterText){
+    findParty(filterText){
         var data = 
             [
                 {
@@ -78,7 +97,7 @@ class WebApiFake {
         return this.getData(filteredData, 1);
     }
 
-    getPartyDetail(selectedPartyID){
+    getParty(selectedPartyID){
         var data = {
             "id" : selectedPartyID,
             "name": "Jmeno "

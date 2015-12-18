@@ -7,7 +7,7 @@ require ('./partySearch.less');
 import React from 'react';
 import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap';
-import {AbstractReactComponent, Search} from 'components';
+import {AbstractReactComponent, Search, i18n} from 'components';
 import {AppActions} from 'stores';
 
 import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
@@ -24,17 +24,26 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
         this.dispatch(findPartyFetchIfNeeded(filterText));
     }
 
-    handlePartyDetail(e){
-        this.dispatch(partyDetailFetchIfNeeded(3));
+    handlePartyDetail(item, e){
+        this.dispatch(partyDetailFetchIfNeeded(item.id));
     }
 
     render() {
-        var partyList = this.props.items.map((item) => {                                               // přidání všech nazelených osob
-                return  <li key={item.id} eventKey={item.id} onClick={this.handlePartyDetail}>                                          
-                            <span className="name">{item.name}</span>
-                        </li>                          
-        });
-
+        if(this.props.items && this.props.items.length>0){
+            var partyList = this.props.items.map((item) => {                                               // přidání všech nazelených osob
+                    return  <li 
+                                key={item.id} 
+                                eventKey={item.id} 
+                                className={item.id==this.props.selectedPartyID ? 'active' : ''} 
+                                onClick={this.handlePartyDetail.bind(this,item)}
+                            >                                          
+                                <span className="name">{item.name}</span>
+                            </li>                          
+            });
+        }else{
+            var label = i18n('search.action.noResult'); ;
+            var partyList = <li className="noResult">{label}</li>
+        }
         return  <div>
                     <Search onSearch={this.handleSearch} filterText={this.props.filterText}/>
                     <ul>
