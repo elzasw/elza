@@ -36,9 +36,9 @@
             </column>
             <column name="calendar_type_id" type="int" />
             <column name="value_from" type="varchar(19)" />
-            <column name="value_from_estimated" type="booolean" />
+            <column name="value_from_estimated" type="boolean" />
             <column name="value_to" type="varchar(19)" />
-            <column name="value_to_estimated" type="booolean" />
+            <column name="value_to_estimated" type="boolean" />
             <column name="format" type="varchar(50)" />
             <column name="text_date" type="varchar(250)" />
         </createTable>
@@ -73,34 +73,13 @@
             </column>
         </createTable>
 
-        <createTable tableName="par_party_name_complement">
-            <column name="party_name_complement_id" type="int">
-                <constraints primaryKey="true" nullable="false" />
-            </column>
-            <column name="complement_type_id" type="int" >
-                <constraints nullable="false" />
-            </column>
-            <column name="party_name_id" type="int" >
-                <constraints nullable="false" />
-            </column>
-            <column name="complement" type="varchar(1000)">
-                <constraints nullable="false" />
-            </column>
-        </createTable>
-        <addForeignKeyConstraint
-                constraintName="fk_parPartynameComplement_parComplementType"
-                baseTableName="par_party_name_complement" baseColumnNames="complement_type_id"
-                referencedTableName="par_complement_type" referencedColumnNames="complement_type_id"
-                onDelete="NO ACTION" />
-        <addForeignKeyConstraint
-                constraintName="fk_parPartynameComplement_parPartyName"
-                baseTableName="par_party_name_complement" baseColumnNames="party_name_id"
-                referencedTableName="par_party_name" referencedColumnNames="party_name_id"
-                onDelete="NO ACTION" />
 
+        <!-- par_party_name cele znova, nejprve odpojit, pak obnovi constraint(y)-->
+        <dropForeignKeyConstraint baseTableName="par_party" constraintName="fk_parParty_parPartyName" />
         <dropTable tableName="par_party_name" />
+
         <createTable tableName="par_party_name">
-            <column name="par_party_name_id" type="int">
+            <column name="party_name_id" type="int">
                 <constraints primaryKey="true" nullable="false" />
             </column>
             <column name="valid_from_unitdate_id" type="int" />
@@ -138,6 +117,37 @@
                 constraintName="fk_parPartyName_parParty"
                 baseTableName="par_party_name" baseColumnNames="party_id"
                 referencedTableName="par_party" referencedColumnNames="party_id"
+                onDelete="NO ACTION" />
+        <!--obnova puvodniho-->
+        <addForeignKeyConstraint
+                constraintName="fk_parParty_parPartyName"
+                baseTableName="par_party" baseColumnNames="preferred_name_id"
+                referencedTableName="par_party_name"
+                referencedColumnNames="party_name_id" onDelete="NO ACTION" />
+
+        <createTable tableName="par_party_name_complement">
+            <column name="party_name_complement_id" type="int">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="complement_type_id" type="int" >
+                <constraints nullable="false" />
+            </column>
+            <column name="party_name_id" type="int" >
+                <constraints nullable="false" />
+            </column>
+            <column name="complement" type="varchar(1000)">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+                constraintName="fk_parPartynameComplement_parComplementType"
+                baseTableName="par_party_name_complement" baseColumnNames="complement_type_id"
+                referencedTableName="par_complement_type" referencedColumnNames="complement_type_id"
+                onDelete="NO ACTION" />
+        <addForeignKeyConstraint
+                constraintName="fk_parPartynameComplement_parPartyName"
+                baseTableName="par_party_name_complement" baseColumnNames="party_name_id"
+                referencedTableName="par_party_name" referencedColumnNames="party_name_id"
                 onDelete="NO ACTION" />
 
         <createTable tableName="par_creator">
@@ -210,6 +220,19 @@
                 referencedTableName="par_party_type" referencedColumnNames="party_type_id"
                 onDelete="NO ACTION" />
 
+        <createTable tableName="par_relation_type">
+            <column name="relation_type_id" type="int">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="name" type="varchar(250)" >
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="varchar(50)" >
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="class_type" type="varchar(50)" />
+        </createTable>
+
         <createTable tableName="par_party_type_relation">
             <column name="party_type_relation_id" type="int">
                 <constraints primaryKey="true" nullable="false" />
@@ -231,19 +254,6 @@
                 baseTableName="par_party_type_relation" baseColumnNames="party_type_id"
                 referencedTableName="par_party_type" referencedColumnNames="party_type_id"
                 onDelete="NO ACTION" />
-
-        <createTable tableName="par_relation_type">
-            <column name="relation_type_id" type="int">
-                <constraints primaryKey="true" nullable="false" />
-            </column>
-            <column name="name" type="varchar(250)" >
-                <constraints nullable="false"/>
-            </column>
-            <column name="code" type="varchar(50)" >
-                <constraints nullable="false" unique="true"/>
-            </column>
-            <column name="class_type" type="varchar(50)" />
-        </createTable>
 
         <createTable tableName="par_relation">
             <column name="relation_id" type="int">
@@ -409,7 +419,6 @@
                 <constraints primaryKey="true" nullable="false" />
             </column>
         </createTable>
-
 
     </changeSet>
 </databaseChangeLog>
