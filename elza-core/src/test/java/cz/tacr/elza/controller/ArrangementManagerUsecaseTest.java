@@ -771,9 +771,9 @@ public class ArrangementManagerUsecaseTest extends AbstractRestTest {
         ArrFindingAidVersion version = getFindingAidOpenVersion(findingAid);
         ArrNode node = version.getRootLevel().getNode();
 
-        RegRecord record1 = createRecord();
-        RegRecord record2 = createRecord();
-        RegRecord record3 = createRecord();
+        RegRecord record1 = createRecord("KOD1");
+        RegRecord record2 = createRecord("KOD2");
+        RegRecord record3 = createRecord("KOD3");
 
         // just create
         restCreateNodeRegister(node, record1, record2, record3, version.getFindingAidVersionId());

@@ -168,10 +168,14 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
 
         checkPartyUsage(party);
         ParPartyName partyName = party.getPreferredName();
-        partyName.setParty(null);
-        partyNameRepository.save(partyName);
+        if (partyName != null) {
+            partyName.setParty(null);
+            partyNameRepository.save(partyName);
+        }
         partyRepository.delete(partyId);
-        partyNameRepository.delete(partyName);
+        if (partyName != null) {
+            partyNameRepository.delete(partyName);
+        }
     }
 
     private void checkPartyUsage(ParParty party) {

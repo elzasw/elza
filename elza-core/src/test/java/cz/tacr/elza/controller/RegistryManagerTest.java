@@ -2,7 +2,6 @@ package cz.tacr.elza.controller;
 
 import com.jayway.restassured.response.Response;
 import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.RegExternalSource;
 import cz.tacr.elza.domain.RegRecord;
@@ -10,6 +9,7 @@ import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.vo.RegRecordWithCount;
 import cz.tacr.elza.repository.ExternalSourceRepository;
+import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
@@ -51,13 +51,16 @@ public class RegistryManagerTest extends AbstractRestTest {
     @Autowired
     private ExternalSourceRepository externalSourceRepository;
 
+    @Autowired
+    private PartyNameFormTypeRepository partyNameFormTypeRepository;
+
 
     /**
      * Vytvoření záznamu rejstříku.
      */
     @Test
     public void testRestCreateRecord() {
-        RegRecord newRecord = restCreateRecord();
+        RegRecord newRecord = restCreateRecord("KOD1");
 
         // ověření
         Assert.assertNotNull(newRecord);
@@ -70,12 +73,12 @@ public class RegistryManagerTest extends AbstractRestTest {
      */
     @Test
     public void testRestUpdateRecord() {
-        RegRecord record = restCreateRecord();
+        RegRecord record = restCreateRecord("KOD2");
 
         Assert.assertTrue("Původní jméno", record.getRecord().equals(TEST_NAME));
         record.setRecord(TEST_UPDATE_NAME);
 
-        RegRegisterType newRegisterType = createRegisterType();
+        RegRegisterType newRegisterType = createRegisterType("KOD3");
         record.setRegisterType(newRegisterType);
 
         Response response =
@@ -97,10 +100,17 @@ public class RegistryManagerTest extends AbstractRestTest {
      */
     @Test
     public void testRestDeleteRecord() {
-        RegRecord record = createRecord();
+        RegRecord record = createRecord("KOD4");
         final ParPartyType partyType = findPartyType();
-        final ParPartyName partyName = new ParPartyName();
-        ParParty party = createParParty(partyType, record, partyName);
+
+//        final ParPartyNameFormType partyNameFormType = new ParPartyNameFormType();
+//        partyNameFormType.setCode("PNFT-KOD1");
+//        partyNameFormTypeRepository.save(partyNameFormType);
+
+//        final ParPartyName partyName = new ParPartyName();
+//        partyName.setNameFormType(partyNameFormType);
+
+        ParParty party = createParParty(partyType, record, null);
 
         long countStart = recordRepository.count();
 
@@ -123,7 +133,7 @@ public class RegistryManagerTest extends AbstractRestTest {
      */
     @Test
     public void testRestCreateVariantRecord() {
-        RegRecord record = restCreateRecord();
+        RegRecord record = restCreateRecord("KOD5");
         RegVariantRecord newVariantRecord = restCreateVariantRecord(record);
 
         // ověření
@@ -137,7 +147,7 @@ public class RegistryManagerTest extends AbstractRestTest {
      */
     @Test
     public void testRestUpdateVariantRecord() {
-        RegRecord record = restCreateRecord();
+        RegRecord record = restCreateRecord("KOD6");
 
         RegVariantRecord variantRecord = restCreateVariantRecord(record);
 
@@ -163,7 +173,7 @@ public class RegistryManagerTest extends AbstractRestTest {
      */
     @Test
     public void testRestDeleteVariantRecord() {
-        RegRecord record = createRecord();
+        RegRecord record = createRecord("KOD7");
         RegVariantRecord variantRecord = createVariantRecord(TEST_NAME, record);
 
         long countStart = variantRecordRepository.count();
@@ -187,8 +197,8 @@ public class RegistryManagerTest extends AbstractRestTest {
      */
     @Test
     public void testRestGetRegisterTypes() {
-        createRegisterType();
-        createRegisterType();
+        createRegisterType("KOD8");
+        createRegisterType("KOD9");
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).get(GET_REGISTER_TYPES_URL);
         logger.info(response.asString());
@@ -203,8 +213,8 @@ public class RegistryManagerTest extends AbstractRestTest {
      */
     @Test
     public void testRestGetExternalSources() {
-        createExternalSource();
-        createExternalSource();
+        createExternalSource("ES-KOD1");
+        createExternalSource("ES-KOD2");
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).get(GET_EXTERNAL_SOURCES_URL);
         logger.info(response.asString());
@@ -219,8 +229,8 @@ public class RegistryManagerTest extends AbstractRestTest {
      */
     @Test
     public void testRestFindRecords() {
-        createRecord2();
-        RegRecord record = createRecord();
+        createRecord2("KOD10");
+        RegRecord record = createRecord("KOD11");
         createVariantRecord("varianta", record);
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
@@ -278,12 +288,12 @@ public class RegistryManagerTest extends AbstractRestTest {
      * Vytvoření jednoho záznamu rejstříku defaultního typu.
      * @return  vytvořený objekt, zapsaný do db
      */
-    protected RegRecord createRecord2() {
+    protected RegRecord createRecord2(final String uniqueCode) {
         RegRecord regRecord = new RegRecord();
         regRecord.setRecord("XXX");
         regRecord.setCharacteristics("CHAR");
         regRecord.setLocal(false);
-        regRecord.setRegisterType(createRegisterType());
+        regRecord.setRegisterType(createRegisterType(uniqueCode));
 
         return recordRepository.save(regRecord);
     }
@@ -295,7 +305,7 @@ public class RegistryManagerTest extends AbstractRestTest {
      */
     @Test
     public void testRestFindRecordsCount() {
-        RegRecord record = createRecord();
+        RegRecord record = createRecord("KOD12");
         createVariantRecord("varianta", record);
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
@@ -311,7 +321,7 @@ public class RegistryManagerTest extends AbstractRestTest {
         long recordsCount = recordWithCount.getCount();
         Assert.assertEquals("Nenalezena polozka: " + TEST_NAME, 1, recordsCount);
 
-        createRecord();
+        createRecord("KOD13");
 
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .parameter(SEARCH_ATT, "varianta")
@@ -332,7 +342,7 @@ public class RegistryManagerTest extends AbstractRestTest {
      */
     @Test
     public void testRestGetRecord() {
-        RegRecord record = createRecord();
+        RegRecord record = createRecord("KOD14");
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .param(RECORD_ID_ATT, record.getRecordId())
@@ -350,9 +360,9 @@ public class RegistryManagerTest extends AbstractRestTest {
      * Vytvoření jednoho externího zdroje.
      * @return  vytvořený objekt, zapsaný do db
      */
-    private RegExternalSource createExternalSource() {
+    private RegExternalSource createExternalSource(final String uniqueCode) {
         RegExternalSource externalSource = new RegExternalSource();
-        externalSource.setCode(TEST_CODE);
+        externalSource.setCode(uniqueCode);
         externalSource.setName(TEST_NAME);
         externalSourceRepository.save(externalSource);
         return externalSource;

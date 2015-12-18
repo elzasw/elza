@@ -1,32 +1,6 @@
 package cz.tacr.elza.controller;
 
-import static com.jayway.restassured.RestAssured.given;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
-
-import org.apache.commons.lang.math.RandomUtils;
-import org.hibernate.Session;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-
 import com.jayway.restassured.response.Response;
-
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -78,6 +52,29 @@ import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import org.apache.commons.lang.math.RandomUtils;
+import org.hibernate.Session;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import static com.jayway.restassured.RestAssured.given;
 
 /**
  * Testy pro {@link ArrangementManager}.
@@ -854,7 +851,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         List<ArrDescItem> descItems = new ArrayList<>();
         savePack.setDescItems(descItems);
 
-        RegRecord record = restCreateRecord();
+        RegRecord record = restCreateRecord("KOD1");
         ParParty party = restCreateParty();
         ArrPacket packet = restCreatePacket(findingAid);
         Map<String, RulDescItemType> itemTypes = new HashMap<>();
@@ -1771,7 +1768,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrDescItem descItemRecordRef = new ArrDescItemRecordRef();
         descItemRecordRef.setDescItemType(itemTypeRecordRef);
-        RegRecord record = restCreateRecord();
+        RegRecord record = restCreateRecord("KOD1");
         ((ArrDescItemRecordRef) descItemRecordRef).setRecord(record);
         descItemRecordRef.setNode(node);
         descItemRecordRef.setPosition(5);
@@ -1825,7 +1822,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         node = nodeRepository.findOne(node.getNodeId());
 
         ParParty partyUpdate = restCreateParty();
-        RegRecord recordUpdate = restCreateRecord();
+        RegRecord recordUpdate = restCreateRecord("KOD2");
 
         ((ArrDescItemCoordinates) descItemCoordinatesNew).setValue("Coordinates2");
         ((ArrDescItemFormattedText) descItemFormattedTextNew).setValue("FormattedText2");

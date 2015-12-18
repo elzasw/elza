@@ -485,7 +485,7 @@ public abstract class AbstractRestTest {
             return dataStr;
         } else if (DATA_TYPE_RECORD_REF.equals(dataTypeId)) {
             ArrDataRecordRef dataStr = new ArrDataRecordRef();
-            RegRecord record = createRecord();
+            RegRecord record = createRecord("KOD1");
             dataStr.setDescItem(item);
             RulDataType dataType = dataTypeRepository.getOne(dataTypeId);
             dataStr.setDataType(dataType);
@@ -658,9 +658,9 @@ public abstract class AbstractRestTest {
      * Vytvoření jednoho typu rejstříku.
      * @return  vytvořený objekt, zapsaný do db
      */
-    protected RegRegisterType createRegisterType() {
+    protected RegRegisterType createRegisterType(final String uniqueCode) {
         RegRegisterType regRegisterType = new RegRegisterType();
-        regRegisterType.setCode(TEST_CODE);
+        regRegisterType.setCode(uniqueCode);
         regRegisterType.setName(TEST_NAME);
         return registerTypeRepository.save(regRegisterType);
     }
@@ -669,12 +669,12 @@ public abstract class AbstractRestTest {
      * Vytvoření jednoho záznamu rejstříku defaultního typu.
      * @return  vytvořený objekt, zapsaný do db
      */
-    protected RegRecord createRecord() {
+    protected RegRecord createRecord(final String uniqueCode) {
         RegRecord regRecord = new RegRecord();
         regRecord.setRecord(TEST_NAME);
         regRecord.setCharacteristics("CHARACTERISTICS");
         regRecord.setLocal(false);
-        regRecord.setRegisterType(createRegisterType());
+        regRecord.setRegisterType(createRegisterType(uniqueCode));
 
         return recordRepository.save(regRecord);
     }
@@ -696,7 +696,7 @@ public abstract class AbstractRestTest {
 
     @Transactional
     protected ParParty createParty(String obsah) {
-        final RegRecord record = createRecord();
+        final RegRecord record = createRecord("KOD1");
         final ParPartyType partySubtype = findPartyType();
         createVariantRecord(obsah, record);
 
@@ -915,13 +915,13 @@ public abstract class AbstractRestTest {
      *
      * @return  záznam
      */
-    protected RegRecord restCreateRecord() {
+    protected RegRecord restCreateRecord(final String uniqueCode) {
         RegRecord regRecord = new RegRecord();
         regRecord.setRecord(TEST_NAME);
         regRecord.setCharacteristics("CHARACTERISTICS");
         regRecord.setLocal(false);
 
-        RegRegisterType registerType = createRegisterType();
+        RegRegisterType registerType = createRegisterType(uniqueCode);
         regRecord.setRegisterType(registerType);
 
         Response response = put(spec -> spec.body(regRecord), CREATE_RECORD_URL);
@@ -937,7 +937,7 @@ public abstract class AbstractRestTest {
     protected ParParty restCreateParty() {
         final ParPartyType partySubtype = findPartyType();
 
-        final RegRecord record = restCreateRecord();
+        final RegRecord record = restCreateRecord("KOD1");
 
         final ParPartyName partyName = new ParPartyName();
 
