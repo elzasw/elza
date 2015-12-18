@@ -35,6 +35,8 @@ class WebApiRest {
             });
     }
 
+
+
     findParty(search = ''){
         return AjaxUtils.ajaxGet('/api/partyManager/findParty', [{
             'search': search,
@@ -65,6 +67,49 @@ class WebApiFake {
                 resolve(data);
             }, timeout);
         });
+    }
+    
+    getTree(){
+        var data = 
+            [
+                {
+                    id: 1, name: 'Stromy', chidrens: [
+                        {id: 17, name : 'Baobab'},
+                        {id: 18, name : 'Dub'},
+                        {id: 19, name : 'Javor'} 
+                    ]
+                },{
+                    id: 2, name: 'Kytky', chidrens: [
+                        {id: 14, name : 'Pampeliška'},
+                        {id: 15, name : 'Kopretina'},
+                        {id: 16, name : 'Chrpa'}  
+                    ]
+                },{
+                    id: 3, name: 'Zvířáta', childrens : [
+                        {
+                            id: 5, name : 'Hezký zvířata', childrens : [
+                                {id: 8, name : 'Tygr'},
+                                {id: 6, name : 'Medvěd'},
+                                {id: 7, name : 'Orel'}
+                            ]
+                        },{
+                            id: 9, name : 'Ošklivý zvířata', childrens : [
+                                {id: 10, name : 'Šnek'},
+                                {id: 11, name : 'Vosa'},
+                                {id: 12, name : 'Hyena'},
+                                {id: 13, name : 'Prase'}
+                            ]
+                        },    
+                    ]
+                },{
+                    id: 4, name: 'Kameny', chidrens: [
+                        {id: 20, name : 'Opál'},
+                        {id: 21, name : 'Achát'},
+                        {id: 22, name : 'Živec'}
+                    ]
+                }
+            ]
+        return this.getData(data, 1);
     }
 
     findParty(filterText){

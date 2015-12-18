@@ -6,12 +6,15 @@
         display: flex;
         li{
             overflow:hidden;
+            max-width:150px;
+            flex-grow: 1;
             a{
-                width: @component-tabs-tab-width;  
                 overflow: hidden;
                 display: flex;
                 justify-content: flex-end;
                 height:42px;
+                padding-right:8px;
+                padding-left:8px;
                 span{
                     overflow: hidden;
                     flex-grow: 1;
@@ -37,19 +40,6 @@
                     flex: 0 0 20px;
                 }
             }
-        }
-        .dropdown{
-            overflow:visible;
-            flex-grow: 99;
-            a{
-                width:45px;
-                float:right;
-                height:auto;
-            }
-            ul a{
-                width:auto;
-                float:none;
-            } 
         }
     }
     .tab-content {
