@@ -1,24 +1,25 @@
+/**
+ * Web api pro komunikaci se serverem.
+ */
+
 import {WebApi} from 'actions'
 
 import * as types from 'actions/constants/actionTypes';
 
-export function fetchRecordIfNeeded() {
-
+export function fetchRecordIfNeeded(search = '') {
     return (dispatch, getState) => {
         var state = getState();
-
-        if (!state.fetched && !state.isFetching) {
-            return dispatch(fetchRecord());
+        if (!state.record.fetched && !state.record.isFetching) {
+            return dispatch(fetchRecord(search));
         }
     }
 }
 
-export function fetchRecord() {
+export function fetchRecord(search) {
     return dispatch => {
-
         dispatch(requestRecord())
 
-        return WebApi.getRecord()
+        return WebApi.findRecord(search)
                 .then(json => dispatch(receiveRecord(json)));
     }
 }
@@ -26,50 +27,48 @@ export function fetchRecord() {
 export function receiveRecord(json) {
     return {
         type: types.RECORD_RECEIVE_RECORD_LIST,
-        items: json,
+        items: json.recordList,
+        countItems: json.count,
         receivedAt: Date.now()
     }
 }
 
 export function requestRecord() {
-
     return {
         type: types.RECORD_REQUEST_RECORD_LIST
     }
 }
 
-export function fetchRecordDetailIfNeeded() {
-
+export function getRecordIfNeeded(recordId) {
     return (dispatch, getState) => {
         var state = getState();
+        if (!state.recordData.fetched && !state.recordData.isFetching && recordId !==state.recordData.selectedId) {
 
-        if (!state.fetched && !state.isFetching) {
-            return dispatch(fetchRecordDetail());
+            return dispatch(getRecord(recordId));
         }
     }
 }
 
-export function fetchRecordDetail() {
+export function getRecord(recordId) {
     return dispatch => {
-
-        dispatch(requestRecordDetail())
-
-        return WebApi.findRecord()
-                .then(json => dispatch(receiveRecord(json)));
+        dispatch(requestRecordGetRecord())
+        return WebApi.getRecord(recordId)
+                .then(json => dispatch(receiveRecordGetRecord(recordId, json)));
     }
 }
 
-export function requestRecordDetail() {
-
+export function requestRecordGetRecord() {
     return {
         type: types.RECORD_REQUEST_RECORD_DETAIL
     }
 }
 
-export function receiveRecordDetail() {
-
+export function receiveRecordGetRecord(recordId, json) {
     return {
-        type: types.RECORD_RECEIVE_RECORD_DETAIL
+        item: json,
+        selectedId: recordId,
+        type: types.RECORD_RECEIVE_RECORD_DETAIL,
+        receivedAt: Date.now()
     }
 }
 

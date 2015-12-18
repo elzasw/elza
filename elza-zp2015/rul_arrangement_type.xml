@@ -1,0 +1,11 @@
+<arrangement-types>
+    <arrangement-type code="MAN" rule-set="ZP">
+        <name>Manipulační seznam</name>
+    </arrangement-type>
+    <arrangement-type code="INV" rule-set="ZP">
+        <name>Inventář</name>
+    </arrangement-type>
+    <arrangement-type code="KAT" rule-set="ZP">
+        <name>Katalog</name>
+    </arrangement-type>
+</arrangement-types>

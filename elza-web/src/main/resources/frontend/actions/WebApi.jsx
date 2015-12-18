@@ -22,10 +22,35 @@ class WebApiRest {
             });
     }
 
-    getRecord(){
-        return AjaxUtils.ajaxGet('/api/registryManager/findRecord', [{key: 'search', value: 'test'},{key: 'from', value: '0'},{key: 'count', value: '200'}, {key: 'registerTypeIds', value: ''}])
+    findRecord(search = ''){
+        return AjaxUtils.ajaxGet('/api/registryManager/findRecord', [{key: 'search', value: search},{key: 'from', value: '0'},{key: 'count', value: '200'}, {key: 'registerTypeIds', value: ''}])
             .then(json=>{
-                return json.recordList;
+                return json;
+            });
+    }
+    getRecord(recordId){
+        return AjaxUtils.ajaxGet('/api/registryManager/getRecord', [{key: 'recordId', value: recordId}])
+            .then(json=>{
+                return json;
+            });
+    }
+
+    findParty(search = ''){
+        return AjaxUtils.ajaxGet('/api/partyManager/findParty', [{
+            'search': search,
+            'from': 0,
+            'count' : 200,
+            'partyTypeId': null,
+            'originator': false
+        }]).then(json=>{
+            return json;
+        });
+    }
+
+    getParty(partyId){
+        return AjaxUtils.ajaxGet('/api/partyManager/getParty', [{key: 'partyId', value: partyId}])
+            .then(json=>{
+                return json;
             });
     }
 }
@@ -42,29 +67,43 @@ class WebApiFake {
         });
     }
 
-    getFindParty(filterText){
+    findParty(filterText){
         var data = 
             [
                 {
-                    id: 1, 
-                    name: 'Kněžna Libuše',
+                    id: 1, name: 'Kněžna Libuše',
                 },{
-                    id: 2,
-                    name: 'Jan Lucemburský',
+                    id: 2, name: 'Jan Lucemburský',
                 },{
-                    id: 3,
-                    name: 'Marie Terezie',
+                    id: 3, name: 'Marie Terezie',
                 },{
-                    id: 4,
-                    name: 'Svatý Václav',
+                    id: 4, name: 'Svatý Václav',
                 },{
-                    id: 5,
-                    name: 'Albrecht z Valdštejna',
+                    id: 5, name: 'Albrecht z Valdštejna',
+                },{
+                    id: 6, name: 'Kouzelník Žito',
+                },{
+                    id: 7, name: 'Čachtická paní',
+                },{
+                    id: 8, name: 'Jan "Sladký" Kozina',
                 }
             ]
-            
-        return this.getData(data, 1);
+        var filteredData = [];
+        for(var i=0; i<data.length; i++){
+            if(data[i].name.indexOf(filterText) > -1){
+                filteredData[filteredData.length] = data[i]; 
+            }
+        }
+        return this.getData(filteredData, 1);
     }
+
+    getParty(selectedPartyID){
+        var data = {
+            "id" : selectedPartyID,
+            "name": "Jmeno "
+        };
+        return this.getData(data, 1);
+    }   
 
     getNodeForm(nodeId, versionId) {
         var faId = 'x';
@@ -148,31 +187,58 @@ class WebApiFake {
         return this.getData(data, 1);
     }
 
-    getRecord() {
-        var data = 
-            [
-                {
-                    id: 1, 
-                    record: 'Záznam 1',
-                },
-                {
-                    id: 2, 
-                    record: 'Záznam 2',
-                },
-                {
-                    id: 3, 
-                    record: 'Záznam 3',
-                },
-                {
-                    id: 4, 
-                    record: 'Záznam 4',
-                },
-                {
-                    id: 5,
-                    record: 'Záznam 5',
-                }
-            ]
+    findRecord(search = '') {
+        var data = {
+                recordList: [
+                    {
+                        id: 1, 
+                        record: 'Záznam 1',
+                    },
+                    {
+                        id: 2, 
+                        record: 'Záznam 2',
+                    },
+                    {
+                        id: 3, 
+                        record: 'Záznam 3',
+                    },
+                    {
+                        id: 4, 
+                        record: 'Záznam 4',
+                    },
+                    {
+                        id: 5,
+                        record: 'Záznam 5',
+                    }
+                ],
+                count: 152
+            }
         
+        return this.getData(data, 1);
+    }
+
+    getRecord(idRecord) {
+        var data = {
+            recordId: idRecord,
+            registerType: 'text',
+            externalSource: 'text1',
+            variantRecordList: [{
+                    variantRecordId: 1,
+                    regRecord: 1,
+                    record: 'Záznam variant 2'
+                },
+                {
+                    variantRecordId: 2,
+                    regRecord: 2,
+                    record: 'Záznam variant 2'
+                }
+            ],
+            record: 'Záznam s názvem id='+idRecord,
+            characteristics: 'Charakteristika záznamu s id='+idRecord,
+            comment: 'Komentář záznamu s id='+idRecord,
+            local: false,
+            externalId: ''
+        }
         return this.getData(data, 1);
     }
 

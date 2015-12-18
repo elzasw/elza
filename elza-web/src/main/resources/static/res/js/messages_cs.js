@@ -12,6 +12,7 @@ var messages = {
     "tabs.action.closeTab": "Zavřít záložku",
     
     "search.action.search": "Najít",
+    "search.action.noResult": "nenalezeny žádné záznamy",
     
     "____": ""
 };
