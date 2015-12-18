@@ -17,6 +17,7 @@ import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -91,38 +92,30 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 
         String searchValue = "%" + searchString + "%";
 
-        Predicate condition = null;
+        List<Predicate> condition = new ArrayList<>();
         if (StringUtils.isNotBlank(searchString)) {
-            condition = builder.or(
+            condition.add(builder.or(
                     builder.like(builder.lower(record.get(RegRecord.RECORD)), searchValue),
                     builder.like(builder.lower(record.get(RegRecord.CHARACTERISTICS)), searchValue),
                     builder.like(builder.lower(record.get(RegRecord.NOTE)), searchValue),
                     builder.like(builder.lower(variantRecord.get(RegVariantRecord.RECORD)), searchValue)
+                )
             );
         }
 
         if (originator != null) {
             if (originator) {
-                condition = builder.and(
-                    condition,
-                    builder.isNotNull(partyType.get(ParPartyType.PARTY_TYPE_ID))
-                );
+                condition.add(builder.isNotNull(partyType.get(ParPartyType.PARTY_TYPE_ID)));
             } else {
-                condition = builder.and(
-                    condition,
-                    builder.isNull(partyType.get(ParPartyType.PARTY_TYPE_ID))
-                );
+                condition.add(builder.isNull(partyType.get(ParPartyType.PARTY_TYPE_ID)));
             }
         } 
 
         if (partyTypeId != null) {
-            condition = builder.and(
-                    condition,
-                    builder.equal(partyType.get(ParPartyType.PARTY_TYPE_ID), partyTypeId)
-            );
+            condition.add(builder.equal(partyType.get(ParPartyType.PARTY_TYPE_ID), partyTypeId));
         }
 
-        return condition;
+        return builder.and(condition.toArray(new Predicate[condition.size()]));
     }
 
     @Override
