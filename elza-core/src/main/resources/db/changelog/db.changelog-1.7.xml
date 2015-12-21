@@ -46,7 +46,7 @@
                 <constraints nullable="true"/>
             </column>
             <column name="preferred_name_id" type="int">
-                <constraints nullable="false"/>
+                <constraints nullable="true"/>
             </column>
         </addColumn>
 
