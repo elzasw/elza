@@ -423,6 +423,7 @@ public abstract class AbstractRestTest {
         //descItemTypeRepository.deleteAll();
         nodeRepository.deleteAll();
         changeRepository.deleteAll();
+        registerTypeRepository.deleteAll();
     }
 
     protected RulArrangementType createArrangementType(RulRuleSet ruleSet) {
