@@ -28,4 +28,7 @@ public interface DescItemSpecRepository extends JpaRepository<RulDescItemSpec, I
 
 
     List<RulDescItemSpec> findByRulPackage(RulPackage rulPackage);
+
+
+    RulDescItemSpec findOneByCode(String code);
 }

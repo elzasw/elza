@@ -88,4 +88,4 @@ logging:
 ```
 
 ### Import balíčku s pravidly
-Po spuštění je potřeba naimportovat základní pravidla - soubor package-default.zip
+Po přeložení spuštění je potřeba naimportovat základní pravidla - soubor elza-war/target/elza-packages.zip
