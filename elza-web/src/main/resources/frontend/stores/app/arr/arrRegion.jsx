@@ -56,7 +56,7 @@ function selectFaTab(state, action) {
     }
 }
 
-export default function arrangementRegion(state = initialState, action) {
+export default function arrRegion(state = initialState, action) {
     switch (action.type) {
         case types.GLOBAL_GET_OBJECT_INFO:
             state.fas.forEach(fa => {

@@ -5,14 +5,14 @@ import createLogger from 'redux-logger'
 /**
  * Sestavení reducerů.
  */
-import arrangementRegion from './arr/arrangementRegion';
+import arrRegion from './arr/arrRegion';
 import faFileTree from './arr/faFileTree';
 import record from './record/record';
 import recordData from './record/recordData';
 import partyRegion from './party/partyRegion';
 
 let reducer = combineReducers({
-    arrangementRegion,
+    arrRegion,
     faFileTree,
     record,
     partyRegion

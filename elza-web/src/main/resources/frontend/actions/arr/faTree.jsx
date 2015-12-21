@@ -12,7 +12,7 @@ export function faTreeNodeExpandInt(node, addWaitingNode=false) {
 export function faTreeNodeExpand(node) {
     return (dispatch, getState) => {
         var state = getState();
-        var activeFa = state.arrangementRegion.fas[state.arrangementRegion.activeIndex];
+        var activeFa = state.arrRegion.fas[state.arrRegion.activeIndex];
         var faTree = activeFa.faTree;
 
         dispatch(faTreeNodeExpandInt(node, true))
@@ -36,7 +36,7 @@ export function faTreeNodeCollapse(node) {
 export function faTreeFetchIfNeeded(faId, versionId, expandedIds) {
     return (dispatch, getState) => {
         var state = getState();
-        var faTree = state.arrangementRegion.fas[state.arrangementRegion.activeIndex].faTree;
+        var faTree = state.arrRegion.fas[state.arrRegion.activeIndex].faTree;
 
         if (faTree.faId !== faId || faTree.versionId !== versionId || faTree.expandedIds !== expandedIds) {
             return dispatch(faTreeFetch(faId, versionId, null, expandedIds));

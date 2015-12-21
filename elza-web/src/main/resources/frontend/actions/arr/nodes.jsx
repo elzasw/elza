@@ -6,7 +6,7 @@ import * as types from 'actions/constants/actionTypes';
 export function faSelectNodeTab(node, moveTabToBegin=false) {
     return (dispatch, getState) => {
         var state = getState();
-        var activeFa = state.arrangementRegion.fas[state.arrangementRegion.activeIndex];
+        var activeFa = state.arrRegion.fas[state.arrRegion.activeIndex];
         var index = indexById(activeFa.nodes.nodes, node.id);
         var nodeTab = activeFa.nodes.nodes[index];
         if (nodeTab.selectedSubNodeId != null) {    // musíme poslat akci vybrání subnode (aby se řádek vybral např. ve stromu)

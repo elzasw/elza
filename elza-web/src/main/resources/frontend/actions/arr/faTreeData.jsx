@@ -6,7 +6,7 @@ import * as types from 'actions/constants/actionTypes';
 export function faTreeFetchIfNeeded(faId, versionId) {
     return (dispatch, getState) => {
         var state = getState();
-        var faTreeData = state.arrangementRegion.faTreeData;
+        var faTreeData = state.arrRegion.faTreeData;
         if (faTreeData.faId !== faId || faTreeData.versionId !== versionId) {
             return dispatch(faTreeFetch(faId, versionId));
         } else if (!faTreeData.fetched && !faTreeData.isFetching) {
