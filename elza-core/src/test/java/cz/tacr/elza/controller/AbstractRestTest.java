@@ -102,6 +102,7 @@ import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.RegistryService;
+import cz.tacr.elza.service.ArrangementService;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -371,6 +372,9 @@ public abstract class AbstractRestTest {
     @Autowired
     protected RuleManager ruleManager;
 
+    @Autowired
+    private ArrangementService arrangementService;
+
     protected RulPackage rulPackage;
 
     //servisní třídy
@@ -499,7 +503,7 @@ public abstract class AbstractRestTest {
             level.setNodeParent(parent.getNode());
         }
         level.setCreateChange(change);
-        level.setNode(arrangementManager.createNode());
+        level.setNode(arrangementService.createNode());
         return levelRepository.save(level);
     }
 

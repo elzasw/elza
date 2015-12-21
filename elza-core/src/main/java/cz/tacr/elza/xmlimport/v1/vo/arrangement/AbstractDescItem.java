@@ -24,7 +24,7 @@ public abstract class AbstractDescItem {
     @XmlAttribute(name = "desc-item-type-code", required = true)
     private String descItemTypeCode;
 
-    @XmlAttribute(name = "desc-item-spec-code", required = true)
+    @XmlAttribute(name = "desc-item-spec-code")
     private String descItemSpecCode;
 
     @XmlElement(name = "position", required = true)

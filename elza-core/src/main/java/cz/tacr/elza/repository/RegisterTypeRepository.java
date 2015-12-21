@@ -11,4 +11,6 @@ import cz.tacr.elza.domain.RegRegisterType;
  */
 public interface RegisterTypeRepository extends JpaRepository<RegRegisterType, Integer> {
 
+    RegRegisterType findRegisterTypeByCode(String registerTypeCode);
+
 }

@@ -16,6 +16,7 @@ import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemCoordinates;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemDecimal;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemFormattedText;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemInteger;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemPacketRef;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemPartyRef;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemRecordRef;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemString;
@@ -24,6 +25,7 @@ import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemUnitDate;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemUnitId;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.FindingAid;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Level;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.Packet;
 import cz.tacr.elza.xmlimport.v1.vo.date.ComplexDate;
 import cz.tacr.elza.xmlimport.v1.vo.party.AbstractParty;
 import cz.tacr.elza.xmlimport.v1.vo.party.Dynasty;
@@ -66,11 +68,15 @@ public class XmlDataGenerator {
 
         List<Record> records = createRecords(config);
         xmlImport.setRecords(records);
+
         List<AbstractParty> parties = createParties(records, config);
         xmlImport.setParties(parties);
 
+        List<Packet> packets = createPackets(config);
+        xmlImport.setPackets(packets);
+
         if (config.getTreeDepth() > 0) {
-            FindingAid findingAid = createFindingAid(config, records, parties);
+            FindingAid findingAid = createFindingAid(config, records, parties, packets);
             xmlImport.setFindingAid(findingAid);
         }
 
@@ -79,19 +85,45 @@ public class XmlDataGenerator {
         return xmlImport;
     }
 
+    private List<Packet> createPackets(final XmlDataGeneratorConfig config) {
+        List<Packet> packets = new ArrayList<Packet>(config.getPacketCount());
+
+        for (int i = 0; i < config.getPacketCount(); i++) {
+            Packet packet = createPacket(i);
+
+            packets.add(packet);
+        }
+
+        return packets;
+    }
+
+    private Packet createPacket(int index) {
+        Packet packet = new Packet();
+
+        packet.setInvalid(RandomUtils.nextBoolean());
+        packet.setPacketTypeCode("packetTypeCode");
+        packet.setStorageNumber("storageNumber-" + index);
+
+        return packet;
+    }
+
     /**
      * Vytvoření archivní pomůcky.
      *
      * @param config nastavení generátoru
      * @param parties osoby
      * @param records rejstříková hesla
+     * @param packets obaly
      *
      * @return archivní pomůcka
      */
-    private FindingAid createFindingAid(final XmlDataGeneratorConfig config, List<Record> records, List<AbstractParty> parties) {
+    private FindingAid createFindingAid(final XmlDataGeneratorConfig config, List<Record> records, List<AbstractParty> parties,
+            List<Packet> packets) {
         FindingAid fa = new FindingAid();
         fa.setName("Import z XML");
-        fa.setRootLevel(createLevelTree(records, parties, config));
+        fa.setArrangementTypeCode("arr type code");
+        fa.setRuleSetCode("rule set code");
+        fa.setRootLevel(createLevelTree(records, parties, packets, config));
 
         return fa;
     }
@@ -101,18 +133,19 @@ public class XmlDataGenerator {
      *
      * @param records rejstříková hesla
      * @param parties osoby
+     * @param packets obaly
      * @param config nastavení generátoru
      *
      * @return kořenový uzel
      */
-    private Level createLevelTree(List<Record> records, List<AbstractParty> parties, XmlDataGeneratorConfig config) {
+    private Level createLevelTree(List<Record> records, List<AbstractParty> parties, List<Packet> packets, XmlDataGeneratorConfig config) {
         nodes++;
         Level rootLevel = new Level();
         rootLevel.setPosition(1);
         rootLevel.setUuid(UUID.randomUUID().toString());
 
-        rootLevel.setSubLevels(createChildren(config.getTreeDepth(), records, parties, config));
-        rootLevel.setDescItems(createDescItems(records, parties, config));
+        rootLevel.setSubLevels(createChildren(config.getTreeDepth(), records, parties, packets, config));
+        rootLevel.setDescItems(createDescItems(records, parties, packets, config));
 
         return rootLevel;
     }
@@ -122,15 +155,17 @@ public class XmlDataGenerator {
      *
      * @param records rejstříková hesla
      * @param parties osoby
+     * @param packets obaly
      * @param config nastavení generátoru
      *
      * @return hodnoty uzlu
      */
-    private List<AbstractDescItem> createDescItems(List<Record> records, List<AbstractParty> parties, XmlDataGeneratorConfig config) {
+    private List<AbstractDescItem> createDescItems(List<Record> records, List<AbstractParty> parties, List<Packet> packets,
+            XmlDataGeneratorConfig config) {
         List<AbstractDescItem> values = new ArrayList<AbstractDescItem>(config.getDescItemsCount());
 
         for (int i = 0; i < config.getDescItemsCount(); i++) {
-            int position = i % 10;
+            int position = i % 11;
 
             switch (position) {
                 case 0:
@@ -162,6 +197,9 @@ public class XmlDataGenerator {
                     break;
                 case 9:
                     values.add(createValueUnitId(i));
+                    break;
+                case 10:
+                    values.add(createValuePacketRef(i, packets));
                     break;
             }
         }
@@ -238,9 +276,9 @@ public class XmlDataGenerator {
         DescItemUnitDate value = new DescItemUnitDate();
         fillCommonValueFields(value ,position);
         value.setCalendarTypeCode("calendarTypeCode " + position);
-        value.setValueFrom("valueFrom " + position);
+        value.setValueFrom(new Date());
         value.setValueFromEstimated(RandomUtils.nextBoolean());
-        value.setValueTo("valueTo " + position);
+        value.setValueTo(new Date());
         value.setValueToEstimated(RandomUtils.nextBoolean());
 
         return value;
@@ -254,13 +292,21 @@ public class XmlDataGenerator {
         return value;
     }
 
+    private DescItemPacketRef createValuePacketRef(int position, List<Packet> packets) {
+        DescItemPacketRef value = new DescItemPacketRef();
+        fillCommonValueFields(value ,position);
+        value.setPacket(packets.get(RandomUtils.nextInt(packets.size())));
+
+        return value;
+    }
+
     private void fillCommonValueFields(AbstractDescItem value, int position) {
         value.setDescItemSpecCode("descItemSpecCode");
         value.setDescItemTypeCode("descItemTypeCode");
         value.setPosition(position);
     }
 
-    private List<Level> createChildren(int depth, List<Record> records, List<AbstractParty> parties, XmlDataGeneratorConfig config) {
+    private List<Level> createChildren(int depth, List<Record> records, List<AbstractParty> parties, List<Packet> packets, XmlDataGeneratorConfig config) {
         if (depth < 1) {
             return null;
         }
@@ -268,9 +314,9 @@ public class XmlDataGenerator {
         for (int i = 0; i < config.getChildrenCount(); i++) {
             nodes++;
             Level child = new Level();
-            child.setSubLevels(createChildren(depth - 1, records, parties, config));
+            child.setSubLevels(createChildren(depth - 1, records, parties, packets, config));
             child.setPosition(i);
-            child.setDescItems(createDescItems(records, parties, config));
+            child.setDescItems(createDescItems(records, parties, packets, config));
             child.setUuid(UUID.randomUUID().toString());
             if (RandomUtils.nextBoolean()) {
                 List<Record> levelRecords = new ArrayList<Record>(1);

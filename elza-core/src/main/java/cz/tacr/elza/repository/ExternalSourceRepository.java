@@ -1,7 +1,8 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.RegExternalSource;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import cz.tacr.elza.domain.RegExternalSource;
 
 /**
  * Repository externích zdrojů rejstříku.
@@ -9,4 +10,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
 public interface ExternalSourceRepository extends JpaRepository<RegExternalSource, Integer> {
+
+    RegExternalSource findExternalSourceByCode(String externalSourceCode);
 }

@@ -3,6 +3,7 @@ package cz.tacr.elza.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.RegRecord;
@@ -23,4 +24,7 @@ public interface RegRecordRepository extends JpaRepository<RegRecord, Integer>, 
      * @return seznam potomků
      */
     List<RegRecord> findByParentRecord(RegRecord parentRecord);
+    @Query("SELECT r FROM reg_record r WHERE r.externalId = ?1 "
+            + "and r.externalSource.code = ?2")
+    RegRecord findRegRecordByExternalIdAndExternalSourceCode(String externalId, String externalSourceCode);
 }

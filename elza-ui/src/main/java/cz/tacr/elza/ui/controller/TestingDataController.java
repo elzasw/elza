@@ -68,6 +68,7 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
+import cz.tacr.elza.service.ArrangementService;
 
 /**
  * Kontroler pro testovací data.
@@ -124,6 +125,9 @@ public class TestingDataController {
     private RuleSetRepository ruleSetRepository;
     @Autowired
     private CalendarTypeRepository calendarTypeRepository;
+
+    @Autowired
+    private ArrangementService arrangementService;
 
     private static final int MAX_DEPTH = 4;
     private static final int NODES_IN_LEVEL = 3;
@@ -903,7 +907,7 @@ public class TestingDataController {
         level.setPosition(position);
         level.setCreateChange(createChange);
         level.setNodeParent(parentNode);
-        level.setNode(arrangementManager.createNode());
+        level.setNode(arrangementService.createNode());
         return levelRepository.save(level);
     }
 

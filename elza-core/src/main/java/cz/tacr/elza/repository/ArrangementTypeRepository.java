@@ -25,4 +25,7 @@ public interface ArrangementTypeRepository extends JpaRepository<RulArrangementT
 
 
     void deleteByRulPackage(RulPackage rulPackage);
+
+
+    RulArrangementType findByCode(String arrangementTypeCode);
 }
