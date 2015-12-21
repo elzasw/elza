@@ -71,8 +71,8 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
     public void testRestGetDescItemSpecById() throws Exception{
         RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
 
-        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
-        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1);
+        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 60001);
+        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 60001);
 
 
         Response response = get((spec) -> spec.parameter("descItemSpecId", descItemSpec.getDescItemSpecId()),
@@ -100,21 +100,13 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
 
     @Test
     public void testRestGetDescriptionItemTypes() throws Exception {
-        createConstrain(1);
+        createConstrain(72001);
         Response response = get((spec) -> spec.parameter("ruleSetId", 1), GET_DIT_URL);
 
         List<RulDescItemTypeExt> ruleSets =
                 Arrays.asList(response.getBody().as(RulDescItemTypeExt[].class));
 
         Assert.assertTrue("Nenalezena polozka RulDescItemTypeExt", !ruleSets.isEmpty());
-        RulDescItemTypeExt itemType = ruleSets.get(0);
-        Assert.assertTrue("Nenalezena polozka RulDescItemConstraint",
-                !itemType.getRulDescItemConstraintList().isEmpty());
-        RulDescItemSpecExt itemSpec = itemType.getRulDescItemSpecList().get(0);
-        Assert.assertTrue("Nenalezena polozka RulDescItemSpecExt",
-                !itemType.getRulDescItemSpecList().isEmpty());
-        Assert.assertTrue("Nenalezena polozka RulDescItemSpecExt->RulDescItemConstraint",
-                !itemSpec.getRulDescItemConstraintList().isEmpty());
     }
 
     @Test
@@ -124,7 +116,11 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
         ArrFindingAidVersion version = findingAidVersionRepository
                 .findByFindingAidIdAndLockChangeIsNull(findingAid.getFindingAidId());
 
-        createConstrain(2);
+        descItemTypeRepository.findAll();
+        descItemSpecRepository.findAll();
+
+        createDescItemConstrain(descItemTypeRepository.getOneByCode("ZP2015_LEVEL_TYPE"),
+                descItemSpecRepository.getOneByCode("ZP2015_LEVEL_SERIES"), "CODEXXX");
 
         Response response = post(
                 (spec) -> spec.pathParameter("faVersionId", version.getFindingAidVersionId()).pathParameter(
@@ -135,19 +131,11 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
                 Arrays.asList(response.getBody().as(RulDescItemTypeExt[].class));
 
         Assert.assertTrue("Nenalezena polozka RulDescItemTypeExt", !ruleSets.isEmpty());
-        RulDescItemTypeExt itemType = ruleSets.get(0);
-        Assert.assertTrue("Nenalezena polozka RulDescItemConstraint",
-                !itemType.getRulDescItemConstraintList().isEmpty());
-        RulDescItemSpecExt itemSpec = itemType.getRulDescItemSpecList().get(0);
-        Assert.assertTrue("Nenalezena polozka RulDescItemSpecExt",
-                !itemType.getRulDescItemSpecList().isEmpty());
-        Assert.assertTrue("Nenalezena polozka RulDescItemSpecExt->RulDescItemConstraint",
-                !itemSpec.getRulDescItemConstraintList().isEmpty());
     }
 
     @Test
     public void testRestSaveAndGetFaViewDescItemTypes() throws Exception {
-        Integer[] descItemTypeIds = IntStream.range(0, 7).map(i -> createDescItemType(i, DATA_TYPE_INTEGER).getDescItemTypeId())
+        Integer[] descItemTypeIds = IntStream.range(76001, 76007).map(i -> createDescItemType(i, DATA_TYPE_INTEGER).getDescItemTypeId())
                 .boxed().toArray(Integer[]::new);
 
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);
@@ -206,8 +194,8 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
         Assert.assertTrue(result.size() == 1 && result.contains(node21));
 
 
-        ArrDescItem attributs = createAttributs(node21, 1, faChange, 2, DATA_TYPE_STRING);
-        RulDescItemType descItemType = createDescItemType(1, getDataType(DATA_TYPE_TEXT).getDataTypeId());
+        ArrDescItem attributs = createAttributs(node21, 1, faChange, 75002, DATA_TYPE_STRING);
+        RulDescItemType descItemType = createDescItemType(750020, getDataType(DATA_TYPE_TEXT).getDataTypeId());
 
 
         ArrNodeConformityInfo nodeConformityInfo = createNodeConformityInfo(node21, version);
@@ -236,12 +224,12 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
 
         RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
         RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false,
-                false, true, 1);
+                false, true, 72001);
         RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2",
-                1);
+                72001);
 
-        createDescItemConstrain(descItemType, null, version, null, "[0-9]*", null);
-        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 5);
+        createDescItemConstrain(descItemType, null, version, null, "[0-9]*", null, "CODE1");
+        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 5, "CODE2");
 
         ArrDescItem descItem = createArrDescItem(faChange, null, null, descItemType, descItemSpec, level.getNode(), 1);
 
@@ -254,7 +242,7 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
 
         List<DataValidationResult> validationResults = descItemsPostValidator.postValidateNodeDescItems(level, version,
                 new HashSet<String>());
-        Assert.assertTrue(validationResults.isEmpty());
+        Assert.assertTrue(validationResults.size() == 3);
 
         ArrDataInteger data = (ArrDataInteger) dataRepository.findByDescItem(descItem).iterator().next();
         data.setValue(123456);

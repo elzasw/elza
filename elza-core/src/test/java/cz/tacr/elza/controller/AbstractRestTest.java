@@ -1,5 +1,33 @@
 package cz.tacr.elza.controller;
 
+import static com.jayway.restassured.RestAssured.given;
+
+import java.io.File;
+import java.net.URL;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+
+import javax.transaction.Transactional;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.IntegrationTest;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.EncoderConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
@@ -34,6 +62,7 @@ import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulFaView;
+import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.ArrCalendarTypes;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
@@ -64,6 +93,7 @@ import cz.tacr.elza.repository.NodeConformityInfoRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
@@ -118,7 +148,7 @@ public abstract class AbstractRestTest {
     protected static final String PARTY_MANAGER_URL = "/api/partyManager";
     protected static final String BULK_ACTION_MANAGER_URL = "/api/bulkActionManager";
 
-    protected static final String TEST_CODE = "Tcode";
+    protected static final String TEST_CODE = "ZP";
     protected static final String TEST_NAME = "Test name";
     protected static final String TEST_UPDATE_NAME = "Update name";
 
@@ -280,9 +310,9 @@ public abstract class AbstractRestTest {
     @Autowired
     protected DescItemRepository descItemRepository;
     @Autowired
-    private DescItemTypeRepository descItemTypeRepository;
+    protected DescItemTypeRepository descItemTypeRepository;
     @Autowired
-    private DescItemSpecRepository descItemSpecRepository;
+    protected DescItemSpecRepository descItemSpecRepository;
     @Autowired
     private DescItemSpecRegisterRepository descItemSpecRegisterRepository;
     @Autowired
@@ -330,14 +360,36 @@ public abstract class AbstractRestTest {
     @Autowired
     protected FindingAidVersionConformityInfoRepository findingAidVersionConformityInfoRepository;
 
+    @Autowired
+    protected PackageRepository packageRepository;
+
+    @Autowired
+    protected RuleManager ruleManager;
+
+    protected RulPackage rulPackage;
 
     @Before
     public void setUp() {
+
         // nastavi default port pro REST-assured
         RestAssured.port = port;
 
         // nastavi default URI pro REST-assured. Nejcasteni localhost
         RestAssured.baseURI = RestAssured.DEFAULT_URI;
+
+
+        if (packageRepository.count() == 0) {
+            URL url = Thread.currentThread().getContextClassLoader().getResource("package-test.zip");
+            File file = new File(url.getPath());
+
+
+            ruleManager.importPackage(file);
+        }
+
+
+        if (rulPackage == null) {
+            rulPackage = packageRepository.findAll().get(0);
+        }
 
         // potřebné delete, jen data, ne číselníky
         arrDataRepository.deleteAll();
@@ -360,32 +412,25 @@ public abstract class AbstractRestTest {
         faViewRepository.deleteAll();
         findingAidVersionConformityInfoRepository.deleteAll();
         findingAidVersionRepository.deleteAll();
-        arrangementTypeRepository.deleteAll();
-        ruleSetRepository.deleteAll();
+        //arrangementTypeRepository.deleteAll();
+        //ruleSetRepository.deleteAll();
         findingAidRepository.deleteAll();
         levelRepository.deleteAll();
         descItemRepository.deleteAll();
         descItemSpecRegisterRepository.deleteAll();
 
-        descItemSpecRepository.deleteAll();
-        descItemTypeRepository.deleteAll();
+        //descItemSpecRepository.deleteAll();
+        //descItemTypeRepository.deleteAll();
         nodeRepository.deleteAll();
         changeRepository.deleteAll();
     }
 
     protected RulArrangementType createArrangementType(RulRuleSet ruleSet) {
-        RulArrangementType arrangementType = new RulArrangementType();
-        arrangementType.setName(TEST_NAME);
-        arrangementType.setCode(TEST_CODE);
-        arrangementType.setRuleSet(ruleSet);
-        return arrangementTypeRepository.save(arrangementType);
+        return arrangementTypeRepository.findAll().get(0);
     }
 
     protected RulRuleSet createRuleSet() {
-        RulRuleSet ruleSet = new RulRuleSet();
-        ruleSet.setName(TEST_NAME);
-        ruleSet.setCode(TEST_CODE);
-        return ruleSetRepository.save(ruleSet);
+        return ruleSetRepository.findAll().get(0);
     }
 
     protected ArrFindingAid createFindingAid(final String name) {
@@ -470,7 +515,7 @@ public abstract class AbstractRestTest {
     protected RulDescItemConstraint createConstrain(final int index) {
         RulDescItemType descItemType = createDescItemType(index, DATA_TYPE_INTEGER);
         RulDescItemSpec rulDescItemSpec = createDescItemSpec(descItemType, index);
-        RulDescItemConstraint itemConstraint = createDescItemConstrain(descItemType, rulDescItemSpec);
+        RulDescItemConstraint itemConstraint = createDescItemConstrain(descItemType, rulDescItemSpec, "CODE20");
         return itemConstraint;
     }
 
@@ -497,7 +542,10 @@ public abstract class AbstractRestTest {
     }
 
     protected RulDescItemType createDescItemType(final int index, final int dataTypeId) {
-        RulDescItemType itemType = new RulDescItemType();
+        RulDescItemType itemType = descItemTypeRepository.findOneByCode("DI" + index);
+        if (itemType == null) {
+            itemType = new RulDescItemType();
+        }
         RulDataType dataType = getDataType(dataTypeId);
         itemType.setDataType(dataType);
         itemType.setCode("DI" + index);
@@ -509,31 +557,41 @@ public abstract class AbstractRestTest {
         itemType.setUseSpecification(false);
         itemType.setViewOrder(index);
         itemType.setFaOnly(false);
+        itemType.setPackage(rulPackage);
         return descItemTypeRepository.save(itemType);
     }
 
-    protected RulDescItemConstraint createDescItemConstrain(final RulDescItemType itemType, RulDescItemSpec rulDescItemSpec) {
+    protected RulDescItemConstraint createDescItemConstrain(final RulDescItemType itemType, RulDescItemSpec rulDescItemSpec, String code) {
         RulDescItemConstraint itemConstrain = new RulDescItemConstraint();
         itemConstrain.setDescItemSpec(rulDescItemSpec);
         itemConstrain.setDescItemType(itemType);
+        itemConstrain.setCode(code);
+        itemConstrain.setPackage(rulPackage);
         descItemConstraintRepository.save(itemConstrain);
         return itemConstrain;
     }
 
     private RulDescItemSpec createDescItemSpec(final RulDescItemType itemType, final int index) {
-        RulDescItemSpec rulDescItemSpec = new RulDescItemSpec();
+        RulDescItemSpec rulDescItemSpec = descItemSpecRepository.findOneByCode("IS" + index);
+        if (rulDescItemSpec == null) {
+            rulDescItemSpec = new RulDescItemSpec();
+        }
         rulDescItemSpec.setCode("IS" + index);
         rulDescItemSpec.setDescItemType(itemType);
         rulDescItemSpec.setName("Item Spec " + index);
         rulDescItemSpec.setShortcut("ISpec " + index);
         rulDescItemSpec.setDescription("popis");
         rulDescItemSpec.setViewOrder(index);
+        rulDescItemSpec.setPackage(rulPackage);
         return descItemSpecRepository.save(rulDescItemSpec);
     }
 
     protected RulDescItemType createDescItemType(RulDataType rulDataType, String code, String name, String shortcut,
             String description, Boolean isValueUnique, Boolean canBeOrdered, Boolean useSpecification, Integer viewOrder) {
-        RulDescItemType dataTypeItem = new RulDescItemType();
+        RulDescItemType dataTypeItem = descItemTypeRepository.findOneByCode(code);
+        if (dataTypeItem == null) {
+            dataTypeItem = new RulDescItemType();
+        }
         dataTypeItem.setDataType(rulDataType);
         dataTypeItem.setCode(code);
         dataTypeItem.setName(name);
@@ -544,6 +602,7 @@ public abstract class AbstractRestTest {
         dataTypeItem.setUseSpecification(useSpecification);
         dataTypeItem.setViewOrder(viewOrder);
         dataTypeItem.setFaOnly(false);
+        dataTypeItem.setPackage(rulPackage);
         return descItemTypeRepository.save(dataTypeItem);
     }
 
@@ -563,18 +622,22 @@ public abstract class AbstractRestTest {
     }
 
     protected RulDescItemSpec createDescItemSpec(RulDescItemType rulDescItemType, String code, String name, String shortcut, String description, Integer viewOrder) {
-        RulDescItemSpec dataSpecItem = new RulDescItemSpec();
+        RulDescItemSpec dataSpecItem = descItemSpecRepository.findOneByCode(code);
+        if (dataSpecItem == null) {
+            dataSpecItem = new RulDescItemSpec();
+        }
         dataSpecItem.setDescItemType(rulDescItemType);
         dataSpecItem.setCode(code);
         dataSpecItem.setName(name);
         dataSpecItem.setShortcut(shortcut);
         dataSpecItem.setDescription(description);
         dataSpecItem.setViewOrder(viewOrder);
+        dataSpecItem.setPackage(rulPackage);
         return descItemSpecRepository.save(dataSpecItem);
     }
 
     protected RulDescItemConstraint createDescItemConstrain(RulDescItemType rulDescItemType, RulDescItemSpec rulDescItemSpec,
-            ArrFindingAidVersion faVersion, Boolean repeatable, String regexp, Integer textLengthLimit) {
+            ArrFindingAidVersion faVersion, Boolean repeatable, String regexp, Integer textLengthLimit, String code) {
         RulDescItemConstraint itemConstraint = new RulDescItemConstraint();
         itemConstraint.setDescItemType(rulDescItemType);
         itemConstraint.setDescItemSpec(rulDescItemSpec);
@@ -582,6 +645,8 @@ public abstract class AbstractRestTest {
         itemConstraint.setRepeatable(repeatable);
         itemConstraint.setRegexp(regexp);
         itemConstraint.setTextLenghtLimit(textLengthLimit);
+        itemConstraint.setPackage(rulPackage);
+        itemConstraint.setCode(code);
         return descItemConstraintRepository.save(itemConstraint);
     }
 

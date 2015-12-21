@@ -744,7 +744,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrChange createChange = createFaChange(startTime.minusSeconds(1));
         ArrLevel child = createLevel(2, parent, createChange);
-        createAttributs(child.getNode(), 1, createChange, 1, DATA_TYPE_RECORD_REF);
+        createAttributs(child.getNode(), 1, createChange, 11001, DATA_TYPE_RECORD_REF);
         levelRepository.save(child);
 
         ArrChange lockChange = createFaChange(startTime.plusSeconds(2));
@@ -754,12 +754,12 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         child.setDeleteChange(createFaChange(startTime.plusSeconds(3)));
         createChange = createFaChange(startTime.plusSeconds(3));
-        createAttributs(child.getNode(), 2, createChange, 11, DATA_TYPE_STRING);
+        createAttributs(child.getNode(), 2, createChange, 11011, DATA_TYPE_STRING);
 
         createChange = createFaChange(startTime.plusSeconds(3));
         ArrLevel child2 = createLevel(2, parent, createChange);
-        ArrDescItem item = createAttributs(child2.getNode(), 1, createChange, 2, DATA_TYPE_STRING);
-        ArrDescItem item2 = createAttributs(child2.getNode(), 2, createChange, 21, DATA_TYPE_STRING);
+        ArrDescItem item = createAttributs(child2.getNode(), 1, createChange, 11002, DATA_TYPE_STRING);
+        ArrDescItem item2 = createAttributs(child2.getNode(), 2, createChange, 11021, DATA_TYPE_STRING);
         item2.setDeleteChange(createChange);
         descItemRepository.save(item2);
 
@@ -857,7 +857,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         Map<String, RulDescItemType> itemTypes = new HashMap<>();
         List<RulDataType> dataTypes = dataTypeRepository.findAll();
         List<ArrCalendarType> calendarTypes = calendarTypeRepository.findAll();
-        int order = 1;
+        int order = 40001;
 
         List<RulDescItemSpecExt> rulDescItemSpecExtList = new ArrayList<>();
         RulDescItemSpec descItemSpec;
@@ -868,6 +868,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         for (RulDataType dataType : dataTypes) {
             RulDescItemType descItemType = createRulDescItemType(dataType, order++);
+            descItemType.setPackage(rulPackage);
             descItemType.setDataType(dataType);
             itemTypes.put(dataType.getCode(), descItemType);
             if (dataType.getCode().equals("ENUM")) {
@@ -1127,7 +1128,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         descItemType = descItemTypeRepository.save(descItemType);
 
-        createDescItemConstrain(descItemType, null);
+        createDescItemConstrain(descItemType, null, "CODE21");
 
         return descItemType;
     }
@@ -1163,12 +1164,12 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         // vytvoření závislých dat
 
-        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
-        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1);
-        createDescItemConstrain(descItemType, descItemSpec, version, false, null, null);
-        createDescItemConstrain(descItemType, descItemSpec, version, true, null, null);
-        createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null);
-        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 50);
+        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 3001);
+        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 3001);
+        createDescItemConstrain(descItemType, descItemSpec, version, false, null, null, "CODE1");
+        createDescItemConstrain(descItemType, descItemSpec, version, true, null, null, "CODE2");
+        createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null, "CODE3");
+        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 50, "CODE4");
 
         // přidání hodnoty attributu
 
@@ -1206,10 +1207,10 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         // vytvoření závislých dat
 
-        RulDescItemType descItemType2 = createDescItemType(dataType, "ITEM_TYPE2", "Item type 2", "SH3", "Desc 3", false, false, true, 2);
-        RulDescItemSpec descItemSpec2 = createDescItemSpec(descItemType2, "ITEM_SPEC2", "Item spec 2", "SH4", "Desc 4", 2);
-        createDescItemConstrain(descItemType2, descItemSpec, version, null, "[0-9]*", null);
-        createDescItemConstrain(descItemType2, descItemSpec, version, null, null, 50);
+        RulDescItemType descItemType2 = createDescItemType(dataType, "ITEM_TYPE2", "Item type 2", "SH3", "Desc 3", false, false, true, 4002);
+        RulDescItemSpec descItemSpec2 = createDescItemSpec(descItemType2, "ITEM_SPEC2", "Item spec 2", "SH4", "Desc 4", 4002);
+        createDescItemConstrain(descItemType2, descItemSpec, version, null, "[0-9]*", null, "CODE5");
+        createDescItemConstrain(descItemType2, descItemSpec, version, null, null, 50, "CODE6");
 
         // přidání hodnoty attributu - kontrola position
 
@@ -1274,12 +1275,12 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         // vytvoření závislých dat
 
-        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
-        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1);
-        createDescItemConstrain(descItemType, descItemSpec, version, false, null, null);
-        createDescItemConstrain(descItemType, descItemSpec, version, true, null, null);
-        createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null);
-        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 50);
+        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 2001);
+        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 2001);
+        createDescItemConstrain(descItemType, descItemSpec, version, false, null, null, "CODE7");
+        createDescItemConstrain(descItemType, descItemSpec, version, true, null, null, "CODE8");
+        createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null, "CODE9");
+        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 50, "CODE10");
 
         // přidání hodnoty attributu
 
@@ -1379,10 +1380,10 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         // vytvoření závislých dat
 
-        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
-        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1);
-        createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null);
-        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 10);
+        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1001);
+        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1001);
+        createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null, "CODE11");
+        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 10, "CODE12");
 
         // přidání hodnot attributů k uzlu
 
@@ -1476,11 +1477,12 @@ public class ArrangementManagerTest extends AbstractRestTest {
         Assert.assertNotNull("Neexistuje záznam pro datový typ INTEGER", dataType);
 
         // vytvoření závislých dat
+        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1222", "Item type 1aa", "SH1a", "Desc 1a", false,
+                false, true, 2221001);
 
-        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
-        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1);
-        createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null);
-        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 10);
+        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1222", "Item spec 1aa", "SH2a", "Desc 2a", 2221001);
+        createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null, "CODE133");
+        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 10, "CODE144");
 
         // přidání hodnot attributů k uzlu
 
@@ -1560,11 +1562,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItemSavePack.setDeleteDescItems(deleteDescItems);
         descItemSavePack.setNode(node);
 
-        RelatedNodeDirectionWithDescItems relatedNodeDirectionWithDescItems = arrangementManager
-                .saveDescriptionItems(descItemSavePack);
-
-        ArrDescItems descItemsContainer = relatedNodeDirectionWithDescItems.getArrDescItems();
-        List<ArrDescItem> descItemListSave = descItemsContainer.getDescItems();
+        List<ArrDescItem> descItemListSave = storeSavePack(descItemSavePack);
 
         Assert.assertNotNull(descItemListSave);
         Assert.assertEquals(6, descItemListSave.size());
@@ -1634,12 +1632,12 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         // vytvoření závislých dat
 
-        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1);
-        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1);
-        createDescItemConstrain(descItemType, descItemSpec, version, false, null, null);
-        createDescItemConstrain(descItemType, descItemSpec, version, true, null, null);
-        createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null);
-        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 50);
+        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1001);
+        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1001);
+        createDescItemConstrain(descItemType, descItemSpec, version, false, null, null, "CODE15");
+        createDescItemConstrain(descItemType, descItemSpec, version, true, null, null, "CODE16");
+        createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null, "CODE17");
+        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 50, "CODE18");
 
         // přidání hodnoty attributu
 
@@ -1713,19 +1711,19 @@ public class ArrangementManagerTest extends AbstractRestTest {
         List<RulDescItemType> list = descItemTypeRepository.findAll();
 
         RulDescItemType itemTypeCoordinates = createDescItemType(dataTypeCoordinates, "ITEM_TYPE_COORDINATES", "Item type COORDINATES", "SH COORDINATES", "Desc COORDINATES", false,
-                false, false, 1);
+                false, false, 5001);
         RulDescItemType itemTypeFormattedText = createDescItemType(dataTypeFormattedText, "ITEM_TYPE_FORMATTED_TEXT", "Item type FORMATTED_TEXT", "SH FORMATTED_TEXT",
-                "Desc FORMATTED_TEXT", false, false, false, 2);
-        RulDescItemType itemTypeInteger = createDescItemType(dataTypeInteger, "ITEM_TYPE_INTEGER", "Item type INTEGER", "SH INTEGER", "Desc INTEGER", false, false, false, 3);
+                "Desc FORMATTED_TEXT", false, false, false, 5002);
+        RulDescItemType itemTypeInteger = createDescItemType(dataTypeInteger, "ITEM_TYPE_INTEGER", "Item type INTEGER", "SH INTEGER", "Desc INTEGER", false, false, false, 5003);
         RulDescItemType itemTypePartyRef = createDescItemType(dataTypePartyRef, "ITEM_TYPE_PARTY_REF", "Item type PARTY_REF", "SH PARTY_REF", "Desc PARTY_REF", false, false, false,
-                4);
+                5004);
         RulDescItemType itemTypeRecordRef = createDescItemType(dataTypeRecordRef, "ITEM_TYPE_RECORD_REF", "Item type RECORD_REF", "SH RECORD_REF", "Desc RECORD_REF", false, false,
-                false, 5);
-        RulDescItemType itemTypeString = createDescItemType(dataTypeString, "ITEM_TYPE_STRING", "Item type STRING", "SH STRING", "Desc STRING", false, false, false, 6);
-        RulDescItemType itemTypeText = createDescItemType(dataTypeText, "ITEM_TYPE_TEXT", "Item type TEXT", "SH TEXT", "Desc TEXT", false, false, false, 7);
-        RulDescItemType itemTypeUnitdate = createDescItemType(dataTypeUnitdate, "ITEM_TYPE_UNITDATE", "Item type UNITDATE", "SH UNITDATE", "Desc UNITDATE", false, false, false, 8);
-        RulDescItemType itemTypeUnitid = createDescItemType(dataTypeUnitid, "ITEM_TYPE_UNITID", "Item type UNITID", "SH UNITID", "Desc UNITID", false, false, false, 9);
-        RulDescItemType itemTypeDecimal = createDescItemType(dataTypeDecimal, "ITEM_TYPE_DECIMAL", "Item type DECIMAL", "SH DECIMAL", "Desc DECIMAL", false, false, false, 10);
+                false, 5005);
+        RulDescItemType itemTypeString = createDescItemType(dataTypeString, "ITEM_TYPE_STRING", "Item type STRING", "SH STRING", "Desc STRING", false, false, false, 5006);
+        RulDescItemType itemTypeText = createDescItemType(dataTypeText, "ITEM_TYPE_TEXT", "Item type TEXT", "SH TEXT", "Desc TEXT", false, false, false, 5007);
+        RulDescItemType itemTypeUnitdate = createDescItemType(dataTypeUnitdate, "ITEM_TYPE_UNITDATE", "Item type UNITDATE", "SH UNITDATE", "Desc UNITDATE", false, false, false, 5008);
+        RulDescItemType itemTypeUnitid = createDescItemType(dataTypeUnitid, "ITEM_TYPE_UNITID", "Item type UNITID", "SH UNITID", "Desc UNITID", false, false, false, 5009);
+        RulDescItemType itemTypeDecimal = createDescItemType(dataTypeDecimal, "ITEM_TYPE_DECIMAL", "Item type DECIMAL", "SH DECIMAL", "Desc DECIMAL", false, false, false, 5010);
 
         // přidání všech typů attributu
 

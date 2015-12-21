@@ -48,4 +48,7 @@ public interface DescItemTypeRepository extends JpaRepository<RulDescItemType, I
 
 
     void deleteByRulPackage(RulPackage rulPackage);
+
+
+    RulDescItemType findOneByCode(String code);
 }
