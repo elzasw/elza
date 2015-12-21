@@ -40,6 +40,7 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPackageActions;
 import cz.tacr.elza.domain.RulPackageRules;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.packageimport.xml.ArrangementType;
@@ -56,6 +57,8 @@ import cz.tacr.elza.packageimport.xml.PackageActions;
 import cz.tacr.elza.packageimport.xml.PackageInfo;
 import cz.tacr.elza.packageimport.xml.PackageRule;
 import cz.tacr.elza.packageimport.xml.PackageRules;
+import cz.tacr.elza.packageimport.xml.PacketType;
+import cz.tacr.elza.packageimport.xml.PacketTypes;
 import cz.tacr.elza.packageimport.xml.RuleSet;
 import cz.tacr.elza.packageimport.xml.RuleSets;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
@@ -67,6 +70,7 @@ import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.PackageActionsRepository;
 import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.PackageRulesRepository;
+import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 
@@ -134,6 +138,9 @@ public class PackageService {
     @Autowired
     private BulkActionConfigManager bulkActionConfigManager;
 
+    @Autowired
+    private PacketTypeRepository packetTypeRepository;
+
     /**
      * Provede import balíčku.
      *
@@ -174,6 +181,9 @@ public class PackageService {
                     mapEntry.get("rul_package_actions.xml"));
             PackageRules packageRules = convertXmlStreamToObject(PackageRules.class,
                     mapEntry.get("rul_package_rules.xml"));
+            PacketTypes packetTypes = convertXmlStreamToObject(PacketTypes.class, mapEntry.get("rul_packet_type.xml"));
+
+            processPacketTypes(packetTypes, rulPackage);
 
             List<RulRuleSet> rulRuleSets = processRuleSets(ruleSets, arrangementTypes, rulPackage);
             processDescItemTypes(descItemTypes, descItemSpecs, descItemConstraints, rulPackage);
@@ -218,6 +228,56 @@ public class PackageService {
             }
         }
 
+    }
+
+    /**
+     * Zpracování packet.
+     *
+     * @param packetTypes    importovaný seznam packets
+     * @param rulPackage     balíček
+     */
+    private void processPacketTypes(final PacketTypes packetTypes, final RulPackage rulPackage) {
+        List<RulPacketType> rulPacketTypes = packetTypeRepository.findByRulPackage(rulPackage);
+        List<RulPacketType> rulPacketTypesNew = new ArrayList<>();
+
+        if (!CollectionUtils.isEmpty(packetTypes.getPacketTypes())) {
+            for (PacketType packetType : packetTypes.getPacketTypes()) {
+                List<RulPacketType> findItems = rulPacketTypes.stream().filter(
+                        (r) -> r.getCode().equals(packetType.getCode())).collect(
+                        Collectors.toList());
+                RulPacketType item;
+                if (findItems.size() > 0) {
+                    item = findItems.get(0);
+                } else {
+                    item = new RulPacketType();
+                }
+
+                convertPacketTypes(rulPackage, packetType, item);
+                rulPacketTypesNew.add(item);
+            }
+        }
+
+        rulPacketTypesNew = packetTypeRepository.save(rulPacketTypesNew);
+
+        List<RulPacketType> rulPacketTypesDelete = new ArrayList<>(rulPacketTypesNew);
+        rulPacketTypesDelete.removeAll(rulPacketTypesNew);
+        packetTypeRepository.delete(rulPacketTypesDelete);
+    }
+
+    /**
+     * Převod VO na DAO packet.
+     *
+     * @param rulPackage    balíček
+     * @param packetType    VO packet
+     * @param rulPacketType DAO packet
+     */
+    private void convertPacketTypes(final RulPackage rulPackage,
+                                    final PacketType packetType,
+                                    final RulPacketType rulPacketType) {
+        rulPacketType.setPackage(rulPackage);
+        rulPacketType.setCode(packetType.getCode());
+        rulPacketType.setName(packetType.getName());
+        rulPacketType.setShortcut(packetType.getShortcut());
     }
 
     /**
@@ -1092,6 +1152,8 @@ public class PackageService {
             packageRulesRepository.deleteByRulPackage(rulPackage);
 
             ruleSetRepository.deleteByRulPackage(rulPackage);
+
+            packetTypeRepository.deleteByRulPackage(rulPackage);
 
             packageRepository.delete(rulPackage);
 

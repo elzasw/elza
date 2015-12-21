@@ -2,7 +2,7 @@ package cz.tacr.elza.api;
 
 import java.io.Serializable;
 
-public interface ArrPacket <PT extends ArrPacketType, FA extends ArrFindingAid> extends Serializable {
+public interface ArrPacket <PT extends RulPacketType, FA extends ArrFindingAid> extends Serializable {
 
     Integer getPacketId();
 

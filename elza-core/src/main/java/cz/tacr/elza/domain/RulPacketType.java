@@ -2,22 +2,26 @@ package cz.tacr.elza.domain;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+
 /**
  * Číselník typů obalů.
  * @author by Ondřej Buriánek, burianek@marbes.cz.
  * @since 22.7.15
  */
-@Entity(name = "arr_packet_type")
+@Entity(name = "rul_packet_type")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrPacketType implements cz.tacr.elza.api.ArrPacketType {
+public class RulPacketType implements cz.tacr.elza.api.RulPacketType<RulPackage> {
 
     public final static String PACKET_TYPE_ID = "packetTypeId";
 
@@ -33,6 +37,10 @@ public class ArrPacketType implements cz.tacr.elza.api.ArrPacketType {
     
     @Column(length = 50, nullable = false)
     private String shortcut;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
+    @JoinColumn(name = "packageId", nullable = false)
+    private RulPackage rulPackage;
 
     @Override
     public Integer getPacketTypeId() {
@@ -75,15 +83,25 @@ public class ArrPacketType implements cz.tacr.elza.api.ArrPacketType {
     }
 
     @Override
+    public RulPackage getPackage() {
+        return rulPackage;
+    }
+
+    @Override
+    public void setPackage(final RulPackage rulPackage) {
+        this.rulPackage = rulPackage;
+    }
+
+    @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof ArrPacketType)) {
+        if (!(obj instanceof RulPacketType)) {
             return false;
         }
         if (this == obj) {
             return true;
         }
 
-        ArrPacketType other = (ArrPacketType) obj;
+        RulPacketType other = (RulPacketType) obj;
 
         return new EqualsBuilder().append(packetTypeId, other.getPacketTypeId()).isEquals();
     }

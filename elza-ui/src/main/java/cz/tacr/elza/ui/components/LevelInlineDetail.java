@@ -30,7 +30,7 @@ import cz.tacr.elza.domain.ArrNodeConformityInfoExt;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.ArrPacketType;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
@@ -328,7 +328,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
             if (item instanceof ArrDescItemPacketRef) {
                 ArrDescItemPacketRef packetRef = (ArrDescItemPacketRef) item;
-                ArrPacketType packetType = packetRef.getPacket().getPacketType();
+                RulPacketType packetType = packetRef.getPacket().getPacketType();
                 String packetName = packetType == null ? "" : " (" + packetType.getName() + ")";
                 value += packetName;
             }
@@ -481,8 +481,8 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             attribut = new Attribut(listItem, listSpec, type, dataType, level.getNode(), versionId, getAttributeValuesLoader(), calendarTypes) {
 
                 @Override
-                public List<ArrPacketType> getPacketTypes() {
-                    List<ArrPacketType> packetTypes = arrangementManager.getPacketTypes();
+                public List<RulPacketType> getPacketTypes() {
+                    List<RulPacketType> packetTypes = arrangementManager.getPacketTypes();
                     return packetTypes;
                 }
 
