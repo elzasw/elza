@@ -343,14 +343,6 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
     List<APT> getPacketTypes();
 
     /**
-     * Vytvoří nový uzel.
-     *
-     * @return uzel
-     */
-    N createNode();
-
-
-    /**
      * Zjistí, jestli patří vybraný level do dané verze.
      *
      * @param level   level

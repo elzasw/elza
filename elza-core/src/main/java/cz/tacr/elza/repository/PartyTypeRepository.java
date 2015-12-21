@@ -11,4 +11,6 @@ import cz.tacr.elza.domain.ParPartyType;
  */
 public interface PartyTypeRepository extends JpaRepository<ParPartyType, Integer> {
 
+    ParPartyType findPartyTypeByCode(String partyTypeCode);
+
 }

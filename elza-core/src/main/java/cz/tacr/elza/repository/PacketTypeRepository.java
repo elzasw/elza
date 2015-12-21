@@ -18,4 +18,6 @@ public interface PacketTypeRepository extends JpaRepository<RulPacketType, Integ
 
 
     void deleteByRulPackage(RulPackage rulPackage);
+    ArrPacketType findByCode(String packetTypeCode);
+
 }

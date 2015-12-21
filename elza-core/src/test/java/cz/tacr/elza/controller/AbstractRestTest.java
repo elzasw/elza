@@ -101,6 +101,7 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
+import cz.tacr.elza.service.ArrangementService;
 
 /**
  * Abstraktní předek pro testy. Nastavuje REST prostředí.
@@ -346,6 +347,9 @@ public abstract class AbstractRestTest {
     @Autowired
     protected RuleManager ruleManager;
 
+    @Autowired
+    private ArrangementService arrangementService;
+
     protected RulPackage rulPackage;
 
     @Before
@@ -469,7 +473,7 @@ public abstract class AbstractRestTest {
             level.setNodeParent(parent.getNode());
         }
         level.setCreateChange(change);
-        level.setNode(arrangementManager.createNode());
+        level.setNode(arrangementService.createNode());
         return levelRepository.save(level);
     }
 
