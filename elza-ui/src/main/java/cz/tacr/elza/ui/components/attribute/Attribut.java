@@ -42,7 +42,7 @@ import cz.tacr.elza.domain.ArrDescItemUnitdate;
 import cz.tacr.elza.domain.ArrDescItemUnitid;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.ArrPacketType;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
@@ -352,7 +352,7 @@ public abstract class Attribut extends CssLayout implements Components {
     private void createFormularPacket() {
         AxForm<ArrPacket> form = AxForm.init(ArrPacket.class);
         form.addStyleName("form");
-        AxItemContainer<ArrPacketType> container = AxItemContainer.init(ArrPacketType.class);
+        AxItemContainer<RulPacketType> container = AxItemContainer.init(RulPacketType.class);
         container.addAll(getPacketTypes());
         form.addCombo("Typ obalu", "packetType", container, "name");
         form.addField("Číslo", "storageNumber").required();
@@ -375,7 +375,7 @@ public abstract class Attribut extends CssLayout implements Components {
 
     protected abstract void createPacket(ArrPacket packet, Integer versionId);
 
-    protected abstract List<ArrPacketType> getPacketTypes();
+    protected abstract List<RulPacketType> getPacketTypes();
 
     private Button createPacketButton() {
         Button button = new Button(FontAwesome.PLUS);

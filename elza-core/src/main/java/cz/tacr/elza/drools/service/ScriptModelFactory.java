@@ -27,7 +27,7 @@ import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.ArrPacketType;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.model.DescItemVO;
@@ -324,7 +324,7 @@ public class ScriptModelFactory {
         result.setInvalidPacket(packet.getInvalidPacket());
 
         if (packet.getPacketType() != null) {
-            ArrPacketType packetType = packet.getPacketType();
+            RulPacketType packetType = packet.getPacketType();
             VOPacket.VOPacketType voPacketType = new VOPacket.VOPacketType();
             voPacketType.setCode(packetType.getCode());
             voPacketType.setName(packetType.getName());

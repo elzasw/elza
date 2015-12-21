@@ -10,7 +10,7 @@ import cz.tacr.elza.api.ArrLevelExt;
 import cz.tacr.elza.api.ArrNode;
 import cz.tacr.elza.api.ArrNodeRegister;
 import cz.tacr.elza.api.ArrPacket;
-import cz.tacr.elza.api.ArrPacketType;
+import cz.tacr.elza.api.RulPacketType;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.ArrCalendarTypes;
 import cz.tacr.elza.api.vo.ArrDescItemSavePack;
@@ -44,7 +44,7 @@ import cz.tacr.elza.api.vo.ScenarioOfNewLevel;
 public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFindingAidVersion, DI extends ArrDescItem,
         DISP extends ArrDescItemSavePack, FL extends ArrLevel, FLP extends ArrLevelPack, N extends ArrNode,
         DIS extends ArrDescItems, NHP extends ArrNodeHistoryPack, CTL extends ArrCalendarTypes, ANR extends ArrNodeRegister,
-        ANRP extends ArrNodeRegisterPack, AP extends ArrPacket, APT extends ArrPacketType,
+        ANRP extends ArrNodeRegisterPack, AP extends ArrPacket, APT extends RulPacketType,
         RNDWDIS extends RelatedNodeDirectionWithDescItems, RNDWDI extends RelatedNodeDirectionWithDescItem,
         RNDWLFP extends RelatedNodeDirectionWithLevelPack, SONL extends ScenarioOfNewLevel> {
 

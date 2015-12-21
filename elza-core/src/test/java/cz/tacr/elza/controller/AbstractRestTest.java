@@ -7,8 +7,6 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import javax.transaction.Transactional;
@@ -24,7 +22,6 @@ import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
@@ -35,7 +32,6 @@ import com.jayway.restassured.response.Header;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 
-import cz.tacr.elza.ElzaCore;
 import cz.tacr.elza.ElzaCoreTest;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -51,7 +47,7 @@ import cz.tacr.elza.domain.ArrNodeConformityErrors;
 import cz.tacr.elza.domain.ArrNodeConformityInfo;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.ArrPacketType;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyType;
@@ -207,6 +203,7 @@ public abstract class AbstractRestTest {
     protected static final String FIND_SUB_LEVELS_EXT_URL = ARRANGEMENT_MANAGER_URL + "/findSubLevelsExt";
     protected static final String FIND_SUB_LEVELS_URL = ARRANGEMENT_MANAGER_URL + "/findSubLevels";
     protected static final String GET_HISTORY_FOR_NODE = ARRANGEMENT_MANAGER_URL + "/getHistoryForNode/{findingAidId}/{nodeId}";
+    protected static final String GET_PACKET_TYPES = ARRANGEMENT_MANAGER_URL + "/getPacketTypes";
 
     protected static final String ADD_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/addLevel";
     protected static final String ADD_LEVEL_BEFORE_URL = ARRANGEMENT_MANAGER_URL + "/addLevelBefore";
@@ -673,8 +670,10 @@ public abstract class AbstractRestTest {
         return partyTypeRepository.findOne(2);
     }
 
-    protected ArrPacketType findPacketType() {
-        return packetTypeRepository.findOne(1);
+    protected RulPacketType findPacketType() {
+        Response response = get(GET_PACKET_TYPES);
+        List<RulPacketType> list = Arrays.asList(response.getBody().as(RulPacketType[].class));
+        return list.get(0);
     }
 
     protected ParParty createParParty() {
@@ -1005,7 +1004,7 @@ public abstract class AbstractRestTest {
      * @return obal
      */
     protected ArrPacket restCreatePacket(ArrFindingAid findingAid) {
-        final ArrPacketType partySubtype = findPacketType();
+        final RulPacketType partySubtype = findPacketType();
 
         ArrPacket requestBody = new ArrPacket();
         requestBody.setPacketType(partySubtype);

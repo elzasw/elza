@@ -53,7 +53,7 @@ import cz.tacr.elza.domain.ArrNodeConformityInfo;
 import cz.tacr.elza.domain.ArrNodeConformityInfoExt;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.ArrPacketType;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
@@ -101,7 +101,7 @@ import cz.tacr.elza.repository.RuleSetRepository;
 @RequestMapping("/api/arrangementManager")
 public class ArrangementManager implements cz.tacr.elza.api.controller.ArrangementManager<ArrFindingAid, ArrFindingAidVersion,
     ArrDescItem, ArrDescItemSavePack, ArrLevel, ArrLevelWithExtraNode, ArrNode, ArrDescItems, ArrNodeHistoryPack,
-    ArrCalendarTypes, ArrNodeRegister, ArrNodeRegisterPack, ArrPacket, ArrPacketType, RelatedNodeDirectionWithDescItems,
+    ArrCalendarTypes, ArrNodeRegister, ArrNodeRegisterPack, ArrPacket, RulPacketType, RelatedNodeDirectionWithDescItems,
         RelatedNodeDirectionWithDescItem, RelatedNodeDirectionWithLevelPack, ScenarioOfNewLevel> {
 
     @PersistenceContext
@@ -2599,7 +2599,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         Assert.notNull(packetTypeId, "Není vyplněné packetTypeId");
         Assert.notNull(findingAidId, "Není vyplněné findingAidId");
 
-        final ArrPacketType partyType = packetTypeRepository.findOne(packetTypeId);
+        final RulPacketType partyType = packetTypeRepository.findOne(packetTypeId);
         final ArrFindingAid findingAid = findingAidRepository.findOne(findingAidId);
 
         Assert.notNull(partyType, "Nebyla nalezena ArrPacketType s id " + packetTypeId);
@@ -2622,8 +2622,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @RequestMapping(value = "/getPacketTypes", method = RequestMethod.GET)
     @Override
-    public List<ArrPacketType> getPacketTypes() {
-        List<ArrPacketType> result = packetTypeRepository.findAll();
+    public List<RulPacketType> getPacketTypes() {
+        List<RulPacketType> result = packetTypeRepository.findAll();
         return result;
     }
 
