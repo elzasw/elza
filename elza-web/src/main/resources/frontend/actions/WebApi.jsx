@@ -57,6 +57,52 @@ class WebApiRest {
     }
 }
 
+function findNodeById(node, nodeId) {
+    if (node.id == nodeId) {
+        return node;
+    }
+
+    for (var a=0; a<node.children.length; a++) {
+        var ret = findNodeById(node.children[a], nodeId);
+        if (ret !== null) {
+            return ret;
+        }
+    }
+
+    return null;
+}
+function generateFlatTree(nodes, expandedIds, out) {
+    nodes.each(node => {
+        node.hasChildren = node.children && node.children.length > 0;
+        out.push(node);
+        if (expandedIds['n_' + node.id]) {
+            generateFlatTree(node.children, expandedIds, out);
+        }
+    });
+}
+function buildTree(node, depth) {
+    _nodeMap[node.id] = node;
+
+    if (depth > 4) {
+        return;
+    }
+    var len = (depth + depth % 5) * 3;
+if (depth == 1) {
+len = 40;
+}
+    for (var a=0; a<len; a++) {
+        _nodeId++;
+        var child = {id: _nodeId, name: node.name + "_" + _nodeId, depth: depth, children: []};
+        node.children.push(child);
+        buildTree(child, depth + 1);
+    }
+}
+var _nodeMap = {};
+var _nodeId = 0;
+var _faRootNode = {id: 0, name: 'node', depth: 0, children: []}
+buildTree(_faRootNode, 1);
+console.log("TREE NODES", _nodeId);
+
 class WebApiFake {
     constructor() {
     }
@@ -287,7 +333,24 @@ class WebApiFake {
         return this.getData(data, 1);
     }
 
-    getFaTree(faId, versionId) {
+    getFaTree(faId, versionId, nodeId, expandedIds = {0:true}) {
+        var srcNodes;
+        if (nodeId == null || typeof nodeId == 'undefined') {
+            srcNodes = [_faRootNode];
+        } else {
+            srcNodes = findNodeById(_faRootNode, nodeId).children;
+        }
+
+        var out = [];
+        generateFlatTree(srcNodes, expandedIds, out);
+        var data = {
+            nodes: out
+        }
+
+        return this.getData(data, 1);
+    }
+
+    getFaTree2(faId, versionId) {
         var str = " {" + faId + "_" + versionId + "}";
 
         var root = {id: 123, name: 'root node' + str, parentId: null};
@@ -307,7 +370,7 @@ class WebApiFake {
                 [child1.id]: child1,
                 [child3.id]: child3,
             },
-            nodes: [
+            nodes1: [
                 {
                     ...root,
                     children: [
@@ -317,7 +380,8 @@ class WebApiFake {
                         {...child4},
                     ]
                 }
-            ]
+            ],
+            nodes: [_faRootNode]
         }
 
         return this.getData(data, 1);

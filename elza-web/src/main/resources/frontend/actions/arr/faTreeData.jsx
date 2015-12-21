@@ -2,6 +2,7 @@ import {WebApi} from 'actions'
 
 import * as types from 'actions/constants/actionTypes';
 
+/*
 export function faTreeFetchIfNeeded(faId, versionId) {
     return (dispatch, getState) => {
         var state = getState();
@@ -40,3 +41,4 @@ export function faTreeRequest(faId, versionId) {
         versionId
     }
 }
+*/

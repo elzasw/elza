@@ -3,15 +3,15 @@ import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
 
 import nodes from './nodes'
 import faTree from './faTree'
-import faTreeData from './faTreeData'
+//import faTreeData from './faTreeData'
 import nodeForm from './nodeForm'
 
 const initialState = {
     activeIndex: null,
-    faTreeData: faTreeData(undefined, {}),
     nodeForm: nodeForm(undefined, {}),
     fas: []
 }
+  //  faTreeData: faTreeData(undefined, {}),
 
 function selectFaTab(state, action) {
     var faItem = Object.assign({}, action.fa, {faTree: faTree(action.fa.faTree, action), nodes: nodes(undefined, action)});
@@ -69,6 +69,8 @@ export default function arrangementRegion(state = initialState, action) {
             return Object.assign({}, state, {nodeForm: nodeForm(state.nodeForm, action)});
         case types.FA_FA_TREE_EXPAND_NODE:
         case types.FA_FA_TREE_COLLAPSE_NODE:
+        case types.FA_FA_TREE_REQUEST:
+        case types.FA_FA_TREE_RECEIVE:
             return {
                 ...state,
                 fas: [
@@ -76,16 +78,6 @@ export default function arrangementRegion(state = initialState, action) {
                     Object.assign({}, state.fas[state.activeIndex], {faTree: faTree(state.fas[state.activeIndex].faTree, action)}),
                     ...state.fas.slice(state.activeIndex + 1)
                 ]
-            }
-        case types.FA_FA_TREE_REQUEST:
-            return {
-                ...state,
-                faTreeData: faTreeData(state.faTreeData, action)
-            }
-        case types.FA_FA_TREE_RECEIVE:
-            return {
-                ...state,
-                faTreeData: faTreeData(state.faTreeData, action)
             }
         case types.FA_FA_SELECT_SUBNODE:
         case types.FA_FA_CLOSE_NODE_TAB:

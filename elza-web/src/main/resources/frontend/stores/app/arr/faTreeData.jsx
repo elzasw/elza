@@ -9,6 +9,7 @@ const initialState = {
     nodeMap: [],
 }
 
+/*
 export default function faTreeData(state = initialState, action) {
     switch (action.type) {
         case types.FA_FA_TREE_REQUEST:
@@ -31,3 +32,4 @@ export default function faTreeData(state = initialState, action) {
             return state
     }
 }
+*/

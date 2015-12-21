@@ -2,28 +2,39 @@
  * Strom archivních souborů.
  */
 
-require ('./FaTree.less');
+require ('./FaTreeLazy.less');
 
 import React from 'react';
+import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Loading} from 'components';
+import {VirtualList, AbstractReactComponent, i18n, Loading} from 'components';
 import {Nav, NavItem} from 'react-bootstrap';
 var classNames = require('classnames');
-import {faTreeFetchIfNeeded} from 'actions/arr/faTreeData'
-import {faTreeNodeExpand, faTreeNodeCollapse} from 'actions/arr/faTree'
+import {faTreeFetchIfNeeded, faTreeNodeExpand, faTreeNodeCollapse} from 'actions/arr/faTree'
 import {faSelectNodeTab, faSelectSubNode} from 'actions/arr/nodes'
+import {ResizeStore} from 'stores';
 
-var FaTree = class FaTree extends AbstractReactComponent {
+var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
         this.bindMethods('renderNode', 'handleToggle', 'handleNodeClick', 'handleNodeDoubleClick');
 
-        this.dispatch(faTreeFetchIfNeeded(props.faId, props.versionId));
+        this.dispatch(faTreeFetchIfNeeded(props.faId, props.versionId, props.expandedIds));
+
+        ResizeStore.listen(status => {
+            this.setState({});
+        });
+
+        this.state = {};
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(faTreeFetchIfNeeded(nextProps.faId, nextProps.versionId));
+        this.dispatch(faTreeFetchIfNeeded(nextProps.faId, nextProps.versionId, nextProps.expandedIds));
+    }
+
+    componentDidMount() {
+        this.setState({treeContainer: ReactDOM.findDOMNode(this.refs.treeContainer)});
     }
 
     handleToggle(node, expand) {
@@ -46,47 +57,44 @@ var FaTree = class FaTree extends AbstractReactComponent {
         }
     }
 
-    renderNode(node, level) {
-        var expanded = node.children && this.props.expandedIds['n_' + node.id];
-
-        var children;
-        if (expanded) {
-            children = node.children.map(child => {return this.renderNode(child, level + 1)});
-        }
+    renderNode(node) {
+        var expanded = node.hasChildren && this.props.expandedIds['n_' + node.id];
 
         var expCol;
-        if (node.children && node.children.length > 0) {
+        if (node.hasChildren) {
             expCol = <span className='exp-col' onClick={this.handleToggle.bind(this, node, !expanded)}>{expanded ? '-' : '+'}</span>
         } else {
             expCol = <span className='exp-col'>&nbsp;</span>
         }
 
         var cls = classNames({
-            ['level' + level]: true,
+            node: true,
+            ['level' + node.depth]: true,
             opened: expanded,
             closed: !expanded,
             active: this.props.selectedId === node.id
         })
-
         return (
-            <div>
-                <div key={node.id} className={cls}>
-                    {expCol}
-                    <span onClick={this.handleNodeClick.bind(this, node)} onDoubleClick={this.handleNodeDoubleClick.bind(this, node)}>{node.name}</span>
-                </div>
-                {children}
+            <div key={node.id} className={cls}>
+                {expCol}
+                <span onClick={this.handleNodeClick.bind(this, node)} onDoubleClick={this.handleNodeDoubleClick.bind(this, node)}>{node.name}</span>
             </div>
         )
     }
 
     render() {
+        return (
+            <div className='fa-tree-lazy-container' ref="treeContainer">
+                <VirtualList tagName='div' container={this.state.treeContainer} items={this.props.nodes} renderItem={this.renderNode} itemHeight={this.props.rowHeight} />
+            </div>
+        )
+
         var rows;
         if (this.props.fetched) {
             rows = this.props.nodes.map(node => {
-                return this.renderNode(node, 0);
+                return this.renderNode(node);
             });
         }
-
         return (
             <div className='fa-tree'>
                 {(this.props.isFetching || !this.props.fetched) && <Loading/>}
@@ -96,4 +104,8 @@ var FaTree = class FaTree extends AbstractReactComponent {
     }
 }
 
-module.exports = connect()(FaTree);
+FaTreeLazy.defaultProps = {
+    rowHeight: 22
+}
+
+module.exports = connect()(FaTreeLazy);
