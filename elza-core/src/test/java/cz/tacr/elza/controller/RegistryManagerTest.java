@@ -1,6 +1,22 @@
 package cz.tacr.elza.controller;
 
+import static com.jayway.restassured.RestAssured.given;
+
+import java.util.Arrays;
+import java.util.List;
+
+import javax.transaction.Transactional;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import com.jayway.restassured.response.Response;
+
+import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.RegExternalSource;
@@ -13,16 +29,8 @@ import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import ma.glasnost.orika.MapperFactory;
 
-import java.util.Arrays;
-import java.util.List;
-
-import static com.jayway.restassured.RestAssured.given;
 
 /**
  * Test pro operace s rejstříkem.
@@ -53,6 +61,10 @@ public class RegistryManagerTest extends AbstractRestTest {
 
     @Autowired
     private PartyNameFormTypeRepository partyNameFormTypeRepository;
+
+    @Autowired
+    @Qualifier("configVOMapper")
+    private MapperFactory configVOMapper;
 
 
     /**
@@ -355,6 +367,21 @@ public class RegistryManagerTest extends AbstractRestTest {
         Assert.assertNotNull(foundRecord);
         Assert.assertTrue(foundRecord.getRecordId().equals(record.getRecordId()));
     }
+
+    @Test
+    public void testFindByParentRecord(){
+        RegRecord kod1 = createRecord("KOD1");
+        RegRecord kod2 = createRecord2("KOD2");
+
+        kod1.setParentRecord(kod2);
+        recordRepository.save(kod1);
+
+        List<RegRecord> byParentRecord = recordRepository.findByParentRecord(kod2);
+        Assert.assertTrue(byParentRecord.size() > 0);
+        Assert.assertEquals(byParentRecord.iterator().next(),kod1);
+    }
+
+
 
     /**
      * Vytvoření jednoho externího zdroje.

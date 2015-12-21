@@ -101,6 +101,8 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
+import cz.tacr.elza.service.RegistryService;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -143,6 +145,7 @@ public abstract class AbstractRestTest {
     protected static final String ARRANGEMENT_MANAGER_URL = "/api/arrangementManager";
     protected static final String RULE_MANAGER_URL = "/api/ruleSetManager";
     protected static final String REGISTRY_MANAGER_URL = "/api/registryManager";
+    protected static final String REGISTRY_MANAGER_URL_V2 = "/api/registryManagerV2";
     protected static final String PARTY_MANAGER_URL = "/api/partyManager";
     protected static final String BULK_ACTION_MANAGER_URL = "/api/bulkActionManager";
 
@@ -178,11 +181,14 @@ public abstract class AbstractRestTest {
     protected static final String CREATE_RECORD_URL = REGISTRY_MANAGER_URL + "/createRecord";
     protected static final String CREATE_VARIANT_RECORD_URL = REGISTRY_MANAGER_URL + "/createVariantRecord";
     protected static final String FIND_RECORD_URL = REGISTRY_MANAGER_URL + "/findRecord";
+    protected static final String FIND_RECORD_URL_V2 = REGISTRY_MANAGER_URL_V2 + "/findRecord";
     protected static final String UPDATE_RECORD_URL = REGISTRY_MANAGER_URL + "/updateRecord";
     protected static final String DELETE_RECORD_URL = REGISTRY_MANAGER_URL + "/deleteRecord";
     protected static final String UPDATE_VARIANT_RECORD_URL = REGISTRY_MANAGER_URL + "/updateVariantRecord";
     protected static final String DELETE_VARIANT_RECORD_URL = REGISTRY_MANAGER_URL + "/deleteVariantRecord";
     protected static final String GET_RECORD_URL = REGISTRY_MANAGER_URL + "/getRecord";
+    protected static final String GET_RECORD_URL_V2 = REGISTRY_MANAGER_URL_V2 + "/getRecord";
+
 
     protected static final String RECORD_ID_ATT = "recordId";
     protected static final String VARIANT_RECORD_ID_ATT = "variantRecordId";
@@ -325,7 +331,7 @@ public abstract class AbstractRestTest {
     @Autowired
     private DataRepository arrDataRepository;
     @Autowired
-    private RegisterTypeRepository registerTypeRepository;
+    protected RegisterTypeRepository registerTypeRepository;
     @Autowired
     private ExternalSourceRepository externalSourceRepository;
     @Autowired
@@ -333,7 +339,7 @@ public abstract class AbstractRestTest {
     @Autowired
     private VariantRecordRepository variantRecordRepository;
     @Autowired
-    private RegRecordRepository recordRepository;
+    protected RegRecordRepository recordRepository;
     @Autowired
     private PartyTypeRepository partyTypeRepository;
     @Autowired
@@ -366,6 +372,10 @@ public abstract class AbstractRestTest {
     protected RuleManager ruleManager;
 
     protected RulPackage rulPackage;
+
+    //servisní třídy
+    @Autowired
+    protected RegistryService registryService;
 
     @Before
     public void setUp() {
