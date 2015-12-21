@@ -25,7 +25,6 @@ exports.FaFileTree = require('./arr/FaFileTree');
 exports.NodePanel = require('./arr/NodePanel');
 exports.NodeTabs = require('./arr/NodeTabs');
 exports.FaTreeTabs = require('./arr/FaTreeTabs');
-exports.FaTree = require('./arr/FaTree');
 exports.FaTreeLazy = require('./arr/FaTreeLazy');
 
 exports.PartySearch = require('./party/PartySearch');

@@ -3,7 +3,6 @@ import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
 
 import nodes from './nodes'
 import faTree from './faTree'
-//import faTreeData from './faTreeData'
 import nodeForm from './nodeForm'
 
 const initialState = {
@@ -11,7 +10,6 @@ const initialState = {
     nodeForm: nodeForm(undefined, {}),
     fas: []
 }
-  //  faTreeData: faTreeData(undefined, {}),
 
 function selectFaTab(state, action) {
     var faItem = Object.assign({}, action.fa, {faTree: faTree(action.fa.faTree, action), nodes: nodes(undefined, action)});

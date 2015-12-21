@@ -38,7 +38,6 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             <FaTreeTabs
                 fas={fas}
                 activeFa={activeFa}
-                faTreeData={this.props.arrRegion.faTreeData}
             />
         )
 
