@@ -12,10 +12,10 @@ const initialState = {
     fetched: false,
     nodes: [],
 }
-console.log('eeeeeeeeeeeeexxxxxxxxxxxxppp');
+/*console.log('eeeeeeeeeeeeexxxxxxxxxxxxppp');
 for (var a=0; a<300000; a++) {
 initialState.expandedIds['n_' + a] = true;
-}
+}*/
 
 function removeChildren(nodes, node) {
     var index = indexById(nodes, node.id);

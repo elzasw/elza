@@ -13,12 +13,13 @@ var classNames = require('classnames');
 import {faTreeFetchIfNeeded, faTreeNodeExpand, faTreeNodeCollapse} from 'actions/arr/faTree'
 import {faSelectNodeTab, faSelectSubNode} from 'actions/arr/nodes'
 import {ResizeStore} from 'stores';
+import {indexById} from 'stores/app/utils.jsx'
 
 var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderNode', 'handleToggle', 'handleNodeClick', 'handleNodeDoubleClick');
+        this.bindMethods('renderNode', 'handleToggle', 'handleNodeClick', 'handleNodeDoubleClick', 'getParentNode');
 
         this.dispatch(faTreeFetchIfNeeded(props.faId, props.versionId, props.expandedIds));
 
@@ -41,8 +42,18 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
         expand ? this.dispatch(faTreeNodeExpand(node)) : this.dispatch(faTreeNodeCollapse(node));
     }
 
+    getParentNode(node) {
+        var index = indexById(this.props.nodes, node.id);
+        while (--index >= 0) {
+            if (this.props.nodes[index].depth < node.depth) {
+                return this.props.nodes[index];
+            }
+        }
+        return null;
+    }
+
     handleNodeDoubleClick(node) {
-        var parentNode = this.props.nodeMap[node.parentId];
+        var parentNode = this.getParentNode(node);
         if (parentNode != null) {
             //this.dispatch(faSelectNodeTab(parentNode));
             this.dispatch(faSelectSubNode(node.id, parentNode, true));
@@ -50,7 +61,7 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     }
 
     handleNodeClick(node) {
-        var parentNode = this.props.nodeMap[node.parentId];
+        var parentNode = this.getParentNode(node);
         if (parentNode != null) {
             //this.dispatch(faSelectNodeTab(parentNode));
             this.dispatch(faSelectSubNode(node.id, parentNode, false));

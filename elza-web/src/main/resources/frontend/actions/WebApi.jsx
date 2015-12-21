@@ -83,7 +83,7 @@ function generateFlatTree(nodes, expandedIds, out) {
 function buildTree(node, depth) {
     _nodeMap[node.id] = node;
 
-    if (depth > 4) {
+    if (depth > 3) {
         return;
     }
     var len = (depth + depth % 5) * 3;
