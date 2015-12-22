@@ -3,11 +3,19 @@ package cz.tacr.elza.controller.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import cz.tacr.elza.controller.vo.ParComplementTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyTypeVO;
+import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
+import cz.tacr.elza.controller.vo.ParRelationTypeVO;
 import cz.tacr.elza.controller.vo.RegExternalSourceVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.domain.ParComplementType;
+import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParRelationRoleType;
+import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.RegExternalSource;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
@@ -44,7 +52,11 @@ public class ConfigMapperConfiguration {
      * @param mapperFactory tovární třída
      */
     private void initSimpleVO(final MapperFactory mapperFactory) {
+        mapperFactory.classMap(ParComplementType.class, ParComplementTypeVO.class).byDefault().register();
+        mapperFactory.classMap(ParPartyNameFormType.class, ParPartyNameFormTypeVO.class).byDefault().register();
         mapperFactory.classMap(ParPartyType.class, ParPartyTypeVO.class).byDefault().register();
+        mapperFactory.classMap(ParRelationRoleType.class, ParRelationRoleTypeVO.class).byDefault().register();
+        mapperFactory.classMap(ParRelationType.class, ParRelationTypeVO.class).byDefault().register();
 
         mapperFactory.classMap(RegRecord.class, RegRecordVO.class)
                 .exclude("variantRecordList")

@@ -382,7 +382,6 @@ public class RegistryManagerTest extends AbstractRestTest {
     }
 
 
-
     /**
      * Vytvoření jednoho externího zdroje.
      * @return  vytvořený objekt, zapsaný do db
@@ -415,5 +414,7 @@ public class RegistryManagerTest extends AbstractRestTest {
 
         return response.getBody().as(RegVariantRecord.class);
     }
+
+
 
 }

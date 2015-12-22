@@ -47,10 +47,12 @@ import cz.tacr.elza.domain.ArrNodeConformityErrors;
 import cz.tacr.elza.domain.ArrNodeConformityInfo;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParRelationRoleType;
+import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
@@ -61,6 +63,7 @@ import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.ArrCalendarTypes;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
@@ -70,6 +73,7 @@ import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithDescItems;
 import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithLevelPack;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataStringRepository;
@@ -96,35 +100,18 @@ import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
+import cz.tacr.elza.repository.PartyTypeRelationRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.RelationRoleTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.RegistryService;
 import cz.tacr.elza.service.ArrangementService;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-
-import javax.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Function;
-
-import static com.jayway.restassured.RestAssured.given;
 
 /**
  * Abstraktní předek pro testy. Nastavuje REST prostředí.
@@ -148,6 +135,7 @@ public abstract class AbstractRestTest {
     protected static final String REGISTRY_MANAGER_URL = "/api/registryManager";
     protected static final String REGISTRY_MANAGER_URL_V2 = "/api/registryManagerV2";
     protected static final String PARTY_MANAGER_URL = "/api/partyManager";
+    protected static final String PARTY_MANAGER_URL_V2 = "/api/partyManagerV2";
     protected static final String BULK_ACTION_MANAGER_URL = "/api/bulkActionManager";
 
     protected static final String TEST_CODE = "ZP";
@@ -202,6 +190,7 @@ public abstract class AbstractRestTest {
 
     // PARTY MANAGER CONSTANTS
     protected static final String GET_PARTY_TYPES = PARTY_MANAGER_URL + "/getPartyTypes";
+    protected static final String GET_PARTY_TYPES_V2 = PARTY_MANAGER_URL_V2 + "/getPartyTypes";
     protected static final String INSERT_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/insertParty";
     protected static final String FIND_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/findParty";
     protected static final String UPDATE_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/updateParty";
@@ -380,6 +369,26 @@ public abstract class AbstractRestTest {
     //servisní třídy
     @Autowired
     protected RegistryService registryService;
+
+
+    @Autowired
+    protected PartyTypeRelationRepository partyTypeRelationRepository;
+
+    @Autowired
+    protected RelationTypeRepository relationTypeRepository;
+
+    @Autowired
+    protected RelationRoleTypeRepository relationRoleTypeRepository;
+
+    @Autowired
+    protected RelationTypeRoleTypeRepository relationTypeRoleTypeRepository;
+
+    @Autowired
+    protected PartyTypeComplementTypeRepository partyTypeComplementTypeRepository;
+
+    @Autowired
+    protected ComplementTypeRepository complementTypeRepository;
+
 
     @Before
     public void setUp() {
@@ -716,6 +725,37 @@ public abstract class AbstractRestTest {
         final ParPartyName partyName = new ParPartyName();
         return createParParty(partyType, record, partyName);
     }
+
+    protected ParPartyType createPartyType(final String code) {
+        ParPartyType parPartyType = new ParPartyType();
+        parPartyType.setCode(code);
+        parPartyType.setName(code);
+        parPartyType.setDescription(code);
+        return partyTypeRepository.save(parPartyType);
+    }
+
+    protected ParRelationType createRelationType(final String code) {
+        ParRelationType relationType = new ParRelationType();
+        relationType.setCode(code);
+        relationType.setName(code);
+        return relationTypeRepository.save(relationType);
+    }
+
+    protected ParRelationRoleType createRelationRoleType(final String code){
+        ParRelationRoleType relationRoleType = new ParRelationRoleType();
+        relationRoleType.setCode(code);
+        relationRoleType.setName(code);
+        return relationRoleTypeRepository.save(relationRoleType);
+    }
+
+    protected ParComplementType createComplementType(final String code){
+        ParComplementType complementType = new ParComplementType();
+        complementType.setCode(code);
+        complementType.setName(code);
+        complementType.setViewOrder(0);
+        return complementTypeRepository.save(complementType);
+    }
+
 
     protected ParParty createParParty(final ParPartyType partySubtype, final RegRecord record, final ParPartyName partyName) {
         ParParty party = new ParParty();

@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller.config;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -13,10 +14,13 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
+import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import ma.glasnost.orika.MapperFacade;
@@ -69,6 +73,36 @@ public class ConfigClientVOService {
         return result;
     }
 
+    /**
+     * Vytvoří ty rejstříkového hesla.
+     *
+     * @param registerType typ rejstříkového hesla
+     * @return VO
+     */
+    public RegRegisterTypeVO createRegRegisterType(final RegRegisterType registerType) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.map(registerType, RegRegisterTypeVO.class);
+    }
+
+
+    /**
+     * Vytvoří seznam typů formy jména.
+     *
+     * @param types typy formy jména
+     * @return seznam VO typů
+     */
+    public List<ParPartyNameFormTypeVO> createPartyNameFormTypes(final Collection<ParPartyNameFormType> types) {
+        Assert.notNull(types);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+
+        List<ParPartyNameFormTypeVO> result = new LinkedList<>();
+
+        for (ParPartyNameFormType type : types) {
+            result.add(mapper.map(type, ParPartyNameFormTypeVO.class));
+        }
+
+        return result;
+    }
 
     /**
      * Vytváří stromovou strukturu pro všechny typy rejstříků.
@@ -118,5 +152,31 @@ public class ConfigClientVOService {
 
         return result;
     }
+
+    /**
+     * Najde v mapě objekt podle daného id. Pokud není objekt nalezen, přes faktory jej vytvoří a vloží do mapy.
+     *
+     * @param id                id objektu
+     * @param source            zdrojový objekt
+     * @param processedItemsMap mapa vytvořených objektů
+     * @param classType         typ VO objektu
+     * @param <VO>              typ VO objektu
+     * @param <VOTYPE>          třída VO objektu
+     * @return nalezený nebo vytvořený VO
+     */
+    public <VO, VOTYPE extends Class> VO getOrCreateVo(final Integer id,
+                                                       final Object source,
+                                                       final Map<Integer, VO> processedItemsMap,
+                                                       final VOTYPE classType) {
+        VO item = processedItemsMap.get(id);
+
+
+        if (item == null) {
+            item = (VO) mapperFactory.getMapperFacade().map(source, classType);
+            processedItemsMap.put(id, item);
+        }
+        return item;
+    }
+
 
 }
