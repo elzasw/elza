@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -17,10 +18,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -87,15 +90,55 @@ public class PackageService {
     /**
      * hlavní soubor v zipu
      */
-    private final String INFO_FILE = "package.xml";
+    public static final String PACKAGE_XML = "package.xml";
 
     /**
-     * adresář pro hromadné akce
+     * pravidla v zipu
+     */
+    public static final String RULE_SET_XML = "rul_rule_set.xml";
+
+    /**
+     * typy v zipu
+     */
+    public static final String ARRANGEMENT_TYPE_XML = "rul_arrangement_type.xml";
+
+    /**
+     * podmínky atributů v zipu
+     */
+    public static final String DESC_ITEM_CONSTRAINT_XML = "rul_desc_item_constraint.xml";
+
+    /**
+     * specifikace atributů v zipu
+     */
+    public static final String DESC_ITEM_SPEC_XML = "rul_desc_item_spec.xml";
+
+    /**
+     * typy atributů v zipu
+     */
+    public static final String DESC_ITEM_TYPE_XML = "rul_desc_item_type.xml";
+
+    /**
+     * hromadné akce v zipu
+     */
+    public static final String PACKAGE_ACTIONS_XML = "rul_package_actions.xml";
+
+    /**
+     * pravidla v zipu
+     */
+    public static final String PACKAGE_RULES_XML = "rul_package_rules.xml";
+
+    /**
+     * typy packet v zipu
+     */
+    public static final String PACKET_TYPE_XML = "rul_packet_type.xml";
+
+    /**
+     * adresář pro hromadné akce v zip
      */
     private final String ZIP_DIR_ACTIONS = "bulk_actions";
 
     /**
-     * adresář pro pravidla
+     * adresář pro pravidla v zip
      */
     private final String ZIP_DIR_RULES = "rules";
 
@@ -163,25 +206,25 @@ public class PackageService {
             Map<String, ByteArrayInputStream> mapEntry = createStreamsMap(zipFile, entries);
 
             // načtení info o importu
-            PackageInfo packageInfo = convertXmlStreamToObject(PackageInfo.class, mapEntry.get(INFO_FILE));
+            PackageInfo packageInfo = convertXmlStreamToObject(PackageInfo.class, mapEntry.get(PACKAGE_XML));
 
             RulPackage rulPackage = processRulPackage(packageInfo);
 
-            RuleSets ruleSets = convertXmlStreamToObject(RuleSets.class, mapEntry.get("rul_rule_set.xml"));
+            RuleSets ruleSets = convertXmlStreamToObject(RuleSets.class, mapEntry.get(RULE_SET_XML));
 
             ArrangementTypes arrangementTypes = convertXmlStreamToObject(ArrangementTypes.class,
-                    mapEntry.get("rul_arrangement_type.xml"));
+                    mapEntry.get(ARRANGEMENT_TYPE_XML));
             DescItemConstraints descItemConstraints = convertXmlStreamToObject(DescItemConstraints.class,
-                    mapEntry.get("rul_desc_item_constraint.xml"));
+                    mapEntry.get(DESC_ITEM_CONSTRAINT_XML));
             DescItemSpecs descItemSpecs = convertXmlStreamToObject(DescItemSpecs.class,
-                    mapEntry.get("rul_desc_item_spec.xml"));
+                    mapEntry.get(DESC_ITEM_SPEC_XML));
             DescItemTypes descItemTypes = convertXmlStreamToObject(DescItemTypes.class,
-                    mapEntry.get("rul_desc_item_type.xml"));
+                    mapEntry.get(DESC_ITEM_TYPE_XML));
             PackageActions packageActions = convertXmlStreamToObject(PackageActions.class,
-                    mapEntry.get("rul_package_actions.xml"));
+                    mapEntry.get(PACKAGE_ACTIONS_XML));
             PackageRules packageRules = convertXmlStreamToObject(PackageRules.class,
-                    mapEntry.get("rul_package_rules.xml"));
-            PacketTypes packetTypes = convertXmlStreamToObject(PacketTypes.class, mapEntry.get("rul_packet_type.xml"));
+                    mapEntry.get(PACKAGE_RULES_XML));
+            PacketTypes packetTypes = convertXmlStreamToObject(PacketTypes.class, mapEntry.get(PACKET_TYPE_XML));
 
             processPacketTypes(packetTypes, rulPackage);
 
@@ -233,8 +276,8 @@ public class PackageService {
     /**
      * Zpracování packet.
      *
-     * @param packetTypes    importovaný seznam packets
-     * @param rulPackage     balíček
+     * @param packetTypes importovaný seznam packets
+     * @param rulPackage  balíček
      */
     private void processPacketTypes(final PacketTypes packetTypes, final RulPackage rulPackage) {
         List<RulPacketType> rulPacketTypes = packetTypeRepository.findByRulPackage(rulPackage);
@@ -252,7 +295,7 @@ public class PackageService {
                     item = new RulPacketType();
                 }
 
-                convertPacketTypes(rulPackage, packetType, item);
+                convertRulPacketTypes(rulPackage, packetType, item);
                 rulPacketTypesNew.add(item);
             }
         }
@@ -271,9 +314,9 @@ public class PackageService {
      * @param packetType    VO packet
      * @param rulPacketType DAO packet
      */
-    private void convertPacketTypes(final RulPackage rulPackage,
-                                    final PacketType packetType,
-                                    final RulPacketType rulPacketType) {
+    private void convertRulPacketTypes(final RulPackage rulPackage,
+                                       final PacketType packetType,
+                                       final RulPacketType rulPacketType) {
         rulPacketType.setPackage(rulPackage);
         rulPacketType.setCode(packetType.getCode());
         rulPacketType.setName(packetType.getName());
@@ -635,7 +678,7 @@ public class PackageService {
                     item = new RulDescItemSpec();
                 }
 
-                convertDescItemSpec(rulPackage, descItemSpec, item, rulDescItemTypes);
+                convertRulDescItemSpec(rulPackage, descItemSpec, item, rulDescItemTypes);
                 rulDescItemSpecsNew.add(item);
             }
         }
@@ -681,7 +724,7 @@ public class PackageService {
                     item = new RulDescItemConstraint();
                 }
 
-                convertDescItemConstraint(rulPackage, descItemConstraint, item, rulDescItemTypes, rulDescItemSpecs);
+                convertRulDescItemConstraint(rulPackage, descItemConstraint, item, rulDescItemTypes, rulDescItemSpecs);
                 rulDescItemConstraintsNew.add(item);
             }
         }
@@ -702,11 +745,11 @@ public class PackageService {
      * @param rulDescItemTypes      seznam typů atributů
      * @param rulDescItemSpecs      seznam specifikací atributů
      */
-    private void convertDescItemConstraint(final RulPackage rulPackage,
-                                           final DescItemConstraint descItemConstraint,
-                                           final RulDescItemConstraint rulDescItemConstraint,
-                                           final List<RulDescItemType> rulDescItemTypes,
-                                           final List<RulDescItemSpec> rulDescItemSpecs) {
+    private void convertRulDescItemConstraint(final RulPackage rulPackage,
+                                              final DescItemConstraint descItemConstraint,
+                                              final RulDescItemConstraint rulDescItemConstraint,
+                                              final List<RulDescItemType> rulDescItemTypes,
+                                              final List<RulDescItemSpec> rulDescItemSpecs) {
 
         rulDescItemConstraint.setCode(descItemConstraint.getCode());
         rulDescItemConstraint.setRegexp(descItemConstraint.getRegexp());
@@ -783,7 +826,8 @@ public class PackageService {
                         itemRegister = new RulDescItemSpecRegister();
                     }
 
-                    convertDescItemSpecsRegister(rulDescItemSpec, itemRegister, regRegisterTypes, descItemSpecRegister);
+                    convertRulDescItemSpecsRegister(rulDescItemSpec, itemRegister, regRegisterTypes,
+                            descItemSpecRegister);
 
                     rulDescItemSpecRegistersNew.add(itemRegister);
                 }
@@ -807,10 +851,10 @@ public class PackageService {
      * @param regRegisterTypes        seznam typů reg.
      * @param descItemSpecRegister    seznam VO napojení
      */
-    private void convertDescItemSpecsRegister(final RulDescItemSpec rulDescItemSpec,
-                                              final RulDescItemSpecRegister rulDescItemSpecRegister,
-                                              final List<RegRegisterType> regRegisterTypes,
-                                              final DescItemSpecRegister descItemSpecRegister) {
+    private void convertRulDescItemSpecsRegister(final RulDescItemSpec rulDescItemSpec,
+                                                 final RulDescItemSpecRegister rulDescItemSpecRegister,
+                                                 final List<RegRegisterType> regRegisterTypes,
+                                                 final DescItemSpecRegister descItemSpecRegister) {
 
         rulDescItemSpecRegister.setDescItemSpec(rulDescItemSpec);
 
@@ -839,10 +883,10 @@ public class PackageService {
      * @param rulDescItemSpec  DAO specifikace
      * @param rulDescItemTypes seznam typů atributů
      */
-    private void convertDescItemSpec(final RulPackage rulPackage,
-                                     final DescItemSpec descItemSpec,
-                                     final RulDescItemSpec rulDescItemSpec,
-                                     final List<RulDescItemType> rulDescItemTypes) {
+    private void convertRulDescItemSpec(final RulPackage rulPackage,
+                                        final DescItemSpec descItemSpec,
+                                        final RulDescItemSpec rulDescItemSpec,
+                                        final List<RulDescItemType> rulDescItemTypes) {
 
         rulDescItemSpec.setName(descItemSpec.getName());
         rulDescItemSpec.setCode(descItemSpec.getCode());
@@ -1184,5 +1228,449 @@ public class PackageService {
      */
     public List<RulPackage> getPackages() {
         return packageRepository.findAll();
+    }
+
+    /**
+     * Provede export balíčku s konfigurací.
+     *
+     * @param code kód balíčku
+     * @return výsledný soubor
+     */
+    public File exportPackage(final String code) {
+        RulPackage rulPackage = packageRepository.findTopByCode(code);
+
+        if (rulPackage == null) {
+            throw new IllegalArgumentException("Balíček s kódem " + code + " neexistuje");
+        }
+
+        File file = null;
+        FileOutputStream fos = null;
+        ZipOutputStream zos = null;
+
+        try {
+            file = File.createTempFile(code + "-", "-package.zip");
+            fos = new FileOutputStream(file);
+            zos = new ZipOutputStream(fos);
+
+            exportPackageInfo(rulPackage, zos);
+            exportRuleSet(rulPackage, zos);
+            exportArrangementTypes(rulPackage, zos);
+            exportDescItemConstraints(rulPackage, zos);
+            exportDescItemSpecs(rulPackage, zos);
+            exportDescItemTypes(rulPackage, zos);
+            exportPackageActions(rulPackage, zos);
+            exportPackageRules(rulPackage, zos);
+            exportPacketTypes(rulPackage, zos);
+
+            file.deleteOnExit();
+        } catch (IOException e) {
+
+            if (file != null) {
+                file.delete();
+            }
+
+            throw new IllegalStateException(e);
+
+        } finally {
+
+            if (zos != null) {
+                try {
+                    zos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
+
+        return file;
+
+    }
+
+    /**
+     * Exportování typů pořádání.
+     *
+     * @param rulPackage balíček
+     * @param zos        stream zip souboru
+     */
+    private void exportArrangementTypes(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        ArrangementTypes arrangementTypes = new ArrangementTypes();
+        List<RulArrangementType> rulArrangementTypes = arrangementTypeRepository.findByRulPackage(rulPackage);
+        List<ArrangementType> arrangementTypeList = new ArrayList<>(rulArrangementTypes.size());
+        arrangementTypes.setArrangementTypes(arrangementTypeList);
+
+        for (RulArrangementType rulArrangementType : rulArrangementTypes) {
+            ArrangementType arrangementType = new ArrangementType();
+            covertArrangementType(rulArrangementType, arrangementType);
+            arrangementTypeList.add(arrangementType);
+        }
+
+        addObjectToZipFile(arrangementTypes, zos, ARRANGEMENT_TYPE_XML);
+    }
+
+    /**
+     * Exportování pravidel.
+     *
+     * @param rulPackage balíček
+     * @param zos        stream zip souboru
+     */
+    private void exportRuleSet(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        RuleSets ruleSets = new RuleSets();
+        List<RulRuleSet> rulRuleSets = ruleSetRepository.findByRulPackage(rulPackage);
+        List<RuleSet> ruleSetList = new ArrayList<>(rulRuleSets.size());
+        ruleSets.setRuleSets(ruleSetList);
+
+        for (RulRuleSet rulRuleSet : rulRuleSets) {
+            RuleSet ruleSet = new RuleSet();
+            covertRuleSet(rulRuleSet, ruleSet);
+            ruleSetList.add(ruleSet);
+        }
+
+        addObjectToZipFile(ruleSets, zos, RULE_SET_XML);
+    }
+
+    /**
+     * Exportování informace o balíčku
+     *
+     * @param rulPackage balíček
+     * @param zos        stream zip souboru
+     */
+    private void exportPackageInfo(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+
+        PackageInfo packageInfo = new PackageInfo();
+        packageInfo.setCode(rulPackage.getCode());
+        packageInfo.setName(rulPackage.getName());
+        packageInfo.setDescription(rulPackage.getDescription());
+        packageInfo.setVersion(rulPackage.getVersion());
+
+        addObjectToZipFile(packageInfo, zos, PACKAGE_XML);
+    }
+
+    /**
+     * Exportování packet typů.
+     *
+     * @param rulPackage balíček
+     * @param zos        stream zip souboru
+     */
+    private void exportPacketTypes(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        PacketTypes packetTypes = new PacketTypes();
+        List<RulPacketType> rulPacketTypes = packetTypeRepository.findByRulPackage(rulPackage);
+        List<PacketType> packetTypeList = new ArrayList<>(rulPacketTypes.size());
+        packetTypes.setPacketTypes(packetTypeList);
+
+        for (RulPacketType rulPacketType : rulPacketTypes) {
+            PacketType packetType = new PacketType();
+            covertPacketType(rulPacketType, packetType);
+            packetTypeList.add(packetType);
+        }
+
+        addObjectToZipFile(packetTypes, zos, PACKET_TYPE_XML);
+    }
+
+    /**
+     * Exportování pravidel.
+     *
+     * @param rulPackage balíček
+     * @param zos        stream zip souboru
+     */
+    private void exportPackageRules(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        PackageRules packageRules = new PackageRules();
+        List<RulPackageRules> rulPackageRules = packageRulesRepository.findByRulPackage(rulPackage);
+        List<PackageRule> packageRuleList = new ArrayList<>(rulPackageRules.size());
+        packageRules.setPackageRules(packageRuleList);
+
+        for (RulPackageRules rulPackageRule : rulPackageRules) {
+            PackageRule packageRule = new PackageRule();
+            convertPackageRule(rulPackageRule, packageRule);
+            packageRuleList.add(packageRule);
+
+            addToZipFile(ZIP_DIR_RULES + "/" + rulPackageRule.getFilename(), new File(RulesExecutor.ROOT_PATH
+                    + File.separator + rulPackageRule.getFilename()), zos);
+
+        }
+
+        addObjectToZipFile(packageRules, zos, PACKAGE_RULES_XML);
+    }
+
+    /**
+     * Exportování hromadných akcí.
+     *
+     * @param rulPackage balíček
+     * @param zos        stream zip souboru
+     */
+    private void exportPackageActions(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        PackageActions packageActions = new PackageActions();
+        List<RulPackageActions> rulPackageActions = packageActionsRepository.findByRulPackage(rulPackage);
+        List<PackageAction> packageActionList = new ArrayList<>(rulPackageActions.size());
+        packageActions.setPackageActions(packageActionList);
+
+        for (RulPackageActions rulPackageAction : rulPackageActions) {
+            PackageAction packageAction = new PackageAction();
+            convertPackageAction(rulPackageAction, packageAction);
+            packageActionList.add(packageAction);
+
+            addToZipFile(ZIP_DIR_ACTIONS + "/" + rulPackageAction.getFilename(),
+                    new File(bulkActionConfigManager.getPath() + File.separator + rulPackageAction.getFilename()), zos);
+        }
+
+        addObjectToZipFile(packageActions, zos, PACKAGE_ACTIONS_XML);
+    }
+
+    /**
+     * Exportování typů atributů.
+     *
+     * @param rulPackage balíček
+     * @param zos        stream zip souboru
+     */
+    private void exportDescItemTypes(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        DescItemTypes descItemTypes = new DescItemTypes();
+        List<RulDescItemType> rulDescItemTypes = descItemTypeRepository.findByRulPackage(rulPackage);
+        List<DescItemType> descItemTypeList = new ArrayList<>(rulDescItemTypes.size());
+        descItemTypes.setDescItemTypes(descItemTypeList);
+
+        for (RulDescItemType rulDescItemType : rulDescItemTypes) {
+            DescItemType descItemType = new DescItemType();
+            convertDescItemType(rulDescItemType, descItemType);
+            descItemTypeList.add(descItemType);
+        }
+
+        addObjectToZipFile(descItemTypes, zos, DESC_ITEM_TYPE_XML);
+    }
+
+    /**
+     * Exportování specifikací atributů.
+     *
+     * @param rulPackage balíček
+     * @param zos        stream zip souboru
+     */
+    private void exportDescItemSpecs(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        DescItemSpecs descItemSpecs = new DescItemSpecs();
+        List<RulDescItemSpec> rulDescItemSpecs = descItemSpecRepository.findByRulPackage(rulPackage);
+        List<DescItemSpec> descItemSpecList = new ArrayList<>(rulDescItemSpecs.size());
+        descItemSpecs.setDescItemSpecs(descItemSpecList);
+
+        for (RulDescItemSpec rulDescItemSpec : rulDescItemSpecs) {
+            DescItemSpec descItemSpec = new DescItemSpec();
+            convertDescItemSpec(rulDescItemSpec, descItemSpec);
+            descItemSpecList.add(descItemSpec);
+        }
+
+        addObjectToZipFile(descItemSpecs, zos, DESC_ITEM_SPEC_XML);
+    }
+
+    /**
+     * Exportování podmínek atributů.
+     *
+     * @param rulPackage balíček
+     * @param zos        stream zip souboru
+     */
+    private void exportDescItemConstraints(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        DescItemConstraints descItemConstraints = new DescItemConstraints();
+        List<RulDescItemConstraint> rulDescItemConstraints = descItemConstraintRepository.findByRulPackage(rulPackage);
+        List<DescItemConstraint> descItemConstraintList = new ArrayList<>(rulDescItemConstraints.size());
+        descItemConstraints.setDescItemConstraints(descItemConstraintList);
+
+        for (RulDescItemConstraint rulDescItemConstraint : rulDescItemConstraints) {
+            DescItemConstraint descItemConstraint = new DescItemConstraint();
+            convertDescItemConstraint(rulDescItemConstraint, descItemConstraint);
+            descItemConstraintList.add(descItemConstraint);
+        }
+
+        addObjectToZipFile(descItemConstraints, zos, DESC_ITEM_CONSTRAINT_XML);
+    }
+
+    /**
+     * Převod DAO na VO podmínky atributu.
+     *
+     * @param rulDescItemConstraint DAO podmínky
+     * @param descItemConstraint    VO podínky
+     */
+    private void convertDescItemConstraint(final RulDescItemConstraint rulDescItemConstraint,
+                                           final DescItemConstraint descItemConstraint) {
+        descItemConstraint.setCode(rulDescItemConstraint.getCode());
+        descItemConstraint.setRegexp(rulDescItemConstraint.getRegexp());
+        descItemConstraint.setRepeatable(rulDescItemConstraint.getRepeatable());
+        descItemConstraint.setTextLenghtLimit(rulDescItemConstraint.getTextLenghtLimit());
+        descItemConstraint.setDescItemType(rulDescItemConstraint.getDescItemType().getCode());
+        descItemConstraint.setDescItemSpec(rulDescItemConstraint.getDescItemSpec() == null ? null :
+                                           rulDescItemConstraint.getDescItemSpec().getCode());
+    }
+
+    /**
+     * Převod DAO na VO pravidla.
+     *
+     * @param rulRuleSet DAO pravidla
+     * @param ruleSet    VO pravidla
+     */
+    private void covertRuleSet(final RulRuleSet rulRuleSet, final RuleSet ruleSet) {
+        ruleSet.setCode(rulRuleSet.getCode());
+        ruleSet.setName(rulRuleSet.getName());
+    }
+
+    /**
+     * Převod DAO na VO typu pořádání.
+     *
+     * @param rulArrangementType DAO typu pořádání
+     * @param arrangementType    VO typu pořádání
+     */
+    private void covertArrangementType(final RulArrangementType rulArrangementType,
+                                       final ArrangementType arrangementType) {
+        arrangementType.setCode(rulArrangementType.getCode());
+        arrangementType.setName(rulArrangementType.getName());
+        arrangementType.setRuleSet(rulArrangementType.getRuleSet().getCode());
+    }
+
+    /**
+     * Převod DAO na VO typu packet.
+     *
+     * @param rulPacketType DAO packet
+     * @param packetType    VO packet
+     */
+    private void covertPacketType(final RulPacketType rulPacketType, final PacketType packetType) {
+        packetType.setCode(rulPacketType.getCode());
+        packetType.setName(rulPacketType.getName());
+        packetType.setShortcut(rulPacketType.getShortcut());
+    }
+
+    /**
+     * Převod DAO na VO typů atributu.
+     *
+     * @param rulDescItemType DAO typy
+     * @param descItemType    VO typu
+     */
+    private void convertDescItemType(final RulDescItemType rulDescItemType, final DescItemType descItemType) {
+        descItemType.setCode(rulDescItemType.getCode());
+        descItemType.setName(rulDescItemType.getName());
+        descItemType.setShortcut(rulDescItemType.getShortcut());
+        descItemType.setCanBeOrdered(rulDescItemType.getCanBeOrdered());
+        descItemType.setDataType(rulDescItemType.getDataType().getCode());
+        descItemType.setDescription(rulDescItemType.getDescription());
+        descItemType.setFaOnly(rulDescItemType.getFaOnly());
+        descItemType.setIsValueUnique(rulDescItemType.getIsValueUnique());
+        descItemType.setUseSpecification(rulDescItemType.getUseSpecification());
+        descItemType.setViewOrder(rulDescItemType.getViewOrder());
+    }
+
+    /**
+     * Převod DAO na VO specifikace.
+     *
+     * @param rulDescItemSpec DAO specifikace
+     * @param descItemSpec    VO specifikace
+     */
+    private void convertDescItemSpec(final RulDescItemSpec rulDescItemSpec, final DescItemSpec descItemSpec) {
+        descItemSpec.setCode(rulDescItemSpec.getCode());
+        descItemSpec.setName(rulDescItemSpec.getName());
+        descItemSpec.setViewOrder(rulDescItemSpec.getViewOrder());
+        descItemSpec.setDescription(rulDescItemSpec.getDescription());
+        descItemSpec.setDescItemType(rulDescItemSpec.getDescItemType().getCode());
+        descItemSpec.setShortcut(rulDescItemSpec.getShortcut());
+
+        List<RulDescItemSpecRegister> rulDescItemSpecRegisters = descItemSpecRegisterRepository
+                .findByDescItemSpecId(rulDescItemSpec);
+
+        List<DescItemSpecRegister> descItemSpecRegisterList = new ArrayList<>(rulDescItemSpecRegisters.size());
+
+        for (RulDescItemSpecRegister rulDescItemSpecRegister : rulDescItemSpecRegisters) {
+            DescItemSpecRegister descItemSpecRegister = new DescItemSpecRegister();
+            convertDescItemSpecRegister(rulDescItemSpecRegister, descItemSpecRegister);
+            descItemSpecRegisterList.add(descItemSpecRegister);
+        }
+
+        descItemSpec.setDescItemSpecRegisters(descItemSpecRegisterList);
+    }
+
+    /**
+     * Převod DAO na VO napojení specifikací na reg.
+     *
+     * @param rulDescItemSpecRegister DAO napojení specifikací
+     * @param descItemSpecRegister    VO napojení specifikací
+     */
+    private void convertDescItemSpecRegister(final RulDescItemSpecRegister rulDescItemSpecRegister,
+                                             final DescItemSpecRegister descItemSpecRegister) {
+        descItemSpecRegister.setRegisterType(rulDescItemSpecRegister.getRegisterType().getCode());
+    }
+
+    /**
+     * Převod DAO na VO pravidla.
+     *
+     * @param rulPackageRule DAO pravidla
+     * @param packageRule    VO pravidla
+     */
+    private void convertPackageRule(final RulPackageRules rulPackageRule, final PackageRule packageRule) {
+        packageRule.setFilename(rulPackageRule.getFilename());
+        packageRule.setPriority(rulPackageRule.getPriority());
+        packageRule.setRuleSet(rulPackageRule.getRuleSet().getCode());
+        packageRule.setRuleType(rulPackageRule.getRuleType());
+    }
+
+    /**
+     * Převod DAO na VO hromadné akce.
+     *
+     * @param rulPackageAction DAO hromadné akce
+     * @param packageAction    VO hromadné akce
+     */
+    private void convertPackageAction(final RulPackageActions rulPackageAction, final PackageAction packageAction) {
+        packageAction.setFilename(rulPackageAction.getFilename());
+    }
+
+    /**
+     * Převod objekt souboru (XML) do XML souboru.
+     *
+     * @param data objekt souboru (XML)
+     * @return převedený dočasný soubor
+     */
+    private <T> File convertObjectToXmlFile(T data) {
+        try {
+            File file = File.createTempFile(data.getClass().getSimpleName() + "-", ".xml");
+            JAXBContext jaxbContext = JAXBContext.newInstance(data.getClass());
+            Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+            jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+            jaxbMarshaller.marshal(data, file);
+            return file;
+        } catch (Exception e) {
+            throw new IllegalStateException("Problém při konverzi xml objektu do xml souboru", e);
+        }
+    }
+
+    /**
+     * Přidání souboru do zip souboru.
+     *
+     * @param fileName název souboru v zip
+     * @param file     zdrojový soubor
+     * @param zos      stream zip souboru
+     */
+    private void addToZipFile(String fileName, File file, ZipOutputStream zos) throws IOException {
+        FileInputStream fis = new FileInputStream(file);
+        ZipEntry zipEntry = new ZipEntry(fileName);
+        zos.putNextEntry(zipEntry);
+        byte[] bytes = new byte[1024];
+        int length;
+        while ((length = fis.read(bytes)) >= 0) {
+            zos.write(bytes, 0, length);
+        }
+        zos.closeEntry();
+        fis.close();
+    }
+
+    /**
+     * Přidání objekt souboru (XML) do zip souboru.
+     *
+     * @param data     objekt souboru (XML)
+     * @param zos      stream zip souboru
+     * @param fileName název souboru v zip
+     */
+    private <T> void addObjectToZipFile(final T data, final ZipOutputStream zos, final String fileName)
+            throws IOException {
+        File xmlFile = convertObjectToXmlFile(data);
+        addToZipFile(fileName, xmlFile, zos);
+        xmlFile.delete();
     }
 }

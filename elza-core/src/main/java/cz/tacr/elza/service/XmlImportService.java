@@ -46,7 +46,6 @@ import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.ArrPacketType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyType;
@@ -55,6 +54,7 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.RulArrangementType;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
@@ -311,6 +311,7 @@ public class XmlImportService {
             } else if (descItem instanceof DescItemPartyRef) {
                 DescItemPartyRef partyRefItem = (DescItemPartyRef) descItem;
                 usedParties.add(partyRefItem.getParty().getPartyId());
+                usedRecords.add(partyRefItem.getParty().getRecord().getRecordId());
             } else if (descItem instanceof DescItemPacketRef) {
                 DescItemPacketRef packetRefItem = (DescItemPacketRef) descItem;
                 usedPackets.add(packetRefItem.getPacket().getStorageNumber());
@@ -348,7 +349,7 @@ public class XmlImportService {
 
         String packetTypeCode = packet.getPacketTypeCode();
         if (packetTypeCode != null) {
-            ArrPacketType arrPacketType = packetTypeRepository.findByCode(packetTypeCode);
+            RulPacketType arrPacketType = packetTypeRepository.findByCode(packetTypeCode);
             arrPacket.setPacketType(arrPacketType);
         }
         arrPacket.setStorageNumber(packet.getStorageNumber());
@@ -397,13 +398,13 @@ public class XmlImportService {
         RegRecord regRecord = recordRepository.findOne(internalRecordId);
         parParty.setRecord(regRecord);
 
-        partyRepository.save(parParty);
+        parParty = partyRepository.save(parParty);
 
         ParPartyName parPartyName = createPartyName(party);
+        parPartyName.setParty(parParty);
         parPartyName = partyNameRepository.save(parPartyName);
 
         parParty.setPreferredName(parPartyName);
-
         return partyRepository.save(parParty);
     }
 
@@ -493,7 +494,7 @@ public class XmlImportService {
 
         if (record.getRecords() != null) {
             for (Record subRecord : record.getRecords()) {
-                if (usedRecords.contains(record.getExternalId())) {
+                if (usedRecords.contains(record.getRecordId())) {
                     try {
                         importRecord(subRecord, regRecord, stopOnError, usedRecords, xmlIdIntIdRecordMap);
                     } catch (RecordImportException e) {
