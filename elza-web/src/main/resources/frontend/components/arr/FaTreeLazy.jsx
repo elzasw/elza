@@ -8,10 +8,11 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {VirtualList, AbstractReactComponent, i18n, Loading} from 'components';
-import {Nav, NavItem} from 'react-bootstrap';
+import {Nav, NavItem, DropdownButton, MenuItem} from 'react-bootstrap';
 var classNames = require('classnames');
-import {faTreeFetchIfNeeded, faTreeNodeExpand, faTreeNodeCollapse} from 'actions/arr/faTree'
-import {faSelectNodeTab, faSelectSubNode} from 'actions/arr/nodes'
+import {faTreeFocusNode, faTreeFetchIfNeeded, faTreeNodeExpand, faTreeNodeCollapse} from 'actions/arr/faTree'
+import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu'
+import {faSelectSubNode} from 'actions/arr/nodes'
 import {ResizeStore} from 'stores';
 import {indexById} from 'stores/app/utils.jsx'
 
@@ -19,7 +20,10 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderNode', 'handleToggle', 'handleNodeClick', 'handleNodeDoubleClick', 'getParentNode');
+        this.bindMethods(
+            'renderNode', 'handleToggle', 'handleNodeClick',
+            'handleContextMenu', 'getParentNode', 'handleSelectInNewTab'
+        );
 
         this.dispatch(faTreeFetchIfNeeded(props.faId, props.versionId, props.expandedIds));
 
@@ -52,10 +56,29 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
         return null;
     }
 
-    handleNodeDoubleClick(node) {
+    handleContextMenu(node, e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        console.log(e);
+        console.log(e.clientX);
+        console.log(e.clientY);
+
+        var menu = (
+            <ul className="dropdown-menu">
+                <MenuItem onClick={this.handleSelectInNewTab.bind(this, node)}>{i18n('faTree.action.openInNewTab')}</MenuItem>
+            </ul>
+        )
+
+        this.dispatch(faTreeFocusNode(node));
+        this.dispatch(contextMenuShow(this, menu, {x: e.clientX, y:e.clientY}));
+    }
+
+    handleSelectInNewTab(node) {
+        this.dispatch(contextMenuHide());
+
         var parentNode = this.getParentNode(node);
         if (parentNode != null) {
-            //this.dispatch(faSelectNodeTab(parentNode));
             this.dispatch(faSelectSubNode(node.id, parentNode, true));
         }
     }
@@ -63,7 +86,6 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     handleNodeClick(node) {
         var parentNode = this.getParentNode(node);
         if (parentNode != null) {
-            //this.dispatch(faSelectNodeTab(parentNode));
             this.dispatch(faSelectSubNode(node.id, parentNode, false));
         }
     }
@@ -83,12 +105,18 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
             ['level' + node.depth]: true,
             opened: expanded,
             closed: !expanded,
-            active: this.props.selectedId === node.id
+            active: this.props.selectedId === node.id,
+            focus: this.props.focusId === node.id,
         })
         return (
             <div key={node.id} className={cls}>
                 {expCol}
-                <span onClick={this.handleNodeClick.bind(this, node)} onDoubleClick={this.handleNodeDoubleClick.bind(this, node)}>{node.name}</span>
+                <span
+                    onClick={this.handleNodeClick.bind(this, node)}
+                    onContextMenu={this.handleContextMenu.bind(this, node)}
+                    >
+                    {node.name}
+                </span>
             </div>
         )
     }
@@ -96,7 +124,7 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     render() {
         return (
             <div className='fa-tree-lazy-container' ref="treeContainer">
-                <VirtualList tagName='div' container={this.state.treeContainer} items={this.props.nodes} renderItem={this.renderNode} itemHeight={this.props.rowHeight} />
+                {true && <VirtualList tagName='div' container={this.state.treeContainer} items={this.props.nodes} renderItem={this.renderNode} itemHeight={this.props.rowHeight} />}
             </div>
         )
 

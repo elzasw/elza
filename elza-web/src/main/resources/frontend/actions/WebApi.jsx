@@ -101,7 +101,6 @@ var _nodeMap = {};
 var _nodeId = 0;
 var _faRootNode = {id: 0, name: 'node', depth: 0, children: []}
 buildTree(_faRootNode, 1);
-console.log("TREE NODES", _nodeId);
 
 class WebApiFake {
     constructor() {
@@ -333,7 +332,7 @@ class WebApiFake {
         return this.getData(data, 1);
     }
 
-    getFaTree(faId, versionId, nodeId, expandedIds = {0:true}) {
+    getFaTree(faId, versionId, nodeId, expandedIds={}, includeIds={}) {
         var srcNodes;
         if (nodeId == null || typeof nodeId == 'undefined') {
             srcNodes = [_faRootNode];
@@ -345,43 +344,6 @@ class WebApiFake {
         generateFlatTree(srcNodes, expandedIds, out);
         var data = {
             nodes: out
-        }
-
-        return this.getData(data, 1);
-    }
-
-    getFaTree2(faId, versionId) {
-        var str = " {" + faId + "_" + versionId + "}";
-
-        var root = {id: 123, name: 'root node' + str, parentId: null};
-        var child1 = {id: 1, name: 'child 1' + str, parentId: 123};
-        var child11 = {id: 11, name: 'child 11' + str, parentId: 1};
-        var child12 = {id: 12, name: 'child 12' + str, parentId: 1};
-        var child2 = {id: 2, name: 'child 2' + str, parentId: 123};
-        var child3 = {id: 3, name: 'child 3' + str, parentId: 123};
-        var child31 = {id: 31, name: 'child 31' + str, parentId: 3};
-        var child32 = {id: 32, name: 'child 32' + str, parentId: 3};
-        var child33 = {id: 33, name: 'child 33' + str, parentId: 3};
-        var child4 = {id: 4, name: 'child 4' + str, parentId: 123};
-
-        var data = {
-            nodeMap: {
-                [root.id]: root,
-                [child1.id]: child1,
-                [child3.id]: child3,
-            },
-            nodes1: [
-                {
-                    ...root,
-                    children: [
-                        {...child1, children: [child11, child12]},
-                        {...child2},
-                        {...child3, children: [child31, child32, child33]},
-                        {...child4},
-                    ]
-                }
-            ],
-            nodes: [_faRootNode]
         }
 
         return this.getData(data, 1);

@@ -91,9 +91,10 @@ var Tabs = class Tabs extends React.Component {
      *  Zobrazení obsahu vybrané záložky
      *  @ param int itemID      lokální identidikátor záložky 
     **/
-    handleTabSelect(itemId) {       
+    handleTabSelect(itemKey) {       
         var item = this.props.items.one(i => {      
-            if (i.id === itemId) {                  
+            var key = typeof i.key !== 'undefined' ? i.key : i.id;
+            if (key === itemKey) {                  
                 return i;                           
             } else {
                 return null;                        
@@ -108,13 +109,18 @@ var Tabs = class Tabs extends React.Component {
     **/
     render() {
         var tabs = this.props.items.map((item, i) => {                                                              // vytvoření html seznamu všecch záložek                                        
-                var closeTitle = i18n('tabs.action.closeTab');                                          // popisek ikony zavírající záložku
-                return <NavItem key={item.id} ref={"tab"+i} eventKey={item.id}><span>{item.title}</span><small>{item.desc}</small><Button title={closeTitle} onClick={this.handleTabClose.bind(this, item)}><Glyphicon glyph="remove" /></Button></NavItem>    // vlastni kod založky 
+            var closeTitle = i18n('tabs.action.closeTab');                                          // popisek ikony zavírající záložku
+            var key = typeof item.key !== 'undefined' ? item.key : item.id;
+            return <NavItem key={key} ref={"tab"+i} eventKey={key}><span>{item.title}</span><small>{item.desc}</small><Button title={closeTitle} onClick={this.handleTabClose.bind(this, item)}><Glyphicon glyph="remove" /></Button></NavItem>    // vlastni kod založky 
         });
   
         // vrácení html komponenty záložek
+        var activeKey = null;
+        if (this.props.activeItem) {
+            activeKey = typeof this.props.activeItem.key !== 'undefined' ? this.props.activeItem.key : this.props.activeItem.id;
+        }
         return (
-            <Nav className="tabs-tabs-container" ref="tabs"  bsStyle="tabs" onSelect={this.handleTabSelect} activeKey={this.props.activeItem ? this.props.activeItem.id : null}>
+            <Nav className="tabs-tabs-container" ref="tabs"  bsStyle="tabs" onSelect={this.handleTabSelect} activeKey={activeKey}>
                 {tabs}
             </Nav>
         )

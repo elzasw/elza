@@ -17,21 +17,26 @@ var NodeTabs = class NodeTabs extends AbstractReactComponent {
     }
 
     render() {
-        var tabs = this.props.nodes.map((node) => {
+        var tabs = this.props.nodes.map((node, i) => {
             return {
                 id: node.id,
+                index: i,
+                key: node.id + "_" + i,
                 title: <span>Node {node.id} <small>id:{node.id}</small></span>
             }
         });
 
+        var activeNode = this.props.nodes[this.props.activeIndex];
+        var activeTab = tabs[this.props.activeIndex];
+
         return (
             <Tabs.Container className='node-tabs-container'>
-                <Tabs.Tabs items={tabs} activeItem={this.props.activeNode}
-                    onSelect={item=>this.dispatch(faSelectNodeTab(item))}
-                    onClose={item=>this.dispatch(faCloseNodeTab(item))}
+                <Tabs.Tabs items={tabs} activeItem={activeTab}
+                    onSelect={item=>this.dispatch(faSelectNodeTab(item.index))}
+                    onClose={item=>this.dispatch(faCloseNodeTab(item.index))}
                 />
                 <Tabs.Content>
-                    {this.props.activeNode && <NodePanel node={this.props.activeNode} nodeForm={this.props.nodeForm} />}
+                    {activeNode && <NodePanel node={activeNode} nodeForm={this.props.nodeForm} />}
                 </Tabs.Content>
             </Tabs.Container>
         );

@@ -25,49 +25,6 @@ function nodeInitState(node) {
     }
 }
 
-function selectNodeTab(state, node, moveTabToBegin, openUnexistingNodeTab) {
-    var index = indexById(state.nodes, node.id);
-    if (index == null && openUnexistingNodeTab) {    // není zatím v seznamu, přidáme ho tam, jen pokud je to požadováno
-        var nodeItem = nodeInitState(node);
-        if (moveTabToBegin) {
-            return {
-                ...state,
-                nodes: [
-                    nodeItem,
-                    ...state.nodes
-                ],
-                activeIndex: 0
-            }
-        } else {
-            return {
-                ...state,
-                nodes: [
-                    ...state.nodes,
-                    nodeItem
-                ],
-                activeIndex: state.nodes.length
-            }
-        }
-    } else if (index != null) { // existuje již v záložkách, vybereme ho
-        if (moveTabToBegin) {
-            return {
-                ...state,
-                nodes: [
-                    state.nodes[index],
-                    ...state.nodes.slice(0, index),
-                    ...state.nodes.slice(index + 1)
-                ],
-                activeIndex: 0
-            }
-        } else {
-            return {
-                ...state,
-                activeIndex: index
-            }
-        }
-    }
-}
-
 const nodesInitialState = {
     activeIndex: null,
     nodes: []
@@ -80,23 +37,37 @@ export default function nodes(state = nodesInitialState, action) {
             });
             return state
         case types.FA_FA_SELECT_SUBNODE:
-            // 1. Nejdříve výběr záložky a případně její vytvoření
-            var index = indexById(state.nodes, action.subNodeParentNode.id);
             var newState;
-            if (index == null) {    // Sub node parent node není jako záložka
-                if (action.openUnexistingNodeTab) { // Chceme ho jako záložku vytvořit
-                    // Založíme novou záložku a vybereme ji
-                    newState = selectNodeTab(state, action.subNodeParentNode, action.moveTabToBegin, true);
-                } else {    // nic neděláme, není jako záložka a nechceme je vytvořit, budeme akci výběru sub node ignorovat
-                    return state;
+
+            if (action.subNodeParentNode == null) { // jen nulování
+                return state;
+            }
+
+            // 1. Záložka
+            if (action.openNewTab || state.nodes.length == 0) {   // otevře se vždy nová záložka, nebo není žádná
+                // Založíme novou záložku a vybereme ji
+                newState = {
+                    ...state,
+                    nodes: [
+                        ...state.nodes,
+                        nodeInitState(action.subNodeParentNode)
+                    ],
+                    activeIndex: state.nodes.length
                 }
-            } else {    // sub node parent node je jako záložka, pouze chceme přepnout aktuální záložku
-                // Vybereme záložku
-                newState = selectNodeTab(state, action.subNodeParentNode, action.moveTabToBegin, false);
+            } else {    // pokusí se použít aktuální, pokud je, jinak vytvoří novou
+                var index = state.activeIndex;
+                newState = {
+                    ...state,
+                    nodes: [
+                        ...state.nodes.slice(0, index),
+                        nodeInitState(action.subNodeParentNode),
+                        ...state.nodes.slice(index + 1)
+                    ],
+                }
             }
 
             // 2. Výběr subnode
-            var index = indexById(newState.nodes, action.subNodeParentNode.id);
+            var index = newState.activeIndex;
             return {
                 ...newState,
                 nodes: [
@@ -106,7 +77,7 @@ export default function nodes(state = nodesInitialState, action) {
                 ],
             }
         case types.FA_FA_CLOSE_NODE_TAB:
-            var index = indexById(state.nodes, action.node.id);
+            var index = action.index;
             var newActiveIndex = state.activeIndex;
             if (state.activeIndex == index) {   // byl vybrán, budeme řešit novou vybranou záložku
                 newActiveIndex = selectedAfterClose(state.nodes, index);
@@ -122,7 +93,10 @@ export default function nodes(state = nodesInitialState, action) {
                 activeIndex: newActiveIndex
             }
         case types.FA_FA_SELECT_NODE_TAB:
-            return selectNodeTab(state, action.node, action.moveTabToBegin, true);
+            return {
+                ...state,
+                activeIndex: action.index
+            }            
         default:
             return state
     }

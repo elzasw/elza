@@ -6,6 +6,7 @@ const initialState = {
     faId: null,
     versionId: null,
     selectedId: null,
+    focusId: null,
     expandedIds: {'n_0': true},
     searchedIds: null,
     isFetching: false,
@@ -38,6 +39,8 @@ export default function faTree(state = initialState, action) {
     switch (action.type) {
         case types.FA_FA_SELECT_SUBNODE:
             return Object.assign({}, state, {selectedId: action.subNodeId});
+        case types.FA_FA_TREE_FOCUS_NODE:
+            return Object.assign({}, state, {focusId: action.node.id});
         case types.FA_FA_TREE_EXPAND_NODE:
             if (action.addWaitingNode) {
                 var index = indexById(state.nodes, action.node.id);

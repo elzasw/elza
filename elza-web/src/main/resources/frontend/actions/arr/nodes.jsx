@@ -3,38 +3,60 @@ import {indexById} from 'stores/app/utils.jsx'
 
 import * as types from 'actions/constants/actionTypes';
 
-export function faSelectNodeTab(node, moveTabToBegin=false) {
+export function faSelectNodeTab(index) {
     return (dispatch, getState) => {
         var state = getState();
         var activeFa = state.arrRegion.fas[state.arrRegion.activeIndex];
-        var index = indexById(activeFa.nodes.nodes, node.id);
         var nodeTab = activeFa.nodes.nodes[index];
-        if (nodeTab.selectedSubNodeId != null) {    // musíme poslat akci vybrání subnode (aby se řádek vybral např. ve stromu)
-            dispatch(faSelectSubNode(nodeTab.selectedSubNodeId, nodeTab, false, false));
-        }
-
-        return dispatch({
+        dispatch({
             type: types.FA_FA_SELECT_NODE_TAB,
-            node,
-            moveTabToBegin
+            index,
         });
+        if (nodeTab.selectedSubNodeId != null) {    // musíme poslat akci vybrání subnode (aby se řádek vybral např. ve stromu)
+            dispatch(faSelectSubNode(nodeTab.selectedSubNodeId, nodeTab, false));
+        }
     }
 }
 
-export function faCloseNodeTab(node) {
+export function faCloseNodeTabInt(index) {
     return {
         type: types.FA_FA_CLOSE_NODE_TAB,
-        node
+        index
+    }
+}
+export function faCloseNodeTab(index) {
+    return (dispatch, getState) => {
+        var state = getState();
+        var activeFa = state.arrRegion.fas[state.arrRegion.activeIndex];
+        var wasSelected = false;
+        if (activeFa.nodes.activeIndex == index) {  // zavíráme aktuálně vybranou
+            wasSelected = true;
+        }
+        dispatch(faCloseNodeTabInt(index));
+        var newState = getState();
+        var newActiveFa = newState.arrRegion.fas[newState.arrRegion.activeIndex];
+        if (wasSelected) { 
+            if (newActiveFa.nodes.nodes.length > 0) {    // je vybraná nějakaá, jiná, protože ještě nejaké záložky jsou
+                dispatch(faSelectNodeTab(newActiveFa.nodes.activeIndex));
+            } else {    // není žádná záložka
+                dispatch(faSelectSubNode(null, null, false));
+            }
+        }
+    }
+}
+export function faCloseNodeTab2(index) {
+    return {
+        type: types.FA_FA_CLOSE_NODE_TAB,
+        index
     }
 }
 
-export function faSelectSubNode(subNodeId, subNodeParentNode, openUnexistingNodeTab=false, moveTabToBegin=false) {
+export function faSelectSubNode(subNodeId, subNodeParentNode, openNewTab=false) {
     return {
         type: types.FA_FA_SELECT_SUBNODE,
         subNodeId,
         subNodeParentNode,
-        openUnexistingNodeTab,
-        moveTabToBegin,
+        openNewTab,
     }
 }
 

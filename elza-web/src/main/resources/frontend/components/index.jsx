@@ -15,6 +15,7 @@ exports.Tabs = require('./shared/tabs/Tabs');
 exports.Search = require('./shared/search/Search');
 exports.Loading = require('./shared/loading/Loading');
 exports.VirtualList = require('./shared/virtual-list/VirtualList');
+exports.ContextMenu = require('./shared/context-menu/ContextMenu');
 
 exports.ModalDialog = require('./shared/dialog/ModalDialog');
 

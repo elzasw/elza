@@ -44,10 +44,9 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         var centerPanel;
         if (activeFa && activeFa.nodes) {
             var nodes = activeFa.nodes.nodes;
-            var activeNode = activeFa.nodes.activeIndex != null ? nodes[activeFa.nodes.activeIndex] : null;
             centerPanel = (
                 <div>
-                    <NodeTabs nodes={nodes} activeNode={activeNode} nodeForm={this.props.arrRegion.nodeForm}/>
+                    <NodeTabs nodes={nodes} activeIndex={activeFa.nodes.activeIndex} nodeForm={this.props.arrRegion.nodeForm}/>
                     {false && <ModalDialog title="Upraveni osoby">
                         nnn
                     </ModalDialog>}

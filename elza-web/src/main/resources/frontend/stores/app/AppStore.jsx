@@ -10,12 +10,14 @@ import faFileTree from './arr/faFileTree';
 import record from './record/record';
 import recordData from './record/recordData';
 import partyRegion from './party/partyRegion';
+import contextMenu from './global/contextMenu';
 
 let reducer = combineReducers({
     arrRegion,
     faFileTree,
     record,
-    partyRegion
+    partyRegion,
+    contextMenu,
 });
 
 // Store a middleware

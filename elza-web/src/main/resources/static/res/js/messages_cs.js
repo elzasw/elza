@@ -14,5 +14,7 @@ var messages = {
     "search.action.search": "Najít",
     "search.action.noResult": "nenalezeny žádné záznamy",
     
+    "faTree.action.openInNewTab": "Otevřít v nové záložce",
+    
     "____": ""
 };

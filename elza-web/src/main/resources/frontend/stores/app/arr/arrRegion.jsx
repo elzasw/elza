@@ -65,6 +65,7 @@ export default function arrRegion(state = initialState, action) {
         case types.FA_NODE_FORM_REQUEST:
         case types.FA_NODE_FORM_RECEIVE:
             return Object.assign({}, state, {nodeForm: nodeForm(state.nodeForm, action)});
+        case types.FA_FA_TREE_FOCUS_NODE:
         case types.FA_FA_TREE_EXPAND_NODE:
         case types.FA_FA_TREE_COLLAPSE_NODE:
         case types.FA_FA_TREE_REQUEST:

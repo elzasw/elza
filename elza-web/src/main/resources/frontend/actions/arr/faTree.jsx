@@ -26,6 +26,13 @@ export function faTreeNodeExpand(node) {
     }
 }
 
+export function faTreeFocusNode(node) {
+    return {
+        type: types.FA_FA_TREE_FOCUS_NODE,
+        node,
+    }
+}
+
 export function faTreeNodeCollapse(node) {
     return {
         type: types.FA_FA_TREE_COLLAPSE_NODE,
