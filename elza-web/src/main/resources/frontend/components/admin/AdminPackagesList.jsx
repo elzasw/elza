@@ -30,7 +30,7 @@ var AdminPackagesList = class AdminPackagesList extends AbstractReactComponent {
 
         var items = this.props.items.map((item) => {
             return (
-                    <tr>
+                    <tr key={item.code}>
                         <td>{item.code}</td>
                         <td>{item.name}</td>
                         <td>{item.version}</td>
