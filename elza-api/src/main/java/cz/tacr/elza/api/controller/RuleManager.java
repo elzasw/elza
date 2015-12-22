@@ -147,4 +147,12 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      * @param code kód balíčku
      */
     void deletePackage(String code);
+
+
+    /**
+     * Provede export balíčku s konfigurací.
+     *
+     * @param code kód balíčku
+     */
+    File exportPackage(String code);
 }

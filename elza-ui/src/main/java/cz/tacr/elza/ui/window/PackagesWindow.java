@@ -7,7 +7,10 @@ import java.util.List;
 
 import org.springframework.util.Assert;
 
+import com.vaadin.server.FileResource;
 import com.vaadin.server.FontAwesome;
+import com.vaadin.server.Page;
+import com.vaadin.server.Resource;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Upload;
@@ -75,6 +78,7 @@ public class PackagesWindow extends AxWindow implements Upload.SucceededListener
         layout.setSizeUndefined();
 
         AxAction deletePackage;
+        AxAction downloadPackage;
 
         for (RulPackage rulPackage : packages) {
 
@@ -93,6 +97,23 @@ public class PackagesWindow extends AxWindow implements Upload.SucceededListener
             }).caption("Smazat").icon(FontAwesome.TRASH_O);
 
             bulkActionLayout.addComponent(deletePackage.button());
+
+            downloadPackage = new AxAction().caption("Stáhnout").icon(FontAwesome.SAVE);
+
+            downloadPackage.run(() -> {
+                try {
+                    File file = ruleManager.exportPackage(rulPackage.getCode());
+                    FileResource res = new FileResource(file);
+                    Page.getCurrent().open(res, null, false);
+                    ElzaNotifications.show("Staženo...", 2000);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    ElzaNotifications.showError(e.getMessage());
+                }
+            });
+
+            downloadPackage.style("level-name");
+            bulkActionLayout.addComponent(downloadPackage.button());
 
             Label label = newLabel(rulPackage.getCode());
             label.addStyleName("level-code");
