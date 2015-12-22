@@ -22,14 +22,19 @@ class WebApiRest {
             });
     }
 
-    findRecord(search = ''){
-        return AjaxUtils.ajaxGet('/api/registryManager/findRecord', [{key: 'search', value: search},{key: 'from', value: '0'},{key: 'count', value: '200'}, {key: 'registerTypeIds', value: ''}])
-            .then(json=>{
-                return json;
-            });
+    findRecord(search = null){
+        return AjaxUtils.ajaxGet('/api/registryManager/findRecord', {
+            search: search,
+            from: 0,
+            count: 200,
+            registerTypeIds: null
+        }).then(json=>{
+            return json;
+        });
     }
+
     getRecord(recordId){
-        return AjaxUtils.ajaxGet('/api/registryManager/getRecord', [{key: 'recordId', value: recordId}])
+        return AjaxUtils.ajaxGet('/api/registryManager/getRecord', {recordId: recordId})
             .then(json=>{
                 return json;
             });
@@ -37,20 +42,20 @@ class WebApiRest {
 
 
 
-    findParty(search = ''){
-        return AjaxUtils.ajaxGet('/api/partyManager/findParty', [{
-            'search': search,
-            'from': 0,
-            'count' : 200,
-            'partyTypeId': null,
-            'originator': false
-        }]).then(json=>{
+    findParty(search = null){
+        return AjaxUtils.ajaxGet('/api/partyManager/findParty', {
+            search: search,
+            from: 0,
+            count : 200,
+            partyTypeId: null,
+            originator: false
+        }).then(json=>{
             return json;
         });
     }
 
     getParty(partyId){
-        return AjaxUtils.ajaxGet('/api/partyManager/getParty', [{key: 'partyId', value: partyId}])
+        return AjaxUtils.ajaxGet('/api/partyManager/getParty', {partyId: partyId})
             .then(json=>{
                 return json;
             });
@@ -75,7 +80,7 @@ class WebApiRest {
     }
 
     importPackage(data) {
-        return AjaxUtils.ajaxCallRaw('/api/ruleSetManager/importPackage', [], "POST", data)
+        return AjaxUtils.ajaxCallRaw('/api/ruleSetManager/importPackage', {}, "POST", data)
                 .then(json=>{
                     return json;
                 });

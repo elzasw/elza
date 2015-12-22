@@ -12,9 +12,7 @@ import {i18n, Toastr, LongText} from 'components';
  * Zavolání raw ajaxového volání podle vložených parametrů.
  *
  * @param {string} url
- * @param {Object[]} params - Pole query parametrů
- * @param {string} params[].key - Klíč parametru
- * @param {string} params[].value - Hodnota parametru
+ * @param {Object} params - Object query parametrů -> klíč: hodnota
  * @param {string} method - Metoda volání (GET, POST, PUT, DELETE, ...)
  * @param {Object} data - Odesílaná data
  * @returns {Promise} - Výsledek volání
@@ -92,9 +90,7 @@ function ajaxCallRaw(url, params, method, data) {
  * Zavolání ajaxového volání podle vložených parametrů.
  *
  * @param {string} url
- * @param {Object[]} params - Pole query parametrů
- * @param {string} params[].key - Klíč parametru
- * @param {string} params[].value - Hodnota parametru
+ * @param {Object} params - Object query parametrů -> klíč: hodnota
  * @param {string} method - Metoda volání (GET, POST, PUT, DELETE, ...)
  * @param {Object} data - Odesílaná data
  * @returns {Promise} - Výsledek volání
@@ -173,16 +169,14 @@ function ajaxCall(url, params, method, data) {
  * Provede aktualizaci všech query parametrů v adrese.
  *
  * @param {string} uri - Upravovaná adresa
- * @param {Object[]} params - Pole query parametrů
- * @param {string} params[].key - Klíč parametru
- * @param {string} params[].value - Hodnota parametru
+ * @param {Object} params - Object query parametrů -> klíč: hodnota
  * @returns {string} upravená adresa
  */
 function updateQueryStringParameters(uri, params) {
     if (params) {
-        for (var i = 0; i < params.length; i++) {
-            var param = params[i];
-            uri = updateQueryStringParameter(uri, param.key, param.value);
+        for(var key in params) {
+            var value = params[key];
+            uri = updateQueryStringParameter(uri, key, value);
         }
     }
     return uri;
@@ -196,6 +190,9 @@ function updateQueryStringParameters(uri, params) {
  * @returns {string} upravená adresa
  */
 function updateQueryStringParameter(uri, key, value) {
+    if (value == null || value == undefined) {
+        return uri;
+    }
     var re = new RegExp("([?&])" + key + "=.*?(&|$)", "i");
     var separator = uri.indexOf('?') !== -1 ? "&" : "?";
     if (uri.match(re)) {
@@ -209,9 +206,7 @@ function updateQueryStringParameter(uri, key, value) {
  * Odeslání GET dotazu na server.
  *
  * @param {string} url - Adresa volání
- * @param {Object[]} params - Pole query parametrů
- * @param {string} params[].key - Klíč parametru
- * @param {string} params[].value - Hodnota parametru
+ * @param {Object} params - Object query parametrů -> klíč: hodnota
  * @returns {Promise} - Výsledek volání
  */
 function ajaxGet(url, params) {
@@ -222,9 +217,7 @@ function ajaxGet(url, params) {
  * Odeslání POST dotazu na server.
  *
  * @param {string} url - Adresa volání
- * @param {Object[]} params - Pole query parametrů
- * @param {string} params[].key - Klíč parametru
- * @param {string} params[].value - Hodnota parametru
+ * @param {Object} params - Object query parametrů -> klíč: hodnota
  * @param {Object} data - Odesílaná data
  * @returns {Promise} - Výsledek volání
  */
@@ -236,9 +229,7 @@ function ajaxPost(url, params, data) {
  * Odeslání PUT dotazu na server.
  *
  * @param {string} url - Adresa volání
- * @param {Object[]} params - Pole query parametrů
- * @param {string} params[].key - Klíč parametru
- * @param {string} params[].value - Hodnota parametru
+ * @param {Object} params - Object query parametrů -> klíč: hodnota
  * @param {Object} data - Odesílaná data
  * @returns {Promise} - Výsledek volání
  */
@@ -250,9 +241,7 @@ function ajaxPut(url, params, data) {
  * Odeslání DELETE dotazu na server.
  *
  * @param {string} url - Adresa volání
- * @param {Object[]} params - Pole query parametrů
- * @param {string} params[].key - Klíč parametru
- * @param {string} params[].value - Hodnota parametru
+ * @param {Object} params - Object query parametrů -> klíč: hodnota
  * @param {Object} data - Odesílaná data
  * @returns {Promise} - Výsledek volání
  */
