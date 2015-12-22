@@ -55,6 +55,31 @@ class WebApiRest {
                 return json;
             });
     }
+
+    getPackages() {
+        return AjaxUtils.ajaxGet('/api/ruleSetManager/getPackages')
+            .then(json=>{
+                return json;
+            });
+    }
+
+    deletePackage(code) {
+        return AjaxUtils.ajaxGet('/api/ruleSetManager/deletePackage/' + code)
+                .then(json=>{
+                    return json;
+                });
+    }
+
+    getPackageExportUrl(code) {
+        return '/api/ruleSetManager/exportPackage/' + code;
+    }
+
+    importPackage(data) {
+        return AjaxUtils.ajaxCallRaw('/api/ruleSetManager/importPackage', [], "POST", data)
+                .then(json=>{
+                    return json;
+                });
+    }
 }
 
 function findNodeById(node, nodeId) {
@@ -304,5 +329,5 @@ class WebApiFake {
     }
 }
 
-//module.exports = new WebApiRest();
-module.exports = new WebApiFake();
+module.exports = new WebApiRest();
+//module.exports = new WebApiFake();

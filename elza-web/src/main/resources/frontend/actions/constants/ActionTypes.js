@@ -46,3 +46,13 @@ export const RECORD_SEARCH_RECORD = 'RECORD_SEARCH_RECORD'
 export const GLOBAL_GET_OBJECT_INFO = 'GLOBAL_GET_OBJECT_INFO'
 export const GLOBAL_CONTEXT_MENU_SHOW = 'GLOBAL_CONTEXT_MENU_SHOW'
 export const GLOBAL_CONTEXT_MENU_HIDE = 'GLOBAL_CONTEXT_MENU_HIDE'
+
+/**
+ * Admin - Packages
+ */
+export const ADMIN_PACKAGES_REQUEST = 'ADMIN_PACKAGES_REQUEST'                  // dotaz na načtení balíčků
+export const ADMIN_PACKAGES_RECEIVE = 'ADMIN_PACKAGES_RECEIVE'                  // odpověď na načtení balíčků
+export const ADMIN_PACKAGES_DELETE_REQUEST = 'ADMIN_PACKAGES_DELETE_REQUEST'    // dotaz na smazání balíčku
+export const ADMIN_PACKAGES_DELETE_RECEIVE = 'ADMIN_PACKAGES_DELETE_RECEIVE'    // odpověď na smazání balíčku
+export const ADMIN_PACKAGES_IMPORT_REQUEST = 'ADMIN_PACKAGES_IMPORT_REQUEST'    // dotaz na nahrání balíčku
+export const ADMIN_PACKAGES_IMPORT_RECEIVE = 'ADMIN_PACKAGES_IMPORT_RECEIVE'    // odpověď na nahrání balíčku

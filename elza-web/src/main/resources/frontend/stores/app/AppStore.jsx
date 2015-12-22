@@ -11,6 +11,7 @@ import record from './record/record';
 import recordData from './record/recordData';
 import partyRegion from './party/partyRegion';
 import contextMenu from './global/contextMenu';
+import adminRegion from './admin/adminRegion';
 
 let reducer = combineReducers({
     arrRegion,
@@ -18,6 +19,7 @@ let reducer = combineReducers({
     record,
     partyRegion,
     contextMenu,
+    adminRegion
 });
 
 // Store a middleware

@@ -31,4 +31,6 @@ exports.FaTreeLazy = require('./arr/FaTreeLazy');
 exports.PartySearch = require('./party/PartySearch');
 exports.PartyDetail = require('./party/PartyDetail');
 
+exports.AdminPackagesList = require('./admin/AdminPackagesList');
+exports.AdminPackagesUpload = require('./admin/AdminPackagesUpload');
 

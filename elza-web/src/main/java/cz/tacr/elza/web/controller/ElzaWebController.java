@@ -57,4 +57,10 @@ public class ElzaWebController {
         initDefaults(request, model);
         return "web";
     }
+
+    @RequestMapping(value = "/admin/**", method = RequestMethod.GET)
+    public String adminPage(final HttpServletRequest request, final Model model) {
+        initDefaults(request, model);
+        return "web";
+    }
 }
