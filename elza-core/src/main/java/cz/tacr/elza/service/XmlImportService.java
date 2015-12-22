@@ -412,7 +412,7 @@ public class XmlImportService {
         PartyName preferredName = party.getPreferredName();
         ParPartyName parPartyName = new ParPartyName();
 
-        parPartyName.setAnnotation(preferredName.getNote());
+        parPartyName.setNote(preferredName.getNote());
         parPartyName.setDegreeAfter(preferredName.getDegreeAfter());
         parPartyName.setDegreeBefore(preferredName.getDegreeBefore());
         parPartyName.setMainPart(preferredName.getMainPart());
@@ -420,12 +420,14 @@ public class XmlImportService {
 
         Date specificDateFrom = preferredName.getValidFrom().getSpecificDateFrom();
         if (specificDateFrom != null) {
-            parPartyName.setValidFrom(LocalDateTime.ofInstant(specificDateFrom.toInstant(), ZoneId.systemDefault()));
+            // TODO pro J. Vaněk: opravit pro nový model
+            //parPartyName.setValidFrom(LocalDateTime.ofInstant(specificDateFrom.toInstant(), ZoneId.systemDefault()));
         }
 
         Date specificDateTo = preferredName.getValidTo().getSpecificDateTo();
         if (specificDateTo != null) {
-            parPartyName.setValidTo(LocalDateTime.ofInstant(specificDateTo.toInstant(), ZoneId.systemDefault()));
+            // TODO pro J. Vaněk: opravit pro nový model
+            //parPartyName.setValidTo(LocalDateTime.ofInstant(specificDateTo.toInstant(), ZoneId.systemDefault()));
         }
         return parPartyName;
     }
@@ -550,7 +552,7 @@ public class XmlImportService {
 
     private void updateRecord(Record record, RegRecord regRecord, RegRecord parent) {
         regRecord.setCharacteristics(record.getCharacteristics());
-        regRecord.setComment(record.getNote());
+        regRecord.setNote(record.getNote());
         regRecord.setRecord(record.getPreferredName());
 
         RegRegisterType regType = registerTypeRepository.findRegisterTypeByCode(record.getRegisterTypeCode());
