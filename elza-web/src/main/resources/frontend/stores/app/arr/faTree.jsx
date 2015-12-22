@@ -37,6 +37,8 @@ function removeChildren(nodes, node) {
 }
 export default function faTree(state = initialState, action) {
     switch (action.type) {
+        case types.GLOBAL_CONTEXT_MENU_HIDE:
+            return Object.assign({}, state, {focusId: null});
         case types.FA_FA_SELECT_SUBNODE:
             return Object.assign({}, state, {selectedId: action.subNodeId});
         case types.FA_FA_TREE_FOCUS_NODE:

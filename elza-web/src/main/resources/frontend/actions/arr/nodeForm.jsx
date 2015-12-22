@@ -28,6 +28,7 @@ export function nodeFormReceive(nodeId, versionId, json) {
         type: types.FA_NODE_FORM_RECEIVE,
         nodeId,
         versionId,
+        node: json.node,
         parentNodes: json.parents,
         childNodes: json.children,
         receivedAt: Date.now()

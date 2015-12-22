@@ -1,6 +1,10 @@
 @import "~variables.less";
 
 @parts-margin: 6px;
+@node-panel-actions-height: 22px;
+@node-panel-parents-height: 15%;
+@node-panel-content-height: 70%;
+@node-panel-children-height: 15%;
 
 .node-panel-container {
     display: flex;
@@ -14,20 +18,34 @@
     }
     
     .actions {
-        height: 22px;
+        height: @node-panel-actions-height;
     }
     .parents {
-        height: 10%;
+        height: @node-panel-parents-height;
         overflow-y: auto;
         border: 1px solid @gray-lighter;
+        
+        .node {
+            cursor: pointer;
+            &:hover {
+                background: @nav-link-hover-bg;
+            }
+        }
     }
     .content {
-        height: 80%;
+        height: @node-panel-content-height;
         border: 1px solid @gray-lighter;
     }
     .children {
-        height: 10%;
+        height: @node-panel-children-height;
         overflow-y: auto;
         border: 1px solid @gray-lighter;
+        
+        .node {
+            cursor: pointer;
+            &:hover {
+                background: @nav-link-hover-bg;
+            }
+        }
     }
 }

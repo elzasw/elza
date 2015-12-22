@@ -112,6 +112,7 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
             <div key={node.id} className={cls}>
                 {expCol}
                 <span
+                    className='node-label'
                     onClick={this.handleNodeClick.bind(this, node)}
                     onContextMenu={this.handleContextMenu.bind(this, node)}
                     >

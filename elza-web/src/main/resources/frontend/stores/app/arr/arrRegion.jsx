@@ -47,6 +47,7 @@ export default function arrRegion(state = initialState, action) {
         case types.FA_FA_TREE_COLLAPSE_NODE:
         case types.FA_FA_TREE_REQUEST:
         case types.FA_FA_TREE_RECEIVE:
+        case types.GLOBAL_CONTEXT_MENU_HIDE:
             return {
                 ...state,
                 fas: [

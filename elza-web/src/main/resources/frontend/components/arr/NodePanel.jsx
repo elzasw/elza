@@ -6,6 +6,8 @@ import React from 'react';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Loading} from 'components';
 import {nodeFormFetchIfNeeded} from 'actions/arr/nodeForm'
+import {faSelectSubNode} from 'actions/arr/nodes'
+import {indexById} from 'stores/app/utils.jsx'
 
 require ('./NodePanel.less');
 
@@ -13,7 +15,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderParents', 'renderChildren');
+        this.bindMethods('renderParents', 'renderChildren', 'handleParentNodeClick', 'handleChildNodeClick');
 
         this.dispatch(nodeFormFetchIfNeeded(props.node.selectedSubNodeId, props.versionId));
     }
@@ -22,10 +24,24 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         this.dispatch(nodeFormFetchIfNeeded(nextProps.node.selectedSubNodeId, nextProps.versionId));
     }
 
+    handleParentNodeClick(node) {
+        var index = indexById(this.props.nodeForm.parentNodes, node.id);
+        var subNodeId = node.id;
+        var subNodeParentNode = index + 1 < this.props.nodeForm.parentNodes.length ? this.props.nodeForm.parentNodes[index + 1] : null;
+
+        this.dispatch(faSelectSubNode(subNodeId, subNodeParentNode));
+    }
+
+    handleChildNodeClick(node) {
+        var subNodeId = node.id;
+        var subNodeParentNode = this.props.nodeForm.node;
+        this.dispatch(faSelectSubNode(subNodeId, subNodeParentNode));
+    }
+
     renderParents(parents) {
         var rows = parents.map(parent => {
             return (
-                <div>{parent.name}</div>
+                <div className='node' onClick={this.handleParentNodeClick.bind(this, parent)}>{parent.name}</div>
             )
         }).reverse();
         return (
@@ -38,7 +54,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     renderChildren(children) {
         var rows = children.map(child => {
             return (
-                <div>{child.name}</div>
+                <div className='node' onClick={this.handleChildNodeClick.bind(this, child)}>{child.name}</div>
             )
         });
 
@@ -63,7 +79,6 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             <div className='node-panel-container'>
                 <div className='actions'>NODE [{this.props.node.id}] actions.......SUB NODE: {this.props.node.selectedSubNodeId}</div>
                 {parents}
-                <div className='parents'>parents<br/>parents<br/>parents<br/>parents<br/></div>
                 <div className='content'>content</div>
                 {children}
             </div>

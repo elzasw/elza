@@ -47,7 +47,9 @@ var ContextMenu = class extends AbstractReactComponent {
             source = source.parentNode;
         }
 
-        this.hideMenu();
+        if (this.props.visible) {
+            this.hideMenu();
+        }
         //console.log("NOT FOUND...");
     }
 

@@ -1,3 +1,5 @@
+@import "~variables.less";
+
 @fa-tree-level-margin: 16px;
 
 @rowHeight: 22px;
@@ -15,9 +17,17 @@
     .exp-col {
         display: inline-block;
         width: 18px;
+        cursor: pointer;
     }
     .active {
         background: silver;
+    }
+    .node-label {
+        cursor: pointer;
+        padding: 2px;
+        &:hover {
+            background: @nav-link-hover-bg;
+        }        
     }
     .focus {
         outline: 1px solid darkgray;
