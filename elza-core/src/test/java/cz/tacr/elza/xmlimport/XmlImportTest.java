@@ -75,7 +75,7 @@ public class XmlImportTest implements ApplicationContextAware {
 
     /** Test na import nové pomůcky v nativním formátu.
      * @throws XmlImportException */
-    @Test
+    //@Test
     public void importNativeData() throws XmlImportException {
         XmlImportConfig config = new XmlImportConfig();
         config.setStopOnError(false);
@@ -169,7 +169,7 @@ public class XmlImportTest implements ApplicationContextAware {
     }
 
     /** Test na validaci dat oproti vygenerovanému xsd. */
-    @Test
+    //@Test
     public void testValidityJV() throws JAXBException, SAXException, IOException {
 //        XmlDataGeneratorConfig config = createDefaultGeneratorConfig(true);
 //        XmlImport fa = xmlDataGenerator.createXmlImportData(config);
