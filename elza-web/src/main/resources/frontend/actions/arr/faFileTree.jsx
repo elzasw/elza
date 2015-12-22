@@ -1,7 +1,14 @@
+/**
+ * Akce pro strom AP, verzí a případně fondů.
+ */
+
 import {WebApi} from 'actions'
 
 import * as types from 'actions/constants/actionTypes';
 
+/**
+ * Vyžádání dat - aby byla ve store k dispozici.
+ */
 export function faFileTreeFetchIfNeeded() {
     return (dispatch, getState) => {
         var state = getState();
@@ -11,6 +18,9 @@ export function faFileTreeFetchIfNeeded() {
     }
 }
 
+/**
+ * Nové načtení dat.
+ */
 export function faFileTreeFetch() {
     return dispatch => {
         dispatch(faFileTreeRequest())
@@ -19,6 +29,10 @@ export function faFileTreeFetch() {
     }
 }
 
+/**
+ * Nová data byla načtena.
+ * @param {Object} json objekt s daty
+ */
 export function faFileTreeReceive(json) {
     return {
         type: types.FA_FA_FILE_TREE_RECEIVE,
@@ -27,6 +41,9 @@ export function faFileTreeReceive(json) {
     }
 }
 
+/**
+ * Bylo zahájeno nové načítání dat.
+ */
 export function faFileTreeRequest() {
     return {
         type: types.FA_FA_FILE_TREE_REQUEST

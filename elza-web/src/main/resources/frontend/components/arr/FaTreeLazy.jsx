@@ -91,7 +91,7 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     }
 
     renderNode(node) {
-        var expanded = node.hasChildren && this.props.expandedIds['n_' + node.id];
+        var expanded = node.hasChildren && this.props.expandedIds[node.id];
 
         var expCol;
         if (node.hasChildren) {

@@ -75,7 +75,7 @@ function generateFlatTree(nodes, expandedIds, out) {
     nodes.each(node => {
         node.hasChildren = node.children && node.children.length > 0;
         out.push(node);
-        if (expandedIds['n_' + node.id]) {
+        if (expandedIds[node.id]) {
             generateFlatTree(node.children, expandedIds, out);
         }
     });

@@ -15,41 +15,18 @@ function selectFaTab(state, action) {
     var faItem = Object.assign({}, action.fa, {faTree: faTree(action.fa.faTree, action), nodes: nodes(undefined, action)});
     var index = indexById(state.fas, action.fa.id);
     if (index == null) {    // není zatím v seznamu, přidáme jí tam
-        if (action.moveTabToBegin) {
-            return {
-                ...state,
-                fas: [
-                    faItem,
-                    ...state.fas
-                ],
-                activeIndex: 0
-            }
-        } else {
-            return {
-                ...state,
-                fas: [
-                    ...state.fas,
-                    faItem
-                ],
-                activeIndex: state.fas.length
-            }
+        return {
+            ...state,
+            fas: [
+                ...state.fas,
+                faItem
+            ],
+            activeIndex: state.fas.length
         }
     } else {
-        if (action.moveTabToBegin) {
-            return {
-                ...state,
-                fas: [
-                    state.fas[index],
-                    ...state.fas.slice(0, index),
-                    ...state.fas.slice(index + 1)
-                ],
-                activeIndex: 0
-            }
-        } else {
-            return {
-                ...state,
-                activeIndex: index
-            }
+        return {
+            ...state,
+            activeIndex: index
         }
     }
 }

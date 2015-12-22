@@ -7,7 +7,7 @@ const initialState = {
     versionId: null,
     selectedId: null,
     focusId: null,
-    expandedIds: {'n_0': true},
+    expandedIds: {'0': true},
     searchedIds: null,
     isFetching: false,
     fetched: false,
@@ -15,7 +15,7 @@ const initialState = {
 }
 /*console.log('eeeeeeeeeeeeexxxxxxxxxxxxppp');
 for (var a=0; a<300000; a++) {
-initialState.expandedIds['n_' + a] = true;
+initialState.expandedIds[a] = true;
 }*/
 
 function removeChildren(nodes, node) {
@@ -45,7 +45,7 @@ export default function faTree(state = initialState, action) {
             if (action.addWaitingNode) {
                 var index = indexById(state.nodes, action.node.id);
                 return Object.assign({}, state, {
-                    expandedIds: {...state.expandedIds, ['n_' + action.node.id]: true},
+                    expandedIds: {...state.expandedIds, [action.node.id]: true},
                     nodes: [
                         ...state.nodes.slice(0, index + 1),
                         {id: '___' + Math.random(), name: i18n('global.data.loading'), depth: action.node.depth + 1},
@@ -54,12 +54,12 @@ export default function faTree(state = initialState, action) {
                 });
             } else {
                 return Object.assign({}, state, {
-                    expandedIds: {...state.expandedIds, ['n_' + action.node.id]: true}
+                    expandedIds: {...state.expandedIds, [action.node.id]: true}
                 });
             }
         case types.FA_FA_TREE_COLLAPSE_NODE:
             var expandedIds = {...state.expandedIds};
-            delete expandedIds['n_' + action.node.id];
+            delete expandedIds[action.node.id];
             var ret = Object.assign({}, state, {
                 expandedIds: expandedIds,
                 nodes: removeChildren(state.nodes, action.node),
@@ -73,7 +73,7 @@ export default function faTree(state = initialState, action) {
             })
         case types.FA_FA_TREE_RECEIVE:
             if (action.nodeId !== null && typeof action.nodeId !== 'undefined') {
-                if (state.expandedIds['n_' + action.nodeId]) { // ještě je stále rozbalený
+                if (state.expandedIds[action.nodeId]) { // ještě je stále rozbalený
                     var index = indexById(state.nodes, action.nodeId);
                     if (index != null) {
                         var node = state.nodes[index];
