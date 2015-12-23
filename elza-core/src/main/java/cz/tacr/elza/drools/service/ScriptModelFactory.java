@@ -3,7 +3,6 @@ package cz.tacr.elza.drools.service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,10 +29,12 @@ import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
-import cz.tacr.elza.drools.model.DescItemVO;
-import cz.tacr.elza.drools.model.VOLevel;
-import cz.tacr.elza.drools.model.VOPacket;
-import cz.tacr.elza.drools.model.VOScenarioOfNewLevel;
+import cz.tacr.elza.drools.model.DescItem;
+import cz.tacr.elza.drools.model.EventSource;
+import cz.tacr.elza.drools.model.Level;
+import cz.tacr.elza.drools.model.NewLevel;
+import cz.tacr.elza.drools.model.Packet;
+import cz.tacr.elza.drools.model.NewLevelApproach;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
@@ -71,7 +72,7 @@ public class ScriptModelFactory {
     /**
      * Vytvoří strukturu od výchozího levelu. Načte všechny jeho rodiče a přímé potomky.
      */
-    public VOLevel createLevelStructure(final ArrLevel level, final ArrFindingAidVersion version) {
+    public Level createLevelStructureWithChilds(final ArrLevel level, final ArrFindingAidVersion version) {
         Assert.notNull(level);
         Assert.notNull(version);
 
@@ -79,11 +80,11 @@ public class ScriptModelFactory {
         Set<ArrNode> nodes = new HashSet<>();
         nodes.add(level.getNode());
 
-        VOLevel mainLevel = createLevel(level, version);
+        Level mainLevel = createLevel(level, version);
 
-        VOLevel voParent = mainLevel;
+        Level voParent = mainLevel;
         for (ArrLevel parent : parents) {
-            VOLevel newParent = createLevel(parent, version);
+            Level newParent = createLevel(parent, version);
             voParent.setParent(newParent);
             newParent.setChildCount(1);
             voParent = newParent;
@@ -108,7 +109,7 @@ public class ScriptModelFactory {
      * @param version   verze
      * @param nodes     seznam nodů, pro které se budou hledat atributy
      */
-    public void assignDescItems(final VOLevel mainLevel, final ArrFindingAidVersion version, final Set<ArrNode> nodes) {
+    public void assignDescItems(final Level mainLevel, final ArrFindingAidVersion version, final Set<ArrNode> nodes) {
         Assert.notNull(mainLevel);
 
 
@@ -117,35 +118,37 @@ public class ScriptModelFactory {
         Map<Integer, List<ArrDescItem>> descItemsMap =
                 ElzaTools.createGroupMap(descItems, p -> p.getNode().getNodeId());
 
-        List<VOLevel> levels = new LinkedList<>();
-        structureToList(mainLevel, levels);
+        List<Level> levels = convertLevelTreeToList(mainLevel);
 
-        for (VOLevel level : levels) {
+        for (Level level : levels) {
             List<ArrDescItem> levelDescItems = descItemsMap.get(level.getNodeId());
             level.setDescItems(createDescItems(levelDescItems));
         }
     }
 
-
     /**
      * Převede stromovou strukturu na seznam.
      *
-     * @param mainLevel  level, pro který je struktura sestavena
-     * @param resultList seznam
+     * @param level  level, pro který je struktura sestavena
+     * @return resultList seznam
      */
-    private void structureToList(final VOLevel mainLevel, final List<VOLevel> resultList) {
-        if (mainLevel == null) {
-            return;
+    public List<Level> convertLevelTreeToList(final Level level) {
+        List<Level> list = new ArrayList<>();
+        Level tmp = level;
+        while (tmp != null) {
+            list.add(tmp);
+            if (tmp instanceof NewLevel) {
+                NewLevel newLevel = (NewLevel) tmp;
+                if (newLevel.getSiblingAfter() != null) {
+                    list.add(newLevel.getSiblingAfter());
+                }
+                if (newLevel.getSiblingBefore() != null) {
+                    list.add(newLevel.getSiblingBefore());
+                }
+            }
+            tmp = tmp.getParent();
         }
-
-        resultList.add(mainLevel);
-        if (mainLevel.getSiblingBefore() != null) {
-            resultList.add(mainLevel.getSiblingBefore());
-        }
-        if (mainLevel.getSiblingAfter() != null) {
-            resultList.add(mainLevel.getSiblingAfter());
-        }
-        structureToList(mainLevel.getParent(), resultList);
+        return list;
     }
 
     /**
@@ -154,7 +157,7 @@ public class ScriptModelFactory {
      * @param descItems hodnoty atributu
      * @return seznam vo hodnot atributu
      */
-    public List<DescItemVO> createDescItems(@Nullable final List<ArrDescItem> descItems) {
+    public List<DescItem> createDescItems(@Nullable final List<ArrDescItem> descItems) {
         if (descItems == null) {
             return Collections.EMPTY_LIST;
         }
@@ -162,9 +165,9 @@ public class ScriptModelFactory {
         Set<RulDescItemType> descItemTypesForPackets = descItemTypeRepository.findDescItemTypesForPackets();
         Set<RulDescItemType> descItemTypesForIntegers = descItemTypeRepository.findDescItemTypesForIntegers();
 
-        List<DescItemVO> result = new ArrayList<>(descItems.size());
+        List<DescItem> result = new ArrayList<>(descItems.size());
         for (ArrDescItem descItem : descItems) {
-            DescItemVO voDescItem = createDescItem(descItem);
+            DescItem voDescItem = createDescItem(descItem);
             result.add(voDescItem);
 
             if (descItemTypesForPackets.contains(descItem.getDescItemType())) {
@@ -186,8 +189,7 @@ public class ScriptModelFactory {
     /**
      * Vytvoří strukturu od výchozího levelu. Načte všechny jeho rodiče a předchozího a dalšího sourozence.
      */
-    public VOLevel createLevelStructure(final ArrLevel level,
-                                        final DirectionLevel directionLevel,
+    public Level createLevelStructure(final ArrLevel level,
                                         final ArrFindingAidVersion version) {
         Assert.notNull(level);
         Assert.notNull(version);
@@ -196,70 +198,16 @@ public class ScriptModelFactory {
         Set<ArrNode> nodes = new HashSet<>();
         nodes.add(level.getNode());
 
-        VOLevel mainLevel = createLevel(level, version);
+        Level mainLevel = createLevel(level, version);
 
-        VOLevel voParent = mainLevel;
+        Level voParent = mainLevel;
         for (ArrLevel parent : parents) {
-            VOLevel newParent = createLevel(parent, version);
+            Level newParent = createLevel(parent, version);
             voParent.setParent(newParent);
             newParent.setChildCount(1);
             voParent = newParent;
 
             nodes.add(parent.getNode());
-        }
-
-
-        List<ArrLevel> siblings;
-        ArrLevel siblingBefore;
-        ArrLevel siblingAfter;
-        VOLevel voSiblingBefore;
-        VOLevel voSiblingAfter;
-        int indexOfMainLevel;
-
-        switch (directionLevel) {
-            case BEFORE:
-                siblings = levelRepository.findByParentNode(level.getNodeParent(), version.getLockChange());
-                mainLevel.setSiblingAfter(mainLevel);
-
-                indexOfMainLevel = siblings.indexOf(level);
-                if (indexOfMainLevel > 0) {
-                    siblingBefore = siblings.get(indexOfMainLevel - 1);
-                    voSiblingBefore = createLevel(siblingBefore, version);
-                    voSiblingBefore.setParent(mainLevel.getParent());
-                    mainLevel.setSiblingBefore(voSiblingBefore);
-                }
-
-                break;
-
-            case AFTER:
-                siblings = levelRepository.findByParentNode(level.getNodeParent(), version.getLockChange());
-                mainLevel.setSiblingBefore(mainLevel);
-
-                indexOfMainLevel = siblings.indexOf(level);
-                if (indexOfMainLevel < siblings.size()-1) {
-                    siblingAfter = siblings.get(indexOfMainLevel + 1);
-                    voSiblingAfter = createLevel(siblingAfter, version);
-                    voSiblingAfter.setParent(mainLevel.getParent());
-                    mainLevel.setSiblingAfter(voSiblingAfter);
-                }
-
-                break;
-
-            case CHILD:
-                List<ArrLevel> childs = levelRepository.findByParentNode(level.getNode(), version.getLockChange());
-                VOLevel newMain = new VOLevel();
-                newMain.setParent(mainLevel);
-                mainLevel = newMain;
-                if (childs.size() > 0) {
-
-                    siblingBefore = childs.get(childs.size() - 1);
-                    voSiblingBefore = createLevel(siblingBefore, version);
-                    voSiblingBefore.setParent(mainLevel.getParent());
-                    nodes.add(siblingBefore.getNode());
-
-                    mainLevel.setSiblingBefore(voSiblingBefore);
-                }
-                break;
         }
 
         assignDescItems(mainLevel, version, nodes);
@@ -274,13 +222,13 @@ public class ScriptModelFactory {
      * @param extension funkce pro zadání dodatečných hodnot
      * @return seznam vo hodnot
      */
-    public List<DescItemVO> createDescItems(final List<ArrDescItem> descItems, final Consumer<DescItemVO> extension) {
+    public List<DescItem> createDescItems(final List<ArrDescItem> descItems, final Consumer<DescItem> extension) {
         Assert.notNull(descItems);
         Assert.notNull(extension);
 
-        List<DescItemVO> result = new ArrayList<>(descItems.size());
+        List<DescItem> result = new ArrayList<>(descItems.size());
         for (ArrDescItem descItem : descItems) {
-            DescItemVO item = createDescItem(descItem);
+            DescItem item = createDescItem(descItem);
             result.add(item);
             extension.accept(item);
         }
@@ -293,8 +241,8 @@ public class ScriptModelFactory {
      * @param descItem atribut
      * @return vo hodnota atributu
      */
-    public DescItemVO createDescItem(final ArrDescItem descItem) {
-        DescItemVO item = new DescItemVO();
+    public DescItem createDescItem(final ArrDescItem descItem) {
+        DescItem item = new DescItem();
         item.setDescItemId(descItem.getDescItemId());
         item.setType(descItem.getDescItemType().getCode());
         item.setSpecCode(descItem.getDescItemSpec() == null ? null : descItem.getDescItemSpec().getCode());
@@ -309,23 +257,23 @@ public class ScriptModelFactory {
      * @param version verze levelu
      * @return vo level
      */
-    public VOLevel createLevel(final ArrLevel level, final ArrFindingAidVersion version) {
+    public Level createLevel(final ArrLevel level, final ArrFindingAidVersion version) {
 
-        VOLevel result = new VOLevel();
+        Level result = new Level();
         result.setNodeId(level.getNode().getNodeId());
 
         return result;
     }
 
-    private VOPacket createPacket(final ArrPacket packet) {
+    private Packet createPacket(final ArrPacket packet) {
 
-        VOPacket result = new VOPacket();
+        Packet result = new Packet();
         result.setStorageNumber(packet.getStorageNumber());
         result.setInvalidPacket(packet.getInvalidPacket());
 
         if (packet.getPacketType() != null) {
             RulPacketType packetType = packet.getPacketType();
-            VOPacket.VOPacketType voPacketType = new VOPacket.VOPacketType();
+            Packet.VOPacketType voPacketType = new Packet.VOPacketType();
             voPacketType.setCode(packetType.getCode());
             voPacketType.setName(packetType.getName());
             voPacketType.setShortcut(packetType.getShortcut());
@@ -336,15 +284,15 @@ public class ScriptModelFactory {
 
     /**
      * Vytvoření scénáře pro level z value objektu.
-     * @param voScenarioOfNewLevel  scénář VO
+     * @param newLevelApproach  scénář VO
      * @return
      */
-    public ScenarioOfNewLevel createScenarioOfNewLevel(final VOScenarioOfNewLevel voScenarioOfNewLevel) {
+    public ScenarioOfNewLevel createScenarioOfNewLevel(final NewLevelApproach newLevelApproach) {
         ScenarioOfNewLevel scenarioOfNewLevel = new ScenarioOfNewLevel();
-        scenarioOfNewLevel.setName(voScenarioOfNewLevel.getName());
+        scenarioOfNewLevel.setName(newLevelApproach.getName());
 
         List<ArrDescItem> descItems = new ArrayList<>();
-        for (DescItemVO descItemVO : voScenarioOfNewLevel.getDescItems()) {
+        for (DescItem descItemVO : newLevelApproach.getDescItems()) {
             RulDescItemType rulDescItemType = descItemTypeRepository.getOneByCode(descItemVO.getType());
             Assert.notNull(rulDescItemType);
             ArrDescItem descItem = descItemFactory.createDescItemByType(rulDescItemType.getDataType());
@@ -370,4 +318,81 @@ public class ScriptModelFactory {
         return scenarioOfNewLevel;
     }
 
+    /**
+     * Vytvoří nově přidávaného levelu. Načte jeho sousedy.
+     *
+     * @param level             referenční level
+     * @param directionLevel    způsob přídání
+     * @param version           verze AP
+     * @return
+     */
+    public NewLevel createNewLevel(final ArrLevel level,
+                                   final DirectionLevel directionLevel,
+                                   final ArrFindingAidVersion version) {
+
+        NewLevel newLevel = new NewLevel();
+        Set<ArrNode> nodes = new HashSet<>();
+
+        List<ArrLevel> siblings;
+        ArrLevel siblingBefore;
+        ArrLevel siblingAfter;
+        Level voSiblingBefore;
+        Level voSiblingAfter;
+        int indexOfMainLevel;
+
+        siblings = levelRepository.findByParentNode(level.getNodeParent(), version.getLockChange());
+
+        switch (directionLevel) {
+            case BEFORE:
+                newLevel.setEventSource(EventSource.SIBLING_AFTER);
+
+                indexOfMainLevel = siblings.indexOf(level);
+                if (indexOfMainLevel > 0) {
+                    siblingBefore = siblings.get(indexOfMainLevel - 1);
+                    voSiblingBefore = createLevel(siblingBefore, version);
+                    nodes.add(siblingBefore.getNode());
+                    newLevel.setSiblingBefore(voSiblingBefore);
+                }
+
+                siblingAfter = level;
+                voSiblingAfter = createLevel(siblingAfter, version);
+                nodes.add(siblingAfter.getNode());
+                newLevel.setSiblingAfter(voSiblingAfter);
+
+                break;
+            case AFTER:
+                newLevel.setEventSource(EventSource.SIBLING_BEFORE);
+
+                siblingBefore = level;
+                voSiblingBefore = createLevel(siblingBefore, version);
+                nodes.add(siblingBefore.getNode());
+                newLevel.setSiblingBefore(voSiblingBefore);
+
+                indexOfMainLevel = siblings.indexOf(level);
+                if (indexOfMainLevel < siblings.size() - 1) {
+                    siblingAfter = siblings.get(indexOfMainLevel + 1);
+                    voSiblingAfter = createLevel(siblingAfter, version);
+                    nodes.add(siblingAfter.getNode());
+                    newLevel.setSiblingAfter(voSiblingAfter);
+                }
+
+                break;
+
+            case CHILD:
+                newLevel.setEventSource(EventSource.PARENT);
+
+                List<ArrLevel> childs = levelRepository.findByParentNode(level.getNode(), version.getLockChange());
+                if (childs.size() > 0) {
+                    siblingBefore = childs.get(childs.size() - 1);
+                    voSiblingBefore = createLevel(siblingBefore, version);
+                    nodes.add(siblingBefore.getNode());
+                    newLevel.setSiblingBefore(voSiblingBefore);
+                }
+                break;
+        }
+
+        assignDescItems(newLevel, version, nodes);
+
+        return newLevel;
+    }
 }

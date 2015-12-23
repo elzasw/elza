@@ -2,32 +2,31 @@ package ZP2015;
 
 
 import java.util.Arrays;
-import cz.tacr.elza.drools.model.VOLevel
+import cz.tacr.elza.drools.model.Level
 import cz.tacr.elza.domain.vo.DataValidationResult
-import cz.tacr.elza.drools.model.DescItemVO;
+import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.domain.RulArrangementType;
-import cz.tacr.elza.domain.vo.ScenarioOfNewLevel
 import cz.tacr.elza.domain.ArrDescItem
 import java.util.ArrayList
 import java.util.List
 import cz.tacr.elza.domain.ArrDescItemEnum
-import cz.tacr.elza.drools.model.VOScenarioOfNewLevel;
+import cz.tacr.elza.drools.model.NewLevelApproach;
 
-global java.util.List results;
+global cz.tacr.elza.drools.model.NewLevelApproaches results;
 
-function boolean isRootLevel(VOLevel level){
+function boolean isRootLevel(Level level){
     if (level == null) {
         return false;
     }
     return level.getParent() == null;
 }
 
-function boolean hasLevelTypeAndSpec(VOLevel level, String typeCode, String specCode){
+function boolean hasLevelTypeAndSpec(Level level, String typeCode, String specCode){
     if(level == null || level.getDescItems() == null){
         return false;
     }
 
-    for (DescItemVO descItem : level.getDescItems()) {
+    for (DescItem descItem : level.getDescItems()) {
         if(typeCode.equals(descItem.getType()) && specCode.equals(descItem.getSpecCode())){
             return true;
         }
@@ -37,42 +36,27 @@ function boolean hasLevelTypeAndSpec(VOLevel level, String typeCode, String spec
 
 rule "Pokud rodič levelu je root level"
 when
-    level: VOLevel()
+    level: Level()
     eval(isRootLevel(level.getParent()))
 then
-    VOScenarioOfNewLevel scenario = new VOScenarioOfNewLevel();
-    scenario.setName("Nejvyšší série");
-    List<DescItemVO> descItemList = new ArrayList<>();
-    DescItemVO descItemVO = new DescItemVO("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_SERIES");
-    descItemList.add(descItemVO);
-    scenario.setDescItems(descItemList);
-    results.add(scenario);
+    NewLevelApproach approach = results.create("Nejvyšší série");
+    approach.addDescItem("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_SERIES");
 end
 
 rule "Pokud rodič levelu má atribut ZP2015_LEVEL_TYPE/ZP2015_LEVEL_ITEM"
 when
-    level: VOLevel()
+    level: Level()
     eval(hasLevelTypeAndSpec(level.getParent(), "ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_ITEM"))
 then
-    VOScenarioOfNewLevel scenario = new VOScenarioOfNewLevel();
-    scenario.setName("Část jednotlivosti");
-    List<DescItemVO> descItemList = new ArrayList<>();
-    DescItemVO descItemVO = new DescItemVO("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_PART");
-    descItemList.add(descItemVO);
-    scenario.setDescItems(descItemList);
-    results.add(scenario);
+    NewLevelApproach approach = results.create("Část jednotlivosti");
+    approach.addDescItem("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_PART");
 end
 
 rule "Pokud rodič levelu má atribut ZP2015_LEVEL_TYPE/ZP2015_LEVEL_PART"
 when
-    level: VOLevel()
+    level: Level()
     eval(hasLevelTypeAndSpec(level.getParent(), "ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_PART"))
 then
-    VOScenarioOfNewLevel scenario = new VOScenarioOfNewLevel();
-    scenario.setName("Část jednotlivosti");
-    List<DescItemVO> descItemList = new ArrayList<>();
-    DescItemVO descItemVO = new DescItemVO("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_PART");
-    descItemList.add(descItemVO);
-    scenario.setDescItems(descItemList);
-    results.add(scenario);
+    NewLevelApproach approach = results.create("Část jednotlivosti");
+    approach.addDescItem("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_PART");
 end
