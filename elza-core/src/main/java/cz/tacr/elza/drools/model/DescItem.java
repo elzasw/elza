@@ -7,7 +7,7 @@ package cz.tacr.elza.drools.model;
  * @author Martin Šlapa
  * @since 27.11.2015
  */
-public class DescItemVO {
+public class DescItem {
 
     /**
      * Id atributu.
@@ -31,7 +31,7 @@ public class DescItemVO {
     /**
      * Obal.
      */
-    private VOPacket packet;
+    private Packet packet;
 
 
     /**
@@ -39,11 +39,11 @@ public class DescItemVO {
      */
     private DescItemChange change;
 
-    public DescItemVO() {
+    public DescItem() {
 
     }
 
-    public DescItemVO(final String type, final String spec) {
+    public DescItem(final String type, final String spec) {
         this.type = type;
         this.specCode = spec;
     }
@@ -88,11 +88,11 @@ public class DescItemVO {
         this.integerValue = value;
     }
 
-    public VOPacket getPacket() {
+    public Packet getPacket() {
         return packet;
     }
 
-    public void setPacket(final VOPacket packet) {
+    public void setPacket(final Packet packet) {
         this.packet = packet;
     }
 }

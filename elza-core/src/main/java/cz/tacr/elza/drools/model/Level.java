@@ -9,7 +9,7 @@ import java.util.List;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 1.12.2015
  */
-public class VOLevel {
+public class Level {
 
     /**
      * Id nodu.
@@ -18,12 +18,12 @@ public class VOLevel {
     /**
      * Seznam atributů.
      */
-    private List<DescItemVO> descItems;
+    private List<DescItem> descItems;
 
     /**
      * Rodičovský uzel.
      */
-    private VOLevel parent;
+    private Level parent;
 
     /**
      * Má uzel potomky?
@@ -35,16 +35,6 @@ public class VOLevel {
      */
     private int childCount = 0;
 
-    /**
-     * Uzel sourozence před.
-     */
-    private VOLevel siblingBefore;
-
-    /**
-     * Uzel sourozence po.
-     */
-    private VOLevel siblingAfter;
-
     public Integer getNodeId() {
         return nodeId;
     }
@@ -53,19 +43,19 @@ public class VOLevel {
         this.nodeId = nodeId;
     }
 
-    public List<DescItemVO> getDescItems() {
+    public List<DescItem> getDescItems() {
         return descItems;
     }
 
-    public void setDescItems(final List<DescItemVO> descItems) {
+    public void setDescItems(final List<DescItem> descItems) {
         this.descItems = descItems;
     }
 
-    public VOLevel getParent() {
+    public Level getParent() {
         return parent;
     }
 
-    public void setParent(final VOLevel parent) {
+    public void setParent(final Level parent) {
         this.parent = parent;
     }
 
@@ -86,19 +76,4 @@ public class VOLevel {
         this.hasChilds = childCount == 0 ? false : true;
     }
 
-    public VOLevel getSiblingBefore() {
-        return siblingBefore;
-    }
-
-    public void setSiblingBefore(final VOLevel siblingBefore) {
-        this.siblingBefore = siblingBefore;
-    }
-
-    public VOLevel getSiblingAfter() {
-        return siblingAfter;
-    }
-
-    public void setSiblingAfter(final VOLevel siblingAfter) {
-        this.siblingAfter = siblingAfter;
-    }
 }

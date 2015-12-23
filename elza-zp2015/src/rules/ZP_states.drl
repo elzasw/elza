@@ -1,6 +1,6 @@
 package ZP2015;
 
-import cz.tacr.elza.drools.model.DescItemVO;
+import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.DescItemChange;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
@@ -12,7 +12,7 @@ global cz.tacr.elza.api.vo.NodeTypeOperation nodeTypeOperation;
 
 rule "Pokud v SaveDescriptionItems změním atribut ZP2015_LEVEL_TYPE, tak dopady je Node+Parent+Descendants"
 when
-    descItem : DescItemVO(type == "ZP2015_LEVEL_TYPE", change == DescItemChange.UPDATE)
+    descItem : DescItem(type == "ZP2015_LEVEL_TYPE", change == DescItemChange.UPDATE)
 	eval( nodeTypeOperation.equals(NodeTypeOperation.SAVE_DESC_ITEM) )
 then
 	results.add(RelatedNodeDirection.NODE);
@@ -30,7 +30,7 @@ end
 
 rule "Pokud v SaveDescriptionItems provedu smazání hodnoty ZP2015_TITLE, tak dopady jsou Node+Descendants"
 when
-    descItem : DescItemVO(type == "ZP2015_LEVEL_TYPE", change == DescItemChange.DELETE)
+    descItem : DescItem(type == "ZP2015_LEVEL_TYPE", change == DescItemChange.DELETE)
 	eval( nodeTypeOperation.equals(NodeTypeOperation.SAVE_DESC_ITEM) )
 then
 	results.add(RelatedNodeDirection.NODE);

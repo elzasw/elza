@@ -6,7 +6,7 @@ package cz.tacr.elza.drools.model;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 08.12.2015
  */
-public class VOPacket {
+public class Packet {
 
     private String storageNumber;
     private boolean invalidPacket;

@@ -5,11 +5,14 @@ import java.util.ArrayList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import cz.tacr.elza.controller.XmlImportManager;
 import cz.tacr.elza.ui.window.PackagesWindow;
+import cz.tacr.elza.ui.window.XmlImportWindow;
 import ru.xpoft.vaadin.VaadinView;
 
 import com.vaadin.data.Validator;
@@ -51,6 +54,9 @@ public class FindingAidListView extends ElzaView {
     @Autowired
     private RuleManager ruleSetManager;
 
+    @Autowired
+    private XmlImportManager xmlImportManager;
+
     AxContainer<RulArrangementType> arTypeContainer;
     AxContainer<RulRuleSet> ruleSetContainer;
     AxTable<ArrFindingAid> tableFA;
@@ -81,7 +87,9 @@ public class FindingAidListView extends ElzaView {
                 new AxAction().caption("Packages").icon(FontAwesome.PLUS_CIRCLE)
                         .run(() -> showPackagesWindow()),
                 new AxAction().caption("Testovací data").icon(FontAwesome.DATABASE)
-                        .run(() -> navigate(TestingDataView.class)));
+                        .run(() -> navigate(TestingDataView.class)),
+                new AxAction().caption("Xml import").icon(FontAwesome.UPLOAD).run(() -> createXmlImportWindow())
+        );
 
         components(tableFA.getTable());
         refresh();
@@ -182,6 +190,20 @@ public class FindingAidListView extends ElzaView {
         form.addCombo("Typ výstupu", "arrangementTypeId", arTypeContainer, RulArrangementType::getName).required();
 
         return form;
+    }
+
+
+
+    XmlImportWindow createXmlImportWindow(){
+
+        Runnable refresh = new Runnable() {
+            @Override
+            public void run() {
+                refresh();
+            }
+        };
+
+        return new XmlImportWindow(ruleSetManager, xmlImportManager, refresh);
     }
 }
 
