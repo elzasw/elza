@@ -41,8 +41,8 @@ public class ScenarioOfNewLevelRules extends Rules {
 
         Level voLevel = scriptModelFactory.createLevelStructure(level, version);
         List<Level> levels = scriptModelFactory.convertLevelTreeToList(voLevel);
-
-        NewLevel newLevel = scriptModelFactory.createNewLevel(level, directionLevel, version);
+        
+        NewLevel newLevel = scriptModelFactory.createNewLevel(voLevel, level, directionLevel, version);
         levels.add(newLevel);
 
         Path path;

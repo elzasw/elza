@@ -1,8 +1,10 @@
 package cz.tacr.elza.drools.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,7 +37,6 @@ import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.model.NewLevel;
 import cz.tacr.elza.drools.model.Packet;
 import cz.tacr.elza.drools.model.NewLevelApproach;
-import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
@@ -46,6 +47,7 @@ import cz.tacr.elza.repository.LevelRepository;
  * Tovární třída pro objekty validačních skriptů.
  *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
+ * @author Petr Pytelka [<a href="mailto:petr.pytelka@lightcomp.cz">petr.pytelka@lightcomp.cz</a>]
  * @since 1.12.2015
  */
 @Component
@@ -54,8 +56,10 @@ public class ScriptModelFactory {
     @Autowired
     private LevelRepository levelRepository;
 
+    /*
     @Autowired
     private DataRepository arrDataRepository;
+     */
 
     @Autowired
     private DescItemFactory descItemFactory;
@@ -96,20 +100,45 @@ public class ScriptModelFactory {
         Integer childsCount = levelRepository.countChildsByParent(level.getNode(), version.getLockChange());
         mainLevel.setChildCount(childsCount);
 
-        assignDescItems(mainLevel, version, nodes);
+        assignDescItemsToRoot(mainLevel, version, nodes);
 
 
         return mainLevel;
     }
+    
+    /**
+     * Assisng description items to each node in the collection
+     *
+     * @param levels    collection of nodes to set description items
+     * @param version   version
+     * @param nodes		set of source nodes 
+     */
+    public void assignDescItems(final Collection<Level> levels, final ArrFindingAidVersion version,
+    		final Set<ArrNode> srcNodes)
+    {
+        Assert.notNull(levels);
+
+        List<ArrDescItem> descItems = descItemRepository.findByNodes(srcNodes, version.getLockChange());
+
+        Map<Integer, List<ArrDescItem>> descItemsMap =
+                ElzaTools.createGroupMap(descItems, p -> p.getNode().getNodeId());
+
+        for (Level level : levels) {
+            List<ArrDescItem> levelDescItems = descItemsMap.get(level.getNodeId());
+            level.setDescItems(createDescItems(levelDescItems));
+        }
+    }
 
     /**
-     * Pro kořenový level projde celou jeho strukturu a přiřadí na ni hodnoty atributů.
+     * Pro level projde celou jeho strukturu do kořene a přiřadí každému uzlu hodnoty atributů.
+     * 
+     * Upozornění: nodes musí obsahovat záznamy pro všechny node 
      *
      * @param mainLevel level, pro který je struktura sestavena
      * @param version   verze
      * @param nodes     seznam nodů, pro které se budou hledat atributy
      */
-    public void assignDescItems(final Level mainLevel, final ArrFindingAidVersion version, final Set<ArrNode> nodes) {
+    public void assignDescItemsToRoot(final Level mainLevel, final ArrFindingAidVersion version, final Set<ArrNode> nodes) {
         Assert.notNull(mainLevel);
 
 
@@ -159,7 +188,7 @@ public class ScriptModelFactory {
      */
     public List<DescItem> createDescItems(@Nullable final List<ArrDescItem> descItems) {
         if (descItems == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         Set<RulDescItemType> descItemTypesForPackets = descItemTypeRepository.findDescItemTypesForPackets();
@@ -210,7 +239,7 @@ public class ScriptModelFactory {
             nodes.add(parent.getNode());
         }
 
-        assignDescItems(mainLevel, version, nodes);
+        assignDescItemsToRoot(mainLevel, version, nodes);
 
         return mainLevel;
     }
@@ -320,78 +349,100 @@ public class ScriptModelFactory {
 
     /**
      * Vytvoří nově přidávaného levelu. Načte jeho sousedy.
-     *
+     * @param srcModelLevel 	source level for the event in the Drools model
      * @param level             referenční level
      * @param directionLevel    způsob přídání
      * @param version           verze AP
+     *
      * @return
      */
-    public NewLevel createNewLevel(final ArrLevel level,
-                                   final DirectionLevel directionLevel,
-                                   final ArrFindingAidVersion version) {
-
-        NewLevel newLevel = new NewLevel();
-        Set<ArrNode> nodes = new HashSet<>();
+    public NewLevel createNewLevel(Level srcModelLevel,
+                                   final ArrLevel level,
+                                   final DirectionLevel directionLevel, final ArrFindingAidVersion version) {
+    	
+    	// Parent level
+        Level parentLevel = null;
+        EventSource eventSource = null;
+        Level modelSiblingBefore = null;
+        Level modelSiblingAfter = null;
 
         List<ArrLevel> siblings;
         ArrLevel siblingBefore;
         ArrLevel siblingAfter;
-        Level voSiblingBefore;
-        Level voSiblingAfter;
         int indexOfMainLevel;
+        
+        Set<ArrNode> nodesToRead = new HashSet<>();
 
         siblings = levelRepository.findByParentNode(level.getNodeParent(), version.getLockChange());
 
+        // Prepare data for new level
         switch (directionLevel) {
             case BEFORE:
-                newLevel.setEventSource(EventSource.SIBLING_AFTER);
+    			if(srcModelLevel!=null) {
+    				parentLevel = srcModelLevel.getParent();
+    			}
+    			eventSource = EventSource.SIBLING_AFTER;                
 
                 indexOfMainLevel = siblings.indexOf(level);
                 if (indexOfMainLevel > 0) {
                     siblingBefore = siblings.get(indexOfMainLevel - 1);
-                    voSiblingBefore = createLevel(siblingBefore, version);
-                    nodes.add(siblingBefore.getNode());
-                    newLevel.setSiblingBefore(voSiblingBefore);
+                    modelSiblingBefore = createLevel(siblingBefore, version);
+                    nodesToRead.add(siblingBefore.getNode());                    
                 }
 
                 siblingAfter = level;
-                voSiblingAfter = createLevel(siblingAfter, version);
-                nodes.add(siblingAfter.getNode());
-                newLevel.setSiblingAfter(voSiblingAfter);
+                modelSiblingAfter = createLevel(siblingAfter, version);
+                nodesToRead.add(siblingAfter.getNode());
 
                 break;
             case AFTER:
-                newLevel.setEventSource(EventSource.SIBLING_BEFORE);
+    			if(srcModelLevel!=null) {
+    				parentLevel = srcModelLevel.getParent();
+    			}
+    			eventSource = EventSource.SIBLING_BEFORE;
 
                 siblingBefore = level;
-                voSiblingBefore = createLevel(siblingBefore, version);
-                nodes.add(siblingBefore.getNode());
-                newLevel.setSiblingBefore(voSiblingBefore);
+                modelSiblingBefore = createLevel(siblingBefore, version);
+                nodesToRead.add(siblingBefore.getNode());
 
                 indexOfMainLevel = siblings.indexOf(level);
                 if (indexOfMainLevel < siblings.size() - 1) {
                     siblingAfter = siblings.get(indexOfMainLevel + 1);
-                    voSiblingAfter = createLevel(siblingAfter, version);
-                    nodes.add(siblingAfter.getNode());
-                    newLevel.setSiblingAfter(voSiblingAfter);
+                    modelSiblingAfter = createLevel(siblingAfter, version);
+                    nodesToRead.add(siblingAfter.getNode());
                 }
 
                 break;
 
             case CHILD:
-                newLevel.setEventSource(EventSource.PARENT);
+            	parentLevel = srcModelLevel;
+            	eventSource = EventSource.PARENT;
 
                 List<ArrLevel> childs = levelRepository.findByParentNode(level.getNode(), version.getLockChange());
                 if (childs.size() > 0) {
                     siblingBefore = childs.get(childs.size() - 1);
-                    voSiblingBefore = createLevel(siblingBefore, version);
-                    nodes.add(siblingBefore.getNode());
-                    newLevel.setSiblingBefore(voSiblingBefore);
+                    modelSiblingBefore = createLevel(siblingBefore, version);
+                    nodesToRead.add(siblingBefore.getNode());
                 }
                 break;
         }
+        
+        // Prepare new level
+        NewLevel newLevel = new NewLevel();
+        newLevel.setParent(parentLevel);
+        newLevel.setEventSource(eventSource);
+        newLevel.setSiblingAfter(modelSiblingAfter);
+        newLevel.setSiblingBefore(modelSiblingBefore);
 
-        assignDescItems(newLevel, version, nodes);
+        // Read description items
+        List<Level> levels = new LinkedList<>();
+        if(modelSiblingAfter!=null) {
+        	levels.add(modelSiblingAfter);
+        }
+        if(modelSiblingBefore!=null) {
+        	levels.add(modelSiblingBefore);
+        }
+        assignDescItems(levels, version, nodesToRead);
 
         return newLevel;
     }
