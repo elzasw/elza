@@ -11,7 +11,7 @@ export function findPartyFetchIfNeeded(filterText) {
         console.log(state.partyRegion);
         if (state.partyRegion.filterText !== filterText) {
             return dispatch(findPartyFetch(filterText));
-        } else if (!state.partyRegion.fetched && !state.partyRegion.isFetching) {
+        } else if (!state.partyRegion.fetchedSearch && !state.partyRegion.isFetchingSearh) {
             return dispatch(findPartyFetch(filterText));
         }
     }
@@ -45,7 +45,7 @@ export function partyDetailFetchIfNeeded(selectedPartyID) {
         var state = getState();
         if (state.partyRegion.selectedPartyID !== selectedPartyID) {
             return dispatch(partyDetailFetch(selectedPartyID));
-        } else if (!state.partyRegion.fetched && !state.partyRegion.isFetching) {
+        } else if (!state.partyRegion.fetchedDetail && !state.partyRegion.isFetchingDetail) {
             return dispatch(partyDetailFetch(selectedPartyID));
         }
     }

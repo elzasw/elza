@@ -1,8 +1,10 @@
 import * as types from 'actions/constants/actionTypes';
 
 const initialState = {
-    isFetching: false,
-    fetched: false,
+    isFetchingSearch: false,
+    fetchedSearch: false,
+    isFetchingDetail: false,
+    fetchedDetail: false,
     selectedId: null,
     filterText: "",
     items: [],
@@ -14,23 +16,23 @@ export default function partyRegion(state = initialState, action) {
     switch (action.type) {
         case types.PARTY_FIND_PARTY_REQUEST:
             return Object.assign({}, state, {
-                isFetching: true,
+                isFetchingSearch: true,
             })
         case types.PARTY_FIND_PARTY_RECEIVE:
             return Object.assign({}, state, {
-                isFetching: false,
-                fetched: true,
+                isFetchingSearch: false,
+                fetchedSearch: true,
                 items: action.items,
                 filterText: action.filterText,
             })
         case types.PARTY_DETAIL_REQUEST:
             return Object.assign({}, state, {
-                isFetching: true,
+                isFetchingDetail: true,
             })
         case types.PARTY_DETAIL_RECEIVE:
             return Object.assign({}, state, {
-                isFetching: false,
-                fetched: true,
+                isFetchingDetail: false,
+                fetchedDetail: true,
                 selectedPartyData: action.selectedPartyData,
                 selectedPartyID: action.selectedPartyID,
             })

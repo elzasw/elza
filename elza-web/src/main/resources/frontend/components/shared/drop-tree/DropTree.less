@@ -1,0 +1,17 @@
+@import "~variables.less";
+@levelIndent : 20px;
+@maxLevel: 30;
+
+
+.dropDownTree .dropdown-menu{
+    overflow-y: scroll;
+    max-height:200px;
+
+    .mixin-loop (@i) when (@i > 0) {
+      .depth@{i} a{
+        padding-left: (@i*@levelIndent);
+      }
+      .mixin-loop(@i - 1);
+    }
+    .mixin-loop(@maxLevel);
+}
