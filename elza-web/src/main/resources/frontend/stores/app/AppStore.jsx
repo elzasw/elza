@@ -17,6 +17,7 @@ let reducer = combineReducers({
     arrRegion,
     faFileTree,
     record,
+    recordData,
     partyRegion,
     contextMenu,
     adminRegion
