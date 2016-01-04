@@ -5,15 +5,15 @@ import java.util.List;
 
 
 /**
- * Zastøešující tøída pro scénáøe
+ * ZastÅ™eÅ¡ujÃ­cÃ­ tÅ™Ã­da pro scÃ©nÃ¡Å™e
  *
- * @author Martin Šlapa
+ * @author Martin Å lapa
  * @since 23.12.2015
  */
 public class NewLevelApproaches {
 
     /**
-     * seznam scénáøù
+     * seznam scÃ©nÃ¡Å™Å¯
      */
     List<NewLevelApproach> newLevelApproaches = new LinkedList<>();
 
