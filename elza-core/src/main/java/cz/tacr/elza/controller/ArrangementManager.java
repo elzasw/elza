@@ -20,6 +20,8 @@ import javax.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -173,6 +175,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @Autowired
     private ArrangementService arrangementService;
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
     /**
      * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.
      *
@@ -211,7 +215,21 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         ArrChange change = arrangementService.createChange();
 
         ArrLevel rootNode = arrangementService.createLevel(change, null);
-        arrangementService.createVersion(change, findingAid, arrangementType, ruleSet, rootNode);
+        ArrFindingAidVersion version = arrangementService
+                .createVersion(change, findingAid, arrangementType, ruleSet, rootNode);
+
+        // vyhledání scénářů
+        List<ScenarioOfNewLevel> scenarioOfNewLevels = getDescriptionItemTypesForNewLevel(
+                rootNode.getNode().getNodeId(), DirectionLevel.ROOT, version.getFindingAidVersionId());
+
+        // pokud existuje právě jeden, použijeme ho pro založení nových hodnot atributů
+        if (scenarioOfNewLevels.size() == 1) {
+            ArrLevelWithExtraNode levelWithParentNode = new ArrLevelWithExtraNode();
+            levelWithParentNode.setDescItems(scenarioOfNewLevels.get(0).getDescItems());
+            createDescItemsAfterLevelCreate(levelWithParentNode, version, change, rootNode);
+        } else if (scenarioOfNewLevels.size() > 1) {
+            logger.error("Při založení AP bylo nalezeno více scénařů (" + scenarioOfNewLevels.size() + ")");
+        }
 
         return findingAid;
     }
