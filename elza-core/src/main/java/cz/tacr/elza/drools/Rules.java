@@ -83,10 +83,10 @@ public abstract class Rules {
      * @return nová session
      */
     public synchronized StatelessKieSession createNewStatelessKieSession(final RulRuleSet rulRuleSet, final Path path) throws Exception {
-        if (kbase == null) {
-            ruleFile = path;
-            reloadRules();
-        }
+    	// Reload rules each time
+        ruleFile = path;
+        reloadRules();
+
         return kbase.newStatelessKieSession();
     }
 

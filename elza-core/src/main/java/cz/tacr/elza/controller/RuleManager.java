@@ -191,14 +191,19 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
             @PathVariable(value = "faVersionId") Integer faVersionId,
             @PathVariable(value = "nodeId") Integer nodeId,
             @RequestBody Set<String> strategies) {
-        Assert.notNull(strategies);
-        List<RulDescItemType> itemTypeList = descItemTypeRepository.findAll();
-
+    	
+    	// Pravdepodobne vhodne zapouzdrit do jedne funkce
         ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
-
         if (version == null) {
             throw new IllegalArgumentException("Verze archivni pomucky neexistuje");
         }
+        ArrNode node = nodeRepository.findOne(nodeId);
+        ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootLevel().getNode(),
+                version.getLockChange());
+    	
+    	
+        Assert.notNull(strategies);
+        List<RulDescItemType> itemTypeList = descItemTypeRepository.findAll();
 
         List<RulDescItemTypeExt> rulDescItemTypeExtList = createExt(itemTypeList);
 
@@ -232,7 +237,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
             }
         }
 
-        return rulesExecutor.executeDescItemTypesRules(rulDescItemTypeExtList, version, strategies);
+        return rulesExecutor.executeDescItemTypesRules(level, rulDescItemTypeExtList, version, strategies);
     }
 
     @Override

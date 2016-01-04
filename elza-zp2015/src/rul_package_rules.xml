@@ -11,7 +11,7 @@
         <rule-type>CONFORMITY_IMPACT</rule-type>
         <priority>1</priority>
     </package-rule>
-    <package-rule filename="ZP_types.drl" rule-set="ZP2015">
+    <package-rule filename="ZP2015_AvailableItems.drl" rule-set="ZP2015">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>1</priority>
     </package-rule>
