@@ -389,6 +389,13 @@ public class ScriptModelFactory {
                     newLevel.setSiblingBefore(voSiblingBefore);
                 }
                 break;
+
+            case ROOT:
+                // pokud je vytvářena AP, tak se root level vytváří automaticky
+                break;
+
+            default:
+                throw new IllegalStateException("Nedefinovaný stav DirectionLevel");
         }
 
         assignDescItems(newLevel, version, nodes);

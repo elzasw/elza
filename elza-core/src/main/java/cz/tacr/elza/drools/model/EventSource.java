@@ -1,9 +1,9 @@
 package cz.tacr.elza.drools.model;
 
 /**
- * Urèuje u novì vytváøeného levelu kdo ho vytváøí.
+ * UrÄuje u novÄ› vytvÃ¡Å™enÃ©ho levelu kdo ho vytvÃ¡Å™Ã­.
  *
- * @author Martin Šlapa
+ * @author Martin Å lapa
  * @since 23.12.2015
  */
 public enum EventSource {
