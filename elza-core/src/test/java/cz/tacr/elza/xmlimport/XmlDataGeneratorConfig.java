@@ -30,10 +30,12 @@ public class XmlDataGeneratorConfig {
 
     private int partyNameComplementsCount;
 
+    private int packetCount;
+
     public XmlDataGeneratorConfig(final int recordCount, final int variantRecordCount, final int partyCount,
             final int childrenCount, final int treeDepth, final int descItemsCount, final boolean valid,
             final int eventCount, final int partyGroupIdCount, final int partyTimeRangeCount,
-            final int partyNameComplementsCount) {
+            final int partyNameComplementsCount, final int packetCount) {
         this.recordCount = recordCount;
         this.variantRecordCount = variantRecordCount;
         this.partyCount = partyCount;
@@ -45,6 +47,7 @@ public class XmlDataGeneratorConfig {
         this.partyGroupIdCount = partyGroupIdCount;
         this.partyTimeRangeCount = partyTimeRangeCount;
         this.partyNameComplementsCount = partyNameComplementsCount;
+        this.packetCount = packetCount;
     }
 
     public int getRecordCount() {
@@ -133,5 +136,9 @@ public class XmlDataGeneratorConfig {
 
     public void setPartyNameComplementsCount(int partyNameComplementsCount) {
         this.partyNameComplementsCount = partyNameComplementsCount;
+    }
+
+    public int getPacketCount() {
+        return packetCount;
     }
 }

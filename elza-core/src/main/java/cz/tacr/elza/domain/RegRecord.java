@@ -78,6 +78,7 @@ public class RegRecord extends AbstractVersionableEntity
     public static final String RECORD = "record";
     public static final String CHARACTERISTICS = "characteristics";
     public static final String NOTE = "note";
+    public static final String LOCAL = "local";
 
 
     @Override

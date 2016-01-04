@@ -5,7 +5,7 @@ import * as types from 'actions/constants/actionTypes';
 export function nodeFormFetchIfNeeded(nodeId, versionId) {
     return (dispatch, getState) => {
         var state = getState();
-        var nodeForm = state.arrangementRegion.nodeForm;
+        var nodeForm = state.arrRegion.nodeForm;
 
         if (nodeForm.nodeId !== nodeId || nodeForm.versionId !== versionId) {
             return dispatch(nodeFormFetch(nodeId, versionId));
@@ -28,6 +28,7 @@ export function nodeFormReceive(nodeId, versionId, json) {
         type: types.FA_NODE_FORM_RECEIVE,
         nodeId,
         versionId,
+        node: json.node,
         parentNodes: json.parents,
         childNodes: json.children,
         receivedAt: Date.now()

@@ -2,6 +2,7 @@ package cz.tacr.elza.xmlimport.v1.vo.arrangement;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -17,7 +18,7 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
  * @since 27. 10. 2015
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "findinig-aid", namespace = NamespaceInfo.NAMESPACE)
+@XmlType(name = "finding-aid", namespace = NamespaceInfo.NAMESPACE)
 public class FindingAid {
 
     /** Název archivní pomůcky. */
@@ -27,6 +28,14 @@ public class FindingAid {
     /** Kořenový uzel. */
     @XmlElement(name = "root-level", required = true)
     private Level rootLevel;
+
+    /** Kód typu výstupu. */
+    @XmlAttribute(name = "arr-type-code")
+    private String ArrangementTypeCode;
+
+    /** Kód pravidel. */
+    @XmlAttribute(name = "rule-set-code")
+    private String ruleSetCode;
 
     public String getName() {
         return name;
@@ -42,6 +51,22 @@ public class FindingAid {
 
     public void setRootLevel(Level rootLevel) {
         this.rootLevel = rootLevel;
+    }
+
+    public String getArrangementTypeCode() {
+        return ArrangementTypeCode;
+    }
+
+    public void setArrangementTypeCode(String arrangementTypeCode) {
+        ArrangementTypeCode = arrangementTypeCode;
+    }
+
+    public String getRuleSetCode() {
+        return ruleSetCode;
+    }
+
+    public void setRuleSetCode(String ruleSetCode) {
+        this.ruleSetCode = ruleSetCode;
     }
 
     @Override

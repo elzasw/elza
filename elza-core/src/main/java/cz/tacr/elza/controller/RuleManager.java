@@ -1,7 +1,9 @@
 package cz.tacr.elza.controller;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -15,10 +17,12 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
+import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
@@ -437,6 +441,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
         findingAidVersionConformityInfoRepository.save(conformityInfo);
     }
 
+    @RequestMapping(value = "/getPackages", method = RequestMethod.GET)
     @Override
     @Transactional
     public List<RulPackage> getPackages() {
@@ -456,6 +461,29 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     public void deletePackage(@PathVariable(value = "code") final String code) {
         Assert.notNull(code);
         packageService.deletePackage(code);
+    }
+
+    @RequestMapping(value = "/exportPackage/{code}", method = RequestMethod.GET)
+    public void exportPackageRest(@PathVariable(value = "code") final String code,
+                                  HttpServletResponse response) {
+        Assert.notNull(code);
+        try {
+            File file = exportPackage(code);
+            response.setContentType("application/zip");
+            response.setHeader("Content-Disposition", "inline; filename=" + code + "-package.zip");
+            response.setContentLength((int) file.length());
+            InputStream is = new FileInputStream(file);
+            IOUtils.copy(is, response.getOutputStream());
+            response.flushBuffer();
+        } catch (IOException ex) {
+            throw new RuntimeException("Problem pri zapisu souboru", ex);
+        }
+    }
+
+    @Override
+    public File exportPackage(final String code) {
+        Assert.notNull(code);
+        return packageService.exportPackage(code);
     }
 
     @RequestMapping(value="/importPackage", method=RequestMethod.POST)

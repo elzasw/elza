@@ -5,6 +5,7 @@ const initialState = {
     versionId: null,
     isFetching: false,
     fetched: false,
+    node: null,
     parentNodes: [],
     childNodes: [],
 }
@@ -14,6 +15,7 @@ export default function nodeForm(state = initialState, action) {
         case types.FA_NODE_FORM_REQUEST:
             return Object.assign({}, state, {
                 nodeId: action.nodeId,
+                node: null,
                 versionId: action.versionId,
                 isFetching: true,
             })
@@ -23,6 +25,7 @@ export default function nodeForm(state = initialState, action) {
                 versionId: action.versionId,
                 isFetching: false,
                 fetched: true,
+                node: action.node,
                 parentNodes: action.parentNodes,
                 childNodes: action.childNodes,
                 lastUpdated: action.receivedAt

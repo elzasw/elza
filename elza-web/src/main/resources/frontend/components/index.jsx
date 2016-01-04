@@ -15,6 +15,8 @@ exports.Tabs = require('./shared/tabs/Tabs');
 exports.Search = require('./shared/search/Search');
 exports.DropTree = require('./shared/drop-tree/DropTree');
 exports.Loading = require('./shared/loading/Loading');
+exports.VirtualList = require('./shared/virtual-list/VirtualList');
+exports.ContextMenu = require('./shared/context-menu/ContextMenu');
 
 exports.ModalDialog = require('./shared/dialog/ModalDialog');
 
@@ -25,9 +27,11 @@ exports.FaFileTree = require('./arr/FaFileTree');
 exports.NodePanel = require('./arr/NodePanel');
 exports.NodeTabs = require('./arr/NodeTabs');
 exports.FaTreeTabs = require('./arr/FaTreeTabs');
-exports.FaTree = require('./arr/FaTree');
+exports.FaTreeLazy = require('./arr/FaTreeLazy');
 
 exports.PartySearch = require('./party/PartySearch');
 exports.PartyDetail = require('./party/PartyDetail');
 
+exports.AdminPackagesList = require('./admin/AdminPackagesList');
+exports.AdminPackagesUpload = require('./admin/AdminPackagesUpload');
 

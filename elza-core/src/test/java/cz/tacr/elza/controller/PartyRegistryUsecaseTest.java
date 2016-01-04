@@ -1,8 +1,23 @@
 package cz.tacr.elza.controller;
 
+import static com.jayway.restassured.RestAssured.given;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.jayway.restassured.internal.RestAssuredResponseImpl;
 import com.jayway.restassured.response.Response;
+
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
+import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyType;
@@ -12,16 +27,6 @@ import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.vo.ParPartyWithCount;
 import cz.tacr.elza.domain.vo.RegRecordWithCount;
-import org.apache.commons.lang.StringUtils;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Arrays;
-import java.util.List;
-
-import static com.jayway.restassured.RestAssured.given;
 
 /**
  * Test kompletní funkčnosti rejstříku a osob.
@@ -96,9 +101,16 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         RegRegisterType registerTypeArtWork = getRegisterTypeArtWork();
 
         List<RegRecord> hesla = findRecords("heslo", registerTypeArtWork);
+        List<RegRecordVO> heslaVO = findRecordsRest("heslo", registerTypeArtWork);
+
         long heslaCount = findRecordsCount("heslo", registerTypeArtWork);
+        long heslaCountRest = findRecordsCountRest("heslo", registerTypeArtWork);
+        Assert.assertEquals(heslaCount, heslaCountRest);
         Assert.assertEquals("Nenalezeny hesla. ", 3, hesla.size());
         Assert.assertEquals("Neodpovídá počet. ", 3, heslaCount);
+        Assert.assertEquals("Jine hledani pres rest", hesla.size(), heslaVO.size());
+
+
 
         hesla = findRecords("h1", registerTypeArtWork);
         heslaCount = findRecordsCount("h1", registerTypeArtWork);
@@ -185,6 +197,9 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
         heslo1.setCharacteristics("Heslo H111");
         updateRecord(heslo1);
         heslo1 = getRecord(heslo1.getRecordId());
+        RegRecordVO heslo1Vo = getRecordRest(heslo1.getRecordId());
+        Assert.assertEquals(heslo1.getRecordId(), heslo1Vo.getRecordId());
+
         Assert.assertEquals("Update neproveden.", "Heslo H111", heslo1.getCharacteristics());
 
         // variantní heslo, jeho heslo
@@ -387,16 +402,44 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
      * @return                  nalezená hesla
      */
     private List<RegRecord> findRecords(final String searchString, final RegRegisterType registerType) {
+        Set<Integer> typeIds = null;
+        if(registerType != null){
+            typeIds = new HashSet<>();
+            typeIds.add(registerType.getRegisterTypeId());
+        }
+
+        return registryService.findRegRecordByTextAndType(searchString, typeIds, null, 0, 10);
+    }
+
+    private List<RegRecordVO> findRecordsRest(final String searchString, final RegRegisterType registerType) {
         Response response = get((spec) -> spec
                         .parameter(SEARCH_ATT, searchString)
                         .parameter(FROM_ATT, 0)
                         .parameter(COUNT_ATT, 10)
                         .parameter(REGISTER_TYPE_ID_ATT, registerType.getRegisterTypeId())
-                , FIND_RECORD_URL
+                , FIND_RECORD_URL_V2
         );
 
-        RegRecordWithCount recordWithCount = response.getBody().as(RegRecordWithCount.class);
+        cz.tacr.elza.controller.vo.RegRecordWithCount recordWithCount = response.getBody()
+                .as(cz.tacr.elza.controller.vo.RegRecordWithCount.class);
         return recordWithCount.getRecordList();
+    }
+
+    /**
+     * Najde počet hesel dle řetězce a typu.
+     *
+     * @param searchString hledaný text
+     * @param registerType typ hesla
+     * @return počet nalezených
+     */
+    private long findRecordsCount(final String searchString, final RegRegisterType registerType) {
+        Set<Integer> typeIds = null;
+        if (registerType != null) {
+            typeIds = new HashSet<>();
+            typeIds.add(registerType.getRegisterTypeId());
+        }
+
+        return registryService.findRegRecordByTextAndTypeCount(searchString, typeIds, null);
     }
 
     /**
@@ -406,13 +449,13 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
      * @param registerType      typ hesla
      * @return                  počet nalezených
      */
-    private long findRecordsCount(final String searchString, final RegRegisterType registerType) {
+    private long findRecordsCountRest(final String searchString, final RegRegisterType registerType) {
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .parameter(SEARCH_ATT, searchString)
                 .parameter(FROM_ATT, 0)
                 .parameter(COUNT_ATT, 1)
                 .parameter(REGISTER_TYPE_ID_ATT, registerType.getRegisterTypeId())
-                .get(FIND_RECORD_URL);
+                .get(FIND_RECORD_URL_V2);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
@@ -612,13 +655,19 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
      * @return      entita
      */
     private RegRecord getRecord(final Integer recordId) {
+
+        return recordRepository.getOne(recordId);
+    }
+
+    private RegRecordVO getRecordRest(final Integer recordId) {
         Response response = get((spec) -> spec
                         .parameter(RECORD_ID_ATT, recordId),
-                GET_RECORD_URL
+                GET_RECORD_URL_V2
         );
 
-        return response.getBody().as(RegRecord.class);
+        return response.getBody().as(RegRecordVO.class);
     }
+
 
     /**
      * Smazání libovolného záznamu dle id.

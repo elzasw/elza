@@ -7,8 +7,6 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import javax.transaction.Transactional;
@@ -24,7 +22,6 @@ import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
@@ -34,6 +31,7 @@ import com.jayway.restassured.config.RestAssuredConfig;
 import com.jayway.restassured.response.Header;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
+
 import cz.tacr.elza.ElzaCoreTest;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -49,10 +47,12 @@ import cz.tacr.elza.domain.ArrNodeConformityErrors;
 import cz.tacr.elza.domain.ArrNodeConformityInfo;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.ArrPacketType;
+import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParRelationRoleType;
+import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
@@ -63,6 +63,7 @@ import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulFaView;
 import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.vo.ArrCalendarTypes;
 import cz.tacr.elza.domain.vo.ArrDescItemSavePack;
@@ -72,6 +73,7 @@ import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithDescItems;
 import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithLevelPack;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataStringRepository;
@@ -98,32 +100,18 @@ import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
+import cz.tacr.elza.repository.PartyTypeRelationRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.RelationRoleTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-
-import javax.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Function;
-
-import static com.jayway.restassured.RestAssured.given;
+import cz.tacr.elza.service.RegistryService;
+import cz.tacr.elza.service.ArrangementService;
 
 /**
  * Abstraktní předek pro testy. Nastavuje REST prostředí.
@@ -145,7 +133,9 @@ public abstract class AbstractRestTest {
     protected static final String ARRANGEMENT_MANAGER_URL = "/api/arrangementManager";
     protected static final String RULE_MANAGER_URL = "/api/ruleSetManager";
     protected static final String REGISTRY_MANAGER_URL = "/api/registryManager";
+    protected static final String REGISTRY_MANAGER_URL_V2 = "/api/registryManagerV2";
     protected static final String PARTY_MANAGER_URL = "/api/partyManager";
+    protected static final String PARTY_MANAGER_URL_V2 = "/api/partyManagerV2";
     protected static final String BULK_ACTION_MANAGER_URL = "/api/bulkActionManager";
 
     protected static final String TEST_CODE = "ZP";
@@ -180,11 +170,14 @@ public abstract class AbstractRestTest {
     protected static final String CREATE_RECORD_URL = REGISTRY_MANAGER_URL + "/createRecord";
     protected static final String CREATE_VARIANT_RECORD_URL = REGISTRY_MANAGER_URL + "/createVariantRecord";
     protected static final String FIND_RECORD_URL = REGISTRY_MANAGER_URL + "/findRecord";
+    protected static final String FIND_RECORD_URL_V2 = REGISTRY_MANAGER_URL_V2 + "/findRecord";
     protected static final String UPDATE_RECORD_URL = REGISTRY_MANAGER_URL + "/updateRecord";
     protected static final String DELETE_RECORD_URL = REGISTRY_MANAGER_URL + "/deleteRecord";
     protected static final String UPDATE_VARIANT_RECORD_URL = REGISTRY_MANAGER_URL + "/updateVariantRecord";
     protected static final String DELETE_VARIANT_RECORD_URL = REGISTRY_MANAGER_URL + "/deleteVariantRecord";
     protected static final String GET_RECORD_URL = REGISTRY_MANAGER_URL + "/getRecord";
+    protected static final String GET_RECORD_URL_V2 = REGISTRY_MANAGER_URL_V2 + "/getRecord";
+
 
     protected static final String RECORD_ID_ATT = "recordId";
     protected static final String VARIANT_RECORD_ID_ATT = "variantRecordId";
@@ -197,6 +190,7 @@ public abstract class AbstractRestTest {
 
     // PARTY MANAGER CONSTANTS
     protected static final String GET_PARTY_TYPES = PARTY_MANAGER_URL + "/getPartyTypes";
+    protected static final String GET_PARTY_TYPES_V2 = PARTY_MANAGER_URL_V2 + "/getPartyTypes";
     protected static final String INSERT_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/insertParty";
     protected static final String FIND_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/findParty";
     protected static final String UPDATE_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/updateParty";
@@ -224,6 +218,7 @@ public abstract class AbstractRestTest {
     protected static final String FIND_SUB_LEVELS_EXT_URL = ARRANGEMENT_MANAGER_URL + "/findSubLevelsExt";
     protected static final String FIND_SUB_LEVELS_URL = ARRANGEMENT_MANAGER_URL + "/findSubLevels";
     protected static final String GET_HISTORY_FOR_NODE = ARRANGEMENT_MANAGER_URL + "/getHistoryForNode/{findingAidId}/{nodeId}";
+    protected static final String GET_PACKET_TYPES = ARRANGEMENT_MANAGER_URL + "/getPacketTypes";
 
     protected static final String ADD_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/addLevel";
     protected static final String ADD_LEVEL_BEFORE_URL = ARRANGEMENT_MANAGER_URL + "/addLevelBefore";
@@ -326,7 +321,7 @@ public abstract class AbstractRestTest {
     @Autowired
     private DataRepository arrDataRepository;
     @Autowired
-    private RegisterTypeRepository registerTypeRepository;
+    protected RegisterTypeRepository registerTypeRepository;
     @Autowired
     private ExternalSourceRepository externalSourceRepository;
     @Autowired
@@ -334,7 +329,7 @@ public abstract class AbstractRestTest {
     @Autowired
     private VariantRecordRepository variantRecordRepository;
     @Autowired
-    private RegRecordRepository recordRepository;
+    protected RegRecordRepository recordRepository;
     @Autowired
     private PartyTypeRepository partyTypeRepository;
     @Autowired
@@ -366,7 +361,34 @@ public abstract class AbstractRestTest {
     @Autowired
     protected RuleManager ruleManager;
 
+    @Autowired
+    private ArrangementService arrangementService;
+
     protected RulPackage rulPackage;
+
+    //servisní třídy
+    @Autowired
+    protected RegistryService registryService;
+
+
+    @Autowired
+    protected PartyTypeRelationRepository partyTypeRelationRepository;
+
+    @Autowired
+    protected RelationTypeRepository relationTypeRepository;
+
+    @Autowired
+    protected RelationRoleTypeRepository relationRoleTypeRepository;
+
+    @Autowired
+    protected RelationTypeRoleTypeRepository relationTypeRoleTypeRepository;
+
+    @Autowired
+    protected PartyTypeComplementTypeRepository partyTypeComplementTypeRepository;
+
+    @Autowired
+    protected ComplementTypeRepository complementTypeRepository;
+
 
     @Before
     public void setUp() {
@@ -490,7 +512,7 @@ public abstract class AbstractRestTest {
             level.setNodeParent(parent.getNode());
         }
         level.setCreateChange(change);
-        level.setNode(arrangementManager.createNode());
+        level.setNode(arrangementService.createNode());
         return levelRepository.save(level);
     }
 
@@ -691,8 +713,10 @@ public abstract class AbstractRestTest {
         return partyTypeRepository.findOne(2);
     }
 
-    protected ArrPacketType findPacketType() {
-        return packetTypeRepository.findOne(1);
+    protected RulPacketType findPacketType() {
+        Response response = get(GET_PACKET_TYPES);
+        List<RulPacketType> list = Arrays.asList(response.getBody().as(RulPacketType[].class));
+        return list.get(0);
     }
 
     protected ParParty createParParty() {
@@ -701,6 +725,37 @@ public abstract class AbstractRestTest {
         final ParPartyName partyName = new ParPartyName();
         return createParParty(partyType, record, partyName);
     }
+
+    protected ParPartyType createPartyType(final String code) {
+        ParPartyType parPartyType = new ParPartyType();
+        parPartyType.setCode(code);
+        parPartyType.setName(code);
+        parPartyType.setDescription(code);
+        return partyTypeRepository.save(parPartyType);
+    }
+
+    protected ParRelationType createRelationType(final String code) {
+        ParRelationType relationType = new ParRelationType();
+        relationType.setCode(code);
+        relationType.setName(code);
+        return relationTypeRepository.save(relationType);
+    }
+
+    protected ParRelationRoleType createRelationRoleType(final String code){
+        ParRelationRoleType relationRoleType = new ParRelationRoleType();
+        relationRoleType.setCode(code);
+        relationRoleType.setName(code);
+        return relationRoleTypeRepository.save(relationRoleType);
+    }
+
+    protected ParComplementType createComplementType(final String code){
+        ParComplementType complementType = new ParComplementType();
+        complementType.setCode(code);
+        complementType.setName(code);
+        complementType.setViewOrder(0);
+        return complementTypeRepository.save(complementType);
+    }
+
 
     protected ParParty createParParty(final ParPartyType partySubtype, final RegRecord record, final ParPartyName partyName) {
         ParParty party = new ParParty();
@@ -1023,7 +1078,7 @@ public abstract class AbstractRestTest {
      * @return obal
      */
     protected ArrPacket restCreatePacket(ArrFindingAid findingAid) {
-        final ArrPacketType partySubtype = findPacketType();
+        final RulPacketType partySubtype = findPacketType();
 
         ArrPacket requestBody = new ArrPacket();
         requestBody.setPacketType(partySubtype);

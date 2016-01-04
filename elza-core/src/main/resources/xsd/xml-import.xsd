@@ -25,6 +25,13 @@
           </xs:sequence>
         </xs:complexType>
       </xs:element>
+      <xs:element minOccurs="0" name="packet-list">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="packet" type="tns:packet"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
     </xs:sequence>
   </xs:complexType>
 
@@ -33,6 +40,8 @@
       <xs:element name="name" type="xs:string"/>
       <xs:element name="root-level" type="tns:level"/>
     </xs:sequence>
+    <xs:attribute name="arr-type-code" type="xs:string"/>
+    <xs:attribute name="rule-set-code" type="xs:string"/>
   </xs:complexType>
 
   <xs:complexType name="level">
@@ -60,6 +69,7 @@
               <xs:element name="desc-item-text" type="tns:desc-item-text"/>
               <xs:element name="desc-item-unit-date" type="tns:desc-item-unit-date"/>
               <xs:element name="desc-item-unit-id" type="tns:desc-item-unit-id"/>
+              <xs:element name="desc-item-packed-ref" type="tns:desc-item-packet-ref"/>
             </xs:choice>
           </xs:sequence>
         </xs:complexType>
@@ -89,7 +99,7 @@
       <xs:element name="position" type="xs:int"/>
     </xs:sequence>
     <xs:attribute name="desc-item-type-code" type="xs:string" use="required"/>
-    <xs:attribute name="desc-item-spec-code" type="xs:string" use="required"/>
+    <xs:attribute name="desc-item-spec-code" type="xs:string"/>
   </xs:complexType>
 
   <xs:complexType name="desc-item-decimal">
@@ -384,9 +394,9 @@
     <xs:complexContent>
       <xs:extension base="tns:abstract-desc-item">
         <xs:sequence>
-          <xs:element minOccurs="0" name="value-from" type="xs:string"/>
+          <xs:element minOccurs="0" name="value-from" type="xs:dateTime"/>
           <xs:element minOccurs="0" name="value-from-estimated" type="xs:boolean"/>
-          <xs:element minOccurs="0" name="value-to" type="xs:string"/>
+          <xs:element minOccurs="0" name="value-to" type="xs:dateTime"/>
           <xs:element minOccurs="0" name="value-to-estimated" type="xs:boolean"/>
           <xs:element minOccurs="0" name="format" type="xs:string"/>
         </xs:sequence>
@@ -403,5 +413,21 @@
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="desc-item-packet-ref">
+    <xs:complexContent>
+      <xs:extension base="tns:abstract-desc-item">
+        <xs:sequence/>
+        <xs:attribute name="packet-id" type="xs:IDREF" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="packet">
+    <xs:sequence/>
+    <xs:attribute name="packet-type-code" type="xs:string"/>
+    <xs:attribute name="storage-number" type="xs:ID"/>
+    <xs:attribute name="invalid" type="xs:boolean" use="required"/>
   </xs:complexType>
 </xs:schema>

@@ -16,6 +16,19 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
     }
 
     render() {
+
+        var section = null;
+
+        if (this.props.admin) {
+
+            section = (
+                    <RibbonGroup className="small">
+                        <LinkContainer to="/admin/packages"><Button><Glyphicon glyph="cog" /><div><span className="btnText">{i18n('ribbon.action.admin.packages')}</span></div></Button></LinkContainer>
+                    </RibbonGroup>
+            );
+
+        }
+
         return (
             <RibbonMenu opened onShowHide={this.handleRibbonShowHide}>
                 <RibbonGroup className="large">
@@ -23,6 +36,7 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
                     <LinkContainer to="/arr"><Button><Glyphicon glyph="th-list" /><div><span className="btnText">{i18n('ribbon.action.arr')}</span></div></Button></LinkContainer>
                     <LinkContainer to="/registry"><Button><Glyphicon glyph="th-list" /><div><span className="btnText">{i18n('ribbon.action.registry')}</span></div></Button></LinkContainer>
                     <LinkContainer to="/party"><Button><Glyphicon glyph="th-list" /><div><span className="btnText">{i18n('ribbon.action.party')}</span></div></Button></LinkContainer>
+                    <LinkContainer to="/admin"><Button><Glyphicon glyph="cog" /><div><span className="btnText">{i18n('ribbon.action.admin')}</span></div></Button></LinkContainer>
 
                     <DropdownButton title={<span className="dropContent"><Glyphicon glyph='film' /><div><span className="btnText">{i18n('ribbon.action.findingAid')}</span></div></span>}>
                       <MenuItem eventKey="1">Action</MenuItem>
@@ -31,37 +45,20 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
                     </DropdownButton>
                 </RibbonGroup>
 
-                <RibbonSplit />
-
-                <RibbonGroup className="small">
-                    <DropdownButton title={<span className="dropContent"><Glyphicon glyph='film' /><div><span className="btnText">{i18n('ribbon.action.findingAid')}</span></div></span>}>
-                        <MenuItem eventKey="1">Action</MenuItem>
-                        <MenuItem eventKey="2">Another action</MenuItem>
-                        <MenuItem eventKey="3">Active Item</MenuItem>
-                      </DropdownButton>
-                    <IndexLinkContainer to="/"><Button><Glyphicon glyph="film" /><div><span className="btnText">{i18n('ribbon.action.findingAid')}</span></div></Button></IndexLinkContainer>
-                    <LinkContainer to="/party"><Button><Glyphicon glyph="user" /><div><span className="btnText">{i18n('ribbon.action.party')}</span></div></Button></LinkContainer>
-                </RibbonGroup>
 
                 <RibbonSplit />
 
-                <RibbonGroup className="small">
-                    <DropdownButton title={<span className="dropContent"><Glyphicon glyph='film' /><div><span className="btnText">{i18n('ribbon.action.findingAid')}</span></div></span>}>
-                      <MenuItem eventKey="1">Action</MenuItem>
-                      <MenuItem eventKey="2">Another action</MenuItem>
-                      <MenuItem eventKey="3">Active Item</MenuItem>
-                    </DropdownButton>
-                    <LinkContainer to="/registry"><Button><Glyphicon glyph="th-list" /><div><span className="btnText">{i18n('ribbon.action.record')}</span></div></Button></LinkContainer>
-                </RibbonGroup>
+                {section}
+
             </RibbonMenu>
         )
     }
 }
 
 function mapStateToProps(state) {
-    const {arrangementRegion, faFileTree} = state
+    const {arrRegion, faFileTree} = state
     return {
-        arrangementRegion,
+        arrRegion,
         faFileTree
     }
 }

@@ -14,7 +14,7 @@ import javax.persistence.criteria.Root;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.ArrPacketType;
+import cz.tacr.elza.domain.RulPacketType;
 
 /**
  * Implementace repository pro obaly.
@@ -84,7 +84,7 @@ public class PacketRepositoryImpl implements PacketRepositoryCustom {
         }
 
         if (packetTypeId != null) {
-            Predicate conditionType = builder.equal(partyType.get(ArrPacketType.PACKET_TYPE_ID), packetTypeId);
+            Predicate conditionType = builder.equal(partyType.get(RulPacketType.PACKET_TYPE_ID), packetTypeId);
             condition = builder.and(condition, conditionType);
         }
 

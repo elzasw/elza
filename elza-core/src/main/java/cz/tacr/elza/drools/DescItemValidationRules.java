@@ -16,7 +16,7 @@ import cz.tacr.elza.domain.RulPackageRules;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.vo.DataValidationResult;
-import cz.tacr.elza.drools.model.VOLevel;
+import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.service.ScriptModelFactory;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
@@ -54,7 +54,7 @@ public class DescItemValidationRules extends Rules {
             throws Exception {
 
         List<DataValidationResult> result = new LinkedList<>();
-        VOLevel voLevel = scriptModelFactory.createLevelStructure(level, version);
+        Level voLevel = scriptModelFactory.createLevelStructureWithChilds(level, version);
 
         Path path;
         List<RulPackageRules> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(

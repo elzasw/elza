@@ -32,27 +32,20 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     render() {
-        var fas = this.props.arrangementRegion.fas;
-        var activeFa = this.props.arrangementRegion.activeIndex != null ? this.props.arrangementRegion.fas[this.props.arrangementRegion.activeIndex] : null;
+        var fas = this.props.arrRegion.fas;
+        var activeFa = this.props.arrRegion.activeIndex != null ? this.props.arrRegion.fas[this.props.arrRegion.activeIndex] : null;
         var leftPanel = (
             <FaTreeTabs
                 fas={fas}
                 activeFa={activeFa}
-                faTreeData={this.props.arrangementRegion.faTreeData}
             />
         )
 
         var centerPanel;
         if (activeFa && activeFa.nodes) {
             var nodes = activeFa.nodes.nodes;
-            var activeNode = activeFa.nodes.activeIndex != null ? nodes[activeFa.nodes.activeIndex] : null;
             centerPanel = (
-                <div>
-                    <NodeTabs nodes={nodes} activeNode={activeNode} nodeForm={this.props.arrangementRegion.nodeForm}/>
-                    {false && <ModalDialog title="Upraveni osoby">
-                        nnn
-                    </ModalDialog>}
-                </div>
+                <NodeTabs nodes={nodes} activeIndex={activeFa.nodes.activeIndex} nodeForm={this.props.arrRegion.nodeForm}/>
             )
         }
 
@@ -82,9 +75,9 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {arrangementRegion, faFileTree} = state
+    const {arrRegion, faFileTree} = state
     return {
-        arrangementRegion,
+        arrRegion,
         faFileTree,
     }
 }

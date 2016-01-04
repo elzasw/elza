@@ -1,8 +1,17 @@
 package cz.tacr.elza.controller;
 
 import com.jayway.restassured.response.Response;
+
+import cz.tacr.elza.controller.vo.ParPartyTypeVO;
+import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParPartyTypeComplementType;
 import cz.tacr.elza.domain.ParPartyTypeExt;
+import cz.tacr.elza.domain.ParPartyTypeRelation;
+import cz.tacr.elza.domain.ParRelationRoleType;
+import cz.tacr.elza.domain.ParRelationType;
+import cz.tacr.elza.domain.ParRelationTypeRoleType;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.vo.ParPartyWithCount;
 import org.junit.Assert;
@@ -11,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import static com.jayway.restassured.RestAssured.given;
@@ -192,4 +202,51 @@ public class PartyManagerTest extends AbstractRestTest {
 
         Assert.assertEquals("Nenalezena polozka ", 1, partyWithCount.getCount().intValue());
     }
+
+
+    @Test
+    public void testGetPartyTypes(){
+
+        ParPartyType partyType = createPartyType("p1");
+        ParRelationType relationType = createRelationType("p1");
+
+        ParPartyTypeRelation partyTypeRelation = new ParPartyTypeRelation();
+        partyTypeRelation.setPartyType(partyType);
+        partyTypeRelation.setRelationType(relationType);
+        partyTypeRelationRepository.save(partyTypeRelation);
+
+        ParRelationRoleType relationRoleType = createRelationRoleType("p1");
+        ParRelationTypeRoleType relationTypeRoleType = new ParRelationTypeRoleType();
+        relationTypeRoleType.setRelationType(relationType);
+        relationTypeRoleType.setRoleType(relationRoleType);
+        relationTypeRoleTypeRepository.save(relationTypeRoleType);
+
+
+        ParComplementType complementType = createComplementType("p1");
+        ParPartyTypeComplementType parPartyTypeComplementType = new ParPartyTypeComplementType();
+        parPartyTypeComplementType.setPartyType(partyType);
+        parPartyTypeComplementType.setComplementType(complementType);
+        partyTypeComplementTypeRepository.save(parPartyTypeComplementType);
+
+
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).get(GET_PARTY_TYPES_V2);
+        List<LinkedHashMap<String, Object>> partyTypes = response.as(List.class);
+
+        LinkedHashMap<String, Object> p1Type = null;
+        for (LinkedHashMap type : partyTypes) {
+            if(type.get("name").equals("p1")){
+                p1Type = type;
+                break;
+            }
+        }
+        Assert.assertNotNull(p1Type);
+
+        List<LinkedHashMap> relationTypes = (List) p1Type.get("relationTypes");
+        Assert.assertNotNull(relationTypes);
+
+        List<LinkedHashMap> complementTypes = (List) p1Type.get("complementTypes");
+        Assert.assertNotNull(complementTypes);
+    }
+
+
 }

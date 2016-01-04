@@ -26,6 +26,10 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import cz.tacr.elza.ElzaCore;
+import cz.tacr.elza.api.vo.ImportDataFormat;
+import cz.tacr.elza.api.vo.XmlImportConfig;
+import cz.tacr.elza.service.XmlImportService;
+import cz.tacr.elza.service.exception.XmlImportException;
 import cz.tacr.elza.xmlimport.v1.vo.XmlImport;
 
 /**
@@ -40,6 +44,9 @@ public class XmlImportTest implements ApplicationContextAware {
 
     @Autowired
     private XmlDataGenerator xmlDataGenerator;
+
+    @Autowired
+    private XmlImportService xmlImportService;
 
     private static final int RECORD_COUNT = 10;
 
@@ -61,12 +68,28 @@ public class XmlImportTest implements ApplicationContextAware {
 
     private static final int PARTY_NAME_COMPLEMENTS_COUNT = 1;
 
+    private static final int PACKET_COUNT = 10;
+
     private ApplicationContext applicationContext;
+
+
+    /** Test na import nové pomůcky v nativním formátu.
+     * @throws XmlImportException */
+    //@Test
+    public void importNativeData() throws XmlImportException {
+        XmlImportConfig config = new XmlImportConfig();
+        config.setStopOnError(false);
+        config.setUpdateRecords(true);
+        config.setImportDataFormat(ImportDataFormat.ELZA);
+        config.setXmlFile(new File("d:\\xml-export1.xml"));
+
+        xmlImportService.importData(config);
+    }
 
     /** Vytvoření xml souboru s osobami a rejstříky. */
 //    @Test
     public void testCreatePartyFile() throws IOException, JAXBException {
-        XmlDataGeneratorConfig config = new XmlDataGeneratorConfig(3, 1, 4, 0, 0, 0, true, 2, 2, 2, 2);
+        XmlDataGeneratorConfig config = new XmlDataGeneratorConfig(3, 1, 4, 0, 0, 0, true, 2, 2, 2, 2, 0);
         XmlImport fa = xmlDataGenerator.createXmlImportData(config);
 
         File out = File.createTempFile("xml-export-parties", ".xml");
@@ -77,9 +100,9 @@ public class XmlImportTest implements ApplicationContextAware {
     }
 
     /** Vytvoření xml souboru s rejstříky. */
-//    @Test
+    @Test
     public void testCreateRecordFile() throws IOException, JAXBException {
-        XmlDataGeneratorConfig config = new XmlDataGeneratorConfig(3, 1, 0, 0, 0, 0, true, 0, 0, 0, 0);
+        XmlDataGeneratorConfig config = new XmlDataGeneratorConfig(3, 1, 0, 0, 0, 0, true, 0, 0, 0, 0, 0);
         XmlImport fa = xmlDataGenerator.createXmlImportData(config);
 
         File out = File.createTempFile("xml-export-records", ".xml");
@@ -106,7 +129,7 @@ public class XmlImportTest implements ApplicationContextAware {
         //1,5 GB
 //        XmlDataGeneratorConfig config = new XmlDataGeneratorConfig(50, 10, 50, 50, 15, 10, true, 5, 3, 3, 3);
         //300 MB
-        XmlDataGeneratorConfig config = new XmlDataGeneratorConfig(50, 10, 50, 20, 4, 10, true, 5, 3, 3, 3);
+        XmlDataGeneratorConfig config = new XmlDataGeneratorConfig(50, 10, 50, 20, 4, 10, true, 5, 3, 3, 3, 3);
         XmlImport fa = xmlDataGenerator.createXmlImportData(config);
 
         File out = File.createTempFile("xml-export-large", ".xml");
@@ -145,6 +168,38 @@ public class XmlImportTest implements ApplicationContextAware {
         Assert.isTrue(true);
     }
 
+    /** Test na validaci dat oproti vygenerovanému xsd. */
+    //@Test
+    public void testValidityJV() throws JAXBException, SAXException, IOException {
+//        XmlDataGeneratorConfig config = createDefaultGeneratorConfig(true);
+//        XmlImport fa = xmlDataGenerator.createXmlImportData(config);
+
+        String path = "d:\\marbes\\dokumenty\\elza\\ELZA-228 - MCV MT09 XSD pro rejstříky a osoby (původce) z INTERPI\\testovaci xml\\";
+        String[] files = {
+        "ELZA+xml-parties-DYNASTY.xml",
+        "ELZA+xml-parties-EVENT.xml",
+        "ELZA+xml-parties-PARTY_GROUP.xml",
+        "ELZA+xml-parties-PERSON.xml",
+        "ELZA-xml-records-ARTWORK.xml",
+        "ELZA-xml-records-GEO.xml",
+        "ELZA-xml-records-TERM.xml"};
+
+        for (String f : files) {
+            File file = new File(path + f);
+
+            long start = System.nanoTime();
+            XmlImport fa = (XmlImport) createUnmarshaller().unmarshal(file);
+            long stop = System.nanoTime();
+
+            Marshaller marshaller = createMarshaller();
+            marshaller.setSchema(createSchema());
+            marshaller.marshal(fa, new DefaultHandler());
+            System.out.println("Soubor " + f);
+        }
+
+        Assert.isTrue(true);
+    }
+
     /** Test na validaci dat oproti vygenerovanému xsd. Data nejsou validní. */
     @Test(expected = MarshalException.class)
     public void testValidityWithInvalidData() throws JAXBException, SAXException, IOException {
@@ -168,7 +223,7 @@ public class XmlImportTest implements ApplicationContextAware {
     private XmlDataGeneratorConfig createDefaultGeneratorConfig(final boolean valid) {
        return new XmlDataGeneratorConfig(RECORD_COUNT, VARIANT_RECORD_COUNT, PARTY_COUNT, CHILD_COUNT, TREE_DEPTH_COUNT,
                DESC_ITEMS_COUNT, valid, EVENT_COUNT, PARTY_GROUP_ID_COUNT, PARTY_TIME_RANGE_COUNT,
-               PARTY_NAME_COMPLEMENTS_COUNT);
+               PARTY_NAME_COMPLEMENTS_COUNT, PACKET_COUNT);
     }
 
     /**

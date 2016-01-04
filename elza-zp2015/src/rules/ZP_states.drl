@@ -1,0 +1,71 @@
+package ZP2015;
+
+import cz.tacr.elza.drools.model.DescItem;
+import cz.tacr.elza.drools.model.DescItemChange;
+import cz.tacr.elza.api.vo.RelatedNodeDirection;
+import cz.tacr.elza.api.vo.NodeTypeOperation;
+
+import java.util.Arrays;
+
+global java.util.Set results;
+global cz.tacr.elza.api.vo.NodeTypeOperation nodeTypeOperation;
+
+rule "Pokud v SaveDescriptionItems změním atribut ZP2015_LEVEL_TYPE, tak dopady je Node+Parent+Descendants"
+when
+    descItem : DescItem(type == "ZP2015_LEVEL_TYPE", change == DescItemChange.UPDATE)
+	eval( nodeTypeOperation.equals(NodeTypeOperation.SAVE_DESC_ITEM) )
+then
+	results.add(RelatedNodeDirection.NODE);
+	results.add(RelatedNodeDirection.PARENTS);
+	results.add(RelatedNodeDirection.DESCENDANTS);
+end
+
+rule "Pokud provedu CreateNode, tak dopady jsou Node+Parent"
+when
+	eval( nodeTypeOperation.equals(NodeTypeOperation.CREATE_NODE) )
+then
+	results.add(RelatedNodeDirection.NODE);
+	results.add(RelatedNodeDirection.PARENTS);
+end
+
+rule "Pokud v SaveDescriptionItems provedu smazání hodnoty ZP2015_TITLE, tak dopady jsou Node+Descendants"
+when
+    descItem : DescItem(type == "ZP2015_LEVEL_TYPE", change == DescItemChange.DELETE)
+	eval( nodeTypeOperation.equals(NodeTypeOperation.SAVE_DESC_ITEM) )
+then
+	results.add(RelatedNodeDirection.NODE);
+	results.add(RelatedNodeDirection.DESCENDANTS);
+end
+
+rule "Pokud provedu DeleteNode, tak dopady jsou Node+Parent"
+when
+	eval( nodeTypeOperation.equals(NodeTypeOperation.DELETE_NODE) )
+then
+	results.add(RelatedNodeDirection.NODE);
+	results.add(RelatedNodeDirection.PARENTS);
+end
+
+rule "Pokud provedu ChangeNodePosition, tak dopady jsou Node"
+when
+	eval( nodeTypeOperation.equals(NodeTypeOperation.CHANGE_NODE_POSITION) )
+then
+	results.add(RelatedNodeDirection.NODE);
+end
+
+rule "Pokud provedu DisconnectNode, tak dopady jsou Node"
+when
+	eval( nodeTypeOperation.equals(NodeTypeOperation.DISCONNECT_NODE) )
+then
+	results.add(RelatedNodeDirection.NODE);
+	results.add(RelatedNodeDirection.PARENTS);
+end
+
+rule "Pokud provedu ConnectNode, tak dopady jsou Parent + Descendants + Siblings + Node"
+when
+	eval( nodeTypeOperation.equals(NodeTypeOperation.CONNECT_NODE) )
+then
+	results.add(RelatedNodeDirection.PARENTS);
+	results.add(RelatedNodeDirection.DESCENDANTS);
+	results.add(RelatedNodeDirection.SIBLINGS);
+	results.add(RelatedNodeDirection.NODE);
+end

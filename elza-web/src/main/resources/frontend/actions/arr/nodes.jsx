@@ -1,40 +1,80 @@
+/**
+ * Akce pro záložky uzlů JP.
+ */
+
 import {WebApi} from 'actions'
 import {indexById} from 'stores/app/utils.jsx'
 
 import * as types from 'actions/constants/actionTypes';
 
-export function faSelectNodeTab(node, moveTabToBegin=false) {
+/**
+ * Změna vybrané záložky JP.
+ * Pokud má daná záložka vybraný podřízený JP, je poslána nová akce s vybrání podřízené JP {@link faSelectSubNode}.
+ * @param {int} index index vybrané záložky
+ */
+export function faSelectNodeTab(index) {
     return (dispatch, getState) => {
         var state = getState();
-        var activeFa = state.arrangementRegion.fas[state.arrangementRegion.activeIndex];
-        var index = indexById(activeFa.nodes.nodes, node.id);
+        var activeFa = state.arrRegion.fas[state.arrRegion.activeIndex];
         var nodeTab = activeFa.nodes.nodes[index];
-        if (nodeTab.selectedSubNodeId != null) {    // musíme poslat akci vybrání subnode (aby se řádek vybral např. ve stromu)
-            dispatch(faSelectSubNode(nodeTab.selectedSubNodeId, nodeTab, false, false));
-        }
-
-        return dispatch({
+        dispatch({
             type: types.FA_FA_SELECT_NODE_TAB,
-            node,
-            moveTabToBegin
+            index,
         });
+        if (nodeTab.selectedSubNodeId != null) {    // musíme poslat akci vybrání subnode (aby se řádek vybral např. ve stromu)
+            dispatch(faSelectSubNode(nodeTab.selectedSubNodeId, nodeTab, false));
+        }
     }
 }
 
-export function faCloseNodeTab(node) {
+/**
+ * Zavření záložky JP.
+ * @param index {int} index záložky
+ */
+export function _faCloseNodeTab(index) {
     return {
         type: types.FA_FA_CLOSE_NODE_TAB,
-        node
+        index
     }
 }
 
-export function faSelectSubNode(subNodeId, subNodeParentNode, openUnexistingNodeTab=false, moveTabToBegin=false) {
+/**
+ * Zavření záložky JP.
+ * @param index {int} index záložky
+ */
+export function faCloseNodeTab(index) {
+    return (dispatch, getState) => {
+        var state = getState();
+        var activeFa = state.arrRegion.fas[state.arrRegion.activeIndex];
+        var wasSelected = false;
+        if (activeFa.nodes.activeIndex == index) {  // zavíráme aktuálně vybranou
+            wasSelected = true;
+        }
+        dispatch(_faCloseNodeTab(index));
+        var newState = getState();
+        var newActiveFa = newState.arrRegion.fas[newState.arrRegion.activeIndex];
+        if (wasSelected) { 
+            if (newActiveFa.nodes.nodes.length > 0) {    // je vybraná nějaká jiná, protože ještě nějaké záložky existují
+                dispatch(faSelectNodeTab(newActiveFa.nodes.activeIndex));
+            } else {    // není žádná záložka
+                dispatch(faSelectSubNode(null, null, false));
+            }
+        }
+    }
+}
+
+/**
+ * Vybrání podřízené JP pod záložkou JP (vybrání JP pro formulář).
+ * @param {String} subNodeId id JP pro vybrání
+ * @param {Object} subNodeParentNode nadřazená JP pro vybíranou JP, předáváno kvůli případnému otevření nové záložky, pokud neexistuje
+ * @param {boolean} openNewTab má se otevřít nová záložka? Pokud je false, bude použita existující  aktuálně vybraná, pokud žádná neexistuje, bude nová vytvořena
+ */
+export function faSelectSubNode(subNodeId, subNodeParentNode, openNewTab=false) {
     return {
         type: types.FA_FA_SELECT_SUBNODE,
         subNodeId,
         subNodeParentNode,
-        openUnexistingNodeTab,
-        moveTabToBegin,
+        openNewTab,
     }
 }
 

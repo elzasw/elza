@@ -14,16 +14,7 @@ const history = useBasename(createHistory)({
     basename: serverContextPath + ''
 })
 
-import {ArrPage, HomePage, RegistryPage, PartyPage, Layout} from 'pages';
-
-var routes = (
-    <Route name="layout" path="/" component={Layout}>
-        <IndexRoute component={HomePage} />
-        <Route path="arr" component={ArrPage} />
-        <Route path="registry" component={RegistryPage} />
-        <Route path="party" component={PartyPage} />
-    </Route>
-);
+import {ArrPage, HomePage, RegistryPage, PartyPage, AdminLayout, AdminPage, AdminPackagesPage, Layout} from 'pages';
 
 // Aplikace
 exports.start = function() {
@@ -35,6 +26,19 @@ exports.start = function() {
         </Provider>
     ), document.getElementById('content'));
 }
+
+var routes = (
+        <Route name="layout" path="/" component={Layout}>
+            <IndexRoute component={HomePage} />
+            <Route path="arr" component={ArrPage} />
+            <Route path="registry" component={RegistryPage} />
+            <Route path="party" component={PartyPage} />
+            <Route path="admin" component={Layout}>
+                <IndexRoute component={AdminPage} />
+                <Route path="packages" component={AdminPackagesPage} />
+            </Route>
+        </Route>
+);
 
 
 

@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
         @UniqueConstraint(columnNames = {"findingAidId"}),
         @UniqueConstraint(columnNames = {"storageNumber"})})
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrPacket implements cz.tacr.elza.api.ArrPacket<ArrPacketType, ArrFindingAid> {
+public class ArrPacket implements cz.tacr.elza.api.ArrPacket<RulPacketType, ArrFindingAid> {
     public final static String PACKET_ID = "packetId";
     public final static String PACKET_TYPE = "packetType";
     public final static String STORAGE_NUMBER = "storageNumber";
@@ -37,9 +37,9 @@ public class ArrPacket implements cz.tacr.elza.api.ArrPacket<ArrPacketType, ArrF
     private Integer packetId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrPacketType.class)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPacketType.class)
     @JoinColumn(name = "packetTypeId", nullable = true)
-    private ArrPacketType packetType;
+    private RulPacketType packetType;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFindingAid.class)
@@ -63,12 +63,12 @@ public class ArrPacket implements cz.tacr.elza.api.ArrPacket<ArrPacketType, ArrF
     }
 
     @Override
-    public ArrPacketType getPacketType() {
+    public RulPacketType getPacketType() {
         return packetType;
     }
 
     @Override
-    public void setPacketType(ArrPacketType packetType) {
+    public void setPacketType(RulPacketType packetType) {
         this.packetType = packetType;
     }
 

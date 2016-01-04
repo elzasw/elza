@@ -175,6 +175,8 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
         return externalSourceRepository.findAll();
     }
 
+
+    //přepsáno do RecordController
     @Override
     @RequestMapping(value = "/findRecord", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
     public RegRecordWithCount findRecord(@RequestParam(required = false) @Nullable final String search,
@@ -185,18 +187,20 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
         if (registerTypeIds != null) {
             registerTypeIdList = Arrays.asList(registerTypeIds);
         }
-        List<RegRecord> regRecords = regRecordRepository.findRegRecordByTextAndType(search, registerTypeIdList, from, count);
+        List<RegRecord> regRecords = regRecordRepository.findRegRecordByTextAndType(search, registerTypeIdList, false,
+                from, count);
         regRecords.forEach((record) -> {
             record.getVariantRecordList().forEach((variantRecord) -> {
                 variantRecord.setRegRecord(null);
             });
         });
 
-        long countAll = regRecordRepository.findRegRecordByTextAndTypeCount(search, registerTypeIdList);
+        long countAll = regRecordRepository.findRegRecordByTextAndTypeCount(search, registerTypeIdList, false);
 
         return new RegRecordWithCount(regRecords, countAll);
     }
 
+    //přepsáno do RecordController
     @Override
     @RequestMapping(value = "/getRecord", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE,
             params = {"recordId"})

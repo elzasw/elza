@@ -22,14 +22,19 @@ class WebApiRest {
             });
     }
 
-    findRecord(search = ''){
-        return AjaxUtils.ajaxGet('/api/registryManager/findRecord', [{key: 'search', value: search},{key: 'from', value: '0'},{key: 'count', value: '200'}, {key: 'registerTypeIds', value: ''}])
-            .then(json=>{
-                return json;
-            });
+    findRecord(search = null){
+        return AjaxUtils.ajaxGet('/api/registryManager/findRecord', {
+            search: search,
+            from: 0,
+            count: 200,
+            registerTypeIds: null
+        }).then(json=>{
+            return json;
+        });
     }
+
     getRecord(recordId){
-        return AjaxUtils.ajaxGet('/api/registryManager/getRecord', [{key: 'recordId', value: recordId}])
+        return AjaxUtils.ajaxGet('/api/registryManager/getRecord', {recordId: recordId})
             .then(json=>{
                 return json;
             });
@@ -37,25 +42,96 @@ class WebApiRest {
 
 
 
-    findParty(search = ''){
-        return AjaxUtils.ajaxGet('/api/partyManager/findParty', [{
-            'search': search,
-            'from': 0,
-            'count' : 200,
-            'partyTypeId': null,
-            'originator': false
-        }]).then(json=>{
+    findParty(search = null){
+        return AjaxUtils.ajaxGet('/api/partyManager/findParty', {
+            search: search,
+            from: 0,
+            count : 200,
+            partyTypeId: null,
+            originator: false
+        }).then(json=>{
             return json;
         });
     }
 
     getParty(partyId){
-        return AjaxUtils.ajaxGet('/api/partyManager/getParty', [{key: 'partyId', value: partyId}])
+        return AjaxUtils.ajaxGet('/api/partyManager/getParty', {partyId: partyId})
             .then(json=>{
                 return json;
             });
     }
+
+    getPackages() {
+        return AjaxUtils.ajaxGet('/api/ruleSetManager/getPackages')
+            .then(json=>{
+                return json;
+            });
+    }
+
+    deletePackage(code) {
+        return AjaxUtils.ajaxGet('/api/ruleSetManager/deletePackage/' + code)
+                .then(json=>{
+                    return json;
+                });
+    }
+
+    getPackageExportUrl(code) {
+        return '/api/ruleSetManager/exportPackage/' + code;
+    }
+
+    importPackage(data) {
+        return AjaxUtils.ajaxCallRaw('/api/ruleSetManager/importPackage', {}, "POST", data)
+                .then(json=>{
+                    return json;
+                });
+    }
 }
+
+function findNodeById(node, nodeId) {
+    if (node.id == nodeId) {
+        return node;
+    }
+
+    for (var a=0; a<node.children.length; a++) {
+        var ret = findNodeById(node.children[a], nodeId);
+        if (ret !== null) {
+            return ret;
+        }
+    }
+
+    return null;
+}
+function generateFlatTree(nodes, expandedIds, out) {
+    nodes.each(node => {
+        node.hasChildren = node.children && node.children.length > 0;
+        out.push(node);
+        if (expandedIds[node.id]) {
+            generateFlatTree(node.children, expandedIds, out);
+        }
+    });
+}
+function buildTree(node, depth) {
+    _nodeMap[node.id] = node;
+
+    if (depth > 3) {
+        return;
+    }
+    var len = (depth + depth % 5) * 3;
+if (depth == 1) {
+len = 40;
+}
+    for (var a=0; a<len; a++) {
+        _nodeId++;
+        var child = {id: _nodeId, name: node.name + "_" + _nodeId, depth: depth, children: []};
+        child.parent = node;
+        node.children.push(child);
+        buildTree(child, depth + 1);
+    }
+}
+var _nodeMap = {};
+var _nodeId = 0;
+var _faRootNode = {id: 0, name: 'node', depth: 0, parent: null, children: []}
+buildTree(_faRootNode, 1);
 
 class WebApiFake {
     constructor() {
@@ -106,70 +182,6 @@ class WebApiFake {
         };
         return this.getData(data, 1);
     }   
-
-    getNodeForm(nodeId, versionId) {
-        var faId = 'x';
-        var str = " {" + faId + "_" + versionId + "}";
-
-        var root = {id: 123, name: 'root node' + str, parentId: null};
-        var child1 = {id: 1, name: 'child 1' + str, parentId: 123};
-        var child11 = {id: 11, name: 'child 11' + str, parentId: 1};
-        var child12 = {id: 12, name: 'child 12' + str, parentId: 1};
-        var child2 = {id: 2, name: 'child 2' + str, parentId: 123};
-        var child3 = {id: 3, name: 'child 3' + str, parentId: 123};
-        var child31 = {id: 31, name: 'child 31' + str, parentId: 3};
-        var child32 = {id: 32, name: 'child 32' + str, parentId: 3};
-        var child33 = {id: 33, name: 'child 33' + str, parentId: 3};
-        var child4 = {id: 4, name: 'child 4' + str, parentId: 123};
-
-        var parents, children;
-        switch (nodeId) {
-            case 1:
-                parents = [root];
-                children = [child11, child12];
-            break;
-            case 2:
-                parents = [root];
-                children = [];
-            break;
-            case 3:
-                parents = [root];
-                children = [child31, child32, child33];
-            break;
-            case 4:
-                parents = [root];
-                children = [];
-            break;
-            case 11:
-                parents = [child1, root];
-                children = [];
-            break;
-            case 12:
-                parents = [child1, root];
-                children = [];
-            break;
-            case 31:
-                parents = [child3, root];
-                children = [];
-            break;
-            case 32:
-                parents = [child3, root];
-                children = [];
-            break;
-            case 33:
-                parents = [child3, root];
-                children = [];
-            break;
-            default:
-                parents = [];
-                children = [];
-        }
-        var data = {
-            parents: parents,
-            children: children,
-        }
-        return this.getData(data, 1);
-    }
 
     getFaFileTree() {
         var data = 
@@ -244,42 +256,40 @@ class WebApiFake {
         return this.getData(data, 1);
     }
 
-    getFaTree(faId, versionId) {
-        var str = " {" + faId + "_" + versionId + "}";
-
-        var root = {id: 123, name: 'root node' + str, parentId: null};
-        var child1 = {id: 1, name: 'child 1' + str, parentId: 123};
-        var child11 = {id: 11, name: 'child 11' + str, parentId: 1};
-        var child12 = {id: 12, name: 'child 12' + str, parentId: 1};
-        var child2 = {id: 2, name: 'child 2' + str, parentId: 123};
-        var child3 = {id: 3, name: 'child 3' + str, parentId: 123};
-        var child31 = {id: 31, name: 'child 31' + str, parentId: 3};
-        var child32 = {id: 32, name: 'child 32' + str, parentId: 3};
-        var child33 = {id: 33, name: 'child 33' + str, parentId: 3};
-        var child4 = {id: 4, name: 'child 4' + str, parentId: 123};
+    getNodeForm(nodeId, versionId) {
+        var node = findNodeById(_faRootNode, nodeId);
+        var parents = [];
+        var n = node.parent;
+        while (n !== null) {
+            parents.push(n);
+            n = n.parent;
+        }
 
         var data = {
-            nodeMap: {
-                [root.id]: root,
-                [child1.id]: child1,
-                [child3.id]: child3,
-            },
-            nodes: [
-                {
-                    ...root,
-                    children: [
-                        {...child1, children: [child11, child12]},
-                        {...child2},
-                        {...child3, children: [child31, child32, child33]},
-                        {...child4},
-                    ]
-                }
-            ]
+            node: node,
+            parents: parents,
+            children: node.children,
+        }
+        return this.getData(data, 1);
+    }
+
+    getFaTree(faId, versionId, nodeId, expandedIds={}, includeIds={}) {
+        var srcNodes;
+        if (nodeId == null || typeof nodeId == 'undefined') {
+            srcNodes = [_faRootNode];
+        } else {
+            srcNodes = findNodeById(_faRootNode, nodeId).children;
+        }
+
+        var out = [];
+        generateFlatTree(srcNodes, expandedIds, out);
+        var data = {
+            nodes: out
         }
 
         return this.getData(data, 1);
     }
 }
 
-//module.exports = new WebApiRest();
-module.exports = new WebApiFake();
+module.exports = new WebApiRest();
+//module.exports = new WebApiFake();

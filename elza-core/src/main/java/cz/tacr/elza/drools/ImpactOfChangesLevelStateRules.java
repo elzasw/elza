@@ -19,7 +19,7 @@ import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.drools.model.DescItemChange;
-import cz.tacr.elza.drools.model.DescItemVO;
+import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.service.ScriptModelFactory;
 
 
@@ -51,7 +51,7 @@ public class ImpactOfChangesLevelStateRules extends Rules {
                                                           final NodeTypeOperation nodeTypeOperation,
                                                           final RulRuleSet rulRuleSet)
             throws Exception {
-        List<DescItemVO> descItemVOList = prepareDescItemVOList(createDescItem, updateDescItem, deleteDescItem);
+        List<DescItem> descItemVOList = prepareDescItemVOList(createDescItem, updateDescItem, deleteDescItem);
 
         Set<RelatedNodeDirection> relatedNodeDirections = new HashSet<>();
 
@@ -80,10 +80,10 @@ public class ImpactOfChangesLevelStateRules extends Rules {
      * @param deleteDescItem hodnoty atributů ke smazání
      * @return seznam VO do modelu
      */
-    private List<DescItemVO> prepareDescItemVOList(final List<ArrDescItem> createDescItem,
+    private List<DescItem> prepareDescItemVOList(final List<ArrDescItem> createDescItem,
                                                    final List<ArrDescItem> updateDescItem,
                                                    final List<ArrDescItem> deleteDescItem) {
-        List<DescItemVO> list = new ArrayList<>();
+        List<DescItem> list = new ArrayList<>();
         if (!CollectionUtils.isEmpty(createDescItem)) {
             list.addAll(factory.createDescItems(createDescItem, (t)->t.setChange(DescItemChange.CREATE)));
         }
