@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -16,13 +17,37 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
+import cz.tacr.elza.controller.vo.ParPartyGroupVO;
+import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
 import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyNameVO;
+import cz.tacr.elza.controller.vo.ParPartyTimeRangeVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParRelationEntityVO;
+import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyGroup;
+import cz.tacr.elza.domain.ParPartyGroupIdentifier;
+import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyNameComplement;
 import cz.tacr.elza.domain.ParPartyNameFormType;
+import cz.tacr.elza.domain.ParPartyTimeRange;
+import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
+import cz.tacr.elza.repository.PartyNameComplementRepository;
+import cz.tacr.elza.repository.PartyNameRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.PartyTimeRangeRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.RelationEntityRepository;
+import cz.tacr.elza.repository.RelationRepository;
+import cz.tacr.elza.repository.UnitdateRepository;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 
@@ -39,6 +64,163 @@ public class ConfigClientVOService {
     @Autowired
     @Qualifier("configVOMapper")
     private MapperFactory mapperFactory;
+
+    @Autowired
+    private PartyNameComplementRepository partyNameComplementRepository;
+
+    @Autowired
+    private PartyTimeRangeRepository partyTimeRangeRepository;
+
+    @Autowired
+    private PartyNameRepository partyNameRepository;
+
+    @Autowired
+    private PartyGroupIdentifierRepository partyGroupIdentifierRepository;
+
+    @Autowired
+    private RelationRepository relationRepository;
+
+    @Autowired
+    private RelationEntityRepository relationEntityRepository;
+
+    @Autowired
+    private RegRecordRepository recordRepository;
+
+    @Autowired
+    private PartyRepository partyRepository;
+
+    @Autowired
+    private UnitdateRepository unitdateRepository;
+
+    /**
+     * Vytvoří detailní objekt osoby. Načte všechna navázaná data.
+     *
+     * @param party osoba
+     * @return detail VO osoby
+     */
+    public ParPartyVO createParPartyDetail(final ParParty party) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+
+        ParPartyVO result = mapper.map(party, ParPartyVO.class);
+
+        //donačtení group party identifiers
+        if (party instanceof ParPartyGroup) {
+            List<ParPartyGroupIdentifier> groupIdentifiers = partyGroupIdentifierRepository.findByPartyGroup(
+                    (ParPartyGroup) party);
+            ParPartyGroupVO groupResult = (ParPartyGroupVO) result;
+            groupResult.setGroupIdentifiers(createList(groupIdentifiers, ParPartyGroupIdentifierVO.class, null));
+        }
+
+
+        //partyPreferredName
+        if (party.getPreferredName() != null) {
+            result.setPreferredName(createParPartyNameDetail(party.getPreferredName()));
+        }
+        //partyNames
+        result.setPartyNames(createList(partyNameRepository.findByParty(party), ParPartyNameVO.class, (n) ->
+                        createParPartyNameDetail(n)
+        ));
+
+        //partyNames
+        result.setPartyNames(createList(partyNameRepository.findByParty(party), ParPartyNameVO.class,
+                this::createParPartyNameDetail));
+
+        //partyTimeRange
+        result.setTimeRanges(createList(partyTimeRangeRepository.findByParty(party), ParPartyTimeRangeVO.class, null));
+
+        result.setRelations(createPartyRelations(party));
+        result.setCreators(createPartyList(partyRepository.findCreatorsByParty(party)));
+
+        return result;
+    }
+
+    /**
+     * Vytvoří seznam objektů osob. Pro osoby nejsou načítány všechna detailní data.
+     *
+     * @param parties seznam osob
+     * @return seznam VO osob
+     */
+    public List<ParPartyVO> createPartyList(final List<ParParty> parties) {
+        if (CollectionUtils.isEmpty(parties)) {
+            return Collections.EMPTY_LIST;
+        }
+
+        //načtení dat do session
+        unitdateRepository.findForFromTimeRangeByParties(parties);
+        unitdateRepository.findForToTimeRangeByParties(parties);
+        unitdateRepository.findForFromPartyNameByParties(parties);
+        unitdateRepository.findForToPartyNameByParties(parties);
+        partyNameRepository.findByParties(parties);
+        recordRepository.findByParties(parties);
+
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        Map<Integer, ParPartyVO> partyMap = new HashMap<>();
+
+        for (ParParty party : parties) {
+            ParPartyVO partyVO = mapper.map(party, ParPartyVO.class);
+            if (party.getPreferredName() != null) {
+                partyVO.setPreferredName(mapper.map(party.getPreferredName(), ParPartyNameVO.class));
+            }
+            partyVO.setRecord(mapper.map(party.getRecord(), RegRecordVO.class));
+            partyMap.put(partyVO.getPartyId(), partyVO);
+        }
+
+        for (ParPartyTimeRange partyTimeRange : partyTimeRangeRepository.findByParties(parties)) {
+            ParPartyTimeRangeVO partyTimeRangeVO = mapper.map(partyTimeRange, ParPartyTimeRangeVO.class);
+            partyMap.get(partyTimeRangeVO.getPartyId()).addPartyTimeRange(partyTimeRangeVO);
+        }
+
+        return new ArrayList<>(partyMap.values());
+    }
+
+    /**
+     * Vytvoří objekt jména osoby. Jsou načteny i detailní informace.
+     *
+     * @param partyName jméno osoby
+     * @return vo jména osoba
+     */
+    private ParPartyNameVO createParPartyNameDetail(final ParPartyName partyName) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        ParPartyNameVO result = mapper.map(partyName, ParPartyNameVO.class);
+
+        List<ParPartyNameComplement> nameComplements = partyNameComplementRepository.findByPartyName(partyName);
+        result.setPartyNameComplements(createList(nameComplements, ParPartyNameComplementVO.class, null));
+
+        return result;
+    }
+
+
+    /**
+     * Vytvoří seznam vazeb osoby.
+     *
+     * @param party osoba
+     * @return seznam vazeb osoby
+     */
+    public List<ParRelationVO> createPartyRelations(final ParParty party) {
+        List<ParRelation> relations = relationRepository.findByParty(party);
+        if (CollectionUtils.isEmpty(relations)) {
+            return null;
+        }
+
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+
+        Map<Integer, ParRelationVO> relationVOMap = new HashMap<>();
+        for (ParRelation relation : relations) {
+            relationVOMap.put(relation.getRelationId(), mapper.map(relation, ParRelationVO.class));
+        }
+
+        //načtení objektů regrecord do session
+        recordRepository.findByPartyRelations(party);
+        List<ParRelationEntity> partyRelations = relationEntityRepository.findByParty(party);
+        List<ParRelationEntityVO> partyRelationsVo = createList(partyRelations, ParRelationEntityVO.class, null);
+
+        for (ParRelationEntityVO parRelationEntityVO : partyRelationsVo) {
+            relationVOMap.get(parRelationEntityVO.getRelationId()).addRelationEntity(parRelationEntityVO);
+        }
+
+        return new ArrayList<>(relationVOMap.values());
+    }
+
 
     /**
      * Vytvoření seznamu RegRecordVo.
@@ -148,6 +330,38 @@ public class ConfigClientVOService {
         if (registerType.getParentRegisterType() != null) {
             RegRegisterTypeVO parent = createRegisterTypeTree(registerType.getParentRegisterType(), typeMap);
             parent.addChild(result);
+        }
+
+        return result;
+    }
+
+    /**
+     * Vytvoří seznam VO objektů z objektů.
+     *
+     * @param items   seznam objektů
+     * @param voTypes typ cílových objektů
+     * @param factory metoda pro vytvoření VO objektu. Pokud je null, je použita výchozí tovární třída.
+     * @param <VO>    typ VO objektu
+     * @param <ITEM>  Typ objektu
+     * @return seznam VO objektů
+     */
+    private <VO, ITEM> List<VO> createList(final List<ITEM> items,
+                                           final Class<VO> voTypes,
+                                           @Nullable final Function<ITEM, VO> factory) {
+        if (CollectionUtils.isEmpty(items)) {
+            return Collections.EMPTY_LIST;
+        }
+
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        List<VO> result = new ArrayList<>(items.size());
+        if (factory == null) {
+            for (ITEM item : items) {
+                result.add(mapper.map(item, voTypes));
+            }
+        } else {
+            for (ITEM item : items) {
+                result.add(factory.apply(item));
+            }
         }
 
         return result;

@@ -5,19 +5,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.config.ConfigClientVOService;
 import cz.tacr.elza.controller.vo.ParComplementTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParPartyWithCount;
 import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationTypeVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.domain.ParComplementType;
+import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParPartyTypeComplementType;
@@ -28,6 +35,8 @@ import cz.tacr.elza.domain.ParRelationTypeRoleType;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
+import cz.tacr.elza.repository.PartyNameRepository;
+import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRelationRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
@@ -35,6 +44,7 @@ import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
+import cz.tacr.elza.repository.UnitdateRepository;
 
 
 /**
@@ -76,6 +86,24 @@ public class PartyController {
 
     @Autowired
     private PartyNameFormTypeRepository partyNameFormTypeRepository;
+
+    @Autowired
+    private PartyRepository partyRepository;
+
+    @Autowired
+    private PartyNameRepository partyNameRepository;
+
+    @Autowired
+    private UnitdateRepository unitdateRepository;
+
+
+    @RequestMapping(value = "/getParty", method = RequestMethod.GET)
+    public ParPartyVO getParty(@RequestParam("partyId") final Integer partyId) {
+        Assert.notNull(partyId);
+
+        ParParty party = partyRepository.findOne(partyId);
+        return factoryVo.createParPartyDetail(party);
+    }
 
     /**
      * Vrátí všechny typy osob včetně podtypů.
@@ -170,4 +198,31 @@ public class PartyController {
 
         return factoryVo.createPartyNameFormTypes(types);
     }
+
+
+    /**
+     * Načte stránkovaný seznam osob.
+     *
+     * @param search      hledaný řetězec
+     * @param from        počáteční záznam
+     * @param count       počet vrácených záznamů
+     * @param partyTypeId id typu osoby
+     * @return seznam osob s počtem všech osob
+     */
+    @RequestMapping(value = "/findParty", method = RequestMethod.GET)
+    public ParPartyWithCount findParty(@Nullable @RequestParam(value = "search", required = false) final String search,
+                                       @RequestParam("from") final Integer from,
+                                       @RequestParam("count") final Integer count,
+                                       @Nullable @RequestParam(value = "partyTypeId", required = false) final Integer partyTypeId) {
+
+        boolean onlyLocal = false;
+
+        List<ParParty> partyList = partyRepository
+                .findPartyByTextAndType(search, partyTypeId, from, count, onlyLocal);
+        List<ParPartyVO> resultVo = factoryVo.createPartyList(partyList);
+
+        long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, onlyLocal);
+        return new ParPartyWithCount(resultVo, countAll);
+    }
+
 }

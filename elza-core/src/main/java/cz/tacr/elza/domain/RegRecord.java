@@ -15,6 +15,7 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,6 +56,10 @@ public class RegRecord extends AbstractVersionableEntity
     @RestResource(exported = false)
     @OneToMany(mappedBy = "regRecord")
     private List<RegVariantRecord> variantRecordList = new ArrayList<>(0);
+
+    @RestResource(exported = false)
+    @OneToMany(mappedBy = "record", fetch = FetchType.LAZY)
+    private List<ParRelationEntity> relationEntities = new ArrayList<>();
 
     @Column(length = 1000, nullable = false)
     private String record;

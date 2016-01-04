@@ -193,9 +193,11 @@ public abstract class AbstractRestTest {
     protected static final String GET_PARTY_TYPES_V2 = PARTY_MANAGER_URL_V2 + "/getPartyTypes";
     protected static final String INSERT_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/insertParty";
     protected static final String FIND_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/findParty";
+    protected static final String FIND_ABSTRACT_PARTY_V2 = PARTY_MANAGER_URL_V2 + "/findParty";
     protected static final String UPDATE_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/updateParty";
     protected static final String DELETE_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/deleteParty";
     protected static final String GET_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/getParty";
+    protected static final String GET_ABSTRACT_PARTY_V2 = PARTY_MANAGER_URL_V2 + "/getParty";
 
     protected static final String PARTY_TYPE_ID_ATT = "partyTypeId";
     protected static final String ORIGINATOR_ATT = "originator";

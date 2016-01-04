@@ -48,6 +48,7 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
     private DataPartyRefRepository dataPartyRefRepository;
 
 
+    //přepsáno do PartyController
     @RequestMapping(value = "/getPartyTypes", method = RequestMethod.GET)
     @Override
     public List<ParPartyTypeExt> getPartyTypes() {
@@ -186,6 +187,8 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
         }
     }
 
+
+    //přepsáno do PartyController
     @RequestMapping(value = "/findParty", method = RequestMethod.GET)
     @Override
     public ParPartyWithCount findParty(@Nullable @RequestParam(value = "search", required = false) final String search,
@@ -211,6 +214,7 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
         return new ParPartyWithCount(resultList, countAll);
     }
 
+    //přepsáno do PartyController
     @RequestMapping(value = "/getParty", method = RequestMethod.GET)
     @Override
     public ParParty getParty(

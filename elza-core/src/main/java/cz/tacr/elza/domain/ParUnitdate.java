@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -13,6 +15,7 @@ import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -64,6 +67,23 @@ public class ParUnitdate extends AbstractVersionableEntity implements cz.tacr.el
 
     @Column(length = 250)
     private String textDate;
+
+    @RestResource(exported = false)
+    @OneToMany(mappedBy = "from", fetch = FetchType.LAZY)
+    private List<ParPartyTimeRange> fromTimeRanges;
+
+    @RestResource(exported = false)
+    @OneToMany(mappedBy = "to", fetch = FetchType.LAZY)
+    private List<ParPartyTimeRange> toTimeRanges;
+
+    @RestResource(exported = false)
+    @OneToMany(mappedBy = "validFrom", fetch = FetchType.LAZY)
+    private List<ParPartyName> validFromPartyNames;
+
+    @RestResource(exported = false)
+    @OneToMany(mappedBy = "validTo", fetch = FetchType.LAZY)
+    private List<ParPartyName> validToPartyNames;
+
 
     @Override
     public Integer getUnitdateId() {

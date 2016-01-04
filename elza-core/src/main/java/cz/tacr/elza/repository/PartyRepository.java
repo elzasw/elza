@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import cz.tacr.elza.domain.ParParty;
 
+
 /**
  * Repository pro abstraktní osoby.
  *
@@ -31,4 +32,14 @@ public interface PartyRepository extends JpaRepository<ParParty, Integer>, Party
      */
     @Query("SELECT ap FROM par_party ap JOIN ap.record r WHERE r.recordId IN (?1)")
     List<ParParty> findParPartyByRecordIds(Collection<Integer> recordIds);
+
+
+    /**
+     * Najde seznam tvůrců osoby podle vytvořené osoby.
+     *
+     * @param party vytvořená osoba
+     * @return seznam tvůrců
+     */
+    @Query("SELECT c.creatorParty FROM par_creator c WHERE c.party = ?1")
+    List<ParParty> findCreatorsByParty(ParParty party);
 }

@@ -19,20 +19,20 @@ public interface PartyRepositoryCustom {
      * @param registerTypeId typ záznamu
      * @param firstResult id prvního záznamu
      * @param maxResults max počet záznamů
-     * @param originator původce - true, není původce - false, null - neaplikuje filtr - obě možnosti
+     * @param onlyLocal vyhledat pouze lokální nebo globální osoby
      * @return
      */
     List<ParParty> findPartyByTextAndType(String searchRecord, Integer registerTypeId,
-                                                          Integer firstResult, Integer maxResults, Boolean originator);
+                                                          Integer firstResult, Integer maxResults, Boolean onlyLocal);
 
     /**
      * Vrátí počet osob vyhovující zadané frázi. Osobu vyhledává podle hesla v rejstříku včetně variantních hesel.
      * @param searchRecord hledaný řetězec, může být null
      * @param registerTypeId typ záznamu
-     * @param originator původce - true, není původce - false, null - neaplikuje filtr - obě možnosti
+     * @param onlyLocal vyhledat pouze lokální nebo globální osoby
      * @return
      */
-    long findPartyByTextAndTypeCount(String searchRecord, Integer registerTypeId, Boolean originator);
+    long findPartyByTextAndTypeCount(String searchRecord, Integer registerTypeId, Boolean onlyLocal);
 
     /**
      * Nastavi všechny preferred_name na null.

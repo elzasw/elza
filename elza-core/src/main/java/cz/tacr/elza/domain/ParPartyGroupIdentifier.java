@@ -45,7 +45,7 @@ public class ParPartyGroupIdentifier implements cz.tacr.elza.api.ParPartyGroupId
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParPartyGroup.class)
-    @JoinColumn(name = "recordId", nullable = false)
+    @JoinColumn(name = "partyId", nullable = false)
     private ParPartyGroup partyGroup;
 
     @Column(length = 50)

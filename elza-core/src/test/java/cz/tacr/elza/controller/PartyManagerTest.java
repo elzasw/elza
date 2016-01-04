@@ -3,6 +3,7 @@ package cz.tacr.elza.controller;
 import com.jayway.restassured.response.Response;
 
 import cz.tacr.elza.controller.vo.ParPartyTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyType;
@@ -91,13 +92,14 @@ public class PartyManagerTest extends AbstractRestTest {
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .parameter("partyId", partyInput.getPartyId())
-                .get(GET_ABSTRACT_PARTY);
+                .get(GET_ABSTRACT_PARTY_V2);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
-        ParParty party = response.getBody().as(ParParty.class);
+        ParPartyVO party = response.getBody().as(ParPartyVO.class);
 
         Assert.assertNotNull("Nenalezena polozka ", party);
     }
+
 
     @Test
     public void testRestGetPartyTypes() throws Exception {
@@ -120,10 +122,10 @@ public class PartyManagerTest extends AbstractRestTest {
                 .parameter("from", 0)
                 .parameter("count", 2)
                 .parameter("partyTypeId", 2)
-                .get(FIND_ABSTRACT_PARTY);
+                .get(FIND_ABSTRACT_PARTY_V2);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
-        ParPartyWithCount partyWithCount = response.getBody().as(ParPartyWithCount.class);
+        cz.tacr.elza.controller.vo.ParPartyWithCount partyWithCount = response.getBody().as(cz.tacr.elza.controller.vo.ParPartyWithCount.class);
 
         Assert.assertTrue("Nenalezena polozka ", partyWithCount.getRecordList().size() == 1);
 
@@ -137,7 +139,7 @@ public class PartyManagerTest extends AbstractRestTest {
                 .get(FIND_ABSTRACT_PARTY);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
-        partyWithCount = response.getBody().as(ParPartyWithCount.class);
+        partyWithCount = response.getBody().as(cz.tacr.elza.controller.vo.ParPartyWithCount.class);
 
         Assert.assertEquals("Nenalezena polozka ", 2, partyWithCount.getRecordList().size());
 
@@ -149,7 +151,7 @@ public class PartyManagerTest extends AbstractRestTest {
                 .get(FIND_ABSTRACT_PARTY);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
-        partyWithCount = response.getBody().as(ParPartyWithCount.class);
+        partyWithCount = response.getBody().as(cz.tacr.elza.controller.vo.ParPartyWithCount.class);
 
         Assert.assertEquals("Nenalezena polozka ", 1, partyWithCount.getRecordList().size());
 
@@ -161,7 +163,7 @@ public class PartyManagerTest extends AbstractRestTest {
                 .get(FIND_ABSTRACT_PARTY);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
-        partyWithCount = response.getBody().as(ParPartyWithCount.class);
+        partyWithCount = response.getBody().as(cz.tacr.elza.controller.vo.ParPartyWithCount.class);
 
         Assert.assertEquals("Nenalezena polozka ", 1, partyWithCount.getRecordList().size());
 
@@ -172,7 +174,7 @@ public class PartyManagerTest extends AbstractRestTest {
                 .get(FIND_ABSTRACT_PARTY);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
-        partyWithCount = response.getBody().as(ParPartyWithCount.class);
+        partyWithCount = response.getBody().as(cz.tacr.elza.controller.vo.ParPartyWithCount.class);
         Assert.assertEquals("Nenalezena polozka ", 3, partyWithCount.getRecordList().size());
 
         // empty
@@ -183,7 +185,7 @@ public class PartyManagerTest extends AbstractRestTest {
                 .get(FIND_ABSTRACT_PARTY);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
-        partyWithCount = response.getBody().as(ParPartyWithCount.class);
+        partyWithCount = response.getBody().as(cz.tacr.elza.controller.vo.ParPartyWithCount.class);
         Assert.assertEquals("Nenalezena polozka ", 3, partyWithCount.getRecordList().size());
     }
 
