@@ -13,4 +13,6 @@ import cz.tacr.elza.domain.RulDataType;
 @Repository
 public interface DataTypeRepository extends JpaRepository<RulDataType, Integer> {
 
+    RulDataType findByCode(String string);
+
 }

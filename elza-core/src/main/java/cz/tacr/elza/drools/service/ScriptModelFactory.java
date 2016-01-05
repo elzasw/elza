@@ -313,7 +313,15 @@ public class ScriptModelFactory {
 				descItemReader.add(modelSiblingBefore, siblingBefore.getNode());
 			}
 			break;
-		}
+        
+        case ROOT:
+            // pokud je vytvářena AP, tak se root level vytváří automaticky
+            break;
+
+        default:
+            throw new IllegalStateException("Nedefinovaný stav DirectionLevel");
+
+        }
 		        
         // Prepare new level
         NewLevel newLevel = new NewLevel();
@@ -324,51 +332,51 @@ public class ScriptModelFactory {
         
         // Add to the output
         List<Level> levels = new LinkedList<>();
-        ModelFactory.addAll(newLevel, (List)levels);		
+        ModelFactory.addAll(newLevel, (List) levels);
 
         // Read description items
         descItemReader.read(version);
 
         return levels;
-    }
+	}
 
     /**
      * Create active level for given level
      * @param modelLevel prepared model level
      * @return
      */
-	public ActiveLevel createActiveLevel(Level modelLevel, 
-			final ArrLevel level,
-			final ArrFindingAidVersion version) {
-		DescItemReader descItemReader = new DescItemReader(descItemRepository, descItemTypeRepository, descItemFactory);
-		
-		ActiveLevel activeLevel = new ActiveLevel(modelLevel);
-		
-		// Prepare siblinds
-		List<ArrLevel> siblings;
-		siblings = levelRepository.findByParentNode(level.getNodeParent(), version.getLockChange());
-		
-		// Find siblings
+    public ActiveLevel createActiveLevel(Level modelLevel,
+                                         final ArrLevel level,
+                                         final ArrFindingAidVersion version) {
+        DescItemReader descItemReader = new DescItemReader(descItemRepository, descItemTypeRepository, descItemFactory);
+
+        ActiveLevel activeLevel = new ActiveLevel(modelLevel);
+
+        // Prepare siblinds
+        List<ArrLevel> siblings;
+        siblings = levelRepository.findByParentNode(level.getNodeParent(), version.getLockChange());
+
+        // Find siblings
         Level modelSiblingBefore = null;
         Level modelSiblingAfter = null;
         ArrLevel siblingBefore = null;
         //ArrLevel siblingAfter ;
         for(Iterator<ArrLevel> it = siblings.iterator(); it.hasNext(); )
         {
-        	ArrLevel l = it.next();
-        	if(l.getNode().getNodeId().equals(modelLevel.getNodeId())) {
-        		if(siblingBefore!=null) {
-        			modelSiblingBefore = ModelFactory.createLevel(siblingBefore, version);
-        			descItemReader.add(modelSiblingBefore, siblingBefore.getNode());
-        		}
-        		if(it.hasNext()) {
-        			ArrLevel siblingAfter = it.next();
-        			modelSiblingAfter = ModelFactory.createLevel(siblingAfter, version);
-        			descItemReader.add(modelSiblingAfter, siblingAfter.getNode());
-        		}
-        		break;
-        	}
-        	siblingBefore = l;
+            ArrLevel l = it.next();
+            if(l.getNode().getNodeId().equals(modelLevel.getNodeId())) {
+                if(siblingBefore!=null) {
+                    modelSiblingBefore = ModelFactory.createLevel(siblingBefore, version);
+                    descItemReader.add(modelSiblingBefore, siblingBefore.getNode());
+                }
+                if(it.hasNext()) {
+                    ArrLevel siblingAfter = it.next();
+                    modelSiblingAfter = ModelFactory.createLevel(siblingAfter, version);
+                    descItemReader.add(modelSiblingAfter, siblingAfter.getNode());
+                }
+                break;
+            }
+            siblingBefore = l;
         }
 
         activeLevel.setSiblingAfter(modelSiblingAfter);
@@ -376,6 +384,6 @@ public class ScriptModelFactory {
 
         // Read description items
         descItemReader.read(version);
-		return activeLevel;
-	}
+        return activeLevel;
+    }
 }
