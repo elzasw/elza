@@ -1,5 +1,7 @@
 package cz.tacr.elza.controller;
 
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegExternalSource;
 import cz.tacr.elza.domain.RegRecord;
@@ -8,13 +10,17 @@ import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemSpecRegister;
 import cz.tacr.elza.domain.vo.RegRecordWithCount;
+import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.DescItemSpecRegisterRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
+import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
+import cz.tacr.elza.service.RegistryService;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -65,6 +71,15 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     @Autowired
     private PartyManager partyManager;
 
+    @Autowired
+    private DataRecordRefRepository dataRecordRefRepository;
+
+    @Autowired
+    private NodeRegisterRepository nodeRegisterRepository;
+
+    @Autowired
+    private RegistryService registryService;
+
 
     @RequestMapping(value = "/createRecord", method = RequestMethod.PUT)
     @Override
@@ -101,13 +116,25 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
             return;
         }
 
-        variantRecordRepository.delete(variantRecordRepository.findByRegRecordId(recordId));
-        List<ParParty> partyList = partyRepository.findParPartyByRecordId(recordId);
-        for (ParParty parParty : partyList) {
-            partyManager.deleteParty(parParty.getPartyId());
+        checkRecordUsage(record);
+        registryService.deleteRecord(record);
+    }
+
+    private void checkRecordUsage(final RegRecord record) {
+        List<ParParty> parPartyByRecordId = partyRepository.findParPartyByRecordId(record.getRecordId());
+        if (CollectionUtils.isNotEmpty(parPartyByRecordId)) {
+            throw new IllegalStateException("Existuje vazba z osoby, nelze smazat.");
         }
 
-        regRecordRepository.delete(recordId);
+        List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByRecordId(record.getRecordId());
+        if (CollectionUtils.isNotEmpty(dataRecordRefList)) {
+            throw new IllegalStateException("Nalezeno použití hesla v tabulce ArrDataRecordRef.");
+        }
+
+        List<ArrNodeRegister> nodeRegisterList = nodeRegisterRepository.findByRecordId(record);
+        if (CollectionUtils.isNotEmpty(nodeRegisterList)) {
+            throw new IllegalStateException("Nalezeno použití hesla v tabulce ArrDataRecordRef.");
+        }
     }
 
     @RequestMapping(value = "/createVariantRecord", method = RequestMethod.PUT)

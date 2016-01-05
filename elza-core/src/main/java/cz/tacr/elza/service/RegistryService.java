@@ -1,15 +1,14 @@
 package cz.tacr.elza.service;
 
-import java.util.Collection;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.VariantRecordRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.repository.RegRecordRepository;
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -23,6 +22,9 @@ public class RegistryService {
 
     @Autowired
     private RegRecordRepository regRecordRepository;
+
+    @Autowired
+    private VariantRecordRepository variantRecordRepository;
 
 
     /**
@@ -59,6 +61,15 @@ public class RegistryService {
 
 
         return regRecordRepository.findRegRecordByTextAndTypeCount(searchRecord, registerTypeIds, local);
+    }
+
+    /**
+     * Smaže rej. heslo a jeho variantní hesla. Předpokládá, že již proběhlo ověření, že je možné ho smazat (vazby atd...).
+     * @param record heslo
+     */
+    public void deleteRecord(final RegRecord record) {
+        variantRecordRepository.delete(variantRecordRepository.findByRegRecordId(record.getRecordId()));
+        regRecordRepository.delete(record);
     }
 
 }

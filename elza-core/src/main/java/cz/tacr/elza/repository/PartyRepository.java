@@ -1,12 +1,11 @@
 package cz.tacr.elza.repository;
 
-import java.util.Collection;
-import java.util.List;
-
+import cz.tacr.elza.domain.ParParty;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import cz.tacr.elza.domain.ParParty;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -42,4 +41,5 @@ public interface PartyRepository extends JpaRepository<ParParty, Integer>, Party
      */
     @Query("SELECT c.creatorParty FROM par_creator c WHERE c.party = ?1")
     List<ParParty> findCreatorsByParty(ParParty party);
+
 }

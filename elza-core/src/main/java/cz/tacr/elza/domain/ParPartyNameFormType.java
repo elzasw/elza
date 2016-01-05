@@ -24,7 +24,7 @@ public class ParPartyNameFormType implements cz.tacr.elza.api.ParPartyNameFormTy
     @Column(length = 50, nullable = false)
     private String code;
 
-    @Column(length = 250, nullable = false)
+    @Column(length = 250)
     private String name;
 
 

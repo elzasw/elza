@@ -1,8 +1,6 @@
 package cz.tacr.elza.controller;
 
 import com.jayway.restassured.response.Response;
-
-import cz.tacr.elza.controller.vo.ParPartyTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParParty;
@@ -48,7 +46,7 @@ public class PartyManagerTest extends AbstractRestTest {
     @Test
     public void testRestUpdateParty() throws Exception {
 
-        ParParty partyInput = createParParty();
+        ParParty partyInput = createParParty(1);
         final RegRecord record = createRecord(2);
         partyInput.setRecord(record);
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
@@ -68,7 +66,7 @@ public class PartyManagerTest extends AbstractRestTest {
 
     @Test
     public void testRestDeleteParty() throws Exception {
-        ParParty partyInput = createParParty();
+        ParParty partyInput = createParParty(3);
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .parameter("partyId", partyInput.getPartyId())
@@ -88,7 +86,7 @@ public class PartyManagerTest extends AbstractRestTest {
 
     @Test
     public void testRestGetParty() throws Exception {
-        ParParty partyInput = createParParty();
+        ParParty partyInput = createParParty(4);
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .parameter("partyId", partyInput.getPartyId())
@@ -115,7 +113,7 @@ public class PartyManagerTest extends AbstractRestTest {
 
     @Test
     public void testRestFindParty() throws Exception {
-        ParParty partyInput = createParty("varianta");
+        ParParty partyInput = createParty("varianta", "KOD1");
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .parameter("search", partyInput.getRecord().getRecord())
@@ -129,8 +127,8 @@ public class PartyManagerTest extends AbstractRestTest {
 
         Assert.assertTrue("Nenalezena polozka ", partyWithCount.getRecordList().size() == 1);
 
-        createParty("varianta");
-        createParty("vr 2");
+        createParty("varianta", "KOD2");
+        createParty("vr 2", "KOD3");
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .parameter("search", "varianta")
                 .parameter("from", 0)
@@ -187,11 +185,24 @@ public class PartyManagerTest extends AbstractRestTest {
         Assert.assertEquals(200, response.statusCode());
         partyWithCount = response.getBody().as(cz.tacr.elza.controller.vo.ParPartyWithCount.class);
         Assert.assertEquals("Nenalezena polozka ", 3, partyWithCount.getRecordList().size());
+
+        // mixed, first null, then ok
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
+                .parameter("from", 0)
+                .parameter("count", 4)
+                .parameter("partyTypeId", 2)
+                .parameter("originator", true)
+                .get(FIND_ABSTRACT_PARTY);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+        partyWithCount = response.getBody().as(cz.tacr.elza.controller.vo.ParPartyWithCount.class);
+        Assert.assertEquals("Nenalezena polozka ", 3, partyWithCount.getRecordList().size());
+
     }
 
     @Test
     public void testRestFindPartyCount() throws Exception {
-        ParParty partyInput = createParty("varianta");
+        ParParty partyInput = createParty("varianta", "xxx");
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
                 .parameter("search", partyInput.getRecord().getRecord())
                 .parameter("from", 0)

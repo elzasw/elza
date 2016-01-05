@@ -2,6 +2,7 @@ package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.RegRecord;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -35,5 +36,13 @@ public interface NodeRegisterRepository extends JpaRepository<ArrNodeRegister, I
             " WHERE cc.changeId < ?2" +
             " AND (dc.changeId > ?2 OR dc.changeId is null) AND nr.node = ?1")
     List<ArrNodeRegister> findClosedVersion(ArrNode node, Integer versionLockChangeId);
+
+    /**
+     * Vazby uzlu na heslo.
+     * @param record    heslo
+     * @return          množina vazeb, nebo prázdná
+     */
+    @Query("SELECT nr FROM arr_node_register nr WHERE nr.record = ?1")
+    List<ArrNodeRegister> findByRecordId(RegRecord record);
 
 }

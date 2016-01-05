@@ -1,37 +1,11 @@
 package cz.tacr.elza.controller;
 
-import static com.jayway.restassured.RestAssured.given;
-
-import java.io.File;
-import java.net.URL;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Function;
-
-import javax.transaction.Transactional;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.EncoderConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
 import com.jayway.restassured.response.Header;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
-
 import cz.tacr.elza.ElzaCoreTest;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -50,6 +24,7 @@ import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.ParRelationType;
@@ -98,6 +73,8 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
+import cz.tacr.elza.repository.PartyNameComplementRepository;
+import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
@@ -110,8 +87,31 @@ import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
-import cz.tacr.elza.service.RegistryService;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.RegistryService;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.IntegrationTest;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+
+import javax.transaction.Transactional;
+import java.io.File;
+import java.net.URL;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+
+import static com.jayway.restassured.RestAssured.given;
 
 /**
  * Abstraktní předek pro testy. Nastavuje REST prostředí.
@@ -343,6 +343,8 @@ public abstract class AbstractRestTest {
     @Autowired
     private PartyNameRepository partyNameRepository;
     @Autowired
+    private PartyNameComplementRepository partyNameComplementRepository;
+    @Autowired
     private NodeRegisterRepository nodeRegisterRepository;
     @Autowired
     private PacketRepository packetRepository;
@@ -391,6 +393,9 @@ public abstract class AbstractRestTest {
     @Autowired
     protected ComplementTypeRepository complementTypeRepository;
 
+    @Autowired
+    protected PartyNameFormTypeRepository partyNameFormTypeRepository;
+
 
     @Before
     public void setUp() {
@@ -417,14 +422,16 @@ public abstract class AbstractRestTest {
 
         // potřebné delete, jen data, ne číselníky
         arrDataRepository.deleteAll();
-        partyNameRepository.unsetAllParty();
+//        partyNameRepository.unsetAllParty();
 
         faBulkActionRepository.deleteAll();
 
         packetRepository.deleteAll();
 
-        partyRepository.deleteAll();
+        partyNameComplementRepository.deleteAll();
+        partyRepository.unsetAllPreferredName();
         partyNameRepository.deleteAll();
+        partyRepository.deleteAll();
         variantRecordRepository.deleteAll();
         nodeRegisterRepository.deleteAll();
         recordRepository.deleteAll();
@@ -721,10 +728,18 @@ public abstract class AbstractRestTest {
         return list.get(0);
     }
 
-    protected ParParty createParParty() {
+    protected ParParty createParParty(final Integer codeIndex) {
         final ParPartyType partyType = findPartyType();
-        final RegRecord record = createRecord(1);
+        final RegRecord record = createRecord(codeIndex);
+
+        ParPartyNameFormType partyNameFormType = new ParPartyNameFormType();
+        partyNameFormType.setCode("PPNFT" + codeIndex);
+        partyNameFormTypeRepository.save(partyNameFormType);
+
         final ParPartyName partyName = new ParPartyName();
+        partyName.setNameFormType(partyNameFormType);
+        partyName.setMainPart("MAIN_PART");
+
         return createParParty(partyType, record, partyName);
     }
 
@@ -761,19 +776,18 @@ public abstract class AbstractRestTest {
 
     protected ParParty createParParty(final ParPartyType partySubtype, final RegRecord record, final ParPartyName partyName) {
         ParParty party = new ParParty();
-        if (partyName != null) {
-            partyNameRepository.save(partyName);
-            party.setPreferredName(partyName);
-        }
-
         party.setPartyType(partySubtype);
         party.setRecord(record);
         party = partyRepository.save(party);
+
         if (partyName != null) {
             partyName.setParty(party);
             partyNameRepository.save(partyName);
-            partyName.setParty(null);
+
+            party.setPreferredName(partyName);
+            partyRepository.save(party);
         }
+
         return party;
     }
 
@@ -818,21 +832,21 @@ public abstract class AbstractRestTest {
     }
 
     @Transactional
-    protected ParParty createParty(String obsah) {
-        final RegRecord record = createRecord("KOD1");
+    protected ParParty createParty(String obsah, final String uniqueCode) {
+        final RegRecord record = createRecord(uniqueCode);
         final ParPartyType partySubtype = findPartyType();
         createVariantRecord(obsah, record);
 
-        ParPartyName preferredName = new ParPartyName();
-        partyNameRepository.save(preferredName);
+//        ParPartyName preferredName = new ParPartyName();
+//        partyNameRepository.save(preferredName);
 
         ParParty party = new ParParty();
         party.setRecord(record);
         party.setPartyType(partySubtype);
-        party.setPreferredName(preferredName);
+//        party.setPreferredName(preferredName);
         party = partyRepository.save(party);
-        preferredName.setParty(party);
-        partyNameRepository.save(preferredName);
+//        preferredName.setParty(party);
+//        partyNameRepository.save(preferredName);
         return party;
     }
 

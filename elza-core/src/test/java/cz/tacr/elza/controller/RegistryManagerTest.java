@@ -1,23 +1,6 @@
 package cz.tacr.elza.controller;
 
-import static com.jayway.restassured.RestAssured.given;
-
-import java.util.Arrays;
-import java.util.List;
-
-import javax.transaction.Transactional;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import com.jayway.restassured.response.Response;
-
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.RegExternalSource;
 import cz.tacr.elza.domain.RegRecord;
@@ -30,6 +13,17 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import ma.glasnost.orika.MapperFactory;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static com.jayway.restassured.RestAssured.given;
 
 
 /**
@@ -115,15 +109,6 @@ public class RegistryManagerTest extends AbstractRestTest {
         RegRecord record = createRecord("KOD4");
         final ParPartyType partyType = findPartyType();
 
-//        final ParPartyNameFormType partyNameFormType = new ParPartyNameFormType();
-//        partyNameFormType.setCode("PNFT-KOD1");
-//        partyNameFormTypeRepository.save(partyNameFormType);
-
-//        final ParPartyName partyName = new ParPartyName();
-//        partyName.setNameFormType(partyNameFormType);
-
-        ParParty party = createParParty(partyType, record, null);
-
         long countStart = recordRepository.count();
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(RECORD_ID_ATT, record.getRecordId())
@@ -134,10 +119,24 @@ public class RegistryManagerTest extends AbstractRestTest {
         Assert.assertEquals(200, response.statusCode());
         Assert.assertEquals(countStart, countEnd + 1);
 
+        // neexistující
         response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(RECORD_ID_ATT, 874522214)
                 .delete(DELETE_RECORD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
+
+        // s vazbou na osobu, nesmí se smazat
+        record = createRecord("KOD4x");
+        createParParty(partyType, record, null);
+
+        countStart = recordRepository.count();
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(RECORD_ID_ATT, record.getRecordId())
+                .delete(DELETE_RECORD_URL);
+        logger.info(response.asString());
+        countEnd = recordRepository.count();
+        Assert.assertEquals(500, response.statusCode());
+        Assert.assertEquals(countStart, countEnd);
+
     }
 
     /**

@@ -1,12 +1,13 @@
 package cz.tacr.elza.repository;
 
-import java.util.List;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyNameComplement;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 
 /**
@@ -18,7 +19,6 @@ import cz.tacr.elza.domain.ParPartyNameComplement;
 @Repository
 public interface PartyNameComplementRepository extends JpaRepository<ParPartyNameComplement, Integer> {
 
-
     /**
      * Najde seznam doplňků jména podle jména.
      *
@@ -26,4 +26,13 @@ public interface PartyNameComplementRepository extends JpaRepository<ParPartyNam
      * @return seznam doplňků jména
      */
     List<ParPartyNameComplement> findByPartyName(ParPartyName partyName);
+    
+    /*
+     * Smaže doplňky jmen dle daného jména.
+     *
+     * @param partyName jméno
+     */
+    @Query("DELETE FROM par_party_name_complement pnc WHERE pnc.partyName = ?1")
+    @Modifying
+    void deleteByPartyName(ParPartyName partyName);
 }
