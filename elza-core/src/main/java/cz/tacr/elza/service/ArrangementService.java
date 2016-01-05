@@ -1,6 +1,8 @@
 package cz.tacr.elza.service;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
@@ -10,19 +12,29 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
+import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrFindingAidVersionConformityInfo;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformityInfo;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
+import cz.tacr.elza.repository.FindingAidVersionConformityInfoRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeConformityErrorsRepository;
+import cz.tacr.elza.repository.NodeConformityInfoRepository;
+import cz.tacr.elza.repository.NodeConformityMissingRepository;
+import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 
 /**
@@ -33,6 +45,12 @@ import cz.tacr.elza.repository.NodeRepository;
  */
 @Service
 public class ArrangementService {
+
+    @Autowired
+    private UpdateConformityInfoService updateConformityInfoService;
+
+    @Autowired
+    private BulkActionService bulkActionService;
 
     @Autowired
     private FindingAidVersionRepository findingAidVersionRepository;
@@ -51,6 +69,24 @@ public class ArrangementService {
 
     @Autowired
     private DescItemRepository descItemRepository;
+
+    @Autowired
+    private DataRepository dataRepository;
+
+    @Autowired
+    private NodeRegisterRepository nodeRegisterRepository;
+
+    @Autowired
+    private NodeConformityInfoRepository nodeConformityInfoRepository;
+
+    @Autowired
+    private NodeConformityErrorsRepository nodeConformityErrorsRepository;
+
+    @Autowired
+    private NodeConformityMissingRepository nodeConformityMissingRepository;
+
+    @Autowired
+    private FindingAidVersionConformityInfoRepository findingAidVersionConformityInfoRepository;
 
     public ArrFindingAid findFindingAidByRootNodeUUID(String uuid) {
         Assert.notNull(uuid);
@@ -146,25 +182,98 @@ public class ArrangementService {
      *
      * @param findingAidId id archivní pomůcky
      */
-    public void deleteFindingAid(@RequestParam(value = "findingAidId") final Integer findingAidId) {
+    public void deleteFindingAid(final Integer findingAidId) {
         Assert.notNull(findingAidId);
 
         if (!findingAidRepository.exists(findingAidId)) {
             return;
         }
 
+//        bulkActionService.getBulkActionState(findingAidId).forEach(state -> {
+//            if (state.getState() == State.RUNNING) {
+//                throw new IllegalStateException("Archivní pomůcku nelze smazat protože běží hromadná akce.");
+//            }
+//        });
+
         ArrFindingAidVersion version = getOpenVersionByFindingAidId(findingAidId);
 
-        ArrChange change = createChange();
+        ArrLevel rootLevel = version.getRootLevel();
+        ArrNode node = rootLevel.getNode();
 
+        findingAidVersionRepository.findVersionsByFindingAidIdOrderByCreateDateAsc(findingAidId).forEach(deleteVersion ->
+            deleteVersion(deleteVersion)
+        );
 
-        deleteLevelCascade(version.getRootLevel(), change);
-
-        for (ArrFindingAidVersion deleteVersion : findingAidVersionRepository
-                .findVersionsByFindingAidIdOrderByCreateDateAsc(findingAidId)) {
-            findingAidVersionRepository.delete(deleteVersion);
-        }
+        deleteLevelCascade(rootLevel);
+        nodeRepository.delete(node);
         findingAidRepository.delete(findingAidId);
+    }
+
+    private void deleteVersion(ArrFindingAidVersion version) {
+        Assert.notNull(version);
+
+//        updateConformityInfoService.terminateWorkerInVersion(version);
+
+        nodeConformityInfoRepository.findByFaVersion(version).forEach(conformityInfo -> {
+            deleteConformityInfo(conformityInfo);
+        });
+
+        ArrFindingAidVersionConformityInfo versionConformityInfo = findingAidVersionConformityInfoRepository.findByFaVersion(version);
+        if (versionConformityInfo != null) {
+            findingAidVersionConformityInfoRepository.delete(versionConformityInfo);
+        }
+
+        findingAidVersionRepository.delete(version);
+    }
+
+    private void deleteConformityInfo(ArrNodeConformityInfo conformityInfo) {
+        nodeConformityErrorsRepository.findByNodeConformityInfo(conformityInfo).forEach(error ->
+            nodeConformityErrorsRepository.delete(error)
+        );
+        nodeConformityMissingRepository.findByNodeConformityInfo(conformityInfo).forEach(error ->
+            nodeConformityMissingRepository.delete(error)
+        );
+
+        nodeConformityInfoRepository.delete(conformityInfo);
+    }
+
+    private void deleteLevelCascade(final ArrLevel level) {
+        Set<ArrNode> nodes = new HashSet<>();
+        ArrNode parentNode = level.getNode();
+        for (ArrLevel childLevel : levelRepository.findByParentNode(parentNode)) {
+            nodes.add(childLevel.getNode());
+            deleteLevelCascade(childLevel);
+        }
+
+        for (ArrDescItem descItem : descItemRepository.findByNodeOrderByCreateChangeAsc(parentNode)) {
+            deleteDescItemInner(descItem);
+        }
+
+        levelRepository.delete(level);
+        nodes.forEach(node -> {
+            deleteNode(node);
+        });
+    }
+
+    private void deleteNode(ArrNode node) {
+        Assert.notNull(node);
+
+        nodeRegisterRepository.findByNode(node).forEach(relation -> {
+            nodeRegisterRepository.delete(relation);
+        });
+
+        nodeConformityInfoRepository.findByNode(node).forEach(conformityInfo -> {
+            deleteConformityInfo(conformityInfo);
+        });
+
+        nodeRepository.delete(node);
+    }
+
+    private void deleteDescItemInner(final ArrDescItem descItem) {
+        Assert.notNull(descItem);
+
+        dataRepository.findByDescItem(descItem).forEach(data -> dataRepository.delete(data));
+        descItemRepository.delete(descItem);
     }
 
     /**

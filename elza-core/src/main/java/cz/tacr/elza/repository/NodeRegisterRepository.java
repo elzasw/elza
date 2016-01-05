@@ -1,13 +1,14 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeRegister;
+import java.util.List;
+
 import cz.tacr.elza.domain.RegRecord;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeRegister;
 
 
 /**
@@ -44,5 +45,7 @@ public interface NodeRegisterRepository extends JpaRepository<ArrNodeRegister, I
      */
     @Query("SELECT nr FROM arr_node_register nr WHERE nr.record = ?1")
     List<ArrNodeRegister> findByRecordId(RegRecord record);
+
+    List<ArrNodeRegister> findByNode(ArrNode node);
 
 }

@@ -80,4 +80,7 @@ public interface LevelRepository extends JpaRepository<ArrLevel, Integer>, Level
 
     @Query("SELECT l FROM arr_level l WHERE l.node = ?1 order by l.createChange.changeDate asc")
     List<ArrLevel> findByNodeOrderByCreateChangeAsc(ArrNode node);
+
+    @Query("SELECT l FROM arr_level l WHERE l.nodeParent = ?1")
+    List<ArrLevel> findByParentNode(ArrNode node);
 }

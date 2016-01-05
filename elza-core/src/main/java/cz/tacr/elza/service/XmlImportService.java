@@ -267,7 +267,7 @@ public class XmlImportService {
     }
 
     private void importFindingAid(FindingAid findingAid, ArrChange change, ArrNode rootNode, Map<String, Integer> xmlIdIntIdRecordMap,
-            Map<String, Integer> xmlIdIntIdPartyMap, Map<String, Integer> xmlIdIntIdPacketMap, XmlImportConfig config) {
+            Map<String, Integer> xmlIdIntIdPartyMap, Map<String, Integer> xmlIdIntIdPacketMap, XmlImportConfig config) throws LevelImportException {
         Level rootLevel = findingAid.getRootLevel();
         int position = 1;
 
@@ -278,7 +278,7 @@ public class XmlImportService {
         }
     }
 
-    private void importLevel(Level level, int position, ArrNode parent, XmlImportConfig config, ArrChange change, Map<String, Integer> xmlIdIntIdRecordMap, Map<String, Integer> xmlIdIntIdPartyMap, Map<String, Integer> xmlIdIntIdPacketMap) {
+    private void importLevel(Level level, int position, ArrNode parent, XmlImportConfig config, ArrChange change, Map<String, Integer> xmlIdIntIdRecordMap, Map<String, Integer> xmlIdIntIdPartyMap, Map<String, Integer> xmlIdIntIdPacketMap) throws LevelImportException {
         ArrNode arrNode = arrangementService.createNode(level.getUuid());
         ArrLevel arrLevel = arrangementService.createLevel(change, arrNode, parent, position);
 
@@ -287,16 +287,30 @@ public class XmlImportService {
         int childPosition = 1;
         if (level.getSubLevels() != null) {
             for (Level subLevel : level.getSubLevels()) {
-                importLevel(subLevel, childPosition++, arrNode, config, change, xmlIdIntIdRecordMap, xmlIdIntIdPartyMap, xmlIdIntIdPacketMap);
+                try {
+                    importLevel(subLevel, childPosition++, arrNode, config, change, xmlIdIntIdRecordMap, xmlIdIntIdPartyMap, xmlIdIntIdPacketMap);
+                } catch (LevelImportException e) {
+                    if (config.isStopOnError()) {
+                        throw e;
+                    }
+                }
             }
         }
     }
 
-    private void importDescItems(ArrNode node, Level level, ArrChange change, XmlImportConfig config, Map<String, Integer> xmlIdIntIdRecordMap, Map<String, Integer> xmlIdIntIdPartyMap, Map<String, Integer> xmlIdIntIdPacketMap) {
+    private void importDescItems(ArrNode node, Level level, ArrChange change, XmlImportConfig config, Map<String, Integer> xmlIdIntIdRecordMap, Map<String, Integer> xmlIdIntIdPartyMap, Map<String, Integer> xmlIdIntIdPacketMap) throws LevelImportException {
         List<AbstractDescItem> descItems = level.getDescItems();
         if (descItems != null) {
             for (AbstractDescItem descItem : descItems) {
-                ArrDescItem arrDescItem = createArrDescItem(change, node, descItem);
+                ArrDescItem arrDescItem;
+                try {
+                    arrDescItem = createArrDescItem(change, node, descItem);
+                } catch (LevelImportException e) {
+                    if (config.isStopOnError()) {
+                        throw e;
+                    }
+                    continue;
+                }
                 descItemRepository.save(arrDescItem);
 
                 if (descItem instanceof DescItemCoordinates) {
@@ -439,7 +453,7 @@ public class XmlImportService {
 
     }
 
-    private ArrDescItem createArrDescItem(ArrChange change, ArrNode node, AbstractDescItem descItem) {
+    private ArrDescItem createArrDescItem(ArrChange change, ArrNode node, AbstractDescItem descItem) throws LevelImportException {
         ArrDescItem arrDescItem = new ArrDescItem();
 
         arrDescItem.setCreateChange(change);
@@ -457,11 +471,11 @@ public class XmlImportService {
         if (descItemTypeCode !=  null) {
             RulDescItemType descItemType = descItemTypeRepository.findOneByCode(descItemTypeCode);
             if (descItemType == null) {
-                throw new IllegalStateException("Chybí desc item type");
+                throw new LevelImportException("Chybí desc item type");
             }
             arrDescItem.setDescItemType(descItemType);
         } else {
-            throw new IllegalStateException("Chybí desc item type code");
+            throw new LevelImportException("Chybí desc item type code");
         }
 
         return arrDescItem;
@@ -478,7 +492,7 @@ public class XmlImportService {
 
             String ruleSetCode = findingAid.getRuleSetCode();
             ruleSet = ruleSetRepository.findByCode(ruleSetCode);
-        } else { // SUZAP, INTERPI by se sem nemělo dostat
+        } else { // jen pro SUZAP, INTERPI by se sem nemělo dostat
             arrangementType = arrangementTypeRepository.findOne(config.getArrangementTypeId());
             ruleSet = ruleSetRepository.findOne(config.getRuleSetId());
         }
