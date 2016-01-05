@@ -31,7 +31,7 @@ public class Level {
     private Integer position;
 
     /** Univerzální unikátní identifikátor. */
-    @XmlElement(name = "uuid", required = true)
+    @XmlElement(name = "uuid")
     private String uuid;
 
     /** Potomci. */

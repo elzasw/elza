@@ -52,11 +52,11 @@ import cz.tacr.elza.domain.ArrNodeConformityInfo;
 import cz.tacr.elza.domain.ArrNodeConformityInfoExt;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.ArrCalendarTypes;
@@ -1187,7 +1187,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         Assert.notNull(descItem);
         Assert.notNull(versionId);
         ArrChange change = arrangementService.createChange();
-        Integer objectId = getNextDescItemObjectId();
+        Integer objectId = arrangementService.getNextDescItemObjectId();
         Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems = new HashMap<>();
         ArrDescItem descItemRet = createDescriptionItemRaw(descItem, versionId, change, true, mapDescItems, objectId);
         saveChanges(mapDescItems, null, true);
@@ -1367,7 +1367,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
                 change = arrangementService.createChange();
 
-                Integer objectId = getNextDescItemObjectId();
+                Integer objectId = arrangementService.getNextDescItemObjectId();
 
                 for (ArrDescItem deleteDescItem : deleteDescItems) {
                     ArrDescItem deleteDescItemRet = deleteDescriptionItemRaw(deleteDescItem, versionId, change, false, mapDescItems);
@@ -1573,7 +1573,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems = new HashMap<>();
 
         ArrDescItem descItemRet = createDescriptionItemRaw(createDescItem, version.getFindingAidVersionId(), change,
-                saveNode, mapDescItems, getNextDescItemObjectId());
+                saveNode, mapDescItems, arrangementService.getNextDescItemObjectId());
         saveChanges(mapDescItems, null, true);
         return descItemRet;
     }
@@ -1987,24 +1987,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         if (!rulDescItemTypes.contains(rulDescItemType)) {
             throw new IllegalArgumentException("Typ atributu není povolený");
         }
-    }
-
-    /**
-     * Vrací další identifikátor objektu pro atribut (oproti PK se zachovává při nové verzi)
-     *
-     * TODO:
-     * Není dořešené, může dojít k přidělení stejného object_id dvěma různýmhodnotám atributu.
-     * Řešit v budoucnu zrušením object_id (pravděpodobně GUID) nebo vytvořením nové entity,
-     * kde bude object_id primární klíč a bude tak generován pomocí sekvencí hibernate.
-     *
-     * @return Identifikátor objektu
-     */
-    public Integer getNextDescItemObjectId() {
-        Integer maxDescItemObjectId = descItemRepository.findMaxDescItemObjectId();
-        if (maxDescItemObjectId == null) {
-            maxDescItemObjectId = 0;
-        }
-        return maxDescItemObjectId + 1;
     }
 
     /**
