@@ -6,7 +6,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import cz.tacr.elza.api.RulPackageRules;
+import cz.tacr.elza.api.RulRule;
 
 
 /**
@@ -26,7 +26,7 @@ public class PackageRule {
     private String filename;
 
     @XmlElement(name = "rule-type", required = true)
-    private RulPackageRules.RuleType ruleType;
+    private RulRule.RuleType ruleType;
 
     @XmlElement(name = "priority", required = true)
     private Integer priority;
@@ -47,11 +47,11 @@ public class PackageRule {
         this.filename = filename;
     }
 
-    public RulPackageRules.RuleType getRuleType() {
+    public RulRule.RuleType getRuleType() {
         return ruleType;
     }
 
-    public void setRuleType(final RulPackageRules.RuleType ruleType) {
+    public void setRuleType(final RulRule.RuleType ruleType) {
         this.ruleType = ruleType;
     }
 

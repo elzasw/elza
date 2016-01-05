@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemConstraint;
@@ -41,8 +42,7 @@ import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemSpecRegister;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulPackageActions;
-import cz.tacr.elza.domain.RulPackageRules;
+import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.drools.RulesExecutor;
@@ -70,9 +70,9 @@ import cz.tacr.elza.repository.DescItemConstraintRepository;
 import cz.tacr.elza.repository.DescItemSpecRegisterRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
-import cz.tacr.elza.repository.PackageActionsRepository;
+import cz.tacr.elza.repository.ActionRepository;
 import cz.tacr.elza.repository.PackageRepository;
-import cz.tacr.elza.repository.PackageRulesRepository;
+import cz.tacr.elza.repository.RuleRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
@@ -173,10 +173,10 @@ public class PackageService {
     private RegisterTypeRepository registerTypeRepository;
 
     @Autowired
-    private PackageActionsRepository packageActionsRepository;
+    private ActionRepository packageActionsRepository;
 
     @Autowired
-    private PackageRulesRepository packageRulesRepository;
+    private RuleRepository packageRulesRepository;
 
     @Autowired
     private BulkActionConfigManager bulkActionConfigManager;
@@ -194,8 +194,8 @@ public class PackageService {
         File dirRules = new File(RulesExecutor.ROOT_PATH);
 
         ZipFile zipFile = null;
-        List<RulPackageActions> rulPackageActions = null;
-        List<RulPackageRules> rulPackageRules = null;
+        List<RulAction> rulPackageActions = null;
+        List<RulRule> rulPackageRules = null;
 
         try {
 
@@ -243,13 +243,13 @@ public class PackageService {
         } catch (Exception e) {
             try {
                 if (rulPackageActions != null) {
-                    for (RulPackageActions rulPackageAction : rulPackageActions) {
+                    for (RulAction rulPackageAction : rulPackageActions) {
                         forceDeleteFile(dirActions, rulPackageAction.getFilename());
                     }
                 }
 
                 if (rulPackageRules != null) {
-                    for (RulPackageRules rulPackageRule : rulPackageRules) {
+                    for (RulRule rulPackageRule : rulPackageRules) {
                         forceDeleteFile(dirRules, rulPackageRule.getFilename());
                     }
                 }
@@ -333,44 +333,44 @@ public class PackageService {
      * @param dir          adresář pravidel
      * @return seznam pravidel
      */
-    private List<RulPackageRules> processPackageRules(final PackageRules packageRules,
+    private List<RulRule> processPackageRules(final PackageRules packageRules,
                                                       final RulPackage rulPackage,
                                                       final Map<String, ByteArrayInputStream> mapEntry,
                                                       final List<RulRuleSet> rulRuleSets,
                                                       final File dir) {
 
-        List<RulPackageRules> rulPackageRules = packageRulesRepository.findByRulPackage(rulPackage);
-        List<RulPackageRules> rulPackageRulesNew = new ArrayList<>();
+        List<RulRule> rulPackageRules = packageRulesRepository.findByRulPackage(rulPackage);
+        List<RulRule> rulRuleNew = new ArrayList<>();
 
         if (!CollectionUtils.isEmpty(packageRules.getPackageRules())) {
             for (PackageRule packageRule : packageRules.getPackageRules()) {
-                List<RulPackageRules> findItems = rulPackageRules.stream().filter(
+                List<RulRule> findItems = rulPackageRules.stream().filter(
                         (r) -> r.getFilename().equals(packageRule.getFilename())).collect(
                         Collectors.toList());
-                RulPackageRules item;
+                RulRule item;
                 if (findItems.size() > 0) {
                     item = findItems.get(0);
                 } else {
-                    item = new RulPackageRules();
+                    item = new RulRule();
                 }
 
                 convertRulPackageRule(rulPackage, packageRule, item, rulRuleSets);
-                rulPackageRulesNew.add(item);
+                rulRuleNew.add(item);
             }
         }
 
-        rulPackageRulesNew = packageRulesRepository.save(rulPackageRulesNew);
+        rulRuleNew = packageRulesRepository.save(rulRuleNew);
 
-        List<RulPackageRules> rulPackageRulesDelete = new ArrayList<>(rulPackageRules);
-        rulPackageRulesDelete.removeAll(rulPackageRulesNew);
-        packageRulesRepository.delete(rulPackageRulesDelete);
+        List<RulRule> rulRuleDelete = new ArrayList<>(rulPackageRules);
+        rulRuleDelete.removeAll(rulRuleNew);
+        packageRulesRepository.delete(rulRuleDelete);
 
         try {
-            for (RulPackageRules rule : rulPackageRulesDelete) {
+            for (RulRule rule : rulRuleDelete) {
                 deleteFile(dir, rule.getFilename());
             }
 
-            for (RulPackageRules rule : rulPackageRulesNew) {
+            for (RulRule rule : rulRuleNew) {
                 saveFile(mapEntry, dir, ZIP_DIR_RULES, rule.getFilename());
             }
 
@@ -379,7 +379,7 @@ public class PackageService {
             throw new IllegalStateException(e);
         }
 
-        return rulPackageRulesNew;
+        return rulRuleNew;
 
     }
 
@@ -393,7 +393,7 @@ public class PackageService {
      */
     private void convertRulPackageRule(final RulPackage rulPackage,
                                        final PackageRule packageRule,
-                                       final RulPackageRules rulPackageRule,
+                                       final RulRule rulPackageRule,
                                        final List<RulRuleSet> rulRuleSets) {
 
         rulPackageRule.setPackage(rulPackage);
@@ -426,24 +426,24 @@ public class PackageService {
      * @param dir            adresář hromadných akcí
      * @return seznam hromadných akcí
      */
-    private List<RulPackageActions> processPackageActions(final PackageActions packageActions,
+    private List<RulAction> processPackageActions(final PackageActions packageActions,
                                                           final RulPackage rulPackage,
                                                           final Map<String, ByteArrayInputStream> mapEntry,
                                                           final File dir) {
 
-        List<RulPackageActions> rulPackageActions = packageActionsRepository.findByRulPackage(rulPackage);
-        List<RulPackageActions> rulPackageActionsNew = new ArrayList<>();
+        List<RulAction> rulPackageActions = packageActionsRepository.findByRulPackage(rulPackage);
+        List<RulAction> rulPackageActionsNew = new ArrayList<>();
 
         if (!CollectionUtils.isEmpty(packageActions.getPackageActions())) {
             for (PackageAction packageAction : packageActions.getPackageActions()) {
-                List<RulPackageActions> findItems = rulPackageActions.stream().filter(
+                List<RulAction> findItems = rulPackageActions.stream().filter(
                         (r) -> r.getFilename().equals(packageAction.getFilename())).collect(
                         Collectors.toList());
-                RulPackageActions item;
+                RulAction item;
                 if (findItems.size() > 0) {
                     item = findItems.get(0);
                 } else {
-                    item = new RulPackageActions();
+                    item = new RulAction();
                 }
 
                 convertRulPackageAction(rulPackage, packageAction, item);
@@ -453,17 +453,17 @@ public class PackageService {
 
         rulPackageActionsNew = packageActionsRepository.save(rulPackageActionsNew);
 
-        List<RulPackageActions> rulPackageActionsDelete = new ArrayList<>(rulPackageActions);
+        List<RulAction> rulPackageActionsDelete = new ArrayList<>(rulPackageActions);
         rulPackageActionsDelete.removeAll(rulPackageActionsNew);
         packageActionsRepository.delete(rulPackageActionsDelete);
 
 
         try {
-            for (RulPackageActions action : rulPackageActionsDelete) {
+            for (RulAction action : rulPackageActionsDelete) {
                 deleteFile(dir, action.getFilename());
             }
 
-            for (RulPackageActions action : rulPackageActionsNew) {
+            for (RulAction action : rulPackageActionsNew) {
                 saveFile(mapEntry, dir, ZIP_DIR_ACTIONS, action.getFilename());
             }
 
@@ -601,7 +601,7 @@ public class PackageService {
      */
     private void convertRulPackageAction(final RulPackage rulPackage,
                                          final PackageAction packageAction,
-                                         final RulPackageActions rulPackageAction) {
+                                         final RulAction rulPackageAction) {
         rulPackageAction.setPackage(rulPackage);
         rulPackageAction.setFilename(packageAction.getFilename());
     }
@@ -1183,11 +1183,11 @@ public class PackageService {
         try {
 
 
-            for (RulPackageRules rulPackageRule : packageRulesRepository.findByRulPackage(rulPackage)) {
+            for (RulRule rulPackageRule : packageRulesRepository.findByRulPackage(rulPackage)) {
                 deleteFile(dirRules, rulPackageRule.getFilename());
             }
 
-            for (RulPackageActions rulPackageAction : packageActionsRepository.findByRulPackage(rulPackage)) {
+            for (RulAction rulPackageAction : packageActionsRepository.findByRulPackage(rulPackage)) {
                 deleteFile(dirActions, rulPackageAction.getFilename());
             }
 
@@ -1383,11 +1383,11 @@ public class PackageService {
      */
     private void exportPackageRules(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
         PackageRules packageRules = new PackageRules();
-        List<RulPackageRules> rulPackageRules = packageRulesRepository.findByRulPackage(rulPackage);
+        List<RulRule> rulPackageRules = packageRulesRepository.findByRulPackage(rulPackage);
         List<PackageRule> packageRuleList = new ArrayList<>(rulPackageRules.size());
         packageRules.setPackageRules(packageRuleList);
 
-        for (RulPackageRules rulPackageRule : rulPackageRules) {
+        for (RulRule rulPackageRule : rulPackageRules) {
             PackageRule packageRule = new PackageRule();
             convertPackageRule(rulPackageRule, packageRule);
             packageRuleList.add(packageRule);
@@ -1408,11 +1408,11 @@ public class PackageService {
      */
     private void exportPackageActions(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
         PackageActions packageActions = new PackageActions();
-        List<RulPackageActions> rulPackageActions = packageActionsRepository.findByRulPackage(rulPackage);
+        List<RulAction> rulPackageActions = packageActionsRepository.findByRulPackage(rulPackage);
         List<PackageAction> packageActionList = new ArrayList<>(rulPackageActions.size());
         packageActions.setPackageActions(packageActionList);
 
-        for (RulPackageActions rulPackageAction : rulPackageActions) {
+        for (RulAction rulPackageAction : rulPackageActions) {
             PackageAction packageAction = new PackageAction();
             convertPackageAction(rulPackageAction, packageAction);
             packageActionList.add(packageAction);
@@ -1604,7 +1604,7 @@ public class PackageService {
      * @param rulPackageRule DAO pravidla
      * @param packageRule    VO pravidla
      */
-    private void convertPackageRule(final RulPackageRules rulPackageRule, final PackageRule packageRule) {
+    private void convertPackageRule(final RulRule rulPackageRule, final PackageRule packageRule) {
         packageRule.setFilename(rulPackageRule.getFilename());
         packageRule.setPriority(rulPackageRule.getPriority());
         packageRule.setRuleSet(rulPackageRule.getRuleSet().getCode());
@@ -1617,7 +1617,7 @@ public class PackageService {
      * @param rulPackageAction DAO hromadné akce
      * @param packageAction    VO hromadné akce
      */
-    private void convertPackageAction(final RulPackageActions rulPackageAction, final PackageAction packageAction) {
+    private void convertPackageAction(final RulAction rulPackageAction, final PackageAction packageAction) {
         packageAction.setFilename(rulPackageAction.getFilename());
     }
 

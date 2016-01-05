@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulPackageRules;
+import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.RulRuleSet;
 
 
@@ -17,15 +17,15 @@ import cz.tacr.elza.domain.RulRuleSet;
  * @since 14.12.2015
  */
 @Repository
-public interface PackageRulesRepository extends JpaRepository<RulPackageRules, Integer> {
+public interface RuleRepository extends JpaRepository<RulRule, Integer> {
 
 
-    List<RulPackageRules> findByRulPackage(RulPackage rulPackage);
+    List<RulRule> findByRulPackage(RulPackage rulPackage);
 
 
     void deleteByRulPackage(RulPackage rulPackage);
 
 
-    List<RulPackageRules> findByRuleSetAndRuleTypeOrderByPriorityAsc(RulRuleSet rulRuleSet,
-                                                                     RulPackageRules.RuleType attributeTypes);
+    List<RulRule> findByRuleSetAndRuleTypeOrderByPriorityAsc(RulRuleSet rulRuleSet,
+                                                                     RulRule.RuleType attributeTypes);
 }

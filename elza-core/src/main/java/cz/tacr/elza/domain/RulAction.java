@@ -13,19 +13,19 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
- * Implementace RulPackageActions.
+ * Implementace RulAction.
  *
  * @author Martin Šlapa
  * @since 14.12.2015
  */
-@Entity(name = "rul_package_actions")
+@Entity(name = "rul_action")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulPackageActions implements cz.tacr.elza.api.RulPackageActions<RulPackage> {
+public class RulAction implements cz.tacr.elza.api.RulAction<RulPackage> {
 
     @Id
     @GeneratedValue
-    private Integer packageActionsId;
+    private Integer actionId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
@@ -35,13 +35,13 @@ public class RulPackageActions implements cz.tacr.elza.api.RulPackageActions<Rul
     private String filename;
 
     @Override
-    public Integer getPackageActionsId() {
-        return packageActionsId;
+    public Integer getActionId() {
+        return actionId;
     }
 
     @Override
-    public void setPackageActionsId(final Integer packageActionsId) {
-        this.packageActionsId = packageActionsId;
+    public void setActionId(final Integer actionId) {
+        this.actionId = actionId;
     }
 
     @Override

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.RulPackageRules;
+import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.model.NewLevel;
@@ -42,10 +42,10 @@ public class ScenarioOfNewLevelRules extends Rules {
         List<Level> levels = scriptModelFactory.createFactsForNewLevel(level, directionLevel, version);
         
         Path path;
-        List<RulPackageRules> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
-                version.getRuleSet(), RulPackageRules.RuleType.NEW_LEVEL);
+        List<RulRule> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
+                version.getRuleSet(), RulRule.RuleType.NEW_LEVEL);
 
-        for (RulPackageRules rulPackageRule : rulPackageRules) {
+        for (RulRule rulPackageRule : rulPackageRules) {
             path = Paths.get(RulesExecutor.ROOT_PATH + File.separator + rulPackageRule.getFilename());
 
             StatelessKieSession session = createNewStatelessKieSession(version.getRuleSet(), path);

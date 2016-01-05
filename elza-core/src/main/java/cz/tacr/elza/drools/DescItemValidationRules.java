@@ -12,7 +12,7 @@ import org.kie.api.runtime.StatelessKieSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.domain.RulPackageRules;
+import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.vo.DataValidationResult;
@@ -57,10 +57,10 @@ public class DescItemValidationRules extends Rules {
         Level voLevel = scriptModelFactory.createLevelStructureWithChilds(level, version);
 
         Path path;
-        List<RulPackageRules> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
-                version.getRuleSet(), RulPackageRules.RuleType.CONFORMITY_INFO);
+        List<RulRule> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
+                version.getRuleSet(), RulRule.RuleType.CONFORMITY_INFO);
 
-        for (RulPackageRules rulPackageRule : rulPackageRules) {
+        for (RulRule rulPackageRule : rulPackageRules) {
             path = Paths.get(RulesExecutor.ROOT_PATH + File.separator + rulPackageRule.getFilename());
             StatelessKieSession session = createNewStatelessKieSession(version.getRuleSet(), path);
             session.setGlobal("results", result);

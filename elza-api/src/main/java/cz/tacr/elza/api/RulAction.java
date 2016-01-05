@@ -3,19 +3,19 @@ package cz.tacr.elza.api;
 import java.io.Serializable;
 
 
-public interface RulPackageActions<P extends RulPackage> extends Serializable {
+public interface RulAction<P extends RulPackage> extends Serializable {
 
 
     /**
      * @return identifikátor entity
      */
-    Integer getPackageActionsId();
+    Integer getActionId();
 
 
     /**
-     * @param packageActionsId identifikátor entity
+     * @param actionId identifikátor entity
      */
-    void setPackageActionsId(Integer packageActionsId);
+    void setActionId(Integer actionId);
 
 
     /**

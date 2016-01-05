@@ -1,8 +1,6 @@
 package cz.tacr.elza.drools;
 
-import java.io.File;
 import java.io.FileInputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.List;
@@ -17,7 +15,7 @@ import org.kie.internal.io.ResourceFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.repository.PackageRulesRepository;
+import cz.tacr.elza.repository.RuleRepository;
 
 
 /**
@@ -29,7 +27,7 @@ import cz.tacr.elza.repository.PackageRulesRepository;
 public abstract class Rules {
 
     @Autowired
-    protected PackageRulesRepository packageRulesRepository;
+    protected RuleRepository packageRulesRepository;
 
     /**
      * cesta k souboru
