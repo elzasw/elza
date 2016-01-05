@@ -1,0 +1,233 @@
+package ZP2015;
+
+import cz.tacr.elza.api.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemTypeExt;
+import cz.tacr.elza.domain.RulDescItemSpecExt;
+import cz.tacr.elza.domain.RulArrangementType;
+import cz.tacr.elza.drools.model.AvailableDescItems;
+import cz.tacr.elza.drools.model.ActiveLevel;
+import cz.tacr.elza.drools.model.Level;
+import cz.tacr.elza.drools.model.DescItem;
+
+import java.util.Arrays;
+import java.util.Set;
+import cz.tacr.elza.api.RulDescItemType;
+
+global AvailableDescItems results;
+global java.util.Set strategies;
+global cz.tacr.elza.domain.RulArrangementType arrangementType;
+
+
+function void requiredForTypes(RulDescItemTypeExt descItemType, RulArrangementType arrangementType, String[] types) {
+    if (Arrays.asList(types).contains(arrangementType.getCode())) {
+        descItemType.setType(RulDescItemType.Type.REQUIRED);
+    }
+}
+
+function void requiredForTypesAndStrategy(RulDescItemTypeExt descItemType, RulArrangementType arrangementType,
+                                          String[] types, Set strategies, String strategy) {
+    if (Arrays.asList(types).contains(arrangementType.getCode()) && strategies.contains(strategy)) {
+        descItemType.setType(RulDescItemType.Type.REQUIRED);
+    }
+}
+
+//
+// Otazky:
+// - Jak pridat kopii prvku? Jde o to mit moznost postupne pridavat 
+//   dostupne specifikace samostatnymi pravidly
+// Priklad: 
+// - addWithAllSpec
+// - addWithoutSpec - ?kde je vzit pozdeji?
+
+rule "Atribut ZP2015_LEVEL_TYPE je povinný vždy"
+salience 100 
+no-loop
+when
+	$descItemType : RulDescItemTypeExt(code == "ZP2015_LEVEL_TYPE")
+then
+    $descItemType.setType(RulDescItemType.Type.REQUIRED);
+	results.add($descItemType);
+	results.setSpecTypeForAll($descItemType, null);
+end
+
+rule "Atribut ZP2015_LEVEL_TYPE, ZP2015_LEVEL_ROOT"
+no-loop 
+when
+	$descItemType : RulDescItemTypeExt(code == "ZP2015_LEVEL_TYPE")
+	$activeLevel  : ActiveLevel( parent==null )
+	$descItemSpec : RulDescItemSpecExt(code == "ZP2015_LEVEL_ROOT") from $descItemType.rulDescItemSpecList 
+then
+	$descItemSpec.setType(RulDescItemSpec.Type.REQUIRED);
+end
+
+// Serie - povinná pokud je rodič root
+rule "Atribut ZP2015_LEVEL_TYPE, ZP2015_LEVEL_SERIES pod souborem"
+no-loop 
+when
+	$descItemType : RulDescItemTypeExt(code == "ZP2015_LEVEL_TYPE")
+	$activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems )
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_ROOT" ) from $parentDescItems
+	$descItemSpec : RulDescItemSpecExt(code == "ZP2015_LEVEL_SERIES") from $descItemType.rulDescItemSpecList 
+then
+	$descItemSpec.setType(RulDescItemSpec.Type.REQUIRED);
+end
+
+// Pokud je rodic série, tak může být série, složka nebo jednotlivost
+rule "Atribut ZP2015_LEVEL_TYPE, ZP2015_LEVEL_SERIES"
+no-loop 
+when
+	$descItemType : RulDescItemTypeExt(code == "ZP2015_LEVEL_TYPE")
+	$activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems )
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_SERIES" ) from $parentDescItems
+	$descItemSpec : RulDescItemSpecExt(code == "ZP2015_LEVEL_SERIES" || code == "ZP2015_LEVEL_FOLDER" || code == "ZP2015_LEVEL_ITEM") from $descItemType.rulDescItemSpecList 
+then
+	$descItemSpec.setType(RulDescItemSpec.Type.POSSIBLE);
+end
+
+// Pokud je rodič složka, tak může být složka nebo jednotlivost pokud sourozenec neexistuje
+rule "Atribut ZP2015_LEVEL_TYPE u rodice je ZP2015_LEVEL_FOLDER, nema sourozence"
+no-loop 
+when
+	$descItemType : RulDescItemTypeExt(code == "ZP2015_LEVEL_TYPE")
+	$activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems && siblingBefore==null && siblingAfter==null)
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $parentDescItems
+	$descItemSpec : RulDescItemSpecExt(code == "ZP2015_LEVEL_FOLDER" || code == "ZP2015_LEVEL_ITEM") from $descItemType.rulDescItemSpecList 
+then
+	$descItemSpec.setType(RulDescItemSpec.Type.POSSIBLE);
+end
+
+// Pokud je rodič složka a má sourozence pred, tak je stejného typu jako oni
+rule "Atribut ZP2015_LEVEL_TYPE u rodice je ZP2015_LEVEL_FOLDER, ma sourozence pred"
+no-loop 
+when
+	$descItemType : RulDescItemTypeExt(code == "ZP2015_LEVEL_TYPE")
+	$activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems && siblingBefore!=null && $siblingDescItems: siblingBefore.descItems)
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $parentDescItems
+	DescItem(type=="ZP2015_LEVEL_TYPE" && $specCode: specCode) from $siblingDescItems
+	$descItemSpec : RulDescItemSpecExt(code == $specCode) from $descItemType.rulDescItemSpecList
+then
+	$descItemSpec.setType(RulDescItemSpec.Type.REQUIRED);
+end
+
+// Pokud je rodič složka a má sourozence za, tak je stejného typu jako oni
+rule "Atribut ZP2015_LEVEL_TYPE u rodice je ZP2015_LEVEL_FOLDER, ma sourozence za"
+no-loop 
+when
+	$descItemType : RulDescItemTypeExt(code == "ZP2015_LEVEL_TYPE")
+	$activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems && siblingAfter!=null && $siblingDescItems: siblingAfter.descItems)
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $parentDescItems
+	DescItem(type=="ZP2015_LEVEL_TYPE" && $specCode: specCode) from $siblingDescItems
+	$descItemSpec : RulDescItemSpecExt(code == $specCode) from $descItemType.rulDescItemSpecList
+then
+	$descItemSpec.setType(RulDescItemSpec.Type.REQUIRED);
+end
+
+// Pokud je rodič jednotlivost, tak je část
+rule "Atribut ZP2015_LEVEL_TYPE u rodice je ZP2015_LEVEL_ITEM"
+no-loop 
+when
+	$descItemType : RulDescItemTypeExt(code == "ZP2015_LEVEL_TYPE")
+	$activeLevel  : ActiveLevel( parent!=null && $parentDescItems: parent.descItems )
+	DescItem(type=="ZP2015_LEVEL_TYPE" && (specCode=="ZP2015_LEVEL_ITEM"||specCode=="ZP2015_LEVEL_PART") ) from $parentDescItems
+	$descItemSpec : RulDescItemSpecExt(code == "ZP2015_LEVEL_PART" ) from $descItemType.rulDescItemSpecList
+then
+	$descItemSpec.setType(RulDescItemSpec.Type.REQUIRED);
+end
+
+// Složka musí mít uveden typ
+rule "Složka musí mít uveden typ"
+salience 100
+no-loop
+when
+	$activeLevel : ActiveLevel( parent!=null  )
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.descItems
+	$descItemType : RulDescItemTypeExt(code == "ZP2015_FOLDER_TYPE")
+	$descItemSpec : RulDescItemSpecExt(code == "ZP2015_FOLDER_LOGICAL" ) from $descItemType.rulDescItemSpecList
+then
+    $descItemType.setType(RulDescItemType.Type.REQUIRED);
+	results.add($descItemType);
+	results.setSpecTypeForAll($descItemType, null);
+	$descItemSpec.setType(RulDescItemSpec.Type.POSSIBLE);
+end
+
+// Pokud je nadřazená složka s uvedenim EJ nebo hromadina, potom musí být logická
+rule "Musí být logická složka, pokud nadřazená složka je s uvedenim EJ nebo hromadina"
+no-loop
+when
+	$activeLevel : ActiveLevel( parent!=null  )
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.descItems
+	$level : Level( this!=$activeLevel )
+	DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode=="ZP2015_FOLDER_SINGLE_TYPE" || specCode=="ZP2015_FOLDER_UNITS" ) ) from $level.descItems
+	$descItemType : RulDescItemTypeExt(code == "ZP2015_FOLDER_TYPE")
+	$descItemSpec : RulDescItemSpecExt(code == "ZP2015_FOLDER_LOGICAL" ) from $descItemType.rulDescItemSpecList
+then
+	$descItemSpec.setType(RulDescItemSpec.Type.REQUIRED);
+end
+
+// Pokud je nadřazená složka bez uvedeni EJ nebo hromadina, potom muze byt hromadina nebo s uvedenim EJ
+rule "Může být hromadina nebo s uvedením EJ, pokud nemá nadřazenou složku nebo jen logické"
+no-loop
+when
+	$activeLevel : ActiveLevel( )
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.descItems
+	// neexistje nadrizeny level typu slozka
+	not ( $level : Level( this!=$activeLevel ) and
+	     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $level.descItems and 
+	     DescItem(type=="ZP2015_FOLDER_TYPE" && specCode!="ZP2015_FOLDER_LOGICAL" ) from $level.descItems )
+	$descItemType : RulDescItemTypeExt(code == "ZP2015_FOLDER_TYPE")
+	$descItemSpec : RulDescItemSpecExt(code != "ZP2015_FOLDER_LOGICAL" ) from $descItemType.rulDescItemSpecList
+then
+	$descItemSpec.setType(RulDescItemSpec.Type.POSSIBLE);
+end
+
+/*
+rule "Atribut ZP2015_LEVEL_TYPE je povinný vždy"
+when
+	descItemType : RulDescItemTypeExt(code == "ZP2015_LEVEL_TYPE")
+then
+    descItemType.setType(RulDescItemType.Type.REQUIRED);
+    descItemType.setRulDescItemSpecList();
+	results.add(descItemType);
+end
+
+rule "Atribut ZP2015_SERIAL_NUMBER je povinný vždy, pokud typ výstupu je MAN"
+when
+	descItemType : RulDescItemTypeExt(code == "ZP2015_SERIAL_NUMBER")
+then
+    requiredForTypes(descItemType, arrangementType, new String[] {"MAN"});
+	results.add(descItemType);
+end
+
+rule "Atribut ZP2015_UNIT_ID je povinný vždy, pokud typ výstupu je INV nebo KAT"
+when
+	descItemType : RulDescItemTypeExt(code == "ZP2015_UNIT_ID")
+then
+    requiredForTypesAndStrategy(descItemType, arrangementType, new String[] {"INV", "KAT"}, strategies, "COMPLETE");
+	results.add(descItemType);
+end
+
+rule "Atributy jsou vždy možné: {ZP2015_TITLE, ZP2015_FORMAL_TITLE, ZP2015_UNIT_DATE_PRE, ZP2015_UNIT_DATE, ZP2015_UNIT_DATE_POST, ZP2015_ORIGINATOR}"
+when
+	descItemType : (RulDescItemTypeExt(code == "ZP2015_TITLE")
+                 	            or RulDescItemTypeExt(code == "ZP2015_FORMAL_TITLE")
+                 	            or RulDescItemTypeExt(code == "ZP2015_UNIT_DATE_PRE")
+                 	            or RulDescItemTypeExt(code == "ZP2015_UNIT_DATE")
+                 	            or RulDescItemTypeExt(code == "ZP2015_UNIT_DATE_POST")
+                 	            or RulDescItemTypeExt(code == "ZP2015_ORIGINATOR")
+                 	            )
+then
+	results.add(descItemType);
+end
+
+rule "Atribut ZP2015_OTHER_ID a jeho specifikace ZP2015_OTHERID_SIG_ORIG jsou možný vždy"
+when
+	descItemType : RulDescItemTypeExt(code == "ZP2015_OTHER_ID")
+	(
+		descItemSpec : RulDescItemSpecExt(code == "ZP2015_OTHERID_SIG_ORIG") from descItemType.rulDescItemSpecList
+	)
+
+then
+	descItemType.setRulDescItemSpecList(Arrays.asList(descItemSpec));
+	results.add(descItemType);
+end
+*/

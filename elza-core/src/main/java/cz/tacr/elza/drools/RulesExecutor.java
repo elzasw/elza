@@ -66,18 +66,20 @@ public class RulesExecutor implements InitializingBean {
     /**
      * Spustí pravidla nad typy atributů a jejich specifikacema.
      *
+     * @param level                  checked level
      * @param rulDescItemTypeExtList seznam všech atributů
      * @param version                verze AP
      * @param strategies             strategie vyhodnocování
      * @return seznam typů atributů odpovídající pravidlům
      */
-    public List<RulDescItemTypeExt> executeDescItemTypesRules(final List<RulDescItemTypeExt> rulDescItemTypeExtList,
+    public List<RulDescItemTypeExt> executeDescItemTypesRules(final ArrLevel level,
+                                                              final List<RulDescItemTypeExt> rulDescItemTypeExtList,
                                                               final ArrFindingAidVersion version,
                                                               final Set<String> strategies) {
 
         try {
             return descItemTypesRules
-                    .execute(rulDescItemTypeExtList, version.getArrangementType(), version.getRuleSet(), strategies);
+                    .execute(level, version, rulDescItemTypeExtList, strategies);
         } catch (NoSuchFileException e) {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
             return rulDescItemTypeExtList;

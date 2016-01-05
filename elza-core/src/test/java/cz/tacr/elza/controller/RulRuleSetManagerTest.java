@@ -122,9 +122,11 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
         createDescItemConstrain(descItemTypeRepository.getOneByCode("ZP2015_LEVEL_TYPE"),
                 descItemSpecRepository.getOneByCode("ZP2015_LEVEL_SERIES"), "CODEXXX");
 
+        List<ArrNode> all = nodeRepository.findAll();
+
         Response response = post(
                 (spec) -> spec.pathParameter("faVersionId", version.getFindingAidVersionId()).pathParameter(
-                        NODE_ID_ATT, 1).body(new HashSet<String>()),
+                        NODE_ID_ATT, all.get(0).getNodeId()).body(new HashSet<String>()),
                 GET_DIT_FOR_NODE_ID_URL);
 
         List<RulDescItemTypeExt> ruleSets =
@@ -242,7 +244,7 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
 
         List<DataValidationResult> validationResults = descItemsPostValidator.postValidateNodeDescItems(level, version,
                 new HashSet<String>());
-        Assert.assertTrue(validationResults.size() == 3);
+        Assert.assertTrue(validationResults.size() == 2);
 
         ArrDataInteger data = (ArrDataInteger) dataRepository.findByDescItem(descItem).iterator().next();
         data.setValue(123456);
