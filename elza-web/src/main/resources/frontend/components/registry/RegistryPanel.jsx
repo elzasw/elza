@@ -9,49 +9,49 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, Loading} from 'components';
 import {i18n} from 'components';
-import {getRecordIfNeeded} from 'actions/record/recordList'
-import {recordChangeDetail} from 'actions/record/recordData'
+import {getRegistryIfNeeded} from 'actions/registry/registryList'
+import {registryChangeDetail} from 'actions/registry/registryData'
 
 
-var RecordPanel = class RecordPanel extends AbstractReactComponent {
+var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
         if (props.selectedId === null){
-            this.dispatch(getRecordIfNeeded(props.selectedId));
+            this.dispatch(getRegistryIfNeeded(props.selectedId));
         }
     }
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.selectedId !== null){
-            this.dispatch(getRecordIfNeeded(nextProps.selectedId));
+            this.dispatch(getRegistryIfNeeded(nextProps.selectedId));
         }
     }
     
     render() {
 
-        if (!this.props.recordData.isFetching && this.props.recordData.fetched) {
-            var detailRecord = (
+        if (!this.props.registryData.isFetching && this.props.registryData.fetched) {
+            var detailRegistry = (
                     <div>
                         <h2>
-                            {this.props.recordData.item.record}
+                            {this.props.registryData.item.registry}
                         </h2>
                         <h3>
                             Charakteristika:
                         </h3>
                         <p>
-                            {this.props.recordData.item.characteristics}
+                            {this.props.registryData.item.characteristics}
                         </p>
                         <h3>
                             Typ rejstříku - hiearchie:
                         </h3>
                         <p>
-                            {this.props.recordData.item.registrType}
+                            {this.props.registryData.item.registrType}
                         </p>
                         <h3>
                             Variantní jména:
                         </h3>
-                        {(this.props.recordData.item) && this.props.recordData.item.variantRecordList.map(item => { 
+                        {(this.props.registryData.item) && this.props.registryData.item.variantRecordList.map(item => { 
                                 return (
                                         <p key={item.variantRecordId}>{item.variantRecordId}: {item.record}</p>
                                     ) 
@@ -63,18 +63,19 @@ var RecordPanel = class RecordPanel extends AbstractReactComponent {
 
         return (
             <div>
-                {(this.props.selectedId) && detailRecord || <Loading/>}
+                {(this.props.selectedId) && detailRegistry || <Loading/>}
             </div>
         )
     }
 }
 
 function mapStateToProps(state) {
-    const {recordData} = state
+    const {registryData} = state
+
     return {
-        recordData
+        registryData
     }
 }
 
-module.exports = connect(mapStateToProps)(RecordPanel);
+module.exports = connect(mapStateToProps)(RegistryPanel);
 

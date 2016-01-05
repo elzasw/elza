@@ -22,7 +22,7 @@ class WebApiRest {
             });
     }
 
-    findRecord(search = null){
+    findRegistry(search = null){
         return AjaxUtils.ajaxGet('/api/registryManager/findRecord', {
             search: search,
             from: 0,
@@ -33,8 +33,8 @@ class WebApiRest {
         });
     }
 
-    getRecord(recordId){
-        return AjaxUtils.ajaxGet('/api/registryManager/getRecord', {recordId: recordId})
+    getRegistry(registryId){
+        return AjaxUtils.ajaxGet('/api/registryManager/getRecord', {recordId: registryId})
             .then(json=>{
                 return json;
             });
@@ -201,7 +201,7 @@ class WebApiFake {
         return this.getData(data, 1);
     }
 
-    findRecord(search = '') {
+    findRegistry(search = '') {
         var data = {
                 recordList: [
                     {
@@ -231,7 +231,7 @@ class WebApiFake {
         return this.getData(data, 1);
     }
 
-    getRecord(idRecord) {
+    getRegistry(idRecord) {
         var data = {
             recordId: idRecord,
             registerType: 'text',

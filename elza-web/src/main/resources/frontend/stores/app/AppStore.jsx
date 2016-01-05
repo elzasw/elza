@@ -7,8 +7,8 @@ import createLogger from 'redux-logger'
  */
 import arrRegion from './arr/arrRegion';
 import faFileTree from './arr/faFileTree';
-import record from './record/record';
-import recordData from './record/recordData';
+import registry from './registry/registry';
+import registryData from './registry/registryData';
 import partyRegion from './party/partyRegion';
 import contextMenu from './global/contextMenu';
 import adminRegion from './admin/adminRegion';
@@ -16,8 +16,8 @@ import adminRegion from './admin/adminRegion';
 let reducer = combineReducers({
     arrRegion,
     faFileTree,
-    record,
-    recordData,
+    registry,
+    registryData,
     partyRegion,
     contextMenu,
     adminRegion

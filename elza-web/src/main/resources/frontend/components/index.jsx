@@ -22,7 +22,7 @@ exports.ModalDialog = require('./shared/dialog/ModalDialog');
 
 exports.Ribbon = require('./page/Ribbon');
 
-exports.RecordPanel = require('./record/RecordPanel');
+exports.RegistryPanel = require('./registry/RegistryPanel');
 exports.FaFileTree = require('./arr/FaFileTree');
 exports.NodePanel = require('./arr/NodePanel');
 exports.NodeTabs = require('./arr/NodeTabs');

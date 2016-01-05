@@ -6,68 +6,68 @@ import {WebApi} from 'actions'
 
 import * as types from 'actions/constants/actionTypes';
 
-export function fetchRecordIfNeeded(search = '') {
+export function fetchRegistryIfNeeded(search = '') {
     return (dispatch, getState) => {
         var state = getState();
-        if (!state.record.fetched && !state.record.isFetching) {
-            return dispatch(fetchRecord(search));
+        if (!state.registry.fetched && !state.registry.isFetching) {
+            return dispatch(fetchRegistry(search));
         }
     }
 }
 
-export function fetchRecord(search) {
+export function fetchRegistry(search) {
     return dispatch => {
-        dispatch(requestRecord())
+        dispatch(requestRegistry())
 
-        return WebApi.findRecord(search)
-                .then(json => dispatch(receiveRecord(json)));
+        return WebApi.findRegistry(search)
+                .then(json => dispatch(receiveRegistry(json)));
     }
 }
 
-export function receiveRecord(json) {
+export function receiveRegistry(json) {
     return {
-        type: types.RECORD_RECEIVE_RECORD_LIST,
+        type: types.REGISTRY_RECEIVE_REGISTRY_LIST,
         items: json.recordList,
         countItems: json.count,
         receivedAt: Date.now()
     }
 }
 
-export function requestRecord() {
+export function requestRegistry() {
     return {
-        type: types.RECORD_REQUEST_RECORD_LIST
+        type: types.REGISTRY_REQUEST_REGISTRY_LIST
     }
 }
 
-export function getRecordIfNeeded(recordId) {
+export function getRegistryIfNeeded(registryId) {
     return (dispatch, getState) => {
         var state = getState();
-        if (!state.recordData.fetched && !state.recordData.isFetching && recordId !==state.recordData.selectedId) {
+        if (!state.registryData.fetched && !state.registryData.isFetching && registryId !==state.registryData.selectedId) {
 
-            return dispatch(getRecord(recordId));
+            return dispatch(getRegistry(registryId));
         }
     }
 }
 
-export function getRecord(recordId) {
+export function getRegistry(registryId) {
     return dispatch => {
-        dispatch(requestRecordGetRecord())
-        return WebApi.getRecord(recordId)
-                .then(json => dispatch(receiveRecordGetRecord(recordId, json)));
+        dispatch(requestRegistryGetRegistry())
+        return WebApi.getRegistry(registryId)
+                .then(json => dispatch(receiveRegistryGetRegistry(registryId, json)));
     }
 }
 
-export function requestRecordGetRecord() {
+export function requestRegistryGetRegistry() {
     return {
-        type: types.RECORD_REQUEST_RECORD_DETAIL
+        type: types.REGISTRY_REQUEST_REGISTRY_DETAIL
     }
 }
 
-export function receiveRecordGetRecord(recordId, json) {
+export function receiveRegistryGetRegistry(registryId, json) {
     return {
         item: json,
-        selectedId: recordId,
-        type: types.RECORD_RECEIVE_RECORD_DETAIL,
+        selectedId: registryId,
+        type: types.REGISTRY_RECEIVE_REGISTRY_DETAIL,
         receivedAt: Date.now()
     }
 }

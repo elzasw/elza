@@ -5,23 +5,23 @@ import {WebApi} from 'actions'
 
 import * as types from 'actions/constants/actionTypes';
 
-export function recordData(record) {
+export function registryData(registry) {
     return {
-        type: types.RECORD_SELECT_RECORD,
-        record
+        type: types.REGISTRY_SELECT_REGISTRY,
+        registry
     }
 }
 
-export function recordSearchData(record) {
+export function registrySearchData(registry) {
     return {
-        type: types.RECORD_SEARCH_RECORD,
-        record
+        type: types.REGISTRY_SEARCH_REGISTRY,
+        registry
     }
 }
 
-export function recordChangeDetail(record) {
+export function registryChangeDetail(registry) {
     return {
-        type: types.RECORD_CHANGE_RECORD_DETAIL,
-        record
+        type: types.REGISTRY_CHANGE_REGISTRY_DETAIL,
+        registry
     }
 }

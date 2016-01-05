@@ -4,38 +4,38 @@
  * 
  **/ 
 import * as types from 'actions/constants/actionTypes';
-import recordData from './recordData';
+import registryData from './registryData';
 
 const initialState = {
     isFetching: false,
     fetched: false,
     selectedId: null,
-    isReloadingRecord: false,
-    reloadedRecord: false,
+    isReloadingRegistry: false,
+    reloadedRegistry: false,
     search: null,
-    recordData: undefined,
+    registryData: undefined,
     items: [],
     countItems: 0,
 }
 
-export default function record(state = initialState, action) {
+export default function registry(state = initialState, action) {
     switch (action.type) {
-        case types.RECORD_SELECT_RECORD:
+        case types.REGISTRY_SELECT_REGISTRY:
             return Object.assign({}, state, {
-                selectedId: action.record.selectedId,
-                reloadedRecord: false,
-                recordData: recordData(state.recordData, action)
+                selectedId: action.registry.selectedId,
+                reloadedRegistry: false,
+                registryData: registryData(state.registryData, action)
             })
-        case types.RECORD_REQUEST_RECORD_LIST:
+        case types.REGISTRY_REQUEST_REGISTRY_LIST:
             return Object.assign({}, state, {
                 isFetching: true
             })
-        case types.RECORD_SEARCH_RECORD:
+        case types.REGISTRY_SEARCH_REGISTRY:
             return Object.assign({}, state, {
-                search: action.record.search,
+                search: action.registry.search,
                 fetched: false
             })
-        case types.RECORD_RECEIVE_RECORD_LIST:
+        case types.REGISTRY_RECEIVE_REGISTRY_LIST:
             return Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,
