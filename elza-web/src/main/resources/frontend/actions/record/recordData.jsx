@@ -5,26 +5,23 @@ import {WebApi} from 'actions'
 
 import * as types from 'actions/constants/actionTypes';
 
-export function recordData(record, moveToBegin=false) {
+export function recordData(record) {
     return {
         type: types.RECORD_SELECT_RECORD,
-        record,
-        moveToBegin
+        record
     }
 }
 
-export function recordSearchData(record, moveToBegin=false) {
+export function recordSearchData(record) {
     return {
         type: types.RECORD_SEARCH_RECORD,
-        record,
-        moveToBegin
+        record
     }
 }
 
-export function recordChangeDetail(record, moveToBegin=false) {
+export function recordChangeDetail(record) {
     return {
         type: types.RECORD_CHANGE_RECORD_DETAIL,
-        record,
-        moveToBegin
+        record
     }
 }
