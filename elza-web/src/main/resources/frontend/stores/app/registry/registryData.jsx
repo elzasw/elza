@@ -14,10 +14,10 @@ const initialState = {
     LastUpdated: null
 }
 
-export default function recordData(state = initialState, action) {
+export default function registryData(state = initialState, action) {
     switch (action.type) {
-        case types.RECORD_SELECT_RECORD:
-            if (state.selectedId === action.record.selectedId){
+        case types.REGISTRY_SELECT_REGISTRY:
+            if (state.selectedId === action.registry.selectedId){
                 return state
             }
             else{
@@ -26,16 +26,16 @@ export default function recordData(state = initialState, action) {
                     fetched: false
                 })
             }
-        case types.RECORD_REQUEST_RECORD_DETAIL:
+        case types.REGISTRY_REQUEST_REGISTRY_DETAIL:
             return Object.assign({}, state, {
                 isFetching: true,
                 fetched: false
             })
-        case types.RECORD_CHANGE_RECORD_DETAIL:
+        case types.REGISTRY_CHANGE_REGISTRY_DETAIL:
             return Object.assign({}, state, {
                 fetched: false
             })
-        case types.RECORD_RECEIVE_RECORD_DETAIL:
+        case types.REGISTRY_RECEIVE_REGISTRY_DETAIL:
             return Object.assign({}, state, {
                 selectedId: action.selectedId,
                 item: action.item,

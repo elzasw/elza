@@ -12,53 +12,52 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Loading} from 'components';
-import {Ribbon, ModalDialog, NodeTabs, Search, RecordPanel} from 'components';
+import {Ribbon, ModalDialog, NodeTabs, Search, RegistryPanel} from 'components';
 import {ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {Nav, NavItem} from 'react-bootstrap';
-import {recordData, recordSearchData} from 'actions/record/recordData'
+import {registryData, registrySearchData} from 'actions/registry/registryData'
 
-import {fetchRecordIfNeeded} from 'actions/record/recordList'
+import {fetchRegistryIfNeeded} from 'actions/registry/registryList'
 
-var RecordPage = class RecordPage extends AbstractReactComponent {
+var RegistryPage = class RegistryPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
         this.bindMethods('handleSelect');
         this.bindMethods('handleSearch');
         this.buildRibbon = this.buildRibbon.bind(this);
-        this.dispatch(fetchRecordIfNeeded(props.record.search));
+        this.dispatch(fetchRegistryIfNeeded(props.registry.search));
 
     }
 
     componentWillReceiveProps(nextProps) {
-            this.dispatch(fetchRecordIfNeeded(nextProps.record.search));
+            this.dispatch(fetchRegistryIfNeeded(nextProps.registry.search));
     }
 
     buildRibbon() {
         return (
-            <Ribbon record {...this.props} />
+            <Ribbon registry {...this.props} />
         )
     }
 
-    handleSelect(record, event) {
-        var record = Object.assign({}, record,{selectedId: record.id});
-        this.dispatch(recordData(record));
+    handleSelect(registry, event) {
+        var registry = Object.assign({}, registry,{selectedId: registry.id});
+        this.dispatch(registryData(registry));
     }
 
     handleSearch(search, event) {
-        var record = Object.assign({}, record,{search: search});
-        this.dispatch(recordSearchData(record));
+        var registry = Object.assign({}, registry,{search: search});
+        this.dispatch(registrySearchData(registry));
     }
 
     render() {
-        
         var navRows = (
             <div>
-                <div key='recordsList'>
-                    {this.props.record.items.map(item=>{
+                <div key='registrysList'>
+                    {this.props.registry.items.map(item=>{
                         var cls = classNames({
-                                    active: this.props.record.selectedId === item.id
+                                    active: this.props.registry.selectedId === item.id
                                     })
 
                         return (
@@ -68,31 +67,31 @@ var RecordPage = class RecordPage extends AbstractReactComponent {
                         )
                     })}
                 </div>
-                <div key='recordsCouns' className='seznamRejstrikuCelkem'>Zobrazeno {this.props.record.items.length} z celkoveho poctu {this.props.record.countItems}</div>
+                <div key='registrysCouns' className='seznamRejstrikuCelkem'>Zobrazeno {this.props.registry.items.length} z celkoveho poctu {this.props.registry.countItems}</div>
             </div>
         )
 
         var leftPanel = (
             <div>
                 <div>
-                    <Search onSearch={this.handleSearch.bind(this)} filterText={this.props.record.search}/>
+                    <Search onSearch={this.handleSearch.bind(this)} filterText={this.props.registry.search}/>
                 </div>
                 <div>
-                    {(this.props.record.isFetching || !this.props.record.fetched) && <Loading/>}
-                    {(!this.props.record.isFetching && this.props.record.fetched) && navRows}
+                    {(this.props.registry.isFetching || !this.props.registry.fetched) && <Loading/>}
+                    {(!this.props.registry.isFetching && this.props.registry.fetched) && navRows}
                 </div>
             </div>
         )
 
         var centerPanel = (
             <div>
-                <RecordPanel selectedId = {this.props.record.selectedId}/>
+                <RegistryPanel selectedId = {this.props.registry.selectedId}/>
             </div>
         )
 
         var rightPanel = (
             <div>
-                RIGHT - record
+                RIGHT - registry
             </div>
         )
 
@@ -100,7 +99,7 @@ var RecordPage = class RecordPage extends AbstractReactComponent {
 
         return (
             <PageLayout
-                className='record-page'
+                className='registry-page'
                 ribbon={this.buildRibbon()}
                 leftPanel={leftPanel}
                 centerPanel={centerPanel}
@@ -111,10 +110,10 @@ var RecordPage = class RecordPage extends AbstractReactComponent {
     }
 }
 function mapStateToProps(state) {
-    const {record} = state
+    const {registry} = state
     return {
-        record
+        registry
     }
 }
 
-module.exports = connect(mapStateToProps)(RecordPage);
+module.exports = connect(mapStateToProps)(RegistryPage);
