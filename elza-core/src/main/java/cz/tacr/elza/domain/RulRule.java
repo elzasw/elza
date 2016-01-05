@@ -15,19 +15,19 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 /**
- * Implementace RulPackageRules.
+ * Implementace RulRule.
  *
  * @author Martin Šlapa
  * @since 14.12.2015
  */
-@Entity(name = "rul_package_rules")
+@Entity(name = "rul_rule")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulPackageRules implements cz.tacr.elza.api.RulPackageRules<RulPackage, RulRuleSet> {
+public class RulRule implements cz.tacr.elza.api.RulRule<RulPackage, RulRuleSet> {
 
     @Id
     @GeneratedValue
-    private Integer packageRulesId;
+    private Integer ruleId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
     @JoinColumn(name = "ruleSetId", nullable = false)
@@ -49,13 +49,13 @@ public class RulPackageRules implements cz.tacr.elza.api.RulPackageRules<RulPack
 
 
     @Override
-    public Integer getPackageRulesId() {
-        return packageRulesId;
+    public Integer getRuleId() {
+        return ruleId;
     }
 
     @Override
-    public void setPackageRulesId(final Integer packageRulesId) {
-        this.packageRulesId = packageRulesId;
+    public void setRuleId(final Integer ruleId) {
+        this.ruleId = ruleId;
     }
 
     @Override

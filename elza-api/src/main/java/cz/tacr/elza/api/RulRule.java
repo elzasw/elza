@@ -3,7 +3,7 @@ package cz.tacr.elza.api;
 import java.io.Serializable;
 
 
-public interface RulPackageRules<P extends RulPackage, RS extends RulRuleSet> extends Serializable {
+public interface RulRule<P extends RulPackage, RS extends RulRuleSet> extends Serializable {
 
     /**
      * Typy pravidel.
@@ -19,13 +19,13 @@ public interface RulPackageRules<P extends RulPackage, RS extends RulRuleSet> ex
     /**
      * @return identifikátor entity
      */
-    Integer getPackageRulesId();
+    Integer getRuleId();
 
 
     /**
-     * @param packageRulesId identifikátor entity
+     * @param ruleId identifikátor entity
      */
-    void setPackageRulesId(Integer packageRulesId);
+    void setRuleId(Integer ruleId);
 
 
     /**

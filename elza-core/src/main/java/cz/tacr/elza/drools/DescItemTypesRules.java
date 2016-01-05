@@ -11,7 +11,7 @@ import org.kie.api.runtime.StatelessKieSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.domain.RulPackageRules;
+import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.RulArrangementType;
@@ -64,10 +64,10 @@ public class DescItemTypesRules extends Rules {
     	AvailableDescItems results = new AvailableDescItems();      
 
         Path path;
-        List<RulPackageRules> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
-                rulRuleSet, RulPackageRules.RuleType.ATTRIBUTE_TYPES);
+        List<RulRule> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
+                rulRuleSet, RulRule.RuleType.ATTRIBUTE_TYPES);
 
-        for (RulPackageRules rulPackageRule : rulPackageRules) {
+        for (RulRule rulPackageRule : rulPackageRules) {
             path = Paths.get(RulesExecutor.ROOT_PATH + File.separator + rulPackageRule.getFilename());
             StatelessKieSession session = createNewStatelessKieSession(rulRuleSet, path);
             session.setGlobal("results", results);

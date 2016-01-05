@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <!-- Verze 1.27.1  -->
+    <changeSet id="28.1" author="slapa">
+
+        <renameTable newTableName="rul_action"
+                     oldTableName="rul_package_actions" />
+
+        <renameTable newTableName="rul_rule"
+                     oldTableName="rul_package_rules" />
+
+        <renameColumn tableName="rul_action"
+                      oldColumnName="package_actions_id"
+                      newColumnName="action_id"
+                />
+
+        <renameColumn tableName="rul_rule"
+                      oldColumnName="package_rules_id"
+                      newColumnName="rule_id"
+                />
+
+    </changeSet>
+</databaseChangeLog>

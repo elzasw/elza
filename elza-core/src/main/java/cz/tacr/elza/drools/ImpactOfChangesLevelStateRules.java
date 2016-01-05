@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import cz.tacr.elza.domain.RulPackageRules;
+import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -56,10 +56,10 @@ public class ImpactOfChangesLevelStateRules extends Rules {
         Set<RelatedNodeDirection> relatedNodeDirections = new HashSet<>();
 
         Path path;
-        List<RulPackageRules> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
-                rulRuleSet, RulPackageRules.RuleType.CONFORMITY_IMPACT);
+        List<RulRule> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
+                rulRuleSet, RulRule.RuleType.CONFORMITY_IMPACT);
 
-        for (RulPackageRules rulPackageRule : rulPackageRules) {
+        for (RulRule rulPackageRule : rulPackageRules) {
             path = Paths.get(RulesExecutor.ROOT_PATH + File.separator + rulPackageRule.getFilename());
 
             StatelessKieSession session = createNewStatelessKieSession(rulRuleSet, path);
