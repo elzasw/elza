@@ -38,13 +38,9 @@ public class ScenarioOfNewLevelRules extends Rules {
             throws Exception {
 
         NewLevelApproaches newLevelApproaches = new NewLevelApproaches();
-
-        Level voLevel = scriptModelFactory.createLevelStructure(level, version);
-        List<Level> levels = scriptModelFactory.convertLevelTreeToList(voLevel);
-
-        NewLevel newLevel = scriptModelFactory.createNewLevel(level, directionLevel, version);
-        levels.add(newLevel);
-
+        
+        List<Level> levels = scriptModelFactory.createFactsForNewLevel(level, directionLevel, version);
+        
         Path path;
         List<RulPackageRules> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
                 version.getRuleSet(), RulPackageRules.RuleType.NEW_LEVEL);

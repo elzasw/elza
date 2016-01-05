@@ -7,6 +7,7 @@ import java.util.List;
  * Objekt uzlu pro skripty pravidel.
  *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
+ * @author Petr Pytelka [<a href="mailto:petr.pytelka@lightcomp.cz">petr.pytelka@lightcomp.cz</a>]
  * @since 1.12.2015
  */
 public class Level {
@@ -31,11 +32,30 @@ public class Level {
     private boolean hasChilds = false;
 
     /**
-     * Počet potomků.
+     * Number of child nodes
      */
-    private int childCount = 0;
+    private Integer childCount;
+    
+    /**
+     * Default constructor
+     */
+    public Level() {
+    	
+    }
 
-    public Integer getNodeId() {
+    /**
+     * Copy constructor 
+     * @param level 	source level 
+     */
+    public Level(Level level) {
+		this.childCount = level.childCount;
+		this.descItems = level.descItems;
+		this.hasChilds = level.hasChilds;
+		this.nodeId = level.nodeId;
+		this.parent = level.parent;
+	}
+
+	public Integer getNodeId() {
         return nodeId;
     }
 
@@ -67,13 +87,15 @@ public class Level {
         this.hasChilds = hasChilds;
     }
 
-    public int getChildCount() {
+    public Integer getChildCount() {
         return childCount;
     }
 
-    public void setChildCount(final int childCount) {
+    public void setChildCount(Integer childCount) {
         this.childCount = childCount;
-        this.hasChilds = childCount == 0 ? false : true;
+        if(childCount!=null) {
+        	this.hasChilds = (childCount.intValue() > 0);
+        }
     }
 
 }
