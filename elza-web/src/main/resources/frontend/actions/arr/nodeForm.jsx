@@ -38,7 +38,6 @@ export function faNodeFormReceive(faId, nodeId, nodeKey, json) {
         faId,
         nodeId,
         nodeKey,
-        node: json.node,
         attrDesc: json.attrDesc,
         childNodes: json.childNodes,
         receivedAt: Date.now()

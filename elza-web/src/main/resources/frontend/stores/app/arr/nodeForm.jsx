@@ -3,7 +3,6 @@ import * as types from 'actions/constants/actionTypes';
 const initialState = {
     isFetching: false,
     fetched: false,
-    node: null,
     childNodes: [],
     attrDesc: null,
 }
@@ -18,7 +17,6 @@ export default function nodeForm(state = initialState, action) {
             return Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,
-                node: action.node,
                 childNodes: action.childNodes,
                 attrDesc: action.attrDesc
             })

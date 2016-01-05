@@ -15,7 +15,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderParents', 'renderChildren', 'handleParentNodeClick', 'handleChildNodeClick', 'getParentNodes', 'getChildNodes');
+        this.bindMethods('renderParents', 'renderChildren', 'handleParentNodeClick', 'handleChildNodeClick', 'getParentNodes', 'getChildNodes', 'getSiblingNodes');
         
         if (props.node.selectedSubNodeId != null) {
             this.dispatch(faNodeFormFetchIfNeeded(props.faId, props.node.selectedSubNodeId, props.node.nodeKey));
@@ -41,7 +41,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 
     handleChildNodeClick(node) {
         var subNodeId = node.id;
-        var subNodeParentNode = this.props.node.nodeForm.node;
+        var subNodeParentNode = this.getSiblingNodes()[indexById(this.getSiblingNodes(), this.props.node.selectedSubNodeId)];
         this.dispatch(faSelectSubNode(subNodeId, subNodeParentNode));
     }
 
@@ -80,6 +80,10 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         return [...this.props.node.nodeForm.childNodes];
     }
 
+    getSiblingNodes() {
+        return [...this.props.node.nodeInfo.childNodes];
+    }
+
     render() {
         var isLoading = false;
         isLoading |= this.props.node.nodeInfo.isFetching || !this.props.node.nodeInfo.fetched;
@@ -92,7 +96,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 
         var parents = this.renderParents(this.getParentNodes());
         var children = this.renderChildren(this.getChildNodes());
-        var siblings = this.props.node.nodeInfo.childNodes.map(s => <span key={s.id}> {s.id}</span>);
+        var siblings = this.getSiblingNodes().map(s => <span key={s.id}> {s.id}</span>);
 
         return (
             <div className='node-panel-container'>

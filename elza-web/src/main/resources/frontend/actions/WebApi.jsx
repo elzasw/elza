@@ -267,7 +267,6 @@ class WebApiFake {
         }
 
         var data = {
-            node: node,
             parents: parents,
             children: node.children,
             siblings: siblings,
