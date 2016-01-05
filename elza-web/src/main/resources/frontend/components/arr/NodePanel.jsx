@@ -74,12 +74,13 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 
         var parents = this.renderParents(this.props.nodeForm.parentNodes);
         var children = this.renderChildren(this.props.nodeForm.childNodes);
+        var siblings = this.props.nodeForm.siblingNodes.map(s => <span>{s.id}</span>);
 
         return (
             <div className='node-panel-container'>
                 <div className='actions'>NODE [{this.props.node.id}] actions.......SUB NODE: {this.props.node.selectedSubNodeId}</div>
                 {parents}
-                <div className='content'>content</div>
+                <div className='content'>content{siblings}</div>
                 {children}
             </div>
         );

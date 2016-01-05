@@ -31,6 +31,7 @@ export function nodeFormReceive(nodeId, versionId, json) {
         node: json.node,
         parentNodes: json.parents,
         childNodes: json.children,
+        siblingNodes: json.siblings,
         receivedAt: Date.now()
     }
 }

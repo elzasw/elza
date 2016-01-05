@@ -28,6 +28,7 @@ export default function nodeForm(state = initialState, action) {
                 node: action.node,
                 parentNodes: action.parentNodes,
                 childNodes: action.childNodes,
+                siblingNodes: action.siblingNodes,
                 lastUpdated: action.receivedAt
             })
         default:

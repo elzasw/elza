@@ -259,6 +259,7 @@ class WebApiFake {
     getNodeForm(nodeId, versionId) {
         var node = findNodeById(_faRootNode, nodeId);
         var parents = [];
+        var siblings = [...node.parent.children];
         var n = node.parent;
         while (n !== null) {
             parents.push(n);
@@ -269,6 +270,7 @@ class WebApiFake {
             node: node,
             parents: parents,
             children: node.children,
+            siblings: siblings,
         }
         return this.getData(data, 1);
     }
@@ -291,5 +293,5 @@ class WebApiFake {
     }
 }
 
-module.exports = new WebApiRest();
-//module.exports = new WebApiFake();
+//module.exports = new WebApiRest();
+module.exports = new WebApiFake();

@@ -21,6 +21,7 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
         var tabs = this.props.fas.map((fa) => {
             return {
                 id: fa.id,
+                key: fa.id,
                 title: fa.name
             }
         });
