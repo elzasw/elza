@@ -49,7 +49,10 @@ import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.ArrangementService;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.RandomUtils;
+import org.apache.tomcat.util.security.MD5Encoder;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
@@ -507,7 +510,7 @@ public class TestingDataController {
         List<ParParty> existingParties = partyRepository.findAll();
 
         ParPartyNameFormType partyNameFormType = new ParPartyNameFormType();
-        partyNameFormType.setCode("CODE");
+        partyNameFormType.setCode("CODE" + getMD5OfActualDate());
         partyNameFormTypeRepository.save(partyNameFormType);
 
         List<ParParty> parties = new LinkedList<ParParty>();
@@ -576,7 +579,7 @@ public class TestingDataController {
 
         ParPartyName preferredName = new ParPartyName();
         preferredName.setNameFormType(partyNameFormType);
-        preferredName.setMainPart("MAIN-PART");
+        preferredName.setMainPart("MAIN-PART" + getMD5OfActualDate());
         preferredName.setParty(parParty);
         partyNameRepository.save(preferredName);
 
@@ -584,6 +587,13 @@ public class TestingDataController {
         partyRepository.save(parParty);
 
         return parParty;
+    }
+
+    private String getMD5OfActualDate() {
+        LocalDateTime now = LocalDateTime.now();
+        String right = StringUtils.right(now.toString(), 16);
+        byte[] subarray = ArrayUtils.subarray(right.getBytes(), 0, 16);
+        return MD5Encoder.encode(subarray);
     }
 
     private List<RegRecord> createRegRecords() {
