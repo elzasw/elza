@@ -293,6 +293,17 @@ public class RegistryManagerTest extends AbstractRestTest {
         Assert.assertEquals(200, response.statusCode());
         recordWithCount = response.getBody().as(RegRecordWithCount.class);
         Assert.assertEquals("Nenalezena polozka.", 2, recordWithCount.getRecordList().size());
+
+        // mixed, první atribut je null, další je
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
+                .parameter(FROM_ATT, 0)
+                .parameter(COUNT_ATT, 10)
+                .parameter(REGISTER_TYPE_ID_ATT, new Integer[] {})
+                .get(FIND_RECORD_URL);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+        recordWithCount = response.getBody().as(RegRecordWithCount.class);
+        Assert.assertEquals("Nenalezena polozka.", 2, recordWithCount.getRecordList().size());
     }
 
     /**
