@@ -2,8 +2,9 @@ package ZP2015;
 
 
 import java.util.Arrays;
-import cz.tacr.elza.drools.model.Level
-import cz.tacr.elza.domain.vo.DataValidationResult
+import cz.tacr.elza.drools.model.Level;
+import cz.tacr.elza.drools.model.NewLevel;
+import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.ArrDescItem
@@ -33,6 +34,14 @@ function boolean hasLevelTypeAndSpec(Level level, String typeCode, String specCo
     }
     return false;
 }
+
+rule "Vytvoření AP"
+when
+    level: NewLevel(eventSource == null)
+then
+    NewLevelApproach approach = results.create("Vytvoření AP");
+    approach.addDescItem("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_ROOT");
+end
 
 rule "Pokud rodič levelu je root level"
 when

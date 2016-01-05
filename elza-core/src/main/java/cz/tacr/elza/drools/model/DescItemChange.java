@@ -1,20 +1,20 @@
 package cz.tacr.elza.drools.model;
 
 /**
- * Typ zmìny hodnoty atributu.
+ * Typ zmÄ›ny hodnoty atributu.
  *
- * @author Martin Šlapa
+ * @author Martin Å lapa
  * @since 27.11.2015
  */
 public enum DescItemChange {
 
     /**
-     * Vytvoøen
+     * VytvoÅ™en
      */
     CREATE,
 
     /**
-     * Smazán
+     * SmazÃ¡n
      */
     DELETE,
 
