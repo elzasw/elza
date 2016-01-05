@@ -1,45 +1,55 @@
 import {WebApi} from 'actions'
+import {indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
 
 import * as types from 'actions/constants/actionTypes';
 
-export function nodeFormFetchIfNeeded(nodeId, versionId) {
+function getNodeForm(state, faId, nodeKey) {
+    var r = findByNodeKeyInGlobalState(state, faId, nodeKey);
+    if (r != null) {
+        return r.node.nodeForm;
+    }
+
+    return null;
+}
+export function faNodeFormFetchIfNeeded(faId, nodeId, nodeKey) {
     return (dispatch, getState) => {
         var state = getState();
-        var nodeForm = state.arrRegion.nodeForm;
+        var nodeForm = getNodeForm(state, faId, nodeKey);
 
-        if (nodeForm.nodeId !== nodeId || nodeForm.versionId !== versionId) {
-            return dispatch(nodeFormFetch(nodeId, versionId));
-        } else if (!nodeForm.fetched && !nodeForm.isFetching) {
-            return dispatch(nodeFormFetch(nodeId, versionId));
+        if (nodeForm != null) {
+            if (!nodeForm.fetched && !nodeForm.isFetching) {
+                return dispatch(faNodeFormFetch(faId, nodeId, nodeKey));
+            }
         }
     }
 }
 
-export function nodeFormFetch(nodeId, versionId) {
+export function faNodeFormFetch(faId, nodeId, nodeKey) {
     return dispatch => {
-        dispatch(nodeFormRequest(nodeId, versionId))
-        return WebApi.getNodeForm(nodeId, versionId)
-            .then(json => dispatch(nodeFormReceive(nodeId, versionId, json)));
-    }
+        dispatch(faNodeFormRequest(faId, nodeId, nodeKey))
+        return WebApi.getFaNodeForm(faId, nodeId)
+            .then(json => dispatch(faNodeFormReceive(faId, nodeId, nodeKey, json)))
+    };
 }
 
-export function nodeFormReceive(nodeId, versionId, json) {
+export function faNodeFormReceive(faId, nodeId, nodeKey, json) {
     return {
         type: types.FA_NODE_FORM_RECEIVE,
+        faId,
         nodeId,
-        versionId,
+        nodeKey,
         node: json.node,
-        parentNodes: json.parents,
-        childNodes: json.children,
-        siblingNodes: json.siblings,
+        attrDesc: json.attrDesc,
+        childNodes: json.childNodes,
         receivedAt: Date.now()
     }
 }
 
-export function nodeFormRequest(nodeId, versionId) {
+export function faNodeFormRequest(faId, nodeId, nodeKey) {
     return {
         type: types.FA_NODE_FORM_REQUEST,
+        faId,
         nodeId,
-        versionId,
+        nodeKey,
     }
 }

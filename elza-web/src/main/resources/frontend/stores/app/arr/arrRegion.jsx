@@ -3,11 +3,9 @@ import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
 
 import nodes from './nodes'
 import faTree from './faTree'
-import nodeForm from './nodeForm'
 
 const initialState = {
     activeIndex: null,
-    nodeForm: nodeForm(undefined, {}),
     fas: []
 }
 
@@ -39,9 +37,6 @@ export default function arrRegion(state = initialState, action) {
                 nodes(fa.nodes, action);
             });
             return state
-        case types.FA_NODE_FORM_REQUEST:
-        case types.FA_NODE_FORM_RECEIVE:
-            return Object.assign({}, state, {nodeForm: nodeForm(state.nodeForm, action)});
         case types.FA_FA_TREE_FOCUS_NODE:
         case types.FA_FA_TREE_EXPAND_NODE:
         case types.FA_FA_TREE_COLLAPSE_NODE:
@@ -66,6 +61,23 @@ export default function arrRegion(state = initialState, action) {
                     Object.assign({}, state.fas[state.activeIndex], {nodes: nodes(state.fas[state.activeIndex].nodes, action), faTree: faTree(state.fas[state.activeIndex].faTree, action)}),
                     ...state.fas.slice(state.activeIndex + 1)
                 ]
+            }
+        case types.FA_NODE_INFO_REQUEST:
+        case types.FA_NODE_INFO_RECEIVE:
+        case types.FA_NODE_FORM_REQUEST:
+        case types.FA_NODE_FORM_RECEIVE:
+            var faIndex = indexById(state.fas, action.faId);
+            if (faIndex != null) {
+                return {
+                    ...state,
+                    fas: [
+                        ...state.fas.slice(0, faIndex),
+                        Object.assign({}, state.fas[faIndex], {nodes: nodes(state.fas[faIndex].nodes, action), faTree: faTree(state.fas[faIndex].faTree, action)}),
+                        ...state.fas.slice(faIndex + 1)
+                    ]
+                }
+            } else {
+                return state;
             }
         case types.FA_CLOSE_FA_TAB:
             var index = indexById(state.fas, action.fa.id);

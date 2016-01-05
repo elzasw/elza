@@ -275,6 +275,36 @@ class WebApiFake {
         return this.getData(data, 1);
     }
 
+    getNodeFormLevel(nodeId, versionId) {
+        return AjaxUtils.ajaxGet('/api/arrangementManager/getLevel', {nodeId: 10, versionId: 3})
+            .then(json=>{return json})
+    }
+
+    getFaNodeForm(faId, nodeId) {
+        var node = findNodeById(_faRootNode, nodeId);
+        var data = {
+            childNodes: [...node.children],
+            node: node,
+            attrDesc: {a:1, b:2, c:3}
+        };
+        return this.getData(data, 1);
+    }
+
+    getFaNodeInfo(faId, nodeId) {
+        var node = findNodeById(_faRootNode, nodeId);
+        var parents = [];
+        var n = node.parent;
+        while (n !== null) {
+            parents.push(n);
+            n = n.parent;
+        }
+        var data = {
+            childNodes: [...node.children],
+            parentNodes: parents
+        };
+        return this.getData(data, 1);
+    }
+
     getFaTree(faId, versionId, nodeId, expandedIds={}, includeIds={}) {
         var srcNodes;
         if (nodeId == null || typeof nodeId == 'undefined') {
@@ -292,6 +322,9 @@ class WebApiFake {
         return this.getData(data, 1);
     }
 }
+
+//AjaxUtils.ajaxGet('/api/arrangementManager/getLevel', {nodeId: 10, versionId: 3})
+//            .then(json=>console.log("LEVEL", json));
 
 //module.exports = new WebApiRest();
 module.exports = new WebApiFake();

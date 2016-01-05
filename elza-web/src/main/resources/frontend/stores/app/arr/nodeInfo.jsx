@@ -1,29 +1,27 @@
 import * as types from 'actions/constants/actionTypes';
 
-const initialState = {
+const nodeInfoInitialState = {
     isFetching: false,
     fetched: false,
-    node: null,
     childNodes: [],
-    attrDesc: null,
+    parentNodes: [],
 }
 
-export default function nodeForm(state = initialState, action) {
+export default function nodeInfo(state = nodeInfoInitialState, action) {
     switch (action.type) {
-        case types.FA_NODE_FORM_REQUEST:
+        case types.FA_NODE_INFO_REQUEST:
             return Object.assign({}, state, {
                 isFetching: true,
             })
-        case types.FA_NODE_FORM_RECEIVE:
+        case types.FA_NODE_INFO_RECEIVE:
             return Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,
-                node: action.node,
                 childNodes: action.childNodes,
-                attrDesc: action.attrDesc
+                parentNodes: action.parentNodes,
+                lastUpdated: action.receivedAt
             })
         default:
-            return state
+            return state;
     }
 }
-

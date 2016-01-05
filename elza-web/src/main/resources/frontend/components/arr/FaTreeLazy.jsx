@@ -22,7 +22,8 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
 
         this.bindMethods(
             'renderNode', 'handleToggle', 'handleNodeClick',
-            'handleContextMenu', 'getParentNode', 'handleSelectInNewTab'
+            'handleContextMenu', 'getParentNode', 'handleSelectInNewTab',
+            'callFaSelectSubNode'
         );
 
         this.dispatch(faTreeFetchIfNeeded(props.faId, props.versionId, props.expandedIds));
@@ -77,17 +78,18 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     handleSelectInNewTab(node) {
         this.dispatch(contextMenuHide());
 
+        this.callFaSelectSubNode(node, true);
+    }
+
+    callFaSelectSubNode(node, openNewTab) {
         var parentNode = this.getParentNode(node);
         if (parentNode != null) {
-            this.dispatch(faSelectSubNode(node.id, parentNode, true));
+            this.dispatch(faSelectSubNode(node.id, parentNode, openNewTab));
         }
     }
 
     handleNodeClick(node) {
-        var parentNode = this.getParentNode(node);
-        if (parentNode != null) {
-            this.dispatch(faSelectSubNode(node.id, parentNode, false));
-        }
+        this.callFaSelectSubNode(node, false);
     }
 
     renderNode(node) {

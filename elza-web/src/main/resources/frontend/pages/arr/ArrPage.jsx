@@ -45,7 +45,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         if (activeFa && activeFa.nodes) {
             var nodes = activeFa.nodes.nodes;
             centerPanel = (
-                <NodeTabs nodes={nodes} activeIndex={activeFa.nodes.activeIndex} nodeForm={this.props.arrRegion.nodeForm}/>
+                <NodeTabs faId={activeFa.id} nodes={nodes} activeIndex={activeFa.nodes.activeIndex} nodeForm={this.props.arrRegion.nodeForm}/>
             )
         }
 

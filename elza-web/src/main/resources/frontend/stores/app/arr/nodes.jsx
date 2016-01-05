@@ -1,29 +1,6 @@
 import * as types from 'actions/constants/actionTypes';
-import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
-
-
-const nodeInitialState = {
-    id: null,
-    name: null,
-    selectedSubNodeId: null,
-    subNodes: [],
-}
-function node(state = nodeInitialState, action) {
-    switch (action.type) {
-        case types.FA_FA_SELECT_SUBNODE:
-            return Object.assign({}, state, {selectedSubNodeId: action.subNodeId});
-        default:
-            return state;
-    }
-}
-function nodeInitState(node) {
-    return {
-        id: node.id,
-        name: node.name,
-        selectedSubNodeId: null,
-        subNodes: [],
-    }
-}
+import {indexById, findByNodeKeyInNodes, selectedAfterClose} from 'stores/app/utils.jsx'
+import {node, nodeInitState} from './node.jsx'
 
 const nodesInitialState = {
     activeIndex: null,
@@ -31,6 +8,23 @@ const nodesInitialState = {
 }
 export default function nodes(state = nodesInitialState, action) {
     switch (action.type) {
+        case types.FA_NODE_INFO_REQUEST:
+        case types.FA_NODE_INFO_RECEIVE:
+        case types.FA_NODE_FORM_REQUEST:
+        case types.FA_NODE_FORM_RECEIVE:
+            var r = findByNodeKeyInNodes(state, action.faId, action.nodeKey);
+            if (r) {
+                return {
+                    ...state,
+                    nodes: [
+                        ...state.nodes.slice(0, r.nodeIndex),
+                        node(state.nodes[r.nodeIndex], action),
+                        ...state.nodes.slice(r.nodeIndex + 1)
+                    ]
+                }            
+            } else {
+                return state;
+            }
         case types.GET_OBJECT_INFO:
             state.nodes.forEach(node => {
                 action.objectInfo.addNode(node);
@@ -44,7 +38,7 @@ export default function nodes(state = nodesInitialState, action) {
             }
 
             // 1. Záložka
-            if (action.openNewTab || state.nodes.length == 0) {   // otevře se vždy nová záložka, nebo není žádná
+            if (action.openNewTab || state.nodes.length == 0) {   // otevře se vždy nová záložka, pokud není žádná
                 // Založíme novou záložku a vybereme ji
                 newState = {
                     ...state,
@@ -54,13 +48,13 @@ export default function nodes(state = nodesInitialState, action) {
                     ],
                     activeIndex: state.nodes.length
                 }
-            } else {    // pokusí se použít aktuální, pokud je, jinak vytvoří novou
+            } else {    // pokusí se použít aktuální
                 var index = state.activeIndex;
                 newState = {
                     ...state,
                     nodes: [
                         ...state.nodes.slice(0, index),
-                        nodeInitState(action.subNodeParentNode),
+                        nodeInitState(action.subNodeParentNode, state.nodes[index]),
                         ...state.nodes.slice(index + 1)
                     ],
                 }

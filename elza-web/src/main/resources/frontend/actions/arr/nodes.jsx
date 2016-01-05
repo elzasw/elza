@@ -66,7 +66,7 @@ export function faCloseNodeTab(index) {
 /**
  * Vybrání podřízené JP pod záložkou JP (vybrání JP pro formulář).
  * @param {String} subNodeId id JP pro vybrání
- * @param {Object} subNodeParentNode nadřazená JP pro vybíranou JP, předáváno kvůli případnému otevření nové záložky, pokud neexistuje
+ * @param {Object} subNodeParentNode nadřazený JP pro vybíranou JP, předáváno kvůli případnému otevření nové záložky, pokud neexistuje
  * @param {boolean} openNewTab má se otevřít nová záložka? Pokud je false, bude použita existující  aktuálně vybraná, pokud žádná neexistuje, bude nová vytvořena
  */
 export function faSelectSubNode(subNodeId, subNodeParentNode, openNewTab=false) {
