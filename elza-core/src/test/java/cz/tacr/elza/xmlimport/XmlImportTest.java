@@ -2,6 +2,7 @@ package cz.tacr.elza.xmlimport;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -12,6 +13,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.BeansException;
@@ -28,6 +30,8 @@ import org.xml.sax.helpers.DefaultHandler;
 import cz.tacr.elza.ElzaCore;
 import cz.tacr.elza.api.vo.ImportDataFormat;
 import cz.tacr.elza.api.vo.XmlImportConfig;
+import cz.tacr.elza.controller.RuleManager;
+import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.service.XmlImportService;
 import cz.tacr.elza.service.exception.XmlImportException;
 import cz.tacr.elza.xmlimport.v1.vo.XmlImport;
@@ -47,6 +51,12 @@ public class XmlImportTest implements ApplicationContextAware {
 
     @Autowired
     private XmlImportService xmlImportService;
+
+    @Autowired
+    protected PackageRepository packageRepository;
+
+    @Autowired
+    protected RuleManager ruleManager;
 
     private static final int RECORD_COUNT = 10;
 
@@ -72,6 +82,16 @@ public class XmlImportTest implements ApplicationContextAware {
 
     private ApplicationContext applicationContext;
 
+    @Before
+    public void setUp() {
+        if (packageRepository.count() == 0) {
+            URL url = Thread.currentThread().getContextClassLoader().getResource("package-test.zip");
+            File file = new File(url.getPath());
+
+
+            ruleManager.importPackage(file);
+        }
+    }
 
     /** Test na import nové pomůcky v nativním formátu.
      * @throws XmlImportException */

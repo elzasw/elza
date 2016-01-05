@@ -3,6 +3,7 @@ package cz.tacr.elza.service;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -105,10 +106,31 @@ public class ArrangementService {
         return levelRepository.save(level);
     }
 
+    public ArrLevel createLevel(ArrChange createChange, ArrNode node, ArrNode parentNode, int position) {
+        Assert.notNull(createChange);
+
+        ArrLevel level = new ArrLevel();
+        level.setPosition(position);
+        level.setCreateChange(createChange);
+        level.setNodeParent(parentNode);
+        level.setNode(node);
+        return levelRepository.save(level);
+    }
+
     public ArrNode createNode() {
         ArrNode node = new ArrNode();
         node.setLastUpdate(LocalDateTime.now());
         node.setUuid(UUID.randomUUID().toString());
+        return nodeRepository.save(node);
+    }
+
+    public ArrNode createNode(String uuid) {
+        if (StringUtils.isBlank(uuid)) {
+            return createNode();
+        }
+        ArrNode node = new ArrNode();
+        node.setLastUpdate(LocalDateTime.now());
+        node.setUuid(uuid);
         return nodeRepository.save(node);
     }
 
@@ -201,5 +223,23 @@ public class ArrangementService {
         ArrDescItem descItemTmp = new ArrDescItem();
         BeanUtils.copyProperties(descItem, descItemTmp);
         descItemRepository.save(descItemTmp);
+    }
+
+    /**
+     * Vrací další identifikátor objektu pro atribut (oproti PK se zachovává při nové verzi)
+     *
+     * TODO:
+     * Není dořešené, může dojít k přidělení stejného object_id dvěma různýmhodnotám atributu.
+     * Řešit v budoucnu zrušením object_id (pravděpodobně GUID) nebo vytvořením nové entity,
+     * kde bude object_id primární klíč a bude tak generován pomocí sekvencí hibernate.
+     *
+     * @return Identifikátor objektu
+     */
+    public Integer getNextDescItemObjectId() {
+        Integer maxDescItemObjectId = descItemRepository.findMaxDescItemObjectId();
+        if (maxDescItemObjectId == null) {
+            maxDescItemObjectId = 0;
+        }
+        return maxDescItemObjectId + 1;
     }
 }

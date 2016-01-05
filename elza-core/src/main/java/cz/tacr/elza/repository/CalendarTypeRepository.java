@@ -13,4 +13,6 @@ import cz.tacr.elza.domain.ArrCalendarType;
 @Repository
 public interface CalendarTypeRepository extends JpaRepository<ArrCalendarType, Integer> {
 
+    ArrCalendarType findByCode(String calendarTypeCode);
+
 }

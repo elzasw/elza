@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -41,8 +42,21 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.api.vo.ImportDataFormat;
 import cz.tacr.elza.api.vo.XmlImportConfig;
+import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataPacketRef;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrPacket;
@@ -54,11 +68,21 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.RulArrangementType;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
+import cz.tacr.elza.repository.CalendarTypeRepository;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DataTypeRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.DescItemSpecRepository;
+import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
@@ -71,9 +95,18 @@ import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.exception.RecordImportException;
 import cz.tacr.elza.service.exception.XmlImportException;
 import cz.tacr.elza.xmlimport.v1.vo.XmlImport;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.AbstractDescItem;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemCoordinates;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemDecimal;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemFormattedText;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemInteger;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemPacketRef;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemPartyRef;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemRecordRef;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemString;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemText;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemUnitDate;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemUnitId;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.FindingAid;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Level;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.Packet;
@@ -132,6 +165,27 @@ public class XmlImportService {
     @Autowired
     private ArrangementTypeRepository arrangementTypeRepository;
 
+    @Autowired
+    private DescItemTypeRepository descItemTypeRepository;
+
+    @Autowired
+    private DescItemSpecRepository descItemSpecRepository;
+
+    @Autowired
+    private CalendarTypeRepository calendarTypeRepository;
+
+    @Autowired
+    private DescItemRepository descItemRepository;
+
+    @Autowired
+    private DataTypeRepository dataTypeRepository;
+
+    @Autowired
+    private DataRepository dataRepository;
+
+    @Autowired
+    private NodeRepository nodeRepository;
+
     /**
      * Naimportuje data.
      *
@@ -186,9 +240,13 @@ public class XmlImportService {
             Level rootLevel = xmlImport.getFindingAid().getRootLevel();
             if (rootLevel != null) {
                 // najít fa, smazat
-                ArrFindingAid findingAid = findingAidRepository.findFindingAidByRootNodeUUID(rootLevel.getUuid());
-                if (findingAid != null) {
-                    arrangementService.deleteFindingAid(findingAid.getFindingAidId());
+                ArrFindingAid findingAid;
+                String rootUuid = rootLevel.getUuid();
+                if (StringUtils.isNotBlank(rootUuid)) {
+                    findingAid = findingAidRepository.findFindingAidByRootNodeUUID(rootUuid);
+                    if (findingAid != null) {
+                        arrangementService.deleteFindingAid(findingAid.getFindingAidId());
+                    }
                 }
 
                 // založit fa
@@ -196,40 +254,217 @@ public class XmlImportService {
                 findingAid = createFindingAid(xmlImport.getFindingAid(), change, config);
                 Map<String, Integer> xmlIdIntIdPacketMap = importPackets(xmlImport.getPackets(), usedPackets, stopOnError, findingAid);
                 // importovat
-                importFindingAid(xmlImport.getFindingAid(), change, findingAid, xmlIdIntIdRecordMap, xmlIdIntIdPartyMap, xmlIdIntIdPacketMap, config);
+                ArrFindingAidVersion findingAidVersion = arrangementService.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
+                ArrNode rootNode = findingAidVersion.getRootLevel().getNode();
+                if (StringUtils.isNotBlank(rootUuid)) {
+                    rootNode.setUuid(rootLevel.getUuid());
+                    nodeRepository.save(rootNode);
+                }
+
+                importFindingAid(xmlImport.getFindingAid(), change, rootNode, xmlIdIntIdRecordMap, xmlIdIntIdPartyMap, xmlIdIntIdPacketMap, config);
             }
         }
     }
 
-    private void importFindingAid(FindingAid findingAid, ArrChange change, ArrFindingAid arrFindingAid, Map<String, Integer> xmlIdIntIdRecordMap,
+    private void importFindingAid(FindingAid findingAid, ArrChange change, ArrNode rootNode, Map<String, Integer> xmlIdIntIdRecordMap,
             Map<String, Integer> xmlIdIntIdPartyMap, Map<String, Integer> xmlIdIntIdPacketMap, XmlImportConfig config) {
         Level rootLevel = findingAid.getRootLevel();
         int position = 1;
 
         if (rootLevel.getSubLevels() != null) {
             for (Level level : rootLevel.getSubLevels()) {
-                importLevel(level, position++, null, config, change);
+                importLevel(level, position++, rootNode, config, change, xmlIdIntIdRecordMap, xmlIdIntIdPartyMap, xmlIdIntIdPacketMap);
             }
         }
     }
 
-    private void importLevel(Level level, int position, ArrNode parent, XmlImportConfig config, ArrChange change) {
-        ArrNode arrNode = arrangementService.createNode();
-        ArrLevel arrLevel = arrangementService.createLevel(change, parent, position);
+    private void importLevel(Level level, int position, ArrNode parent, XmlImportConfig config, ArrChange change, Map<String, Integer> xmlIdIntIdRecordMap, Map<String, Integer> xmlIdIntIdPartyMap, Map<String, Integer> xmlIdIntIdPacketMap) {
+        ArrNode arrNode = arrangementService.createNode(level.getUuid());
+        ArrLevel arrLevel = arrangementService.createLevel(change, arrNode, parent, position);
 
-        importDescItems(arrLevel, level, config);
+        importDescItems(arrLevel.getNode(), level, change, config, xmlIdIntIdRecordMap, xmlIdIntIdPartyMap, xmlIdIntIdPacketMap);
 
         int childPosition = 1;
         if (level.getSubLevels() != null) {
             for (Level subLevel : level.getSubLevels()) {
-                importLevel(subLevel, childPosition++, arrNode, config, change);
+                importLevel(subLevel, childPosition++, arrNode, config, change, xmlIdIntIdRecordMap, xmlIdIntIdPartyMap, xmlIdIntIdPacketMap);
             }
         }
     }
 
-    private void importDescItems(ArrLevel arrLevel, Level level, XmlImportConfig config) {
-        // TODO Auto-generated method stub
+    private void importDescItems(ArrNode node, Level level, ArrChange change, XmlImportConfig config, Map<String, Integer> xmlIdIntIdRecordMap, Map<String, Integer> xmlIdIntIdPartyMap, Map<String, Integer> xmlIdIntIdPacketMap) {
+        List<AbstractDescItem> descItems = level.getDescItems();
+        if (descItems != null) {
+            for (AbstractDescItem descItem : descItems) {
+                ArrDescItem arrDescItem = createArrDescItem(change, node, descItem);
+                descItemRepository.save(arrDescItem);
 
+                if (descItem instanceof DescItemCoordinates) {
+                    DescItemCoordinates descItemCoordinates = (DescItemCoordinates) descItem;
+                    RulDataType dataType = dataTypeRepository.findByCode("COORDINATES");
+
+                    ArrDataCoordinates arrData = new ArrDataCoordinates();
+                    arrData.setDataType(dataType);
+                    arrData.setDescItem(arrDescItem);
+                    arrData.setValue(descItemCoordinates.getValue());
+
+                    dataRepository.save(arrData);
+                } else if (descItem instanceof DescItemDecimal) {
+                    DescItemDecimal descItemDecimal = (DescItemDecimal) descItem;
+                    RulDataType dataType = dataTypeRepository.findByCode("DECIMAL");
+
+                    ArrDataDecimal arrData = new ArrDataDecimal();
+                    arrData.setDataType(dataType);
+                    arrData.setDescItem(arrDescItem);
+                    arrData.setValue(descItemDecimal.getValue());
+
+                    dataRepository.save(arrData);
+                } else if (descItem instanceof DescItemFormattedText) {
+                    DescItemFormattedText descItemFormattedText = (DescItemFormattedText) descItem;
+                    RulDataType dataType = dataTypeRepository.findByCode("FORMATTED_TEXT");
+
+                    ArrDataText arrData = new ArrDataText();
+                    arrData.setDataType(dataType);
+                    arrData.setDescItem(arrDescItem);
+                    arrData.setValue(descItemFormattedText.getValue());
+
+                    dataRepository.save(arrData);
+                } else if (descItem instanceof DescItemInteger) {
+                    DescItemInteger descItemInteger = (DescItemInteger) descItem;
+                    RulDataType dataType = dataTypeRepository.findByCode("INT");
+
+                    ArrDataInteger arrData = new ArrDataInteger();
+                    arrData.setDataType(dataType);
+                    arrData.setDescItem(arrDescItem);
+                    arrData.setValue(descItemInteger.getValue());
+
+                    dataRepository.save(arrData);
+                } else if (descItem instanceof DescItemPacketRef) {
+                    DescItemPacketRef descItemPacketRef = (DescItemPacketRef) descItem;
+                    RulDataType dataType = dataTypeRepository.findByCode("PACKET_REF");
+
+                    ArrDataPacketRef arrData = new ArrDataPacketRef();
+                    arrData.setDataType(dataType);
+                    arrData.setDescItem(arrDescItem);
+
+                    String storageNumber = descItemPacketRef.getPacket().getStorageNumber();
+                    arrData.setPacketId(xmlIdIntIdPacketMap.get(storageNumber));
+
+                    dataRepository.save(arrData);
+                } else if (descItem instanceof DescItemPartyRef) {
+                    DescItemPartyRef descItemPartyRef = (DescItemPartyRef) descItem;
+                    RulDataType dataType = dataTypeRepository.findByCode("PARTY_REF");
+
+                    ArrDataPartyRef arrData = new ArrDataPartyRef();
+                    arrData.setDataType(dataType);
+                    arrData.setDescItem(arrDescItem);
+
+                    String partyId = descItemPartyRef.getParty().getPartyId();
+                    arrData.setPartyId(xmlIdIntIdPartyMap.get(partyId));
+
+                    dataRepository.save(arrData);
+                } else if (descItem instanceof DescItemRecordRef) {
+                    DescItemRecordRef descItemRecordRef = (DescItemRecordRef) descItem;
+                    RulDataType dataType = dataTypeRepository.findByCode("RECORD_REF");
+
+                    ArrDataRecordRef arrData = new ArrDataRecordRef();
+                    arrData.setDataType(dataType);
+                    arrData.setDescItem(arrDescItem);
+
+                    String recordId = descItemRecordRef.getRecord().getRecordId();
+                    arrData.setRecordId(xmlIdIntIdRecordMap.get(recordId));
+
+                    dataRepository.save(arrData);
+                } else if (descItem instanceof DescItemString) {
+                    DescItemString descItemString = (DescItemString) descItem;
+                    RulDataType dataType = dataTypeRepository.findByCode("STRING");
+
+                    ArrDataString arrData = new ArrDataString();
+                    arrData.setDataType(dataType);
+                    arrData.setDescItem(arrDescItem);
+                    arrData.setValue(descItemString.getValue());
+
+                    dataRepository.save(arrData);
+                } else if (descItem instanceof DescItemText) {
+                    DescItemText descItemText = (DescItemText) descItem;
+                    RulDataType dataType = dataTypeRepository.findByCode("TEXT");
+
+                    ArrDataText arrData = new ArrDataText();
+                    arrData.setDataType(dataType);
+                    arrData.setDescItem(arrDescItem);
+                    arrData.setValue(descItemText.getValue());
+
+                    dataRepository.save(arrData);
+                } else if (descItem instanceof DescItemUnitDate) {
+                    DescItemUnitDate descItemUnitDate = (DescItemUnitDate) descItem;
+                    RulDataType dataType = dataTypeRepository.findByCode("UNITDATE");
+
+                    ArrDataUnitdate arrData = new ArrDataUnitdate();
+                    arrData.setDataType(dataType);
+                    arrData.setDescItem(arrDescItem);
+
+                    String calendarTypeCode = descItemUnitDate.getCalendarTypeCode();
+                    ArrCalendarType calendarType = calendarTypeRepository.findByCode(calendarTypeCode);
+                    arrData.setCalendarTypeId(calendarType.getCalendarTypeId());
+                    arrData.setFormat("DT");
+
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                    Date fromDate = descItemUnitDate.getValueFrom();
+                    if (fromDate != null) {
+                        arrData.setValueFrom(dateFormat.format(fromDate));
+                    }
+
+                    Date toDate = descItemUnitDate.getValueTo();
+                    if (toDate != null) {
+                        arrData.setValueTo(dateFormat.format(toDate));
+                    }
+
+                    arrData.setValueFromEstimated(descItemUnitDate.getValueFromEstimated());
+                    arrData.setValueToEstimated(descItemUnitDate.getValueToEstimated());
+
+                    dataRepository.save(arrData);
+                } else if (descItem instanceof DescItemUnitId) {
+                    DescItemUnitId descItemUnitId = (DescItemUnitId) descItem;
+                    RulDataType dataType = dataTypeRepository.findByCode("UNITID");
+
+                    ArrDataUnitid arrData = new ArrDataUnitid();
+                    arrData.setDataType(dataType);
+                    arrData.setDescItem(arrDescItem);
+                    arrData.setValue(descItemUnitId.getValue());
+
+                    dataRepository.save(arrData);
+                }
+            }
+        }
+
+    }
+
+    private ArrDescItem createArrDescItem(ArrChange change, ArrNode node, AbstractDescItem descItem) {
+        ArrDescItem arrDescItem = new ArrDescItem();
+
+        arrDescItem.setCreateChange(change);
+        arrDescItem.setNode(node);
+        arrDescItem.setPosition(descItem.getPosition());
+        arrDescItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+
+        String descItemSpecCode = descItem.getDescItemSpecCode();
+        if (descItemSpecCode !=  null) {
+            RulDescItemSpec descItemSpec = descItemSpecRepository.findOneByCode(descItemSpecCode);
+            arrDescItem.setDescItemSpec(descItemSpec);
+        }
+
+        String descItemTypeCode = descItem.getDescItemTypeCode();
+        if (descItemTypeCode !=  null) {
+            RulDescItemType descItemType = descItemTypeRepository.findOneByCode(descItemTypeCode);
+            if (descItemType == null) {
+                throw new IllegalStateException("Chybí desc item type");
+            }
+            arrDescItem.setDescItemType(descItemType);
+        } else {
+            throw new IllegalStateException("Chybí desc item type code");
+        }
+
+        return arrDescItem;
     }
 
     private ArrFindingAid createFindingAid(FindingAid findingAid, ArrChange change, XmlImportConfig config) {
