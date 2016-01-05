@@ -1,27 +1,5 @@
 package cz.tacr.elza.ui.controller;
 
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.sql.DataSource;
-import javax.transaction.Transactional;
-
-import org.apache.commons.lang.math.RandomUtils;
-import org.hibernate.Session;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrCalendarType;
@@ -41,6 +19,7 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
@@ -61,6 +40,7 @@ import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
@@ -69,6 +49,26 @@ import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.ArrangementService;
+import org.apache.commons.lang.math.RandomUtils;
+import org.hibernate.Session;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.sql.DataSource;
+import javax.transaction.Transactional;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Kontroler pro testovací data.
@@ -118,13 +118,14 @@ public class TestingDataController {
     private VariantRecordRepository variantRecordRepository;
     @Autowired
     private FindingAidVersionRepository findingAidVersionRepository;
-
     @Autowired
     private ArrangementTypeRepository arrangementTypeRepository;
     @Autowired
     private RuleSetRepository ruleSetRepository;
     @Autowired
     private CalendarTypeRepository calendarTypeRepository;
+    @Autowired
+    private PartyNameFormTypeRepository partyNameFormTypeRepository;
 
     @Autowired
     private ArrangementService arrangementService;
@@ -505,6 +506,10 @@ public class TestingDataController {
 
         List<ParParty> existingParties = partyRepository.findAll();
 
+        ParPartyNameFormType partyNameFormType = new ParPartyNameFormType();
+        partyNameFormType.setCode("CODE");
+        partyNameFormTypeRepository.save(partyNameFormType);
+
         List<ParParty> parties = new LinkedList<ParParty>();
         for (PartyEnum partyEnum : PartyEnum.values()) {
             String subType = partyEnum.getSubType();
@@ -513,7 +518,7 @@ public class TestingDataController {
             RegRecord regRecord = records.get(position);
             ParParty party = findParty(partySubtype, regRecord, existingParties);
             if (party == null) {
-                party = createParParty(partySubtype, regRecord);
+                party = createParParty(partySubtype, regRecord, partyNameFormType);
             }
             parties.add(party);
         }
@@ -563,16 +568,20 @@ public class TestingDataController {
         return null;
     }
 
-    private ParParty createParParty(ParPartyType parPartyType, RegRecord regRecord) {
-        ParPartyName preferredName = new ParPartyName();
-        partyNameRepository.save(preferredName);
+    private ParParty createParParty(ParPartyType parPartyType, RegRecord regRecord, ParPartyNameFormType partyNameFormType) {
         ParParty parParty = new ParParty();
         parParty.setPartyType(parPartyType);
         parParty.setRecord(regRecord);
-        parParty.setPreferredName(preferredName);
         parParty = partyRepository.save(parParty);
+
+        ParPartyName preferredName = new ParPartyName();
+        preferredName.setNameFormType(partyNameFormType);
+        preferredName.setMainPart("MAIN-PART");
         preferredName.setParty(parParty);
         partyNameRepository.save(preferredName);
+
+        parParty.setPreferredName(preferredName);
+        partyRepository.save(parParty);
 
         return parParty;
     }
