@@ -1,8 +1,6 @@
 package cz.tacr.elza.bulkaction;
 
 
-import static cz.tacr.elza.api.vo.BulkActionState.State;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
+import cz.tacr.elza.api.vo.BulkActionState.State;
 import cz.tacr.elza.bulkaction.factory.BulkActionFactory;
 import cz.tacr.elza.bulkaction.generator.BulkAction;
 import cz.tacr.elza.bulkaction.generator.CleanDescriptionItemBulkAction;
@@ -353,12 +352,17 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
 
     @Override
     public void onSuccess(final BulkActionWorker result) {
+        ArrFindingAidVersion findingAidVersion = findingAidVersionRepository.findOne(result.getVersionId());
+        if (findingAidVersion == null) {
+            logger.warn("Neexistuje verze archivní pomůcky s identifikátorem " + result.getVersionId());
+            return;
+        }
 
         ArrFaBulkAction arrFaBulkAction = new ArrFaBulkAction();
 
         arrFaBulkAction.setBulkActionCode(result.getBulkActionConfig().getCode());
         arrFaBulkAction.setChange(result.getBulkActionState().getRunChange());
-        arrFaBulkAction.setFindingAidVersion(findingAidVersionRepository.findOne(result.getVersionId()));
+        arrFaBulkAction.setFindingAidVersion(findingAidVersion);
 
         faBulkActionRepository.save(arrFaBulkAction);
 
@@ -475,5 +479,18 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         }
 
         return bulkActionConfigReturnList;
+    }
+
+    /**
+     * Ukončí běžící akce pro danou verzi.
+     *
+     * @param findingAidVersionId id verze archivní pomůcky
+     */
+    public void terminateBulkActions(Integer findingAidVersionId) {
+        for (BulkActionWorker worker : workers) {
+            if (worker.getVersionId().equals(findingAidVersionId) && worker.getBulkActionState().getState() == State.RUNNING) {
+                worker.terminate();
+            }
+        }
     }
 }

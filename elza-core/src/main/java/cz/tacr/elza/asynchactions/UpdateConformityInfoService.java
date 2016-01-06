@@ -56,7 +56,7 @@ public class UpdateConformityInfoService {
 
     @Autowired
     private ElzaRules elzaRules;
-    
+
     private ThreadLocal<Set<ArrNode>> nodesToUpdate = new ThreadLocal<>();
 
     /**
@@ -133,8 +133,6 @@ public class UpdateConformityInfoService {
         });
     }
 
-
-
     /**
      * Provede ukončení běhu vlákna. (dopočítá poslední stav a ukončí se)
      */
@@ -142,6 +140,17 @@ public class UpdateConformityInfoService {
         UpdateConformityInfoWorker worker = versionWorkers.get(version);
         if (worker != null) {
             worker.terminate();
+            versionWorkers.remove(worker);
+        }
+    }
+
+    /**
+     * Provede ukončení běhu vlákna.
+     */
+    synchronized public void terminateWorkerInVersionAndWait(final ArrFindingAidVersion version) {
+        UpdateConformityInfoWorker worker = versionWorkers.get(version);
+        if (worker != null) {
+            worker.terminateAndWait();
             versionWorkers.remove(worker);
         }
     }

@@ -10,7 +10,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.api.vo.BulkActionState.State;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
+import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
 import cz.tacr.elza.bulkaction.BulkActionState;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -24,7 +26,6 @@ import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
-
 
 /**
  * Hromadná akce prochází strom otevřené verze archivní pomůcky a doplňuje u položek požadované atributy.
@@ -147,7 +148,6 @@ public class UnitIdBulkAction extends BulkAction {
         } else {
             delimiterMajorLevelTypeNotUseList = Arrays.asList(delimiterMajorLevelTypeNotUse.split("\\|"));
         }
-
     }
 
     /**
@@ -158,6 +158,10 @@ public class UnitIdBulkAction extends BulkAction {
      * @param parentSpecCode specifický kód rodiče
      */
     private void generate(final ArrLevel level, UnitId unitId, final String parentSpecCode) {
+        if (bulkActionState.isInterrupt()) {
+            bulkActionState.setState(State.ERROR);
+            throw new BulkActionInterruptedException("Hromadná akce " + toString() + " byla přerušena.");
+        }
 
         ArrDescItem descItem = loadDescItem(level);
         ArrDescItem descItemLevel = loadDescItemLevel(level);

@@ -52,7 +52,7 @@ public class Level {
             @XmlElement(name = "desc-item-text", type = DescItemText.class),
             @XmlElement(name = "desc-item-unit-date", type = DescItemUnitDate.class),
             @XmlElement(name = "desc-item-unit-id", type = DescItemUnitId.class),
-            @XmlElement(name = "desc-item-packed-ref", type = DescItemPacketRef.class)
+            @XmlElement(name = "desc-item-packet-ref", type = DescItemPacketRef.class)
     })
     private List<AbstractDescItem> descItems;
 

@@ -90,4 +90,11 @@ public interface BulkActionState<FC extends ArrChange> {
      */
     void setBulkActionCode(String bulkActionCode);
 
+    /**
+     * @return příznak zda je požadováno přerušení běhu akce
+     */
+    boolean isInterrupt();
+
+    /** Nastaví požadavek na přerušení akce. */
+    void setInterrupt(boolean setInterrupt) ;
 }
