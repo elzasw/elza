@@ -105,4 +105,12 @@ public class ParPartyType implements cz.tacr.elza.api.ParPartyType {
     public String toString() {
         return "ParPartyType pk=" + partyTypeId;
     }
+
+    public enum PartyTypeEnum {
+        PERSON,
+        ROD,
+        GROUP_PARTY,
+        EVENT
+    }
+
 }

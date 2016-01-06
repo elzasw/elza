@@ -1,22 +1,5 @@
 package cz.tacr.elza.controller.config;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
 import cz.tacr.elza.controller.vo.ParPartyGroupVO;
 import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
@@ -50,6 +33,21 @@ import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 
 /**
@@ -171,6 +169,22 @@ public class ConfigClientVOService {
         }
 
         return new ArrayList<>(partyMap.values());
+    }
+
+    /**
+     * Vytvoří objekt osoby z předaného VO.
+     *
+     * @param partyVO       VO osoby
+     * @return              objekt osoby
+     */
+    public ParParty createParty(final ParPartyVO partyVO) {
+        if (partyVO == null) {
+            return null;
+        }
+
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+
+        return mapper.map(partyVO, ParParty.class);
     }
 
     /**

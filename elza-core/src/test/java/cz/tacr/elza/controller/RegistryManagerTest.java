@@ -84,7 +84,7 @@ public class RegistryManagerTest extends AbstractRestTest {
         Assert.assertTrue("Původní jméno", record.getRecord().equals(TEST_NAME));
         record.setRecord(TEST_UPDATE_NAME);
 
-        RegRegisterType newRegisterType = createRegisterType("KOD3");
+        RegRegisterType newRegisterType = createRegisterType("KOD3", null);
         record.setRegisterType(newRegisterType);
 
         Response response =
@@ -208,8 +208,8 @@ public class RegistryManagerTest extends AbstractRestTest {
      */
     @Test
     public void testRestGetRegisterTypes() {
-        createRegisterType("KOD8");
-        createRegisterType("KOD9");
+        createRegisterType("KOD8", null);
+        createRegisterType("KOD9", null);
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).get(GET_REGISTER_TYPES_URL);
         logger.info(response.asString());
@@ -315,7 +315,7 @@ public class RegistryManagerTest extends AbstractRestTest {
         regRecord.setRecord("XXX");
         regRecord.setCharacteristics("CHAR");
         regRecord.setLocal(false);
-        regRecord.setRegisterType(createRegisterType(uniqueCode));
+        regRecord.setRegisterType(createRegisterType(uniqueCode, null));
 
         return recordRepository.save(regRecord);
     }

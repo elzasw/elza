@@ -7,6 +7,9 @@ import com.jayway.restassured.response.Header;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 import cz.tacr.elza.ElzaCoreTest;
+import cz.tacr.elza.controller.config.ConfigClientVOService;
+import cz.tacr.elza.controller.vo.RegRecordVO;
+import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
@@ -103,6 +106,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
+import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import java.io.File;
 import java.net.URL;
@@ -192,6 +196,7 @@ public abstract class AbstractRestTest {
     protected static final String GET_PARTY_TYPES = PARTY_MANAGER_URL + "/getPartyTypes";
     protected static final String GET_PARTY_TYPES_V2 = PARTY_MANAGER_URL_V2 + "/getPartyTypes";
     protected static final String INSERT_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/insertParty";
+    protected static final String INSERT_PARTY_V2 = PARTY_MANAGER_URL_V2 + "/insertParty";
     protected static final String FIND_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/findParty";
     protected static final String FIND_ABSTRACT_PARTY_V2 = PARTY_MANAGER_URL_V2 + "/findParty";
     protected static final String UPDATE_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/updateParty";
@@ -202,6 +207,7 @@ public abstract class AbstractRestTest {
     protected static final String PARTY_TYPE_ID_ATT = "partyTypeId";
     protected static final String ORIGINATOR_ATT = "originator";
     protected static final String ABSTRACT_PARTY_ID_ATT = "partyId";
+    protected static final String PARTY_VO = "partyVO";
 
     // END - PARTY MANAGER CONSTANTS
 
@@ -395,6 +401,9 @@ public abstract class AbstractRestTest {
 
     @Autowired
     protected PartyNameFormTypeRepository partyNameFormTypeRepository;
+
+    @Autowired
+    protected ConfigClientVOService factoryVO;
 
 
     @Before
@@ -795,10 +804,15 @@ public abstract class AbstractRestTest {
      * Vytvoření jednoho typu rejstříku.
      * @return  vytvořený objekt, zapsaný do db
      */
-    protected RegRegisterType createRegisterType(final String uniqueCode) {
+    protected RegRegisterType createRegisterType(final String uniqueCode, @Nullable final ParPartyType partyType) {
         RegRegisterType regRegisterType = new RegRegisterType();
         regRegisterType.setCode(uniqueCode);
         regRegisterType.setName(TEST_NAME);
+
+        if (partyType != null) {
+            regRegisterType.setPartyType(partyType);
+        }
+
         return registerTypeRepository.save(regRegisterType);
     }
 
@@ -811,9 +825,28 @@ public abstract class AbstractRestTest {
         regRecord.setRecord(TEST_NAME);
         regRecord.setCharacteristics("CHARACTERISTICS");
         regRecord.setLocal(false);
-        regRecord.setRegisterType(createRegisterType(uniqueCode));
+        regRecord.setRegisterType(createRegisterType(uniqueCode, null));
 
         return recordRepository.save(regRecord);
+    }
+
+    /**
+     * Vytvoření jednoho záznamu rejstříku defaultního typu.
+     * @return  vytvořený VO objekt
+     */
+    protected RegRecordVO createRecordVO(final String uniqueCode, @Nullable final ParPartyType partyType) {
+        RegRecordVO recordVO = new RegRecordVO();
+        recordVO.setRecord(TEST_NAME);
+        recordVO.setCharacteristics("CHARACTERISTICS");
+        recordVO.setLocal(false);
+
+        RegRegisterType registerType = createRegisterType(uniqueCode, partyType);
+
+        RegRegisterTypeVO registerTypeVO = factoryVO.createRegRegisterType(registerType);
+
+        recordVO.setRegisterType(registerTypeVO);
+
+        return recordVO;
     }
 
     /**
@@ -1058,7 +1091,7 @@ public abstract class AbstractRestTest {
         regRecord.setCharacteristics("CHARACTERISTICS");
         regRecord.setLocal(false);
 
-        RegRegisterType registerType = createRegisterType(uniqueCode);
+        RegRegisterType registerType = createRegisterType(uniqueCode, null);
         regRecord.setRegisterType(registerType);
 
         Response response = put(spec -> spec.body(regRecord), CREATE_RECORD_URL);

@@ -1,8 +1,5 @@
 package cz.tacr.elza.controller.config;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ParComplementTypeVO;
 import cz.tacr.elza.controller.vo.ParDynastyVO;
@@ -47,6 +44,8 @@ import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 
 /**
@@ -79,7 +78,19 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ArrCalendarType.class, ArrCalendarTypeVO.class).byDefault().register();
         mapperFactory.classMap(ParComplementType.class, ParComplementTypeVO.class).byDefault().register();
         mapperFactory.classMap(ParDynasty.class, ParDynastyVO.class).byDefault().register();
-        mapperFactory.classMap(ParParty.class, ParPartyVO.class).exclude("preferredName").byDefault().register();
+
+        // Exlude preferredName ve směru DO na VO. VO na DO bez exclude.
+        mapperFactory.classMap(ParParty.class, ParPartyVO.class).customize(new CustomMapper<ParParty, ParPartyVO>() {
+            @Override
+            public void mapBtoA(final ParPartyVO partyVO, final ParParty party, final MappingContext context) {
+                super.mapBtoA(partyVO, party, context);
+                if (partyVO.getPreferredName() != null) {
+                    ParPartyName partyName = mapperFacade.map(partyVO.getPreferredName(), ParPartyName.class);
+                    party.setPreferredName(partyName);
+                }
+            }
+        }).exclude("preferredName").byDefault().register();
+
         mapperFactory.classMap(ParPartyGroup.class, ParPartyGroupVO.class).byDefault().register();
         mapperFactory.classMap(ParPartyGroupIdentifier.class, ParPartyGroupIdentifierVO.class).customize(
                 new CustomMapper<ParPartyGroupIdentifier, ParPartyGroupIdentifierVO>() {

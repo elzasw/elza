@@ -1,22 +1,9 @@
 package cz.tacr.elza.controller;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import cz.tacr.elza.controller.config.ConfigClientVOService;
 import cz.tacr.elza.controller.vo.ParComplementTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyNameVO;
 import cz.tacr.elza.controller.vo.ParPartyTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ParPartyWithCount;
@@ -25,6 +12,7 @@ import cz.tacr.elza.controller.vo.ParRelationTypeVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParPartyTypeComplementType;
@@ -32,6 +20,7 @@ import cz.tacr.elza.domain.ParPartyTypeRelation;
 import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParRelationTypeRoleType;
+import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
@@ -40,11 +29,28 @@ import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRelationRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -95,6 +101,9 @@ public class PartyController {
 
     @Autowired
     private UnitdateRepository unitdateRepository;
+
+    @Autowired
+    private RegRecordRepository recordRepository;
 
 
     @RequestMapping(value = "/getParty", method = RequestMethod.GET)
@@ -225,4 +234,80 @@ public class PartyController {
         return new ParPartyWithCount(resultVo, countAll);
     }
 
+    @RequestMapping(value = "/insertParty", method = RequestMethod.PUT)
+    @Transactional
+    public ParParty insertParty(@RequestBody final ParPartyVO partyVO) {
+        if (partyVO == null) {
+            return null;
+        }
+
+        // TODO kuzel check na min. vyplneni entit
+
+        ParParty party = factoryVo.createParty(partyVO);
+
+        //CHECK
+        if (party.getRecord() == null) {
+            throw new IllegalArgumentException("Není vyplněno heslo rejstříku.");
+        }
+        List<RegRegisterType> regRegisterTypes = registerTypeRepository.findRegisterTypeByPartyType(party.getPartyType());
+        if (CollectionUtils.isEmpty(regRegisterTypes)) {
+            throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + party.getPartyType().getCode());
+        }
+        RegRegisterType registerType = regRegisterTypes.get(0);
+
+        // Party
+        ParPartyName preferredName = party.getPreferredName();
+        party.setPreferredName(null);
+
+        // Record
+        // hledám typ rejstříku, který má přiřazen zde použitý typ osoby
+        RegRecord regRecord = genRegRecordsFromPartyNames(partyVO.getPartyNames(), registerType);
+        party.setRecord(regRecord);
+
+        partyRepository.save(party);
+
+        // Name & NameFormtype
+        if (preferredName != null) {
+            if (preferredName.getNameFormType() != null) {
+                partyNameFormTypeRepository.save(preferredName.getNameFormType());
+            } else {
+                throw new IllegalArgumentException("Není vyplněna forma pref. jména osoby.");
+            }
+
+            preferredName.setParty(party);
+            partyNameRepository.save(preferredName);
+        }
+
+        party.setPreferredName(preferredName);
+        partyRepository.save(party);
+
+        return party;
+    }
+
+    /**
+     * Nageneruje rejtříková hesla dle jmen osob. Vrátí jedno, které se prováže na danou osobu.
+     * @param partyNamesVO    jména osob
+     * @return      takové heslo z vygenerovaných, které je k použití na vazbu z osoby
+     */
+    private RegRecord genRegRecordsFromPartyNames(final List<ParPartyNameVO> partyNamesVO, final RegRegisterType registerType) {
+        if (partyNamesVO == null) {
+            return null;
+        }
+
+        RegRecord result = null;
+        for (final ParPartyNameVO pn : partyNamesVO) {
+            RegRecord regRecord = new RegRecord();
+            regRecord.setRegisterType(registerType);
+            regRecord.setRecord(pn.getMainPart() + StringUtils.defaultString(pn.getOtherPart()));
+            regRecord.setLocal(true);
+
+            recordRepository.save(regRecord);
+
+            if (result == null) {
+                result = regRecord;
+            }
+        }
+
+        return result;
+    }
 }
