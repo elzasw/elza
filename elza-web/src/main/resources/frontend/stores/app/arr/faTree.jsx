@@ -3,14 +3,13 @@ import {indexById} from 'stores/app/utils.jsx'
 import {i18n} from 'components'
 
 const initialState = {
-    faId: null,
-    versionId: null,
     selectedId: null,
     focusId: null,
     expandedIds: {'0': true},
     searchedIds: null,
     isFetching: false,
     fetched: false,
+    fetchingIncludeIds: {},   // jaké id aktuálně fetchuje - id na true
     nodes: [],
 }
 /*console.log('eeeeeeeeeeeeexxxxxxxxxxxxppp');
@@ -85,10 +84,15 @@ export default function faTree(state = initialState, action) {
             });
             return ret;
         case types.FA_FA_TREE_REQUEST:
+            var fetchingIncludeIds = [];
+            if (action.includeIds != null) {
+                action.includeIds.forEach(id => {
+                    fetchingIncludeIds[id] = true;
+                });
+            }
             return Object.assign({}, state, {
                 isFetching: true,
-                faId: action.faId,
-                versionId: action.versionId,
+                fetchingIncludeIds: fetchingIncludeIds
             })
         case types.FA_FA_TREE_RECEIVE:
             if (action.nodeId !== null && typeof action.nodeId !== 'undefined') {
@@ -106,15 +110,14 @@ export default function faTree(state = initialState, action) {
                                 ...action.nodes,
                                 ...nodes.slice(index + 1)
                             ],
-                            faId: action.faId,
-                            versionId: action.versionId,
+                            fetchingIncludeIds: {},
                             lastUpdated: action.receivedAt
                         })
                     } else {
-                        return state;
+                        return Object.assign({}, state, { fetchingIncludeIds: {} });
                     }
                 } else {
-                    return state;
+                    return Object.assign({}, state, { fetchingIncludeIds: {} });
                 }
             } else {
                 var result = Object.assign({}, state, {
@@ -122,8 +125,7 @@ export default function faTree(state = initialState, action) {
                     fetched: true,
                     nodes: action.nodes,
                     expandedIds: action.expandedIds,
-                    faId: action.faId,
-                    versionId: action.versionId,
+                    fetchingIncludeIds: {},
                     lastUpdated: action.receivedAt
                 })
 

@@ -37,11 +37,24 @@ export default function arrRegion(state = initialState, action) {
                 nodes(fa.nodes, action);
             });
             return state
+        case types.FA_FA_TREE_REQUEST:
+        case types.FA_FA_TREE_RECEIVE:
+            var index = indexById(state.fas, action.faId);
+            if (index != null) {
+                return {
+                    ...state,
+                    fas: [
+                        ...state.fas.slice(0, index),
+                        Object.assign({}, state.fas[index], {faTree: faTree(state.fas[index].faTree, action)}),
+                        ...state.fas.slice(index + 1)
+                    ]
+                }
+            } else {
+                return state;
+            }
         case types.FA_FA_TREE_FOCUS_NODE:
         case types.FA_FA_TREE_EXPAND_NODE:
         case types.FA_FA_TREE_COLLAPSE_NODE:
-        case types.FA_FA_TREE_REQUEST:
-        case types.FA_FA_TREE_RECEIVE:
         case types.GLOBAL_CONTEXT_MENU_HIDE:
             return {
                 ...state,

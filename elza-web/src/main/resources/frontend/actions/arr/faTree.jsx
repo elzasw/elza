@@ -83,8 +83,9 @@ export function faTreeFetchIfNeeded(faId, versionId, expandedIds, selectedId) {
 
             var isInView = indexById(faTree.nodes, selectedId);
             if (isInView == null) {
-                console.log("NOT IN VIEW...", selectedId);
-                fetch = true;
+                if (!faTree.fetchingIncludeIds[selectedId]) {
+                    fetch = true;
+                }
             }
         }
 
