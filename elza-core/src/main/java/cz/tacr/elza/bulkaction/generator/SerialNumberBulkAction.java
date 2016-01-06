@@ -8,7 +8,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.api.vo.BulkActionState.State;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
+import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
 import cz.tacr.elza.bulkaction.BulkActionState;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -111,7 +113,6 @@ public class SerialNumberBulkAction extends BulkAction {
             descItemEndSpec = descItemSpecRepository.getOneByCode(levelTypeEndGenerationForArrType);
             Assert.notNull(descItemEndSpec);
         }
-
     }
 
     /**
@@ -120,6 +121,10 @@ public class SerialNumberBulkAction extends BulkAction {
      * @param level uzel
      */
     private void generate(final ArrLevel level) {
+        if (bulkActionState.isInterrupt()) {
+            bulkActionState.setState(State.ERROR);
+            throw new BulkActionInterruptedException("Hromadná akce " + toString() + " byla přerušena.");
+        }
 
         ArrDescItem descItem = loadDescItem(level);
 
