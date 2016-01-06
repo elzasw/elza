@@ -481,7 +481,7 @@ public class XmlImportService {
         return arrDescItem;
     }
 
-    private ArrFindingAid createFindingAid(FindingAid findingAid, ArrChange change, XmlImportConfig config) {
+    private ArrFindingAid createFindingAid(FindingAid findingAid, ArrChange change, XmlImportConfig config) throws XmlImportException {
         ImportDataFormat importDataFormat = config.getImportDataFormat();
 
         RulArrangementType arrangementType;
@@ -489,9 +489,14 @@ public class XmlImportService {
         if (importDataFormat == ImportDataFormat.ELZA) {
             String arrangementTypeCode = findingAid.getArrangementTypeCode();
             arrangementType = arrangementTypeRepository.findByCode(arrangementTypeCode);
-
+            if (arrangementType == null) {
+                throw new XmlImportException("Nebyl nalezen typ výstupu s kódem " + arrangementTypeCode);
+            }
             String ruleSetCode = findingAid.getRuleSetCode();
             ruleSet = ruleSetRepository.findByCode(ruleSetCode);
+            if (ruleSet == null) {
+                throw new XmlImportException("Nebyla nalezena pravidla s kódem " + ruleSetCode);
+            }
         } else { // jen pro SUZAP, INTERPI by se sem nemělo dostat
             arrangementType = arrangementTypeRepository.findOne(config.getArrangementTypeId());
             ruleSet = ruleSetRepository.findOne(config.getRuleSetId());

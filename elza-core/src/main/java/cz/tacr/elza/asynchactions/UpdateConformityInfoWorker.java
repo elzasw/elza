@@ -47,7 +47,6 @@ public class UpdateConformityInfoWorker implements Runnable {
      */
     private Set<ArrNode> nodesToUpdate = new HashSet<>();
 
-
     private boolean running = true;
     private Integer versionId;
 
@@ -151,6 +150,23 @@ public class UpdateConformityInfoWorker implements Runnable {
         synchronized (getLock()) {
             running = false;
             nodesToUpdate.clear();
+        }
+    }
+
+    /**
+     * Provede ukončení běhu. Počká než vlákno skutečně skončí.
+     */
+    public void terminateAndWait() {
+        synchronized (getLock()) {
+            nodesToUpdate.clear();
+        }
+
+        while (running) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                throw new IllegalStateException("Chyba při ukončování vlákna pro validaci uzlů.", e);
+            }
         }
     }
 }
