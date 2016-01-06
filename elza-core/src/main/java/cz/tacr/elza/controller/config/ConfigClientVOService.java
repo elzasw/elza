@@ -5,8 +5,10 @@ import cz.tacr.elza.controller.vo.ParPartyGroupVO;
 import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
 import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyNameVO;
+import cz.tacr.elza.controller.vo.ParPartyNameVOSave;
 import cz.tacr.elza.controller.vo.ParPartyTimeRangeVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParPartyVOInsert;
 import cz.tacr.elza.controller.vo.ParRelationEntityVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
@@ -177,7 +179,7 @@ public class ConfigClientVOService {
      * @param partyVO       VO osoby
      * @return              objekt osoby
      */
-    public ParParty createParty(final ParPartyVO partyVO) {
+    public ParParty createParty(final ParPartyVOInsert partyVO) {
         if (partyVO == null) {
             return null;
         }
@@ -203,6 +205,16 @@ public class ConfigClientVOService {
         return result;
     }
 
+    /**
+     * Vytvoří objekt jména osoby. Jsou načteny i detailní informace.
+     *
+     * @param partyNameVOSave jméno osoby VO
+     * @return vo jména osoba
+     */
+    public ParPartyName createParPartyName(final ParPartyNameVOSave partyNameVOSave) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.map(partyNameVOSave, ParPartyName.class);
+    }
 
     /**
      * Vytvoří seznam vazeb osoby.

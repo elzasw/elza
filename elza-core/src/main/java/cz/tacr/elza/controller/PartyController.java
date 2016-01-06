@@ -3,9 +3,10 @@ package cz.tacr.elza.controller;
 import cz.tacr.elza.controller.config.ConfigClientVOService;
 import cz.tacr.elza.controller.vo.ParComplementTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyNameVO;
+import cz.tacr.elza.controller.vo.ParPartyNameVOSave;
 import cz.tacr.elza.controller.vo.ParPartyTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParPartyVOInsert;
 import cz.tacr.elza.controller.vo.ParPartyWithCount;
 import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationTypeVO;
@@ -22,6 +23,7 @@ import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParRelationTypeRoleType;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
@@ -35,6 +37,7 @@ import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
+import cz.tacr.elza.repository.VariantRecordRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,6 +107,9 @@ public class PartyController {
 
     @Autowired
     private RegRecordRepository recordRepository;
+
+    @Autowired
+    private VariantRecordRepository variantRecordRepository;
 
 
     @RequestMapping(value = "/getParty", method = RequestMethod.GET)
@@ -236,75 +242,105 @@ public class PartyController {
 
     @RequestMapping(value = "/insertParty", method = RequestMethod.PUT)
     @Transactional
-    public ParParty insertParty(@RequestBody final ParPartyVO partyVO) {
+    public ParParty insertParty(@RequestBody final ParPartyVOInsert partyVO) {
         if (partyVO == null) {
             return null;
         }
 
         // TODO kuzel check na min. vyplneni entit
 
-        ParParty party = factoryVo.createParty(partyVO);
 
-        //CHECK
-        if (party.getRecord() == null) {
-            throw new IllegalArgumentException("Není vyplněno heslo rejstříku.");
+        //CHECK & types
+        ParPartyType partyType;
+        if (partyVO.getPartyTypeId() != null) {
+            partyType = partyTypeRepository.getOne(partyVO.getPartyTypeId());
+        } else {
+            throw new IllegalArgumentException("Nenalezen typ osoby s id: " + partyVO.getPartyTypeId());
         }
-        List<RegRegisterType> regRegisterTypes = registerTypeRepository.findRegisterTypeByPartyType(party.getPartyType());
+
+        List<RegRegisterType> regRegisterTypes = registerTypeRepository.findRegisterTypeByPartyType(partyType);
         if (CollectionUtils.isEmpty(regRegisterTypes)) {
-            throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + party.getPartyType().getCode());
+            throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
         }
         RegRegisterType registerType = regRegisterTypes.get(0);
 
-        // Party
-        ParPartyName preferredName = party.getPreferredName();
-        party.setPreferredName(null);
+        boolean isPreferred = false;
+        for (ParPartyNameVOSave partyName : partyVO.getPartyNames()) {
+            if (partyName.isPreferredName()) {
+                isPreferred = true;
+            }
+        }
+        if (!isPreferred) {
+            throw new IllegalArgumentException("Není přítomno žádné preferované jméno osoby.");
+        }
+        // end CHECK
+
+        ParParty party = factoryVo.createParty(partyVO);
+        party.setPartyType(partyType);
 
         // Record
         // hledám typ rejstříku, který má přiřazen zde použitý typ osoby
         RegRecord regRecord = genRegRecordsFromPartyNames(partyVO.getPartyNames(), registerType);
         party.setRecord(regRecord);
 
+        // Party
         partyRepository.save(party);
 
-        // Name & NameFormtype
-        if (preferredName != null) {
-            if (preferredName.getNameFormType() != null) {
-                partyNameFormTypeRepository.save(preferredName.getNameFormType());
-            } else {
-                throw new IllegalArgumentException("Není vyplněna forma pref. jména osoby.");
-            }
+        // Names
+        ParPartyName preferredName = null;
+        for (final ParPartyNameVOSave partyNameVO : partyVO.getPartyNames()) {
+            ParPartyNameFormType nameFormType = partyNameFormTypeRepository.getOne(partyNameVO.getNameFormTypeId());
 
-            preferredName.setParty(party);
-            partyNameRepository.save(preferredName);
+            ParPartyName partyName = factoryVo.createParPartyName(partyNameVO);
+            partyName.setNameFormType(nameFormType);
+            partyName.setParty(party);
+
+            partyNameRepository.save(partyName);
+
+            if (partyNameVO.isPreferredName()) {
+                preferredName = partyName;
+            }
         }
 
+        Assert.notNull(preferredName);
         party.setPreferredName(preferredName);
         partyRepository.save(party);
 
-        return party;
+        //TODO kuzel party na VOdetail a vratit
+        return null;
     }
 
     /**
-     * Nageneruje rejtříková hesla dle jmen osob. Vrátí jedno, které se prováže na danou osobu.
+     * Nageneruje rejstříkové heslo dle preferovaného jména osoby. Ostatní jména jako variantní hesla k tomuto.
      * @param partyNamesVO    jména osob
-     * @return      takové heslo z vygenerovaných, které je k použití na vazbu z osoby
+     * @param registerType    typ rejstříku
+     * @return      rejstříkoví heslo s variantními hesly daného typu
      */
-    private RegRecord genRegRecordsFromPartyNames(final List<ParPartyNameVO> partyNamesVO, final RegRegisterType registerType) {
+    private RegRecord genRegRecordsFromPartyNames(final List<ParPartyNameVOSave> partyNamesVO, final RegRegisterType registerType) {
         if (partyNamesVO == null) {
             return null;
         }
 
         RegRecord result = null;
-        for (final ParPartyNameVO pn : partyNamesVO) {
-            RegRecord regRecord = new RegRecord();
-            regRecord.setRegisterType(registerType);
-            regRecord.setRecord(pn.getMainPart() + StringUtils.defaultString(pn.getOtherPart()));
-            regRecord.setLocal(true);
+        for (final ParPartyNameVOSave pn : partyNamesVO) {
+            if (pn.isPreferredName()) {
+                RegRecord regRecord = new RegRecord();
+                regRecord.setRegisterType(registerType);
+                regRecord.setRecord(pn.getMainPart() + StringUtils.defaultString(pn.getOtherPart()));
+                regRecord.setLocal(true);
 
-            recordRepository.save(regRecord);
-
-            if (result == null) {
+                recordRepository.save(regRecord);
                 result = regRecord;
+            }
+        }
+
+        for (final ParPartyNameVOSave pn : partyNamesVO) {
+            if (!pn.isPreferredName()) {
+                RegVariantRecord regVariantRecord = new RegVariantRecord();
+                regVariantRecord.setRegRecord(result);
+                regVariantRecord.setRecord(pn.getMainPart() + StringUtils.defaultString(pn.getOtherPart()));
+
+                variantRecordRepository.save(regVariantRecord);
             }
         }
 

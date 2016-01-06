@@ -7,6 +7,7 @@ import com.jayway.restassured.response.Header;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 import cz.tacr.elza.ElzaCoreTest;
+import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.controller.config.ConfigClientVOService;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
@@ -830,17 +831,24 @@ public abstract class AbstractRestTest {
         return recordRepository.save(regRecord);
     }
 
+    protected ParPartyNameFormType createNameFormType() {
+        ParPartyNameFormType parPartyNameFormType = new ParPartyNameFormType();
+        parPartyNameFormType.setCode(TEST_CODE + ElzaTools.getStringOfActualDate());
+
+        return partyNameFormTypeRepository.save(parPartyNameFormType);
+    }
+
     /**
      * Vytvoření jednoho záznamu rejstříku defaultního typu.
      * @return  vytvořený VO objekt
      */
-    protected RegRecordVO createRecordVO(final String uniqueCode, @Nullable final ParPartyType partyType) {
+    protected RegRecordVO createRecordVO(final String uniqueCode) {
         RegRecordVO recordVO = new RegRecordVO();
         recordVO.setRecord(TEST_NAME);
         recordVO.setCharacteristics("CHARACTERISTICS");
         recordVO.setLocal(false);
 
-        RegRegisterType registerType = createRegisterType(uniqueCode, partyType);
+        RegRegisterType registerType = createRegisterType(uniqueCode, null);
 
         RegRegisterTypeVO registerTypeVO = factoryVO.createRegRegisterType(registerType);
 

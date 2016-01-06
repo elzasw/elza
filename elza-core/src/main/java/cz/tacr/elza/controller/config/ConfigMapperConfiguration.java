@@ -8,9 +8,11 @@ import cz.tacr.elza.controller.vo.ParPartyGroupVO;
 import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
 import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyNameVO;
+import cz.tacr.elza.controller.vo.ParPartyNameVOSave;
 import cz.tacr.elza.controller.vo.ParPartyTimeRangeVO;
 import cz.tacr.elza.controller.vo.ParPartyTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParPartyVOInsert;
 import cz.tacr.elza.controller.vo.ParPersonVO;
 import cz.tacr.elza.controller.vo.ParRelationEntityVO;
 import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
@@ -78,19 +80,9 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ArrCalendarType.class, ArrCalendarTypeVO.class).byDefault().register();
         mapperFactory.classMap(ParComplementType.class, ParComplementTypeVO.class).byDefault().register();
         mapperFactory.classMap(ParDynasty.class, ParDynastyVO.class).byDefault().register();
-
-        // Exlude preferredName ve směru DO na VO. VO na DO bez exclude.
-        mapperFactory.classMap(ParParty.class, ParPartyVO.class).customize(new CustomMapper<ParParty, ParPartyVO>() {
-            @Override
-            public void mapBtoA(final ParPartyVO partyVO, final ParParty party, final MappingContext context) {
-                super.mapBtoA(partyVO, party, context);
-                if (partyVO.getPreferredName() != null) {
-                    ParPartyName partyName = mapperFacade.map(partyVO.getPreferredName(), ParPartyName.class);
-                    party.setPreferredName(partyName);
-                }
-            }
-        }).exclude("preferredName").byDefault().register();
-
+        mapperFactory.classMap(ParParty.class, ParPartyVO.class).exclude("preferredName").byDefault().register();
+        mapperFactory.classMap(ParPartyVOInsert.class, ParParty.class).byDefault().register();
+        mapperFactory.classMap(ParPartyNameVOSave.class, ParPartyName.class).byDefault().register();
         mapperFactory.classMap(ParPartyGroup.class, ParPartyGroupVO.class).byDefault().register();
         mapperFactory.classMap(ParPartyGroupIdentifier.class, ParPartyGroupIdentifierVO.class).customize(
                 new CustomMapper<ParPartyGroupIdentifier, ParPartyGroupIdentifierVO>() {

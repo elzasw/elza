@@ -11,6 +11,11 @@ public class ParPartyNameVOSave {
     private Integer partyNameId;
 
     /**
+     * Preferované jméno.
+     */
+    private boolean preferredName = false;
+
+    /**
      * Platnost jména od.
      */
     private ParUnitdateVO validFrom;
@@ -23,11 +28,6 @@ public class ParPartyNameVOSave {
      * Typ jména.
      */
     private Integer nameFormTypeId;
-
-    /**
-     * Id osoby.
-     */
-    private Integer partyId;
 
     /**
      * Hlavní část jména.
@@ -77,14 +77,6 @@ public class ParPartyNameVOSave {
         this.validTo = validTo;
     }
 
-    public Integer getPartyId() {
-        return partyId;
-    }
-
-    public void setPartyId(final Integer partyId) {
-        this.partyId = partyId;
-    }
-
     public String getMainPart() {
         return mainPart;
     }
@@ -131,5 +123,13 @@ public class ParPartyNameVOSave {
 
     public void setNameFormTypeId(final Integer nameFormTypeId) {
         this.nameFormTypeId = nameFormTypeId;
+    }
+
+    public boolean isPreferredName() {
+        return preferredName;
+    }
+
+    public void setPreferredName(final boolean preferredName) {
+        this.preferredName = preferredName;
     }
 }
