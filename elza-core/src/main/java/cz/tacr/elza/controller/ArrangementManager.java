@@ -231,6 +231,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             logger.error("Při založení AP bylo nalezeno více scénařů (" + scenarioOfNewLevels.size() + ")");
         }
 
+        ruleManager
+                .conformityInfo(version.getFindingAidVersionId(), Arrays.asList(rootNode.getNode().getNodeId()), NodeTypeOperation.CREATE_NODE,
+                        null, null, null);
+
         return findingAid;
     }
 
@@ -420,7 +424,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         saveLastChangeFaVersion(change, versionId);
 
         Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
-                .conformityInfo(versionId, Arrays.asList(node.getNode().getNodeId()), NodeTypeOperation.CREATE_NODE,
+                .conformityInfo(versionId, Arrays.asList(faLevelRet.getNode().getNodeId()), NodeTypeOperation.CREATE_NODE,
                         null, null, null);
 
         createDescItemsAfterLevelCreate(levelWithParentNode, version, change, faLevelRet);
@@ -481,7 +485,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         saveLastChangeFaVersion(change, versionId);
 
         Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
-                .conformityInfo(versionId, Arrays.asList(node.getNode().getNodeId()), NodeTypeOperation.CREATE_NODE,
+                .conformityInfo(versionId, Arrays.asList(faLevelRet.getNode().getNodeId()), NodeTypeOperation.CREATE_NODE,
                         null, null, null);
 
         createDescItemsAfterLevelCreate(levelWithParentNode, version, change, faLevelRet);
@@ -519,7 +523,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         saveLastChangeFaVersion(change, versionId);
 
         Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
-                .conformityInfo(versionId, Arrays.asList(node.getNode().getNodeId()), NodeTypeOperation.CREATE_NODE,
+                .conformityInfo(versionId, Arrays.asList(faLevelRet.getNode().getNodeId()), NodeTypeOperation.CREATE_NODE,
                         null, null, null);
 
         createDescItemsAfterLevelCreate(levelWithParentNode, version, change, faLevelRet);
