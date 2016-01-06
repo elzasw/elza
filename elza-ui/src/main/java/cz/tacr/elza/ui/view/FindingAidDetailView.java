@@ -69,7 +69,7 @@ import cz.tacr.elza.ui.components.LevelInlineDetail;
 import cz.tacr.elza.ui.components.TreeTable;
 import cz.tacr.elza.ui.utils.ConcurrentUpdateExceptionHandler;
 import cz.tacr.elza.ui.utils.ElzaNotifications;
-import cz.tacr.elza.ui.utils.UnitDateConvertor;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.ui.window.AddLevelScenariosWindow;
 import cz.tacr.elza.ui.window.BulkActionApproveVersionWindow;
 import cz.tacr.elza.ui.window.BulkActionsWindow;

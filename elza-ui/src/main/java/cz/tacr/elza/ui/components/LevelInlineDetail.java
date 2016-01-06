@@ -50,7 +50,7 @@ import cz.tacr.elza.ui.components.attribute.NodeRegisterLink;
 import cz.tacr.elza.ui.components.autocomplete.AutocompleteItem;
 import cz.tacr.elza.ui.utils.ConcurrentUpdateExceptionHandler;
 import cz.tacr.elza.ui.utils.ElzaNotifications;
-import cz.tacr.elza.ui.utils.UnitDateConvertor;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.ui.view.FindingAidDetailView;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
