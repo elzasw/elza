@@ -6,6 +6,7 @@
 
 import {WebApi} from 'actions'
 import * as types from 'actions/constants/actionTypes';
+import {indexById} from 'stores/app/utils.jsx'
 
 /**
  * Rozbalení uzlu.
@@ -37,7 +38,7 @@ export function faTreeNodeExpand(node) {
         var nodeId = node.id;
         var expandedIds = {...faTree.expandedIds, [nodeId]: true}
         return WebApi.getFaTree(faId, versionId, nodeId, expandedIds)
-            .then(json => dispatch(faTreeReceive(faId, versionId, nodeId, expandedIds, json)));
+            .then(json => dispatch(faTreeReceive(faId, versionId, nodeId, expandedIds, [], json)));
     }
 }
 
@@ -69,15 +70,30 @@ export function faTreeNodeCollapse(node) {
  * @param {versionId} id verze
  * @param {expandedIds} seznam rozbalených uzlů
  */
-export function faTreeFetchIfNeeded(faId, versionId, expandedIds) {
+export function faTreeFetchIfNeeded(faId, versionId, expandedIds, selectedId) {
     return (dispatch, getState) => {
         var state = getState();
         var faTree = state.arrRegion.fas[state.arrRegion.activeIndex].faTree;
 
-        if (faTree.faId !== faId || faTree.versionId !== versionId || faTree.expandedIds !== expandedIds) {
-            return dispatch(faTreeFetch(faId, versionId, null, expandedIds));
-        } else if (!faTree.fetched && !faTree.isFetching) {
-            return dispatch(faTreeFetch(faId, versionId, null, expandedIds));
+        var fetch = false;
+
+        var includeIds = [];
+        if (selectedId != null && typeof selectedId !== 'undefined') {
+            includeIds.push(selectedId);
+
+            var isInView = indexById(faTree.nodes, selectedId);
+            if (isInView == null) {
+                console.log("NOT IN VIEW...", selectedId);
+                fetch = true;
+            }
+        }
+
+        if (!faTree.fetched && !faTree.isFetching) {
+            fetch = true;
+        }
+
+        if (fetch) {
+            return dispatch(faTreeFetch(faId, versionId, null, expandedIds, includeIds));
         }
     }
 }
@@ -89,11 +105,11 @@ export function faTreeFetchIfNeeded(faId, versionId, expandedIds) {
  * @param {nodeId} pokud je uvedeno, obsahuje id node, pro který se mají vracet data, pokud není uveden, vrací se celý strom
  * @param {expandedIds} seznam rozbalených uzlů
  */
-export function faTreeFetch(faId, versionId, nodeId, expandedIds) {
+export function faTreeFetch(faId, versionId, nodeId, expandedIds, includeIds=[]) {
     return dispatch => {
-        dispatch(faTreeRequest(faId, versionId, nodeId, expandedIds))
-        return WebApi.getFaTree(faId, versionId, nodeId, expandedIds)
-            .then(json => dispatch(faTreeReceive(faId, versionId, nodeId, expandedIds, json)));
+        dispatch(faTreeRequest(faId, versionId, nodeId, expandedIds, includeIds))
+        return WebApi.getFaTree(faId, versionId, nodeId, expandedIds, includeIds)
+            .then(json => dispatch(faTreeReceive(faId, versionId, nodeId, expandedIds, includeIds, json)));
     }
 }
 
@@ -105,14 +121,16 @@ export function faTreeFetch(faId, versionId, nodeId, expandedIds) {
  * @param {expandedIds} seznam rozbalených uzlů
  * @param {Object} json objekt s daty
  */
-export function faTreeReceive(faId, versionId, nodeId, expandedIds, json) {
+export function faTreeReceive(faId, versionId, nodeId, expandedIds, includeIds, json) {
     return {
         type: types.FA_FA_TREE_RECEIVE,
         faId,
         versionId,
         nodeId,
         expandedIds,
+        includeIds,
         nodes: json.nodes,
+        expandedIdsExtension: json.expandedIdsExtension,
         receivedAt: Date.now()
     }
 }
@@ -124,12 +142,13 @@ export function faTreeReceive(faId, versionId, nodeId, expandedIds, json) {
  * @param {nodeId} node id, pokud bylo požadováno
  * @param {expandedIds} seznam rozbalených uzlů
  */
-export function faTreeRequest(faId, versionId, nodeId, expandedIds) {
+export function faTreeRequest(faId, versionId, nodeId, expandedIds, includeIds) {
     return {
         type: types.FA_FA_TREE_REQUEST,
         faId,
         versionId,
         nodeId,
         expandedIds,
+        includeIds,
     }
 }

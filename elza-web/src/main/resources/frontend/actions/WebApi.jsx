@@ -304,7 +304,9 @@ class WebApiFake {
         return this.getData(data, 1);
     }
 
-    getFaTree(faId, versionId, nodeId, expandedIds={}, includeIds={}) {
+    getFaTree(faId, versionId, nodeId, expandedIds={}, includeIds=[]) {
+        expandedIds = {...expandedIds};
+
         var srcNodes;
         if (nodeId == null || typeof nodeId == 'undefined') {
             srcNodes = [_faRootNode];
@@ -312,10 +314,25 @@ class WebApiFake {
             srcNodes = findNodeById(_faRootNode, nodeId).children;
         }
 
+        var expandedIdsExtension = [];
+        var expandedIdsExtOut = [];
+        includeIds.forEach(id => {
+            var node = findNodeById(_faRootNode, id).parent;
+            while (node != null) {
+                if (expandedIds[node.id]) { // je rozbalená, nic neděláme
+                } else {
+                    expandedIds[node.id] = true;
+                    expandedIdsExtOut.push(node.id);
+                }
+                node = node.parent;
+            }
+        });
+
         var out = [];
         generateFlatTree(srcNodes, expandedIds, out);
         var data = {
-            nodes: out
+            nodes: out,
+            expandedIdsExtension: expandedIdsExtOut,
         }
 
         return this.getData(data, 1);

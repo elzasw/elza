@@ -18,22 +18,29 @@ for (var a=0; a<300000; a++) {
 initialState.expandedIds[a] = true;
 }*/
 
-function removeChildren(nodes, node) {
+function removeChildren(nodes, node, selectedId) {
     var index = indexById(nodes, node.id);
     var start = index;
     var max = nodes.length;
+    var containsSelectedId = false;
     while (++index < max) {
         if (nodes[index].depth > node.depth) { // potomek, odebereme
             // ale až na konci
+            if (selectedId != null && selectedId == nodes[index].id) {
+                containsSelectedId = true;
+            }
         } else {    // už není potomek, končíme procházení
             break;
         }
     }
 
-    return [
-        ...nodes.slice(0, start + 1),
-        ...nodes.slice(index)
-    ]
+    return {
+        containsSelectedId: containsSelectedId,
+        nodes: [
+            ...nodes.slice(0, start + 1),
+            ...nodes.slice(index)
+        ]
+    }
 }
 export default function faTree(state = initialState, action) {
     switch (action.type) {
@@ -62,9 +69,19 @@ export default function faTree(state = initialState, action) {
         case types.FA_FA_TREE_COLLAPSE_NODE:
             var expandedIds = {...state.expandedIds};
             delete expandedIds[action.node.id];
+
+            var removeInfo = removeChildren(state.nodes, action.node, state.selectedId);
+
+            var newSelectedId = state.selectedId;
+            if (state.selectedId != null && removeInfo.containsSelectedId) {    // zabaloval se podtrom, který měl označnou položku
+                // Položku odznačíme
+                newSelectedId = null;
+            }
+
             var ret = Object.assign({}, state, {
                 expandedIds: expandedIds,
-                nodes: removeChildren(state.nodes, action.node),
+                nodes: removeInfo.nodes,
+                selectedId: newSelectedId,
             });
             return ret;
         case types.FA_FA_TREE_REQUEST:
@@ -79,7 +96,8 @@ export default function faTree(state = initialState, action) {
                     var index = indexById(state.nodes, action.nodeId);
                     if (index != null) {
                         var node = state.nodes[index];
-                        var nodes = removeChildren(state.nodes, node);
+                        var removeInfo = removeChildren(state.nodes, node, null);
+                        var nodes = removeInfo.nodes;
                         return Object.assign({}, state, {
                             isFetching: false,
                             fetched: true,
@@ -99,7 +117,7 @@ export default function faTree(state = initialState, action) {
                     return state;
                 }
             } else {
-                return Object.assign({}, state, {
+                var result = Object.assign({}, state, {
                     isFetching: false,
                     fetched: true,
                     nodes: action.nodes,
@@ -108,6 +126,12 @@ export default function faTree(state = initialState, action) {
                     versionId: action.versionId,
                     lastUpdated: action.receivedAt
                 })
+
+                action.expandedIdsExtension.forEach(id => {
+                    result.expandedIds[id] = true;
+                });
+
+                return result;
             }
         default:
             return state
