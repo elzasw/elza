@@ -62,18 +62,4 @@ public class ElzaCoreTest {
         threadPoolTaskExecutor.afterPropertiesSet();
         return threadPoolTaskExecutor;
     }
-
-
-
-    @Bean
-    public Executor conformityUpdateTaskExecutor() {
-        return new Executor() {
-            @Override
-            public void execute(final Runnable command) {
-                //TODO kubovy zprovoznit testy se spouštěním vlákna
-                //nebudeme spouštět vlákno pro aktualizaci conformityInfo
-            }
-        };
-    }
-
 }
