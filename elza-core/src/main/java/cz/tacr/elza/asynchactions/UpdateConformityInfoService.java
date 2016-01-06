@@ -149,7 +149,7 @@ public class UpdateConformityInfoService {
      */
     synchronized public void terminateWorkerInVersionAndWait(final ArrFindingAidVersion version) {
         UpdateConformityInfoWorker worker = versionWorkers.get(version);
-        if (worker != null) {
+        if (worker != null && worker.isRunning()) {
             worker.terminateAndWait();
             versionWorkers.remove(worker);
         }

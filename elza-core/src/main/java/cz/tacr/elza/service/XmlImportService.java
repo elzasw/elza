@@ -917,7 +917,7 @@ public class XmlImportService {
                 }
             }
 
-            if (result != null) {
+            if (result != null && result.getOutputStream() != null) {
                 try {
                     result.getOutputStream().close();
                 } catch (IOException ex) {
