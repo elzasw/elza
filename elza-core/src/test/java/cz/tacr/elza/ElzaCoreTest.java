@@ -1,9 +1,6 @@
 package cz.tacr.elza;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,4 +59,18 @@ public class ElzaCoreTest {
         threadPoolTaskExecutor.afterPropertiesSet();
         return threadPoolTaskExecutor;
     }
+
+
+
+    @Bean
+    public Executor conformityUpdateTaskExecutor() {
+        return new Executor() {
+            @Override
+            public void execute(final Runnable command) {
+                //metodu spustíme v běžícím vlákně
+                command.run();
+            }
+        };
+    }
+
 }
