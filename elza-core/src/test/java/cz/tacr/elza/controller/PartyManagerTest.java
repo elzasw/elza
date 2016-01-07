@@ -1,9 +1,14 @@
 package cz.tacr.elza.controller;
 
 import com.jayway.restassured.response.Response;
+import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.controller.config.ConfigClientVOService;
+import cz.tacr.elza.controller.vo.ParPartyNameVOSave;
 import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParPartyVOInsert;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParPartyTypeComplementType;
 import cz.tacr.elza.domain.ParPartyTypeExt;
@@ -13,10 +18,14 @@ import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParRelationTypeRoleType;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.vo.ParPartyWithCount;
+import ma.glasnost.orika.MapperFacade;
+import ma.glasnost.orika.MapperFactory;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -33,6 +42,14 @@ import static com.jayway.restassured.RestAssured.given;
 public class PartyManagerTest extends AbstractRestTest {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    @Autowired
+    private ConfigClientVOService factoryVo;
+
+    @Autowired
+    @Qualifier("configVOMapper")
+    private MapperFactory mapperFactory;
+
 
     @Test
     public void testRestInsertParty() throws Exception {
@@ -261,5 +278,31 @@ public class PartyManagerTest extends AbstractRestTest {
         Assert.assertNotNull(complementTypes);
     }
 
+    @Test
+    public void testRestInsertPartyV2() {
+        final ParPartyType partyType = findPartyType();
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+//        ParPartyTypeVO partyTypeVO = mapper.map(partyType, ParPartyTypeVO.class);
+
+//        ParPartyNameFormTypeVO partyNameFormTypeVO = new ParPartyNameFormTypeVO();
+//        partyNameFormTypeVO.setCode("CODE" + ElzaTools.getStringOfActualDate());
+
+        ParPartyNameFormType nameFormType = createNameFormType();
+
+        ParPartyNameVOSave partyNameVO = new ParPartyNameVOSave();
+        partyNameVO.setMainPart("MAIN_PART" + ElzaTools.getStringOfActualDate());
+        partyNameVO.setNameFormTypeId(nameFormType.getNameFormTypeId());
+        partyNameVO.setPreferredName(true);
+
+        //TODO kuzel tady ten typ nize dat zas pryc
+//        RegRecordVO recordVO = createRecordVO("RECORD" + ElzaTools.getStringOfActualDate(), partyType);
+        createRegisterType(TEST_CODE + ElzaTools.getStringOfActualDate(), partyType);
+
+        ParPartyVOInsert parPartyVO = new ParPartyVOInsert();
+        parPartyVO.setPartyTypeId(partyType.getPartyTypeId());
+        parPartyVO.setPartyNames(Arrays.asList(partyNameVO));
+
+        Response response = put(spec -> spec.body(parPartyVO), INSERT_PARTY_V2);
+    }
 
 }

@@ -1,4 +1,4 @@
-package cz.tacr.elza.ui.utils;
+package cz.tacr.elza.domain.convertor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -311,7 +311,7 @@ public class UnitDateConvertor {
      * @param first     zda-li se jedná o první datum
      * @return          výsledný řetězec
      */
-    public static String convertCentury(final String format, final ArrDescItemUnitdate unitdate, boolean first) {
+    private static String convertCentury(final String format, final ArrDescItemUnitdate unitdate, boolean first) {
         if (first) {
             if (unitdate.getValueFrom() != null) {
                 LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom());

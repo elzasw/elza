@@ -1,12 +1,12 @@
 package cz.tacr.elza.repository;
 
-import java.util.List;
-
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.RegRegisterType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.RegRegisterType;
+import java.util.List;
 
 
 /**
@@ -33,5 +33,12 @@ public interface RegisterTypeRepository extends JpaRepository<RegRegisterType, I
      * @return typ rejstříkového hesla
      */
     RegRegisterType findRegisterTypeByCode(String registerTypeCode);
+
+    /**
+     * Typ rejstříku, který odpovídá typu osoby.
+     * @param partyType typ osoby ke kterému hledáme příslušný typ rejstříku
+     * @return      nalezené rejstříkové typy k danému typu osoby
+     */
+    List<RegRegisterType> findRegisterTypeByPartyType(ParPartyType partyType);
 
 }

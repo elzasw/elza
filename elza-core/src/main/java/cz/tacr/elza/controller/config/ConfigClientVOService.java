@@ -1,29 +1,14 @@
 package cz.tacr.elza.controller.config;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
 import cz.tacr.elza.controller.vo.ParPartyGroupVO;
 import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
 import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyNameVO;
+import cz.tacr.elza.controller.vo.ParPartyNameVOSave;
 import cz.tacr.elza.controller.vo.ParPartyTimeRangeVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParPartyVOInsert;
 import cz.tacr.elza.controller.vo.ParRelationEntityVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
@@ -50,6 +35,21 @@ import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 
 /**
@@ -174,6 +174,22 @@ public class ConfigClientVOService {
     }
 
     /**
+     * Vytvoří objekt osoby z předaného VO.
+     *
+     * @param partyVO       VO osoby
+     * @return              objekt osoby
+     */
+    public ParParty createParty(final ParPartyVOInsert partyVO) {
+        if (partyVO == null) {
+            return null;
+        }
+
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+
+        return mapper.map(partyVO, ParParty.class);
+    }
+
+    /**
      * Vytvoří objekt jména osoby. Jsou načteny i detailní informace.
      *
      * @param partyName jméno osoby
@@ -189,6 +205,16 @@ public class ConfigClientVOService {
         return result;
     }
 
+    /**
+     * Vytvoří objekt jména osoby. Jsou načteny i detailní informace.
+     *
+     * @param partyNameVOSave jméno osoby VO
+     * @return vo jména osoba
+     */
+    public ParPartyName createParPartyName(final ParPartyNameVOSave partyNameVOSave) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.map(partyNameVOSave, ParPartyName.class);
+    }
 
     /**
      * Vytvoří seznam vazeb osoby.

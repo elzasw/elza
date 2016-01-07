@@ -26,7 +26,7 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
             'callFaSelectSubNode'
         );
 
-        this.dispatch(faTreeFetchIfNeeded(props.faId, props.versionId, props.expandedIds));
+        this.dispatch(faTreeFetchIfNeeded(props.faId, props.versionId, props.expandedIds, props.selectedId));
 
         ResizeStore.listen(status => {
             this.setState({});
@@ -36,7 +36,7 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(faTreeFetchIfNeeded(nextProps.faId, nextProps.versionId, nextProps.expandedIds));
+        this.dispatch(faTreeFetchIfNeeded(nextProps.faId, nextProps.versionId, nextProps.expandedIds, nextProps.selectedId));
     }
 
     componentDidMount() {

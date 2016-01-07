@@ -8,7 +8,6 @@ import com.vaadin.data.Property;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.CssLayout;
 import com.vaadin.ui.DragAndDropWrapper;
-import com.vaadin.ui.Field;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 
@@ -22,7 +21,7 @@ import cz.tacr.elza.domain.ArrDescItemUnitdate;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.ui.components.autocomplete.Autocomplete;
-import cz.tacr.elza.ui.utils.UnitDateConvertor;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 
 
 /**

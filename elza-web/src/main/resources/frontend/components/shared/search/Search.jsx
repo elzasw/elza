@@ -34,11 +34,7 @@ var Search = class Search extends React.Component {
        this.props.onSearch(this.state.filterText);  
     }
 
-    handleKeyDown(e){
-        console.log(e)
-        
-    }
-
+    
     handleChange(e){
         this.setState({
             filterText: e.target.value                                  // uložení zadaného řezezce ve stavu komponenty
@@ -59,7 +55,7 @@ var Search = class Search extends React.Component {
                     value={this.state.filterText}
                     ref="input"
                     labelClassName="label-class"
-                    onChange={this.handleChange}
+                    onChange={this.handleChange}                    
                 />
                 <Button onClick={this.handleSearch}>{searchLabel}</Button> 
             </div>

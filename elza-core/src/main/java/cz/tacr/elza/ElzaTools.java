@@ -1,13 +1,14 @@
 package cz.tacr.elza;
 
+import org.apache.commons.collections4.CollectionUtils;
+
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-
-import org.apache.commons.collections4.CollectionUtils;
 
 
 /**
@@ -84,4 +85,13 @@ public class ElzaTools {
         }
         return result;
     }
+
+    /**
+     * Aktuální datum v neformátováne podobě. Hodí se pro doplnění unique fieldů v testech.
+     * @return  řetězec ve formátu např. "2016-01-05T22:05:47.859"
+     */
+    public static String getStringOfActualDate() {
+        return LocalDateTime.now().toString();
+    }
+
 }
