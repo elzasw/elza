@@ -28,4 +28,7 @@ public interface ArrangementTypeRepository extends JpaRepository<RulArrangementT
 
 
     RulArrangementType findByCode(String arrangementTypeCode);
+
+    @Query(value = "SELECT at FROM rul_arrangement_type at join fetch at.ruleSet rs order by rs.name, at.name")
+    List<RulArrangementType> findAllFetchRuleSets();
 }
