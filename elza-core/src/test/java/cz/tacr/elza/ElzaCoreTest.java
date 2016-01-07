@@ -1,9 +1,6 @@
 package cz.tacr.elza;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,8 +67,8 @@ public class ElzaCoreTest {
         return new Executor() {
             @Override
             public void execute(final Runnable command) {
-                //TODO kubovy zprovoznit testy se spouštěním vlákna
-                //nebudeme spouštět vlákno pro aktualizaci conformityInfo
+                //metodu spustíme v běžícím vlákně
+                command.run();
             }
         };
     }
