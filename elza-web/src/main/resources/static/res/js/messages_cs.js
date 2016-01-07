@@ -10,6 +10,7 @@ var messages = {
     "ribbon.action.home": "Domů",
     "ribbon.action.arr": "Archivní pomůcky",
     "ribbon.action.arr.fa.add": "Vytvořit AP",
+    "ribbon.action.arr.fa.approveVersion": "Uzavřít verzi AP",
     "ribbon.action.registry": "Rejstříky",
     "ribbon.action.party": "Osoby",
     "ribbon.action.admin": "Administrace",
@@ -26,6 +27,7 @@ var messages = {
     "faTree.action.openInNewTab": "Otevřít v nové záložce",
 
     "arr.fa.title.add": "Vytvoření nové AP",
+    "arr.fa.title.approveVersion": "Uzavření verze AP",
     "arr.fa.name": "Název",
     "arr.fa.ruleSet": "Pravidla tvorby",
     "arr.fa.arrType": "Typ výstupu",

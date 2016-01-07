@@ -12,10 +12,10 @@ import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet'
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField} from 'components/form/FormUtils'
 
-const validate = values => {
+const validate = (values, props) => {
     const errors = {};
 
-    if (!values.name) {
+    if (props.create && !values.name) {
         errors.name = i18n('global.validation.required');
     }
     if (!values.ruleSetId) {
@@ -56,7 +56,7 @@ var AddFaForm = class AddFaForm extends AbstractReactComponent {
             <div>
                 <Modal.Body>
                     <form onSubmit={handleSubmit}>
-                        <Input type="text" label={i18n('arr.fa.name')} {...name} {...decorateFormField(name)} />
+                        {this.props.create && <Input type="text" label={i18n('arr.fa.name')} {...name} {...decorateFormField(name)} />}
                         <Input type="select" label={i18n('arr.fa.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
                             <option></option>
                             {ruleSets.map(i=> {return <option value={i.id}>{i.name}</option>})}

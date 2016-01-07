@@ -22,22 +22,37 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('buildRibbon', 'handleAddFa', 'handleCreateFa');
+        this.bindMethods('getActiveInfo', 'buildRibbon', 'handleAddFa', 'handleApproveFaVersion', 'handleCallAddFa', 'handleCallApproveFaVersion');
 
         this.state = {faFileTreeOpened: false};
     }
 
-    handleCreateFa(data) {
+    handleCallAddFa(data) {
         WebApi.createFindingAid(data.name, data.ruleSetId, data.rulArrTypeId)
+            .then(this.dispatch(modalDialogHide()));
+    }
+    
+    handleCallApproveFaVersion(data) {
+        var activeInfo = this.getActiveInfo();
+        WebApi.approveVersion(activeInfo.activeFa.versionId, data.ruleSetId, data.rulArrTypeId)
             .then(this.dispatch(modalDialogHide()));
     }
 
     handleAddFa() {
-        //this.dispatch(modalDialogShow(this, i18n('arr.fa.title.add'), <AddFaForm initData={{name:111}} onSubmit={x=>console.log(x)} />));
-        this.dispatch(modalDialogShow(this, i18n('arr.fa.title.add'), <AddFaForm onSubmit={this.handleCreateFa} />));
+        this.dispatch(modalDialogShow(this, i18n('arr.fa.title.add'), <AddFaForm create onSubmit={this.handleCallAddFa} />));
     }
 
-    buildRibbon() {
+    handleApproveFaVersion() {
+        var activeInfo = this.getActiveInfo();
+        var data = {
+            name_: activeInfo.activeFa.name,
+            ruleSetId: activeInfo.activeFa.activeVersion.arrangementType.ruleSetId,
+            rulArrTypeId: activeInfo.activeFa.activeVersion.arrangementType.id
+        }
+        this.dispatch(modalDialogShow(this, i18n('arr.fa.title.approveVersion'), <AddFaForm initData={data} onSubmit={this.handleCallApproveFaVersion} />));
+    }
+
+    getActiveInfo() {
         var arrRegion = this.props.arrRegion
         var activeFa = null;
         var activeNode = null;
@@ -52,6 +67,15 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                 }
             }
         }
+        return {
+            activeFa,
+            activeNode,
+            activeSubNode,
+        }
+    }
+
+    buildRibbon() {
+        var activeInfo = this.getActiveInfo();
 
         var altSection = [];
         altSection.push(
@@ -59,11 +83,16 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                 <Button onClick={this.handleAddFa}><Glyphicon glyph="plus" /><div><span className="btnText">{i18n('ribbon.action.arr.fa.add')}</span></div></Button>
             </RibbonGroup>
         );
-        if (activeFa) {
+        if (activeInfo.activeFa) {
+            altSection.push(
+                <RibbonGroup className="small">
+                    <Button onClick={this.handleApproveFaVersion}><Glyphicon glyph="plus" /><div><span className="btnText">{i18n('ribbon.action.arr.fa.approveVersion')}</span></div></Button>
+                </RibbonGroup>
+            )
         }
 
         return (
-            <Ribbon arr altSection={altSection} fa={activeFa} node={activeNode} subNode={activeSubNode} />
+            <Ribbon arr altSection={altSection} />
         )
     }
 

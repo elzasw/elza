@@ -253,6 +253,13 @@ class WebApi {
             });
     }
 
+    approveVersion(versionId, ruleSetId, arrangementTypeId) {
+        return AjaxUtils.ajaxPut('/api/arrangementManager/approveVersion', {arrangementTypeId: arrangementTypeId, ruleSetId: ruleSetId}, {findingAidVersionId: versionId})
+            .then(json=>{
+                return json;
+            });
+    }
+
     getPackages() {
         return AjaxUtils.ajaxGet('/api/ruleSetManager/getPackages')
             .then(json=>{
