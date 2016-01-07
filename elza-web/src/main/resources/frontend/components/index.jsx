@@ -17,8 +17,8 @@ exports.DropTree = require('./shared/drop-tree/DropTree');
 exports.Loading = require('./shared/loading/Loading');
 exports.VirtualList = require('./shared/virtual-list/VirtualList');
 exports.ContextMenu = require('./shared/context-menu/ContextMenu');
-
 exports.ModalDialog = require('./shared/dialog/ModalDialog');
+exports.ModalDialogWrapper = require('./shared/dialog/ModalDialogWrapper');
 
 exports.Ribbon = require('./page/Ribbon');
 
@@ -29,6 +29,8 @@ exports.NodeTabs = require('./arr/NodeTabs');
 exports.FaTreeTabs = require('./arr/FaTreeTabs');
 exports.FaTreeLazy = require('./arr/FaTreeLazy');
 exports.NodeForm = require('./arr/NodeForm');
+exports.AddFaDialog = require('./arr/AddFaDialog');
+exports.AddFaForm = require('./arr/AddFaForm');
 
 exports.PartySearch = require('./party/PartySearch');
 exports.PartyDetail = require('./party/PartyDetail');

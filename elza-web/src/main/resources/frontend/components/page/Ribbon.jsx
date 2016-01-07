@@ -13,20 +13,20 @@ import {AppStore} from 'stores'
 var Ribbon = class Ribbon extends AbstractReactComponent {
     constructor(props) {
         super(props);
+
+        this.state = {};
     }
 
     render() {
-
         var section = null;
 
         if (this.props.admin) {
-
             section = (
-                    <RibbonGroup className="small">
-                        <LinkContainer to="/admin/packages"><Button><Glyphicon glyph="cog" /><div><span className="btnText">{i18n('ribbon.action.admin.packages')}</span></div></Button></LinkContainer>
-                    </RibbonGroup>
+                <RibbonGroup className="small">
+                    <LinkContainer to="/admin/packages"><Button><Glyphicon glyph="cog" /><div><span className="btnText">{i18n('ribbon.action.admin.packages')}</span></div></Button></LinkContainer>
+                </RibbonGroup>
             );
-
+        } else if (this.props.arr) {
         }
 
         return (
@@ -49,6 +49,7 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
                 <RibbonSplit />
 
                 {section}
+                {this.props.altSection}
 
             </RibbonMenu>
         )

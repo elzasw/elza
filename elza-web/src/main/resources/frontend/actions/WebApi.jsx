@@ -337,6 +337,20 @@ class WebApiFake {
 
         return this.getData(data, 1);
     }
+
+    getRuleSets() {
+        return AjaxUtils.ajaxGet('/api/ruleSetManager/getRuleSets')
+            .then(json=>{
+                return json.map(i=>{return {...i, id:i.ruleSetId, rulArrTypes: [{id:4, code:'MAN', name: 'Manipulační seznam'}, {id:5, code:'INV', name: "Inventář"}, {id:6, code:'KAT', name: "Katalog"}]}});
+            });
+    }
+
+    createFindingAid(name, ruleSetId, arrangementTypeId) {
+        return AjaxUtils.ajaxPut('/api/arrangementManager/createFindingAid', {name: name, arrangementTypeId: arrangementTypeId, ruleSetId: ruleSetId})
+            .then(json=>{
+                console.log("OOOOOOOOOOOOOOOOOOOO");
+            });
+    }
 }
 
 //AjaxUtils.ajaxGet('/api/arrangementManager/getLevel', {nodeId: 10, versionId: 3})

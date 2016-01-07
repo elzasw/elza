@@ -1,30 +1,44 @@
-/**
- * Modální dialog.
- */
-
 import React from 'react';
+import ReactDOM from 'react-dom';
+import {connect} from 'react-redux'
+import {ModalDialogWrapper, AbstractReactComponent} from 'components';
+import {modalDialogHide} from 'actions/global/modalDialog'
 
-import {i18n} from 'components';
-import {Modal} from 'react-bootstrap';
-
-var ModalDialog = class ModalDialog extends React.Component {
+var ModalDialog = class extends AbstractReactComponent {
     constructor(props) {
         super(props);
+
+        this.bindMethods('handleClose');
+    }
+
+    handleClose() {
+        this.dispatch(modalDialogHide());
     }
 
     render() {
-        return (
-            <Modal show={true} onHide={this.props.onHide}>
-                <Modal.Header closeButton onHide={this.props.onHide}>
-                    <Modal.Title>{this.props.title}</Modal.Title>
-                </Modal.Header>
+        if (!this.props.visible) {
+            return <div></div>;
+        }
+        var style = {};
 
-                <div ref="modalBody">
-                    {this.props.children}
-                </div>
-            </Modal>
-        );
+        var children = React.Children.map(this.props.content, (el) => {
+            return React.cloneElement(el, {
+                onClose: this.handleClose
+            })
+        });
+
+        return (
+            <ModalDialogWrapper title={this.props.title} onHide={this.handleClose}>
+                {children}
+            </ModalDialogWrapper>
+        )
     }
 }
 
-module.exports = ModalDialog;
+function mapStateToProps(state) {
+    return {
+        ...state
+    }
+}
+
+module.exports = connect(mapStateToProps)(ModalDialog);
