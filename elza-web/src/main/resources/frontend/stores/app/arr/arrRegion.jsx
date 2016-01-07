@@ -39,7 +39,7 @@ export default function arrRegion(state = initialState, action) {
             return state
         case types.FA_FA_TREE_REQUEST:
         case types.FA_FA_TREE_RECEIVE:
-            var index = indexById(state.fas, action.faId);
+            var index = indexById(state.fas, action.versionId, "versionId");
             if (index != null) {
                 return {
                     ...state,
@@ -79,7 +79,7 @@ export default function arrRegion(state = initialState, action) {
         case types.FA_NODE_INFO_RECEIVE:
         case types.FA_NODE_FORM_REQUEST:
         case types.FA_NODE_FORM_RECEIVE:
-            var faIndex = indexById(state.fas, action.faId);
+            var faIndex = indexById(state.fas, action.versionId, "versionId");
             if (faIndex != null) {
                 return {
                     ...state,

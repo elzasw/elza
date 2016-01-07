@@ -46,9 +46,11 @@ var store = function configureStore(initialState) {
     return createStoreWithMiddleware(reducer, initialState)
 }(initialState);
 
+/*
 import {selectFaTab} from 'actions/arr/fa'
 var fa = Object.assign({id: 1, versionId: 1});
 store.dispatch(selectFaTab(fa));
+*/
 
 module.exports = {
     store
