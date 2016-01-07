@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -75,6 +76,9 @@ public class PartyService {
     @Autowired
     private UnitdateRepository unitdateRepository;
 
+    @Autowired
+    private RegistryService registryService;
+
 
     /**
      * Najde osobu podle rejstříkového hesla.
@@ -112,7 +116,8 @@ public class PartyService {
         party.setPartyType(partyType);
 
         // Record
-        RegRecord regRecord = genRegRecordsFromPartyNames(partyVO.getPartyNames(), registerType);
+        RegRecord regRecord = genRegRecordFromPartyNames(partyVO.getPartyNames(), registerType);
+        genRegVariantRecordsFromPartyNames(partyVO.getPartyNames(), regRecord);
         party.setRecord(regRecord);
 
         // Party
@@ -131,6 +136,38 @@ public class PartyService {
         return partyRepository.save(party);
     }
 
+    public ParParty updateParty(final ParPartyEditVO partyVO, final ParPartyType partyType, final RegRegisterType registerType) {
+        ParParty origParty = partyRepository.getOne(partyVO.getPartyId());
+
+        factoryDO.updateParty(partyVO, origParty);
+
+        // Record
+        List<ParPartyNameEditVO> partyNames = partyVO.getPartyNames();
+        if (partyNames != null) {
+            // pokud nějaké máme, nagenerujeme nové, chování je tedy: null - beze změny, plná - update přegenerováním
+            RegRecord origRecord = origParty.getRecord();
+            updateRegRecordFromPartyNames(partyNames, origRecord);
+
+            variantRecordRepository.deleteInBatch(origRecord.getVariantRecordList());
+            genRegVariantRecordsFromPartyNames(partyNames, origRecord);
+        }
+
+        // Party
+        partyRepository.save(origParty);
+
+        // Names
+        ParPartyName preferredName = updatePartyNames(partyVO, origParty);
+
+        // TimeRanges
+//        if (CollectionUtils.isNotEmpty(partyVO.getTimeRanges())) {
+//            createTimeRanges(partyVO.getTimeRanges(), party);
+//        }
+
+        Assert.notNull(preferredName);
+        origParty.setPreferredName(preferredName);
+        return partyRepository.save(origParty);
+    }
+
     private ParPartyName createPartyNames(final ParPartyEditVO partyVO, final ParParty party) {
         ParPartyName preferredName = null;
         for (final ParPartyNameEditVO partyNameVO : partyVO.getPartyNames()) {
@@ -146,6 +183,33 @@ public class PartyService {
                 preferredName = partyName;
             }
         }
+
+        return preferredName;
+    }
+
+    private ParPartyName updatePartyNames(final ParPartyEditVO partyVO, final ParParty origParty) {
+
+        List<ParPartyName> origNames = partyNameRepository.findByParty(origParty);
+
+        ParPartyName preferredName = null;
+        for (final ParPartyNameEditVO partyNameVO : partyVO.getPartyNames()) {
+
+            ParPartyName origPartyName = partyNameRepository.getOne(partyNameVO.getPartyNameId());
+            ParPartyNameFormType nameFormType = partyNameFormTypeRepository.getOne(partyNameVO.getNameFormTypeId());
+
+            factoryDO.updateParPartyName(partyNameVO, origPartyName);
+            origPartyName.setNameFormType(nameFormType);
+
+            partyNameRepository.save(origPartyName);
+
+            if (partyNameVO.isPreferredName()) {
+                preferredName = origPartyName;
+            }
+
+            origNames.remove(origPartyName);
+        }
+
+        partyNameRepository.deleteInBatch(origNames);
 
         return preferredName;
     }
@@ -195,7 +259,8 @@ public class PartyService {
      * @param registerType    typ rejstříku
      * @return      rejstříkoví heslo s variantními hesly daného typu
      */
-    private RegRecord genRegRecordsFromPartyNames(final List<ParPartyNameEditVO> partyNamesVO, final RegRegisterType registerType) {
+    private RegRecord genRegRecordFromPartyNames(final List<ParPartyNameEditVO> partyNamesVO,
+                                                 final RegRegisterType registerType) {
         if (partyNamesVO == null) {
             return null;
         }
@@ -213,13 +278,42 @@ public class PartyService {
             }
         }
 
+        return result;
+    }
+
+    private RegRecord updateRegRecordFromPartyNames(final List<ParPartyNameEditVO> partyNamesVO, final RegRecord regRecord) {
+        if (partyNamesVO == null) {
+            return null;
+        }
+
+        RegRecord result = null;
+        for (final ParPartyNameEditVO pn : partyNamesVO) {
+            if (pn.isPreferredName()) {
+                regRecord.setRecord(pn.getMainPart() + StringUtils.defaultString(pn.getOtherPart()));
+
+                recordRepository.save(regRecord);
+                result = regRecord;
+            }
+        }
+
+        return result;
+    }
+
+    private List<RegVariantRecord> genRegVariantRecordsFromPartyNames(final List<ParPartyNameEditVO> partyNamesVO,
+                                                         final RegRecord regRecord) {
+        if (partyNamesVO == null) {
+            return null;
+        }
+
+        List<RegVariantRecord> result = new ArrayList<>();
+
         for (final ParPartyNameEditVO pn : partyNamesVO) {
             if (!pn.isPreferredName()) {
                 RegVariantRecord regVariantRecord = new RegVariantRecord();
-                regVariantRecord.setRegRecord(result);
+                regVariantRecord.setRegRecord(regRecord);
                 regVariantRecord.setRecord(pn.getMainPart() + StringUtils.defaultString(pn.getOtherPart()));
 
-                variantRecordRepository.save(regVariantRecord);
+                result.add(variantRecordRepository.save(regVariantRecord));
             }
         }
 

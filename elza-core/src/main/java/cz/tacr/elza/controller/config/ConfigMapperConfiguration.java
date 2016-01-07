@@ -108,6 +108,11 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ParEventEditVO.class, ParEvent.class).byDefault().register();
         mapperFactory.classMap(ParPartyGroupEditVO.class, ParPartyGroup.class).byDefault().register();
 
+        mapperFactory.classMap(RegRecord.class, RegRecord.class)
+                .exclude(RegRecord.RECORD_ID)
+                .exclude(RegRecord.PARENT_RECORD)
+            .byDefault().register();
+
         mapperFactory.classMap(ParPartyTimeRangeEditVO.class, ParPartyTimeRange.class).byDefault().register();
         mapperFactory.classMap(ParUnitdateEditVO.class, ParUnitdate.class).byDefault().register();
 

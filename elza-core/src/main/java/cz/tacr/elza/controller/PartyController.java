@@ -252,6 +252,28 @@ public class PartyController {
         return partyList.get(0);
     }
 
+    @RequestMapping(value = "/updateParty", method = RequestMethod.PUT)
+    @Transactional
+    public ParPartyVO updateParty(@RequestBody final ParPartyEditVO partyVO) {
+        if (partyVO == null) {
+            return null;
+        }
+
+        //CHECK
+        chekPartyUpdate(partyVO);
+
+        //TYPES
+        ParPartyType partyType = partyTypeRepository.getOne(partyVO.getPartyTypeId());
+        // hledám typ rejstříku, který má přiřazen zde použitý typ osoby
+        RegRegisterType registerType = registerTypeRepository.findRegisterTypeByPartyType(partyType).get(0);
+
+        //PARTY
+        ParParty party = partyService.updateParty(partyVO, partyType, registerType);
+
+        List<ParPartyVO> partyList = factoryVo.createPartyList(Arrays.asList(party));
+        return partyList.get(0);
+    }
+
     private void chekParty(final ParPartyEditVO partyVO) {
         ParPartyType partyType;
         if (partyVO.getPartyTypeId() != null) {
@@ -287,8 +309,44 @@ public class PartyController {
             throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
         }
 
+        if (partyVO.getPartyNames() != null) {
+            checkPreferredNameExist(partyVO.getPartyNames());
+        } else {
+            throw new IllegalArgumentException("Je povinné alespoň jedno preferované jméno.");
+        }
+        // end CHECK
+    }
+
+    private void chekPartyUpdate(final ParPartyEditVO partyVO) {
+        ParPartyType partyType;
+        if (partyVO.getPartyTypeId() != null) {
+            partyType = partyTypeRepository.getOne(partyVO.getPartyTypeId());
+        } else {
+            throw new IllegalArgumentException("Nenalezen typ osoby s id: " + partyVO.getPartyTypeId());
+        }
+
+        if (partyVO.getPartyId() == null) {
+            throw new IllegalArgumentException("Není vyplněno id existující entity pro update.");
+        }
+
+        ParParty parParty = partyRepository.getOne(partyVO.getPartyId());
+        if (!parParty.getPartyType().getPartyTypeId().equals(partyVO.getPartyTypeId())) {
+            throw new IllegalArgumentException("Nelze měnit typ osoby.");
+        }
+
+        List<RegRegisterType> regRegisterTypes = registerTypeRepository.findRegisterTypeByPartyType(partyType);
+        if (CollectionUtils.isEmpty(regRegisterTypes)) {
+            throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
+        }
+
+        if (partyVO.getPartyNames() != null) {
+            checkPreferredNameExist(partyVO.getPartyNames());
+        }
+    }
+
+    private void checkPreferredNameExist(final List<ParPartyNameEditVO> partyNameEditVOs) {
         boolean isPreferred = false;
-        for (final ParPartyNameEditVO partyName : partyVO.getPartyNames()) {
+        for (final ParPartyNameEditVO partyName : partyNameEditVOs) {
             if (partyName.isPreferredName()) {
                 isPreferred = true;
             }
@@ -296,7 +354,6 @@ public class PartyController {
         if (!isPreferred) {
             throw new IllegalArgumentException("Není přítomno žádné preferované jméno osoby.");
         }
-        // end CHECK
     }
 
 }

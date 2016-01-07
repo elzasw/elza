@@ -15,7 +15,6 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,6 +83,7 @@ public class RegRecord extends AbstractVersionableEntity
     public static final String CHARACTERISTICS = "characteristics";
     public static final String NOTE = "note";
     public static final String LOCAL = "local";
+    public static final String RECORD_ID = "recordId";
 
 
     @Override

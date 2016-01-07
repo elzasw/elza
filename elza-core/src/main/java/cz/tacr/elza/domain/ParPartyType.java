@@ -22,7 +22,7 @@ import javax.persistence.Table;
 @Entity(name = "par_party_type")
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "partyTypeEnum"})
 public class ParPartyType implements cz.tacr.elza.api.ParPartyType {
 
     /* Konstanty pro vazby a fieldy. */

@@ -4,8 +4,10 @@ import com.jayway.restassured.response.Response;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ParDynastyEditVO;
+import cz.tacr.elza.controller.vo.ParDynastyVO;
 import cz.tacr.elza.controller.vo.ParPartyNameEditVO;
 import cz.tacr.elza.controller.vo.ParPartyTimeRangeEditVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ParUnitdateEditVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ParPartyNameFormType;
@@ -264,8 +266,43 @@ public class PartyManagerTest extends AbstractRestTest {
 //        Assert.assertNotNull(complementTypes);
 //    }
 
+//    @Test
+//    public void testRestInsertPartyV2() {
+//        final ParPartyType partyType = findPartyType();
+//
+//        ParPartyNameFormType nameFormType = createNameFormType();
+//        ArrCalendarType calendarType = createCalendarType();
+//
+//        // names
+//        ParPartyNameEditVO partyNameVO = new ParPartyNameEditVO();
+//        partyNameVO.setMainPart("MAIN_PART" + ElzaTools.getStringOfActualDate());
+//        partyNameVO.setNameFormTypeId(nameFormType.getNameFormTypeId());
+//        partyNameVO.setPreferredName(true);
+//
+//        // timeranges
+//        ParUnitdateEditVO unitdateEditVO = new ParUnitdateEditVO();
+//        unitdateEditVO.setCalendarTypeId(calendarType.getCalendarTypeId());
+//        ParUnitdateEditVO unitdateEditVO2 = new ParUnitdateEditVO();
+//        unitdateEditVO2.setCalendarTypeId(calendarType.getCalendarTypeId());
+//
+//        ParPartyTimeRangeEditVO partyTimeRangeEditVO = new ParPartyTimeRangeEditVO();
+//        partyTimeRangeEditVO.setFrom(unitdateEditVO);
+//        partyTimeRangeEditVO.setTo(unitdateEditVO2);
+//
+//        // register type
+//        createRegisterType(TEST_CODE + ElzaTools.getStringOfActualDate(), partyType);
+//
+//        ParDynastyEditVO parPartyVO = new ParDynastyEditVO();
+//        parPartyVO.setPartyTypeId(partyType.getPartyTypeId());
+//        parPartyVO.setPartyNames(Arrays.asList(partyNameVO));
+//        parPartyVO.addPartyTimeRange(partyTimeRangeEditVO);
+//        parPartyVO.setGenealogy("GENEALOGY");
+//
+//        Response response = put(spec -> spec.body(parPartyVO), INSERT_PARTY_V2);
+//    }
+
     @Test
-    public void testRestInsertPartyV2() {
+    public void testRestUpdatePartyV2() {
         final ParPartyType partyType = findPartyType();
 
         ParPartyNameFormType nameFormType = createNameFormType();
@@ -297,6 +334,17 @@ public class PartyManagerTest extends AbstractRestTest {
         parPartyVO.setGenealogy("GENEALOGY");
 
         Response response = put(spec -> spec.body(parPartyVO), INSERT_PARTY_V2);
+        ParPartyVO parPartyVORet = response.getBody().as(ParDynastyVO.class);
+
+
+        parPartyVO.setPartyId(parPartyVORet.getPartyId());
+//        parPartyVO.getPartyNames().get(0).setPartyNameId(parPartyVORet.getPartyNames().get(0).getPartyNameId());
+
+        parPartyVO.setGenealogy("GENEALOGYUPDATE");
+
+        parPartyVO.getPartyNames().get(0).setPartyNameId(1);
+        response = put(spec -> spec.body(parPartyVO), UPDATE_PARTY_V2);
+        parPartyVORet = response.getBody().as(ParDynastyVO.class);
     }
 
 }

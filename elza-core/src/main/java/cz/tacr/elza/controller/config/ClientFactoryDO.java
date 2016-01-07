@@ -70,6 +70,26 @@ public class ClientFactoryDO {
         return mapper.map(partyVO, ParParty.class);
     }
 
+    public void updateParty(final ParPartyEditVO partyVO, final ParParty origParty) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+
+        //TODO kuzel
+//        if (partyVO instanceof ParDynastyEditVO) {
+//            return mapper.map(partyVO, ParDynasty.class);
+//        }
+//        if (partyVO instanceof ParPersonEditVO) {
+//            return mapper.map(partyVO, ParPerson.class);
+//        }
+//        if (partyVO instanceof ParEventEditVO) {
+//            return mapper.map(partyVO, ParEvent.class);
+//        }
+//        if (partyVO instanceof ParPartyGroupEditVO) {
+//            return mapper.map(partyVO, ParPartyGroup.class);
+//        }
+
+        mapper.map(partyVO, origParty);
+    }
+
     /**
      * Vytvoří objekt jména osoby. Jsou načteny i detailní informace.
      *
@@ -79,6 +99,11 @@ public class ClientFactoryDO {
     public ParPartyName createParPartyName(final ParPartyNameEditVO partyNameVOSave) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(partyNameVOSave, ParPartyName.class);
+    }
+
+    public void updateParPartyName(final ParPartyNameEditVO partyNameEditVO, final ParPartyName partyName) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        mapper.map(partyNameEditVO, partyName);
     }
 
     /**
