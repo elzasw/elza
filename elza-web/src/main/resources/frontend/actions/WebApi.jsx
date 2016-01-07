@@ -23,7 +23,7 @@ class WebApiRest {
     }
 
     findRegistry(search = null){
-        return AjaxUtils.ajaxGet('/api/registryManager/findRecord', {
+        return AjaxUtils.ajaxGet('/api/registryManagerV2/findRecord', {
             search: search,
             from: 0,
             count: 200,
@@ -34,7 +34,7 @@ class WebApiRest {
     }
 
     getRegistry(registryId){
-        return AjaxUtils.ajaxGet('/api/registryManager/getRecord', {recordId: registryId})
+        return AjaxUtils.ajaxGet('/api/registryManagerV2/getRecord', {recordId: registryId})
             .then(json=>{
                 return json;
             });
@@ -342,5 +342,5 @@ class WebApiFake {
 //AjaxUtils.ajaxGet('/api/arrangementManager/getLevel', {nodeId: 10, versionId: 3})
 //            .then(json=>console.log("LEVEL", json));
 
-//module.exports = new WebApiRest();
-module.exports = new WebApiFake();
+module.exports = new WebApiRest();
+//module.exports = new WebApiFake();
