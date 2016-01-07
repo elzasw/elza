@@ -31,7 +31,6 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     render() {
 
         if (!this.props.registryData.isFetching && this.props.registryData.fetched) {
-console.log('detail', this.props.registryData);
             var detailRegistry = (
                     <div>
                         <h2>
