@@ -11,6 +11,7 @@ import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
@@ -51,6 +52,7 @@ import cz.tacr.elza.domain.vo.ArrNodeHistoryPack;
 import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithDescItems;
 import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithLevelPack;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
+import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
@@ -402,6 +404,9 @@ public abstract class AbstractRestTest {
 
     @Autowired
     protected PartyNameFormTypeRepository partyNameFormTypeRepository;
+
+    @Autowired
+    protected CalendarTypeRepository calendarTypeRepository;
 
     @Autowired
     protected ClientFactoryVO factoryVO;
@@ -836,6 +841,14 @@ public abstract class AbstractRestTest {
         parPartyNameFormType.setCode(TEST_CODE + ElzaTools.getStringOfActualDate());
 
         return partyNameFormTypeRepository.save(parPartyNameFormType);
+    }
+
+    protected ArrCalendarType createCalendarType() {
+        ArrCalendarType calendarType = new ArrCalendarType();
+        calendarType.setCode(TEST_CODE + ElzaTools.getStringOfActualDate());
+        calendarType.setName(TEST_NAME);
+
+        return calendarTypeRepository.save(calendarType);
     }
 
     /**

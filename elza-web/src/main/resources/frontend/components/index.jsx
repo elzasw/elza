@@ -16,6 +16,7 @@ exports.Search = require('./shared/search/Search');
 exports.DropTree = require('./shared/drop-tree/DropTree');
 exports.Loading = require('./shared/loading/Loading');
 exports.VirtualList = require('./shared/virtual-list/VirtualList');
+exports.Accordion = require('./shared/accordion/Accordion');
 exports.ContextMenu = require('./shared/context-menu/ContextMenu');
 exports.ModalDialog = require('./shared/dialog/ModalDialog');
 exports.ModalDialogWrapper = require('./shared/dialog/ModalDialogWrapper');

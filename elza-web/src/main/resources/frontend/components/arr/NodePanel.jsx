@@ -4,7 +4,7 @@
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Loading, NodeForm} from 'components';
+import {AbstractReactComponent, i18n, Loading, NodeForm, Accordion} from 'components';
 import {faNodeFormFetchIfNeeded} from 'actions/arr/nodeForm'
 import {faNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo'
 import {faSelectSubNode} from 'actions/arr/nodes'
@@ -15,7 +15,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderParents', 'renderChildren', 'handleParentNodeClick', 'handleChildNodeClick', 'getParentNodes', 'getChildNodes', 'getSiblingNodes');
+        this.bindMethods('renderParents', 'renderChildren', 'handleOpenItem', 'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick', 'getParentNodes', 'getChildNodes', 'getSiblingNodes');
         
         if (props.node.selectedSubNodeId != null) {
             this.dispatch(faNodeFormFetchIfNeeded(props.faId, props.node.selectedSubNodeId, props.node.nodeKey));
@@ -84,28 +84,39 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         return [...this.props.node.nodeInfo.childNodes];
     }
 
-    render() {
-        var isLoading = false;
-        isLoading |= this.props.node.nodeInfo.isFetching || !this.props.node.nodeInfo.fetched;
-        isLoading |= this.props.node.nodeForm.isFetching || !this.props.node.nodeForm.fetched;
-//console.log("NODE_PANEL", this.props, this.props.node, 'isLoading', isLoading);
+    handleCloseItem(item) {
+        this.dispatch(faSelectSubNode(null, this.props.node));
+    }
 
-        if (isLoading) {
+    handleOpenItem(item) {
+        var subNodeId = item.id;
+        this.dispatch(faSelectSubNode(subNodeId, this.props.node));
+    }
+
+
+    render() {
+        if (this.props.node.nodeInfo.isFetching || !this.props.node.nodeInfo.fetched) {
             return <Loading/>
         }
 
         var parents = this.renderParents(this.getParentNodes());
         var children = this.renderChildren(this.getChildNodes());
         var siblings = this.getSiblingNodes().map(s => <span key={s.id}> {s.id}</span>);
+        var content;
+        if (this.props.node.nodeForm.isFetching || !this.props.node.nodeForm.fetched) {
+            content = <div className='content'><Loading/></div>
+        } else {
+            content = (
+                <div className='content'>
+                    <Accordion closeItem={this.handleCloseItem} openItem={this.handleOpenItem} selectedId={this.props.node.selectedSubNodeId} items={this.getSiblingNodes()} />
+                </div>
+            )
+        }
 
         return (
             <div className='node-panel-container'>
-                <div className='actions'>NODE [{this.props.node.id}] actions.......SUB NODE: {this.props.node.selectedSubNodeId}</div>
                 {parents}
-                <div className='content'>
-                    content{siblings}
-                    {false && <NodeForm levelExt={this.props.nodeForm.levelExt}/>}
-                </div>
+                {content}
                 {children}
             </div>
         );

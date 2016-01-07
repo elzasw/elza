@@ -1,0 +1,40 @@
+@import "~variables.less";
+
+.accordion {
+    height: 100%;
+    .accordion-item {
+        .accordion-header {
+            cursor: pointer;
+            height: 100%;
+            .accordion-header-content {
+                height: 100%;
+                _margin: 2px;
+                background: @gray-lighter;
+                _border: 1px solid @gray;
+            }
+        }
+        .accordion-body {
+            height: 100%;
+            .accordion-body-content {
+                height: 100%;
+                overflow-y: auto;
+                _margin: 2px;
+                _border: 1px solid @gray;
+                border-top: 0;
+            }
+        }
+        &.active {
+            .accordion-header {
+                .accordion-header-content {
+                    margin-bottom: 0;
+                    background: @gray-light;
+                }
+            }
+            .accordion-body {
+                .accordion-body-content {
+                    margin-top: 0;
+                }
+            }
+        }
+    }
+}
