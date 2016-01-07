@@ -51,7 +51,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
                         <h3>
                             Variantní jména:
                         </h3>
-                        {(this.props.registryData.item) && this.props.registryData.item.variantRecordList && this.props.registryData.item.variantRecordList.map(item => { 
+                        { (this.props.registryData.item) && this.props.registryData.item.variantRecords && this.props.registryData.item.variantRecords.map(item => { 
                                 return (
                                         <p key={item.variantRecordId}>{item.variantRecordId}: {item.record}</p>
                                     ) 
