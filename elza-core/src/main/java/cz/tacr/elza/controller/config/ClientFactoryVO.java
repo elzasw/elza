@@ -26,10 +26,8 @@ import cz.tacr.elza.controller.vo.ParPartyGroupVO;
 import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
 import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyNameVO;
-import cz.tacr.elza.controller.vo.ParPartyNameVOSave;
 import cz.tacr.elza.controller.vo.ParPartyTimeRangeVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParPartyVOInsert;
 import cz.tacr.elza.controller.vo.ParRelationEntityVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
@@ -37,6 +35,7 @@ import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.RulArrangementTypeVO;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroup;
 import cz.tacr.elza.domain.ParPartyGroupIdentifier;
@@ -49,6 +48,7 @@ import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RulArrangementType;
+import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
@@ -67,7 +67,7 @@ import cz.tacr.elza.repository.UnitdateRepository;
  * @since 21.12.2015
  */
 @Service
-public class ConfigClientVOService {
+public class ClientFactoryVO {
 
     @Autowired
     @Qualifier("configVOMapper")
@@ -164,7 +164,7 @@ public class ConfigClientVOService {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         Map<Integer, ParPartyVO> partyMap = new HashMap<>();
 
-        for (ParParty party : parties) {
+        for (final ParParty party : parties) {
             ParPartyVO partyVO = mapper.map(party, ParPartyVO.class);
             if (party.getPreferredName() != null) {
                 partyVO.setPreferredName(mapper.map(party.getPreferredName(), ParPartyNameVO.class));
@@ -173,7 +173,7 @@ public class ConfigClientVOService {
             partyMap.put(partyVO.getPartyId(), partyVO);
         }
 
-        for (ParPartyTimeRange partyTimeRange : partyTimeRangeRepository.findByParties(parties)) {
+        for (final ParPartyTimeRange partyTimeRange : partyTimeRangeRepository.findByParties(parties)) {
             ParPartyTimeRangeVO partyTimeRangeVO = mapper.map(partyTimeRange, ParPartyTimeRangeVO.class);
             partyMap.get(partyTimeRangeVO.getPartyId()).addPartyTimeRange(partyTimeRangeVO);
         }
@@ -181,21 +181,6 @@ public class ConfigClientVOService {
         return new ArrayList<>(partyMap.values());
     }
 
-    /**
-     * Vytvoří objekt osoby z předaného VO.
-     *
-     * @param partyVO       VO osoby
-     * @return              objekt osoby
-     */
-    public ParParty createParty(final ParPartyVOInsert partyVO) {
-        if (partyVO == null) {
-            return null;
-        }
-
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-
-        return mapper.map(partyVO, ParParty.class);
-    }
 
     /**
      * Vytvoří objekt jména osoby. Jsou načteny i detailní informace.
@@ -214,17 +199,6 @@ public class ConfigClientVOService {
     }
 
     /**
-     * Vytvoří objekt jména osoby. Jsou načteny i detailní informace.
-     *
-     * @param partyNameVOSave jméno osoby VO
-     * @return vo jména osoba
-     */
-    public ParPartyName createParPartyName(final ParPartyNameVOSave partyNameVOSave) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(partyNameVOSave, ParPartyName.class);
-    }
-
-    /**
      * Vytvoří seznam vazeb osoby.
      *
      * @param party osoba
@@ -239,7 +213,7 @@ public class ConfigClientVOService {
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
         Map<Integer, ParRelationVO> relationVOMap = new HashMap<>();
-        for (ParRelation relation : relations) {
+        for (final ParRelation relation : relations) {
             relationVOMap.put(relation.getRelationId(), mapper.map(relation, ParRelationVO.class));
         }
 
@@ -248,7 +222,7 @@ public class ConfigClientVOService {
         List<ParRelationEntity> partyRelations = relationEntityRepository.findByParty(party);
         List<ParRelationEntityVO> partyRelationsVo = createList(partyRelations, ParRelationEntityVO.class, null);
 
-        for (ParRelationEntityVO parRelationEntityVO : partyRelationsVo) {
+        for (final ParRelationEntityVO parRelationEntityVO : partyRelationsVo) {
             relationVOMap.get(parRelationEntityVO.getRelationId()).addRelationEntity(parRelationEntityVO);
         }
 
@@ -266,7 +240,7 @@ public class ConfigClientVOService {
     public List<RegRecordVO> createRegRecords(final List<RegRecord> records,
                                               final Map<Integer, ParParty> recordPartyMap) {
         List<RegRecordVO> result = new ArrayList<>(records.size());
-        for (RegRecord record : records) {
+        for (final RegRecord record : records) {
             ParParty recordParty = recordPartyMap.get(record.getRecordId());
             result.add(createRegRecord(record, recordParty == null ? null : recordParty.getPartyId()));
         }
@@ -290,7 +264,37 @@ public class ConfigClientVOService {
     }
 
     /**
-     * Vytvoří typ rejstříkového hesla.
+     * Vytvoření variantního rejstříkového hesla.
+     *
+     * @param regVariantRecord variantní rejstříkové heslo
+     * @return VO variantní rejstříkové heslo
+     */
+    public RegVariantRecordVO createRegVariantRecord(final RegVariantRecord regVariantRecord){
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.map(regVariantRecord, RegVariantRecordVO.class);
+    }
+
+    /**
+     * Vytvoření seznamu variantních rejstříkových hesel.
+     *
+     * @param variantRecords seznam variantních rejstříkových hesel
+     * @return seznam VO variantních hesel
+     */
+    public List<RegVariantRecordVO> createRegVariantRecords(@Nullable final List<RegVariantRecord> variantRecords) {
+        if (variantRecords == null) {
+            return null;
+        }
+
+        List<RegVariantRecordVO> result = new ArrayList<>(variantRecords.size());
+        variantRecords.forEach((variantRecord) ->
+                        result.add(createRegVariantRecord(variantRecord))
+        );
+
+        return result;
+    }
+
+    /**
+     * Vytvoří ty rejstříkového hesla.
      *
      * @param registerType typ rejstříkového hesla
      * @return VO
@@ -313,7 +317,7 @@ public class ConfigClientVOService {
 
         List<ParPartyNameFormTypeVO> result = new LinkedList<>();
 
-        for (ParPartyNameFormType type : types) {
+        for (final ParPartyNameFormType type : types) {
             result.add(mapper.map(type, ParPartyNameFormTypeVO.class));
         }
 
@@ -333,7 +337,7 @@ public class ConfigClientVOService {
 
         Map<Integer, RegRegisterTypeVO> typeMap = new HashMap<>();
         List<RegRegisterTypeVO> roots = new LinkedList<>();
-        for (RegRegisterType registerType : allTypes) {
+        for (final RegRegisterType registerType : allTypes) {
             RegRegisterTypeVO registerTypeVO = createRegisterTypeTree(registerType, typeMap);
             if (registerTypeVO.getParentRegisterTypeId() == null) {
                 roots.add(registerTypeVO);
@@ -389,11 +393,11 @@ public class ConfigClientVOService {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         List<VO> result = new ArrayList<>(items.size());
         if (factory == null) {
-            for (ITEM item : items) {
+            for (final ITEM item : items) {
                 result.add(mapper.map(item, voTypes));
             }
         } else {
-            for (ITEM item : items) {
+            for (final ITEM item : items) {
                 result.add(factory.apply(item));
             }
         }

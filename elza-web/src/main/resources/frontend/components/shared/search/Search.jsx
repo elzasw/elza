@@ -24,6 +24,7 @@ var Search = class Search extends React.Component {
 
         this.handleSearch = this.handleSearch.bind(this);               // funkce pro akci spoustící vyhledávání
         this.handleChange = this.handleChange.bind(this);               // funckce pro aktualizaci hledaneho textu v komponentě
+        this.handleKeyUp = this.handleKeyUp.bind(this);                 // funckce pro odchycení stisknutí klávesy enter a odeslání search
 
         this.state = {                                                  // inicializace stavu komponenty
             filterText: this.props.filterText,                          // hledaný text
@@ -32,6 +33,12 @@ var Search = class Search extends React.Component {
 
     handleSearch(e){
        this.props.onSearch(this.state.filterText);  
+    }
+
+    handleKeyUp(e){
+        if (e.keyCode == 13){
+            this.handleSearch(e);
+        }
     }
 
     
@@ -55,7 +62,8 @@ var Search = class Search extends React.Component {
                     value={this.state.filterText}
                     ref="input"
                     labelClassName="label-class"
-                    onChange={this.handleChange}                    
+                    onChange={this.handleChange}
+                    onKeyUp={this.handleKeyUp}
                 />
                 <Button onClick={this.handleSearch}>{searchLabel}</Button> 
             </div>

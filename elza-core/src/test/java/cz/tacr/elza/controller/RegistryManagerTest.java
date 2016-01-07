@@ -1,6 +1,19 @@
 package cz.tacr.elza.controller;
 
+import static com.jayway.restassured.RestAssured.given;
+
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import com.jayway.restassured.response.Response;
+
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.RegExternalSource;
 import cz.tacr.elza.domain.RegRecord;
@@ -13,17 +26,6 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import ma.glasnost.orika.MapperFactory;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
-import java.util.Arrays;
-import java.util.List;
-
-import static com.jayway.restassured.RestAssured.given;
 
 
 /**
@@ -72,6 +74,48 @@ public class RegistryManagerTest extends AbstractRestTest {
         Assert.assertNotNull(newRecord);
         Assert.assertNotNull(newRecord.getRecordId());
         Assert.assertNotNull(recordRepository.getOne(newRecord.getRecordId()));
+    }
+
+    /**
+     * Vytvoření, aktualizace a smazání rejstříkového hesla.
+     */
+    @Test
+    public void testSaveUpdateDeleteRecord() {
+        RegRecord record = createRecord2("SR1");
+        record.setCharacteristics("abc");
+
+        RegRecord updatedRecord = registryService.saveRecord(record, true);
+        Assert.assertEquals(updatedRecord.getCharacteristics(), "abc");
+
+        Integer recordId = updatedRecord.getRecordId();
+        registryService.deleteRecord(updatedRecord, true);
+
+        Assert.assertNull(recordRepository.findOne(recordId));
+    }
+
+    /**
+     * Vytvoření, aktualizace a smazání variantního rejstříkového hesla.
+     */
+    @Test
+    public void testSaveUpdateDeleteVariantRecord(){
+
+        RegRecord record = createRecord2("SR1");
+        //vytvoříme var. record
+        RegVariantRecord variantRecord = createVariantRecord("1", record);
+        Integer variantRecordId = variantRecord.getVariantRecordId();
+
+        //změníme obsah
+        variantRecord.setRecord("2");
+
+        RegVariantRecord updatedVariant = registryService.saveVariantRecord(variantRecord);
+        updatedVariant = variantRecordRepository.findOne(variantRecordId);
+        Assert.assertEquals(updatedVariant.getRecord(), "2");
+
+        //smazání var. record
+        variantRecordRepository.delete(variantRecordId);
+        Assert.assertNull(variantRecordRepository.findOne(variantRecordId));
+
+        recordRepository.delete(record);
     }
 
     /**

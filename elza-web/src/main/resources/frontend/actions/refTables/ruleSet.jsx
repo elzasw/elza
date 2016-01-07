@@ -1,0 +1,51 @@
+/**
+ * Akce pro seznam sad pravidel - RulRuleSet.
+ */
+
+import {WebApi} from 'actions'
+
+import * as types from 'actions/constants/actionTypes';
+
+/**
+ * Vyžádání dat - aby byla ve store k dispozici.
+ */
+export function refRuleSetFetchIfNeeded() {
+    return (dispatch, getState) => {
+        var state = getState();
+        if (!state.faFileTree.fetched && !state.faFileTree.isFetching) {
+            return dispatch(refRuleSetFetch());
+        }
+    }
+}
+
+/**
+ * Nové načtení dat.
+ */
+export function refRuleSetFetch() {
+    return dispatch => {
+        dispatch(refRuleSetRequest())
+        return WebApi.getRuleSets()
+            .then(json => dispatch(refRuleSetReceive(json)));
+    }
+}
+
+/**
+ * Nová data byla načtena.
+ * @param {Object} json objekt s daty
+ */
+export function refRuleSetReceive(json) {
+    return {
+        type: types.REF_RULE_SET_RECEIVE,
+        items: json,
+        receivedAt: Date.now()
+    }
+}
+
+/**
+ * Bylo zahájeno nové načítání dat.
+ */
+export function refRuleSetRequest() {
+    return {
+        type: types.REF_RULE_SET_REQUEST
+    }
+}

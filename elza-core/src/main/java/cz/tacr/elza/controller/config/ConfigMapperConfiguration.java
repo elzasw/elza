@@ -15,17 +15,21 @@ import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
 import cz.tacr.elza.controller.vo.ParComplementTypeVO;
+import cz.tacr.elza.controller.vo.ParDynastyEditVO;
 import cz.tacr.elza.controller.vo.ParDynastyVO;
+import cz.tacr.elza.controller.vo.ParEventEditVO;
+import cz.tacr.elza.controller.vo.ParPartyEditVO;
+import cz.tacr.elza.controller.vo.ParPartyGroupEditVO;
 import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
 import cz.tacr.elza.controller.vo.ParPartyGroupVO;
 import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
+import cz.tacr.elza.controller.vo.ParPartyNameEditVO;
 import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyNameVO;
-import cz.tacr.elza.controller.vo.ParPartyNameVOSave;
 import cz.tacr.elza.controller.vo.ParPartyTimeRangeVO;
 import cz.tacr.elza.controller.vo.ParPartyTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParPartyVOInsert;
+import cz.tacr.elza.controller.vo.ParPersonEditVO;
 import cz.tacr.elza.controller.vo.ParPersonVO;
 import cz.tacr.elza.controller.vo.ParRelationEntityVO;
 import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
@@ -37,11 +41,13 @@ import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.RulArrangementTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParDynasty;
+import cz.tacr.elza.domain.ParEvent;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroup;
 import cz.tacr.elza.domain.ParPartyGroupIdentifier;
@@ -61,6 +67,13 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RegVariantRecord;
+import ma.glasnost.orika.CustomMapper;
+import ma.glasnost.orika.MapperFactory;
+import ma.glasnost.orika.MappingContext;
+import ma.glasnost.orika.impl.DefaultMapperFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 
 /**
@@ -94,8 +107,14 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ParComplementType.class, ParComplementTypeVO.class).byDefault().register();
         mapperFactory.classMap(ParDynasty.class, ParDynastyVO.class).byDefault().register();
         mapperFactory.classMap(ParParty.class, ParPartyVO.class).exclude("preferredName").byDefault().register();
-        mapperFactory.classMap(ParPartyVOInsert.class, ParParty.class).byDefault().register();
-        mapperFactory.classMap(ParPartyNameVOSave.class, ParPartyName.class).byDefault().register();
+        mapperFactory.classMap(ParPartyEditVO.class, ParParty.class).byDefault().register();
+
+        mapperFactory.classMap(ParDynastyEditVO.class, ParDynasty.class).byDefault().register();
+        mapperFactory.classMap(ParPersonEditVO.class, ParPerson.class).byDefault().register();
+        mapperFactory.classMap(ParEventEditVO.class, ParEvent.class).byDefault().register();
+        mapperFactory.classMap(ParPartyGroupEditVO.class, ParPartyGroup.class).byDefault().register();
+
+        mapperFactory.classMap(ParPartyNameEditVO.class, ParPartyName.class).byDefault().register();
         mapperFactory.classMap(ParPartyGroup.class, ParPartyGroupVO.class).byDefault().register();
         mapperFactory.classMap(ParPartyGroupIdentifier.class, ParPartyGroupIdentifierVO.class).customize(
                 new CustomMapper<ParPartyGroupIdentifier, ParPartyGroupIdentifierVO>() {
@@ -205,6 +224,28 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ArrFindingAid.class, ArrFindingAidVO.class).byDefault().field("findingAidId", "id").register();
         mapperFactory.classMap(ArrFindingAidVersion.class, ArrFindingAidVersionVO.class).byDefault().field("findingAidVersionId", "id").register();
         mapperFactory.getConverterFactory().registerConverter(new PassThroughConverter(LocalDateTime.class));
+        mapperFactory.classMap(RegVariantRecord.class, RegVariantRecordVO.class).customize(
+                new CustomMapper<RegVariantRecord, RegVariantRecordVO>() {
+                    @Override
+                    public void mapAtoB(final RegVariantRecord regVariantRecord,
+                                        final RegVariantRecordVO regVariantRecordVO,
+                                        final MappingContext context) {
+                        RegRecord regRecord = regVariantRecord.getRegRecord();
+                        regVariantRecordVO.setRegRecordId(regRecord.getRecordId());
+    }
+
+                    @Override
+                    public void mapBtoA(final RegVariantRecordVO regVariantRecordVO,
+                                        final RegVariantRecord regVariantRecord,
+                                        final MappingContext context) {
+                        if (regVariantRecordVO.getRegRecordId() != null) {
+                            RegRecord regRecord = new RegRecord();
+                            regRecord.setRecordId(regVariantRecordVO.getRegRecordId());
+                            regVariantRecord.setRegRecord(regRecord);
+                        }
+                    }
+                }).byDefault().register();
+
     }
 
 }

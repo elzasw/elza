@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import cz.tacr.elza.controller.config.ConfigClientVOService;
+import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
@@ -29,7 +29,7 @@ public class ArrangementController {
     private FindingAidVersionRepository findingAidVersionRepository;
 
     @Autowired
-    private ConfigClientVOService factoryVo;
+    private ClientFactoryVO factoryVo;
 
     @RequestMapping(value = "/getFindingAids", method = RequestMethod.GET)
     public List<ArrFindingAidVO> getFindingAids() {

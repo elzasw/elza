@@ -30,7 +30,7 @@ function indexById(arr, id) {
     }
 
     for (var a=0; a<arr.length; a++) {
-        if (arr[a].id === id) {
+        if (arr[a].id == id) {
             return a;
         }
     }

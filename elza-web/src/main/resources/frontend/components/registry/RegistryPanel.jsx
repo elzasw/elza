@@ -34,7 +34,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
             var detailRegistry = (
                     <div>
                         <h2>
-                            {this.props.registryData.item.registry}
+                            {this.props.registryData.item.record}
                         </h2>
                         <h3>
                             Charakteristika:
@@ -46,12 +46,12 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
                             Typ rejstříku - hiearchie:
                         </h3>
                         <p>
-                            {this.props.registryData.item.registrType}
+                            {this.props.registryData.item.registerType.name}
                         </p>
                         <h3>
                             Variantní jména:
                         </h3>
-                        {(this.props.registryData.item) && this.props.registryData.item.variantRecordList.map(item => { 
+                        { (this.props.registryData.item) && this.props.registryData.item.variantRecords && this.props.registryData.item.variantRecords.map(item => { 
                                 return (
                                         <p key={item.variantRecordId}>{item.variantRecordId}: {item.record}</p>
                                     ) 

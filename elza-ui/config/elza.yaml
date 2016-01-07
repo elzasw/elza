@@ -1,8 +1,14 @@
 elza:
   data:
-      url: jdbc:postgresql://vyv-inet:5432/elza
-      user: app
-      pass: app
+#      url: jdbc:postgresql://vyv-inet:5432/elza
+#      user: app
+#      pass: app
+      url: jdbc:postgresql://localhost/elza
+      user: postgres
+      pass: hesloo
+server:
+  port:
+      9000
 
 #  rules:
 #    ZP:

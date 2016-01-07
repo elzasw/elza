@@ -1,0 +1,76 @@
+package ZP2015;
+
+import cz.tacr.elza.drools.model.DescItem;
+import cz.tacr.elza.drools.model.DescItemChange;
+import cz.tacr.elza.api.vo.RelatedNodeDirection;
+import cz.tacr.elza.api.vo.NodeTypeOperation;
+
+global java.util.Set results;
+
+rule "Uzel se revaliduje při každé operaci"
+when
+then
+	results.add(RelatedNodeDirection.NODE);
+end
+
+rule "Pokud se změní ZP2015_LEVEL_TYPE nebo ZP2015_FOLDER_TYPE, tak dopad je na všechny potomky"
+when
+    DescItem(type == "ZP2015_LEVEL_TYPE" || type=="ZP2015_FOLDER_TYPE")
+	NodeTypeOperation(this==NodeTypeOperation.SAVE_DESC_ITEM)
+then
+	results.add(RelatedNodeDirection.DESCENDANTS);
+end
+
+// Při vytvoření uzlu se zneplatňuje rodič a sourozenec
+rule "Vytvoření uzlu"
+when
+	NodeTypeOperation( this==NodeTypeOperation.CREATE_NODE )
+then
+	results.add(RelatedNodeDirection.PARENTS);
+	results.add(RelatedNodeDirection.SIBLINGS);
+end
+
+rule "Vymazání uzlu"
+when
+	NodeTypeOperation( this==NodeTypeOperation.DELETE_NODE )
+then
+	results.add(RelatedNodeDirection.PARENTS);
+	results.add(RelatedNodeDirection.SIBLINGS);
+end
+
+// Bylo by vhodne dopad lokalizovat na predchozi prime sourozence a na nove sourozence
+rule "Změna pozice, dopad na sourozence"
+when
+	NodeTypeOperation(this==NodeTypeOperation.CHANGE_NODE_POSITION)
+then
+	results.add(RelatedNodeDirection.SIBLINGS);
+end
+
+rule "DisconnectNode"
+when
+	NodeTypeOperation(this==NodeTypeOperation.DISCONNECT_NODE)
+then
+	results.add(RelatedNodeDirection.PARENTS);
+	results.add(RelatedNodeDirection.SIBLINGS);
+end
+
+rule "ConnectNode"
+when
+	NodeTypeOperation(this==NodeTypeOperation.CONNECT_NODE)
+then
+	results.add(RelatedNodeDirection.PARENTS);
+	results.add(RelatedNodeDirection.SIBLINGS);
+	results.add(RelatedNodeDirection.DESCENDANTS);
+end
+
+/*
+
+rule "Pokud v SaveDescriptionItems provedu smazání hodnoty ZP2015_TITLE, tak dopady jsou Node+Descendants"
+when
+    descItem : DescItem(type == "ZP2015_LEVEL_TYPE", change == DescItemChange.DELETE)
+	eval( nodeTypeOperation.equals(NodeTypeOperation.SAVE_DESC_ITEM) )
+then
+	results.add(RelatedNodeDirection.NODE);
+	results.add(RelatedNodeDirection.DESCENDANTS);
+end
+*/

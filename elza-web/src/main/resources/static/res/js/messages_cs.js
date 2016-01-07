@@ -1,9 +1,15 @@
 var messages = {
     "global.data.loading": "Načítání dat...",
     "global.error.ajax": "Problém ajaxového volání",
+    "global.action.create": "Vytvořit",
+    "global.action.cancel": "Storno",
+    "global.action.store": "Uložit",
 
+    "global.validation.required": "Pole je povinné",
+    
     "ribbon.action.home": "Domů",
     "ribbon.action.arr": "Archivní pomůcky",
+    "ribbon.action.arr.fa.add": "Vytvořit AP",
     "ribbon.action.registry": "Rejstříky",
     "ribbon.action.party": "Osoby",
     "ribbon.action.admin": "Administrace",
@@ -19,6 +25,10 @@ var messages = {
     
     "faTree.action.openInNewTab": "Otevřít v nové záložce",
 
+    "arr.fa.title.add": "Vytvoření nové AP",
+    "arr.fa.name": "Název",
+    "arr.fa.ruleSet": "Pravidla tvorby",
+    "arr.fa.arrType": "Typ výstupu",
 
     "admin.packages.action.export": "Stáhnout",
     "admin.packages.action.delete": "Smazat",

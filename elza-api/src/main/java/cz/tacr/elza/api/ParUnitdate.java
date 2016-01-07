@@ -8,7 +8,7 @@ import java.io.Serializable;
  * @param  <CT> typ kalendáře
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public interface ParUnitdate<CT extends ArrCalendarType> extends Versionable, Serializable {
+public interface ParUnitdate<CT extends ArrCalendarType> extends Serializable {
 
     /**
      * Primární ID.

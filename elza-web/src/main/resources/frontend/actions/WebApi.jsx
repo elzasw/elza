@@ -11,7 +11,7 @@ AjaxUtils.ajaxGet('/api/arrangementManager/getFindingAids')
     });
 */
 
-class WebApiRest {
+class WebApiRestOld {
     constructor() {
     }
 
@@ -21,26 +21,6 @@ class WebApiRest {
                 return json.map(i=>{return {id:i.findingAidId, name:i.name}});
             });
     }
-
-    findRegistry(search = null){
-        return AjaxUtils.ajaxGet('/api/registryManager/findRecord', {
-            search: search,
-            from: 0,
-            count: 200,
-            registerTypeIds: null
-        }).then(json=>{
-            return json;
-        });
-    }
-
-    getRegistry(registryId){
-        return AjaxUtils.ajaxGet('/api/registryManager/getRecord', {recordId: registryId})
-            .then(json=>{
-                return json;
-            });
-    }
-
-
 
     findParty(search = null){
         return AjaxUtils.ajaxGet('/api/partyManager/findParty', {
@@ -59,31 +39,6 @@ class WebApiRest {
             .then(json=>{
                 return json;
             });
-    }
-
-    getPackages() {
-        return AjaxUtils.ajaxGet('/api/ruleSetManager/getPackages')
-            .then(json=>{
-                return json;
-            });
-    }
-
-    deletePackage(code) {
-        return AjaxUtils.ajaxGet('/api/ruleSetManager/deletePackage/' + code)
-                .then(json=>{
-                    return json;
-                });
-    }
-
-    getPackageExportUrl(code) {
-        return '/api/ruleSetManager/exportPackage/' + code;
-    }
-
-    importPackage(data) {
-        return AjaxUtils.ajaxCallRaw('/api/ruleSetManager/importPackage', {}, "POST", data)
-                .then(json=>{
-                    return json;
-                });
     }
 }
 
@@ -133,7 +88,7 @@ var _nodeId = 0;
 var _faRootNode = {id: 0, name: 'node', depth: 0, parent: null, children: []}
 buildTree(_faRootNode, 1);
 
-class WebApiFake {
+class WebApi {
     constructor() {
     }
 
@@ -201,59 +156,22 @@ class WebApiFake {
         return this.getData(data, 1);
     }
 
-    findRegistry(search = '') {
-        var data = {
-                recordList: [
-                    {
-                        id: 1, 
-                        record: 'Záznam 1',
-                    },
-                    {
-                        id: 2, 
-                        record: 'Záznam 2',
-                    },
-                    {
-                        id: 3, 
-                        record: 'Záznam 3',
-                    },
-                    {
-                        id: 4, 
-                        record: 'Záznam 4',
-                    },
-                    {
-                        id: 5,
-                        record: 'Záznam 5',
-                    }
-                ],
-                count: 152
-            }
-        
-        return this.getData(data, 1);
+    findRegistry(search = null){
+        return AjaxUtils.ajaxGet('/api/registryManagerV2/findRecord', {
+            search: search,
+            from: 0,
+            count: 200,
+            registerTypeIds: null
+        }).then(json=>{
+            return json;
+        });
     }
 
-    getRegistry(idRecord) {
-        var data = {
-            recordId: idRecord,
-            registerType: 'text',
-            externalSource: 'text1',
-            variantRecordList: [{
-                    variantRecordId: 1,
-                    regRecord: 1,
-                    record: 'Záznam variant 2'
-                },
-                {
-                    variantRecordId: 2,
-                    regRecord: 2,
-                    record: 'Záznam variant 2'
-                }
-            ],
-            record: 'Záznam s názvem id='+idRecord,
-            characteristics: 'Charakteristika záznamu s id='+idRecord,
-            comment: 'Komentář záznamu s id='+idRecord,
-            local: false,
-            externalId: ''
-        }
-        return this.getData(data, 1);
+    getRegistry(registryId){
+        return AjaxUtils.ajaxGet('/api/registryManagerV2/getRecord', {recordId: registryId})
+            .then(json=>{
+                return json;
+            });
     }
 
     getNodeForm(nodeId, versionId) {
@@ -337,10 +255,49 @@ class WebApiFake {
 
         return this.getData(data, 1);
     }
+
+    getRuleSets() {
+        return AjaxUtils.ajaxGet('/api/ruleSetManager/getRuleSets')
+            .then(json=>{
+                return json.map(i=>{return {...i, id:i.ruleSetId, rulArrTypes: [{id:1, code:'MAN', name: 'Manipulační seznam'}, {id:2, code:'INV', name: "Inventář"}, {id:3, code:'KAT', name: "Katalog"}]}});
+            });
+    }
+
+    createFindingAid(name, ruleSetId, arrangementTypeId) {
+        return AjaxUtils.ajaxPut('/api/arrangementManager/createFindingAid', {name: name, arrangementTypeId: arrangementTypeId, ruleSetId: ruleSetId})
+            .then(json=>{
+                return json;
+            });
+    }
+
+    getPackages() {
+        return AjaxUtils.ajaxGet('/api/ruleSetManager/getPackages')
+            .then(json=>{
+                return json;
+            });
+    }
+
+    deletePackage(code) {
+        return AjaxUtils.ajaxGet('/api/ruleSetManager/deletePackage/' + code)
+                .then(json=>{
+                    return json;
+                });
+    }
+
+    getPackageExportUrl(code) {
+        return '/api/ruleSetManager/exportPackage/' + code;
+    }
+
+    importPackage(data) {
+        return AjaxUtils.ajaxCallRaw('/api/ruleSetManager/importPackage', {}, "POST", data)
+                .then(json=>{
+                    return json;
+                });
+    }
 }
 
 //AjaxUtils.ajaxGet('/api/arrangementManager/getLevel', {nodeId: 10, versionId: 3})
 //            .then(json=>console.log("LEVEL", json));
 
-//module.exports = new WebApiRest();
-module.exports = new WebApiFake();
+//module.exports = new WebApiRestOld();
+module.exports = new WebApi();

@@ -42,7 +42,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     handleSelect(registry, event) {
-        var registry = Object.assign({}, registry,{selectedId: registry.id});
+        var registry = Object.assign({}, registry,{selectedId: registry.recordId});
         this.dispatch(registryData(registry));
     }
 
@@ -57,11 +57,11 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 <div key='registrysList'>
                     {this.props.registry.items.map(item=>{
                         var cls = classNames({
-                                    active: this.props.registry.selectedId === item.id
+                                    active: this.props.registry.selectedId === item.recordId
                                     })
 
                         return (
-                            <div key={item.id} className={cls} onClick={this.handleSelect.bind(this, item)}>
+                            <div key={item.recordId} className={cls} onClick={this.handleSelect.bind(this, item)}>
                                 <span>{item.record}</span>
                             </div>
                         )

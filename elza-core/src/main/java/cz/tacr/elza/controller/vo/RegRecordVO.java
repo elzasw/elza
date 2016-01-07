@@ -56,10 +56,21 @@ public class RegRecordVO {
      * Externí identifikátor rejstříkového hesla v externím zdroji záznamů, například interpi.
      */
     private String externalId;
+
+    /**
+     * Verze záznamu.
+     */
+    private Integer version;
+
     /**
      * Seznam potomků.
      */
     private List<RegRecordVO> childs;
+
+    /**
+     * Seznam variantních rejstříkových hesel.
+     */
+    private List<RegVariantRecordVO> variantRecords;
 
     public Integer getRecordId() {
         return recordId;
@@ -147,5 +158,21 @@ public class RegRecordVO {
 
     public void setChilds(final List<RegRecordVO> childs) {
         this.childs = childs;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(final Integer version) {
+        this.version = version;
+    }
+
+    public List<RegVariantRecordVO> getVariantRecords() {
+        return variantRecords;
+    }
+
+    public void setVariantRecords(final List<RegVariantRecordVO> variantRecords) {
+        this.variantRecords = variantRecords;
     }
 }
