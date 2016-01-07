@@ -1,6 +1,5 @@
-package cz.tacr.elza.service;
+package cz.tacr.elza.service.exception;
 
-import cz.tacr.elza.service.exception.XmlImportException;
 
 /**
  *

@@ -163,70 +163,80 @@ public class UnitIdBulkAction extends BulkAction {
             throw new BulkActionInterruptedException("Hromadná akce " + toString() + " byla přerušena.");
         }
 
-        ArrDescItem descItem = loadDescItem(level);
         ArrDescItem descItemLevel = loadDescItemLevel(level);
 
-        if (unitId == null) {
-            unitId = new UnitId(1);
-        } else {
-            String specCode = descItemLevel == null ? null : descItemLevel.getDescItemSpec().getCode();
+        if (level.getNodeParent() != null) {
 
-            if ((specCode == null && parentSpecCode == null)
-                    || (specCode != null && specCode.equals(parentSpecCode))
-                    || (parentSpecCode != null && parentSpecCode.equals(specCode))
-                    || (delimiterMajorLevelTypeNotUseList.contains(specCode))) {
-                unitId.setSeparator(delimiterMinor);
+            ArrDescItem descItem = loadDescItem(level);
+
+            if (unitId == null) {
+                unitId = new UnitId(1);
             } else {
-                unitId.setSeparator(delimiterMajor);
-            }
+                String specCode = descItemLevel == null ? null : descItemLevel.getDescItemSpec().getCode();
 
-            unitId.genNext();
-        }
-
-        // vytvoření nového atributu
-        if (descItem == null) {
-            descItem = new ArrDescItemUnitid();
-            descItem.setDescItemType(descItemType);
-            descItem.setNode(level.getNode());
-        }
-
-        if (!(descItem instanceof ArrDescItemUnitid)) {
-            throw new IllegalStateException(descItemType.getCode() + " neni typu ArrDescItemUnitid");
-        }
-
-        // uložit pouze při rozdílu
-        if (((ArrDescItemUnitid) descItem).getValue() == null || !unitId.getData()
-                .equals(((ArrDescItemUnitid) descItem).getValue())) {
-
-            ArrDescItem ret;
-
-            // uložit původní hodnotu pouze při první změně z předchozí verze
-            if (descItem.getDescItemObjectId() != null && descItem.getCreateChange().getChangeId() < version
-                    .getCreateChange().getChangeId()) {
-                ArrDescItem descItemPrev = descItemFactory.createDescItemByType(descItemPreviousType.getDataType());
-                descItemPrev.setDescItemType(descItemPreviousType);
-                descItemPrev.setDescItemSpec(descItemPreviousSpec);
-                descItemPrev.setNode(level.getNode());
-
-                if (descItemPrev instanceof ArrDescItemString) {
-                    ((ArrDescItemString) descItemPrev).setValue(((ArrDescItemUnitid) descItem).getValue());
+                if ((specCode == null && parentSpecCode == null)
+                        || (specCode != null && specCode.equals(parentSpecCode))
+                        || (parentSpecCode != null && parentSpecCode.equals(specCode))
+                        || (delimiterMajorLevelTypeNotUseList.contains(specCode))) {
+                    unitId.setSeparator(delimiterMinor);
                 } else {
-                    throw new IllegalStateException(
-                            descItemPrev.getClass().getName() + " nema definovany prevod hodnoty");
+                    unitId.setSeparator(delimiterMajor);
                 }
 
-                ret = saveDescItem(descItemPrev, version, change);
+                unitId.genNext();
+            }
+
+            // vytvoření nového atributu
+            if (descItem == null) {
+                descItem = new ArrDescItemUnitid();
+                descItem.setDescItemType(descItemType);
+                descItem.setNode(level.getNode());
+            }
+
+            if (!(descItem instanceof ArrDescItemUnitid)) {
+                throw new IllegalStateException(descItemType.getCode() + " neni typu ArrDescItemUnitid");
+            }
+
+            // uložit pouze při rozdílu
+            if (((ArrDescItemUnitid) descItem).getValue() == null || !unitId.getData()
+                    .equals(((ArrDescItemUnitid) descItem).getValue())) {
+
+                ArrDescItem ret;
+
+                // uložit původní hodnotu pouze při první změně z předchozí verze
+                if (descItem.getDescItemObjectId() != null && descItem.getCreateChange().getChangeId() < version
+                        .getCreateChange().getChangeId()) {
+                    ArrDescItem descItemPrev = descItemFactory.createDescItemByType(descItemPreviousType.getDataType());
+                    descItemPrev.setDescItemType(descItemPreviousType);
+                    descItemPrev.setDescItemSpec(descItemPreviousSpec);
+                    descItemPrev.setNode(level.getNode());
+
+                    if (descItemPrev instanceof ArrDescItemString) {
+                        ((ArrDescItemString) descItemPrev).setValue(((ArrDescItemUnitid) descItem).getValue());
+                    } else {
+                        throw new IllegalStateException(
+                                descItemPrev.getClass().getName() + " nema definovany prevod hodnoty");
+                    }
+
+                    ret = saveDescItem(descItemPrev, version, change);
+                    level.setNode(ret.getNode());
+
+                }
+
+                ((ArrDescItemUnitid) descItem).setValue(unitId.getData());
+                ret = saveDescItem(descItem, version, change);
                 level.setNode(ret.getNode());
 
             }
 
-            ((ArrDescItemUnitid) descItem).setValue(unitId.getData());
-            ret = saveDescItem(descItem, version, change);
-            level.setNode(ret.getNode());
-
         }
 
         List<ArrLevel> childLevels = getChildren(level);
+
+        if (unitId == null) {
+            unitId = new UnitId("");
+            unitId.setSeparator("");
+        }
 
         UnitId unitIdChild = null;
         for (ArrLevel childLevel : childLevels) {
@@ -318,7 +328,13 @@ public class UnitIdBulkAction extends BulkAction {
         }
 
         public String getData() {
-            return this.data + separator + id.toString();
+            String tmp;
+            if (this.data.equals("")) {
+                tmp = (id == null ? "" : id.toString());
+            } else {
+                tmp = this.data + separator + (id == null ? "" : id.toString());
+            }
+            return tmp;
         }
 
         public UnitId getClone() {
