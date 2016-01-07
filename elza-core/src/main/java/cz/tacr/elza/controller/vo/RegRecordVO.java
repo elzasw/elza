@@ -56,6 +56,12 @@ public class RegRecordVO {
      * Externí identifikátor rejstříkového hesla v externím zdroji záznamů, například interpi.
      */
     private String externalId;
+
+    /**
+     * Verze záznamu.
+     */
+    private Integer version;
+
     /**
      * Seznam potomků.
      */
@@ -147,5 +153,13 @@ public class RegRecordVO {
 
     public void setChilds(final List<RegRecordVO> childs) {
         this.childs = childs;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(final Integer version) {
+        this.version = version;
     }
 }

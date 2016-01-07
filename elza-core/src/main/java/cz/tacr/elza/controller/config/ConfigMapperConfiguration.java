@@ -1,5 +1,8 @@
 package cz.tacr.elza.controller.config;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ParComplementTypeVO;
 import cz.tacr.elza.controller.vo.ParDynastyVO;
@@ -22,6 +25,7 @@ import cz.tacr.elza.controller.vo.ParUnitdateVO;
 import cz.tacr.elza.controller.vo.RegExternalSourceVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParDynasty;
@@ -42,12 +46,11 @@ import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RegExternalSource;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegVariantRecord;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 
 /**
@@ -185,6 +188,28 @@ public class ConfigMapperConfiguration {
                     }
                 }).byDefault()
                 .register();
+
+        mapperFactory.classMap(RegVariantRecord.class, RegVariantRecordVO.class).customize(
+                new CustomMapper<RegVariantRecord, RegVariantRecordVO>() {
+                    @Override
+                    public void mapAtoB(final RegVariantRecord regVariantRecord,
+                                        final RegVariantRecordVO regVariantRecordVO,
+                                        final MappingContext context) {
+                        RegRecord regRecord = regVariantRecord.getRegRecord();
+                        regVariantRecordVO.setRegRecordId(regRecord.getRecordId());
+                    }
+
+                    @Override
+                    public void mapBtoA(final RegVariantRecordVO regVariantRecordVO,
+                                        final RegVariantRecord regVariantRecord,
+                                        final MappingContext context) {
+                        if (regVariantRecordVO.getRegRecordId() != null) {
+                            RegRecord regRecord = new RegRecord();
+                            regRecord.setRecordId(regVariantRecordVO.getRegRecordId());
+                            regVariantRecord.setRegRecord(regRecord);
+                        }
+                    }
+                }).byDefault().register();
 
     }
 

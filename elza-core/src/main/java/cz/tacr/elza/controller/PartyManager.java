@@ -263,7 +263,7 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
 
         partyRepository.delete(partyId);
 
-        registryService.deleteRecord(party.getRecord());
+        registryService.deleteRecord(party.getRecord(), false);
     }
 
     /**

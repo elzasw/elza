@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.controller.config.ConfigClientVOService;
+import cz.tacr.elza.controller.config.ClientFactoryDO;
+import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ParComplementTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyNameVOSave;
@@ -67,7 +68,10 @@ import java.util.Map;
 public class PartyController {
 
     @Autowired
-    private ConfigClientVOService factoryVo;
+    private ClientFactoryVO factoryVo;
+
+    @Autowired
+    private ClientFactoryDO factoryDO;
 
     @Autowired
     private PartyTypeRepository partyTypeRepository;
@@ -275,7 +279,7 @@ public class PartyController {
         }
         // end CHECK
 
-        ParParty party = factoryVo.createParty(partyVO);
+        ParParty party = factoryDO.createParty(partyVO);
         party.setPartyType(partyType);
 
         // Record
@@ -291,7 +295,7 @@ public class PartyController {
         for (final ParPartyNameVOSave partyNameVO : partyVO.getPartyNames()) {
             ParPartyNameFormType nameFormType = partyNameFormTypeRepository.getOne(partyNameVO.getNameFormTypeId());
 
-            ParPartyName partyName = factoryVo.createParPartyName(partyNameVO);
+            ParPartyName partyName = factoryDO.createParPartyName(partyNameVO);
             partyName.setNameFormType(nameFormType);
             partyName.setParty(party);
 

@@ -81,15 +81,17 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     private RegistryService registryService;
 
 
+    //přepsáno do RegistryController
     @RequestMapping(value = "/createRecord", method = RequestMethod.PUT)
     @Override
     @Transactional
     public RegRecord createRecord(@RequestBody final RegRecord record) {
         Assert.isNull(record.getRecordId(), "Při vytváření záznamu nesmí být vyplněno ID (recordId).");
 
-        return saveRecordInternal(record);
+        return registryService.saveRecord(record, true);
     }
 
+    //přepsáno do RegistryController
     @RequestMapping(value = "/updateRecord", method = RequestMethod.PUT)
     @Override
     public RegRecord updateRecord(@RequestBody final RegRecord record) {
@@ -97,7 +99,7 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
         RegRecord recordTest = regRecordRepository.findOne(record.getRecordId());
         Assert.notNull(recordTest, "Nebyl nalezen záznam pro update s id " + record.getRecordId());
 
-        saveRecordInternal(record);
+        registryService.saveRecord(record, true);
         record.getVariantRecordList().forEach((variantRecord) -> {
             variantRecord.setRegRecord(null);
         });
@@ -105,6 +107,7 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
         return record;
     }
 
+    //přepsáno do RegistryController
     @Override
     @RequestMapping(value = "/deleteRecord", method = RequestMethod.DELETE, consumes = MediaType.APPLICATION_JSON_VALUE,
             params = {"recordId"})
@@ -116,33 +119,17 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
             return;
         }
 
-        checkRecordUsage(record);
-        registryService.deleteRecord(record);
+        registryService.deleteRecord(record, true);
     }
 
-    private void checkRecordUsage(final RegRecord record) {
-        List<ParParty> parPartyByRecordId = partyRepository.findParPartyByRecordId(record.getRecordId());
-        if (CollectionUtils.isNotEmpty(parPartyByRecordId)) {
-            throw new IllegalStateException("Existuje vazba z osoby, nelze smazat.");
-        }
 
-        List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByRecordId(record.getRecordId());
-        if (CollectionUtils.isNotEmpty(dataRecordRefList)) {
-            throw new IllegalStateException("Nalezeno použití hesla v tabulce ArrDataRecordRef.");
-        }
-
-        List<ArrNodeRegister> nodeRegisterList = nodeRegisterRepository.findByRecordId(record);
-        if (CollectionUtils.isNotEmpty(nodeRegisterList)) {
-            throw new IllegalStateException("Nalezeno použití hesla v tabulce ArrDataRecordRef.");
-        }
-    }
-
+    //přepsáno do RegistryController
     @RequestMapping(value = "/createVariantRecord", method = RequestMethod.PUT)
     @Override
     public RegVariantRecord createVariantRecord(@RequestBody final RegVariantRecord variantRecord) {
         Assert.isNull(variantRecord.getVariantRecordId(), "Při vytváření záznamu nesmí být vyplněno ID (variantRecordId).");
 
-        RegVariantRecord newVariantRecord = saveVariantRecordInternal(variantRecord);
+        RegVariantRecord newVariantRecord = registryService.saveVariantRecord(variantRecord);
         newVariantRecord.getRegRecord().getVariantRecordList();
 //        newVariantRecord.setRegRecord(null);
         newVariantRecord.getRegRecord().setVariantRecordList(null);
@@ -150,6 +137,7 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
         return newVariantRecord;
     }
 
+    //přepsáno do RegistryController
     @RequestMapping(value = "/updateVariantRecord", method = RequestMethod.PUT)
     @Override
     public RegVariantRecord updateVariantRecord(@RequestBody final RegVariantRecord variantRecord) {
@@ -157,13 +145,14 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
         RegVariantRecord variantRecordTest = variantRecordRepository.findOne(variantRecord.getVariantRecordId());
         Assert.notNull(variantRecordTest, "Nebyl nalezen záznam pro update s id " + variantRecord.getVariantRecordId());
 
-        RegVariantRecord newVariantRecord = saveVariantRecordInternal(variantRecord);
+        RegVariantRecord newVariantRecord = registryService.saveVariantRecord(variantRecord);
 
         newVariantRecord.getRegRecord().setVariantRecordList(null);
 
         return newVariantRecord;
     }
 
+    //přepsáno do RegistryController
     @Override
     @RequestMapping(value = "/deleteVariantRecord", method = RequestMethod.DELETE, consumes = MediaType.APPLICATION_JSON_VALUE,
             params = {"variantRecordId"})
@@ -241,61 +230,4 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
 
         return record;
     }
-
-    /**
-     * Uložení či update záznamu.
-     *
-     * @param record            naplněný objekt, bez vazeb
-     * @return      výslendný objekt
-     */
-    @Transactional
-    private RegRecord saveRecordInternal(final RegRecord record) {
-        Assert.notNull(record);
-
-        Assert.notNull(record.getRecord(), "Není vyplněné Record.");
-        Assert.notNull(record.getCharacteristics(), "Není vyplněné Characteristics.");
-        Assert.notNull(record.getLocal(), "Není vyplněné Local.");
-
-        RegRegisterType regRegisterType = record.getRegisterType();
-        Assert.notNull(regRegisterType, "Není vyplněné RegisterType.");
-        Integer registerTypeId = regRegisterType.getRegisterTypeId();
-        Assert.notNull(registerTypeId, "RegisterType nemá vyplněné ID.");
-        regRegisterType = registerTypeRepository.findOne(registerTypeId);
-        Assert.notNull(regRegisterType, "RegisterType nebylo nalezeno podle id " + registerTypeId);
-        record.setRegisterType(regRegisterType);
-
-        RegExternalSource externalSource = record.getExternalSource();
-        if (externalSource != null) {
-            Integer externalSourceId = externalSource.getExternalSourceId();
-            Assert.notNull(externalSourceId, "ExternalSource nemá vyplněné ID.");
-            externalSource = externalSourceRepository.findOne(externalSourceId);
-            Assert.notNull(externalSource, "ExternalSource nebylo nalezeno podle id " + externalSourceId);
-            record.setExternalSource(externalSource);
-        }
-
-        return regRecordRepository.save(record);
-    }
-
-    /**
-     * Uložení či update variantního záznamu.
-     *
-     * @param variantRecord     variantní záznam, bez vazeb
-     * @return      výslendný objekt uložený do db
-     */
-    @Transactional
-    private RegVariantRecord saveVariantRecordInternal(final RegVariantRecord variantRecord) {
-        Assert.notNull(variantRecord);
-
-        RegRecord regRecord = variantRecord.getRegRecord();
-        Assert.notNull(regRecord, "RegRecord musí být vyplněno.");
-        Integer recordId = regRecord.getRecordId();
-        Assert.notNull(recordId, "RegRecord nemá vyplněno ID.");
-
-        regRecord = regRecordRepository.findOne(recordId);
-        Assert.notNull(regRecord, "RegRecord nebylo nalezeno podle id " + recordId);
-        variantRecord.setRegRecord(regRecord);
-
-        return variantRecordRepository.save(variantRecord);
-    }
-
 }

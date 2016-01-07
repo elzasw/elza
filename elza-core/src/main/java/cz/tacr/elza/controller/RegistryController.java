@@ -6,24 +6,30 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
+import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import cz.tacr.elza.controller.config.ConfigClientVOService;
+import cz.tacr.elza.controller.config.ClientFactoryDO;
+import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRecordWithCount;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.RegistryService;
 import cz.tacr.elza.utils.PartyUtils;
@@ -52,7 +58,13 @@ public class RegistryController {
     private PartyService partyService;
 
     @Autowired
-    private ConfigClientVOService factoryVo;
+    private ClientFactoryVO factoryVo;
+
+    @Autowired
+    private ClientFactoryDO factoryDO;
+
+    @Autowired
+    private VariantRecordRepository variantRecordRepository;
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
@@ -133,5 +145,113 @@ public class RegistryController {
           return factoryVo.createRegisterTypesTree(allTypes);
     }
 
+    /**
+     * Vytvoření rejstříkového hesla.
+     *
+     * @param record VO rejstříkové heslo
+     * @return vytvořený záznam
+     */
+    @RequestMapping(value = "/createRecord", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public RegRecordVO createRecord(@RequestBody final RegRecordVO record) {
+        Assert.isNull(record.getRecordId(), "Při vytváření záznamu nesmí být vyplněno ID (recordId).");
+
+        RegRecord recordDO = factoryDO.createRegRecord(record);
+        RegRecord newRecordDO = registryService.saveRecord(recordDO, true);
+
+        ParParty recordParty = partyService.findParPartyByRecord(newRecordDO);
+        return factoryVo.createRegRecord(newRecordDO, recordParty == null ? null : recordParty.getPartyId());
+    }
+
+    /**
+     * Aktualizace rejstříkového hesla.
+     *
+     * @param record VO rejstříkové heslo
+     * @return aktualizovaný záznam
+     */
+    @RequestMapping(value = "/updateRecord", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public RegRecordVO updateRecord(@RequestBody final RegRecordVO record) {
+        Assert.notNull(record.getRecordId(), "Očekáváno ID (recordId) pro update.");
+        RegRecord recordTest = regRecordRepository.findOne(record.getRecordId());
+        Assert.notNull(recordTest, "Nebyl nalezen záznam pro update s id " + record.getRecordId());
+
+        RegRecord recordDO = factoryDO.createRegRecord(record);
+        RegRecord newRecordDO = registryService.saveRecord(recordDO, true);
+
+        ParParty recordParty = partyService.findParPartyByRecord(newRecordDO);
+        return factoryVo.createRegRecord(newRecordDO, recordParty == null ? null : recordParty.getPartyId());
+    }
+
+
+
+    /**
+     * Smazání rejstříkového hesla.
+     *
+     * @param recordId id rejstříkového hesla
+     */
+    @Transactional
+    @RequestMapping(value = "/deleteRecord", method = RequestMethod.DELETE, consumes = MediaType.APPLICATION_JSON_VALUE,
+            params = {"recordId"})
+    public void deleteRecord(@RequestParam(value = "recordId") final Integer recordId) {
+        Assert.notNull(recordId);
+        RegRecord record = regRecordRepository.findOne(recordId);
+        if (record == null) {
+            return;
+        }
+
+        registryService.deleteRecord(record, true);
+    }
+
+    /**
+     * Vytvoření variantního rejstříkového hesla.
+     *
+     * @param variantRecord VO rejstříkové heslo
+     * @return vytvořený záznam
+     */
+    @RequestMapping(value = "/createVariantRecord", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public RegVariantRecordVO createVariantRecord(@RequestBody final RegVariantRecordVO variantRecord) {
+        Assert.isNull(variantRecord.getVariantRecordId(),
+                "Při vytváření záznamu nesmí být vyplněno ID (variantRecordId).");
+
+        RegVariantRecord variantRecordDO = factoryDO.createRegVariantRecord(variantRecord);
+
+        RegVariantRecord newVariantRecord = registryService.saveVariantRecord(variantRecordDO);
+        return factoryVo.createRegVariantRecord(newVariantRecord);
+    }
+
+    /**
+     * Aktualizace variantního rejstříkového hesla.
+     *
+     * @param variantRecord VO rejstříkové heslo
+     * @return aktualizovaný záznam
+     */
+    @RequestMapping(value = "/updateVariantRecord", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public RegVariantRecordVO updateVariantRecord(@RequestBody final RegVariantRecordVO variantRecord) {
+        Assert.notNull(variantRecord.getVariantRecordId(), "Očekáváno ID pro update.");
+        RegVariantRecord variantRecordTest = variantRecordRepository.findOne(variantRecord.getVariantRecordId());
+        Assert.notNull(variantRecordTest, "Nebyl nalezen záznam pro update s id " + variantRecord.getVariantRecordId());
+
+        RegVariantRecord variantRecordDO = factoryDO.createRegVariantRecord(variantRecord);
+
+        RegVariantRecord updatedVarRec = registryService.saveVariantRecord(variantRecordDO);
+        return factoryVo.createRegVariantRecord(updatedVarRec);
+    }
+
+    /**
+     * Smazání variantního rejstříkového hesla.
+     *
+     * @param variantRecordId id variantního rejstříkového hesla
+     */
+    @Transactional
+    @RequestMapping(value = "/deleteVariantRecord", method = RequestMethod.DELETE, consumes = MediaType.APPLICATION_JSON_VALUE,
+            params = {"variantRecordId"})
+    public void deleteVariantRecord(@RequestParam(value = "variantRecordId") final Integer variantRecordId) {
+        Assert.notNull(variantRecordId);
+        RegVariantRecord variantRecord = variantRecordRepository.findOne(variantRecordId);
+        if (variantRecord == null) {
+            return;
+        }
+
+        variantRecordRepository.delete(variantRecordId);
+    }
 
 }

@@ -2,7 +2,7 @@ package cz.tacr.elza.controller;
 
 import com.jayway.restassured.response.Response;
 import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.controller.config.ConfigClientVOService;
+import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ParPartyNameVOSave;
 import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ParPartyVOInsert;
@@ -44,7 +44,7 @@ public class PartyManagerTest extends AbstractRestTest {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    private ConfigClientVOService factoryVo;
+    private ClientFactoryVO factoryVo;
 
     @Autowired
     @Qualifier("configVOMapper")

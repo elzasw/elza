@@ -13,6 +13,7 @@ import cz.tacr.elza.controller.vo.ParRelationEntityVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroup;
 import cz.tacr.elza.domain.ParPartyGroupIdentifier;
@@ -24,6 +25,7 @@ import cz.tacr.elza.domain.ParRelation;
 import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
@@ -59,7 +61,7 @@ import java.util.function.Function;
  * @since 21.12.2015
  */
 @Service
-public class ConfigClientVOService {
+public class ClientFactoryVO {
 
     @Autowired
     @Qualifier("configVOMapper")
@@ -173,21 +175,6 @@ public class ConfigClientVOService {
         return new ArrayList<>(partyMap.values());
     }
 
-    /**
-     * Vytvoří objekt osoby z předaného VO.
-     *
-     * @param partyVO       VO osoby
-     * @return              objekt osoby
-     */
-    public ParParty createParty(final ParPartyVOInsert partyVO) {
-        if (partyVO == null) {
-            return null;
-        }
-
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-
-        return mapper.map(partyVO, ParParty.class);
-    }
 
     /**
      * Vytvoří objekt jména osoby. Jsou načteny i detailní informace.
@@ -203,17 +190,6 @@ public class ConfigClientVOService {
         result.setPartyNameComplements(createList(nameComplements, ParPartyNameComplementVO.class, null));
 
         return result;
-    }
-
-    /**
-     * Vytvoří objekt jména osoby. Jsou načteny i detailní informace.
-     *
-     * @param partyNameVOSave jméno osoby VO
-     * @return vo jména osoba
-     */
-    public ParPartyName createParPartyName(final ParPartyNameVOSave partyNameVOSave) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(partyNameVOSave, ParPartyName.class);
     }
 
     /**
@@ -279,6 +255,17 @@ public class ConfigClientVOService {
         result.setPartyId(partyId);
 
         return result;
+    }
+
+    /**
+     * Vytvoření variantního rejstříkového hesla.
+     *
+     * @param regVariantRecord VO variantní rejstříkové heslo
+     * @return DO variantní rejstříkové heslo
+     */
+    public RegVariantRecordVO createRegVariantRecord(final RegVariantRecord regVariantRecord){
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.map(regVariantRecord, RegVariantRecordVO.class);
     }
 
     /**

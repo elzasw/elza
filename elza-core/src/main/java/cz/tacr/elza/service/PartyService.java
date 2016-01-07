@@ -9,6 +9,7 @@ import java.util.Set;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
@@ -27,6 +28,19 @@ public class PartyService {
     @Autowired
     private PartyRepository partyRepository;
 
+    /**
+     * Najde osobu podle rejstříkového hesla.
+     *
+     * @param record rejstříkové heslo
+     * @return osoba s daným rejstříkovým heslem nebo null
+     */
+    public ParParty findParPartyByRecord(final RegRecord record) {
+        Assert.notNull(record);
+
+
+        List<ParParty> recordParties = partyRepository.findParPartyByRecordId(record.getRecordId());
+        return recordParties.isEmpty() ? null : recordParties.get(0);
+    }
 
     /**
      * Najde seznam osob podle rejstříkových hesel.

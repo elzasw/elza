@@ -8,7 +8,7 @@ import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 import cz.tacr.elza.ElzaCoreTest;
 import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.controller.config.ConfigClientVOService;
+import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.domain.ArrChange;
@@ -404,7 +404,7 @@ public abstract class AbstractRestTest {
     protected PartyNameFormTypeRepository partyNameFormTypeRepository;
 
     @Autowired
-    protected ConfigClientVOService factoryVO;
+    protected ClientFactoryVO factoryVO;
 
 
     @Before
