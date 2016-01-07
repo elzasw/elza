@@ -4,7 +4,7 @@
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Loading, NodeForm} from 'components';
+import {AbstractReactComponent, i18n, Loading, NodeForm, Accordion} from 'components';
 import {faNodeFormFetchIfNeeded} from 'actions/arr/nodeForm'
 import {faNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo'
 import {faSelectSubNode} from 'actions/arr/nodes'
@@ -15,7 +15,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderParents', 'renderChildren', 'handleParentNodeClick', 'handleChildNodeClick', 'getParentNodes', 'getChildNodes', 'getSiblingNodes');
+        this.bindMethods('renderParents', 'renderChildren', 'handleOpenItem', 'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick', 'getParentNodes', 'getChildNodes', 'getSiblingNodes');
         
         if (props.node.selectedSubNodeId != null) {
             this.dispatch(faNodeFormFetchIfNeeded(props.faId, props.node.selectedSubNodeId, props.node.nodeKey));
@@ -84,6 +84,16 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         return [...this.props.node.nodeInfo.childNodes];
     }
 
+    handleCloseItem(item) {
+        this.dispatch(faSelectSubNode(null, this.props.node));
+    }
+
+    handleOpenItem(item) {
+        var subNodeId = item.id;
+        this.dispatch(faSelectSubNode(subNodeId, this.props.node));
+    }
+
+
     render() {
         var isLoading = false;
         isLoading |= this.props.node.nodeInfo.isFetching || !this.props.node.nodeInfo.fetched;
@@ -102,10 +112,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             <div className='node-panel-container'>
                 <div className='actions'>NODE [{this.props.node.id}] actions.......SUB NODE: {this.props.node.selectedSubNodeId}</div>
                 {parents}
-                <div className='content'>
-                    content{siblings}
-                    {false && <NodeForm levelExt={this.props.nodeForm.levelExt}/>}
-                </div>
+                <Accordion closeItem={this.handleCloseItem} openItem={this.handleOpenItem} selectedId={this.props.node.selectedSubNodeId} items={this.getSiblingNodes()} />
                 {children}
             </div>
         );
