@@ -457,10 +457,9 @@ public class BulkActionManagerTest extends AbstractRestTest {
             // kontrola root uzlu
 
             levelExt = getLevelByNodeId(version.getRootLevel().getNode().getNodeId(), version.getFindingAidVersionId());
-            Assert.assertEquals(1, levelExt.getDescItemList().size());
+            Assert.assertEquals(0, levelExt.getDescItemList().size());
 
-            ArrDescItemUnitid descItemUnitid = (ArrDescItemUnitid) levelExt.getDescItemList().get(0);
-            Assert.assertEquals("1", descItemUnitid.getValue());
+            ArrDescItemUnitid descItemUnitid;
 
             // kontrola prvni urovne uzlu
 
@@ -471,13 +470,13 @@ public class BulkActionManagerTest extends AbstractRestTest {
             Assert.assertEquals(1, levelExt.getDescItemList().size());
 
             descItemUnitid = (ArrDescItemUnitid) levelExt.getDescItemList().get(0);
-            Assert.assertEquals("1/1", descItemUnitid.getValue());
+            Assert.assertEquals("1", descItemUnitid.getValue());
 
             levelExt = getLevelByNodeId(levels.get(1).getNode().getNodeId(), version.getFindingAidVersionId());
             Assert.assertEquals(1, levelExt.getDescItemList().size());
 
             descItemUnitid = (ArrDescItemUnitid) levelExt.getDescItemList().get(0);
-            Assert.assertEquals("1/2", descItemUnitid.getValue());
+            Assert.assertEquals("2", descItemUnitid.getValue());
 
             // kontrola druhe urovni prvniho uzlu
 
@@ -488,13 +487,13 @@ public class BulkActionManagerTest extends AbstractRestTest {
             Assert.assertEquals(1, levelExt.getDescItemList().size());
 
             descItemUnitid = (ArrDescItemUnitid) levelExt.getDescItemList().get(0);
-            Assert.assertEquals("1/1/1", descItemUnitid.getValue());
+            Assert.assertEquals("1/1", descItemUnitid.getValue());
 
             levelExt = getLevelByNodeId(sublevels.get(1).getNode().getNodeId(), version.getFindingAidVersionId());
             Assert.assertEquals(1, levelExt.getDescItemList().size());
 
             descItemUnitid = (ArrDescItemUnitid) levelExt.getDescItemList().get(0);
-            Assert.assertEquals("1/1/2", descItemUnitid.getValue());
+            Assert.assertEquals("1/2", descItemUnitid.getValue());
 
             //
             //  Spusteni ctvrte hromadne akce
