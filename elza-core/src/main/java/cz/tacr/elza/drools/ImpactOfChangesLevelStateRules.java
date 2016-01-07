@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -27,6 +28,7 @@ import cz.tacr.elza.drools.service.ScriptModelFactory;
  * Zpracování pravidel dopadu změny na stavy uzlu.
  *
  * @author Martin Šlapa
+ * @author Petr Pytelka
  * @since 27.11.2015
  */
 @Component
@@ -51,7 +53,9 @@ public class ImpactOfChangesLevelStateRules extends Rules {
                                                           final NodeTypeOperation nodeTypeOperation,
                                                           final RulRuleSet rulRuleSet)
             throws Exception {
-        List<DescItem> descItemVOList = prepareDescItemVOList(createDescItem, updateDescItem, deleteDescItem);
+        List<Object> facts = new LinkedList<>();
+        facts.addAll( prepareDescItemList(createDescItem, updateDescItem, deleteDescItem) );
+        facts.add(nodeTypeOperation);
 
         Set<RelatedNodeDirection> relatedNodeDirections = new HashSet<>();
 
@@ -66,9 +70,8 @@ public class ImpactOfChangesLevelStateRules extends Rules {
 
             // přidání globálních proměnných
             session.setGlobal("results", relatedNodeDirections);
-            session.setGlobal("nodeTypeOperation", nodeTypeOperation);
 
-            execute(session, descItemVOList, path);
+            execute(session, facts, path);
         }
         return relatedNodeDirections;
     }
@@ -80,7 +83,7 @@ public class ImpactOfChangesLevelStateRules extends Rules {
      * @param deleteDescItem hodnoty atributů ke smazání
      * @return seznam VO do modelu
      */
-    private List<DescItem> prepareDescItemVOList(final List<ArrDescItem> createDescItem,
+    private List<DescItem> prepareDescItemList(final List<ArrDescItem> createDescItem,
                                                    final List<ArrDescItem> updateDescItem,
                                                    final List<ArrDescItem> deleteDescItem) {
         List<DescItem> list = new ArrayList<>();
@@ -89,11 +92,11 @@ public class ImpactOfChangesLevelStateRules extends Rules {
         }
 
         if (!CollectionUtils.isEmpty(updateDescItem)) {
-            factory.createDescItems(updateDescItem, (t) -> t.setChange(DescItemChange.UPDATE));
+        	list.addAll(factory.createDescItems(updateDescItem, (t) -> t.setChange(DescItemChange.UPDATE)));
         }
 
         if (!CollectionUtils.isEmpty(deleteDescItem)) {
-            factory.createDescItems(deleteDescItem, (t) -> t.setChange(DescItemChange.DELETE));
+        	list.addAll(factory.createDescItems(deleteDescItem, (t) -> t.setChange(DescItemChange.DELETE)));
         }
 
         return list;
