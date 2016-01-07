@@ -11,7 +11,11 @@ import java.util.List;
  * Osoba pro operace insert.
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include= JsonTypeInfo.As.PROPERTY)
-@JsonSubTypes(@JsonSubTypes.Type(value = ParDynastyEditVO.class, name = "ParDynastyVOInsert"))
+@JsonSubTypes({@JsonSubTypes.Type(value = ParDynastyEditVO.class),
+               @JsonSubTypes.Type(value = ParPartyGroupEditVO.class),
+               @JsonSubTypes.Type(value = ParPersonEditVO.class),
+               @JsonSubTypes.Type(value = ParEventEditVO.class)
+})
 public class ParPartyEditVO {
 
     /**

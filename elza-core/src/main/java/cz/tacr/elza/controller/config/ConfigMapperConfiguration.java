@@ -2,8 +2,11 @@ package cz.tacr.elza.controller.config;
 
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ParComplementTypeVO;
+import cz.tacr.elza.controller.vo.ParDynastyEditVO;
 import cz.tacr.elza.controller.vo.ParDynastyVO;
+import cz.tacr.elza.controller.vo.ParEventEditVO;
 import cz.tacr.elza.controller.vo.ParPartyEditVO;
+import cz.tacr.elza.controller.vo.ParPartyGroupEditVO;
 import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
 import cz.tacr.elza.controller.vo.ParPartyGroupVO;
 import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
@@ -13,6 +16,7 @@ import cz.tacr.elza.controller.vo.ParPartyNameVO;
 import cz.tacr.elza.controller.vo.ParPartyTimeRangeVO;
 import cz.tacr.elza.controller.vo.ParPartyTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParPersonEditVO;
 import cz.tacr.elza.controller.vo.ParPersonVO;
 import cz.tacr.elza.controller.vo.ParRelationEntityVO;
 import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
@@ -26,6 +30,7 @@ import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParDynasty;
+import cz.tacr.elza.domain.ParEvent;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroup;
 import cz.tacr.elza.domain.ParPartyGroupIdentifier;
@@ -84,6 +89,12 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ParDynasty.class, ParDynastyVO.class).byDefault().register();
         mapperFactory.classMap(ParParty.class, ParPartyVO.class).exclude("preferredName").byDefault().register();
         mapperFactory.classMap(ParPartyEditVO.class, ParParty.class).byDefault().register();
+
+        mapperFactory.classMap(ParDynastyEditVO.class, ParDynasty.class).byDefault().register();
+        mapperFactory.classMap(ParPersonEditVO.class, ParPerson.class).byDefault().register();
+        mapperFactory.classMap(ParEventEditVO.class, ParEvent.class).byDefault().register();
+        mapperFactory.classMap(ParPartyGroupEditVO.class, ParPartyGroup.class).byDefault().register();
+
         mapperFactory.classMap(ParPartyNameEditVO.class, ParPartyName.class).byDefault().register();
         mapperFactory.classMap(ParPartyGroup.class, ParPartyGroupVO.class).byDefault().register();
         mapperFactory.classMap(ParPartyGroupIdentifier.class, ParPartyGroupIdentifierVO.class).customize(

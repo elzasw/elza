@@ -1,22 +1,5 @@
 package cz.tacr.elza.controller.config;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
 import cz.tacr.elza.controller.vo.ParPartyGroupVO;
 import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
@@ -52,6 +35,21 @@ import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 
 /**
@@ -158,7 +156,7 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         Map<Integer, ParPartyVO> partyMap = new HashMap<>();
 
-        for (ParParty party : parties) {
+        for (final ParParty party : parties) {
             ParPartyVO partyVO = mapper.map(party, ParPartyVO.class);
             if (party.getPreferredName() != null) {
                 partyVO.setPreferredName(mapper.map(party.getPreferredName(), ParPartyNameVO.class));
@@ -167,7 +165,7 @@ public class ClientFactoryVO {
             partyMap.put(partyVO.getPartyId(), partyVO);
         }
 
-        for (ParPartyTimeRange partyTimeRange : partyTimeRangeRepository.findByParties(parties)) {
+        for (final ParPartyTimeRange partyTimeRange : partyTimeRangeRepository.findByParties(parties)) {
             ParPartyTimeRangeVO partyTimeRangeVO = mapper.map(partyTimeRange, ParPartyTimeRangeVO.class);
             partyMap.get(partyTimeRangeVO.getPartyId()).addPartyTimeRange(partyTimeRangeVO);
         }
@@ -207,7 +205,7 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
         Map<Integer, ParRelationVO> relationVOMap = new HashMap<>();
-        for (ParRelation relation : relations) {
+        for (final ParRelation relation : relations) {
             relationVOMap.put(relation.getRelationId(), mapper.map(relation, ParRelationVO.class));
         }
 
@@ -216,7 +214,7 @@ public class ClientFactoryVO {
         List<ParRelationEntity> partyRelations = relationEntityRepository.findByParty(party);
         List<ParRelationEntityVO> partyRelationsVo = createList(partyRelations, ParRelationEntityVO.class, null);
 
-        for (ParRelationEntityVO parRelationEntityVO : partyRelationsVo) {
+        for (final ParRelationEntityVO parRelationEntityVO : partyRelationsVo) {
             relationVOMap.get(parRelationEntityVO.getRelationId()).addRelationEntity(parRelationEntityVO);
         }
 
@@ -234,7 +232,7 @@ public class ClientFactoryVO {
     public List<RegRecordVO> createRegRecords(final List<RegRecord> records,
                                               final Map<Integer, ParParty> recordPartyMap) {
         List<RegRecordVO> result = new ArrayList<>(records.size());
-        for (RegRecord record : records) {
+        for (final RegRecord record : records) {
             ParParty recordParty = recordPartyMap.get(record.getRecordId());
             result.add(createRegRecord(record, recordParty == null ? null : recordParty.getPartyId()));
         }
@@ -311,7 +309,7 @@ public class ClientFactoryVO {
 
         List<ParPartyNameFormTypeVO> result = new LinkedList<>();
 
-        for (ParPartyNameFormType type : types) {
+        for (final ParPartyNameFormType type : types) {
             result.add(mapper.map(type, ParPartyNameFormTypeVO.class));
         }
 
@@ -331,7 +329,7 @@ public class ClientFactoryVO {
 
         Map<Integer, RegRegisterTypeVO> typeMap = new HashMap<>();
         List<RegRegisterTypeVO> roots = new LinkedList<>();
-        for (RegRegisterType registerType : allTypes) {
+        for (final RegRegisterType registerType : allTypes) {
             RegRegisterTypeVO registerTypeVO = createRegisterTypeTree(registerType, typeMap);
             if (registerTypeVO.getParentRegisterTypeId() == null) {
                 roots.add(registerTypeVO);
@@ -387,11 +385,11 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         List<VO> result = new ArrayList<>(items.size());
         if (factory == null) {
-            for (ITEM item : items) {
+            for (final ITEM item : items) {
                 result.add(mapper.map(item, voTypes));
             }
         } else {
-            for (ITEM item : items) {
+            for (final ITEM item : items) {
                 result.add(factory.apply(item));
             }
         }

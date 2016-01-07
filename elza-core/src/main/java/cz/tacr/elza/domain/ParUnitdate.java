@@ -1,7 +1,5 @@
 package cz.tacr.elza.domain;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -18,6 +16,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import java.util.List;
 
 
 /**
@@ -29,7 +28,7 @@ import javax.persistence.Table;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParUnitdate extends AbstractVersionableEntity implements cz.tacr.elza.api.ParUnitdate<ArrCalendarType> {
+public class ParUnitdate implements cz.tacr.elza.api.ParUnitdate<ArrCalendarType> {
 
     /* Konstanty pro vazby a fieldy. */
     public static final String UNITDATE_ID = "unitdateId";

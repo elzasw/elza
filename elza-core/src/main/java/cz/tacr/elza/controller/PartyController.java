@@ -4,12 +4,15 @@ import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ParComplementTypeVO;
 import cz.tacr.elza.controller.vo.ParDynastyEditVO;
+import cz.tacr.elza.controller.vo.ParEventEditVO;
 import cz.tacr.elza.controller.vo.ParPartyEditVO;
+import cz.tacr.elza.controller.vo.ParPartyGroupEditVO;
 import cz.tacr.elza.controller.vo.ParPartyNameEditVO;
 import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ParPartyWithCount;
+import cz.tacr.elza.controller.vo.ParPersonEditVO;
 import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationTypeVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
@@ -27,6 +30,7 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.repository.ComplementTypeRepository;
+import cz.tacr.elza.repository.PartyDynastyRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
@@ -53,6 +57,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,6 +108,9 @@ public class PartyController {
 
     @Autowired
     private PartyRepository partyRepository;
+
+    @Autowired
+    private PartyDynastyRepository partyDynastyRepository;
 
     @Autowired
     private PartyNameRepository partyNameRepository;
@@ -269,6 +277,21 @@ public class PartyController {
 
             throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
         }
+        if (partyVO instanceof ParPersonEditVO
+                && !ParPartyType.PartyTypeEnum.PERSON.equals(partyType.getPartyTypeEnum())) {
+
+            throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
+        }
+        if (partyVO instanceof ParEventEditVO
+                && !ParPartyType.PartyTypeEnum.EVENT.equals(partyType.getPartyTypeEnum())) {
+
+            throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
+        }
+        if (partyVO instanceof ParPartyGroupEditVO
+                && !ParPartyType.PartyTypeEnum.PARTY_GROUP.equals(partyType.getPartyTypeEnum())) {
+
+            throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
+        }
 
         List<RegRegisterType> regRegisterTypes = registerTypeRepository.findRegisterTypeByPartyType(partyType);
         if (CollectionUtils.isEmpty(regRegisterTypes)) {
@@ -318,9 +341,8 @@ public class PartyController {
         party.setPreferredName(preferredName);
         partyRepository.save(party);
 
-//        List<ParPartyVO> partyList = factoryVo.createPartyList(Arrays.asList(party));
-//        return partyList.get(0);
-        return null;
+        List<ParPartyVO> partyList = factoryVo.createPartyList(Arrays.asList(party));
+        return partyList.get(0);
     }
 
     /**

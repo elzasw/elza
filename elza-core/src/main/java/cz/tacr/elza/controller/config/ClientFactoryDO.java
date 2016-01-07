@@ -1,11 +1,19 @@
 package cz.tacr.elza.controller.config;
 
+import cz.tacr.elza.controller.vo.ParDynastyEditVO;
+import cz.tacr.elza.controller.vo.ParEventEditVO;
 import cz.tacr.elza.controller.vo.ParPartyEditVO;
+import cz.tacr.elza.controller.vo.ParPartyGroupEditVO;
 import cz.tacr.elza.controller.vo.ParPartyNameEditVO;
+import cz.tacr.elza.controller.vo.ParPersonEditVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
+import cz.tacr.elza.domain.ParDynasty;
+import cz.tacr.elza.domain.ParEvent;
 import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyGroup;
 import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPerson;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegVariantRecord;
 import ma.glasnost.orika.MapperFacade;
@@ -41,6 +49,19 @@ public class ClientFactoryDO {
         }
 
         MapperFacade mapper = mapperFactory.getMapperFacade();
+
+        if (partyVO instanceof ParDynastyEditVO) {
+            return mapper.map(partyVO, ParDynasty.class);
+        }
+        if (partyVO instanceof ParPersonEditVO) {
+            return mapper.map(partyVO, ParPerson.class);
+        }
+        if (partyVO instanceof ParEventEditVO) {
+            return mapper.map(partyVO, ParEvent.class);
+        }
+        if (partyVO instanceof ParPartyGroupEditVO) {
+            return mapper.map(partyVO, ParPartyGroup.class);
+        }
 
         return mapper.map(partyVO, ParParty.class);
     }

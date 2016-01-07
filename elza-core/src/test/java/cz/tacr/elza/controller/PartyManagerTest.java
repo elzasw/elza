@@ -285,6 +285,7 @@ public class PartyManagerTest extends AbstractRestTest {
         ParDynastyEditVO parPartyVO = new ParDynastyEditVO();
         parPartyVO.setPartyTypeId(partyType.getPartyTypeId());
         parPartyVO.setPartyNames(Arrays.asList(partyNameVO));
+        parPartyVO.setGenealogy("GENEALOGY");
 
         Response response = put(spec -> spec.body(parPartyVO), INSERT_PARTY_V2);
     }
