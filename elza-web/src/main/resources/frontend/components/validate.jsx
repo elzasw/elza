@@ -11,6 +11,11 @@
 **/
 
 /**
+ * Ajax je pro validaci datace
+**/
+import {AjaxUtils} from 'components';
+
+/**
  * Validace zda je číslo celým číslem kladným i záporným  v intervalu clého čísla JAVA
  * @param cislo int
 **/
@@ -39,15 +44,16 @@ var validateDouble = function (desetineCislo)
 /**
  * Validace zda je datace ve správném formátu
  * @param datace
+ * volání funkce: validateDate('19.st.', function (message){console.log(message); });
 **/
-var validateDate = function (datace)
-{
-/**
- *  TODO: - Tomáš Kubový připraví java api
- *  if (webApiVratiChybu.chyba)
- *      return webApiVratiChybu.chyba; // očekává se String
-**/
-    return null;
+var validateDate = function (datace, callback = function (){}) {
+    AjaxUtils.ajaxGet('/api/validate/unitDate', {value: datace})
+            .then(json=>{
+                var message = null;
+                if (json['valid'] == false)
+                    message = json['message'];
+                callback(message);
+            });
 }
 
 /**
