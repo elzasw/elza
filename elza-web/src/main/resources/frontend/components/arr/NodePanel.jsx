@@ -95,24 +95,28 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 
 
     render() {
-        var isLoading = false;
-        isLoading |= this.props.node.nodeInfo.isFetching || !this.props.node.nodeInfo.fetched;
-        isLoading |= this.props.node.nodeForm.isFetching || !this.props.node.nodeForm.fetched;
-//console.log("NODE_PANEL", this.props, this.props.node, 'isLoading', isLoading);
-
-        if (isLoading) {
+        if (this.props.node.nodeInfo.isFetching || !this.props.node.nodeInfo.fetched) {
             return <Loading/>
         }
 
         var parents = this.renderParents(this.getParentNodes());
         var children = this.renderChildren(this.getChildNodes());
         var siblings = this.getSiblingNodes().map(s => <span key={s.id}> {s.id}</span>);
+        var content;
+        if (this.props.node.nodeForm.isFetching || !this.props.node.nodeForm.fetched) {
+            content = <div className='content'><Loading/></div>
+        } else {
+            content = (
+                <div className='content'>
+                    <Accordion closeItem={this.handleCloseItem} openItem={this.handleOpenItem} selectedId={this.props.node.selectedSubNodeId} items={this.getSiblingNodes()} />
+                </div>
+            )
+        }
 
         return (
             <div className='node-panel-container'>
-                <div className='actions'>NODE [{this.props.node.id}] actions.......SUB NODE: {this.props.node.selectedSubNodeId}</div>
                 {parents}
-                <Accordion closeItem={this.handleCloseItem} openItem={this.handleOpenItem} selectedId={this.props.node.selectedSubNodeId} items={this.getSiblingNodes()} />
+                {content}
                 {children}
             </div>
         );

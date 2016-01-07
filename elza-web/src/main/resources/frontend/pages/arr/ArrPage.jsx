@@ -54,12 +54,12 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         }
 
         var altSection = [];
+        altSection.push(
+            <RibbonGroup className="small">
+                <Button onClick={this.handleAddFa}><Glyphicon glyph="plus" /><div><span className="btnText">{i18n('ribbon.action.arr.fa.add')}</span></div></Button>
+            </RibbonGroup>
+        );
         if (activeFa) {
-            altSection.push(
-                <RibbonGroup className="small">
-                    <Button onClick={this.handleAddFa}><Glyphicon glyph="plus" /><div><span className="btnText">{i18n('ribbon.action.arr.fa.add')}</span></div></Button>
-                </RibbonGroup>
-            );
         }
 
         return (

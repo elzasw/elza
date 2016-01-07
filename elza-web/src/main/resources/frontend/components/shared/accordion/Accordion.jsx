@@ -1,3 +1,5 @@
+require ('./Accordion.less')
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {AbstractReactComponent} from 'components';
@@ -33,41 +35,48 @@ var Accordion = class AccordionWrapper extends AbstractReactComponent {
     }
 
     renderItem(item) {
-
         var selectedNodeId = this.props.selectedId;
         var open = item.id == selectedNodeId;
+
         var result;
-
-
         if (open) {
             result = (
-                    <div style={{border: '1px solid black', height: this.state.itemOpenHeight}} key={item.id} >
-                        <div style={{height: this.state.itemCloseHeight}} onClick={this.props.closeItem.bind(this, item)}>{item.id}</div>
-                        <div style={{height: this.state.itemOpenHeight-this.state.itemCloseHeight, 'overflow-y': 'auto'}}>
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            {false && <NodeForm levelExt={this.props.nodeForm.levelExt}/>}
-                        </div>
+                <div className='accordion-item active' style={{height: this.state.itemOpenHeight}} key={item.id} >
+                    <div className='accordion-header' style={{height: this.state.itemCloseHeight}} onClick={this.props.closeItem.bind(this, item)}>
+                        <div className='accordion-header-content'>{item.id}</div>
                     </div>
-
+                    <div className='accordion-body' style={{height: this.state.itemOpenHeight-this.state.itemCloseHeight}}>
+                        <div className='accordion-body-content'>
+                            Tadaaaa<br />
+                            Tadaaaa<br />
+                            Tadaaaa<br />
+                            Tadaaaa<br />
+                            Tadaaaa<br />
+                            Tadaaaa<br />
+                            Tadaaaa<br />
+                            Tadaaaa<br />
+                            Tadaaaa<br />
+                            Tadaaaa<br />
+                            Tadaaaa<br />
+                            Tadaaaa<br />
+                            Tadaaaa<br />
+                            Tadaaaa<br />
+                            Tadaaaa<br />
+                            Tadaaaa<br />
+                            Tadaaaa<br />
+                        </div>
+                        {false && <NodeForm levelExt={this.props.nodeForm.levelExt}/>}
+                    </div>
+                </div>
             )
         } else {
-            result = <div style={{border: '1px solid black', height: this.state.itemCloseHeight}} key={item.id} onClick={this.props.openItem.bind(this, item)}>{item.id}</div>
+            result = (
+                <div className='accordion-item' style={{height: this.state.itemCloseHeight}} key={item.id}>
+                    <div className='accordion-header' style={{height: this.state.itemCloseHeight}} onClick={this.props.openItem.bind(this, item)}>
+                        <div className='accordion-header-content'>{item.id}</div>
+                    </div>
+                </div>
+            )
         }
 
         return (
@@ -107,9 +116,9 @@ var Accordion = class AccordionWrapper extends AbstractReactComponent {
         console.log(offset);
 
         return (
-                <div className="content" ref="contentContainer">
-                    {this.refs.contentContainer && <AccordionComponent container={this.refs.contentContainer} scrollTo={scrollTo} renderItem={this.renderItem} selectedId={this.props.selectedId} items={this.props.items} itemCloseHeight={this.state.itemCloseHeight} itemOpenHeight={this.state.itemOpenHeight} />}
-                </div>
+            <div className="accordion" ref="contentContainer">
+                {this.refs.contentContainer && <AccordionComponent container={this.refs.contentContainer} scrollTo={scrollTo} renderItem={this.renderItem} selectedId={this.props.selectedId} items={this.props.items} itemCloseHeight={this.state.itemCloseHeight} itemOpenHeight={this.state.itemOpenHeight} />}
+            </div>
         )
     }
 }
