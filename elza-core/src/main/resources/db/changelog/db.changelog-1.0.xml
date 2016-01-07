@@ -6,7 +6,7 @@
 
     <!--Verze 1.0 - vytvoreni schematu databaze-->
 
-    <changeSet id="1" author="bendik" >
+    <changeSet id="1" author="bendik">
 
         <createTable tableName="db_hibernate_sequences">
             <column name="sequence_name" type="varchar(255)">
@@ -40,7 +40,7 @@
             </column>
             <column name="create_date" type="timestamp"/>
             <column name="name" type="varchar(255)"/>
-            <column name="version" type="int" defaultValueNumeric="0" />
+            <column name="version" type="int" defaultValueNumeric="0"/>
         </createTable>
 
         <createTable tableName="rul_arrangement_type">
@@ -49,7 +49,10 @@
             </column>
             <column name="code" type="varchar(50)"/>
             <column name="name" type="varchar(250)"/>
-            <column name="rule_set_id" type="int" >
+            <column name="rule_set_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="package_id" type="int">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -60,6 +63,9 @@
             </column>
             <column name="code" type="varchar(50)"/>
             <column name="name" type="varchar(250)"/>
+            <column name="package_id" type="int">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
 
         <createTable tableName="arr_finding_aid_version">
@@ -71,10 +77,11 @@
             <column name="finding_aid_id" type="int"/>
             <column name="lock_change_id" type="int"/>
             <column name="rule_set_id" type="int"/>
-            <column name="version" type="int" defaultValueNumeric="0" />
+            <column name="version" type="int" defaultValueNumeric="0"/>
             <column name="root_level_id" type="int">
                 <constraints nullable="false"/>
             </column>
+            <column name="last_arr_fa_change_id" type="int"/>
         </createTable>
 
         <createTable tableName="arr_desc_item">
@@ -98,7 +105,7 @@
             <column name="position" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="version" type="int" defaultValueNumeric="0" />
+            <column name="version" type="int" defaultValueNumeric="0"/>
         </createTable>
 
         <createTable tableName="arr_data">
@@ -109,14 +116,29 @@
                 <constraints nullable="false"/>
             </column>
             <column name="desc_item_id" type="int"/>
-            <column name="version" type="int" defaultValueNumeric="0" />
+            <column name="version" type="int" defaultValueNumeric="0"/>
         </createTable>
 
         <createTable tableName="arr_data_unitdate">
             <column name="data_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="value" type="varchar(250)">
+            <column name="calendar_type_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value_from" type="char(19)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="value_from_estimated" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value_to" type="char(19)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="value_to_estimated" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="format" defaultValue="" type="varchar(50)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -157,6 +179,15 @@
             </column>
         </createTable>
 
+        <createTable tableName="arr_data_decimal">
+            <column name="data_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="value" type="decimal">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
         <createTable tableName="rul_fa_view">
             <column name="fa_view_id" type="int">
                 <constraints primaryKey="true"/>
@@ -170,7 +201,7 @@
             <column name="view_specification" type="varchar(1000)">
                 <constraints nullable="false"/>
             </column>
-            <column name="version" type="int" defaultValueNumeric="0" />
+            <column name="version" type="int" defaultValueNumeric="0"/>
         </createTable>
 
         <createTable tableName="rul_desc_item_type">
@@ -201,10 +232,11 @@
             <column name="use_specification" type="boolean">
                 <constraints nullable="false"/>
             </column>
-            <column name="view_order" type="int">
-                <constraints unique="true" uniqueConstraintName="rul_desc_item_type_view_order_key" nullable="false"/>
-            </column>
+            <column name="view_order" type="int"/>
             <column name="fa_only" type="boolean"/>
+            <column name="package_id" type="int">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
 
         <createTable tableName="rul_desc_item_spec">
@@ -229,7 +261,9 @@
             <column name="view_order" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="register_type_id" type="int"/>
+            <column name="package_id" type="int">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
 
         <createTable tableName="rul_data_type">
@@ -271,38 +305,20 @@
             </column>
         </createTable>
 
-        <createTable tableName="par_party_subtype">
-            <column name="party_subtype_id" type="int">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="party_type_id" type="int">
-                <constraints nullable="false"/>
-            </column>
-            <column name="code" type="varchar(50)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="name" type="varchar(250)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="description" type="text">
-                <constraints nullable="false"/>
-            </column>
-            <column name="originator" type="boolean">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-
         <createTable tableName="par_party">
             <column name="party_id" type="int">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="party_subtype_id" type="int">
-                <constraints nullable="false"/>
-            </column>
             <column name="record_id" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="version" type="int" defaultValueNumeric="0" />
+            <column name="version" type="int" defaultValueNumeric="0"/>
+            <column name="party_type_id" type="int">
+                <constraints nullable="true"/>
+            </column>
+            <column name="preferred_name_id" type="int">
+                <constraints nullable="true"/>
+            </column>
         </createTable>
 
         <createTable tableName="reg_external_source">
@@ -325,7 +341,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="record" type="varchar(1000)"/>
-            <column name="version" type="int" defaultValueNumeric="0" />
+            <column name="version" type="int" defaultValueNumeric="0"/>
         </createTable>
 
         <createTable tableName="reg_record">
@@ -339,15 +355,13 @@
             <column name="record" type="varchar(1000)">
                 <constraints nullable="false"/>
             </column>
-            <column name="characteristics" type="text">
-                <constraints nullable="false"/>
-            </column>
+            <column name="characteristics" type="text"/>
             <column name="comment" type="text"/>
             <column name="local" type="boolean">
                 <constraints nullable="false"/>
             </column>
             <column name="external_id" type="varchar(250)"/>
-            <column name="version" type="int" defaultValueNumeric="0" />
+            <column name="version" type="int" defaultValueNumeric="0"/>
         </createTable>
 
         <createTable tableName="reg_register_type">
@@ -359,6 +373,18 @@
             </column>
             <column name="name" type="varchar(250)">
                 <constraints nullable="false"/>
+            </column>
+            <column name="parent_register_type_id" type="int">
+                <constraints nullable="true"/>
+            </column>
+            <column name="hierarchical" type="boolean">
+                <constraints nullable="true"/>
+            </column>
+            <column name="add_record" type="boolean">
+                <constraints nullable="true"/>
+            </column>
+            <column name="party_type_id" type="int">
+                <constraints nullable="true"/>
             </column>
         </createTable>
 
@@ -391,12 +417,10 @@
         </createTable>
 
         <createTable tableName="par_party_name">
-            <column name="abstract_party_name_id" type="int">
+            <column name="party_name_id" type="int">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="party_id" type="int">
-                <constraints nullable="false"/>
-            </column>
+            <column name="party_id" type="int"/>
             <column name="main_part" type="varchar(255)"/>
             <column name="other_part" type="varchar(255)"/>
             <column name="annotation" type="text"/>
@@ -410,8 +434,9 @@
             <column name="node_id" type="int">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="version" type="int" defaultValueNumeric="0" />
-            <column name="last_update" type="timestamp" />
+            <column name="version" type="int" defaultValueNumeric="0"/>
+            <column name="last_update" type="timestamp"/>
+            <column name="uuid" defaultValue="" type="char(36)"/>
         </createTable>
 
         <createTable tableName="rul_desc_item_constraint">
@@ -426,6 +451,223 @@
             <column name="repeatable" type="boolean"/>
             <column name="regexp" type="varchar(500)"/>
             <column name="text_lenght_limit" type="int"/>
+            <column name="code" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="rul_desc_item_spec_register">
+            <column name="desc_item_spec_register_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="register_type_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="desc_item_spec_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="arr_calendar_type">
+            <column name="calendar_type_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="code" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="arr_node_register">
+            <column name="node_register_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="record_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="node_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="create_change_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="delete_change_id" type="int"/>
+        </createTable>
+
+        <createTable tableName="rul_packet_type">
+            <column name="packet_type_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="code" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="shortcut" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="arr_packet">
+            <column name="packet_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="storage_number" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="invalid_packet" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="packet_type_id" type="int">
+                <constraints nullable="true"/>
+            </column>
+            <column name="finding_aid_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="arr_data_packet_ref">
+            <column name="data_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="packet_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="arr_fa_bulk_action">
+            <column name="arr_fa_bulk_action_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="bulk_action_code" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fa_version_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fa_change_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="arr_data_null">
+            <column name="data_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="arr_node_conformity_info">
+            <column name="node_conformity_info_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="node_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fa_version_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state" type="char(3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(1000)"/>
+            <column name="date" type="timestamp"/>
+        </createTable>
+
+        <createTable tableName="arr_node_conformity_missing">
+            <column name="node_conformity_missing_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="node_conformity_info_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="desc_item_type_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="desc_item_spec_id" type="int"/>
+            <column name="description" type="varchar(1000)"/>
+        </createTable>
+
+        <createTable tableName="arr_node_conformity_errors">
+            <column name="node_conformity_errors_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="node_conformity_info_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="desc_item_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(1000)"/>
+        </createTable>
+
+        <createTable tableName="arr_fa_version_conformity_info">
+            <column name="fa_version_conformity_info_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="fa_version_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state" type="char(3)"/>
+            <column name="state_description" type="varchar(1000)"/>
+        </createTable>
+
+        <createTable tableName="rul_package">
+            <column name="package_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="varchar(50)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="description" type="text">
+                <constraints nullable="true"/>
+            </column>
+            <column name="version" type="int" />
+        </createTable>
+
+        <createTable tableName="rul_action">
+            <column name="action_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="filename" type="varchar(250)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="rul_rule">
+            <column name="rule_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="filename" type="varchar(250)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="rule_type" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="priority" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rule_set_id" type="int">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
 
         <addForeignKeyConstraint constraintName="fk_arr_level_1"
@@ -512,6 +754,12 @@
                                  referencedColumnNames="data_type_id"
                                  onDelete="NO ACTION"/>
 
+        <addForeignKeyConstraint constraintName="fk_dataDecimal_data"
+                                 baseTableName="arr_data_decimal"
+                                 baseColumnNames="data_id"
+                                 referencedTableName="arr_data"
+                                 referencedColumnNames="data_id"
+                                 onDelete="NO ACTION"/>
 
         <addForeignKeyConstraint constraintName="fk_descItem_crChange"
                                  baseTableName="arr_desc_item"
@@ -587,20 +835,6 @@
                                  baseColumnNames="desc_item_type_id"
                                  referencedTableName="rul_desc_item_type"
                                  referencedColumnNames="desc_item_type_id"
-                                 onDelete="NO ACTION"/>
-
-        <addForeignKeyConstraint constraintName="fk_parPartySubtype_parPartyType"
-                                 baseTableName="par_party_subtype"
-                                 baseColumnNames="party_type_id"
-                                 referencedTableName="par_party_type"
-                                 referencedColumnNames="party_type_id"
-                                 onDelete="NO ACTION"/>
-
-        <addForeignKeyConstraint constraintName="fk_party_parPartySubtype"
-                                 baseTableName="par_party"
-                                 baseColumnNames="party_subtype_id"
-                                 referencedTableName="par_party_subtype"
-                                 referencedColumnNames="party_subtype_id"
                                  onDelete="NO ACTION"/>
 
         <addForeignKeyConstraint constraintName="fk_party_regRecord"
@@ -680,13 +914,6 @@
                                  referencedColumnNames="data_id"
                                  onDelete="NO ACTION"/>
 
-        <addForeignKeyConstraint constraintName="fk_itmSpec_regType"
-                                 baseTableName="rul_desc_item_spec"
-                                 baseColumnNames="register_type_id"
-                                 referencedTableName="reg_register_type"
-                                 referencedColumnNames="register_type_id"
-                                 onDelete="NO ACTION"/>
-
         <addForeignKeyConstraint constraintName="fk_partyName_party"
                                  baseTableName="par_party_name"
                                  baseColumnNames="party_id"
@@ -729,18 +956,250 @@
                                  referencedColumnNames="level_id"
                                  onDelete="NO ACTION"/>
 
-        <addUniqueConstraint tableName="arr_level" columnNames="position,node_id_parent,delete_change_id" constraintName="u_arr_level_ppd"/>
+        <addForeignKeyConstraint constraintName="fk_rul_rule_set_package"
+                                 baseTableName="rul_rule_set"
+                                 baseColumnNames="package_id"
+                                 referencedTableName="rul_package"
+                                 referencedColumnNames="package_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_rul_arrangement_type_package"
+                                 baseTableName="rul_arrangement_type"
+                                 baseColumnNames="package_id"
+                                 referencedTableName="rul_package"
+                                 referencedColumnNames="package_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_rul_desc_item_type_package"
+                                 baseTableName="rul_desc_item_type"
+                                 baseColumnNames="package_id"
+                                 referencedTableName="rul_package"
+                                 referencedColumnNames="package_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_rul_desc_item_spec_package"
+                                 baseTableName="rul_desc_item_spec"
+                                 baseColumnNames="package_id"
+                                 referencedTableName="rul_package"
+                                 referencedColumnNames="package_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_rul_desc_item_constraint_package"
+                                 baseTableName="rul_desc_item_constraint"
+                                 baseColumnNames="package_id"
+                                 referencedTableName="rul_package"
+                                 referencedColumnNames="package_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_rul_action_package"
+                                 baseTableName="rul_action"
+                                 baseColumnNames="package_id"
+                                 referencedTableName="rul_package"
+                                 referencedColumnNames="package_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_rul_rule_package"
+                                 baseTableName="rul_rule"
+                                 baseColumnNames="package_id"
+                                 referencedTableName="rul_package"
+                                 referencedColumnNames="package_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_rul_rule_rule_set"
+                                 baseTableName="rul_rule"
+                                 baseColumnNames="rule_set_id"
+                                 referencedTableName="rul_rule_set"
+                                 referencedColumnNames="rule_set_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_rulDescItemSpecRegister_registerType"
+                                 baseTableName="rul_desc_item_spec_register" baseColumnNames="register_type_id"
+                                 referencedTableName="reg_register_type"
+                                 referencedColumnNames="register_type_id" onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_rulDescItemSpecRegister_descItemSpec"
+                                 baseTableName="rul_desc_item_spec_register" baseColumnNames="desc_item_spec_id"
+                                 referencedTableName="rul_desc_item_spec"
+                                 referencedColumnNames="desc_item_spec_id" onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_arrDataUnitdate_calendarType"
+                                 baseTableName="arr_data_unitdate" baseColumnNames="calendar_type_id"
+                                 referencedTableName="arr_calendar_type"
+                                 referencedColumnNames="calendar_type_id" onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_regRegisterType_parPartyType"
+                                 baseTableName="reg_register_type" baseColumnNames="party_type_id"
+                                 referencedTableName="par_party_type"
+                                 referencedColumnNames="party_type_id" onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_regRegisterType_regRegisterType"
+                                 baseTableName="reg_register_type" baseColumnNames="parent_register_type_id"
+                                 referencedTableName="reg_register_type"
+                                 referencedColumnNames="register_type_id" onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_parParty_parPartyType"
+                                 baseTableName="par_party" baseColumnNames="party_type_id"
+                                 referencedTableName="par_party_type"
+                                 referencedColumnNames="party_type_id" onDelete="NO ACTION"/>
+        <addForeignKeyConstraint constraintName="fk_parParty_parPartyName"
+                                 baseTableName="par_party" baseColumnNames="preferred_name_id"
+                                 referencedTableName="par_party_name"
+                                 referencedColumnNames="party_name_id" onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_nodeRegister_record"
+                                 baseTableName="arr_node_register"
+                                 baseColumnNames="record_id"
+                                 referencedTableName="reg_record"
+                                 referencedColumnNames="record_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_nodeRegister_node"
+                                 baseTableName="arr_node_register"
+                                 baseColumnNames="node_id"
+                                 referencedTableName="arr_node"
+                                 referencedColumnNames="node_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_nodeRegister_crChange"
+                                 baseTableName="arr_node_register"
+                                 baseColumnNames="create_change_id"
+                                 referencedTableName="arr_change"
+                                 referencedColumnNames="change_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_nodeRegister_delChange"
+                                 baseTableName="arr_node_register"
+                                 baseColumnNames="delete_change_id"
+                                 referencedTableName="arr_change"
+                                 referencedColumnNames="change_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_packet_packetType"
+                                 baseTableName="arr_packet"
+                                 baseColumnNames="packet_type_id"
+                                 referencedTableName="rul_packet_type"
+                                 referencedColumnNames="packet_type_id"
+                                 onDelete="NO ACTION"/>
+        <addForeignKeyConstraint constraintName="fk_packet_findingAid"
+                                 baseTableName="arr_packet"
+                                 baseColumnNames="finding_aid_id"
+                                 referencedTableName="arr_finding_aid"
+                                 referencedColumnNames="finding_aid_id"
+                                 onDelete="NO ACTION"/>
+        <addForeignKeyConstraint constraintName="fk_packetRef_data"
+                                 baseTableName="arr_data_packet_ref"
+                                 baseColumnNames="data_id"
+                                 referencedTableName="arr_data"
+                                 referencedColumnNames="data_id"
+                                 onDelete="NO ACTION"/>
+        <addForeignKeyConstraint constraintName="fk_packetRef_packet"
+                                 baseTableName="arr_data_packet_ref"
+                                 baseColumnNames="packet_id"
+                                 referencedTableName="arr_packet"
+                                 referencedColumnNames="packet_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_arrFaVersionConfInfo_faVersion"
+                                 baseTableName="arr_fa_version_conformity_info" baseColumnNames="fa_version_id"
+                                 referencedTableName="arr_finding_aid_version"
+                                 referencedColumnNames="finding_aid_version_id" onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_arrFaBulkAction_faVersion"
+                                 baseTableName="arr_fa_bulk_action" baseColumnNames="fa_version_id"
+                                 referencedTableName="arr_finding_aid_version"
+                                 referencedColumnNames="finding_aid_version_id" onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_arrFaBulkAction_faChange"
+                                 baseTableName="arr_fa_bulk_action" baseColumnNames="fa_change_id"
+                                 referencedTableName="arr_change"
+                                 referencedColumnNames="change_id" onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_dataNull_data"
+                                 baseTableName="arr_data_null"
+                                 baseColumnNames="data_id"
+                                 referencedTableName="arr_data"
+                                 referencedColumnNames="data_id"
+                                 onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_arrNodeConfInfo_faNode"
+                                 baseTableName="arr_node_conformity_info" baseColumnNames="node_id"
+                                 referencedTableName="arr_node"
+                                 referencedColumnNames="node_id" onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_arrNodeConfInfo_faVersion"
+                                 baseTableName="arr_node_conformity_info" baseColumnNames="fa_version_id"
+                                 referencedTableName="arr_finding_aid_version"
+                                 referencedColumnNames="finding_aid_version_id" onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_arrNodeConfMiss_nodConfInf"
+                                 baseTableName="arr_node_conformity_missing" baseColumnNames="node_conformity_info_id"
+                                 referencedTableName="arr_node_conformity_info"
+                                 referencedColumnNames="node_conformity_info_id" onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_arrNodeConfMiss_descItmTyp"
+                                 baseTableName="arr_node_conformity_missing" baseColumnNames="desc_item_type_id"
+                                 referencedTableName="rul_desc_item_type"
+                                 referencedColumnNames="desc_item_type_id" onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_arrNodeConfMiss_descItmSpc"
+                                 baseTableName="arr_node_conformity_missing" baseColumnNames="desc_item_spec_id"
+                                 referencedTableName="rul_desc_item_spec"
+                                 referencedColumnNames="desc_item_spec_id" onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_arrNodeConfErr_nodConfInf"
+                                 baseTableName="arr_node_conformity_errors" baseColumnNames="node_conformity_info_id"
+                                 referencedTableName="arr_node_conformity_info"
+                                 referencedColumnNames="node_conformity_info_id" onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_arrNodeConfErr_descItem"
+                                 baseTableName="arr_node_conformity_errors" baseColumnNames="desc_item_id"
+                                 referencedTableName="arr_desc_item"
+                                 referencedColumnNames="desc_item_id" onDelete="NO ACTION"/>
+
+        <addForeignKeyConstraint constraintName="fk_rul_packet_type_package"
+                                 baseTableName="rul_packet_type"
+                                 baseColumnNames="package_id"
+                                 referencedTableName="rul_package"
+                                 referencedColumnNames="package_id"
+                                 onDelete="NO ACTION"/>
+
+        <addUniqueConstraint tableName="arr_level" columnNames="position,node_id_parent,delete_change_id"
+                             constraintName="u_arr_level_ppd"/>
+
+        <addUniqueConstraint columnNames="view_order"
+                             constraintName="rul_desc_item_type_view_order_key"
+                             tableName="rul_desc_item_type"/>
+
+        <addUniqueConstraint tableName="rul_packet_type" columnNames="code" constraintName="u_rul_packet_type_code"/>
+
+        <addUniqueConstraint columnNames="uuid" tableName="arr_node"/>
+
+        <addUniqueConstraint tableName="arr_packet" columnNames="finding_aid_id, storage_number" />
+
+        <addNotNullConstraint columnName="fa_only"
+                              defaultNullValue="false"
+                              tableName="rul_desc_item_type"/>
+
+        <addNotNullConstraint columnDataType="int"
+                              columnName="party_type_id"
+                              tableName="par_party"/>
+
+        <addNotNullConstraint tableName="arr_node" columnName="uuid"/>
+
+        <addNotNullConstraint columnDataType="int"
+                              columnName="last_arr_fa_change_id"
+                              tableName="arr_finding_aid_version"/>
 
         <createIndex tableName="arr_level" indexName="i_node_id_1">
-            <column name="node_id" />
-            <column name="delete_change_id" />
-            <column name="create_change_id" />
+            <column name="node_id"/>
+            <column name="delete_change_id"/>
+            <column name="create_change_id"/>
         </createIndex>
 
         <createIndex tableName="arr_level" indexName="i_node_id_parent_1">
-            <column name="node_id_parent" />
-            <column name="delete_change_id" />
-            <column name="create_change_id" />
+            <column name="node_id_parent"/>
+            <column name="delete_change_id"/>
+            <column name="create_change_id"/>
         </createIndex>
 
     </changeSet>
