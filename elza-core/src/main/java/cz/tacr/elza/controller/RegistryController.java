@@ -130,6 +130,8 @@ public class RegistryController {
         RegRecordVO result = factoryVo.createRegRecord(record, recordParty == null ? null : recordParty.getPartyId());
         result.setChilds(factoryVo.createRegRecords(childs, recordPartyMap));
 
+        result.setVariantRecords(factoryVo.createRegVariantRecords(record.getVariantRecordList()));
+
         return result;
     }
 
