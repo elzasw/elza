@@ -7,7 +7,7 @@
         <rule-type>NEW_LEVEL</rule-type>
         <priority>1</priority>
     </package-rule>
-    <package-rule filename="ZP_states.drl" rule-set="ZP2015">
+    <package-rule filename="ZP2015_ChangeImpact.drl" rule-set="ZP2015">
         <rule-type>CONFORMITY_IMPACT</rule-type>
         <priority>1</priority>
     </package-rule>
