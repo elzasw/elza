@@ -1140,13 +1140,6 @@
                                  referencedColumnNames="data_id"
                                  onDelete="NO ACTION"/>
 
-        <addForeignKeyConstraint constraintName="fk_partyName_party"
-                                 baseTableName="par_party_name"
-                                 baseColumnNames="party_id"
-                                 referencedTableName="par_party"
-                                 referencedColumnNames="party_id"
-                                 onDelete="NO ACTION"/>
-
         <addForeignKeyConstraint constraintName="fk_rulSet_arrType"
                                  baseTableName="rul_arrangement_type"
                                  baseColumnNames="rule_set_id"
