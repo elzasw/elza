@@ -1,11 +1,16 @@
 package cz.tacr.elza.controller.vo;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import java.util.List;
 
 
 /**
  * Osoba pro operace insert.
  */
+@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include= JsonTypeInfo.As.PROPERTY)
+@JsonSubTypes(@JsonSubTypes.Type(value = ParDynastyVOInsert.class, name = "ParDynastyVOInsert"))
 public class ParPartyVOInsert {
 
     /**

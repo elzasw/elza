@@ -3,6 +3,7 @@ package cz.tacr.elza.controller;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ParComplementTypeVO;
+import cz.tacr.elza.controller.vo.ParDynastyVOInsert;
 import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyNameVOSave;
 import cz.tacr.elza.controller.vo.ParPartyTypeVO;
@@ -246,7 +247,7 @@ public class PartyController {
 
     @RequestMapping(value = "/insertParty", method = RequestMethod.PUT)
     @Transactional
-    public ParParty insertParty(@RequestBody final ParPartyVOInsert partyVO) {
+    public ParPartyVO insertParty(@RequestBody final ParPartyVOInsert partyVO) {
         if (partyVO == null) {
             return null;
         }
@@ -262,6 +263,13 @@ public class PartyController {
             throw new IllegalArgumentException("Nenalezen typ osoby s id: " + partyVO.getPartyTypeId());
         }
 
+        // object type dle party type ?
+        if (partyVO instanceof ParDynastyVOInsert
+                && !ParPartyType.PartyTypeEnum.DYNASTY.equals(partyType.getPartyTypeEnum())) {
+
+            throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
+        }
+
         List<RegRegisterType> regRegisterTypes = registerTypeRepository.findRegisterTypeByPartyType(partyType);
         if (CollectionUtils.isEmpty(regRegisterTypes)) {
             throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
@@ -269,7 +277,7 @@ public class PartyController {
         RegRegisterType registerType = regRegisterTypes.get(0);
 
         boolean isPreferred = false;
-        for (ParPartyNameVOSave partyName : partyVO.getPartyNames()) {
+        for (final ParPartyNameVOSave partyName : partyVO.getPartyNames()) {
             if (partyName.isPreferredName()) {
                 isPreferred = true;
             }
@@ -310,7 +318,8 @@ public class PartyController {
         party.setPreferredName(preferredName);
         partyRepository.save(party);
 
-        //TODO kuzel party na VOdetail a vratit
+//        List<ParPartyVO> partyList = factoryVo.createPartyList(Arrays.asList(party));
+//        return partyList.get(0);
         return null;
     }
 
