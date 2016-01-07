@@ -1,6 +1,5 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ParComplementTypeVO;
 import cz.tacr.elza.controller.vo.ParDynastyEditVO;
@@ -15,41 +14,29 @@ import cz.tacr.elza.controller.vo.ParPartyWithCount;
 import cz.tacr.elza.controller.vo.ParPersonEditVO;
 import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationTypeVO;
-import cz.tacr.elza.controller.vo.ParUnitdateEditVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
-import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.domain.ParPartyTimeRange;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParPartyTypeComplementType;
 import cz.tacr.elza.domain.ParPartyTypeRelation;
 import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParRelationTypeRoleType;
-import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
-import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.PartyTimeRangeRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRelationRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
-import cz.tacr.elza.repository.UnitdateRepository;
-import cz.tacr.elza.repository.VariantRecordRepository;
+import cz.tacr.elza.service.PartyService;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -79,9 +66,6 @@ public class PartyController {
 
     @Autowired
     private ClientFactoryVO factoryVo;
-
-    @Autowired
-    private ClientFactoryDO factoryDO;
 
     @Autowired
     private PartyTypeRepository partyTypeRepository;
@@ -114,22 +98,8 @@ public class PartyController {
     private PartyRepository partyRepository;
 
     @Autowired
-    private PartyNameRepository partyNameRepository;
+    private PartyService partyService;
 
-    @Autowired
-    private UnitdateRepository unitdateRepository;
-
-    @Autowired
-    private RegRecordRepository recordRepository;
-
-    @Autowired
-    private VariantRecordRepository variantRecordRepository;
-
-    @Autowired
-    private PartyTimeRangeRepository partyTimeRangeRepository;
-
-    @Autowired
-    private CalendarTypeRepository calendarTypeRepository;
 
 
     @RequestMapping(value = "/getParty", method = RequestMethod.GET)
@@ -267,10 +237,22 @@ public class PartyController {
             return null;
         }
 
-        // TODO kuzel check na min. vyplneni entit
+        //CHECK
+        chekParty(partyVO);
 
+        //TYPES
+        ParPartyType partyType = partyTypeRepository.getOne(partyVO.getPartyTypeId());
+        // hledám typ rejstříku, který má přiřazen zde použitý typ osoby
+        RegRegisterType registerType = registerTypeRepository.findRegisterTypeByPartyType(partyType).get(0);
 
-        //CHECK & types
+        //PARTY
+        ParParty party = partyService.createParty(partyVO, partyType, registerType);
+
+        List<ParPartyVO> partyList = factoryVo.createPartyList(Arrays.asList(party));
+        return partyList.get(0);
+    }
+
+    private void chekParty(final ParPartyEditVO partyVO) {
         ParPartyType partyType;
         if (partyVO.getPartyTypeId() != null) {
             partyType = partyTypeRepository.getOne(partyVO.getPartyTypeId());
@@ -304,7 +286,6 @@ public class PartyController {
         if (CollectionUtils.isEmpty(regRegisterTypes)) {
             throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
         }
-        RegRegisterType registerType = regRegisterTypes.get(0);
 
         boolean isPreferred = false;
         for (final ParPartyNameEditVO partyName : partyVO.getPartyNames()) {
@@ -316,111 +297,6 @@ public class PartyController {
             throw new IllegalArgumentException("Není přítomno žádné preferované jméno osoby.");
         }
         // end CHECK
-
-        ParParty party = factoryDO.createParty(partyVO);
-        party.setPartyType(partyType);
-
-        // Record
-        // hledám typ rejstříku, který má přiřazen zde použitý typ osoby
-        RegRecord regRecord = genRegRecordsFromPartyNames(partyVO.getPartyNames(), registerType);
-        party.setRecord(regRecord);
-
-        // Party
-        partyRepository.save(party);
-
-        // Names
-        ParPartyName preferredName = null;
-        for (final ParPartyNameEditVO partyNameVO : partyVO.getPartyNames()) {
-            ParPartyNameFormType nameFormType = partyNameFormTypeRepository.getOne(partyNameVO.getNameFormTypeId());
-
-            ParPartyName partyName = factoryDO.createParPartyName(partyNameVO);
-            partyName.setNameFormType(nameFormType);
-            partyName.setParty(party);
-
-            partyNameRepository.save(partyName);
-
-            if (partyNameVO.isPreferredName()) {
-                preferredName = partyName;
-            }
-        }
-
-        // TimeRanges
-        if (CollectionUtils.isNotEmpty(partyVO.getTimeRanges())) {
-            partyVO.getTimeRanges().forEach(tr -> {
-                ParPartyTimeRange partyTimeRange = factoryDO.createParPartyTimeRange(tr);
-
-                // unitdates
-                ParUnitdateEditVO fromVO = tr.getFrom();
-                if (fromVO != null) {
-                    ArrCalendarType calendarType = findCalendarType(fromVO);
-
-                    partyTimeRange.getFrom().setCalendarType(calendarType);
-                    unitdateRepository.save(partyTimeRange.getFrom());
-                }
-                ParUnitdateEditVO toVO = tr.getTo();
-                if (toVO != null) {
-                    ArrCalendarType calendarType = findCalendarType(toVO);
-
-                    partyTimeRange.getTo().setCalendarType(calendarType);
-                    unitdateRepository.save(partyTimeRange.getTo());
-                }
-
-                partyTimeRange.setParty(party);
-                partyTimeRangeRepository.save(partyTimeRange);
-            });
-        }
-
-        Assert.notNull(preferredName);
-        party.setPreferredName(preferredName);
-        partyRepository.save(party);
-
-        List<ParPartyVO> partyList = factoryVo.createPartyList(Arrays.asList(party));
-        return partyList.get(0);
     }
 
-    private ArrCalendarType findCalendarType(final ParUnitdateEditVO fromVO) {
-        Integer calendarTypeId = fromVO.getCalendarTypeId();
-        if (calendarTypeId != null) {
-            return calendarTypeRepository.findOne(calendarTypeId);
-        }
-
-        return null;
-    }
-
-    /**
-     * Nageneruje rejstříkové heslo dle preferovaného jména osoby. Ostatní jména jako variantní hesla k tomuto.
-     * @param partyNamesVO    jména osob
-     * @param registerType    typ rejstříku
-     * @return      rejstříkoví heslo s variantními hesly daného typu
-     */
-    private RegRecord genRegRecordsFromPartyNames(final List<ParPartyNameEditVO> partyNamesVO, final RegRegisterType registerType) {
-        if (partyNamesVO == null) {
-            return null;
-        }
-
-        RegRecord result = null;
-        for (final ParPartyNameEditVO pn : partyNamesVO) {
-            if (pn.isPreferredName()) {
-                RegRecord regRecord = new RegRecord();
-                regRecord.setRegisterType(registerType);
-                regRecord.setRecord(pn.getMainPart() + StringUtils.defaultString(pn.getOtherPart()));
-                regRecord.setLocal(true);
-
-                recordRepository.save(regRecord);
-                result = regRecord;
-            }
-        }
-
-        for (final ParPartyNameEditVO pn : partyNamesVO) {
-            if (!pn.isPreferredName()) {
-                RegVariantRecord regVariantRecord = new RegVariantRecord();
-                regVariantRecord.setRegRecord(result);
-                regVariantRecord.setRecord(pn.getMainPart() + StringUtils.defaultString(pn.getOtherPart()));
-
-                variantRecordRepository.save(regVariantRecord);
-            }
-        }
-
-        return result;
-    }
 }
