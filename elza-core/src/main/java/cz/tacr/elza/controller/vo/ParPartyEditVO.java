@@ -3,6 +3,7 @@ package cz.tacr.elza.controller.vo;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import java.util.LinkedList;
 import java.util.List;
 
 
@@ -10,8 +11,8 @@ import java.util.List;
  * Osoba pro operace insert.
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include= JsonTypeInfo.As.PROPERTY)
-@JsonSubTypes(@JsonSubTypes.Type(value = ParDynastyVOInsert.class, name = "ParDynastyVOInsert"))
-public class ParPartyVOInsert {
+@JsonSubTypes(@JsonSubTypes.Type(value = ParDynastyEditVO.class, name = "ParDynastyVOInsert"))
+public class ParPartyEditVO {
 
     /**
      * Id osoby.
@@ -35,7 +36,12 @@ public class ParPartyVOInsert {
     /**
      * Seznam jmen osoby.
      */
-    private List<ParPartyNameVOSave> partyNames;
+    private List<ParPartyNameEditVO> partyNames;
+
+    /**
+     * Seznam působností osoby.
+     */
+    private List<ParPartyTimeRangeVO> timeRanges;
 
 
     public Integer getPartyId() {
@@ -62,11 +68,11 @@ public class ParPartyVOInsert {
         this.sourceInformation = sourceInformation;
     }
 
-    public List<ParPartyNameVOSave> getPartyNames() {
+    public List<ParPartyNameEditVO> getPartyNames() {
         return partyNames;
     }
 
-    public void setPartyNames(final List<ParPartyNameVOSave> partyNames) {
+    public void setPartyNames(final List<ParPartyNameEditVO> partyNames) {
         this.partyNames = partyNames;
     }
 
@@ -74,8 +80,24 @@ public class ParPartyVOInsert {
         return partyTypeId;
     }
 
-    public void setPartyTypeId(Integer partyTypeId) {
+    public void setPartyTypeId(final Integer partyTypeId) {
         this.partyTypeId = partyTypeId;
     }
+
+    public List<ParPartyTimeRangeVO> getTimeRanges() {
+        return timeRanges;
+    }
+
+    public void setTimeRanges(final List<ParPartyTimeRangeVO> timeRanges) {
+        this.timeRanges = timeRanges;
+    }
+
+    public void addPartyTimeRange(final ParPartyTimeRangeVO partyTimeRange) {
+        if (timeRanges == null) {
+            timeRanges = new LinkedList<>();
+        }
+        timeRanges.add(partyTimeRange);
+    }
+
 }
 

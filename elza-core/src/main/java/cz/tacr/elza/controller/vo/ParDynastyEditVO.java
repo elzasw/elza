@@ -6,7 +6,7 @@ package cz.tacr.elza.controller.vo;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 23.12.2015
  */
-public class ParDynastyVOInsert extends ParPartyVOInsert {
+public class ParDynastyEditVO extends ParPartyEditVO {
 
     private String genealogy;
 

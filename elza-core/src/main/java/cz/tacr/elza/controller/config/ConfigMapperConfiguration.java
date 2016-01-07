@@ -1,21 +1,18 @@
 package cz.tacr.elza.controller.config;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ParComplementTypeVO;
 import cz.tacr.elza.controller.vo.ParDynastyVO;
+import cz.tacr.elza.controller.vo.ParPartyEditVO;
 import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
 import cz.tacr.elza.controller.vo.ParPartyGroupVO;
 import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
+import cz.tacr.elza.controller.vo.ParPartyNameEditVO;
 import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyNameVO;
-import cz.tacr.elza.controller.vo.ParPartyNameVOSave;
 import cz.tacr.elza.controller.vo.ParPartyTimeRangeVO;
 import cz.tacr.elza.controller.vo.ParPartyTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParPartyVOInsert;
 import cz.tacr.elza.controller.vo.ParPersonVO;
 import cz.tacr.elza.controller.vo.ParRelationEntityVO;
 import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
@@ -51,6 +48,8 @@ import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 
 /**
@@ -84,8 +83,8 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ParComplementType.class, ParComplementTypeVO.class).byDefault().register();
         mapperFactory.classMap(ParDynasty.class, ParDynastyVO.class).byDefault().register();
         mapperFactory.classMap(ParParty.class, ParPartyVO.class).exclude("preferredName").byDefault().register();
-        mapperFactory.classMap(ParPartyVOInsert.class, ParParty.class).byDefault().register();
-        mapperFactory.classMap(ParPartyNameVOSave.class, ParPartyName.class).byDefault().register();
+        mapperFactory.classMap(ParPartyEditVO.class, ParParty.class).byDefault().register();
+        mapperFactory.classMap(ParPartyNameEditVO.class, ParPartyName.class).byDefault().register();
         mapperFactory.classMap(ParPartyGroup.class, ParPartyGroupVO.class).byDefault().register();
         mapperFactory.classMap(ParPartyGroupIdentifier.class, ParPartyGroupIdentifierVO.class).customize(
                 new CustomMapper<ParPartyGroupIdentifier, ParPartyGroupIdentifierVO>() {

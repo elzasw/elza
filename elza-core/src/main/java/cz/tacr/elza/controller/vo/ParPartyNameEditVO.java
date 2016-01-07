@@ -3,7 +3,7 @@ package cz.tacr.elza.controller.vo;
 /**
  * Jméno abstraktní osoby pro insert či update.
  */
-public class ParPartyNameVOSave {
+public class ParPartyNameEditVO {
 
     /**
      * Vlastní ID.

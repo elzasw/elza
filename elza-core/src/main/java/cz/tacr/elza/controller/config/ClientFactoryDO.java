@@ -1,11 +1,7 @@
 package cz.tacr.elza.controller.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-
-import cz.tacr.elza.controller.vo.ParPartyNameVOSave;
-import cz.tacr.elza.controller.vo.ParPartyVOInsert;
+import cz.tacr.elza.controller.vo.ParPartyEditVO;
+import cz.tacr.elza.controller.vo.ParPartyNameEditVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.domain.ParParty;
@@ -14,6 +10,9 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegVariantRecord;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
 
 
 /**
@@ -36,7 +35,7 @@ public class ClientFactoryDO {
      * @param partyVO VO osoby
      * @return objekt osoby
      */
-    public ParParty createParty(final ParPartyVOInsert partyVO) {
+    public ParParty createParty(final ParPartyEditVO partyVO) {
         if (partyVO == null) {
             return null;
         }
@@ -52,7 +51,7 @@ public class ClientFactoryDO {
      * @param partyNameVOSave jméno osoby VO
      * @return vo jména osoba
      */
-    public ParPartyName createParPartyName(final ParPartyNameVOSave partyNameVOSave) {
+    public ParPartyName createParPartyName(final ParPartyNameEditVO partyNameVOSave) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(partyNameVOSave, ParPartyName.class);
     }

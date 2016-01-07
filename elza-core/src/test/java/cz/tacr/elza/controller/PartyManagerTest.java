@@ -3,8 +3,8 @@ package cz.tacr.elza.controller;
 import com.jayway.restassured.response.Response;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.ParDynastyVOInsert;
-import cz.tacr.elza.controller.vo.ParPartyNameVOSave;
+import cz.tacr.elza.controller.vo.ParDynastyEditVO;
+import cz.tacr.elza.controller.vo.ParPartyNameEditVO;
 import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.ParPartyType;
 import ma.glasnost.orika.MapperFacade;
@@ -273,7 +273,7 @@ public class PartyManagerTest extends AbstractRestTest {
 
         ParPartyNameFormType nameFormType = createNameFormType();
 
-        ParPartyNameVOSave partyNameVO = new ParPartyNameVOSave();
+        ParPartyNameEditVO partyNameVO = new ParPartyNameEditVO();
         partyNameVO.setMainPart("MAIN_PART" + ElzaTools.getStringOfActualDate());
         partyNameVO.setNameFormTypeId(nameFormType.getNameFormTypeId());
         partyNameVO.setPreferredName(true);
@@ -282,7 +282,7 @@ public class PartyManagerTest extends AbstractRestTest {
 //        RegRecordVO recordVO = createRecordVO("RECORD" + ElzaTools.getStringOfActualDate(), partyType);
         createRegisterType(TEST_CODE + ElzaTools.getStringOfActualDate(), partyType);
 
-        ParDynastyVOInsert parPartyVO = new ParDynastyVOInsert();
+        ParDynastyEditVO parPartyVO = new ParDynastyEditVO();
         parPartyVO.setPartyTypeId(partyType.getPartyTypeId());
         parPartyVO.setPartyNames(Arrays.asList(partyNameVO));
 
