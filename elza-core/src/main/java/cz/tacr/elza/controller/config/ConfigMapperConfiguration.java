@@ -1,16 +1,5 @@
 package cz.tacr.elza.controller.config;
 
-import java.time.LocalDateTime;
-
-import ma.glasnost.orika.CustomMapper;
-import ma.glasnost.orika.MapperFactory;
-import ma.glasnost.orika.MappingContext;
-import ma.glasnost.orika.converter.builtin.PassThroughConverter;
-import ma.glasnost.orika.impl.DefaultMapperFactory;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
@@ -26,6 +15,7 @@ import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
 import cz.tacr.elza.controller.vo.ParPartyNameEditVO;
 import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyNameVO;
+import cz.tacr.elza.controller.vo.ParPartyTimeRangeEditVO;
 import cz.tacr.elza.controller.vo.ParPartyTimeRangeVO;
 import cz.tacr.elza.controller.vo.ParPartyTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
@@ -35,13 +25,14 @@ import cz.tacr.elza.controller.vo.ParRelationEntityVO;
 import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.ParUnitdateEditVO;
 import cz.tacr.elza.controller.vo.ParUnitdateVO;
 import cz.tacr.elza.controller.vo.RegExternalSourceVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.controller.vo.RulArrangementTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
@@ -65,15 +56,18 @@ import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RegExternalSource;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.RegVariantRecord;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
+import ma.glasnost.orika.converter.builtin.PassThroughConverter;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.time.LocalDateTime;
 
 
 /**
@@ -113,6 +107,9 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ParPersonEditVO.class, ParPerson.class).byDefault().register();
         mapperFactory.classMap(ParEventEditVO.class, ParEvent.class).byDefault().register();
         mapperFactory.classMap(ParPartyGroupEditVO.class, ParPartyGroup.class).byDefault().register();
+
+        mapperFactory.classMap(ParPartyTimeRangeEditVO.class, ParPartyTimeRange.class).byDefault().register();
+        mapperFactory.classMap(ParUnitdateEditVO.class, ParUnitdate.class).byDefault().register();
 
         mapperFactory.classMap(ParPartyNameEditVO.class, ParPartyName.class).byDefault().register();
         mapperFactory.classMap(ParPartyGroup.class, ParPartyGroupVO.class).byDefault().register();

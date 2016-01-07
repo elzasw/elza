@@ -45,7 +45,7 @@ public class ParPartyEditVO {
     /**
      * Seznam působností osoby.
      */
-    private List<ParPartyTimeRangeVO> timeRanges;
+    private List<ParPartyTimeRangeEditVO> timeRanges;
 
 
     public Integer getPartyId() {
@@ -88,15 +88,15 @@ public class ParPartyEditVO {
         this.partyTypeId = partyTypeId;
     }
 
-    public List<ParPartyTimeRangeVO> getTimeRanges() {
+    public List<ParPartyTimeRangeEditVO> getTimeRanges() {
         return timeRanges;
     }
 
-    public void setTimeRanges(final List<ParPartyTimeRangeVO> timeRanges) {
+    public void setTimeRanges(final List<ParPartyTimeRangeEditVO> timeRanges) {
         this.timeRanges = timeRanges;
     }
 
-    public void addPartyTimeRange(final ParPartyTimeRangeVO partyTimeRange) {
+    public void addPartyTimeRange(final ParPartyTimeRangeEditVO partyTimeRange) {
         if (timeRanges == null) {
             timeRanges = new LinkedList<>();
         }

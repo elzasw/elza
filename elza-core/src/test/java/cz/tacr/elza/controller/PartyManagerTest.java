@@ -5,9 +5,11 @@ import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ParDynastyEditVO;
 import cz.tacr.elza.controller.vo.ParPartyNameEditVO;
+import cz.tacr.elza.controller.vo.ParPartyTimeRangeEditVO;
+import cz.tacr.elza.controller.vo.ParUnitdateEditVO;
+import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.ParPartyType;
-import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -265,26 +267,33 @@ public class PartyManagerTest extends AbstractRestTest {
     @Test
     public void testRestInsertPartyV2() {
         final ParPartyType partyType = findPartyType();
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-//        ParPartyTypeVO partyTypeVO = mapper.map(partyType, ParPartyTypeVO.class);
-
-//        ParPartyNameFormTypeVO partyNameFormTypeVO = new ParPartyNameFormTypeVO();
-//        partyNameFormTypeVO.setCode("CODE" + ElzaTools.getStringOfActualDate());
 
         ParPartyNameFormType nameFormType = createNameFormType();
+        ArrCalendarType calendarType = createCalendarType();
 
+        // names
         ParPartyNameEditVO partyNameVO = new ParPartyNameEditVO();
         partyNameVO.setMainPart("MAIN_PART" + ElzaTools.getStringOfActualDate());
         partyNameVO.setNameFormTypeId(nameFormType.getNameFormTypeId());
         partyNameVO.setPreferredName(true);
 
-        //TODO kuzel tady ten typ nize dat zas pryc
-//        RegRecordVO recordVO = createRecordVO("RECORD" + ElzaTools.getStringOfActualDate(), partyType);
+        // timeranges
+        ParUnitdateEditVO unitdateEditVO = new ParUnitdateEditVO();
+        unitdateEditVO.setCalendarTypeId(calendarType.getCalendarTypeId());
+        ParUnitdateEditVO unitdateEditVO2 = new ParUnitdateEditVO();
+        unitdateEditVO2.setCalendarTypeId(calendarType.getCalendarTypeId());
+
+        ParPartyTimeRangeEditVO partyTimeRangeEditVO = new ParPartyTimeRangeEditVO();
+        partyTimeRangeEditVO.setFrom(unitdateEditVO);
+        partyTimeRangeEditVO.setTo(unitdateEditVO2);
+
+        // register type
         createRegisterType(TEST_CODE + ElzaTools.getStringOfActualDate(), partyType);
 
         ParDynastyEditVO parPartyVO = new ParDynastyEditVO();
         parPartyVO.setPartyTypeId(partyType.getPartyTypeId());
         parPartyVO.setPartyNames(Arrays.asList(partyNameVO));
+        parPartyVO.addPartyTimeRange(partyTimeRangeEditVO);
         parPartyVO.setGenealogy("GENEALOGY");
 
         Response response = put(spec -> spec.body(parPartyVO), INSERT_PARTY_V2);

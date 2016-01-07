@@ -25,8 +25,8 @@ import cz.tacr.elza.repository.PartyRelationRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTimeRangeRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
-import cz.tacr.elza.repository.PartyUnitdateRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.service.RegistryService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -77,7 +77,7 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
     @Autowired
     private PartyRelationRepository partyRelationRepository;
     @Autowired
-    private PartyUnitdateRepository partyUnitdateRepository;
+    private UnitdateRepository partyUnitdateRepository;
     @Autowired
     private PartyGroupIdentifierRepository partyGroupIdentifierRepository;
     @Autowired

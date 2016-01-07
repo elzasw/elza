@@ -15,11 +15,14 @@ import cz.tacr.elza.controller.vo.ParPartyWithCount;
 import cz.tacr.elza.controller.vo.ParPersonEditVO;
 import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationTypeVO;
+import cz.tacr.elza.controller.vo.ParUnitdateEditVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyNameFormType;
+import cz.tacr.elza.domain.ParPartyTimeRange;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParPartyTypeComplementType;
 import cz.tacr.elza.domain.ParPartyTypeRelation;
@@ -29,11 +32,12 @@ import cz.tacr.elza.domain.ParRelationTypeRoleType;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
-import cz.tacr.elza.repository.PartyDynastyRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.PartyTimeRangeRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRelationRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
@@ -110,9 +114,6 @@ public class PartyController {
     private PartyRepository partyRepository;
 
     @Autowired
-    private PartyDynastyRepository partyDynastyRepository;
-
-    @Autowired
     private PartyNameRepository partyNameRepository;
 
     @Autowired
@@ -123,6 +124,12 @@ public class PartyController {
 
     @Autowired
     private VariantRecordRepository variantRecordRepository;
+
+    @Autowired
+    private PartyTimeRangeRepository partyTimeRangeRepository;
+
+    @Autowired
+    private CalendarTypeRepository calendarTypeRepository;
 
 
     @RequestMapping(value = "/getParty", method = RequestMethod.GET)
@@ -337,12 +344,47 @@ public class PartyController {
             }
         }
 
+        // TimeRanges
+        if (CollectionUtils.isNotEmpty(partyVO.getTimeRanges())) {
+            partyVO.getTimeRanges().forEach(tr -> {
+                ParPartyTimeRange partyTimeRange = factoryDO.createParPartyTimeRange(tr);
+
+                // unitdates
+                ParUnitdateEditVO fromVO = tr.getFrom();
+                if (fromVO != null) {
+                    ArrCalendarType calendarType = findCalendarType(fromVO);
+
+                    partyTimeRange.getFrom().setCalendarType(calendarType);
+                    unitdateRepository.save(partyTimeRange.getFrom());
+                }
+                ParUnitdateEditVO toVO = tr.getTo();
+                if (toVO != null) {
+                    ArrCalendarType calendarType = findCalendarType(toVO);
+
+                    partyTimeRange.getTo().setCalendarType(calendarType);
+                    unitdateRepository.save(partyTimeRange.getTo());
+                }
+
+                partyTimeRange.setParty(party);
+                partyTimeRangeRepository.save(partyTimeRange);
+            });
+        }
+
         Assert.notNull(preferredName);
         party.setPreferredName(preferredName);
         partyRepository.save(party);
 
         List<ParPartyVO> partyList = factoryVo.createPartyList(Arrays.asList(party));
         return partyList.get(0);
+    }
+
+    private ArrCalendarType findCalendarType(final ParUnitdateEditVO fromVO) {
+        Integer calendarTypeId = fromVO.getCalendarTypeId();
+        if (calendarTypeId != null) {
+            return calendarTypeRepository.findOne(calendarTypeId);
+        }
+
+        return null;
     }
 
     /**
