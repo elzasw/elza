@@ -30,7 +30,7 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
     }
 
     handleSelect(fa, version) {
-        var fa = Object.assign({}, fa, {versionId: version.id});
+        var fa = Object.assign({}, fa, {faId: fa.id, id: version.id, versionId: version.id, activeVersion: version});
 
         this.dispatch(selectFaTab(fa));
         this.props.onSelect(fa);
@@ -46,7 +46,9 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
             )
             item.versions.each(ver => {
                 rows.push(
-                    <NavItem key={item.id + '_' + ver.id} onClick={this.handleSelect.bind(this, item, ver)}>{ver.name}</NavItem>
+                    <NavItem key={item.id + '_' + ver.id} onClick={this.handleSelect.bind(this, item, ver)}>
+                        {ver.createDate}
+                    </NavItem>
                 )
             });
         });

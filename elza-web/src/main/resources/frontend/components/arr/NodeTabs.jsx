@@ -37,7 +37,7 @@ var NodeTabs = class NodeTabs extends AbstractReactComponent {
                     onClose={item=>this.dispatch(faCloseNodeTab(item.index))}
                 />
                 <Tabs.Content>
-                    {activeNode && <NodePanel faId={this.props.faId} node={activeNode} />}
+                    {activeNode && <NodePanel versionId={this.props.versionId} node={activeNode} />}
                 </Tabs.Content>
             </Tabs.Container>
         );

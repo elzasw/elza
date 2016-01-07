@@ -33,12 +33,11 @@ export function faTreeNodeExpand(node) {
 
         dispatch(_faTreeNodeExpand(node, true))
 
-        var faId = activeFa.id;
         var versionId = activeFa.versionId;
         var nodeId = node.id;
         var expandedIds = {...faTree.expandedIds, [nodeId]: true}
-        return WebApi.getFaTree(faId, versionId, nodeId, expandedIds)
-            .then(json => dispatch(faTreeReceive(faId, versionId, nodeId, expandedIds, [], json)));
+        return WebApi.getFaTree(versionId, nodeId, expandedIds)
+            .then(json => dispatch(faTreeReceive(versionId, nodeId, expandedIds, [], json)));
     }
 }
 
@@ -66,11 +65,10 @@ export function faTreeNodeCollapse(node) {
 
 /**
  * Vyžádání dat - aby byla ve store k dispozici.
- * @param {faId} node finding aid id
  * @param {versionId} id verze
  * @param {expandedIds} seznam rozbalených uzlů
  */
-export function faTreeFetchIfNeeded(faId, versionId, expandedIds, selectedId) {
+export function faTreeFetchIfNeeded(versionId, expandedIds, selectedId) {
     return (dispatch, getState) => {
         var state = getState();
         var faTree = state.arrRegion.fas[state.arrRegion.activeIndex].faTree;
@@ -94,38 +92,35 @@ export function faTreeFetchIfNeeded(faId, versionId, expandedIds, selectedId) {
         }
 
         if (fetch) {
-            return dispatch(faTreeFetch(faId, versionId, null, expandedIds, includeIds));
+            return dispatch(faTreeFetch(versionId, null, expandedIds, includeIds));
         }
     }
 }
 
 /**
  * Nové načtení dat.
- * @param {faId} node finding aid id
  * @param {versionId} id verze
  * @param {nodeId} pokud je uvedeno, obsahuje id node, pro který se mají vracet data, pokud není uveden, vrací se celý strom
  * @param {expandedIds} seznam rozbalených uzlů
  */
-export function faTreeFetch(faId, versionId, nodeId, expandedIds, includeIds=[]) {
+export function faTreeFetch(versionId, nodeId, expandedIds, includeIds=[]) {
     return dispatch => {
-        dispatch(faTreeRequest(faId, versionId, nodeId, expandedIds, includeIds))
-        return WebApi.getFaTree(faId, versionId, nodeId, expandedIds, includeIds)
-            .then(json => dispatch(faTreeReceive(faId, versionId, nodeId, expandedIds, includeIds, json)));
+        dispatch(faTreeRequest(versionId, nodeId, expandedIds, includeIds))
+        return WebApi.getFaTree(versionId, nodeId, expandedIds, includeIds)
+            .then(json => dispatch(faTreeReceive(versionId, nodeId, expandedIds, includeIds, json)));
     }
 }
 
 /**
  * Nová data byla načtena.
- * @param {faId} node finding aid id
  * @param {versionId} id verze
  * @param {nodeId} node id, pokud bylo požadováno
  * @param {expandedIds} seznam rozbalených uzlů
  * @param {Object} json objekt s daty
  */
-export function faTreeReceive(faId, versionId, nodeId, expandedIds, includeIds, json) {
+export function faTreeReceive(versionId, nodeId, expandedIds, includeIds, json) {
     return {
         type: types.FA_FA_TREE_RECEIVE,
-        faId,
         versionId,
         nodeId,
         expandedIds,
@@ -138,15 +133,13 @@ export function faTreeReceive(faId, versionId, nodeId, expandedIds, includeIds, 
 
 /**
  * Bylo zahájeno nové načítání dat.
- * @param {faId} node finding aid id
  * @param {versionId} id verze
  * @param {nodeId} node id, pokud bylo požadováno
  * @param {expandedIds} seznam rozbalených uzlů
  */
-export function faTreeRequest(faId, versionId, nodeId, expandedIds, includeIds) {
+export function faTreeRequest(versionId, nodeId, expandedIds, includeIds) {
     return {
         type: types.FA_FA_TREE_REQUEST,
-        faId,
         versionId,
         nodeId,
         expandedIds,

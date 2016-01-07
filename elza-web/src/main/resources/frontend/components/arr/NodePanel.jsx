@@ -18,16 +18,16 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         this.bindMethods('renderParents', 'renderChildren', 'handleOpenItem', 'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick', 'getParentNodes', 'getChildNodes', 'getSiblingNodes');
         
         if (props.node.selectedSubNodeId != null) {
-            this.dispatch(faNodeFormFetchIfNeeded(props.faId, props.node.selectedSubNodeId, props.node.nodeKey));
+            this.dispatch(faNodeFormFetchIfNeeded(props.versionId, props.node.selectedSubNodeId, props.node.nodeKey));
         }
-        this.dispatch(faNodeInfoFetchIfNeeded(props.faId, props.node.id, props.node.nodeKey));
+        this.dispatch(faNodeInfoFetchIfNeeded(props.versionId, props.node.id, props.node.nodeKey));
     }
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.node.selectedSubNodeId != null) {
-            this.dispatch(faNodeFormFetchIfNeeded(nextProps.faId, nextProps.node.selectedSubNodeId, nextProps.node.nodeKey));
+            this.dispatch(faNodeFormFetchIfNeeded(nextProps.versionId, nextProps.node.selectedSubNodeId, nextProps.node.nodeKey));
         }
-        this.dispatch(faNodeInfoFetchIfNeeded(nextProps.faId, nextProps.node.id, nextProps.node.nodeKey));
+        this.dispatch(faNodeInfoFetchIfNeeded(nextProps.versionId, nextProps.node.id, nextProps.node.nodeKey));
     }
 
     handleParentNodeClick(node) {

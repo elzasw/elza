@@ -7,8 +7,8 @@ import {indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
 
 import * as types from 'actions/constants/actionTypes';
 
-function getNodeInfo(state, faId, nodeKey) {
-    var r = findByNodeKeyInGlobalState(state, faId, nodeKey);
+function getNodeInfo(state, versionId, nodeKey) {
+    var r = findByNodeKeyInGlobalState(state, versionId, nodeKey);
     if (r != null) {
         return r.node.nodeInfo;
     }
@@ -19,12 +19,12 @@ function getNodeInfo(state, faId, nodeKey) {
 /**
  * Vyžádání dat - aby byla ve store k dispozici.
  */
-export function faNodeInfoFetchIfNeeded(faId, nodeId, nodeKey) {
+export function faNodeInfoFetchIfNeeded(versionId, nodeId, nodeKey) {
     return (dispatch, getState) => {
         var state = getState();
-        var nodeInfo = getNodeInfo(state, faId, nodeKey);
+        var nodeInfo = getNodeInfo(state, versionId, nodeKey);
         if (nodeInfo != null && !nodeInfo.fetched && !nodeInfo.isFetching) {
-            return dispatch(faNodeInfoFetch(faId, nodeId, nodeKey));
+            return dispatch(faNodeInfoFetch(versionId, nodeId, nodeKey));
         }
     }
 }
@@ -32,11 +32,11 @@ export function faNodeInfoFetchIfNeeded(faId, nodeId, nodeKey) {
 /**
  * Nové načtení dat.
  */
-export function faNodeInfoFetch(faId, nodeId, nodeKey) {
+export function faNodeInfoFetch(versionId, nodeId, nodeKey) {
     return dispatch => {
-        dispatch(faNodeInfoRequest(faId, nodeId, nodeKey))
-        return WebApi.getFaNodeInfo(faId, nodeId)
-            .then(json => dispatch(faNodeInfoReceive(faId, nodeId, nodeKey, json)));
+        dispatch(faNodeInfoRequest(versionId, nodeId, nodeKey))
+        return WebApi.getFaNodeInfo(versionId, nodeId)
+            .then(json => dispatch(faNodeInfoReceive(versionId, nodeId, nodeKey, json)));
     }
 }
 
@@ -44,10 +44,10 @@ export function faNodeInfoFetch(faId, nodeId, nodeKey) {
  * Nová data byla načtena.
  * @param {Object} json objekt s daty
  */
-export function faNodeInfoReceive(faId, nodeId, nodeKey, json) {
+export function faNodeInfoReceive(versionId, nodeId, nodeKey, json) {
     return {
         type: types.FA_NODE_INFO_RECEIVE,
-        faId,
+        versionId,
         nodeId,
         nodeKey,
         childNodes: json.childNodes,
@@ -59,9 +59,9 @@ export function faNodeInfoReceive(faId, nodeId, nodeKey, json) {
 /**
  * Bylo zahájeno nové načítání dat.
  */
-export function faNodeInfoRequest(faId, nodeId, nodeKey) {
+export function faNodeInfoRequest(versionId, nodeId, nodeKey) {
     return {
-        faId,
+        versionId,
         nodeId,
         nodeKey,
         type: types.FA_NODE_INFO_REQUEST

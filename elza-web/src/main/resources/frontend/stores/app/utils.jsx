@@ -1,5 +1,5 @@
 
-function findByNodeKeyInNodes(nodesState, faId, nodeKey) {
+function findByNodeKeyInNodes(nodesState, versionId, nodeKey) {
     var nodes = nodesState.nodes;
     for (var a=0; a<nodes.length; a++) {
         if (nodes[a].nodeKey == nodeKey) {
@@ -10,8 +10,8 @@ function findByNodeKeyInNodes(nodesState, faId, nodeKey) {
 }
 exports.findByNodeKeyInNodes = findByNodeKeyInNodes
 
-function findByNodeKeyInGlobalState(globalState, faId, nodeKey) {
-    var faIndex = indexById(globalState.arrRegion.fas, faId);
+function findByNodeKeyInGlobalState(globalState, versionId, nodeKey) {
+    var faIndex = indexById(globalState.arrRegion.fas, versionId, "versionId");
     if (faIndex != null) {
         var nodes = globalState.arrRegion.fas[faIndex].nodes.nodes;
         for (var a=0; a<nodes.length; a++) {
@@ -24,14 +24,22 @@ function findByNodeKeyInGlobalState(globalState, faId, nodeKey) {
 }
 exports.findByNodeKeyInGlobalState = findByNodeKeyInGlobalState
 
-function indexById(arr, id) {
+function indexById(arr, id, attrName = null) {
     if (arr == null) {
         return null;
     }
 
-    for (var a=0; a<arr.length; a++) {
-        if (arr[a].id == id) {
-            return a;
+    if (attrName !== null) {
+        for (var a=0; a<arr.length; a++) {
+            if (arr[a][attrName] == id) {
+                return a;
+            }
+        }
+    } else {
+        for (var a=0; a<arr.length; a++) {
+            if (arr[a].id == id) {
+                return a;
+            }
         }
     }
     return null;

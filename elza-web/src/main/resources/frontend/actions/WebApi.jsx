@@ -139,21 +139,7 @@ class WebApi {
     }   
 
     getFaFileTree() {
-        var data = 
-            [
-                {
-                    id: 1, 
-                    name: 'AP1',
-                    versions: [{id: 1, name: 'verze 1'}, {id: 2, name: 'verze 2'}]
-                },
-                {
-                    id: 2,
-                    name: 'AP2',
-                    versions: [{id: 3, name: 'verze 3'}, {id: 4, name: 'verze 4'}]
-                }
-            ]
-        
-        return this.getData(data, 1);
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/getFindingAids');
     }
 
     findRegistry(search = null){
@@ -197,7 +183,7 @@ class WebApi {
             .then(json=>{return json})
     }
 
-    getFaNodeForm(faId, nodeId) {
+    getFaNodeForm(versionId, nodeId) {
         var node = findNodeById(_faRootNode, nodeId);
         var data = {
             childNodes: [...node.children],
@@ -207,7 +193,7 @@ class WebApi {
         return this.getData(data, 1);
     }
 
-    getFaNodeInfo(faId, nodeId) {
+    getFaNodeInfo(versionId, nodeId) {
         var node = findNodeById(_faRootNode, nodeId);
         var parents = [];
         var n = node.parent;
@@ -222,7 +208,7 @@ class WebApi {
         return this.getData(data, 1);
     }
 
-    getFaTree(faId, versionId, nodeId, expandedIds={}, includeIds=[]) {
+    getFaTree(versionId, nodeId, expandedIds={}, includeIds=[]) {
         expandedIds = {...expandedIds};
 
         var srcNodes;
@@ -257,14 +243,18 @@ class WebApi {
     }
 
     getRuleSets() {
-        return AjaxUtils.ajaxGet('/api/ruleSetManager/getRuleSets')
-            .then(json=>{
-                return json.map(i=>{return {...i, id:i.ruleSetId, rulArrTypes: [{id:1, code:'MAN', name: 'Manipulační seznam'}, {id:2, code:'INV', name: "Inventář"}, {id:3, code:'KAT', name: "Katalog"}]}});
-            });
+        return AjaxUtils.ajaxGet('/api/ruleSetManagerV2/getRuleSets');
     }
 
     createFindingAid(name, ruleSetId, arrangementTypeId) {
         return AjaxUtils.ajaxPut('/api/arrangementManager/createFindingAid', {name: name, arrangementTypeId: arrangementTypeId, ruleSetId: ruleSetId})
+            .then(json=>{
+                return json;
+            });
+    }
+
+    approveVersion(versionId, ruleSetId, arrangementTypeId) {
+        return AjaxUtils.ajaxPut('/api/arrangementManager/approveVersion', {arrangementTypeId: arrangementTypeId, ruleSetId: ruleSetId}, {findingAidVersionId: versionId})
             .then(json=>{
                 return json;
             });
