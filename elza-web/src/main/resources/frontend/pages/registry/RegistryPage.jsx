@@ -42,7 +42,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     handleSelect(registry, event) {
-        var registry = Object.assign({}, registry,{selectedId: registry.id});
+        var registry = Object.assign({}, registry,{selectedId: registry.recordId});
         this.dispatch(registryData(registry));
     }
 

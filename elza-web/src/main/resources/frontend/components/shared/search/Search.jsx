@@ -37,7 +37,7 @@ var Search = class Search extends React.Component {
 
     handleKeyUp(e){
         if (e.keyCode == 13){
-            handleSearch(e);
+            this.handleSearch(e);
         }
     }
 
