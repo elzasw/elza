@@ -1,6 +1,19 @@
 package cz.tacr.elza.controller.config;
 
+import java.time.LocalDateTime;
+
+import ma.glasnost.orika.CustomMapper;
+import ma.glasnost.orika.MapperFactory;
+import ma.glasnost.orika.MappingContext;
+import ma.glasnost.orika.converter.builtin.PassThroughConverter;
+import ma.glasnost.orika.impl.DefaultMapperFactory;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrFindingAidVO;
+import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
 import cz.tacr.elza.controller.vo.ParComplementTypeVO;
 import cz.tacr.elza.controller.vo.ParDynastyEditVO;
 import cz.tacr.elza.controller.vo.ParDynastyVO;
@@ -26,8 +39,12 @@ import cz.tacr.elza.controller.vo.ParUnitdateVO;
 import cz.tacr.elza.controller.vo.RegExternalSourceVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RulArrangementTypeVO;
+import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParDynasty;
 import cz.tacr.elza.domain.ParEvent;
@@ -48,6 +65,8 @@ import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RegExternalSource;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RulArrangementType;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RegVariantRecord;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
@@ -199,6 +218,12 @@ public class ConfigMapperConfiguration {
                 }).byDefault()
                 .register();
 
+        mapperFactory.classMap(RulArrangementType.class, RulArrangementTypeVO.class).byDefault().field("arrangementTypeId", "id").register();
+        mapperFactory.classMap(RulRuleSet.class, RulRuleSetVO.class).byDefault().field("ruleSetId", "id").register();
+
+        mapperFactory.classMap(ArrFindingAid.class, ArrFindingAidVO.class).byDefault().field("findingAidId", "id").register();
+        mapperFactory.classMap(ArrFindingAidVersion.class, ArrFindingAidVersionVO.class).byDefault().field("findingAidVersionId", "id").register();
+        mapperFactory.getConverterFactory().registerConverter(new PassThroughConverter(LocalDateTime.class));
         mapperFactory.classMap(RegVariantRecord.class, RegVariantRecordVO.class).customize(
                 new CustomMapper<RegVariantRecord, RegVariantRecordVO>() {
                     @Override
@@ -207,7 +232,7 @@ public class ConfigMapperConfiguration {
                                         final MappingContext context) {
                         RegRecord regRecord = regVariantRecord.getRegRecord();
                         regVariantRecordVO.setRegRecordId(regRecord.getRecordId());
-                    }
+    }
 
                     @Override
                     public void mapBtoA(final RegVariantRecordVO regVariantRecordVO,

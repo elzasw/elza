@@ -28,4 +28,7 @@ public interface FindingAidVersionRepository extends JpaRepository<ArrFindingAid
 
     ArrFindingAidVersion findTopByRootLevel(ArrLevel level);
 
+
+    @Query(value = "SELECT v FROM arr_finding_aid_version v join fetch v.findingAid fa join fetch v.arrangementType at join fetch at.ruleSet join fetch v.createChange left join fetch v.lockChange order by fa.name asc, v.createChange.changeId desc")
+    List<ArrFindingAidVersion> findAllFetchFindingAids();
 }

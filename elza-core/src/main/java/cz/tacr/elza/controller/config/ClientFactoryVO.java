@@ -1,5 +1,26 @@
 package cz.tacr.elza.controller.config;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+
+import ma.glasnost.orika.MapperFacade;
+import ma.glasnost.orika.MapperFactory;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
 import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
 import cz.tacr.elza.controller.vo.ParPartyGroupVO;
 import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
@@ -11,6 +32,9 @@ import cz.tacr.elza.controller.vo.ParRelationEntityVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RulArrangementTypeVO;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroup;
@@ -23,6 +47,7 @@ import cz.tacr.elza.domain.ParRelation;
 import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
@@ -33,23 +58,6 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
-import ma.glasnost.orika.MapperFacade;
-import ma.glasnost.orika.MapperFactory;
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 
 
 /**
@@ -422,5 +430,42 @@ public class ClientFactoryVO {
         return item;
     }
 
+    /**
+     * Vytvoří typ výstupu.
+     *
+     * @param arrType typ výstupu
+     *
+     * @return VO typ výstupu
+     */
+    public RulArrangementTypeVO createArrangementType(RulArrangementType arrType) {
+        Assert.notNull(arrType);
 
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        RulArrangementTypeVO rulArrangementTypeVO = mapper.map(arrType, RulArrangementTypeVO.class);
+        rulArrangementTypeVO.setRuleSetId(arrType.getRuleSet().getRuleSetId());
+
+        return rulArrangementTypeVO;
+    }
+
+    /**
+     * Vytvoří verzi archivní pomůcky.
+     *
+     * @param version verze archivní pomůcky
+     *
+     * @return VO verze archivní pomůcky
+     */
+    public ArrFindingAidVersionVO createFindingAidVersion(ArrFindingAidVersion version) {
+        Assert.notNull(version);
+
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        ArrFindingAidVersionVO findingAidVersionVO = mapper.map(version, ArrFindingAidVersionVO.class);
+        findingAidVersionVO.setCreateDate(version.getCreateChange().getChangeDate());
+
+        ArrChange lockChange = version.getLockChange();
+        if (lockChange != null) {
+            findingAidVersionVO.setLockDate(lockChange.getChangeDate());
+        }
+
+        return findingAidVersionVO;
+    }
 }
