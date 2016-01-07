@@ -28,7 +28,8 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     handleCreateFa(data) {
-        WebApi.createFindingAid(data.name, data.ruleSetId, data.rulArrTypeId);
+        WebApi.createFindingAid(data.name, data.ruleSetId, data.rulArrTypeId)
+            .then(this.dispatch(modalDialogHide()));
     }
 
     handleAddFa() {
