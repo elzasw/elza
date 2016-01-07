@@ -92,6 +92,8 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
+import cz.tacr.elza.service.exception.LevelImportException;
+import cz.tacr.elza.service.exception.PartyImportException;
 import cz.tacr.elza.service.exception.RecordImportException;
 import cz.tacr.elza.service.exception.XmlImportException;
 import cz.tacr.elza.xmlimport.v1.vo.XmlImport;
@@ -420,7 +422,7 @@ public class XmlImportService {
                     String calendarTypeCode = descItemUnitDate.getCalendarTypeCode();
                     ArrCalendarType calendarType = calendarTypeRepository.findByCode(calendarTypeCode);
                     arrData.setCalendarTypeId(calendarType.getCalendarTypeId());
-                    arrData.setFormat("DT");
+                    arrData.setFormat(descItemUnitDate.getFormat());
 
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
                     Date fromDate = descItemUnitDate.getValueFrom();
