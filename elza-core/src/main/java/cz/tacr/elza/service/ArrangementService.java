@@ -27,6 +27,7 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.FaBulkActionRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.FindingAidVersionConformityInfoRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
@@ -36,6 +37,7 @@ import cz.tacr.elza.repository.NodeConformityInfoRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.PacketRepository;
 
 /**
  *
@@ -87,6 +89,12 @@ public class ArrangementService {
 
     @Autowired
     private FindingAidVersionConformityInfoRepository findingAidVersionConformityInfoRepository;
+
+    @Autowired
+    private FaBulkActionRepository faBulkActionRepository;
+
+    @Autowired
+    private PacketRepository packetRepository;
 
     public ArrFindingAid findFindingAidByRootNodeUUID(String uuid) {
         Assert.notNull(uuid);
@@ -189,12 +197,6 @@ public class ArrangementService {
             return;
         }
 
-//        bulkActionService.getBulkActionState(findingAidId).forEach(state -> {
-//            if (state.getState() == State.RUNNING) {
-//                throw new IllegalStateException("Archivní pomůcku nelze smazat protože běží hromadná akce.");
-//            }
-//        });
-
         ArrFindingAidVersion version = getOpenVersionByFindingAidId(findingAidId);
 
         ArrLevel rootLevel = version.getRootLevel();
@@ -206,13 +208,23 @@ public class ArrangementService {
 
         deleteLevelCascade(rootLevel);
         nodeRepository.delete(node);
+
+
+        packetRepository.findByFindingAid(version.getFindingAid()).forEach(packet -> packetRepository.delete(packet));
+
         findingAidRepository.delete(findingAidId);
     }
 
     private void deleteVersion(ArrFindingAidVersion version) {
         Assert.notNull(version);
 
-//        updateConformityInfoService.terminateWorkerInVersion(version);
+        updateConformityInfoService.terminateWorkerInVersionAndWait(version);
+
+        bulkActionService.terminateBulkActions(version.getFindingAidVersionId());
+
+        faBulkActionRepository.findByFaVersionId(version.getFindingAidVersionId()).forEach(action ->
+            faBulkActionRepository.delete(action)
+        );
 
         nodeConformityInfoRepository.findByFaVersion(version).forEach(conformityInfo -> {
             deleteConformityInfo(conformityInfo);

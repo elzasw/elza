@@ -1180,6 +1180,7 @@ public class PackageService {
         File dirActions = new File(bulkActionConfigManager.getPath());
         File dirRules = new File(RulesExecutor.ROOT_PATH);
 
+
         try {
 
 
@@ -1208,12 +1209,13 @@ public class PackageService {
 
             bulkActionConfigManager.load();
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             try {
                 rollBackFiles(dirActions);
                 rollBackFiles(dirRules);
 
                 bulkActionConfigManager.load();
+                throw new IllegalStateException(e);
             } catch (IOException e1) {
                 throw new IllegalStateException(e);
             }

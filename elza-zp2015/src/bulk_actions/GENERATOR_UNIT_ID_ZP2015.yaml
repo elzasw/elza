@@ -1,5 +1,5 @@
 code_type_bulk_action: GENERATOR_UNIT_ID
-rule_code: ZP
+rule_code: ZP2015
 mandatory_arrangement_type: INV|MAN
 unit_id_code: ZP2015_UNIT_ID
 previous_id_code: ZP2015_OTHER_ID

@@ -1,13 +1,12 @@
 package cz.tacr.elza.bulkaction;
 
 
-import static cz.tacr.elza.api.vo.BulkActionState.State;
-
 import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cz.tacr.elza.api.vo.BulkActionState.State;
 import cz.tacr.elza.bulkaction.generator.BulkAction;
 
 
@@ -121,5 +120,25 @@ public class BulkActionWorker implements Callable<BulkActionWorker> {
                 ", bulkActionConfig=" + bulkActionConfig +
                 ", bulkActionState=" + bulkActionState +
                 '}';
+    }
+
+    /**
+     * Ukončí běžící hromadnou akci.
+     */
+    public void terminate() {
+        if (bulkActionState.getState() != State.RUNNING) {
+            return;
+        }
+
+        bulkActionState.setInterrupt(true);
+
+        while (bulkActionState.getState() == State.RUNNING) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                throw new IllegalStateException("Chyba při ukončování vlákna hromadné akce.", e);
+            }
+        }
+        bulkActionState.setInterrupt(false);
     }
 }

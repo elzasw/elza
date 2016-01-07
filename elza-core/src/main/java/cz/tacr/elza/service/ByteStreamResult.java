@@ -4,8 +4,6 @@ import java.io.ByteArrayOutputStream;
 
 import javax.xml.transform.stream.StreamResult;
 
-import org.springframework.util.Assert;
-
 /**
  * Rozšíření {@link StreamResult} o práci s {@link ByteArrayOutputStream}.
  *
@@ -17,7 +15,7 @@ public class ByteStreamResult extends StreamResult {
     private ByteArrayOutputStream outputStream;
 
     public ByteStreamResult(ByteArrayOutputStream outputStream) {
-        Assert.notNull(outputStream);
+        super(outputStream);
 
         this.outputStream = outputStream;
     }

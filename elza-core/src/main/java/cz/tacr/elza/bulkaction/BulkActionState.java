@@ -32,6 +32,8 @@ public class BulkActionState implements cz.tacr.elza.api.vo.BulkActionState<ArrC
      */
     private String bulkActionCode;
 
+    private boolean interrupt = false;
+
     @Override
     public synchronized ArrChange getRunChange() {
         return runChange;
@@ -68,6 +70,7 @@ public class BulkActionState implements cz.tacr.elza.api.vo.BulkActionState<ArrC
                 "runChange=" + runChange +
                 ", state=" + state +
                 ", processId=" + processId +
+                ", interrupt=" + interrupt +
                 '}';
     }
 
@@ -79,5 +82,15 @@ public class BulkActionState implements cz.tacr.elza.api.vo.BulkActionState<ArrC
     @Override
     public void setBulkActionCode(final String bulkActionCode) {
         this.bulkActionCode = bulkActionCode;
+    }
+
+    @Override
+    public boolean isInterrupt() {
+        return interrupt;
+    }
+
+    @Override
+    public void setInterrupt(boolean interrupt) {
+        this.interrupt = interrupt;
     }
 }

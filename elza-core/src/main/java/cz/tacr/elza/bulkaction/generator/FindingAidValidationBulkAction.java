@@ -13,8 +13,10 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.api.ArrNodeConformityInfo;
 import cz.tacr.elza.api.ArrNodeConformityInfoExt;
+import cz.tacr.elza.api.vo.BulkActionState.State;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
+import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
 import cz.tacr.elza.bulkaction.BulkActionState;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrChange;
@@ -95,6 +97,10 @@ public class FindingAidValidationBulkAction extends BulkAction {
      * @param level uzel
      */
     private ArrFindingAidVersionConformityInfo.State generate(final ArrLevel level) {
+        if (bulkActionState.isInterrupt()) {
+            bulkActionState.setState(State.ERROR);
+            throw new BulkActionInterruptedException("Hromadná akce " + toString() + " byla přerušena.");
+        }
 
         List<ArrLevel> childLevels = getChildren(level);
 
