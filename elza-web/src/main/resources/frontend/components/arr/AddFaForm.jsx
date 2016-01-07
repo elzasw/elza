@@ -32,7 +32,7 @@ var AddFaForm = class AddFaForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        //this.bindMethods('pokus');
+        //this.bindMethods('');
 
         this.dispatch(refRuleSetFetchIfNeeded());
 

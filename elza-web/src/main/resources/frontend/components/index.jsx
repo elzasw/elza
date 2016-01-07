@@ -29,7 +29,6 @@ exports.NodeTabs = require('./arr/NodeTabs');
 exports.FaTreeTabs = require('./arr/FaTreeTabs');
 exports.FaTreeLazy = require('./arr/FaTreeLazy');
 exports.NodeForm = require('./arr/NodeForm');
-exports.AddFaDialog = require('./arr/AddFaDialog');
 exports.AddFaForm = require('./arr/AddFaForm');
 
 exports.PartySearch = require('./party/PartySearch');
