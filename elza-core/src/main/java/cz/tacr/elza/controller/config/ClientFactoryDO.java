@@ -7,7 +7,6 @@ import cz.tacr.elza.controller.vo.ParPartyGroupEditVO;
 import cz.tacr.elza.controller.vo.ParPartyNameEditVO;
 import cz.tacr.elza.controller.vo.ParPartyTimeRangeEditVO;
 import cz.tacr.elza.controller.vo.ParPersonEditVO;
-import cz.tacr.elza.controller.vo.ParUnitdateEditVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.domain.ParDynasty;
@@ -17,7 +16,6 @@ import cz.tacr.elza.domain.ParPartyGroup;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyTimeRange;
 import cz.tacr.elza.domain.ParPerson;
-import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegVariantRecord;
 import ma.glasnost.orika.MapperFacade;
@@ -86,22 +84,6 @@ public class ClientFactoryDO {
         return mapper.map(partyNameVOSave, ParPartyName.class);
     }
 
-    public void updateParPartyName(final ParPartyNameEditVO partyNameEditVO, final ParPartyName partyName) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        mapper.map(partyNameEditVO, partyName);
-    }
-
-    /**
-     * Vytvoří objekt datace.
-     *
-     * @param parUnitdateEditVO datace VO
-     * @return do datace
-     */
-    public ParUnitdate createParUnitdate(final ParUnitdateEditVO parUnitdateEditVO) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(parUnitdateEditVO, ParUnitdate.class);
-    }
-
     /**
      * Vytvoří objekt působnosti osoby.
      *
@@ -111,13 +93,6 @@ public class ClientFactoryDO {
     public ParPartyTimeRange createParPartyTimeRange(final ParPartyTimeRangeEditVO parPartyTimeRangeEditVO) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(parPartyTimeRangeEditVO, ParPartyTimeRange.class);
-    }
-
-    public void updateParPartyTimeRange(final ParPartyTimeRangeEditVO parPartyTimeRangeEditVO,
-                                                     final ParPartyTimeRange partyTimeRange) {
-
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        mapper.map(parPartyTimeRangeEditVO, partyTimeRange);
     }
 
     /**

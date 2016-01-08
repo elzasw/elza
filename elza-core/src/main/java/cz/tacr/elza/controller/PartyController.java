@@ -268,7 +268,7 @@ public class PartyController {
         RegRegisterType registerType = registerTypeRepository.findRegisterTypeByPartyType(partyType).get(0);
 
         //PARTY
-        ParParty party = partyService.updateParty(partyVO, partyType, registerType);
+        ParParty party = partyService.updateParty(partyVO, partyType);
 
         List<ParPartyVO> partyList = factoryVo.createPartyList(Arrays.asList(party));
         return partyList.get(0);
