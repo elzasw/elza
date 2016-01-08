@@ -18,11 +18,11 @@ public class ParPartyNameEditVO {
     /**
      * Platnost jména od.
      */
-    private ParUnitdateVO validFrom;
+    private ParUnitdateEditVO validFrom;
     /**
      * Platnost jména do.
      */
-    private ParUnitdateVO validTo;
+    private ParUnitdateEditVO validTo;
 
     /**
      * Typ jména.
@@ -61,19 +61,19 @@ public class ParPartyNameEditVO {
         this.partyNameId = partyNameId;
     }
 
-    public ParUnitdateVO getValidFrom() {
+    public ParUnitdateEditVO getValidFrom() {
         return validFrom;
     }
 
-    public void setValidFrom(final ParUnitdateVO validFrom) {
+    public void setValidFrom(final ParUnitdateEditVO validFrom) {
         this.validFrom = validFrom;
     }
 
-    public ParUnitdateVO getValidTo() {
+    public ParUnitdateEditVO getValidTo() {
         return validTo;
     }
 
-    public void setValidTo(final ParUnitdateVO validTo) {
+    public void setValidTo(final ParUnitdateEditVO validTo) {
         this.validTo = validTo;
     }
 

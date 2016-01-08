@@ -69,7 +69,8 @@
               <xs:element name="desc-item-text" type="tns:desc-item-text"/>
               <xs:element name="desc-item-unit-date" type="tns:desc-item-unit-date"/>
               <xs:element name="desc-item-unit-id" type="tns:desc-item-unit-id"/>
-              <xs:element name="desc-item-packed-ref" type="tns:desc-item-packet-ref"/>
+              <xs:element name="desc-item-packet-ref" type="tns:desc-item-packet-ref"/>
+              <xs:element name="desc-item-enum" type="tns:desc-item-enum"/>
             </xs:choice>
           </xs:sequence>
         </xs:complexType>
@@ -429,5 +430,13 @@
     <xs:attribute name="packet-type-code" type="xs:string"/>
     <xs:attribute name="storage-number" type="xs:ID"/>
     <xs:attribute name="invalid" type="xs:boolean" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="desc-item-enum">
+    <xs:complexContent>
+      <xs:extension base="tns:abstract-desc-item">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 </xs:schema>

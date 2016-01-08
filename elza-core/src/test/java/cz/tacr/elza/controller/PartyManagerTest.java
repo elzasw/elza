@@ -10,8 +10,13 @@ import cz.tacr.elza.controller.vo.ParPartyTimeRangeEditVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ParUnitdateEditVO;
 import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyNameFormType;
+import cz.tacr.elza.domain.ParPartyTimeRange;
 import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParUnitdate;
+import cz.tacr.elza.domain.RegRecord;
 import ma.glasnost.orika.MapperFactory;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -20,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Testy pro {@link PartyManager}.
@@ -336,15 +342,27 @@ public class PartyManagerTest extends AbstractRestTest {
         Response response = put(spec -> spec.body(parPartyVO), INSERT_PARTY_V2);
         ParPartyVO parPartyVORet = response.getBody().as(ParDynastyVO.class);
 
+        List<ParPartyName> allNames = partyNameRepository.findAll(); //
+        List<ParUnitdate> allUnitDate = unitdateRepository.findAll();//
+        List<ParPartyTimeRange> allPartyTimerange = partyTimeRangeRepository.findAll();
+        List<ParParty> allParty = partyRepository.findAll();
+        List<RegRecord> allRecords = recordRepository.findAll();
 
+        // update
         parPartyVO.setPartyId(parPartyVORet.getPartyId());
-//        parPartyVO.getPartyNames().get(0).setPartyNameId(parPartyVORet.getPartyNames().get(0).getPartyNameId());
-
+        parPartyVO.getPartyNames().get(0).setPartyNameId(parPartyVORet.getPartyNames().get(0).getPartyNameId());
         parPartyVO.setGenealogy("GENEALOGYUPDATE");
 
-        parPartyVO.getPartyNames().get(0).setPartyNameId(1);
+//        parPartyVO.getPartyNames().get(0).setPartyNameId(1);
         response = put(spec -> spec.body(parPartyVO), UPDATE_PARTY_V2);
         parPartyVORet = response.getBody().as(ParDynastyVO.class);
+
+        allNames = partyNameRepository.findAll(); //
+        allUnitDate = unitdateRepository.findAll();//
+        allPartyTimerange = partyTimeRangeRepository.findAll();
+        allParty = partyRepository.findAll();
+        allRecords = recordRepository.findAll();
+
         return;
     }
 

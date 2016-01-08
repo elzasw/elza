@@ -149,25 +149,6 @@ public class PartyService {
         return partyRepository.save(party);
     }
 
-    private ParParty getPartyByType(final Integer partyId, final ParPartyType partyType) {
-        switch (partyType.getPartyTypeEnum()) {
-            case DYNASTY:
-                return partyDynastyRepository.getOne(partyId);
-
-            case EVENT:
-                return partyEventRepository.getOne(partyId);
-
-            case PARTY_GROUP:
-                return partyGroupRepository.getOne(partyId);
-
-            case PERSON:
-                return partyPersonRepository.getOne(partyId);
-
-            default:
-                return partyRepository.getOne(partyId);
-        }
-    }
-
     public ParParty updateParty(final ParPartyEditVO partyVO, final ParPartyType partyType, final RegRegisterType registerType) {
         ParParty origParty = getPartyByType(partyVO.getPartyId(), partyType);
 
@@ -191,9 +172,9 @@ public class PartyService {
         ParPartyName preferredName = updatePartyNames(partyVO, origParty);
 
         // TimeRanges
-//        if (CollectionUtils.isNotEmpty(partyVO.getTimeRanges())) {
-//            createTimeRanges(partyVO.getTimeRanges(), party);
-//        }
+        if (CollectionUtils.isNotEmpty(partyVO.getTimeRanges())) {
+            createTimeRanges(partyVO.getTimeRanges(), origParty);
+        }
 
         Assert.notNull(preferredName);
         origParty.setPreferredName(preferredName);
@@ -208,6 +189,22 @@ public class PartyService {
             ParPartyName partyName = factoryDO.createParPartyName(partyNameVO);
             partyName.setNameFormType(nameFormType);
             partyName.setParty(party);
+
+            // unitdates
+            ParUnitdateEditVO validFrom = partyNameVO.getValidFrom();
+            if (validFrom != null) {
+                ArrCalendarType calendarType = findCalendarType(validFrom);
+
+                partyName.getValidFrom().setCalendarType(calendarType);
+                unitdateRepository.save(partyName.getValidFrom());
+            }
+            ParUnitdateEditVO validTo = partyNameVO.getValidTo();
+            if (validTo != null) {
+                ArrCalendarType calendarType = findCalendarType(validTo);
+
+                partyName.getValidTo().setCalendarType(calendarType);
+                unitdateRepository.save(partyName.getValidTo());
+            }
 
             partyNameRepository.save(partyName);
 
@@ -226,6 +223,7 @@ public class PartyService {
         ParPartyName preferredName = null;
         for (final ParPartyNameEditVO partyNameVO : partyVO.getPartyNames()) {
 
+            //TODO kuzel muze chtit i nove
             ParPartyName origPartyName = partyNameRepository.getOne(partyNameVO.getPartyNameId());
             ParPartyNameFormType nameFormType = partyNameFormTypeRepository.getOne(partyNameVO.getNameFormTypeId());
 
@@ -270,6 +268,39 @@ public class PartyService {
             partyTimeRangeRepository.save(partyTimeRange);
         });
     }
+
+//    private void updateTimeRanges(final List<ParPartyTimeRangeEditVO> timeRanges, final ParParty party) {
+//        timeRanges.forEach(tr -> {
+//            if (tr.getPartyTimeRangeId() != null) {
+//
+//            }
+//
+//
+////            partyTimeRangeRepository.
+////                    //TODO kuzel muze chtit i nove
+////
+////                    ParPartyTimeRange partyTimeRange = factoryDO.updateParPartyTimeRange(tr);
+//
+//            // unitdates
+//            ParUnitdateEditVO fromVO = tr.getFrom();
+//            if (fromVO != null) {
+//                ArrCalendarType calendarType = findCalendarType(fromVO);
+//
+//                partyTimeRange.getFrom().setCalendarType(calendarType);
+//                unitdateRepository.save(partyTimeRange.getFrom());
+//            }
+//            ParUnitdateEditVO toVO = tr.getTo();
+//            if (toVO != null) {
+//                ArrCalendarType calendarType = findCalendarType(toVO);
+//
+//                partyTimeRange.getTo().setCalendarType(calendarType);
+//                unitdateRepository.save(partyTimeRange.getTo());
+//            }
+//
+//            partyTimeRange.setParty(party);
+//            partyTimeRangeRepository.save(partyTimeRange);
+//        });
+//    }
 
 
     /**
@@ -350,6 +381,25 @@ public class PartyService {
         }
 
         return result;
+    }
+
+    private ParParty getPartyByType(final Integer partyId, final ParPartyType partyType) {
+        switch (partyType.getPartyTypeEnum()) {
+            case DYNASTY:
+                return partyDynastyRepository.getOne(partyId);
+
+            case EVENT:
+                return partyEventRepository.getOne(partyId);
+
+            case PARTY_GROUP:
+                return partyGroupRepository.getOne(partyId);
+
+            case PERSON:
+                return partyPersonRepository.getOne(partyId);
+
+            default:
+                return partyRepository.getOne(partyId);
+        }
     }
 
 }

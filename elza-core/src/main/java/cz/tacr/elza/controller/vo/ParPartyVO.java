@@ -143,5 +143,12 @@ public class ParPartyVO {
         }
         timeRanges.add(partyTimeRange);
     }
+
+    public void addPartyName(final ParPartyNameVO partyName) {
+        if (partyNames == null) {
+            partyNames = new LinkedList<>();
+        }
+        partyNames.add(partyName);
+    }
 }
 
