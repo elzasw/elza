@@ -15,8 +15,12 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.repository.CalendarTypeRepository;
+import cz.tacr.elza.repository.PartyDynastyRepository;
+import cz.tacr.elza.repository.PartyEventRepository;
+import cz.tacr.elza.repository.PartyGroupRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
+import cz.tacr.elza.repository.PartyPersonRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTimeRangeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
@@ -77,7 +81,16 @@ public class PartyService {
     private UnitdateRepository unitdateRepository;
 
     @Autowired
-    private RegistryService registryService;
+    private PartyDynastyRepository partyDynastyRepository;
+
+    @Autowired
+    private PartyEventRepository partyEventRepository;
+
+    @Autowired
+    private PartyGroupRepository partyGroupRepository;
+
+    @Autowired
+    private PartyPersonRepository partyPersonRepository;
 
 
     /**
@@ -136,8 +149,27 @@ public class PartyService {
         return partyRepository.save(party);
     }
 
+    private ParParty getPartyByType(final Integer partyId, final ParPartyType partyType) {
+        switch (partyType.getPartyTypeEnum()) {
+            case DYNASTY:
+                return partyDynastyRepository.getOne(partyId);
+
+            case EVENT:
+                return partyEventRepository.getOne(partyId);
+
+            case PARTY_GROUP:
+                return partyGroupRepository.getOne(partyId);
+
+            case PERSON:
+                return partyPersonRepository.getOne(partyId);
+
+            default:
+                return partyRepository.getOne(partyId);
+        }
+    }
+
     public ParParty updateParty(final ParPartyEditVO partyVO, final ParPartyType partyType, final RegRegisterType registerType) {
-        ParParty origParty = partyRepository.getOne(partyVO.getPartyId());
+        ParParty origParty = getPartyByType(partyVO.getPartyId(), partyType);
 
         factoryDO.updateParty(partyVO, origParty);
 

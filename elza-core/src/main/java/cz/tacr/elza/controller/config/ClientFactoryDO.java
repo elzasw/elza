@@ -72,21 +72,6 @@ public class ClientFactoryDO {
 
     public void updateParty(final ParPartyEditVO partyVO, final ParParty origParty) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
-
-        //TODO kuzel
-//        if (partyVO instanceof ParDynastyEditVO) {
-//            return mapper.map(partyVO, ParDynasty.class);
-//        }
-//        if (partyVO instanceof ParPersonEditVO) {
-//            return mapper.map(partyVO, ParPerson.class);
-//        }
-//        if (partyVO instanceof ParEventEditVO) {
-//            return mapper.map(partyVO, ParEvent.class);
-//        }
-//        if (partyVO instanceof ParPartyGroupEditVO) {
-//            return mapper.map(partyVO, ParPartyGroup.class);
-//        }
-
         mapper.map(partyVO, origParty);
     }
 

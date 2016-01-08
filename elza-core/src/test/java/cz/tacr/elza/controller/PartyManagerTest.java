@@ -345,6 +345,7 @@ public class PartyManagerTest extends AbstractRestTest {
         parPartyVO.getPartyNames().get(0).setPartyNameId(1);
         response = put(spec -> spec.body(parPartyVO), UPDATE_PARTY_V2);
         parPartyVORet = response.getBody().as(ParDynastyVO.class);
+        return;
     }
 
 }
