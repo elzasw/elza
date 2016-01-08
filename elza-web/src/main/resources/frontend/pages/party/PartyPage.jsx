@@ -10,7 +10,7 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {i18n} from 'components';
-import {Ribbon, PartySearch, PartyDetail, DropTree} from 'components';
+import {Ribbon, PartySearch, PartyDetail, DropDownTree} from 'components';
 import {ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
@@ -31,8 +31,8 @@ var PartyPage = class PartyPage extends React.Component {
     }
 
     render() {
-
-         var items =
+        var selected = null; 
+        var items =
             [
                 {
                     id: 1, name: 'Stromy', childrens: [
@@ -55,7 +55,7 @@ var PartyPage = class PartyPage extends React.Component {
                                 {id: 7, name : 'Orel'}
                             ]
                         },{
-                            id: 9, name : 'Ošklivý zvířata', childrens : [
+                            id: 9, name : 'Hodně Ošklivý', childrens : [
                                 {id: 10, name : 'Šnek'},
                                 {id: 11, name : 'Vosa'},
                                 {id: 12, name : 'Hyena'},
@@ -79,13 +79,25 @@ var PartyPage = class PartyPage extends React.Component {
                     selectedPartyID={this.props.partyRegion.selectedPartyID}
                     filterText={this.props.partyRegion.filterText} 
                 />
-                <DropTree 
+                <DropDownTree 
                     items = {items} 
-                    selectedItemID = {20}
+                    selectedItemID = {13}
+                    label = {"Vyberte si něco"}
+                    opened = {[10]}
+                    onSelect = {this.a}
                 />
             </div>
         )
-        
+
+/*
+                <DropDownree 
+                    items = {items} 
+                    selectedItemID = {13}
+                    label = {"Vyberte si něco"}
+                    opened = {[10]}
+                />
+*/
+
         var centerPanel = (
             <PartyDetail selectedPartyData={this.props.partyRegion.selectedPartyData} />
         )

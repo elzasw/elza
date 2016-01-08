@@ -1,0 +1,70 @@
+@import "~variables.less";
+@levelIndent : 25px;
+@maxLevel: 30;
+
+
+.dropDownTree{
+    button{
+        .glyphicon{
+            margin:0px 0px 0px 5px;
+            position:relative;
+            font-size:10px;
+        }
+    }
+    
+    .menu{
+        overflow-y: scroll;
+        max-height:200px;
+        margin:2px 0px;
+        padding:0px;
+        display:none;
+        position:absolute;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border: 1px solid rgba(0,0,0,.15);
+        border-radius: 4px;
+        box-shadow: 0 6px 12px rgba(0,0,0,.175);
+        li{
+            list-style-type: none;
+            display:block;
+            ul{
+                padding:0 0 0 20px;
+                margin:0px;
+            }
+
+            .itemLabel{
+                display:inline-block;
+                white-space: nowrap;
+                border-radius: 4px;
+                padding:0 5px;
+                height:25px;
+                line-height:25px;
+                cursor:pointer;
+                &:hover{
+                   background-color:#F2F2F2; 
+                }
+            }
+
+            .switcher{
+                background-color:#F2F2F2;
+                border-radius: 4px;
+                display:inline-block;
+                padding:0px;
+                width:14px;
+                height:14px;
+                line-height:12px;
+                text-align:center;
+                margin:5px 5px 0px;
+                &.enabled{
+                    cursor:pointer;
+                    border:1px solid #AAAAAA;
+                    background-color:#EEEEEE;
+                    &:hover{
+                        background-color:#CCCCCC;
+                    }    
+                }
+            }
+        }
+    }
+    
+}
