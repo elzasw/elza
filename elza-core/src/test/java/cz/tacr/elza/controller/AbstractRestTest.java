@@ -43,8 +43,7 @@ import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformityErrors;
-import cz.tacr.elza.domain.ArrNodeConformityInfo;
+import cz.tacr.elza.domain.ArrNodeConformityError;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulPacketType;
@@ -80,14 +79,14 @@ import cz.tacr.elza.repository.DescItemSpecRegisterRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
-import cz.tacr.elza.repository.FaBulkActionRepository;
+import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FaViewRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
-import cz.tacr.elza.repository.FindingAidVersionConformityInfoRepository;
+import cz.tacr.elza.repository.VersionConformityRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NodeConformityErrorsRepository;
-import cz.tacr.elza.repository.NodeConformityInfoRepository;
+import cz.tacr.elza.repository.NodeConformityErrorRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
@@ -331,15 +330,15 @@ public abstract class AbstractRestTest {
     @Autowired
     private PacketRepository packetRepository;
     @Autowired
-    private FaBulkActionRepository faBulkActionRepository;
+    private BulkActionRunRepository faBulkActionRepository;
     @Autowired
-    protected NodeConformityInfoRepository nodeConformityInfoRepository;
+    protected NodeConformityRepository nodeConformityInfoRepository;
     @Autowired
-    protected NodeConformityErrorsRepository nodeConformityErrorsRepository;
+    protected NodeConformityErrorRepository nodeConformityErrorsRepository;
     @Autowired
     protected NodeConformityMissingRepository nodeConformityMissingRepository;
     @Autowired
-    protected FindingAidVersionConformityInfoRepository findingAidVersionConformityInfoRepository;
+    protected VersionConformityRepository findingAidVersionConformityInfoRepository;
 
     @Autowired
     protected PackageRepository packageRepository;
@@ -1108,17 +1107,17 @@ public abstract class AbstractRestTest {
     }
 
     /**
-     * Vytvoří objekt {@link ArrNodeConformityInfo}.
+     * Vytvoří objekt {@link cz.tacr.elza.domain.ArrNodeConformity}.
      *
      * @param node    uzel
      * @param version verze uzlu
      * @return info
      */
-    protected ArrNodeConformityInfo createNodeConformityInfo(final ArrNode node, final ArrFindingAidVersion version){
-        ArrNodeConformityInfo info = new ArrNodeConformityInfo();
+    protected cz.tacr.elza.domain.ArrNodeConformity createNodeConformityInfo(final ArrNode node, final ArrFindingAidVersion version){
+        cz.tacr.elza.domain.ArrNodeConformity info = new cz.tacr.elza.domain.ArrNodeConformity();
         info.setNode(node);
         info.setFaVersion(version);
-        info.setState(cz.tacr.elza.api.ArrNodeConformityInfo.State.OK);
+        info.setState(cz.tacr.elza.api.ArrNodeConformity.State.OK);
         return nodeConformityInfoRepository.save(info);
     }
 
@@ -1129,25 +1128,25 @@ public abstract class AbstractRestTest {
      * @param type typ
      * @return chybějící data
      */
-    protected ArrNodeConformityMissing createNodeConformityMissing(final ArrNodeConformityInfo info,
+    protected ArrNodeConformityMissing createNodeConformityMissing(final cz.tacr.elza.domain.ArrNodeConformity info,
                                                                    final RulDescItemType type) {
         ArrNodeConformityMissing result = new ArrNodeConformityMissing();
-        result.setNodeConformityInfo(info);
+        result.setNodeConformity(info);
         result.setDescItemType(type);
         return nodeConformityMissingRepository.save(result);
     }
 
     /**
-     * Vytvoří objekt {@link ArrNodeConformityErrors}.
+     * Vytvoří objekt {@link ArrNodeConformityError}.
      *
      * @param info     stav
      * @param descItem atribut
      * @return chyba
      */
-    protected ArrNodeConformityErrors createNodeConformityError(final ArrNodeConformityInfo info,
+    protected ArrNodeConformityError createNodeConformityError(final cz.tacr.elza.domain.ArrNodeConformity info,
                                                                 final ArrDescItem descItem) {
-        ArrNodeConformityErrors result = new ArrNodeConformityErrors();
-        result.setNodeConformityInfo(info);
+        ArrNodeConformityError result = new ArrNodeConformityError();
+        result.setNodeConformity(info);
         result.setDescItem(descItem);
         return result;
     }

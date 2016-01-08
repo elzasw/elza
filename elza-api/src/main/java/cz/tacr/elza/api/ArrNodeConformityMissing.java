@@ -1,12 +1,12 @@
 package cz.tacr.elza.api;
 
 /**
- * Textový popis chyby {@link ArrNodeConformityInfo}
+ * Textový popis chyby {@link ArrNodeConformity}
  *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 19.11.2015
  */
-public interface ArrNodeConformityMissing<ANCI extends ArrNodeConformityInfo,
+public interface ArrNodeConformityMissing<ANCI extends ArrNodeConformity,
         RDIT extends RulDescItemType, RDIS extends RulDescItemSpec> {
 
     /**
@@ -24,13 +24,13 @@ public interface ArrNodeConformityMissing<ANCI extends ArrNodeConformityInfo,
     /**
      * @return stav uzlu
      */
-    ANCI getNodeConformityInfo();
+    ANCI getNodeConformity();
 
 
     /**
      * @param nodeConformityInfo stav uzlu
      */
-    void setNodeConformityInfo(ANCI nodeConformityInfo);
+    void setNodeConformity(ANCI nodeConformityInfo);
 
 
     /**

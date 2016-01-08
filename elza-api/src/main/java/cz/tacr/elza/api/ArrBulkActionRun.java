@@ -9,14 +9,14 @@ import java.io.Serializable;
  * @author Martin Šlapa
  * @since 10.11.2015
  */
-public interface ArrFaBulkAction<FC extends ArrChange, FAV extends ArrFindingAidVersion> extends Serializable {
+public interface ArrBulkActionRun<FC extends ArrChange, FAV extends ArrFindingAidVersion> extends Serializable {
 
     /**
      * Vrací identifikátor záznamu.
      *
      * @return identifikátor záznamu
      */
-    Integer getArrFaBulkActionId();
+    Integer getBulkActionRunId();
 
 
     /**
@@ -24,7 +24,7 @@ public interface ArrFaBulkAction<FC extends ArrChange, FAV extends ArrFindingAid
      *
      * @param bulkActionId identifikátor záznamu
      */
-    void setArrFaBulkActionId(Integer bulkActionId);
+    void setBulkActionRunId(Integer bulkActionId);
 
 
     /**

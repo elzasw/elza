@@ -545,17 +545,17 @@
             </column>
         </createTable>
 
-        <createTable tableName="arr_fa_bulk_action">
-            <column name="arr_fa_bulk_action_id" type="int">
+        <createTable tableName="arr_bulk_action_run">
+            <column name="bulk_action_run_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
             <column name="bulk_action_code" type="varchar(50)">
                 <constraints nullable="false"/>
             </column>
-            <column name="fa_version_id" type="int">
+            <column name="version_id" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="fa_change_id" type="int">
+            <column name="change_id" type="int">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -566,8 +566,8 @@
             </column>
         </createTable>
 
-        <createTable tableName="arr_node_conformity_info">
-            <column name="node_conformity_info_id" type="int">
+        <createTable tableName="arr_node_conformity">
+            <column name="node_conformity_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
             <column name="node_id" type="int">
@@ -587,7 +587,7 @@
             <column name="node_conformity_missing_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="node_conformity_info_id" type="int">
+            <column name="node_conformity_id" type="int">
                 <constraints nullable="false"/>
             </column>
             <column name="desc_item_type_id" type="int">
@@ -597,11 +597,11 @@
             <column name="description" type="varchar(1000)"/>
         </createTable>
 
-        <createTable tableName="arr_node_conformity_errors">
-            <column name="node_conformity_errors_id" type="int">
+        <createTable tableName="arr_node_conformity_error">
+            <column name="node_conformity_error_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="node_conformity_info_id" type="int">
+            <column name="node_conformity_id" type="int">
                 <constraints nullable="false"/>
             </column>
             <column name="desc_item_id" type="int">
@@ -610,11 +610,11 @@
             <column name="description" type="varchar(1000)"/>
         </createTable>
 
-        <createTable tableName="arr_fa_version_conformity_info">
-            <column name="fa_version_conformity_info_id" type="int">
+        <createTable tableName="arr_version_conformity">
+            <column name="version_conformity_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="fa_version_id" type="int">
+            <column name="version_id" type="int">
                 <constraints nullable="false"/>
             </column>
             <column name="state" type="char(3)"/>
@@ -1100,17 +1100,17 @@
                                  onDelete="NO ACTION"/>
 
         <addForeignKeyConstraint constraintName="fk_arrFaVersionConfInfo_faVersion"
-                                 baseTableName="arr_fa_version_conformity_info" baseColumnNames="fa_version_id"
+                                 baseTableName="arr_version_conformity" baseColumnNames="version_id"
                                  referencedTableName="arr_finding_aid_version"
                                  referencedColumnNames="finding_aid_version_id" onDelete="NO ACTION"/>
 
         <addForeignKeyConstraint constraintName="fk_arrFaBulkAction_faVersion"
-                                 baseTableName="arr_fa_bulk_action" baseColumnNames="fa_version_id"
+                                 baseTableName="arr_bulk_action_run" baseColumnNames="version_id"
                                  referencedTableName="arr_finding_aid_version"
                                  referencedColumnNames="finding_aid_version_id" onDelete="NO ACTION"/>
 
         <addForeignKeyConstraint constraintName="fk_arrFaBulkAction_faChange"
-                                 baseTableName="arr_fa_bulk_action" baseColumnNames="fa_change_id"
+                                 baseTableName="arr_bulk_action_run" baseColumnNames="change_id"
                                  referencedTableName="arr_change"
                                  referencedColumnNames="change_id" onDelete="NO ACTION"/>
 
@@ -1122,19 +1122,19 @@
                                  onDelete="NO ACTION"/>
 
         <addForeignKeyConstraint constraintName="fk_arrNodeConfInfo_faNode"
-                                 baseTableName="arr_node_conformity_info" baseColumnNames="node_id"
+                                 baseTableName="arr_node_conformity" baseColumnNames="node_id"
                                  referencedTableName="arr_node"
                                  referencedColumnNames="node_id" onDelete="NO ACTION"/>
 
         <addForeignKeyConstraint constraintName="fk_arrNodeConfInfo_faVersion"
-                                 baseTableName="arr_node_conformity_info" baseColumnNames="fa_version_id"
+                                 baseTableName="arr_node_conformity" baseColumnNames="fa_version_id"
                                  referencedTableName="arr_finding_aid_version"
                                  referencedColumnNames="finding_aid_version_id" onDelete="NO ACTION"/>
 
         <addForeignKeyConstraint constraintName="fk_arrNodeConfMiss_nodConfInf"
-                                 baseTableName="arr_node_conformity_missing" baseColumnNames="node_conformity_info_id"
-                                 referencedTableName="arr_node_conformity_info"
-                                 referencedColumnNames="node_conformity_info_id" onDelete="NO ACTION"/>
+                                 baseTableName="arr_node_conformity_missing" baseColumnNames="node_conformity_id"
+                                 referencedTableName="arr_node_conformity"
+                                 referencedColumnNames="node_conformity_id" onDelete="NO ACTION"/>
 
         <addForeignKeyConstraint constraintName="fk_arrNodeConfMiss_descItmTyp"
                                  baseTableName="arr_node_conformity_missing" baseColumnNames="desc_item_type_id"
@@ -1147,12 +1147,12 @@
                                  referencedColumnNames="desc_item_spec_id" onDelete="NO ACTION"/>
 
         <addForeignKeyConstraint constraintName="fk_arrNodeConfErr_nodConfInf"
-                                 baseTableName="arr_node_conformity_errors" baseColumnNames="node_conformity_info_id"
-                                 referencedTableName="arr_node_conformity_info"
-                                 referencedColumnNames="node_conformity_info_id" onDelete="NO ACTION"/>
+                                 baseTableName="arr_node_conformity_error" baseColumnNames="node_conformity_id"
+                                 referencedTableName="arr_node_conformity"
+                                 referencedColumnNames="node_conformity_id" onDelete="NO ACTION"/>
 
         <addForeignKeyConstraint constraintName="fk_arrNodeConfErr_descItem"
-                                 baseTableName="arr_node_conformity_errors" baseColumnNames="desc_item_id"
+                                 baseTableName="arr_node_conformity_error" baseColumnNames="desc_item_id"
                                  referencedTableName="arr_desc_item"
                                  referencedColumnNames="desc_item_id" onDelete="NO ACTION"/>
 

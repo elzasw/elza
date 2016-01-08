@@ -6,8 +6,8 @@ import java.util.Set;
 
 import cz.tacr.elza.api.ArrDescItem;
 import cz.tacr.elza.api.ArrFindingAidVersion;
-import cz.tacr.elza.api.ArrFindingAidVersionConformityInfo;
-import cz.tacr.elza.api.ArrNodeConformityInfoExt;
+import cz.tacr.elza.api.ArrVersionConformity;
+import cz.tacr.elza.api.ArrNodeConformityExt;
 import cz.tacr.elza.api.RulArrangementType;
 import cz.tacr.elza.api.RulDataType;
 import cz.tacr.elza.api.RulDescItemSpec;
@@ -33,7 +33,7 @@ import cz.tacr.elza.api.vo.RelatedNodeDirection;
  */
 public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType, DIS extends RulDescItemSpec,
         RFV extends RulFaView, NTO extends NodeTypeOperation, RND extends RelatedNodeDirection, DI extends ArrDescItem,
-        FAV extends ArrFindingAidVersion, FAVCI extends ArrFindingAidVersionConformityInfo, P extends RulPackage> {
+        FAV extends ArrFindingAidVersion, FAVCI extends ArrVersionConformity, P extends RulPackage> {
 
     /**
      * Najde specifikaci podle id.
@@ -116,7 +116,7 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
      * @param strategies     strategie vyhodnocovani
      * @return stav validovaného uzlu
      */
-    ArrNodeConformityInfoExt setConformityInfo(Integer faLevelId, Integer faVersionId, Set<String> strategies);
+    ArrNodeConformityExt setConformityInfo(Integer faLevelId, Integer faVersionId, Set<String> strategies);
 
     /**
      * Nastavení stavu u verze archivní pomůcky.

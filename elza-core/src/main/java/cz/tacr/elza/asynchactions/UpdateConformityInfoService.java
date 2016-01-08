@@ -28,12 +28,12 @@ import cz.tacr.elza.ElzaRules;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformityInfo;
+import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.events.ConformityInfoUpdatedEvent;
 
 
 /**
- * Servisní třída pro spouštění vláken na aktualizaci {@link ArrNodeConformityInfo}.
+ * Servisní třída pro spouštění vláken na aktualizaci {@link ArrNodeConformity}.
  *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 2.12.2015

@@ -17,34 +17,34 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author Martin Šlapa
  * @since 10.11.2015
  */
-@Entity(name = "arr_fa_bulk_action")
+@Entity(name = "arr_bulk_action_run")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
-public class ArrFaBulkAction implements cz.tacr.elza.api.ArrFaBulkAction<ArrChange, ArrFindingAidVersion> {
+public class ArrBulkActionRun implements cz.tacr.elza.api.ArrBulkActionRun<ArrChange, ArrFindingAidVersion> {
 
     @Id
     @GeneratedValue
-    private Integer arrFaBulkActionId;
+    private Integer bulkActionRunId;
 
     @Column(nullable = false)
     private String bulkActionCode;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFindingAidVersion.class)
-    @JoinColumn(name = "faVersionId", nullable = false)
-    private ArrFindingAidVersion faVersion;
+    @JoinColumn(name = "versionId", nullable = false)
+    private ArrFindingAidVersion version;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
-    @JoinColumn(name = "faChangeId", nullable = false)
-    private ArrChange faChange;
+    @JoinColumn(name = "changeId", nullable = false)
+    private ArrChange change;
 
 
     @Override
-    public Integer getArrFaBulkActionId() {
-        return arrFaBulkActionId;
+    public Integer getBulkActionRunId() {
+        return bulkActionRunId;
     }
 
     @Override
-    public void setArrFaBulkActionId(final Integer bulkActionId) {
-        this.arrFaBulkActionId = bulkActionId;
+    public void setBulkActionRunId(final Integer bulkActionId) {
+        this.bulkActionRunId = bulkActionId;
     }
 
     @Override
@@ -59,21 +59,21 @@ public class ArrFaBulkAction implements cz.tacr.elza.api.ArrFaBulkAction<ArrChan
 
     @Override
     public ArrFindingAidVersion getFindingAidVersion() {
-        return faVersion;
+        return version;
     }
 
     @Override
     public void setFindingAidVersion(final ArrFindingAidVersion findingAidVersion) {
-        this.faVersion = findingAidVersion;
+        this.version = findingAidVersion;
     }
 
     @Override
     public ArrChange getChange() {
-        return faChange;
+        return change;
     }
 
     @Override
     public void setChange(final ArrChange change) {
-        this.faChange = change;
+        this.change = change;
     }
 }

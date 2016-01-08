@@ -11,8 +11,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.api.ArrNodeConformityInfo;
-import cz.tacr.elza.api.ArrNodeConformityInfoExt;
+import cz.tacr.elza.api.ArrNodeConformity;
+import cz.tacr.elza.api.ArrNodeConformityExt;
 import cz.tacr.elza.api.vo.BulkActionState.State;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
@@ -21,7 +21,7 @@ import cz.tacr.elza.bulkaction.BulkActionState;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrFindingAidVersionConformityInfo;
+import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.domain.ArrLevel;
 
 
@@ -96,7 +96,7 @@ public class FindingAidValidationBulkAction extends BulkAction {
      *
      * @param level uzel
      */
-    private ArrFindingAidVersionConformityInfo.State generate(final ArrLevel level) {
+    private ArrVersionConformity.State generate(final ArrLevel level) {
         if (bulkActionState.isInterrupt()) {
             bulkActionState.setState(State.ERROR);
             throw new BulkActionInterruptedException("Hromadná akce " + toString() + " byla přerušena.");
@@ -104,22 +104,22 @@ public class FindingAidValidationBulkAction extends BulkAction {
 
         List<ArrLevel> childLevels = getChildren(level);
 
-        ArrFindingAidVersionConformityInfo.State state = ArrFindingAidVersionConformityInfo.State.OK;
+        ArrVersionConformity.State state = ArrVersionConformity.State.OK;
 
-        ArrNodeConformityInfoExt nodeConformityInfoExt = ruleManager
+        ArrNodeConformityExt nodeConformityInfoExt = ruleManager
                 .setConformityInfo(level.getLevelId(), version.getFindingAidVersionId(), strategies);
 
-        ArrNodeConformityInfo.State stateLevel = nodeConformityInfoExt.getState();
+        ArrNodeConformity.State stateLevel = nodeConformityInfoExt.getState();
 
-        if (stateLevel.equals(ArrNodeConformityInfo.State.ERR)) {
+        if (stateLevel.equals(ArrNodeConformity.State.ERR)) {
             errorCount++;
-            state = ArrFindingAidVersionConformityInfo.State.ERR;
+            state = ArrVersionConformity.State.ERR;
         }
 
         for (ArrLevel childLevel : childLevels) {
-            ArrFindingAidVersionConformityInfo.State stateChild = generate(childLevel);
-            if (!stateChild.equals(ArrFindingAidVersionConformityInfo.State.OK)) {
-                state = ArrFindingAidVersionConformityInfo.State.ERR;
+            ArrVersionConformity.State stateChild = generate(childLevel);
+            if (!stateChild.equals(ArrVersionConformity.State.OK)) {
+                state = ArrVersionConformity.State.ERR;
             }
         }
 
@@ -147,10 +147,10 @@ public class FindingAidValidationBulkAction extends BulkAction {
         // v případě, že existuje nějaké přepočítávání uzlů, je nutné to ukončit
         updateConformityInfoService.terminateWorkerInVersion(version);
 
-        ArrFindingAidVersionConformityInfo.State state = generate(version.getRootLevel());
+        ArrVersionConformity.State state = generate(version.getRootLevel());
 
         String stateDescription;
-        if (state.equals(ArrFindingAidVersionConformityInfo.State.ERR)) {
+        if (state.equals(ArrVersionConformity.State.ERR)) {
             stateDescription = "Validace uzlů archivní pomůcky zjistila nejméně jednu chybu: " + errorCount;
         } else {
             stateDescription = null;

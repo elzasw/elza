@@ -24,14 +24,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 19.11.2015
  */
-@Entity(name = "arr_node_conformity_info")
+@Entity(name = "arr_node_conformity")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrNodeConformityInfo implements cz.tacr.elza.api.ArrNodeConformityInfo<ArrNode, ArrFindingAidVersion> {
+public class ArrNodeConformity implements cz.tacr.elza.api.ArrNodeConformity<ArrNode, ArrFindingAidVersion> {
 
     @Id
     @GeneratedValue
-    private Integer nodeConformityInfoId;
+    private Integer nodeConformityId;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
@@ -54,13 +54,13 @@ public class ArrNodeConformityInfo implements cz.tacr.elza.api.ArrNodeConformity
     private Date date;
 
     @Override
-    public Integer getNodeConformityInfoId() {
-        return nodeConformityInfoId;
+    public Integer getNodeConformityId() {
+        return nodeConformityId;
     }
 
     @Override
-    public void setNodeConformityInfoId(final Integer nodeConformityInfoId) {
-        this.nodeConformityInfoId = nodeConformityInfoId;
+    public void setNodeConformityId(final Integer nodeConformityId) {
+        this.nodeConformityId = nodeConformityId;
     }
 
     @Override
@@ -115,25 +115,25 @@ public class ArrNodeConformityInfo implements cz.tacr.elza.api.ArrNodeConformity
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof ArrNodeConformityInfo)) {
+        if (!(obj instanceof cz.tacr.elza.domain.ArrNodeConformity)) {
             return false;
         }
         if (this == obj) {
             return true;
         }
 
-        ArrNodeConformityInfo other = (ArrNodeConformityInfo) obj;
+        cz.tacr.elza.domain.ArrNodeConformity other = (cz.tacr.elza.domain.ArrNodeConformity) obj;
 
-        return new EqualsBuilder().append(nodeConformityInfoId, other.getNodeConformityInfoId()).isEquals();
+        return new EqualsBuilder().append(nodeConformityId, other.getNodeConformityId()).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(nodeConformityInfoId).append(state).toHashCode();
+        return new HashCodeBuilder().append(nodeConformityId).append(state).toHashCode();
     }
 
     @Override
     public String toString() {
-        return "ArrNodeConformityInfo pk=" + nodeConformityInfoId;
+        return "ArrNodeConformity pk=" + nodeConformityId;
     }
 }

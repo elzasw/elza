@@ -8,11 +8,11 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.domain.ArrNodeConformityErrors;
-import cz.tacr.elza.domain.ArrNodeConformityInfo;
-import cz.tacr.elza.domain.ArrNodeConformityInfoExt;
+import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeConformityError;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
-import cz.tacr.elza.repository.NodeConformityErrorsRepository;
+import cz.tacr.elza.repository.NodeConformityErrorRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
 
 
@@ -29,7 +29,7 @@ public class ExtendedObjectsFactory {
     private NodeConformityMissingRepository nodeConformityMissingRepository;
 
     @Autowired
-    private NodeConformityErrorsRepository nodeConformityErrorsRepository;
+    private NodeConformityErrorRepository nodeConformityErrorsRepository;
 
 
     /**
@@ -39,19 +39,19 @@ public class ExtendedObjectsFactory {
      * @param loadErrors     true pokud se mají načítat chybějící a špatně zadaný hodnoty
      * @return rozšířený objekt chyby
      */
-    public ArrNodeConformityInfoExt createNodeConformityInfoExt(@Nullable final ArrNodeConformityInfo conformityInfo,
+    public ArrNodeConformityExt createNodeConformityInfoExt(@Nullable final ArrNodeConformity conformityInfo,
                                                                 final boolean loadErrors) {
         if (conformityInfo == null) {
             return null;
         }
 
-        ArrNodeConformityInfoExt result = new ArrNodeConformityInfoExt();
+        ArrNodeConformityExt result = new ArrNodeConformityExt();
         BeanUtils.copyProperties(conformityInfo, result);
         if (loadErrors) {
             List<ArrNodeConformityMissing> missing = nodeConformityMissingRepository
-                    .findByNodeConformityInfo(conformityInfo);
-            List<ArrNodeConformityErrors> errors = nodeConformityErrorsRepository
-                    .findByNodeConformityInfo(conformityInfo);
+                    .findByNodeConformity(conformityInfo);
+            List<ArrNodeConformityError> errors = nodeConformityErrorsRepository
+                    .findByNodeConformity(conformityInfo);
 
             result.setMissingList(missing);
             result.setErrorList(errors);

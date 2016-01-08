@@ -11,7 +11,7 @@ import java.util.Date;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 19.11.2015
  */
-public interface ArrNodeConformityInfo<AN extends ArrNode, AFAV extends ArrFindingAidVersion> {
+public interface ArrNodeConformity<AN extends ArrNode, AFAV extends ArrFindingAidVersion> {
 
     /**
      * Stav uzlu.
@@ -25,13 +25,13 @@ public interface ArrNodeConformityInfo<AN extends ArrNode, AFAV extends ArrFindi
     /**
      * @return id stavu
      */
-    Integer getNodeConformityInfoId();
+    Integer getNodeConformityId();
 
 
     /**
-     * @param nodeConformityInfoId id stavu
+     * @param nodeConformityId id stavu
      */
-    void setNodeConformityInfoId(Integer nodeConformityInfoId);
+    void setNodeConformityId(Integer nodeConformityId);
 
 
     /**
