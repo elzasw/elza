@@ -11,6 +11,7 @@ import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.ParPartyTimeRange;
 import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
@@ -137,7 +138,7 @@ public class PartyService {
         partyRepository.save(party);
 
         // Names
-        ParPartyName preferredName = createPartyNames(partyVO, party);
+        ParPartyName preferredName = insertPartyNames(partyVO, party);
 
         // TimeRanges
         if (CollectionUtils.isNotEmpty(partyVO.getTimeRanges())) {
@@ -216,32 +217,103 @@ public class PartyService {
         return preferredName;
     }
 
-    private ParPartyName updatePartyNames(final ParPartyEditVO partyVO, final ParParty origParty) {
+    private ParPartyName insertPartyNames(final ParPartyEditVO partyVO, final ParParty parParty) {
 
-        List<ParPartyName> origNames = partyNameRepository.findByParty(origParty);
+        ParPartyName preferredName = null;
+
+        for (final ParPartyNameEditVO partyNameVO : partyVO.getPartyNames()) {
+
+            ParPartyName partyName = factoryDO.createParPartyName(partyNameVO);
+
+            // nf type
+            ParPartyNameFormType nameFormType = partyNameFormTypeRepository.getOne(partyNameVO.getNameFormTypeId());
+            partyName.setNameFormType(nameFormType);
+            partyName.setParty(parParty);
+
+            // unitdates
+            ParUnitdateEditVO validFromVO = partyNameVO.getValidFrom();
+            saveValidFrom(validFromVO, partyName);
+            ParUnitdateEditVO validToVO = partyNameVO.getValidTo();
+            saveValidTo(validToVO, partyName);
+
+            partyNameRepository.save(partyName);
+
+            if (partyNameVO.isPreferredName()) {
+                preferredName = partyName;
+            }
+        }
+
+        return preferredName;
+    }
+
+    private ParPartyName updatePartyNames(final ParPartyEditVO partyVO, final ParParty parParty) {
+
+        List<ParPartyName> namesToDelete = partyNameRepository.findByParty(parParty);
 
         ParPartyName preferredName = null;
         for (final ParPartyNameEditVO partyNameVO : partyVO.getPartyNames()) {
 
-            //TODO kuzel muze chtit i nove
-            ParPartyName origPartyName = partyNameRepository.getOne(partyNameVO.getPartyNameId());
+            ParPartyName partyName = partyNameRepository.getOne(partyNameVO.getPartyNameId());
+
+            // nf type
             ParPartyNameFormType nameFormType = partyNameFormTypeRepository.getOne(partyNameVO.getNameFormTypeId());
+            partyName.setNameFormType(nameFormType);
+            partyName.setParty(parParty);
 
-            factoryDO.updateParPartyName(partyNameVO, origPartyName);
-            origPartyName.setNameFormType(nameFormType);
+            // UNITDATES
+            ParUnitdateEditVO validFromVO = partyNameVO.getValidFrom();
+            // nedal ho, chce smazat
+            ParUnitdate validFrom = partyName.getValidFrom();
+            if (validFrom != null && validFrom.getUnitdateId() != null
+                    && (validFromVO == null || validFromVO.getUnitdateId() == null)) {
+                partyName.setValidFrom(null);
+                partyNameRepository.save(partyName);
+                unitdateRepository.delete(validFrom);
+            }
+            saveValidFrom(validFromVO, partyName);
 
-            partyNameRepository.save(origPartyName);
+            ParUnitdateEditVO validToVO = partyNameVO.getValidTo();
+            // nedal ho, chce smazat
+            ParUnitdate validTo = partyName.getValidTo();
+            if (validTo != null && validTo.getUnitdateId() != null
+                    && (validToVO == null || validToVO.getUnitdateId() == null)) {
+                partyName.setValidTo(null);
+                partyNameRepository.save(partyName);
+                unitdateRepository.delete(validTo);
+            }
+            saveValidTo(validToVO, partyName);
+
+            partyNameRepository.save(partyName);
 
             if (partyNameVO.isPreferredName()) {
-                preferredName = origPartyName;
+                preferredName = partyName;
             }
 
-            origNames.remove(origPartyName);
+            // remove from deletion
+            namesToDelete.remove(partyName);
         }
 
-        partyNameRepository.deleteInBatch(origNames);
+        partyNameRepository.deleteInBatch(namesToDelete);
 
         return preferredName;
+    }
+
+    private void saveValidFrom(final ParUnitdateEditVO validFromVO, final ParPartyName partyName) {
+        if (validFromVO != null) {
+            ArrCalendarType calendarType = findCalendarType(validFromVO);
+            // mapovana mapperem
+            partyName.getValidFrom().setCalendarType(calendarType);
+            unitdateRepository.save(partyName.getValidFrom());
+        }
+    }
+
+    private void saveValidTo(final ParUnitdateEditVO validToVO, final ParPartyName partyName) {
+        if (validToVO != null) {
+            ArrCalendarType calendarType = findCalendarType(validToVO);
+            // mapovana mapperem
+            partyName.getValidTo().setCalendarType(calendarType);
+            unitdateRepository.save(partyName.getValidTo());
+        }
     }
 
     private void createTimeRanges(final List<ParPartyTimeRangeEditVO> timeRanges, final ParParty party) {
@@ -269,39 +341,30 @@ public class PartyService {
         });
     }
 
-//    private void updateTimeRanges(final List<ParPartyTimeRangeEditVO> timeRanges, final ParParty party) {
-//        timeRanges.forEach(tr -> {
-//            if (tr.getPartyTimeRangeId() != null) {
-//
-//            }
-//
-//
-////            partyTimeRangeRepository.
-////                    //TODO kuzel muze chtit i nove
-////
-////                    ParPartyTimeRange partyTimeRange = factoryDO.updateParPartyTimeRange(tr);
-//
-//            // unitdates
-//            ParUnitdateEditVO fromVO = tr.getFrom();
-//            if (fromVO != null) {
-//                ArrCalendarType calendarType = findCalendarType(fromVO);
-//
-//                partyTimeRange.getFrom().setCalendarType(calendarType);
-//                unitdateRepository.save(partyTimeRange.getFrom());
-//            }
-//            ParUnitdateEditVO toVO = tr.getTo();
-//            if (toVO != null) {
-//                ArrCalendarType calendarType = findCalendarType(toVO);
-//
-//                partyTimeRange.getTo().setCalendarType(calendarType);
-//                unitdateRepository.save(partyTimeRange.getTo());
-//            }
-//
-//            partyTimeRange.setParty(party);
-//            partyTimeRangeRepository.save(partyTimeRange);
-//        });
-//    }
+    private void saveTimeRanges(final List<ParPartyTimeRangeEditVO> timeRanges, final ParParty party) {
+        timeRanges.forEach(tr -> {
+            ParPartyTimeRange partyTimeRange = factoryDO.createParPartyTimeRange(tr);
 
+            // unitdates
+            ParUnitdateEditVO fromVO = tr.getFrom();
+            if (fromVO != null) {
+                ArrCalendarType calendarType = findCalendarType(fromVO);
+
+                partyTimeRange.getFrom().setCalendarType(calendarType);
+                unitdateRepository.save(partyTimeRange.getFrom());
+            }
+            ParUnitdateEditVO toVO = tr.getTo();
+            if (toVO != null) {
+                ArrCalendarType calendarType = findCalendarType(toVO);
+
+                partyTimeRange.getTo().setCalendarType(calendarType);
+                unitdateRepository.save(partyTimeRange.getTo());
+            }
+
+            partyTimeRange.setParty(party);
+            partyTimeRangeRepository.save(partyTimeRange);
+        });
+    }
 
     /**
      * Nalezne typ kalendáře dle jeho VO.

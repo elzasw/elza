@@ -314,18 +314,21 @@ public class PartyManagerTest extends AbstractRestTest {
         ParPartyNameFormType nameFormType = createNameFormType();
         ArrCalendarType calendarType = createCalendarType();
 
-        // names
-        ParPartyNameEditVO partyNameVO = new ParPartyNameEditVO();
-        partyNameVO.setMainPart("MAIN_PART" + ElzaTools.getStringOfActualDate());
-        partyNameVO.setNameFormTypeId(nameFormType.getNameFormTypeId());
-        partyNameVO.setPreferredName(true);
-
-        // timeranges
+        // unitranges
         ParUnitdateEditVO unitdateEditVO = new ParUnitdateEditVO();
         unitdateEditVO.setCalendarTypeId(calendarType.getCalendarTypeId());
         ParUnitdateEditVO unitdateEditVO2 = new ParUnitdateEditVO();
         unitdateEditVO2.setCalendarTypeId(calendarType.getCalendarTypeId());
 
+        // names
+        ParPartyNameEditVO partyNameVO = new ParPartyNameEditVO();
+        partyNameVO.setMainPart("MAIN_PART" + ElzaTools.getStringOfActualDate());
+        partyNameVO.setNameFormTypeId(nameFormType.getNameFormTypeId());
+        partyNameVO.setPreferredName(true);
+        partyNameVO.setValidFrom(unitdateEditVO);
+        partyNameVO.setValidTo(unitdateEditVO2);
+
+        // timeranges
         ParPartyTimeRangeEditVO partyTimeRangeEditVO = new ParPartyTimeRangeEditVO();
         partyTimeRangeEditVO.setFrom(unitdateEditVO);
         partyTimeRangeEditVO.setTo(unitdateEditVO2);
@@ -352,6 +355,10 @@ public class PartyManagerTest extends AbstractRestTest {
         parPartyVO.setPartyId(parPartyVORet.getPartyId());
         parPartyVO.getPartyNames().get(0).setPartyNameId(parPartyVORet.getPartyNames().get(0).getPartyNameId());
         parPartyVO.setGenealogy("GENEALOGYUPDATE");
+
+//        parPartyVO.getPartyNames().get(0).getValidFrom().setUnitdateId(parPartyVORet.getPartyNames().get(0).getValidFrom().getUnitdateId());
+        parPartyVO.getPartyNames().get(0).getValidTo().setUnitdateId(parPartyVORet.getPartyNames().get(0).getValidTo().getUnitdateId());
+        parPartyVO.getPartyNames().get(0).setValidFrom(null);
 
 //        parPartyVO.getPartyNames().get(0).setPartyNameId(1);
         response = put(spec -> spec.body(parPartyVO), UPDATE_PARTY_V2);
