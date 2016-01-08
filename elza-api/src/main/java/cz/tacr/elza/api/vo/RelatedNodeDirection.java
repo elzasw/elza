@@ -14,11 +14,11 @@ public enum RelatedNodeDirection {
     /**
      * Všechny přímé rodiče.
      */
-    PARENTS,
+    PARENT,
     /**
      * Všechny předky.
      */
-    ASCENDATNS,
+    ASCENDANTS,
     /**
      * Všechny příme potomky.
      */

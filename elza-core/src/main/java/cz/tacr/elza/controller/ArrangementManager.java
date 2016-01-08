@@ -546,6 +546,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         ArrLevel targetLevel = levelWithFollowerNode.getLevelTarget();
         ArrNode targetNode = targetLevel.getNode();
         Integer versionId = levelWithFollowerNode.getFaVersionId();
+        ArrNode originalParentNode = level.getNodeParent();
+
+        List relatedList = new ArrayList<>();
 
         isValidAndOpenVersion(versionId);
         isValidArrFaLevel(level);
@@ -585,7 +588,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         nodesToShiftDown.add(follower);
 
         Integer position;
-        if (level.getNodeParent().equals(follower.getNodeParent())) {
+        if (originalParentNode.equals(follower.getNodeParent())) {
+            Set<RelatedNodeDirection> relatedNodeDirectionsDisconnect = ruleManager
+                    .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.DISCONNECT_NODE_LOCAL,
+                            null, null, null);
+            relatedList.add(relatedNodeDirectionsDisconnect);
+
             Collection<ArrLevel> nodesToShift = CollectionUtils.disjunction(nodesToShiftDown, nodesToShiftUp);
             if (level.getPosition() > follower.getPosition()) {
                 nodesToShift.remove(level);
@@ -596,6 +604,11 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 position = follower.getPosition() - 1;
             }
         } else {
+            Set<RelatedNodeDirection> relatedNodeDirectionsDisconnect = ruleManager
+                    .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.DISCONNECT_NODE,
+                            null, null, null);
+            relatedList.add(relatedNodeDirectionsDisconnect);
+
             shiftNodesDown(nodesToShiftDown, change);
             shiftNodesUp(nodesToShiftUp, change);
             position = follower.getPosition();
@@ -610,24 +623,16 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         saveLastChangeFaVersion(change, versionId);
 
-        List relatedList = new ArrayList<>();
-
-        if (level.getNodeParent().equals(follower.getNodeParent())) {
+        if (originalParentNode.equals(follower.getNodeParent())) {
             Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
-                    .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.CHANGE_NODE_POSITION,
+                    .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.CONNECT_NODE_LOCAL,
                             null, null, null);
-
             relatedList.add(relatedNodeDirections);
         } else {
-            Set<RelatedNodeDirection> relatedNodeDirectionsDisconnect = ruleManager
-                    .conformityInfo(versionId, Arrays.asList(follower.getNode().getNodeId()), NodeTypeOperation.DISCONNECT_NODE,
-                            null, null, null);
-
             Set<RelatedNodeDirection> relatedNodeDirectionsConnect = ruleManager
                     .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.CONNECT_NODE,
                             null, null, null);
 
-            relatedList.add(relatedNodeDirectionsDisconnect);
             relatedList.add(relatedNodeDirectionsConnect);
         }
 
@@ -670,6 +675,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         // vkládaný nesmí být rodičem uzlu pod který ho vkládám
         checkCycle(level, parent);
 
+        Set<RelatedNodeDirection> relatedNodeDirectionsDisconnect = ruleManager
+                .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.DISCONNECT_NODE,
+                        null, null, null);
+
         ArrChange change = arrangementService.createChange();
         shiftNodesUp(nodesToShift(level), change);
         ArrLevel newLevel = createNewLevelVersion(level, change);
@@ -684,10 +693,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         levelWithPredecessorNodeRet.setExtraNode(parentNode);
 
         saveLastChangeFaVersion(change, versionId);
-
-        Set<RelatedNodeDirection> relatedNodeDirectionsDisconnect = ruleManager
-                .conformityInfo(versionId, Arrays.asList(parentNode.getNodeId()), NodeTypeOperation.DISCONNECT_NODE,
-                        null, null, null);
 
         Set<RelatedNodeDirection> relatedNodeDirectionsConnect = ruleManager
                 .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.CONNECT_NODE,
@@ -709,9 +714,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         Assert.notNull(levelWithPredecessorNode);
 
         ArrLevel level = levelWithPredecessorNode.getLevel();
+        ArrNode originalParentNode = level.getNodeParent();
         ArrLevel predecessorLevel = levelWithPredecessorNode.getLevelTarget();
         ArrNode predecessorNode = predecessorLevel.getNode();
         Integer versionId = levelWithPredecessorNode.getFaVersionId();
+
+        List relatedList = new ArrayList<>();
 
         isValidAndOpenVersion(versionId);
         isValidArrFaLevel(level);
@@ -750,7 +758,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         List<ArrLevel> nodesToShiftUp = nodesToShift(level);
         List<ArrLevel> nodesToShiftDown = nodesToShift(predecessor);
         Integer position;
-        if (level.getNodeParent().equals(predecessor.getNodeParent())) {
+        if (originalParentNode.equals(predecessor.getNodeParent())) {
+            Set<RelatedNodeDirection> relatedNodeDirectionsDisconnect = ruleManager
+                    .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.DISCONNECT_NODE_LOCAL,
+                            null, null, null);
+            relatedList.add(relatedNodeDirectionsDisconnect);
+
             Collection<ArrLevel> nodesToShift = CollectionUtils.disjunction(nodesToShiftDown, nodesToShiftUp);
             if (level.getPosition() > predecessor.getPosition()) {
                 nodesToShift.remove(level);
@@ -761,6 +774,11 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 position = predecessor.getPosition();
             }
         } else {
+            Set<RelatedNodeDirection> relatedNodeDirectionsDisconnect = ruleManager
+                    .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.DISCONNECT_NODE,
+                            null, null, null);
+            relatedList.add(relatedNodeDirectionsDisconnect);
+
             shiftNodesDown(nodesToShiftDown, change);
             shiftNodesUp(nodesToShiftUp, change);
             position = predecessor.getPosition() + 1;
@@ -777,24 +795,15 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         saveLastChangeFaVersion(change, versionId);
 
-        List relatedList = new ArrayList<>();
-
-        if (level.getNodeParent().equals(predecessor.getNodeParent())) {
+        if (originalParentNode.equals(predecessor.getNodeParent())) {
             Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
-                    .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.CHANGE_NODE_POSITION,
+                    .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.CONNECT_NODE_LOCAL,
                             null, null, null);
-
             relatedList.add(relatedNodeDirections);
         } else {
-            Set<RelatedNodeDirection> relatedNodeDirectionsDisconnect = ruleManager
-                    .conformityInfo(versionId, Arrays.asList(predecessor.getNode().getNodeId()), NodeTypeOperation.DISCONNECT_NODE,
-                            null, null, null);
-
             Set<RelatedNodeDirection> relatedNodeDirectionsConnect = ruleManager
                     .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.CONNECT_NODE,
                             null, null, null);
-
-            relatedList.add(relatedNodeDirectionsDisconnect);
             relatedList.add(relatedNodeDirectionsConnect);
         }
 

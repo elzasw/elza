@@ -19,9 +19,14 @@ public enum NodeTypeOperation {
     DELETE_NODE,
 
     /**
-     * Změna pozice uzlu.
+     * Odpojení uzlu se od stejného rodiče.
      */
-    CHANGE_NODE_POSITION,
+    DISCONNECT_NODE_LOCAL,
+
+    /**
+     * Připojení uzlu ke stejnému rodiči.
+     */
+    CONNECT_NODE_LOCAL,
 
     /**
      * Odpojení uzlu.

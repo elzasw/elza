@@ -179,10 +179,10 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
         ArrNode node3 = level3.getNode();
 
 
-        List<ArrNode> result = nodeRepository.findNodesByDirection(level2.getNode(), version, RelatedNodeDirection.PARENTS);
+        List<ArrNode> result = nodeRepository.findNodesByDirection(level2.getNode(), version, RelatedNodeDirection.PARENT);
         Assert.assertTrue(result.size() == 1 && result.contains(node1));
 
-        result = nodeRepository.findNodesByDirection(level2.getNode(), version, RelatedNodeDirection.ASCENDATNS);
+        result = nodeRepository.findNodesByDirection(level2.getNode(), version, RelatedNodeDirection.ASCENDANTS);
         Assert.assertTrue(result.size() == 2 && result.contains(rootNode) && result.contains(node1));
 
         result = nodeRepository.findNodesByDirection(level1.getNode(), version, RelatedNodeDirection.CHILDREN);
