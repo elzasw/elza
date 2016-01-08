@@ -1,5 +1,16 @@
 package cz.tacr.elza.controller.config;
 
+import java.time.LocalDateTime;
+
+import ma.glasnost.orika.CustomMapper;
+import ma.glasnost.orika.MapperFactory;
+import ma.glasnost.orika.MappingContext;
+import ma.glasnost.orika.converter.builtin.PassThroughConverter;
+import ma.glasnost.orika.impl.DefaultMapperFactory;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
@@ -59,15 +70,6 @@ import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulRuleSet;
-import ma.glasnost.orika.CustomMapper;
-import ma.glasnost.orika.MapperFactory;
-import ma.glasnost.orika.MappingContext;
-import ma.glasnost.orika.converter.builtin.PassThroughConverter;
-import ma.glasnost.orika.impl.DefaultMapperFactory;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-import java.time.LocalDateTime;
 
 
 /**
@@ -224,8 +226,10 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(RulRuleSet.class, RulRuleSetVO.class).byDefault().field("ruleSetId", "id").register();
 
         mapperFactory.classMap(ArrFindingAid.class, ArrFindingAidVO.class).byDefault().field("findingAidId", "id").register();
-        mapperFactory.classMap(ArrFindingAidVersion.class, ArrFindingAidVersionVO.class).byDefault().field("findingAidVersionId", "id").register();
+        mapperFactory.classMap(ArrFindingAidVersion.class, ArrFindingAidVersionVO.class).byDefault().field("findingAidVersionId", "id").
+            exclude("arrangementType").register();
         mapperFactory.getConverterFactory().registerConverter(new PassThroughConverter(LocalDateTime.class));
+
         mapperFactory.classMap(RegVariantRecord.class, RegVariantRecordVO.class).customize(
                 new CustomMapper<RegVariantRecord, RegVariantRecordVO>() {
                     @Override

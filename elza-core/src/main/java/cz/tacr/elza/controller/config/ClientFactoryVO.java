@@ -32,10 +32,10 @@ import cz.tacr.elza.controller.vo.ParRelationEntityVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.controller.vo.RulArrangementTypeVO;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroup;
 import cz.tacr.elza.domain.ParPartyGroupIdentifier;
@@ -47,8 +47,8 @@ import cz.tacr.elza.domain.ParRelation;
 import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
@@ -465,6 +465,7 @@ public class ClientFactoryVO {
         if (lockChange != null) {
             findingAidVersionVO.setLockDate(lockChange.getChangeDate());
         }
+        findingAidVersionVO.setArrangementType(createArrangementType(version.getArrangementType()));
 
         return findingAidVersionVO;
     }
