@@ -68,7 +68,7 @@ public class XmlImportTest implements ApplicationContextAware {
 
     private static final int TREE_DEPTH_COUNT = 2;
 
-    private static final int DESC_ITEMS_COUNT = 10;
+    private static final int DESC_ITEMS_COUNT = 12;
 
     private static final int EVENT_COUNT = 1;
 

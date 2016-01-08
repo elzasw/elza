@@ -47,6 +47,7 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataDecimal;
 import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
@@ -100,6 +101,7 @@ import cz.tacr.elza.xmlimport.v1.vo.XmlImport;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.AbstractDescItem;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemCoordinates;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemDecimal;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemEnum;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemFormattedText;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemInteger;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemPacketRef;
@@ -449,6 +451,14 @@ public class XmlImportService {
                     arrData.setValue(descItemUnitId.getValue());
 
                     dataRepository.save(arrData);
+                } else if (descItem instanceof DescItemEnum) {
+                    RulDataType dataType = dataTypeRepository.findByCode("ENUM");
+
+                    ArrDataNull arrData = new ArrDataNull();
+                    arrData.setDataType(dataType);
+                    arrData.setDescItem(arrDescItem);
+
+                    dataRepository.save(arrData);
                 }
             }
         }
@@ -463,12 +473,6 @@ public class XmlImportService {
         arrDescItem.setPosition(descItem.getPosition());
         arrDescItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
 
-        String descItemSpecCode = descItem.getDescItemSpecCode();
-        if (descItemSpecCode !=  null) {
-            RulDescItemSpec descItemSpec = descItemSpecRepository.findOneByCode(descItemSpecCode);
-            arrDescItem.setDescItemSpec(descItemSpec);
-        }
-
         String descItemTypeCode = descItem.getDescItemTypeCode();
         if (descItemTypeCode !=  null) {
             RulDescItemType descItemType = descItemTypeRepository.findOneByCode(descItemTypeCode);
@@ -478,6 +482,16 @@ public class XmlImportService {
             arrDescItem.setDescItemType(descItemType);
         } else {
             throw new LevelImportException("Chybí desc item type code");
+        }
+
+        String descItemSpecCode = descItem.getDescItemSpecCode();
+        if (descItemSpecCode !=  null) {
+            RulDescItemSpec descItemSpec = descItemSpecRepository.findByDescItemTypeAndCode(arrDescItem.getDescItemType(), descItemSpecCode);
+            if (descItemSpec == null) {
+                throw new LevelImportException("Neexistuje specifikace s kódem " + descItemSpecCode
+                        + " pro desc item type s kódem " + descItemTypeCode);
+            }
+            arrDescItem.setDescItemSpec(descItemSpec);
         }
 
         return arrDescItem;
