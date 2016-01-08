@@ -1,35 +1,35 @@
 package cz.tacr.elza.api;
 
 /**
- * Pro chybové stavy uzlu {@link ArrNodeConformityInfo} se odkazuje na hodnoty atributů, které jsou ve špatném stavu.
+ * Pro chybové stavy uzlu {@link ArrNodeConformity} se odkazuje na hodnoty atributů, které jsou ve špatném stavu.
  *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 19.11.2015
  */
-public interface ArrNodeConformityErrors<ANCI extends ArrNodeConformityInfo, ADI extends ArrDescItem> {
+public interface ArrNodeConformityError<ANCI extends ArrNodeConformity, ADI extends ArrDescItem> {
 
     /**
      * @return id chyby
      */
-    Integer getNodeConformityErrorsId();
+    Integer getNodeConformityErrorId();
 
 
     /**
-     * @param nodeConformityErrorsId id chyby
+     * @param nodeConformityErrorId id chyby
      */
-    void setNodeConformityErrorsId(Integer nodeConformityErrorsId);
+    void setNodeConformityErrorId(Integer nodeConformityErrorId);
 
 
     /**
      * @return stav uzlu
      */
-    ANCI getNodeConformityInfo();
+    ANCI getNodeConformity();
 
 
     /**
-     * @param nodeConformityInfo stav uzlu
+     * @param nodeConformity stav uzlu
      */
-    void setNodeConformityInfo(ANCI nodeConformityInfo);
+    void setNodeConformity(ANCI nodeConformity);
 
 
     /**

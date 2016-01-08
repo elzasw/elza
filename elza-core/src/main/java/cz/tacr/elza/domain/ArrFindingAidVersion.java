@@ -1,9 +1,6 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -13,9 +10,6 @@ import javax.persistence.ManyToOne;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import cz.tacr.elza.api.*;
-import cz.tacr.elza.api.ArrNodeConformityInfo;
 
 
 /**

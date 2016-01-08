@@ -18,22 +18,22 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrFindingAidVersionConformityInfo;
+import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformityInfo;
+import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.FaBulkActionRepository;
+import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
-import cz.tacr.elza.repository.FindingAidVersionConformityInfoRepository;
+import cz.tacr.elza.repository.VersionConformityRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NodeConformityErrorsRepository;
-import cz.tacr.elza.repository.NodeConformityInfoRepository;
+import cz.tacr.elza.repository.NodeConformityErrorRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
@@ -79,19 +79,19 @@ public class ArrangementService {
     private NodeRegisterRepository nodeRegisterRepository;
 
     @Autowired
-    private NodeConformityInfoRepository nodeConformityInfoRepository;
+    private NodeConformityRepository nodeConformityInfoRepository;
 
     @Autowired
-    private NodeConformityErrorsRepository nodeConformityErrorsRepository;
+    private NodeConformityErrorRepository nodeConformityErrorsRepository;
 
     @Autowired
     private NodeConformityMissingRepository nodeConformityMissingRepository;
 
     @Autowired
-    private FindingAidVersionConformityInfoRepository findingAidVersionConformityInfoRepository;
+    private VersionConformityRepository findingAidVersionConformityInfoRepository;
 
     @Autowired
-    private FaBulkActionRepository faBulkActionRepository;
+    private BulkActionRunRepository faBulkActionRepository;
 
     @Autowired
     private PacketRepository packetRepository;
@@ -230,7 +230,7 @@ public class ArrangementService {
             deleteConformityInfo(conformityInfo);
         });
 
-        ArrFindingAidVersionConformityInfo versionConformityInfo = findingAidVersionConformityInfoRepository.findByFaVersion(version);
+        ArrVersionConformity versionConformityInfo = findingAidVersionConformityInfoRepository.findByVersion(version);
         if (versionConformityInfo != null) {
             findingAidVersionConformityInfoRepository.delete(versionConformityInfo);
         }
@@ -238,11 +238,11 @@ public class ArrangementService {
         findingAidVersionRepository.delete(version);
     }
 
-    private void deleteConformityInfo(ArrNodeConformityInfo conformityInfo) {
-        nodeConformityErrorsRepository.findByNodeConformityInfo(conformityInfo).forEach(error ->
+    private void deleteConformityInfo(ArrNodeConformity conformityInfo) {
+        nodeConformityErrorsRepository.findByNodeConformity(conformityInfo).forEach(error ->
             nodeConformityErrorsRepository.delete(error)
         );
-        nodeConformityMissingRepository.findByNodeConformityInfo(conformityInfo).forEach(error ->
+        nodeConformityMissingRepository.findByNodeConformity(conformityInfo).forEach(error ->
             nodeConformityMissingRepository.delete(error)
         );
 

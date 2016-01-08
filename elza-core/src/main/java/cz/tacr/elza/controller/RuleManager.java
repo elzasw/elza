@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.api.ArrNodeConformityInfoExt;
+import cz.tacr.elza.api.ArrNodeConformityExt;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
@@ -43,11 +43,11 @@ import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrFindingAidVersionConformityInfo;
+import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeConformityError;
+import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformityErrors;
-import cz.tacr.elza.domain.ArrNodeConformityInfo;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDataType;
@@ -69,11 +69,11 @@ import cz.tacr.elza.repository.DescItemConstraintRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FaViewRepository;
-import cz.tacr.elza.repository.FindingAidVersionConformityInfoRepository;
+import cz.tacr.elza.repository.VersionConformityRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NodeConformityErrorsRepository;
-import cz.tacr.elza.repository.NodeConformityInfoRepository;
+import cz.tacr.elza.repository.NodeConformityErrorRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
@@ -90,7 +90,7 @@ import cz.tacr.elza.validation.ArrDescItemsPostValidator;
 @RequestMapping("/api/ruleSetManager")
 public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulDataType, RulDescItemType,
         RulDescItemSpec, RulFaView, NodeTypeOperation, RelatedNodeDirection, ArrDescItem, ArrFindingAidVersion,
-        ArrFindingAidVersionConformityInfo, RulPackage> {
+        ArrVersionConformity, RulPackage> {
 
     private static final String VIEW_SPECIFICATION_SEPARATOR = "|";
     private static final String VIEW_SPECIFICATION_SEPARATOR_REGEX = "\\|";
@@ -123,10 +123,10 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     private NodeRepository nodeRepository;
 
     @Autowired
-    private NodeConformityInfoRepository nodeConformityInfoRepository;
+    private NodeConformityRepository nodeConformityInfoRepository;
 
     @Autowired
-    private NodeConformityErrorsRepository nodeConformityErrorsRepository;
+    private NodeConformityErrorRepository nodeConformityErrorsRepository;
 
     @Autowired
     private NodeConformityMissingRepository nodeConformityMissingRepository;
@@ -150,7 +150,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     private UpdateConformityInfoService updateConformityInfoService;
 
     @Autowired
-    private FindingAidVersionConformityInfoRepository findingAidVersionConformityInfoRepository;
+    private VersionConformityRepository findingAidVersionConformityInfoRepository;
 
     @Autowired
     private PackageService packageService;
@@ -393,7 +393,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     }
 
     @Override
-    public ArrNodeConformityInfoExt setConformityInfo(final Integer faLevelId, final Integer faVersionId,
+    public ArrNodeConformityExt setConformityInfo(final Integer faLevelId, final Integer faVersionId,
                                                       final Set<String> strategies) {
         Assert.notNull(faLevelId);
         Assert.notNull(faVersionId);
@@ -415,7 +415,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
         List<DataValidationResult> scriptResults = rulesExecutor.executeDescItemValidationRules(level, version, strategies);
         validationResults.addAll(scriptResults);
         
-        ArrNodeConformityInfoExt result = updateNodeConformityInfo(level, version, validationResults);
+        ArrNodeConformityExt result = updateNodeConformityInfo(level, version, validationResults);
 
         entityManager.detach(nodeBeforeValidation);
         ArrNode nodeAfterValidation = nodeRepository.getOne(nodeId);
@@ -429,18 +429,18 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     }
 
     @Override
-    public void setVersionConformityInfo(final ArrFindingAidVersionConformityInfo.State state,
+    public void setVersionConformityInfo(final ArrVersionConformity.State state,
                                          final String stateDescription,
                                          final ArrFindingAidVersion version) {
         Assert.notNull(version);
-        ArrFindingAidVersionConformityInfo conformityInfo = findingAidVersionConformityInfoRepository
-                .findByFaVersion(version);
+        ArrVersionConformity conformityInfo = findingAidVersionConformityInfoRepository
+                .findByVersion(version);
 
         if (conformityInfo == null) {
-            conformityInfo = new ArrFindingAidVersionConformityInfo();
+            conformityInfo = new ArrVersionConformity();
         }
 
-        conformityInfo.setFaVersion(version);
+        conformityInfo.setVersion(version);
         conformityInfo.setState(state);
         conformityInfo.setStateDescription(stateDescription);
         findingAidVersionConformityInfoRepository.save(conformityInfo);
@@ -515,20 +515,20 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
      * @param version verze, do které spadá uzel
      * @param validationResults seznam validačních chyb
      */
-    private ArrNodeConformityInfoExt updateNodeConformityInfo(final ArrLevel level,
+    private ArrNodeConformityExt updateNodeConformityInfo(final ArrLevel level,
                                           final ArrFindingAidVersion version,
                                           final List<DataValidationResult> validationResults) {
 
-        ArrNodeConformityInfo conformityInfo = nodeConformityInfoRepository
+        ArrNodeConformity conformityInfo = nodeConformityInfoRepository
                 .findByNodeAndFaVersion(level.getNode(), version);
 
-        if (conformityInfo != null && conformityInfo.getState().equals(ArrNodeConformityInfo.State.OK)) {
+        if (conformityInfo != null && conformityInfo.getState().equals(ArrNodeConformity.State.OK)) {
             conformityInfo.setDate(new Date());
         } else {
             if(conformityInfo != null){
                 deleteConformityInfo(Arrays.asList(conformityInfo));
             }
-            conformityInfo = new ArrNodeConformityInfo();
+            conformityInfo = new ArrNodeConformity();
             conformityInfo.setNode(level.getNode());
             conformityInfo.setFaVersion(version);
             conformityInfo.setDate(new Date());
@@ -536,25 +536,25 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
 
 
         if (validationResults.isEmpty()) {
-            conformityInfo.setState(ArrNodeConformityInfo.State.OK);
+            conformityInfo.setState(ArrNodeConformity.State.OK);
             nodeConformityInfoRepository.save(conformityInfo);
         } else {
-            conformityInfo.setState(ArrNodeConformityInfo.State.ERR);
+            conformityInfo.setState(ArrNodeConformity.State.ERR);
             nodeConformityInfoRepository.save(conformityInfo);
 
             for (DataValidationResult validationResult : validationResults) {
                 switch (validationResult.getResultType()) {
                     case MISSING:
                         ArrNodeConformityMissing missing = new ArrNodeConformityMissing();
-                        missing.setNodeConformityInfo(conformityInfo);
+                        missing.setNodeConformity(conformityInfo);
                         missing.setDescItemType(validationResult.getType());
                         missing.setDescItemSpec(validationResult.getSpec());
                         missing.setDescription(validationResult.getMessage());
                         nodeConformityMissingRepository.save(missing);
                         break;
                     case ERROR:
-                        ArrNodeConformityErrors error = new ArrNodeConformityErrors();
-                        error.setNodeConformityInfo(conformityInfo);
+                        ArrNodeConformityError error = new ArrNodeConformityError();
+                        error.setNodeConformity(conformityInfo);
                         error.setDescItem(validationResult.getDescItem());
                         error.setDescription(validationResult.getMessage());
                         nodeConformityErrorsRepository.save(error);
@@ -562,7 +562,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
                 }
             }
 
-            setVersionConformityInfo(ArrFindingAidVersionConformityInfo.State.ERR,
+            setVersionConformityInfo(ArrVersionConformity.State.ERR,
                     "Nejméně jedna jednotka popisu se nachází v chybovém stavu", version);
         }
 
@@ -630,7 +630,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
 
 
         if (!deleteNodes.isEmpty()) {
-            List<ArrNodeConformityInfo> deleteInfos = nodeConformityInfoRepository
+            List<ArrNodeConformity> deleteInfos = nodeConformityInfoRepository
                     .findByNodesAndVersion(deleteNodes, version);
 
             deleteConformityInfo(deleteInfos);
@@ -671,7 +671,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
      *
      * @param infos stavy ke smazání
      */
-    private void deleteConformityInfo(final Collection<ArrNodeConformityInfo> infos) {
+    private void deleteConformityInfo(final Collection<ArrNodeConformity> infos) {
 
         if (CollectionUtils.isNotEmpty(infos)) {
             List<ArrNodeConformityMissing> missing = nodeConformityMissingRepository
@@ -680,7 +680,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
                 nodeConformityMissingRepository.delete(missing);
             }
 
-            List<ArrNodeConformityErrors> errors = nodeConformityErrorsRepository.findByNodeConformityInfos(infos);
+            List<ArrNodeConformityError> errors = nodeConformityErrorsRepository.findByNodeConformityInfos(infos);
             if (CollectionUtils.isNotEmpty(errors)) {
                 nodeConformityErrorsRepository.delete(errors);
             }

@@ -25,8 +25,8 @@ import cz.tacr.elza.domain.ArrDescItemUnitdate;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformityErrors;
-import cz.tacr.elza.domain.ArrNodeConformityInfoExt;
+import cz.tacr.elza.domain.ArrNodeConformityError;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
@@ -637,7 +637,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
         return attributeValuesLoader;
     }
 
-    private void showConformityInfo(final ArrNodeConformityInfoExt conformityInfo) {
+    private void showConformityInfo(final ArrNodeConformityExt conformityInfo) {
 
         String state = conformityInfo == null ? "Undefined" : conformityInfo.getState().name();
 
@@ -660,7 +660,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
             if (CollectionUtils.isNotEmpty(conformityInfo.getErrorList())) {
                 String caption = "Seznam špatně zadaných hodnot";
-                for (ArrNodeConformityErrors errors : conformityInfo.getErrorList()) {
+                for (ArrNodeConformityError errors : conformityInfo.getErrorList()) {
                     String value = errors.getDescItem().getDescItemType().getName();
                     if (errors.getDescItem().getDescItemSpec() != null) {
                         value += ": " + errors.getDescItem().getDescItemSpec().getName();

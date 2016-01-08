@@ -4,11 +4,11 @@ import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.event.ItemClickEvent;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.ui.Table;
+
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrFindingAidVersionConformityInfo;
-import cz.tacr.elza.repository.FindingAidVersionConformityInfoRepository;
+import cz.tacr.elza.repository.VersionConformityRepository;
 import cz.tacr.elza.ui.ElzaView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -41,7 +41,7 @@ public class VersionListView extends ElzaView {
     private ArrangementManager arrangementManager;
 
     @Autowired
-    private FindingAidVersionConformityInfoRepository findingAidVersionConformityInfoRepository;
+    private VersionConformityRepository findingAidVersionConformityInfoRepository;
 
     BeanItemContainer<ArrFindingAidVersion> container;
 
@@ -62,7 +62,7 @@ public class VersionListView extends ElzaView {
         Table table = new Table();
         table.setWidth("100%");
         table.setColumnHeader(ID_TABLE, "Pořadí");
-        table.addContainerProperty("state", cz.tacr.elza.api.ArrFindingAidVersionConformityInfo.State.class, "Neznámý");
+        table.addContainerProperty("state", cz.tacr.elza.api.ArrVersionConformity.State.class, "Neznámý");
         table.addContainerProperty("createChange", LocalDateTime.class, null, "Datum vytvoření", null, null);
         table.addContainerProperty("lockChange", LocalDateTime.class, null, "Datum uzavření", null, null);
         table.setSortEnabled(false);
@@ -71,8 +71,8 @@ public class VersionListView extends ElzaView {
             @Override
             public Object generateCell(final Table table, final Object itemId, final Object colId) {
                 ArrFindingAidVersion version = (ArrFindingAidVersion) itemId;
-                ArrFindingAidVersionConformityInfo conformityInfo = findingAidVersionConformityInfoRepository
-                        .findByFaVersion(version);
+                cz.tacr.elza.domain.ArrVersionConformity conformityInfo = findingAidVersionConformityInfoRepository
+                        .findByVersion(version);
                 return conformityInfo == null || conformityInfo.getState() == null ? "Neznámý" : conformityInfo.getState().name();
             }
         });

@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ArrNodeConformityInfo;
+import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
 
 
@@ -21,12 +21,12 @@ import cz.tacr.elza.domain.ArrNodeConformityMissing;
 public interface NodeConformityMissingRepository extends JpaRepository<ArrNodeConformityMissing, Integer> {
 
     /**
-     * Najde seznam chybějících atributů daného ArrNodeConformityInfo.
+     * Najde seznam chybějících atributů daného ArrNodeConformity.
      *
      * @param info informace o chybě
      * @return seznam chybějících atributů
      */
-    List<ArrNodeConformityMissing> findByNodeConformityInfo(ArrNodeConformityInfo info);
+    List<ArrNodeConformityMissing> findByNodeConformity(ArrNodeConformity info);
 
 
     /**
@@ -35,7 +35,7 @@ public interface NodeConformityMissingRepository extends JpaRepository<ArrNodeCo
      * @param infos hledané stavy záznamů
      * @return všechny záznamy s danými stavy
      */
-    @Query("SELECT c FROM arr_node_conformity_missing c WHERE c.nodeConformityInfo in (?1)")
-    List<ArrNodeConformityMissing> findByNodeConformityInfos(Collection<ArrNodeConformityInfo> infos);
+    @Query("SELECT c FROM arr_node_conformity_missing c WHERE c.nodeConformity in (?1)")
+    List<ArrNodeConformityMissing> findByNodeConformityInfos(Collection<ArrNodeConformity> infos);
 
 }

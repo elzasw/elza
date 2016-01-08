@@ -25,10 +25,9 @@ import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformityInfo;
+import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemSpecExt;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulFaView;
@@ -200,7 +199,7 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
         RulDescItemType descItemType = createDescItemType(750020, getDataType(DATA_TYPE_TEXT).getDataTypeId());
 
 
-        ArrNodeConformityInfo nodeConformityInfo = createNodeConformityInfo(node21, version);
+        ArrNodeConformity nodeConformityInfo = createNodeConformityInfo(node21, version);
         createNodeConformityMissing(nodeConformityInfo, descItemType);
         createNodeConformityError(nodeConformityInfo, attributs);
 

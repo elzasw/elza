@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity(name = "arr_node_conformity_missing")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrNodeConformityMissing implements cz.tacr.elza.api.ArrNodeConformityMissing<ArrNodeConformityInfo
+public class ArrNodeConformityMissing implements cz.tacr.elza.api.ArrNodeConformityMissing<ArrNodeConformity
         , RulDescItemType, RulDescItemSpec> {
 
     @Id
@@ -31,9 +31,9 @@ public class ArrNodeConformityMissing implements cz.tacr.elza.api.ArrNodeConform
     private Integer nodeConformityMissingId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNodeConformityInfo.class)
-    @JoinColumn(name = "nodeConformityInfoId", nullable = false)
-    private ArrNodeConformityInfo nodeConformityInfo;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNodeConformity.class)
+    @JoinColumn(name = "nodeConformityId", nullable = false)
+    private ArrNodeConformity nodeConformity;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulDescItemType.class)
@@ -59,13 +59,13 @@ public class ArrNodeConformityMissing implements cz.tacr.elza.api.ArrNodeConform
     }
 
     @Override
-    public ArrNodeConformityInfo getNodeConformityInfo() {
-        return nodeConformityInfo;
+    public ArrNodeConformity getNodeConformity() {
+        return nodeConformity;
     }
 
     @Override
-    public void setNodeConformityInfo(final ArrNodeConformityInfo nodeConformityInfo) {
-        this.nodeConformityInfo = nodeConformityInfo;
+    public void setNodeConformity(final ArrNodeConformity nodeConformity) {
+        this.nodeConformity = nodeConformity;
     }
 
     @Override

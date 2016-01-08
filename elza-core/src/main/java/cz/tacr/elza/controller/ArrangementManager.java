@@ -46,12 +46,12 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemPartyRef;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrFindingAidVersionConformityInfo;
+import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformityInfo;
-import cz.tacr.elza.domain.ArrNodeConformityInfoExt;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulArrangementType;
@@ -84,7 +84,7 @@ import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NodeConformityInfoRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PacketRepository;
@@ -164,7 +164,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     private BulkActionService bulkActionService;
 
     @Autowired
-    private NodeConformityInfoRepository nodeConformityInfoRepository;
+    private NodeConformityRepository nodeConformityInfoRepository;
 
     @Autowired
     private ExtendedObjectsFactory extendedObjectsFactory;
@@ -379,7 +379,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 codes.add(bulkActionConfig.getCode());
             }
 
-            ruleManager.setVersionConformityInfo(ArrFindingAidVersionConformityInfo.State.ERR,
+            ruleManager.setVersionConformityInfo(ArrVersionConformity.State.ERR,
                     "Nebyly provedeny povinné hromadné akce " + codes + " před uzavřením verze", version);
         }
 
@@ -1023,9 +1023,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 ElzaTools.createGroupMap(dataList, p -> p.getDescItem().getNode().getNodeId());
 
 
-        Map<Integer, ArrNodeConformityInfo> conformityInfoMap = Collections.EMPTY_MAP;
+        Map<Integer, ArrNodeConformity> conformityInfoMap = Collections.EMPTY_MAP;
         if (CollectionUtils.isNotEmpty(nodes)) {
-            List<ArrNodeConformityInfo> conformityInfos = nodeConformityInfoRepository
+            List<ArrNodeConformity> conformityInfos = nodeConformityInfoRepository
                     .findByNodesAndVersion(nodes, version);
             conformityInfoMap = ElzaTools.createEntityMap(conformityInfos, conformityInfo ->
                             conformityInfo.getNode().getNodeId()
@@ -1042,7 +1042,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             readItemData(levelExt, dataNodeList, idItemTypeSet, formatData);
             resultList.add(levelExt);
 
-            ArrNodeConformityInfo conformityInfo = conformityInfoMap.get(arrFaLevel.getNode().getNodeId());
+            ArrNodeConformity conformityInfo = conformityInfoMap.get(arrFaLevel.getNode().getNodeId());
             levelExt.setNodeConformityInfo(extendedObjectsFactory.createNodeConformityInfoExt(conformityInfo, false));
         }
 
@@ -1148,8 +1148,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
 
 
-        ArrNodeConformityInfo conformityInfo = nodeConformityInfoRepository.findByNodeAndFaVersion(node, version);
-        ArrNodeConformityInfoExt conformityInfoExt = extendedObjectsFactory.createNodeConformityInfoExt(conformityInfo,
+        ArrNodeConformity conformityInfo = nodeConformityInfoRepository.findByNodeAndFaVersion(node, version);
+        ArrNodeConformityExt conformityInfoExt = extendedObjectsFactory.createNodeConformityInfoExt(conformityInfo,
                 true);
 
         levelExt.setNodeConformityInfo(conformityInfoExt);

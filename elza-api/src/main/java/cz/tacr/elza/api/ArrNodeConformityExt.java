@@ -4,12 +4,13 @@ import java.util.List;
 
 
 /**
- * Rozšíření {@link ArrNodeConformityInfo} o seznam chybových zpráv.
+ * Rozšíření {@link ArrNodeConformity} o seznam chybových zpráv.
  *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 26.11.2015
  */
-public interface ArrNodeConformityInfoExt<AN extends ArrNode, AFAV extends ArrFindingAidVersion, MIS extends ArrNodeConformityMissing, ERR extends ArrNodeConformityErrors> extends ArrNodeConformityInfo<AN, AFAV> {
+public interface ArrNodeConformityExt<AN extends ArrNode, AFAV extends ArrFindingAidVersion, MIS extends ArrNodeConformityMissing, ERR extends ArrNodeConformityError> extends
+                                                                                                                                                                        ArrNodeConformity<AN, AFAV> {
 
     /**
      * @return Seznam chybějících hodnot.

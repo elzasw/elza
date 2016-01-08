@@ -8,7 +8,6 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -16,45 +15,45 @@ import org.springframework.data.rest.core.annotation.RestResource;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
-@Entity(name = "arr_fa_version_conformity_info")
+@Entity(name = "arr_version_conformity")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrFindingAidVersionConformityInfo
-        implements cz.tacr.elza.api.ArrFindingAidVersionConformityInfo<ArrFindingAidVersion> {
+public class ArrVersionConformity
+        implements cz.tacr.elza.api.ArrVersionConformity<ArrFindingAidVersion> {
 
     @Id
     @GeneratedValue
-    private Integer faVersionConformityInfoId;
+    private Integer versionConformityId;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 3, nullable = true)
-    private ArrFindingAidVersionConformityInfo.State state;
+    private cz.tacr.elza.domain.ArrVersionConformity.State state;
 
     @Column(length = 1000, nullable = true)
     private String stateDescription;
 
     @RestResource(exported = false)
     @OneToOne(fetch = FetchType.LAZY, targetEntity = ArrFindingAidVersion.class)
-    @JoinColumn(name = "faVersionId", nullable = false)
-    private ArrFindingAidVersion faVersion;
+    @JoinColumn(name = "versionId", nullable = false)
+    private ArrFindingAidVersion version;
 
     @Override
-    public Integer getFindingAidVersionConformityInfoId() {
-        return faVersionConformityInfoId;
+    public Integer getVersionConformityId() {
+        return versionConformityId;
     }
 
     @Override
-    public void setFindingAidVersionConformityInfoId(final Integer findingAidVersionConformityInfoId) {
-        this.faVersionConformityInfoId = findingAidVersionConformityInfoId;
+    public void setVersionConformityId(final Integer versionConformityId) {
+        this.versionConformityId = versionConformityId;
     }
 
     @Override
-    public ArrFindingAidVersion getFaVersion() {
-        return faVersion;
+    public ArrFindingAidVersion getVersion() {
+        return version;
     }
 
     @Override
-    public void setFaVersion(final ArrFindingAidVersion faVersion) {
-        this.faVersion = faVersion;
+    public void setVersion(final ArrFindingAidVersion version) {
+        this.version = version;
     }
 
     @Override

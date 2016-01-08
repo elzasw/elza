@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.jayway.restassured.response.Response;
 
-import cz.tacr.elza.api.ArrNodeConformityInfo;
+import cz.tacr.elza.api.ArrNodeConformity;
 import cz.tacr.elza.api.vo.BulkActionState.State;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionService;
@@ -27,7 +27,7 @@ import cz.tacr.elza.domain.ArrDescItemInt;
 import cz.tacr.elza.domain.ArrDescItemUnitid;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrFindingAidVersionConformityInfo;
+import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.RulDescItemType;
@@ -505,7 +505,7 @@ public class BulkActionManagerTest extends AbstractRestTest {
             // kontrola root uzlu
 
             levelExt = getLevelByNodeId(version.getRootLevel().getNode().getNodeId(), version.getFindingAidVersionId());
-            Assert.assertEquals(ArrNodeConformityInfo.State.ERR, levelExt.getNodeConformityInfo().getState());
+            Assert.assertEquals(ArrNodeConformity.State.ERR, levelExt.getNodeConformityInfo().getState());
 
             // kontrola prvni urovne uzlu
 
@@ -513,10 +513,10 @@ public class BulkActionManagerTest extends AbstractRestTest {
             Assert.assertEquals(2, levels.size());
 
             levelExt = getLevelByNodeId(levels.get(0).getNode().getNodeId(), version.getFindingAidVersionId());
-            Assert.assertEquals(ArrNodeConformityInfo.State.ERR, levelExt.getNodeConformityInfo().getState());
+            Assert.assertEquals(ArrNodeConformity.State.ERR, levelExt.getNodeConformityInfo().getState());
 
             levelExt = getLevelByNodeId(levels.get(1).getNode().getNodeId(), version.getFindingAidVersionId());
-            Assert.assertEquals(ArrNodeConformityInfo.State.ERR, levelExt.getNodeConformityInfo().getState());
+            Assert.assertEquals(ArrNodeConformity.State.ERR, levelExt.getNodeConformityInfo().getState());
 
             // kontrola druhe urovni prvniho uzlu
 
@@ -524,15 +524,15 @@ public class BulkActionManagerTest extends AbstractRestTest {
             Assert.assertEquals(2, sublevels.size());
 
             levelExt = getLevelByNodeId(sublevels.get(0).getNode().getNodeId(), version.getFindingAidVersionId());
-            Assert.assertEquals(ArrNodeConformityInfo.State.ERR, levelExt.getNodeConformityInfo().getState());
+            Assert.assertEquals(ArrNodeConformity.State.ERR, levelExt.getNodeConformityInfo().getState());
 
             levelExt = getLevelByNodeId(sublevels.get(1).getNode().getNodeId(), version.getFindingAidVersionId());
-            Assert.assertEquals(ArrNodeConformityInfo.State.ERR, levelExt.getNodeConformityInfo().getState());
+            Assert.assertEquals(ArrNodeConformity.State.ERR, levelExt.getNodeConformityInfo().getState());
 
             version = getFindingAidOpenVersion(version.getFindingAid());
-            ArrFindingAidVersionConformityInfo conformityInfo = findingAidVersionConformityInfoRepository
-                    .findByFaVersion(version);
-            Assert.assertEquals(ArrFindingAidVersionConformityInfo.State.ERR, conformityInfo.getState());
+            ArrVersionConformity conformityInfo = findingAidVersionConformityInfoRepository
+                    .findByVersion(version);
+            Assert.assertEquals(ArrVersionConformity.State.ERR, conformityInfo.getState());
 
         } finally {
             cleanUpBulkActionConfig(bulkActionConfigSerial);

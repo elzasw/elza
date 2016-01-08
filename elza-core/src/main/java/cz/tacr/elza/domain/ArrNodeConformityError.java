@@ -20,20 +20,20 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 19.11.2015
  */
-@Entity(name = "arr_node_conformity_errors")
+@Entity(name = "arr_node_conformity_error")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrNodeConformityErrors implements cz.tacr.elza.api.ArrNodeConformityErrors<
-        ArrNodeConformityInfo, ArrDescItem> {
+public class ArrNodeConformityError implements cz.tacr.elza.api.ArrNodeConformityError<
+        ArrNodeConformity, ArrDescItem> {
 
     @Id
     @GeneratedValue
-    private Integer nodeConformityErrorsId;
+    private Integer nodeConformityErrorId;
 
     @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNodeConformityInfo.class)
-    @JoinColumn(name = "nodeConformityInfoId", nullable = false)
-    private ArrNodeConformityInfo nodeConformityInfo;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrNodeConformity.class)
+    @JoinColumn(name = "nodeConformityId", nullable = false)
+    private ArrNodeConformity nodeConformity;
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrDescItem.class)
@@ -44,23 +44,23 @@ public class ArrNodeConformityErrors implements cz.tacr.elza.api.ArrNodeConformi
     private String description;
 
     @Override
-    public Integer getNodeConformityErrorsId() {
-        return nodeConformityErrorsId;
+    public Integer getNodeConformityErrorId() {
+        return nodeConformityErrorId;
     }
 
     @Override
-    public void setNodeConformityErrorsId(final Integer nodeConformityErrorsId) {
-        this.nodeConformityErrorsId = nodeConformityErrorsId;
+    public void setNodeConformityErrorId(final Integer nodeConformityErrorId) {
+        this.nodeConformityErrorId = nodeConformityErrorId;
     }
 
     @Override
-    public ArrNodeConformityInfo getNodeConformityInfo() {
-        return nodeConformityInfo;
+    public ArrNodeConformity getNodeConformity() {
+        return nodeConformity;
     }
 
     @Override
-    public void setNodeConformityInfo(final ArrNodeConformityInfo nodeConformityInfo) {
-        this.nodeConformityInfo = nodeConformityInfo;
+    public void setNodeConformity(final ArrNodeConformity nodeConformity) {
+        this.nodeConformity = nodeConformity;
     }
 
     @Override
@@ -85,25 +85,25 @@ public class ArrNodeConformityErrors implements cz.tacr.elza.api.ArrNodeConformi
 
     @Override
     public boolean equals(final Object obj) {
-        if (!(obj instanceof ArrNodeConformityErrors)) {
+        if (!(obj instanceof cz.tacr.elza.domain.ArrNodeConformityError)) {
             return false;
         }
         if (this == obj) {
             return true;
         }
 
-        ArrNodeConformityErrors other = (ArrNodeConformityErrors) obj;
+        cz.tacr.elza.domain.ArrNodeConformityError other = (cz.tacr.elza.domain.ArrNodeConformityError) obj;
 
-        return new EqualsBuilder().append(nodeConformityErrorsId, other.getNodeConformityErrorsId()).isEquals();
+        return new EqualsBuilder().append(nodeConformityErrorId, other.getNodeConformityErrorId()).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(nodeConformityErrorsId).toHashCode();
+        return new HashCodeBuilder().append(nodeConformityErrorId).toHashCode();
     }
 
     @Override
     public String toString() {
-        return "ArrNodeConformityErrors pk=" + nodeConformityErrorsId;
+        return "ArrNodeConformityError pk=" + nodeConformityErrorId;
     }
 }

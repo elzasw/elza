@@ -50,7 +50,7 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemUnitdate;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrFindingAidVersionConformityInfo;
+import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.RulArrangementType;
@@ -61,7 +61,7 @@ import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
 import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithLevelPack;
 import cz.tacr.elza.events.ConformityInfoUpdatedEvent;
 import cz.tacr.elza.ui.ElzaUI;
-import cz.tacr.elza.repository.FindingAidVersionConformityInfoRepository;
+import cz.tacr.elza.repository.VersionConformityRepository;
 import cz.tacr.elza.ui.ElzaView;
 import cz.tacr.elza.ui.components.Callback;
 import cz.tacr.elza.ui.components.ConformityInfoChangeNotificator;
@@ -107,7 +107,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
     private ConformityInfoChangeNotificator conformityInfoChangeNotificator;
 
     @Autowired
-    private FindingAidVersionConformityInfoRepository findingAidVersionConformityInfoRepository;
+    private VersionConformityRepository findingAidVersionConformityInfoRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -147,8 +147,8 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
         this.findingAid = arrangementManager.getFindingAid(findingAidId);
         discardNodeCut();
 
-        ArrFindingAidVersionConformityInfo conformityInfo = findingAidVersionConformityInfoRepository
-                .findByFaVersion(version);
+        ArrVersionConformity conformityInfo = findingAidVersionConformityInfoRepository
+                .findByVersion(version);
         pageTitle(
                 findingAid.getName() + " (stav: " + ((conformityInfo == null || conformityInfo.getState() == null) ? "Neznámý" : conformityInfo.getState().name())
                         + ")");

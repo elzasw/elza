@@ -24,9 +24,9 @@ import cz.tacr.elza.bulkaction.generator.FindingAidValidationBulkAction;
 import cz.tacr.elza.bulkaction.generator.SerialNumberBulkAction;
 import cz.tacr.elza.bulkaction.generator.UnitIdBulkAction;
 import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrFaBulkAction;
+import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.repository.FaBulkActionRepository;
+import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -56,7 +56,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
     private BulkActionFactory bulkActionFactory;
 
     @Autowired
-    private FaBulkActionRepository faBulkActionRepository;
+    private BulkActionRunRepository faBulkActionRepository;
 
     /**
      * Seznam registrovaných typů hromadných akcí.
@@ -303,7 +303,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * @param bulkActionWorker úloha, podle které se provede úklid
      */
     private void removeOldFaBulkAction(final BulkActionWorker bulkActionWorker) {
-        List<ArrFaBulkAction> bulkActions = faBulkActionRepository.findByFaVersionIdAndBulkActionCode(
+        List<ArrBulkActionRun> bulkActions = faBulkActionRepository.findByFaVersionIdAndBulkActionCode(
                 bulkActionWorker.getVersionId(),
                 bulkActionWorker.getBulkActionConfig().getCode());
         faBulkActionRepository.delete(bulkActions);
@@ -324,7 +324,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
                 bulkActionStates.add(worker.getBulkActionState());
             }
         }
-        for (ArrFaBulkAction arrFaBulkAction : faBulkActionRepository.findByFaVersionId(findingAidVersionId)) {
+        for (ArrBulkActionRun arrFaBulkAction : faBulkActionRepository.findByFaVersionId(findingAidVersionId)) {
             boolean add = true;
             for (BulkActionWorker worker : workers) {
                 if (worker.getVersionId().equals(findingAidVersionId) && worker.getBulkActionConfig().getCode()
@@ -359,7 +359,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
             return;
         }
 
-        ArrFaBulkAction arrFaBulkAction = new ArrFaBulkAction();
+        ArrBulkActionRun arrFaBulkAction = new ArrBulkActionRun();
 
         arrFaBulkAction.setBulkActionCode(result.getBulkActionConfig().getCode());
         arrFaBulkAction.setChange(result.getBulkActionState().getRunChange());
@@ -460,12 +460,12 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         List<BulkActionConfig> bulkActionConfigReturnList = new ArrayList<>();
 
         List<BulkActionConfig> bulkActionConfigMandatoryList = getBulkActions(findingAidVersionId, true);
-        List<ArrFaBulkAction> faBulkActions = faBulkActionRepository.findByFaVersionId(findingAidVersionId);
+        List<ArrBulkActionRun> faBulkActions = faBulkActionRepository.findByFaVersionId(findingAidVersionId);
 
         for (BulkActionConfig bulkActionConfig : bulkActionConfigMandatoryList) {
 
             boolean isValidate = false;
-            for (ArrFaBulkAction bulkAction : faBulkActions) {
+            for (ArrBulkActionRun bulkAction : faBulkActions) {
                 if (bulkAction.getBulkActionCode().equals(bulkActionConfig.getCode())) {
                     if (bulkAction.getChange().getChangeId() > lastUserChange.getChangeId()) {
                         isValidate = true;

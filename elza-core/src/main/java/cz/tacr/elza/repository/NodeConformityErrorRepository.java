@@ -7,26 +7,26 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ArrNodeConformityErrors;
-import cz.tacr.elza.domain.ArrNodeConformityInfo;
+import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeConformityError;
 
 
 /**
- * Repozitory pro {@link ArrNodeConformityErrors}.
+ * Repozitory pro {@link ArrNodeConformityError}.
  *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 23.11.2015
  */
 @Repository
-public interface NodeConformityErrorsRepository extends JpaRepository<ArrNodeConformityErrors, Integer> {
+public interface NodeConformityErrorRepository extends JpaRepository<ArrNodeConformityError, Integer> {
 
     /**
-     * Najde seznam chybně vyplněných atributů daného ArrNodeConformityInfo.
+     * Najde seznam chybně vyplněných atributů daného ArrNodeConformity.
      *
      * @param info informace o chybě
      * @return seznam chybně vyplněných atributů
      */
-    List<ArrNodeConformityErrors> findByNodeConformityInfo(ArrNodeConformityInfo info);
+    List<ArrNodeConformityError> findByNodeConformity(ArrNodeConformity info);
 
 
     /**
@@ -35,7 +35,7 @@ public interface NodeConformityErrorsRepository extends JpaRepository<ArrNodeCon
      * @param infos hledané stavy záznamů
      * @return všechny záznamy s danými stavy
      */
-    @Query("SELECT c FROM arr_node_conformity_errors c WHERE c.nodeConformityInfo in (?1)")
-    List<ArrNodeConformityErrors> findByNodeConformityInfos(Collection<ArrNodeConformityInfo> infos);
+    @Query("SELECT c FROM arr_node_conformity_error c WHERE c.nodeConformity in (?1)")
+    List<ArrNodeConformityError> findByNodeConformityInfos(Collection<ArrNodeConformity> infos);
 
 }

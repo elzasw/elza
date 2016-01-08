@@ -4,13 +4,14 @@ import java.util.List;
 
 
 /**
- * Rozšíření {@link cz.tacr.elza.domain.ArrNodeConformityInfo} o seznam chybových zpráv.
+ * Rozšíření {@link ArrNodeConformity} o seznam chybových zpráv.
  *
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 26.11.2015
  */
-public class ArrNodeConformityInfoExt extends ArrNodeConformityInfo
-        implements cz.tacr.elza.api.ArrNodeConformityInfoExt<ArrNode, ArrFindingAidVersion, ArrNodeConformityMissing, ArrNodeConformityErrors> {
+public class ArrNodeConformityExt extends ArrNodeConformity
+        implements
+        cz.tacr.elza.api.ArrNodeConformityExt<ArrNode, ArrFindingAidVersion, ArrNodeConformityMissing, ArrNodeConformityError> {
 
     /**
      * Seznam chybějících hodnot.
@@ -20,7 +21,7 @@ public class ArrNodeConformityInfoExt extends ArrNodeConformityInfo
     /**
      * Seznam chybějících hodnot.
      */
-    private List<ArrNodeConformityErrors> errorList;
+    private List<ArrNodeConformityError> errorList;
 
 
     /**
@@ -42,14 +43,14 @@ public class ArrNodeConformityInfoExt extends ArrNodeConformityInfo
     /**
      * @return Seznam chybějících hodnot.
      */
-    public List<ArrNodeConformityErrors> getErrorList() {
+    public List<ArrNodeConformityError> getErrorList() {
         return errorList;
     }
 
     /**
      * @param errorList Seznam špatně zadaných hodnot Seznam chybějících hodnot.
      */
-    public void setErrorList(final List<ArrNodeConformityErrors> errorList) {
+    public void setErrorList(final List<ArrNodeConformityError> errorList) {
         this.errorList = errorList;
     }
 }
