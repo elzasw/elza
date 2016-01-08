@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -192,7 +193,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         switch (direction) {
             case NODE:
                 return Arrays.asList(level);
-            case PARENTS:
+            case PARENT:
 
                 // pokud je to root level, nemuze mit rodice
                 if (level.getNode().equals(version.getRootLevel().getNode())) {
@@ -202,17 +203,27 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
                 return Arrays.asList(levelRepository
                         .findNodeInRootTreeByNodeId(level.getNodeParent(), version.getRootLevel().getNode(),
                                 version.getLockChange()));
-            case ASCENDATNS:
+            case ASCENDANTS:
                 return levelRepository.findAllParentsByNodeAndVersion(level.getNode(), version);
             case CHILDREN:
                 return levelRepository.findByParentNode(level.getNode(), version.getLockChange());
             case DESCENDANTS:
                 return levelRepository.findAllChildrenByNode(level.getNode(), version.getLockChange());
             case SIBLINGS:
-                List<ArrLevel> siblings = levelRepository
-                        .findByParentNode(level.getNodeParent(), version.getLockChange());
-                siblings.remove(level); //chceme pouze sourozence, bez nas
-                return siblings;
+                ArrayList<ArrLevel> siblings = new ArrayList<>(levelRepository
+                        .findByParentNode(level.getNodeParent(), version.getLockChange()));
+
+                //požadujeme pouze nejbližšího sourozence před a za objektem
+                int nodeIndex = siblings.indexOf(level);
+                List<ArrLevel> result = new ArrayList<>(2);
+                if (nodeIndex >= 1) {
+                    result.add(siblings.get(nodeIndex - 1));
+                }
+                if ((nodeIndex + 1) < siblings.size()) {
+                    result.add(siblings.get(nodeIndex + 1));
+                }
+
+                return result;
             case ALL:
                 return levelRepository.findAllChildrenByNode(version.getRootLevel().getNode(), version.getLockChange());
             default:

@@ -26,7 +26,7 @@ rule "Vytvoření uzlu"
 when
 	NodeTypeOperation( this==NodeTypeOperation.CREATE_NODE )
 then
-	results.add(RelatedNodeDirection.PARENTS);
+	results.add(RelatedNodeDirection.PARENT);
 	results.add(RelatedNodeDirection.SIBLINGS);
 end
 
@@ -34,14 +34,20 @@ rule "Vymazání uzlu"
 when
 	NodeTypeOperation( this==NodeTypeOperation.DELETE_NODE )
 then
-	results.add(RelatedNodeDirection.PARENTS);
+	results.add(RelatedNodeDirection.PARENT);
 	results.add(RelatedNodeDirection.SIBLINGS);
 end
 
-// Bylo by vhodne dopad lokalizovat na predchozi prime sourozence a na nove sourozence
-rule "Změna pozice, dopad na sourozence"
+rule "Odpojení uzlu se stejným rodičem"
 when
-	NodeTypeOperation(this==NodeTypeOperation.CHANGE_NODE_POSITION)
+	NodeTypeOperation(this==NodeTypeOperation.DISCONNECT_NODE_LOCAL)
+then
+	results.add(RelatedNodeDirection.SIBLINGS);
+end
+
+rule "Připojení uzlu se stejným rodičem"
+when
+	NodeTypeOperation(this==NodeTypeOperation.CONNECT_NODE_LOCAL)
 then
 	results.add(RelatedNodeDirection.SIBLINGS);
 end
@@ -50,7 +56,7 @@ rule "DisconnectNode"
 when
 	NodeTypeOperation(this==NodeTypeOperation.DISCONNECT_NODE)
 then
-	results.add(RelatedNodeDirection.PARENTS);
+	results.add(RelatedNodeDirection.PARENT);
 	results.add(RelatedNodeDirection.SIBLINGS);
 end
 
@@ -58,7 +64,7 @@ rule "ConnectNode"
 when
 	NodeTypeOperation(this==NodeTypeOperation.CONNECT_NODE)
 then
-	results.add(RelatedNodeDirection.PARENTS);
+	results.add(RelatedNodeDirection.PARENT);
 	results.add(RelatedNodeDirection.SIBLINGS);
 	results.add(RelatedNodeDirection.DESCENDANTS);
 end
