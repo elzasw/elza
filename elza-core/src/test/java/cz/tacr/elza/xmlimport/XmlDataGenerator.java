@@ -14,6 +14,7 @@ import cz.tacr.elza.xmlimport.v1.vo.XmlImport;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.AbstractDescItem;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemCoordinates;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemDecimal;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemEnum;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemFormattedText;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemInteger;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemPacketRef;
@@ -165,7 +166,7 @@ public class XmlDataGenerator {
         List<AbstractDescItem> values = new ArrayList<AbstractDescItem>(config.getDescItemsCount());
 
         for (int i = 0; i < config.getDescItemsCount(); i++) {
-            int position = i % 11;
+            int position = i % 12;
 
             switch (position) {
                 case 0:
@@ -201,6 +202,9 @@ public class XmlDataGenerator {
                 case 10:
                     values.add(createValuePacketRef(i, packets));
                     break;
+                case 11:
+                    values.add(createValueEnum(i));
+                    break;
             }
         }
 
@@ -209,7 +213,7 @@ public class XmlDataGenerator {
 
     private DescItemCoordinates createValueCoordinates(int position) {
         DescItemCoordinates value = new DescItemCoordinates();
-        fillCommonValueFields(value ,position);
+        fillCommonValueFields(value, position);
         value.setValue("coordinates " + position);
 
         return value;
@@ -217,7 +221,7 @@ public class XmlDataGenerator {
 
     private DescItemDecimal createValueDecimal(int position, int descItemCount) {
         DescItemDecimal value = new DescItemDecimal();
-        fillCommonValueFields(value ,position);
+        fillCommonValueFields(value, position);
         value.setValue(new BigDecimal(descItemCount * position));
 
         return value;
@@ -225,7 +229,7 @@ public class XmlDataGenerator {
 
     private DescItemFormattedText createValueFormattedText(int position) {
         DescItemFormattedText value = new DescItemFormattedText();
-        fillCommonValueFields(value ,position);
+        fillCommonValueFields(value, position);
         value.setValue("formatted text " + position);
 
         return value;
@@ -233,7 +237,7 @@ public class XmlDataGenerator {
 
     private DescItemInteger createValueInteger(int position) {
         DescItemInteger value = new DescItemInteger();
-        fillCommonValueFields(value ,position);
+        fillCommonValueFields(value, position);
         value.setValue(position);
 
         return value;
@@ -241,7 +245,7 @@ public class XmlDataGenerator {
 
     private DescItemPartyRef createValuePartyRef(int position, List<AbstractParty> parties) {
         DescItemPartyRef value = new DescItemPartyRef();
-        fillCommonValueFields(value ,position);
+        fillCommonValueFields(value, position);
 
         value.setParty(parties.get(RandomUtils.nextInt(parties.size())));
 
@@ -250,7 +254,7 @@ public class XmlDataGenerator {
 
     private DescItemRecordRef createValueRecordRef(int position, List<Record> records) {
         DescItemRecordRef value = new DescItemRecordRef();
-        fillCommonValueFields(value ,position);
+        fillCommonValueFields(value, position);
         value.setRecord(records.get(RandomUtils.nextInt(records.size())));
 
         return value;
@@ -258,7 +262,7 @@ public class XmlDataGenerator {
 
     private DescItemString createValueString(int position) {
         DescItemString value = new DescItemString();
-        fillCommonValueFields(value ,position);
+        fillCommonValueFields(value, position);
         value.setValue("string " + position);
 
         return value;
@@ -266,7 +270,7 @@ public class XmlDataGenerator {
 
     private DescItemText createValueText(int position) {
         DescItemText value = new DescItemText();
-        fillCommonValueFields(value ,position);
+        fillCommonValueFields(value, position);
         value.setValue("text " + position);
 
         return value;
@@ -274,7 +278,7 @@ public class XmlDataGenerator {
 
     private DescItemUnitDate createValueUnitDate(int position) {
         DescItemUnitDate value = new DescItemUnitDate();
-        fillCommonValueFields(value ,position);
+        fillCommonValueFields(value, position);
         value.setCalendarTypeCode("calendarTypeCode " + position);
         value.setValueFrom(new Date());
         value.setValueFromEstimated(RandomUtils.nextBoolean());
@@ -286,7 +290,7 @@ public class XmlDataGenerator {
 
     private DescItemUnitId createValueUnitId(int position) {
         DescItemUnitId value = new DescItemUnitId();
-        fillCommonValueFields(value ,position);
+        fillCommonValueFields(value, position);
         value.setValue("unitId " + position);
 
         return value;
@@ -294,8 +298,15 @@ public class XmlDataGenerator {
 
     private DescItemPacketRef createValuePacketRef(int position, List<Packet> packets) {
         DescItemPacketRef value = new DescItemPacketRef();
-        fillCommonValueFields(value ,position);
+        fillCommonValueFields(value, position);
         value.setPacket(packets.get(RandomUtils.nextInt(packets.size())));
+
+        return value;
+    }
+
+    private DescItemEnum createValueEnum(int position) {
+        DescItemEnum value = new DescItemEnum();
+        fillCommonValueFields(value, position);
 
         return value;
     }
