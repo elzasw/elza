@@ -51,6 +51,7 @@ import cz.tacr.elza.domain.vo.ArrNodeHistoryPack;
 import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithDescItems;
 import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithLevelPack;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
+import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
@@ -64,15 +65,13 @@ import cz.tacr.elza.repository.DescItemSpecRegisterRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
-import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FaViewRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
-import cz.tacr.elza.repository.VersionConformityRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PackageRepository;
@@ -82,6 +81,7 @@ import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.PartyTimeRangeRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRelationRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
@@ -91,7 +91,9 @@ import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
+import cz.tacr.elza.repository.VersionConformityRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.RegistryService;
 import org.junit.Assert;
@@ -350,7 +352,7 @@ public abstract class AbstractRestTest {
     @Autowired
     protected NodeRepository nodeRepository;
     @Autowired
-    private PartyNameRepository partyNameRepository;
+    protected PartyNameRepository partyNameRepository;
     @Autowired
     private PartyNameComplementRepository partyNameComplementRepository;
     @Autowired
@@ -410,6 +412,12 @@ public abstract class AbstractRestTest {
 
     @Autowired
     protected ClientFactoryVO factoryVO;
+
+    @Autowired
+    protected PartyTimeRangeRepository partyTimeRangeRepository;
+
+    @Autowired
+    protected UnitdateRepository unitdateRepository;
 
 
     @Before

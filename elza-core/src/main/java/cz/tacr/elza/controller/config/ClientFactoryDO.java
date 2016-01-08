@@ -113,6 +113,13 @@ public class ClientFactoryDO {
         return mapper.map(parPartyTimeRangeEditVO, ParPartyTimeRange.class);
     }
 
+    public void updateParPartyTimeRange(final ParPartyTimeRangeEditVO parPartyTimeRangeEditVO,
+                                                     final ParPartyTimeRange partyTimeRange) {
+
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        mapper.map(parPartyTimeRangeEditVO, partyTimeRange);
+    }
+
     /**
      * Vytvoření rejstříkového hesla.
      *
