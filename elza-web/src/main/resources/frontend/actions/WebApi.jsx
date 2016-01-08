@@ -11,7 +11,7 @@ AjaxUtils.ajaxGet('/api/arrangementManager/getFindingAids')
     });
 */
 
-class WebApiRestOld {
+class WebApi{
     constructor() {
     }
 
@@ -30,7 +30,8 @@ class WebApiRestOld {
             partyTypeId: null,
             originator: false
         }).then(json=>{
-            return json;
+            console.log(json.recordList);
+            return json.recordList;
         });
     }
 
@@ -88,7 +89,7 @@ var _nodeId = 0;
 var _faRootNode = {id: 0, name: 'node', depth: 0, parent: null, children: []}
 buildTree(_faRootNode, 1);
 
-class WebApi {
+class WebApiRestOld {
     constructor() {
     }
 
@@ -99,44 +100,6 @@ class WebApi {
             }, timeout);
         });
     }
-
-    findParty(filterText){
-        var data = 
-            [
-                {
-                    id: 1, name: 'Kněžna Libuše',
-                },{
-                    id: 2, name: 'Jan Lucemburský',
-                },{
-                    id: 3, name: 'Marie Terezie',
-                },{
-                    id: 4, name: 'Svatý Václav',
-                },{
-                    id: 5, name: 'Albrecht z Valdštejna',
-                },{
-                    id: 6, name: 'Kouzelník Žito',
-                },{
-                    id: 7, name: 'Čachtická paní',
-                },{
-                    id: 8, name: 'Jan "Sladký" Kozina',
-                }
-            ]
-        var filteredData = [];
-        for(var i=0; i<data.length; i++){
-            if(data[i].name.indexOf(filterText) > -1){
-                filteredData[filteredData.length] = data[i]; 
-            }
-        }
-        return this.getData(filteredData, 1);
-    }
-
-    getParty(selectedPartyID){
-        var data = {
-            "id" : selectedPartyID,
-            "name": "Jmeno "
-        };
-        return this.getData(data, 1);
-    }   
 
     getFaFileTree() {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/getFindingAids');

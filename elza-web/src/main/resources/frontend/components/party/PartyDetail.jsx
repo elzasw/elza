@@ -23,7 +23,7 @@ var PartyDetail = class PartySearch extends AbstractReactComponent {
             return <div>Nenalezeno</div>
         }
         return  <div>
-                    <h1>Osoba {data.id}</h1>
+                    <h1>Osoba {data.record.record}</h1>
                 </div>
     }
 }

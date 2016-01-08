@@ -25,19 +25,19 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
     }
 
     handlePartyDetail(item, e){
-        this.dispatch(partyDetailFetchIfNeeded(item.id));
+        this.dispatch(partyDetailFetchIfNeeded(item.partyId));
     }
 
     render() {
         if(this.props.items && this.props.items.length>0){
             var partyList = this.props.items.map((item) => {                                               // přidání všech nazelených osob
                     return  <li 
-                                key={item.id} 
-                                eventKey={item.id} 
-                                className={item.id==this.props.selectedPartyID ? 'active' : ''} 
+                                key={item.partyId} 
+                                eventKey={item.partyId} 
+                                className={item.partyId==this.props.selectedPartyID ? 'active' : ''} 
                                 onClick={this.handlePartyDetail.bind(this,item)}
                             >                                          
-                                <span className="name">{item.name}</span>
+                                <span className="name">{item.record.record}</span>
                             </li>                          
             });
         }else{
