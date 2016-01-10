@@ -30,6 +30,7 @@ import cz.tacr.elza.controller.vo.ParPartyTimeRangeVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ParRelationEntityVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.RegRecordParentVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
@@ -235,14 +236,15 @@ public class ClientFactoryVO {
      *
      * @param records        seznam rejstříkových hesel
      * @param recordPartyMap mapa id rejstříkových hesel na osobu
+     * @param fillParents příznak zda se mají načíst rodiče rejstříku
      * @return seznam rejstříkových hesel
      */
     public List<RegRecordVO> createRegRecords(final List<RegRecord> records,
-                                              final Map<Integer, ParParty> recordPartyMap) {
+                                              final Map<Integer, ParParty> recordPartyMap, boolean fillParents) {
         List<RegRecordVO> result = new ArrayList<>(records.size());
         for (final RegRecord record : records) {
             ParParty recordParty = recordPartyMap.get(record.getRecordId());
-            result.add(createRegRecord(record, recordParty == null ? null : recordParty.getPartyId()));
+            result.add(createRegRecord(record, recordParty == null ? null : recordParty.getPartyId(), fillParents));
         }
 
         return result;
@@ -253,14 +255,34 @@ public class ClientFactoryVO {
      *
      * @param regRecord rejstříkové heslo
      * @param partyId   id osoby
+     * @param fillParents příznak zda se mají načíst rodiče rejstříku
      * @return rejstříkové heslo
      */
-    public RegRecordVO createRegRecord(final RegRecord regRecord, @Nullable final Integer partyId) {
+    public RegRecordVO createRegRecord(final RegRecord regRecord, @Nullable final Integer partyId, boolean fillParents) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RegRecordVO result = mapper.map(regRecord, RegRecordVO.class);
         result.setPartyId(partyId);
 
+        if (fillParents) {
+            List<RegRecordParentVO> parents = new LinkedList<>();
+            RegRecord parentRecord = regRecord.getParentRecord();
+            while (parentRecord != null) {
+                parents.add(createRegRecordParent(parentRecord));
+                parentRecord = parentRecord.getParentRecord();
+            }
+            result.setParents(parents);
+        }
+
         return result;
+    }
+
+    private RegRecordParentVO createRegRecordParent(RegRecord parentRecord) {
+        RegRecordParentVO parent = new RegRecordParentVO();
+
+        parent.setId(parentRecord.getRecordId());
+        parent.setRecord(parentRecord.getRecord());
+
+        return parent;
     }
 
     /**

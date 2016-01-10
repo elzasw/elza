@@ -65,16 +65,49 @@ public class RegistryService {
      * @param registerTypeIds typ záznamu
      * @param firstResult     index prvního záznamu, začíná od 0
      * @param maxResults      počet výsledků k vrácení
+     * @param parentRecordId  id rodičovského rejstříku
      * @return vybrané záznamy dle popisu seřazené za record, nbeo prázdná množina
      */
     public List<RegRecord> findRegRecordByTextAndType(@Nullable final String searchRecord,
                                                       @Nullable final Collection<Integer> registerTypeIds,
                                                       final Boolean local,
                                                       final Integer firstResult,
-                                                      final Integer maxResults) {
+                                                      final Integer maxResults,
+                                                      final Integer parentRecordId) {
+        RegRecord parentRecord = null;
+        if (parentRecordId != null) {
+            parentRecord = regRecordRepository.getOne(parentRecordId);
+            if (parentRecord == null) {
+                throw new IllegalArgumentException("Rejstřík s identifikátorem " + parentRecordId + " neexistuje.");
+            }
+        }
 
-        return regRecordRepository
-                .findRegRecordByTextAndType(searchRecord, registerTypeIds, local, firstResult, maxResults);
+        return regRecordRepository.findRegRecordByTextAndType(searchRecord, registerTypeIds, local, firstResult,
+                maxResults, parentRecord);
+    }
+
+    /**
+     * Celkový počet záznamů v DB pro funkci {@link #findRegRecordByTextAndType(String, Collection, Boolean, Integer,
+     * Integer)}
+     *
+     * @param searchRecord    hledaný řetězec, může být null
+     * @param registerTypeIds typ záznamu
+     * @param parentRecordId  id rodičovského rejstříku
+     * @return celkový počet záznamů, který je v db za dané parametry
+     */
+    public long findRegRecordByTextAndTypeCount(@Nullable final String searchRecord,
+                                                @Nullable final Collection<Integer> registerTypeIds,
+                                                final Boolean local, final Integer parentRecordId) {
+
+        RegRecord parentRecord = null;
+        if (parentRecordId != null) {
+            parentRecord = regRecordRepository.getOne(parentRecordId);
+            if (parentRecord == null) {
+                throw new IllegalArgumentException("Rejstřík s identifikátorem " + parentRecordId + " neexistuje.");
+            }
+        }
+
+        return regRecordRepository.findRegRecordByTextAndTypeCount(searchRecord, registerTypeIds, local, parentRecord);
     }
 
     /**
@@ -86,8 +119,8 @@ public class RegistryService {
      * @return celkový počet záznamů, který je v db za dané parametry
      */
     public long findRegRecordByTextAndTypeCount(@Nullable final String searchRecord,
-                                                @Nullable final Collection<Integer> registerTypeIds,
-                                                final Boolean local) {
+            @Nullable final Collection<Integer> registerTypeIds,
+            final Boolean local) {
 
 
         return regRecordRepository.findRegRecordByTextAndTypeCount(searchRecord, registerTypeIds, local);
