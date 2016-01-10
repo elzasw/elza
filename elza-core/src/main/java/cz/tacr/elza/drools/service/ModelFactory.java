@@ -3,9 +3,9 @@ package cz.tacr.elza.drools.service;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -18,10 +18,10 @@ import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
-import cz.tacr.elza.drools.model.ActiveLevel;
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.model.Packet;
+import cz.tacr.elza.drools.model.Strategy;
 
 /**
  * Factory method for the base Drools model objects.
@@ -129,5 +129,15 @@ public class ModelFactory {
 			level = level.getParent();
 		}
 		
+	}
+	
+	/**
+	 * Create set of strategies
+	 * @param srcStrategies
+	 * @return Return set of objects for the Drools
+	 */
+	public static Set<Strategy> createStrategies(Set<String> srcStrategies)
+	{
+		return srcStrategies.stream().map(s -> new Strategy(s)).collect(Collectors.toSet());
 	}
 }

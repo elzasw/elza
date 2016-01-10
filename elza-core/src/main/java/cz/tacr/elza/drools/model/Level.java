@@ -29,7 +29,7 @@ public class Level {
     /**
      * Má uzel potomky?
      */
-    private boolean hasChilds = false;
+    private boolean hasChildren = false;
 
     /**
      * Number of child nodes
@@ -50,7 +50,7 @@ public class Level {
     public Level(Level level) {
 		this.childCount = level.childCount;
 		this.descItems = level.descItems;
-		this.hasChilds = level.hasChilds;
+		this.hasChildren = level.hasChildren;
 		this.nodeId = level.nodeId;
 		this.parent = level.parent;
 	}
@@ -79,12 +79,12 @@ public class Level {
         this.parent = parent;
     }
 
-    public boolean isHasChilds() {
-        return hasChilds;
+    public boolean isHasChildren() {
+        return hasChildren;
     }
 
-    public void setHasChilds(final boolean hasChilds) {
-        this.hasChilds = hasChilds;
+    public void setHasChildren(final boolean hasChildren) {
+        this.hasChildren = hasChildren;
     }
 
     public Integer getChildCount() {
@@ -94,7 +94,7 @@ public class Level {
     public void setChildCount(Integer childCount) {
         this.childCount = childCount;
         if(childCount!=null) {
-        	this.hasChilds = (childCount.intValue() > 0);
+        	this.hasChildren = (childCount.intValue() > 0);
         }
     }
 
