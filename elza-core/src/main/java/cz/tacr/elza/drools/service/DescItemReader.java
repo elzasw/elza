@@ -71,7 +71,7 @@ public class DescItemReader {
 
         for (Level level : levels) {
             List<ArrDescItem> levelDescItems = descItemsMap.get(level.getNodeId());
-            List<DescItem> items = ModelFactory.createDescItems(levelDescItems, 
+            List<DescItem> items = ModelFactory.createDescItems(levelDescItems,
             		descItemTypesForPackets, descItemTypesForIntegers, descItemFactory);
             level.setDescItems(items);
         }
