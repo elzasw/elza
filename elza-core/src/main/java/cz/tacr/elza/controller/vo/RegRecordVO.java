@@ -72,6 +72,12 @@ public class RegRecordVO {
      */
     private List<RegVariantRecordVO> variantRecords;
 
+    /** Cesta od toho rejstříku až ke kořeni. První záznam je kořenový rejstřík, poslední záznam je přímý nadřízený. */
+    private List<RegRecordParentVO> parents;
+
+    /** Příznak zda má rejstřík potomky. Pokud je null, nebyl příznak nastaven. */
+    private Boolean hasChildren;
+
     public Integer getRecordId() {
         return recordId;
     }
@@ -174,5 +180,21 @@ public class RegRecordVO {
 
     public void setVariantRecords(final List<RegVariantRecordVO> variantRecords) {
         this.variantRecords = variantRecords;
+    }
+
+    public Boolean getHasChildren() {
+        return hasChildren;
+    }
+
+    public void setHasChildren(Boolean hasChildren) {
+        this.hasChildren = hasChildren;
+    }
+
+    public List<RegRecordParentVO> getParents() {
+        return parents;
+    }
+
+    public void setParents(List<RegRecordParentVO> parents) {
+        this.parents = parents;
     }
 }

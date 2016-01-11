@@ -5,6 +5,8 @@ import static com.jayway.restassured.RestAssured.given;
 import java.util.Arrays;
 import java.util.List;
 
+import ma.glasnost.orika.MapperFactory;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -23,9 +25,7 @@ import cz.tacr.elza.domain.vo.RegRecordWithCount;
 import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
-import ma.glasnost.orika.MapperFactory;
 
 
 /**
@@ -41,10 +41,6 @@ public class RegistryManagerTest extends AbstractRestTest {
 
     private static final String GET_EXTERNAL_SOURCES_URL = REGISTRY_MANAGER_URL + "/getExternalSources";
     private static final String EXTERNAL_SOURCE_ID_ATT = "externalSourceId";
-
-
-    @Autowired
-    private RegisterTypeRepository registerTypeRepository;
 
     @Autowired
     private RegRecordRepository recordRepository;

@@ -39,6 +39,7 @@ import cz.tacr.elza.service.PartyService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -230,7 +231,7 @@ public class PartyController {
         return new ParPartyWithCount(resultVo, countAll);
     }
 
-    @RequestMapping(value = "/insertParty", method = RequestMethod.PUT)
+    @RequestMapping(value = "/insertParty", method = RequestMethod.POST)
     @Transactional
     public ParPartyVO insertParty(@RequestBody final ParPartyEditVO partyVO) {
         if (partyVO == null) {
@@ -252,14 +253,19 @@ public class PartyController {
         return partyList.get(0);
     }
 
-    @RequestMapping(value = "/updateParty", method = RequestMethod.PUT)
+    @RequestMapping(value = "/updateParty/{partyId}", method = RequestMethod.PUT)
     @Transactional
-    public ParPartyVO updateParty(@RequestBody final ParPartyEditVO partyVO) {
+    public ParPartyVO updateParty(
+            @PathVariable(value = "partyId") final Integer partyId,
+            @RequestBody final ParPartyEditVO partyVO) {
+
         if (partyVO == null) {
             return null;
         }
 
         //CHECK
+        Assert.isTrue(partyVO.getPartyId().equals(partyId), "V url požadavku je odkazováno na jiné ID (" + partyId
+                + ") než ve VO (" + partyVO.getPartyId() + ").");
         chekPartyUpdate(partyVO);
 
         //TYPES
@@ -268,7 +274,7 @@ public class PartyController {
         RegRegisterType registerType = registerTypeRepository.findRegisterTypeByPartyType(partyType).get(0);
 
         //PARTY
-        ParParty party = partyService.updateParty(partyVO, partyType, registerType);
+        ParParty party = partyService.updateParty(partyVO, partyType);
 
         List<ParPartyVO> partyList = factoryVo.createPartyList(Arrays.asList(party));
         return partyList.get(0);

@@ -1,6 +1,8 @@
 package cz.tacr.elza.controller;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -74,12 +76,15 @@ public class RegistryController {
      * @param from              index prvního záznamu, začíná od 0
      * @param count             počet výsledků k vrácení
      * @param registerTypeIds   IDčka typu záznamu, může být null či prázdné (pak vrací vše)
+     * @param parentRecordId    id rodiče, pokud je null načtou se kořenové záznamy, jinak potomci daného rejstříku
+     *
      * @return                  vybrané záznamy dle popisu seřazené za text hesla, nebo prázdná množina
      */
-    @RequestMapping(value = "/findRecord", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/findRecord", method = RequestMethod.GET)
     public RegRecordWithCount findRecord(@RequestParam(required = false) @Nullable final String search,
                                          @RequestParam final Integer from, @RequestParam final Integer count,
-                                         @RequestParam(value = "registerTypeIds", required = false) @Nullable final Integer[] registerTypeIds) {
+                                         @RequestParam(value = "registerTypeIds", required = false) @Nullable final Integer[] registerTypeIds,
+                                         @RequestParam(required = false) @Nullable final Integer parentRecordId) {
 
         List<Integer> registerTypeIdList = null;
         if (registerTypeIds != null) {
@@ -88,17 +93,52 @@ public class RegistryController {
 
         final boolean onlyLocal = false;
 
+        // všechny záznamy
+        List<RegRecord> allRecords = new LinkedList<>();
 
         List<RegRecord> regRecords = registryService
-                .findRegRecordByTextAndType(search, registerTypeIdList, onlyLocal, from, count);
-        List<ParParty> recordParties = partyService.findParPartyByRecords(regRecords);
+                .findRegRecordByTextAndType(search, registerTypeIdList, onlyLocal, from, count, parentRecordId);
+        allRecords.addAll(regRecords);
 
-        List<RegRecordVO> recordVOList = factoryVo
-                .createRegRecords(regRecords, PartyUtils.createRecordPartyMap(recordParties));
+        // děti
+        Map<Integer, List<RegRecord>> parentChildrenMap = new HashMap<>();
+        for (RegRecord regRecord : regRecords) {
+            List<RegRecord> children = regRecordRepository.findByParentRecord(regRecord);
+            allRecords.addAll(children);
+            parentChildrenMap.put(regRecord.getRecordId(), children);
+        }
 
-        long countAll = registryService.findRegRecordByTextAndTypeCount(search, registerTypeIdList, onlyLocal);
+        List<ParParty> recordParties = partyService.findParPartyByRecords(allRecords);
 
-        return new RegRecordWithCount(recordVOList, countAll);
+        Map<Integer, ParParty> recordPartyMap = PartyUtils.createRecordPartyMap(recordParties);
+        List<RegRecordVO> parentRecordVOList = factoryVo.createRegRecords(regRecords, recordPartyMap, true);
+
+        Map<Integer, RegRecordVO> parentRecordVOMap = new HashMap<>();
+        for (RegRecordVO regRecordVO : parentRecordVOList) {
+            parentRecordVOMap.put(regRecordVO.getRecordId(), regRecordVO);
+        }
+
+        for (Integer recordId : parentChildrenMap.keySet()) {
+            List<RegRecord> children = parentChildrenMap.get(recordId);
+
+            List<RegRecordVO> childrenVO = new ArrayList<RegRecordVO>(children.size());
+            RegRecordVO parentVO = parentRecordVOMap.get(recordId);
+            parentVO.setChilds(childrenVO);
+            for (RegRecord child : children) {
+                ParParty parParty = recordPartyMap.get(child.getRecordId());
+                Integer partyId = parParty == null ? null : parParty.getPartyId();
+                RegRecordVO regRecordVO = factoryVo.createRegRecord(child, partyId, true);
+                childrenVO.add(regRecordVO);
+
+                List<RegRecord> childChildren = regRecordRepository.findByParentRecord(child);
+                regRecordVO.setHasChildren(childChildren.isEmpty() ? false : true);
+            }
+            parentVO.setHasChildren(!childrenVO.isEmpty());
+        }
+
+        long countAll = registryService.findRegRecordByTextAndTypeCount(search, registerTypeIdList, onlyLocal, parentRecordId);
+
+        return new RegRecordWithCount(parentRecordVOList, countAll);
     }
 
 
@@ -127,8 +167,8 @@ public class RegistryController {
                 .createRecordPartyMap(partyService.findParPartyByRecords(records));
 
         ParParty recordParty = recordPartyMap.get(recordId);
-        RegRecordVO result = factoryVo.createRegRecord(record, recordParty == null ? null : recordParty.getPartyId());
-        result.setChilds(factoryVo.createRegRecords(childs, recordPartyMap));
+        RegRecordVO result = factoryVo.createRegRecord(record, recordParty == null ? null : recordParty.getPartyId(), false);
+        result.setChilds(factoryVo.createRegRecords(childs, recordPartyMap, false));
 
         result.setVariantRecords(factoryVo.createRegVariantRecords(record.getVariantRecordList()));
 
@@ -161,7 +201,7 @@ public class RegistryController {
         RegRecord newRecordDO = registryService.saveRecord(recordDO, true);
 
         ParParty recordParty = partyService.findParPartyByRecord(newRecordDO);
-        return factoryVo.createRegRecord(newRecordDO, recordParty == null ? null : recordParty.getPartyId());
+        return factoryVo.createRegRecord(newRecordDO, recordParty == null ? null : recordParty.getPartyId(), false);
     }
 
     /**
@@ -180,7 +220,7 @@ public class RegistryController {
         RegRecord newRecordDO = registryService.saveRecord(recordDO, true);
 
         ParParty recordParty = partyService.findParPartyByRecord(newRecordDO);
-        return factoryVo.createRegRecord(newRecordDO, recordParty == null ? null : recordParty.getPartyId());
+        return factoryVo.createRegRecord(newRecordDO, recordParty == null ? null : recordParty.getPartyId(), false);
     }
 
 

@@ -1,5 +1,25 @@
 package cz.tacr.elza.controller.config;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+
+import ma.glasnost.orika.MapperFacade;
+import ma.glasnost.orika.MapperFactory;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
 import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
 import cz.tacr.elza.controller.vo.ParPartyGroupVO;
@@ -10,6 +30,7 @@ import cz.tacr.elza.controller.vo.ParPartyTimeRangeVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ParRelationEntityVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.RegRecordParentVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
@@ -38,23 +59,6 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
-import ma.glasnost.orika.MapperFacade;
-import ma.glasnost.orika.MapperFactory;
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 
 
 /**
@@ -236,14 +240,15 @@ public class ClientFactoryVO {
      *
      * @param records        seznam rejstříkových hesel
      * @param recordPartyMap mapa id rejstříkových hesel na osobu
+     * @param fillParents příznak zda se mají načíst rodiče rejstříku
      * @return seznam rejstříkových hesel
      */
     public List<RegRecordVO> createRegRecords(final List<RegRecord> records,
-                                              final Map<Integer, ParParty> recordPartyMap) {
+                                              final Map<Integer, ParParty> recordPartyMap, boolean fillParents) {
         List<RegRecordVO> result = new ArrayList<>(records.size());
         for (final RegRecord record : records) {
             ParParty recordParty = recordPartyMap.get(record.getRecordId());
-            result.add(createRegRecord(record, recordParty == null ? null : recordParty.getPartyId()));
+            result.add(createRegRecord(record, recordParty == null ? null : recordParty.getPartyId(), fillParents));
         }
 
         return result;
@@ -254,14 +259,35 @@ public class ClientFactoryVO {
      *
      * @param regRecord rejstříkové heslo
      * @param partyId   id osoby
+     * @param fillParents příznak zda se mají načíst rodiče rejstříku
      * @return rejstříkové heslo
      */
-    public RegRecordVO createRegRecord(final RegRecord regRecord, @Nullable final Integer partyId) {
+    public RegRecordVO createRegRecord(final RegRecord regRecord, @Nullable final Integer partyId, boolean fillParents) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RegRecordVO result = mapper.map(regRecord, RegRecordVO.class);
         result.setPartyId(partyId);
 
+        if (fillParents) {
+            List<RegRecordParentVO> parents = new LinkedList<>();
+            RegRecord parentRecord = regRecord.getParentRecord();
+            while (parentRecord != null) {
+                parents.add(createRegRecordParent(parentRecord));
+                parentRecord = parentRecord.getParentRecord();
+            }
+            Collections.reverse(parents);
+            result.setParents(parents);
+        }
+
         return result;
+    }
+
+    private RegRecordParentVO createRegRecordParent(RegRecord parentRecord) {
+        RegRecordParentVO parent = new RegRecordParentVO();
+
+        parent.setId(parentRecord.getRecordId());
+        parent.setRecord(parentRecord.getRecord());
+
+        return parent;
     }
 
     /**
