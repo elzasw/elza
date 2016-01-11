@@ -54,11 +54,18 @@ public class DescItemTypesRules extends Rules {
     	LinkedList<Object> facts = new LinkedList<>();
     	facts.addAll(rulDescItemTypeExtList);
     	
-    	Level modelLevel = scriptModelFactory.createLevelStructure(level, version);
+    	// prepare list of levels
+    	Level modelLevel = scriptModelFactory.createLevelModel(level, version);
     	ActiveLevel activeLevel = scriptModelFactory.createActiveLevel(modelLevel, level, version);
     	ModelFactory.addAll(activeLevel, facts);
     	
+    	// Add arrangement type
     	RulArrangementType arrangementType = version.getArrangementType();
+    	facts.add(arrangementType);
+    	
+    	// Add strategies
+    	facts.addAll(ModelFactory.createStrategies(strategies));
+    	
     	final RulRuleSet rulRuleSet = version.getRuleSet();
 
     	AvailableDescItems results = new AvailableDescItems();      
@@ -71,8 +78,6 @@ public class DescItemTypesRules extends Rules {
             path = Paths.get(RulesExecutor.ROOT_PATH + File.separator + rulPackageRule.getFilename());
             StatelessKieSession session = createNewStatelessKieSession(rulRuleSet, path);
             session.setGlobal("results", results);
-            session.setGlobal("strategies", strategies);
-            session.setGlobal("arrangementType", arrangementType);
             execute(session, facts, path);
         }
         

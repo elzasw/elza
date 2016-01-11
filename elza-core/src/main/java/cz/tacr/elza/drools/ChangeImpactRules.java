@@ -32,7 +32,7 @@ import cz.tacr.elza.drools.service.ScriptModelFactory;
  * @since 27.11.2015
  */
 @Component
-public class ImpactOfChangesLevelStateRules extends Rules {
+public class ChangeImpactRules extends Rules {
 
     @Autowired
     private ScriptModelFactory factory;

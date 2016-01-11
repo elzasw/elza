@@ -46,10 +46,9 @@ public class DataValidationResult {
      */
     private RulDescItemSpec spec;
 
-    private DataValidationResult(final ValidationResultType resultType) {
+    public DataValidationResult(final ValidationResultType resultType) {
         this.resultType = resultType;
     }
-
 
     public ValidationResultType getResultType() {
         return resultType;
@@ -110,40 +109,4 @@ public class DataValidationResult {
     }
 
 
-    public static DataValidationResult createError(final ArrDescItem item, final String errorMsg) {
-        DataValidationResult result = new DataValidationResult(ValidationResultType.ERROR);
-        result.setDescItem(item);
-        result.setMessage(errorMsg);
-        return result;
-    }
-
-    public static DataValidationResult createError(final Integer descItemId, final String errorMsg){
-        DataValidationResult result = new DataValidationResult(ValidationResultType.ERROR);
-        result.setDescItemId(descItemId);
-        result.setMessage(errorMsg);
-        return result;
-    }
-
-    public static DataValidationResult createMissing(final RulDescItemType type,
-                                                     final RulDescItemSpec spec) {
-        DataValidationResult result = new DataValidationResult(ValidationResultType.MISSING);
-        result.setType(type);
-        result.setSpec(spec);
-
-        if (spec == null) {
-            result.setMessage("Atribut " + type.getName() + " musí být vyplněn u této jednotky archivního popisu.");
-        } else {
-            result.setMessage("Atribut " + type.getName() + " se specifikací " + spec.getName()
-                    + " musí být vyplněn u této jednotky archivního popisu.");
-        }
-        return result;
-    }
-
-    public static DataValidationResult createMissing(final String typeCode, final String message){
-        DataValidationResult result = new DataValidationResult(ValidationResultType.MISSING);
-        result.setTypeCode(typeCode);
-        result.setMessage(message);
-
-        return result;
-    }
 }

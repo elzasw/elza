@@ -1,13 +1,10 @@
 elza:
   data:
-      url: jdbc:postgresql://localhost:5432/elza
-      user: postgres
-      pass: postgres
+      url: jdbc:postgresql://vyv-inet:5432/elza
+      user: app
+      pass: app
+
 #  rules:
 #    ZP:
 #      default:
 #        - NORMAL
-spring:
-  jpa:
-    # Logovani SQL dotazu
-    show-sql: true
