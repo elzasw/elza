@@ -1,11 +1,13 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ParParty;
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.util.Collection;
-import java.util.List;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.RegRecord;
 
 
 /**
@@ -29,8 +31,17 @@ public interface PartyRepository extends JpaRepository<ParParty, Integer>, Party
      * @param recordIds seznam rejstříkových hesel
      * @return seznam osob s danými hesly
      */
-    @Query("SELECT ap FROM par_party ap JOIN ap.record r WHERE r.recordId IN (?1)")
-    List<ParParty> findParPartyByRecordIds(Collection<Integer> recordIds);
+    @Query("SELECT ap FROM par_party ap WHERE ap.record IN (?1)")
+    List<ParParty> findParPartyByRecords(Collection<RegRecord> records);
+
+    /**
+     * Najde seznam osob podle rejstříkových hesel.
+     *
+     * @param recordIds seznam rejstříkových hesel
+     * @return seznam osob s danými hesly
+     */
+    @Query("SELECT ap.partyId, r.recordId FROM par_party ap JOIN ap.record r WHERE r IN (?1)")
+    List<Object[]> findRecordIdAndPartyIdByRecords(Collection<RegRecord> records);
 
 
     /**

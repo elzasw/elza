@@ -1,8 +1,23 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ParParty;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import cz.tacr.elza.domain.RegExternalSource;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
@@ -20,23 +35,6 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.RegistryService;
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Implementace Api pro práci s rejstříkem.
@@ -204,14 +202,14 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
             registerTypeIdList = Arrays.asList(registerTypeIds);
         }
         List<RegRecord> regRecords = regRecordRepository.findRegRecordByTextAndType(search, registerTypeIdList, false,
-                from, count);
+                from, count, null);
         regRecords.forEach((record) -> {
             record.getVariantRecordList().forEach((variantRecord) -> {
                 variantRecord.setRegRecord(null);
             });
         });
 
-        long countAll = regRecordRepository.findRegRecordByTextAndTypeCount(search, registerTypeIdList, false);
+        long countAll = regRecordRepository.findRegRecordByTextAndTypeCount(search, registerTypeIdList, false, null);
 
         return new RegRecordWithCount(regRecords, countAll);
     }

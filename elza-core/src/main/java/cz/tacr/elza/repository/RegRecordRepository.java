@@ -27,6 +27,16 @@ public interface RegRecordRepository extends JpaRepository<RegRecord, Integer>, 
      */
     List<RegRecord> findByParentRecord(RegRecord parentRecord);
 
+    /**
+     * Najde potomky rejstříkových hesel.
+     *
+     * @param parentRecords rodiče
+     *
+     * @return seznam potomků
+     */
+    @Query("SELECT r FROM reg_record r WHERE parentRecord IN (?1)")
+    List<RegRecord> findByParentRecords(List<RegRecord> parentRecords);
+
 
     @Query("SELECT r FROM reg_record r WHERE r.externalId = ?1 "
             + "and r.externalSource.code = ?2")
