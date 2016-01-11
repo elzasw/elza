@@ -6,20 +6,20 @@ import {WebApi} from 'actions'
 
 import * as types from 'actions/constants/actionTypes';
 
-export function fetchRegistryIfNeeded(search = '') {
+export function fetchRegistryIfNeeded(search = '', registryParent = null) {
     return (dispatch, getState) => {
         var state = getState();
         if (!state.registry.fetched && !state.registry.isFetching) {
-            return dispatch(fetchRegistry(search));
+            return dispatch(fetchRegistry(search, registryParent));
         }
     }
 }
 
-export function fetchRegistry(search) {
+export function fetchRegistry(search, registryParent = null) {
     return dispatch => {
         dispatch(requestRegistry())
 
-        return WebApi.findRegistry(search)
+        return WebApi.findRegistry(search, registryParent)
                 .then(json => dispatch(receiveRegistry(json)));
     }
 }

@@ -3,6 +3,38 @@
 .active{
     font-weight: bold;
 }
-.seznamRejstrikuCelkem{
+.registry-list-count{
     padding-top: 10px;
+}
+
+ul.breadcrumbs li{
+    width: 100%;
+    background-color: none;
+}
+
+ul.breadcrumbs li:hover{
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
+
+ul.breadcrumbs li.selected:hover{
+    cursor: default;
+}
+
+.registry-list-icon-list:before, .registry-list-icon-record:before{
+    margin: 0;
+    margin-right: 5px;
+    pading: 0;
+}
+
+.registry-list-icon-list:before{
+    content: "►";
+}
+
+.registry-list-icon-record:before{
+    content: "○";
+}
+
+.registry-list-icon-list:hover, .registry-list-icon-record:hover{
+    cursor: pointer;
 }

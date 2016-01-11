@@ -16,7 +16,7 @@ import {Ribbon, ModalDialog, NodeTabs, Search, RegistryPanel} from 'components';
 import {ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {Nav, NavItem} from 'react-bootstrap';
-import {registryData, registrySearchData} from 'actions/registry/registryData'
+import {registryData, registrySearchData, registryChangeParent} from 'actions/registry/registryData'
 
 import {fetchRegistryIfNeeded} from 'actions/registry/registryList'
 
@@ -26,13 +26,15 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
         this.bindMethods('handleSelect');
         this.bindMethods('handleSearch');
+        this.bindMethods('handleDoubleClick');
+        this.bindMethods('handleClickNavigation');
         this.buildRibbon = this.buildRibbon.bind(this);
-        this.dispatch(fetchRegistryIfNeeded(props.registry.search));
+        this.dispatch(fetchRegistryIfNeeded(props.registry.search, props.registry.idRegistryParent));
 
     }
 
     componentWillReceiveProps(nextProps) {
-            this.dispatch(fetchRegistryIfNeeded(nextProps.registry.search));
+            this.dispatch(fetchRegistryIfNeeded(nextProps.registry.search, nextProps.registry.idRegistryParent));
     }
 
     buildRibbon() {
@@ -44,6 +46,17 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     handleSelect(registry, event) {
         var registry = Object.assign({}, registry,{selectedId: registry.recordId});
         this.dispatch(registryData(registry));
+    }
+
+    handleDoubleClick(item, event) {
+        var registry = Object.assign({}, registry,{idRegistryParent: item.recordId});
+        this.dispatch(registryChangeParent(registry));
+    }
+
+    handleClickNavigation(item, event) {
+        
+        var registry = Object.assign({}, registry,{idRegistryParent: item.id});
+        this.dispatch(registryChangeParent(registry));
     }
 
     handleSearch(search, event) {
@@ -58,23 +71,46 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                     {this.props.registry.items.map(item=>{
                         var cls = classNames({
                                     active: this.props.registry.selectedId === item.recordId
-                                    })
-
+                                    });
+                        
+                        var clsItem = 'registry-list-icon-record';
+                        if (item.hasChildren === false)
+                            clsItem = 'registry-list-icon-list';
+                        
                         return (
-                            <div key={item.recordId} className={cls} onClick={this.handleSelect.bind(this, item)}>
-                                <span>{item.record}</span>
+                            <div key={item.recordId} className={cls} onDoubleClick={this.handleDoubleClick.bind(this, item)} onClick={this.handleSelect.bind(this, item)}>
+                                <span className={clsItem}>{item.record}</span>
                             </div>
                         )
                     })}
                 </div>
-                <div key='registrysCouns' className='seznamRejstrikuCelkem'>Zobrazeno {this.props.registry.items.length} z celkoveho poctu {this.props.registry.countItems}</div>
+                <div key='registrysCouns' className='registry-list-count'>Zobrazeno {this.props.registry.items.length} z celkoveho poctu {this.props.registry.countItems}</div>
             </div>
         )
+        
+        var navParents = '';
+console.log(this.props.registry);
+        if (this.props.registry.items[0] && this.props.registry.search === null){ 
+            navParents = (
+                <ul className='breadcrumbs'>
+                <li onClick={this.handleClickNavigation.bind(this, {id:null})}>/</li>
+                {this.props.registry.items[0].parents.map(item => {
+                    if (this.props.registry.selectedId===item.id)
+                        return <li className='selected'>{item.record}</li>
+                    return <li onClick={this.handleClickNavigation.bind(this, item)}>{item.record}</li>
+                    }
+                )}
+                </ul>
+            )
+        } 
 
         var leftPanel = (
             <div>
                 <div>
                     <Search onSearch={this.handleSearch.bind(this)} filterText={this.props.registry.search}/>
+                </div>
+                <div>
+                    {navParents}
                 </div>
                 <div>
                     {(this.props.registry.isFetching || !this.props.registry.fetched) && <Loading/>}

@@ -14,6 +14,7 @@ const initialState = {
     reloadedRegistry: false,
     search: null,
     registryData: undefined,
+    idRegistryParent: null,
     items: [],
     countItems: 0,
 }
@@ -31,8 +32,15 @@ export default function registry(state = initialState, action) {
                 isFetching: true
             })
         case types.REGISTRY_SEARCH_REGISTRY:
+            if (action.registry.search === '')
+                action.registry.search = null;
             return Object.assign({}, state, {
                 search: action.registry.search,
+                fetched: false
+            })
+        case types.REGISTRY_CHANGED_PARENT_REGISTRY:
+            return Object.assign({}, state, {
+                idRegistryParent: action.registry.idRegistryParent,
                 fetched: false
             })
         case types.REGISTRY_RECEIVE_REGISTRY_LIST:

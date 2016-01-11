@@ -19,6 +19,13 @@ export function registrySearchData(registry) {
     }
 }
 
+export function registryChangeParent(registry) {
+    return {
+        type: types.REGISTRY_CHANGED_PARENT_REGISTRY,
+        registry
+    }
+}
+
 export function registryChangeDetail(registry) {
     return {
         type: types.REGISTRY_CHANGE_REGISTRY_DETAIL,
