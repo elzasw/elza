@@ -1,0 +1,69 @@
+@valueActionWidth: 22px;
+
+.node-form {
+    overflow-x: hidden;
+    
+    .attr-group {
+        border: 1px solid #f0f0f0;
+        background: #f9f9f9;
+        width: 100%;
+        margin: 2px;
+        
+        .attr-group-label {
+            background: #f0f0f0;
+            width: 100%;
+        }
+        
+        .attr-group-attrs {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            
+            .attr {
+                padding: 2px;
+                min-width: 200px;
+                
+                .attr-label {
+                    white-space: nowrap;
+                    width: 100%;
+                    button {
+                        border: none;
+                        font-size: 14px;
+                        padding: 0;
+                        margin: 0 2px 0 2px;
+                    }
+                }
+                
+                .attr-values {
+                    width: 100%;
+                    
+                    .value-container {
+                        .value {
+                            width: 100%;
+                        }
+                        .action {
+                            width: @valueActionWidth;
+                            button {
+                                border: none;
+                                padding: 2px;
+                            }
+                            float: right;
+                        }
+                        &.action {
+                            .value {
+                                width: calc(~"100% - "@valueActionWidth);
+                            }
+                        }
+                    }
+                    .action {
+                        button {
+                            border: none;
+                            padding: 2px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

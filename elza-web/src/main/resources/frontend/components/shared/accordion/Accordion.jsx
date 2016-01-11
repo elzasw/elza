@@ -65,7 +65,7 @@ var Accordion = class AccordionWrapper extends AbstractReactComponent {
                             Tadaaaa<br />
                             Tadaaaa<br />
                         </div>
-                        {false && <NodeForm levelExt={this.props.nodeForm.levelExt}/>}
+                        {false && <SubNodeForm/>}
                     </div>
                 </div>
             )

@@ -187,9 +187,30 @@ class WebApi {
     getFaNodeForm(versionId, nodeId) {
         var node = findNodeById(_faRootNode, nodeId);
         var data = {
-            childNodes: [...node.children],
             node: node,
-            attrDesc: {a:1, b:2, c:3}
+            data: {
+                groups:[
+                    {
+                    name: 'group 1',
+                    attrDesc: [
+                        { id:1, name: 'attr1', multipleValue: false, code: 'STRING', values: [{value: 'nejaky text1'}], width: 1},
+                        { id:2, name: 'attr2', multipleValue: false, code: 'INT', values: [{value: '123'}], width: 2},
+                        { id:4, name: 'attr4', multipleValue: false, code: 'DECIMAL', values: [{value: '123,456'}], width: 1},
+                        { id:3, name: 'attr3', multipleValue: false, code: 'TEXT', values: [{value: 'nejaky text3-area'}], width: 4},
+                        { id:5, name: 'attr5', multipleValue: false, code: 'STRING', values: [{value: 'nejaky text5'}], width: 2},
+                        { id:6, name: 'attr6', multipleValue: false, code: 'ENUM', values: [{value: 'nejaky text6', specValue: 2}], width: 2, specs: [{id: 1, name: 'jedna'}, {id: 2, name: 'dve'}, {id: 3, name: 'tri'}]},
+                        ]
+                    },
+                    {
+                    name: 'group 2',
+                    attrDesc: [
+                        { id:9, name: 'attr9', multipleValue: true, type: 'TEXT', values: [{value: 'val1'}, {value: 'val2'}], width: 1},
+                        { id:10, name: 'attr10', multipleValue: true, type: 'TEXT', values: [{value: 'val1'}, {value: 'val2'}, {value: 'val3'}, {value: 'val4'}], width: 2},
+                        { id:11, name: 'attr11', multipleValue: false, type: 'TEXT', values: [{value: 'val'}], width: 1},
+                        ]
+                    }
+                ]
+            }
         };
         return this.getData(data, 1);
     }

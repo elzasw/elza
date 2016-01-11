@@ -77,8 +77,10 @@ export default function arrRegion(state = initialState, action) {
             }
         case types.FA_NODE_INFO_REQUEST:
         case types.FA_NODE_INFO_RECEIVE:
-        case types.FA_NODE_FORM_REQUEST:
-        case types.FA_NODE_FORM_RECEIVE:
+        case types.FA_SUB_NODE_FORM_REQUEST:
+        case types.FA_SUB_NODE_FORM_RECEIVE:
+        case types.FA_SUB_NODE_INFO_REQUEST:
+        case types.FA_SUB_NODE_INFO_RECEIVE:
             var faIndex = indexById(state.fas, action.versionId, "versionId");
             if (faIndex != null) {
                 return {

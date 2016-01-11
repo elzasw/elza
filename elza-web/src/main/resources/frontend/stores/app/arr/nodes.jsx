@@ -10,8 +10,10 @@ export default function nodes(state = nodesInitialState, action) {
     switch (action.type) {
         case types.FA_NODE_INFO_REQUEST:
         case types.FA_NODE_INFO_RECEIVE:
-        case types.FA_NODE_FORM_REQUEST:
-        case types.FA_NODE_FORM_RECEIVE:
+        case types.FA_SUB_NODE_FORM_REQUEST:
+        case types.FA_SUB_NODE_FORM_RECEIVE:
+        case types.FA_SUB_NODE_INFO_REQUEST:
+        case types.FA_SUB_NODE_INFO_RECEIVE:
             var r = findByNodeKeyInNodes(state, action.versionId, action.nodeKey);
             if (r) {
                 return {

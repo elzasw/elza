@@ -4,21 +4,19 @@ const initialState = {
     isFetching: false,
     fetched: false,
     childNodes: [],
-    attrDesc: null,
 }
 
-export default function nodeForm(state = initialState, action) {
+export default function subNodeInfo(state = initialState, action) {
     switch (action.type) {
-        case types.FA_NODE_FORM_REQUEST:
+        case types.FA_SUB_NODE_INFO_REQUEST:
             return Object.assign({}, state, {
                 isFetching: true,
             })
-        case types.FA_NODE_FORM_RECEIVE:
+        case types.FA_SUB_NODE_INFO_RECEIVE:
             return Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,
                 childNodes: action.childNodes,
-                attrDesc: action.attrDesc
             })
         default:
             return state
