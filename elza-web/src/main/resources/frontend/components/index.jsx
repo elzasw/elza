@@ -29,7 +29,7 @@ exports.NodePanel = require('./arr/NodePanel');
 exports.NodeTabs = require('./arr/NodeTabs');
 exports.FaTreeTabs = require('./arr/FaTreeTabs');
 exports.FaTreeLazy = require('./arr/FaTreeLazy');
-exports.NodeForm = require('./arr/NodeForm');
+exports.SubNodeForm = require('./arr/SubNodeForm');
 exports.AddFaForm = require('./arr/AddFaForm');
 
 exports.PartySearch = require('./party/PartySearch');

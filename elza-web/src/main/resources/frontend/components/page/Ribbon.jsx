@@ -22,7 +22,7 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
 
         if (this.props.admin) {
             section = (
-                <RibbonGroup className="small">
+                <RibbonGroup className="">
                     <LinkContainer to="/admin/packages"><Button><Glyphicon glyph="cog" /><div><span className="btnText">{i18n('ribbon.action.admin.packages')}</span></div></Button></LinkContainer>
                 </RibbonGroup>
             );
@@ -38,11 +38,11 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
                     <LinkContainer to="/party"><Button><Glyphicon glyph="th-list" /><div><span className="btnText">{i18n('ribbon.action.party')}</span></div></Button></LinkContainer>
                     <LinkContainer to="/admin"><Button><Glyphicon glyph="cog" /><div><span className="btnText">{i18n('ribbon.action.admin')}</span></div></Button></LinkContainer>
 
-                    <DropdownButton title={<span className="dropContent"><Glyphicon glyph='film' /><div><span className="btnText">{i18n('ribbon.action.findingAid')}</span></div></span>}>
+                    {false && <DropdownButton title={<span className="dropContent"><Glyphicon glyph='film' /><div><span className="btnText">{i18n('ribbon.action.findingAid')}</span></div></span>}>
                       <MenuItem eventKey="1">Action</MenuItem>
                       <MenuItem eventKey="2">Another action jdoias djaos ijdoas i</MenuItem>
                       <MenuItem eventKey="3">Active Item</MenuItem>
-                    </DropdownButton>
+                    </DropdownButton>}
                 </RibbonGroup>
 
 

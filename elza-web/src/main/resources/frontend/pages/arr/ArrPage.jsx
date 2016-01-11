@@ -79,13 +79,13 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         var altSection = [];
         altSection.push(
-            <RibbonGroup className="small">
+            <RibbonGroup className="">
                 <Button onClick={this.handleAddFa}><Glyphicon glyph="plus" /><div><span className="btnText">{i18n('ribbon.action.arr.fa.add')}</span></div></Button>
             </RibbonGroup>
         );
         if (activeInfo.activeFa) {
             altSection.push(
-                <RibbonGroup className="small">
+                <RibbonGroup className="">
                     <Button onClick={this.handleApproveFaVersion}><Glyphicon glyph="plus" /><div><span className="btnText">{i18n('ribbon.action.arr.fa.approveVersion')}</span></div></Button>
                 </RibbonGroup>
             )
@@ -110,13 +110,13 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         if (activeFa && activeFa.nodes) {
             var nodes = activeFa.nodes.nodes;
             centerPanel.push(
-                <NodeTabs versionId={activeFa.versionId} nodes={nodes} activeIndex={activeFa.nodes.activeIndex} nodeForm={this.props.arrRegion.nodeForm}/>
+                <NodeTabs versionId={activeFa.activeVersion.id} nodes={nodes} activeIndex={activeFa.nodes.activeIndex}/>
             )
         }
 
         var rightPanel = (
             <div>
-                FINDING_AID-right
+                
             </div>
         )
 

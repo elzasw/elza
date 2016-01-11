@@ -1,7 +1,8 @@
 import * as types from 'actions/constants/actionTypes';
 import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
 import nodeInfo from './nodeInfo'
-import nodeForm from './nodeForm'
+import subNodeForm from './subNodeForm'
+import subNodeInfo from './subNodeInfo'
 
 var _nextNodeKey = 1;
 
@@ -13,10 +14,12 @@ export function nodeInitState(node, prevNodesNode) {
 
     if (prevNodesNode) {
         result.nodeKey = prevNodesNode.nodeKey;
-        result.nodeForm = prevNodesNode.nodeForm;
+        result.subNodeForm = prevNodesNode.subNodeForm;
+        result.subNodeInfo = prevNodesNode.subNodeInfo;
     } else {
         result.nodeKey = _nextNodeKey++;
-        result.nodeForm = nodeForm(undefined, {type:''});
+        result.subNodeForm = subNodeForm(undefined, {type:''});
+        result.subNodeInfo = subNodeInfo(undefined, {type:''});
     }
 
     if (prevNodesNode && prevNodesNode.id == node.id) {
@@ -36,15 +39,21 @@ const nodeInitialState = {
     nodeKey: _nextNodeKey++,
     selectedSubNodeId: null,
     nodeInfo: nodeInfo(undefined, {type:''}),
-    nodeForm: nodeForm(undefined, {type:''}),
+    subNodeForm: subNodeForm(undefined, {type:''}),
+    subNodeInfo: subNodeInfo(undefined, {type:''}),
 }
 
 export function node(state = nodeInitialState, action) {
     switch (action.type) {
-        case types.FA_NODE_FORM_REQUEST:
-        case types.FA_NODE_FORM_RECEIVE:
+        case types.FA_SUB_NODE_FORM_REQUEST:
+        case types.FA_SUB_NODE_FORM_RECEIVE:
             return Object.assign({}, state, {
-                nodeForm: nodeForm(state.nodeForm, action),
+                subNodeForm: subNodeForm(state.subNodeForm, action),
+            });
+        case types.FA_SUB_NODE_INFO_REQUEST:
+        case types.FA_SUB_NODE_INFO_RECEIVE:
+            return Object.assign({}, state, {
+                subNodeInfo: subNodeInfo(state.subNodeInfo, action),
             });
         case types.FA_NODE_INFO_REQUEST:
         case types.FA_NODE_INFO_RECEIVE:
@@ -56,7 +65,8 @@ export function node(state = nodeInitialState, action) {
                 selectedSubNodeId: action.subNodeId
             });
             if (state.selectedSubNodeId !=action.subNodeId) {
-                result.nodeForm = nodeForm(undefined, {type:''});
+                result.subNodeForm = subNodeForm(undefined, {type:''});
+                result.subNodeInfo = subNodeInfo(undefined, {type:''});
             }
             return result;
         default:

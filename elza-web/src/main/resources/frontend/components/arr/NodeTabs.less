@@ -1,6 +1,6 @@
 @import "~variables.less";
 
-@tabs-height: 42px;
+@tabs-height: 32px;
 
 .node-tabs-container {
     height: 100%;
@@ -11,5 +11,9 @@
     
     .tab-content {
         height: calc(~"100% - "@tabs-height);
+        border: 1px solid #DDDDDD;
+        border-top: none;
+        padding: 4px;
+        background: #f8f8f8;
     }
 }

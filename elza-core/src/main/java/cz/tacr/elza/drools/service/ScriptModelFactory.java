@@ -69,39 +69,6 @@ public class ScriptModelFactory {
     private DescItemRepository descItemRepository;
 
     /**
-     * Vytvoří strukturu od výchozího levelu. Načte všechny jeho rodiče a přímé potomky.
-     */
-    public Level createLevelStructureWithChilds(final ArrLevel level, final ArrFindingAidVersion version) {
-        Assert.notNull(level);
-        Assert.notNull(version);
-        
-        DescItemReader descItemReader = new DescItemReader(descItemRepository, descItemTypeRepository, descItemFactory);
-
-        Level mainLevel = ModelFactory.createLevel(level, version);        
-        descItemReader.add(mainLevel, level.getNode());
-        
-        List<ArrLevel> parents = levelRepository.findAllParentsByNodeAndVersion(level.getNode(), version);
-        
-        Level lastLevel = mainLevel;
-        for (ArrLevel parent : parents) {
-            Level newParent = ModelFactory.createLevel(parent, version);
-            lastLevel.setParent(newParent);
-            newParent.setHasChilds(true);
-            lastLevel = newParent;
-            
-            descItemReader.add(newParent, parent.getNode());
-        }
-
-
-        Integer childsCount = levelRepository.countChildsByParent(level.getNode(), version.getLockChange());
-        mainLevel.setChildCount(childsCount);
-
-        descItemReader.read(version);
-
-        return mainLevel;
-    }
-
-    /**
      * Převede stromovou strukturu na seznam.
      *
      * @param level  level, pro který je struktura sestavena
@@ -148,7 +115,7 @@ public class ScriptModelFactory {
     /**
      * Vytvoří strukturu od výchozího levelu. Načte všechny jeho rodiče a prvky popisu.
      */
-    public Level createLevelStructure(final ArrLevel level,
+    public Level createLevelModel(final ArrLevel level,
                                         final ArrFindingAidVersion version) {
         Assert.notNull(level);
         Assert.notNull(version);
@@ -166,7 +133,7 @@ public class ScriptModelFactory {
         for (ArrLevel parent : parents) {
             Level newParent = ModelFactory.createLevel(parent, version);
             voParent.setParent(newParent);
-            newParent.setHasChilds(true);
+            newParent.setHasChildren(true);
             voParent = newParent;
 
             descItemReader.add(newParent, parent.getNode());
@@ -246,7 +213,7 @@ public class ScriptModelFactory {
                                    final ArrLevel level,
                                    final DirectionLevel directionLevel, final ArrFindingAidVersion version) 
     {
-    	Level srcModelLevel = createLevelStructure(level, version);
+    	Level srcModelLevel = createLevelModel(level, version);
             	
     	DescItemReader descItemReader = new DescItemReader(descItemRepository, descItemTypeRepository, descItemFactory);
     	
@@ -351,10 +318,14 @@ public class ScriptModelFactory {
         DescItemReader descItemReader = new DescItemReader(descItemRepository, descItemTypeRepository, descItemFactory);
 
         ActiveLevel activeLevel = new ActiveLevel(modelLevel);
+        
+        // Prepare children info
+        Integer childsCount = levelRepository.countChildsByParent(level.getNode(), version.getLockChange());
+        activeLevel.setChildCount(childsCount);
 
         // Prepare siblinds
         List<ArrLevel> siblings;
-        siblings = levelRepository.findByParentNode(level.getNodeParent(), version.getLockChange());
+        siblings = levelRepository.findByParentNode(level.getNodeParent(), version.getLockChange());        
 
         // Find siblings
         Level modelSiblingBefore = null;

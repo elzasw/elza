@@ -49,6 +49,8 @@ when
 	not ( DescItem( type == "ZP2015_LEVEL_TYPE" && specCode == "ZP2015_LEVEL_FOLDER" ) from $items and
 		  NewLevel ( siblingAfter!=null && $itemsAfter: siblingAfter.descItems ) and
 		  DescItem( type == "ZP2015_LEVEL_TYPE" && specCode != "ZP2015_LEVEL_FOLDER" ) from $itemsAfter )
+	// Nesmi byt slozka manip seznamu s vice prvky popisu
+	not ( DescItem( type == "ZP2015_EXTRA_UNITS" ) from $items )
 then
 	NewLevelApproach approach = results.create("Logická složka");
 	approach.addDescItem("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_FOLDER");
@@ -122,6 +124,8 @@ when
 	// Jednotlivost nejde pridat pokud za existuje složka (neco jineho) v dane urovni
 	not ( NewLevel ( siblingAfter!=null && $itemsAfter: siblingAfter.descItems ) and
 		DescItem( type == "ZP2015_LEVEL_TYPE" && specCode != "ZP2015_LEVEL_ITEM" ) from $itemsAfter ) 
+	// Nesmi byt slozka manip seznamu s vice prvky popisu
+	not ( DescItem( type == "ZP2015_EXTRA_UNITS" ) from $items )
 then
     NewLevelApproach approach = results.create("Jednotlivost");
     approach.addDescItem("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_ITEM");

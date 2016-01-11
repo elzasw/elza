@@ -10,29 +10,57 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {i18n} from 'components';
-import {Ribbon, PartySearch, PartyDetail, DropDownTree} from 'components';
-import {ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
+import {AbstractReactComponent, Ribbon, RibbonGroup, PartySearch, PartyDetail, DropTree} from 'components';
+import {ButtonGroup, MenuItem, DropdownButton, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
 
 import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
 
-var PartyPage = class PartyPage extends React.Component {
+var PartyPage = class PartyPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.buildRibbon = this.buildRibbon.bind(this);
+        this.bindMethods('buildRibbon');
     }
 
     buildRibbon() {
+        var isSelected = this.props.partyRegion.selectedPartyID ? true : false;
+
+        var actions = [];
+        actions.push(
+            <DropdownButton title={<span className="dropContent"><Glyphicon glyph='plus-sign' /><div><span className="btnText">Nová osoba</span></div></span>}>
+                <MenuItem eventKey="1">Osoba</MenuItem>
+                <MenuItem eventKey="2">Rod</MenuItem>
+                <MenuItem eventKey="3">Korporace</MenuItem>
+                <MenuItem eventKey="4">Dočasná korporace</MenuItem>
+            </DropdownButton>
+        );
+        isSelected && actions.push(
+            <Button><Glyphicon glyph="link" /><div><span className="btnText">Nový vztah</span></div></Button>
+        );
+        actions.push(
+            <DropdownButton title={<span className="dropContent"><Glyphicon glyph='plus-sign' /><div><span className="btnText">Import</span></div></span>}>
+                <MenuItem eventKey="1">Osob</MenuItem>
+            </DropdownButton>
+        );
+        isSelected && actions.push(
+            <Button><Glyphicon glyph="ok" /><div><span className="btnText">Validace</span></div></Button>
+        );
+        isSelected && actions.push(
+            <Button><Glyphicon glyph="trash" /><div><span className="btnText">Smazat osobu</span></div></Button>
+        );
+
+        var altSection = <RibbonGroup className="large">{actions}</RibbonGroup>
+
         return (
-            <Ribbon party {...this.props} />
+            <Ribbon party altSection={altSection} {...this.props} />
         )
     }
 
     render() {
-        var selected = null; 
-        var items =
+
+         var items =
             [
                 {
                     id: 1, name: 'Stromy', childrens: [
@@ -55,7 +83,7 @@ var PartyPage = class PartyPage extends React.Component {
                                 {id: 7, name : 'Orel'}
                             ]
                         },{
-                            id: 9, name : 'Hodně Ošklivý', childrens : [
+                            id: 9, name : 'Ošklivý zvířata', childrens : [
                                 {id: 10, name : 'Šnek'},
                                 {id: 11, name : 'Vosa'},
                                 {id: 12, name : 'Hyena'},
@@ -79,32 +107,20 @@ var PartyPage = class PartyPage extends React.Component {
                     selectedPartyID={this.props.partyRegion.selectedPartyID}
                     filterText={this.props.partyRegion.filterText} 
                 />
-                <DropDownTree 
+                <DropTree 
                     items = {items} 
-                    selectedItemID = {13}
-                    label = {"Vyberte si něco"}
-                    opened = {[10]}
-                    onSelect = {this.a}
+                    selectedItemID = {20}
                 />
             </div>
         )
-
-/*
-                <DropDownree 
-                    items = {items} 
-                    selectedItemID = {13}
-                    label = {"Vyberte si něco"}
-                    opened = {[10]}
-                />
-*/
-
+        
         var centerPanel = (
             <PartyDetail selectedPartyData={this.props.partyRegion.selectedPartyData} />
         )
 
         var rightPanel = (
             <div>
-                RIGHT
+                
             </div>
         )
 

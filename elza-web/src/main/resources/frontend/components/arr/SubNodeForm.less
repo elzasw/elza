@@ -1,0 +1,74 @@
+@valueActionWidth: 22px;
+
+.node-form {
+    overflow-x: hidden;
+    font-weight: normal;
+    background: white;
+    
+    .attr-group {
+        _border: 1px solid #f0f0f0;
+        _background: #f9f9f9;
+        width: 100%;
+        margin: 2px;
+        
+        .attr-group-label {
+            background: #f0f0f0;
+            width: 100%;
+        }
+        
+        .attr-group-attrs {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            
+            .attr {
+                padding: 2px;
+                min-width: 200px;
+                
+                .attr-label {
+                    white-space: nowrap;
+                    width: 100%;
+                    .btn {
+                        border: none;
+                        font-size: 14px;
+                        padding: 0;
+                        margin: 0 2px 0 2px;
+                        background: transparent;
+                    }
+                }
+                
+                .attr-values {
+                    width: 100%;
+                    
+                    .value-container {
+                        .value {
+                            width: 100%;
+                        }
+                        .action {
+                            width: @valueActionWidth;
+                            .btn {
+                                border: none;
+                                padding: 2px;
+                                background: transparent;
+                            }
+                            float: right;
+                        }
+                        &.action {
+                            .value {
+                                width: calc(~"100% - "@valueActionWidth);
+                            }
+                        }
+                    }
+                    .action {
+                        .btn {
+                            border: none;
+                            padding: 2px;
+                            background: transparent;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

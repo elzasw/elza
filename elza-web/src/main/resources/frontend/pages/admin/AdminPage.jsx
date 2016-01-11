@@ -33,7 +33,7 @@ var AdminPage = class AdminPage extends React.Component {
 
         var centerPanel = (
                 <div>
-                    Administrace...
+                    Administrace - HOME
                 </div>
         )
 

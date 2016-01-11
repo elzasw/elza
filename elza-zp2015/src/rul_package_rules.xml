@@ -1,5 +1,5 @@
 <package-rules>
-    <package-rule filename="ZP_descItemValidation.drl" rule-set="ZP2015">
+    <package-rule filename="ZP2015_Validation.drl" rule-set="ZP2015">
         <rule-type>CONFORMITY_INFO</rule-type>
         <priority>1</priority>
     </package-rule>

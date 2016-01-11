@@ -1,7 +1,7 @@
 @import "~variables.less";
 
 @parts-margin: 6px;
-@node-panel-actions-height: 22px;
+@node-panel-actions-height: 26px;
 @node-panel-parents-height: 15%;
 @node-panel-content-height: 70%;
 @node-panel-children-height: 15%;
@@ -18,12 +18,23 @@
     }
     
     .actions {
+        background: #F5F5F5;
         height: @node-panel-actions-height;
+        .btn {
+            background: transparent;
+            height: @node-panel-actions-height;
+            font-size: 12px;
+            border: none;
+        }
+    }
+    > .actions {
+        background: transparent;
     }
     .parents {
         height: @node-panel-parents-height;
         overflow-y: auto;
         border: 1px solid @gray-lighter;
+        background: white;
         
         .node {
             cursor: pointer;
@@ -35,13 +46,15 @@
     .content {
         height: 100%;
         overflow: auto;
-        border: 1px solid @gray-lighter;
+        overflow-x: hidden;
+        _border: 1px solid @gray-lighter;
 
     }
     .children {
         height: @node-panel-children-height;
         overflow-y: auto;
         border: 1px solid @gray-lighter;
+        background: white;
         
         .node {
             cursor: pointer;

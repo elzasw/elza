@@ -40,13 +40,13 @@ public class RulesExecutor implements InitializingBean {
 
 
     @Autowired
-    private DescItemValidationRules descItemValidationRules;
+    private ValidationRules descItemValidationRules;
 
     @Autowired
     private DescItemTypesRules descItemTypesRules;
 
     @Autowired
-    private ImpactOfChangesLevelStateRules impactOfChangesLevelStateRules;
+    private ChangeImpactRules impactOfChangesLevelStateRules;
 
     @Autowired
     private ScenarioOfNewLevelRules scenarioOfNewLevelRules;
