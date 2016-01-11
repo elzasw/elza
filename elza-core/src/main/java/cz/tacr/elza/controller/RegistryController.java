@@ -124,7 +124,6 @@ public class RegistryController {
             List<RegRecordVO> childrenVO = new ArrayList<RegRecordVO>(children.size());
             RegRecordVO parentVO = parentRecordVOMap.get(recordId);
             parentVO.setChilds(childrenVO);
-            parentVO.setHasChildren(!childrenVO.isEmpty());
             for (RegRecord child : children) {
                 ParParty parParty = recordPartyMap.get(child.getRecordId());
                 Integer partyId = parParty == null ? null : parParty.getPartyId();
@@ -134,6 +133,7 @@ public class RegistryController {
                 List<RegRecord> childChildren = regRecordRepository.findByParentRecord(child);
                 regRecordVO.setHasChildren(childChildren.isEmpty() ? false : true);
             }
+            parentVO.setHasChildren(!childrenVO.isEmpty());
         }
 
         long countAll = registryService.findRegRecordByTextAndTypeCount(search, registerTypeIdList, onlyLocal, parentRecordId);
