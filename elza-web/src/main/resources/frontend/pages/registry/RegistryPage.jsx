@@ -127,7 +127,7 @@ console.log(this.props.registry);
 
         var rightPanel = (
             <div>
-                RIGHT - registry
+                
             </div>
         )
 

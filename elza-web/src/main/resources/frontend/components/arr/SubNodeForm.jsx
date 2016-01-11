@@ -102,7 +102,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 return (
                     <div className={valueContainerCls}>
                         <input
-                            className='value'
+                            className='form-control value'
                             type="text"
                             value={value.value}
                             onChange={this.handleChange.bind(this, link)}
@@ -116,7 +116,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 return (
                     <div className={valueContainerCls}>
                         <textarea 
-                            className='value'
+                            className='form-control value'
                             rows={4}
                             value={value.value}
                             onChange={this.handleChange.bind(this, link)}
@@ -134,7 +134,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
 
         return (
             <div className='attr-group'>
-                <div className='attr-group-label'>{group.name}</div>
+                {false && <div className='attr-group-label'>{group.name}</div>}
                 <div className='attr-group-attrs'>
                     {attrs}
                 </div>

@@ -14,7 +14,7 @@
 
     .app-header {
         height: @header-height;
-        background: @navbar-default-bg;
+        background: #f8f8f8;
         border-bottom: 1px solid @navbar-default-border;
         
     }
@@ -29,6 +29,9 @@
     &.noRibbon {
         .app-header {
             height: @header-minimized-height;
+            .ribbon-toggle-container {
+                border-bottom: none;
+            }
         }
         .app-content {
             height: calc(~"100% - "@header-minimized-height);
@@ -39,6 +42,7 @@
         // Ribbon a u něj min max tlačítko
         .ribbon-toggle-container {
             position: relative;
+            border-bottom: 1px solid #cccccc;
             .toggle.btn {
                 height: 14px;
                 line-height: 12px;
@@ -78,6 +82,7 @@
         }        
 
         #left-component {
+            padding: 4px;
             width: @split-left-width;
             min-width: @split-left-min-width;
         }
@@ -90,6 +95,7 @@
             margin-left: @split-divider-width;  /* Same as divider width */
 
             #inner-left-component {
+                padding: 4px;
                 min-width: @split-center-min-width;
                 right: @split-right-width;
                 margin-right: @split-divider-width;

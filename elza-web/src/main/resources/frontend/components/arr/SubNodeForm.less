@@ -2,10 +2,12 @@
 
 .node-form {
     overflow-x: hidden;
+    font-weight: normal;
+    background: white;
     
     .attr-group {
-        border: 1px solid #f0f0f0;
-        background: #f9f9f9;
+        _border: 1px solid #f0f0f0;
+        _background: #f9f9f9;
         width: 100%;
         margin: 2px;
         
@@ -27,11 +29,12 @@
                 .attr-label {
                     white-space: nowrap;
                     width: 100%;
-                    button {
+                    .btn {
                         border: none;
                         font-size: 14px;
                         padding: 0;
                         margin: 0 2px 0 2px;
+                        background: transparent;
                     }
                 }
                 
@@ -44,9 +47,10 @@
                         }
                         .action {
                             width: @valueActionWidth;
-                            button {
+                            .btn {
                                 border: none;
                                 padding: 2px;
+                                background: transparent;
                             }
                             float: right;
                         }
@@ -57,9 +61,10 @@
                         }
                     }
                     .action {
-                        button {
+                        .btn {
                             border: none;
                             padding: 2px;
+                            background: transparent;
                         }
                     }
                 }

@@ -27,7 +27,7 @@ var Accordion = class AccordionWrapper extends AbstractReactComponent {
 
     setHeights() {
         if (this.refs.contentContainer) {
-            var itemCloseHeight = 50;
+            var itemCloseHeight = 42;
             var itemOpenHeight = this.refs.contentContainer.clientHeight - itemCloseHeight * 4;
 
             this.setState({itemCloseHeight:itemCloseHeight, itemOpenHeight: itemOpenHeight});
@@ -43,27 +43,11 @@ var Accordion = class AccordionWrapper extends AbstractReactComponent {
             result = (
                 <div className='accordion-item active' style={{height: this.state.itemOpenHeight}} key={item.id} >
                     <div className='accordion-header' style={{height: this.state.itemCloseHeight}} onClick={this.props.closeItem.bind(this, item)}>
-                        <div className='accordion-header-content'>{item.id}</div>
+                        <div className='accordion-header-content'>{this.props.renderItemHeader(item, true)}</div>
                     </div>
                     <div className='accordion-body' style={{height: this.state.itemOpenHeight-this.state.itemCloseHeight}}>
                         <div className='accordion-body-content'>
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
-                            Tadaaaa<br />
+                            {this.props.renderItemContent(item)}
                         </div>
                         {false && <SubNodeForm/>}
                     </div>
@@ -73,7 +57,7 @@ var Accordion = class AccordionWrapper extends AbstractReactComponent {
             result = (
                 <div className='accordion-item' style={{height: this.state.itemCloseHeight}} key={item.id}>
                     <div className='accordion-header' style={{height: this.state.itemCloseHeight}} onClick={this.props.openItem.bind(this, item)}>
-                        <div className='accordion-header-content'>{item.id}</div>
+                        <div className='accordion-header-content'>{this.props.renderItemHeader(item, false)}</div>
                     </div>
                 </div>
             )

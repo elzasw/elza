@@ -10,8 +10,8 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {i18n} from 'components';
-import {Ribbon, PartySearch, PartyDetail, DropTree} from 'components';
-import {ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
+import {Ribbon, RibbonGroup, PartySearch, PartyDetail, DropTree} from 'components';
+import {ButtonGroup, MenuItem, DropdownButton, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
 
@@ -25,8 +25,36 @@ var PartyPage = class PartyPage extends React.Component {
     }
 
     buildRibbon() {
+        var isSelected = this.props.partyRegion.selectedPartyID ? true : false;
+
+        var actions = [];
+        actions.push(
+            <DropdownButton title={<span className="dropContent"><Glyphicon glyph='plus-sign' /><div><span className="btnText">Nová osoba</span></div></span>}>
+                <MenuItem eventKey="1">Osoba</MenuItem>
+                <MenuItem eventKey="2">Rod</MenuItem>
+                <MenuItem eventKey="3">Korporace</MenuItem>
+                <MenuItem eventKey="4">Dočasná korporace</MenuItem>
+            </DropdownButton>
+        );
+        isSelected && actions.push(
+            <Button><Glyphicon glyph="link" /><div><span className="btnText">Nový vztah</span></div></Button>
+        );
+        actions.push(
+            <DropdownButton title={<span className="dropContent"><Glyphicon glyph='plus-sign' /><div><span className="btnText">Import</span></div></span>}>
+                <MenuItem eventKey="1">Osob</MenuItem>
+            </DropdownButton>
+        );
+        isSelected && actions.push(
+            <Button><Glyphicon glyph="ok" /><div><span className="btnText">Validace</span></div></Button>
+        );
+        isSelected && actions.push(
+            <Button><Glyphicon glyph="trash" /><div><span className="btnText">Smazat osobu</span></div></Button>
+        );
+
+        var altSection = <RibbonGroup className="large">{actions}</RibbonGroup>
+
         return (
-            <Ribbon party {...this.props} />
+            <Ribbon party altSection={altSection} {...this.props} />
         )
     }
 
@@ -92,7 +120,7 @@ var PartyPage = class PartyPage extends React.Component {
 
         var rightPanel = (
             <div>
-                RIGHT
+                
             </div>
         )
 

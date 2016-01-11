@@ -79,13 +79,13 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         var altSection = [];
         altSection.push(
-            <RibbonGroup className="small">
+            <RibbonGroup className="">
                 <Button onClick={this.handleAddFa}><Glyphicon glyph="plus" /><div><span className="btnText">{i18n('ribbon.action.arr.fa.add')}</span></div></Button>
             </RibbonGroup>
         );
         if (activeInfo.activeFa) {
             altSection.push(
-                <RibbonGroup className="small">
+                <RibbonGroup className="">
                     <Button onClick={this.handleApproveFaVersion}><Glyphicon glyph="plus" /><div><span className="btnText">{i18n('ribbon.action.arr.fa.approveVersion')}</span></div></Button>
                 </RibbonGroup>
             )
@@ -116,7 +116,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         var rightPanel = (
             <div>
-                FINDING_AID-right
+                
             </div>
         )
 

@@ -17,7 +17,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderParents', 'renderChildren', 'handleOpenItem', 'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick', 'getParentNodes', 'getChildNodes', 'getSiblingNodes');
+        this.bindMethods('renderParents', 'handleRenderAccordionItemHeader', 'handleRenderAccordionItemContent', 'renderChildren', 'handleOpenItem', 'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick', 'getParentNodes', 'getChildNodes', 'getSiblingNodes');
         
         if (props.node.selectedSubNodeId != null) {
             this.dispatch(faSubNodeFormFetchIfNeeded(props.versionId, props.node.selectedSubNodeId, props.node.nodeKey));
@@ -97,6 +97,17 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         this.dispatch(faSelectSubNode(subNodeId, this.props.node));
     }
 
+    handleRenderAccordionItemHeader(item, opened) {
+        return (
+            <div>{item.id}</div>
+        );
+    }
+
+    handleRenderAccordionItemContent(item) {
+        return (
+            <SubNodeForm formData={this.props.node.subNodeForm.data} />
+        );
+    }
 
     render() {
         if (this.props.node.nodeInfo.isFetching || !this.props.node.nodeInfo.fetched) {
@@ -118,8 +129,14 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         } else {
             content = (
                 <div className='content'>
-                    {true && <Accordion closeItem={this.handleCloseItem} openItem={this.handleOpenItem} selectedId={this.props.node.selectedSubNodeId} items={this.getSiblingNodes()} />}
-                    {false && <SubNodeForm formData={this.props.node.subNodeForm.data} />}
+                    <Accordion
+                        closeItem={this.handleCloseItem}
+                        openItem={this.handleOpenItem}
+                        selectedId={this.props.node.selectedSubNodeId}
+                        items={this.getSiblingNodes()}
+                        renderItemHeader={this.handleRenderAccordionItemHeader}
+                        renderItemContent={this.handleRenderAccordionItemContent}
+                    />
                 </div>
             )
             actions = (
