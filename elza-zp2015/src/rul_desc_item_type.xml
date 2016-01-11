@@ -149,9 +149,9 @@
         <view-order>15</view-order>
         <fa-only>false</fa-only>
     </desc-item-type>
-    <desc-item-type code="ZP2015_UNIT_DATE_3" data-type="STRING">
-        <name>Datace vzniku jednotky popisu - 3ový zápis</name>
-        <shortcut>Dat. vzniku - 3ově</shortcut>
+    <desc-item-type code="ZP2015_UNIT_DATE_TEXT" data-type="STRING">
+        <name>Datace vzniku jednotky popisu - Textový zápis</name>
+        <shortcut>Dat. vzniku - Textově</shortcut>
         <description>ZP4.2.5 Datace vzniku jednotky popisu - strojově čitelný</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
