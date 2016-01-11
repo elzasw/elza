@@ -10,18 +10,18 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {i18n} from 'components';
-import {Ribbon, RibbonGroup, PartySearch, PartyDetail, DropTree} from 'components';
+import {AbstractReactComponent, Ribbon, RibbonGroup, PartySearch, PartyDetail, DropTree} from 'components';
 import {ButtonGroup, MenuItem, DropdownButton, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
 
 import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
 
-var PartyPage = class PartyPage extends React.Component {
+var PartyPage = class PartyPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.buildRibbon = this.buildRibbon.bind(this);
+        this.bindMethods('buildRibbon');
     }
 
     buildRibbon() {

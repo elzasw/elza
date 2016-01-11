@@ -12,8 +12,8 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Loading} from 'components';
-import {Ribbon, ModalDialog, NodeTabs, Search, RegistryPanel} from 'components';
-import {ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
+import {RibbonGroup,Ribbon, ModalDialog, NodeTabs, Search, RegistryPanel} from 'components';
+import {MenuItem, DropdownButton, ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {Nav, NavItem} from 'react-bootstrap';
 import {registryData, registrySearchData, registryChangeParent} from 'actions/registry/registryData'
@@ -24,11 +24,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleSelect');
-        this.bindMethods('handleSearch');
-        this.bindMethods('handleDoubleClick');
-        this.bindMethods('handleClickNavigation');
-        this.buildRibbon = this.buildRibbon.bind(this);
+        this.bindMethods('buildRibbon', 'handleSelect', 'handleSearch', 'handleDoubleClick', 'handleClickNavigation');
         this.dispatch(fetchRegistryIfNeeded(props.registry.search, props.registry.idRegistryParent));
 
     }
@@ -38,8 +34,26 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     buildRibbon() {
+        var isSelected = this.props.registry.selectedId;
+
+        var actions = [];
+
+        isSelected && actions.push(
+            <Button><Glyphicon glyph="share-alt" /><div><span className="btnText">Přesun hesla</span></div></Button>
+        );
+        actions.push(
+            <DropdownButton title={<span className="dropContent"><Glyphicon glyph='plus-sign' /><div><span className="btnText">Import</span></div></span>}>
+                <MenuItem eventKey="1">Hesel</MenuItem>
+            </DropdownButton>
+        );
+        isSelected && actions.push(
+            <Button><Glyphicon glyph="ok" /><div><span className="btnText">Validace</span></div></Button>
+        );
+
+        var altSection = <RibbonGroup className="large">{actions}</RibbonGroup>
+
         return (
-            <Ribbon registry {...this.props} />
+            <Ribbon registry altSection={altSection} {...this.props} />
         )
     }
 
