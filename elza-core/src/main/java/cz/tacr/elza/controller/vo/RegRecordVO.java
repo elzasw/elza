@@ -72,7 +72,7 @@ public class RegRecordVO {
      */
     private List<RegVariantRecordVO> variantRecords;
 
-    /** Cesta od toho rejstříku až ke kořeni. První záznam je přímí rodič tohoto rejstříku. */
+    /** Cesta od toho rejstříku až ke kořeni. První záznam je kořenový rejstřík, poslední záznam je přímý nadřízený. */
     private List<RegRecordParentVO> parents;
 
     /** Příznak zda má rejstřík potomky. Pokud je null, nebyl příznak nastaven. */

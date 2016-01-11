@@ -122,7 +122,9 @@ public class RegistryController {
             List<RegRecord> children = parentChildrenMap.get(recordId);
 
             List<RegRecordVO> childrenVO = new ArrayList<RegRecordVO>(children.size());
-            parentRecordVOMap.get(recordId).setChilds(childrenVO);
+            RegRecordVO parentVO = parentRecordVOMap.get(recordId);
+            parentVO.setChilds(childrenVO);
+            parentVO.setHasChildren(!childrenVO.isEmpty());
             for (RegRecord child : children) {
                 ParParty parParty = recordPartyMap.get(child.getRecordId());
                 Integer partyId = parParty == null ? null : parParty.getPartyId();
