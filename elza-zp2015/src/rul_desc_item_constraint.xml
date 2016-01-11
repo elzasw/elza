@@ -32,7 +32,7 @@
     <desc-item-constraint code="ZP2015_Constraint_11" desc-item-type="ZP2015_UNIT_DATE_POST">
         <repeatable>false</repeatable>
     </desc-item-constraint>
-    <desc-item-constraint code="ZP2015_Constraint_12" desc-item-type="ZP2015_UNIT_DATE_3">
+    <desc-item-constraint code="ZP2015_Constraint_12" desc-item-type="ZP2015_UNIT_DATE_TEXT">
         <repeatable>false</repeatable>
     </desc-item-constraint>
     <desc-item-constraint code="ZP2015_Constraint_13" desc-item-type="ZP2015_UNIT_HIST">
@@ -65,7 +65,7 @@
     <desc-item-constraint code="ZP2015_Constraint_22" desc-item-type="ZP2015_COPY_SOURCE">
         <repeatable>false</repeatable>
     </desc-item-constraint>
-    <desc-item-constraint code="ZP2015_Constraint_23" desc-item-type="ZP2015_1ERNAL_NOTE">
+    <desc-item-constraint code="ZP2015_Constraint_23" desc-item-type="ZP2015_INTERNAL_NOTE">
         <repeatable>false</repeatable>
     </desc-item-constraint>
     <desc-item-constraint code="ZP2015_Constraint_24" desc-item-type="ZP2015_NOTE">
@@ -98,16 +98,16 @@
     <desc-item-constraint code="ZP2015_Constraint_33" desc-item-type="ZP2015_EXERQUE">
         <repeatable>false</repeatable>
     </desc-item-constraint>
-    <desc-item-constraint code="ZP2015_Constraint_34" desc-item-type="ZP2015_PA1ING_CHAR">
+    <desc-item-constraint code="ZP2015_Constraint_34" desc-item-type="ZP2015_PAINTING_CHAR">
         <repeatable>false</repeatable>
     </desc-item-constraint>
     <desc-item-constraint code="ZP2015_Constraint_35" desc-item-type="ZP2015_CORROBORATION">
         <repeatable>false</repeatable>
     </desc-item-constraint>
-    <desc-item-constraint code="ZP2015_Constraint_36" desc-item-type="ZP2015_IMPR1_COUNT">
+    <desc-item-constraint code="ZP2015_Constraint_36" desc-item-type="ZP2015_IMPRINT_COUNT">
         <repeatable>false</repeatable>
     </desc-item-constraint>
-    <desc-item-constraint code="ZP2015_Constraint_37" desc-item-type="ZP2015_IMPR1_ORDER">
+    <desc-item-constraint code="ZP2015_Constraint_37" desc-item-type="ZP2015_IMPRINT_ORDER">
         <repeatable>false</repeatable>
     </desc-item-constraint>
     <desc-item-constraint code="ZP2015_Constraint_38" desc-item-type="ZP2015_LEGEND">
