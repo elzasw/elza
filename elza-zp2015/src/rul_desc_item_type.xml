@@ -289,7 +289,7 @@
         <view-order>29</view-order>
         <fa-only>false</fa-only>
     </desc-item-type>
-    <desc-item-type code="ZP2015_1ERNAL_NOTE" data-type="TEXT">
+    <desc-item-type code="ZP2015_INTERNAL_NOTE" data-type="TEXT">
         <name>Služební poznámka</name>
         <shortcut>Služ. pozn.</shortcut>
         <description>ZP4.6.1 Služební poznámka</description>
@@ -450,7 +450,7 @@
         <view-order>45</view-order>
         <fa-only>false</fa-only>
     </desc-item-type>
-    <desc-item-type code="ZP2015_PA1ING_CHAR" data-type="TEXT">
+    <desc-item-type code="ZP2015_PAINTING_CHAR" data-type="TEXT">
         <name>Popis obrazu v poli typáře či otisku</name>
         <shortcut>Popis obr.</shortcut>
         <description>ZP5.7.2 Popis obrazu v poli typáře či otisku</description>
@@ -470,7 +470,7 @@
         <view-order>47</view-order>
         <fa-only>false</fa-only>
     </desc-item-type>
-    <desc-item-type code="ZP2015_IMPR1_COUNT" data-type="TEXT">
+    <desc-item-type code="ZP2015_IMPRINT_COUNT" data-type="TEXT">
         <name>Počet otisků původní a současný</name>
         <shortcut>Poč. ot.</shortcut>
         <description>ZP5.7.4 Počet otisků původní a současný</description>
@@ -480,7 +480,7 @@
         <view-order>48</view-order>
         <fa-only>false</fa-only>
     </desc-item-type>
-    <desc-item-type code="ZP2015_IMPR1_ORDER" data-type="TEXT">
+    <desc-item-type code="ZP2015_IMPRINT_ORDER" data-type="TEXT">
         <name>Pořadí otisku</name>
         <shortcut>Poř. ot.</shortcut>
         <description>ZP5.7.5 Pořadí otisku</description>
