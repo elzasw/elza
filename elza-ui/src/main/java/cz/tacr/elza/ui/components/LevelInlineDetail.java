@@ -8,6 +8,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import javax.persistence.EntityManager;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -103,6 +105,9 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
 
     @Autowired
     private ElzaRules elzaRules;
+
+    @Autowired
+    private EntityManager entityManager;
 
     /**
      * Loader hodnot atributu
@@ -227,6 +232,9 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
             relateds.add(relatedNodeDirectionWithDescItems.getRelatedNodeDirections());
 
             FindingAidDetailView.showRelatedNodeDirection(relateds);
+
+            entityManager.clear(); //promazání session, v DataItemReader to načítalo RulDestItemTypeExt z db, potom docházelo k no session exc.
+                                   //viz ELZA-373
 
             ArrLevelExt level = arrangementManager.getLevel(attribut.getNode().getNodeId(), attribut.getVersionId(),
                     null);
@@ -652,6 +660,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
                     if (missing.getDescItemSpec() != null) {
                         value += ": " + missing.getDescItemSpec().getName();
                     }
+                    value += "\n (" + missing.getDescription() + ")";
                     formGrid.addRow(newLabel(caption, "error-text"), newLabel(value));
                     caption = "";
                 }
@@ -663,8 +672,8 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
                     String value = errors.getDescItem().getDescItemType().getName();
                     if (errors.getDescItem().getDescItemSpec() != null) {
                         value += ": " + errors.getDescItem().getDescItemSpec().getName();
-                        value += "\n (" + errors.getDescription() + ")";
                     }
+                    value += "\n (" + errors.getDescription() + ")";
                     formGrid.addRow(newLabel(caption, "error-text"), newLabel(value));
                     caption = "";
                 }
