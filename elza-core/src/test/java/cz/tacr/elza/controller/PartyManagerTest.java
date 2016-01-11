@@ -309,7 +309,7 @@ public class PartyManagerTest extends AbstractRestTest {
         parPartyVO.setGenealogy("GENEALOGY");
         parPartyVO.setHistory("HISTORY");
 
-        Response response = put(spec -> spec.body(parPartyVO), INSERT_PARTY_V2);
+        Response response = post(spec -> spec.body(parPartyVO), INSERT_PARTY_V2);
         ParPartyVO parPartyVORet = response.getBody().as(ParDynastyVO.class);
 
         List<ParPartyName> allNames = partyNameRepository.findAll();
@@ -338,7 +338,8 @@ public class PartyManagerTest extends AbstractRestTest {
         parPartyVO.getTimeRanges().get(0).getTo().setUnitdateId(parPartyVORet.getTimeRanges().get(0).getTo().getUnitdateId());
         parPartyVO.getTimeRanges().get(0).setFrom(null);
 
-        response = put(spec -> spec.body(parPartyVO), UPDATE_PARTY_V2);
+        response = put(spec -> spec.pathParameter(ABSTRACT_PARTY_ID_ATT, parPartyVO.getPartyId())
+                                   .body(parPartyVO), UPDATE_PARTY_V2);
         parPartyVORet = response.getBody().as(ParDynastyVO.class);
 
         allNames = partyNameRepository.findAll(); //
