@@ -3,37 +3,38 @@ package ZP2015;
 
 import java.util.Arrays;
 import cz.tacr.elza.drools.model.Level
-import cz.tacr.elza.domain.vo.DataValidationResult
+import cz.tacr.elza.drools.model.ActiveLevel
 import cz.tacr.elza.drools.model.DescItem;
+import cz.tacr.elza.drools.model.Strategy;
+import cz.tacr.elza.domain.vo.DataValidationResult;
+import cz.tacr.elza.domain.vo.DataValidationResults;
 import cz.tacr.elza.domain.RulArrangementType;
 
-global java.util.List results;
-global cz.tacr.elza.domain.RulArrangementType arrType;
-global java.util.Set strategies;
+global DataValidationResults results;
 
-function boolean isLeaf(Level level){
-    return !level.isHasChilds();
-}
+// Kontrola, zda každý list má ukládací jednotku
+rule "List musí mít ukládací jednotku"
+when
+	Strategy(code=="StorageUnit")
+	$activeLevel: ActiveLevel( !hasChildren )
+	not ( $level: Level( $items: descItems ) and 
+		DescItem(type=="ZP2015_STORAGE_ID") from $items )
+then
+	results.createMissing("ZP2015_STORAGE_ID", "V hierarchii není uveden prvek ZP2015_STORAGE_ID");
+end
 
-function boolean hasParentsAttribute(Level level, String attributeName){
-    Level parent = level.getParent();
+// Počet jednotek musí být větší než 1 pro ZP2015_UNIT_COUNT
+rule "Počet jednotek musí být větší než 1 - ZP2015_UNIT_COUNT"
+when
+	$activeLevel: ActiveLevel( $items: descItems )
+    $descItem: DescItem(type=="ZP2015_UNIT_COUNT"  && integer.intValue()<2 ) from $items
+then
+	results.createError($descItem.getDescItemId(), "Počet jednotek musí být větší než 1");
+end
 
-    while(parent != null){
-        boolean hasAttr = hasLevelAttribute(parent, attributeName);
-        if(hasAttr){
-            return true;
-        }
+/*
 
-        parent = parent.getParent();
-    }
 
-    return false;
-}
-
-function boolean hasLevelAttribute(Level level, String attributeName){
-    return getLevelAttribute(level, attributeName) != null;
-
-}
 
 function DescItem getLevelAttribute(Level level, String attributeName){
      if(level.getDescItems() == null){
@@ -180,10 +181,4 @@ then
     DescItem typeItem = getLevelAttribute(level, "ZP2015_LEVEL_TYPE");
     results.add(DataValidationResult.createError(typeItem.getDescItemId(), "Chybně ukončená úroveň popisu v "+arrType.getCode()+": "+typeItem.getSpecCode()));
 end
-
-
-
-
-
-
-
+*/

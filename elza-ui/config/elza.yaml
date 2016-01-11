@@ -1,10 +1,11 @@
 elza:
   data:
-      url: jdbc:postgresql://vyv-inet:5432/elza
+      #url: jdbc:postgresql://vyv-inet:5432/elza
+      url: jdbc:postgresql://localhost:5432/elza-mt11
       user: app
       pass: app
-
-#  rules:
-#    ZP:
-#      default:
-#        - NORMAL
+  rules:
+    ZP2015:
+      default:
+#        - StorageUnit
+#        - CheckId
