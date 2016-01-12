@@ -62,7 +62,7 @@ var AddFaForm = class AddFaForm extends AbstractReactComponent {
                             {ruleSets.map(i=> {return <option value={i.id}>{i.name}</option>})}
                         </Input>
                         {!ruleSetId.invalid && (
-                            <Input type="select" label={i18n('arr.fa.ruleSet')} {...rulArrTypeId} {...decorateFormField(rulArrTypeId)}>
+                            <Input type="select" label={i18n('arr.fa.arrType')} {...rulArrTypeId} {...decorateFormField(rulArrTypeId)}>
                                 <option></option>
                                 {currRuleSet.arrangementTypes.map(i=> <option value={i.id}>{i.name}</option>)}
                             </Input>
