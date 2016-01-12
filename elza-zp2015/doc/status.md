@@ -21,6 +21,6 @@ Chybi
 * Specificke prvky popisu
 
 
-Dotazy
-------
-1. Vicenasobnost typu archivalie - je zapotrebi?
+Otazky
+======
+Muze logicka slozka obsahovat ukladaci jednotku?
