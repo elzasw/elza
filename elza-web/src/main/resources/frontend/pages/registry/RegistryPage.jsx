@@ -53,8 +53,14 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             );
         }
 
-        var altSection = <RibbonGroup className="large">{altActions}</RibbonGroup>
-        var itemSection = <RibbonGroup className="large">{itemActions}</RibbonGroup>
+        var altSection;
+        if (altActions.length > 0) {
+            altSection = <RibbonGroup className="large">{altActions}</RibbonGroup>
+        }
+        var itemSection;
+        if (itemActions.length > 0) {
+            itemSection = <RibbonGroup className="large">{itemActions}</RibbonGroup>
+        }
 
         return (
             <Ribbon registry altSection={altSection} itemSection={itemSection} {...this.props} />

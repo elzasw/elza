@@ -67,8 +67,14 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
             );
         }
 
-        var altSection = <RibbonGroup className="large">{altActions}</RibbonGroup>
-        var itemSection = <RibbonGroup className="large">{itemActions}</RibbonGroup>
+        var altSection;
+        if (altActions.length > 0) {
+            altSection = <RibbonGroup className="large">{altActions}</RibbonGroup>
+        }
+        var itemSection;
+        if (itemActions.length > 0) {
+            itemSection = <RibbonGroup className="large">{itemActions}</RibbonGroup>
+        }
 
         return (
             <Ribbon party altSection={altSection} itemSection={itemSection} {...this.props} />

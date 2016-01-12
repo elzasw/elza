@@ -17,28 +17,20 @@ import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
 import {WebApi} from 'actions'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {createFa, approveFa} from 'actions/arr/fa'
+import {approveFa} from 'actions/arr/fa'
 
 var ArrPage = class ArrPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('getActiveInfo', 'buildRibbon', 'handleAddFa', 'handleApproveFaVersion', 'handleCallAddFa', 'handleCallApproveFaVersion');
+        this.bindMethods('getActiveInfo', 'buildRibbon', 'handleApproveFaVersion', 'handleCallAddFa', 'handleCallApproveFaVersion');
 
         this.state = {faFileTreeOpened: false};
     }
 
-    handleCallAddFa(data) {
-        this.dispatch(createFa(data));
-    }
-    
     handleCallApproveFaVersion(data) {
         var activeInfo = this.getActiveInfo();
         this.dispatch(approveFa(activeInfo.activeFa.versionId, data.ruleSetId, data.rulArrTypeId, activeInfo.activeFa.faId));
-    }
-
-    handleAddFa() {
-        this.dispatch(modalDialogShow(this, i18n('arr.fa.title.add'), <AddFaForm create onSubmit={this.handleCallAddFa} />));
     }
 
     handleApproveFaVersion() {
@@ -77,9 +69,6 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         var activeInfo = this.getActiveInfo();
 
         var altActions = [];
-        altActions.push(
-            <Button onClick={this.handleAddFa}><Glyphicon glyph="plus" /><div><span className="btnText">{i18n('ribbon.action.arr.fa.add')}</span></div></Button>
-        );
 
         var itemActions = [];
         if (activeInfo.activeFa) {
@@ -88,8 +77,14 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             )
         }
 
-        var altSection = <RibbonGroup className="large">{altActions}</RibbonGroup>
-        var itemSection = <RibbonGroup className="large">{itemActions}</RibbonGroup>
+        var altSection;
+        if (altActions.length > 0) {
+            altSection = <RibbonGroup className="large">{altActions}</RibbonGroup>
+        }
+        var itemSection;
+        if (itemActions.length > 0) {
+            itemSection = <RibbonGroup className="large">{itemActions}</RibbonGroup>
+        }
 
         return (
             <Ribbon arr altSection={altSection} itemSection={itemSection} />

@@ -50,7 +50,7 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
 
                 {section}
                 {this.props.altSection}
-                <RibbonSplit />
+                {this.props.altSection && <RibbonSplit />}
                 {this.props.itemSection}
 
             </RibbonMenu>
