@@ -10,6 +10,7 @@ var ToastrStore = Reflux.createStore({
     listenables: [ToastrActions],
     id: 1,
     lastKey: 1,
+    timer: null,
     toasters : [],
     getInitialData: function() {
         return this.toasters;
@@ -24,6 +25,10 @@ var ToastrStore = Reflux.createStore({
         });
 
         this.trigger(this.toasters);
+        var parent = this;
+        if (this.timer!==null)
+            clearTimeout(this.timer);
+        this.timer = setTimeout(function(){ parent.removeOldToasts(); parent.trigger(parent.toasters);},500);
     },
     removeOldToasts: function(id){
         this.toasters.forEach((t, i) => {
