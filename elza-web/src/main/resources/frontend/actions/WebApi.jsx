@@ -23,7 +23,7 @@ class WebApi{
     }
 
     findParty(search = null){
-        return AjaxUtils.ajaxGet('/api/partyManager/findParty', {
+        return AjaxUtils.ajaxGet('/api/partyManagerV2/findParty', {
             search: search,
             from: 0,
             count : 200,
@@ -36,7 +36,7 @@ class WebApi{
     }
 
     getParty(partyId){
-        return AjaxUtils.ajaxGet('/api/partyManager/getParty', {partyId: partyId})
+        return AjaxUtils.ajaxGet('/api/partyManagerV2/getParty', {partyId: partyId})
             .then(json=>{
                 return json;
             });
