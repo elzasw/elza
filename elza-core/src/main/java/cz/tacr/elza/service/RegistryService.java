@@ -1,7 +1,11 @@
 package cz.tacr.elza.service;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
@@ -111,22 +115,6 @@ public class RegistryService {
     }
 
     /**
-     * Celkový počet záznamů v DB pro funkci {@link #findRegRecordByTextAndType(String, Collection, Boolean, Integer,
-     * Integer)}
-     *
-     * @param searchRecord    hledaný řetězec, může být null
-     * @param registerTypeIds typ záznamu
-     * @return celkový počet záznamů, který je v db za dané parametry
-     */
-    public long findRegRecordByTextAndTypeCount(@Nullable final String searchRecord,
-            @Nullable final Collection<Integer> registerTypeIds,
-            final Boolean local) {
-
-
-        return regRecordRepository.findRegRecordByTextAndTypeCount(searchRecord, registerTypeIds, local);
-    }
-
-    /**
      * Kontrola, jestli je používáno rejstříkové heslo v navázaných tabulkách.
      *
      * @param record rejstříkové heslo
@@ -233,6 +221,27 @@ public class RegistryService {
         variantRecord.setRegRecord(regRecord);
 
         return variantRecordRepository.save(variantRecord);
+    }
+
+    public Map<RegRecord, List<RegRecord>> findChildren(List<RegRecord> records) {
+        Assert.notNull(records);
+
+        if (CollectionUtils.isEmpty(records)) {
+            return Collections.EMPTY_MAP;
+        }
+
+        Map<RegRecord, List<RegRecord>> result = new HashMap<>();
+        regRecordRepository.findByParentRecords(records).forEach(record -> {
+            RegRecord parent = record.getParentRecord();
+            List<RegRecord> children = result.get(parent);
+            if (children == null) {
+                children = new LinkedList<>();
+                result.put(parent, children);
+            }
+            children.add(record);
+        });
+
+        return result;
     }
 
 }

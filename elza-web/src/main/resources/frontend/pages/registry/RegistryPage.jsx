@@ -87,15 +87,37 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                                     active: this.props.registry.selectedId === item.recordId
                                     });
                         
-                        var clsItem = 'registry-list-icon-record';
-                        if (item.hasChildren === false)
-                            clsItem = 'registry-list-icon-list';
-                        
-                        return (
-                            <div key={item.recordId} className={cls} onDoubleClick={this.handleDoubleClick.bind(this, item)} onClick={this.handleSelect.bind(this, item)}>
-                                <span className={clsItem}>{item.record}</span>
-                            </div>
-                        )
+                        var clsItem = 'registry-list-icon-list';
+                        var doubleClick = this.handleDoubleClick.bind(this, item);
+                        if (item.hasChildren === false) {
+                            clsItem = 'registry-list-icon-record';
+                            doubleClick = false;
+                        }
+                         
+                        // výsledky z vyhledávání
+                        if ( this.props.registry.search!==null ) {
+                            var path = '';
+                            item.parents.map(parent => {
+                                path+= '/'+parent.record;
+                            });
+                            
+                            return (
+                                <div key={item.recordId} className={cls} onDoubleClick={doubleClick} onClick={this.handleSelect.bind(this, item)}>
+                                    <div className="path">
+                                        <span>{path.substr(0,5)}</span><span>{path.substr(5)}</span>
+                                    </div>
+                                    <span className={clsItem}>{item.record}</span>
+                                </div>
+                            )
+                        }
+                        else{
+                            // jednořádkový výsledek
+                            return (
+                                <div key={item.recordId} className={cls} onDoubleClick={doubleClick} onClick={this.handleSelect.bind(this, item)}>
+                                    <span className={clsItem}>{item.record}</span>
+                                </div>
+                            )
+                        }
                     })}
                 </div>
                 <div key='registrysCouns' className='registry-list-count'>Zobrazeno {this.props.registry.items.length} z celkoveho poctu {this.props.registry.countItems}</div>
@@ -103,7 +125,6 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         )
         
         var navParents = '';
-console.log(this.props.registry);
         if (this.props.registry.items[0] && this.props.registry.search === null){ 
             navParents = (
                 <ul className='breadcrumbs'>
@@ -119,7 +140,7 @@ console.log(this.props.registry);
         } 
 
         var leftPanel = (
-            <div>
+            <div className="registry-list">
                 <div>
                     <Search onSearch={this.handleSearch.bind(this)} filterText={this.props.registry.search}/>
                 </div>

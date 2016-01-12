@@ -36,6 +36,7 @@ export default function registry(state = initialState, action) {
                 action.registry.search = null;
             return Object.assign({}, state, {
                 search: action.registry.search,
+                idRegistryParent: null,
                 fetched: false
             })
         case types.REGISTRY_CHANGED_PARENT_REGISTRY:

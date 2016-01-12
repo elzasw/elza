@@ -1,5 +1,18 @@
 package cz.tacr.elza.service;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.vo.ParPartyEditVO;
 import cz.tacr.elza.controller.vo.ParPartyNameEditVO;
@@ -27,18 +40,6 @@ import cz.tacr.elza.repository.PartyTimeRangeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -105,20 +106,24 @@ public class PartyService {
     }
 
     /**
-     * Najde seznam osob podle rejstříkových hesel.
+     * Najde id osob podle rejstříkových hesel.
      *
      * @param records seznam rejstříkových hesel
-     * @return seznam osob s danými hesly
+     *
+     * @return mapa id rejstříku -> id osoby
      */
-    public List<ParParty> findParPartyByRecords(final Collection<RegRecord> records) {
+    public Map<Integer, Integer> findParPartyIdsByRecords(final Collection<RegRecord> records) {
         if (CollectionUtils.isEmpty(records)) {
-            return Collections.EMPTY_LIST;
+            return Collections.EMPTY_MAP;
         }
 
-        Set<Integer> recordIds = new HashSet<>();
-        records.forEach(r -> recordIds.add(r.getRecordId()));
+        List<Object[]> recordIdsAndPartyIds = partyRepository.findRecordIdAndPartyIdByRecords(records);
+        Map<Integer, Integer> recordIdPartyIdMap = new HashMap<>(recordIdsAndPartyIds.size());
+        for (Object[] row : recordIdsAndPartyIds) {
+            recordIdPartyIdMap.put((Integer) row[0], (Integer) row[1]);
+        }
 
-        return partyRepository.findParPartyByRecordIds(recordIds);
+        return recordIdPartyIdMap;
     }
 
     public ParParty createParty(final ParPartyEditVO partyVO, final ParPartyType partyType, final RegRegisterType registerType) {
