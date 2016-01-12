@@ -1,13 +1,13 @@
 elza:
   data:
-      jdbc:postgresql://vyv-db.marbes.cz/elza_demo
+      url: jdbc:postgresql://vyv-db.marbes.cz/elza_demo
       user: postgres
       pass: postgres
+
+
+  treenode:
+      title: ZP2015_TITLE
 #  rules:
 #    ZP:
 #      default:
 #        - NORMAL
-spring:
-  jpa:
-    # Logovani SQL dotazu
-    show-sql: true

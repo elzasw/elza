@@ -1,8 +1,11 @@
 elza:
   data:
-      url: jdbc:postgresql://vyv-inet:5432/elza
+      url: jdbc:postgresql://localhost:5432/elza05
       user: app
       pass: app
+elza:
+  treenode:
+      title: ZP2015_TITLE
 #  rules:
 #    ZP:
 #      default:

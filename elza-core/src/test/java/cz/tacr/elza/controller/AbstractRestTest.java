@@ -1,11 +1,38 @@
 package cz.tacr.elza.controller;
 
+import static com.jayway.restassured.RestAssured.given;
+
+import java.io.File;
+import java.net.URL;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.IntegrationTest;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.EncoderConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
 import com.jayway.restassured.response.Header;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
+
 import cz.tacr.elza.ElzaCoreTest;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
@@ -95,31 +122,8 @@ import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.repository.VersionConformityRepository;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.RegistryService;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-import java.io.File;
-import java.net.URL;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Function;
-
-import static com.jayway.restassured.RestAssured.given;
 
 /**
  * Abstraktní předek pro testy. Nastavuje REST prostředí.
@@ -139,6 +143,7 @@ public abstract class AbstractRestTest {
     private static final Logger logger = LoggerFactory.getLogger(ArrangementManagerTest.class);
 
     protected static final String ARRANGEMENT_MANAGER_URL = "/api/arrangementManager";
+4    protected static final String ARRANGEMENT_MANAGER_URL_V2 = "/api/arrangementManagerV2";
     protected static final String RULE_MANAGER_URL = "/api/ruleSetManager";
     protected static final String REGISTRY_MANAGER_URL = "/api/registryManager";
     protected static final String REGISTRY_MANAGER_URL_V2 = "/api/registryManagerV2";
@@ -221,6 +226,7 @@ public abstract class AbstractRestTest {
     protected static final String UPDATE_FA_URL = ARRANGEMENT_MANAGER_URL + "/updateFindingAid";
     protected static final String DELETE_FA_URL = ARRANGEMENT_MANAGER_URL + "/deleteFindingAid";
     protected static final String GET_FA_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAids";
+    protected static final String GET_FA_TREE_URL_V2 = ARRANGEMENT_MANAGER_URL_V2 + "/faTree";
     protected static final String GET_FA_ONE_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAid";
     protected static final String GET_ARRANGEMENT_TYPES_URL = RULE_MANAGER_URL + "/getArrangementTypes";
     protected static final String GET_FINDING_AID_VERSIONS_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAidVersions";
@@ -418,6 +424,9 @@ public abstract class AbstractRestTest {
 
     @Autowired
     protected UnitdateRepository unitdateRepository;
+
+    @Autowired
+    protected LevelTreeCacheService levelTreeCacheService;
 
 
     @Before

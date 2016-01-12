@@ -1,15 +1,28 @@
 package cz.tacr.elza.repository;
 
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.TemporalType;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -19,6 +32,8 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.utils.ObjectListIterator;
 
 
 /**
@@ -28,7 +43,9 @@ import cz.tacr.elza.domain.ArrNode;
 @Component
 public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
-    @PersistenceContext
+    private final Log logger = LogFactory.getLog(this.getClass());
+
+    @Autowired
     private EntityManager entityManager;
 
     @Autowired
@@ -231,4 +248,137 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
                         "Chybi implementace pro smer prohledavani stromu " + direction.name());
         }
     }
+
+
+    @Override
+    public List<LevelInfo> readTree(final ArrFindingAidVersion version){
+        Set<Integer> leaves = new HashSet<>();
+        leaves.add(version.getRootLevel().getNode().getNodeId());
+
+        Set<Integer> allIds = new HashSet<>();
+        while (!leaves.isEmpty()){
+
+            List resultList = subTree(version, leaves);
+            leaves.clear();
+
+            for (Object[] row : (List<Object[]>) (List<?>) resultList) {
+                allIds.add((Integer) row[0]);
+                allIds.add((Integer) row[1]);
+                allIds.add((Integer) row[2]);
+                allIds.add((Integer) row[3]);
+
+                leaves.add((Integer) row[3]);
+            }
+            //množina může obsahovat i null hodnoty, takže je vyhodíme
+            leaves.remove(null);
+        }
+
+        allIds.remove(null);
+
+        return findLevelInfoByIds(allIds);
+    }
+
+
+    /**
+     * Načte potomky daných uzlů. Vždy načítá 4 generace uzlů.
+     *
+     * @param version verze stromu
+     * @param rootIds seznam id uzlů, pro které se mají načíst potomci
+     * @return 4 generace potomků
+     */
+    private List<Object[]> subTree(final ArrFindingAidVersion version, final Set<Integer> rootIds) {
+
+        List<Object[]> result = new LinkedList<>();
+
+        ObjectListIterator<Integer> iterator = new ObjectListIterator<>(rootIds);
+        while (iterator.hasNext()) {
+            List<Integer> partIds = iterator.next();
+
+            StringBuilder builder = new StringBuilder();
+            builder.append("SELECT DISTINCT ");
+            builder.append("a1.level_id as a1, ");
+            builder.append("a2.level_id as a2, ");
+            builder.append("a3.level_id as a3, ");
+            builder.append("a4.level_id as a4 ");
+            builder.append("FROM arr_level a1 ");
+            builder.append("LEFT JOIN arr_level a2 ON a2.node_id_parent = a1.node_id ");
+            builder.append("LEFT JOIN arr_level a3 ON a3.node_id_parent = a2.node_id ");
+            builder.append("LEFT JOIN arr_level a4 ON a4.node_id_parent = a3.node_id ");
+
+            if (version.getLockChange() == null) {
+                builder.append("WHERE a1.delete_change_id IS NULL AND ");
+                builder.append("a2.delete_change_id IS NULL AND ");
+                builder.append("a3.delete_change_id IS NULL AND ");
+                builder.append("a4.delete_change_id IS NULL AND ");
+            } else {
+                builder.append("LEFT JOIN arr_change cc1 ON a1.create_change_id = cc1.change_id ");
+                builder.append("LEFT JOIN arr_change cd1 ON a1.delete_change_id = cd1.change_id ");
+                builder.append("LEFT JOIN arr_change cc2 ON a2.create_change_id = cc2.change_id ");
+                builder.append("LEFT JOIN arr_change cd2 ON a2.delete_change_id = cd2.change_id ");
+                builder.append("LEFT JOIN arr_change cc3 ON a3.create_change_id = cc3.change_id ");
+                builder.append("LEFT JOIN arr_change cd3 ON a3.delete_change_id = cd3.change_id ");
+                builder.append("LEFT JOIN arr_change cc4 ON a4.create_change_id = cc4.change_id ");
+                builder.append("LEFT JOIN arr_change cd4 ON a4.delete_change_id = cd4.change_id ");
+
+
+                builder.append(
+                        "WHERE ((cc1.change_date IS NULL OR cc1.change_date < :closeDate) AND (a1.delete_change_id IS NULL OR cd1.change_date > :closeDate)) AND ");
+                builder.append(
+                        "((cc2.change_date IS NULL OR cc2.change_date < :closeDate) AND (a2.delete_change_id IS NULL OR cd2.change_date > :closeDate)) AND ");
+                builder.append(
+                        "((cc3.change_date IS NULL OR cc3.change_date < :closeDate) AND (a3.delete_change_id IS NULL OR cd3.change_date > :closeDate)) AND ");
+                builder.append(
+                        "((cc4.change_date IS NULL OR cc4.change_date < :closeDate) AND (a4.delete_change_id IS NULL OR cd4.change_date > :closeDate)) AND ");
+            }
+
+
+            builder.append("a1.node_id_parent IN (:ids)");
+
+            Query query = entityManager.createNativeQuery(builder.toString());
+            if (version.getLockChange() != null) {
+                Date out = Date
+                        .from(version.getLockChange().getChangeDate().atZone(ZoneId.systemDefault()).toInstant());
+                query.setParameter("closeDate", out, TemporalType.TIMESTAMP);
+            }
+
+            query.setParameter("ids", partIds);
+
+            result.addAll((List<Object[]>) query.getResultList());
+        }
+
+        return result;
+    }
+
+
+    /**
+     * Najde uzly podle jejich primárního id.
+     *
+     * @param ids seznam uzlů
+     * @return uzly s danými id
+     */
+    private List<LevelInfo> findLevelInfoByIds(final Collection<Integer> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return Collections.EMPTY_LIST;
+        }
+
+        List<LevelInfo> result = new ArrayList<>(ids.size());
+
+        String hql = "SELECT l.node_id, l.position, l.node_id_parent FROM arr_level l WHERE l.level_id IN (:ids)";
+
+        Query query = entityManager.createNativeQuery(hql);
+
+        ObjectListIterator<Integer> iterator = new ObjectListIterator<Integer>(ids);
+        while (iterator.hasNext()) {
+            List<Integer> partIds = iterator.next();
+
+            query.setParameter("ids", partIds);
+
+            for (Object[] row : (List<Object[]>) query.getResultList()) {
+                result.add(new LevelInfo((Integer) row[0], (Integer) row[1], (Integer) row[2]));
+            }
+        }
+
+        return result;
+    }
+
 }

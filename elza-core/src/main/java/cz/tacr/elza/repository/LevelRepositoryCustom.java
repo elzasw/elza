@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -97,4 +98,71 @@ public interface LevelRepositoryCustom {
      * @return nalezený level pro daný strom nebo null, pokud nebyl nalezen
      */
     ArrLevel findNodeInRootTreeByNodeId(ArrNode node, ArrNode rootNode, @Nullable ArrChange lockChange);
+
+
+    /**
+     * Provede načtení všech uzlů ve stromu dané verze.
+     *
+     * @param version verze stromu
+     * @return seznam všech uzlů ve stromu
+     */
+    List<LevelInfo> readTree(ArrFindingAidVersion version);
+
+
+    /**
+     * Uzel stromu, obsahuje pouze základní informace.
+     */
+    class LevelInfo {
+
+        /**
+         * NodeId uzlu.
+         */
+        private Integer nodeId;
+        /**
+         * Pozice uzlu.
+         */
+        private Integer position;
+        /**
+         * Nodeid rodiče uzlu.
+         */
+        private Integer parentId;
+
+        /**
+         * Nová instance.
+         *
+         * @param nodeId   NodeId uzlu.
+         * @param position Pozice uzlu.
+         * @param parentId Nodeid rodiče uzlu.
+         */
+        public LevelInfo(final Integer nodeId, final Integer position, final Integer parentId) {
+            this.nodeId = nodeId;
+            this.position = position;
+            this.parentId = parentId;
+        }
+
+        public Integer getNodeId() {
+            return nodeId;
+        }
+
+        public void setNodeId(final Integer nodeId) {
+            this.nodeId = nodeId;
+        }
+
+        public Integer getPosition() {
+            return position;
+        }
+
+        public void setPosition(final Integer position) {
+            this.position = position;
+        }
+
+        public Integer getParentId() {
+            return parentId;
+        }
+
+        public void setParentId(final Integer parentId) {
+            this.parentId = parentId;
+        }
+
+    }
 }

@@ -50,20 +50,21 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemUnitdate;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrNodeConformity;
-import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrLevelExt;
+import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
 import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
 import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithLevelPack;
 import cz.tacr.elza.events.ConformityInfoUpdatedEvent;
 import cz.tacr.elza.repository.NodeConformityRepository;
-import cz.tacr.elza.ui.ElzaUI;
 import cz.tacr.elza.repository.VersionConformityRepository;
+import cz.tacr.elza.ui.ElzaUI;
 import cz.tacr.elza.ui.ElzaView;
 import cz.tacr.elza.ui.components.Callback;
 import cz.tacr.elza.ui.components.ConformityInfoChangeNotificator;
@@ -71,7 +72,6 @@ import cz.tacr.elza.ui.components.LevelInlineDetail;
 import cz.tacr.elza.ui.components.TreeTable;
 import cz.tacr.elza.ui.utils.ConcurrentUpdateExceptionHandler;
 import cz.tacr.elza.ui.utils.ElzaNotifications;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.ui.window.AddLevelScenariosWindow;
 import cz.tacr.elza.ui.window.BulkActionApproveVersionWindow;
 import cz.tacr.elza.ui.window.BulkActionsWindow;
@@ -197,7 +197,7 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
             @Override
             public Object generateCell(final Table source, final Object itemId, final Object columnId) {
                 ArrLevel node = (ArrLevel) itemId;
-                return node.getPosition();
+                return node.getPosition() + " - " + node.getNode().getNodeId();
             }
         });
         for (RulDescItemType descItemType : sloupce) {
