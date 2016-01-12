@@ -2495,20 +2495,25 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Transactional
     private void updatePacket(final ArrPacket source, final ArrPacket target) {
-        Assert.notNull(source.getPacketType(), "Není vyplněné packet type");
         Assert.notNull(source.getFindingAid(), "Není vyplněné finding aid");
         Assert.notNull(source.getStorageNumber(), "Není vyplněné storage number");
 
         Integer findingAidId = source.getFindingAid().getFindingAidId();
-        Integer packetTypeId = source.getPacketType().getPacketTypeId();
 
-        Assert.notNull(packetTypeId, "Není vyplněné packetTypeId");
         Assert.notNull(findingAidId, "Není vyplněné findingAidId");
 
-        final RulPacketType partyType = packetTypeRepository.findOne(packetTypeId);
+        RulPacketType partyType;
+        if(source.getPacketType() == null){
+            partyType = null;
+        } else{
+            Integer packetTypeId = source.getPacketType().getPacketTypeId();
+            Assert.notNull(packetTypeId, "Není vyplněn packetTypeId pro packetType");
+
+            partyType = packetTypeRepository.findOne(packetTypeId);
+        }
+
         final ArrFindingAid findingAid = findingAidRepository.findOne(findingAidId);
 
-        Assert.notNull(partyType, "Nebyla nalezena ArrPacketType s id " + packetTypeId);
         Assert.notNull(findingAid, "Nebyla nalezena ArrFindingAid s id " + findingAidId);
 
         target.setPacketType(partyType);
