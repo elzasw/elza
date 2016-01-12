@@ -12,7 +12,7 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Loading} from 'components';
-import {RibbonGroup,Ribbon, ModalDialog, NodeTabs, Search, RegistryPanel} from 'components';
+import {RibbonGroup,Ribbon, ModalDialog, NodeTabs, Search, RegistryPanel, DropDownTree} from 'components';
 import {MenuItem, DropdownButton, ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {Nav, NavItem} from 'react-bootstrap';
@@ -149,10 +149,54 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             )
         } 
         
+         var items =
+            [
+                {
+                    id: 1, name: 'Stromy', childrens: [
+                        {id: 17, name : 'Baobab'},
+                        {id: 18, name : 'Dub'},
+                        {id: 19, name : 'Javor'} 
+                    ]
+                },{
+                    id: 2, name: 'Kytky', childrens: [
+                        {id: 14, name : 'Pampeliška'},
+                        {id: 15, name : 'Kopretina'},
+                        {id: 16, name : 'Chrpa'}  
+                    ]
+                },{
+                    id: 3, name: 'Zvířáta', childrens : [
+                        {
+                            id: 5, name : 'Hezký zvířata', childrens : [
+                                {id: 8, name : 'Tygr'},
+                                {id: 6, name : 'Medvěd'},
+                                {id: 7, name : 'Orel'}
+                            ]
+                        },{
+                            id: 9, name : 'Ošklivý zvířata', childrens : [
+                                {id: 10, name : 'Šnek'},
+                                {id: 11, name : 'Vosa'},
+                                {id: 12, name : 'Hyena'},
+                                {id: 13, name : 'Prase'}
+                            ]
+                        },    
+                    ]
+                },{
+                    id: 4, name: 'Kameny', childrens: [
+                        {id: 20, name : 'Opál'},
+                        {id: 21, name : 'Achát'},
+                        {id: 22, name : 'Živec'}
+                    ]
+                }
+            ];
+
         var leftPanel = (
             <div className="registry-list">
                 <div>
                     <Search onSearch={this.handleSearch.bind(this)} filterText={this.props.registry.filterText}/>
+                    {false && <DropDownTree 
+                        items = {items} 
+                        selectedItemID = {20}
+                    />}
                 </div>
                 <div>
                     {navParents}
