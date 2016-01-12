@@ -30,9 +30,9 @@
         <view-order>5</view-order>
     </desc-item-spec>
     <desc-item-spec code="ZP2015_FOLDER_LOGICAL" desc-item-type="ZP2015_FOLDER_TYPE">
-        <name>Logická složka</name>
-        <description>Logická složka</description>
-        <shortcut>Logická</shortcut>
+        <name>Bez uvedení EJ</name>
+        <description>Bez uvedení EJ</description>
+        <shortcut>Bez uvedení EJ</shortcut>
         <view-order>1</view-order>
     </desc-item-spec>
     <desc-item-spec code="ZP2015_FOLDER_UNITS" desc-item-type="ZP2015_FOLDER_TYPE">
@@ -268,6 +268,12 @@
         <description>Jiné</description>
         <shortcut>jin</shortcut>
         <view-order>53</view-order>
+    </desc-item-spec>
+    <desc-item-spec code="ZP2015_UNIT_TYPE_OTHER" desc-item-type="ZP2015_UNIT_TYPE">
+    <name>Neevidovaná jednotlivost</name>
+    <description>Neevidovaná jednotlivost</description>
+    <shortcut>other</shortcut>
+    <view-order>54</view-order>
     </desc-item-spec>
     <desc-item-spec code="ZP2015_EXTRA_UNITS_LIO" desc-item-type="ZP2015_EXTRA_UNITS">
         <name>Listiny do roku 1850</name>

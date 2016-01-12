@@ -51,7 +51,7 @@
     </desc-item-type>
     <desc-item-type code="ZP2015_EXTRA_UNITS" data-type="INT">
         <name>Další evidenční jednotky ve složce</name>
-        <shortcut>Extra EJ</shortcut>
+        <shortcut>Další EJ</shortcut>
         <description>Typ archiválie a počet pro složku manipulačního seznamu</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
