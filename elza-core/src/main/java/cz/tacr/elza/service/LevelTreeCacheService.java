@@ -93,16 +93,17 @@ public class LevelTreeCacheService {
 
         ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
 
+        Map<Integer, TreeNode> treeMap = getVersionTreeCache(version);
+        Set<Integer> expandedIdsExtended = createExpandedIdsExtension(includeIds, treeMap);
+
+
         if (nodeId == null) {
-            nodesToExpandIDs.add(version.getRootLevel().getNode().getNodeId());
+            expandedIdsExtended.add(version.getRootLevel().getNode().getNodeId());
         } else {
             //pokud vracíme podstrom, přidáme pro jistotu nodeid do otevřených uzlů
             nodesToExpandIDs.add(nodeId);
         }
 
-
-        Map<Integer, TreeNode> treeMap = getVersionTreeCache(version);
-        Set<Integer> expandedIdsExtended = createExpandedIdsExtension(includeIds, treeMap);
         //do rozbalených uzlů přidáme ty, které je nutné rozbalit, aby byly included vidět
         nodesToExpandIDs.addAll(expandedIdsExtended);
 
@@ -133,7 +134,6 @@ public class LevelTreeCacheService {
             while (expandedIterator.hasNext()) {
                 TreeNode next = expandedIterator.next();
                 if (next.getId().equals(nodeId)) {
-                    nodesMap.put(next.getId(), next); //přidáme kořen na začátek seznamu
                     addNodesToResultList(nodesMap, next, expandedIterator);
                     break;
                 }
@@ -193,10 +193,9 @@ public class LevelTreeCacheService {
      */
     private Set<Integer> createExpandedIdsExtension(final Set<Integer> includedIds,
                                                     final Map<Integer, TreeNode> treeMap) {
-        if (CollectionUtils.isEmpty(includedIds)) {
-            return Collections.EMPTY_SET;
-        } else {
-            Set<Integer> result = new HashSet<>();
+        Set<Integer> result = new HashSet<>();
+
+        if (CollectionUtils.isNotEmpty(includedIds)) {
 
             for (Integer includedId : includedIds) {
                 TreeNode node = treeMap.get(includedId);
@@ -206,9 +205,8 @@ public class LevelTreeCacheService {
                     parent = parent.getParent();
                 }
             }
-
-            return result;
         }
+        return result;
     }
 
 
@@ -302,6 +300,8 @@ public class LevelTreeCacheService {
         }
 
         result = new TreeNode(treeNode.getId(), treeNode.getPosition());
+        result.setDepth(treeNode.getDepth());
+
         //nastavíme původní děti, které budou použity na vytvoření výsledného seznamu
         result.setChilds(treeNode.getChilds());
 

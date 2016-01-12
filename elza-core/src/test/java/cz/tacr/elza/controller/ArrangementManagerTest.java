@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,6 +31,7 @@ import org.springframework.http.HttpStatus;
 import com.jayway.restassured.response.Response;
 
 import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -1914,6 +1916,74 @@ public class ArrangementManagerTest extends AbstractRestTest {
         ArrLevel parentLevel = testLevelData.getParentLevel();
         ArrFindingAidVersion version = findingAidVersionRepository.getOne(testLevelData.getVersionId());
         Assert.assertTrue(levelRepository.countChildsByParent(parentLevel.getNode(), version.getLockChange()) > 0);
+    }
+
+    @Test
+    @Transactional
+    public void testRestGetFaTree(){
+//        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
+//        ArrFindingAidVersion version = getRootNodeIdForVersion(findingAid.getFindingAidId());
+
+
+
+//        ArrChange createChange = createFaChange(LocalDateTime.now());
+//        ArrLevel parent = levelRepository.findOne(version.getRootLevel().getLevelId());
+
+        TestLevelData testLevelData = createTestLevelData();
+        ArrFindingAidVersion version = findingAidVersionRepository.getOne(testLevelData.getVersionId());
+
+        ArrChange createChange = createFaChange(LocalDateTime.now());
+
+        ArrLevel child1 = createLevel(1, testLevelData.getParentLevel(), createChange);
+        ArrLevel child12 = createLevel(2, child1, createChange);
+        ArrLevel child13 = createLevel(3, child1, createChange);
+        ArrLevel child123 = createLevel(3, child12, createChange);
+        ArrLevel child1234 = createLevel(4, child123, createChange);
+        ArrLevel child12345 = createLevel(5, child1234, createChange);
+
+
+        //nastavení title na child12
+        RulDataType stringDataType = getDataType(DATA_TYPE_STRING);
+
+        RulDescItemType descItemType = createDescItemType("ZP2015_TITLE", stringDataType.getDataTypeId());
+        RulDescItemTypeExt rulDescItemTypeExt = new RulDescItemTypeExt();
+        BeanUtils.copyProperties(descItemType, rulDescItemTypeExt);
+        ArrDescItemString stringValue = (ArrDescItemString) createStringValue(child12.getNode(), rulDescItemTypeExt);
+        stringValue.setValue("Title child12");
+        arrangementManager.createDescriptionItem(stringValue, version.getFindingAidVersionId());
+
+
+
+        Set<Integer> expandedIds = new HashSet<>();
+        expandedIds.add(child123.getNode().getNodeId());
+
+        ArrangementController.FaTreeParam params = new ArrangementController.FaTreeParam();
+        params.setVersionId(version.getFindingAidVersionId());
+        params.setExpandedIds(expandedIds);
+
+
+        TreeData result = levelTreeCacheService
+                .getFaTree(version.getRootLevel().getNode().getNodeId(), null, expandedIds, null);
+
+        //První uzel v seznamu musí být root.
+        Assert.assertEquals(result.getNodes().get(0).getId(), version.getRootLevel().getNode().getNodeId());
+
+
+
+        Map<Integer, TreeNodeClient> resultMap = new LinkedHashMap<>();
+        for (TreeNodeClient treeNodeClient : result.getNodes()) {
+            resultMap.put(treeNodeClient.getId(), treeNodeClient);
+        }
+
+
+        //Uzel child12345 nesmí být ve výsledku, protože není v seznamu rozbalených
+        Assert.assertFalse(resultMap.containsKey(child12345.getNode().getNodeId()));
+
+        //Uzel child13 musí být vrácen, protože je to bratr rozbaleného uzlu child12
+        Assert.assertTrue(resultMap.containsKey(child13.getNode().getNodeId()));
+
+        Assert.assertEquals(resultMap.get(child12.getNode().getNodeId()).getName(), "Title child12");
+
     }
 
 }

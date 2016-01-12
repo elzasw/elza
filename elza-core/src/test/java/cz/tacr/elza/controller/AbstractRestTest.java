@@ -143,7 +143,7 @@ public abstract class AbstractRestTest {
     private static final Logger logger = LoggerFactory.getLogger(ArrangementManagerTest.class);
 
     protected static final String ARRANGEMENT_MANAGER_URL = "/api/arrangementManager";
-4    protected static final String ARRANGEMENT_MANAGER_URL_V2 = "/api/arrangementManagerV2";
+    protected static final String ARRANGEMENT_MANAGER_URL_V2 = "/api/arrangementManagerV2";
     protected static final String RULE_MANAGER_URL = "/api/ruleSetManager";
     protected static final String REGISTRY_MANAGER_URL = "/api/registryManager";
     protected static final String REGISTRY_MANAGER_URL_V2 = "/api/registryManagerV2";
@@ -603,6 +603,26 @@ public abstract class AbstractRestTest {
             return dataStr;
         }
         return null;
+    }
+
+    protected RulDescItemType createDescItemType(final String code, final int dataTypeId){
+        RulDescItemType itemType = descItemTypeRepository.findOneByCode(code);
+        if (itemType == null) {
+            itemType = new RulDescItemType();
+        }
+        RulDataType dataType = getDataType(dataTypeId);
+        itemType.setDataType(dataType);
+        itemType.setCode(code);
+        itemType.setName("Desc Item " + code);
+        itemType.setShortcut("DItem " + code);
+        itemType.setDescription("popis");
+        itemType.setCanBeOrdered(false);
+        itemType.setIsValueUnique(false);
+        itemType.setUseSpecification(false);
+        itemType.setViewOrder(0);
+        itemType.setFaOnly(false);
+        itemType.setPackage(rulPackage);
+        return descItemTypeRepository.save(itemType);
     }
 
     protected RulDescItemType createDescItemType(final int index, final int dataTypeId) {

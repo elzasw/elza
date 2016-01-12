@@ -6,3 +6,7 @@ spring:
     #pametova databaze automaticky zapina hibernate.ddl-auto: create
     hibernate.ddl-auto: none
 
+elza:
+  treenode:
+    title: ZP2015_TITLE
+
