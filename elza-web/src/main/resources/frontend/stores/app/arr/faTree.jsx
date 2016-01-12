@@ -5,7 +5,8 @@ import {i18n} from 'components'
 const initialState = {
     selectedId: null,
     focusId: null,
-    expandedIds: {'0': true},
+    _expandedIds: {'0': true},
+    expandedIds: {},
     searchedIds: null,
     isFetching: false,
     fetched: false,
@@ -113,6 +114,10 @@ export default function faTree(state = initialState, action) {
                             fetchingIncludeIds: {},
                             lastUpdated: action.receivedAt
                         })
+
+                        action.expandedIdsExtension.forEach(id => {
+                            result.expandedIds[id] = true;
+                        });
                     } else {
                         return Object.assign({}, state, { fetchingIncludeIds: {} });
                     }

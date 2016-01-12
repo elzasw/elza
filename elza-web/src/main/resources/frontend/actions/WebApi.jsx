@@ -149,6 +149,24 @@ class WebApi{
         return this.getData(data, 1);
     }
 
+    getFaTree1(versionId, nodeId, expandedIds={}, includeIds=[]) {
+        var data = {
+            versionId,
+            nodeId,
+            includeIds,
+            expandedIds: []
+        };
+        for (var prop in expandedIds) {
+            if (expandedIds[prop]) {
+                data.expandedIds.push(prop);
+            }
+        }
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/faTree', null, data)
+            .then(json=>{
+console.log("FA TREE DATA", {versionId, nodeId, expandedIds, includeIds}, json);
+                return json
+            });
+    }
     getFaTree(versionId, nodeId, expandedIds={}, includeIds=[]) {
         expandedIds = {...expandedIds};
 
@@ -273,9 +291,12 @@ len = 40;
     }
 }
 var _nodeMap = {};
-var _nodeId = 0;
-var _faRootNode = {id: 0, name: 'node', depth: 0, parent: null, children: []}
-buildTree(_faRootNode, 1);
+var _nodeId = 2;
+var _faRootNode = {id: 0, name: 'Název AP', depth: 0, parent: null, children: []}
+var _ch1 = {id: 1, name: 'Node', depth: 1, parent: _faRootNode, children: []}
+_faRootNode.children.push(_ch1);
+buildTree(_ch1, 2);
+_ch1.name = 'Velká testovací data';
 
 //AjaxUtils.ajaxGet('/api/arrangementManager/getLevel', {nodeId: 10, versionId: 3})
 //            .then(json=>console.log("LEVEL", json));
