@@ -150,6 +150,7 @@ class WebApi {
             parentRecordId: registryParent,
             registerTypeIds: null
         }).then(json=>{
+console.log(json);
             return json;
         });
     }

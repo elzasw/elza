@@ -7,6 +7,10 @@
     padding-top: 10px;
 }
 
+div.registry-list{
+    margin-left: 5px;
+}
+
 ul.breadcrumbs li{
     width: 100%;
     background-color: none;
@@ -38,3 +42,29 @@ ul.breadcrumbs li.selected:hover{
 .registry-list-icon-list:hover, .registry-list-icon-record:hover{
     cursor: pointer;
 }
+
+div.path{
+    font-weight: bold;
+    width: 100%;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    
+}
+
+div.path span:first-child{
+        display: inline-block;
+        overflow: hidden;
+        &:after{
+            content: '\02026';
+        }
+    }
+div.path span:last-child{
+        display: inline-block;
+        max-width: calc(~'100% - 50px');
+        text-overflow: clip;
+        direction: rtl;
+        overflow: hidden;
+        white-space: nowrap;
+    }
