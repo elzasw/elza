@@ -439,7 +439,7 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
             typeIds.add(registerType.getRegisterTypeId());
         }
 
-        return registryService.findRegRecordByTextAndTypeCount(searchString, typeIds, null, null);
+        return registryService.findRegRecordByTextAndTypeCount(searchString, typeIds, null);
     }
 
     /**

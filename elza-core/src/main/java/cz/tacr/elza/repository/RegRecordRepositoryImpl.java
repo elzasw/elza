@@ -36,6 +36,33 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
             final Collection<Integer> registerTypeIds,
             final Boolean local,
             final Integer firstReult,
+            final Integer maxResults) {
+
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<RegRecord> query = builder.createQuery(RegRecord.class);
+        Root<RegRecord> record = query.from(RegRecord.class);
+
+        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, local, record, builder);
+
+        query.select(record).distinct(true);
+        if (condition != null) {
+            Order order = builder.asc(record.get(RegRecord.RECORD));
+            query.where(condition).orderBy(order);
+        }
+
+
+
+        return entityManager.createQuery(query)
+                .setFirstResult(firstReult)
+                .setMaxResults(maxResults)
+                .getResultList();
+    }
+
+    @Override
+    public List<RegRecord> findRegRecordByTextAndType(final String searchRecord,
+            final Collection<Integer> registerTypeIds,
+            final Boolean local,
+            final Integer firstReult,
             final Integer maxResults,
             final RegRecord parentRecord) {
 
@@ -64,6 +91,25 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
                 .setFirstResult(firstReult)
                 .setMaxResults(maxResults)
                 .getResultList();
+    }
+
+    @Override
+    public long findRegRecordByTextAndTypeCount(final String searchRecord,
+            final Collection<Integer> registerTypeIds,
+            final Boolean local) {
+
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Long> query = builder.createQuery(Long.class);
+        Root<RegRecord> record = query.from(RegRecord.class);
+
+        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, local, record, builder);
+
+        query.select(builder.countDistinct(record));
+        if (condition != null) {
+            query.where(condition);
+        }
+
+        return entityManager.createQuery(query).getSingleResult();
     }
 
     @Override
@@ -132,5 +178,51 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
         }
 
         return condition;
+    }
+
+
+    @Override
+    public long findRootRecordsByTypeCount(final Collection<Integer> registerTypeIds, final Boolean local) {
+
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Long> query = builder.createQuery(Long.class);
+        Root<RegRecord> record = query.from(RegRecord.class);
+
+        Predicate condition = preparefindRegRecordByTextAndType(null, registerTypeIds, local, record, builder);
+        if (condition == null) {
+            condition = builder.isNull(record.get(RegRecord.PARENT_RECORD));
+        } else {
+            condition = builder.and(condition, builder.isNull(record.get(RegRecord.PARENT_RECORD)));
+        }
+
+        query.select(builder.countDistinct(record));
+        query.where(condition);
+
+        return entityManager.createQuery(query).getSingleResult();
+    }
+
+    @Override
+    public List<RegRecord> findRootRecords(Collection<Integer> registerTypeIds, Boolean local, Integer firstResult,
+            Integer maxResults) {
+
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<RegRecord> query = builder.createQuery(RegRecord.class);
+        Root<RegRecord> record = query.from(RegRecord.class);
+
+        Predicate condition = preparefindRegRecordByTextAndType(null, registerTypeIds, local, record, builder);
+        if (condition == null) {
+            condition = builder.isNull(record.get(RegRecord.PARENT_RECORD));
+        } else {
+            condition = builder.and(condition, builder.isNull(record.get(RegRecord.PARENT_RECORD)));
+        }
+
+        query.select(record).distinct(true);
+        Order order = builder.asc(record.get(RegRecord.RECORD));
+        query.where(condition).orderBy(order);
+
+        return entityManager.createQuery(query)
+                .setFirstResult(firstResult)
+                .setMaxResults(maxResults)
+                .getResultList();
     }
 }

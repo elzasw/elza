@@ -274,7 +274,6 @@ public class ClientFactoryVO {
                 parents.add(createRegRecordParent(parentRecord));
                 parentRecord = parentRecord.getParentRecord();
             }
-            Collections.reverse(parents);
             result.setParents(parents);
         }
 

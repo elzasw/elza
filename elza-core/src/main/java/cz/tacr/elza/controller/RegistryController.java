@@ -1,6 +1,5 @@
 package cz.tacr.elza.controller;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -94,47 +93,44 @@ public class RegistryController {
         final long foundRecordsCount = registryService.findRegRecordByTextAndTypeCount(search, registerTypeIdList,
                 onlyLocal, parentRecordId);
 
-        // všechny záznamy
-        List<RegRecord> allRecords = new LinkedList<>();
-
         List<RegRecord> foundRecords = registryService
                 .findRegRecordByTextAndType(search, registerTypeIdList, onlyLocal, from, count, parentRecordId);
-        allRecords.addAll(foundRecords);
 
         // děti
         Map<RegRecord, List<RegRecord>> parentChildrenMap = registryService.findChildren(foundRecords);
-        for (List<RegRecord> children : parentChildrenMap.values()) {
-            allRecords.addAll(children);
-        }
 
-        Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(allRecords);
+        Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(foundRecords);
 
-        List<RegRecordVO> parentRecordVOList = factoryVo.createRegRecords(foundRecords, recordIdPartyIdMap, true);
+        List<RegRecordVO> foundRecordVOList = factoryVo.createRegRecords(foundRecords, recordIdPartyIdMap, true);
 
         Map<Integer, RegRecordVO> parentRecordVOMap = new HashMap<>();
-        for (RegRecordVO regRecordVO : parentRecordVOList) {
+        for (RegRecordVO regRecordVO : foundRecordVOList) {
             parentRecordVOMap.put(regRecordVO.getRecordId(), regRecordVO);
         }
 
-        for (RegRecord record : parentChildrenMap.keySet()) {
+        foundRecords.forEach(record -> {
             List<RegRecord> children = parentChildrenMap.get(record);
+            parentRecordVOMap.get(record.getRecordId()).setHasChildren(children == null ? false : !children.isEmpty());
+        });
 
-            List<RegRecordVO> childrenVO = new ArrayList<RegRecordVO>(children.size());
-            RegRecordVO parentVO = parentRecordVOMap.get(record.getRecordId());
-            parentVO.setChilds(childrenVO);
-            for (RegRecord child : children) {
-                Integer partyId = recordIdPartyIdMap.get(child.getRecordId());
-                RegRecordVO regRecordVO = factoryVo.createRegRecord(child, partyId, true);
-                childrenVO.add(regRecordVO);
+//        for (RegRecord record : parentChildrenMap.keySet()) {
+//            List<RegRecord> children = parentChildrenMap.get(record);
+//
+//            List<RegRecordVO> childrenVO = new ArrayList<RegRecordVO>(children.size());
+//            RegRecordVO parentVO = parentRecordVOMap.get(record.getRecordId());
+//            parentVO.setChilds(childrenVO);
+//            for (RegRecord child : children) {
+//                Integer partyId = recordIdPartyIdMap.get(child.getRecordId());
+//                RegRecordVO regRecordVO = factoryVo.createRegRecord(child, partyId, true);
+//                childrenVO.add(regRecordVO);
+//
+//                List<RegRecord> childChildren = regRecordRepository.findByParentRecord(child);
+//                regRecordVO.setHasChildren(childChildren.isEmpty() ? false : true);
+//            }
+//            parentVO.setHasChildren(!childrenVO.isEmpty());
+//        }
 
-                List<RegRecord> childChildren = regRecordRepository.findByParentRecord(child);
-                regRecordVO.setHasChildren(childChildren.isEmpty() ? false : true);
-            }
-            parentVO.setHasChildren(!childrenVO.isEmpty());
-        }
-
-
-        return new RegRecordWithCount(parentRecordVOList, foundRecordsCount);
+        return new RegRecordWithCount(foundRecordVOList, foundRecordsCount);
     }
 
 
