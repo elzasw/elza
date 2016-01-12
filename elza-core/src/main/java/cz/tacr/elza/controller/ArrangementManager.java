@@ -361,17 +361,19 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         Assert.notNull(arrangementTypeId);
         Assert.notNull(ruleSetId);
 
-        ArrFindingAid findingAid = version.getFindingAid();
+        ArrFindingAidVersion ver = findingAidVersionRepository.findOne(version.getFindingAidVersionId());
+        ArrFindingAid findingAid = ver.getFindingAid();
         Integer findingAidId = findingAid.getFindingAidId();
+        
         if (!findingAidRepository.exists(findingAidId)) {
             throw new ConcurrentUpdateException("Archivní pomůcka s identifikátorem " + findingAidId + " již neexistuje.");
         }
 
-        if (version.getLockChange() != null) {
+        if (ver.getLockChange() != null) {
             throw new ConcurrentUpdateException("Verze byla již uzavřena");
         }
 
-        List<BulkActionConfig> bulkActionConfigs = bulkActionService.runValidation(version.getFindingAidVersionId());
+        List<BulkActionConfig> bulkActionConfigs = bulkActionService.runValidation(ver.getFindingAidVersionId());
         if (bulkActionConfigs.size() > 0) {
             List<String> codes = new LinkedList<>();
 
@@ -380,19 +382,19 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             }
 
             ruleManager.setVersionConformityInfo(ArrVersionConformity.State.ERR,
-                    "Nebyly provedeny povinné hromadné akce " + codes + " před uzavřením verze", version);
+                    "Nebyly provedeny povinné hromadné akce " + codes + " před uzavřením verze", ver);
         }
 
         ArrChange change = arrangementService.createChange();
-        version.setLockChange(change);
-        findingAidVersionRepository.save(version);
+        ver.setLockChange(change);
+        findingAidVersionRepository.save(ver);
 
         RulArrangementType arrangementType = arrangementTypeRepository.findOne(arrangementTypeId);
         RulRuleSet ruleSet = ruleSetRepository.findOne(ruleSetId);
 
         Assert.isTrue(ruleSet.equals(arrangementType.getRuleSet()));
 
-        return arrangementService.createVersion(change, findingAid, arrangementType, ruleSet, version.getRootLevel());
+        return arrangementService.createVersion(change, findingAid, arrangementType, ruleSet, ver.getRootLevel());
     }
 
 

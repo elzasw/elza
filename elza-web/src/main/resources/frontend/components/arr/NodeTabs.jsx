@@ -17,6 +17,10 @@ var NodeTabs = class NodeTabs extends AbstractReactComponent {
     }
 
     render() {
+        if (this.props.nodes.length == 0) {
+            return <div></div>
+        }
+
         var tabs = this.props.nodes.map((node, i) => {
             return {
                 id: node.id,

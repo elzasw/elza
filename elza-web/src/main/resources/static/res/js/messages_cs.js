@@ -31,6 +31,8 @@ var messages = {
     "arr.fa.name": "Název",
     "arr.fa.ruleSet": "Pravidla tvorby",
     "arr.fa.arrType": "Typ výstupu",
+    "arr.fa.title.added": "AP byla vytvořena",
+    "arr.fa.title.approved": "AP byla uzavřena",
 
     "admin.packages.action.export": "Stáhnout",
     "admin.packages.action.delete": "Smazat",
