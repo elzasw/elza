@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-		xmlns:ap="http://www.mvcr.cz/archivy/evidence-nad/ap"
-		targetNamespace="http://v1_0_0.suzap.elza.tacr.cz">
+		xmlns:ap="http://www.mvcr.cz/archivy/evidence-nad/ap">
+
+<xsl:key name="evidencni_jednotky" match="ap:eviJednotka" use="concat(normalize-space(./ap:druhEVJ),normalize-space(./ap:cisloEVJ))"/>
 
 <xsl:template match="ap:lokatorR">
     <record><xsl:value-of select="../@aID"/></record>
@@ -25,7 +26,7 @@
             <xsl:choose>
 		<xsl:when test="string-length($aNormDat) = 4"><xsl:value-of select="concat($aNormDat,'-01-01T00:00:00Z')"/></xsl:when>
 		<xsl:when test="string-length($aNormDat) = 7"><xsl:value-of select="concat($aNormDat,'-01T00:00:00Z')"/></xsl:when>
-		<xsl:when test="string-length($aNorm) = 10"><xsl:value-of select="concat($aNormDat,'T00:00:00Z')"/></xsl:when>
+		<xsl:when test="string-length($aNormDat) = 10"><xsl:value-of select="concat($aNormDat,'T00:00:00Z')"/></xsl:when>
 		<xsl:otherwise>error</xsl:otherwise>
 	    </xsl:choose>
 	</xsl:when>
@@ -33,7 +34,7 @@
             <xsl:choose>
 		<xsl:when test="string-length($aNormDat) = 4"><xsl:value-of select="concat($aNormDat,'-12-31T23:59:59Z')"/></xsl:when>
 		<xsl:when test="string-length($aNormDat) = 7"><xsl:value-of select="concat($aNormDat,'-31T23:59:59Z')"/></xsl:when>
-		<xsl:when test="string-length($aNorm) = 10"><xsl:value-of select="concat($aNormDat,'T23:59:59Z')"/></xsl:when>
+		<xsl:when test="string-length($aNormDat) = 10"><xsl:value-of select="concat($aNormDat,'T23:59:59Z')"/></xsl:when>
 		<xsl:otherwise>error</xsl:otherwise>
 	    </xsl:choose>
 	</xsl:otherwise>
@@ -68,6 +69,24 @@
 	    </xsl:when>
 	    <xsl:otherwise>
 		<value-to><xsl:call-template name="printISO8601"><xsl:with-param name="aNormDat" select="./@aNormDat"/></xsl:call-template></value-to>	    
+	    </xsl:otherwise>
+	</xsl:choose>
+	<xsl:choose>
+	    <xsl:when test="@aOdhadDat='ano'">
+		<value-from-estimated>true</value-from-estimated>
+		<value-to-estimated>true</value-to-estimated>
+	    </xsl:when>
+	    <xsl:when test="@aOdhadDat='ano-ne'">
+		<value-from-estimated>true</value-from-estimated>
+		<value-to-estimated>false</value-to-estimated>
+	    </xsl:when>
+	    <xsl:when test="@aOdhadDat='ne-ano'">
+		<value-from-estimated>false</value-from-estimated>
+		<value-to-estimated>true</value-to-estimated>
+	    </xsl:when>
+	    <xsl:otherwise>
+		<value-from-estimated>false</value-from-estimated>
+		<value-to-estimated>false</value-to-estimated>
 	    </xsl:otherwise>
 	</xsl:choose>
 
@@ -108,6 +127,11 @@
 	<position>1</position>
 	<value><xsl:value-of select=".//ap:obsah"/></value>
     </desc-item-string>
+    <desc-item-enum>
+       <xsl:attribute name="desc-item-type-code">ZP2015_LEVEL_TYPE</xsl:attribute>
+       <xsl:attribute name="desc-item-spec-code">ZP2015_LEVEL_SERIES</xsl:attribute>
+       <position>1</position>
+    </desc-item-enum>
 </xsl:template>
 
 <xsl:template match="ap:obsah">
@@ -118,9 +142,103 @@
     </desc-item-string>
 </xsl:template>
 
+<xsl:template match="ap:eviJednotka">
+  <xsl:choose>
+    <xsl:when test="./ap:druhEVJ='karton' or ./ap:druhEVJ='N'">
+    <desc-item-packet-ref>
+      <xsl:attribute name="desc-item-type-code">ZP2015_STORAGE_ID</xsl:attribute>
+      <xsl:attribute name="packet-id">
+        <xsl:value-of select="./ap:cisloEVJ"/>
+      </xsl:attribute>
+      <position>1</position>
+    </desc-item-packet-ref>
+    <desc-item-enum>
+      <xsl:attribute name="desc-item-type-code">ZP2015_LEVEL_TYPE</xsl:attribute>
+      <xsl:attribute name="desc-item-spec-code">ZP2015_LEVEL_FOLDER</xsl:attribute>
+      <position>1</position>
+    </desc-item-enum>
+    <desc-item-enum>
+      <xsl:attribute name="desc-item-type-code">ZP2015_FOLDER_TYPE</xsl:attribute>
+      <xsl:attribute name="desc-item-spec-code">ZP2015_FOLDER_UNITS</xsl:attribute>
+      <position>1</position>
+    </desc-item-enum>
+    </xsl:when>
+    <xsl:otherwise>
+      <desc-item-enum>
+        <xsl:attribute name="desc-item-type-code">ZP2015_LEVEL_TYPE</xsl:attribute>
+        <xsl:attribute name="desc-item-spec-code">ZP2015_LEVEL_ITEM</xsl:attribute>
+        <position>1</position>
+      </desc-item-enum>
+      <xsl:choose>
+         <xsl:when test="./ap:druhEVJ='úřední kniha' or ./ap:druhEVJ='K'">
+           <desc-item-enum>
+             <xsl:attribute name="desc-item-type-code">ZP2015_UNIT_TYPE</xsl:attribute>
+             <xsl:attribute name="desc-item-spec-code">ZP2015_UNIT_TYPE_UKN</xsl:attribute>
+             <position>1</position>
+           </desc-item-enum>
+        </xsl:when>
+        <xsl:when test="./ap:druhEVJ='plán'">
+           <desc-item-enum>
+             <xsl:attribute name="desc-item-type-code">ZP2015_UNIT_TYPE</xsl:attribute>
+             <xsl:attribute name="desc-item-spec-code">ZP2015_UNIT_TYPE_TVY</xsl:attribute>
+             <position>1</position>
+           </desc-item-enum>
+        </xsl:when>
+        <xsl:when test="./ap:druhEVJ='M' or ./ap:druhEVJ='mapa'">
+           <desc-item-enum>
+             <xsl:attribute name="desc-item-type-code">ZP2015_UNIT_TYPE</xsl:attribute>
+             <xsl:attribute name="desc-item-spec-code">ZP2015_UNIT_TYPE_MAP</xsl:attribute>
+             <position>1</position>
+           </desc-item-enum>
+        </xsl:when>        
+        <xsl:when test="./ap:druhEVJ='Y'">
+           <desc-item-enum>
+             <xsl:attribute name="desc-item-type-code">ZP2015_UNIT_TYPE</xsl:attribute>
+             <xsl:attribute name="desc-item-spec-code">ZP2015_UNIT_TYPE_KTT</xsl:attribute>
+             <position>1</position>
+           </desc-item-enum>
+        </xsl:when>
+        <xsl:when test="./ap:druhEVJ='fotografie'">
+           <desc-item-enum>
+             <xsl:attribute name="desc-item-type-code">ZP2015_UNIT_TYPE</xsl:attribute>
+             <xsl:attribute name="desc-item-spec-code">ZP2015_UNIT_TYPE_FSN</xsl:attribute>
+             <position>1</position>
+           </desc-item-enum>
+        </xsl:when>
+        <xsl:when test="./ap:druhEVJ='grafické listy'">
+           <desc-item-enum>
+             <xsl:attribute name="desc-item-type-code">ZP2015_UNIT_TYPE</xsl:attribute>
+             <xsl:attribute name="desc-item-spec-code">ZP2015_UNIT_TYPE_GLI</xsl:attribute>
+             <position>1</position>
+           </desc-item-enum>
+        </xsl:when>                                                                                        
+        <xsl:otherwise>
+           <desc-item-enum>
+             <xsl:attribute name="desc-item-type-code">ZP2015_UNIT_TYPE</xsl:attribute>
+             <xsl:attribute name="desc-item-spec-code">ZP2015_UNIT_TYPE_JIN</xsl:attribute>
+             <position>1</position>
+           </desc-item-enum>        
+        </xsl:otherwise>        
+      </xsl:choose>
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:template>
+
 <xsl:template match="ap:radekIS">
     <xsl:apply-templates select="./ap:obsah"/>
     <xsl:apply-templates select="./ap:datace"/>
+    <xsl:apply-templates select="./ap:eviJednotka"/>
+    <xsl:choose>
+      <xsl:when test="./ap:eviJednotka">
+
+      </xsl:when>
+      <xsl:otherwise>
+        <desc-item-enum>
+          <xsl:attribute name="desc-item-type-code">ZP2015_LEVEL_TYPE</xsl:attribute>
+          <xsl:attribute name="desc-item-spec-code">ZP2015_LEVEL_SERIES</xsl:attribute>
+        </desc-item-enum>
+      </xsl:otherwise>
+    </xsl:choose>
 </xsl:template>
 
 <xsl:template match="ap:castIS" mode="child">
@@ -206,15 +324,44 @@
 <elza:xml-import xmlns:elza="http://v1_0_0.import.elza.tacr.cz">
     <finding-aid>
     	<xsl:attribute name="arr-type-code">INV</xsl:attribute>
-    	<xsl:attribute name="rule-set-code">ZP</xsl:attribute>
+    	<xsl:attribute name="rule-set-code">ZP2015</xsl:attribute>
     	<name><xsl:value-of select="./ap:metaData/ap:oPomucce/ap:nazevPomucky[@aTyp='nazev']"/></name>
-	<xsl:apply-templates select="./ap:pomucka/ap:inventSeznam/ap:castIS" mode="root"/>
+        <xsl:choose>
+          <xsl:when test="count(./ap:pomucka/ap:inventSeznam/ap:castIS)>1">
+            <root-level>
+              <position><xsl:value-of select="position()"/></position>
+              <uuid/>              
+                <sub-level-list>
+                  <xsl:apply-templates select="./ap:pomucka/ap:inventSeznam/ap:castIS" mode="child"/>
+                </sub-level-list>              
+              <desc-item-list/>
+            </root-level>
+          </xsl:when>
+          <xsl:otherwise>          
+	          <xsl:apply-templates select="./ap:pomucka/ap:inventSeznam/ap:castIS" mode="root"/>
+          </xsl:otherwise>
+        </xsl:choose>
     </finding-aid>
     <record-list>
 	<xsl:apply-templates select="./ap:pomucka/ap:rejstrik"/>
     </record-list>
     <party-list>	
     </party-list>
+    <packet-list>
+        <xsl:for-each select=".//ap:eviJednotka[generate-id() = generate-id(key('evidencni_jednotky',concat(normalize-space(./ap:druhEVJ),normalize-space(./ap:cisloEVJ)))[1])]">            
+                <xsl:choose>
+                  <xsl:when test="./ap:druhEVJ='karton' or ./ap:druhEVJ='N'">
+                    <packet>
+                      <xsl:attribute name="packet-type-code">BOX</xsl:attribute>
+                      <xsl:attribute name="invalid">false</xsl:attribute>
+                      <xsl:attribute name="storage-number">
+                        <xsl:value-of select="./ap:cisloEVJ"/>
+                      </xsl:attribute>
+                    </packet>
+                  </xsl:when>
+                </xsl:choose>
+        </xsl:for-each>
+    </packet-list>
 </elza:xml-import>
 </xsl:template>
 
