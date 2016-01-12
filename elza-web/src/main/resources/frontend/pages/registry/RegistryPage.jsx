@@ -96,7 +96,6 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                          
                         // výsledky z vyhledávání
                         if ( this.props.registry.search!==null ) {
-                            console.log(item.parents);
                             var path = '';
                             item.parents.map(parent => {
                                 path+= '/'+parent.record;
