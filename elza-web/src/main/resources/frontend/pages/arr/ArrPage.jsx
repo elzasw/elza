@@ -10,13 +10,14 @@ import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {Toastr, Ribbon, i18n} from 'components';
+import {Ribbon, i18n} from 'components';
 import {AddFaForm, RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FaFileTree, AbstractReactComponent, ModalDialog, NodeTabs, FaTreeTabs} from 'components';
 import {ButtonGroup, Button, DropdownButton, MenuItem, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
 import {WebApi} from 'actions'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
+import {createFa, approveFa} from 'actions/arr/fa'
 
 var ArrPage = class ArrPage extends AbstractReactComponent {
     constructor(props) {
@@ -28,24 +29,12 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     handleCallAddFa(data) {
-        WebApi.createFindingAid(data.name, data.ruleSetId, data.rulArrTypeId)
-            .then(() => {
-                Toastr.Actions.success({
-                    title: i18n("arr.fa.title.added"),
-                });                
-                this.dispatch(modalDialogHide())
-            });
+        this.dispatch(createFa(data));
     }
     
     handleCallApproveFaVersion(data) {
         var activeInfo = this.getActiveInfo();
-        WebApi.approveVersion(activeInfo.activeFa.versionId, data.ruleSetId, data.rulArrTypeId, activeInfo.activeFa.faId)
-            .then(() => {
-                Toastr.Actions.success({
-                    title: i18n("arr.fa.title.approved"),
-                });
-                this.dispatch(modalDialogHide())
-            });
+        this.dispatch(approveFa(activeInfo.activeFa.versionId, data.ruleSetId, data.rulArrTypeId, activeInfo.activeFa.faId));
     }
 
     handleAddFa() {
