@@ -13,12 +13,23 @@ import cz.tacr.elza.domain.RulArrangementType;
 global DataValidationResults results;
 
 // Kontrola, zda každý list má ukládací jednotku
-rule "List musí mít ukládací jednotku"
+rule "List musí mít ukládací jednotku směrem ke kořeni"
 when
 	Strategy(code=="StorageUnit")
 	$activeLevel: ActiveLevel( !hasChildren )
 	not ( $level: Level( $items: descItems ) and 
 		DescItem(type=="ZP2015_STORAGE_ID") from $items )
+then
+	results.createMissing("ZP2015_STORAGE_ID", "V hierarchii není uveden prvek ZP2015_STORAGE_ID");
+end
+
+// Kontrola, zda každá hromadina s EJ má uvedenu ukládací jednotku s druhem KAR,FAS,DAJ
+rule "Každá hromadina s EJ má uvedenu ukládací jednotku"
+when
+	Strategy(code=="StorageUnit")
+	$activeLevel: ActiveLevel( $items: descItems )
+	DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode=="ZP2015_FOLDER_UNITS"||specCode=="ZP2015_FOLDER_SINGLE_TYPE") ) from $items 
+	not ( DescItem(type=="ZP2015_STORAGE_ID"&&packet!=null&&packet.packetType!=null&&(packet.packetType.code=="BOX"||packet.packetType.code=="FASCICLE"||packet.packetType.code=="DATA_UNIT" ) ) from $items )
 then
 	results.createMissing("ZP2015_STORAGE_ID", "V hierarchii není uveden prvek ZP2015_STORAGE_ID");
 end
