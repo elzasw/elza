@@ -30,8 +30,11 @@ import org.springframework.http.HttpStatus;
 
 import com.jayway.restassured.response.Response;
 
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.controller.vo.descitems.ArrDescItemGroupVO;
+import cz.tacr.elza.controller.vo.descitems.RulDescItemTypeVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -786,7 +789,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
                 parameter(NODE_ID_ATT, testLevel.getChildNodeId2()).parameter(VERSION_ID_ATT, testLevel.getVersionId2())
                 .parameter("descItemTypeIds", descItemTypeIds).get(
-                GET_LEVEL_URL);
+                        GET_LEVEL_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
         ArrLevelExt level = response.getBody().as(ArrLevelExt.class);
@@ -830,7 +833,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         Response response =
                 given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).parameter(FA_NAME_ATT, name).
-                parameter("arrangementTypeId", arrangementType.getArrangementTypeId()).parameter("ruleSetId", ruleSet.getRuleSetId()).
+                parameter("arrangementTypeId", arrangementType.getArrangementTypeId()).parameter("ruleSetId",
+                        ruleSet.getRuleSetId()).
                 put(CREATE_FA_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
@@ -1453,7 +1457,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         checkChangePositionDescItem(descItem4, 4, false, node);
 
         descItem3New.setPosition(3);
-        relatedNodeDirectionWithDescItem = arrangementManager.updateDescriptionItem(descItem3New, version.getFindingAidVersionId(), true);
+        relatedNodeDirectionWithDescItem = arrangementManager.updateDescriptionItem(descItem3New,
+                version.getFindingAidVersionId(), true);
         ArrDescItem descItem3New2 = relatedNodeDirectionWithDescItem.getArrDescItem();
 
         // kontrola pozice attributu
@@ -1907,6 +1912,36 @@ public class ArrangementManagerTest extends AbstractRestTest {
         Assert.assertEquals(2, calendarTypes.getCalendarTypes().size());
     }
 
+    @Test
+    public void testRestCalendarTypesV2() {
+        List<ArrCalendarTypeVO> calendarTypes = getCalendarTypesV2();
+        Assert.assertNotNull(calendarTypes);
+        Assert.assertEquals(2, calendarTypes.size());
+    }
+
+    @Test
+    public void testRestDescItems() throws Exception {
+        ArrFindingAid findingAid = createFindingAidRest(TEST_NAME);
+        ArrFindingAidVersion version = getFindingAidOpenVersion(findingAid);
+        ArrNode node = version.getRootLevel().getNode();
+
+        List<ArrDescItemGroupVO> descItemGroups = getDescItemGroup(version.getFindingAidVersionId(), node.getNodeId());
+
+        Assert.assertNotNull(descItemGroups);
+        Assert.assertEquals(1, descItemGroups.size());
+
+        ArrDescItemGroupVO group = descItemGroups.get(0);
+
+        Assert.assertNotNull(group.getDescItemTypes());
+        Assert.assertEquals(1, group.getDescItemTypes().size());
+
+        RulDescItemTypeVO descItemType = group.getDescItemTypes().get(0);
+
+        Assert.assertNotNull(descItemType.getDescItemConstraints());
+        Assert.assertNotNull(descItemType.getDescItemSpecs());
+        Assert.assertNotNull(descItemType.getDescItems());
+        Assert.assertEquals(1, (int) descItemType.getWidth());
+    }
 
     @Test
     @Transactional

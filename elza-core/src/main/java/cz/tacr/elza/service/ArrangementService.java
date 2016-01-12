@@ -2,6 +2,8 @@ package cz.tacr.elza.service;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -18,30 +20,30 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.factory.DescItemFactory;
+import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
-import cz.tacr.elza.repository.VersionConformityRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PacketRepository;
+import cz.tacr.elza.repository.VersionConformityRepository;
+
 
 /**
- *
- *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 20. 12. 2015
  */
@@ -96,6 +98,9 @@ public class ArrangementService {
     @Autowired
     private PacketRepository packetRepository;
 
+    @Autowired
+    private DescItemFactory descItemFactory;
+
     public ArrFindingAid findFindingAidByRootNodeUUID(String uuid) {
         Assert.notNull(uuid);
 
@@ -103,14 +108,14 @@ public class ArrangementService {
     }
 
     public ArrFindingAid createFindingAid(String name, RulRuleSet ruleSet, RulArrangementType arrangementType,
-            ArrChange change) {
+                                          ArrChange change) {
         ArrFindingAid findingAid = new ArrFindingAid();
         findingAid.setCreateDate(LocalDateTime.now());
         findingAid.setName(name);
 
         findingAid = findingAidRepository.save(findingAid);
 
-//        Assert.isTrue(ruleSet.equals(arrangementType.getRuleSet()));
+        //        Assert.isTrue(ruleSet.equals(arrangementType.getRuleSet()));
 
         ArrLevel rootNode = createLevel(change, null);
         createVersion(change, findingAid, arrangementType, ruleSet, rootNode);
@@ -118,8 +123,11 @@ public class ArrangementService {
         return findingAid;
     }
 
-    public ArrFindingAidVersion createVersion(final ArrChange createChange, final ArrFindingAid findingAid,
-            final RulArrangementType arrangementType, final RulRuleSet ruleSet, final ArrLevel rootNode) {
+    public ArrFindingAidVersion createVersion(final ArrChange createChange,
+                                              final ArrFindingAid findingAid,
+                                              final RulArrangementType arrangementType,
+                                              final RulRuleSet ruleSet,
+                                              final ArrLevel rootNode) {
         ArrFindingAidVersion version = new ArrFindingAidVersion();
         version.setCreateChange(createChange);
         version.setArrangementType(arrangementType);
@@ -202,9 +210,10 @@ public class ArrangementService {
         ArrLevel rootLevel = version.getRootLevel();
         ArrNode node = rootLevel.getNode();
 
-        findingAidVersionRepository.findVersionsByFindingAidIdOrderByCreateDateAsc(findingAidId).forEach(deleteVersion ->
-            deleteVersion(deleteVersion)
-        );
+        findingAidVersionRepository.findVersionsByFindingAidIdOrderByCreateDateAsc(findingAidId)
+                .forEach(deleteVersion ->
+                                deleteVersion(deleteVersion)
+                );
 
         deleteLevelCascade(rootLevel);
         nodeRepository.delete(node);
@@ -223,7 +232,7 @@ public class ArrangementService {
         bulkActionService.terminateBulkActions(version.getFindingAidVersionId());
 
         faBulkActionRepository.findByFaVersionId(version.getFindingAidVersionId()).forEach(action ->
-            faBulkActionRepository.delete(action)
+                        faBulkActionRepository.delete(action)
         );
 
         nodeConformityInfoRepository.findByFaVersion(version).forEach(conformityInfo -> {
@@ -240,10 +249,10 @@ public class ArrangementService {
 
     private void deleteConformityInfo(ArrNodeConformity conformityInfo) {
         nodeConformityErrorsRepository.findByNodeConformity(conformityInfo).forEach(error ->
-            nodeConformityErrorsRepository.delete(error)
+                        nodeConformityErrorsRepository.delete(error)
         );
         nodeConformityMissingRepository.findByNodeConformity(conformityInfo).forEach(error ->
-            nodeConformityMissingRepository.delete(error)
+                        nodeConformityMissingRepository.delete(error)
         );
 
         nodeConformityInfoRepository.delete(conformityInfo);
@@ -291,12 +300,13 @@ public class ArrangementService {
     /**
      * Načte neuzavřenou verzi archivní pomůcky.
      *
-     * @param findingAidId      id archivní pomůcky
-     * @return                  verze
+     * @param findingAidId id archivní pomůcky
+     * @return verze
      */
     public ArrFindingAidVersion getOpenVersionByFindingAidId(@RequestParam(value = "findingAidId") Integer findingAidId) {
         Assert.notNull(findingAidId);
-        ArrFindingAidVersion faVersion = findingAidVersionRepository.findByFindingAidIdAndLockChangeIsNull(findingAidId);
+        ArrFindingAidVersion faVersion = findingAidVersionRepository
+                .findByFindingAidIdAndLockChangeIsNull(findingAidId);
 
         return faVersion;
     }
@@ -362,5 +372,42 @@ public class ArrangementService {
             maxDescItemObjectId = 0;
         }
         return maxDescItemObjectId + 1;
+    }
+
+    /**
+     * Získání hodnot atributů podle verze AP a uzlu.
+     *
+     * @param version verze AP
+     * @param node    uzel
+     * @return seznam hodnot atributů
+     */
+    public List<ArrDescItem> getDescItems(final ArrFindingAidVersion version, final ArrNode node) {
+
+        List<ArrDescItem> itemList;
+
+        if (version.getLockChange() == null) {
+            itemList = descItemRepository.findByNodeAndDeleteChangeIsNull(node);
+        } else {
+            itemList = descItemRepository.findByNodeAndChange(node, version.getLockChange());
+        }
+
+        return createItem(itemList);
+    }
+
+    /**
+     * Připojení hodnot k záznamu atributu.
+     *
+     * @param itemList seznam holých hodnot atributů
+     * @return seznam převedených hodnot atributů
+     */
+    private List<ArrDescItem> createItem(final List<ArrDescItem> itemList) {
+        List<ArrDescItem> descItems = new LinkedList<>();
+        if (itemList.isEmpty()) {
+            return descItems;
+        }
+        for (ArrDescItem descItem : itemList) {
+            descItems.add(descItemFactory.getDescItem(descItem));
+        }
+        return descItems;
     }
 }

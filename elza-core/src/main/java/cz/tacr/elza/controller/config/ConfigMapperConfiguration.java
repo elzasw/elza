@@ -2,18 +2,13 @@ package cz.tacr.elza.controller.config;
 
 import java.time.LocalDateTime;
 
-import ma.glasnost.orika.CustomMapper;
-import ma.glasnost.orika.MapperFactory;
-import ma.glasnost.orika.MappingContext;
-import ma.glasnost.orika.converter.builtin.PassThroughConverter;
-import ma.glasnost.orika.impl.DefaultMapperFactory;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
+import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.ParComplementTypeVO;
 import cz.tacr.elza.controller.vo.ParDynastyEditVO;
 import cz.tacr.elza.controller.vo.ParDynastyVO;
@@ -43,10 +38,37 @@ import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.controller.vo.RulArrangementTypeVO;
+import cz.tacr.elza.controller.vo.RulDataTypeVO;
+import cz.tacr.elza.controller.vo.RulDescItemConstraintVO;
+import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.descitems.ArrDescItemCoordinatesVO;
+import cz.tacr.elza.controller.vo.descitems.ArrDescItemEnumVO;
+import cz.tacr.elza.controller.vo.descitems.ArrDescItemFormattedTextVO;
+import cz.tacr.elza.controller.vo.descitems.ArrDescItemIntVO;
+import cz.tacr.elza.controller.vo.descitems.ArrDescItemPacketVO;
+import cz.tacr.elza.controller.vo.descitems.ArrDescItemPartyRefVO;
+import cz.tacr.elza.controller.vo.descitems.ArrDescItemRecordRefVO;
+import cz.tacr.elza.controller.vo.descitems.ArrDescItemStringVO;
+import cz.tacr.elza.controller.vo.descitems.ArrDescItemTextVO;
+import cz.tacr.elza.controller.vo.descitems.ArrDescItemUnitdateVO;
+import cz.tacr.elza.controller.vo.descitems.ArrDescItemUnitidVO;
+import cz.tacr.elza.controller.vo.descitems.RulDescItemTypeVO;
 import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ArrDescItemCoordinates;
+import cz.tacr.elza.domain.ArrDescItemEnum;
+import cz.tacr.elza.domain.ArrDescItemFormattedText;
+import cz.tacr.elza.domain.ArrDescItemInt;
+import cz.tacr.elza.domain.ArrDescItemPacketRef;
+import cz.tacr.elza.domain.ArrDescItemPartyRef;
+import cz.tacr.elza.domain.ArrDescItemRecordRef;
+import cz.tacr.elza.domain.ArrDescItemString;
+import cz.tacr.elza.domain.ArrDescItemText;
+import cz.tacr.elza.domain.ArrDescItemUnitdate;
+import cz.tacr.elza.domain.ArrDescItemUnitid;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParDynasty;
 import cz.tacr.elza.domain.ParEvent;
@@ -69,7 +91,16 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.RulArrangementType;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulDescItemConstraint;
+import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulRuleSet;
+import ma.glasnost.orika.CustomMapper;
+import ma.glasnost.orika.MapperFactory;
+import ma.glasnost.orika.MappingContext;
+import ma.glasnost.orika.converter.builtin.PassThroughConverter;
+import ma.glasnost.orika.impl.DefaultMapperFactory;
 
 
 /**
@@ -99,7 +130,54 @@ public class ConfigMapperConfiguration {
      * @param mapperFactory tovární třída
      */
     private void initSimpleVO(final MapperFactory mapperFactory) {
-        mapperFactory.classMap(ArrCalendarType.class, ArrCalendarTypeVO.class).byDefault().register();
+        mapperFactory.classMap(ArrCalendarType.class, ArrCalendarTypeVO.class).byDefault().field(
+                "calendarTypeId", "id").register();
+        mapperFactory.classMap(ArrDescItemCoordinates.class, ArrDescItemCoordinatesVO.class).byDefault().field(
+                "descItemId", "id").register();
+        mapperFactory.classMap(ArrDescItemEnum.class, ArrDescItemEnumVO.class).byDefault().field(
+                "descItemId", "id").register();
+        mapperFactory.classMap(ArrDescItemFormattedText.class, ArrDescItemFormattedTextVO.class).byDefault().field(
+                "descItemId", "id").register();
+        mapperFactory.classMap(ArrDescItemInt.class, ArrDescItemIntVO.class).byDefault().field(
+                "descItemId", "id").register();
+        mapperFactory.classMap(ArrDescItemText.class, ArrDescItemTextVO.class).byDefault().field(
+                "descItemId", "id").register();
+        mapperFactory.classMap(ArrDescItemUnitid.class, ArrDescItemUnitidVO.class).byDefault().field(
+                "descItemId", "id").register();
+        mapperFactory.classMap(ArrDescItemUnitdate.class, ArrDescItemUnitdateVO.class).customize(
+                new CustomMapper<ArrDescItemUnitdate, ArrDescItemUnitdateVO>() {
+                    @Override
+                    public void mapAtoB(final ArrDescItemUnitdate unitdate,
+                                        final ArrDescItemUnitdateVO unitdateVO,
+                                        final MappingContext context) {
+                        unitdateVO.setCalendarTypeId(unitdate.getCalendarType().getCalendarTypeId());
+                        unitdateVO.setId(unitdate.getDescItemId());
+                    }
+                }).byDefault().register();
+
+        mapperFactory.classMap(ArrDescItemPacketRef.class, ArrDescItemPacketVO.class).byDefault().field(
+                "descItemId", "id").register();
+        mapperFactory.classMap(ArrDescItemPartyRef.class, ArrDescItemPartyRefVO.class).byDefault().field(
+                "descItemId", "id").register();
+        mapperFactory.classMap(ArrDescItemRecordRef.class, ArrDescItemRecordRefVO.class).byDefault().field(
+                "descItemId", "id").register();
+        mapperFactory.classMap(ArrDescItemString.class, ArrDescItemStringVO.class).byDefault().field(
+                "descItemId", "id").register();
+
+        mapperFactory.classMap(ArrPacket.class, ArrPacketVO.class).customize(
+                new CustomMapper<ArrPacket, ArrPacketVO>() {
+                    @Override
+                    public void mapAtoB(final ArrPacket packet,
+                                        final ArrPacketVO packetVO,
+                                        final MappingContext context) {
+                        packetVO.setId(packet.getPacketId());
+                        packetVO.setFindingAidId(packet.getFindingAid().getFindingAidId());
+                        packetVO.setInvalidPacket(packet.getInvalidPacket());
+                        packetVO.setPacketTypeId(packet.getPacketType().getPacketTypeId());
+                    }
+                }
+        ).byDefault().register();
+
         mapperFactory.classMap(ParComplementType.class, ParComplementTypeVO.class).byDefault().register();
         mapperFactory.classMap(ParDynasty.class, ParDynastyVO.class).byDefault().register();
         mapperFactory.classMap(ParParty.class, ParPartyVO.class).exclude("preferredName").byDefault().register();
@@ -189,7 +267,7 @@ public class ConfigMapperConfiguration {
 
         mapperFactory.classMap(ParRelationRoleType.class, ParRelationRoleTypeVO.class).byDefault().register();
         mapperFactory.classMap(ParRelationType.class, ParRelationTypeVO.class).byDefault().register();
-        mapperFactory.classMap(ParUnitdate.class, ParUnitdateVO.class).byDefault().getClass();
+        mapperFactory.classMap(ParUnitdate.class, ParUnitdateVO.class).byDefault().register();
 
         mapperFactory.classMap(RegRecord.class, RegRecordVO.class)
                 .exclude("variantRecordList")
@@ -222,7 +300,30 @@ public class ConfigMapperConfiguration {
                 }).byDefault()
                 .register();
 
-        mapperFactory.classMap(RulArrangementType.class, RulArrangementTypeVO.class).byDefault().field("arrangementTypeId", "id").register();
+        mapperFactory.classMap(RulArrangementType.class, RulArrangementTypeVO.class).byDefault().field(
+                "arrangementTypeId", "id").register();
+        mapperFactory.classMap(RulDataType.class, RulDataTypeVO.class).byDefault().field("dataTypeId", "id").register();
+
+
+        mapperFactory.classMap(RulDescItemConstraint.class, RulDescItemConstraintVO.class).customize(
+                new CustomMapper<RulDescItemConstraint, RulDescItemConstraintVO>() {
+                    @Override
+                    public void mapAtoB(final RulDescItemConstraint descItemConstraint,
+                                        final RulDescItemConstraintVO descItemConstraintVO,
+                                        final MappingContext context) {
+                        descItemConstraintVO.setId(descItemConstraint.getDescItemConstraintId());
+                        descItemConstraintVO.setDescItemTypeId(descItemConstraint.getDescItemType().getDescItemTypeId());
+                        if (descItemConstraint.getDescItemSpec() != null) {
+                            descItemConstraintVO.setDescItemSpecId(descItemConstraint.getDescItemSpec().getDescItemSpecId());
+                        }
+                        if (descItemConstraint.getVersion() != null) {
+                            descItemConstraintVO.setFindingAidVersionId(descItemConstraint.getVersion().getFindingAidVersionId());
+                        }
+                    }
+                }).byDefault().register();
+        mapperFactory.classMap(RulDescItemType.class, RulDescItemTypeVO.class).byDefault().field("descItemTypeId", "id").register();
+        mapperFactory.classMap(RulDescItemSpec.class, RulDescItemSpecVO.class).byDefault().field("descItemSpecId", "id").register();
+
         mapperFactory.classMap(RulRuleSet.class, RulRuleSetVO.class).byDefault().field("ruleSetId", "id").register();
 
         mapperFactory.classMap(ArrFindingAid.class, ArrFindingAidVO.class).byDefault().field("findingAidId", "id").register();

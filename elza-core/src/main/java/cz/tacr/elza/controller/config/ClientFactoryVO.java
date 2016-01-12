@@ -11,15 +11,14 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import ma.glasnost.orika.MapperFacade;
-import ma.glasnost.orika.MapperFactory;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.ElzaRules;
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
 import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
 import cz.tacr.elza.controller.vo.ParPartyGroupVO;
@@ -35,7 +34,15 @@ import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.controller.vo.RulArrangementTypeVO;
+import cz.tacr.elza.controller.vo.RulDataTypeVO;
+import cz.tacr.elza.controller.vo.RulDescItemConstraintVO;
+import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
+import cz.tacr.elza.controller.vo.descitems.ArrDescItemGroupVO;
+import cz.tacr.elza.controller.vo.descitems.ArrDescItemVO;
+import cz.tacr.elza.controller.vo.descitems.RulDescItemTypeVO;
+import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroup;
@@ -50,6 +57,11 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.RulArrangementType;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.repository.DescItemConstraintRepository;
+import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
@@ -59,6 +71,8 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
+import ma.glasnost.orika.MapperFacade;
+import ma.glasnost.orika.MapperFactory;
 
 
 /**
@@ -100,6 +114,15 @@ public class ClientFactoryVO {
 
     @Autowired
     private UnitdateRepository unitdateRepository;
+
+    @Autowired
+    private DescItemSpecRepository descItemSpecRepository;
+
+    @Autowired
+    private DescItemConstraintRepository descItemConstraintRepository;
+
+    @Autowired
+    private ElzaRules elzaRules;
 
     /**
      * Vytvoří detailní objekt osoby. Načte všechna navázaná data.
@@ -239,8 +262,8 @@ public class ClientFactoryVO {
      * Vytvoření seznamu RegRecordVo.
      *
      * @param records        seznam rejstříkových hesel
-     * @param recordPartyMap mapa id rejstříkových hesel na osobu
-     * @param fillParents příznak zda se mají načíst rodiče rejstříku
+     * @param recordIdPartyIdMap mapa id rejstříkových hesel na osobu
+     * @param fillParents    příznak zda se mají načíst rodiče rejstříku
      * @return seznam rejstříkových hesel
      */
     public List<RegRecordVO> createRegRecords(final List<RegRecord> records,
@@ -257,12 +280,14 @@ public class ClientFactoryVO {
     /**
      * Vytvoří rejstříkové heslo.
      *
-     * @param regRecord rejstříkové heslo
-     * @param partyId   id osoby
+     * @param regRecord   rejstříkové heslo
+     * @param partyId     id osoby
      * @param fillParents příznak zda se mají načíst rodiče rejstříku
      * @return rejstříkové heslo
      */
-    public RegRecordVO createRegRecord(final RegRecord regRecord, @Nullable final Integer partyId, boolean fillParents) {
+    public RegRecordVO createRegRecord(final RegRecord regRecord,
+                                       @Nullable final Integer partyId,
+                                       boolean fillParents) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RegRecordVO result = mapper.map(regRecord, RegRecordVO.class);
         result.setPartyId(partyId);
@@ -295,7 +320,7 @@ public class ClientFactoryVO {
      * @param regVariantRecord variantní rejstříkové heslo
      * @return VO variantní rejstříkové heslo
      */
-    public RegVariantRecordVO createRegVariantRecord(final RegVariantRecord regVariantRecord){
+    public RegVariantRecordVO createRegVariantRecord(final RegVariantRecord regVariantRecord) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(regVariantRecord, RegVariantRecordVO.class);
     }
@@ -460,7 +485,6 @@ public class ClientFactoryVO {
      * Vytvoří typ výstupu.
      *
      * @param arrType typ výstupu
-     *
      * @return VO typ výstupu
      */
     public RulArrangementTypeVO createArrangementType(RulArrangementType arrType) {
@@ -477,7 +501,6 @@ public class ClientFactoryVO {
      * Vytvoří verzi archivní pomůcky.
      *
      * @param version verze archivní pomůcky
-     *
      * @return VO verze archivní pomůcky
      */
     public ArrFindingAidVersionVO createFindingAidVersion(ArrFindingAidVersion version) {
@@ -494,5 +517,162 @@ public class ClientFactoryVO {
         findingAidVersionVO.setArrangementType(createArrangementType(version.getArrangementType()));
 
         return findingAidVersionVO;
+    }
+
+    /**
+     * Vytvoření specifikace hodnoty atributu.
+     *
+     * @param descItemSpec specifikace hodnoty atributu
+     * @return VO specifikace hodnoty atributu
+     */
+    public RulDescItemSpecVO createDescItemSpecVO(final RulDescItemSpec descItemSpec) {
+        Assert.notNull(descItemSpec);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        RulDescItemSpecVO descItemSpecVO = mapper.map(descItemSpec, RulDescItemSpecVO.class);
+        descItemSpecVO.setDescItemConstraints(
+                createList(descItemConstraintRepository.findByDescItemSpec(descItemSpec), RulDescItemConstraintVO.class,
+                        null));
+        return descItemSpecVO;
+    }
+
+    /**
+     * Vytvoření typu hodnoty atributu.
+     *
+     * @param descItemType typ hodnoty atributu
+     * @return VO typ hodnoty atributu
+     */
+    public RulDescItemTypeVO createDescItemTypeVO(final RulDescItemType descItemType) {
+        Assert.notNull(descItemType);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        RulDescItemTypeVO descItemTypeVO = mapper.map(descItemType, RulDescItemTypeVO.class);
+        descItemTypeVO.setDataTypeId(descItemType.getDataType().getDataTypeId());
+        descItemTypeVO.setDescItemSpecs(
+                createList(descItemSpecRepository.findByDescItemType(descItemType), RulDescItemSpecVO.class,
+                        this::createDescItemSpecVO));
+        descItemTypeVO.setDescItemConstraints(
+                createList(descItemConstraintRepository.findByDescItemType(descItemType), RulDescItemConstraintVO.class,
+                        null));
+        descItemTypeVO.setWidth(elzaRules.getTypeWidthByCode(descItemType.getCode()));
+        return descItemTypeVO;
+    }
+
+    /**
+     * Vytvoření hodnoty atributu.
+     *
+     * @param descItem hodnota atributu
+     * @return VO hodnota atributu
+     */
+    public ArrDescItemVO createDescItem(final ArrDescItem descItem) {
+        Assert.notNull(descItem);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        ArrDescItemVO descItemVO = mapper.map(descItem, ArrDescItemVO.class);
+        Integer specId = (descItem.getDescItemSpec() == null) ? null : descItem.getDescItemSpec().getDescItemSpecId();
+        descItemVO.setDescItemSpecId(specId);
+        return descItemVO;
+    }
+
+    /**
+     * Vytvoření skupin, které zaobalují hodnoty atributů (typy, specifikace, apod.)
+     *
+     * @param descItems seznam hodnot atributů
+     * @return VO skupin zabalených atributů
+     */
+    public List<ArrDescItemGroupVO> createDescItemGroups(final List<ArrDescItem> descItems) {
+        Map<String, ArrDescItemGroupVO> descItemGroupVOMap = new HashMap<>();
+        Map<RulDescItemType, List<ArrDescItemVO>> descItemByType = new HashMap<>();
+        List<RulDescItemTypeVO> descItemTypeVOList = new ArrayList<>();
+
+        // vytvoření VO hodnot atributů
+        for (ArrDescItem descItem : descItems) {
+            List<ArrDescItemVO> descItemList = descItemByType.get(descItem.getDescItemType());
+
+            if (descItemList == null) {
+                descItemList = new ArrayList<>();
+                descItemByType.put(descItem.getDescItemType(), descItemList);
+            }
+
+            descItemList.add(createDescItem(descItem));
+        }
+
+        // zjištění použitých typů atributů a jejich převod do VO
+        for (RulDescItemType descItemType : descItemByType.keySet()) {
+            RulDescItemTypeVO descItemTypeVO = createDescItemTypeVO(descItemType);
+            descItemTypeVOList.add(descItemTypeVO);
+            descItemTypeVO.setDescItems(descItemByType.get(descItemType));
+        }
+
+        // rozřazení do skupin podle konfigurace
+        for (RulDescItemTypeVO descItemTypeVO : descItemTypeVOList) {
+            ElzaRules.Group group = elzaRules.getGroupByType(descItemTypeVO.getCode());
+            ArrDescItemGroupVO descItemGroupVO = descItemGroupVOMap.get(group.getCode());
+
+            if (descItemGroupVO == null) {
+                descItemGroupVO = new ArrDescItemGroupVO(group.getCode(), group.getName());
+                descItemGroupVOMap.put(group.getCode(), descItemGroupVO);
+            }
+
+            List<RulDescItemTypeVO> descItemTypeList = descItemGroupVO.getDescItemTypes();
+            if (descItemTypeList == null) {
+                descItemTypeList = new ArrayList<>();
+                descItemGroupVO.setDescItemTypes(descItemTypeList);
+            }
+
+            descItemTypeList.add(descItemTypeVO);
+        }
+
+        ArrayList<ArrDescItemGroupVO> descItemGroupVOList = new ArrayList<>(descItemGroupVOMap.values());
+
+        List<String> typeGroupCodes = elzaRules.getTypeGroupCodes();
+
+        // seřazení skupin
+        Collections.sort(descItemGroupVOList, (left, right) -> Integer
+                .compare(typeGroupCodes.indexOf(left.getCode()), typeGroupCodes.indexOf(right.getCode())));
+
+        // seřazení položek ve skupinách
+        for (ArrDescItemGroupVO descItemGroupVO : descItemGroupVOList) {
+            List<String> typeInfos = elzaRules.getTypeCodesByGroupCode(descItemGroupVO.getCode());
+            if (typeInfos.isEmpty()) {
+
+                // seřazení typů atributů podle viewOrder
+                Collections.sort(descItemGroupVO.getDescItemTypes(), (left, right) -> Integer
+                        .compare(left.getViewOrder(), right.getViewOrder()));
+            } else {
+
+                // seřazení typů atributů podle konfigurace
+                Collections.sort(descItemGroupVO.getDescItemTypes(), (left, right) -> Integer
+                        .compare(typeInfos.indexOf(left.getCode()), typeInfos.indexOf(right.getCode())));
+            }
+
+            descItemGroupVO.getDescItemTypes().forEach(descItemType -> {
+                if (CollectionUtils.isNotEmpty(descItemType.getDescItems())) {
+
+                    // seřazení hodnot atributů podle position
+                    Collections.sort(descItemType.getDescItems(), (left, right) -> Integer
+                            .compare(left.getPosition(), right.getPosition()));
+                }
+            });
+        }
+
+        return descItemGroupVOList;
+    }
+
+    /**
+     * Vytvoření seznamu datových typů, které jsou k dispozici.
+     *
+     * @param dataTypes datové typy
+     * @return seznam VO datových typů
+     */
+    public List<RulDataTypeVO> createDataTypeList(final List<RulDataType> dataTypes) {
+        return createList(dataTypes, RulDataTypeVO.class, null);
+    }
+
+    /**
+     * Vytvoření seznamu typů kalendářů, které jsou k dispozici.
+     *
+     * @param calendarTypes typy kalendářů
+     * @return seznam VO typů kalendářů
+     */
+    public List<ArrCalendarTypeVO> createCalendarTypes(final List<ArrCalendarType> calendarTypes) {
+        return createList(calendarTypes, ArrCalendarTypeVO.class, null);
     }
 }

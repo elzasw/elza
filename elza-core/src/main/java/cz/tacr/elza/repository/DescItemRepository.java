@@ -37,6 +37,9 @@ public interface DescItemRepository extends JpaRepository<ArrDescItem, Integer>,
     @Query("SELECT i FROM arr_desc_item i JOIN i.descItemType t WHERE i.node = ?1 AND i.deleteChange IS NULL AND t.descItemTypeId = ?2")
     List<ArrDescItem> findByNodeAndDeleteChangeIsNullAndDescItemTypeId(ArrNode node, Integer descItemTypeId);
 
+    @Query("SELECT i FROM arr_desc_item i WHERE i.node = ?1 AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
+    List<ArrDescItem> findByNodeAndChange(ArrNode node, ArrChange change);
+
     @Query("SELECT i FROM arr_desc_item i JOIN i.descItemType t WHERE i.node = ?1 AND t.descItemTypeId = ?2 AND i.createChange < ?3 AND (i.deleteChange > ?3 OR i.deleteChange IS NULL)")
     List<ArrDescItem> findByNodeDescItemTypeIdAndLockChangeId(ArrNode node, Integer descItemTypeId, ArrChange change);
 

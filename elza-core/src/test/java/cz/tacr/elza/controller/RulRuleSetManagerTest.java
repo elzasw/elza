@@ -18,6 +18,7 @@ import com.jayway.restassured.response.Response;
 
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
+import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -254,5 +255,12 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
         Assert.assertTrue(nodeConformityInfoRepository.findAll().size() > 0);
         Assert.assertTrue(nodeConformityErrorsRepository.findAll().size() > 0);
 
+    }
+
+    @Test
+    public void testRestDataTypes() {
+        List<RulDataTypeVO> dataTypes = getDataTypes();
+        Assert.assertNotNull(dataTypes);
+        Assert.assertEquals(12, dataTypes.size());
     }
 }

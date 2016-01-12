@@ -36,8 +36,11 @@ import com.jayway.restassured.specification.RequestSpecification;
 import cz.tacr.elza.ElzaCoreTest;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RulDataTypeVO;
+import cz.tacr.elza.controller.vo.descitems.ArrDescItemGroupVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -145,6 +148,7 @@ public abstract class AbstractRestTest {
     protected static final String ARRANGEMENT_MANAGER_URL = "/api/arrangementManager";
     protected static final String ARRANGEMENT_MANAGER_URL_V2 = "/api/arrangementManagerV2";
     protected static final String RULE_MANAGER_URL = "/api/ruleSetManager";
+    protected static final String RULE_MANAGER_URL_V2 = "/api/ruleSetManagerV2";
     protected static final String REGISTRY_MANAGER_URL = "/api/registryManager";
     protected static final String REGISTRY_MANAGER_URL_V2 = "/api/registryManagerV2";
     protected static final String PARTY_MANAGER_URL = "/api/partyManager";
@@ -234,6 +238,7 @@ public abstract class AbstractRestTest {
     protected static final String GET_VERSION_ID_URL = ARRANGEMENT_MANAGER_URL + "/getVersion";
     protected static final String GET_OPEN_VERSION_BY_FA_ID_URL = ARRANGEMENT_MANAGER_URL + "/getOpenVersionByFindingAidId";
     protected static final String GET_CALENDAR_TYPES = ARRANGEMENT_MANAGER_URL + "/getCalendarTypes";
+    protected static final String GET_CALENDAR_TYPES_V2 = ARRANGEMENT_MANAGER_URL_V2 + "/calendarTypes";
     protected static final String FIND_SUB_LEVELS_EXT_URL = ARRANGEMENT_MANAGER_URL + "/findSubLevelsExt";
     protected static final String FIND_SUB_LEVELS_URL = ARRANGEMENT_MANAGER_URL + "/findSubLevels";
     protected static final String GET_HISTORY_FOR_NODE = ARRANGEMENT_MANAGER_URL + "/getHistoryForNode/{findingAidId}/{nodeId}";
@@ -256,6 +261,9 @@ public abstract class AbstractRestTest {
     protected static final String MODIFY_NODE_REGISTER_LINKS_URL = ARRANGEMENT_MANAGER_URL + "/modifyArrNodeRegisterLinks/{versionId}";
     protected static final String FIND_NODE_REGISTER_LINKS_URL = ARRANGEMENT_MANAGER_URL + "/findNodeRegisterLinks";
     protected static final String INSERT_ABSTRACT_PACKET = ARRANGEMENT_MANAGER_URL + "/insertPacket";
+
+    protected static final String DESC_ITEMS = ARRANGEMENT_MANAGER_URL_V2 + "/descItems";
+    protected static final String GET_DESC_ITEMS = DESC_ITEMS + "/{versionId}/{nodeId}";
 
     protected static final String FA_NAME_ATT = "name";
     protected static final String FA_ID_ATT = "findingAidId";
@@ -289,6 +297,7 @@ public abstract class AbstractRestTest {
     protected static final String GET_DIT_FOR_NODE_ID_URL = RULE_MANAGER_URL + "/getDescriptionItemTypesForNode/{faVersionId}/{nodeId}";
     protected static final String GET_FVDIT_URL = RULE_MANAGER_URL + "/getFaViewDescItemTypes";
     protected static final String SAVE_FVDIT_URL = RULE_MANAGER_URL + "/saveFaViewDescItemTypes";
+    protected static final String DATA_TYPES = RULE_MANAGER_URL_V2 + "/dataTypes";
 
     protected static final String DT_UNITID = "UNITID";
     protected static final String DT_STRING = "STRING";
@@ -1433,5 +1442,34 @@ public abstract class AbstractRestTest {
     protected ArrCalendarTypes getCalendarTypes() {
         Response response = get(GET_CALENDAR_TYPES);
         return response.getBody().as(ArrCalendarTypes.class);
+    }
+
+    /**
+     * Načte dostupné typy kalendářů.
+     * @return  dostupné typy kalendářů
+     */
+    protected List<ArrCalendarTypeVO> getCalendarTypesV2() {
+        Response response = get(GET_CALENDAR_TYPES_V2);
+        return Arrays.asList(response.getBody().as(ArrCalendarTypeVO[].class));
+    }
+
+    /**
+     * Načte dostupné datové typy.
+     * @return dostupné datové typy
+     */
+    protected List<RulDataTypeVO> getDataTypes() {
+        Response response = get(DATA_TYPES);
+        return Arrays.asList(response.getBody().as(RulDataTypeVO[].class));
+    }
+
+    /**
+     * Načte hodnoty atributů zapouzdřené do skupin.
+     * @param findingAidVersionId identifikátor verze archivní pomůcky
+     * @param nodeId identifikátor uzlu
+     * @return hodnoty atributů zapouzdřené do skupin
+     */
+    protected List<ArrDescItemGroupVO> getDescItemGroup(final Integer findingAidVersionId, final Integer nodeId) {
+        Response response = get(spec -> spec.pathParameters(VERSION_ID_ATT, findingAidVersionId, NODE_ID_ATT, nodeId), GET_DESC_ITEMS);
+        return Arrays.asList(response.getBody().as(ArrDescItemGroupVO[].class));
     }
 }

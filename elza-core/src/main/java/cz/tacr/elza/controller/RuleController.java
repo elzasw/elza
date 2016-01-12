@@ -11,9 +11,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
+import cz.tacr.elza.repository.DataTypeRepository;
+
 
 /**
  * Kontroler pro pravidla.
@@ -31,6 +35,9 @@ public class RuleController {
     @Autowired
     private ClientFactoryVO factoryVo;
 
+    @Autowired
+    private DataTypeRepository dataTypeRepository;
+
     @RequestMapping(value = "/getRuleSets", method = RequestMethod.GET)
     public List<RulRuleSetVO> getRuleSets() {
         Map<Integer, RulRuleSetVO> ruleSets = new LinkedHashMap<>();
@@ -42,5 +49,11 @@ public class RuleController {
 
 
         return new ArrayList<RulRuleSetVO>(ruleSets.values());
+    }
+
+    @RequestMapping(value = "/dataTypes", method = RequestMethod.GET)
+    public List<RulDataTypeVO> getDataTypes() {
+        List<RulDataType> dataTypes = dataTypeRepository.findAll();
+        return factoryVo.createDataTypeList(dataTypes);
     }
 }

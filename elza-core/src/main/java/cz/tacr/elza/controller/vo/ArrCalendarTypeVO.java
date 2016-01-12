@@ -11,7 +11,7 @@ public class ArrCalendarTypeVO {
     /**
      * Id typu kalendáře.
      */
-    private Integer calendarTypeId;
+    private Integer id;
 
     /**
      * Kod typu.
@@ -23,12 +23,12 @@ public class ArrCalendarTypeVO {
      */
     private String name;
 
-    public Integer getCalendarTypeId() {
-        return calendarTypeId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setCalendarTypeId(final Integer calendarTypeId) {
-        this.calendarTypeId = calendarTypeId;
+    public void setId(final Integer id) {
+        this.id = id;
     }
 
     public String getCode() {
