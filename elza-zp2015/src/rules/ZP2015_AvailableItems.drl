@@ -229,7 +229,7 @@ then
 end
 
 // Druh archiválie povinně - u složky s jednotlivostmi
-rule "Druh archiválie - povině"
+rule "Druh archiválie - povinně u složky"
 no-loop
 when
 	$activeLevel: ActiveLevel( )
@@ -240,29 +240,27 @@ then
 	$descItemType.setType(RulDescItemType.Type.REQUIRED);
 end
 
-/*
-rule "Atributy jsou vždy možné: {ZP2015_TITLE, ZP2015_FORMAL_TITLE, ZP2015_UNIT_DATE_PRE, ZP2015_UNIT_DATE, ZP2015_UNIT_DATE_POST, ZP2015_ORIGINATOR}"
+// Druh archiválie povinně - u jednotlivosti
+rule "Druh archiválie - povinně u jednotlivosti"
+no-loop
 when
-	descItemType : (RulDescItemTypeExt(code == "ZP2015_TITLE")
-                 	            or RulDescItemTypeExt(code == "ZP2015_FORMAL_TITLE")
-                 	            or RulDescItemTypeExt(code == "ZP2015_UNIT_DATE_PRE")
-                 	            or RulDescItemTypeExt(code == "ZP2015_UNIT_DATE")
-                 	            or RulDescItemTypeExt(code == "ZP2015_UNIT_DATE_POST")
-                 	            or RulDescItemTypeExt(code == "ZP2015_ORIGINATOR")
-                 	            )
+	$activeLevel: ActiveLevel( )
+	$descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_ITEM" ) from $activeLevel.descItems
+	$descItemType : RulDescItemTypeExt(code == "ZP2015_UNIT_TYPE")
 then
-	results.add(descItemType);
+    results.add($descItemType);
+	$descItemType.setType(RulDescItemType.Type.REQUIRED);
 end
 
-rule "Atribut ZP2015_OTHER_ID a jeho specifikace ZP2015_OTHERID_SIG_ORIG jsou možný vždy"
-when
-	descItemType : RulDescItemTypeExt(code == "ZP2015_OTHER_ID")
-	(
-		descItemSpec : RulDescItemSpecExt(code == "ZP2015_OTHERID_SIG_ORIG") from descItemType.rulDescItemSpecList
-	)
 
+// Vždy možné prvky popisu
+rule "Univerzální prvky popisu - možné"
+no-loop
+when
+	$descItemType : RulDescItemTypeExt(code in 
+	( "ZP2015_TITLE", "ZP2015_FORMAL_TITLE", "ZP2015_ORIGINATOR", "ZP2015_OTHER_ID", 
+	  "ZP2015_UNIT_DATE_PRE", "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_POST" ) )
 then
-	descItemType.setRulDescItemSpecList(Arrays.asList(descItemSpec));
-	results.add(descItemType);
+    results.add($descItemType);
+	//$descItemType.setType(RulDescItemType.Type.POSSIBLE);
 end
-*/
