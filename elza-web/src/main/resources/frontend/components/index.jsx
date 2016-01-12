@@ -34,6 +34,7 @@ exports.AddFaForm = require('./arr/AddFaForm');
 
 exports.PartySearch = require('./party/PartySearch');
 exports.PartyDetail = require('./party/PartyDetail');
+exports.AddPartyForm = require('./party/AddPartyForm');
 
 exports.AdminPackagesList = require('./admin/AdminPackagesList');
 exports.AdminPackagesUpload = require('./admin/AdminPackagesUpload');

@@ -9,11 +9,12 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {i18n} from 'components';
-import {AbstractReactComponent, Ribbon, RibbonGroup, PartySearch, PartyDetail, DropTree} from 'components';
+import {AbstractReactComponent, Ribbon, RibbonGroup, PartySearch, PartyDetail, AddPartyForm, DropDownTree, i18n} from 'components';
 import {ButtonGroup, MenuItem, DropdownButton, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
+import {WebApi} from 'actions'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 
 import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
 
@@ -21,7 +22,18 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('buildRibbon');
+        this.bindMethods('buildRibbon', 'handleAddParty', 'handleCallAddParty');
+    }
+
+    handleCallAddParty(data) {
+        // vytvoreni objektu party z nameMain, nameOther, ...
+        // WebApi.createParty(party).then(this.dispatch(modalDialogHide()));
+        this.dispatch(modalDialogHide());
+        this.dispatch(partyDetailFetchIfNeeded(3));
+    }
+    
+    handleAddParty() {
+        this.dispatch(modalDialogShow(this, i18n('arr.fa.title.add'), <AddPartyForm create onSubmit={this.handleCallAddParty} />));
     }
 
     buildRibbon() {
@@ -30,7 +42,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         var actions = [];
         actions.push(
             <DropdownButton title={<span className="dropContent"><Glyphicon glyph='plus-sign' /><div><span className="btnText">Nová osoba</span></div></span>}>
-                <MenuItem eventKey="1">Osoba</MenuItem>
+                <MenuItem onClick={this.handleAddParty} eventKey="1">Osoba</MenuItem>
                 <MenuItem eventKey="2">Rod</MenuItem>
                 <MenuItem eventKey="3">Korporace</MenuItem>
                 <MenuItem eventKey="4">Dočasná korporace</MenuItem>
@@ -107,7 +119,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
                     selectedPartyID={this.props.partyRegion.selectedPartyID}
                     filterText={this.props.partyRegion.filterText} 
                 />
-                <DropTree 
+                <DropDownTree 
                     items = {items} 
                     selectedItemID = {20}
                 />

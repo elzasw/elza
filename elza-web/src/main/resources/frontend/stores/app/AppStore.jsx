@@ -16,7 +16,7 @@ import contextMenu from './global/contextMenu';
 import modalDialog from './global/modalDialog';
 import adminRegion from './admin/adminRegion';
 import addFaForm from './arr/form/addFaForm';
-
+import addPartyForm from './party/form/addPartyForm';
 
 let reducer = combineReducers({
     arrRegion,
@@ -29,7 +29,8 @@ let reducer = combineReducers({
     modalDialog,
     adminRegion,
     form: formReducer.plugin({
-        addFaForm: addFaForm
+        addFaForm: addFaForm,
+        addPartyForm: addPartyForm
     })
 });
 

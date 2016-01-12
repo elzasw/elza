@@ -41,6 +41,13 @@ class WebApi{
                 return json;
             });
     }
+
+    createParty(nameFormType, nameMain, nameOther, degreeBefore, degreeAfter, validTo, validFrom) {
+        return AjaxUtils.ajaxPut('/api/partyManager/createParty', {"nameFormType":nameFormType, "nameMain":nameMain, "nameOther":nameOther, "degreeBefore":degreeBefore, "degreeAfter":degreeAfter, "validTo": validTo, "validFrom":validFrom})
+            .then(json=>{
+                return json;
+            });
+    }
 }
 
 function findNodeById(node, nodeId) {

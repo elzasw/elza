@@ -1,10 +1,13 @@
 elza:
   data:
-      url: jdbc:postgresql://vyv-inet:5432/elza
-      user: app
-      pass: app
-
+      jdbc:postgresql://vyv-db.marbes.cz/elza_demo
+      user: postgres
+      pass: postgres
 #  rules:
 #    ZP:
 #      default:
 #        - NORMAL
+spring:
+  jpa:
+    # Logovani SQL dotazu
+    show-sql: true

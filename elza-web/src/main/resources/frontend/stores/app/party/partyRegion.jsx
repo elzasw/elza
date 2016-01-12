@@ -9,7 +9,8 @@ const initialState = {
     filterText: "",
     items: [],
     selectedPartyID : null,
-    selectedPartyData: null
+    selectedPartyData: null,
+    partyTypes: []
 }
 
 export default function partyRegion(state = initialState, action) {

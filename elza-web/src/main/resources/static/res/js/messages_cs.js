@@ -31,6 +31,15 @@ var messages = {
     "arr.fa.name": "Název",
     "arr.fa.ruleSet": "Pravidla tvorby",
     "arr.fa.arrType": "Typ výstupu",
+    
+    "party.addParty": "Nová osoba",
+    "party.nameMain": "Hlavní část jména",
+    "party.nameOther": "Vedlejší část jména",
+    "party.degreeBefore": "Titul před",
+    "party.degreeAfter": "Titul za",
+    "party.nameFormType": "Typ formy jména",
+    "party.nameValidFrom": "Datace použítí jména od",
+    "party.nameValidTo": "Datace použítí jména do",
 
     "admin.packages.action.export": "Stáhnout",
     "admin.packages.action.delete": "Smazat",
