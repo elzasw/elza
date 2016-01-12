@@ -112,22 +112,13 @@ class WebApi{
                     {
                     name: 'group 1',
                     attrDesc: [
-                        { id:1, name: 'attr1', multipleValue: false, code: 'STRING', values: [{value: 'nejaky text1'}], width: 1},
-                        { id:2, name: 'attr2', multipleValue: false, code: 'INT', values: [{value: '123'}], width: 2},
-                        { id:4, name: 'attr4', multipleValue: false, code: 'DECIMAL', values: [{value: '123,456'}], width: 1},
-                        { id:3, name: 'attr3', multipleValue: false, code: 'TEXT', values: [{value: 'nejaky text3-area'}], width: 4},
-                        { id:5, name: 'attr5', multipleValue: false, code: 'STRING', values: [{value: 'nejaky text5'}], width: 2},
-                        { id:6, name: 'attr6', multipleValue: false, code: 'ENUM', values: [{value: 'nejaky text6', specValue: 2}], width: 2, specs: [{id: 1, name: 'jedna'}, {id: 2, name: 'dve'}, {id: 3, name: 'tri'}]},
+                        { id:1, name: 'Ref. ozn.', multipleValue: false, code: 'STRING', values: [{value: ''}], width: 1},
+                        { id:2, name: 'Obsah/regest', multipleValue: false, code: 'TEXT', values: [{value: ''}], width: 4},
+                        { id:4, name: 'Typ archiválie', multipleValue: false, code: 'STRING', values: [{value: ''}], width: 1},
+                        { id:3, name: 'Ukládací jednotka', multipleValue: false, code: 'STRING', values: [{value: ''}], width: 1},
+                        { id:5, name: 'Datace', multipleValue: false, code: 'STRING', values: [{value: ''}], width: 1},
                         ]
                     },
-                    {
-                    name: 'group 2',
-                    attrDesc: [
-                        { id:9, name: 'attr9', multipleValue: true, type: 'TEXT', values: [{value: 'val1'}, {value: 'val2'}], width: 1},
-                        { id:10, name: 'attr10', multipleValue: true, type: 'TEXT', values: [{value: 'val1'}, {value: 'val2'}, {value: 'val3'}, {value: 'val4'}], width: 2},
-                        { id:11, name: 'attr11', multipleValue: false, type: 'TEXT', values: [{value: 'val'}], width: 1},
-                        ]
-                    }
                 ]
             }
         };
@@ -291,9 +282,69 @@ len = 40;
     }
 }
 var _nodeMap = {};
-var _nodeId = 2;
-var _faRootNode = {id: 0, name: 'Název AP', depth: 0, parent: null, children: []}
-var _ch1 = {id: 1, name: 'Node', depth: 1, parent: _faRootNode, children: []}
+var _nodeId = 1;
+var _faRootNode = {id: 0, name: 'Reyl František, ThDr. 1893-1935', depth: 0, parent: null, children: []}
+var _ch1 = {id: _nodeId++, name: 'Node', depth: 1, parent: _faRootNode, children: []}
+
+var _ch2 = {id: _nodeId++, name: 'ŽIVOTOPISNÝ MATERIÁL', depth: 1, parent: _faRootNode, children: []}
+var _ch21 = {id: _nodeId++, name: 'PÍSEMNOSTI CIZÍCH OSOB', depth: 2, parent: _ch2, children: []}
+var _ch211 = {id: _nodeId++, name: 'Úmrtní oznámení', depth: 3, parent: _ch21, children: []}
+var _ch212 = {id: _nodeId++, name: 'Diplom čestného členství v Československé straně lidové', depth: 3, parent: _ch21, children: []}
+var _ch213 = {id: _nodeId++, name: 'Legitimace účastníka 1. Národní pouti československých katolíkůdo Říma', depth: 3, parent: _ch21, children: []}
+var _ch214 = {id: _nodeId++, name: 'Legitimace člena Národního shromáždění', depth: 3, parent: _ch21, children: []}
+var _ch215 = {id: _nodeId++, name: 'Legitimace člena Národního shromáždění', depth: 3, parent: _ch21, children: []}
+_ch2.children.push(_ch21);
+_ch21.children.push(_ch211);
+_ch21.children.push(_ch212);
+_ch21.children.push(_ch213);
+_ch21.children.push(_ch214);
+_ch21.children.push(_ch215);
+
+var _ch3 = {id: _nodeId++, name: 'KORESPONDENCE', depth: 1, parent: _faRootNode, children: []}
+var _ch31 = {id: _nodeId++, name: 'Osobní', depth: 2, parent: _ch3, children: []}
+var _ch32 = {id: _nodeId++, name: 'Blahopřání - přijatá', depth: 2, parent: _ch3, children: []}
+var _ch321 = {id: _nodeId++, name: 'Blahopřání k šedesátinám od Župního výboru čsl. strany lidové župy Hradec Králové', depth: 3, parent: _ch32, children: []}
+var _ch322 = {id: _nodeId++, name: 'Blahopřání k jmeninám', depth: 3, parent: _ch32, children: []}
+var _ch323 = {id: _nodeId++, name: 'Blahopřání k sedmdesátinám od zaměstnanců kapitulního velkostatku Skály (Bischofstein)', depth: 3, parent: _ch32, children: []}
+var _ch33 = {id: _nodeId++, name: 'Blahopřání - odeslaná', depth: 2, parent: _ch3, children: []}
+var _ch331 = {id: _nodeId++, name: 'Poděkování za blahopřání k sedmdesátinám', depth: 3, parent: _ch33, children: []}
+_ch3.children.push(_ch31);
+_ch3.children.push(_ch32);
+_ch3.children.push(_ch33);
+_ch32.children.push(_ch321);
+_ch32.children.push(_ch322);
+_ch32.children.push(_ch323);
+_ch33.children.push(_ch331);
+
+var _ch4 = {id: _nodeId++, name: 'ILUSTRAČNÍ MATERIÁL', depth: 1, parent: _faRootNode, children: []}
+var _ch41 = {id: _nodeId++, name: 'Fotografie Františka Reyla', depth: 2, parent: _ch4, children: []}
+var _ch411 = {id: _nodeId++, name: 'Portrétní fotografie', depth: 3, parent: _ch41, children: []}
+var _ch412 = {id: _nodeId++, name: 'Skupinové fotografie ', depth: 3, parent: _ch41, children: []}
+var _ch42 = {id: _nodeId++, name: 'Jiné', depth: 2, parent: _ch4, children: []}
+var _ch421 = {id: _nodeId++, name: 'Album fotografií, korespondence a blahopřání', depth: 3, parent: _ch42, children: []}
+var _ch422 = {id: _nodeId++, name: 'Album blahopřejných projevů k narozeninám a korespondence', depth: 3, parent: _ch42, children: []}
+var _ch423 = {id: _nodeId++, name: 'Album blahopřejných projevů k sedmdesátinám a korespondence', depth: 3, parent: _ch42, children: []}
+_ch4.children.push(_ch41);
+_ch41.children.push(_ch411);
+_ch41.children.push(_ch412);
+_ch4.children.push(_ch42);
+_ch42.children.push(_ch421);
+_ch42.children.push(_ch422);
+_ch42.children.push(_ch423);
+
+var _ch5 = {id: _nodeId++, name: 'PÍSEMNOSTI TÝKAJÍCÍ SE RODINNÝCH PŘÍSLUŠNÍKŮ', depth: 1, parent: _faRootNode, children: []}
+var _ch51 = {id: _nodeId++, name: 'Poděkování za projev soustrasti (Antonie Bartošková a rodina Reylova-Greifova)', depth: 2, parent: _ch5, children: []}
+_ch5.children.push(_ch51);
+
+var _ch6 = {id: _nodeId++, name: 'PÍSEMNOSTI CIZÍCH OSOB', depth: 1, parent: _faRootNode, children: []}
+var _ch61 = {id: _nodeId++, name: 'Zbožná upomínka na zesnulého Františka Reyla', depth: 2, parent: _ch6, children: []}
+_ch6.children.push(_ch61);
+
+_faRootNode.children.push(_ch2);
+_faRootNode.children.push(_ch3);
+_faRootNode.children.push(_ch4);
+_faRootNode.children.push(_ch5);
+_faRootNode.children.push(_ch6);
 _faRootNode.children.push(_ch1);
 buildTree(_ch1, 2);
 _ch1.name = 'Velká testovací data';

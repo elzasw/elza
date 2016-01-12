@@ -26,7 +26,7 @@ var NodeTabs = class NodeTabs extends AbstractReactComponent {
                 id: node.id,
                 index: i,
                 key: node.id + "_" + i,
-                title: <span>Node {node.id}</span>,
+                title: <span>{node.name}</span>,
                 desc: <span>id:{node.id}</span>
             }
         });
