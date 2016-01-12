@@ -18,6 +18,10 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
     }
 
     render() {
+        if (this.props.fas.length == 0) {
+            return <div></div>
+        }
+
         var tabs = this.props.fas.map((fa) => {
             return {
                 id: fa.id,
@@ -33,12 +37,10 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
                     onClose={item=>this.dispatch(closeFaTab(item))}
                 />
                 <Tabs.Content>
-                    {this.props.activeFa && 
-                        <FaTreeLazy 
-                            {...this.props.activeFa.faTree}
-                            versionId={this.props.activeFa.versionId}
-                        /> 
-                    }
+                    <FaTreeLazy 
+                        {...this.props.activeFa.faTree}
+                        versionId={this.props.activeFa.versionId}
+                    /> 
                 </Tabs.Content>
             </Tabs.Container>
         );

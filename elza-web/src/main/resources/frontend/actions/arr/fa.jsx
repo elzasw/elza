@@ -3,8 +3,36 @@
  */
 
 import {WebApi} from 'actions'
-
+import {Toastr, i18n} from 'components';
 import * as types from 'actions/constants/actionTypes';
+import {modalDialogHide} from 'actions/global/modalDialog'
+import {faFileTreeFetch} from 'actions/arr/faFileTree'
+
+export function createFa(data) {
+    return dispatch => {
+        return WebApi.createFindingAid(data.name, data.ruleSetId, data.rulArrTypeId)
+            .then((json) => {
+                Toastr.Actions.success({
+                    title: i18n("arr.fa.title.added"),
+                });                
+                dispatch(modalDialogHide())
+                dispatch(faFileTreeFetch())
+            });
+    }
+}
+
+export function approveFa(versionId, ruleSetId, arrangementTypeId, odebratFindingAidId) {
+    return dispatch => {
+        return WebApi.approveVersion(versionId, ruleSetId, arrangementTypeId, odebratFindingAidId)
+            .then((json) => {
+                Toastr.Actions.success({
+                    title: i18n("arr.fa.title.approved"),
+                });                
+                dispatch(modalDialogHide())
+                dispatch(faFileTreeFetch())
+            });
+    }
+}
 
 /**
  * Vybrání záložky pro strom AP.

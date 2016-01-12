@@ -40,6 +40,8 @@ var messages = {
     "party.nameFormType": "Typ formy jména",
     "party.nameValidFrom": "Datace použítí jména od",
     "party.nameValidTo": "Datace použítí jména do",
+    "arr.fa.title.added": "AP byla vytvořena",
+    "arr.fa.title.approved": "AP byla uzavřena",
 
     "admin.packages.action.export": "Stáhnout",
     "admin.packages.action.delete": "Smazat",

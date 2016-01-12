@@ -25,12 +25,12 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('buildRibbon', 'handleSelect', 'handleSearch', 'handleDoubleClick', 'handleClickNavigation');
-        this.dispatch(fetchRegistryIfNeeded(props.registry.search, props.registry.idRegistryParent));
+        this.dispatch(fetchRegistryIfNeeded(props.registry.filterText, props.registry.registryParentId));
 
     }
 
     componentWillReceiveProps(nextProps) {
-            this.dispatch(fetchRegistryIfNeeded(nextProps.registry.search, nextProps.registry.idRegistryParent));
+            this.dispatch(fetchRegistryIfNeeded(nextProps.registry.filterText, nextProps.registry.registryParentId));
     }
 
     buildRibbon() {
@@ -63,18 +63,17 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     handleDoubleClick(item, event) {
-        var registry = Object.assign({}, registry,{idRegistryParent: item.recordId});
+        var registry = Object.assign({}, registry,{registryParentId: item.recordId});
         this.dispatch(registryChangeParent(registry));
     }
 
     handleClickNavigation(item, event) {
-        
-        var registry = Object.assign({}, registry,{idRegistryParent: item.id});
+        var registry = Object.assign({}, registry,{registryParentId: item.id});
         this.dispatch(registryChangeParent(registry));
     }
 
     handleSearch(search, event) {
-        var registry = Object.assign({}, registry,{search: search});
+        var registry = Object.assign({}, registry,{filterText: search});
         this.dispatch(registrySearchData(registry));
     }
 
@@ -82,9 +81,10 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         var navRows = (
             <div>
                 <div key='registrysList'>
-                    {this.props.registry.items.map(item=>{
+                    {this.props.registry.records.map(item=>{
                         var cls = classNames({
-                                    active: this.props.registry.selectedId === item.recordId
+                                    active: this.props.registry.selectedId === item.recordId,
+                                    'search-result-row': 'search-result-row'
                                     });
                         
                         var clsItem = 'registry-list-icon-list';
@@ -95,7 +95,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                         }
                          
                         // výsledky z vyhledávání
-                        if ( this.props.registry.search!==null ) {
+                        if ( this.props.registry.filterText!==null ) {
                             var path = '';
                             item.parents.map(parent => {
                                 path+= '/'+parent.record;
@@ -120,16 +120,16 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                         }
                     })}
                 </div>
-                <div key='registrysCouns' className='registry-list-count'>Zobrazeno {this.props.registry.items.length} z celkoveho poctu {this.props.registry.countItems}</div>
+                <div key='registrysCouns' className='registry-list-count'>Zobrazeno {this.props.registry.records.length} z celkoveho poctu {this.props.registry.countRecords}</div>
             </div>
         )
         
         var navParents = '';
-        if (this.props.registry.items[0] && this.props.registry.search === null){ 
+        if (this.props.registry.records[0] && this.props.registry.filterText === null && this.props.registry.records[0].parents.length>0){ 
             navParents = (
                 <ul className='breadcrumbs'>
                 <li onClick={this.handleClickNavigation.bind(this, {id:null})}>/</li>
-                {this.props.registry.items[0].parents.map(item => {
+                {this.props.registry.records[0].parents.map(item => {
                     if (this.props.registry.selectedId===item.id)
                         return <li className='selected'>{item.record}</li>
                     return <li onClick={this.handleClickNavigation.bind(this, item)}>{item.record}</li>
@@ -138,11 +138,11 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 </ul>
             )
         } 
-
+        
         var leftPanel = (
             <div className="registry-list">
                 <div>
-                    <Search onSearch={this.handleSearch.bind(this)} filterText={this.props.registry.search}/>
+                    <Search onSearch={this.handleSearch.bind(this)} filterText={this.props.registry.filterText}/>
                 </div>
                 <div>
                     {navParents}
