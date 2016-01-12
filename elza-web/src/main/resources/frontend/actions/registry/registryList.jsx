@@ -27,8 +27,8 @@ export function fetchRegistry(search, registryParent = null) {
 export function receiveRegistry(json) {
     return {
         type: types.REGISTRY_RECEIVE_REGISTRY_LIST,
-        items: json.recordList,
-        countItems: json.count,
+        records: json.recordList,
+        countRecords: json.count,
         receivedAt: Date.now()
     }
 }

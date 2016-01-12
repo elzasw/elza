@@ -12,11 +12,11 @@ const initialState = {
     selectedId: null,
     isReloadingRegistry: false,
     reloadedRegistry: false,
-    search: null,
+    filterText: null,
     registryData: undefined,
-    idRegistryParent: null,
-    items: [],
-    countItems: 0,
+    registryParentId: null,
+    records: [],
+    countRecords: 0,
 }
 
 export default function registry(state = initialState, action) {
@@ -32,24 +32,27 @@ export default function registry(state = initialState, action) {
                 isFetching: true
             })
         case types.REGISTRY_SEARCH_REGISTRY:
-            if (action.registry.search === '')
-                action.registry.search = null;
+            if (action.registry.filterText === '')
+                action.registry.filterText = null;
             return Object.assign({}, state, {
-                search: action.registry.search,
-                idRegistryParent: null,
+                filterText: action.registry.filterText,
+                registryParentId: null,
                 fetched: false
             })
         case types.REGISTRY_CHANGED_PARENT_REGISTRY:
+            if (action.registry.filterText === undefined)
+                action.registry.filterText = null;
             return Object.assign({}, state, {
-                idRegistryParent: action.registry.idRegistryParent,
+                registryParentId: action.registry.registryParentId,
+                filterText: action.registry.filterText,
                 fetched: false
             })
         case types.REGISTRY_RECEIVE_REGISTRY_LIST:
             return Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,
-                items: action.items,
-                countItems: action.countItems,
+                records: action.records,
+                countRecords: action.countRecords,
                 lastUpdated: action.receivedAt
             })
         default:
