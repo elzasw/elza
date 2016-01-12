@@ -50,6 +50,7 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemUnitdate;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrLevelExt;
@@ -60,6 +61,7 @@ import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
 import cz.tacr.elza.domain.vo.FaViewDescItemTypes;
 import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithLevelPack;
 import cz.tacr.elza.events.ConformityInfoUpdatedEvent;
+import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.ui.ElzaUI;
 import cz.tacr.elza.repository.VersionConformityRepository;
 import cz.tacr.elza.ui.ElzaView;
@@ -105,6 +107,9 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
 
     @Autowired
     private ConformityInfoChangeNotificator conformityInfoChangeNotificator;
+
+    @Autowired
+    private NodeConformityRepository nodeConformityRepository;
 
     @Autowired
     private VersionConformityRepository findingAidVersionConformityInfoRepository;
@@ -1161,6 +1166,11 @@ public class FindingAidDetailView extends ElzaView implements PosAction {
         arTypeContainer.addAll(new ArrayList<RulArrangementType>());
         arTypeContainer.setBeanIdProperty("arrangementTypeId");
         form.addCombo("Typ výstupu", "arrangementTypeId", arTypeContainer, RulArrangementType::getName).required();
+
+        List<ArrNodeConformity> nodeConformities = nodeConformityRepository.findByFaVersionAndState(version,
+                cz.tacr.elza.api.ArrNodeConformity.State.ERR);
+
+        form.addComponent(newLabel("Počet chybných uzlů: " + nodeConformities.size()));
 
         return form;
     }
