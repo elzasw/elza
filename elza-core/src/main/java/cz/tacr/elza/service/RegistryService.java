@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -78,6 +79,11 @@ public class RegistryService {
                                                       final Integer firstResult,
                                                       final Integer maxResults,
                                                       final Integer parentRecordId) {
+
+        if (StringUtils.isBlank(searchRecord) && parentRecordId == null) {
+            return regRecordRepository.findRootRecords(registerTypeIds, local, firstResult, maxResults);
+        }
+
         RegRecord parentRecord = null;
         if (parentRecordId != null) {
             parentRecord = regRecordRepository.getOne(parentRecordId);
@@ -96,12 +102,31 @@ public class RegistryService {
      *
      * @param searchRecord    hledaný řetězec, může být null
      * @param registerTypeIds typ záznamu
-     * @param parentRecordId  id rodičovského rejstříku
      * @return celkový počet záznamů, který je v db za dané parametry
      */
     public long findRegRecordByTextAndTypeCount(@Nullable final String searchRecord,
                                                 @Nullable final Collection<Integer> registerTypeIds,
-                                                final Boolean local, final Integer parentRecordId) {
+                                                final Boolean local) {
+
+        return regRecordRepository.findRegRecordByTextAndTypeCount(searchRecord, registerTypeIds, local);
+    }
+
+    /**
+     * Celkový počet záznamů v DB pro funkci {@link #findRegRecordByTextAndType(String, Collection, Boolean, Integer,
+     * Integer)}
+     *
+     * @param searchRecord    hledaný řetězec, může být null
+     * @param registerTypeIds typ záznamu
+     * @param parentRecordId  id rodičovského rejstříku
+     * @return celkový počet záznamů, který je v db za dané parametry
+     */
+    public long findRegRecordByTextAndTypeCount(@Nullable final String searchRecord,
+            @Nullable final Collection<Integer> registerTypeIds,
+            final Boolean local, final Integer parentRecordId) {
+
+        if (StringUtils.isBlank(searchRecord) && parentRecordId == null) {
+            return regRecordRepository.findRootRecordsByTypeCount(registerTypeIds, local);
+        }
 
         RegRecord parentRecord = null;
         if (parentRecordId != null) {
