@@ -48,57 +48,6 @@ class WebApi{
                 return json;
             });
     }
-}
-
-function findNodeById(node, nodeId) {
-    if (node.id == nodeId) {
-        return node;
-    }
-
-    for (var a=0; a<node.children.length; a++) {
-        var ret = findNodeById(node.children[a], nodeId);
-        if (ret !== null) {
-            return ret;
-        }
-    }
-
-    return null;
-}
-function generateFlatTree(nodes, expandedIds, out) {
-    nodes.each(node => {
-        node.hasChildren = node.children && node.children.length > 0;
-        out.push(node);
-        if (expandedIds[node.id]) {
-            generateFlatTree(node.children, expandedIds, out);
-        }
-    });
-}
-function buildTree(node, depth) {
-    _nodeMap[node.id] = node;
-
-    if (depth > 3) {
-        return;
-    }
-    var len = (depth + depth % 5) * 3;
-if (depth == 1) {
-len = 40;
-}
-    for (var a=0; a<len; a++) {
-        _nodeId++;
-        var child = {id: _nodeId, name: node.name + "_" + _nodeId, depth: depth, children: []};
-        child.parent = node;
-        node.children.push(child);
-        buildTree(child, depth + 1);
-    }
-}
-var _nodeMap = {};
-var _nodeId = 0;
-var _faRootNode = {id: 0, name: 'node', depth: 0, parent: null, children: []}
-buildTree(_faRootNode, 1);
-
-class WebApiRestOld {
-    constructor() {
-    }
 
     getData(data, timeout = 1000) {
         return new Promise(function (resolve, reject) {
@@ -281,6 +230,52 @@ class WebApiRestOld {
                 });
     }
 }
+
+function findNodeById(node, nodeId) {
+    if (node.id == nodeId) {
+        return node;
+    }
+
+    for (var a=0; a<node.children.length; a++) {
+        var ret = findNodeById(node.children[a], nodeId);
+        if (ret !== null) {
+            return ret;
+        }
+    }
+
+    return null;
+}
+function generateFlatTree(nodes, expandedIds, out) {
+    nodes.each(node => {
+        node.hasChildren = node.children && node.children.length > 0;
+        out.push(node);
+        if (expandedIds[node.id]) {
+            generateFlatTree(node.children, expandedIds, out);
+        }
+    });
+}
+function buildTree(node, depth) {
+    _nodeMap[node.id] = node;
+
+    if (depth > 3) {
+        return;
+    }
+    var len = (depth + depth % 5) * 3;
+if (depth == 1) {
+len = 40;
+}
+    for (var a=0; a<len; a++) {
+        _nodeId++;
+        var child = {id: _nodeId, name: node.name + "_" + _nodeId, depth: depth, children: []};
+        child.parent = node;
+        node.children.push(child);
+        buildTree(child, depth + 1);
+    }
+}
+var _nodeMap = {};
+var _nodeId = 0;
+var _faRootNode = {id: 0, name: 'node', depth: 0, parent: null, children: []}
+buildTree(_faRootNode, 1);
 
 //AjaxUtils.ajaxGet('/api/arrangementManager/getLevel', {nodeId: 10, versionId: 3})
 //            .then(json=>console.log("LEVEL", json));

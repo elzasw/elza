@@ -39,8 +39,8 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
     buildRibbon() {
         var isSelected = this.props.partyRegion.selectedPartyID ? true : false;
 
-        var actions = [];
-        actions.push(
+        var altActions = [];
+        altActions.push(
             <DropdownButton title={<span className="dropContent"><Glyphicon glyph='plus-sign' /><div><span className="btnText">Nová osoba</span></div></span>}>
                 <MenuItem onClick={this.handleAddParty} eventKey="1">Osoba</MenuItem>
                 <MenuItem eventKey="2">Rod</MenuItem>
@@ -48,25 +48,30 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
                 <MenuItem eventKey="4">Dočasná korporace</MenuItem>
             </DropdownButton>
         );
-        isSelected && actions.push(
-            <Button><Glyphicon glyph="link" /><div><span className="btnText">Nový vztah</span></div></Button>
-        );
-        actions.push(
+        altActions.push(
             <DropdownButton title={<span className="dropContent"><Glyphicon glyph='plus-sign' /><div><span className="btnText">Import</span></div></span>}>
                 <MenuItem eventKey="1">Osob</MenuItem>
             </DropdownButton>
         );
-        isSelected && actions.push(
-            <Button><Glyphicon glyph="ok" /><div><span className="btnText">Validace</span></div></Button>
-        );
-        isSelected && actions.push(
-            <Button><Glyphicon glyph="trash" /><div><span className="btnText">Smazat osobu</span></div></Button>
-        );
 
-        var altSection = <RibbonGroup className="large">{actions}</RibbonGroup>
+        var itemActions = [];
+        if (isSelected) {
+            itemActions.push(
+                <Button><Glyphicon glyph="link" /><div><span className="btnText">Nový vztah</span></div></Button>
+            );
+            itemActions.push(
+                <Button><Glyphicon glyph="ok" /><div><span className="btnText">Validace</span></div></Button>
+            );
+            itemActions.push(
+                <Button><Glyphicon glyph="trash" /><div><span className="btnText">Smazat osobu</span></div></Button>
+            );
+        }
+
+        var altSection = <RibbonGroup className="large">{altActions}</RibbonGroup>
+        var itemSection = <RibbonGroup className="large">{itemActions}</RibbonGroup>
 
         return (
-            <Ribbon party altSection={altSection} {...this.props} />
+            <Ribbon party altSection={altSection} itemSection={itemSection} {...this.props} />
         )
     }
 

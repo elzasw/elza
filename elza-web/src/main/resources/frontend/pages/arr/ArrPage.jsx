@@ -76,22 +76,23 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     buildRibbon() {
         var activeInfo = this.getActiveInfo();
 
-        var altSection = [];
-        altSection.push(
-            <RibbonGroup className="">
-                <Button onClick={this.handleAddFa}><Glyphicon glyph="plus" /><div><span className="btnText">{i18n('ribbon.action.arr.fa.add')}</span></div></Button>
-            </RibbonGroup>
+        var altActions = [];
+        altActions.push(
+            <Button onClick={this.handleAddFa}><Glyphicon glyph="plus" /><div><span className="btnText">{i18n('ribbon.action.arr.fa.add')}</span></div></Button>
         );
+
+        var itemActions = [];
         if (activeInfo.activeFa) {
-            altSection.push(
-                <RibbonGroup className="">
-                    <Button onClick={this.handleApproveFaVersion}><Glyphicon glyph="plus" /><div><span className="btnText">{i18n('ribbon.action.arr.fa.approveVersion')}</span></div></Button>
-                </RibbonGroup>
+            itemActions.push(
+                <Button onClick={this.handleApproveFaVersion}><Glyphicon glyph="plus" /><div><span className="btnText">{i18n('ribbon.action.arr.fa.approveVersion')}</span></div></Button>
             )
         }
 
+        var altSection = <RibbonGroup className="large">{altActions}</RibbonGroup>
+        var itemSection = <RibbonGroup className="large">{itemActions}</RibbonGroup>
+
         return (
-            <Ribbon arr altSection={altSection} />
+            <Ribbon arr altSection={altSection} itemSection={itemSection} />
         )
     }
 

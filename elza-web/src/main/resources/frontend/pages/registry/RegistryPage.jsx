@@ -36,24 +36,28 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     buildRibbon() {
         var isSelected = this.props.registry.selectedId;
 
-        var actions = [];
-
-        isSelected && actions.push(
-            <Button><Glyphicon glyph="share-alt" /><div><span className="btnText">Přesun hesla</span></div></Button>
-        );
-        actions.push(
+        var altActions = [];
+        altActions.push(
             <DropdownButton title={<span className="dropContent"><Glyphicon glyph='plus-sign' /><div><span className="btnText">Import</span></div></span>}>
                 <MenuItem eventKey="1">Hesel</MenuItem>
             </DropdownButton>
         );
-        isSelected && actions.push(
-            <Button><Glyphicon glyph="ok" /><div><span className="btnText">Validace</span></div></Button>
-        );
 
-        var altSection = <RibbonGroup className="large">{actions}</RibbonGroup>
+        var itemActions = [];
+        if (isSelected) {
+            itemActions.push(
+                <Button><Glyphicon glyph="share-alt" /><div><span className="btnText">Přesun hesla</span></div></Button>
+            );
+            itemActions.push(
+                <Button><Glyphicon glyph="ok" /><div><span className="btnText">Validace</span></div></Button>
+            );
+        }
+
+        var altSection = <RibbonGroup className="large">{altActions}</RibbonGroup>
+        var itemSection = <RibbonGroup className="large">{itemActions}</RibbonGroup>
 
         return (
-            <Ribbon registry altSection={altSection} {...this.props} />
+            <Ribbon registry altSection={altSection} itemSection={itemSection} {...this.props} />
         )
     }
 
