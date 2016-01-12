@@ -7,5 +7,5 @@ elza:
   rules:
     ZP2015:
       default:
-#        - StorageUnit
-#        - CheckId
+        - StorageUnit
+        - CheckId
