@@ -34,7 +34,6 @@ import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.RegistryService;
-import cz.tacr.elza.utils.PartyUtils;
 
 
 /**
@@ -76,7 +75,7 @@ public class RegistryController {
      * @param from              index prvního záznamu, začíná od 0
      * @param count             počet výsledků k vrácení
      * @param registerTypeIds   IDčka typu záznamu, může být null či prázdné (pak vrací vše)
-     * @param parentRecordId    id rodiče, pokud je null načtou se kořenové záznamy, jinak potomci daného rejstříku
+     * @param parentRecordId    id rodiče, pokud je null načtou se všechny záznamy, jinak potomci daného rejstříku
      *
      * @return                  vybrané záznamy dle popisu seřazené za text hesla, nebo prázdná množina
      */
@@ -92,41 +91,39 @@ public class RegistryController {
         }
 
         final boolean onlyLocal = false;
+        final long foundRecordsCount = registryService.findRegRecordByTextAndTypeCount(search, registerTypeIdList,
+                onlyLocal, parentRecordId);
 
         // všechny záznamy
         List<RegRecord> allRecords = new LinkedList<>();
 
-        List<RegRecord> regRecords = registryService
+        List<RegRecord> foundRecords = registryService
                 .findRegRecordByTextAndType(search, registerTypeIdList, onlyLocal, from, count, parentRecordId);
-        allRecords.addAll(regRecords);
+        allRecords.addAll(foundRecords);
 
         // děti
-        Map<Integer, List<RegRecord>> parentChildrenMap = new HashMap<>();
-        for (RegRecord regRecord : regRecords) {
-            List<RegRecord> children = regRecordRepository.findByParentRecord(regRecord);
+        Map<RegRecord, List<RegRecord>> parentChildrenMap = registryService.findChildren(foundRecords);
+        for (List<RegRecord> children : parentChildrenMap.values()) {
             allRecords.addAll(children);
-            parentChildrenMap.put(regRecord.getRecordId(), children);
         }
 
-        List<ParParty> recordParties = partyService.findParPartyByRecords(allRecords);
+        Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(allRecords);
 
-        Map<Integer, ParParty> recordPartyMap = PartyUtils.createRecordPartyMap(recordParties);
-        List<RegRecordVO> parentRecordVOList = factoryVo.createRegRecords(regRecords, recordPartyMap, true);
+        List<RegRecordVO> parentRecordVOList = factoryVo.createRegRecords(foundRecords, recordIdPartyIdMap, true);
 
         Map<Integer, RegRecordVO> parentRecordVOMap = new HashMap<>();
         for (RegRecordVO regRecordVO : parentRecordVOList) {
             parentRecordVOMap.put(regRecordVO.getRecordId(), regRecordVO);
         }
 
-        for (Integer recordId : parentChildrenMap.keySet()) {
-            List<RegRecord> children = parentChildrenMap.get(recordId);
+        for (RegRecord record : parentChildrenMap.keySet()) {
+            List<RegRecord> children = parentChildrenMap.get(record);
 
             List<RegRecordVO> childrenVO = new ArrayList<RegRecordVO>(children.size());
-            RegRecordVO parentVO = parentRecordVOMap.get(recordId);
+            RegRecordVO parentVO = parentRecordVOMap.get(record.getRecordId());
             parentVO.setChilds(childrenVO);
             for (RegRecord child : children) {
-                ParParty parParty = recordPartyMap.get(child.getRecordId());
-                Integer partyId = parParty == null ? null : parParty.getPartyId();
+                Integer partyId = recordIdPartyIdMap.get(child.getRecordId());
                 RegRecordVO regRecordVO = factoryVo.createRegRecord(child, partyId, true);
                 childrenVO.add(regRecordVO);
 
@@ -136,9 +133,8 @@ public class RegistryController {
             parentVO.setHasChildren(!childrenVO.isEmpty());
         }
 
-        long countAll = registryService.findRegRecordByTextAndTypeCount(search, registerTypeIdList, onlyLocal, parentRecordId);
 
-        return new RegRecordWithCount(parentRecordVOList, countAll);
+        return new RegRecordWithCount(parentRecordVOList, foundRecordsCount);
     }
 
 
@@ -163,12 +159,11 @@ public class RegistryController {
         records.addAll(childs);
 
 
-        Map<Integer, ParParty> recordPartyMap = PartyUtils
-                .createRecordPartyMap(partyService.findParPartyByRecords(records));
+        Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(records);
 
-        ParParty recordParty = recordPartyMap.get(recordId);
-        RegRecordVO result = factoryVo.createRegRecord(record, recordParty == null ? null : recordParty.getPartyId(), false);
-        result.setChilds(factoryVo.createRegRecords(childs, recordPartyMap, false));
+        Integer partyId = recordIdPartyIdMap.get(recordId);
+        RegRecordVO result = factoryVo.createRegRecord(record, partyId, false);
+        result.setChilds(factoryVo.createRegRecords(childs, recordIdPartyIdMap, false));
 
         result.setVariantRecords(factoryVo.createRegVariantRecords(record.getVariantRecordList()));
 

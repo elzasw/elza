@@ -244,11 +244,11 @@ public class ClientFactoryVO {
      * @return seznam rejstříkových hesel
      */
     public List<RegRecordVO> createRegRecords(final List<RegRecord> records,
-                                              final Map<Integer, ParParty> recordPartyMap, boolean fillParents) {
+                                              final Map<Integer, Integer> recordIdPartyIdMap, boolean fillParents) {
         List<RegRecordVO> result = new ArrayList<>(records.size());
         for (final RegRecord record : records) {
-            ParParty recordParty = recordPartyMap.get(record.getRecordId());
-            result.add(createRegRecord(record, recordParty == null ? null : recordParty.getPartyId(), fillParents));
+            Integer partyId = recordIdPartyIdMap.get(record.getRecordId());
+            result.add(createRegRecord(record, partyId, fillParents));
         }
 
         return result;

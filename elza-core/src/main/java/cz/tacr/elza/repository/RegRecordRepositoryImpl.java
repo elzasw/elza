@@ -33,31 +33,6 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
 
     @Override
     public List<RegRecord> findRegRecordByTextAndType(final String searchRecord,
-                                                      final Collection<Integer> registerTypeIds,
-                                                      final Boolean local,
-                                                      final Integer firstReult,
-                                                      final Integer maxResults) {
-
-        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<RegRecord> query = builder.createQuery(RegRecord.class);
-        Root<RegRecord> record = query.from(RegRecord.class);
-
-        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, local, record, builder);
-
-        query.select(record).distinct(true);
-        if (condition != null) {
-            Order order = builder.asc(record.get(RegRecord.RECORD));
-            query.where(condition).orderBy(order);
-        }
-
-        return entityManager.createQuery(query)
-                .setFirstResult(firstReult)
-                .setMaxResults(maxResults)
-                .getResultList();
-    }
-
-    @Override
-    public List<RegRecord> findRegRecordByTextAndType(final String searchRecord,
             final Collection<Integer> registerTypeIds,
             final Boolean local,
             final Integer firstReult,
@@ -69,24 +44,19 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
         Root<RegRecord> record = query.from(RegRecord.class);
 
         Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, local, record, builder);
-        if (condition == null) {
-            if (parentRecord == null) {
-                condition = builder.isNull(record.get(RegRecord.PARENT_RECORD));
-            } else {
+        if (parentRecord != null) {
+            if (condition == null) {
                 condition = builder.equal(record.get(RegRecord.PARENT_RECORD), parentRecord);
-            }
-        } else {
-            if (parentRecord == null) {
-                condition = builder.and(condition, builder.isNull(record.get(RegRecord.PARENT_RECORD)));
             } else {
                 condition = builder.and(condition, builder.equal(record.get(RegRecord.PARENT_RECORD), parentRecord));
             }
         }
 
-
         query.select(record).distinct(true);
-        Order order = builder.asc(record.get(RegRecord.RECORD));
-        query.where(condition).orderBy(order);
+        if (condition != null) {
+            Order order = builder.asc(record.get(RegRecord.RECORD));
+            query.where(condition).orderBy(order);
+        }
 
 
 
@@ -94,26 +64,6 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
                 .setFirstResult(firstReult)
                 .setMaxResults(maxResults)
                 .getResultList();
-    }
-
-    @Override
-    public long findRegRecordByTextAndTypeCount(final String searchRecord,
-                                                final Collection<Integer> registerTypeIds,
-                                                final Boolean local) {
-
-        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Long> query = builder.createQuery(Long.class);
-        Root<RegRecord> record = query.from(RegRecord.class);
-
-        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, local, record, builder);
-
-        query.select(builder.countDistinct(record));
-        if (condition != null) {
-            query.where(condition);
-        }
-
-        return entityManager.createQuery(query)
-                .getSingleResult();
     }
 
     @Override
@@ -126,25 +76,20 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
         Root<RegRecord> record = query.from(RegRecord.class);
 
         Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, local, record, builder);
-        if (condition == null) {
-            if (parentRecord == null) {
-                condition = builder.isNull(record.get(RegRecord.PARENT_RECORD));
-            } else {
+        if (parentRecord != null) {
+            if (condition == null) {
                 condition = builder.equal(record.get(RegRecord.PARENT_RECORD), parentRecord);
-            }
-        } else {
-            if (parentRecord == null) {
-                condition = builder.and(condition, builder.isNull(record.get(RegRecord.PARENT_RECORD)));
             } else {
                 condition = builder.and(condition, builder.equal(record.get(RegRecord.PARENT_RECORD), parentRecord));
             }
         }
 
         query.select(builder.countDistinct(record));
-        query.where(condition);
+        if (condition != null) {
+            query.where(condition);
+        }
 
-        return entityManager.createQuery(query)
-                .getSingleResult();
+        return entityManager.createQuery(query).getSingleResult();
     }
 
     /**
