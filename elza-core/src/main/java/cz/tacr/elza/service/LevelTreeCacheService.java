@@ -87,7 +87,7 @@ public class LevelTreeCacheService {
 
 
         Set<Integer> nodesToExpandIDs = new HashSet<>();
-        if (nodesToExpandIDs != null) {
+        if (expandedIds != null) {
             nodesToExpandIDs.addAll(expandedIds);
         }
 
@@ -268,8 +268,7 @@ public class LevelTreeCacheService {
                 .createEntityMap(levelInfos, (i) -> i.getNodeId());
         levelInfoMap.put(rootId, rootInfo);
 
-
-        for (LevelRepositoryCustom.LevelInfo levelInfo : levelInfos) {
+        for (LevelRepositoryCustom.LevelInfo levelInfo : levelInfoMap.values()) {
             createTreeNodeMap(levelInfo, levelInfoMap, allMap);
         }
 
