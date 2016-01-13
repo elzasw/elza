@@ -377,5 +377,5 @@ _ch1.name = 'Velká testovací data';
 //AjaxUtils.ajaxGet('/api/arrangementManager/getLevel', {nodeId: 10, versionId: 3})
 //            .then(json=>console.log("LEVEL", json));
 
-//module.exports = new WebApiRestOld();
+//module.exports = new WebApiRestOld2
 module.exports = new WebApi();

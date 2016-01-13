@@ -35,7 +35,7 @@ export function refRulDataTypesFetch() {
  */
 export function refRulDataTypesReceive(json) {
     return {
-        type: types.REF_PARTY_TYPE_RECEIVE,
+        type: types.REF_RUL_DATA_TYPES_RECEIVE,
         items: json,
         receivedAt: Date.now()
     }
