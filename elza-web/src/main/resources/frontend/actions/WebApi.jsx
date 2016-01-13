@@ -125,6 +125,13 @@ class WebApi{
         return this.getData(data, 1);
     }
 
+    getNodeParents(versionId, nodeId) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodeParents', {versionId, nodeId})
+            .then(json=>{
+                return json
+            });
+    }
+
     getFaTree(versionId, nodeId, expandedIds={}, includeIds=[]) {
         var data = {
             versionId,
@@ -177,7 +184,7 @@ class WebApi{
     }
 
     getRuleSets() {
-        return AjaxUtils.ajaxGet('/api/ruleSetManagerV21/getRuleSets');
+        return AjaxUtils.ajaxGet('/api/ruleSetManagerV2/getRuleSets');
     }
 
     createFindingAid(name, ruleSetId, arrangementTypeId) {

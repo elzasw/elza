@@ -37,12 +37,13 @@ export function faNodeInfoFetch(versionId, nodeId, nodeKey) {
         dispatch(faNodeInfoRequest(versionId, nodeId, nodeKey))
 
         return barrier(
-            WebApi.getFaTree(versionId, nodeId)
+            WebApi.getFaTree(versionId, nodeId),
+            WebApi.getNodeParents(versionId, nodeId)
         )
         .then(data => {
             return {
                 childNodes: data[0].data.nodes,
-                parentNodes: []
+                parentNodes: data[1].data
             }
         })
         .then(json => dispatch(faNodeInfoReceive(versionId, nodeId, nodeKey, json)));
