@@ -726,7 +726,7 @@ public class DescItemFactory implements InitializingBean {
      * @return seznam převedených hodnot atributů
      */
     public List<ArrDescItem> getDescItems(final Collection<ArrDescItem> descItems){
-        List<ArrDescItem> result = new ArrayList<>(descItems);
+        List<ArrDescItem> result = new ArrayList<>(descItems.size());
         if(CollectionUtils.isEmpty(descItems)){
             return result;
         }
