@@ -23,6 +23,19 @@ then
 	results.createMissing("ZP2015_STORAGE_ID", "V hierarchii není uveden prvek ZP2015_STORAGE_ID");
 end
 
+// Kontrola, zda každý list má dataci
+rule "List musí mít dataci směrem ke kořeni"
+when
+	$activeLevel: ActiveLevel( !hasChildren )
+	not ( $level: Level( $items: descItems ) and 
+		DescItem(type in 
+		  ( "ZP2015_UNIT_DATE_PRE", "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_POST","ZP2015_UNIT_DATE_TEXT" ) )
+		  from $items )
+then
+	results.createMissing("ZP2015_UNIT_DATE", "V hierarchii není uveden prvek datace vzniku");
+end
+
+
 // Kontrola, zda každá hromadina s EJ má uvedenu ukládací jednotku s druhem KAR,FAS,DAJ
 rule "Každá hromadina s EJ má uvedenu ukládací jednotku"
 when
