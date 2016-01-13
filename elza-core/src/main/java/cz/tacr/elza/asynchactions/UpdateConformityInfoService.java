@@ -30,6 +30,7 @@ import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.events.ConformityInfoUpdatedEvent;
+import cz.tacr.elza.service.RuleService;
 
 
 /**
@@ -49,7 +50,7 @@ public class UpdateConformityInfoService {
     private Executor taskExecutor;
 
     @Autowired
-    private RuleManager ruleManager;
+    private RuleService ruleService;
 
     @Autowired
     private EventBus eventBus;
@@ -178,7 +179,7 @@ public class UpdateConformityInfoService {
         logger.info("Aktualizace stavu " + nodeId + " ve verzi " + versionId);
 
         registerAfterCommitListener(nodeId);
-        ruleManager.setConformityInfo(levelId, versionId, elzaRules.getStrategies(versionId));
+        ruleService.setConformityInfo(levelId, versionId, elzaRules.getStrategies(versionId));
     }
 
     /**

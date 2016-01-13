@@ -57,11 +57,7 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
     @Autowired
     private FindingAidVersionRepository findingAidVersionRepository;
     @Autowired
-    private ArrangementManager arrangementManager;
-
-    @Autowired
     private ArrDescItemsPostValidator descItemsPostValidator;
-
     @Autowired
     private DataRepository dataRepository;
     @Autowired
@@ -207,7 +203,7 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
 
         Assert.assertTrue(nodeConformityInfoRepository.findAll().size() > 0);
 
-        ruleManager.conformityInfo(version.getFindingAidVersionId(), Arrays.asList(node21.getNodeId()),
+        ruleService.conformityInfo(version.getFindingAidVersionId(), Arrays.asList(node21.getNodeId()),
                 NodeTypeOperation.DELETE_NODE, null, null, null);
 
         Assert.assertTrue(nodeConformityInfoRepository.findAll().size() == 0);
@@ -250,7 +246,7 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
         data.setValue(123456);
         dataRepository.save(data);
 
-        ruleManager.setConformityInfo(level.getLevelId(), version.getFindingAidVersionId(), new HashSet<String>());
+        ruleService.setConformityInfo(level.getLevelId(), version.getFindingAidVersionId(), new HashSet<String>());
 
         Assert.assertTrue(nodeConformityInfoRepository.findAll().size() > 0);
         Assert.assertTrue(nodeConformityErrorsRepository.findAll().size() > 0);

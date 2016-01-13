@@ -91,6 +91,7 @@ import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.RuleService;
 
 
 /**
@@ -135,6 +136,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
     @Autowired
     private RuleManager ruleManager;
+
+    @Autowired
+    private RuleService ruleService;
 
     @Autowired
     private DescItemTypeRepository descItemTypeRepository;
@@ -231,7 +235,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             logger.error("Při založení AP bylo nalezeno více scénařů (" + scenarioOfNewLevels.size() + ")");
         }
 
-        ruleManager
+        ruleService
                 .conformityInfo(version.getFindingAidVersionId(), Arrays.asList(rootNode.getNode().getNodeId()), NodeTypeOperation.CREATE_NODE,
                         null, null, null);
 
@@ -351,6 +355,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return findingAidRepository.findOne(findingAidId);
     }
 
+    //přepsáno do ArrangementController
     @Override
     @Transactional
     @RequestMapping(value = "/approveVersion", method = RequestMethod.PUT)
@@ -381,7 +386,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 codes.add(bulkActionConfig.getCode());
             }
 
-            ruleManager.setVersionConformityInfo(ArrVersionConformity.State.ERR,
+            ruleService.setVersionConformityInfo(ArrVersionConformity.State.ERR,
                     "Nebyly provedeny povinné hromadné akce " + codes + " před uzavřením verze", ver);
         }
 
@@ -425,7 +430,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         saveLastChangeFaVersion(change, versionId);
 
-        Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
+        Set<RelatedNodeDirection> relatedNodeDirections = ruleService
                 .conformityInfo(versionId, Arrays.asList(faLevelRet.getNode().getNodeId()), NodeTypeOperation.CREATE_NODE,
                         null, null, null);
 
@@ -486,7 +491,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         saveLastChangeFaVersion(change, versionId);
 
-        Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
+        Set<RelatedNodeDirection> relatedNodeDirections = ruleService
                 .conformityInfo(versionId, Arrays.asList(faLevelRet.getNode().getNodeId()), NodeTypeOperation.CREATE_NODE,
                         null, null, null);
 
@@ -524,7 +529,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         saveLastChangeFaVersion(change, versionId);
 
-        Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
+        Set<RelatedNodeDirection> relatedNodeDirections = ruleService
                 .conformityInfo(versionId, Arrays.asList(faLevelRet.getNode().getNodeId()), NodeTypeOperation.CREATE_NODE,
                         null, null, null);
 
@@ -591,7 +596,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         Integer position;
         if (originalParentNode.equals(follower.getNodeParent())) {
-            Set<RelatedNodeDirection> relatedNodeDirectionsDisconnect = ruleManager
+            Set<RelatedNodeDirection> relatedNodeDirectionsDisconnect = ruleService
                     .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.DISCONNECT_NODE_LOCAL,
                             null, null, null);
             relatedList.add(relatedNodeDirectionsDisconnect);
@@ -606,7 +611,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 position = follower.getPosition() - 1;
             }
         } else {
-            Set<RelatedNodeDirection> relatedNodeDirectionsDisconnect = ruleManager
+            Set<RelatedNodeDirection> relatedNodeDirectionsDisconnect = ruleService
                     .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.DISCONNECT_NODE,
                             null, null, null);
             relatedList.add(relatedNodeDirectionsDisconnect);
@@ -626,12 +631,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         saveLastChangeFaVersion(change, versionId);
 
         if (originalParentNode.equals(follower.getNodeParent())) {
-            Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
+            Set<RelatedNodeDirection> relatedNodeDirections = ruleService
                     .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.CONNECT_NODE_LOCAL,
                             null, null, null);
             relatedList.add(relatedNodeDirections);
         } else {
-            Set<RelatedNodeDirection> relatedNodeDirectionsConnect = ruleManager
+            Set<RelatedNodeDirection> relatedNodeDirectionsConnect = ruleService
                     .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.CONNECT_NODE,
                             null, null, null);
 
@@ -677,7 +682,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         // vkládaný nesmí být rodičem uzlu pod který ho vkládám
         checkCycle(level, parent);
 
-        Set<RelatedNodeDirection> relatedNodeDirectionsDisconnect = ruleManager
+        Set<RelatedNodeDirection> relatedNodeDirectionsDisconnect = ruleService
                 .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.DISCONNECT_NODE,
                         null, null, null);
 
@@ -696,7 +701,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         saveLastChangeFaVersion(change, versionId);
 
-        Set<RelatedNodeDirection> relatedNodeDirectionsConnect = ruleManager
+        Set<RelatedNodeDirection> relatedNodeDirectionsConnect = ruleService
                 .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.CONNECT_NODE,
                         null, null, null);
 
@@ -761,7 +766,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         List<ArrLevel> nodesToShiftDown = nodesToShift(predecessor);
         Integer position;
         if (originalParentNode.equals(predecessor.getNodeParent())) {
-            Set<RelatedNodeDirection> relatedNodeDirectionsDisconnect = ruleManager
+            Set<RelatedNodeDirection> relatedNodeDirectionsDisconnect = ruleService
                     .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.DISCONNECT_NODE_LOCAL,
                             null, null, null);
             relatedList.add(relatedNodeDirectionsDisconnect);
@@ -776,7 +781,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 position = predecessor.getPosition();
             }
         } else {
-            Set<RelatedNodeDirection> relatedNodeDirectionsDisconnect = ruleManager
+            Set<RelatedNodeDirection> relatedNodeDirectionsDisconnect = ruleService
                     .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.DISCONNECT_NODE,
                             null, null, null);
             relatedList.add(relatedNodeDirectionsDisconnect);
@@ -798,12 +803,12 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         saveLastChangeFaVersion(change, versionId);
 
         if (originalParentNode.equals(predecessor.getNodeParent())) {
-            Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
+            Set<RelatedNodeDirection> relatedNodeDirections = ruleService
                     .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.CONNECT_NODE_LOCAL,
                             null, null, null);
             relatedList.add(relatedNodeDirections);
         } else {
-            Set<RelatedNodeDirection> relatedNodeDirectionsConnect = ruleManager
+            Set<RelatedNodeDirection> relatedNodeDirectionsConnect = ruleService
                     .conformityInfo(versionId, Arrays.asList(level.getNode().getNodeId()), NodeTypeOperation.CONNECT_NODE,
                             null, null, null);
             relatedList.add(relatedNodeDirectionsConnect);
@@ -955,7 +960,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrChange change = arrangementService.createChange();
 
-        Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
+        Set<RelatedNodeDirection> relatedNodeDirections = ruleService
                 .conformityInfo(versionId, Arrays.asList(node.getNodeId()), NodeTypeOperation.DELETE_NODE,
                         null, null, null);
 
@@ -1229,7 +1234,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         List<ArrDescItem> createDescItems = new ArrayList<>();
         createDescItems.add(descItem);
 
-        Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
+        Set<RelatedNodeDirection> relatedNodeDirections = ruleService
                 .conformityInfo(versionId, Arrays.asList(descItem.getNode().getNodeId()), NodeTypeOperation.SAVE_DESC_ITEM,
                         createDescItems, null, null);
 
@@ -1266,7 +1271,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         List<ArrDescItem> updateDescItems = new ArrayList<>();
         updateDescItems.add(descItem);
 
-        Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
+        Set<RelatedNodeDirection> relatedNodeDirections = ruleService
                 .conformityInfo(versionId, Arrays.asList(descItem.getNode().getNodeId()), NodeTypeOperation.SAVE_DESC_ITEM,
                         null, updateDescItems, null);
 
@@ -1290,7 +1295,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         List<ArrDescItem> deleteDescItems = new ArrayList<>();
         deleteDescItems.add(descItem);
 
-        Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
+        Set<RelatedNodeDirection> relatedNodeDirections = ruleService
                 .conformityInfo(versionId, Arrays.asList(descItem.getNode().getNodeId()), NodeTypeOperation.SAVE_DESC_ITEM,
                         null, null, deleteDescItems);
 
@@ -1433,7 +1438,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             throw e;
         }
 
-        Set<RelatedNodeDirection> relatedNodeDirections = ruleManager
+        Set<RelatedNodeDirection> relatedNodeDirections = ruleService
                 .conformityInfo(versionId, Arrays.asList(node.getNodeId()), NodeTypeOperation.SAVE_DESC_ITEM,
                         createDescItems, updateDescItems, deleteDescItems);
 
@@ -2540,23 +2545,6 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return result;
     }
 
-
-    @Override
-    public boolean validLevelInVersion(final ArrLevel level, final ArrFindingAidVersion version) {
-        Assert.notNull(level);
-        Assert.notNull(version);
-        Integer lockChange = version.getLockChange() == null
-                             ? Integer.MAX_VALUE : version.getLockChange().getChangeId();
-
-        Integer levelDeleteChange = level.getDeleteChange() == null ?
-                                    Integer.MAX_VALUE : level.getDeleteChange().getChangeId();
-
-        if (level.getCreateChange().getChangeId() < lockChange && levelDeleteChange >= lockChange) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 
     @RequestMapping(value = "/getDescriptionItemTypesForNewLevelBefore", method = RequestMethod.GET)
     @Override

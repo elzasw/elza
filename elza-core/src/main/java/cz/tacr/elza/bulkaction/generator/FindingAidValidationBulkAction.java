@@ -23,6 +23,7 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.service.RuleService;
 
 
 /**
@@ -66,7 +67,7 @@ public class FindingAidValidationBulkAction extends BulkAction {
     private Integer errorCount;
 
     @Autowired
-    private RuleManager ruleManager;
+    private RuleService ruleService;
 
     @Autowired
     private UpdateConformityInfoService updateConformityInfoService;
@@ -106,7 +107,7 @@ public class FindingAidValidationBulkAction extends BulkAction {
 
         ArrVersionConformity.State state = ArrVersionConformity.State.OK;
 
-        ArrNodeConformityExt nodeConformityInfoExt = ruleManager
+        ArrNodeConformityExt nodeConformityInfoExt = ruleService
                 .setConformityInfo(level.getLevelId(), version.getFindingAidVersionId(), strategies);
 
         ArrNodeConformity.State stateLevel = nodeConformityInfoExt.getState();
@@ -156,7 +157,7 @@ public class FindingAidValidationBulkAction extends BulkAction {
             stateDescription = null;
         }
 
-        ruleManager.setVersionConformityInfo(state, stateDescription, version);
+        ruleService.setVersionConformityInfo(state, stateDescription, version);
     }
 
     @Override

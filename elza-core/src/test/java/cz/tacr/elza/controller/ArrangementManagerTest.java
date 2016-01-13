@@ -31,6 +31,7 @@ import org.springframework.http.HttpStatus;
 import com.jayway.restassured.response.Response;
 
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.descitems.ArrDescItemGroupVO;
@@ -317,6 +318,35 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         Assert.assertNotNull(newVersion);
         Assert.assertTrue(newVersion.getLockChange() == null);
+        Assert.assertTrue(versions.size() == 2);
+    }
+
+    @Test
+    public void testRestApproveVersionV2() {
+        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
+
+        Response response = get(spec -> spec.parameter(FA_ID_ATT, findingAid.getFindingAidId())
+                , GET_FINDING_AID_VERSIONS_URL);
+
+        List<ArrFindingAidVersion> versions = Arrays.asList(response.getBody().as(ArrFindingAidVersion[].class));
+        ArrFindingAidVersion version = versions.iterator().next();
+
+
+        response = put(spec ->
+                spec.parameter(VERSION_ID_ATT, version.getFindingAidVersionId()).
+                        parameter(ARRANGEMENT_TYPE_ID_ATT, version.getArrangementType().getArrangementTypeId()).
+                        parameter(RULE_SET_ID_ATT, version.getRuleSet().getRuleSetId())
+                , APPROVE_VERSION_URL_V2);
+
+        ArrFindingAidVersionVO newVersion = response.getBody().as(ArrFindingAidVersionVO.class);
+
+        response = get(spec -> spec.parameter(FA_ID_ATT, findingAid.getFindingAidId()),
+                GET_FINDING_AID_VERSIONS_URL);
+
+        versions = Arrays.asList(response.getBody().as(ArrFindingAidVersion[].class));
+
+        Assert.assertNotNull(newVersion);
+        Assert.assertTrue(newVersion.getLockDate() == null);
         Assert.assertTrue(versions.size() == 2);
     }
 

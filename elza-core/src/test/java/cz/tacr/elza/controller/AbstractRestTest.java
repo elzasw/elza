@@ -127,6 +127,8 @@ import cz.tacr.elza.repository.VersionConformityRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.RegistryService;
+import cz.tacr.elza.service.RuleService;
+
 
 /**
  * Abstraktní předek pro testy. Nastavuje REST prostředí.
@@ -235,6 +237,7 @@ public abstract class AbstractRestTest {
     protected static final String GET_ARRANGEMENT_TYPES_URL = RULE_MANAGER_URL + "/getArrangementTypes";
     protected static final String GET_FINDING_AID_VERSIONS_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAidVersions";
     protected static final String APPROVE_VERSION_URL = ARRANGEMENT_MANAGER_URL + "/approveVersion";
+    protected static final String APPROVE_VERSION_URL_V2 = ARRANGEMENT_MANAGER_URL_V2 + "/approveVersion";
     protected static final String GET_VERSION_ID_URL = ARRANGEMENT_MANAGER_URL + "/getVersion";
     protected static final String GET_OPEN_VERSION_BY_FA_ID_URL = ARRANGEMENT_MANAGER_URL + "/getOpenVersionByFindingAidId";
     protected static final String GET_CALENDAR_TYPES = ARRANGEMENT_MANAGER_URL + "/getCalendarTypes";
@@ -400,6 +403,8 @@ public abstract class AbstractRestTest {
     @Autowired
     protected RegistryService registryService;
 
+    @Autowired
+    protected RuleService ruleService;
 
     @Autowired
     protected PartyTypeRelationRepository partyTypeRelationRepository;

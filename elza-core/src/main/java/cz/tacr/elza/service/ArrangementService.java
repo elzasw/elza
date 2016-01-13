@@ -14,36 +14,40 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
+import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionService;
+import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
-import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.factory.DescItemFactory;
-import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
+import cz.tacr.elza.repository.VersionConformityRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
+import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PacketRepository;
-import cz.tacr.elza.repository.VersionConformityRepository;
-
 
 /**
+ *
+ *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 20. 12. 2015
  */
@@ -55,6 +59,12 @@ public class ArrangementService {
 
     @Autowired
     private BulkActionService bulkActionService;
+
+    @Autowired
+    private RuleManager ruleManager;
+
+    @Autowired
+    private RuleService ruleService;
 
     @Autowired
     private FindingAidVersionRepository findingAidVersionRepository;
@@ -222,6 +232,56 @@ public class ArrangementService {
         packetRepository.findByFindingAid(version.getFindingAid()).forEach(packet -> packetRepository.delete(packet));
 
         findingAidRepository.delete(findingAidId);
+    }
+
+
+    /**
+     * Uzavře otevřenou verzi archivní pomůcky a otevře novou verzi.
+     *
+     * @param version         verze, která se má uzavřít
+     * @param arrangementType typ výstupu nové verze
+     * @param ruleSet         pravidla podle kterých se vytváří popis v nové verzi
+     * @return nová verze archivní pomůcky
+     * @throws ConcurrentUpdateException chyba při současné manipulaci s položkou více uživateli
+     */
+    public ArrFindingAidVersion approveVersion(final ArrFindingAidVersion version,
+                                               final RulArrangementType arrangementType,
+                                               final RulRuleSet ruleSet) {
+        Assert.notNull(version);
+        Assert.notNull(arrangementType);
+        Assert.notNull(ruleSet);
+
+        ArrFindingAid findingAid = version.getFindingAid();
+
+        if (!findingAidRepository.exists(findingAid.getFindingAidId())) {
+            throw new ConcurrentUpdateException(
+                    "Archivní pomůcka s identifikátorem " + findingAid.getFindingAidId() + " již neexistuje.");
+        }
+
+        if (version.getLockChange() != null) {
+            throw new ConcurrentUpdateException("Verze byla již uzavřena");
+        }
+
+        List<BulkActionConfig> bulkActionConfigs = bulkActionService.runValidation(version.getFindingAidVersionId());
+        if (bulkActionConfigs.size() > 0) {
+            List<String> codes = new LinkedList<>();
+
+            for (BulkActionConfig bulkActionConfig : bulkActionConfigs) {
+                codes.add(bulkActionConfig.getCode());
+            }
+
+            ruleService.setVersionConformityInfo(ArrVersionConformity.State.ERR,
+                    "Nebyly provedeny povinné hromadné akce " + codes + " před uzavřením verze", version);
+        }
+
+        ArrChange change = createChange();
+        version.setLockChange(change);
+        findingAidVersionRepository.save(version);
+
+
+        Assert.isTrue(ruleSet.equals(arrangementType.getRuleSet()));
+
+        return createVersion(change, findingAid, arrangementType, ruleSet, version.getRootLevel());
     }
 
     private void deleteVersion(ArrFindingAidVersion version) {
@@ -393,6 +453,29 @@ public class ArrangementService {
 
         return createItem(itemList);
     }
+    
+    /**
+     * Zjistí, jestli patří vybraný level do dané verze.
+     *
+     * @param level   level
+     * @param version verze
+     * @return true pokud patří uzel do verze, jinak false
+     */
+    public boolean validLevelInVersion(final ArrLevel level, final ArrFindingAidVersion version) {
+           Assert.notNull(level);
+           Assert.notNull(version);
+           Integer lockChange = version.getLockChange() == null
+                                ? Integer.MAX_VALUE : version.getLockChange().getChangeId();
+
+           Integer levelDeleteChange = level.getDeleteChange() == null ?
+                                       Integer.MAX_VALUE : level.getDeleteChange().getChangeId();
+
+           if (level.getCreateChange().getChangeId() < lockChange && levelDeleteChange >= lockChange) {
+               return true;
+           } else {
+               return false;
+           }
+       }
 
     /**
      * Připojení hodnot k záznamu atributu.

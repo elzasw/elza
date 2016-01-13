@@ -342,15 +342,6 @@ public interface ArrangementManager<FA extends ArrFindingAid, FV extends ArrFind
      */
     List<APT> getPacketTypes();
 
-    /**
-     * Zjistí, jestli patří vybraný level do dané verze.
-     *
-     * @param level   level
-     * @param version verze
-     * @return true pokud patří uzel do verze, jinak false
-     */
-    boolean validLevelInVersion(FL level, FV version);
-
 
     /**
      * Informace o možných scénářích založení nového uzlu - před.

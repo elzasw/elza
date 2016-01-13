@@ -109,26 +109,6 @@ public interface RuleManager<DT extends RulDataType, DIT extends RulDescItemType
 
 
     /**
-     * Provede validaci atributů vybraného uzlu a nastaví jejich validační hodnoty.
-     *
-     * @param faLevelId      id uzlu
-     * @param faVersionId    id verze
-     * @param strategies     strategie vyhodnocovani
-     * @return stav validovaného uzlu
-     */
-    ArrNodeConformityExt setConformityInfo(Integer faLevelId, Integer faVersionId, Set<String> strategies);
-
-    /**
-     * Nastavení stavu u verze archivní pomůcky.
-     *
-     * @param state            stav
-     * @param stateDescription popis stavu
-     * @param version          verze ap
-     */
-    void setVersionConformityInfo(FAVCI.State state, String stateDescription, FAV version);
-
-
-    /**
      * Vrací seznam naimportovaných balíčlů.
      * @return seznam balíčlů
      */
