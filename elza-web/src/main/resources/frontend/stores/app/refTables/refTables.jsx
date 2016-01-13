@@ -1,11 +1,15 @@
 import * as types from 'actions/constants/actionTypes';
 
 import ruleSet from './ruleSet'
-import nameFormType from './nameFormType'
+import partyNameFormTypes from './partyNameFormTypes'
+import partyTypes from './partyTypes'
+import recordTypes from './recordTypes'
 
 const initialState = {
     ruleSet: ruleSet(undefined, {type:''}),
-    nameFormType: nameFormType(undefined, {type:''})
+    partyNameFormTypes: partyNameFormTypes(undefined, {type:''}),
+    partyTypes: partyTypes(undefined, {type:''}),
+    recordTypes: recordTypes(undefined, {type:''})
 }
 
 export default function refTables(state = initialState, action) {
@@ -16,11 +20,23 @@ export default function refTables(state = initialState, action) {
                 ...state,
                 ruleSet: ruleSet(state.ruleSet, action),
             }
-        case types.REF_NAME_FORM_TYPE_REQUEST:
-        case types.REF_NAME_FORM_TYPE_RECEIVE:
+        case types.REF_PARTY_NAME_FORM_TYPES_REQUEST:
+        case types.REF_PARTY_NAME_FORM_TYPES_RECEIVE:
             return {
                 ...state,
-                nameFormType: nameFormType(state.nameFormType, action),
+                partyNameFormTypes: partyNameFormTypes(state.partyNameFormTypes, action),
+            }
+        case types.REF_PARTY_TYPES_REQUEST:
+        case types.REF_PARTY_TYPES_RECEIVE:
+            return {
+                ...state,
+                partyTypes: partyTypes(state.partyTypes, action),
+            }
+        case types.REF_RECORD_TYPES_REQUEST:
+        case types.REF_RECORD_TYPES_RECEIVE:
+            return {
+                ...state,
+                recordTypes: recordTypes(state.recordTypes, action),
             }
         default:
         return state

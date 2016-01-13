@@ -10,7 +10,8 @@ import {AbstractReactComponent, i18n} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField} from 'components/form/FormUtils'
-import {refNameFormTypeFetchIfNeeded} from 'actions/refTables/nameFormType'
+import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes'
+import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
 
 const validate = (values, props) => {
     const errors = {};
@@ -25,7 +26,8 @@ const validate = (values, props) => {
 var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.dispatch(refNameFormTypeFetchIfNeeded());
+        this.dispatch(refPartyNameFormTypesFetchIfNeeded());
+        this.dispatch(refRecordTypesFetchIfNeeded());
 
         this.props.load(props.initData);
 
@@ -37,14 +39,13 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
 
     render() {
         const {fields: {nameMain, nameOther, degreeBefore, degreeAfter, nameFormTypeId, validRange}, handleSubmit, onClose} = this.props;
-        var nameFormTypes = this.props.refTables.nameFormType.items;
-        console.log(nameFormTypes);
         return (
             <div>
                 <Modal.Body>
                     <form onSubmit={handleSubmit}>
                         <Input type="select" label={i18n('party.nameFormType')} {...nameFormTypeId} {...decorateFormField(nameFormTypeId)}>
-                            {nameFormTypes.map(i=> {return <option value={i.id}>{i.name}</option>})}
+                            {this.props.refTables.partyNameFormTypes.items.map(i=> {return <option value={i.id}>{i.name}</option>})}
+                            {this.props.refTables.recordTypes.items.map(i=> {return <option value={i.id}>{i.name}</option>})}
                         </Input>
                         <Input type="text" label={i18n('party.degreeBefore')} {...degreeBefore} {...decorateFormField(degreeBefore)} />
                         <Input type="text" label={i18n('party.nameMain')} {...nameMain} {...decorateFormField(nameMain)} />

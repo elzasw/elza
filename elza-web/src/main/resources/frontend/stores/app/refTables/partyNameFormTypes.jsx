@@ -6,13 +6,13 @@ const initialState = {
     items: []
 }
 
-export default function nameFormType(state = initialState, action) {
+export default function partyNameFormTypes(state = initialState, action) {
     switch (action.type) {
-        case types.REF_NAME_FORM_TYPE_REQUEST:
+        case types.REF_PARTY_NAME_FORM_TYPES_REQUEST:
             return Object.assign({}, state, {
                 isFetching: true,
             })
-        case types.REF_NAME_FORM_TYPE_RECEIVE:
+        case types.REF_PARTY_NAME_FORM_TYPES_RECEIVE:
             return Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,

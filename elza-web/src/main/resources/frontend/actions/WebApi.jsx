@@ -47,11 +47,12 @@ class WebApi{
             '@type': type, 
             partyTypeId: 1,
             partyNames : [{
-                nameFormTypeId: nameFormTypeId,
+                nameFormTypeIod: nameFormTypeId,
                 mainPart: nameMain,
                 otherPart: nameOther,
                 degreeBefore: degreeBefore,
-                degreeAfter: degreeAfter
+                degreeAfter: degreeAfter,
+                preferredName: true
             }]
         }
         return AjaxUtils.ajaxPost('/api/partyManagerV2/insertParty', null,  data)
@@ -194,8 +195,16 @@ class WebApi{
         return this.getData(data, 1);
     }
 
-    getNameFormTypes() {
+    getPartyNameFormTypes() {
         return AjaxUtils.ajaxGet('/api/partyManagerV2/getPartyNameFormTypes');
+    }
+
+    getRecordTypes() {
+        return AjaxUtils.ajaxGet('/api/recordManagerV2/getRecordTypes');
+    }
+
+    getPartyTypes() {
+        return AjaxUtils.ajaxGet('/api/partyManagerV2/getPartyTypes');
     }
 
     getRuleSets() {

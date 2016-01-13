@@ -15,13 +15,14 @@ import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
 import {WebApi} from 'actions'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-
+import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
 import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
 
 var PartyPage = class PartyPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
-
+        //this.dispatch(refPartyTypesFetchIfNeeded());
+        this.state = {};
         this.bindMethods('buildRibbon', 'handleAddParty', 'handleCallAddParty');
     }
 
@@ -37,7 +38,6 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
 
     buildRibbon() {
         var isSelected = this.props.partyRegion.selectedPartyID ? true : false;
-
         var altActions = [];
         altActions.push(
             <DropdownButton title={<span className="dropContent"><Glyphicon glyph='plus-sign' /><div><span className="btnText">Nová osoba</span></div></span>}>
