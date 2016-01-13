@@ -203,6 +203,31 @@ then
 	results.add($descItemType);
 end
 
+// referenční označení v INV|KAT - povinné pro uzly mimo kořen
+rule "Referenční označení - povinné"
+no-loop
+when
+	Strategy(code=="CheckId")	
+	RulArrangementType(code in ("INV", "KAT") )
+	$activeLevel: ActiveLevel( parent!=null )
+	$descItemType : RulDescItemTypeExt(code == "ZP2015_UNIT_ID")
+then
+	$descItemType.setType(RulDescItemType.Type.REQUIRED);
+	results.add($descItemType);
+end
+
+// referenční označení v INV|KAT - možné pro uzly mimo kořen
+rule "Referenční označení - možné"
+no-loop
+when
+	not Strategy(code=="CheckId")	
+	RulArrangementType(code in ("INV", "KAT") )
+	$activeLevel: ActiveLevel( parent!=null )
+	$descItemType : RulDescItemTypeExt(code == "ZP2015_UNIT_ID")
+then
+	results.add($descItemType);
+end
+
 // Složka/Jednotlivost - lze zadat vždy ukládací jednotku
 rule "Ukládací jednotka na složce - volitelně"
 no-loop
@@ -258,9 +283,30 @@ rule "Univerzální prvky popisu - možné"
 no-loop
 when
 	$descItemType : RulDescItemTypeExt(code in 
-	( "ZP2015_TITLE", "ZP2015_FORMAL_TITLE", "ZP2015_ORIGINATOR", "ZP2015_OTHER_ID", 
-	  "ZP2015_UNIT_DATE_PRE", "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_POST" ) )
+	( "ZP2015_TITLE", "ZP2015_FORMAL_TITLE", "ZP2015_ORIGINATOR", "ZP2015_OTHER_ID" ) )
 then
     results.add($descItemType);
-	//$descItemType.setType(RulDescItemType.Type.POSSIBLE);
+end
+
+// Datace - strojová
+rule "Datace - strojová"
+no-loop
+when
+	$activeLevel: ActiveLevel( )
+	not DescItem(type=="ZP2015_UNIT_DATE_TEXT" ) from $activeLevel.descItems
+	$descItemType : RulDescItemTypeExt(code in 
+	( "ZP2015_UNIT_DATE_PRE", "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_POST" ) )
+then
+    results.add($descItemType);
+end
+
+// Datace - textová
+rule "Datace - textová"
+no-loop
+when
+	$activeLevel: ActiveLevel( )
+	not DescItem(type in ( "ZP2015_UNIT_DATE_PRE", "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_POST" ) ) from $activeLevel.descItems
+	$descItemType : RulDescItemTypeExt(code=="ZP2015_UNIT_DATE_TEXT")
+then
+    results.add($descItemType);
 end

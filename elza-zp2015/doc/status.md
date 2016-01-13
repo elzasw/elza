@@ -3,7 +3,7 @@ Stav implementace ZP
 
 Strategie
 ----------
-* Strategie "CheckId" - kontrola pritomnosti poradoveho cisla
+* Strategie "CheckId" - kontrola pritomnosti poradoveho cisla / ref.oznaceni
 * Strategie "StorageUnit" - kontrola pritomnosti ukladaci jednotky/cisla
 
 Manipulacni seznam
@@ -15,6 +15,10 @@ Ukladaci jednotka
 * Muze byt na slozce nebo jednotlivosti
 * Musi byt v kazde vetvi
 
+Prvky popisu
+------------
+* Datace - ok
+
 Chybi
 -----
 * Spolecne prvky popisu
@@ -23,4 +27,6 @@ Chybi
 
 Otazky
 ======
-Muze logicka slozka obsahovat ukladaci jednotku?
+- Muze logicka slozka obsahovat ukladaci jednotku?
+- Jednotlivost - zavest jednotlivost bez typu?
+
