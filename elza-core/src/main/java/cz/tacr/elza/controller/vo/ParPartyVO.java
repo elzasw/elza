@@ -3,6 +3,8 @@ package cz.tacr.elza.controller.vo;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 
 /**
  * Abstraktní osoba.
@@ -10,6 +12,7 @@ import java.util.List;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 23.12.2015
  */
+@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@type")
 public class ParPartyVO {
 
     /**

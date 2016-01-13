@@ -13,6 +13,7 @@ import cz.tacr.elza.controller.vo.ParComplementTypeVO;
 import cz.tacr.elza.controller.vo.ParDynastyEditVO;
 import cz.tacr.elza.controller.vo.ParDynastyVO;
 import cz.tacr.elza.controller.vo.ParEventEditVO;
+import cz.tacr.elza.controller.vo.ParEventVO;
 import cz.tacr.elza.controller.vo.ParPartyEditVO;
 import cz.tacr.elza.controller.vo.ParPartyGroupEditVO;
 import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
@@ -181,6 +182,7 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ParComplementType.class, ParComplementTypeVO.class).byDefault().register();
         mapperFactory.classMap(ParDynasty.class, ParDynastyVO.class).byDefault().register();
         mapperFactory.classMap(ParParty.class, ParPartyVO.class).exclude("preferredName").byDefault().register();
+        mapperFactory.classMap(ParEvent.class, ParEventVO.class).byDefault().register();
         mapperFactory.classMap(ParPartyEditVO.class, ParParty.class).byDefault().register();
 
         mapperFactory.classMap(ParDynastyEditVO.class, ParDynasty.class).byDefault().register();
