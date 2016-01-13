@@ -229,6 +229,7 @@ public abstract class AbstractRestTest {
 
     // ARRANGEMENT MANAGER CONSTANTS
     protected static final String CREATE_FA_URL = ARRANGEMENT_MANAGER_URL + "/createFindingAid";
+    protected static final String CREATE_FA_URL_V2 = ARRANGEMENT_MANAGER_URL_V2 + "/findingAids";
     protected static final String UPDATE_FA_URL = ARRANGEMENT_MANAGER_URL + "/updateFindingAid";
     protected static final String DELETE_FA_URL = ARRANGEMENT_MANAGER_URL + "/deleteFindingAid";
     protected static final String GET_FA_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAids";

@@ -129,7 +129,7 @@ public class ArrangementController {
         RulRuleSet ruleSet = ruleSetRepository.findOne(ruleSetId);
 
         Assert.notNull(version, "Nebyla nalezena verze s id " + versionId);
-        Assert.notNull(arrangementType, "Nebyl nalezen typ výstupu podle zvolených pravidel s id " + arrangementType);
+        Assert.notNull(arrangementType, "Nebyl nalezen typ výstupu podle zvolených pravidel s id " + arrangementTypeId);
         Assert.notNull(ruleSet, "Nebyla nalezena pravidla tvorby s id " + ruleSetId);
 
 
@@ -160,7 +160,31 @@ public class ArrangementController {
         List<ArrCalendarType> calendarTypes = calendarTypeRepository.findAll();
         return factoryVo.createCalendarTypes(calendarTypes);
     }
-    
+
+    @Transactional
+    @RequestMapping(value = "/findingAids", method = RequestMethod.POST,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ArrFindingAidVO createFindingAid(@RequestParam(value = "name") final String name,
+                                            @RequestParam(value = "arrangementTypeId") final Integer arrangementTypeId,
+                                            @RequestParam(value = "ruleSetId") final Integer ruleSetId) {
+
+        Assert.hasText(name);
+        Assert.notNull(arrangementTypeId);
+        Assert.notNull(ruleSetId);
+
+        RulArrangementType arrangementType = arrangementTypeRepository.findOne(arrangementTypeId);
+        RulRuleSet ruleSet = ruleSetRepository.findOne(ruleSetId);
+
+        Assert.notNull(arrangementType, "Nebyl nalezen typ výstupu podle zvolených pravidel s id " + arrangementTypeId);
+        Assert.notNull(ruleSet, "Nebyla nalezena pravidla tvorby s id " + ruleSetId);
+
+
+        ArrFindingAid newFindingAid = arrangementService
+                .createFindingAidWithScenario(name, ruleSet, arrangementType);
+
+        return factoryVo.createArrFindingAidVO(newFindingAid, true);
+    }
+
 
     /**
      * Vstupní parametry pro metodu /faTree {@link #getFaTree(FaTreeParam)}.

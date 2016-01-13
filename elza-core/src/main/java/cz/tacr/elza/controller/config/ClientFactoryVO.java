@@ -19,6 +19,7 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaRules;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
 import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
 import cz.tacr.elza.controller.vo.ParPartyGroupVO;
@@ -43,6 +44,7 @@ import cz.tacr.elza.controller.vo.descitems.RulDescItemTypeVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroup;
@@ -62,6 +64,7 @@ import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.repository.DescItemConstraintRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
+import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
@@ -120,6 +123,9 @@ public class ClientFactoryVO {
 
     @Autowired
     private DescItemConstraintRepository descItemConstraintRepository;
+
+    @Autowired
+    private FindingAidVersionRepository findingAidVersionRepository;
 
     @Autowired
     private ElzaRules elzaRules;
@@ -495,6 +501,32 @@ public class ClientFactoryVO {
         rulArrangementTypeVO.setRuleSetId(arrType.getRuleSet().getRuleSetId());
 
         return rulArrangementTypeVO;
+    }
+
+    /**
+     * Vytvoření ArrFindingAid a načtení verzí.
+     *
+     * @param findingAid      DO
+     * @param includeVersions true - budou do objektu donačteny všechny jeho verze, false- verze nebudou donačteny
+     * @return VO
+     */
+    public ArrFindingAidVO createArrFindingAidVO(final ArrFindingAid findingAid, final boolean includeVersions) {
+        Assert.notNull(findingAid);
+
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        ArrFindingAidVO findingAidVO = mapper.map(findingAid, ArrFindingAidVO.class);
+        if (includeVersions) {
+
+            List<ArrFindingAidVersion> versions = findingAidVersionRepository
+                    .findVersionsByFindingAidIdOrderByCreateDateAsc(findingAid.getFindingAidId());
+
+            List<ArrFindingAidVersionVO> versionVOs = new ArrayList<>(versions.size());
+            for (ArrFindingAidVersion version : versions) {
+                versionVOs.add(createFindingAidVersion(version));
+            }
+            findingAidVO.setVersions(versionVOs);
+        }
+        return findingAidVO;
     }
 
     /**

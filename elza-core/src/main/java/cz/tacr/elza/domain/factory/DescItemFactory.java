@@ -3,11 +3,15 @@ package cz.tacr.elza.domain.factory;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -713,6 +717,24 @@ public class DescItemFactory implements InitializingBean {
         BeanUtils.copyProperties(descItem, descItemTmp);
         facade.map(data, descItemTmp);
         return descItemTmp;
+    }
+
+    /**
+     * Připojení hodnot k záznamu atributu.
+     *
+     * @param descItems seznam holých hodnot atributů
+     * @return seznam převedených hodnot atributů
+     */
+    public List<ArrDescItem> getDescItems(final Collection<ArrDescItem> descItems){
+        List<ArrDescItem> result = new ArrayList<>(descItems);
+        if(CollectionUtils.isEmpty(descItems)){
+            return result;
+        }
+
+        for (ArrDescItem descItem : descItems) {
+            result.add(getDescItem(descItem));
+        }
+        return result;
     }
 
     /**

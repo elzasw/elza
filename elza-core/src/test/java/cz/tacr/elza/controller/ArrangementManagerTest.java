@@ -31,6 +31,7 @@ import org.springframework.http.HttpStatus;
 import com.jayway.restassured.response.Response;
 
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
@@ -163,10 +164,10 @@ public class ArrangementManagerTest extends AbstractRestTest {
     // ---- REST test ----
     @Test
     public void testRestCreateFindingAid() throws Exception {
-        ArrFindingAid findingAid = createFindingAidRest(TEST_NAME);
+        ArrFindingAidVO findingAid = createFindingAidRestV2(TEST_NAME);
 
         Assert.assertNotNull(findingAid);
-        Assert.assertNotNull(findingAid.getFindingAidId());
+        Assert.assertNotNull(findingAid.getId());
     }
 
     @Test
@@ -690,7 +691,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
                 version.getFindingAidVersionId(), null, null);
 
         Assert.assertTrue(subLevels.size() == 2);
-        Assert.assertTrue(movedChild.getLevel().getNodeParent().getNodeId().equals(parent.getLevel().getNodeParent().getNodeId()));
+        Assert.assertTrue(
+                movedChild.getLevel().getNodeParent().getNodeId().equals(parent.getLevel().getNodeParent().getNodeId()));
     }
 
     @Test
@@ -871,6 +873,28 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         ArrFindingAid findingAid = response.getBody().as(ArrFindingAid.class);
 
+
+        return findingAid;
+    }
+
+    /**
+     * Vytvoří VO položku archivní pomůcky přes REST volání.
+     *
+     * @return vytvořená položka VO
+     */
+    private ArrFindingAidVO createFindingAidRestV2(final String name) {
+        RulRuleSet ruleSet = createRuleSet();
+        RulArrangementType arrangementType = createArrangementType(ruleSet);
+
+        Response response = post(spec -> spec.queryParameter("name", name).
+                queryParameter(ARRANGEMENT_TYPE_ID_ATT, arrangementType.getArrangementTypeId()).
+                queryParameter(RULE_SET_ID_ATT, ruleSet.getRuleSetId())
+                , CREATE_FA_URL_V2);
+
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        ArrFindingAidVO findingAid = response.getBody().as(ArrFindingAidVO.class);
 
         return findingAid;
     }
@@ -1207,7 +1231,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         // vytvoření závislých dat
 
         RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 3001);
-        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 3001);
+        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2",
+                3001);
         createDescItemConstrain(descItemType, descItemSpec, version, false, null, null, "CODE1");
         createDescItemConstrain(descItemType, descItemSpec, version, true, null, null, "CODE2");
         createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null, "CODE3");

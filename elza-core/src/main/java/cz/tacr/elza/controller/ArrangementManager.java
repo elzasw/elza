@@ -451,7 +451,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      * @param change    ukládaná změna
      * @param level     nový level, pro který se přidávají hodnoty atributů
      */
-    private void createDescItemsAfterLevelCreate(final ArrLevelWithExtraNode levelWithParentNode,
+    public void createDescItemsAfterLevelCreate(final ArrLevelWithExtraNode levelWithParentNode,
                                                  final ArrFindingAidVersion version,
                                                  final ArrChange change,
                                                  final ArrLevel level) {
@@ -2581,7 +2581,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      * @param faVersionId       id verze
      * @return seznam možných scénařů
      */
-    private List<ScenarioOfNewLevel> getDescriptionItemTypesForNewLevel(final Integer nodeId, final DirectionLevel directionLevel, final Integer faVersionId) {
+    public List<ScenarioOfNewLevel> getDescriptionItemTypesForNewLevel(final Integer nodeId, final DirectionLevel directionLevel, final Integer faVersionId) {
 
         ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
         ArrNode node = nodeRepository.findOne(nodeId);

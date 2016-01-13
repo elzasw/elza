@@ -1,6 +1,6 @@
 elza:
   data:
-      url: jdbc:postgresql://vyv-db.marbes.cz/elza_demo
+      url: jdbc:postgresql://localhost:5432/elza_master
       user: postgres
       pass: postgres
 

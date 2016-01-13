@@ -1,6 +1,7 @@
 package cz.tacr.elza.service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -8,6 +9,8 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,35 +18,41 @@ import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
+import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionService;
+import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.factory.DescItemFactory;
+import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
+import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
+import cz.tacr.elza.drools.DirectionLevel;
+import cz.tacr.elza.drools.RulesExecutor;
+import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
-import cz.tacr.elza.repository.VersionConformityRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PacketRepository;
+import cz.tacr.elza.repository.VersionConformityRepository;
 
 /**
  *
@@ -53,6 +62,8 @@ import cz.tacr.elza.repository.PacketRepository;
  */
 @Service
 public class ArrangementService {
+
+    private Log logger = LogFactory.getLog(this.getClass());
 
     @Autowired
     private UpdateConformityInfoService updateConformityInfoService;
@@ -65,6 +76,9 @@ public class ArrangementService {
 
     @Autowired
     private RuleService ruleService;
+
+    @Autowired
+    private RulesExecutor rulesExecutor;
 
     @Autowired
     private FindingAidVersionRepository findingAidVersionRepository;
@@ -111,6 +125,11 @@ public class ArrangementService {
     @Autowired
     private DescItemFactory descItemFactory;
 
+    //TODO smazat závislost až bude DescItemService
+    @Autowired
+    private ArrangementManager arrangementManager;
+
+
     public ArrFindingAid findFindingAidByRootNodeUUID(String uuid) {
         Assert.notNull(uuid);
 
@@ -132,6 +151,49 @@ public class ArrangementService {
 
         return findingAid;
     }
+
+    /**
+     * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas. Pro root
+     * vytvoří atributy podle scénáře.
+     *
+     * @param name            název archivní pomůcky
+     * @param arrangementType id typu výstupu
+     * @param ruleSet         id pravidel podle kterých se vytváří popis
+     * @return nová archivní pomůcka
+     */
+    public ArrFindingAid createFindingAidWithScenario(String name,
+                                                      RulRuleSet ruleSet,
+                                                      RulArrangementType arrangementType) {
+        ArrChange change = createChange();
+
+        ArrFindingAid findingAid = createFindingAid(name, ruleSet, arrangementType, change);
+
+        ArrFindingAidVersion version = findingAidVersionRepository
+                .findByFindingAidIdAndLockChangeIsNull(findingAid.getFindingAidId());
+
+        ArrLevel rootLevel = version.getRootLevel();
+
+        // vyhledání scénářů
+        //TODO přepsat až bude DescItemService
+        List<ScenarioOfNewLevel> scenarioOfNewLevels = arrangementManager.getDescriptionItemTypesForNewLevel(
+                rootLevel.getNode().getNodeId(), DirectionLevel.ROOT, version.getFindingAidVersionId());
+
+        // pokud existuje právě jeden, použijeme ho pro založení nových hodnot atributů
+        if (scenarioOfNewLevels.size() == 1) {
+            ArrLevelWithExtraNode levelWithParentNode = new ArrLevelWithExtraNode();
+            levelWithParentNode.setDescItems(scenarioOfNewLevels.get(0).getDescItems());
+            //TODO přepsat až bude DescItemService
+            arrangementManager.createDescItemsAfterLevelCreate(levelWithParentNode, version, change, rootLevel);
+        } else if (scenarioOfNewLevels.size() > 1) {
+            logger.error("Při založení AP bylo nalezeno více scénařů (" + scenarioOfNewLevels.size() + ")");
+        }
+
+        ruleService.conformityInfo(version.getFindingAidVersionId(), Arrays.asList(rootLevel.getNode().getNodeId()),
+                NodeTypeOperation.CREATE_NODE, null, null, null);
+
+        return findingAid;
+    }
+
 
     public ArrFindingAidVersion createVersion(final ArrChange createChange,
                                               final ArrFindingAid findingAid,
@@ -451,7 +513,7 @@ public class ArrangementService {
             itemList = descItemRepository.findByNodeAndChange(node, version.getLockChange());
         }
 
-        return createItem(itemList);
+        return descItemFactory.getDescItems(itemList);
     }
     
     /**
@@ -476,21 +538,4 @@ public class ArrangementService {
                return false;
            }
        }
-
-    /**
-     * Připojení hodnot k záznamu atributu.
-     *
-     * @param itemList seznam holých hodnot atributů
-     * @return seznam převedených hodnot atributů
-     */
-    private List<ArrDescItem> createItem(final List<ArrDescItem> itemList) {
-        List<ArrDescItem> descItems = new LinkedList<>();
-        if (itemList.isEmpty()) {
-            return descItems;
-        }
-        for (ArrDescItem descItem : itemList) {
-            descItems.add(descItemFactory.getDescItem(descItem));
-        }
-        return descItems;
-    }
 }
