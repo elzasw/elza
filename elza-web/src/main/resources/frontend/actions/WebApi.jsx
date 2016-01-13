@@ -110,12 +110,22 @@ class WebApi{
         return this.getData(data, 1);
     }
 
-    getNodeFormLevel(nodeId, versionId) {
-        return AjaxUtils.ajaxGet('/api/arrangementManager/getLevel', {nodeId: 10, versionId: 3})
-            .then(json=>{return json})
+    getFaNodeForm(versionId, nodeId) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/descItems/' + versionId + "/" + nodeId, {versionId, nodeId})
+            .then(json=>{
+console.log(33333333333333, json);
+                return json
+            });
     }
 
-    getFaNodeForm(versionId, nodeId) {
+    getRulDataTypes(versionId, nodeId) {
+        return AjaxUtils.ajaxGet('/api/ruleSetManagerV2/dataTypes')
+            .then(json=>{
+                return json
+            });
+    }
+
+    getFaNodeForm1(versionId, nodeId) {
         var node = findNodeById(_faRootNode, nodeId);
         var data = {
             node: node,

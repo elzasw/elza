@@ -3,27 +3,23 @@ import * as types from 'actions/constants/actionTypes';
 const initialState = {
     isFetching: false,
     fetched: false,
-    versionId: null,
-    nodeId: null,
-    data: null,
+    items: []
 }
 
-export default function subNodeForm(state = initialState, action) {
+export default function rulDataTypes(state = initialState, action) {
     switch (action.type) {
-        case types.FA_SUB_NODE_FORM_REQUEST:
+        case types.REF_RUL_DATA_TYPES_REQUEST:
             return Object.assign({}, state, {
                 isFetching: true,
             })
-        case types.FA_SUB_NODE_FORM_RECEIVE:
+        case types.REF_RUL_DATA_TYPES_RECEIVE:
             return Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,
-                versionId: action.versionId,
-                nodeId: action.nodeId,
-                data: action.data,
+                items: action.items,
+                lastUpdated: action.receivedAt
             })
         default:
             return state
     }
 }
-

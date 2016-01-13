@@ -10,6 +10,7 @@ import {faSubNodeFormFetchIfNeeded} from 'actions/arr/subNodeForm'
 import {faSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo'
 import {faNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo'
 import {faSelectSubNode} from 'actions/arr/nodes'
+import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes'
 import {indexById} from 'stores/app/utils.jsx'
 
 require ('./NodePanel.less');
@@ -22,6 +23,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         if (props.node.selectedSubNodeId != null) {
             this.dispatch(faSubNodeFormFetchIfNeeded(props.versionId, props.node.selectedSubNodeId, props.node.nodeKey));
             this.dispatch(faSubNodeInfoFetchIfNeeded(props.versionId, props.node.selectedSubNodeId, props.node.nodeKey));
+            this.dispatch(refRulDataTypesFetchIfNeeded());
         }
         this.dispatch(faNodeInfoFetchIfNeeded(props.versionId, props.node.id, props.node.nodeKey));
     }
@@ -30,6 +32,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         if (nextProps.node.selectedSubNodeId != null) {
             this.dispatch(faSubNodeFormFetchIfNeeded(nextProps.versionId, nextProps.node.selectedSubNodeId, nextProps.node.nodeKey));
             this.dispatch(faSubNodeInfoFetchIfNeeded(nextProps.versionId, nextProps.node.selectedSubNodeId, nextProps.node.nodeKey));
+            this.dispatch(refRulDataTypesFetchIfNeeded());
         }
         this.dispatch(faNodeInfoFetchIfNeeded(nextProps.versionId, nextProps.node.id, nextProps.node.nodeKey));
     }
@@ -104,9 +107,13 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     handleRenderAccordionItemContent(item) {
-        return (
-            <SubNodeForm formData={this.props.node.subNodeForm.data} />
-        );
+        if (this.props.rulDataTypes.fetched && !this.props.rulDataTypes.isFetching) {
+            return (
+                <SubNodeForm formData={this.props.node.subNodeForm.data} rulDataTypes={this.props.rulDataTypes} />
+            );
+        } else {
+            return <Loading/>
+        }
     }
 
     render() {

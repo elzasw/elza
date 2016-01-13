@@ -8,8 +8,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {AbstractReactComponent} from 'components';
 import {Button, Glyphicon} from 'react-bootstrap';
-import {faSubNodeFormFetchIfNeeded} from 'actions/arr/subNodeForm'
 import {connect} from 'react-redux'
+import {indexById} from 'stores/app/utils.jsx'
+import DescItemString from './nodeForm/DescItemString'
 
 function validateText(value, maxLength) {
     if (value && value.length >= maxLength) {
@@ -24,21 +25,22 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderAttrValue', 'renderGroup', 'renderAttr');
-
+        this.bindMethods('renderDescItem', 'renderGroup', 'renderDescItemType');
+console.log("FFFF", props);
         var formData = {
-            groups: props.formData.groups.map(group => {
+            groups: props.formData.map(group => {
                 var resultGroup = {
                     ...group
                 };
 
-                resultGroup.attrDesc = group.attrDesc.map(attr => {
-                    var resultAttr = {
-                        ...attr,
-                        values: attr.values.map(value => ({value: value.value, prevValue: value.value, specValue: value.specValue}))
+                resultGroup.descItemTypes = group.descItemTypes.map(descItemType => {
+
+                    var resultDescItemType = {
+                        ...descItemType,
+                        descItems: descItemType.descItems.map(descItem => ({...descItem, prevDescItemSpecId: descItem.descItemSpecId, prevValue: descItem.value}))
                     }
 
-                    return resultAttr;
+                    return resultDescItemType;
                 });
 
                 return resultGroup;
@@ -52,37 +54,37 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 
     handleBlur(link, e) {
-        var attr = this.state.formData.groups[link.groupIndex].attrDesc[link.attrIndex];
-        var value = attr.values[link.valueIndex];
+        var descItemType = this.state.formData.groups[link.groupIndex].descItemTypes[link.descItemTypeIndex];
+        var descItem = descItemType.descItems[link.descItemIndex];
 
-        if (value.error) {
-            delete value.error;
-            value.value = value.prevValue;
+        if (descItem.error) {
+            delete descItem.error;
+            descItem.value = descItem.prevValue;
 
             this.setState({formData: this.state.formData});
         }
     }
 
     handleChange(link, e) {
-        var attr = this.state.formData.groups[link.groupIndex].attrDesc[link.attrIndex];
-        var value = attr.values[link.valueIndex];
+        var descItemType = this.state.formData.groups[link.groupIndex].descItemTypes[link.descItemTypeIndex];
+        var descItem = descItemType.descItems[link.descItemIndex];
 
         var newValue = e.target.value;
-        newValue = normalizeText(attr.value, newValue);
+        newValue = normalizeText(descItem.value, newValue);
         var msg = validateText(newValue, 14);
 
         if (typeof msg !== 'undefined') {
-            value.error = msg;
+            descItem.error = msg;
         } else {
-            delete value.error;
+            delete descItem.error;
         }
 
-        value.value = newValue;
+        descItem.value = newValue;
 
         this.setState({formData: this.state.formData});
     }
 
-    renderAttrValue(attr, link, value, action) {
+    renderDescItem(descItemType, link, descItem, action) {
         var actionContainer;
         if (action) {
             actionContainer = (
@@ -97,19 +99,24 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             valueContainerCls += ' action';
         }
 
-        switch (attr.code) {
+        var rulDataType = this.props.rulDataTypes.items[indexById(this.props.rulDataTypes.items, descItemType.dataTypeId)];
+
+        switch (rulDataType.code) {
             case 'STRING':
+                return (
+                    <DescItemString descItem={descItem}/>
+                )
                 return (
                     <div className={valueContainerCls}>
                         <input
                             className='form-control value'
                             type="text"
-                            value={value.value}
+                            value={descItem.value}
                             onChange={this.handleChange.bind(this, link)}
                             onBlur={this.handleBlur.bind(this, link)}
                         />
                         {actionContainer}
-                        {value.error && <div>ERR: {value.error}</div>}
+                        {descItem.error && <div>ERR: {descItem.error}</div>}
                     </div>
                 )
             case 'TEXT':
@@ -118,34 +125,34 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                         <textarea 
                             className='form-control value'
                             rows={4}
-                            value={value.value}
+                            value={descItem.value}
                             onChange={this.handleChange.bind(this, link)}
                             onBlur={this.handleBlur.bind(this, link)}
                         />
                         {actionContainer}
-                        {value.error && <div>ERR: {value.error}</div>}
+                        {descItem.error && <div>ERR: {descItem.error}</div>}
                     </div>
                 )
         }
     }
 
     renderGroup(group, groupIndex) {
-        var attrs = group.attrDesc.map((attr, attrIndex) => (this.renderAttr(attr, attrIndex, groupIndex)));
+        var descItemTypes = group.descItemTypes.map((descItemType, descItemTypeIndex) => (this.renderDescItemType(descItemType, descItemTypeIndex, groupIndex)));
 
         return (
             <div className='attr-group'>
                 {false && <div className='attr-group-label'>{group.name}</div>}
                 <div className='attr-group-attrs'>
-                    {attrs}
+                    {descItemTypes}
                 </div>
             </div>
         )
     }
 
-    renderAttr(attr, attrIndex, groupIndex) {
+    renderDescItemType(descItemType, descItemTypeIndex, groupIndex) {
         var label = (
             <div className='attr-label'>
-                {attr.name}
+                {descItemType.name}
                 <Button><Glyphicon glyph="copy" /></Button>
                 <Button><Glyphicon glyph="book" /></Button>
                 <Button><Glyphicon glyph="lock" /></Button>
@@ -154,18 +161,18 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
 
         var link = {
             groupIndex,
-            attrIndex,
+            descItemTypeIndex,
         }
 
-        var vals = attr.values.map((value, valueIndex) => {
-            var action = attr.multipleValue ? <Button><Glyphicon glyph="remove" /></Button> : undefined
-            return this.renderAttrValue(attr, {...link, valueIndex: valueIndex}, value, action);
+        var vals = descItemType.descItems.map((descItem, descItemIndex) => {
+            var action = descItemType.multipleValue ? <Button><Glyphicon glyph="remove" /></Button> : undefined
+            return this.renderDescItem(descItemType, {...link, descItemIndex: descItemIndex}, descItem, action);
         })
 
-        var values = (
+        var descItems = (
             <div className='attr-values'>
                 {vals}
-                {attr.multipleValue && <div className='action'>
+                {descItemType.multipleValue && <div className='action'>
                     <Button><Glyphicon glyph="plus" /></Button>
                 </div>}
             </div>
@@ -174,9 +181,9 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         var flexToValue = {'1': '25%', '2': '50%', 3: '75%', '4': '100%'};
 
         return (
-            <div className='attr' style={{width: flexToValue[attr.width]}}>
+            <div className='attr' style={{width: flexToValue[descItemType.width]}}>
                 {label}
-                {values}
+                {descItems}
             </div>
         )
     }

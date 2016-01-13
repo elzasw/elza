@@ -105,7 +105,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         if (activeFa && activeFa.nodes) {
             var nodes = activeFa.nodes.nodes;
             centerPanel.push(
-                <NodeTabs versionId={activeFa.activeVersion.id} nodes={nodes} activeIndex={activeFa.nodes.activeIndex}/>
+                <NodeTabs versionId={activeFa.activeVersion.id} nodes={nodes} activeIndex={activeFa.nodes.activeIndex} rulDataTypes={this.props.refTables.rulDataTypes} />
             )
         }
 

@@ -38,7 +38,7 @@ export function faSubNodeFormReceive(versionId, nodeId, nodeKey, json) {
         versionId,
         nodeId,
         nodeKey,
-        data: json.data,
+        data: json,
         receivedAt: Date.now()
     }
 }

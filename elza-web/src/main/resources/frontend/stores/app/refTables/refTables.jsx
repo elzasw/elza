@@ -4,12 +4,14 @@ import ruleSet from './ruleSet'
 import partyNameFormTypes from './partyNameFormTypes'
 import partyTypes from './partyTypes'
 import recordTypes from './recordTypes'
+import rulDataTypes from './rulDataTypes';
 
 const initialState = {
     ruleSet: ruleSet(undefined, {type:''}),
     partyNameFormTypes: partyNameFormTypes(undefined, {type:''}),
     partyTypes: partyTypes(undefined, {type:''}),
     recordTypes: recordTypes(undefined, {type:''})
+    rulDataTypes: rulDataTypes(undefined, {type:''})
 }
 
 export default function refTables(state = initialState, action) {
@@ -40,6 +42,14 @@ export default function refTables(state = initialState, action) {
             }
         default:
         return state
+        case types.REF_RUL_DATA_TYPES_REQUEST:
+        case types.REF_RUL_DATA_TYPES_RECEIVE:
+            return {
+                ...state,
+                rulDataTypes: rulDataTypes(state.rulDataTypes, action),
+            }
+        default:
+            return state
     }
 }
 
