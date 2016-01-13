@@ -3,7 +3,6 @@
  */
 
 import {WebApi} from 'actions'
-
 import * as types from 'actions/constants/actionTypes';
 
 /**
