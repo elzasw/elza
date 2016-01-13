@@ -1,9 +1,11 @@
 import * as types from 'actions/constants/actionTypes';
 
 import ruleSet from './ruleSet'
+import nameFormType from './nameFormType'
 
 const initialState = {
-    ruleSet: ruleSet(undefined, {type:''})
+    ruleSet: ruleSet(undefined, {type:''}),
+    nameFormType: nameFormType(undefined, {type:''})
 }
 
 export default function refTables(state = initialState, action) {
@@ -14,8 +16,14 @@ export default function refTables(state = initialState, action) {
                 ...state,
                 ruleSet: ruleSet(state.ruleSet, action),
             }
-            default:
-            return state
+        case types.REF_NAME_FORM_TYPE_REQUEST:
+        case types.REF_NAME_FORM_TYPE_RECEIVE:
+            return {
+                ...state,
+                nameFormType: nameFormType(state.nameFormType, action),
+            }
+        default:
+        return state
     }
 }
 

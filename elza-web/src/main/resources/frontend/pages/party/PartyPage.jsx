@@ -26,14 +26,13 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
     }
 
     handleCallAddParty(data) {
-        // vytvoreni objektu party z nameMain, nameOther, ...
-        // WebApi.createParty(party).then(this.dispatch(modalDialogHide()));
+        WebApi.insertParty('ParPersonEditVO', data.partyTypeId, data.nameMain, data.nameOther, data.degreeBefore, data.degreeAfter, data.validFrom, data.validTo).then(this.dispatch(modalDialogHide()));
         this.dispatch(modalDialogHide());
         this.dispatch(partyDetailFetchIfNeeded(3));
     }
     
     handleAddParty() {
-        this.dispatch(modalDialogShow(this, i18n('arr.fa.title.add'), <AddPartyForm create onSubmit={this.handleCallAddParty} />));
+        this.dispatch(modalDialogShow(this, i18n('party.addParty') , <AddPartyForm create onSubmit={this.handleCallAddParty} />));
     }
 
     buildRibbon() {

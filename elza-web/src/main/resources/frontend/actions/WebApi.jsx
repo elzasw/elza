@@ -42,8 +42,19 @@ class WebApi{
             });
     }
 
-    createParty(nameFormType, nameMain, nameOther, degreeBefore, degreeAfter, validTo, validFrom) {
-        return AjaxUtils.ajaxPut('/api/partyManager/createParty', {"nameFormType":nameFormType, "nameMain":nameMain, "nameOther":nameOther, "degreeBefore":degreeBefore, "degreeAfter":degreeAfter, "validTo": validTo, "validFrom":validFrom})
+    insertParty(type, nameFormTypeId, nameMain, nameOther, degreeBefore, degreeAfter, validRange) {
+        var data = {
+            '@type': type, 
+            partyTypeId: 1,
+            partyNames : [{
+                nameFormTypeId: nameFormTypeId,
+                mainPart: nameMain,
+                otherPart: nameOther,
+                degreeBefore: degreeBefore,
+                degreeAfter: degreeAfter
+            }]
+        }
+        return AjaxUtils.ajaxPost('/api/partyManagerV2/insertParty', null,  data)
             .then(json=>{
                 return json;
             });
@@ -181,6 +192,10 @@ class WebApi{
         }
 
         return this.getData(data, 1);
+    }
+
+    getNameFormTypes() {
+        return AjaxUtils.ajaxGet('/api/partyManagerV2/getPartyNameFormTypes');
     }
 
     getRuleSets() {

@@ -10,6 +10,7 @@ import {AbstractReactComponent, i18n} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField} from 'components/form/FormUtils'
+import {refNameFormTypeFetchIfNeeded} from 'actions/refTables/nameFormType'
 
 const validate = (values, props) => {
     const errors = {};
@@ -24,8 +25,10 @@ const validate = (values, props) => {
 var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
+        this.dispatch(refNameFormTypeFetchIfNeeded());
 
         this.props.load(props.initData);
+
         this.state = {};
     }
 
@@ -33,22 +36,21 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {nameMain, nameOther, degreeBefore, degreeAfter, nameFormType, validFrom, validTo}, handleSubmit, onClose} = this.props;
+        const {fields: {nameMain, nameOther, degreeBefore, degreeAfter, nameFormTypeId, validRange}, handleSubmit, onClose} = this.props;
+        var nameFormTypes = this.props.refTables.nameFormType.items;
+        console.log(nameFormTypes);
         return (
             <div>
                 <Modal.Body>
                     <form onSubmit={handleSubmit}>
-                        <Input type="select" label={i18n('party.nameFormType')} {...nameFormType} {...decorateFormField(nameFormType)}>
-                            <option>Jedna</option>
-                            <option>Dva</option>
-                            <option>3ři</option> 
+                        <Input type="select" label={i18n('party.nameFormType')} {...nameFormTypeId} {...decorateFormField(nameFormTypeId)}>
+                            {nameFormTypes.map(i=> {return <option value={i.id}>{i.name}</option>})}
                         </Input>
                         <Input type="text" label={i18n('party.degreeBefore')} {...degreeBefore} {...decorateFormField(degreeBefore)} />
                         <Input type="text" label={i18n('party.nameMain')} {...nameMain} {...decorateFormField(nameMain)} />
                         <Input type="text" label={i18n('party.nameOther')} {...nameOther} {...decorateFormField(nameOther)} />
                         <Input type="text" label={i18n('party.degreeAfter')} {...degreeAfter} {...decorateFormField(degreeAfter)} />
-                        <Input type="text" label={i18n('party.nameValidFrom')} {...validFrom} {...decorateFormField(validFrom)} />
-                        <Input type="text" label={i18n('party.nameValidTo')} {...validTo} {...decorateFormField(validTo)} />
+                        <Input type="text" label={i18n('party.nameValidRange')} {...validRange} {...decorateFormField(validRange)} />
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
@@ -62,7 +64,7 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
 
 module.exports = reduxForm({
     form: 'addPartyForm',
-    fields: ['nameMain', 'nameOther', 'degreeBefore', 'degreeAfter', 'nameFormType', 'validFrom', 'validTo'],
+    fields: ['nameMain', 'nameOther', 'degreeBefore', 'degreeAfter', 'nameFormTypeId', 'validRange'],
     validate
 },state => ({
     initialValues: state.form.addPartyForm.initialValues,
