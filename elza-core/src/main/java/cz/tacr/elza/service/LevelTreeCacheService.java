@@ -145,6 +145,37 @@ public class LevelTreeCacheService {
 
 
     /**
+     * Najde v cache seznam rodičů daného uzlu. Seřazeno od prvního rodiče po kořen stromu.
+     *
+     * @param nodeId    nodeid uzlu
+     * @param versionId id verze stromu
+     * @return seznam rodičů
+     */
+    public List<TreeNodeClient> getNodeParents(final Integer nodeId, final Integer versionId) {
+        Assert.notNull(nodeId);
+        Assert.notNull(versionId);
+
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+        Map<Integer, TreeNode> treeMap = getVersionTreeCache(version);
+
+        TreeNode node = treeMap.get(nodeId);
+        if (node == null) {
+            throw new IllegalArgumentException("Ve verzi " + versionId + " nebyl nalezen node s id " + nodeId);
+        }
+
+        LinkedHashMap<Integer, TreeNode> parentMap = new LinkedHashMap<>();
+
+        TreeNode parent = node.getParent();
+        while (parent != null) {
+            parentMap.put(parent.getId(), parent);
+            parent = parent.getParent();
+        }
+
+        return createNodesWithTitles(parentMap, version);
+    }
+
+
+    /**
      * Přidá do výsledného seznamu data uzlu a jeho dětí rekurzivně.
      *
      * @param nodesMap            výsledný seznam

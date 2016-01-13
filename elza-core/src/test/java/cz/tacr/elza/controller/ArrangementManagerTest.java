@@ -2011,14 +2011,6 @@ public class ArrangementManagerTest extends AbstractRestTest {
     @Test
     @Transactional
     public void testRestGetFaTree(){
-//        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
-//        ArrFindingAidVersion version = getRootNodeIdForVersion(findingAid.getFindingAidId());
-
-
-
-//        ArrChange createChange = createFaChange(LocalDateTime.now());
-//        ArrLevel parent = levelRepository.findOne(version.getRootLevel().getLevelId());
-
         TestLevelData testLevelData = createTestLevelData();
         ArrFindingAidVersion version = findingAidVersionRepository.getOne(testLevelData.getVersionId());
 
@@ -2053,7 +2045,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
 
         TreeData result = levelTreeCacheService
-                .getFaTree(version.getRootLevel().getNode().getNodeId(), null, expandedIds, null);
+                .getFaTree(version.getFindingAidVersionId(), null, expandedIds, null);
 
         //První uzel v seznamu musí být root.
         Assert.assertEquals(result.getNodes().get(0).getId(), version.getRootLevel().getNode().getNodeId());
@@ -2074,6 +2066,13 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         Assert.assertEquals(resultMap.get(child12.getNode().getNodeId()).getName(), "Title child12");
 
+        //test parentů
+        List<TreeNodeClient> parents = levelTreeCacheService.getNodeParents(child1234.getNode().getNodeId(), version.getFindingAidVersionId());
+        Assert.assertTrue(parents.size() == 4);
+        Assert.assertTrue(parents.get(0).getId().equals(child123.getNode().getNodeId()));
+        Assert.assertTrue(parents.get(1).getId().equals(child12.getNode().getNodeId()));
+        Assert.assertTrue(parents.get(2).getId().equals(child1.getNode().getNodeId()));
+        Assert.assertTrue(parents.get(3).getId().equals(testLevelData.getParentLevel().getNode().getNodeId()));
     }
 
 }

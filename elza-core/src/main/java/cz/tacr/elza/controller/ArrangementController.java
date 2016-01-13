@@ -24,6 +24,7 @@ import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
 import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.descitems.ArrDescItemGroupVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -104,6 +105,23 @@ public class ArrangementController {
 
         return levelTreeCacheService
                 .getFaTree(input.getVersionId(), input.getNodeId(), input.getExpandedIds(), input.getIncludeIds());
+    }
+
+    /**
+     * Načte seznam rodičů daného uzlu. Seřazeno od prvního rodiče po kořen stromu.
+     *
+     * @param nodeId    nodeid uzlu
+     * @param versionId id verze stromu
+     * @return seznam rodičů
+     */
+    @RequestMapping(value = "/nodeParents", method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<TreeNodeClient> getNodeParents(@RequestParam(value = "nodeId") final Integer nodeId,
+                                               @RequestParam(value = "versionId") final Integer versionId) {
+        Assert.notNull(nodeId);
+        Assert.notNull(versionId);
+
+        return levelTreeCacheService.getNodeParents(nodeId, versionId);
     }
 
     /**
