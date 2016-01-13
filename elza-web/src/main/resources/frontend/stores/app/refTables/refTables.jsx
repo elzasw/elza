@@ -10,8 +10,8 @@ const initialState = {
     ruleSet: ruleSet(undefined, {type:''}),
     partyNameFormTypes: partyNameFormTypes(undefined, {type:''}),
     partyTypes: partyTypes(undefined, {type:''}),
-    recordTypes: recordTypes(undefined, {type:''})
-    rulDataTypes: rulDataTypes(undefined, {type:''})
+    recordTypes: recordTypes(undefined, {type:''}),
+    rulDataTypes: rulDataTypes(undefined, {type:''}),
 }
 
 export default function refTables(state = initialState, action) {
