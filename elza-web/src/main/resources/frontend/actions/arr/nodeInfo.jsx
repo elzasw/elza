@@ -4,7 +4,7 @@
 
 import {WebApi} from 'actions'
 import {indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
-
+import {barrier} from 'components/Utils'
 import * as types from 'actions/constants/actionTypes';
 
 function getNodeInfo(state, versionId, nodeKey) {
@@ -35,8 +35,17 @@ export function faNodeInfoFetchIfNeeded(versionId, nodeId, nodeKey) {
 export function faNodeInfoFetch(versionId, nodeId, nodeKey) {
     return dispatch => {
         dispatch(faNodeInfoRequest(versionId, nodeId, nodeKey))
-        return WebApi.getFaNodeInfo(versionId, nodeId)
-            .then(json => dispatch(faNodeInfoReceive(versionId, nodeId, nodeKey, json)));
+
+        return barrier(
+            WebApi.getFaTree(versionId, nodeId)
+        )
+        .then(data => {
+            return {
+                childNodes: data[0].data.nodes,
+                parentNodes: []
+            }
+        })
+        .then(json => dispatch(faNodeInfoReceive(versionId, nodeId, nodeKey, json)));
     }
 }
 

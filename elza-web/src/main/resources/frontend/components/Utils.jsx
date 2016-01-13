@@ -89,9 +89,56 @@ function init() {
     };
 }
 
+function barrierCall(index, promise, onData, onError) {
+    promise
+        .then((result)=>{
+            //console.log("Promise #" + index + " OK", result);
+            onData(index, result);
+        })
+        .catch((error)=>{
+            //console.log("Promise #" + index + " ERROR", error);
+            onError(index, error);
+        });
+}
+
+function barrier(...promises) {
+    var errors = {};
+    var results = {};
+    return new Promise(function (resolve, reject) {
+
+        var tryFinish = () => {
+            //console.log("TRY FINISH", results, errors, Object.keys(results).length, Object.keys(errors).length, promises.length);
+            if (Object.keys(results).length + Object.keys(errors).length == promises.length) {
+                var result = {};
+                Object.keys(results).forEach(key => result[key] = { error: false, data: results[key] });
+                Object.keys(errors).forEach(key => result[key] = { error: true, data: errors[key] });
+
+                if (Object.keys(errors).length > 0) {
+                    reject(result);
+                } else {
+                    resolve(result);
+                }
+            }
+        }
+        var handleData = (index, data) => {
+            results[index] = data;
+            tryFinish();
+        }
+        var handleError = (index, data) => {
+            errors[index] = data;
+            tryFinish();
+        }
+
+        for (var a=0; a<promises.length; a++) {
+            barrierCall(a, promises[a], handleData, handleError);
+        }
+    })
+}
+
 module.exports = {
     StringSet: StringSet,
     StringMap: StringMap,
+    barrier: barrier,
     init: function() {
         init();
     }

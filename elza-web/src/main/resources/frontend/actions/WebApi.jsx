@@ -125,22 +125,7 @@ class WebApi{
         return this.getData(data, 1);
     }
 
-    getFaNodeInfo(versionId, nodeId) {
-        var node = findNodeById(_faRootNode, nodeId);
-        var parents = [];
-        var n = node.parent;
-        while (n !== null) {
-            parents.push(n);
-            n = n.parent;
-        }
-        var data = {
-            childNodes: [...node.children],
-            parentNodes: parents
-        };
-        return this.getData(data, 1);
-    }
-
-    getFaTree1(versionId, nodeId, expandedIds={}, includeIds=[]) {
+    getFaTree(versionId, nodeId, expandedIds={}, includeIds=[]) {
         var data = {
             versionId,
             nodeId,
@@ -154,11 +139,10 @@ class WebApi{
         }
         return AjaxUtils.ajaxPost('/api/arrangementManagerV2/faTree', null, data)
             .then(json=>{
-console.log("FA TREE DATA", {versionId, nodeId, expandedIds, includeIds}, json);
                 return json
             });
     }
-    getFaTree(versionId, nodeId, expandedIds={}, includeIds=[]) {
+    getFaTree1(versionId, nodeId, expandedIds={}, includeIds=[]) {
         expandedIds = {...expandedIds};
 
         var srcNodes;
@@ -193,7 +177,7 @@ console.log("FA TREE DATA", {versionId, nodeId, expandedIds, includeIds}, json);
     }
 
     getRuleSets() {
-        return AjaxUtils.ajaxGet('/api/ruleSetManagerV2/getRuleSets');
+        return AjaxUtils.ajaxGet('/api/ruleSetManagerV21/getRuleSets');
     }
 
     createFindingAid(name, ruleSetId, arrangementTypeId) {

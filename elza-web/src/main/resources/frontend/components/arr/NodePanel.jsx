@@ -99,7 +99,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 
     handleRenderAccordionItemHeader(item, opened) {
         return (
-            <div>{item.id}</div>
+            <div>{item.name}</div>
         );
     }
 
