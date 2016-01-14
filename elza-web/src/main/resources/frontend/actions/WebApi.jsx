@@ -111,7 +111,7 @@ class WebApi{
     }
 
     getFaNodeForm(versionId, nodeId) {
-        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + versionId + "/form" + nodeId, {versionId, nodeId})
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + nodeId + '/' + versionId + '/form', {versionId, nodeId})
             .then(json=>{
 console.log(33333333333333, json);
                 return json
