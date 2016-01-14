@@ -1,9 +1,13 @@
 package cz.tacr.elza.drools;
 
 import java.io.FileInputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
+import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.StatelessKieSession;
@@ -26,43 +30,37 @@ import cz.tacr.elza.repository.RuleRepository;
  */
 public abstract class Rules {
 
+    /**
+     * uchování informace o načtených drools souborech
+     */
+    private Map<Path, Map.Entry<FileTime, KnowledgeBase>> rulesByPathMap = new HashMap<>();
+
     @Autowired
     protected RuleRepository packageRulesRepository;
-
-    /**
-     * cesta k souboru
-     */
-    private Path ruleFile;
-
-    /**
-     * znalostní báze
-     */
-    protected KnowledgeBase kbase;
-
-    /**
-     * poslední úprava souboru
-     */
-    private FileTime lastModifiedTime;
 
 
     /**
      * Metoda pro kontrolu aktuálnosti souboru s pravidly.
      */
-    /*protected void preExecute() throws Exception {
-        FileTime ft = Files.getLastModifiedTime(ruleFile);
-        if (lastModifiedTime == null || ft.compareTo(lastModifiedTime) > 0) {
-            reloadRules();
-            lastModifiedTime = ft;
+    protected Map.Entry<FileTime, KnowledgeBase> testChangeFile(final Path path, final Map.Entry<FileTime, KnowledgeBase> entry) throws Exception {
+        FileTime ft = Files.getLastModifiedTime(path);
+        if (entry.getKey() == null || ft.compareTo(entry.getKey()) > 0) {
+            Map.Entry<FileTime, KnowledgeBase> entryNew = reloadRules(path);
+            rulesByPathMap.remove(path);
+            rulesByPathMap.put(path, entryNew);
+            return entryNew;
+        } else {
+            return entry;
         }
-    }*/
+    }
 
     /**
      * Přenačtení souboru s pravidly.
      */
-    private void reloadRules() throws Exception {
+    private Map.Entry<FileTime, KnowledgeBase> reloadRules(final Path path) throws Exception {
         KnowledgeBuilder kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
 
-        kbuilder.add(ResourceFactory.newInputStreamResource(new FileInputStream(ruleFile.toFile()), "UTF-8"),
+        kbuilder.add(ResourceFactory.newInputStreamResource(new FileInputStream(path.toFile()), "UTF-8"),
                 ResourceType.DRL);
 
         if (kbuilder.hasErrors()) {
@@ -70,36 +68,38 @@ public abstract class Rules {
         }
         KnowledgeBase tmpKbase = KnowledgeBaseFactory.newKnowledgeBase();
         tmpKbase.addKnowledgePackages(kbuilder.getKnowledgePackages());
-        kbase = tmpKbase;
+        FileTime ft = Files.getLastModifiedTime(path);
+        return new AbstractMap.SimpleEntry<>(ft, tmpKbase);
     }
 
     /**
      * Vytvoří novou session.
      *
-     * @param rulRuleSet typ pravidel verze
      * @param path
      * @return nová session
      */
-    public synchronized StatelessKieSession createNewStatelessKieSession(final RulRuleSet rulRuleSet, final Path path) throws Exception {
-    	// Reload rules each time
-        ruleFile = path;
-        reloadRules();
+    public synchronized StatelessKieSession createNewStatelessKieSession(final Path path) throws Exception {
 
-        return kbase.newStatelessKieSession();
+        Map.Entry<FileTime, KnowledgeBase> entry = rulesByPathMap.get(path);
+
+        if (entry == null) {
+            entry = reloadRules(path);
+            rulesByPathMap.put(path, entry);
+        } else {
+            entry = testChangeFile(path, entry);
+        }
+
+        return entry.getValue().newStatelessKieSession();
     }
 
     /**
      * Provede vyvolání scriptu.
      *  @param session session
      * @param objects vstupní data
-     * @param ruleFile
      */
     protected final synchronized void execute(final StatelessKieSession session,
-                                              final List objects,
-                                              final Path ruleFile)
+                                              final List objects)
             throws Exception {
-        this.ruleFile = ruleFile;
-        reloadRules();
         session.execute(objects);
     }
 

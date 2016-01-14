@@ -82,9 +82,9 @@ public class ValidationRules extends Rules {
 
 		for (RulRule rulPackageRule : rulPackageRules) {
 			path = Paths.get(RulesExecutor.ROOT_PATH + File.separator + rulPackageRule.getFilename());
-			StatelessKieSession session = createNewStatelessKieSession(version.getRuleSet(), path);
+			StatelessKieSession session = createNewStatelessKieSession(path);
 			session.setGlobal("results", validationResults);
-			execute(session, facts, path);
+			execute(session, facts);
 		}
 		
 		List<DataValidationResult> results = validationResults.getResults();

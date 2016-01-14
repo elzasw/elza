@@ -48,9 +48,9 @@ public class ScenarioOfNewLevelRules extends Rules {
         for (RulRule rulPackageRule : rulPackageRules) {
             path = Paths.get(RulesExecutor.ROOT_PATH + File.separator + rulPackageRule.getFilename());
 
-            StatelessKieSession session = createNewStatelessKieSession(version.getRuleSet(), path);
+            StatelessKieSession session = createNewStatelessKieSession(path);
             session.setGlobal("results", newLevelApproaches);
-            execute(session, levels, path);
+            execute(session, levels);
         }
 
         List<ScenarioOfNewLevel> scenarioOfNewLevelList = new LinkedList<>();
