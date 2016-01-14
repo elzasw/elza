@@ -1,15 +1,15 @@
-package cz.tacr.elza.controller.vo.descitems;
+package cz.tacr.elza.controller.vo.nodes.descitems;
 
 /**
- * VO hodnoty atributu - coordinates.
+ * VO hodnoty atributu - formatted text.
  *
  * @author Martin Šlapa
  * @since 8.1.2016
  */
-public class ArrDescItemCoordinatesVO extends ArrDescItemVO {
+public class ArrDescItemFormattedTextVO extends ArrDescItemVO {
 
     /**
-     * souřadnice
+     * formátovaných text
      */
     private String value;
 

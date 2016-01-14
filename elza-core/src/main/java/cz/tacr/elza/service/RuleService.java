@@ -1,19 +1,25 @@
 package cz.tacr.elza.service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.ElzaRules;
+import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.ArrNodeConformityExt;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
@@ -27,9 +33,17 @@ import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrNodeConformityError;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrVersionConformity;
+import cz.tacr.elza.domain.RulDescItemConstraint;
+import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemSpecExt;
+import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.LockVersionChangeException;
+import cz.tacr.elza.repository.DescItemConstraintRepository;
+import cz.tacr.elza.repository.DescItemSpecRepository;
+import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
@@ -57,6 +71,8 @@ public class RuleService {
     private ArrangementService arrangementService;
     @Autowired
     private RulesExecutor rulesExecutor;
+    @Autowired
+    private ElzaRules elzaRules;
 
     @Autowired
     private VersionConformityRepository versionConformityRepository;
@@ -76,7 +92,12 @@ public class RuleService {
     private NodeConformityErrorRepository nodeConformityErrorsRepository;
     @Autowired
     private ExtendedObjectsFactory extendedObjectsFactory;
-
+    @Autowired
+    private DescItemSpecRepository descItemSpecRepository;
+    @Autowired
+    private DescItemTypeRepository descItemTypeRepository;
+    @Autowired
+    private DescItemConstraintRepository descItemConstraintRepository;
 
     /**
      * Nastavení stavu u verze archivní pomůcky.
@@ -327,5 +348,149 @@ public class RuleService {
         }
     }
 
+    /**
+     * Získání rozšířených typů hodnot atributů se specifikacemi.
+     * Používá výchozí strategie
+     *
+     * @param findingAidVersionId identifikátor verze archivní pomůcky
+     * @param nodeId              identifikátor uzlu
+     * @return seznam typů hodnot atributů se specifikacemi
+     */
+    public List<RulDescItemTypeExt> getDescriptionItemTypes(final Integer findingAidVersionId,
+                                                            final Integer nodeId) {
+        Assert.notNull(findingAidVersionId);
+        Assert.notNull(nodeId);
+
+        Set<String> strategies = elzaRules.getStrategies(findingAidVersionId);
+
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(findingAidVersionId);
+
+        if (version == null) {
+            throw new IllegalArgumentException("Verze archivni pomucky neexistuje");
+        }
+
+        ArrNode node = nodeRepository.findOne(nodeId);
+
+        if (node == null) {
+            throw new IllegalArgumentException("Uzel neexistuje");
+        }
+
+        return getDescriptionItemTypes(version, node, strategies);
+    }
+
+    /**
+     * Získání rozšířených typů hodnot atributů se specifikacemi.
+     *
+     * @param version    verze archivní pomůcky
+     * @param node       uzel
+     * @param strategies seznam strategií
+     * @return seznam typů hodnot atributů se specifikacemi
+     */
+    public List<RulDescItemTypeExt> getDescriptionItemTypes(final ArrFindingAidVersion version,
+                                                            final ArrNode node,
+                                                            final Set<String> strategies) {
+
+        ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootLevel().getNode(),
+                version.getLockChange());
+
+        Assert.notNull(strategies);
+        List<RulDescItemType> itemTypeList = descItemTypeRepository.findAll();
+
+        List<RulDescItemTypeExt> rulDescItemTypeExtList = createExt(itemTypeList);
+
+        // projde všechny typy atributů
+        for (RulDescItemTypeExt rulDescItemTypeExt : rulDescItemTypeExtList) {
+
+            rulDescItemTypeExt.setType(RulDescItemType.Type.POSSIBLE);
+            rulDescItemTypeExt.setRepeatable(true);
+
+            // projde všechny podmínky typů
+            for (RulDescItemConstraint rulDescItemConstraint : rulDescItemTypeExt.getRulDescItemConstraintList()) {
+                if (rulDescItemConstraint.getRepeatable() != null && rulDescItemConstraint.getRepeatable()
+                        .equals(false)) {
+                    rulDescItemTypeExt.setRepeatable(false);
+                    break;
+                }
+            }
+
+            // projde všechny specifikace typů atributů
+            for (RulDescItemSpecExt rulDescItemSpecExt : rulDescItemTypeExt.getRulDescItemSpecList()) {
+
+                rulDescItemSpecExt.setType(RulDescItemSpec.Type.POSSIBLE);
+                rulDescItemSpecExt.setRepeatable(true);
+
+                // projde všechny podmínky specifikací
+                for (RulDescItemConstraint rulDescItemConstraint : rulDescItemSpecExt.getRulDescItemConstraintList()) {
+                    if (rulDescItemConstraint.getRepeatable() != null && rulDescItemConstraint.getRepeatable()
+                            .equals(false)) {
+                        rulDescItemSpecExt.setRepeatable(false);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return rulesExecutor.executeDescItemTypesRules(level, rulDescItemTypeExtList, version, strategies);
+    }
+
+    /**
+     * Vytvoření seznamu rozšířených typů hodnot atributů se specifikacemi podle seznamu typů hodnot atributů.
+     *
+     * TODO: refactor
+     *
+     * @param itemTypeList seznam typů hodnot atributů
+     * @return seznam typů hodnot atributů se specifikacemi
+     */
+    private List<RulDescItemTypeExt> createExt(final List<RulDescItemType> itemTypeList) {
+        if (itemTypeList.isEmpty()) {
+            return new LinkedList<>();
+        }
+
+        List<RulDescItemSpec> listDescItem = descItemSpecRepository.findByItemTypeIds(itemTypeList);
+        Map<Integer, List<RulDescItemSpec>> itemSpecMap =
+                ElzaTools.createGroupMap(listDescItem, p -> p.getDescItemType().getDescItemTypeId());
+
+        List<RulDescItemConstraint> findItemConstList =
+                descItemConstraintRepository.findByItemTypeIds(itemTypeList);
+        Map<Integer, List<RulDescItemConstraint>> itemConstrainMap =
+                ElzaTools.createGroupMap(findItemConstList, p -> p.getDescItemType().getDescItemTypeId());
+
+        List<RulDescItemConstraint> findItemSpecConstList;
+        if (listDescItem.isEmpty()) {
+            findItemSpecConstList = new ArrayList<>();
+        } else {
+            findItemSpecConstList = descItemConstraintRepository.findByItemSpecIds(listDescItem);
+        }
+        Map<Integer, List<RulDescItemConstraint>> itemSpecConstrainMap =
+                ElzaTools.createGroupMap(findItemSpecConstList, p -> p.getDescItemSpec().getDescItemSpecId());
+
+        List<RulDescItemTypeExt> result = new LinkedList<>();
+        for (RulDescItemType rulDescItemType : itemTypeList) {
+            RulDescItemTypeExt descItemTypeExt = new RulDescItemTypeExt();
+            BeanUtils.copyProperties(rulDescItemType, descItemTypeExt);
+            List<RulDescItemSpec> itemSpecList =
+                    itemSpecMap.get(rulDescItemType.getDescItemTypeId());
+            if (itemSpecList != null) {
+                for (RulDescItemSpec rulDescItemSpec : itemSpecList) {
+                    RulDescItemSpecExt descItemSpecExt = new RulDescItemSpecExt();
+                    BeanUtils.copyProperties(rulDescItemSpec, descItemSpecExt);
+                    descItemTypeExt.getRulDescItemSpecList().add(descItemSpecExt);
+                    List<RulDescItemConstraint> itemConstrainList =
+                            itemSpecConstrainMap.get(rulDescItemSpec.getDescItemSpecId());
+                    if (itemConstrainList != null) {
+                        descItemSpecExt.getRulDescItemConstraintList().addAll(itemConstrainList);
+                    }
+                }
+            }
+            List<RulDescItemConstraint> itemConstrainList =
+                    itemConstrainMap.get(rulDescItemType.getDescItemTypeId());
+            if (itemConstrainList != null) {
+                descItemTypeExt.getRulDescItemConstraintList().addAll(itemConstrainList);
+            }
+            result.add(descItemTypeExt);
+        }
+
+        return result;
+    }
 
 }

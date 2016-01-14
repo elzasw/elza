@@ -1,9 +1,9 @@
-package cz.tacr.elza.controller.vo.descitems;
+package cz.tacr.elza.controller.vo.nodes;
 
 import java.util.List;
 
-import cz.tacr.elza.controller.vo.RulDescItemConstraintVO;
 import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 
 
 /**
@@ -12,7 +12,7 @@ import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
  * @author Martin Šlapa
  * @since 8.1.2016
  */
-public class RulDescItemTypeVO {
+public class RulDescItemTypeDescItemsVO {
 
     /**
      * identifikátor
@@ -49,10 +49,6 @@ public class RulDescItemTypeVO {
      */
     private List<RulDescItemSpecVO> descItemSpecs;
 
-    /**
-     * seznam omezení
-     */
-    private List<RulDescItemConstraintVO> descItemConstraints;
 
     /**
      * šířka atributu (0 - maximální počet sloupců, 1..N - počet sloupců)
@@ -123,11 +119,4 @@ public class RulDescItemTypeVO {
         this.width = width;
     }
 
-    public List<RulDescItemConstraintVO> getDescItemConstraints() {
-        return descItemConstraints;
-    }
-
-    public void setDescItemConstraints(final List<RulDescItemConstraintVO> descItemConstraints) {
-        this.descItemConstraints = descItemConstraints;
-    }
 }

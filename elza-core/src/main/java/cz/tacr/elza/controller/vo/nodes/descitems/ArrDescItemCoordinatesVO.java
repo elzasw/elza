@@ -1,15 +1,15 @@
-package cz.tacr.elza.controller.vo.descitems;
+package cz.tacr.elza.controller.vo.nodes.descitems;
 
 /**
- * VO hodnoty atributu - unit id.
+ * VO hodnoty atributu - coordinates.
  *
  * @author Martin Šlapa
  * @since 8.1.2016
  */
-public class ArrDescItemUnitidVO extends ArrDescItemVO {
+public class ArrDescItemCoordinatesVO extends ArrDescItemVO {
 
     /**
-     * unikátní identifikátor
+     * souřadnice
      */
     private String value;
 

@@ -25,13 +25,16 @@ import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.controller.vo.descitems.ArrDescItemGroupVO;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemGroupVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulArrangementType;
+import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
@@ -40,6 +43,7 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.LevelTreeCacheService;
+import cz.tacr.elza.service.RuleService;
 
 
 /**
@@ -66,7 +70,10 @@ public class ArrangementController {
 
     @Autowired
     private CalendarTypeRepository calendarTypeRepository;
-    
+
+    @Autowired
+    private RuleService ruleService;
+
     @Autowired
     private RuleSetRepository ruleSetRepository;
 
@@ -94,6 +101,7 @@ public class ArrangementController {
 
     /**
      * Provede načtení stromu uzlů. Uzly mohou být rozbaleny.
+     *
      * @param input vstupní data pro načtení
      * @return data stromu
      */
@@ -156,10 +164,10 @@ public class ArrangementController {
         return factoryVo.createFindingAidVersion(nextVersion);
     }
 
-    
-    @RequestMapping(value = "/descItems/{versionId}/{nodeId}", method = RequestMethod.GET)
-    public List<ArrDescItemGroupVO> getDescItems(@PathVariable(value = "versionId") Integer versionId,
-                                                 @PathVariable(value = "nodeId") Integer nodeId) {
+
+    @RequestMapping(value = "/nodes/{nodeId}/{versionId}/form", method = RequestMethod.GET)
+    public NodeFormDataVO getNodeFormData(@PathVariable(value = "nodeId") Integer nodeId,
+                                          @PathVariable(value = "versionId") Integer versionId) {
         Assert.notNull(versionId, "Identifikátor verze musí být vyplněn");
         Assert.notNull(nodeId, "Identifikátor uzlu musí být vyplněn");
 
@@ -170,7 +178,12 @@ public class ArrangementController {
         Assert.notNull(node, "Uzel neexistuje");
 
         List<ArrDescItem> descItems = arrangementService.getDescItems(version, node);
-        return factoryVo.createDescItemGroups(descItems);
+        List<RulDescItemTypeExt> descItemTypes = ruleService.getDescriptionItemTypes(versionId, nodeId);
+
+        ArrNodeVO nodeVO = factoryVo.createArrNode(node);
+        List<ArrDescItemGroupVO> descItemGroupsVO = factoryVo.createDescItemGroups(descItems);
+        List<RulDescItemTypeExtVO> descItemTypesVO = factoryVo.createDescItemTypes(descItemTypes);
+        return new NodeFormDataVO(nodeVO, descItemGroupsVO, descItemTypesVO);
     }
 
     @RequestMapping(value = "/calendarTypes", method = RequestMethod.GET)
@@ -201,6 +214,63 @@ public class ArrangementController {
                 .createFindingAidWithScenario(name, ruleSet, arrangementType);
 
         return factoryVo.createArrFindingAidVO(newFindingAid, true);
+    }
+
+    /**
+     * Výstupní objekt pro získaná data pro formulář detailu uzlu.
+     */
+    public static class NodeFormDataVO {
+
+        /**
+         * Uzel
+         */
+        private ArrNodeVO node;
+
+        /**
+         * Seznam skupin
+         */
+        private List<ArrDescItemGroupVO> descItemGroups;
+
+        /**
+         * Seznam typů hodnot archivní pomůcky
+         */
+        private List<RulDescItemTypeExtVO> descItemTypes;
+
+        public NodeFormDataVO() {
+
+        }
+
+        public NodeFormDataVO(final ArrNodeVO node,
+                              final List<ArrDescItemGroupVO> descItemGroups,
+                              final List<RulDescItemTypeExtVO> descItemTypes) {
+            this.node = node;
+            this.descItemGroups = descItemGroups;
+            this.descItemTypes = descItemTypes;
+        }
+
+        public ArrNodeVO getNode() {
+            return node;
+        }
+
+        public void setNodeVO(final ArrNodeVO node) {
+            this.node = node;
+        }
+
+        public List<ArrDescItemGroupVO> getDescItemGroups() {
+            return descItemGroups;
+        }
+
+        public void setDescItemGroups(final List<ArrDescItemGroupVO> descItemGroups) {
+            this.descItemGroups = descItemGroups;
+        }
+
+        public List<RulDescItemTypeExtVO> getDescItemTypes() {
+            return descItemTypes;
+        }
+
+        public void setDescItemTypes(final List<RulDescItemTypeExtVO> descItemTypes) {
+            this.descItemTypes = descItemTypes;
+        }
     }
 
 

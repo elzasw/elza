@@ -35,8 +35,8 @@ import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.controller.vo.descitems.ArrDescItemGroupVO;
-import cz.tacr.elza.controller.vo.descitems.RulDescItemTypeVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemGroupVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -1975,12 +1975,16 @@ public class ArrangementManagerTest extends AbstractRestTest {
     }
 
     @Test
-    public void testRestDescItems() throws Exception {
+    public void testRestNodeFormData() throws Exception {
         ArrFindingAid findingAid = createFindingAidRest(TEST_NAME);
         ArrFindingAidVersion version = getFindingAidOpenVersion(findingAid);
         ArrNode node = version.getRootLevel().getNode();
 
-        List<ArrDescItemGroupVO> descItemGroups = getDescItemGroup(version.getFindingAidVersionId(), node.getNodeId());
+        ArrangementController.NodeFormDataVO nodeFormData = getNodeFormData(version.getFindingAidVersionId(),
+                node.getNodeId());
+
+        Assert.assertNotNull(nodeFormData);
+        List<ArrDescItemGroupVO> descItemGroups = nodeFormData.getDescItemGroups();
 
         Assert.assertNotNull(descItemGroups);
         Assert.assertEquals(1, descItemGroups.size());
@@ -1990,9 +1994,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         Assert.assertNotNull(group.getDescItemTypes());
         Assert.assertEquals(1, group.getDescItemTypes().size());
 
-        RulDescItemTypeVO descItemType = group.getDescItemTypes().get(0);
+        RulDescItemTypeDescItemsVO descItemType = group.getDescItemTypes().get(0);
 
-        Assert.assertNotNull(descItemType.getDescItemConstraints());
         Assert.assertNotNull(descItemType.getDescItemSpecs());
         Assert.assertNotNull(descItemType.getDescItems());
         Assert.assertEquals(1, (int) descItemType.getWidth());

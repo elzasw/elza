@@ -40,7 +40,6 @@ import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
-import cz.tacr.elza.controller.vo.descitems.ArrDescItemGroupVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -266,8 +265,8 @@ public abstract class AbstractRestTest {
     protected static final String FIND_NODE_REGISTER_LINKS_URL = ARRANGEMENT_MANAGER_URL + "/findNodeRegisterLinks";
     protected static final String INSERT_ABSTRACT_PACKET = ARRANGEMENT_MANAGER_URL + "/insertPacket";
 
-    protected static final String DESC_ITEMS = ARRANGEMENT_MANAGER_URL_V2 + "/descItems";
-    protected static final String GET_DESC_ITEMS = DESC_ITEMS + "/{versionId}/{nodeId}";
+    protected static final String NODES = ARRANGEMENT_MANAGER_URL_V2 + "/nodes";
+    protected static final String GET_NODE_FORM_DATA = NODES + "/{versionId}/{nodeId}/form";
 
     protected static final String FA_NAME_ATT = "name";
     protected static final String FA_ID_ATT = "findingAidId";
@@ -1474,8 +1473,10 @@ public abstract class AbstractRestTest {
      * @param nodeId identifikátor uzlu
      * @return hodnoty atributů zapouzdřené do skupin
      */
-    protected List<ArrDescItemGroupVO> getDescItemGroup(final Integer findingAidVersionId, final Integer nodeId) {
-        Response response = get(spec -> spec.pathParameters(VERSION_ID_ATT, findingAidVersionId, NODE_ID_ATT, nodeId), GET_DESC_ITEMS);
-        return Arrays.asList(response.getBody().as(ArrDescItemGroupVO[].class));
+    protected ArrangementController.NodeFormDataVO getNodeFormData(final Integer findingAidVersionId,
+                                                                   final Integer nodeId) {
+        Response response = get(spec -> spec.pathParameters(VERSION_ID_ATT, findingAidVersionId, NODE_ID_ATT, nodeId),
+                GET_NODE_FORM_DATA);
+        return response.getBody().as(ArrangementController.NodeFormDataVO.class);
     }
 }

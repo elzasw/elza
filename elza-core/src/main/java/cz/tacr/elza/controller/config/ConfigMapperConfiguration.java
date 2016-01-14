@@ -43,18 +43,21 @@ import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulDescItemConstraintVO;
 import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.controller.vo.descitems.ArrDescItemCoordinatesVO;
-import cz.tacr.elza.controller.vo.descitems.ArrDescItemEnumVO;
-import cz.tacr.elza.controller.vo.descitems.ArrDescItemFormattedTextVO;
-import cz.tacr.elza.controller.vo.descitems.ArrDescItemIntVO;
-import cz.tacr.elza.controller.vo.descitems.ArrDescItemPacketVO;
-import cz.tacr.elza.controller.vo.descitems.ArrDescItemPartyRefVO;
-import cz.tacr.elza.controller.vo.descitems.ArrDescItemRecordRefVO;
-import cz.tacr.elza.controller.vo.descitems.ArrDescItemStringVO;
-import cz.tacr.elza.controller.vo.descitems.ArrDescItemTextVO;
-import cz.tacr.elza.controller.vo.descitems.ArrDescItemUnitdateVO;
-import cz.tacr.elza.controller.vo.descitems.ArrDescItemUnitidVO;
-import cz.tacr.elza.controller.vo.descitems.RulDescItemTypeVO;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemCoordinatesVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemEnumVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemFormattedTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemIntVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemPacketVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemPartyRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemRecordRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemStringVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemUnitdateVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemUnitidVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDescItemCoordinates;
 import cz.tacr.elza.domain.ArrDescItemEnum;
@@ -69,6 +72,7 @@ import cz.tacr.elza.domain.ArrDescItemUnitdate;
 import cz.tacr.elza.domain.ArrDescItemUnitid;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParDynasty;
@@ -95,7 +99,9 @@ import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemSpecExt;
 import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
@@ -164,6 +170,8 @@ public class ConfigMapperConfiguration {
                 "descItemId", "id").register();
         mapperFactory.classMap(ArrDescItemString.class, ArrDescItemStringVO.class).byDefault().field(
                 "descItemId", "id").register();
+
+        mapperFactory.classMap(ArrNode.class, ArrNodeVO.class).byDefault().field("nodeId", "id").register();
 
         mapperFactory.classMap(ArrPacket.class, ArrPacketVO.class).customize(
                 new CustomMapper<ArrPacket, ArrPacketVO>() {
@@ -314,22 +322,33 @@ public class ConfigMapperConfiguration {
                                         final RulDescItemConstraintVO descItemConstraintVO,
                                         final MappingContext context) {
                         descItemConstraintVO.setId(descItemConstraint.getDescItemConstraintId());
-                        descItemConstraintVO.setDescItemTypeId(descItemConstraint.getDescItemType().getDescItemTypeId());
+                        descItemConstraintVO
+                                .setDescItemTypeId(descItemConstraint.getDescItemType().getDescItemTypeId());
                         if (descItemConstraint.getDescItemSpec() != null) {
-                            descItemConstraintVO.setDescItemSpecId(descItemConstraint.getDescItemSpec().getDescItemSpecId());
+                            descItemConstraintVO
+                                    .setDescItemSpecId(descItemConstraint.getDescItemSpec().getDescItemSpecId());
                         }
                         if (descItemConstraint.getVersion() != null) {
-                            descItemConstraintVO.setFindingAidVersionId(descItemConstraint.getVersion().getFindingAidVersionId());
+                            descItemConstraintVO
+                                    .setFindingAidVersionId(descItemConstraint.getVersion().getFindingAidVersionId());
                         }
                     }
                 }).byDefault().register();
-        mapperFactory.classMap(RulDescItemType.class, RulDescItemTypeVO.class).byDefault().field("descItemTypeId", "id").register();
+        mapperFactory.classMap(RulDescItemType.class, RulDescItemTypeDescItemsVO.class).byDefault().field(
+                "descItemTypeId",
+                "id").register();
+        mapperFactory.classMap(RulDescItemTypeExt.class, RulDescItemTypeExtVO.class).byDefault()
+                .field("descItemTypeId", "id")
+                .field("rulDescItemSpecList", "descItemSpecs")
+                .register();
         mapperFactory.classMap(RulDescItemSpec.class, RulDescItemSpecVO.class).byDefault().field("descItemSpecId", "id").register();
+        mapperFactory.classMap(RulDescItemSpecExt.class, RulDescItemSpecExtVO.class).byDefault().field("descItemSpecId", "id").register();
 
         mapperFactory.classMap(RulRuleSet.class, RulRuleSetVO.class).byDefault().field("ruleSetId", "id").register();
 
         mapperFactory.classMap(ArrFindingAid.class, ArrFindingAidVO.class).byDefault().field("findingAidId", "id").register();
-        mapperFactory.classMap(ArrFindingAidVersion.class, ArrFindingAidVersionVO.class).byDefault().field("findingAidVersionId", "id").
+        mapperFactory.classMap(ArrFindingAidVersion.class, ArrFindingAidVersionVO.class).byDefault().field(
+                "findingAidVersionId", "id").
             exclude("arrangementType").register();
         mapperFactory.getConverterFactory().registerConverter(new PassThroughConverter(LocalDateTime.class));
 

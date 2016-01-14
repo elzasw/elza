@@ -1,4 +1,4 @@
-package cz.tacr.elza.controller.vo.descitems;
+package cz.tacr.elza.controller.vo.nodes.descitems;
 
 /**
  * VO hodnoty atributu - text.

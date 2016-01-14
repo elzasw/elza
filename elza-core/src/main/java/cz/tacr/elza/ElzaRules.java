@@ -19,7 +19,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.controller.vo.descitems.ArrDescItemGroupVO;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 

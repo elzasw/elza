@@ -1,9 +1,11 @@
-package cz.tacr.elza.controller.vo.descitems;
+package cz.tacr.elza.controller.vo.nodes.descitems;
 
 import java.util.List;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 
 
 /**
@@ -27,7 +29,7 @@ public class ArrDescItemGroupVO {
     /**
      * seznam typů ve skupině
      */
-    private List<RulDescItemTypeVO> descItemTypes;
+    private List<RulDescItemTypeDescItemsVO> descItemTypes;
 
     public ArrDescItemGroupVO() {
     }
@@ -53,11 +55,11 @@ public class ArrDescItemGroupVO {
         this.name = name;
     }
 
-    public List<RulDescItemTypeVO> getDescItemTypes() {
+    public List<RulDescItemTypeDescItemsVO> getDescItemTypes() {
         return descItemTypes;
     }
 
-    public void setDescItemTypes(final List<RulDescItemTypeVO> descItemTypes) {
+    public void setDescItemTypes(final List<RulDescItemTypeDescItemsVO> descItemTypes) {
         this.descItemTypes = descItemTypes;
     }
 

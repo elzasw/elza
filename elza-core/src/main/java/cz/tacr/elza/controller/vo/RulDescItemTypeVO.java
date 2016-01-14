@@ -3,22 +3,27 @@ package cz.tacr.elza.controller.vo;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import cz.tacr.elza.api.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemType;
 
 
 /**
- * VO specifikace atributu.
+ * VO typu hodnoty atributu
  *
  * @author Martin Šlapa
- * @since 8.1.2016
+ * @since 13.1.2016
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@type")
-public class RulDescItemSpecVO {
+public class RulDescItemTypeVO {
 
     /**
-     * identifikátor
+     * identifikátor typu
      */
     private Integer id;
+
+    /**
+     * identifikátor datového typu
+     */
+    private Integer dataTypeId;
 
     /**
      * kód
@@ -41,14 +46,34 @@ public class RulDescItemSpecVO {
     private String description;
 
     /**
-     * řazení
+     * je hodnota unikátní?
+     */
+    private Boolean isValueUnique;
+
+    /**
+     * může se řadit?
+     */
+    private Boolean canBeOrdered;
+
+    /**
+     * použít specifikaci?
+     */
+    private Boolean useSpecification;
+
+    /**
+     * řazení ve formuláři jednotky popisu
      */
     private Integer viewOrder;
 
     /**
+     * pouze pro archivní pomůcku
+     */
+    private Boolean faOnly;
+
+    /**
      * typ důležitosti
      */
-    private RulDescItemSpec.Type type;
+    private RulDescItemType.Type type;
 
     /**
      * opakovatelnost
@@ -61,6 +86,14 @@ public class RulDescItemSpecVO {
 
     public void setId(final Integer id) {
         this.id = id;
+    }
+
+    public Integer getDataTypeId() {
+        return dataTypeId;
+    }
+
+    public void setDataTypeId(final Integer dataTypeId) {
+        this.dataTypeId = dataTypeId;
     }
 
     public String getCode() {
@@ -95,6 +128,30 @@ public class RulDescItemSpecVO {
         this.description = description;
     }
 
+    public Boolean getIsValueUnique() {
+        return isValueUnique;
+    }
+
+    public void setIsValueUnique(final Boolean isValueUnique) {
+        this.isValueUnique = isValueUnique;
+    }
+
+    public Boolean getCanBeOrdered() {
+        return canBeOrdered;
+    }
+
+    public void setCanBeOrdered(final Boolean canBeOrdered) {
+        this.canBeOrdered = canBeOrdered;
+    }
+
+    public Boolean getUseSpecification() {
+        return useSpecification;
+    }
+
+    public void setUseSpecification(final Boolean useSpecification) {
+        this.useSpecification = useSpecification;
+    }
+
     public Integer getViewOrder() {
         return viewOrder;
     }
@@ -103,11 +160,19 @@ public class RulDescItemSpecVO {
         this.viewOrder = viewOrder;
     }
 
-    public RulDescItemSpec.Type getType() {
+    public Boolean getFaOnly() {
+        return faOnly;
+    }
+
+    public void setFaOnly(final Boolean faOnly) {
+        this.faOnly = faOnly;
+    }
+
+    public RulDescItemType.Type getType() {
         return type;
     }
 
-    public void setType(final RulDescItemSpec.Type type) {
+    public void setType(final RulDescItemType.Type type) {
         this.type = type;
     }
 

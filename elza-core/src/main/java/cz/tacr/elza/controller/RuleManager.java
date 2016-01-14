@@ -186,6 +186,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
         return createExt(itemTypeList);
     }
 
+    // TODO: smazat -> přepsáno do servisky
     @Override
     @RequestMapping(value = "/getDescriptionItemTypesForNode/{faVersionId}/{nodeId}", method = RequestMethod.POST)
     public List<RulDescItemTypeExt> getDescriptionItemTypesForNode(
@@ -257,6 +258,7 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
         return typeList.get(0);
     }
 
+    // TODO: smazat -> přesunuto do servisky
     private List<RulDescItemTypeExt> createExt(final List<RulDescItemType> itemTypeList) {
         if (itemTypeList.isEmpty()) {
             return new LinkedList<>();
