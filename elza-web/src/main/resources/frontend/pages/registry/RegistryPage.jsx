@@ -107,7 +107,8 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                         // výsledky z vyhledávání
                         if ( this.props.registry.filterText!==null ) {
                             var path = '';
-                            item.parents.map(parent => {
+                            var parents = item.parents.slice();
+                            parents.reverse().map(parent => {
                                 path+= '/'+parent.record;
                             });
                             
@@ -136,10 +137,11 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         
         var navParents = '';
         if (this.props.registry.records[0] && this.props.registry.filterText === null && this.props.registry.records[0].parents.length>0){ 
+            var parentsArr = this.props.registry.records[0].parents.slice();
             navParents = (
                 <ul className='breadcrumbs'>
                 <li onClick={this.handleClickNavigation.bind(this, {id:null})}>/</li>
-                {this.props.registry.records[0].parents.map(item => {
+                {parentsArr.reverse().map(item => {
                     if (this.props.registry.selectedId===item.id)
                         return <li className='selected'>{item.record}</li>
                     return <li onClick={this.handleClickNavigation.bind(this, item)}>{item.record}</li>
