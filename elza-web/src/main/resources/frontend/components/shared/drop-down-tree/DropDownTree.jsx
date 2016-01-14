@@ -32,18 +32,20 @@ var DropDownTree = class DropDownTree extends React.Component {
 
         this.nullValue = undefined;
         this.nullId = null;
-
-        this.getOpenedDefault = this.getOpenedDefault.bind(this);       // funkce pro zjisteni uzlu, ktere maji byt automaticky otevrene
-        this.isNodeOpened = this.isNodeOpened.bind(this);               // funkce pro kontrolu jestli je uzel otevřený
-        this.getItemLabel = this.getItemLabel.bind(this);               // funkce zjisteni popisku (nazvu) vybrané položky
-        this.handleItemSelect = this.handleItemSelect.bind(this);       // funkce po kliknutí pro výběr
-
+        
         if (this.props.nullValue !== undefined){
             this.nullValue = this.props.nullValue;
             if (props.nullId !== undefined) {
                 this.nullId = props.nullId;
             }
         }
+
+        this.getOpenedDefault = this.getOpenedDefault.bind(this);       // funkce pro zjisteni uzlu, ktere maji byt automaticky otevrene
+        this.isNodeOpened = this.isNodeOpened.bind(this);               // funkce pro kontrolu jestli je uzel otevřený
+        this.getItemLabel = this.getItemLabel.bind(this);               // funkce zjisteni popisku (nazvu) vybrané položky
+        this.handleItemSelect = this.handleItemSelect.bind(this);       // funkce po kliknutí pro výběr
+
+        
         var opened = (props.opened ? props.opened : []);
         this.props.items.map((item, i) => {   
             opened = opened.concat(this.getOpenedDefault(item)); 
@@ -96,7 +98,7 @@ var DropDownTree = class DropDownTree extends React.Component {
         }
 
     }
-// chybí nastavit label
+
     // metoda pro renderovani obsahu komponenty
     render() {     
         var cls = "dropTree-container";     // třída komponenty                 
@@ -133,8 +135,6 @@ var DropDownTree = class DropDownTree extends React.Component {
             };
         }
 
-console.log(this.state.selectedItemID, item.id);
-
         return  <li
                     key={item.id}
                     eventKey={item.id} 
@@ -168,6 +168,9 @@ console.log(this.state.selectedItemID, item.id);
     //vrati popisek vybrane polozky
     getItemLabel(selectedItemID, item = false){
         var label = '';
+        if (selectedItemID === this.nullId)
+            return this.nullValue;
+
         if(!item){
             this.props.items.map((item, i) => {  
                 var childLabel = this.getItemLabel(selectedItemID, item);
