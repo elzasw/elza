@@ -40,6 +40,8 @@ import cz.tacr.elza.repository.PartyTimeRangeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 
 
 /**
@@ -90,6 +92,8 @@ public class PartyService {
     @Autowired
     private PartyPersonRepository partyPersonRepository;
 
+    @Autowired
+    private IEventNotificationService eventNotificationService;
 
     /**
      * Najde osobu podle rejstříkového hesla.
@@ -148,7 +152,10 @@ public class PartyService {
 
         Assert.notNull(preferredName);
         party.setPreferredName(preferredName);
-        return partyRepository.save(party);
+        ParParty result = partyRepository.save(party);
+
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.PARTY_CREATE, result.getPartyId()));
+        return result;
     }
 
     public ParParty updateParty(final ParPartyEditVO partyVO, final ParPartyType partyType) {
@@ -180,6 +187,9 @@ public class PartyService {
 
         Assert.notNull(preferredName);
         origParty.setPreferredName(preferredName);
+
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.PARTY_UPDATE, origParty.getPartyId()));
+
         return partyRepository.save(origParty);
     }
 

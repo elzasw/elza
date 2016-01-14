@@ -29,6 +29,8 @@ import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 
 
 /**
@@ -60,6 +62,9 @@ public class RegistryService {
 
     @Autowired
     private NodeRegisterRepository nodeRegisterRepository;
+
+    @Autowired
+    private IEventNotificationService eventNotificationService;
 
 
     /**
@@ -208,7 +213,11 @@ public class RegistryService {
             record.setExternalSource(externalSource);
         }
 
-        return regRecordRepository.save(record);
+        RegRecord result = regRecordRepository.save(record);
+        EventType type = record.getRecordId() == null ? EventType.RECORD_CREATE : EventType.RECORD_UPDATE;
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(type, result.getRecordId()));
+
+        return result;
     }
 
 
@@ -220,6 +229,8 @@ public class RegistryService {
         if(checkUsage){
             checkRecordUsage(record);
         }
+
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.PARTY_CREATE, record.getRecordId()));
 
         variantRecordRepository.delete(variantRecordRepository.findByRegRecordId(record.getRecordId()));
         regRecordRepository.delete(record);

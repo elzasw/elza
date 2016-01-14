@@ -37,6 +37,7 @@ import cz.tacr.elza.ElzaCoreTest;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
@@ -516,6 +517,28 @@ public abstract class AbstractRestTest {
         RulArrangementType arrangementType = createArrangementType(ruleSet);
 
         return arrangementManager.createFindingAid(name, arrangementType.getArrangementTypeId(), ruleSet.getRuleSetId());
+    }
+
+    /**
+     * Vytvoří VO položku archivní pomůcky přes REST volání.
+     *
+     * @return vytvořená položka VO
+     */
+    protected ArrFindingAidVO createFindingAidRestV2(final String name) {
+        RulRuleSet ruleSet = createRuleSet();
+        RulArrangementType arrangementType = createArrangementType(ruleSet);
+
+        Response response = post(spec -> spec.queryParameter("name", name).
+                queryParameter(ARRANGEMENT_TYPE_ID_ATT, arrangementType.getArrangementTypeId()).
+                queryParameter(RULE_SET_ID_ATT, ruleSet.getRuleSetId())
+                , CREATE_FA_URL_V2);
+
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        ArrFindingAidVO findingAid = response.getBody().as(ArrFindingAidVO.class);
+
+        return findingAid;
     }
 
     protected ArrFindingAidVersion createFindingAidVersion(final ArrFindingAid findingAid, boolean isLock, ArrChange createChange) {

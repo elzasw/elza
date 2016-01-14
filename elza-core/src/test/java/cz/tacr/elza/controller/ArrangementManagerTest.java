@@ -877,27 +877,6 @@ public class ArrangementManagerTest extends AbstractRestTest {
         return findingAid;
     }
 
-    /**
-     * Vytvoří VO položku archivní pomůcky přes REST volání.
-     *
-     * @return vytvořená položka VO
-     */
-    private ArrFindingAidVO createFindingAidRestV2(final String name) {
-        RulRuleSet ruleSet = createRuleSet();
-        RulArrangementType arrangementType = createArrangementType(ruleSet);
-
-        Response response = post(spec -> spec.queryParameter("name", name).
-                queryParameter(ARRANGEMENT_TYPE_ID_ATT, arrangementType.getArrangementTypeId()).
-                queryParameter(RULE_SET_ID_ATT, ruleSet.getRuleSetId())
-                , CREATE_FA_URL_V2);
-
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
-        ArrFindingAidVO findingAid = response.getBody().as(ArrFindingAidVO.class);
-
-        return findingAid;
-    }
 
     @Test
     public void testRestCreateDescriptionItemsForAllDataTypes() {

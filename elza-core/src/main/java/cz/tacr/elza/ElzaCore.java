@@ -18,6 +18,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.google.common.eventbus.EventBus;
 
+import cz.tacr.elza.service.IClientDataChangesService;
+import cz.tacr.elza.service.websocket.ClientDataChangesService;
+
 
 /**
  * Spouštěcí třída pro modul elza-core.
@@ -67,6 +70,11 @@ public class ElzaCore {
     @Bean @Qualifier(value = "conformityUpdateTaskExecutor")
     public Executor conformityUpdateTaskExecutor() {
         return threadPoolTaskExecutor();
+    }
+
+    @Bean
+    public IClientDataChangesService clientDataChangesService(){
+        return new ClientDataChangesService();
     }
 
 }

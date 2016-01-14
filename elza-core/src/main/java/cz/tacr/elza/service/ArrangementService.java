@@ -53,6 +53,9 @@ import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.VersionConformityRepository;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.events.EventType;
+
 
 /**
  *
@@ -79,6 +82,9 @@ public class ArrangementService {
 
     @Autowired
     private RulesExecutor rulesExecutor;
+
+    @Autowired
+    private IEventNotificationService eventNotificationService;
 
     @Autowired
     private FindingAidVersionRepository findingAidVersionRepository;
@@ -143,6 +149,9 @@ public class ArrangementService {
         findingAid.setName(name);
 
         findingAid = findingAidRepository.save(findingAid);
+
+        eventNotificationService
+                .publishEvent(EventFactory.createIdEvent(EventType.FINDING_AID_CREATE, findingAid.getFindingAidId()));
 
         //        Assert.isTrue(ruleSet.equals(arrangementType.getRuleSet()));
 
@@ -293,6 +302,7 @@ public class ArrangementService {
 
         packetRepository.findByFindingAid(version.getFindingAid()).forEach(packet -> packetRepository.delete(packet));
 
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.FINDING_AID_DELETE, findingAidId));
         findingAidRepository.delete(findingAidId);
     }
 

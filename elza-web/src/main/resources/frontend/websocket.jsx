@@ -16,8 +16,13 @@ client.connect('guest', 'guest',
         client.subscribe('/topic/api/changes', function(body, headers) {
             var changes = JSON.parse(body.body);
             changes.forEach(ch => {
+
                 switch (ch.area) {
                     case 'xxx_SETTINGS':
+                    break;
+
+                    case 'EVENT':
+                        console.log(ch.value);
                     break;
                 }
             });
