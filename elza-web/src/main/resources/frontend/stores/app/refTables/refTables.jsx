@@ -40,8 +40,6 @@ export default function refTables(state = initialState, action) {
                 ...state,
                 recordTypes: recordTypes(state.recordTypes, action),
             }
-        default:
-        return state
         case types.REF_RUL_DATA_TYPES_REQUEST:
         case types.REF_RUL_DATA_TYPES_RECEIVE:
             return {
