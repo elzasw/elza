@@ -41,7 +41,6 @@ public class DescItemTypesRules extends Rules {
      * Spuštění zpracování pravidel.
      *
      * @param rulDescItemTypeExtList seznam všech atributů
-     * @param arrangementType        typ výstupu
      */
     // TODO: je nutné používat synchronized?
     public synchronized List<RulDescItemTypeExt> execute(final ArrLevel level,
@@ -76,9 +75,9 @@ public class DescItemTypesRules extends Rules {
 
         for (RulRule rulPackageRule : rulPackageRules) {
             path = Paths.get(RulesExecutor.ROOT_PATH + File.separator + rulPackageRule.getFilename());
-            StatelessKieSession session = createNewStatelessKieSession(rulRuleSet, path);
+            StatelessKieSession session = createNewStatelessKieSession(path);
             session.setGlobal("results", results);
-            execute(session, facts, path);
+            execute(session, facts);
         }
         
         results.finalize();

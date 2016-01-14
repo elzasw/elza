@@ -66,12 +66,12 @@ public class ChangeImpactRules extends Rules {
         for (RulRule rulPackageRule : rulPackageRules) {
             path = Paths.get(RulesExecutor.ROOT_PATH + File.separator + rulPackageRule.getFilename());
 
-            StatelessKieSession session = createNewStatelessKieSession(rulRuleSet, path);
+            StatelessKieSession session = createNewStatelessKieSession(path);
 
             // přidání globálních proměnných
             session.setGlobal("results", relatedNodeDirections);
 
-            execute(session, facts, path);
+            execute(session, facts);
         }
         return relatedNodeDirections;
     }
