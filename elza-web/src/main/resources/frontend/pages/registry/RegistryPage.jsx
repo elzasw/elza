@@ -18,19 +18,22 @@ import {PageLayout} from 'pages';
 import {Nav, NavItem} from 'react-bootstrap';
 import {registryData, registrySearchData, registryChangeParent} from 'actions/registry/registryData'
 
-import {fetchRegistryIfNeeded} from 'actions/registry/registryList'
+import {fetchRegistryIfNeeded, registrySetTypesId} from 'actions/registry/registryList'
+import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
 
 var RegistryPage = class RegistryPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
         this.bindMethods('buildRibbon', 'handleSelect', 'handleSearch', 'handleDoubleClick', 'handleClickNavigation');
-        this.dispatch(fetchRegistryIfNeeded(props.registry.filterText, props.registry.registryParentId));
+        this.dispatch(fetchRegistryIfNeeded(props.registry.filterText, props.registry.registryParentId, props.registry.registryTypesId));
+        this.dispatch(refRecordTypesFetchIfNeeded());
 
     }
 
     componentWillReceiveProps(nextProps) {
-            this.dispatch(fetchRegistryIfNeeded(nextProps.registry.filterText, nextProps.registry.registryParentId));
+            this.dispatch(fetchRegistryIfNeeded(nextProps.registry.filterText, nextProps.registry.registryParentId, nextProps.registry.registryTypesId));
+            this.dispatch(refRecordTypesFetchIfNeeded());
     }
 
     buildRibbon() {
@@ -85,6 +88,10 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     handleSearch(search, event) {
         var registry = Object.assign({}, registry,{filterText: search});
         this.dispatch(registrySearchData(registry));
+    }
+
+    hlandleRegistryTypesSelect(selectedId, event) {
+        this.dispatch(registrySetTypesId(selectedId));
     }
 
     render() {
@@ -150,55 +157,24 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 </ul>
             )
         } 
-        
-         var items =
-            [
-                {
-                    id: 1, name: 'Stromy', childrens: [
-                        {id: 17, name : 'Baobab'},
-                        {id: 18, name : 'Dub'},
-                        {id: 19, name : 'Javor'} 
-                    ]
-                },{
-                    id: 2, name: 'Kytky', childrens: [
-                        {id: 14, name : 'Pampeliška'},
-                        {id: 15, name : 'Kopretina'},
-                        {id: 16, name : 'Chrpa'}  
-                    ]
-                },{
-                    id: 3, name: 'Zvířáta', childrens : [
-                        {
-                            id: 5, name : 'Hezký zvířata', childrens : [
-                                {id: 8, name : 'Tygr'},
-                                {id: 6, name : 'Medvěd'},
-                                {id: 7, name : 'Orel'}
-                            ]
-                        },{
-                            id: 9, name : 'Ošklivý zvířata', childrens : [
-                                {id: 10, name : 'Šnek'},
-                                {id: 11, name : 'Vosa'},
-                                {id: 12, name : 'Hyena'},
-                                {id: 13, name : 'Prase'}
-                            ]
-                        },    
-                    ]
-                },{
-                    id: 4, name: 'Kameny', childrens: [
-                        {id: 20, name : 'Opál'},
-                        {id: 21, name : 'Achát'},
-                        {id: 22, name : 'Živec'}
-                    ]
-                }
-            ];
 
+        
         var leftPanel = (
             <div className="registry-list">
                 <div>
-                    <Search onSearch={this.handleSearch.bind(this)} filterText={this.props.registry.filterText}/>
-                    {false && <DropDownTree 
-                        items = {items} 
-                        selectedItemID = {20}
-                    />}
+                    <Search 
+                        onSearch={this.handleSearch.bind(this)} 
+                        afterInput={
+                            <DropDownTree 
+                                nullValue = 'Vše'
+                                nullId = {null}
+                                items = {this.props.refTables.recordTypes.items}
+                                selectedItemID = {this.props.registry.registryTypesId}
+                                onSelect = {this.hlandleRegistryTypesSelect.bind(this)}
+                            />
+                        } 
+                        filterText={this.props.registry.filterText}
+                    />
                 </div>
                 <div>
                     {navParents}
@@ -237,9 +213,9 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 }
 function mapStateToProps(state) {
-    const {registry} = state
+    const {registry, refTables} = state
     return {
-        registry
+        registry, refTables
     }
 }
 

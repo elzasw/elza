@@ -28,7 +28,7 @@ var Search = class Search extends React.Component {
 
         this.state = {                                                  // inicializace stavu komponenty
             filterText: this.props.filterText,                          // hledaný text
-        } 
+        }
     }
 
     handleSearch(e){
@@ -65,6 +65,7 @@ var Search = class Search extends React.Component {
                     onChange={this.handleChange}
                     onKeyUp={this.handleKeyUp}
                 />
+                {this.props.afterInput}
                 <Button onClick={this.handleSearch}>{searchLabel}</Button> 
             </div>
         );

@@ -73,13 +73,13 @@ class WebApi{
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/getFindingAids');
     }
 
-    findRegistry(search = null, registryParent = null){
+    findRegistry(search = null, registryParent = null, registerTypeIds = null){
         return AjaxUtils.ajaxGet('/api/registryManagerV2/findRecord', {
             search: search,
             from: 0,
             count: 200,
             parentRecordId: registryParent,
-            registerTypeIds: null
+            registerTypeIds: registerTypeIds
         }).then(json=>{
             return json;
         });
@@ -210,7 +210,7 @@ console.log(33333333333333, json);
     }
 
     getRecordTypes() {
-        return AjaxUtils.ajaxGet('/api/recordManagerV2/getRecordTypes');
+        return AjaxUtils.ajaxGet('/api/registryManagerV2/recordTypes');
     }
 
     getPartyTypes() {

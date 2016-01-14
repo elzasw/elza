@@ -6,20 +6,20 @@ import {WebApi} from 'actions'
 
 import * as types from 'actions/constants/actionTypes';
 
-export function fetchRegistryIfNeeded(search = '', registryParent = null) {
+export function fetchRegistryIfNeeded(search = '', registryParent = null, registerTypeIds = null) {
     return (dispatch, getState) => {
         var state = getState();
         if (!state.registry.fetched && !state.registry.isFetching) {
-            return dispatch(fetchRegistry(search, registryParent));
+            return dispatch(fetchRegistry(search, registryParent, registerTypeIds));
         }
     }
 }
 
-export function fetchRegistry(search, registryParent = null) {
+export function fetchRegistry(search, registryParent = null, registerTypeIds = null) {
     return dispatch => {
         dispatch(requestRegistry())
 
-        return WebApi.findRegistry(search, registryParent)
+        return WebApi.findRegistry(search, registryParent, registerTypeIds)
                 .then(json => dispatch(receiveRegistry(json)));
     }
 }
@@ -36,6 +36,13 @@ export function receiveRegistry(json) {
 export function requestRegistry() {
     return {
         type: types.REGISTRY_REQUEST_REGISTRY_LIST
+    }
+}
+
+export function registrySetTypesId(registryTypesId) {
+    return {
+        type: types.REGISTRY_CHANGED_TYPES_ID,
+        registryTypesId: registryTypesId
     }
 }
 

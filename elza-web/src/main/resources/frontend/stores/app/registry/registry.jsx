@@ -15,6 +15,7 @@ const initialState = {
     filterText: null,
     registryData: undefined,
     registryParentId: null,
+    registryTypesId: null,
     records: [],
     countRecords: 0,
 }
@@ -56,6 +57,11 @@ export default function registry(state = initialState, action) {
                 records: action.records,
                 countRecords: action.countRecords,
                 lastUpdated: action.receivedAt
+            })
+        case types.REGISTRY_CHANGED_TYPES_ID:
+            return Object.assign({}, state, {
+                registryTypesId: action.registryTypesId,
+                fetched: false
             })
         default:
             return state
