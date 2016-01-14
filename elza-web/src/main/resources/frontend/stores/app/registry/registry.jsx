@@ -39,6 +39,8 @@ export default function registry(state = initialState, action) {
                 registryParentId: null,
                 fetched: false
             })
+            // {...state, filterText: action.registry.filterText, registryParentId: null, fetched: false}
+
         case types.REGISTRY_CHANGED_PARENT_REGISTRY:
             if (action.registry.filterText === undefined)
                 action.registry.filterText = null;

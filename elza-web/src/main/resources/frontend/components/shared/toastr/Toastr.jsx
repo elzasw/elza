@@ -23,11 +23,13 @@ require("./Toastr.less")
 var React = require('react');
 var assign = require('react/lib/Object.assign');
 
-import {i18n} from 'components';
+import {i18n, AbstractReactComponent} from 'components';
 import {Alert, Button, Glyphicon} from 'react-bootstrap';
+//import {connect} from 'react-redux'
 var ToastrStore = require('./ToastrStore');
 var ToastrActions = require('./ToastrActions');
 
+/* var Toastr = class Toastr extends AbstractReactComponent {*/
 module.exports = class Toastr extends React.Component {
     constructor(props) {
         super(props);
@@ -46,8 +48,10 @@ module.exports = class Toastr extends React.Component {
     handleAlertDismiss(t) {
         ToastrActions.clear(t.id);
     }
+// tady pokračovat
     render() {
 
+        /*var rows = this.props.toastrs.toastrs.map((t) => {*/
         var rows = this.state.toasters.map((t) => {
             var icon = null;
             switch (t.type) {
@@ -90,3 +94,13 @@ module.exports = class Toastr extends React.Component {
         )
     }
 }
+/*
+function mapStateToProps(state) {
+    const {toastrs} = state
+    return {
+        toastrs
+    }
+}
+
+module.exports = connect(mapStateToProps)(Toastr);
+*/

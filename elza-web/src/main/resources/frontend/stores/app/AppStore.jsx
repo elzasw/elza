@@ -11,6 +11,7 @@ import refTables from './refTables/refTables';
 import faFileTree from './arr/faFileTree';
 import registry from './registry/registry';
 import registryData from './registry/registryData';
+import toastrs from './toastr/toastrs';
 import partyRegion from './party/partyRegion';
 import contextMenu from './global/contextMenu';
 import modalDialog from './global/modalDialog';
@@ -24,6 +25,7 @@ let reducer = combineReducers({
     faFileTree,
     registry,
     registryData,
+    toastrs,
     partyRegion,
     contextMenu,
     modalDialog,

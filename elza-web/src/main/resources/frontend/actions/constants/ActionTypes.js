@@ -35,6 +35,16 @@ export const PARTY_DETAIL_REQUEST = 'PARTY_DETAIL_REQUEST'          // pořadave
 export const PARTY_DETAIL_RECEIVE = 'PARTY_DETAIL_RECIVE'            // dokončení požadavku na hledání osoby
 
 /**
+ * Toastr
+**/
+
+export const TOASTR_TYPE_INFO = 'TOASTR_TYPE_INFO'
+export const TOASTR_TYPE_SUCCESS = 'TOASTR_TYPE_SUCCESS'
+export const TOASTR_TYPE_WARNING = 'TOASTR_TYPE_WARNING'
+export const TOASTR_TYPE_CLEAR = 'TOASTR_TYPE_CLEAR'
+export const TOASTR_TYPE_DANGER = 'TOASTR_TYPE_DANGER'
+
+/**
  * Registry.
  */
 export const REGISTRY_REQUEST_REGISTRY_LIST = 'REGISTRY_REQUEST_REGISTRY_LIST'
