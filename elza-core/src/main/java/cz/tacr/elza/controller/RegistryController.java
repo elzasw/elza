@@ -171,7 +171,7 @@ public class RegistryController {
      *
      * @return  seznam typů rejstříku (typů hesel)
      */
-    @RequestMapping(value = "/getRecordTypes", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/recordTypes", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
     public List<RegRegisterTypeVO> getRecordTypes(){
           List<RegRegisterType> allTypes = registerTypeRepository.findAll();
 

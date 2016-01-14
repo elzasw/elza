@@ -15,7 +15,7 @@ public class RegRegisterTypeVO {
     /**
      * Id.
      */
-    private Integer registerTypeId;
+    private Integer id;
     /**
      * Kód typu.
      */
@@ -43,14 +43,14 @@ public class RegRegisterTypeVO {
     /**
      * Seznam potomků.
      */
-    private List<RegRegisterTypeVO> childs;
+    private List<RegRegisterTypeVO> children;
 
-    public Integer getRegisterTypeId() {
-        return registerTypeId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setRegisterTypeId(final Integer registerTypeId) {
-        this.registerTypeId = registerTypeId;
+    public void setId(final Integer id) {
+        this.id = id;
     }
 
     public String getCode() {
@@ -101,18 +101,18 @@ public class RegRegisterTypeVO {
         this.parentRegisterTypeId = parentRegisterTypeId;
     }
 
-    public List<RegRegisterTypeVO> getChilds() {
-        return childs;
+    public List<RegRegisterTypeVO> getChildren() {
+        return children;
     }
 
-    public void setChilds(final List<RegRegisterTypeVO> childs) {
-        this.childs = childs;
+    public void setChildren(final List<RegRegisterTypeVO> children) {
+        this.children = children;
     }
 
     public void addChild(final RegRegisterTypeVO child) {
-        if (childs == null) {
-            childs = new LinkedList<>();
+        if (children == null) {
+            children = new LinkedList<>();
         }
-        childs.add(child);
+        children.add(child);
     }
 }

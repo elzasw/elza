@@ -421,7 +421,7 @@ public class ClientFactoryVO {
         }
 
         result = mapper.map(registerType, RegRegisterTypeVO.class);
-        typeMap.put(result.getRegisterTypeId(), result);
+        typeMap.put(result.getId(), result);
         if (registerType.getParentRegisterType() != null) {
             RegRegisterTypeVO parent = createRegisterTypeTree(registerType.getParentRegisterType(), typeMap);
             parent.addChild(result);

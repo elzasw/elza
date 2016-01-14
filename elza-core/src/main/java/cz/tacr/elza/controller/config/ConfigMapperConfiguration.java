@@ -299,7 +299,7 @@ public class ConfigMapperConfiguration {
                             regRegisterTypeVO.setParentRegisterTypeId(parentType.getRegisterTypeId());
                         }
                     }
-                }).byDefault()
+                }).field("registerTypeId", "id").byDefault()
                 .register();
 
         mapperFactory.classMap(RulArrangementType.class, RulArrangementTypeVO.class).byDefault().field(
