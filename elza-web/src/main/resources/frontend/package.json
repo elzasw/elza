@@ -25,6 +25,7 @@
         "es6-promise": "~3.0.2",
         "stomp": "~0.1.1",
         "stomp-client": "~0.8.0",
+        "stompjs": "~2.3.3", 
         "sockjs-client": "~1.0.3",
         "array.from": "~0.2.0",
         "es5-shim": "~4.1.14",
