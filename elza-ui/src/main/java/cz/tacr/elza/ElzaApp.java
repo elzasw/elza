@@ -11,6 +11,9 @@ import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomi
 import org.springframework.boot.context.embedded.ServletRegistrationBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.*;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import ru.xpoft.vaadin.VaadinMessageSource;
@@ -72,6 +75,21 @@ public class ElzaApp extends WebMvcAutoConfiguration {
             @Override
             public void onStartup(ServletContext servletContext) throws ServletException {
                 servletContext.setInitParameter("productionMode", "false");
+            }
+        });
+    }
+
+    @Bean
+    public SimpMessagingTemplate simpMessagingTemplate(){
+        return new SimpMessagingTemplate(new MessageChannel() {
+            @Override
+            public boolean send(final Message<?> message) {
+                return false;
+            }
+
+            @Override
+            public boolean send(final Message<?> message, final long l) {
+                return false;
             }
         });
     }
