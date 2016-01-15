@@ -97,7 +97,7 @@ class WebApi{
             record: nameMain,
             characteristics: characteristics,
             local: false,
-            registerType: {id: registerType}
+            registerType: registerType
             
         }
         return AjaxUtils.ajaxPut('/api/registryManagerV2/createRecord', null,  data)

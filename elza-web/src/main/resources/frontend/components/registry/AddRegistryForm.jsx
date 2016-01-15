@@ -1,5 +1,6 @@
 /**
- * Formulář přidání nové Osoby
+ * Formulář přidání nového rejstříkového hesla
+ * <AddRegistryForm create onSubmit={this.handleCallAddRegistry} />
  */
 
 import React from 'react';

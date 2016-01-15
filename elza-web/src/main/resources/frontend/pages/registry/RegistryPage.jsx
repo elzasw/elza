@@ -37,14 +37,17 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             this.dispatch(refRecordTypesFetchIfNeeded());
     }
 
-    handleAddRegistry(item, event) { 
-    console.log('tady a ted',this, item, event);
-       this.dispatch(modalDialogShow(this, i18n('registry.addRegistry') , <AddRegistryForm create onSubmit={this.handleCallAddRegistry} />));
+    handleAddRegistry(registerType, event) { 
+       this.dispatch(modalDialogShow(this, i18n('registry.addRegistry') , <AddRegistryForm create onSubmit={this.handleCallAddRegistry.bind(this, registerType)} />));
     }
 
-    handleCallAddRegistry(data) {
-        WebApi.insertRegistry( data.nameMain, data.characteristics ).then(json => {console.log(json); this.dispatch(modalDialogHide()); fetchRegistryIfNeeded(3)});
-        
+    handleCallAddRegistry(registerType, data ) {
+        WebApi.insertRegistry( data.nameMain, data.characteristics, registerType ).then(json => {
+            this.dispatch(modalDialogHide());
+            var registry = Object.assign({}, registry,{filterText: ''});
+            this.dispatch(registrySearchData(registry));
+            this.dispatch(registryData({selectedId: json.recordId}));
+        });
         
     }
     
@@ -70,10 +73,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         }
         itemActions.push(
                 <DropdownButton title={<span className="dropContent"><Glyphicon glyph='plus-sign' /><div><span className="btnText">Přidat heslo</span></div></span>}>
-                    <MenuItem onClick={this.handleAddRegistry.bind(this, 1)} eventKey="1">Heslo</MenuItem>
-                    <MenuItem eventKey="2">Rod</MenuItem>
-                    <MenuItem eventKey="3">Korporace</MenuItem>
-                    <MenuItem eventKey="4">Dočasná korporace</MenuItem>
+                    {this.props.refTables.recordTypes.items.map(i=> { return <MenuItem eventKey="{i.id}" onClick={this.handleAddRegistry.bind(this, i)} value={i.id}>{i.name}</MenuItem>})}
                 </DropdownButton>
                 
             );
