@@ -1,6 +1,9 @@
 package cz.tacr.elza.controller.config;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,6 +48,7 @@ import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemCoordinatesVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemEnumVO;
@@ -57,7 +61,6 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemStringVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemUnitdateVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemUnitidVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDescItemCoordinates;
 import cz.tacr.elza.domain.ArrDescItemEnum;
@@ -106,8 +109,10 @@ import cz.tacr.elza.domain.RulRuleSet;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
+import ma.glasnost.orika.converter.BidirectionalConverter;
 import ma.glasnost.orika.converter.builtin.PassThroughConverter;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
+import ma.glasnost.orika.metadata.Type;
 
 
 /**
@@ -127,6 +132,8 @@ public class ConfigMapperConfiguration {
     public MapperFactory configVOMapper() {
         MapperFactory mapperFactory = new DefaultMapperFactory.Builder().build();
         initSimpleVO(mapperFactory);
+
+        mapperFactory.getConverterFactory().registerConverter(new LocalDateTimeConverter());
 
         return mapperFactory;
     }
@@ -342,14 +349,15 @@ public class ConfigMapperConfiguration {
                 .field("rulDescItemSpecList", "descItemSpecs")
                 .register();
         mapperFactory.classMap(RulDescItemSpec.class, RulDescItemSpecVO.class).byDefault().field("descItemSpecId", "id").register();
-        mapperFactory.classMap(RulDescItemSpecExt.class, RulDescItemSpecExtVO.class).byDefault().field("descItemSpecId", "id").register();
+        mapperFactory.classMap(RulDescItemSpecExt.class, RulDescItemSpecExtVO.class).byDefault().field("descItemSpecId",
+                "id").register();
 
         mapperFactory.classMap(RulRuleSet.class, RulRuleSetVO.class).byDefault().field("ruleSetId", "id").register();
 
         mapperFactory.classMap(ArrFindingAid.class, ArrFindingAidVO.class).byDefault().field("findingAidId", "id").register();
         mapperFactory.classMap(ArrFindingAidVersion.class, ArrFindingAidVersionVO.class).byDefault().field(
                 "findingAidVersionId", "id").
-            exclude("arrangementType").register();
+                exclude("arrangementType").register();
         mapperFactory.getConverterFactory().registerConverter(new PassThroughConverter(LocalDateTime.class));
 
         mapperFactory.classMap(RegVariantRecord.class, RegVariantRecordVO.class).customize(
@@ -360,7 +368,7 @@ public class ConfigMapperConfiguration {
                                         final MappingContext context) {
                         RegRecord regRecord = regVariantRecord.getRegRecord();
                         regVariantRecordVO.setRegRecordId(regRecord.getRecordId());
-    }
+                    }
 
                     @Override
                     public void mapBtoA(final RegVariantRecordVO regVariantRecordVO,
@@ -374,6 +382,22 @@ public class ConfigMapperConfiguration {
                     }
                 }).byDefault().register();
 
+    }
+
+    /**
+     * Konvertor mezi LocalDateTime a Date.
+     */
+    public class LocalDateTimeConverter extends BidirectionalConverter<LocalDateTime, Date> {
+
+        @Override
+        public Date convertTo(final LocalDateTime localDateTime, final Type<Date> type) {
+            return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+        }
+
+        @Override
+        public LocalDateTime convertFrom(final Date date, final Type<LocalDateTime> type) {
+            return LocalDateTime.from(LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()));
+        }
     }
 
 }
