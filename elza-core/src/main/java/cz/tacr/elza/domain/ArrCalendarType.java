@@ -5,6 +5,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
@@ -15,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @since 20.10.2015
  */
 @Entity(name = "arr_calendar_type")
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ArrCalendarType implements cz.tacr.elza.api.ArrCalendarType {
 

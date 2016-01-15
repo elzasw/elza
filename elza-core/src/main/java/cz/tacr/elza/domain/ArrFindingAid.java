@@ -8,6 +8,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
@@ -16,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @since 22.7.15
  */
 @Entity(name = "arr_finding_aid")
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ArrFindingAid extends AbstractVersionableEntity implements cz.tacr.elza.api.ArrFindingAid, Serializable {
 

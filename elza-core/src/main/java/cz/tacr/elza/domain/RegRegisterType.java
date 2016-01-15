@@ -3,6 +3,8 @@ package cz.tacr.elza.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import javax.persistence.Column;
@@ -25,6 +27,7 @@ import javax.persistence.Table;
  */
 @Entity(name = "reg_register_type")
 @Table
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RegRegisterType implements  cz.tacr.elza.api.RegRegisterType<RegRegisterType, ParPartyType> {

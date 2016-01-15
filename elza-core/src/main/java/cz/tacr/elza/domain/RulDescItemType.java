@@ -14,6 +14,8 @@ import javax.persistence.UniqueConstraint;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -28,6 +30,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Table(uniqueConstraints = {
         @UniqueConstraint(columnNames = {"code"}),
         @UniqueConstraint(columnNames = {"viewOrder"})})
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RulDescItemType implements cz.tacr.elza.api.RulDescItemType<RulDataType, RulPackage> {
 

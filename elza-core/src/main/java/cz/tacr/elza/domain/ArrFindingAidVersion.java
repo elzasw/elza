@@ -7,6 +7,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -22,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @since 22.7.15
  */
 @Entity(name = "arr_finding_aid_version")
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrFindingAidVersion extends AbstractVersionableEntity implements
         cz.tacr.elza.api.ArrFindingAidVersion<ArrFindingAid, ArrChange, ArrLevel, RulArrangementType, RulRuleSet> {
