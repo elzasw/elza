@@ -40,6 +40,7 @@ import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemGroupVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTypeGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.domain.ArrCalendarType;
@@ -706,13 +707,37 @@ public class ClientFactoryVO {
     }
 
     /**
-     * Vytvoření seznamu rozšířených typů hodnot atributů se specifikacemi.
+     * Vytvoření seznamu rozšířených typů hodnot atributů se specifikacemi ve skupinách.
      *
      * @param descItemTypes seznam typů hodnot atributů
-     * @return seznam VO typů hodnot atributů
+     * @return seznam skupin s typy hodnot atributů
      */
-    public List<RulDescItemTypeExtVO> createDescItemTypes(final List<RulDescItemTypeExt> descItemTypes) {
-        return createList(descItemTypes, RulDescItemTypeExtVO.class, this::createDescItemTypeExt);
+    public List<ArrDescItemTypeGroupVO> createDescItemTypeGroups(final List<RulDescItemTypeExt> descItemTypes) {
+
+        List<RulDescItemTypeExtVO> descItemTypeExtList = createList(descItemTypes, RulDescItemTypeExtVO.class,
+                this::createDescItemTypeExt);
+
+        Map<String, ArrDescItemTypeGroupVO> descItemTypeGroupVOMap = new HashMap<>();
+
+        for (RulDescItemTypeExtVO descItemTypeVO : descItemTypeExtList) {
+            ElzaRules.Group group = elzaRules.getGroupByType(descItemTypeVO.getCode());
+            ArrDescItemTypeGroupVO descItemTypeGroupVO = descItemTypeGroupVOMap.get(group.getCode());
+
+            if (descItemTypeGroupVO == null) {
+                descItemTypeGroupVO = new ArrDescItemTypeGroupVO(group.getCode(), group.getName());
+                descItemTypeGroupVOMap.put(group.getCode(), descItemTypeGroupVO);
+            }
+
+            List<RulDescItemTypeExtVO> descItemTypeList = descItemTypeGroupVO.getDescItemTypes();
+            if (descItemTypeList == null) {
+                descItemTypeList = new ArrayList<>();
+                descItemTypeGroupVO.setDescItemTypes(descItemTypeList);
+            }
+
+            descItemTypeList.add(descItemTypeVO);
+        }
+
+        return new ArrayList<>(descItemTypeGroupVOMap.values());
     }
 
     /**
