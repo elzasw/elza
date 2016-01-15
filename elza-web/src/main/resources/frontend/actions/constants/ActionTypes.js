@@ -29,10 +29,10 @@ export const FA_FA_SELECT_SUBNODE = 'FA_FA_SELECT_SUBNODE'
  * Party.
  */
 export const PARTY_FIND_PARTY_REQUEST = 'PARTY_FIND_PARTY_REQUEST'  // volaní hledání osob
-export const PARTY_FIND_PARTY_RECEIVE = 'PARTY_FIND_PARTY_RECEIVE'    // dokončení hledání osob
+export const PARTY_FIND_PARTY_RECEIVE = 'PARTY_FIND_PARTY_RECEIVE'  // dokončení hledání osob
 export const PARTY_SELECT_PARTY = 'PARTY_SELECT_PARTY'              // dokončení hledání osob
 export const PARTY_DETAIL_REQUEST = 'PARTY_DETAIL_REQUEST'          // pořadavek na načtení detailu osoby
-export const PARTY_DETAIL_RECEIVE = 'PARTY_DETAIL_RECIVE'            // dokončení požadavku na hledání osoby
+export const PARTY_DETAIL_RECEIVE = 'PARTY_DETAIL_RECIVE'           // dokončení požadavku na hledání osoby
 
 /**
  * Toastr

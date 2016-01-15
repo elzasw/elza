@@ -12,6 +12,7 @@ import {AppActions} from 'stores';
 
 import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
 
+
 var PartySearch = class PartySearch extends AbstractReactComponent {
     constructor(props) {
         super(props);
@@ -38,7 +39,9 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
                                 className={item.partyId==this.props.selectedPartyID ? 'active' : ''} 
                                 onClick={this.handlePartyDetail.bind(this,item)}
                             >                                          
-                                <span className="name">{item.record.record}</span>
+                                <span className="name">{item.record.record}</span> 
+                                <span>{item.record.registerType.name}</span>
+                                <span>1976-2015</span>
                             </li>                          
             });
         }else{
@@ -47,7 +50,7 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
         }
         return  <div>
                     <Search onSearch={this.handleSearch} filterText={this.props.filterText}/>
-                    <ul>
+                    <ul className="partySearch">
                         {partyList}
                     </ul>
                 </div>

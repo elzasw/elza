@@ -42,10 +42,11 @@ class WebApi{
             });
     }
 
-    insertParty(type, nameFormTypeId, nameMain, nameOther, degreeBefore, degreeAfter, validRange) {
+    insertParty(partyType, partyTypeId, nameFormTypeId, nameMain, nameOther, degreeBefore, degreeAfter, validRange) {
         var data = {
-            '@type': type, 
-            partyTypeId: 1,
+            '@type': partyType, 
+            partyTypeId: partyTypeId,
+            genealogy: nameMain,
             partyNames : [{
                 nameFormTypeId: nameFormTypeId,
                 mainPart: nameMain,

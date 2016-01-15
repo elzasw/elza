@@ -17,7 +17,11 @@ import contextMenu from './global/contextMenu';
 import modalDialog from './global/modalDialog';
 import adminRegion from './admin/adminRegion';
 import addFaForm from './arr/form/addFaForm';
-import addPartyForm from './party/form/addPartyForm';
+import addPartyPersonForm from './party/form/addPartyPersonForm';
+import addPartyDynastyForm from './party/form/addPartyDynastyForm';
+import addPartyEventForm from './party/form/addPartyEventForm';
+import addPartyGroupForm from './party/form/addPartyGroupForm';
+import addPartyOtherForm from './party/form/addPartyOtherForm';
 import addRegistryForm from './registry/form/addRegistryForm';
 
 let reducer = combineReducers({
@@ -33,7 +37,11 @@ let reducer = combineReducers({
     adminRegion,
     form: formReducer.plugin({
         addFaForm: addFaForm,
-        addPartyForm: addPartyForm,
+        addPartyPersonForm: addPartyPersonForm,
+        addPartyDynastyForm: addPartyDynastyForm,
+        addPartyOtherForm: addPartyOtherForm,
+        addPartyEventForm: addPartyEventForm,
+        addPartyGroupForm: addPartyGroupForm,
         addRegistryForm: addRegistryForm
     })
 });

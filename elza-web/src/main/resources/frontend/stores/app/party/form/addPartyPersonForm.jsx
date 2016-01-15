@@ -1,9 +1,9 @@
 import * as types from 'actions/constants/actionTypes';
 
-export default function addPartyForm(state, action) {
+export default function addPartyPersonForm(state, action) {
     switch (action.type) {
         case types.GLOBAL_INIT_FORM_DATA:
-            if (action.form == 'addPartyForm') {
+            if (action.form == 'addPartyPersonForm') {
                 return {
                     ...state,
                     initialValues: action.data
@@ -13,15 +13,6 @@ export default function addPartyForm(state, action) {
             }
         case "redux-form/CHANGE":
             switch (action.field) {
-                case "ruleSetId":
-                    if (action.value == '') {
-                        return {
-                            ...state,
-                            rulArrTypeId: {...state.rulArrTypeId, value: ''}
-                        }
-                    } else {
-                        return state;
-                    }
                 default:
                   return state;
             }

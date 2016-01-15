@@ -3,20 +3,17 @@
  */
 
 import {WebApi} from 'actions'
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/actionTypes'
+import {modalDialogHide} from 'actions/global/modalDialog'
 
-export function insertParty(type, nameFormTypeId, nameMain, nameOther, degreeBefore, degreeAfter, validFrom, validTo) {
-
+export function insertParty(partyType, partyTypeId, nameFormTypeId, nameMain, nameOther, validRange, degreeBefore, degreeAfter) {
     return dispatch => {
-        return WebApi.insertParty(type, nameFormTypeId, nameMain, nameOther, degreeBefore, degreeAfter, validFrom, validTo)
+        return WebApi.insertParty(partyType, partyTypeId, nameFormTypeId, nameMain, nameOther, degreeBefore, degreeAfter, validRange)
             .then((json) => {
-                /*
-                Toastr.Actions.success({
-                    title: i18n("party.title.added"),
-                });                
-                dispatch(modalDialogHide())
-                */
-                dispatch(partyDetailFetchIfNeeded(3));
+                console.log(json); 
+                dispatch(modalDialogHide());
+                dispatch(findPartyFetch(''));
+                dispatch(partyDetailFetchIfNeeded(json.partyId));
             });
     }
 }
@@ -89,3 +86,4 @@ export function partyDetailRequest(selectedPartyID) {
         selectedPartyID: selectedPartyID
     }
 }
+

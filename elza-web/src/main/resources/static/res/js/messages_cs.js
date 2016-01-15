@@ -40,13 +40,16 @@ var messages = {
     "registry.all": "Vše",
     
     "party.addParty": "Nová osoba",
+    "party.addPartyDynasty": "Nový rod",
+    "party.addPartyGroup": "Nový korporace",
+    "party.addPartyEvent": "Nová dočasná korporace/událost",
+    "party.addPartyOther": "Nový osoba ostatní",
     "party.nameMain": "Hlavní část jména",
     "party.nameOther": "Vedlejší část jména",
     "party.degreeBefore": "Titul před",
     "party.degreeAfter": "Titul za",
     "party.nameFormType": "Typ formy jména",
-    "party.nameValidFrom": "Datace použítí jména od",
-    "party.nameValidTo": "Datace použítí jména do",
+    "party.nameValidRange": "Datace použítí jména od",
     "arr.fa.title.added": "AP byla vytvořena",
     "arr.fa.title.approved": "AP byla uzavřena",
 
