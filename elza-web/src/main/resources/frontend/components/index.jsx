@@ -24,6 +24,8 @@ exports.ModalDialogWrapper = require('./shared/dialog/ModalDialogWrapper');
 exports.Ribbon = require('./page/Ribbon');
 
 exports.RegistryPanel = require('./registry/RegistryPanel');
+exports.AddRegistryForm = require('./registry/AddRegistryForm');
+
 exports.FaFileTree = require('./arr/FaFileTree');
 exports.NodePanel = require('./arr/NodePanel');
 exports.NodeTabs = require('./arr/NodeTabs');

@@ -91,6 +91,20 @@ class WebApi{
                 return json;
             });
     }
+    
+    insertRegistry(nameMain, characteristics, registerType) {
+        var data = {
+            record: nameMain,
+            characteristics: characteristics,
+            local: false,
+            registerType: {id: registerType}
+            
+        }
+        return AjaxUtils.ajaxPut('/api/registryManagerV2/createRecord', null,  data)
+            .then(json=>{
+                return json;
+            });
+    }
 
     getNodeForm(nodeId, versionId) {
         var node = findNodeById(_faRootNode, nodeId);
