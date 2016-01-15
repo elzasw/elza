@@ -5,6 +5,22 @@
 import {WebApi} from 'actions'
 import * as types from 'actions/constants/actionTypes';
 
+export function insertParty(type, nameFormTypeId, nameMain, nameOther, degreeBefore, degreeAfter, validFrom, validTo) {
+
+    return dispatch => {
+        return WebApi.insertParty(type, nameFormTypeId, nameMain, nameOther, degreeBefore, degreeAfter, validFrom, validTo)
+            .then((json) => {
+                /*
+                Toastr.Actions.success({
+                    title: i18n("party.title.added"),
+                });                
+                dispatch(modalDialogHide())
+                */
+                dispatch(partyDetailFetchIfNeeded(3));
+            });
+    }
+}
+
 export function findPartyFetchIfNeeded(filterText) {
     return (dispatch, getState) => {
         var state = getState();

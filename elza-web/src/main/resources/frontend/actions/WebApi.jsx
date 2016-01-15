@@ -47,7 +47,7 @@ class WebApi{
             '@type': type, 
             partyTypeId: 1,
             partyNames : [{
-                nameFormTypeIod: nameFormTypeId,
+                nameFormTypeId: nameFormTypeId,
                 mainPart: nameMain,
                 otherPart: nameOther,
                 degreeBefore: degreeBefore,

@@ -11,13 +11,16 @@ import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField} from 'components/form/FormUtils'
 import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes'
-import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
 
 const validate = (values, props) => {
     const errors = {};
 
     if (props.create && !values.nameMain) {
         errors.nameMain = i18n('global.validation.required');
+    }
+
+    if (props.create && (!values.nameFormTypeId || values.nameFormTypeId==0 )) {
+        errors.nameFormTypeId = i18n('global.validation.required');
     }
 
     return errors;
@@ -27,7 +30,6 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
         this.dispatch(refPartyNameFormTypesFetchIfNeeded());
-        this.dispatch(refRecordTypesFetchIfNeeded());
 
         this.props.load(props.initData);
 
@@ -44,8 +46,8 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
                 <Modal.Body>
                     <form onSubmit={handleSubmit}>
                         <Input type="select" label={i18n('party.nameFormType')} {...nameFormTypeId} {...decorateFormField(nameFormTypeId)}>
-                            {this.props.refTables.partyNameFormTypes.items.map(i=> {return <option value={i.id}>{i.name}</option>})}
-                            {this.props.refTables.recordTypes.items.map(i=> {return <option value={i.id}>{i.name}</option>})}
+                            <option value="0"></option> 
+                            {this.props.refTables.partyNameFormTypes.items.map(i=> {return <option value={i.nameFormTypeId}>{i.name}</option>})}
                         </Input>
                         <Input type="text" label={i18n('party.degreeBefore')} {...degreeBefore} {...decorateFormField(degreeBefore)} />
                         <Input type="text" label={i18n('party.nameMain')} {...nameMain} {...decorateFormField(nameMain)} />

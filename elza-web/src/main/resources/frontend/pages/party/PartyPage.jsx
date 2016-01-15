@@ -16,24 +16,30 @@ import {AppStore} from 'stores'
 import {WebApi} from 'actions'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
-import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
+import {partyDetailFetchIfNeeded} from 'actions/party/party'
+import {insertParty} from 'actions/party/party'
 
 var PartyPage = class PartyPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        //this.dispatch(refPartyTypesFetchIfNeeded());
         this.state = {};
-        this.bindMethods('buildRibbon', 'handleAddParty', 'handleCallAddParty');
+        this.dispatch(refPartyTypesFetchIfNeeded());
+        this.bindMethods('buildRibbon', 'handleAddParty', 'handleCallAddParty', 'addParty');
     }
 
     handleCallAddParty(data) {
-        WebApi.insertParty('ParPersonEditVO', data.partyTypeId, data.nameMain, data.nameOther, data.degreeBefore, data.degreeAfter, data.validFrom, data.validTo).then(this.dispatch(modalDialogHide()));
-        this.dispatch(modalDialogHide());
-        this.dispatch(partyDetailFetchIfNeeded(3));
+        this.dispatch(insertParty('ParPersonEditVO', data.nameFormTypeId, data.nameMain, data.nameOther, data.degreeBefore, data.degreeAfter, data.validFrom, data.validTo));
     }
-    
+
     handleAddParty() {
         this.dispatch(modalDialogShow(this, i18n('party.addParty') , <AddPartyForm create onSubmit={this.handleCallAddParty} />));
+    }
+
+    addParty(data){
+        var id = WebApi.insertParty('ParPersonEditVO', data.partyTypeId, data.nameMain, data.nameOther, data.degreeBefore, data.degreeAfter, data.validFrom, data.validTo)
+            .then(this.dispatch(modalDialogHide()));
+        console.log(id);    
+        this.dispatch(partyDetailFetchIfNeeded(3));
     }
 
     buildRibbon() {
@@ -41,10 +47,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         var altActions = [];
         altActions.push(
             <DropdownButton title={<span className="dropContent"><Glyphicon glyph='plus-sign' /><div><span className="btnText">Nová osoba</span></div></span>}>
-                <MenuItem onClick={this.handleAddParty} eventKey="1">Osoba</MenuItem>
-                <MenuItem eventKey="2">Rod</MenuItem>
-                <MenuItem eventKey="3">Korporace</MenuItem>
-                <MenuItem eventKey="4">Dočasná korporace</MenuItem>
+                {this.props.refTables.partyTypes.items.map(i=> {return <MenuItem eventKey="{i.id}" onClick={this.handleAddParty} value={i.id}>{i.name}</MenuItem>})}
             </DropdownButton>
         );
         altActions.push(
@@ -115,9 +118,10 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
 
 
 function mapStateToProps(state) {
-    const {partyRegion} = state
+    const {partyRegion, refTables} = state
     return {
-        partyRegion
+        partyRegion,
+        refTables
     }
 }
 
