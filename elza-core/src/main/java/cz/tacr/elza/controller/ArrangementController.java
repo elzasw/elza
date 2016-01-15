@@ -26,8 +26,8 @@ import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemGroupVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTypeGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -202,8 +202,8 @@ public class ArrangementController {
 
         ArrNodeVO nodeVO = factoryVo.createArrNode(node);
         List<ArrDescItemGroupVO> descItemGroupsVO = factoryVo.createDescItemGroups(descItems);
-        List<RulDescItemTypeExtVO> descItemTypesVO = factoryVo.createDescItemTypes(descItemTypes);
-        return new NodeFormDataVO(nodeVO, descItemGroupsVO, descItemTypesVO);
+        List<ArrDescItemTypeGroupVO> descItemTypeGroupsVO = factoryVo.createDescItemTypeGroups(descItemTypes);
+        return new NodeFormDataVO(nodeVO, descItemGroupsVO, descItemTypeGroupsVO);
     }
 
     @RequestMapping(value = "/calendarTypes", method = RequestMethod.GET)
@@ -252,9 +252,9 @@ public class ArrangementController {
         private List<ArrDescItemGroupVO> descItemGroups;
 
         /**
-         * Seznam typů hodnot archivní pomůcky
+         * Seznam skupin typů hodnot archivní pomůcky
          */
-        private List<RulDescItemTypeExtVO> descItemTypes;
+        private List<ArrDescItemTypeGroupVO> descItemTypeGroups;
 
         public NodeFormDataVO() {
 
@@ -262,10 +262,10 @@ public class ArrangementController {
 
         public NodeFormDataVO(final ArrNodeVO node,
                               final List<ArrDescItemGroupVO> descItemGroups,
-                              final List<RulDescItemTypeExtVO> descItemTypes) {
+                              final List<ArrDescItemTypeGroupVO> descItemTypeGroups) {
             this.node = node;
             this.descItemGroups = descItemGroups;
-            this.descItemTypes = descItemTypes;
+            this.descItemTypeGroups = descItemTypeGroups;
         }
 
         public ArrNodeVO getNode() {
@@ -284,12 +284,12 @@ public class ArrangementController {
             this.descItemGroups = descItemGroups;
         }
 
-        public List<RulDescItemTypeExtVO> getDescItemTypes() {
-            return descItemTypes;
+        public List<ArrDescItemTypeGroupVO> getDescItemTypeGroups() {
+            return descItemTypeGroups;
         }
 
-        public void setDescItemTypes(final List<RulDescItemTypeExtVO> descItemTypes) {
-            this.descItemTypes = descItemTypes;
+        public void setDescItemTypeGroups(final List<ArrDescItemTypeGroupVO> descItemTypeGroups) {
+            this.descItemTypeGroups = descItemTypeGroups;
         }
     }
 
