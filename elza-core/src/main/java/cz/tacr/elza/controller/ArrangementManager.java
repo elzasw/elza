@@ -1360,7 +1360,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
             if (descItemObjectId != null) {
                 updateDescItems.add(descItem);
 
-                List<ArrDescItem> descItemsOrig = descItemRepository.findByDescItemObjectIdAndDeleteChangeIsNull(descItemObjectId);
+                List<ArrDescItem> descItemsOrig = descItemRepository.findOpenDescItems(descItemObjectId);
 
                 // musí být právě jeden
                 if (descItemsOrig.size() != 1) {
@@ -1920,7 +1920,8 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
      */
     private boolean findAndMoveDescItemByObjectId(Map<RulDescItemType, Map<RulDescItemSpec, List<ArrDescItem>>> mapDescItems, ArrDescItem updateDescItem) {
 
-        List<ArrDescItem> descItems = descItemRepository.findByDescItemObjectIdAndDeleteChangeIsNull(updateDescItem.getDescItemObjectId());
+        List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(
+                updateDescItem.getDescItemObjectId());
         if (descItems.size() != 1) {
             throw new IllegalStateException("Hodnota musí být právě jedna");
         }

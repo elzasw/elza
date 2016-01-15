@@ -465,7 +465,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         levelWithExtraNode.setLevel(version.getRootLevel());
         levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
 
-        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(
+                ADD_LEVEL_CHILD_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
@@ -522,7 +523,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
         ArrLevelWithExtraNode child = related.getArrLevelPack();
 
-        List<ArrLevelExt> subLevels = arrangementManager.findSubLevels(parentNodeId, version.getFindingAidVersionId(), null, null);
+        List<ArrLevelExt> subLevels = arrangementManager.findSubLevels(parentNodeId, version.getFindingAidVersionId(),
+                null, null);
         Assert.assertTrue(subLevels.size() == 1);
 
         Assert.assertTrue(child.getLevel().getLevelId().equals(subLevels.iterator().next().getLevelId()));
@@ -1638,7 +1640,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
      * @param newPosition
      */
     private void checkChangePositionDescItem(ArrDescItem descItem, int newPosition, boolean hasNewRecord, ArrNode node) {
-        List<ArrDescItem> descItemList1 = descItemRepository.findByDescItemObjectIdAndDeleteChangeIsNull(descItem.getDescItemObjectId());
+        List<ArrDescItem> descItemList1 = descItemRepository.findOpenDescItems(
+                descItem.getDescItemObjectId());
         if (descItemList1.size() != 1) {
             Assert.fail("Nesprávný počet položek");
         }

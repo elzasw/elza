@@ -28,6 +28,7 @@ import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemGroupVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAid;
@@ -42,6 +43,7 @@ import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.RuleService;
 
@@ -83,6 +85,24 @@ public class ArrangementController {
     @Autowired
     private ClientFactoryVO factoryVo;
 
+    @Autowired
+    private DescriptionItemService descriptionItemService;
+
+
+    @Transactional
+    @RequestMapping(value = "/descItems/{findingAidVersionId}/{nodeVersion}/delete",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public void deleteDescItem(@RequestBody final ArrDescItemVO descItemVO,
+                               @PathVariable(value = "findingAidVersionId") final Integer findingAidVersionId,
+                               @PathVariable(value = "nodeVersion") final Integer nodeVersion) {
+        Assert.notNull(descItemVO);
+        Assert.notNull(findingAidVersionId);
+        Assert.notNull(nodeVersion);
+
+        descriptionItemService.deleteDescriptionItem(descItemVO.getDescItemObjectId(), nodeVersion, findingAidVersionId);
+    }
 
     @RequestMapping(value = "/getFindingAids", method = RequestMethod.GET)
     public List<ArrFindingAidVO> getFindingAids() {
