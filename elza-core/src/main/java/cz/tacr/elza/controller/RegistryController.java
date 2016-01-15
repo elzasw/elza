@@ -133,14 +133,6 @@ public class RegistryController {
         return new RegRecordWithCount(foundRecordVOList, foundRecordsCount);
     }
 
-    @RequestMapping(value = "/getRegType", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public RegRegisterTypeVO createRegTypeVo(final Integer typeId) {
-
-        RegRegisterType one = registerTypeRepository.findOne(typeId);
-        RegRegisterTypeVO regRegisterType = factoryVo.createRegRegisterType(one);
-        return regRegisterType;
-    }
 
     /**
      * Vrátí jedno heslo (s variantními hesly) dle id.
