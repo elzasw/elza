@@ -548,4 +548,34 @@ public class ArrangementService {
                return false;
            }
        }
+
+    /**
+     * Uložení poslední uživatelské změny nad AP k verzi AP
+     *
+     * @param change    ukládaná změna
+     * @param versionId identifikátor verze AP
+     * @return aktuální verze AP
+     */
+    public ArrFindingAidVersion saveLastChangeFaVersion(final ArrChange change, final Integer versionId) {
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+        return saveLastChangeFaVersion(change, version);
+    }
+
+    /**
+     * Uložení poslední uživatelské změny nad AP k verzi AP
+     *
+     * @param change  ukládaná změna
+     * @param version verze AP
+     * @return aktuální verze AP
+     */
+    public ArrFindingAidVersion saveLastChangeFaVersion(final ArrChange change, final ArrFindingAidVersion version) {
+
+        if (!bulkActionService.existsChangeInWorkers(change)) {
+            version.setLastChange(change);
+            return findingAidVersionRepository.save(version);
+        }
+
+        return version;
+
+    }
 }
