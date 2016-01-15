@@ -67,7 +67,7 @@ public class DescItemTypesRules extends Rules {
     	
     	final RulRuleSet rulRuleSet = version.getRuleSet();
 
-    	AvailableDescItems results = new AvailableDescItems();      
+    	//AvailableDescItems results = new AvailableDescItems();
 
         Path path;
         List<RulRule> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
@@ -76,13 +76,13 @@ public class DescItemTypesRules extends Rules {
         for (RulRule rulPackageRule : rulPackageRules) {
             path = Paths.get(RulesExecutor.ROOT_PATH + File.separator + rulPackageRule.getFilename());
             StatelessKieSession session = createNewStatelessKieSession(path);
-            session.setGlobal("results", results);
+            //session.setGlobal("results", results);
             execute(session, facts);
         }
         
-        results.finalize();
+        //results.finalize();
 
-        return results.getDescItemTypes();
+        return rulDescItemTypeExtList;
     }
 
 }

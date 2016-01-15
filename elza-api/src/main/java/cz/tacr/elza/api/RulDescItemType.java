@@ -26,7 +26,12 @@ public interface RulDescItemType<RT extends RulDataType, P extends RulPackage> e
         /**
          * Možný
          */
-        POSSIBLE
+        POSSIBLE,
+
+        /**
+         * Nemožný
+         */
+        IMPOSSIBLE
     }
 
     Integer getDescItemTypeId();

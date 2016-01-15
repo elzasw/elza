@@ -45,12 +45,6 @@ public class RulDescItemTypeDescItemsVO {
     private List<ArrDescItemVO> descItems;
 
     /**
-     * seznam specifikací
-     */
-    private List<RulDescItemSpecVO> descItemSpecs;
-
-
-    /**
      * šířka atributu (0 - maximální počet sloupců, 1..N - počet sloupců)
      */
     private Integer width;
@@ -101,14 +95,6 @@ public class RulDescItemTypeDescItemsVO {
 
     public void setViewOrder(final Integer viewOrder) {
         this.viewOrder = viewOrder;
-    }
-
-    public List<RulDescItemSpecVO> getDescItemSpecs() {
-        return descItemSpecs;
-    }
-
-    public void setDescItemSpecs(final List<RulDescItemSpecVO> descItemSpecs) {
-        this.descItemSpecs = descItemSpecs;
     }
 
     public Integer getWidth() {

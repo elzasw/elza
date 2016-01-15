@@ -401,7 +401,7 @@ public class RuleService {
         // projde všechny typy atributů
         for (RulDescItemTypeExt rulDescItemTypeExt : rulDescItemTypeExtList) {
 
-            rulDescItemTypeExt.setType(RulDescItemType.Type.POSSIBLE);
+            rulDescItemTypeExt.setType(RulDescItemType.Type.IMPOSSIBLE);
             rulDescItemTypeExt.setRepeatable(true);
 
             // projde všechny podmínky typů
@@ -416,7 +416,7 @@ public class RuleService {
             // projde všechny specifikace typů atributů
             for (RulDescItemSpecExt rulDescItemSpecExt : rulDescItemTypeExt.getRulDescItemSpecList()) {
 
-                rulDescItemSpecExt.setType(RulDescItemSpec.Type.POSSIBLE);
+                rulDescItemSpecExt.setType(RulDescItemSpec.Type.IMPOSSIBLE);
                 rulDescItemSpecExt.setRepeatable(true);
 
                 // projde všechny podmínky specifikací
