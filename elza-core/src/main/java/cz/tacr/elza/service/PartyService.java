@@ -1,18 +1,5 @@
 package cz.tacr.elza.service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.vo.ParPartyEditVO;
 import cz.tacr.elza.controller.vo.ParPartyNameEditVO;
@@ -42,6 +29,18 @@ import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -406,7 +405,7 @@ public class PartyService {
                 RegRecord regRecord = new RegRecord();
                 regRecord.setRegisterType(registerType);
                 regRecord.setRecord(pn.getMainPart() + StringUtils.defaultString(pn.getOtherPart()));
-                regRecord.setLocal(true);
+                regRecord.setLocal(false);
 
                 recordRepository.save(regRecord);
                 result = regRecord;
