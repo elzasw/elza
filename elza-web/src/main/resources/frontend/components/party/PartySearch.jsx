@@ -30,6 +30,7 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
 
     render() {
         if(this.props.items && this.props.items.length>0){
+            console.log(this.props.items);
             var partyList = this.props.items.map((item) => {                                               // přidání všech nazelených osob
                     return  <li 
                                 key={item.partyId} 

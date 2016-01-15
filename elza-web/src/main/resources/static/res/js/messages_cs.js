@@ -32,6 +32,13 @@ var messages = {
     "arr.fa.ruleSet": "Pravidla tvorby",
     "arr.fa.arrType": "Typ výstupu",
     
+    "registry.addRegistry": "Nové rejstříkové heslo",
+    "registry.name": "Název",
+    "registry.characteristics": "Charakteristika",
+    "registry.shown": "Zobrazeno",
+    "registry.z.celkoveho.poctu": "z celkového počtu",
+    "registry.all": "Vše",
+    
     "party.addParty": "Nová osoba",
     "party.nameMain": "Hlavní část jména",
     "party.nameOther": "Vedlejší část jména",

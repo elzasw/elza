@@ -32,7 +32,7 @@ var DropDownTree = class DropDownTree extends React.Component {
 
         this.nullValue = undefined;
         this.nullId = null;
-        
+        this.myItems = [];
         if (this.props.nullValue !== undefined){
             this.nullValue = this.props.nullValue;
             if (props.nullId !== undefined) {
@@ -47,7 +47,7 @@ var DropDownTree = class DropDownTree extends React.Component {
 
         
         var opened = (props.opened ? props.opened : []);
-        this.props.items.map((item, i) => {   
+        this.myItems.map((item, i) => {   
             opened = opened.concat(this.getOpenedDefault(item)); 
         });
         var label = this.getItemLabel(this.props.selectedItemID);
@@ -101,16 +101,17 @@ var DropDownTree = class DropDownTree extends React.Component {
 
     // metoda pro renderovani obsahu komponenty
     render() {     
+        this.myItems = this.props.items.slice();
         var cls = "dropTree-container";     // třída komponenty                 
         if (this.props.className) {
             cls += " " + this.props.className;
         }
-
+        
         if (this.nullValue !== undefined){
-            this.props.items.unshift({id: this.nullId, name: this.nullValue});
+            this.myItems.unshift({id: this.nullId, name: this.nullValue});
         }
 
-        var tree = this.props.items.map((item) => {   
+        var tree = this.myItems.map((item) => {   
                 return this.renderNode(item, 1); 
         });
         return (
@@ -172,7 +173,7 @@ var DropDownTree = class DropDownTree extends React.Component {
             return this.nullValue;
 
         if(!item){
-            this.props.items.map((item, i) => {  
+            this.myItems.map((item, i) => {  
                 var childLabel = this.getItemLabel(selectedItemID, item);
                 if(childLabel != ''){
                    label = childLabel;

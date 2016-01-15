@@ -12,12 +12,13 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Loading} from 'components';
-import {RibbonGroup,Ribbon, ModalDialog, NodeTabs, Search, RegistryPanel, DropDownTree} from 'components';
+import {RibbonGroup,Ribbon, ModalDialog, NodeTabs, Search, RegistryPanel, DropDownTree, AddRegistryForm} from 'components';
+import {WebApi} from 'actions'
 import {MenuItem, DropdownButton, ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {Nav, NavItem} from 'react-bootstrap';
 import {registryData, registrySearchData, registryChangeParent} from 'actions/registry/registryData'
-
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {fetchRegistryIfNeeded, registrySetTypesId} from 'actions/registry/registryList'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
 
@@ -25,7 +26,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('buildRibbon', 'handleSelect', 'handleSearch', 'handleDoubleClick', 'handleClickNavigation');
+        this.bindMethods('buildRibbon', 'handleSelect', 'handleSearch', 'handleDoubleClick', 'handleClickNavigation', 'handleAddRegistry', 'handleCallAddRegistry', 'handleCreateRecord');
         this.dispatch(fetchRegistryIfNeeded(props.registry.filterText, props.registry.registryParentId, props.registry.registryTypesId));
         this.dispatch(refRecordTypesFetchIfNeeded());
 
@@ -35,6 +36,21 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             this.dispatch(fetchRegistryIfNeeded(nextProps.registry.filterText, nextProps.registry.registryParentId, nextProps.registry.registryTypesId));
             this.dispatch(refRecordTypesFetchIfNeeded());
     }
+
+    handleAddRegistry(registerType, event) { 
+       this.dispatch(modalDialogShow(this, i18n('registry.addRegistry') , <AddRegistryForm create onSubmit={this.handleCallAddRegistry.bind(this, registerType)} />));
+    }
+
+    handleCallAddRegistry(registerType, data ) {
+        WebApi.insertRegistry( data.nameMain, data.characteristics, registerType ).then(json => {
+            this.dispatch(modalDialogHide());
+            var registry = Object.assign({}, registry,{filterText: ''});
+            this.dispatch(registrySearchData(registry));
+            this.dispatch(registryData({selectedId: json.recordId}));
+        });
+        
+    }
+    
 
     buildRibbon() {
         var isSelected = this.props.registry.selectedId;
@@ -55,7 +71,12 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 <Button><Glyphicon glyph="ok" /><div><span className="btnText">Validace</span></div></Button>
             );
         }
-
+        itemActions.push(
+                <DropdownButton title={<span className="dropContent"><Glyphicon glyph='plus-sign' /><div><span className="btnText">Přidat heslo</span></div></span>}>
+                    {this.props.refTables.recordTypes.items.map(i=> { return <MenuItem eventKey="{i.id}" onClick={this.handleAddRegistry.bind(this, i)} value={i.id}>{i.name}</MenuItem>})}
+                </DropdownButton>
+                
+            );
         var altSection;
         if (altActions.length > 0) {
             altSection = <RibbonGroup className="large">{altActions}</RibbonGroup>
@@ -114,15 +135,16 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                         // výsledky z vyhledávání
                         if ( this.props.registry.filterText!==null ) {
                             var path = '';
-                            var parents = item.parents.slice();
-                            parents.reverse().map(parent => {
-                                path+= '/'+parent.record;
+                            item.parents.map(parent => {
+                                if (path !== '')
+                                    path += '<';
+                                path += parent.record;
                             });
                             
                             return (
                                 <div key={item.recordId} className={cls} onDoubleClick={doubleClick} onClick={this.handleSelect.bind(this, item)}>
                                     <div className="path">
-                                        <span>{path.substr(0,5)}</span><span>{path.substr(5)}</span>
+                                        <span>{path}</span>
                                     </div>
                                     <span className={clsItem}>{item.record}</span>
                                 </div>
@@ -138,7 +160,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                         }
                     })}
                 </div>
-                <div key='registrysCouns' className='registry-list-count'>Zobrazeno {this.props.registry.records.length} z celkoveho poctu {this.props.registry.countRecords}</div>
+                <div key='registrysCouns' className='registry-list-count'>{i18n('registry.shown')} {this.props.registry.records.length} {i18n('registry.z.celkoveho.poctu')} {this.props.registry.countRecords}</div>
             </div>
         )
         
@@ -166,7 +188,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                         onSearch={this.handleSearch.bind(this)} 
                         afterInput={
                             <DropDownTree 
-                                nullValue = 'Vše'
+                                nullValue = {i18n('registry.all')}
                                 nullId = {null}
                                 items = {this.props.refTables.recordTypes.items}
                                 selectedItemID = {this.props.registry.registryTypesId}
