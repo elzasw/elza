@@ -62,6 +62,18 @@ class WebApi{
             });
     }
 
+    createDescItem(versionId, nodeId, nodeVersionId, descItemTypeId, descItem) {
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/descItems/' + versionId + "/" + nodeId + "/" + nodeVersionId + "/" + descItemTypeId + "/create", null,  descItem);
+    }
+
+    updateDescItem(versionId, nodeVersionId, descItem) {
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/xxx', null,  data);
+    }
+    
+    deleteDescItem(versionId, nodeVersionId, descItem) {
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/descItems/' + versionId + "/" + nodeVersionId + "/delete", null,  descItem);
+    }
+
     getData(data, timeout = 1000) {
         return new Promise(function (resolve, reject) {
             setTimeout(function() {
@@ -128,7 +140,6 @@ class WebApi{
     getFaNodeForm(versionId, nodeId) {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + nodeId + '/' + versionId + '/form', {versionId, nodeId})
             .then(json=>{
-console.log(33333333333333, json);
                 return json
             });
     }

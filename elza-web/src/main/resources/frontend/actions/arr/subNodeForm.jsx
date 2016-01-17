@@ -3,14 +3,108 @@ import {indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
 
 import * as types from 'actions/constants/actionTypes';
 
-function getSubNodeForm(state, versionId, nodeKey) {
-    var r = findByNodeKeyInGlobalState(state, versionId, nodeKey);
-    if (r != null) {
-        return r.node.subNodeForm;
+export function faSubNodeFormValueAdd(versionId, nodeId, nodeKey, valueLocation) {
+    return {
+        type: types.FA_SUB_NODE_FORM_VALUE_ADD,
+        versionId,
+        nodeId,
+        nodeKey,
+        valueLocation,
     }
-
-    return null;
 }
+
+export function faSubNodeFormValueChange(versionId, nodeId, nodeKey, valueLocation, value) {
+    return {
+        type: types.FA_SUB_NODE_FORM_VALUE_CHANGE,
+        versionId,
+        nodeId,
+        nodeKey,
+        valueLocation,
+        value,
+    }
+}
+
+export function faSubNodeFormValueChangeSpec(versionId, nodeId, nodeKey, valueLocation, value) {
+    return {
+        type: types.FA_SUB_NODE_FORM_VALUE_CHANGE_SPEC,
+        versionId,
+        nodeId,
+        nodeKey,
+        valueLocation,
+        value,
+    }
+}
+
+export function faSubNodeFormValueBlur(versionId, nodeId, nodeKey, valueLocation) {
+    return (dispatch, getState) => {
+        dispatch({
+            type: types.FA_SUB_NODE_FORM_VALUE_BLUR,
+            versionId,
+            nodeId,
+            nodeKey,
+            valueLocation,
+            receivedAt: Date.now()
+        });
+
+        var state = getState();
+        var subNodeForm = getSubNodeForm(state, versionId, nodeKey);
+        var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
+
+        if (!loc.descItem.error && loc.descItem.touched) {
+            if (typeof loc.descItem.id !== 'undefined') {
+                faSubNodeFormUpdateDescItem(versionId, subNodeForm.data.node.version, loc.descItem);
+            } else {
+                faSubNodeFormCreateDescItem(versionId, nodeId, subNodeForm.data.node.version, loc.descItemType.id, loc.descItem);
+            }
+        }
+    }
+}
+
+export function faSubNodeFormValueDelete(versionId, nodeId, nodeKey, valueLocation) {
+    return (dispatch, getState) => {
+        var state = getState();
+        var subNodeForm = getSubNodeForm(state, versionId, nodeKey);
+        var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
+
+        dispatch({
+            type: types.FA_SUB_NODE_FORM_VALUE_DELETE,
+            versionId,
+            nodeId,
+            nodeKey,
+            valueLocation,
+        })
+
+        if (typeof loc.descItem.id !== 'undefined') {
+            faSubNodeFormDeleteDescItem(versionId, subNodeForm.data.node.version, loc.descItem);
+        }
+    }
+}
+
+export function faSubNodeFormValueFocus(versionId, nodeId, nodeKey, valueLocation) {
+    return {
+        type: types.FA_SUB_NODE_FORM_VALUE_FOCUS,
+        versionId,
+        nodeId,
+        nodeKey,
+        valueLocation,
+    }
+}
+
+export function faSubNodeFormUpdateDescItem(versionId, nodeVersionId, descItem) {
+    console.log("ULOZENI desc item", versionId, nodeVersionId, descItem);
+    WebApi.updateDescItem(versionId, nodeVersionId, descItem);
+}
+
+export function faSubNodeFormCreateDescItem(versionId, nodeId, nodeVersionId, descItemTypeId, descItem) {
+    console.log("VYTVORENI desc item", versionId, nodeId, nodeVersionId, descItemTypeId, descItem);
+    WebApi.createDescItem(versionId, nodeId, nodeVersionId, descItemTypeId, descItem);
+}
+
+export function faSubNodeFormDeleteDescItem(versionId, nodeVersionId, descItem) {
+    console.log("SMAZANI desc item", versionId, nodeVersionId, descItem);
+    WebApi.deleteDescItem(versionId, nodeVersionId, descItem);
+}
+
 export function faSubNodeFormFetchIfNeeded(versionId, nodeId, nodeKey) {
     return (dispatch, getState) => {
         var state = getState();
@@ -25,20 +119,21 @@ export function faSubNodeFormFetchIfNeeded(versionId, nodeId, nodeKey) {
 }
 
 export function faSubNodeFormFetch(versionId, nodeId, nodeKey) {
-    return dispatch => {
+    return (dispatch, getState) => {
         dispatch(faSubNodeFormRequest(versionId, nodeId, nodeKey))
         return WebApi.getFaNodeForm(versionId, nodeId)
-            .then(json => dispatch(faSubNodeFormReceive(versionId, nodeId, nodeKey, json)))
+            .then(json => dispatch(faSubNodeFormReceive(versionId, nodeId, nodeKey, json, getState().refTables.rulDataTypes)))
     };
 }
 
-export function faSubNodeFormReceive(versionId, nodeId, nodeKey, json) {
+export function faSubNodeFormReceive(versionId, nodeId, nodeKey, json, rulDataTypes) {
     return {
         type: types.FA_SUB_NODE_FORM_RECEIVE,
         versionId,
         nodeId,
         nodeKey,
         data: json,
+        rulDataTypes,
         receivedAt: Date.now()
     }
 }
@@ -50,4 +145,21 @@ export function faSubNodeFormRequest(versionId, nodeId, nodeKey) {
         nodeId,
         nodeKey,
     }
+}
+
+function getSubNodeForm(state, versionId, nodeKey) {
+    var node = getNode(state, versionId, nodeKey);
+    if (node !== null) {
+        return node.subNodeForm;
+    } else {
+        return null;
+    }
+}
+function getNode(state, versionId, nodeKey) {
+    var r = findByNodeKeyInGlobalState(state, versionId, nodeKey);
+    if (r != null) {
+        return r.node;
+    }
+
+    return null;
 }

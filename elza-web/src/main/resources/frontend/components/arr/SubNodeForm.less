@@ -1,72 +1,112 @@
 @valueActionWidth: 22px;
 
+@node-form-actions-bg: #EEEEEE;
+@node-form-bg: white;
+@node-form-value-error-bg: #FFDCDC;
+@node-form-actions-color: #808080;
+@node-form-group-bg: transparent;
+@node-form-group-border-color: transparent;
+@node-form-group-active-bg: #f9f9f9;
+@node-form-group-active-border-color: #ececec;
+@node-form-item-type-bg: transparent;
+@node-form-item-type-active-bg: #f0f0f0;
+
+.node-form-standard-actions {
+    .btn {
+        padding: 2px;
+        border: none;
+        margin: 2px;
+        background: transparent;
+        .glyphicon  {
+            color: @node-form-actions-color;
+        }
+    }
+}
+
 .node-form {
     overflow-x: hidden;
     font-weight: normal;
-    background: white;
+    background: @node-form-bg;
+
+    .node-form-actions {
+        background: @node-form-actions-bg;
+        .node-form-standard-actions;
+    }
     
-    .attr-group {
-        _border: 1px solid #f0f0f0;
-        _background: #f9f9f9;
-        width: 100%;
-        margin: 2px;
-        
-        .attr-group-label {
-            background: #f0f0f0;
-            width: 100%;
-        }
-        
-        .attr-group-attrs {
-            width: 100%;
-            display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
-            
-            .attr {
-                padding: 2px;
-                min-width: 200px;
-                
-                .attr-label {
-                    white-space: nowrap;
-                    width: 100%;
-                    .btn {
-                        color: #a0a0a0;
-                        border: none;
-                        font-size: 14px;
-                        padding: 0;
-                        margin: 0 2px 0 2px;
-                        background: transparent;
-                    }
-                }
-                
-                .attr-values {
-                    width: 100%;
+    .active {
+        font-weight: normal;
+    }
+
+    .desc-item-groups {
+        .desc-item-group {
+            background: @node-form-group-bg;
+            border: 1px solid @node-form-group-border-color;
+            &.active {
+                background: @node-form-group-active-bg;
+                border: 1px solid @node-form-group-active-border-color;
+            }
+
+            .desc-item-types {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+
+                .desc-item-type {
+                    background: @node-form-item-type-bg;
+                    &.active {
+                        background: @node-form-item-type-active-bg;
+                    }                    
                     
-                    .value-container {
-                        .value {
-                            width: 100%;
+                    white-space: nowrap;
+                    _background: yellow;
+                    padding: 4px;
+                    min-width: 280px;
+
+                    .desc-item-type-label {
+                        .title {
+                            display: inline-block;
                         }
-                        .action {
-                            width: @valueActionWidth;
-                            .btn {
-                                border: none;
-                                padding: 2px;
-                                background: transparent;
+                        .actions {
+                            display: inline-block;
+                            .node-form-standard-actions;
+                        }
+                    }
+
+                    .desc-item-type-desc-items {
+                        .desc-item-type-desc-item-container {
+                            margin-bottom: 4px;
+                            &:last-child {
+                                margin-bottom: 0;
                             }
-                            float: right;
-                        }
-                        &.action {
-                            .value {
-                                width: calc(~"100% - "@valueActionWidth);
+                            
+                            display: flex;
+                            
+                            .desc-item-value-container {
+                                width: calc(~"100% - 28px");
+
+                                display: flex;
+                                flex-direction: row;
+                                flex-wrap: nowrap;                                
+
+                                .desc-item-spec {
+                                    width: 100%;
+                                    margin-right: 4px;
+                                }
+                                .desc-item-value {
+                                    width: 100%;
+                                    .error {
+                                        background: @node-form-value-error-bg;
+                                    }
+                                }
+                            }
+                            .desc-item-action-container {
+                                width: 28px;
+                                .node-form-standard-actions;
                             }
                         }
                     }
-                    .action {
-                        .btn {
-                            border: none;
-                            padding: 2px;
-                            background: transparent;
-                        }
+                    .desc-item-type-actions {
+                        .node-form-standard-actions;
                     }
                 }
             }

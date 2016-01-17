@@ -59,8 +59,8 @@ var validateDate = function (datace, callback = function (){}) {
 /**
  * Normalizace čísla - pouze povolené celé číslo
  * @param cislo int
-**/
-var normalizeInt = function (cislo) {
+ **/
+export function normalizeInt(cislo) {
     var pole = cislo.split('');
     var output = [];
     for( var i = 0, len = pole.length; i < len; i++ ) {
@@ -72,10 +72,10 @@ var normalizeInt = function (cislo) {
 }
 
 /**
- * Normalizace čísla - lze pouze číslice a nahrazení '.' za ',' kdby náhodou
+ * Normalizace čísla - lze pouze číslice a nahrazení '.' za ',' kdy náhodou
  * @param cislo decimal(18,6)
-**/
-var normalizeDouble = function (cislo) {
+ **/
+export function normalizeDouble(cislo) {
     var pole = cislo.split('');
     var output = [];
     for( var i = 0, len = pole.length; i < len; i++ ) {
@@ -94,8 +94,8 @@ var normalizeDouble = function (cislo) {
  * Normalizace textu na delku výchozí 255 znaků
  * @param text String
  * @param delka int
-**/
-var normalizeString = function (text, delka = 255) {
+ **/
+export function normalizeString(text, delka = 255) {
     if (text.length>delka) {
         text = text.substr(0,delka);
     }

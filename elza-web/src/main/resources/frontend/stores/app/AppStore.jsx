@@ -65,6 +65,18 @@ var fa = Object.assign({id: 1, versionId: 1});
 store.dispatch(selectFaTab(fa));
 */
 
+let curr
+function handleChange() {
+    let prev = curr
+    curr = store.getState().arrRegion;
+
+    if (curr !== prev) {
+        console.log("@@@@@@@@@@@@@@@@@@@@@@CHANGE", prev, curr);
+    }
+}
+
+store.subscribe(handleChange);
+
 module.exports = {
     store
 }

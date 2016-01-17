@@ -5,6 +5,7 @@ exports.i18n = require('./i18n');
 exports.LongText = require('./LongText');
 exports.Utils = require('./Utils');
 
+exports.NoFocusButton = require('./shared/button/NoFocusButton');
 exports.Toastr = require('./shared/toastr/index');
 exports.RibbonMenu = require('./shared/ribbon-menu/RibbonMenu');
 exports.RibbonGroup = require('./shared/ribbon-menu/RibbonGroup');

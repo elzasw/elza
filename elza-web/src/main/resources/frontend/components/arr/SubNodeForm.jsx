@@ -6,206 +6,152 @@ require ('./SubNodeForm.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent} from 'components';
-import {Button, Glyphicon} from 'react-bootstrap';
+import {AbstractReactComponent, NoFocusButton} from 'components';
+import {Glyphicon} from 'react-bootstrap';
 import {connect} from 'react-redux'
 import {indexById} from 'stores/app/utils.jsx'
+import {faSubNodeFormValueChange, faSubNodeFormValueChangeSpec,faSubNodeFormValueBlur, faSubNodeFormValueFocus, faSubNodeFormValueAdd, faSubNodeFormValueDelete} from 'actions/arr/subNodeForm'
+var classNames = require('classnames');
 import DescItemString from './nodeForm/DescItemString'
-
-function validateText(value, maxLength) {
-    if (value && value.length >= maxLength) {
-        return "Moc dlouhy";
-    }
-}
-function normalizeText(prevValue, value) {
-    return value;
-}
+import DescItemType from './nodeForm/DescItemType'
 
 var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderDescItem', 'renderGroup', 'renderDescItemType');
-console.log("FFFF", props);
-        var formData = {
-            groups: props.formData.map(group => {
-                var resultGroup = {
-                    ...group
-                };
-
-                resultGroup.descItemTypes = group.descItemTypes.map(descItemType => {
-
-                    var resultDescItemType = {
-                        ...descItemType,
-                        descItems: descItemType.descItems.map(descItem => ({...descItem, prevDescItemSpecId: descItem.descItemSpecId, prevValue: descItem.value}))
-                    }
-
-                    return resultDescItemType;
-                });
-
-                return resultGroup;
-            })
-        }
-
-        this.state = {formData: formData};
+        this.bindMethods('renderDescItemGroup', 'renderDescItemType', 'handleChange', 'handleChangeSpec', 'handleBlur', 'handleFocus', 'renderFormActions', 'getDescItemTypeInfo', 'handleDescItemAdd', 'handleDescItemRemove');
+//console.log("@@@@@-SubNodeForm-@@@@@", props);
     }
 
     componentWillReceiveProps(nextProps) {
+//console.log("@@@@@-SubNodeForm-@@@@@", nextProps);
     }
 
-    handleBlur(link, e) {
-        var descItemType = this.state.formData.groups[link.groupIndex].descItemTypes[link.descItemTypeIndex];
-        var descItem = descItemType.descItems[link.descItemIndex];
-
-        if (descItem.error) {
-            delete descItem.error;
-            descItem.value = descItem.prevValue;
-
-            this.setState({formData: this.state.formData});
-        }
-    }
-
-    handleChange(link, e) {
-        var descItemType = this.state.formData.groups[link.groupIndex].descItemTypes[link.descItemTypeIndex];
-        var descItem = descItemType.descItems[link.descItemIndex];
-
-        var newValue = e.target.value;
-        newValue = normalizeText(descItem.value, newValue);
-        var msg = validateText(newValue, 14);
-
-        if (typeof msg !== 'undefined') {
-            descItem.error = msg;
-        } else {
-            delete descItem.error;
-        }
-
-        descItem.value = newValue;
-
-        this.setState({formData: this.state.formData});
-    }
-
-    renderDescItem(descItemType, link, descItem, action) {
-        var actionContainer;
-        if (action) {
-            actionContainer = (
-                <div className='action'>
-                    {action}
-                </div>
-            )
-        }
-
-        var valueContainerCls = 'value-container';
-        if (action) {
-            valueContainerCls += ' action';
-        }
-
-        var rulDataType = this.props.rulDataTypes.items[indexById(this.props.rulDataTypes.items, descItemType.dataTypeId)];
-
-        switch (rulDataType.code) {
-            case 'STRING':
-                return (
-                    <DescItemString descItem={descItem}/>
-                )
-                return (
-                    <div className={valueContainerCls}>
-                        <input
-                            className='form-control value'
-                            type="text"
-                            value={descItem.value}
-                            onChange={this.handleChange.bind(this, link)}
-                            onBlur={this.handleBlur.bind(this, link)}
-                        />
-                        {actionContainer}
-                        {descItem.error && <div>ERR: {descItem.error}</div>}
-                    </div>
-                )
-            case 'TEXT':
-                return (
-                    <div className={valueContainerCls}>
-                        <textarea 
-                            className='form-control value'
-                            rows={4}
-                            value={descItem.value}
-                            onChange={this.handleChange.bind(this, link)}
-                            onBlur={this.handleBlur.bind(this, link)}
-                        />
-                        {actionContainer}
-                        {descItem.error && <div>ERR: {descItem.error}</div>}
-                    </div>
-                )
-        }
-    }
-
-    renderGroup(group, groupIndex) {
-        var descItemTypes = group.descItemTypes.map((descItemType, descItemTypeIndex) => (this.renderDescItemType(descItemType, descItemTypeIndex, groupIndex)));
+    renderDescItemGroup(descItemGroup, descItemGroupIndex) {
+        var descItemTypes = descItemGroup.descItemTypes.map((descItemType, descItemTypeIndex) => (
+            this.renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex)
+        ));
+        var cls = classNames({
+            'desc-item-group': true,
+            active: descItemGroup.hasFocus
+        });
 
         return (
-            <div className='attr-group'>
-                {false && <div className='attr-group-label'>{group.name}</div>}
-                <div className='attr-group-attrs'>
+            <div className={cls}>
+                <div className='desc-item-types'>
                     {descItemTypes}
                 </div>
             </div>
         )
     }
 
-    renderDescItemType(descItemType, descItemTypeIndex, groupIndex) {
-        var label = (
-            <div className='attr-label'>
-                {descItemType.name}
-                <Button><Glyphicon glyph="copy" /></Button>
-                <Button><Glyphicon glyph="book" /></Button>
-                <Button><Glyphicon glyph="lock" /></Button>
-            </div>
-        )
+    getDescItemTypeInfo(descItemType) {
+        return this.props.descItemTypeInfos[indexById(this.props.descItemTypeInfos, descItemType.id)];
+    }
 
-        var link = {
-            groupIndex,
+    handleDescItemRemove(descItemGroupIndex, descItemTypeIndex, descItemIndex) {
+        var valueLocation = {
+            descItemGroupIndex,
+            descItemTypeIndex,
+            descItemIndex,
+        }
+
+        this.dispatch(faSubNodeFormValueDelete(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation));
+    }
+
+    handleDescItemAdd(descItemGroupIndex, descItemTypeIndex) {
+        var valueLocation = {
+            descItemGroupIndex,
             descItemTypeIndex,
         }
 
-        var vals = descItemType.descItems.map((descItem, descItemIndex) => {
-            var action = descItemType.multipleValue ? <Button><Glyphicon glyph="remove" /></Button> : undefined
-            return this.renderDescItem(descItemType, {...link, descItemIndex: descItemIndex}, descItem, action);
-        })
+        this.dispatch(faSubNodeFormValueAdd(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation));
+    }
 
-        var descItems = (
-            <div className='attr-values'>
-                {vals}
-                {descItemType.multipleValue && <div className='action'>
-                    <Button><Glyphicon glyph="plus" /></Button>
-                </div>}
-            </div>
-        )
+    handleBlur(descItemGroupIndex, descItemTypeIndex, descItemIndex) {
+        var valueLocation = {
+            descItemGroupIndex,
+            descItemTypeIndex,
+            descItemIndex
+        }
 
-        var flexToValue = {'1': '25%', '2': '50%', 3: '75%', '4': '100%'};
+        this.dispatch(faSubNodeFormValueBlur(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation));
+    }
+
+    handleFocus(descItemGroupIndex, descItemTypeIndex, descItemIndex) {
+        var valueLocation = {
+            descItemGroupIndex,
+            descItemTypeIndex,
+            descItemIndex
+        }
+
+        this.dispatch(faSubNodeFormValueFocus(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation));
+    }
+
+    handleChange(descItemGroupIndex, descItemTypeIndex, descItemIndex, value) {
+        var valueLocation = {
+            descItemGroupIndex,
+            descItemTypeIndex,
+            descItemIndex
+        }
+
+        this.dispatch(faSubNodeFormValueChange(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation, value));
+    }
+
+    handleChangeSpec(descItemGroupIndex, descItemTypeIndex, descItemIndex, value) {
+        var valueLocation = {
+            descItemGroupIndex,
+            descItemTypeIndex,
+            descItemIndex
+        }
+
+        this.dispatch(faSubNodeFormValueChangeSpec(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation, value));
+    }
+
+    renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex) {
+        var rulDataType = this.props.rulDataTypes.items[indexById(this.props.rulDataTypes.items, descItemType.dataTypeId)];
+        var descItemTypeInfo = this.getDescItemTypeInfo(descItemType);
 
         return (
-            <div className='attr' style={{width: flexToValue[descItemType.width]}}>
-                {label}
-                {descItems}
+            <DescItemType
+                descItemType={descItemType}
+                descItemTypeInfo={descItemTypeInfo}
+                rulDataType={rulDataType}
+                onDescItemAdd={this.handleDescItemAdd.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onDescItemRemove={this.handleDescItemRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onChange={this.handleChange.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onChangeSpec={this.handleChangeSpec.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onBlur={this.handleBlur.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onFocus={this.handleFocus.bind(this, descItemGroupIndex, descItemTypeIndex)}
+            />
+        )
+    }
+
+    renderFormActions() {
+        return (
+            <div className='node-form-actions'>
+                <NoFocusButton><Glyphicon glyph="plus" />Přidat prvek</NoFocusButton>
+                <NoFocusButton><Glyphicon glyph="lock" />Odemknout vše</NoFocusButton>
+                <NoFocusButton><Glyphicon glyph="plus" />Přidat JP před</NoFocusButton>
+                <NoFocusButton><Glyphicon glyph="plus" />Přidat JP za</NoFocusButton>
+                <NoFocusButton><Glyphicon glyph="list" />Rejstříky</NoFocusButton>
+                <NoFocusButton><Glyphicon glyph="remove" />Zrušit JP</NoFocusButton>
             </div>
         )
     }
 
     render() {
-        var actions = (
-            <div className='actions'>
-                <Button><Glyphicon glyph="plus" />Přidat prvek</Button>
-                <Button><Glyphicon glyph="lock" />Odemknout vše</Button>
-                <Button><Glyphicon glyph="plus" />Přidat JP před</Button>
-                <Button><Glyphicon glyph="plus" />Přidat JP za</Button>
-                <Button><Glyphicon glyph="list" />Rejstříky</Button>
-                <Button><Glyphicon glyph="remove" />Zrušit JP</Button>
-            </div>
-        )
-
-        var groups = this.state.formData.groups.map((group, groupIndex) => (this.renderGroup(group, groupIndex)));
+        var formActions = this.renderFormActions();
+        var descItemGroups = this.props.formData.descItemGroups.map((group, groupIndex) => (
+            this.renderDescItemGroup(group, groupIndex)
+        ));
 
         return (
             <div className='node-form'>
-                {actions}
-                {groups}
+                {formActions}
+                <div className='desc-item-groups'>
+                    {descItemGroups}
+                </div>
             </div>
         )
     }

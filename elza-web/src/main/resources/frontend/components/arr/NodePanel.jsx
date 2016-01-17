@@ -107,16 +107,20 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     handleRenderAccordionItemContent(item) {
-        if (this.props.rulDataTypes.fetched && !this.props.rulDataTypes.isFetching) {
-            return (
-                <SubNodeForm formData={this.props.node.subNodeForm.data} rulDataTypes={this.props.rulDataTypes} />
-            );
-        } else {
+        if (this.props.node.subNodeForm.isFetching || !this.props.node.subNodeForm.fetched) {
             return <Loading/>
         }
+        if (this.props.rulDataTypes.isFetching || !this.props.rulDataTypes.fetched) {
+            return <Loading/>
+        }
+
+        return (
+            <SubNodeForm formData={this.props.node.subNodeForm.data} rulDataTypes={this.props.rulDataTypes} />
+        );
     }
 
     render() {
+        //console.log("NODE_PANEL", this.props);
         if (this.props.node.nodeInfo.isFetching || !this.props.node.nodeInfo.fetched) {
             return <Loading/>
         }
@@ -129,30 +133,38 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             children = this.renderChildren(this.getChildNodes());
         }
         var siblings = this.getSiblingNodes().map(s => <span key={s.id}> {s.id}</span>);
-        var content, actions;
-        if (this.props.node.subNodeForm.isFetching || !this.props.node.subNodeForm.fetched) {
-            content = <div className='content'><Loading/></div>
-            actions = <div className='actions'></div>
-        } else {
-            content = (
-                <div className='content'>
-                    <Accordion
-                        closeItem={this.handleCloseItem}
-                        openItem={this.handleOpenItem}
-                        selectedId={this.props.node.selectedSubNodeId}
-                        items={this.getSiblingNodes()}
-                        renderItemHeader={this.handleRenderAccordionItemHeader}
-                        renderItemContent={this.handleRenderAccordionItemContent}
-                    />
-                </div>
-            )
-            actions = (
-                <div className='actions'>
-                    <Button><Glyphicon glyph="plus" />Přidat JP na konec</Button>
-                    <input type="text"/><Button>Hledat</Button>
-                </div>
-            )
+        var actions = (
+            <div className='actions'>
+                <Button><Glyphicon glyph="plus" />Přidat JP na konec</Button>
+                <input type="text"/><Button>Hledat</Button>
+            </div>
+        )
+
+        var form;
+        if (this.props.node.subNodeForm.formData) {
+            form = <SubNodeForm
+                versionId={this.props.versionId}
+                selectedSubNodeId={this.props.node.selectedSubNodeId}
+                nodeKey={this.props.node.nodeKey}
+                formData={this.props.node.subNodeForm.formData}
+                descItemTypeInfos={this.props.node.subNodeForm.descItemTypeInfos}
+                rulDataTypes={this.props.rulDataTypes}
+            />
         }
+
+        var content = (
+            <div className='content'>
+                {form}
+                {false && <Accordion
+                    closeItem={this.handleCloseItem}
+                    openItem={this.handleOpenItem}
+                    selectedId={this.props.node.selectedSubNodeId}
+                    items={this.getSiblingNodes()}
+                    renderItemHeader={this.handleRenderAccordionItemHeader}
+                    renderItemContent={this.handleRenderAccordionItemContent}
+                />}
+            </div>
+        )
 
         return (
             <div className='node-panel-container'>
