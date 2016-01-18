@@ -98,14 +98,21 @@ public class ArrangementController {
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public void deleteDescItem(@RequestBody final ArrDescItemVO descItemVO,
+    public DescItemResult deleteDescItem(@RequestBody final ArrDescItemVO descItemVO,
                                @PathVariable(value = "findingAidVersionId") final Integer findingAidVersionId,
                                @PathVariable(value = "nodeVersion") final Integer nodeVersion) {
         Assert.notNull(descItemVO);
         Assert.notNull(findingAidVersionId);
         Assert.notNull(nodeVersion);
 
-        descriptionItemService.deleteDescriptionItem(descItemVO.getDescItemObjectId(), nodeVersion, findingAidVersionId);
+        ArrDescItem descItemDeleted = descriptionItemService
+                .deleteDescriptionItem(descItemVO.getDescItemObjectId(), nodeVersion, findingAidVersionId);
+
+        DescItemResult descItemResult = new DescItemResult();
+        descItemResult.setDescItem(null);
+        descItemResult.setNode(factoryVo.createArrNode(descItemDeleted.getNode()));
+
+        return descItemResult;
     }
 
     @Transactional
@@ -113,7 +120,7 @@ public class ArrangementController {
             method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public void createDescItem(@RequestBody final ArrDescItemVO descItemVO,
+    public DescItemResult createDescItem(@RequestBody final ArrDescItemVO descItemVO,
                                @PathVariable(value = "findingAidVersionId") final Integer findingAidVersionId,
                                @PathVariable(value = "descItemTypeId") final Integer descItemTypeId,
                                @PathVariable(value = "nodeId") final Integer nodeId,
@@ -126,7 +133,14 @@ public class ArrangementController {
 
         ArrDescItem descItem = factoryDO.createDescItem(descItemVO, descItemTypeId);
 
-        descriptionItemService.createDescriptionItem(descItem, nodeId, nodeVersion, findingAidVersionId);
+        ArrDescItem descItemCreated = descriptionItemService.createDescriptionItem(descItem, nodeId, nodeVersion,
+                findingAidVersionId);
+
+        DescItemResult descItemResult = new DescItemResult();
+        descItemResult.setDescItem(factoryVo.createDescItem(descItemCreated));
+        descItemResult.setNode(factoryVo.createArrNode(descItemCreated.getNode()));
+
+        return descItemResult;
     }
 
     @RequestMapping(value = "/getFindingAids", method = RequestMethod.GET)
@@ -371,6 +385,40 @@ public class ArrangementController {
 
         public void setIncludeIds(final Set<Integer> includeIds) {
             this.includeIds = includeIds;
+        }
+    }
+
+    /**
+     * Výstupní objekt pro hodnotu atributu a uzel.
+     * - pro create / delete / update
+     *
+     */
+    public static class DescItemResult {
+
+        /**
+         * uzel
+         */
+        private ArrNodeVO node;
+
+        /**
+         * hodnota atributu
+         */
+        private ArrDescItemVO descItem;
+
+        public ArrNodeVO getNode() {
+            return node;
+        }
+
+        public void setNode(final ArrNodeVO node) {
+            this.node = node;
+        }
+
+        public ArrDescItemVO getDescItem() {
+            return descItem;
+        }
+
+        public void setDescItem(final ArrDescItemVO descItem) {
+            this.descItem = descItem;
         }
     }
 }
