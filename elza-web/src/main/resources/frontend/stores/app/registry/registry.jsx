@@ -63,6 +63,12 @@ export default function registry(state = initialState, action) {
                 registryTypesId: action.registryTypesId,
                 fetched: false
             })
+        case types.REGISTRY_REMOVE_REGISTRY:
+            return Object.assign({}, state, {
+                selectedId: null,
+                fetched: false
+            })
+
         default:
             return state
     }

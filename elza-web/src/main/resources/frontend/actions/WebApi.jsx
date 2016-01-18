@@ -119,6 +119,16 @@ class WebApi{
             });
     }
 
+    removeRegistry(registryId) {
+        var data = {
+            recordId: registryId
+        }
+        return AjaxUtils.ajaxDelete('/api/registryManagerV2/deleteRecord', data)
+            .then(json=>{
+                return json;
+            });
+    }
+
     getNodeForm(nodeId, versionId) {
         var node = findNodeById(_faRootNode, nodeId);
         var parents = [];

@@ -17,7 +17,7 @@ import {WebApi} from 'actions'
 import {MenuItem, DropdownButton, ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {Nav, NavItem} from 'react-bootstrap';
-import {registryData, registrySearchData, registryChangeParent} from 'actions/registry/registryData'
+import {registryData, registrySearchData, registryChangeParent, registryRemoveRegistry} from 'actions/registry/registryData'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {fetchRegistryIfNeeded, registrySetTypesId} from 'actions/registry/registryList'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
@@ -39,7 +39,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             this.dispatch(refRecordTypesFetchIfNeeded());
     }
 
-    handleAddRegistry(registerType, event) { 
+    handleAddRegistry(registerType, event) {
        this.dispatch(modalDialogShow(this, i18n('registry.addRegistry') , <AddRegistryForm create onSubmit={this.handleCallAddRegistry.bind(this, registerType)} />));
     }
 
@@ -50,9 +50,23 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             this.dispatch(registrySearchData(registry));
             this.dispatch(registryData({selectedId: json.recordId}));
         });
-        
+
     }
-    
+
+    handleRemoveRegistryDialog(){
+        var result = confirm(i18n('registry.reallyRemoveRegistry'));
+        if (result) {
+            this.dispatch(this.handleRemoveRegistry());
+        }
+
+    }
+    handleRemoveRegistry() {
+        WebApi.removeRegistry( this.props.registry.selectedId ).then(json => {
+            var registry = Object.assign({}, registry);
+            this.dispatch(registryRemoveRegistry(registry));
+        });
+    }
+
 
     buildRibbon() {
         var isSelected = this.props.registry.selectedId;
@@ -67,17 +81,20 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         var itemActions = [];
         if (isSelected) {
             itemActions.push(
-                <Button><Glyphicon glyph="share-alt" /><div><span className="btnText">Přesun hesla</span></div></Button>
+                <Button><Glyphicon glyph="share-alt" /><div><span className="btnText">{i18n('registry.moveRegistry')}</span></div></Button>
             );
             itemActions.push(
-                <Button><Glyphicon glyph="ok" /><div><span className="btnText">Validace</span></div></Button>
+                <Button><Glyphicon glyph="ok" /><div><span className="btnText">{i18n('registry.validate')}</span></div></Button>
+            );
+            itemActions.push(
+                <Button onClick={this.handleRemoveRegistryDialog.bind(this)}><Glyphicon glyph="remove" /><div><span className="btnText">{i18n('registry.removeRegistry')}</span></div></Button>
             );
         }
         itemActions.push(
-                <DropdownButton title={<span className="dropContent"><Glyphicon glyph='plus-sign' /><div><span className="btnText">Přidat heslo</span></div></span>}>
+                <DropdownButton title={<span className="dropContent"><Glyphicon glyph='plus-sign' /><div><span className="btnText">{i18n('registry.addNewRegistry')}</span></div></span>}>
                     {this.props.refTables.recordTypes.items.map(i=> { return <MenuItem eventKey="{i.id}" onClick={this.handleAddRegistry.bind(this, i)} value={i.id}>{i.name}</MenuItem>})}
                 </DropdownButton>
-                
+
             );
         var altSection;
         if (altActions.length > 0) {
@@ -126,14 +143,14 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                                     active: this.props.registry.selectedId === item.recordId,
                                     'search-result-row': 'search-result-row'
                                     });
-                        
+
                         var clsItem = 'registry-list-icon-list';
                         var doubleClick = this.handleDoubleClick.bind(this, item);
                         if (item.hasChildren === false) {
                             clsItem = 'registry-list-icon-record';
                             doubleClick = false;
                         }
-                         
+
                         // výsledky z vyhledávání
                         if ( this.props.registry.filterText!==null ) {
                             var path = '';
@@ -142,7 +159,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                                     path += '<';
                                 path += parent.record;
                             });
-                            
+
                             return (
                                 <div key={item.recordId} className={cls} onDoubleClick={doubleClick} onClick={this.handleSelect.bind(this, item)}>
                                     <div className="path">
@@ -165,9 +182,9 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 <div key='registrysCouns' className='registry-list-count'>{i18n('registry.shown')} {this.props.registry.records.length} {i18n('registry.z.celkoveho.poctu')} {this.props.registry.countRecords}</div>
             </div>
         )
-        
+
         var navParents = '';
-        if (this.props.registry.records[0] && this.props.registry.filterText === null && this.props.registry.records[0].parents.length>0){ 
+        if (this.props.registry.records[0] && this.props.registry.filterText === null && this.props.registry.records[0].parents.length>0){
             var parentsArr = this.props.registry.records[0].parents.slice();
             navParents = (
                 <ul className='breadcrumbs'>
@@ -180,14 +197,14 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 )}
                 </ul>
             )
-        } 
+        }
 
-        
+
         var leftPanel = (
             <div className="registry-list">
                 <div>
-                    <Search 
-                        onSearch={this.handleSearch.bind(this)} 
+                    <Search
+                        onSearch={this.handleSearch.bind(this)}
                         afterInput={
                             <DropDownTree 
                                 nullValue = {i18n('registry.all')}
@@ -196,7 +213,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                                 selectedItemID = {this.props.registry.registryTypesId}
                                 onSelect = {this.hlandleRegistryTypesSelect.bind(this)}
                             />
-                        } 
+                        }
                         filterText={this.props.registry.filterText}
                     />
                 </div>
@@ -218,11 +235,11 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
         var rightPanel = (
             <div>
-                
+
             </div>
         )
 
-        
+
 
         return (
             <PageLayout

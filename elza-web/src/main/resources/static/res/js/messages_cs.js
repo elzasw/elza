@@ -33,11 +33,18 @@ var messages = {
     "arr.fa.arrType": "Typ výstupu",
     
     "registry.addRegistry": "Nové rejstříkové heslo",
+    "registry.addNewRegistry": "Přidat heslo",
     "registry.name": "Název",
     "registry.characteristics": "Charakteristika",
     "registry.shown": "Zobrazeno",
     "registry.z.celkoveho.poctu": "z celkového počtu",
     "registry.all": "Vše",
+    "registry.removeRegistry": "Opravdu chcete smazat rejstříkové heslo?",
+    "registry.yes": "Ano",
+    "registry.moveRegistry": "Přesunout heslo",
+    "registry.validate": "Validace",
+    "registry.removeRegistry": "Smazat heslo",
+    "registry.reallyRemoveRegistry": "Opravdu chcete smazat toto rejstříkové heslo?",
     
     "party.addParty": "Nová osoba",
     "party.addPartyDynasty": "Nový rod",

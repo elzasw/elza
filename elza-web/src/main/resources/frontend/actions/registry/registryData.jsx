@@ -32,3 +32,10 @@ export function registryChangeDetail(registry) {
         registry
     }
 }
+
+export function registryRemoveRegistry(registry) {
+    return {
+        type: types.REGISTRY_REMOVE_REGISTRY,
+        registry
+    }
+}
