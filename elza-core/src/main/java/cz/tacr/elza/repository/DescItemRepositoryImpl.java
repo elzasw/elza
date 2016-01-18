@@ -68,7 +68,7 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
                                                                          @Nullable final ArrChange lockChange) {
         Assert.notNull(titleType);
         if (CollectionUtils.isEmpty(nodeIds)) {
-            return Collections.EMPTY_MAP;
+            return new HashMap<>();
         }
 
         if (titleType != null) {
