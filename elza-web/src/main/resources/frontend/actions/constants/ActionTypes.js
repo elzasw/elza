@@ -15,6 +15,13 @@ export const FA_SUB_NODE_FORM_RECEIVE = 'FA_SUB_NODE_FORM_RECEIVE'
 export const FA_SUB_NODE_INFO_REQUEST = 'FA_SUB_NODE_INFO_REQUEST'
 export const FA_SUB_NODE_INFO_RECEIVE = 'FA_SUB_NODE_INFO_RECEIVE'
 
+export const FA_SUB_NODE_FORM_VALUE_CHANGE = 'FA_SUB_NODE_FORM_VALUE_CHANGE'
+export const FA_SUB_NODE_FORM_VALUE_CHANGE_SPEC = 'FA_SUB_NODE_FORM_VALUE_CHANGE_SPEC'
+export const FA_SUB_NODE_FORM_VALUE_BLUR = 'FA_SUB_NODE_FORM_VALUE_BLUR'
+export const FA_SUB_NODE_FORM_VALUE_FOCUS = 'FA_SUB_NODE_FORM_VALUE_FOCUS'
+export const FA_SUB_NODE_FORM_VALUE_ADD = 'FA_SUB_NODE_FORM_VALUE_ADD'
+export const FA_SUB_NODE_FORM_VALUE_DELETE = 'FA_SUB_NODE_FORM_VALUE_DELETE'
+
 export const FA_NODE_INFO_REQUEST = 'FA_NODE_INFO_REQUEST'
 export const FA_NODE_INFO_RECEIVE = 'FA_NODE_INFO_RECEIVE'
 
@@ -29,10 +36,10 @@ export const FA_FA_SELECT_SUBNODE = 'FA_FA_SELECT_SUBNODE'
  * Party.
  */
 export const PARTY_FIND_PARTY_REQUEST = 'PARTY_FIND_PARTY_REQUEST'  // volaní hledání osob
-export const PARTY_FIND_PARTY_RECEIVE = 'PARTY_FIND_PARTY_RECEIVE'    // dokončení hledání osob
+export const PARTY_FIND_PARTY_RECEIVE = 'PARTY_FIND_PARTY_RECEIVE'  // dokončení hledání osob
 export const PARTY_SELECT_PARTY = 'PARTY_SELECT_PARTY'              // dokončení hledání osob
 export const PARTY_DETAIL_REQUEST = 'PARTY_DETAIL_REQUEST'          // pořadavek na načtení detailu osoby
-export const PARTY_DETAIL_RECEIVE = 'PARTY_DETAIL_RECIVE'            // dokončení požadavku na hledání osoby
+export const PARTY_DETAIL_RECEIVE = 'PARTY_DETAIL_RECIVE'           // dokončení požadavku na hledání osoby
 
 /**
  * Toastr

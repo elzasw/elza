@@ -9,6 +9,8 @@ import cz.tacr.elza.controller.vo.ParPartyTimeRangeEditVO;
 import cz.tacr.elza.controller.vo.ParPersonEditVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ParDynasty;
 import cz.tacr.elza.domain.ParEvent;
 import cz.tacr.elza.domain.ParParty;
@@ -18,6 +20,10 @@ import cz.tacr.elza.domain.ParPartyTimeRange;
 import cz.tacr.elza.domain.ParPerson;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.repository.DescItemSpecRepository;
+import cz.tacr.elza.repository.DescItemTypeRepository;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +44,11 @@ public class ClientFactoryDO {
     @Qualifier("configVOMapper")
     private MapperFactory mapperFactory;
 
+    @Autowired
+    private DescItemTypeRepository descItemTypeRepository;
+
+    @Autowired
+    private DescItemSpecRepository descItemSpecRepository;
 
     /**
      * Vytvoří objekt osoby z předaného VO.
@@ -117,4 +128,32 @@ public class ClientFactoryDO {
         return mapper.map(regVariantRecord, RegVariantRecord.class);
     }
 
+    /**
+     * Vytvoření hodnoty atributu.
+     *
+     * @param descItemVO     VO hodnoty atributu
+     * @param descItemTypeId identiifkátor typu hodnoty atributu
+     * @return
+     */
+    public ArrDescItem createDescItem(final ArrDescItemVO descItemVO, final Integer descItemTypeId) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+
+        ArrDescItem descItem = mapper.map(descItemVO, ArrDescItem.class);
+
+        RulDescItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
+        if (descItemType == null) {
+            throw new IllegalStateException("Typ s ID=" + descItemVO.getDescItemSpecId() + " neexistuje");
+        }
+        descItem.setDescItemType(descItemType);
+
+        if (descItemVO.getDescItemSpecId() != null) {
+            RulDescItemSpec descItemSpec = descItemSpecRepository.findOne(descItemVO.getDescItemSpecId());
+            if (descItemSpec == null) {
+                throw new IllegalStateException("Specifikace s ID=" + descItemVO.getDescItemSpecId() + " neexistuje");
+            }
+            descItem.setDescItemSpec(descItemSpec);
+        }
+
+        return descItem;
+    }
 }

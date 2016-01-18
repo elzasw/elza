@@ -15,8 +15,12 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 
@@ -47,6 +51,12 @@ public class DescriptionItemService {
 
     @Autowired
     private RuleService ruleService;
+
+    @Autowired
+    private DescItemFactory descItemFactory;
+
+    @Autowired
+    private DescItemSpecRepository descItemSpecRepository;
 
     /**
      * Kontrola otevřené verze.
@@ -105,10 +115,144 @@ public class DescriptionItemService {
 
         deleteDescriptionItem(descItem, findingAidVersion, change);
 
+        // uložení poslední uživatelské změny nad AP k verzi AP
+        arrangementService.saveLastChangeFaVersion(change, findingAidVersion);
+
         // validace uzlu
         ruleService.conformityInfo(findingAidVersionId, Arrays.asList(descItem.getNode().getNodeId()),
-                NodeTypeOperation.SAVE_DESC_ITEM,
-                null, null, Arrays.asList(descItem));
+                NodeTypeOperation.SAVE_DESC_ITEM, null, null, Arrays.asList(descItem));
+    }
+
+
+    /**
+     * Vytvoření hodnoty atributu.
+     * - s kontrolou verze uzlu
+     * - se spuštěním validace uzlu
+     *
+     * @param descItem              hodnota atributu
+     * @param nodeId                identifikátor uzlu
+     * @param nodeVersion           verze uzlu (optimistické zámky)
+     * @param findingAidVersionId   identifikátor verze archivní pomůcky
+     */
+    public void createDescriptionItem(final ArrDescItem descItem,
+                                      final Integer nodeId,
+                                      final Integer nodeVersion,
+                                      final Integer findingAidVersionId) {
+        Assert.notNull(descItem);
+        Assert.notNull(nodeId);
+        Assert.notNull(nodeVersion);
+        Assert.notNull(findingAidVersionId);
+
+        ArrChange change = arrangementService.createChange();
+        ArrFindingAidVersion findingAidVersion = findingAidVersionRepository.findOne(findingAidVersionId);
+
+        ArrNode node = nodeRepository.findOne(nodeId);
+
+        // uložení uzlu (kontrola optimistických zámků)
+        saveNode(node);
+
+        descItem.setNode(node);
+        descItem.setCreateChange(change);
+        descItem.setDeleteChange(null);
+        descItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+
+        createDescriptionItemWithData(descItem, findingAidVersion, change);
+
+        // uložení poslední uživatelské změny nad AP k verzi AP
+        arrangementService.saveLastChangeFaVersion(change, findingAidVersion);
+
+        // validace uzlu
+        ruleService.conformityInfo(findingAidVersionId, Arrays.asList(descItem.getNode().getNodeId()),
+                NodeTypeOperation.SAVE_DESC_ITEM, null, null, Arrays.asList(descItem));
+    }
+
+    /**
+     * Vytvoření hodnoty atributu s daty.
+     *
+     * @param descItem hodnota atributu
+     * @param version  verze archivní pomůcky
+     * @param change   změna operace
+     */
+    public void createDescriptionItemWithData(final ArrDescItem descItem,
+                                      final ArrFindingAidVersion version,
+                                      final ArrChange change) {
+        Assert.notNull(descItem);
+        Assert.notNull(version);
+        Assert.notNull(change);
+
+        // pro vytváření musí být verze otevřená
+        checkFindingAidVersionLock(version);
+
+        // kontrola validity typu a specifikace
+        checkValidTypeAndSpec(descItem);
+
+        int position = 0;
+
+        List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsAfterPosition(
+                descItem.getDescItemType(),
+                descItem.getNode(),
+                0);
+
+        for (ArrDescItem item : descItems) {
+            if (item.getPosition() > position) {
+                position = item.getPosition();
+            }
+        }
+
+        if (descItem.getPosition() == null || (descItem.getPosition() > position)) {
+            descItem.setPosition(position + 1);
+        }
+
+        // načtení hodnot, které je potřeba přesunout níž
+        descItems = descItemRepository.findOpenDescItemsAfterPosition(
+                descItem.getDescItemType(),
+                descItem.getNode(),
+                descItem.getPosition() - 1);
+
+        for (ArrDescItem descItemMove : descItems) {
+
+            descItemMove.setDeleteChange(change);
+            descItemRepository.save(descItemMove);
+
+            ArrDescItem descItemNew = new ArrDescItem();
+
+            BeanUtils.copyProperties(descItemMove, descItemNew);
+            descItemNew.setDescItemId(null);
+            descItemNew.setDeleteChange(null);
+            descItemNew.setCreateChange(change);
+            descItemNew.setPosition(descItemMove.getPosition() + 1);
+
+            descItemRepository.save(descItemNew);
+
+            // pro odverzovanou hodnotu atributu je nutné vytvořit kopii dat
+            copyDescItemData(descItemMove, descItemNew);
+        }
+
+        descItem.setCreateChange(change);
+        descItemFactory.saveDescItemWithData(descItem, true);
+    }
+
+    /**
+     * Kontrola typu a specifikace.
+     *
+     * @param descItem hodnota atributu
+     */
+    private void checkValidTypeAndSpec(final ArrDescItem descItem) {
+        RulDescItemType descItemType = descItem.getDescItemType();
+        RulDescItemSpec descItemSpec = descItem.getDescItemSpec();
+
+        Assert.notNull(descItemType, "Hodnota atributu musí mít vyplněný typ");
+
+        if (descItemType.getUseSpecification()) {
+            Assert.notNull(descItemSpec, "Pro typ atributu je specifikace povinná");
+        }
+
+        if (descItemSpec != null) {
+            List<RulDescItemSpec> descItemSpecs = descItemSpecRepository.findByDescItemType(descItemType);
+            if (!descItemSpecs.contains(descItemType)) {
+                throw new IllegalStateException("Specifikace neodpovídá typu hodnoty atributu");
+            }
+        }
     }
 
     /**

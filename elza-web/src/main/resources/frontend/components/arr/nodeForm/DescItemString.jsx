@@ -6,60 +6,47 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {AbstractReactComponent} from 'components';
 import {connect} from 'react-redux'
+var classNames = require('classnames');
+import {normalizeString} from 'components/validate'
+
+const DescItemString_MAX_LENGTH = 1000;
 
 var DescItemString = class DescItemString extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
         this.bindMethods('handleChange');
-
-        this.state = {descItem: props.descItem};
-    }
-
-    componentWillReceiveProps(nextProps) {
-        this.setState({descItem: nextProps.descItem});
-    }
-
-    validateText(value, maxLength) {
-        if (value && value.length >= maxLength) {
-            return "Moc dlouhy";
-        }
-    }
-
-    normalizeText(prevValue, value) {
-        return value;
     }
 
     handleChange(e) {
-        var descItem = this.state.descItem;
+        var newValue = normalizeString(e.target.value, DescItemString_MAX_LENGTH);
 
-        var newValue = e.target.value;
-        newValue = this.normalizeText(descItem.value, newValue);
-        var msg = this.validateText(newValue, 14);
-
-        if (typeof msg !== 'undefined') {
-            descItem.error = msg;
-        } else {
-            delete descItem.error;
+        if (newValue != this.props.descItem.value) {
+            this.props.onChange(newValue);
         }
-
-        descItem.value = newValue;
-
-        this.setState({descItem: {...descItem}});
     }
 
     render() {
-        const {descItem} = this.state;
+        const {descItem} = this.props;
+
+        var cls = classNames({
+            'form-control': true,
+            value: true,
+            error: descItem.error,
+            active: descItem.hasFocus,
+        });
 
         return (
             <div className='desc-item-value'>
                 <input
-                    className='form-control value'
+                    className={cls}
                     type="text"
                     value={descItem.value}
+                    title={descItem.error}
                     onChange={this.handleChange}
+                    onFocus={() => this.props.onFocus()}
+                    onBlur={() => this.props.onBlur()}
                 />
-                {descItem.error && <div>ERR: {descItem.error}</div>}
             </div>
         )
     }

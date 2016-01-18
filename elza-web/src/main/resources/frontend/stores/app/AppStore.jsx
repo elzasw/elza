@@ -17,7 +17,12 @@ import contextMenu from './global/contextMenu';
 import modalDialog from './global/modalDialog';
 import adminRegion from './admin/adminRegion';
 import addFaForm from './arr/form/addFaForm';
-import addPartyForm from './party/form/addPartyForm';
+import addPartyPersonForm from './party/form/addPartyPersonForm';
+import addPartyDynastyForm from './party/form/addPartyDynastyForm';
+import addPartyEventForm from './party/form/addPartyEventForm';
+import addPartyGroupForm from './party/form/addPartyGroupForm';
+import addPartyOtherForm from './party/form/addPartyOtherForm';
+import addRegistryForm from './registry/form/addRegistryForm';
 
 let reducer = combineReducers({
     arrRegion,
@@ -32,7 +37,12 @@ let reducer = combineReducers({
     adminRegion,
     form: formReducer.plugin({
         addFaForm: addFaForm,
-        addPartyForm: addPartyForm
+        addPartyPersonForm: addPartyPersonForm,
+        addPartyDynastyForm: addPartyDynastyForm,
+        addPartyOtherForm: addPartyOtherForm,
+        addPartyEventForm: addPartyEventForm,
+        addPartyGroupForm: addPartyGroupForm,
+        addRegistryForm: addRegistryForm
     })
 });
 
@@ -54,6 +64,18 @@ import {selectFaTab} from 'actions/arr/fa'
 var fa = Object.assign({id: 1, versionId: 1});
 store.dispatch(selectFaTab(fa));
 */
+
+let curr
+function handleChange() {
+    let prev = curr
+    curr = store.getState().arrRegion;
+
+    if (curr !== prev) {
+        console.log("@@@@@@@@@@@@@@@@@@@@@@CHANGE", prev, curr);
+    }
+}
+
+store.subscribe(handleChange);
 
 module.exports = {
     store

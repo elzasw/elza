@@ -3,7 +3,20 @@
  */
 
 import {WebApi} from 'actions'
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/actionTypes'
+import {modalDialogHide} from 'actions/global/modalDialog'
+
+export function insertParty(partyType, partyTypeId, nameFormTypeId, nameMain, nameOther, validRange, degreeBefore, degreeAfter) {
+    return dispatch => {
+        return WebApi.insertParty(partyType, partyTypeId, nameFormTypeId, nameMain, nameOther, degreeBefore, degreeAfter, validRange)
+            .then((json) => {
+                console.log(json); 
+                dispatch(modalDialogHide());
+                dispatch(findPartyFetch(''));
+                dispatch(partyDetailFetchIfNeeded(json.partyId));
+            });
+    }
+}
 
 export function findPartyFetchIfNeeded(filterText) {
     return (dispatch, getState) => {
@@ -73,3 +86,4 @@ export function partyDetailRequest(selectedPartyID) {
         selectedPartyID: selectedPartyID
     }
 }
+

@@ -5,6 +5,7 @@ exports.i18n = require('./i18n');
 exports.LongText = require('./LongText');
 exports.Utils = require('./Utils');
 
+exports.NoFocusButton = require('./shared/button/NoFocusButton');
 exports.Toastr = require('./shared/toastr/index');
 exports.RibbonMenu = require('./shared/ribbon-menu/RibbonMenu');
 exports.RibbonGroup = require('./shared/ribbon-menu/RibbonGroup');
@@ -24,6 +25,8 @@ exports.ModalDialogWrapper = require('./shared/dialog/ModalDialogWrapper');
 exports.Ribbon = require('./page/Ribbon');
 
 exports.RegistryPanel = require('./registry/RegistryPanel');
+exports.AddRegistryForm = require('./registry/AddRegistryForm');
+
 exports.FaFileTree = require('./arr/FaFileTree');
 exports.NodePanel = require('./arr/NodePanel');
 exports.NodeTabs = require('./arr/NodeTabs');
@@ -34,7 +37,11 @@ exports.AddFaForm = require('./arr/AddFaForm');
 
 exports.PartySearch = require('./party/PartySearch');
 exports.PartyDetail = require('./party/PartyDetail');
-exports.AddPartyForm = require('./party/AddPartyForm');
+exports.AddPartyPersonForm = require('./party/AddPartyPersonForm');
+exports.AddPartyDynastyForm = require('./party/AddPartyDynastyForm');
+exports.AddPartyEventForm = require('./party/AddPartyEventForm');
+exports.AddPartyGroupForm = require('./party/AddPartyGroupForm');
+exports.AddPartyOtherForm = require('./party/AddPartyOtherForm');
 
 exports.AdminPackagesList = require('./admin/AdminPackagesList');
 exports.AdminPackagesUpload = require('./admin/AdminPackagesUpload');

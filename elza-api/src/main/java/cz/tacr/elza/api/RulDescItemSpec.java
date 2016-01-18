@@ -29,7 +29,12 @@ public interface RulDescItemSpec<RIT extends RulDescItemType, P extends RulPacka
         /**
          * Možný
          */
-        POSSIBLE
+        POSSIBLE,
+
+        /**
+         * Nemožný
+         */
+        IMPOSSIBLE
     }
 
     Integer getDescItemSpecId();

@@ -56,15 +56,11 @@ div.path{
 div.path span:first-child{
         display: inline-block;
         overflow: hidden;
-        &:after{
-            content: '\02026';
-        }
     }
 div.path span:last-child{
         display: inline-block;
-        max-width: calc(~'100% - 50px');
-        text-overflow: clip;
-        direction: rtl;
+        width: 100%;
+        text-overflow: ellipsis;        
         overflow: hidden;
         white-space: nowrap;
     }

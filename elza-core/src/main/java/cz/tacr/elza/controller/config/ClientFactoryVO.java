@@ -579,9 +579,6 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RulDescItemTypeDescItemsVO descItemTypeVO = mapper.map(descItemType, RulDescItemTypeDescItemsVO.class);
         descItemTypeVO.setDataTypeId(descItemType.getDataType().getDataTypeId());
-        descItemTypeVO.setDescItemSpecs(
-                createList(descItemSpecRepository.findByDescItemType(descItemType), RulDescItemSpecVO.class,
-                        this::createDescItemSpecVO));
         descItemTypeVO.setWidth(elzaRules.getTypeWidthByCode(descItemType.getCode()));
         return descItemTypeVO;
     }

@@ -42,12 +42,13 @@ class WebApi{
             });
     }
 
-    insertParty(type, nameFormTypeId, nameMain, nameOther, degreeBefore, degreeAfter, validRange) {
+    insertParty(partyType, partyTypeId, nameFormTypeId, nameMain, nameOther, degreeBefore, degreeAfter, validRange) {
         var data = {
-            '@type': type, 
-            partyTypeId: 1,
+            '@type': partyType, 
+            partyTypeId: partyTypeId,
+            genealogy: nameMain,
             partyNames : [{
-                nameFormTypeIod: nameFormTypeId,
+                nameFormTypeId: nameFormTypeId,
                 mainPart: nameMain,
                 otherPart: nameOther,
                 degreeBefore: degreeBefore,
@@ -59,6 +60,18 @@ class WebApi{
             .then(json=>{
                 return json;
             });
+    }
+
+    createDescItem(versionId, nodeId, nodeVersionId, descItemTypeId, descItem) {
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/descItems/' + versionId + "/" + nodeId + "/" + nodeVersionId + "/" + descItemTypeId + "/create", null,  descItem);
+    }
+
+    updateDescItem(versionId, nodeVersionId, descItem) {
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/xxx', null,  data);
+    }
+    
+    deleteDescItem(versionId, nodeVersionId, descItem) {
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/descItems/' + versionId + "/" + nodeVersionId + "/delete", null,  descItem);
     }
 
     getData(data, timeout = 1000) {
@@ -91,6 +104,20 @@ class WebApi{
                 return json;
             });
     }
+    
+    insertRegistry(nameMain, characteristics, registerType) {
+        var data = {
+            record: nameMain,
+            characteristics: characteristics,
+            local: false,
+            registerType: registerType
+            
+        }
+        return AjaxUtils.ajaxPut('/api/registryManagerV2/createRecord', null,  data)
+            .then(json=>{
+                return json;
+            });
+    }
 
     getNodeForm(nodeId, versionId) {
         var node = findNodeById(_faRootNode, nodeId);
@@ -113,7 +140,6 @@ class WebApi{
     getFaNodeForm(versionId, nodeId) {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + nodeId + '/' + versionId + '/form', {versionId, nodeId})
             .then(json=>{
-console.log(33333333333333, json);
                 return json
             });
     }

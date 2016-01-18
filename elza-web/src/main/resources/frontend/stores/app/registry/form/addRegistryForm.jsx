@@ -1,9 +1,9 @@
 import * as types from 'actions/constants/actionTypes';
 
-export default function addPartyForm(state, action) {
+export default function addRegistryForm(state, action) {
     switch (action.type) {
         case types.GLOBAL_INIT_FORM_DATA:
-            if (action.form == 'addPartyForm') {
+            if (action.form == 'addRegistryForm') {
                 return {
                     ...state,
                     initialValues: action.data
@@ -13,11 +13,11 @@ export default function addPartyForm(state, action) {
             }
         case "redux-form/CHANGE":
             switch (action.field) {
-                case "ruleSetId":
+                case "registrySetId":
                     if (action.value == '') {
                         return {
                             ...state,
-                            rulArrTypeId: {...state.rulArrTypeId, value: ''}
+                            registryTypeId: {...state.registryTypeId, value: ''}
                         }
                     } else {
                         return state;
@@ -29,3 +29,4 @@ export default function addPartyForm(state, action) {
             return state;
     }
 }
+

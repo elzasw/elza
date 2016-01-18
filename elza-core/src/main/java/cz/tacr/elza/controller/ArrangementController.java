@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
+import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVO;
@@ -83,6 +84,9 @@ public class ArrangementController {
     private ArrangementTypeRepository arrangementTypeRepository;
 
     @Autowired
+    private ClientFactoryDO factoryDO;
+
+    @Autowired
     private ClientFactoryVO factoryVo;
 
     @Autowired
@@ -102,6 +106,27 @@ public class ArrangementController {
         Assert.notNull(nodeVersion);
 
         descriptionItemService.deleteDescriptionItem(descItemVO.getDescItemObjectId(), nodeVersion, findingAidVersionId);
+    }
+
+    @Transactional
+    @RequestMapping(value = "/descItems/{findingAidVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}/create",
+            method = RequestMethod.PUT,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public void createDescItem(@RequestBody final ArrDescItemVO descItemVO,
+                               @PathVariable(value = "findingAidVersionId") final Integer findingAidVersionId,
+                               @PathVariable(value = "descItemTypeId") final Integer descItemTypeId,
+                               @PathVariable(value = "nodeId") final Integer nodeId,
+                               @PathVariable(value = "nodeVersion") final Integer nodeVersion) {
+        Assert.notNull(descItemVO);
+        Assert.notNull(findingAidVersionId);
+        Assert.notNull(descItemTypeId);
+        Assert.notNull(nodeId);
+        Assert.notNull(nodeVersion);
+
+        ArrDescItem descItem = factoryDO.createDescItem(descItemVO, descItemTypeId);
+
+        descriptionItemService.createDescriptionItem(descItem, nodeId, nodeVersion, findingAidVersionId);
     }
 
     @RequestMapping(value = "/getFindingAids", method = RequestMethod.GET)

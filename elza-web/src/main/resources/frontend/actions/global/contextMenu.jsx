@@ -9,7 +9,12 @@ export function contextMenuShow(component, menu, position={x:0,y:0}) {
     }
 }
 export function contextMenuHide() {
-    return {
-        type: types.GLOBAL_CONTEXT_MENU_HIDE,
+    return (dispatch, getState) => {
+        var state = getState();
+        if (state.contextMenu.visible) {
+            return dispatch({
+                type: types.GLOBAL_CONTEXT_MENU_HIDE,
+            })
+        }
     }
 }

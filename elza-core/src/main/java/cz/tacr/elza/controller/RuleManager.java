@@ -78,6 +78,7 @@ import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.validation.ArrDescItemsPostValidator;
 
 
@@ -156,6 +157,9 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
     @Autowired
     private PackageService packageService;
 
+    @Autowired
+    private RuleService ruleService;
+
     @Override
     @RequestMapping(value = "/getDescItemSpecById", method = RequestMethod.GET)
     public RulDescItemSpec getDescItemSpecById(@RequestParam(value = "descItemSpecId") Integer descItemSpecId) {
@@ -193,53 +197,17 @@ public class RuleManager implements cz.tacr.elza.api.controller.RuleManager<RulD
             @PathVariable(value = "faVersionId") Integer faVersionId,
             @PathVariable(value = "nodeId") Integer nodeId,
             @RequestBody Set<String> strategies) {
-    	
-    	// Pravdepodobne vhodne zapouzdrit do jedne funkce
+
+        Assert.notNull(strategies);
+
+        // Pravdepodobne vhodne zapouzdrit do jedne funkce
         ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
         if (version == null) {
             throw new IllegalArgumentException("Verze archivni pomucky neexistuje");
         }
         ArrNode node = nodeRepository.findOne(nodeId);
-        ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootLevel().getNode(),
-                version.getLockChange());
-    	
-    	
-        Assert.notNull(strategies);
-        List<RulDescItemType> itemTypeList = descItemTypeRepository.findAll();
 
-        List<RulDescItemTypeExt> rulDescItemTypeExtList = createExt(itemTypeList);
-
-        // projde všechny typy atributů
-        for (RulDescItemTypeExt rulDescItemTypeExt : rulDescItemTypeExtList) {
-
-            rulDescItemTypeExt.setType(RulDescItemType.Type.POSSIBLE);
-            rulDescItemTypeExt.setRepeatable(true);
-
-            // projde všechny podmínky typů
-            for (RulDescItemConstraint rulDescItemConstraint : rulDescItemTypeExt.getRulDescItemConstraintList()) {
-                if (rulDescItemConstraint.getRepeatable() != null && rulDescItemConstraint.getRepeatable().equals(false)) {
-                    rulDescItemTypeExt.setRepeatable(false);
-                    break;
-                }
-            }
-
-            // projde všechny specifikace typů atributů
-            for (RulDescItemSpecExt rulDescItemSpecExt : rulDescItemTypeExt.getRulDescItemSpecList()) {
-
-                rulDescItemSpecExt.setType(RulDescItemSpec.Type.POSSIBLE);
-                rulDescItemSpecExt.setRepeatable(true);
-
-                // projde všechny podmínky specifikací
-                for (RulDescItemConstraint rulDescItemConstraint : rulDescItemSpecExt.getRulDescItemConstraintList()) {
-                    if (rulDescItemConstraint.getRepeatable() != null && rulDescItemConstraint.getRepeatable().equals(false)) {
-                        rulDescItemSpecExt.setRepeatable(false);
-                        break;
-                    }
-                }
-            }
-        }
-
-        return rulesExecutor.executeDescItemTypesRules(level, rulDescItemTypeExtList, version, strategies);
+        return ruleService.getDescriptionItemTypes(version, node, strategies);
     }
 
     @Override
