@@ -54,7 +54,10 @@ export function faSubNodeFormValueBlur(versionId, nodeId, nodeKey, valueLocation
             if (typeof loc.descItem.id !== 'undefined') {
                 faSubNodeFormUpdateDescItem(versionId, subNodeForm.data.node.version, loc.descItem);
             } else {
-                faSubNodeFormCreateDescItem(versionId, nodeId, subNodeForm.data.node.version, loc.descItemType.id, loc.descItem);
+                faSubNodeFormCreateDescItem(versionId, nodeId, subNodeForm.data.node.version, loc.descItemType.id, loc.descItem)
+                    .then(json => {
+                        dispatch(faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueLocation, json, 'CREATE'));
+                    })
             }
         }
     }
@@ -75,8 +78,24 @@ export function faSubNodeFormValueDelete(versionId, nodeId, nodeKey, valueLocati
         })
 
         if (typeof loc.descItem.id !== 'undefined') {
-            faSubNodeFormDeleteDescItem(versionId, subNodeForm.data.node.version, loc.descItem);
+            faSubNodeFormDeleteDescItem(versionId, subNodeForm.data.node.version, loc.descItem)
+                .then(json => {
+                    dispatch(faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueLocation, json, 'DELETE'));
+                })
+
         }
+    }
+}
+
+export function faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueLocation, descItemResult, operationType) {
+    return {
+        type: types.FA_SUB_NODE_FORM_VALUE_RESPONSE,
+        versionId,
+        nodeId,
+        nodeKey,
+        valueLocation,
+        operationType,
+        descItemResult: descItemResult
     }
 }
 
@@ -92,17 +111,17 @@ export function faSubNodeFormValueFocus(versionId, nodeId, nodeKey, valueLocatio
 
 export function faSubNodeFormUpdateDescItem(versionId, nodeVersionId, descItem) {
     console.log("ULOZENI desc item", versionId, nodeVersionId, descItem);
-    WebApi.updateDescItem(versionId, nodeVersionId, descItem);
+    return WebApi.updateDescItem(versionId, nodeVersionId, descItem);
 }
 
 export function faSubNodeFormCreateDescItem(versionId, nodeId, nodeVersionId, descItemTypeId, descItem) {
     console.log("VYTVORENI desc item", versionId, nodeId, nodeVersionId, descItemTypeId, descItem);
-    WebApi.createDescItem(versionId, nodeId, nodeVersionId, descItemTypeId, descItem);
+    return WebApi.createDescItem(versionId, nodeId, nodeVersionId, descItemTypeId, descItem);
 }
 
 export function faSubNodeFormDeleteDescItem(versionId, nodeVersionId, descItem) {
     console.log("SMAZANI desc item", versionId, nodeVersionId, descItem);
-    WebApi.deleteDescItem(versionId, nodeVersionId, descItem);
+    return WebApi.deleteDescItem(versionId, nodeVersionId, descItem);
 }
 
 export function faSubNodeFormFetchIfNeeded(versionId, nodeId, nodeKey) {

@@ -75,6 +75,50 @@ function updateFormData(state, rulDataTypes) {
     state.descItemTypeInfos = descItemTypeInfos;
 }
 
+function getDescItemType(descItemTypeInfo) {
+    switch (descItemTypeInfo.rulDataType.code) {
+        case 'TEXT':
+            return '.ArrDescItemTextVO';
+        break;
+        case 'STRING':
+            return '.ArrDescItemStringVO';
+        break;
+        case 'INT':
+            return '.ArrDescItemIntVO';
+        break;
+        case 'COORDINATES':
+            return '.ArrDescItemCoordinatesVO';
+        break;
+        case 'DECIMAL':
+            return '.ArrDescItemDecimalVO';
+        break;
+        case 'PARTY_REF':
+            return '.ArrDescItemPartyRefVO';
+        break;
+        case 'RECORD_REF':
+            return '.ArrDescItemRecordRefVO';
+        break;
+        case 'PACKET_REF':
+            return '.ArrDescItemPacketVO';
+        break;
+        case 'ENUM':
+            return '.ArrDescItemEnumVO';
+        break;
+        case 'FORMATTED_TEXT':
+            return '.ArrDescItemFormattedTextVO';
+        break;
+        case 'UNITDATE':
+            return '.ArrDescItemUnitdateVO';
+        break;
+        case 'UNITID':
+            return '.ArrDescItemUnitidVO';
+        break;
+        default:
+            console.error("Unsupported data type", descItemTypeInfo.rulDataType);
+            return null;
+    }
+}
+
 function validate(descItem, descItemTypeInfo) {
     var errors = [];
     var error;
@@ -161,16 +205,34 @@ export default function subNodeForm(state = initialState, action) {
             var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, loc.descItemType.id)];
 
             var descItem = {
-                '!@type': descItemTypeInfo['@type'],
-                '@type': '.ArrDescItemStringVO',
+                '@type': getDescItemType(descItemTypeInfo),
                 prevValue: null,
                 hasFocus: false,
                 touched: false,
-                visited: false
+                visited: false,
+                value: ''
             };
 
             loc.descItemType.descItems = [...loc.descItemType.descItems, descItem];
             
+            state.formData = {...state.formData};
+            return state;
+        case types.FA_SUB_NODE_FORM_VALUE_RESPONSE:
+            var loc = getLoc(state, action.valueLocation);
+
+            state.data.node = action.descItemResult.node;
+
+            switch (action.operationType) {
+                case 'DELETE':
+                    break;
+                case 'UPDATE':
+                    loc.descItem.descItemObjectId = action.descItemResult.descItem.descItemObjectId;
+                    break;
+                case 'CREATE':
+                    loc.descItem.descItemObjectId = action.descItemResult.descItem.descItemObjectId;
+                    break;
+            }
+
             state.formData = {...state.formData};
             return state;
         case types.FA_SUB_NODE_FORM_VALUE_DELETE:

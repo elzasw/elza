@@ -18,6 +18,7 @@ export default function nodes(state = nodesInitialState, action) {
         case types.FA_SUB_NODE_FORM_VALUE_FOCUS:
         case types.FA_SUB_NODE_FORM_VALUE_ADD:
         case types.FA_SUB_NODE_FORM_VALUE_DELETE:
+        case types.FA_SUB_NODE_FORM_VALUE_RESPONSE:
         case types.FA_SUB_NODE_INFO_REQUEST:
         case types.FA_SUB_NODE_INFO_RECEIVE:
             var r = findByNodeKeyInNodes(state, action.versionId, action.nodeKey);

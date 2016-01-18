@@ -53,6 +53,7 @@ export function node(state = nodeInitialState, action) {
         case types.FA_SUB_NODE_FORM_VALUE_FOCUS:
         case types.FA_SUB_NODE_FORM_VALUE_ADD:
         case types.FA_SUB_NODE_FORM_VALUE_DELETE:
+        case types.FA_SUB_NODE_FORM_VALUE_RESPONSE:
             return Object.assign({}, state, {
                 subNodeForm: subNodeForm(state.subNodeForm, action),
             });

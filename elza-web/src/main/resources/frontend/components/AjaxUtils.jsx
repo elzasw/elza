@@ -22,7 +22,7 @@ function ajaxCallRaw(url, params, method, data) {
     url = updateQueryStringParameters(url, params);
 
     return new Promise(function (resolve, reject) {
-        console.log("#ajaxCallRaw [" + method + "] " + url);
+        console.log("#AjaxRaw." + method + " " + url, data);
         $.ajax({
             url: url,
             type: method,
@@ -37,7 +37,7 @@ function ajaxCallRaw(url, params, method, data) {
             error: function (xhr,
                              status,
                              err) {
-                console.log("#ajaxCallRaw [" + xhr.status + "-" + status + "] " + JSON.stringify(xhr));
+                console.log("#AjaxRaw [" + xhr.status + "-" + status + "]",  xhr);
 
                 var message;
                 if (xhr.responseJSON && xhr.responseJSON.message) {
@@ -100,7 +100,7 @@ function ajaxCall(url, params, method, data) {
     url = updateQueryStringParameters(url, params);
 
     return new Promise(function (resolve, reject) {
-        console.log("#ajaxCall [" + method + "] " + url + " " + JSON.stringify(data));
+        console.log("#Ajax." + method + " " + url, data);
         $.ajax({
             url: url,
             type: method,
@@ -119,7 +119,7 @@ function ajaxCall(url, params, method, data) {
             error: function (xhr,
                              status,
                              err) {
-                console.log("#ajaxCall [" + xhr.status + "-" + status + "] " + JSON.stringify(xhr));
+                console.log("#Ajax [" + xhr.status + "-" + status + "]", xhr);
 
                 var message;
                 if (xhr.responseJSON && xhr.responseJSON.message) {

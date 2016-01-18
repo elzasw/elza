@@ -4,6 +4,7 @@ var messages = {
     "global.action.create": "Vytvořit",
     "global.action.cancel": "Storno",
     "global.action.store": "Uložit",
+    "global.action.show.more": "Zobrazit více",
 
     "global.validation.required": "Pole je povinné",
     
