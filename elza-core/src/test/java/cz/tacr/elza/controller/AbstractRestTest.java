@@ -41,6 +41,7 @@ import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
+import cz.tacr.elza.controller.vo.RulPacketTypeVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -302,6 +303,7 @@ public abstract class AbstractRestTest {
     protected static final String GET_FVDIT_URL = RULE_MANAGER_URL + "/getFaViewDescItemTypes";
     protected static final String SAVE_FVDIT_URL = RULE_MANAGER_URL + "/saveFaViewDescItemTypes";
     protected static final String DATA_TYPES = RULE_MANAGER_URL_V2 + "/dataTypes";
+    protected static final String PACKET_TYPES = RULE_MANAGER_URL_V2 + "/packetTypes";
 
     protected static final String DT_UNITID = "UNITID";
     protected static final String DT_STRING = "STRING";
@@ -1488,6 +1490,15 @@ public abstract class AbstractRestTest {
     protected List<RulDataTypeVO> getDataTypes() {
         Response response = get(DATA_TYPES);
         return Arrays.asList(response.getBody().as(RulDataTypeVO[].class));
+    }
+
+    /**
+     * Načte dostupné typy obalu.
+     * @return dostupné typy obalu
+     */
+    protected List<RulPacketTypeVO> getPacketTypes() {
+        Response response = get(PACKET_TYPES);
+        return Arrays.asList(response.getBody().as(RulPacketTypeVO[].class));
     }
 
     /**

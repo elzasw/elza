@@ -12,11 +12,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
+import cz.tacr.elza.controller.vo.RulPacketTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
+import cz.tacr.elza.repository.PacketTypeRepository;
 
 
 /**
@@ -38,6 +41,9 @@ public class RuleController {
     @Autowired
     private DataTypeRepository dataTypeRepository;
 
+    @Autowired
+    private PacketTypeRepository packetTypeRepository;
+
     @RequestMapping(value = "/getRuleSets", method = RequestMethod.GET)
     public List<RulRuleSetVO> getRuleSets() {
         Map<Integer, RulRuleSetVO> ruleSets = new LinkedHashMap<>();
@@ -56,4 +62,11 @@ public class RuleController {
         List<RulDataType> dataTypes = dataTypeRepository.findAll();
         return factoryVo.createDataTypeList(dataTypes);
     }
+
+    @RequestMapping(value = "/packetTypes", method = RequestMethod.GET)
+    public List<RulPacketTypeVO> getPacketTypes() {
+        List<RulPacketType> packetTypes = packetTypeRepository.findAll();
+        return factoryVo.createPacketTypeList(packetTypes);
+    }
+
 }

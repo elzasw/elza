@@ -45,6 +45,7 @@ import cz.tacr.elza.controller.vo.RulArrangementTypeVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulDescItemConstraintVO;
 import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
+import cz.tacr.elza.controller.vo.RulPacketTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
@@ -105,6 +106,7 @@ import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemSpecExt;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
@@ -351,6 +353,8 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(RulDescItemSpec.class, RulDescItemSpecVO.class).byDefault().field("descItemSpecId", "id").register();
         mapperFactory.classMap(RulDescItemSpecExt.class, RulDescItemSpecExtVO.class).byDefault().field("descItemSpecId",
                 "id").register();
+
+        mapperFactory.classMap(RulPacketType.class, RulPacketTypeVO.class).byDefault().field("packetTypeId", "id").register();
 
         mapperFactory.classMap(RulRuleSet.class, RulRuleSetVO.class).byDefault().field("ruleSetId", "id").register();
 

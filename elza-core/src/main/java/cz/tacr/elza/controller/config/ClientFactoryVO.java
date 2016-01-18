@@ -37,6 +37,7 @@ import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.controller.vo.RulArrangementTypeVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
+import cz.tacr.elza.controller.vo.RulPacketTypeVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemGroupVO;
@@ -66,6 +67,7 @@ import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.repository.DescItemConstraintRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
@@ -762,5 +764,15 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrNodeVO descItemVO = mapper.map(node, ArrNodeVO.class);
         return descItemVO;
+    }
+
+    /**
+     * Vytvoření seznamu typů obalů, které jsou k dispozici.
+     *
+     * @param packetTypes seznam DO typů obalů
+     * @return seznam VO typů obalů
+     */
+    public List<RulPacketTypeVO> createPacketTypeList(final List<RulPacketType> packetTypes) {
+        return createList(packetTypes, RulPacketTypeVO.class, null);
     }
 }

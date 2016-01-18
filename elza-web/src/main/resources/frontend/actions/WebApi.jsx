@@ -161,6 +161,20 @@ class WebApi{
             });
     }
 
+    getCalendarTypes(versionId, nodeId) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/calendarTypes')
+                .then(json=>{
+                    return json
+                });
+    }
+
+    getPacketTypes(versionId, nodeId) {
+        return AjaxUtils.ajaxGet('/api/ruleSetManagerV2/packetTypes')
+                .then(json=>{
+                    return json
+                });
+    }
+
     getFaNodeForm1(versionId, nodeId) {
         var node = findNodeById(_faRootNode, nodeId);
         var data = {

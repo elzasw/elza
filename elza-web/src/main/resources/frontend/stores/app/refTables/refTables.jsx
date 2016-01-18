@@ -5,6 +5,8 @@ import partyNameFormTypes from './partyNameFormTypes'
 import partyTypes from './partyTypes'
 import recordTypes from './recordTypes'
 import rulDataTypes from './rulDataTypes';
+import calendarTypes from './calendarTypes';
+import packetTypes from './packetTypes';
 
 const initialState = {
     ruleSet: ruleSet(undefined, {type:''}),
@@ -12,6 +14,8 @@ const initialState = {
     partyTypes: partyTypes(undefined, {type:''}),
     recordTypes: recordTypes(undefined, {type:''}),
     rulDataTypes: rulDataTypes(undefined, {type:''}),
+    calendarTypes: calendarTypes(undefined, {type:''}),
+    packetTypes: packetTypes(undefined, {type:''}),
 }
 
 export default function refTables(state = initialState, action) {
@@ -45,6 +49,18 @@ export default function refTables(state = initialState, action) {
             return {
                 ...state,
                 rulDataTypes: rulDataTypes(state.rulDataTypes, action),
+            }
+        case types.REF_CALENDAR_TYPES_REQUEST:
+        case types.REF_CALENDAR_TYPES_RECEIVE:
+            return {
+                ...state,
+                calendarTypes: calendarTypes(state.calendarTypes, action),
+            }
+        case types.REF_PACKET_TYPES_REQUEST:
+        case types.REF_PACKET_TYPES_RECEIVE:
+            return {
+                ...state,
+                packetTypes: packetTypes(state.packetTypes, action),
             }
         default:
             return state
