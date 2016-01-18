@@ -12,6 +12,8 @@ import org.springframework.transaction.support.TransactionSynchronizationAdapter
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
+import com.google.common.eventbus.EventBus;
+
 import cz.tacr.elza.service.IClientDataChangesService;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
@@ -30,6 +32,10 @@ public class EventNotificationService implements IEventNotificationService {
 
     @Autowired
     private IClientDataChangesService clientDataChangesService;
+
+    @Autowired
+    private EventBus eventBus;
+
 
     private Map<EventType, AbstractEventSimple> committedEventMap = new HashMap<>();
 
@@ -57,13 +63,15 @@ public class EventNotificationService implements IEventNotificationService {
      * Provede odeslání událostí klientům.
      */
     private void flushEvents() {
-        List<AbstractEventSimple> valuesCopy;
+        Map<EventType, AbstractEventSimple> valuesCopy;
         synchronized (this) {
-            valuesCopy = new ArrayList<>(committedEventMap.values());
+            valuesCopy = new HashMap<>(committedEventMap);
             committedEventMap.clear();
         }
 
-        clientDataChangesService.fireEvents(valuesCopy);
+        //prozatím nejpreve odešleme událost do kontextu aplikace a poté až klientovi
+        eventBus.post(new EventChangeMessage(valuesCopy));
+        clientDataChangesService.fireEvents(valuesCopy.values());
     }
 
 

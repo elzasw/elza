@@ -24,6 +24,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import com.google.common.eventbus.Subscribe;
+
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNode;
@@ -36,6 +38,10 @@ import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.LevelRepositoryCustom;
+import cz.tacr.elza.service.eventnotification.EventChangeMessage;
+import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
+import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.eventnotification.events.VersionTreeChange;
 
 
 /**
@@ -408,12 +414,33 @@ public class LevelTreeCacheService {
      * Provede smazání cache pro danou verzi stromu. Vynutí načtení cache při dalším volání {@link
      * #getVersionTreeCache(ArrFindingAidVersion)}
      *
-     * @param version verze stromu
+     * @param versionId verze stromu
      */
-    synchronized public void clearVersionCache(final ArrFindingAidVersion version) {
-        versionCache.remove(version.getFindingAidVersionId());
+    synchronized public void clearVersionCache(final Integer versionId) {
+        versionCache.remove(versionId);
     }
 
+
+
+    @Subscribe
+    public void onDataUpdate(final EventChangeMessage changeMessage){
+
+        Map<EventType, AbstractEventSimple> changeMap = changeMessage.getChangeMap();
+
+        for (Map.Entry<EventType, AbstractEventSimple> changeEntry : changeMap.entrySet()) {
+
+            //projdeme všechny změny, které jsou změny ve stromu uzlů verze a smažeme cache verzí
+            if (VersionTreeChange.class.isAssignableFrom(changeEntry.getKey().getEventClass())) {
+                Set<Integer> changedVersionIds = ((VersionTreeChange) changeEntry.getValue()).getChangedVersionIds();
+
+                for (Integer changedVersionId : changedVersionIds) {
+
+                    clearVersionCache(changedVersionId);
+                }
+
+            }
+        }
+    }
 }
 
 

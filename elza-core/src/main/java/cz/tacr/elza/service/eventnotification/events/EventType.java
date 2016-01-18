@@ -8,15 +8,26 @@ package cz.tacr.elza.service.eventnotification.events;
  */
 public enum EventType {
 
-    FINDING_AID_CREATE,
-    FINDING_AID_DELETE,
+    FINDING_AID_CREATE(EventId.class),
+    FINDING_AID_DELETE(EventId.class),
+
+    NODE_DELETE(EventIdInVersion.class),
 
 
-    PARTY_CREATE,
-    PARTY_UPDATE,
+    PARTY_CREATE(EventId.class),
+    PARTY_UPDATE(EventId.class),
 
-    RECORD_CREATE,
-    RECORD_UPDATE;
+    RECORD_CREATE(EventId.class),
+    RECORD_UPDATE(EventId.class);
 
 
+    private Class<? extends AbstractEventSimple> eventClass;
+
+    EventType(final Class<? extends AbstractEventSimple> eventClass) {
+        this.eventClass = eventClass;
+    }
+
+    public Class<? extends AbstractEventSimple> getEventClass() {
+        return eventClass;
+    }
 }
