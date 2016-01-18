@@ -1,19 +1,35 @@
 package cz.tacr.elza.controller;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ParComplementTypeVO;
-import cz.tacr.elza.controller.vo.ParDynastyEditVO;
-import cz.tacr.elza.controller.vo.ParEventEditVO;
 import cz.tacr.elza.controller.vo.ParPartyEditVO;
-import cz.tacr.elza.controller.vo.ParPartyGroupEditVO;
-import cz.tacr.elza.controller.vo.ParPartyNameEditVO;
 import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ParPartyWithCount;
-import cz.tacr.elza.controller.vo.ParPersonEditVO;
 import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationTypeVO;
+import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParParty;
@@ -21,6 +37,8 @@ import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParPartyTypeComplementType;
 import cz.tacr.elza.domain.ParPartyTypeRelation;
+import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParRelationTypeRoleType;
@@ -32,27 +50,11 @@ import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
 import cz.tacr.elza.repository.PartyTypeRelationRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
 import cz.tacr.elza.service.PartyService;
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -67,6 +69,9 @@ public class PartyController {
 
     @Autowired
     private ClientFactoryVO factoryVo;
+
+    @Autowired
+    private ClientFactoryDO factoryDO;
 
     @Autowired
     private PartyTypeRepository partyTypeRepository;
@@ -99,7 +104,14 @@ public class PartyController {
     private PartyRepository partyRepository;
 
     @Autowired
+    private RelationRepository relationRepository;
+
+    @Autowired
     private PartyService partyService;
+
+    @Autowired
+    private ValidationVOService validationVOService;
+
 
 
 
@@ -239,7 +251,7 @@ public class PartyController {
         }
 
         //CHECK
-        chekParty(partyVO);
+        validationVOService.checkParty(partyVO);
 
         //TYPES
         ParPartyType partyType = partyTypeRepository.getOne(partyVO.getPartyTypeId());
@@ -266,7 +278,7 @@ public class PartyController {
         //CHECK
         Assert.isTrue(partyVO.getPartyId().equals(partyId), "V url požadavku je odkazováno na jiné ID (" + partyId
                 + ") než ve VO (" + partyVO.getPartyId() + ").");
-        chekPartyUpdate(partyVO);
+        validationVOService.checkPartyUpdate(partyVO);
 
         //TYPES
         ParPartyType partyType = partyTypeRepository.getOne(partyVO.getPartyTypeId());
@@ -280,86 +292,72 @@ public class PartyController {
         return partyList.get(0);
     }
 
-    private void chekParty(final ParPartyEditVO partyVO) {
-        ParPartyType partyType;
-        if (partyVO.getPartyTypeId() != null) {
-            partyType = partyTypeRepository.getOne(partyVO.getPartyTypeId());
-        } else {
-            throw new IllegalArgumentException("Nenalezen typ osoby s id: " + partyVO.getPartyTypeId());
-        }
 
-        // object type dle party type ?
-        if (partyVO instanceof ParDynastyEditVO
-                && !ParPartyType.PartyTypeEnum.DYNASTY.equals(partyType.getPartyTypeEnum())) {
+    /**
+     * Vložení vztahu spolu s vazbami.
+     *
+     * @param relationVO vztah s vazvami
+     * @return vložený objekt
+     */
+    @Transactional
+    @RequestMapping(value = "/relations", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ParRelationVO insertRelation(@RequestBody final ParRelationVO relationVO) {
 
-            throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
-        }
-        if (partyVO instanceof ParPersonEditVO
-                && !ParPartyType.PartyTypeEnum.PERSON.equals(partyType.getPartyTypeEnum())) {
+        Assert.isNull(relationVO.getRelationId());
 
-            throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
-        }
-        if (partyVO instanceof ParEventEditVO
-                && !ParPartyType.PartyTypeEnum.EVENT.equals(partyType.getPartyTypeEnum())) {
+        validationVOService.checkRelation(relationVO);
 
-            throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
-        }
-        if (partyVO instanceof ParPartyGroupEditVO
-                && !ParPartyType.PartyTypeEnum.GROUP_PARTY.equals(partyType.getPartyTypeEnum())) {
 
-            throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
-        }
+        ParRelation relation = factoryDO.createRelation(relationVO);
+        List<ParRelationEntity> relationEntities = factoryDO.createRelationEntities(relationVO.getRelationEntities());
+        ParRelation relationSaved = partyService.saveRelation(relation, relationEntities);
 
-        List<RegRegisterType> regRegisterTypes = registerTypeRepository.findRegisterTypeByPartyType(partyType);
-        if (CollectionUtils.isEmpty(regRegisterTypes)) {
-            throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
-        }
 
-        if (partyVO.getPartyNames() != null) {
-            checkPreferredNameExist(partyVO.getPartyNames());
-        } else {
-            throw new IllegalArgumentException("Je povinné alespoň jedno preferované jméno.");
-        }
-        // end CHECK
+        return factoryVo.createRelation(relationSaved);
     }
 
-    private void chekPartyUpdate(final ParPartyEditVO partyVO) {
-        ParPartyType partyType;
-        if (partyVO.getPartyTypeId() != null) {
-            partyType = partyTypeRepository.getOne(partyVO.getPartyTypeId());
-        } else {
-            throw new IllegalArgumentException("Nenalezen typ osoby s id: " + partyVO.getPartyTypeId());
-        }
+    /**
+     * Aktualizace vztahu s vazbami. Obsahuje stav, tzn. chybějící vazby budou smazány.
+     *
+     * @param relationId id vztahu
+     * @param relationVO objekt vztahu s vazbami
+     * @return aktualizovaný objekt vztahu
+     */
+    @Transactional
+    @RequestMapping(value = "/relations/{relationId}", method = RequestMethod.PUT,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ParRelationVO updateRelation(
+            @PathVariable(value = "relationId") final Integer relationId,
+            @RequestBody final ParRelationVO relationVO) {
 
-        if (partyVO.getPartyId() == null) {
-            throw new IllegalArgumentException("Není vyplněno id existující entity pro update.");
-        }
 
-        ParParty parParty = partyRepository.getOne(partyVO.getPartyId());
-        if (!parParty.getPartyType().getPartyTypeId().equals(partyVO.getPartyTypeId())) {
-            throw new IllegalArgumentException("Nelze měnit typ osoby.");
-        }
+        relationVO.setRelationId(relationId);
+        validationVOService.checkRelation(relationVO);
 
-        List<RegRegisterType> regRegisterTypes = registerTypeRepository.findRegisterTypeByPartyType(partyType);
-        if (CollectionUtils.isEmpty(regRegisterTypes)) {
-            throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
-        }
 
-        if (partyVO.getPartyNames() != null) {
-            checkPreferredNameExist(partyVO.getPartyNames());
+        ParRelation relation = factoryDO.createRelation(relationVO);
+        List<ParRelationEntity> relationEntities = factoryDO.createRelationEntities(relationVO.getRelationEntities());
+        ParRelation relationSaved = partyService.saveRelation(relation, relationEntities);
+
+        return factoryVo.createRelation(relationSaved);
+    }
+
+    /**
+     * Provede smazání vztahu a jeho vazeb
+     *
+     * @param relationId id vztahu
+     */
+    @Transactional
+    @RequestMapping(value = "/relations/{relationId}", method = RequestMethod.DELETE)
+    public void deleteRelation(@PathVariable(value = "relationId") final Integer relationId) {
+
+        ParRelation relation = relationRepository.findOne(relationId);
+        if (relation != null) {
+            partyService.deleteRelation(relation);
         }
     }
 
-    private void checkPreferredNameExist(final List<ParPartyNameEditVO> partyNameEditVOs) {
-        boolean isPreferred = false;
-        for (final ParPartyNameEditVO partyName : partyNameEditVOs) {
-            if (partyName.isPreferredName()) {
-                isPreferred = true;
-            }
-        }
-        if (!isPreferred) {
-            throw new IllegalArgumentException("Není přítomno žádné preferované jméno osoby.");
-        }
-    }
 
 }

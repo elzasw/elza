@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParRelation;
 import cz.tacr.elza.domain.ParRelationEntity;
 
 
@@ -27,4 +28,12 @@ public interface RelationEntityRepository extends JpaRepository<ParRelationEntit
     @Query("SELECT re FROM par_relation_entity re JOIN re.relation r WHERE r.party = ?1")
     List<ParRelationEntity> findByParty(ParParty party);
 
+
+    /**
+     * Najde vazby podle vztahu.
+     *
+     * @param relation vztah
+     * @return seznam vazeb vztahu
+     */
+    List<ParRelationEntity> findByRelation(ParRelation relation);
 }

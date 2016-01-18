@@ -1,6 +1,5 @@
 package cz.tacr.elza.controller.config;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -270,6 +269,17 @@ public class ConfigMapperConfiguration {
                         ParParty party = parRelation.getParty();
                         parRelationVO.setPartyId(party.getPartyId());
                     }
+
+                    @Override
+                    public void mapBtoA(final ParRelationVO relationVO,
+                                        final ParRelation parRelation,
+                                        final MappingContext context) {
+                        if(relationVO.getPartyId() != null){
+                            ParParty party = new ParParty();
+                            party.setPartyId(relationVO.getPartyId());
+                            parRelation.setParty(party);
+                        }
+                    }
                 }).byDefault().register();
 
         mapperFactory.classMap(ParRelationEntity.class, ParRelationEntityVO.class).customize(
@@ -280,6 +290,24 @@ public class ConfigMapperConfiguration {
                                         final MappingContext context) {
                         ParRelation relation = parRelationEntity.getRelation();
                         parRelationEntityVO.setRelationId(relation.getRelationId());
+                    }
+
+                    @Override
+                    public void mapBtoA(final ParRelationEntityVO relationEntityVO,
+                                        final ParRelationEntity parRelationEntity,
+                                        final MappingContext context) {
+
+                        if (relationEntityVO.getRoleType() != null) {
+                            ParRelationRoleType roleType = new ParRelationRoleType();
+                            roleType.setRoleTypeId(relationEntityVO.getRoleType().getRoleTypeId());
+                            parRelationEntity.setRoleType(roleType);
+                        }
+
+                        if (relationEntityVO.getRecord() != null) {
+                            RegRecord record = new RegRecord();
+                            record.setRecordId(relationEntityVO.getRecord().getRecordId());
+                            parRelationEntity.setRecord(record);
+                        }
                     }
                 }).byDefault().register();
 

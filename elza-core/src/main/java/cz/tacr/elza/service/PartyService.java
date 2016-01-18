@@ -1,5 +1,23 @@
 package cz.tacr.elza.service;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.vo.ParPartyEditVO;
 import cz.tacr.elza.controller.vo.ParPartyNameEditVO;
@@ -11,6 +29,10 @@ import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.ParPartyTimeRange;
 import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParRelationEntity;
+import cz.tacr.elza.domain.ParRelationRoleType;
+import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
@@ -25,22 +47,14 @@ import cz.tacr.elza.repository.PartyPersonRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTimeRangeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.RelationEntityRepository;
+import cz.tacr.elza.repository.RelationRepository;
+import cz.tacr.elza.repository.RelationRoleTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -92,7 +106,19 @@ public class PartyService {
     private PartyPersonRepository partyPersonRepository;
 
     @Autowired
+    private RelationTypeRepository relationTypeRepository;
+
+    @Autowired
+    private RelationRepository relationRepository;
+
+    @Autowired
+    private RelationEntityRepository relationEntityRepository;
+
+    @Autowired
     private IEventNotificationService eventNotificationService;
+
+    @Autowired
+    private RelationRoleTypeRepository relationRoleTypeRepository;
 
     /**
      * Najde osobu podle rejstříkového hesla.
@@ -191,6 +217,199 @@ public class PartyService {
 
         return partyRepository.save(origParty);
     }
+
+
+    /**
+     * Provede uložení vztahu a jeho vazeb.
+     *
+     * @param relationSource   zdrojový objakt vztahu
+     * @param relationEntities seznam vazeb vztahu (Pokud je null, nedojde k aktualizaci vazeb)
+     * @return uložený objekt
+     */
+    public ParRelation saveRelation(final ParRelation relationSource,
+                                    @Nullable final Collection<ParRelationEntity> relationEntities) {
+
+
+        Assert.notNull(relationSource.getComplementType());
+        Assert.notNull(relationSource.getComplementType().getRelationTypeId());
+
+        Set<ParUnitdate> unitdateRemove = new HashSet<>();
+
+        ParRelationType relationType = relationTypeRepository
+                .findOne(relationSource.getComplementType().getRelationTypeId());
+
+
+        ParRelation relation;
+        if (relationSource.getRelationId() == null) {
+            relation = relationSource;
+
+            relation.setFrom(saveUnitDate(relationSource.getFrom()));
+            relation.setTo(saveUnitDate(relationSource.getTo()));
+
+        } else {
+            relation = relationRepository.findOne(relationSource.getRelationId());
+
+
+            Integer fromId = relation.getFrom() == null ? null : relation.getFrom().getUnitdateId();
+            Integer toId = relation.getTo() == null ? null : relation.getTo().getUnitdateId();
+
+            //pokud měl nastavenou dataci a nyní došlo k jejímu smazání, bude původní datace smazána
+            if (fromId != null && (relationSource.getFrom() == null || relationSource.getFrom().getUnitdateId() == null
+                    || !relationSource.getFrom().getUnitdateId().equals(fromId))) {
+                unitdateRemove.add(relation.getFrom());
+            }
+            relation.setFrom(saveUnitDate(relationSource.getFrom()));
+
+            //pokud měl nastavenou dataci a nyní došlo k jejímu smazání, bude původní datace smazána
+            if (toId != null && (relationSource.getTo() == null || relationSource.getTo().getUnitdateId() == null
+                    || !relationSource.getTo().getUnitdateId().equals(toId))) {
+                unitdateRemove.add(relation.getTo());
+            }
+
+            relation.setTo(saveUnitDate(relationSource.getTo()));
+        }
+
+
+        ParParty party = partyRepository.findOne(relationSource.getParty().getPartyId());
+        Assert.notNull(party);
+
+        relation.setParty(party);
+        relation.setComplementType(relationType);
+        relation.setDateNote(relationSource.getDateNote());
+        relation.setNote(relationSource.getNote());
+
+        ParRelation result = relationRepository.save(relation);
+        relationRepository.flush();
+
+        saveDeleteRelationEntities(result, relationEntities);
+
+
+        for (ParUnitdate unitdate : unitdateRemove) {
+            unitdateRepository.delete(unitdate);
+        }
+
+        return result;
+    }
+
+    public ParUnitdate saveUnitDate(@Nullable final ParUnitdate unitdateSource) {
+        if(unitdateSource == null){
+            return null;
+        }
+
+
+        ParUnitdate unitdate;
+
+        Integer calendarTypeId =
+                unitdateSource.getCalendarType() == null || unitdateSource.getCalendarType().getCalendarTypeId() == null
+                ? null : unitdateSource.getCalendarType().getCalendarTypeId();
+
+
+        if (unitdateSource.getUnitdateId() == null) {
+            unitdate = unitdateSource;
+
+        } else {
+            unitdate = unitdateRepository.findOne(unitdateSource.getUnitdateId());
+
+            unitdate.setValueFrom(unitdateSource.getValueFrom());
+            unitdate.setValueFromEstimated(unitdateSource.getValueFromEstimated());
+            unitdate.setValueTo(unitdateSource.getValueTo());
+            unitdate.setValueToEstimated(unitdateSource.getValueToEstimated());
+            unitdate.setFormat(unitdateSource.getFormat());
+            unitdate.setTextDate(unitdateSource.getTextDate());
+        }
+
+        if (calendarTypeId != null) {
+            ArrCalendarType calendarType = calendarTypeRepository
+                    .findOne(unitdateSource.getCalendarType().getCalendarTypeId());
+            unitdate.setCalendarType(calendarType);
+        }
+
+        return unitdateRepository.save(unitdate);
+    }
+
+
+    public void deleteRelation(final ParRelation relation) {
+
+
+        ParUnitdate from = relation.getFrom();
+        ParUnitdate to = relation.getTo();
+
+        List<ParRelationEntity> relationEntities = relationEntityRepository.findByRelation(relation);
+        if (!relationEntities.isEmpty()) {
+            relationEntityRepository.delete(relationEntities);
+        }
+
+        relationRepository.delete(relation);
+
+
+        if (from != null) {
+            unitdateRepository.delete(from);
+        }
+
+        if (to != null) {
+            unitdateRepository.delete(to);
+        }
+    }
+
+
+    /**
+     * Provede nastavení stavu vazeb u vztahu. Dojde k vytvoření, aktualizaci a smazání přebytečných vazeb.
+     *
+     * @param relation            vztah
+     * @param newRelationEntities seznam vazeb vztahu (pokud je null, nedojde k žádné změně)
+     * @return nový seznam vazeb
+     */
+    private List<ParRelationEntity> saveDeleteRelationEntities(final ParRelation relation,
+                                                               @Nullable final Collection<ParRelationEntity> newRelationEntities) {
+        if (newRelationEntities == null) {
+            return Collections.EMPTY_LIST;
+        }
+
+        Map<Integer, ParRelationEntity> relationEntityMap = ElzaTools
+                .createEntityMap(relationEntityRepository.findByRelation(relation), (r) -> r.getRelationEntityId());
+
+        Set<ParRelationEntity> toRemoveEntities = new HashSet<>(relationEntityMap.values());
+
+        List<ParRelationEntity> result = new ArrayList<>(newRelationEntities.size());
+
+        for (ParRelationEntity newRelationEntity : newRelationEntities) {
+            ParRelationEntity saveEntity;
+            if (newRelationEntity.getRelationEntityId() == null) {
+                saveEntity = newRelationEntity;
+
+            } else {
+                saveEntity = relationEntityMap.get(newRelationEntity.getRelationEntityId());
+                Assert.notNull(saveEntity,
+                        "Nebyla nalezena entita vztahu s id " + newRelationEntity.getRelationEntityId());
+                toRemoveEntities.remove(saveEntity);
+
+                saveEntity.setSource(newRelationEntity.getSource());
+            }
+
+
+            Assert.notNull(newRelationEntity.getRoleType());
+            Assert.notNull(newRelationEntity.getRoleType().getRoleTypeId());
+            ParRelationRoleType relationRoleType = relationRoleTypeRepository
+                    .findOne(newRelationEntity.getRoleType().getRoleTypeId());
+            saveEntity.setRoleType(relationRoleType);
+
+            Assert.notNull(newRelationEntity.getRecord());
+            Assert.notNull(newRelationEntity.getRecord().getRecordId());
+            RegRecord record = recordRepository.findOne(newRelationEntity.getRecord().getRecordId());
+            saveEntity.setRecord(record);
+
+            saveEntity.setRelation(relation);
+
+            result.add(relationEntityRepository.save(saveEntity));
+        }
+
+        if (!toRemoveEntities.isEmpty()) {
+            relationEntityRepository.delete(toRemoveEntities);
+        }
+
+        return result;
+    }
+
 
     private ParPartyName insertPartyNames(final ParPartyEditVO partyVO, final ParParty parParty) {
 

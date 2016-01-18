@@ -118,6 +118,8 @@ import cz.tacr.elza.repository.PartyTypeRelationRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.RelationEntityRepository;
+import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
@@ -214,6 +216,9 @@ public abstract class AbstractRestTest {
     protected static final String INSERT_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/insertParty";
     protected static final String INSERT_PARTY_V2 = PARTY_MANAGER_URL_V2 + "/insertParty";
     protected static final String UPDATE_PARTY_V2 = PARTY_MANAGER_URL_V2 + "/updateParty/{partyId}";
+    protected static final String INSERT_RELATION_V2 = PARTY_MANAGER_URL_V2 + "/relations";
+    protected static final String UPDATE_RELATION_V2 = PARTY_MANAGER_URL_V2 + "/relations/{relationId}";
+    protected static final String DELETE_RELATION_V2 = PARTY_MANAGER_URL_V2 + "/relations/{relationId}";
     protected static final String FIND_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/findParty";
     protected static final String FIND_ABSTRACT_PARTY_V2 = PARTY_MANAGER_URL_V2 + "/findParty";
     protected static final String UPDATE_ABSTRACT_PARTY = PARTY_MANAGER_URL + "/updateParty";
@@ -225,6 +230,7 @@ public abstract class AbstractRestTest {
     protected static final String ORIGINATOR_ATT = "originator";
     protected static final String ABSTRACT_PARTY_ID_ATT = "partyId";
     protected static final String PARTY_VO = "partyVO";
+    protected static final String ABSTRACT_RELATION_ID_ATT = "relationId";
 
     // END - PARTY MANAGER CONSTANTS
 
@@ -411,6 +417,12 @@ public abstract class AbstractRestTest {
 
     @Autowired
     protected PartyTypeRelationRepository partyTypeRelationRepository;
+
+    @Autowired
+    protected RelationRepository relationRepository;
+
+    @Autowired
+    protected RelationEntityRepository relationEntityRepository;
 
     @Autowired
     protected RelationTypeRepository relationTypeRepository;

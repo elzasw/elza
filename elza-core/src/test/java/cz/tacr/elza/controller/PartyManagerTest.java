@@ -1,13 +1,33 @@
 package cz.tacr.elza.controller;
 
+import static com.jayway.restassured.RestAssured.given;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.jayway.restassured.response.Response;
+
 import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ParDynastyEditVO;
 import cz.tacr.elza.controller.vo.ParDynastyVO;
 import cz.tacr.elza.controller.vo.ParPartyNameEditVO;
 import cz.tacr.elza.controller.vo.ParPartyTimeRangeEditVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParRelationEntityVO;
+import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
+import cz.tacr.elza.controller.vo.ParRelationTypeVO;
+import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.ParUnitdateEditVO;
+import cz.tacr.elza.controller.vo.ParUnitdateVO;
+import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParParty;
@@ -18,22 +38,14 @@ import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParPartyTypeComplementType;
 import cz.tacr.elza.domain.ParPartyTypeExt;
 import cz.tacr.elza.domain.ParPartyTypeRelation;
+import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParRelationTypeRoleType;
 import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.vo.ParPartyWithCount;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-
-import static com.jayway.restassured.RestAssured.given;
 
 /**
  * Testy pro {@link PartyManager}.
@@ -354,6 +366,83 @@ public class PartyManagerTest extends AbstractRestTest {
         Assert.assertTrue(allUnitDate.size() == 2);
         Assert.assertTrue(allParty.get(0).getHistory().equals("HISTORYUPDATED"));
 
+
+
+        //TEST RELATIONS
+
+        ParRelationRoleType relationRoleType = createRelationRoleType("rrt" + ElzaTools.getStringOfActualDate());
+        ParRelationRoleTypeVO relationRoleTypeVO = new ParRelationRoleTypeVO();
+        relationRoleTypeVO.setRoleTypeId(relationRoleType.getRoleTypeId());
+
+        ParRelationType relationType = createRelationType("rt" + ElzaTools.getStringOfActualDate());
+        ParRelationTypeVO relationTypeVO = new ParRelationTypeVO();
+        relationTypeVO.setRelationTypeId(relationType.getRelationTypeId());
+
+        RegRecord record = createRecord(1);
+        RegRecordVO recordVO = new RegRecordVO();
+        recordVO.setRecordId(record.getRecordId());
+
+        ArrCalendarTypeVO calendarTypeVO = new ArrCalendarTypeVO();
+        calendarTypeVO.setId(calendarType.getCalendarTypeId());
+
+        ParRelationVO relationVO = new ParRelationVO();
+        relationVO.setComplementType(relationTypeVO);
+
+        ParUnitdateVO udFrom = new ParUnitdateVO();
+        udFrom.setCalendarType(calendarTypeVO);
+        udFrom.setValueFrom("15.1.2015 16:00");
+        udFrom.setValueFromEstimated(Boolean.FALSE);
+
+        relationVO.setFrom(udFrom);
+        relationVO.setNote("note");
+        relationVO.setDateNote("datenote");
+        relationVO.setPartyId(parPartyVORet.getPartyId());
+
+        ParRelationEntityVO relationEntityVO = new ParRelationEntityVO();
+
+
+        relationEntityVO.setRecord(recordVO);
+        relationEntityVO.setRoleType(relationRoleTypeVO);
+        relationEntityVO.setSource("Source1");
+
+        relationVO.setRelationEntities(Arrays.asList(relationEntityVO));
+
+        //INSERT RELATION
+        Response relationResp = post((spec) -> spec.body(relationVO), INSERT_RELATION_V2);
+        ParRelationVO relationResult = relationResp.as(ParRelationVO.class);
+
+        ParRelation relation = relationRepository.findOne(relationResult.getRelationId());
+        Assert.assertNotNull(relation);
+        Assert.assertNotNull(relation.getFrom());
+
+        List<ParRelationEntity> relationEntities = relationEntityRepository.findByRelation(relation);
+        Assert.assertTrue(relationEntities.size() == 1);
+        Assert.assertTrue(relationEntities.get(0).getSource().equals(relationEntityVO.getSource()));
+
+        //UPDATE RELATION
+        relationVO.setRelationId(relationResult.getRelationId());
+        relationVO.setRelationEntities(Collections.EMPTY_LIST);
+        relationVO.setNote("update");
+
+        relationResp = put(
+                (spec) -> spec.pathParameter(ABSTRACT_RELATION_ID_ATT, relationVO.getRelationId()).body(relationVO),
+                UPDATE_RELATION_V2);
+        relationResult = relationResp.as(ParRelationVO.class);
+        relation = relationRepository.findOne(relationResult.getRelationId());
+        Assert.assertNotNull(relation);
+        Assert.assertNotNull(relation.getFrom());
+        Assert.assertEquals(relation.getNote(), relationVO.getNote());
+
+
+        relationEntities = relationEntityRepository.findByRelation(relation);
+        Assert.assertTrue(relationEntities.isEmpty());
+
+
+        //DELETE RELATION
+        relationResp = delete(
+                (spec) -> spec.pathParameter(ABSTRACT_RELATION_ID_ATT, relationVO.getRelationId()), DELETE_RELATION_V2);
+
+        Assert.assertNull(relationRepository.findOne(relationVO.getRelationId()));
     }
 
 }

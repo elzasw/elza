@@ -39,11 +39,11 @@ import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
 import cz.tacr.elza.controller.vo.RulPacketTypeVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTypeGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -267,6 +267,24 @@ public class ClientFactoryVO {
         }
 
         return new ArrayList<>(relationVOMap.values());
+    }
+
+    /**
+     * Vytvoří VO objekt vztahu z DO.
+     *
+     * @param relation VO objekt vztahu
+     * @return DO objekt vztahu
+     */
+    public ParRelationVO createRelation(final ParRelation relation) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+
+        ParRelationVO relationVO = mapper.map(relation, ParRelationVO.class);
+
+        for (ParRelationEntity relationEntity : relationEntityRepository.findByRelation(relation)) {
+            relationVO.addRelationEntity(mapper.map(relationEntity, ParRelationEntityVO.class));
+        }
+
+        return relationVO;
     }
 
 

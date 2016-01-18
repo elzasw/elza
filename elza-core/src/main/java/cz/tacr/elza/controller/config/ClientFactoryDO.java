@@ -1,5 +1,15 @@
 package cz.tacr.elza.controller.config;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+
 import cz.tacr.elza.controller.vo.ParDynastyEditVO;
 import cz.tacr.elza.controller.vo.ParEventEditVO;
 import cz.tacr.elza.controller.vo.ParPartyEditVO;
@@ -7,6 +17,8 @@ import cz.tacr.elza.controller.vo.ParPartyGroupEditVO;
 import cz.tacr.elza.controller.vo.ParPartyNameEditVO;
 import cz.tacr.elza.controller.vo.ParPartyTimeRangeEditVO;
 import cz.tacr.elza.controller.vo.ParPersonEditVO;
+import cz.tacr.elza.controller.vo.ParRelationEntityVO;
+import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
@@ -18,6 +30,8 @@ import cz.tacr.elza.domain.ParPartyGroup;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyTimeRange;
 import cz.tacr.elza.domain.ParPerson;
+import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.RulDescItemSpec;
@@ -26,9 +40,6 @@ import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
 
 
 /**
@@ -155,5 +166,40 @@ public class ClientFactoryDO {
         }
 
         return descItem;
+    }
+
+    /**
+     * Vytvoří DO objektu vztahu.
+     *
+     * @param relationVO VO objekt vztahu
+     * @return DO objekt vztahu
+     */
+    public ParRelation createRelation(final ParRelationVO relationVO) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+
+        ParRelation relation = mapper.map(relationVO, ParRelation.class);
+        return relation;
+    }
+
+    /**
+     * Vytvoří seznam DO relation entities z VO objektů.
+     *
+     * @param relationEntities seznam VO relation entities
+     * @return seznam DO
+     */
+    public List<ParRelationEntity> createRelationEntities(@Nullable final Collection<ParRelationEntityVO> relationEntities) {
+        if (relationEntities == null) {
+            return null;
+        }
+
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+
+        List<ParRelationEntity> result = new ArrayList<>(relationEntities.size());
+
+        for (ParRelationEntityVO relationEntity : relationEntities) {
+            result.add(mapper.map(relationEntity, ParRelationEntity.class));
+        }
+
+        return result;
     }
 }
