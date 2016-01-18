@@ -6,9 +6,9 @@ import {WebApi} from 'actions'
 import * as types from 'actions/constants/actionTypes'
 import {modalDialogHide} from 'actions/global/modalDialog'
 
-export function insertParty(partyType, partyTypeId, nameFormTypeId, nameMain, nameOther, validRange, degreeBefore, degreeAfter) {
+export function insertParty(partyType, partyTypeId, nameFormTypeId, nameMain, nameOther, validRange, calendarType, degreeBefore, degreeAfter, scope) {
     return dispatch => {
-        return WebApi.insertParty(partyType, partyTypeId, nameFormTypeId, nameMain, nameOther, degreeBefore, degreeAfter, validRange)
+        return WebApi.insertParty(partyType, partyTypeId, nameFormTypeId, nameMain, nameOther, degreeBefore, degreeAfter, validRange, calendarType, scope)
             .then((json) => {
                 console.log(json); 
                 dispatch(modalDialogHide());

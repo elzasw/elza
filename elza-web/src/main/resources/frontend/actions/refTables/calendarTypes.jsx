@@ -24,7 +24,7 @@ export function calendarTypesFetchIfNeeded() {
 export function calendarTypesFetch() {
     return dispatch => {
         dispatch(calendarTypesRequest())
-        return WebApi.getClendarTypes()
+        return WebApi.getCalendarTypes()
             .then(json => dispatch(calendarTypesReceive(json)));
     }
 }

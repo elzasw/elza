@@ -11,6 +11,7 @@ import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField} from 'components/form/FormUtils'
 import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes'
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 
 const validate = (values, props) => {
     const errors = {};
@@ -30,7 +31,7 @@ var AddPartyPersonForm = class AddPartyPersonForm extends AbstractReactComponent
     constructor(props) {
         super(props);
         this.dispatch(refPartyNameFormTypesFetchIfNeeded());
-
+        this.dispatch(calendarTypesFetchIfNeeded());
         this.props.load(props.initData);
 
         this.state = {};
@@ -40,7 +41,7 @@ var AddPartyPersonForm = class AddPartyPersonForm extends AbstractReactComponent
     }
 
     render() {
-        const {fields: {partyTypeId, nameFormTypeId, nameMain, nameOther, degreeBefore, degreeAfter, validRange}, handleSubmit, onClose} = this.props;
+        const {fields: {partyTypeId, nameFormTypeId, nameMain, nameOther, degreeBefore, degreeAfter, validRange, calendarType}, handleSubmit, onClose} = this.props;
         return (
             <div>
                 <Modal.Body>
@@ -53,6 +54,9 @@ var AddPartyPersonForm = class AddPartyPersonForm extends AbstractReactComponent
                         <Input type="text" label={i18n('party.nameMain')} {...nameMain} {...decorateFormField(nameMain)} />
                         <Input type="text" label={i18n('party.nameOther')} {...nameOther} {...decorateFormField(nameOther)} />
                         <Input type="text" label={i18n('party.degreeAfter')} {...degreeAfter} {...decorateFormField(degreeAfter)} />
+                        <Input type="select" label={i18n('party.calendarType')}>
+                            {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.partyTypeId}>{i.name}</option>})}
+                        </Input>
                         <Input type="text" label={i18n('party.nameValidRange')} {...validRange} {...decorateFormField(validRange)} />
                         <Input type="hidden" {...partyTypeId} {...decorateFormField(partyTypeId)} />
                     </form>
@@ -68,7 +72,7 @@ var AddPartyPersonForm = class AddPartyPersonForm extends AbstractReactComponent
 
 module.exports = reduxForm({
     form: 'addPartyPersonForm',
-    fields: ['partyTypeId', 'nameFormTypeId', 'nameMain', 'nameOther', 'degreeBefore', 'degreeAfter', 'validRange'],
+    fields: ['partyTypeId', 'nameFormTypeId', 'nameMain', 'nameOther', 'degreeBefore', 'degreeAfter', 'validRange', 'calendarType'],
     validate
 },state => ({
     initialValues: state.form.addPartyPersonForm.initialValues,

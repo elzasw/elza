@@ -33,23 +33,23 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         switch(data.partyTypeId){
             case 1:
                 // vytvoření fyzicke osoby
-                this.dispatch(insertParty('ParPersonEditVO', data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange, data.degreeBefore, data.degreeAfter));
+                this.dispatch(insertParty('ParPersonEditVO', data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange, data.calendarType, data.degreeBefore, data.degreeAfter));
                 break; 
             case 2:
                 // vytvoření rodu
-                this.dispatch(insertParty('ParDynastyEditVO', data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange));
+                this.dispatch(insertParty('ParDynastyEditVO', data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange, data.calendarType));
                 break;
             case 3:
                 // vytvoření korporace
-                this.dispatch(insertParty('ParPartyGroupEditVO', data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange));
+                this.dispatch(insertParty('ParPartyGroupEditVO', data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange, data.calendarType, '', '', ''));
                 break;
             case 4:
                 // vytvoření dočasné korporace
-                this.dispatch(insertParty('ParEventEditVO', data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange));
+                this.dispatch(insertParty('ParEventEditVO', data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange, data.calendarType));
                 break; 
             default:
                 // vytvoření jine osoby - ostatni
-                this.dispatch(insertParty('', data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange));
+                this.dispatch(insertParty('', data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange, data.calendarType));
                 break; 
         }
     }
@@ -135,7 +135,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         )
         
         var centerPanel = (
-            <PartyDetail selectedPartyData={this.props.partyRegion.selectedPartyData} />
+            <PartyDetail refTables={this.props.refTables} selectedPartyData={this.props.partyRegion.selectedPartyData} />
         )
 
         var rightPanel = (

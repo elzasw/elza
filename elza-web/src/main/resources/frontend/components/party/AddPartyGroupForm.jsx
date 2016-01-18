@@ -12,6 +12,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField} from 'components/form/FormUtils'
 import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes'
 
+
 const validate = (values, props) => {
     const errors = {};
 
@@ -40,7 +41,7 @@ var AddPartyGroupForm = class AddPartyGroupForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {partyTypeId, nameFormTypeId, nameMain, nameOther, validRange}, handleSubmit, onClose} = this.props;
+        const {fields: {partyTypeId, nameFormTypeId, nameMain, nameOther, validRange, calendarType}, handleSubmit, onClose} = this.props;
         return (
             <div>
                 <Modal.Body>
@@ -51,6 +52,9 @@ var AddPartyGroupForm = class AddPartyGroupForm extends AbstractReactComponent {
                         </Input>
                         <Input type="text" label={i18n('party.nameMain')} {...nameMain} {...decorateFormField(nameMain)} />
                         <Input type="text" label={i18n('party.nameOther')} {...nameOther} {...decorateFormField(nameOther)} />
+                        <Input type="select" label={i18n('party.calendarType')}>
+                            {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.partyTypeId}>{i.name}</option>})}
+                        </Input>
                         <Input type="text" label={i18n('party.nameValidRange')} {...validRange} {...decorateFormField(validRange)} />
                         <Input type="hidden" {...partyTypeId} {...decorateFormField(partyTypeId)} />
                     </form>
@@ -66,7 +70,7 @@ var AddPartyGroupForm = class AddPartyGroupForm extends AbstractReactComponent {
 
 module.exports = reduxForm({
     form: 'addPartyGroupForm',
-    fields: ['partyTypeId', 'nameFormTypeId', 'nameMain', 'nameOther', 'validRange'],
+    fields: ['partyTypeId', 'nameFormTypeId', 'nameMain', 'nameOther', 'validRange', 'calendarType'],
     validate
 },state => ({
     initialValues: state.form.addPartyGroupForm.initialValues,
