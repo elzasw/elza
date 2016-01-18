@@ -305,7 +305,7 @@ public class PartyController {
             throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
         }
         if (partyVO instanceof ParPartyGroupEditVO
-                && !ParPartyType.PartyTypeEnum.PARTY_GROUP.equals(partyType.getPartyTypeEnum())) {
+                && !ParPartyType.PartyTypeEnum.GROUP_PARTY.equals(partyType.getPartyTypeEnum())) {
 
             throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
         }

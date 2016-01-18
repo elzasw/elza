@@ -116,7 +116,7 @@ public class ParPartyType implements cz.tacr.elza.api.ParPartyType {
     public enum PartyTypeEnum {
         PERSON,
         DYNASTY,
-        PARTY_GROUP,
+        GROUP_PARTY,
         EVENT
     }
 

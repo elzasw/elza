@@ -462,7 +462,7 @@ public class PartyService {
             case EVENT:
                 return partyEventRepository.getOne(partyId);
 
-            case PARTY_GROUP:
+            case GROUP_PARTY:
                 return partyGroupRepository.getOne(partyId);
 
             case PERSON:
