@@ -364,7 +364,8 @@ public class LevelTreeCacheService {
         Assert.notNull(nodesMap);
         Assert.notNull(version);
 
-        Map<Integer, DescItemRepositoryCustom.DescItemTitleInfo> nodeTitlesMap = Collections.EMPTY_MAP;
+        //node id -> title info
+        Map<Integer, DescItemRepositoryCustom.DescItemTitleInfo> nodeTitlesMap = new HashMap<>();
 
         if (StringUtils.isBlank(titleDescItemTypeCode)) {
             logger.warn("Není nastaven typ atributu, jehož hodnota bude použita pro popisek uzlu."
@@ -380,6 +381,11 @@ public class LevelTreeCacheService {
                         .findDescItemTitleInfoByNodeId(nodesMap.keySet(), titleDescItemType, version.getLockChange());
             }
         }
+
+        //root uzel bude mít jako title nastavený název AP
+        DescItemRepositoryCustom.DescItemTitleInfo rootDescItem = new DescItemRepositoryCustom.DescItemTitleInfo(
+                version.getRootLevel().getNode().getNodeId(), version.getFindingAid().getName());
+        nodeTitlesMap.put(version.getRootLevel().getNode().getNodeId(), rootDescItem);
 
 
         List<TreeNodeClient> result = new ArrayList<>(nodesMap.size());
