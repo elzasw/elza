@@ -29,7 +29,15 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             <option value={itemSpec.id}>{itemSpec.name}</option>
         ));
 
-        var descItemProps = {
+        var cls = classNames({
+            'form-control': true,
+            value: true,
+            'desc-item-spec': true,
+            error: descItem.error.spec,
+            active: descItem.hasFocus,
+        });
+
+        var descItemSpecProps = {
             onChange: this.handleChangeSpec.bind(this, descItemIndex),
             onBlur: this.handleBlur.bind(this, descItemIndex),
             onFocus: this.handleFocus.bind(this, descItemIndex),
@@ -37,9 +45,10 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
 
         return (
             <select
-                className='desc-item-spec form-control value'
-                {...descItemProps}
+                className={cls}
+                {...descItemSpecProps}
                 value={descItem.descItemSpecId}
+                title={descItem.error.spec}
             >
                 <option></option>
                 {options}

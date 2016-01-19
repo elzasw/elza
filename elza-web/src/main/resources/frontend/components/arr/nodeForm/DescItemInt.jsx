@@ -1,13 +1,13 @@
 /**
- * Input prvek pro desc item - typ STRING.
+ * Input prvek pro desc item - typ INT.
  */
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {AbstractReactComponent} from 'components';
 import {connect} from 'react-redux'
-var classNames = require('classnames');
 import {normalizeInt} from 'components/validate'
+import {decorateValue} from './DescItemUtils'
 
 var DescItemInt = class DescItemInt extends AbstractReactComponent {
     constructor(props) {
@@ -27,23 +27,13 @@ var DescItemInt = class DescItemInt extends AbstractReactComponent {
     render() {
         const {descItem} = this.props;
 
-        var cls = classNames({
-            'form-control': true,
-            value: true,
-            error: descItem.error,
-            active: descItem.hasFocus,
-        });
-
         return (
             <div className='desc-item-value'>
                 <input
-                    className={cls}
+                    {...decorateValue(this, descItem)}
                     type="text"
                     value={descItem.value}
-                    title={descItem.error}
                     onChange={this.handleChange}
-                    onFocus={() => this.props.onFocus()}
-                    onBlur={() => this.props.onBlur()}
                 />
             </div>
         )

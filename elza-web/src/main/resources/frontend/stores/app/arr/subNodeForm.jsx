@@ -1,4 +1,5 @@
 import * as types from 'actions/constants/actionTypes';
+import {i18n} from 'components'
 import {indexById} from 'stores/app/utils.jsx'
 
 function getLoc(state, valueLocation) {
@@ -48,7 +49,8 @@ function updateFormData(state, rulDataTypes) {
                                 prevValue: descItem.value,
                                 hasFocus: false,
                                 touched: false,
-                                visited: false
+                                visited: false,
+                                error: {hasError:false}
                             }
                         )
                     })
@@ -120,40 +122,37 @@ function getDescItemType(descItemTypeInfo) {
 }
 
 function validate(descItem, descItemTypeInfo) {
-    var errors = [];
-    var error;
+    var error = {};
 
     // Specifikace
     if (descItemTypeInfo.useSpecification) {
         if (typeof descItem.descItemSpecId == 'undefined' || descItem.descItemSpecId == "") {
-            errors.push('Specifikace je povinná');
+            error.spec = i18n('subNodeForm.validate.spec.required');
         }
     }
 
     // Hodnota
-    switch (descItemTypeInfo.rulDataType) {
+    switch (descItemTypeInfo.rulDataType.code) {
         case 'TEXT':
         break;
         case 'STRING':
         break;
         case 'INT':
+            if (descItem.value.length === 0) {
+                error.value = i18n('subNodeForm.validate.value.notEmpty');
+            }
         break;
         case 'COORDINATES':
         break;
         case 'DECIMAL':
+            if (descItem.value.length === 0) {
+                error.value = i18n('subNodeForm.validate.value.notEmpty');
+            }
         break;
         default:
     }
 
-    if (errors.length > 0) {
-        error = errors.map((err, index) => {
-            if (index + 1 < errors.length) {
-                return err + ", ";
-            } else {
-                return err;
-            }
-        });
-    }
+    error.hasError = error.spec || error.value;
 
     return error;
 }
@@ -210,7 +209,8 @@ export default function subNodeForm(state = initialState, action) {
                 hasFocus: false,
                 touched: false,
                 visited: false,
-                value: ''
+                value: '',
+                error: {hasError:false}
             };
 
             loc.descItemType.descItems = [...loc.descItemType.descItems, descItem];

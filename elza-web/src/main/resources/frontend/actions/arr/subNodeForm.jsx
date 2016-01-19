@@ -50,7 +50,7 @@ export function faSubNodeFormValueBlur(versionId, nodeId, nodeKey, valueLocation
         var subNodeForm = getSubNodeForm(state, versionId, nodeKey);
         var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
-        if (!loc.descItem.error && loc.descItem.touched) {
+        if (!loc.descItem.error.hasError && loc.descItem.touched) {
             if (typeof loc.descItem.id !== 'undefined') {
                 faSubNodeFormUpdateDescItem(versionId, subNodeForm.data.node.version, loc.descItem)
                     .then(json => {

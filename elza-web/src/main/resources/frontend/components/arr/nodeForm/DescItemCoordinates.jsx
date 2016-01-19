@@ -8,7 +8,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {AbstractReactComponent} from 'components';
 import {connect} from 'react-redux'
-var classNames = require('classnames');
+import {decorateValue} from './DescItemUtils'
 
 var DescItemCoordinates = class DescItemCoordinates extends AbstractReactComponent {
     constructor(props) {
@@ -66,40 +66,25 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
     render() {
         const {descItem} = this.props;
 
-        var cls1 = classNames({
-            part1: true,
-            'form-control': true,
-            value: true,
-            error: descItem.error,
-            active: descItem.hasFocus,
-        });
-        var cls2 = classNames({
-            part2: true,
-            'form-control': true,
-            value: true,
-            error: descItem.error,
-            active: descItem.hasFocus,
-        });
+        var decorate1 = decorateValue(this, descItem)
+        var decorate2 = decorateValue(this, descItem)
+
+        decorate1.className += ' part1';
+        decorate2.className += ' part2';
 
         return (
             <div className='desc-item-value'>
                 <input
-                    className={cls1}
+                    {...decorate1}
                     type="text"
                     value={this.state.values.value1}
-                    title={descItem.error}
                     onChange={this.handleChange.bind(this, 0)}
-                    onFocus={() => this.props.onFocus()}
-                    onBlur={() => this.props.onBlur()}
                 />
                 <input
-                    className={cls2}
+                    {...decorate2}
                     type="text"
                     value={this.state.values.value2}
-                    title={descItem.error}
                     onChange={this.handleChange.bind(this, 1)}
-                    onFocus={() => this.props.onFocus()}
-                    onBlur={() => this.props.onBlur()}
                 />
             </div>
         )

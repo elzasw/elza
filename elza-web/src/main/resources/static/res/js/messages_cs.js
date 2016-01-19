@@ -37,6 +37,8 @@ var messages = {
     "subNodeForm.addDescItem": "Přidat novou hodnotu",
     "subNodeForm.deleteDescItem": "Odstranit hodnotu",
     "subNodeForm.deleteDescItemType": "Odstranit prvek popisu včetně všech hodnot",
+    "subNodeForm.validate.spec.required": "Specifikace musí být uvedena",
+    "subNodeForm.validate.value.notEmpty": "Hodnota musí být uvedena",
     
     "registry.addRegistry": "Nové rejstříkové heslo",
     "registry.addNewRegistry": "Přidat heslo",
