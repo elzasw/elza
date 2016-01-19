@@ -31,7 +31,7 @@ var AdminFulltextPage = class AdminFulltextPage extends React.Component {
 
         var centerPanel = (
             <div>
-                rrrr
+                
             </div>
         )
 
