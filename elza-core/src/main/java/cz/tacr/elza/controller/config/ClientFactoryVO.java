@@ -80,6 +80,8 @@ import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
+import java.time.ZoneId;
+import java.util.Date;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 
@@ -564,11 +566,13 @@ public class ClientFactoryVO {
 
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrFindingAidVersionVO findingAidVersionVO = mapper.map(version, ArrFindingAidVersionVO.class);
-        findingAidVersionVO.setCreateDate(version.getCreateChange().getChangeDate());
+        Date createDate = Date.from(version.getCreateChange().getChangeDate().atZone(ZoneId.systemDefault()).toInstant());
+        findingAidVersionVO.setCreateDate(createDate);
 
         ArrChange lockChange = version.getLockChange();
         if (lockChange != null) {
-            findingAidVersionVO.setLockDate(lockChange.getChangeDate());
+            Date lockDate = Date.from(lockChange.getChangeDate().atZone(ZoneId.systemDefault()).toInstant());
+            findingAidVersionVO.setLockDate(lockDate);
         }
         findingAidVersionVO.setArrangementType(createArrangementType(version.getArrangementType()));
 

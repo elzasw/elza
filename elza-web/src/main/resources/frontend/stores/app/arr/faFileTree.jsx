@@ -16,7 +16,19 @@ export default function faFileTree(state = initialState, action) {
             return Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,
-                items: action.items,
+                items: action.items.map(item => {
+                    return {
+                        ...item,
+                        createDate: new Date(item.createDate),
+                        versions: item.versions.map(ver => {
+                            return {
+                                ...ver,
+                                createDate: new Date(ver.createDate),
+                                lockDate: ver.lockDate ? new Date(ver.lockDate) : null,
+                            }
+                        })
+                    }
+                }),
                 lastUpdated: action.receivedAt
             })
         default:

@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -16,9 +17,9 @@ public class ArrFindingAidVersionVO {
 
     private Integer id;
 
-    private LocalDateTime createDate;
+    private Date createDate;
 
-    private LocalDateTime lockDate;
+    private Date lockDate;
 
     private RulArrangementTypeVO arrangementType;
 
@@ -30,19 +31,19 @@ public class ArrFindingAidVersionVO {
         this.id = id;
     }
 
-    public LocalDateTime getCreateDate() {
+    public Date getCreateDate() {
         return createDate;
     }
 
-    public void setCreateDate(LocalDateTime createDate) {
+    public void setCreateDate(Date createDate) {
         this.createDate = createDate;
     }
 
-    public LocalDateTime getLockDate() {
+    public Date getLockDate() {
         return lockDate;
     }
 
-    public void setLockDate(LocalDateTime lockDate) {
+    public void setLockDate(Date lockDate) {
         this.lockDate = lockDate;
     }
 

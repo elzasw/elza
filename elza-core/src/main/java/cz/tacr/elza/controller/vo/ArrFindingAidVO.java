@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -20,7 +21,7 @@ public class ArrFindingAidVO {
 
     private String name;
 
-    private LocalDateTime createDate;
+    private Date createDate;
 
     private List<ArrFindingAidVersionVO> versions = new LinkedList<>();
 
@@ -40,11 +41,11 @@ public class ArrFindingAidVO {
         this.name = name;
     }
 
-    public LocalDateTime getCreateDate() {
+    public Date getCreateDate() {
         return createDate;
     }
 
-    public void setCreateDate(LocalDateTime createDate) {
+    public void setCreateDate(Date createDate) {
         this.createDate = createDate;
     }
 

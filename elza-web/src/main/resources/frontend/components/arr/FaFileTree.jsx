@@ -47,7 +47,7 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
             item.versions.each(ver => {
                 rows.push(
                     <NavItem key={item.id + '_' + ver.id} onClick={this.handleSelect.bind(this, item, ver)}>
-                        {ver.createDate}
+                        {ver.createDate.getYear()}
                     </NavItem>
                 )
             });
