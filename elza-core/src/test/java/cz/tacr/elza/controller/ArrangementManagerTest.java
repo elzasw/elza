@@ -37,6 +37,8 @@ import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemIntVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -2057,6 +2059,113 @@ public class ArrangementManagerTest extends AbstractRestTest {
         Assert.assertTrue(parents.get(1).getId().equals(child12.getNode().getNodeId()));
         Assert.assertTrue(parents.get(2).getId().equals(child1.getNode().getNodeId()));
         Assert.assertTrue(parents.get(3).getId().equals(testLevelData.getParentLevel().getNode().getNodeId()));
+    }
+
+    @Test
+    public void testRestCreateDescriptionItemV2() {
+        ArrFindingAid findingAid = createFindingAidRest(TEST_NAME);
+        ArrFindingAidVersion version = getFindingAidOpenVersion(findingAid);
+        ArrNode node = version.getRootLevel().getNode();
+
+        RulDescItemType descItemType = descItemTypeRepository.findOneByCode("ZP2015_UNIT_COUNT");
+
+        final int POSITION = 1;
+        final int VALUE = 123;
+
+        ArrDescItemIntVO descItemInt = new ArrDescItemIntVO();
+        descItemInt.setPosition(POSITION);
+        descItemInt.setValue(VALUE);
+
+        ArrangementController.DescItemResult descItemResult = createDescriptionItem(descItemInt,
+                version.getFindingAidVersionId(),
+                descItemType.getDescItemTypeId(),
+                node.getNodeId(),
+                node.getVersion());
+
+        Assert.assertNotNull(descItemResult);
+
+        ArrDescItemVO descItem = descItemResult.getDescItem();
+
+        Assert.assertNotNull(descItemResult.getNode());
+        Assert.assertNotNull(descItem);
+        Assert.assertTrue(descItem instanceof ArrDescItemIntVO);
+
+        Assert.assertEquals(POSITION, (int) descItem.getPosition());
+        Assert.assertEquals(VALUE, (int) ((ArrDescItemIntVO) descItem).getValue());
+
+    }
+
+    @Test
+    public void testRestDeleteDescriptionItemV2() {
+        ArrFindingAid findingAid = createFindingAidRest(TEST_NAME);
+        ArrFindingAidVersion version = getFindingAidOpenVersion(findingAid);
+        ArrNode node = version.getRootLevel().getNode();
+
+        RulDescItemType descItemType = descItemTypeRepository.findOneByCode("ZP2015_UNIT_COUNT");
+
+        final int POSITION = 1;
+        final int VALUE = 123;
+
+        ArrDescItemIntVO descItemInt = new ArrDescItemIntVO();
+        descItemInt.setPosition(POSITION);
+        descItemInt.setValue(VALUE);
+
+        ArrangementController.DescItemResult descItemResult = createDescriptionItem(descItemInt,
+                version.getFindingAidVersionId(),
+                descItemType.getDescItemTypeId(),
+                node.getNodeId(),
+                node.getVersion());
+
+        descItemResult = deleteDescriptionItem(descItemResult.getDescItem(),
+                version.getFindingAidVersionId(),
+                descItemResult.getNode().getVersion());
+
+        Assert.assertNotNull(descItemResult);
+        Assert.assertNotNull(descItemResult.getNode());
+        Assert.assertNull(descItemResult.getDescItem());
+
+    }
+
+    @Test
+    public void testRestUpdateDescriptionItemV2() {
+        ArrFindingAid findingAid = createFindingAidRest(TEST_NAME);
+        ArrFindingAidVersion version = getFindingAidOpenVersion(findingAid);
+        ArrNode node = version.getRootLevel().getNode();
+
+        RulDescItemType descItemType = descItemTypeRepository.findOneByCode("ZP2015_UNIT_COUNT");
+
+        final int POSITION = 1;
+        final int VALUE = 123;
+        final int VALUE_NEW = 321;
+
+        ArrDescItemIntVO descItemInt = new ArrDescItemIntVO();
+        descItemInt.setPosition(POSITION);
+        descItemInt.setValue(VALUE);
+
+        ArrangementController.DescItemResult descItemResult = createDescriptionItem(descItemInt,
+                version.getFindingAidVersionId(),
+                descItemType.getDescItemTypeId(),
+                node.getNodeId(),
+                node.getVersion());
+
+        ArrDescItemIntVO descItemCreated = (ArrDescItemIntVO) descItemResult.getDescItem();
+
+        descItemCreated.setValue(VALUE_NEW);
+
+        descItemResult = updateDescriptionItem(descItemCreated,
+                version.getFindingAidVersionId(),
+                descItemResult.getNode().getVersion(),
+                true);
+
+        Assert.assertNotNull(descItemResult);
+        Assert.assertNotNull(descItemResult.getNode());
+        Assert.assertNotNull(descItemResult.getDescItem());
+
+        ArrDescItemIntVO descItemUpdated = (ArrDescItemIntVO) descItemResult.getDescItem();
+
+        Assert.assertEquals(VALUE_NEW, (int) descItemUpdated.getValue());
+        Assert.assertNotEquals(descItemCreated.getId(), descItemUpdated.getId());
+
     }
 
 }

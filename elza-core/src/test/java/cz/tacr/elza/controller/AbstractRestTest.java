@@ -42,6 +42,7 @@ import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulPacketTypeVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -237,6 +238,9 @@ public abstract class AbstractRestTest {
     // ARRANGEMENT MANAGER CONSTANTS
     protected static final String CREATE_FA_URL = ARRANGEMENT_MANAGER_URL + "/createFindingAid";
     protected static final String CREATE_FA_URL_V2 = ARRANGEMENT_MANAGER_URL_V2 + "/findingAids";
+    protected static final String CREATE_DESC_ITEM = ARRANGEMENT_MANAGER_URL_V2 + "/descItems/{findingAidVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}/create";
+    protected static final String UPDATE_DESC_ITEM = ARRANGEMENT_MANAGER_URL_V2 + "/descItems/{findingAidVersionId}/{nodeVersion}/update/{createNewVersion}";
+    protected static final String DELETE_DESC_ITEM = ARRANGEMENT_MANAGER_URL_V2 + "/descItems/{findingAidVersionId}/{nodeVersion}/delete";
     protected static final String UPDATE_FA_URL = ARRANGEMENT_MANAGER_URL + "/updateFindingAid";
     protected static final String DELETE_FA_URL = ARRANGEMENT_MANAGER_URL + "/deleteFindingAid";
     protected static final String GET_FA_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAids";
@@ -1524,5 +1528,39 @@ public abstract class AbstractRestTest {
         Response response = get(spec -> spec.pathParameters(VERSION_ID_ATT, findingAidVersionId, NODE_ID_ATT, nodeId),
                 GET_NODE_FORM_DATA);
         return response.getBody().as(ArrangementController.NodeFormDataVO.class);
+    }
+
+
+
+    protected ArrangementController.DescItemResult createDescriptionItem(final ArrDescItemVO descItemVO,
+                                                                         final Integer findingAidVersionId,
+                                                                         final Integer descItemTypeId,
+                                                                         final Integer nodeId,
+                                                                         final Integer nodeVersion) {
+
+        Response response = put(spec -> spec.pathParameter("findingAidVersionId", findingAidVersionId)
+                .pathParameter("descItemTypeId", descItemTypeId).pathParameter("nodeId", nodeId)
+                .pathParameter("nodeVersion", nodeVersion).body(descItemVO), CREATE_DESC_ITEM);
+        return response.getBody().as(ArrangementController.DescItemResult.class);
+    }
+
+    protected ArrangementController.DescItemResult updateDescriptionItem(final ArrDescItemVO descItemVO,
+                                                                         final Integer findingAidVersionId,
+                                                                         final Integer nodeVersion,
+                                                                         final Boolean createNewVersion) {
+
+        Response response = put(spec -> spec.pathParameter("findingAidVersionId", findingAidVersionId)
+                .pathParameter("createNewVersion", createNewVersion)
+                .pathParameter("nodeVersion", nodeVersion).body(descItemVO), UPDATE_DESC_ITEM);
+        return response.getBody().as(ArrangementController.DescItemResult.class);
+    }
+
+    protected ArrangementController.DescItemResult deleteDescriptionItem(final ArrDescItemVO descItemVO,
+                                                                         final Integer findingAidVersionId,
+                                                                         final Integer nodeVersion) {
+
+        Response response = post(spec -> spec.pathParameter("findingAidVersionId", findingAidVersionId)
+                .pathParameter("nodeVersion", nodeVersion).body(descItemVO), DELETE_DESC_ITEM);
+        return response.getBody().as(ArrangementController.DescItemResult.class);
     }
 }
