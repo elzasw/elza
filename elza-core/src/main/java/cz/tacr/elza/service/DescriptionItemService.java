@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import java.beans.PropertyDescriptor;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -151,6 +152,7 @@ public class DescriptionItemService {
         ArrFindingAidVersion findingAidVersion = findingAidVersionRepository.findOne(findingAidVersionId);
 
         ArrNode node = nodeRepository.findOne(nodeId);
+        Assert.notNull(node);
 
         // uložení uzlu (kontrola optimistických zámků)
         saveNode(node);
@@ -167,7 +169,7 @@ public class DescriptionItemService {
 
         // validace uzlu
         ruleService.conformityInfo(findingAidVersionId, Arrays.asList(descItem.getNode().getNodeId()),
-                NodeTypeOperation.SAVE_DESC_ITEM, null, null, Arrays.asList(descItem));
+                NodeTypeOperation.SAVE_DESC_ITEM, Arrays.asList(descItem), null, null);
 
         return descItemCreated;
     }
@@ -193,25 +195,14 @@ public class DescriptionItemService {
         // kontrola validity typu a specifikace
         checkValidTypeAndSpec(descItem);
 
-        int position = 0;
+        int maxPosition = getMaxPosition(descItem);
 
-        List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsAfterPosition(
-                descItem.getDescItemType(),
-                descItem.getNode(),
-                0);
-
-        for (ArrDescItem item : descItems) {
-            if (item.getPosition() > position) {
-                position = item.getPosition();
-            }
-        }
-
-        if (descItem.getPosition() == null || (descItem.getPosition() > position)) {
-            descItem.setPosition(position + 1);
+        if (descItem.getPosition() == null || (descItem.getPosition() > maxPosition)) {
+            descItem.setPosition(maxPosition + 1);
         }
 
         // načtení hodnot, které je potřeba přesunout níž
-        descItems = descItemRepository.findOpenDescItemsAfterPosition(
+        List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsAfterPosition(
                 descItem.getDescItemType(),
                 descItem.getNode(),
                 descItem.getPosition() - 1);
@@ -286,6 +277,20 @@ public class DescriptionItemService {
                 descItem.getNode(),
                 descItem.getPosition());
 
+        copyDescItemsWithData(change, descItems, -1);
+
+        descItem.setDeleteChange(change);
+        return descItemRepository.save(descItem);
+    }
+
+    /**
+     * Provede posun (a odverzování) hodnot atributů s daty o požadovaný počet.
+     *
+     * @param change    změna operace
+     * @param descItems seznam posunovaných hodnot atributu
+     * @param diff      počet a směr posunu
+     */
+    private void copyDescItemsWithData(final ArrChange change, final List<ArrDescItem> descItems, final Integer diff) {
         for (ArrDescItem descItemMove : descItems) {
 
             descItemMove.setDeleteChange(change);
@@ -297,16 +302,13 @@ public class DescriptionItemService {
             descItemNew.setDescItemId(null);
             descItemNew.setDeleteChange(null);
             descItemNew.setCreateChange(change);
-            descItemNew.setPosition(descItemMove.getPosition() - 1);
+            descItemNew.setPosition(descItemMove.getPosition() + diff);
 
             descItemRepository.save(descItemNew);
 
             // pro odverzovanou hodnotu atributu je nutné vytvořit kopii dat
             copyDescItemData(descItemMove, descItemNew);
         }
-
-        descItem.setDeleteChange(change);
-        return descItemRepository.save(descItem);
     }
 
     /**
@@ -337,4 +339,214 @@ public class DescriptionItemService {
         }
     }
 
+    /**
+     * Upravení hodnoty atributu.
+     *
+     * @param descItem              hodnota atributu (změny)
+     * @param nodeVersion           verze uzlu (optimistické zámky)
+     * @param findingAidVersionId   identifikátor verze archivní pomůcky
+     * @param createNewVersion      vytvořit novou verzi?
+     * @return  upravená výsledná hodnota atributu
+     */
+    public ArrDescItem updateDescriptionItem(final ArrDescItem descItem,
+                                             final Integer nodeVersion,
+                                             final Integer findingAidVersionId,
+                                             final Boolean createNewVersion) {
+        Assert.notNull(descItem);
+        Assert.notNull(descItem.getPosition());
+        Assert.notNull(descItem.getDescItemObjectId());
+        Assert.notNull(nodeVersion);
+        Assert.notNull(findingAidVersionId);
+        Assert.notNull(createNewVersion);
+
+        ArrChange change = null;
+        ArrFindingAidVersion findingAidVersion = findingAidVersionRepository.findOne(findingAidVersionId);
+
+        List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItem.getDescItemObjectId());
+
+        if (descItems.size() > 1) {
+            throw new IllegalStateException("Hodnota musí být právě jedna");
+        } else if (descItems.size() == 0) {
+            throw new IllegalStateException("Hodnota neexistuje, pravděpodobně byla již smazána");
+        }
+        ArrDescItem descItemDB = descItems.get(0);
+
+        ArrNode node = descItemDB.getNode();
+        Assert.notNull(node);
+
+        if (createNewVersion) {
+            node.setVersion(nodeVersion);
+
+            // uložení uzlu (kontrola optimistických zámků)
+            saveNode(node);
+
+            // vytvoření změny
+            change = arrangementService.createChange();
+
+            // uložení poslední uživatelské změny nad AP k verzi AP
+            arrangementService.saveLastChangeFaVersion(change, findingAidVersion);
+        }
+
+        ArrDescItem descItemUpdated = updateDescriptionItemWithData(descItem, descItemDB, findingAidVersion, change, createNewVersion);
+
+        // validace uzlu
+        ruleService.conformityInfo(findingAidVersionId, Arrays.asList(descItemUpdated.getNode().getNodeId()),
+                NodeTypeOperation.SAVE_DESC_ITEM, null, Arrays.asList(descItemUpdated), null);
+
+        return descItemUpdated;
+    }
+
+    /**
+     * Upravení hodnoty atributu s daty.
+     *
+     * @param descItem          hodnota atributu (změny)
+     * @param descItemDB        hodnota atributu - původní (pokud je null, donačte se)
+     * @param version           verze archivní pomůcky
+     * @param change            změna operace
+     * @param createNewVersion  vytvořit novou verzi?
+     * @return  upravená výsledná hodnota atributu
+     */
+    public ArrDescItem updateDescriptionItemWithData(final ArrDescItem descItem,
+                                                      final ArrDescItem descItemDB,
+                                                      final ArrFindingAidVersion version,
+                                                      final ArrChange change,
+                                                      final Boolean createNewVersion) {
+
+        if (createNewVersion ^ change != null) {
+            throw new IllegalArgumentException("Pokud vytvářím novou verzi, musí být předaná reference změny. Pokud verzi nevytvářím, musí být reference změny null.");
+        }
+
+        if (createNewVersion && version.getLockChange() != null) {
+            throw new IllegalArgumentException("Nelze provést verzovanou změnu v uzavřené verzi.");
+        }
+
+        ArrDescItem descItemOrig;
+        if (descItemDB == null) {
+            List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItem.getDescItemObjectId());
+
+            if (descItems.size() > 1) {
+                throw new IllegalStateException("Hodnota musí být právě jedna");
+            } else if (descItems.size() == 0) {
+                throw new IllegalStateException("Hodnota neexistuje, pravděpodobně byla již smazána");
+            }
+
+            descItemOrig = descItems.get(0);
+        } else {
+            descItemOrig = descItemDB;
+        }
+
+        descItemOrig = descItemFactory.getDescItem(descItemOrig, null);
+        ArrDescItem descItemUpdated;
+
+        if (createNewVersion) {
+
+            Integer positionOrig = descItemOrig.getPosition();
+            Integer positionNew = descItem.getPosition();
+
+            // změnila pozice, budou se provádět posuny
+            if (positionOrig != positionNew) {
+
+                int maxPosition = getMaxPosition(descItemOrig);
+
+                if (descItem.getPosition() == null || (descItem.getPosition() > maxPosition)) {
+                    descItem.setPosition(maxPosition + 1);
+                }
+
+                List<ArrDescItem> descItemsMove;
+                Integer diff;
+
+                if (positionNew < positionOrig) {
+                    diff = 1;
+                    descItemsMove = findDescItemsBetweenPosition(descItemOrig, positionNew, positionOrig - 1);
+                } else {
+                    diff = -1;
+                    descItemsMove = findDescItemsBetweenPosition(descItemOrig, positionOrig + 1, positionNew);
+                }
+
+                copyDescItemsWithData(change, descItemsMove, diff);
+
+            }
+
+            try {
+                ArrDescItem descItemNew = descItemOrig.getClass().newInstance();
+                BeanUtils.copyProperties(descItemOrig, descItemNew);
+                copyPropertiesSubclass(descItem, descItemNew, ArrDescItem.class);
+                descItemNew.setDescItemSpec(descItem.getDescItemSpec());
+
+                descItemOrig.setDeleteChange(change);
+                descItemNew.setDescItemId(null);
+                descItemNew.setCreateChange(change);
+                descItemNew.setPosition(positionNew);
+
+                descItemFactory.saveDescItem(descItemOrig);
+                descItemUpdated = descItemFactory.saveDescItemWithData(descItemNew, true);
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
+        } else {
+            copyPropertiesSubclass(descItem, descItemOrig, ArrDescItem.class);
+            descItemOrig.setDescItemSpec(descItem.getDescItemSpec());
+            descItemUpdated = descItemFactory.saveDescItemWithData(descItemOrig, false);
+        }
+
+        return descItemUpdated;
+    }
+
+    /**
+     * Vyhledá maximální pozici v hodnotách atributu podle typu.
+     *
+     * @param descItem  hodnota atributu
+     * @return  maximální pozice (počet položek)
+     */
+    private int getMaxPosition(final ArrDescItem descItem) {
+        int maxPosition = 0;
+        List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsAfterPosition(
+                descItem.getDescItemType(),
+                descItem.getNode(),
+                0);
+        for (ArrDescItem item : descItems) {
+            if (item.getPosition() > maxPosition) {
+                maxPosition = item.getPosition();
+            }
+        }
+        return maxPosition;
+    }
+
+    /**
+     * Vyhledá všechny hodnoty atributu mezi pozicemi.
+     *
+     * @param descItem      hodnota atributu
+     * @param positionFrom  od pozice (včetně)
+     * @param positionTo    do pozice (včetně)
+     * @return  seznam nalezených hodnot atributů
+     */
+    private List<ArrDescItem> findDescItemsBetweenPosition(final ArrDescItem descItem,
+                                                           final Integer positionFrom,
+                                                           final Integer positionTo) {
+
+        List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsBetweenPositions(descItem.getDescItemType(),
+                descItem.getNode(), positionFrom, positionTo);
+
+        return descItems;
+    }
+
+    /**
+     * Kopíruje všechny property krom propert, které má zadaná třída.
+     *
+     * @param from z objektu
+     * @param to   do objektu
+     * @param aClass ignorovaná třída (subclass)
+     * @param <T>    ignorovaná třída (subclass)
+     * @param <TYPE> kopírovaná třída
+     */
+    private <T, TYPE extends T> void copyPropertiesSubclass(final TYPE from, final TYPE to, final Class<T> aClass) {
+        String[] ignoreProperties;
+        PropertyDescriptor[] descriptors = BeanUtils.getPropertyDescriptors(aClass);
+        ignoreProperties = new String[descriptors.length];
+        for (int i = 0; i < descriptors.length; i++) {
+            ignoreProperties[i] = descriptors[i].getName();
+        }
+
+        BeanUtils.copyProperties(from, to, ignoreProperties);
+    }
 }

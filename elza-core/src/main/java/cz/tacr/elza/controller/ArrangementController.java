@@ -116,6 +116,32 @@ public class ArrangementController {
     }
 
     @Transactional
+    @RequestMapping(value = "/descItems/{findingAidVersionId}/{nodeVersion}/update/{createNewVersion}",
+            method = RequestMethod.PUT,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public DescItemResult updateDescItem(@RequestBody final ArrDescItemVO descItemVO,
+                                         @PathVariable(value = "findingAidVersionId") final Integer findingAidVersionId,
+                                         @PathVariable(value = "nodeVersion") final Integer nodeVersion,
+                                         @PathVariable(value = "createNewVersion") final Boolean createNewVersion) {
+        Assert.notNull(descItemVO);
+        Assert.notNull(findingAidVersionId);
+        Assert.notNull(nodeVersion);
+        Assert.notNull(createNewVersion);
+
+        ArrDescItem descItem = factoryDO.createDescItem(descItemVO);
+
+        ArrDescItem descItemUpdated = descriptionItemService
+                .updateDescriptionItem(descItem, nodeVersion, findingAidVersionId, createNewVersion);
+
+        DescItemResult descItemResult = new DescItemResult();
+        descItemResult.setDescItem(factoryVo.createDescItem(descItemUpdated));
+        descItemResult.setNode(factoryVo.createArrNode(descItemUpdated.getNode()));
+
+        return descItemResult;
+    }
+
+    @Transactional
     @RequestMapping(value = "/descItems/{findingAidVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}/create",
             method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE,

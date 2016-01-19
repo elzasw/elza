@@ -64,6 +64,16 @@ public interface DescItemRepository extends JpaRepository<ArrDescItem, Integer>,
     @Query("SELECT i FROM arr_desc_item i WHERE i.deleteChange IS NULL AND i.descItemType = ?1 AND i.node = ?2 AND i.position > ?3")
     List<ArrDescItem> findOpenDescItemsAfterPosition(RulDescItemType descItemType, ArrNode node, Integer position);
 
+    /**
+     * Vyhledá všechny otevřené (nesmazené) hodnoty atributů podle typu a uzlu mezi pozicemi. (pro vícehodnotový atribut)
+     *
+     * @param descItemType
+     * @param node
+     * @return
+     */
+    @Query("SELECT i FROM arr_desc_item i WHERE i.deleteChange IS NULL AND i.descItemType = ?1 AND i.node = ?2 AND i.position >= ?3 AND i.position <= ?4")
+    List<ArrDescItem> findOpenDescItemsBetweenPositions(RulDescItemType descItemType, ArrNode node, Integer positionFrom, Integer positionTo);
+
     @Query("SELECT i FROM arr_desc_item i WHERE i.descItemObjectId = ?1 AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
     List<ArrDescItem> findByDescItemObjectIdAndLockChangeId(Integer descItemObjectId, ArrChange change);
 

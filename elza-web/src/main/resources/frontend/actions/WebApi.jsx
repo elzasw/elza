@@ -68,7 +68,7 @@ class WebApi{
     }
 
     updateDescItem(versionId, nodeVersionId, descItem) {
-        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/xxx', null,  data);
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/descItems/' + versionId + "/" + nodeVersionId + "/update/true", null,  descItem);
     }
     
     deleteDescItem(versionId, nodeVersionId, descItem) {

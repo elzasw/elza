@@ -202,4 +202,19 @@ public class ClientFactoryDO {
 
         return result;
     }
+
+    public ArrDescItem createDescItem(final ArrDescItemVO descItemVO) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        ArrDescItem descItem = mapper.map(descItemVO, ArrDescItem.class);
+
+        if (descItemVO.getDescItemSpecId() != null) {
+            RulDescItemSpec descItemSpec = descItemSpecRepository.findOne(descItemVO.getDescItemSpecId());
+            if (descItemSpec == null) {
+                throw new IllegalStateException("Specifikace s ID=" + descItemVO.getDescItemSpecId() + " neexistuje");
+            }
+            descItem.setDescItemSpec(descItemSpec);
+        }
+
+        return descItem;
+    }
 }
