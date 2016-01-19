@@ -6,7 +6,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import { AppStore, ResizeStore } from 'stores';
-import {AbstractReactComponent, ContextMenu, Toastr, ModalDialog} from 'components';
+import {AbstractReactComponent, ContextMenu, Toastr, ModalDialog, WebSocket} from 'components';
 
 require('./Layout.less');
 //var Ukazky = require('./../components/Ukazky.jsx');
@@ -26,6 +26,7 @@ var Layout = class Layout extends AbstractReactComponent {
                 </div>
                 <ContextMenu {...this.props.contextMenu}/>
                 <ModalDialog {...this.props.modalDialog}/>
+                <WebSocket />
             </div>
         )
     }
@@ -35,7 +36,7 @@ function mapStateToProps(state) {
     const {contextMenu, modalDialog} = state
     return {
         contextMenu,
-        modalDialog,
+        modalDialog
     }
 }
 

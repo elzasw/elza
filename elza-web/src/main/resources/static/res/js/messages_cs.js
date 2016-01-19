@@ -7,7 +7,10 @@ var messages = {
     "global.action.show.more": "Zobrazit více",
 
     "global.validation.required": "Pole je povinné",
-    
+
+    "global.websocket.title": "Odpojení od severu",
+    "global.websocket.message": "Vyčkejte na automatické obnovení spojení",
+
     "ribbon.action.home": "Domů",
     "ribbon.action.arr": "Archivní pomůcky",
     "ribbon.action.arr.fa.add": "Vytvořit AP",

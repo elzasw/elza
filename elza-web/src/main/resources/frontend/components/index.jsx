@@ -20,6 +20,7 @@ exports.VirtualList = require('./shared/virtual-list/VirtualList');
 exports.Accordion = require('./shared/accordion/Accordion');
 exports.ContextMenu = require('./shared/context-menu/ContextMenu');
 exports.ModalDialog = require('./shared/dialog/ModalDialog');
+exports.WebSocket = require('./shared/web-socket/WebSocket');
 exports.ModalDialogWrapper = require('./shared/dialog/ModalDialogWrapper');
 
 exports.Ribbon = require('./page/Ribbon');

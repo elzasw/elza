@@ -15,6 +15,7 @@ import toastrs from './toastr/toastrs';
 import partyRegion from './party/partyRegion';
 import contextMenu from './global/contextMenu';
 import modalDialog from './global/modalDialog';
+import webSocket from './global/webSocket';
 import adminRegion from './admin/adminRegion';
 import addFaForm from './arr/form/addFaForm';
 import addPartyPersonForm from './party/form/addPartyPersonForm';
@@ -34,6 +35,7 @@ let reducer = combineReducers({
     partyRegion,
     contextMenu,
     modalDialog,
+    webSocket,
     adminRegion,
     form: formReducer.plugin({
         addFaForm: addFaForm,
