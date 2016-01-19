@@ -36,18 +36,25 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
         this.props.onSelect(fa);
     }
 
+    dateToString(date) {
+        var dd  = date.getDate().toString();
+        var mm = (date.getMonth() + 1).toString();
+        var yyyy = date.getFullYear().toString();
+        return (dd[1]?dd:"0"+dd[0]) + "." + (mm[1]?mm:"0"+mm[0]) + "." + yyyy;
+    }
+
     renderOpened() {
         var rows = [];
         this.props.items.each(item=>{
             rows.push(
-                <NavItem key={item.id} disabled>
+                <NavItem className='fa' key={item.id} disabled>
                     {item.name}
                 </NavItem>
             )
             item.versions.each(ver => {
                 rows.push(
-                    <NavItem key={item.id + '_' + ver.id} onClick={this.handleSelect.bind(this, item, ver)}>
-                        {ver.createDate.getYear()}
+                    <NavItem className='version' key={item.id + '_' + ver.id} onClick={this.handleSelect.bind(this, item, ver)}>
+                        {ver.lockDate ? this.dateToString(ver.lockDate) : i18n('arr.fa.currentVersion')}
                     </NavItem>
                 )
             });
@@ -60,7 +67,7 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
         )
 
         return (
-            <div className='finding-aid-file-tree-conteiner'>
+            <div className='finding-aid-file-tree-container'>
                 {(this.props.isFetching || !this.props.fetched) && <Loading/>}
                 {(!this.props.isFetching && this.props.fetched) && navRows}
             </div>
@@ -69,7 +76,7 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
 
     renderClosed() {
         return (
-            <div className='finding-aid-file-tree-conteiner'>
+            <div className='finding-aid-file-tree-container'>
                 ...
             </div>
         );

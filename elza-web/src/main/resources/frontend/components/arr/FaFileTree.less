@@ -1,11 +1,20 @@
 @import "~variables.less";
 
-.finding-aid-file-tree-conteiner {
+.finding-aid-file-tree-container {
     height: 100%;
     background: @gray-lighter;
     position: relative;
     overflow: auto;
+    
+    .fa {
+    }
+    .version {
+        padding-left: 12px;
+        &:hover a {
+            background: #C0C0C0;
+        }
+    }
 }
-.opened .finding-aid-file-tree-conteiner {
+.opened .finding-aid-file-tree-container {
     padding: 6px;
 }

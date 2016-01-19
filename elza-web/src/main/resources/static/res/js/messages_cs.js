@@ -32,6 +32,7 @@ var messages = {
     "arr.fa.name": "Název",
     "arr.fa.ruleSet": "Pravidla tvorby",
     "arr.fa.arrType": "Typ výstupu",
+    "arr.fa.currentVersion": "Aktuální verze",
     
     "registry.addRegistry": "Nové rejstříkové heslo",
     "registry.addNewRegistry": "Přidat heslo",
