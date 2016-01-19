@@ -72,7 +72,7 @@ export function node(state = nodeInitialState, action) {
             var result = Object.assign({}, state, {
                 selectedSubNodeId: action.subNodeId
             });
-            if (state.selectedSubNodeId !=action.subNodeId) {
+            if (state.selectedSubNodeId != action.subNodeId) {
                 result.subNodeForm = subNodeForm(undefined, {type:''});
                 result.subNodeInfo = subNodeInfo(undefined, {type:''});
             }

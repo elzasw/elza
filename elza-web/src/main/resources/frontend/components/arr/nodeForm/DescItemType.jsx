@@ -94,6 +94,18 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         }
 
         switch (this.props.rulDataType.code) {
+            case 'PARTY_REF':
+                break;
+            case 'RECORD_REF':
+                break;
+            case 'PACKET_REF':
+                break;
+                case 'FORMATTED_TEXT':
+                break;
+            case 'UNITDATE':
+                break;
+            case 'UNITID':
+                break;
             case 'STRING':
                 parts.push(<DescItemString {...descItemProps} />)
                 break;
@@ -108,6 +120,8 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                 break;
             case 'COORDINATES':
                 parts.push(<DescItemCoordinates {...descItemProps} />)
+                break;
+            case 'ENUM':
                 break;
             default:
                 parts.push(<div>-unsupported type {this.props.rulDataType.code}-</div>)
