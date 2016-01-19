@@ -52,10 +52,21 @@ export function faSubNodeFormValueBlur(versionId, nodeId, nodeKey, valueLocation
 
         if (!loc.descItem.error.hasError && loc.descItem.touched) {
             if (typeof loc.descItem.id !== 'undefined') {
-                faSubNodeFormUpdateDescItem(versionId, subNodeForm.data.node.version, loc.descItem)
-                    .then(json => {
-                        dispatch(faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueLocation, json, 'UPDATE'));
-                    })
+                // Jen pokud se hodnota nebo specifikace změnila
+                var needUpdate = false;
+                if (loc.descItemType.useSpecification && loc.descItem.descItemSpecId != loc.descItem.prevDescItemSpecId) {
+                    needUpdate = true;
+                }
+                if (loc.descItem.value != loc.descItem.prevValue) {
+                    needUpdate = true;
+                }
+
+                if (needUpdate) {
+                    faSubNodeFormUpdateDescItem(versionId, subNodeForm.data.node.version, loc.descItem)
+                        .then(json => {
+                            dispatch(faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueLocation, json, 'UPDATE'));
+                        })
+                }
             } else {
                 faSubNodeFormCreateDescItem(versionId, nodeId, subNodeForm.data.node.version, loc.descItemType.id, loc.descItem)
                     .then(json => {
@@ -103,10 +114,19 @@ export function faSubNodeFormDescItemTypeDelete(versionId, nodeId, nodeKey, valu
             valueLocation,
         })
 
-        faSubNodeFormDeleteDescItemType(versionId, subNodeForm.data.node.id, subNodeForm.data.node.version, loc.descItemType)
-            .then(json => {
-                dispatch(faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueLocation, json, 'DELETE_DESC_ITEM_TYPE'));
-            })
+        var hasDescItemsForDelete = false;
+        loc.descItemType.descItems.forEach(descItem => {
+            if (typeof descItem.id !== 'undefined') {
+                hasDescItemsForDelete = true;
+            }
+        });
+
+        if (hasDescItemsForDelete) {
+            faSubNodeFormDeleteDescItemType(versionId, subNodeForm.data.node.id, subNodeForm.data.node.version, loc.descItemType)
+                .then(json => {
+                    dispatch(faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueLocation, json, 'DELETE_DESC_ITEM_TYPE'));
+                })
+        }
     }
 }
 

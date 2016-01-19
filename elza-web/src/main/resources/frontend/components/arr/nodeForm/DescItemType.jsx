@@ -138,16 +138,31 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
     }
 
     renderLabel() {
+        var actions = [];
+
+        // Sestavení akcí
+        actions.push(<NoFocusButton><Glyphicon glyph="copy" /></NoFocusButton>);
+        actions.push(<NoFocusButton><Glyphicon glyph="book" /></NoFocusButton>);
+        actions.push(<NoFocusButton><Glyphicon glyph="lock" /></NoFocusButton>);
+
+        var hasDescItemsForDelete = false;
+        this.props.descItemType.descItems.forEach(descItem => {
+            if (descItem.touched || typeof descItem.id !== 'undefined') {
+                hasDescItemsForDelete = true;
+            }
+        });
+        if (hasDescItemsForDelete) {
+            actions.push(<NoFocusButton onClick={this.handleDescItemTypeRemove} title={i18n('subNodeForm.deleteDescItemType')}><Glyphicon glyph="remove" /></NoFocusButton>);
+        }
+
+        // Render
         return (
             <div className='desc-item-type-label'>
                 <div className='title' title={this.props.descItemType.name}>
                     {this.props.descItemTypeInfo.shortcut}
                 </div>
                 <div className='actions'>
-                    <NoFocusButton><Glyphicon glyph="copy" /></NoFocusButton>
-                    <NoFocusButton><Glyphicon glyph="book" /></NoFocusButton>
-                    <NoFocusButton><Glyphicon glyph="lock" /></NoFocusButton>
-                    <NoFocusButton onClick={this.handleDescItemTypeRemove} title={i18n('subNodeForm.deleteDescItemType')}><Glyphicon glyph="remove" /></NoFocusButton>
+                    {actions}
                 </div>
             </div>
         )

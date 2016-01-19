@@ -82,14 +82,15 @@ function updateFormData(state, rulDataTypes) {
                     )
                 })
             } else {    // není v DB, vytvoříme jen pro možnou inplace editaci
-                if (descItemType.type == 'REQUIRED' || descItemType.type == 'RECOMMENDED') {
-                    useDescItemType = true;
+                useDescItemType = true;
 
-                    resultDescItemType.descItems = [];
+                resultDescItemType.descItems = [];
+                if (descItemType.type == 'REQUIRED' || descItemType.type == 'RECOMMENDED') {
                     var rulDataType = rulDataTypes.items[indexById(rulDataTypes.items, descItemType.dataTypeId)];
                     if (!descItemType.repeatable) { // řešíme jen neopakovatelné, u nich to má smysl
                         var descItemTypeInfo = descItemTypeInfos[indexById(descItemTypeInfos, descItemType.id)];                        
                         var descItem = createDescItem(descItemTypeInfo);
+                        descItem.position = 1;
                         resultDescItemType.descItems.push(descItem);
                     }
                 }
@@ -197,7 +198,7 @@ function validate(descItem, descItemTypeInfo) {
 }
 
 function createDescItem(descItemTypeInfo) {
-    return {
+    var result = {
         '@type': getDescItemType(descItemTypeInfo),
         prevValue: null,
         hasFocus: false,
@@ -206,6 +207,12 @@ function createDescItem(descItemTypeInfo) {
         value: '',
         error: {hasError:false}
     };
+
+    if (descItemTypeInfo.useSpecification) {
+        result.descItemSpecId = '';
+    }
+
+    return result;
 }
 
 export default function subNodeForm(state = initialState, action) {
@@ -255,6 +262,7 @@ export default function subNodeForm(state = initialState, action) {
             var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, loc.descItemType.id)];
 
             var descItem = createDescItem(descItemTypeInfo);
+            descItem.position = loc.descItemType.descItems.length + 1;
             loc.descItemType.descItems = [...loc.descItemType.descItems, descItem];
             
             state.formData = {...state.formData};
@@ -266,14 +274,27 @@ export default function subNodeForm(state = initialState, action) {
 
             switch (action.operationType) {
                 case 'DELETE':
+                    // Aktualizace position
+                    loc.descItemType.descItems.forEach((descItem, index) => {descItem.position = index + 1});
                     break;
                 case 'UPDATE':
                     loc.descItem.descItemObjectId = action.descItemResult.descItem.descItemObjectId;
+                    loc.descItem.prevValue = action.descItemResult.descItem.value;
+                    if (loc.descItemType.useSpecification) {
+                        loc.descItem.prevDescItemSpecId = action.descItemResult.descItem.descItemSpecId;
+                    }
                     break;
                 case 'CREATE':
                     loc.descItem.descItemObjectId = action.descItemResult.descItem.descItemObjectId;
                     loc.descItem.id = action.descItemResult.descItem.id;
-                    loc.descItem.position = action.descItemResult.descItem.position;
+                    loc.descItem.prevValue = action.descItemResult.descItem.value;
+                    if (loc.descItemType.useSpecification) {
+                        loc.descItem.prevDescItemSpecId = action.descItemResult.descItem.descItemSpecId;
+                    }
+
+                    // Aktualizace position - pokud by create byl na první hodnotě a za ní již nějaké uživatel uložil, musí se vše aktualizovat
+                    loc.descItemType.descItems.forEach((descItem, index) => {descItem.position = index + 1});
+
                     break;
                 case 'DELETE_DESC_ITEM_TYPE':
                     // nic dalšího není potřeba, node se aktualizuje výše
@@ -291,10 +312,11 @@ export default function subNodeForm(state = initialState, action) {
                 loc.descItemType.descItems = [];
 
                 // Pokud je ale atribut jednohodnotový, musíme ponechat prázdnou hodnotu
-                if (loc.descItemType.repeatable) {
+                if (!loc.descItemType.repeatable) {
                     var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, loc.descItemType.id)];                        
                     var descItem = createDescItem(descItemTypeInfo);
-                    resultDescItemType.descItems.push(descItem);
+                    descItem.position = 1;
+                    loc.descItemType.descItems.push(descItem);
                 }
             } else { // kompletně odebereme
                 loc.descItemGroup.descItemTypes = [
