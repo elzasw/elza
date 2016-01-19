@@ -75,6 +75,10 @@ class WebApi{
         return AjaxUtils.ajaxPost('/api/arrangementManagerV2/descItems/' + versionId + "/" + nodeVersionId + "/delete", null,  descItem);
     }
 
+    deleteDescItemType(versionId, nodeVersionId, descItemTypeId) {
+        return AjaxUtils.ajaxDelete('/api/arrangementManagerV2/descItems/' + versionId + "/" + nodeVersionId + "/" + descItemTypeId);
+    }
+
     getData(data, timeout = 1000) {
         return new Promise(function (resolve, reject) {
             setTimeout(function() {

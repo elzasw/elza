@@ -10,7 +10,7 @@ import {AbstractReactComponent, NoFocusButton} from 'components';
 import {Glyphicon} from 'react-bootstrap';
 import {connect} from 'react-redux'
 import {indexById} from 'stores/app/utils.jsx'
-import {faSubNodeFormValueChange, faSubNodeFormValueChangeSpec,faSubNodeFormValueBlur, faSubNodeFormValueFocus, faSubNodeFormValueAdd, faSubNodeFormValueDelete} from 'actions/arr/subNodeForm'
+import {faSubNodeFormValueChange, faSubNodeFormDescItemTypeDelete, faSubNodeFormValueChangeSpec,faSubNodeFormValueBlur, faSubNodeFormValueFocus, faSubNodeFormValueAdd, faSubNodeFormValueDelete} from 'actions/arr/subNodeForm'
 var classNames = require('classnames');
 import DescItemString from './nodeForm/DescItemString'
 import DescItemType from './nodeForm/DescItemType'
@@ -19,7 +19,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderDescItemGroup', 'renderDescItemType', 'handleChange', 'handleChangeSpec', 'handleBlur', 'handleFocus', 'renderFormActions', 'getDescItemTypeInfo', 'handleDescItemAdd', 'handleDescItemRemove');
+        this.bindMethods('renderDescItemGroup', 'renderDescItemType', 'handleChange', 'handleChangeSpec', 'handleDescItemTypeRemove', 'handleBlur', 'handleFocus', 'renderFormActions', 'getDescItemTypeInfo', 'handleDescItemAdd', 'handleDescItemRemove');
 //console.log("@@@@@-SubNodeForm-@@@@@", props);
     }
 
@@ -57,6 +57,15 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         }
 
         this.dispatch(faSubNodeFormValueDelete(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation));
+    }
+
+    handleDescItemTypeRemove(descItemGroupIndex, descItemTypeIndex) {
+        var valueLocation = {
+            descItemGroupIndex,
+            descItemTypeIndex,
+        }
+
+        this.dispatch(faSubNodeFormDescItemTypeDelete(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation));
     }
 
     handleDescItemAdd(descItemGroupIndex, descItemTypeIndex) {
@@ -123,6 +132,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 onChangeSpec={this.handleChangeSpec.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onBlur={this.handleBlur.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onFocus={this.handleFocus.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onDescItemTypeRemove={this.handleDescItemTypeRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
             />
         )
     }

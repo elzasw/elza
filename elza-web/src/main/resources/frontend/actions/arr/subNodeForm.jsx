@@ -52,7 +52,10 @@ export function faSubNodeFormValueBlur(versionId, nodeId, nodeKey, valueLocation
 
         if (!loc.descItem.error && loc.descItem.touched) {
             if (typeof loc.descItem.id !== 'undefined') {
-                faSubNodeFormUpdateDescItem(versionId, subNodeForm.data.node.version, loc.descItem);
+                faSubNodeFormUpdateDescItem(versionId, subNodeForm.data.node.version, loc.descItem)
+                    .then(json => {
+                        dispatch(faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueLocation, json, 'UPDATE'));
+                    })
             } else {
                 faSubNodeFormCreateDescItem(versionId, nodeId, subNodeForm.data.node.version, loc.descItemType.id, loc.descItem)
                     .then(json => {
@@ -82,8 +85,28 @@ export function faSubNodeFormValueDelete(versionId, nodeId, nodeKey, valueLocati
                 .then(json => {
                     dispatch(faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueLocation, json, 'DELETE'));
                 })
-
         }
+    }
+}
+
+export function faSubNodeFormDescItemTypeDelete(versionId, nodeId, nodeKey, valueLocation) {
+    return (dispatch, getState) => {
+        var state = getState();
+        var subNodeForm = getSubNodeForm(state, versionId, nodeKey);
+        var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
+
+        dispatch({
+            type: types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE,
+            versionId,
+            nodeId,
+            nodeKey,
+            valueLocation,
+        })
+
+        faSubNodeFormDeleteDescItemType(versionId, subNodeForm.data.node.version, loc.descItemType)
+            .then(json => {
+                dispatch(faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueLocation, json, 'DELETE_DESC_ITEM_TYPE'));
+            })
     }
 }
 
@@ -122,6 +145,11 @@ export function faSubNodeFormCreateDescItem(versionId, nodeId, nodeVersionId, de
 export function faSubNodeFormDeleteDescItem(versionId, nodeVersionId, descItem) {
     console.log("SMAZANI desc item", versionId, nodeVersionId, descItem);
     return WebApi.deleteDescItem(versionId, nodeVersionId, descItem);
+}
+
+export function faSubNodeFormDeleteDescItemType(versionId, nodeVersionId, descItemType) {
+    console.log("SMAZANI desc item type", versionId, nodeVersionId, descItemType);
+    return WebApi.deleteDescItemType(versionId, nodeVersionId, descItemType.id);
 }
 
 export function faSubNodeFormFetchIfNeeded(versionId, nodeId, nodeKey) {

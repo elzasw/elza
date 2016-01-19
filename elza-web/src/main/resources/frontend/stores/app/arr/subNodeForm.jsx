@@ -231,7 +231,20 @@ export default function subNodeForm(state = initialState, action) {
                 case 'CREATE':
                     loc.descItem.descItemObjectId = action.descItemResult.descItem.descItemObjectId;
                     break;
+                case 'DELETE_DESC_ITEM_TYPE':
+                    // nic dalšího není potřeba, node se aktualizuje výše
+                    break;
             }
+
+            state.formData = {...state.formData};
+            return state;
+        case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
+            var loc = getLoc(state, action.valueLocation);
+
+            loc.descItemGroup.descItemTypes = [
+                ...loc.descItemGroup.descItemTypes.slice(0, action.valueLocation.descItemTypeIndex),
+                ...loc.descItemGroup.descItemTypes.slice(action.valueLocation.descItemTypeIndex + 1)
+            ]
 
             state.formData = {...state.formData};
             return state;

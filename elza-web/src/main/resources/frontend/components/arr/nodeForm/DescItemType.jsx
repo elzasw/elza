@@ -4,7 +4,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent, NoFocusButton} from 'components';
+import {i18n, AbstractReactComponent, NoFocusButton} from 'components';
 import {Glyphicon} from 'react-bootstrap';
 import {connect} from 'react-redux'
 var classNames = require('classnames');
@@ -18,7 +18,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderDescItemSpec', 'renderDescItem', 'renderLabel', 'handleDescItemAdd', 'handleDescItemRemove', 'handleChange', 'handleChangeSpec', 'handleBlur', 'handleFocus');
+        this.bindMethods('renderDescItemSpec', 'renderDescItem', 'renderLabel', 'handleDescItemAdd', 'handleDescItemTypeRemove', 'handleDescItemRemove', 'handleChange', 'handleChangeSpec', 'handleBlur', 'handleFocus');
     }
 
     componentWillReceiveProps(nextProps) {
@@ -124,6 +124,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                     <NoFocusButton><Glyphicon glyph="copy" /></NoFocusButton>
                     <NoFocusButton><Glyphicon glyph="book" /></NoFocusButton>
                     <NoFocusButton><Glyphicon glyph="lock" /></NoFocusButton>
+                    <NoFocusButton onClick={this.handleDescItemTypeRemove} title={i18n('subNodeForm.deleteDescItemType')}><Glyphicon glyph="remove" /></NoFocusButton>
                 </div>
             </div>
         )
@@ -137,6 +138,10 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         this.props.onDescItemRemove(descItemIndex);
     }
 
+    handleDescItemTypeRemove() {
+        this.props.onDescItemTypeRemove();
+    }
+
     render() {
         const {descItemType, descItemTypeInfo} = this.props;
 
@@ -144,13 +149,13 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
 
         var addAction;
         if (descItemTypeInfo.repeatable) {
-            addAction = <div className='desc-item-type-actions'><NoFocusButton onClick={this.handleDescItemAdd}><Glyphicon glyph="plus" /></NoFocusButton></div>
+            addAction = <div className='desc-item-type-actions'><NoFocusButton onClick={this.handleDescItemAdd} title={i18n('subNodeForm.addDescItem')}><Glyphicon glyph="plus" /></NoFocusButton></div>
         }
 
         var descItems = descItemType.descItems.map((descItem, descItemIndex) => {
             var removeAction;
             if (descItemTypeInfo.repeatable) {
-                removeAction = <NoFocusButton onClick={this.handleDescItemRemove.bind(this, descItemIndex)}><Glyphicon glyph="trash" /></NoFocusButton>
+                removeAction = <NoFocusButton onClick={this.handleDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Glyphicon glyph="trash" /></NoFocusButton>
             }
             return this.renderDescItem(descItemType, descItem, descItemIndex, removeAction)
         })

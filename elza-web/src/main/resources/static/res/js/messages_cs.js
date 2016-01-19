@@ -34,6 +34,10 @@ var messages = {
     "arr.fa.arrType": "Typ výstupu",
     "arr.fa.currentVersion": "Aktuální verze",
     
+    "subNodeForm.addDescItem": "Přidat novou hodnotu",
+    "subNodeForm.deleteDescItem": "Odstranit hodnotu",
+    "subNodeForm.deleteDescItemType": "Odstranit prvek popisu včetně všech hodnot",
+    
     "registry.addRegistry": "Nové rejstříkové heslo",
     "registry.addNewRegistry": "Přidat heslo",
     "registry.name": "Název",
