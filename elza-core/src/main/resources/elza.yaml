@@ -14,3 +14,11 @@ spring:
   jpa:
     # Logovani SQL dotazu
     #show-sql: true
+      properties:
+          hibernate:
+              search:
+                  lucene_version: LUCENE_CURRENT
+                  default:
+                      indexBase: ./lucene/indexes/
+                      directory_provider: filesystem
+                      

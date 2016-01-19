@@ -26,4 +26,6 @@ public interface NodeRepositoryCustom {
     List<ArrNode> findNodesByDirection(ArrNode node, ArrFindingAidVersion version,
                                        RelatedNodeDirection direction);
 
+    List<ArrNode> search(String text, Integer lockChangeId);
+
 }
