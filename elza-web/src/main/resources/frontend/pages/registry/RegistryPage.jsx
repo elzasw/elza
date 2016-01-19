@@ -17,7 +17,7 @@ import {WebApi} from 'actions'
 import {MenuItem, DropdownButton, ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {Nav, NavItem} from 'react-bootstrap';
-import {registryData, registrySearchData, registryChangeParent, registryRemoveRegistry} from 'actions/registry/registryData'
+import {registryData, registrySearchData, registryChangeParent, registryRemoveRegistry, registryStartMove, registryStopMove, registryCancelMove} from 'actions/registry/registryData'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {fetchRegistryIfNeeded, registrySetTypesId} from 'actions/registry/registryList'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
@@ -28,7 +28,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('buildRibbon', 'handleSelect', 'handleSearch', 'handleDoubleClick', 'handleClickNavigation', 'handleAddRegistry', 'handleCallAddRegistry', 'handleCreateRecord');
+        this.bindMethods('buildRibbon', 'handleSelect', 'handleSearch', 'handleDoubleClick', 'handleClickNavigation', 'handleAddRegistry', 'handleCallAddRegistry', 'handleCreateRecord', 'handleRemoveRegistryDialog', 'handleRemoveRegistry', 'handleStartMoveRegistry', 'handleSaveMoveRegistry', 'handleCancelMoveRegistry');
         this.dispatch(fetchRegistryIfNeeded(props.registry.filterText, props.registry.registryParentId, props.registry.registryTypesId));
         this.dispatch(refRecordTypesFetchIfNeeded());
 
@@ -68,8 +68,22 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
 
+    handleStartMoveRegistry(){
+        this.dispatch(registryStartMove());
+    }
+
+    handleSaveMoveRegistry(){
+        WebApi.saveNewParentRegistry(this.props.registry.recordForMove, this.props.registry.selectedId).then(json => {
+            this.dispatch(registryStopMove());
+        });
+    }
+    handleCancelMoveRegistry(){
+        var registry = Object.assign({}, registry);
+        this.dispatch(registryCancelMove(registry));
+    }
+
     buildRibbon() {
-        var isSelected = this.props.registry.selectedId;
+
 
         var altActions = [];
         altActions.push(
@@ -79,7 +93,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         );
 
         var itemActions = [];
-        if (isSelected) {
+        if (this.props.registry.selectedId) {
             itemActions.push(
                 <Button><Glyphicon glyph="share-alt" /><div><span className="btnText">{i18n('registry.moveRegistry')}</span></div></Button>
             );
@@ -89,7 +103,23 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             itemActions.push(
                 <Button onClick={this.handleRemoveRegistryDialog.bind(this)}><Glyphicon glyph="remove" /><div><span className="btnText">{i18n('registry.removeRegistry')}</span></div></Button>
             );
+            if (!this.props.registry.recordForMove){
+                itemActions.push(
+                    <Button onClick={this.handleStartMoveRegistry.bind(this)}><Glyphicon glyph="move" /><div><span className="btnText">{i18n('registry.startMove')}</span></div></Button>
+                );
+            }
         }
+
+        if (this.props.registry.recordForMove){
+            itemActions.push(
+                <Button onClick={this.handleSaveMoveRegistry.bind(this)}><Glyphicon glyph="glyphicon glyphicon-ok-sign" /><div><span className="btnText">{i18n('registry.applyMove')}</span></div></Button>
+            );
+            itemActions.push(
+                <Button onClick={this.handleCancelMoveRegistry.bind(this)}><Glyphicon glyph="glyphicon glyphicon-remove-sign" /><div><span className="btnText">{i18n('registry.cancelMove')}</span></div></Button>
+            );
+        }
+
+
         itemActions.push(
                 <DropdownButton title={<span className="dropContent"><Glyphicon glyph='plus-sign' /><div><span className="btnText">{i18n('registry.addNewRegistry')}</span></div></span>}>
                     {this.props.refTables.recordTypes.items.map(i=> { return <MenuItem eventKey="{i.id}" onClick={this.handleAddRegistry.bind(this, i)} value={i.id}>{i.name}</MenuItem>})}

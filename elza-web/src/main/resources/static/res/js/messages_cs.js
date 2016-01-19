@@ -46,6 +46,9 @@ var messages = {
     "registry.validate": "Validace",
     "registry.removeRegistry": "Smazat heslo",
     "registry.reallyRemoveRegistry": "Opravdu chcete smazat toto rejstříkové heslo?",
+    "registry.startMove": "Přesunout heslo",
+    "registry.cancelMove": "Zrušit přesun",
+    "registry.applyMove": "Přesunout sem",
     
     "party.detail.characteristics": "Charakteristika",
     "party.detail.type": "Typ",

@@ -39,3 +39,24 @@ export function registryRemoveRegistry(registry) {
         registry
     }
 }
+
+export function registryStartMove() {
+
+    return {
+        type: types.REGISTRY_MOVE_REGISTRY_START,
+    }
+}
+
+export function registryStopMove(registry) {
+    return {
+        type: types.REGISTRY_MOVE_REGISTRY_FINISH,
+        registry
+    }
+}
+
+export function registryCancelMove(registry) {
+    return {
+        type: types.REGISTRY_MOVE_REGISTRY_CANCEL,
+        registry
+    }
+}

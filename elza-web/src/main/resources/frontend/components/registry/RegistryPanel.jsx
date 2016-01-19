@@ -26,6 +26,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         if (nextProps.selectedId !== null){
             this.dispatch(getRegistryIfNeeded(nextProps.selectedId));
         }
+
     }
     
     render() {

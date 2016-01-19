@@ -23,7 +23,8 @@ export default function registryData(state = initialState, action) {
             else{
                 return Object.assign({}, state, {
                     isFetching: false,
-                    fetched: false
+                    fetched: false,
+                    item: action.registry
                 })
             }
         case types.REGISTRY_REQUEST_REGISTRY_DETAIL:
@@ -36,9 +37,10 @@ export default function registryData(state = initialState, action) {
                 fetched: false
             })
         case types.REGISTRY_RECEIVE_REGISTRY_DETAIL:
+
             return Object.assign({}, state, {
                 selectedId: action.selectedId,
-                item: action.item,
+                item: action.ITEM,
                 isFetching: false,
                 fetched: true,
                 LastUpdated: action.receivedAt

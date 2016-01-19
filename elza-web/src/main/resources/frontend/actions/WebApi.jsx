@@ -130,6 +130,14 @@ class WebApi{
             });
     }
 
+    saveNewParentRegistry(data, registryParentId) {
+        data['parentRecordId'] = registryParentId;
+        return AjaxUtils.ajaxPut('/api/registryManagerV2/updateRecord', null, data)
+            .then(json=>{
+                return json;
+            });
+    }
+
     getNodeForm(nodeId, versionId) {
         var node = findNodeById(_faRootNode, nodeId);
         var parents = [];

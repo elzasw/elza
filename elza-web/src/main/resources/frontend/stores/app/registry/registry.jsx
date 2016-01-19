@@ -10,6 +10,7 @@ const initialState = {
     isFetching: false,
     fetched: false,
     selectedId: null,
+    recordForMove: null,
     isReloadingRegistry: false,
     reloadedRegistry: false,
     filterText: null,
@@ -67,6 +68,20 @@ export default function registry(state = initialState, action) {
             return Object.assign({}, state, {
                 selectedId: null,
                 fetched: false
+            })
+        case types.REGISTRY_MOVE_REGISTRY_START:
+            return Object.assign({}, state, {
+                recordForMove: state.registryData.item,
+            })
+        case types.REGISTRY_MOVE_REGISTRY_FINISH:
+            return Object.assign({}, state, {
+                recordForMove: null,
+                reloadedRegistry: false,
+                fetched: false
+            })
+        case types.REGISTRY_MOVE_REGISTRY_CANCEL:
+            return Object.assign({}, state, {
+                recordForMove: null
             })
 
         default:
