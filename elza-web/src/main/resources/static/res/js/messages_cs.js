@@ -26,6 +26,7 @@ var messages = {
     "search.action.noResult": "nenalezeny žádné záznamy",
     
     "faTree.action.openInNewTab": "Otevřít v nové záložce",
+    "faTree.node.name.undefined": "<JP ID={0}>",
 
     "arr.fa.title.add": "Vytvoření nové AP",
     "arr.fa.title.approveVersion": "Uzavření verze AP",

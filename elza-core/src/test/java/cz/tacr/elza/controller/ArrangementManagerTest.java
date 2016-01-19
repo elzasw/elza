@@ -633,7 +633,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         levelWithExtraNode.setLevel(first.getLevel());
         levelWithExtraNode.setExtraNode(second.getLevel().getNode());
-        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(MOVE_LEVEL_UNDER_URL);
+        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(
+                MOVE_LEVEL_UNDER_URL);
         logger.info(response.asString());
         Assert.assertEquals(200, response.statusCode());
 
@@ -2119,6 +2120,38 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItemResult = deleteDescriptionItem(descItemResult.getDescItem(),
                 version.getFindingAidVersionId(),
                 descItemResult.getNode().getVersion());
+
+        Assert.assertNotNull(descItemResult);
+        Assert.assertNotNull(descItemResult.getNode());
+        Assert.assertNull(descItemResult.getDescItem());
+
+    }
+
+    @Test
+    public void testRestDeleteDescriptionItemsByTypeV2() {
+        ArrFindingAid findingAid = createFindingAidRest(TEST_NAME);
+        ArrFindingAidVersion version = getFindingAidOpenVersion(findingAid);
+        ArrNode node = version.getRootLevel().getNode();
+
+        RulDescItemType descItemType = descItemTypeRepository.findOneByCode("ZP2015_UNIT_COUNT");
+
+        final int POSITION = 1;
+        final int VALUE = 123;
+
+        ArrDescItemIntVO descItemInt = new ArrDescItemIntVO();
+        descItemInt.setPosition(POSITION);
+        descItemInt.setValue(VALUE);
+
+        ArrangementController.DescItemResult descItemResult = createDescriptionItem(descItemInt,
+                version.getFindingAidVersionId(),
+                descItemType.getDescItemTypeId(),
+                node.getNodeId(),
+                node.getVersion());
+
+        descItemResult = deleteDescriptionItemsByType(version.getFindingAidVersionId(),
+                descItemResult.getNode().getId(),
+                descItemResult.getNode().getVersion(),
+                descItemType.getDescItemTypeId());
 
         Assert.assertNotNull(descItemResult);
         Assert.assertNotNull(descItemResult.getNode());

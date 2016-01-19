@@ -241,6 +241,7 @@ public abstract class AbstractRestTest {
     protected static final String CREATE_DESC_ITEM = ARRANGEMENT_MANAGER_URL_V2 + "/descItems/{findingAidVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}/create";
     protected static final String UPDATE_DESC_ITEM = ARRANGEMENT_MANAGER_URL_V2 + "/descItems/{findingAidVersionId}/{nodeVersion}/update/{createNewVersion}";
     protected static final String DELETE_DESC_ITEM = ARRANGEMENT_MANAGER_URL_V2 + "/descItems/{findingAidVersionId}/{nodeVersion}/delete";
+    protected static final String DELETE_DESC_ITEMS_TYPE = ARRANGEMENT_MANAGER_URL_V2 + "/descItems/{findingAidVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}";
     protected static final String UPDATE_FA_URL = ARRANGEMENT_MANAGER_URL + "/updateFindingAid";
     protected static final String DELETE_FA_URL = ARRANGEMENT_MANAGER_URL + "/deleteFindingAid";
     protected static final String GET_FA_URL = ARRANGEMENT_MANAGER_URL + "/getFindingAids";
@@ -1561,6 +1562,18 @@ public abstract class AbstractRestTest {
 
         Response response = post(spec -> spec.pathParameter("findingAidVersionId", findingAidVersionId)
                 .pathParameter("nodeVersion", nodeVersion).body(descItemVO), DELETE_DESC_ITEM);
+        return response.getBody().as(ArrangementController.DescItemResult.class);
+    }
+
+    protected ArrangementController.DescItemResult deleteDescriptionItemsByType(final Integer findingAidVersionId,
+                                                                                final Integer nodeId,
+                                                                                final Integer nodeVersion,
+                                                                                final Integer descItemTypeId) {
+
+        Response response = delete(spec -> spec.pathParameter("findingAidVersionId", findingAidVersionId)
+                .pathParameter("nodeVersion", nodeVersion)
+                .pathParameter("nodeId", nodeId)
+                .pathParameter("descItemTypeId", descItemTypeId), DELETE_DESC_ITEMS_TYPE);
         return response.getBody().as(ArrangementController.DescItemResult.class);
     }
 }

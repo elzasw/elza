@@ -2,6 +2,7 @@ package cz.tacr.elza.service;
 
 import java.beans.PropertyDescriptor;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,6 +23,7 @@ import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
+import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 
@@ -59,6 +61,9 @@ public class DescriptionItemService {
     @Autowired
     private DescItemSpecRepository descItemSpecRepository;
 
+    @Autowired
+    private DescItemTypeRepository descItemTypeRepository;
+
     /**
      * Kontrola otevřené verze.
      *
@@ -78,8 +83,9 @@ public class DescriptionItemService {
      */
     private ArrNode saveNode(final ArrNode node) {
         node.setLastUpdate(LocalDateTime.now());
-        // TODO: pokud je v node změněná verze ručně, hibernate to ignoruje
-        return nodeRepository.save(node);
+        nodeRepository.save(node);
+        nodeRepository.flush();
+        return node;
     }
 
     /**
@@ -115,7 +121,7 @@ public class DescriptionItemService {
         // uložení uzlu (kontrola optimistických zámků)
         saveNode(descItem.getNode());
 
-        ArrDescItem descItemDeleted = deleteDescriptionItem(descItem, findingAidVersion, change);
+        ArrDescItem descItemDeleted = deleteDescriptionItem(descItem, findingAidVersion, change, true);
 
         // uložení poslední uživatelské změny nad AP k verzi AP
         arrangementService.saveLastChangeFaVersion(change, findingAidVersion);
@@ -127,6 +133,56 @@ public class DescriptionItemService {
         return descItemDeleted;
     }
 
+
+    /**
+     * Smaže hodnoty atributu podle typu.
+     * - s kontrolou verze uzlu
+     * - se spuštěním validace uzlu
+     *
+     * @param findingAidVersionId   identifikátor verze archivní pomůcky
+     * @param nodeId                identifikátor uzlu
+     * @param nodeVersion           verze uzlu (optimistické zámky)
+     * @param descItemTypeId        identifikátor typu hodnoty atributu
+     * @return  upravený uzel
+     */
+    public ArrNode deleteDescriptionItemsByType(final Integer findingAidVersionId,
+                                                final Integer nodeId,
+                                                final Integer nodeVersion,
+                                                final Integer descItemTypeId) {
+
+        ArrChange change = arrangementService.createChange();
+        ArrFindingAidVersion findingAidVersion = findingAidVersionRepository.findOne(findingAidVersionId);
+        RulDescItemType descItemType = descItemTypeRepository.findOne(descItemTypeId);
+
+        Assert.notNull(findingAidVersion, "Verze archivní pomůcky neexistuje");
+        Assert.notNull(descItemType, "Typ hodnoty atributu neexistuje");
+
+        ArrNode node = nodeRepository.findOne(nodeId);
+        node.setVersion(nodeVersion);
+
+        // uložení uzlu (kontrola optimistických zámků)
+        saveNode(node);
+
+        List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItemType, node);
+
+        if (descItems.size() == 0) {
+            throw new IllegalStateException("Nebyla nalezena žádná hodnota atributu ke smazání");
+        }
+
+        List<ArrDescItem> descItemsDeleted = new ArrayList<>(descItems.size());
+        for (ArrDescItem descItem : descItems) {
+            descItemsDeleted.add(deleteDescriptionItem(descItem, findingAidVersion, change, false));
+        }
+
+        // uložení poslední uživatelské změny nad AP k verzi AP
+        arrangementService.saveLastChangeFaVersion(change, findingAidVersion);
+
+        // validace uzlu
+        ruleService.conformityInfo(findingAidVersionId, Arrays.asList(node.getNodeId()),
+                NodeTypeOperation.SAVE_DESC_ITEM, null, null, descItemsDeleted);
+
+        return node;
+    }
 
     /**
      * Vytvoření hodnoty atributu.
@@ -259,11 +315,13 @@ public class DescriptionItemService {
      * @param descItem hodnota atributu
      * @param version  verze archivní pomůcky
      * @param change   změna operace
+     * @param moveAfter posunout hodnoty po?
      * @return smazaná hodnota atributu
      */
     public ArrDescItem deleteDescriptionItem(final ArrDescItem descItem,
                                              final ArrFindingAidVersion version,
-                                             final ArrChange change) {
+                                             final ArrChange change,
+                                             final boolean moveAfter) {
         Assert.notNull(descItem);
         Assert.notNull(version);
         Assert.notNull(change);
@@ -271,13 +329,15 @@ public class DescriptionItemService {
         // pro mazání musí být verze otevřená
         checkFindingAidVersionLock(version);
 
-        // načtení hodnot, které je potřeba přesunout výš
-        List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsAfterPosition(
-                descItem.getDescItemType(),
-                descItem.getNode(),
-                descItem.getPosition());
+        if (moveAfter) {
+            // načtení hodnot, které je potřeba přesunout výš
+            List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsAfterPosition(
+                    descItem.getDescItemType(),
+                    descItem.getNode(),
+                    descItem.getPosition());
 
-        copyDescItemsWithData(change, descItems, -1);
+            copyDescItemsWithData(change, descItems, -1);
+        }
 
         descItem.setDeleteChange(change);
         return descItemRepository.save(descItem);

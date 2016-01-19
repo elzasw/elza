@@ -110,6 +110,9 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
             active: this.props.selectedId === node.id,
             focus: this.props.focusId === node.id,
         })
+
+        var name = node.name ? node.name : <i>{i18n('faTree.node.name.undefined', node.id)}</i>;
+
         return (
             <div key={node.id} className={cls}>
                 {expCol}
@@ -118,7 +121,7 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
                     onClick={this.handleNodeClick.bind(this, node)}
                     onContextMenu={this.handleContextMenu.bind(this, node)}
                     >
-                    {node.name}
+                    {name}
                 </span>
             </div>
         )

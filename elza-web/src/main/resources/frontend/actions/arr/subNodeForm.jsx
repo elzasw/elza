@@ -103,7 +103,7 @@ export function faSubNodeFormDescItemTypeDelete(versionId, nodeId, nodeKey, valu
             valueLocation,
         })
 
-        faSubNodeFormDeleteDescItemType(versionId, subNodeForm.data.node.version, loc.descItemType)
+        faSubNodeFormDeleteDescItemType(versionId, subNodeForm.data.node.id, subNodeForm.data.node.version, loc.descItemType)
             .then(json => {
                 dispatch(faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueLocation, json, 'DELETE_DESC_ITEM_TYPE'));
             })
@@ -147,9 +147,9 @@ export function faSubNodeFormDeleteDescItem(versionId, nodeVersionId, descItem) 
     return WebApi.deleteDescItem(versionId, nodeVersionId, descItem);
 }
 
-export function faSubNodeFormDeleteDescItemType(versionId, nodeVersionId, descItemType) {
-    console.log("SMAZANI desc item type", versionId, nodeVersionId, descItemType);
-    return WebApi.deleteDescItemType(versionId, nodeVersionId, descItemType.id);
+export function faSubNodeFormDeleteDescItemType(versionId, nodeId, nodeVersionId, descItemType) {
+    console.log("SMAZANI desc item type", versionId, nodeId, nodeVersionId, descItemType);
+    return WebApi.deleteDescItemType(versionId, nodeId, nodeVersionId, descItemType.id);
 }
 
 export function faSubNodeFormFetchIfNeeded(versionId, nodeId, nodeKey) {

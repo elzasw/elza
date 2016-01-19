@@ -92,6 +92,30 @@ public class ArrangementController {
     @Autowired
     private DescriptionItemService descriptionItemService;
 
+    @Transactional
+    @RequestMapping(value = "/descItems/{findingAidVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}",
+            method = RequestMethod.DELETE,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public DescItemResult deleteDescItemsByType(@PathVariable(value = "findingAidVersionId") final Integer findingAidVersionId,
+                                                @PathVariable(value = "nodeId") final Integer nodeId,
+                                                @PathVariable(value = "nodeVersion") final Integer nodeVersion,
+                                                @PathVariable(value = "descItemTypeId") final Integer descItemTypeId) {
+
+        Assert.notNull(findingAidVersionId);
+        Assert.notNull(nodeVersion);
+        Assert.notNull(descItemTypeId);
+        Assert.notNull(nodeId);
+
+        ArrNode node = descriptionItemService
+                .deleteDescriptionItemsByType(findingAidVersionId, nodeId, nodeVersion, descItemTypeId);
+
+        DescItemResult descItemResult = new DescItemResult();
+        descItemResult.setDescItem(null);
+        descItemResult.setNode(factoryVo.createArrNode(node));
+
+        return descItemResult;
+    }
 
     @Transactional
     @RequestMapping(value = "/descItems/{findingAidVersionId}/{nodeVersion}/delete",
