@@ -24,6 +24,7 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
             section = (
                 <RibbonGroup className="">
                     <LinkContainer to="/admin/packages"><Button><Glyphicon glyph="cog" /><div><span className="btnText">{i18n('ribbon.action.admin.packages')}</span></div></Button></LinkContainer>
+                    <LinkContainer to="/admin/fulltext"><Button><Glyphicon glyph="cog" /><div><span className="btnText">{i18n('ribbon.action.admin.fulltext')}</span></div></Button></LinkContainer>
                 </RibbonGroup>
             );
         } else if (this.props.arr) {

@@ -14,7 +14,7 @@ const history = useBasename(createHistory)({
     basename: serverContextPath + ''
 })
 
-import {ArrPage, HomePage, RegistryPage, PartyPage, AdminLayout, AdminPage, AdminPackagesPage, Layout} from 'pages';
+import {ArrPage, HomePage, RegistryPage, PartyPage, AdminLayout, AdminPage, AdminPackagesPage, AdminFulltextPage, Layout} from 'pages';
 
 // Aplikace
 exports.start = function() {
@@ -36,6 +36,7 @@ var routes = (
             <Route path="admin" component={Layout}>
                 <IndexRoute component={AdminPage} />
                 <Route path="packages" component={AdminPackagesPage} />
+                <Route path="fulltext" component={AdminFulltextPage} />
             </Route>
         </Route>
 );

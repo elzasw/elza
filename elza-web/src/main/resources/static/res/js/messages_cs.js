@@ -16,6 +16,7 @@ var messages = {
     "ribbon.action.party": "Osoby",
     "ribbon.action.admin": "Administrace",
     "ribbon.action.admin.packages": "Správa balíčků",
+    "ribbon.action.admin.fulltext": "Fulltext",
 
     "toggle.action.minimize": "Minimalizovat",
     "toggle.action.restore": "Zobrazit",
