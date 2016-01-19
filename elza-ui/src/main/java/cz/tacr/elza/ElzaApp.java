@@ -84,12 +84,12 @@ public class ElzaApp extends WebMvcAutoConfiguration {
         return new SimpMessagingTemplate(new MessageChannel() {
             @Override
             public boolean send(final Message<?> message) {
-                return false;
+                return true;
             }
 
             @Override
             public boolean send(final Message<?> message, final long l) {
-                return false;
+                return true;
             }
         });
     }

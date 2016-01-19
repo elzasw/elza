@@ -213,6 +213,14 @@ public class RegistryService {
             record.setExternalSource(externalSource);
         }
 
+        if(record.getParentRecord() != null && record.getParentRecord().getRecordId() != null){
+            RegRecord parentRecord = regRecordRepository.findOne(record.getParentRecord().getRecordId());
+            Assert.notNull(parentRecord,
+                    "Nebylo nalezeno rejstříkové heslo s id " + record.getParentRecord().getRecordId());
+            record.setParentRecord(parentRecord);
+        }
+
+
         RegRecord result = regRecordRepository.save(record);
         EventType type = record.getRecordId() == null ? EventType.RECORD_CREATE : EventType.RECORD_UPDATE;
         eventNotificationService.publishEvent(EventFactory.createIdEvent(type, result.getRecordId()));

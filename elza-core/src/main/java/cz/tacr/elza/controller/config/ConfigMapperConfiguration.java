@@ -328,6 +328,17 @@ public class ConfigMapperConfiguration {
                             regRecordVO.setParentRecordId(parentRecord.getRecordId());
                         }
                     }
+
+                    @Override
+                    public void mapBtoA(final RegRecordVO regRecordVO,
+                                        final RegRecord regRecord,
+                                        final MappingContext context) {
+                        if (regRecordVO.getParentRecordId() != null) {
+                            RegRecord parent = new RegRecord();
+                            parent.setRecordId(regRecordVO.getParentRecordId());
+                            regRecord.setParentRecord(parent);
+                        }
+                    }
                 }).byDefault().register();
 
         mapperFactory.classMap(RegExternalSource.class, RegExternalSourceVO.class).byDefault().register();
