@@ -201,8 +201,9 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
     }
 
 
-    @RequestMapping(value = "/deleteParty", method = RequestMethod.DELETE)
+    //přepsáno do partyController
     @Transactional
+    @RequestMapping(value = "/deleteParty", method = RequestMethod.DELETE)
     @Override
     public void deleteParty(@RequestParam("partyId") final Integer partyId) {
         Assert.notNull(partyId);
@@ -211,7 +212,7 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
             return;
         }
 
-        checkPartyUsage(party);
+         checkPartyUsage(party);
         ParPartyName partyName = party.getPreferredName();
         if (partyName != null) {
             partyNameComplementRepository.deleteByPartyName(partyName);
@@ -266,6 +267,8 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
         registryService.deleteRecord(party.getRecord(), false);
     }
 
+
+    //přepsáno do partyService
     /**
      * Promazání dvojice datumů od kterékoliv entity.
      * @param from  od
@@ -280,6 +283,8 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
         }
     }
 
+
+    //přepsáno do partyService
     /**
      * Prověří existenci vazeb na osobu. Pokud existují, vyhodí příslušnou výjimku, nelze mazat.
      * @param party osoba

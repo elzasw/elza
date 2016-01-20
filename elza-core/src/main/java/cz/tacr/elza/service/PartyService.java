@@ -24,7 +24,10 @@ import cz.tacr.elza.controller.vo.ParPartyNameEditVO;
 import cz.tacr.elza.controller.vo.ParPartyTimeRangeEditVO;
 import cz.tacr.elza.controller.vo.ParUnitdateEditVO;
 import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyGroup;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.ParPartyTimeRange;
@@ -38,12 +41,19 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.repository.CalendarTypeRepository;
+import cz.tacr.elza.repository.DataPartyRefRepository;
+import cz.tacr.elza.repository.DataRecordRefRepository;
+import cz.tacr.elza.repository.NodeRegisterRepository;
+import cz.tacr.elza.repository.PartyCreatorRepository;
 import cz.tacr.elza.repository.PartyDynastyRepository;
 import cz.tacr.elza.repository.PartyEventRepository;
+import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyGroupRepository;
+import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyPersonRepository;
+import cz.tacr.elza.repository.PartyRelationRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTimeRangeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
@@ -119,6 +129,24 @@ public class PartyService {
 
     @Autowired
     private RelationRoleTypeRepository relationRoleTypeRepository;
+
+    @Autowired
+    private DataPartyRefRepository dataPartyRefRepository;
+    @Autowired
+    private DataRecordRefRepository dataRecordRefRepository;
+
+    @Autowired
+    private NodeRegisterRepository nodeRegisterRepository;
+    @Autowired
+    private PartyNameComplementRepository partyNameComplementRepository;
+    @Autowired
+    private PartyCreatorRepository partyCreatorRepository;
+    @Autowired
+    private PartyRelationRepository partyRelationRepository;
+    @Autowired
+    private PartyGroupIdentifierRepository partyGroupIdentifierRepository;
+    @Autowired
+    private RegistryService registryService;
 
     /**
      * Najde osobu podle rejstříkového hesla.
@@ -216,6 +244,64 @@ public class PartyService {
         eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.PARTY_UPDATE, origParty.getPartyId()));
 
         return partyRepository.save(origParty);
+    }
+
+    /**
+     * Provede smazání osoby a navázaných entit.
+     * @param party osoba ke smazání
+     */
+    public void deleteParty(final ParParty party){
+        Assert.notNull(party);
+
+        checkPartyUsage(party);
+
+        List<ParPartyName> partyNames = new ArrayList<>(partyNameRepository.findByParty(party));
+        ParPartyName partyName = party.getPreferredName();
+        if (partyName != null) {
+            partyNames.add(partyName);
+        }
+
+        party.setPreferredName(null);
+        for (ParPartyName parPartyName : partyNames) {
+            partyNameComplementRepository.deleteByPartyName(parPartyName);
+            partyNameRepository.flush();
+
+            deleteUnitDates(parPartyName.getValidFrom(), parPartyName.getValidTo());
+            partyNameRepository.delete(parPartyName);
+        }
+
+        partyCreatorRepository.deleteByPartyBoth(party);
+
+
+        partyTimeRangeRepository.findByParty(party).forEach((pt) -> {
+                    ParUnitdate from = pt.getFrom();
+                    ParUnitdate to = pt.getTo();
+                    partyTimeRangeRepository.delete(pt);
+                    deleteUnitDates(from, to);
+                }
+        );
+
+
+        partyRelationRepository.findByParty(party).forEach((pr) -> {
+                    deleteRelation(pr);
+                }
+        );
+
+        ParPartyGroup partyGroup = partyGroupRepository.findOne(party.getPartyId());
+        if (partyGroup != null) {
+            partyGroupIdentifierRepository.findByParty(partyGroup).forEach((pg) -> {
+                        ParUnitdate from = pg.getFrom();
+                        ParUnitdate to = pg.getTo();
+                        partyGroupIdentifierRepository.delete(pg);
+                        deleteUnitDates(from, to);
+                    }
+            );
+        }
+
+        partyRepository.flush();
+
+        partyRepository.delete(party);
+        registryService.deleteRecord(party.getRecord(), false);
     }
 
 
@@ -341,14 +427,7 @@ public class PartyService {
 
         relationRepository.delete(relation);
 
-
-        if (from != null) {
-            unitdateRepository.delete(from);
-        }
-
-        if (to != null) {
-            unitdateRepository.delete(to);
-        }
+        deleteUnitDates(from, to);
     }
 
 
@@ -692,4 +771,39 @@ public class PartyService {
         }
     }
 
+    /**
+     * Prověří existenci vazeb na osobu. Pokud existují, vyhodí příslušnou výjimku, nelze mazat.
+     * @param party osoba
+     */
+    private void checkPartyUsage(final ParParty party) {
+        // vazby ( arr_node_register, ArrDataRecordRef, ArrDataPartyRef),
+        Long pocet = dataPartyRefRepository.getCountByParty(party.getPartyId());
+        if (pocet > 0) {
+            throw new IllegalStateException("Nalezeno použití party v tabulce ArrDataPartyRef.");
+        }
+
+        List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByRecordId(party.getRecord().getRecordId());
+        if (CollectionUtils.isNotEmpty(dataRecordRefList)) {
+            throw new IllegalStateException("Nalezeno použití hesla v tabulce ArrDataRecordRef.");
+        }
+
+        List<ArrNodeRegister> nodeRegisterList = nodeRegisterRepository.findByRecordId(party.getRecord());
+        if (CollectionUtils.isNotEmpty(nodeRegisterList)) {
+            throw new IllegalStateException("Nalezeno použití hesla v tabulce ArrDataRecordRef.");
+        }
+    }
+
+    /**
+     * Promazání dvojice datumů od kterékoliv entity.
+     * @param from  od
+     * @param to    do
+     */
+    private void deleteUnitDates(final ParUnitdate from, final ParUnitdate to) {
+        if (from != null) {
+            unitdateRepository.delete(from);
+        }
+        if (to != null) {
+            unitdateRepository.delete(to);
+        }
+    }
 }

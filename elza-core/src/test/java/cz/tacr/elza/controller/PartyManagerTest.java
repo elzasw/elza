@@ -323,6 +323,7 @@ public class PartyManagerTest extends AbstractRestTest {
 
         Response response = post(spec -> spec.body(parPartyVO), INSERT_PARTY_V2);
         ParPartyVO parPartyVORet = response.getBody().as(ParDynastyVO.class);
+        final Integer partyId = parPartyVORet.getPartyId();
 
         List<ParPartyName> allNames = partyNameRepository.findAll();
         List<ParUnitdate> allUnitDate = unitdateRepository.findAll();
@@ -443,6 +444,12 @@ public class PartyManagerTest extends AbstractRestTest {
                 (spec) -> spec.pathParameter(ABSTRACT_RELATION_ID_ATT, relationVO.getRelationId()), DELETE_RELATION_V2);
 
         Assert.assertNull(relationRepository.findOne(relationVO.getRelationId()));
+
+
+        //DELETE PARTY
+        delete((spec)-> spec.parameter(ABSTRACT_PARTY_ID_ATT, partyId), DELETE_ABSTRACT_PARTY_V2);
+
+        Assert.assertTrue(partyRepository.findOne(parPartyVORet.getPartyId()) == null);
     }
 
 }

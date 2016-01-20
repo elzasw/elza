@@ -13,11 +13,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PartyPersonRepository extends JpaRepository<ParPerson, Integer> {
 
-    /**
-     * Smaže osobu.
-     * @param partyId id osoby
-     */
-    @Query("DELETE FROM par_person pp WHERE pp.partyId = ?1")
-    void deleteByPartyBoth(Integer partyId);
-
 }

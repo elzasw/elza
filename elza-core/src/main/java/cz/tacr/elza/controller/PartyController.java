@@ -292,6 +292,23 @@ public class PartyController {
         return partyList.get(0);
     }
 
+    /**
+     * Smazání osoby a navázaných entit.
+     *
+     * @param partyId id osoby
+     */
+    @Transactional
+    @RequestMapping(value = "/deleteParty", method = RequestMethod.DELETE)
+    public void deleteParty(@RequestParam("partyId") final Integer partyId) {
+        Assert.notNull(partyId);
+        ParParty party = partyRepository.findOne(partyId);
+        if (party == null) {
+            return;
+        }
+
+        partyService.deleteParty(party);
+    }
+
 
     /**
      * Vložení vztahu spolu s vazbami.
