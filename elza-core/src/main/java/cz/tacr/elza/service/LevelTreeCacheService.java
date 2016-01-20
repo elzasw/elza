@@ -1,7 +1,6 @@
 package cz.tacr.elza.service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,8 +39,7 @@ import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.LevelRepositoryCustom;
 import cz.tacr.elza.service.eventnotification.EventChangeMessage;
 import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
-import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.service.eventnotification.events.VersionTreeChange;
+import cz.tacr.elza.service.eventnotification.events.AbstractEventVersion;
 
 
 /**
@@ -431,19 +429,15 @@ public class LevelTreeCacheService {
     @Subscribe
     public void onDataUpdate(final EventChangeMessage changeMessage){
 
-        Map<EventType, AbstractEventSimple> changeMap = changeMessage.getChangeMap();
+        List<AbstractEventSimple> events = changeMessage.getEvents();
 
-        for (Map.Entry<EventType, AbstractEventSimple> changeEntry : changeMap.entrySet()) {
-
+        for (AbstractEventSimple event : events) {
             //projdeme všechny změny, které jsou změny ve stromu uzlů verze a smažeme cache verzí
-            if (VersionTreeChange.class.isAssignableFrom(changeEntry.getKey().getEventClass())) {
-                Set<Integer> changedVersionIds = ((VersionTreeChange) changeEntry.getValue()).getChangedVersionIds();
+            if (AbstractEventVersion.class.isAssignableFrom(event.getClass())) {
+                Integer changedVersionId = ((AbstractEventVersion) event).getVersionId();
 
-                for (Integer changedVersionId : changedVersionIds) {
-
-                    clearVersionCache(changedVersionId);
-                }
-
+                //TODO nemazat celou cache, ale provádět co nejvíc změn přímo na cache
+                clearVersionCache(changedVersionId);
             }
         }
     }

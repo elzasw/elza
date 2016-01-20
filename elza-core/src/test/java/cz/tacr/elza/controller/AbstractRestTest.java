@@ -128,6 +128,7 @@ import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.repository.VersionConformityRepository;
+import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.RegistryService;
@@ -266,6 +267,7 @@ public abstract class AbstractRestTest {
     protected static final String ADD_LEVEL_AFTER_URL = ARRANGEMENT_MANAGER_URL + "/addLevelAfter";
     protected static final String ADD_LEVEL_CHILD_URL = ARRANGEMENT_MANAGER_URL + "/addLevelChild";
     protected static final String MOVE_LEVEL_BEFORE_URL = ARRANGEMENT_MANAGER_URL + "/moveLevelBefore";
+    protected static final String MOVE_LEVEL_BEFORE_URL_V2 = ARRANGEMENT_MANAGER_URL_V2 + "/moveLevelBefore";
     protected static final String MOVE_LEVEL_UNDER_URL = ARRANGEMENT_MANAGER_URL + "/moveLevelUnder";
     protected static final String MOVE_LEVEL_AFTER_URL = ARRANGEMENT_MANAGER_URL + "/moveLevelAfter";
     protected static final String DELETE_LEVEL_URL = ARRANGEMENT_MANAGER_URL + "/deleteLevel";
@@ -412,6 +414,9 @@ public abstract class AbstractRestTest {
     @Autowired
     private ArrangementService arrangementService;
 
+    @Autowired
+    protected ArrMoveLevelService moveLevelService;
+
     protected RulPackage rulPackage;
 
     //servisní třídy
@@ -536,7 +541,7 @@ public abstract class AbstractRestTest {
         RulRuleSet ruleSet = createRuleSet();
         RulArrangementType arrangementType = createArrangementType(ruleSet);
 
-        return arrangementManager.createFindingAid(name, arrangementType.getArrangementTypeId(), ruleSet.getRuleSetId());
+        return arrangementService.createFindingAidWithScenario(name, ruleSet, arrangementType);
     }
 
     /**

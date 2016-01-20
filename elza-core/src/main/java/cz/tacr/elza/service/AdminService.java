@@ -59,6 +59,6 @@ public class AdminService implements ApplicationListener<ContextRefreshedEvent> 
     // TODO vanek odstranit až bude klient na indexaci
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        reindex();
+//        reindex();
     }
 }

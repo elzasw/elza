@@ -198,6 +198,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return findingAid;
     }
 
+    //přepsáno do ArrangementController
     @Override
     @Transactional
     @RequestMapping(value = "/createFindingAid", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -543,6 +544,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return ret;
     }
 
+    //přepsáno do arrangementController
     @Override
     @Transactional
     @RequestMapping(value = "/moveLevelBefore", method = RequestMethod.PUT)
@@ -714,6 +716,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return ret;
     }
 
+    //přepsáno do arrangementController
     @Override
     @Transactional
     @RequestMapping(value = "/moveLevelAfter", method = RequestMethod.PUT)

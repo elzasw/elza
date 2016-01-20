@@ -35,8 +35,8 @@ import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemIntVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.domain.ArrCalendarType;
@@ -598,6 +598,204 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
         Assert.assertTrue(subLevels.size() == 2);
         Assert.assertTrue(movedChild.getLevel().getNodeParent().getNodeId().equals(parent.getLevel().getNodeParent().getNodeId()));
+    }
+
+
+    @Test
+    @Transactional
+    public void testMovesV2() {
+        ArrFindingAid fa = createFindingAid("test");
+        ArrFindingAidVersion version = findingAidVersionRepository
+                .findByFindingAidIdAndLockChangeIsNull(fa.getFindingAidId());
+
+        ArrChange createChange = createFaChange(LocalDateTime.now());
+
+        // 1
+        //   2
+        //     3
+        //     4
+        //     5
+        //     6
+        //     7
+        //     8
+        ArrLevel child1 = createLevel(1, version.getRootLevel(), createChange);
+        ArrLevel child2 = createLevel(1, child1, createChange);
+        ArrLevel child3 = createLevel(1, child2, createChange);
+        ArrLevel child4 = createLevel(2, child2, createChange);
+
+        ArrLevel child5 = createLevel(3, child2, createChange);
+        ArrLevel child6 = createLevel(4, child2, createChange);
+        ArrLevel child7 = createLevel(5, child2, createChange);
+        ArrLevel child8 = createLevel(6, child2, createChange);
+
+        moveLevelService.moveLevelsAfter(version, child3.getNode(), child3.getNodeParent(),
+                Arrays.asList(child5.getNode(), child7.getNode()),
+                child3.getNodeParent());
+        child1 = levelRepository.findNodeInRootTreeByNodeId(child1.getNode(), version.getRootLevel().getNode(), null);
+        child2 = levelRepository.findNodeInRootTreeByNodeId(child2.getNode(), version.getRootLevel().getNode(), null);
+        child3 = levelRepository.findNodeInRootTreeByNodeId(child3.getNode(), version.getRootLevel().getNode(), null);
+        child4 = levelRepository.findNodeInRootTreeByNodeId(child4.getNode(), version.getRootLevel().getNode(), null);
+        child5 = levelRepository.findNodeInRootTreeByNodeId(child5.getNode(), version.getRootLevel().getNode(), null);
+        child6 = levelRepository.findNodeInRootTreeByNodeId(child6.getNode(), version.getRootLevel().getNode(), null);
+        child7 = levelRepository.findNodeInRootTreeByNodeId(child7.getNode(), version.getRootLevel().getNode(), null);
+        child8 = levelRepository.findNodeInRootTreeByNodeId(child8.getNode(), version.getRootLevel().getNode(), null);
+
+        // 1
+        //   2
+        //     3
+        //     5
+        //     7
+        //     4
+        //     6
+        //     8
+        Assert.assertTrue(child3.getNodeParent().equals(child2.getNode()));
+        Assert.assertTrue(child4.getNodeParent().equals(child2.getNode()));
+        Assert.assertTrue(child5.getNodeParent().equals(child2.getNode()));
+        Assert.assertTrue(child6.getNodeParent().equals(child2.getNode()));
+        Assert.assertTrue(child7.getNodeParent().equals(child2.getNode()));
+        Assert.assertTrue(child8.getNodeParent().equals(child2.getNode()));
+        Assert.assertTrue(child3.getPosition() < child5.getPosition());
+        Assert.assertTrue(child5.getPosition() < child7.getPosition());
+        Assert.assertTrue(child7.getPosition() < child4.getPosition());
+        Assert.assertTrue(child4.getPosition() < child6.getPosition());
+        Assert.assertTrue(child6.getPosition() < child8.getPosition());
+
+        moveLevelService.moveLevelsBefore(version, child5.getNode(), child5.getNodeParent(),
+                Arrays.asList(child7.getNode(), child6.getNode()),
+                child3.getNodeParent());
+        child1 = levelRepository.findNodeInRootTreeByNodeId(child1.getNode(), version.getRootLevel().getNode(), null);
+        child2 = levelRepository.findNodeInRootTreeByNodeId(child2.getNode(), version.getRootLevel().getNode(), null);
+        child3 = levelRepository.findNodeInRootTreeByNodeId(child3.getNode(), version.getRootLevel().getNode(), null);
+        child4 = levelRepository.findNodeInRootTreeByNodeId(child4.getNode(), version.getRootLevel().getNode(), null);
+        child5 = levelRepository.findNodeInRootTreeByNodeId(child5.getNode(), version.getRootLevel().getNode(), null);
+        child6 = levelRepository.findNodeInRootTreeByNodeId(child6.getNode(), version.getRootLevel().getNode(), null);
+        child7 = levelRepository.findNodeInRootTreeByNodeId(child7.getNode(), version.getRootLevel().getNode(), null);
+        child8 = levelRepository.findNodeInRootTreeByNodeId(child8.getNode(), version.getRootLevel().getNode(), null);
+
+        // 1
+        //   2
+        //     3
+        //     7
+        //     6
+        //     5
+        //     4
+        //     8
+        Assert.assertTrue(child3.getNodeParent().equals(child2.getNode()));
+        Assert.assertTrue(child4.getNodeParent().equals(child2.getNode()));
+        Assert.assertTrue(child5.getNodeParent().equals(child2.getNode()));
+        Assert.assertTrue(child6.getNodeParent().equals(child2.getNode()));
+        Assert.assertTrue(child7.getNodeParent().equals(child2.getNode()));
+        Assert.assertTrue(child8.getNodeParent().equals(child2.getNode()));
+        Assert.assertTrue(child3.getPosition() < child7.getPosition());
+        Assert.assertTrue(child7.getPosition() < child6.getPosition());
+        Assert.assertTrue(child6.getPosition() < child5.getPosition());
+        Assert.assertTrue(child5.getPosition() < child4.getPosition());
+        Assert.assertTrue(child4.getPosition() < child8.getPosition());
+
+
+
+        moveLevelService.moveLevelsBefore(version, child4.getNode(), child4.getNodeParent(),
+                Arrays.asList(child7.getNode(), child6.getNode()),
+                child3.getNodeParent());
+        child1 = levelRepository.findNodeInRootTreeByNodeId(child1.getNode(), version.getRootLevel().getNode(), null);
+        child2 = levelRepository.findNodeInRootTreeByNodeId(child2.getNode(), version.getRootLevel().getNode(), null);
+        child3 = levelRepository.findNodeInRootTreeByNodeId(child3.getNode(), version.getRootLevel().getNode(), null);
+        child4 = levelRepository.findNodeInRootTreeByNodeId(child4.getNode(), version.getRootLevel().getNode(), null);
+        child5 = levelRepository.findNodeInRootTreeByNodeId(child5.getNode(), version.getRootLevel().getNode(), null);
+        child6 = levelRepository.findNodeInRootTreeByNodeId(child6.getNode(), version.getRootLevel().getNode(), null);
+        child7 = levelRepository.findNodeInRootTreeByNodeId(child7.getNode(), version.getRootLevel().getNode(), null);
+        child8 = levelRepository.findNodeInRootTreeByNodeId(child8.getNode(), version.getRootLevel().getNode(), null);
+
+        // 1
+        //   2
+        //     3
+        //     5
+        //     7
+        //     6
+        //     4
+        //     8
+        Assert.assertTrue(child3.getNodeParent().equals(child2.getNode()));
+        Assert.assertTrue(child4.getNodeParent().equals(child2.getNode()));
+        Assert.assertTrue(child5.getNodeParent().equals(child2.getNode()));
+        Assert.assertTrue(child6.getNodeParent().equals(child2.getNode()));
+        Assert.assertTrue(child7.getNodeParent().equals(child2.getNode()));
+        Assert.assertTrue(child8.getNodeParent().equals(child2.getNode()));
+        Assert.assertTrue(child3.getPosition() < child5.getPosition());
+        Assert.assertTrue(child5.getPosition() < child7.getPosition());
+        Assert.assertTrue(child7.getPosition() < child6.getPosition());
+        Assert.assertTrue(child6.getPosition() < child4.getPosition());
+        Assert.assertTrue(child4.getPosition() < child8.getPosition());
+
+
+        //přesun před na jiné urovni
+        moveLevelService.moveLevelsBefore(version, child2.getNode(), child2.getNodeParent(),
+                Arrays.asList(child5.getNode(), child4.getNode()),
+                child3.getNodeParent());
+        child1 = levelRepository.findNodeInRootTreeByNodeId(child1.getNode(), version.getRootLevel().getNode(), null);
+        child2 = levelRepository.findNodeInRootTreeByNodeId(child2.getNode(), version.getRootLevel().getNode(), null);
+        child3 = levelRepository.findNodeInRootTreeByNodeId(child3.getNode(), version.getRootLevel().getNode(), null);
+        child4 = levelRepository.findNodeInRootTreeByNodeId(child4.getNode(), version.getRootLevel().getNode(), null);
+        child5 = levelRepository.findNodeInRootTreeByNodeId(child5.getNode(), version.getRootLevel().getNode(), null);
+        child6 = levelRepository.findNodeInRootTreeByNodeId(child6.getNode(), version.getRootLevel().getNode(), null);
+        child7 = levelRepository.findNodeInRootTreeByNodeId(child7.getNode(), version.getRootLevel().getNode(), null);
+        child8 = levelRepository.findNodeInRootTreeByNodeId(child8.getNode(), version.getRootLevel().getNode(), null);
+
+        // 1
+        //   5
+        //   4
+        //   2
+        //     3
+        //     7
+        //     6
+        //     8
+        Assert.assertTrue(child5.getNodeParent().equals(child1.getNode()));
+        Assert.assertTrue(child4.getNodeParent().equals(child1.getNode()));
+        Assert.assertTrue(child3.getNodeParent().equals(child2.getNode()));
+        Assert.assertTrue(child6.getNodeParent().equals(child2.getNode()));
+        Assert.assertTrue(child7.getNodeParent().equals(child2.getNode()));
+        Assert.assertTrue(child8.getNodeParent().equals(child2.getNode()));
+        Assert.assertTrue(child5.getPosition() < child4.getPosition());
+        Assert.assertTrue(child4.getPosition() < child2.getPosition());
+        Assert.assertTrue(child3.getPosition() < child7.getPosition());
+        Assert.assertTrue(child7.getPosition() < child6.getPosition());
+        Assert.assertTrue(child6.getPosition() < child8.getPosition());
+
+
+
+
+        //přesun pod
+        moveLevelService.moveLevelsUnder(version, child5.getNode(),
+                Arrays.asList(child7.getNode(), child8.getNode()),
+                child7.getNodeParent());
+        child1 = levelRepository.findNodeInRootTreeByNodeId(child1.getNode(), version.getRootLevel().getNode(), null);
+        child2 = levelRepository.findNodeInRootTreeByNodeId(child2.getNode(), version.getRootLevel().getNode(), null);
+        child3 = levelRepository.findNodeInRootTreeByNodeId(child3.getNode(), version.getRootLevel().getNode(), null);
+        child4 = levelRepository.findNodeInRootTreeByNodeId(child4.getNode(), version.getRootLevel().getNode(), null);
+        child5 = levelRepository.findNodeInRootTreeByNodeId(child5.getNode(), version.getRootLevel().getNode(), null);
+        child6 = levelRepository.findNodeInRootTreeByNodeId(child6.getNode(), version.getRootLevel().getNode(), null);
+        child7 = levelRepository.findNodeInRootTreeByNodeId(child7.getNode(), version.getRootLevel().getNode(), null);
+        child8 = levelRepository.findNodeInRootTreeByNodeId(child8.getNode(), version.getRootLevel().getNode(), null);
+
+        // 1
+        //   5
+        //     7
+        //     8
+        //   4
+        //   2
+        //     3
+        //     6
+        Assert.assertTrue(child5.getNodeParent().equals(child1.getNode()));
+        Assert.assertTrue(child4.getNodeParent().equals(child1.getNode()));
+        Assert.assertTrue(child3.getNodeParent().equals(child2.getNode()));
+        Assert.assertTrue(child6.getNodeParent().equals(child2.getNode()));
+        Assert.assertTrue(child7.getNodeParent().equals(child5.getNode()));
+        Assert.assertTrue(child8.getNodeParent().equals(child5.getNode()));
+        Assert.assertTrue(child5.getPosition() < child4.getPosition());
+        Assert.assertTrue(child4.getPosition() < child2.getPosition());
+        Assert.assertTrue(child7.getPosition() < child8.getPosition());
+        Assert.assertTrue(child3.getPosition() < child6.getPosition());
+
+
     }
 
     @Test

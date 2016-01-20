@@ -25,13 +25,6 @@ public abstract class AbstractEventSimple<T> {
         return eventType;
     }
 
-    /**
-     * Sloučí dvě události do jedné, (např. přidá id z jedné události k id druhé)
-     *
-     * @param event událost stejného typu
-     */
-    public abstract void appendEventData(T event);
-
     @Override
     public String toString() {
         return "AbstractEventSimple{" +

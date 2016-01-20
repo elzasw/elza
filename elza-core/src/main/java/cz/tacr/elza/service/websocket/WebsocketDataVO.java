@@ -40,4 +40,12 @@ public class WebsocketDataVO<T> {
     public void setValue(final T value) {
         this.value = value;
     }
+
+    @Override
+    public String toString() {
+        return "WebsocketDataVO{" +
+                "area=" + area +
+                ", value=" + value.toString() +
+                '}';
+    }
 }

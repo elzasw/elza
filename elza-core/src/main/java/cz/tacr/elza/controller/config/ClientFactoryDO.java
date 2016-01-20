@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import cz.tacr.elza.controller.vo.ParDynastyEditVO;
 import cz.tacr.elza.controller.vo.ParEventEditVO;
@@ -21,8 +22,10 @@ import cz.tacr.elza.controller.vo.ParRelationEntityVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParDynasty;
 import cz.tacr.elza.domain.ParEvent;
 import cz.tacr.elza.domain.ParParty;
@@ -60,6 +63,33 @@ public class ClientFactoryDO {
 
     @Autowired
     private DescItemSpecRepository descItemSpecRepository;
+
+    /**
+     * Vytvoří node z VO.
+     * @param nodeVO vo node
+     * @return DO node
+     */
+    public ArrNode createNode(final ArrNodeVO nodeVO){
+        Assert.notNull(nodeVO);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.map(nodeVO, ArrNode.class);
+    }
+
+    /**
+     * Vytvoří seznam DO z VO.
+     * @param nodeVoList VO seznam nodů
+     * @return DO seznam nodů
+     */
+    public List<ArrNode> createNodes(final Collection<ArrNodeVO> nodeVoList){
+        Assert.notNull(nodeVoList);
+
+        List<ArrNode> result = new ArrayList<>(nodeVoList.size());
+        for (ArrNodeVO arrNodeVO : nodeVoList) {
+            result.add(createNode(arrNodeVO));
+        }
+
+        return result;
+    }
 
     /**
      * Vytvoří objekt osoby z předaného VO.

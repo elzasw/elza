@@ -1,7 +1,7 @@
 package cz.tacr.elza.service.eventnotification;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +37,7 @@ public class EventNotificationService implements IEventNotificationService {
     private EventBus eventBus;
 
 
-    private Map<EventType, AbstractEventSimple> committedEventMap = new HashMap<>();
+    private List<AbstractEventSimple> committedEvents = new LinkedList<>();
 
 
     @Override
@@ -63,46 +63,31 @@ public class EventNotificationService implements IEventNotificationService {
      * Provede odeslání událostí klientům.
      */
     private void flushEvents() {
-        Map<EventType, AbstractEventSimple> valuesCopy;
+        List<AbstractEventSimple> valuesCopy;
         synchronized (this) {
-            valuesCopy = new HashMap<>(committedEventMap);
-            committedEventMap.clear();
+            valuesCopy = new LinkedList<>(committedEvents);
+            committedEvents.clear();
         }
 
         //prozatím nejpreve odešleme událost do kontextu aplikace a poté až klientovi
         eventBus.post(new EventChangeMessage(valuesCopy));
-        clientDataChangesService.fireEvents(valuesCopy.values());
+        clientDataChangesService.fireEvents(valuesCopy);
     }
 
 
     /**
      * Uloží dočasné události do komitnutých (připravených k odeslání klientům.)
      *
-     * @param uncommittedEventMap mapa dočasných událostí
+     * @param uncommittedEvents dočasné události
      */
-    synchronized private void commitEvents(final Map<EventType, AbstractEventSimple> uncommittedEventMap) {
-        for (AbstractEventSimple eventSimple : uncommittedEventMap.values()) {
-            putEventIntoMap(committedEventMap, eventSimple);
-        }
+    synchronized private void commitEvents(final List<AbstractEventSimple> uncommittedEvents) {
+        committedEvents.addAll(uncommittedEvents);
+
         //TODO neodesílat po každé transakci, ale po nějakém čase
         flushEvents();
     }
 
 
-    /**
-     * Najde v mapě událost stejného typu a sloučí její data, nebo vytvoří v mapě novo událost.
-     *
-     * @param eventMap mapa události
-     * @param event    událost
-     */
-    private void putEventIntoMap(final Map<EventType, AbstractEventSimple> eventMap, final AbstractEventSimple event) {
-        AbstractEventSimple commitEvent = eventMap.get(event.getEventType());
-        if (commitEvent == null) {
-            eventMap.put(event.getEventType(), event);
-        } else {
-            commitEvent.appendEventData(event);
-        }
-    }
 
     /**
      * Listener udržující připravená data, která v případě úspěšné transakce budou připravena k odeslání.
@@ -112,7 +97,7 @@ public class EventNotificationService implements IEventNotificationService {
         /**
          * Mapa připravených událostí.
          */
-        private Map<EventType, AbstractEventSimple> uncommittedEventMap = new HashMap<>();
+        private List<AbstractEventSimple> uncommittedEvents = new LinkedList<>();
 
         /**
          * Přidá připravenou událost do mapy.
@@ -120,13 +105,13 @@ public class EventNotificationService implements IEventNotificationService {
          * @param event událost
          */
         public void registerEvent(final AbstractEventSimple event) {
-            putEventIntoMap(uncommittedEventMap, event);
+            uncommittedEvents.add(event);
         }
 
 
         @Override
         public void afterCommit() {
-            commitEvents(uncommittedEventMap);
+            commitEvents(uncommittedEvents);
         }
     }
 

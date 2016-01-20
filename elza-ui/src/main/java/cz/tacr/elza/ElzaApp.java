@@ -84,11 +84,20 @@ public class ElzaApp extends WebMvcAutoConfiguration {
         return new SimpMessagingTemplate(new MessageChannel() {
             @Override
             public boolean send(final Message<?> message) {
+
+                if(message.getPayload() != null){
+                    logger.info("WEBSOCKET: "+message.getPayload().toString());
+                }
+
                 return true;
             }
 
             @Override
             public boolean send(final Message<?> message, final long l) {
+                if(message.getPayload() != null){
+                    logger.info("WEBSOCKET: "+message.getPayload().toString());
+                }
+
                 return true;
             }
         });

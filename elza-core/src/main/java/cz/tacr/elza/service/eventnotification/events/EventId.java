@@ -39,9 +39,4 @@ public class EventId extends AbstractEventSimple<EventId> {
     public void setIds(final Set<Integer> ids) {
         this.ids = ids;
     }
-
-    @Override
-    public void appendEventData(final EventId event) {
-        ids.addAll(event.getIds());
-    }
 }

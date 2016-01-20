@@ -43,6 +43,7 @@ import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.LevelTreeCacheService;
@@ -92,6 +93,9 @@ public class ArrangementController {
     @Autowired
     private DescriptionItemService descriptionItemService;
 
+    @Autowired
+    private ArrMoveLevelService moveLevelService;
+
     @Transactional
     @RequestMapping(value = "/descItems/{findingAidVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}",
             method = RequestMethod.DELETE,
@@ -123,8 +127,8 @@ public class ArrangementController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public DescItemResult deleteDescItem(@RequestBody final ArrDescItemVO descItemVO,
-                               @PathVariable(value = "findingAidVersionId") final Integer findingAidVersionId,
-                               @PathVariable(value = "nodeVersion") final Integer nodeVersion) {
+                                         @PathVariable(value = "findingAidVersionId") final Integer findingAidVersionId,
+                                         @PathVariable(value = "nodeVersion") final Integer nodeVersion) {
         Assert.notNull(descItemVO);
         Assert.notNull(findingAidVersionId);
         Assert.notNull(nodeVersion);
@@ -171,10 +175,10 @@ public class ArrangementController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public DescItemResult createDescItem(@RequestBody final ArrDescItemVO descItemVO,
-                               @PathVariable(value = "findingAidVersionId") final Integer findingAidVersionId,
-                               @PathVariable(value = "descItemTypeId") final Integer descItemTypeId,
-                               @PathVariable(value = "nodeId") final Integer nodeId,
-                               @PathVariable(value = "nodeVersion") final Integer nodeVersion) {
+                                         @PathVariable(value = "findingAidVersionId") final Integer findingAidVersionId,
+                                         @PathVariable(value = "descItemTypeId") final Integer descItemTypeId,
+                                         @PathVariable(value = "nodeId") final Integer nodeId,
+                                         @PathVariable(value = "nodeVersion") final Integer nodeVersion) {
         Assert.notNull(descItemVO);
         Assert.notNull(findingAidVersionId);
         Assert.notNull(descItemTypeId);
@@ -301,6 +305,14 @@ public class ArrangementController {
         return factoryVo.createCalendarTypes(calendarTypes);
     }
 
+    /**
+     * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.
+     *
+     * @param name              název archivní pomůcky
+     * @param arrangementTypeId id typu výstupu
+     * @param ruleSetId         id pravidel podle kterých se vytváří popis
+     * @return nová archivní pomůcka
+     */
     @Transactional
     @RequestMapping(value = "/findingAids", method = RequestMethod.POST,
             produces = MediaType.APPLICATION_JSON_VALUE)
@@ -324,6 +336,73 @@ public class ArrangementController {
 
         return factoryVo.createArrFindingAidVO(newFindingAid, true);
     }
+
+
+    /**
+     * Přesun uzlů se stejným rodičem před jiný uzel.
+     *
+     * @param moveParam vstupní parametry
+     */
+    @Transactional
+    @RequestMapping(value = "/moveLevelBefore", method = RequestMethod.PUT)
+    public void moveLevelBefore(@RequestBody LevelMoveParam moveParam) {
+        Assert.notNull(moveParam);
+
+
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(moveParam.getVersionId());
+
+        ArrNode staticNode = factoryDO.createNode(moveParam.getStaticNode());
+        ArrNode staticNodeParent = factoryDO.createNode(moveParam.getStaticNodeParent());
+        List<ArrNode> transportNodes = factoryDO.createNodes(moveParam.getTransportNodes());
+        ArrNode transportNodeParent = factoryDO.createNode(moveParam.getTransportNodeParent());
+
+        moveLevelService.moveLevelsBefore(version, staticNode, staticNodeParent,
+                transportNodes, transportNodeParent);
+    }
+
+    /**
+     * Přesun uzlů se stejným rodičem za jiný uzel.
+     *
+     * @param moveParam vstupní parametry
+     */
+    @Transactional
+    @RequestMapping(value = "/moveLevelAfter", method = RequestMethod.PUT)
+    public void moveLevelAfter(@RequestBody LevelMoveParam moveParam) {
+        Assert.notNull(moveParam);
+
+
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(moveParam.getVersionId());
+
+        ArrNode staticNode = factoryDO.createNode(moveParam.getStaticNode());
+        ArrNode staticNodeParent = factoryDO.createNode(moveParam.getStaticNodeParent());
+        List<ArrNode> transportNodes = factoryDO.createNodes(moveParam.getTransportNodes());
+        ArrNode transportNodeParent = factoryDO.createNode(moveParam.getTransportNodeParent());
+
+        moveLevelService.moveLevelsAfter(version, staticNode, staticNodeParent,
+                transportNodes, transportNodeParent);
+    }
+
+
+    /**
+     * Přesun uzlů se stejným rodičem pod jiný uzel.
+     *
+     * @param moveParam vstupní parametry
+     */
+    @Transactional
+    @RequestMapping(value = "/moveLevelUnder", method = RequestMethod.PUT)
+    public void moveLevelUnder(@RequestBody LevelMoveParam moveParam) {
+        Assert.notNull(moveParam);
+
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(moveParam.getVersionId());
+
+        ArrNode staticNode = factoryDO.createNode(moveParam.getStaticNode());
+        List<ArrNode> transportNodes = factoryDO.createNodes(moveParam.getTransportNodes());
+        ArrNode transportNodeParent = factoryDO.createNode(moveParam.getTransportNodeParent());
+
+        moveLevelService.moveLevelsUnder(version, staticNode,
+                transportNodes, transportNodeParent);
+    }
+
 
     /**
      * Výstupní objekt pro získaná data pro formulář detailu uzlu.
@@ -441,7 +520,6 @@ public class ArrangementController {
     /**
      * Výstupní objekt pro hodnotu atributu a uzel.
      * - pro create / delete / update
-     *
      */
     public static class DescItemResult {
 
@@ -469,6 +547,75 @@ public class ArrangementController {
 
         public void setDescItem(final ArrDescItemVO descItem) {
             this.descItem = descItem;
+        }
+    }
+
+
+    /**
+     * Vstupní parametry pro přesuny uzlů.
+     */
+    public static class LevelMoveParam {
+
+        /**
+         * Id verze stromu.
+         */
+        private Integer versionId;
+        /**
+         * Statický uzel (za/před/pod který přesouváme)
+         */
+        private ArrNodeVO staticNode;
+        /**
+         * Aktuální statického uzlu.
+         */
+        private ArrNodeVO staticNodeParent;
+
+        /**
+         * Seznam uzlů, které přesouváme.
+         */
+        private List<ArrNodeVO> transportNodes;
+        /**
+         * Rodič uzlů, které přesouváme.
+         */
+        private ArrNodeVO transportNodeParent;
+
+        public Integer getVersionId() {
+            return versionId;
+        }
+
+        public void setVersionId(final Integer versionId) {
+            this.versionId = versionId;
+        }
+
+        public ArrNodeVO getStaticNode() {
+            return staticNode;
+        }
+
+        public void setStaticNode(final ArrNodeVO staticNode) {
+            this.staticNode = staticNode;
+        }
+
+        public ArrNodeVO getStaticNodeParent() {
+            return staticNodeParent;
+        }
+
+        public void setStaticNodeParent(final ArrNodeVO staticNodeParent) {
+            this.staticNodeParent = staticNodeParent;
+        }
+
+        public List<ArrNodeVO> getTransportNodes() {
+            return transportNodes;
+        }
+
+        public void setTransportNodes(final List<ArrNodeVO> transportNodes) {
+            this.transportNodes = transportNodes;
+        }
+
+        public ArrNodeVO getTransportNodeParent() {
+            return transportNodeParent;
+        }
+
+        public void setTransportNodeParent(final ArrNodeVO transportNodeParent) {
+            this.transportNodeParent = transportNodeParent;
         }
     }
 }

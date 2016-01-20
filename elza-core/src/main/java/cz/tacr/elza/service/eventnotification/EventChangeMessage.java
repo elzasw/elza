@@ -1,5 +1,6 @@
 package cz.tacr.elza.service.eventnotification;
 
+import java.util.List;
 import java.util.Map;
 
 import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
@@ -17,16 +18,16 @@ public class EventChangeMessage {
     /**
      * Mapa událostí v aplikaci.
      */
-    private Map<EventType, AbstractEventSimple> changeMap;
+    private List<AbstractEventSimple> events;
 
     /**
-     * @param changeMap Mapa událostí v aplikaci.
+     * @param events události v aplikaci.
      */
-    public EventChangeMessage(final Map<EventType, AbstractEventSimple> changeMap) {
-        this.changeMap = changeMap;
+    public EventChangeMessage(final List<AbstractEventSimple> events) {
+        this.events = events;
     }
 
-    public Map<EventType, AbstractEventSimple> getChangeMap() {
-        return changeMap;
+    public List<AbstractEventSimple> getEvents() {
+        return events;
     }
 }
