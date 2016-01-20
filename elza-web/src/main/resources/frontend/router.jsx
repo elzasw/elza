@@ -10,6 +10,8 @@ import { createHistory, useBasename, useQueries } from 'history';
 import { Provider } from 'react-redux'
 import { AppStore } from 'stores'
 
+import { browserHistory } from 'react-router';
+
 const history = useBasename(createHistory)({
     basename: serverContextPath + ''
 })
@@ -20,7 +22,7 @@ import {ArrPage, HomePage, RegistryPage, PartyPage, AdminLayout, AdminPage, Admi
 exports.start = function() {
     ReactDOM.render((
         <Provider store={AppStore.store}>
-            <Router history={history}>
+            <Router history={browserHistory}>
                 {routes}
             </Router>
         </Provider>
