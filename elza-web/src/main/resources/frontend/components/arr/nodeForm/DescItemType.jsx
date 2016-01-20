@@ -96,7 +96,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             onFocus: this.handleFocus.bind(this, descItemIndex),
         }
 
-        parts.push(<div>{this.props.rulDataType.code}-{descItem.id}-{descItemType.type}</div>);
+        //parts.push(<div>{this.props.rulDataType.code}-{descItem.id}-{descItemType.type}</div>);
         switch (this.props.rulDataType.code) {
             case 'PARTY_REF':
                 break;
