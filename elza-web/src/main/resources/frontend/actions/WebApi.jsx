@@ -63,6 +63,13 @@ class WebApi{
             });
     }
 
+    deleteParty(partyId) {
+        return AjaxUtils.ajaxDelete('/api/partyManagerV2/deleteParty', {partyId: partyId})
+            .then(json=>{
+                return json;
+            });
+    }
+
     createDescItem(versionId, nodeId, nodeVersionId, descItemTypeId, descItem) {
         return AjaxUtils.ajaxPut('/api/arrangementManagerV2/descItems/' + versionId + "/" + nodeId + "/" + nodeVersionId + "/" + descItemTypeId + "/create", null,  descItem);
     }

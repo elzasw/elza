@@ -42,6 +42,7 @@ export const PARTY_FIND_PARTY_RECEIVE = 'PARTY_FIND_PARTY_RECEIVE'  // dokončen
 export const PARTY_SELECT_PARTY = 'PARTY_SELECT_PARTY'              // dokončení hledání osob
 export const PARTY_DETAIL_REQUEST = 'PARTY_DETAIL_REQUEST'          // pořadavek na načtení detailu osoby
 export const PARTY_DETAIL_RECEIVE = 'PARTY_DETAIL_RECIVE'           // dokončení požadavku na hledání osoby
+export const PARTY_DELETED = 'PARTY_DELETED'                        // smazani osoby
 
 /**
  * Toastr

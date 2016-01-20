@@ -37,6 +37,11 @@ export default function partyRegion(state = initialState, action) {
                 selectedPartyData: action.selectedPartyData,
                 selectedPartyID: action.selectedPartyID,
             })
+        case types.PARTY_DELETED:
+            return Object.assign({}, state, {
+                selectedPartyData: null,
+                selectedPartyID: null,
+            })
         default:
             return state
     }

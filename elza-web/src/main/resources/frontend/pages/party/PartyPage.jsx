@@ -18,7 +18,7 @@ import {WebApi} from 'actions'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
 import {partyDetailFetchIfNeeded} from 'actions/party/party'
-import {insertParty} from 'actions/party/party'
+import {insertParty, deleteParty} from 'actions/party/party'
 
 
 var PartyPage = class PartyPage extends AbstractReactComponent {
@@ -26,30 +26,30 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         super(props);
         this.state = {};
         this.dispatch(refPartyTypesFetchIfNeeded());
-        this.bindMethods('buildRibbon', 'handleAddParty', 'handleCallAddParty', 'addParty');
+        this.bindMethods('buildRibbon', 'handleAddParty', 'handleCallAddParty', 'handleDeleteParty', 'handleCallDeleteParty');
     }
 
     handleCallAddParty(data) {
         switch(data.partyTypeId){
             case 1:
                 // vytvoření fyzicke osoby
-                this.dispatch(insertParty('ParPersonEditVO', data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange, data.calendarType, data.degreeBefore, data.degreeAfter));
+                this.dispatch(insertParty('ParPersonEditVO', this.props.partyRegion.filterText, data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange, data.calendarType, data.degreeBefore, data.degreeAfter));
                 break; 
             case 2:
                 // vytvoření rodu
-                this.dispatch(insertParty('ParDynastyEditVO', data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange, data.calendarType));
+                this.dispatch(insertParty('ParDynastyEditVO', this.props.partyRegion.filterText, data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange, data.calendarType));
                 break;
             case 3:
                 // vytvoření korporace
-                this.dispatch(insertParty('ParPartyGroupEditVO', data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange, data.calendarType, '', '', ''));
+                this.dispatch(insertParty('ParPartyGroupEditVO', this.props.partyRegion.filterText, data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange, data.calendarType, '', '', ''));
                 break;
             case 4:
                 // vytvoření dočasné korporace
-                this.dispatch(insertParty('ParEventEditVO', data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange, data.calendarType));
+                this.dispatch(insertParty('ParEventEditVO', this.props.partyRegion.filterText, data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange, data.calendarType));
                 break; 
             default:
                 // vytvoření jine osoby - ostatni
-                this.dispatch(insertParty('', data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange, data.calendarType));
+                this.dispatch(insertParty('', this.props.partyRegion.filterText, data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange, data.calendarType));
                 break; 
         }
     }
@@ -82,6 +82,17 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         }
     }
 
+    handleDeleteParty(){
+        var result = confirm(i18n('party.delete.confirm'));
+        if (result) {
+            this.dispatch(this.handleCallDeleteParty());
+        }
+
+    }
+    handleCallDeleteParty() {
+        this.dispatch(deleteParty(this.props.partyRegion.selectedPartyID, this.props.partyRegion.filterText));
+    }    
+
     buildRibbon() {
         var isSelected = this.props.partyRegion.selectedPartyID ? true : false;
         var altActions = [];
@@ -95,7 +106,6 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
                 <MenuItem eventKey="1">Osob</MenuItem>
             </DropdownButton>
         );
-
         var itemActions = [];
         if (isSelected) {
             itemActions.push(
@@ -105,7 +115,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
                 <Button><Glyphicon glyph="ok" /><div><span className="btnText">Validace</span></div></Button>
             );
             itemActions.push(
-                <Button><Glyphicon glyph="trash" /><div><span className="btnText">Smazat osobu</span></div></Button>
+                <Button onClick={this.handleDeleteParty}><Glyphicon glyph="trash" /><div><span className="btnText">ASmazat osobu</span></div></Button>
             );
         }
 

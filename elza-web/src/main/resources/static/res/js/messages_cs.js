@@ -82,8 +82,11 @@ var messages = {
     "party.nameFormType": "Typ formy jména",
     "party.calendarType": "Typ kalendáře", 
     "party.nameValidRange": "Datace použítí jména od",
+    "party.delete.confirm": "Opravdu chcete smazat tuto osobu?",
+    
     "arr.fa.title.added": "AP byla vytvořena",
     "arr.fa.title.approved": "AP byla uzavřena",
+    
 
     "admin.packages.action.export": "Stáhnout",
     "admin.packages.action.delete": "Smazat",
