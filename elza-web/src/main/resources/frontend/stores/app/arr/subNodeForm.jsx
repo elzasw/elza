@@ -37,8 +37,12 @@ function updateFormData(state, rulDataTypes) {
     })
 
     // Seznam všech atributů - obecně, doplněný o rulDataType
+    // Doplnění position ke skupině
     var descItemTypeInfos = [];
-    state.data.descItemTypeGroups.forEach(descItemGroup => {
+    state.descItemTypeGroupsMap = {};
+    state.data.descItemTypeGroups.forEach((descItemGroup, descItemGroupIndex) => {
+        state.descItemTypeGroupsMap[descItemGroup.id] = descItemGroup;
+        descItemGroup.position = descItemGroupIndex;
         descItemGroup.descItemTypes.forEach(descItemType => {
             var rulDataType = rulDataTypes.items[indexById(rulDataTypes.items, descItemType.dataTypeId)];
 
@@ -317,6 +321,46 @@ export default function subNodeForm(state = initialState, action) {
 
             state.formData = {...state.formData};
             return state;
+        case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
+            // Dohledání skupiny a desc item type
+            var addGroup, addItemType;
+            state.data.descItemTypeGroups.forEach(descItemGroup => {
+                descItemGroup.descItemTypes.forEach(descItemType => {
+                    if (descItemType.id == action.descItemTypeId) {
+                        addGroup = descItemGroup;
+                        addItemType = descItemType;
+                    }
+                });
+            });
+
+            // ##
+            // # Přidání do formuláře
+            // ##
+
+            // Dohledání skupiny, pokud existuje
+            var descItemGroup = state.formData.descItemGroups[indexById(state.formData.descItemGroups, addGroup.id)];
+            if (!descItemGroup) {   // skupina není, je nutné ji nejdříve přidat a následně seřadit skupiny podle pořadí
+                descItemGroup = {...addGroup, descItemTypes: []};
+                state.formData.descItemGroups.push(descItemGroup);
+
+                // Seřazení
+                state.formData.descItemGroups.sort((a, b) => state.data.descItemTypeGroups[a.id].position - state.data.descItemTypeGroups[a.id].position);
+            }
+
+            // Přidání prvku do skupiny a seřazení prvků podle position
+            var descItemType = {...addItemType, descItems: []};
+            descItemGroup.descItemTypes.push(descItemType);
+            // Pokud je ale atribut jednohodnotový, musíme ponechat prázdnou hodnotu
+            if (!descItemType.repeatable) {
+                var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, addItemType.id)];
+                var descItem = createDescItem(descItemTypeInfo);
+                descItem.position = 1;
+                descItemType.descItems.push(descItem);
+            }
+            descItemGroup.descItemTypes.sort((a, b) => a.viewOrder - b.viewOrder);
+
+            state.formData = {...state.formData};
+            return state;
         case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
             var loc = getLoc(state, action.valueLocation);
 
@@ -327,7 +371,7 @@ export default function subNodeForm(state = initialState, action) {
 
                 // Pokud je ale atribut jednohodnotový, musíme ponechat prázdnou hodnotu
                 if (!loc.descItemType.repeatable) {
-                    var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, loc.descItemType.id)];                        
+                    var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, loc.descItemType.id)];
                     var descItem = createDescItem(descItemTypeInfo);
                     descItem.position = 1;
                     loc.descItemType.descItems.push(descItem);

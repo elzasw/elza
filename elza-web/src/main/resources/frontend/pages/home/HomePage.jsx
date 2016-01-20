@@ -12,7 +12,7 @@ import {AddFaForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, Abstr
 import {ModalDialog, NodeTabs, FaTreeTabs} from 'components';
 import {ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
+import {modalDialogShow} from 'actions/global/modalDialog'
 import {createFa} from 'actions/arr/fa'
 
 var HomePage = class HomePage extends AbstractReactComponent {

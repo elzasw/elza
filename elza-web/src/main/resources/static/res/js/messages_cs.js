@@ -2,7 +2,9 @@ var messages = {
     "global.data.loading": "Načítání dat...",
     "global.error.ajax": "Problém ajaxového volání",
     "global.action.create": "Vytvořit",
+    "global.action.add": "Přidat",
     "global.action.cancel": "Storno",
+    "global.action.close": "Zavřít",
     "global.action.store": "Uložit",
     "global.action.show.more": "Zobrazit více",
 
@@ -45,6 +47,8 @@ var messages = {
     "subNodeForm.validate.spec.required": "Specifikace musí být uvedena",
     "subNodeForm.validate.calendarType.required": "Typ kalendáře musí být uveden",
     "subNodeForm.validate.value.notEmpty": "Hodnota musí být uvedena",
+    "subNodeForm.descItemType": "Prvek",
+    "subNodeForm.descItemType.title.add": "Přidání prvku",
     
     "registry.addRegistry": "Nové rejstříkové heslo",
     "registry.addNewRegistry": "Přidat heslo",

@@ -100,6 +100,16 @@ export function faSubNodeFormValueDelete(versionId, nodeId, nodeKey, valueLocati
     }
 }
 
+export function faSubNodeFormDescItemTypeAdd(versionId, nodeId, nodeKey, descItemTypeId) {
+    return {
+        type: types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD,
+        versionId,
+        nodeId,
+        nodeKey,
+        descItemTypeId
+    }
+}
+
 export function faSubNodeFormDescItemTypeDelete(versionId, nodeId, nodeKey, valueLocation) {
     return (dispatch, getState) => {
         var state = getState();

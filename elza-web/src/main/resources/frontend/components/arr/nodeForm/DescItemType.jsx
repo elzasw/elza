@@ -104,8 +104,6 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                 break;
             case 'PACKET_REF':
                 break;
-            case 'FORMATTED_TEXT':
-                break;
             case 'UNITDATE':
                 parts.push(<DescItemUnitdate {...descItemProps} calendarTypes={this.props.calendarTypes} />)
                 break;
@@ -114,6 +112,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             case 'STRING':
                 parts.push(<DescItemString {...descItemProps} />)
                 break;
+            case 'FORMATTED_TEXT':
             case 'TEXT':
                 parts.push(<DescItemText {...descItemProps} />)
                 break;
@@ -157,6 +156,12 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                     hasDescItemsForDelete = true;
                 }
             });
+        }
+        if (!hasDescItemsForDelete) {
+            if (this.props.descItemTypeInfo.type == 'REQUIRED' || this.props.descItemTypeInfo.type == 'RECOMMENDED') {
+            } else {
+                hasDescItemsForDelete = true;
+            }
         }
         if (hasDescItemsForDelete) {
             actions.push(<NoFocusButton onClick={this.handleDescItemTypeRemove} title={i18n('subNodeForm.deleteDescItemType')}><Glyphicon glyph="remove" /></NoFocusButton>);

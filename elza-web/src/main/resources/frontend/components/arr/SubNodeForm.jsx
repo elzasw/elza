@@ -6,21 +6,23 @@ require ('./SubNodeForm.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent, NoFocusButton} from 'components';
+import {i18n, AbstractReactComponent, NoFocusButton} from 'components';
 import {Glyphicon} from 'react-bootstrap';
 import {connect} from 'react-redux'
 import {indexById} from 'stores/app/utils.jsx'
-import {faSubNodeFormValueChange, faSubNodeFormDescItemTypeDelete, faSubNodeFormValueChangeSpec,faSubNodeFormValueBlur, faSubNodeFormValueFocus, faSubNodeFormValueAdd, faSubNodeFormValueDelete} from 'actions/arr/subNodeForm'
+import {faSubNodeFormDescItemTypeAdd, faSubNodeFormValueChange, faSubNodeFormDescItemTypeDelete, faSubNodeFormValueChangeSpec,faSubNodeFormValueBlur, faSubNodeFormValueFocus, faSubNodeFormValueAdd, faSubNodeFormValueDelete} from 'actions/arr/subNodeForm'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 var classNames = require('classnames');
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import DescItemString from './nodeForm/DescItemString'
 import DescItemType from './nodeForm/DescItemType'
+import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm'
 
 var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderDescItemGroup', 'renderDescItemType', 'handleChange', 'handleChangeSpec', 'handleDescItemTypeRemove', 'handleBlur', 'handleFocus', 'renderFormActions', 'getDescItemTypeInfo', 'handleDescItemAdd', 'handleDescItemRemove');
+        this.bindMethods('renderDescItemGroup', 'handleAddDescItemType', 'renderDescItemType', 'handleChange', 'handleChangeSpec', 'handleDescItemTypeRemove', 'handleBlur', 'handleFocus', 'renderFormActions', 'getDescItemTypeInfo', 'handleDescItemAdd', 'handleDescItemRemove');
 
 //console.log("@@@@@-SubNodeForm-@@@@@", props);
         this.dispatch(calendarTypesFetchIfNeeded());
@@ -142,10 +144,37 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         )
     }
 
+    handleAddDescItemType() {
+        // Pro přidání chceme jen ty, které zatím ještě nemáme
+        var descItemTypesMap = {};
+        this.props.descItemTypeInfos.forEach(descItemType => {
+            descItemTypesMap[descItemType.id] = descItemType;
+        })
+        this.props.formData.descItemGroups.forEach(group => {
+            group.descItemTypes.forEach(descItemType => {
+                delete descItemTypesMap[descItemType.id];
+            })
+        })
+        var descItemTypes = [];
+        Object.keys(descItemTypesMap).forEach(function (key) {
+            descItemTypes.push(descItemTypesMap[key]);
+        });       
+
+        // Seřazení podle position
+        descItemTypes.sort((a, b) => a.position - b.position);
+
+        // Modální dialog
+        var form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmit={(data) => {
+            this.dispatch(modalDialogHide());
+            this.dispatch(faSubNodeFormDescItemTypeAdd(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, data.descItemTypeId));
+        }} />
+        this.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form));
+    }
+
     renderFormActions() {
         return (
             <div className='node-form-actions'>
-                <NoFocusButton><Glyphicon glyph="plus" />Přidat prvek</NoFocusButton>
+                <NoFocusButton onClick={this.handleAddDescItemType}><Glyphicon glyph="plus" />Přidat prvek</NoFocusButton>
                 <NoFocusButton><Glyphicon glyph="lock" />Odemknout vše</NoFocusButton>
                 <NoFocusButton><Glyphicon glyph="plus" />Přidat JP před</NoFocusButton>
                 <NoFocusButton><Glyphicon glyph="plus" />Přidat JP za</NoFocusButton>
