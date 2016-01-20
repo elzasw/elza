@@ -24,3 +24,19 @@ export function unlockAllDescItemType(nodeId) {
         nodeId: nodeId
     }
 }
+
+export function copyDescItemType(nodeId, descItemTypeId) {
+    return {
+        type: types.NODE_DESC_ITEM_TYPE_COPY,
+        nodeId: nodeId,
+        descItemTypeId: descItemTypeId
+    }
+}
+
+export function nocopyDescItemType(nodeId, descItemTypeId) {
+    return {
+        type: types.NODE_DESC_ITEM_TYPE_NOCOPY,
+        nodeId: nodeId,
+        descItemTypeId: descItemTypeId
+    }
+}

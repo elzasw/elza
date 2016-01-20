@@ -127,6 +127,8 @@ export default function arrRegion(state = initialState, action) {
         case types.NODE_DESC_ITEM_TYPE_LOCK:
         case types.NODE_DESC_ITEM_TYPE_UNLOCK:
         case types.NODE_DESC_ITEM_TYPE_UNLOCK_ALL:
+        case types.NODE_DESC_ITEM_TYPE_COPY:
+        case types.NODE_DESC_ITEM_TYPE_NOCOPY:
             return {
                 ...state,
                 nodeSettings: nodeSetting(state.nodeSettings, action)

@@ -23,7 +23,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
 
         this.bindMethods('renderDescItemSpec', 'renderDescItem', 'renderLabel', 'handleDescItemAdd',
                 'handleDescItemTypeRemove', 'handleDescItemRemove', 'handleChange', 'handleChangeSpec',
-                'handleBlur', 'handleFocus', 'handleDescItemTypeLock');
+                'handleBlur', 'handleFocus', 'handleDescItemTypeLock', 'handleDescItemTypeCopy');
     }
 
     componentWillReceiveProps(nextProps) {
@@ -149,7 +149,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         var actions = [];
 
         // Sestavení akcí
-        actions.push(<NoFocusButton><Glyphicon glyph="copy" /></NoFocusButton>);
+        actions.push(<NoFocusButton onClick={this.handleDescItemTypeCopy}><Glyphicon className={this.props.copy ? 'copy' : 'nocopy'} glyph="copy" /></NoFocusButton>);
         actions.push(<NoFocusButton><Glyphicon glyph="book" /></NoFocusButton>);
         actions.push(<NoFocusButton onClick={this.handleDescItemTypeLock}><Glyphicon className={this.props.locked ? 'locked' : 'unlocked'}  glyph="lock" /></NoFocusButton>);
 
@@ -198,6 +198,10 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
 
     handleDescItemTypeLock() {
         this.props.onDescItemTypeLock(!this.props.locked);
+    }
+
+    handleDescItemTypeCopy() {
+        this.props.onDescItemTypeCopy(!this.props.copy);
     }
 
     render() {

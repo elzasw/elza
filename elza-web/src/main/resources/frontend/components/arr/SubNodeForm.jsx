@@ -18,13 +18,16 @@ import DescItemString from './nodeForm/DescItemString'
 import DescItemType from './nodeForm/DescItemType'
 import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm'
 
-import {lockDescItemType, unlockDescItemType, unlockAllDescItemType} from 'actions/arr/nodeSetting'
+import {lockDescItemType, unlockDescItemType, unlockAllDescItemType, copyDescItemType, nocopyDescItemType} from 'actions/arr/nodeSetting'
 
 var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderDescItemGroup', 'handleAddDescItemType', 'renderDescItemType', 'handleChange', 'handleChangeSpec', 'handleDescItemTypeRemove', 'handleBlur', 'handleFocus', 'renderFormActions', 'getDescItemTypeInfo', 'handleDescItemAdd', 'handleDescItemRemove', 'handleDescItemTypeLock', 'handleDescItemTypeUnlockAll');
+        this.bindMethods('renderDescItemGroup', 'handleAddDescItemType', 'renderDescItemType', 'handleChange',
+                'handleChangeSpec', 'handleDescItemTypeRemove', 'handleBlur', 'handleFocus', 'renderFormActions',
+                'getDescItemTypeInfo', 'handleDescItemAdd', 'handleDescItemRemove', 'handleDescItemTypeLock',
+                'handleDescItemTypeUnlockAll', 'handleDescItemTypeCopy');
 
 //console.log("@@@@@-SubNodeForm-@@@@@", props);
         this.dispatch(calendarTypesFetchIfNeeded());
@@ -81,6 +84,14 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             this.dispatch(lockDescItemType(this.props.nodeId, descItemTypeId));
         } else {
             this.dispatch(unlockDescItemType(this.props.nodeId, descItemTypeId));
+        }
+    }
+
+    handleDescItemTypeCopy(descItemTypeId, copy) {
+        if (copy) {
+            this.dispatch(copyDescItemType(this.props.nodeId, descItemTypeId));
+        } else {
+            this.dispatch(nocopyDescItemType(this.props.nodeId, descItemTypeId));
         }
     }
 
@@ -142,6 +153,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         var descItemTypeInfo = this.getDescItemTypeInfo(descItemType);
 
         var locked = false;
+        var copy = false;
 
         var nodeSettings = this.props.nodeSettings;
 
@@ -149,14 +161,26 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         if (nodeSettings) {
             var nodeSetting = nodeSettings.nodes[nodeSettings.nodes.map(function(node) { return node.id; }).indexOf(this.props.nodeId)];
 
-            // existuje nastavení o JP
-            if (nodeSetting) {
+            // existuje nastavení o JP - zamykání
+            if (nodeSetting && nodeSetting.descItemTypeLockIds) {
                 var index = nodeSetting.descItemTypeLockIds.indexOf(descItemType.id);
 
                 // existuje type mezi zamknutými
                 if (index >= 0) {
                     locked = true;
                 }
+
+            }
+
+            // existuje nastavení o JP - kopírování
+            if (nodeSetting && nodeSetting.descItemTypeCopyIds) {
+                var index = nodeSetting.descItemTypeCopyIds.indexOf(descItemType.id);
+
+                // existuje type mezi kopírovanými
+                if (index >= 0) {
+                    copy = true;
+                }
+
             }
         }
 
@@ -174,7 +198,9 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 onFocus={this.handleFocus.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDescItemTypeRemove={this.handleDescItemTypeRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDescItemTypeLock={this.handleDescItemTypeLock.bind(this, descItemType.id)}
+                onDescItemTypeCopy={this.handleDescItemTypeCopy.bind(this, descItemType.id)}
                 locked={locked}
+                copy={copy}
             />
         )
     }

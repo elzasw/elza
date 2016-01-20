@@ -32,7 +32,8 @@ export default function nodeSetting(state = initialState, action) {
                         ...state.nodes,
                         {
                             id: action.nodeId,
-                            descItemTypeLockIds: [action.descItemTypeId]
+                            descItemTypeLockIds: [action.descItemTypeId],
+                            descItemTypeCopyIds: []
                         }
                     ]
                 };
@@ -64,6 +65,56 @@ export default function nodeSetting(state = initialState, action) {
                     ...state,
                     nodes: [
                         ...state.nodes.slice(0, nodeIndex),
+                        Object.assign({}, state.nodes[nodeIndex], {descItemTypeLockIds: []}),
+                        ...state.nodes.slice(nodeIndex + 1)
+                    ]
+                };
+            }
+            return state;
+
+        case types.NODE_DESC_ITEM_TYPE_COPY:
+
+            var nodeIndex = indexById(state.nodes, action.nodeId);
+
+            if (nodeIndex !== null) {
+                return {
+                    ...state,
+                    nodes: [
+                        ...state.nodes.slice(0, nodeIndex),
+                        Object.assign({}, state.nodes[nodeIndex], {descItemTypeCopyIds: [
+                            ...state.nodes[nodeIndex].descItemTypeCopyIds,
+                            action.descItemTypeId
+                        ]}),
+                        ...state.nodes.slice(nodeIndex + 1)
+                    ]
+                };
+            } else {
+                return {
+                    ...state,
+                    nodes: [
+                        ...state.nodes,
+                        {
+                            id: action.nodeId,
+                            descItemTypeLockIds: [],
+                            descItemTypeCopyIds: [action.descItemTypeId]
+                        }
+                    ]
+                };
+            }
+
+        case types.NODE_DESC_ITEM_TYPE_NOCOPY:
+            var nodeIndex = indexById(state.nodes, action.nodeId);
+            if (nodeIndex !== null) {
+                var typeIndex = state.nodes[nodeIndex].descItemTypeCopyIds.indexOf(action.descItemTypeId);
+
+                return {
+                    ...state,
+                    nodes: [
+                        ...state.nodes.slice(0, nodeIndex),
+                        Object.assign({}, state.nodes[nodeIndex], {descItemTypeCopyIds: [
+                            ...state.nodes[nodeIndex].descItemTypeCopyIds.slice(0, typeIndex),
+                            ...state.nodes[nodeIndex].descItemTypeCopyIds.slice(typeIndex + 1)
+                        ]}),
                         ...state.nodes.slice(nodeIndex + 1)
                     ]
                 };
