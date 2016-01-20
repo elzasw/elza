@@ -13,6 +13,9 @@ import DescItemText from './DescItemText'
 import DescItemInt from './DescItemInt'
 import DescItemDecimal from './DescItemDecimal'
 import DescItemCoordinates from './DescItemCoordinates'
+import DescItemUnitdate from './DescItemUnitdate'
+
+require ('./AbstractDescItem.less')
 
 var DescItemType = class DescItemType extends AbstractReactComponent {
     constructor(props) {
@@ -104,6 +107,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             case 'FORMATTED_TEXT':
                 break;
             case 'UNITDATE':
+                parts.push(<DescItemUnitdate {...descItemProps} calendarTypes={this.props.calendarTypes} />)
                 break;
             case 'UNITID':
                 break;

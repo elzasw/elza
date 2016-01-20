@@ -115,7 +115,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         }
 
         return (
-            <SubNodeForm formData={this.props.node.subNodeForm.data} rulDataTypes={this.props.rulDataTypes} />
+            <SubNodeForm formData={this.props.node.subNodeForm.data} rulDataTypes={this.props.rulDataTypes} calendarTypes={this.props.calendarTypes}/>
         );
     }
 
@@ -149,6 +149,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 formData={this.props.node.subNodeForm.formData}
                 descItemTypeInfos={this.props.node.subNodeForm.descItemTypeInfos}
                 rulDataTypes={this.props.rulDataTypes}
+                calendarTypes={this.props.calendarTypes}
             />
         }
 

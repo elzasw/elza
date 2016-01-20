@@ -11,6 +11,7 @@ import {Glyphicon} from 'react-bootstrap';
 import {connect} from 'react-redux'
 import {indexById} from 'stores/app/utils.jsx'
 import {faSubNodeFormValueChange, faSubNodeFormDescItemTypeDelete, faSubNodeFormValueChangeSpec,faSubNodeFormValueBlur, faSubNodeFormValueFocus, faSubNodeFormValueAdd, faSubNodeFormValueDelete} from 'actions/arr/subNodeForm'
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 var classNames = require('classnames');
 import DescItemString from './nodeForm/DescItemString'
 import DescItemType from './nodeForm/DescItemType'
@@ -20,11 +21,14 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('renderDescItemGroup', 'renderDescItemType', 'handleChange', 'handleChangeSpec', 'handleDescItemTypeRemove', 'handleBlur', 'handleFocus', 'renderFormActions', 'getDescItemTypeInfo', 'handleDescItemAdd', 'handleDescItemRemove');
+
 //console.log("@@@@@-SubNodeForm-@@@@@", props);
+        this.dispatch(calendarTypesFetchIfNeeded());
     }
 
     componentWillReceiveProps(nextProps) {
-//console.log("@@@@@-SubNodeForm-@@@@@", nextProps);
+//console.log("@@@@@-SubNodeForm-@@@@@", props);
+        this.dispatch(calendarTypesFetchIfNeeded());
     }
 
     renderDescItemGroup(descItemGroup, descItemGroupIndex) {
@@ -126,6 +130,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 descItemType={descItemType}
                 descItemTypeInfo={descItemTypeInfo}
                 rulDataType={rulDataType}
+                calendarTypes={this.props.calendarTypes}
                 onDescItemAdd={this.handleDescItemAdd.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDescItemRemove={this.handleDescItemRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onChange={this.handleChange.bind(this, descItemGroupIndex, descItemTypeIndex)}
@@ -151,6 +156,10 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 
     render() {
+        if (this.props.calendarTypes.isFetching && !this.props.calendarTypes.fetched) {
+            return <div className='node-form'></div>
+        }
+
         var formActions = this.renderFormActions();
         var descItemGroups = this.props.formData.descItemGroups.map((group, groupIndex) => (
             this.renderDescItemGroup(group, groupIndex)

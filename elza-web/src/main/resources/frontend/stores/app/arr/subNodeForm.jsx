@@ -169,6 +169,12 @@ function validate(descItem, descItemTypeInfo) {
         case 'FORMATTED_TEXT':
             break;
         case 'UNITDATE':
+            if (typeof descItem.calendarTypeId == 'undefined' || descItem.calendarTypeId == "") {
+                error.calendarType = i18n('subNodeForm.validate.calendarType.required');
+            }
+            if (!descItem.value || descItem.value.length === 0) {
+                error.value = i18n('subNodeForm.validate.value.notEmpty');
+            }
             break;
         case 'UNITID':
             break;
@@ -192,7 +198,7 @@ function validate(descItem, descItemTypeInfo) {
             break;
     }
 
-    error.hasError = error.spec || error.value;
+    error.hasError = error.spec || error.value || error.calendarType;
 
     return error;
 }
@@ -221,7 +227,15 @@ export default function subNodeForm(state = initialState, action) {
             var loc = getLoc(state, action.valueLocation);
             var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, loc.descItemType.id)];
             
-            loc.descItem.value = action.value;
+            switch (descItemTypeInfo.rulDataType.code) {
+                case 'UNITDATE':
+                    loc.descItem.value = action.value.value;
+                    loc.descItem.calendarTypeId = action.value.calendarTypeId;
+                    break;
+                default:
+                    loc.descItem.value = action.value;
+                    break;
+            }
             loc.descItem.touched = true;
             loc.descItem.error = validate(loc.descItem, descItemTypeInfo);
 

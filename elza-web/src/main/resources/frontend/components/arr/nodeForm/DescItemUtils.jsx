@@ -3,17 +3,20 @@ var classNames = require('classnames');
 /**
  * Tool třída pro desc item.
  */
-export function decorateValue(component, descItem) {
-    var cls = classNames({
+export function decorateValue(component, active, error, additionalClassNames = []) {
+    var clsObj = {
         'form-control': true,
         value: true,
-        error: descItem.error.value,
-        active: descItem.hasFocus,
-    });
+        error: error,
+        active: active,
+    };
+    additionalClassNames.forEach(cls => {clsObj[cls] = true});
+
+    var cls = classNames(clsObj);
 
     return {
         className: cls,
-        title: descItem.error.value,
+        title: error,
         onFocus: () => component.props.onFocus(),
         onBlur: () => component.props.onBlur()
     }

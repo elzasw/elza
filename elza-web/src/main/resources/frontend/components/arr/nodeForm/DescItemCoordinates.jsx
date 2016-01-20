@@ -2,8 +2,6 @@
  * Input prvek pro desc item - typ STRING.
  */
 
-require ('./DescItemCoordinates.less')
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {AbstractReactComponent} from 'components';
@@ -66,22 +64,16 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
     render() {
         const {descItem} = this.props;
 
-        var decorate1 = decorateValue(this, descItem)
-        var decorate2 = decorateValue(this, descItem)
-
-        decorate1.className += ' part1';
-        decorate2.className += ' part2';
-
         return (
-            <div className='desc-item-value'>
+            <div className='desc-item-value  desc-item-value-parts'>
                 <input
-                    {...decorate1}
+                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, ['part1'])}
                     type="text"
                     value={this.state.values.value1}
                     onChange={this.handleChange.bind(this, 0)}
                 />
                 <input
-                    {...decorate2}
+                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, ['part2'])}
                     type="text"
                     value={this.state.values.value2}
                     onChange={this.handleChange.bind(this, 1)}

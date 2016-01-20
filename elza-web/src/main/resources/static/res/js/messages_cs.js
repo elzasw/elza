@@ -43,6 +43,7 @@ var messages = {
     "subNodeForm.deleteDescItem": "Odstranit hodnotu",
     "subNodeForm.deleteDescItemType": "Odstranit prvek popisu včetně všech hodnot",
     "subNodeForm.validate.spec.required": "Specifikace musí být uvedena",
+    "subNodeForm.validate.calendarType.required": "Typ kalendáře musí být uveden",
     "subNodeForm.validate.value.notEmpty": "Hodnota musí být uvedena",
     
     "registry.addRegistry": "Nové rejstříkové heslo",

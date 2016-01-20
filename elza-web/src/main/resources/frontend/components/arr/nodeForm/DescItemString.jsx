@@ -32,7 +32,7 @@ var DescItemString = class DescItemString extends AbstractReactComponent {
         return (
             <div className='desc-item-value'>
                 <input
-                    {...decorateValue(this, descItem)}
+                    {...decorateValue(this, descItem.hasFocus, descItem.error.value)}
                     type="text"
                     value={descItem.value}
                     onChange={this.handleChange}

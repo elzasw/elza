@@ -110,6 +110,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                     nodes={nodes}
                     activeIndex={activeFa.nodes.activeIndex}
                     rulDataTypes={this.props.refTables.rulDataTypes}
+                    calendarTypes={this.props.refTables.calendarTypes}
                 />
             )
         }
