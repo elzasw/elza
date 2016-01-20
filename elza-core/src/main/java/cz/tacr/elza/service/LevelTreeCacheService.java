@@ -1,6 +1,7 @@
 package cz.tacr.elza.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -283,6 +284,9 @@ public class LevelTreeCacheService {
             treeNode.getChilds().sort(comparator);
         }
 
+        initReferenceMarks(allMap.get(rootId));
+
+
         return allMap;
     }
 
@@ -317,6 +321,38 @@ public class LevelTreeCacheService {
         }
 
         return result;
+    }
+
+    /**
+     * Projde celým stromem od kořene a nastaví referenční označení.
+     * @param rootNode kořen stromu
+     */
+    private void initReferenceMarks(final TreeNode rootNode) {
+
+        rootNode.setReferenceMark(new Integer[0]);
+        int childPosition = 1;
+        for (TreeNode child : rootNode.getChilds()) {
+            initReferenceMark(child, childPosition++);
+        }
+    }
+
+    /**
+     * Zkopíruje referenční označení z rodiče a nastaví pozici na poslední pozici referenčního označení.
+     *
+     * @param treeNode uzel
+     * @param position pozice uzlu v seznamu sourozenců
+     */
+    private void initReferenceMark(final TreeNode treeNode, final int position) {
+
+        Integer[] parentReferenceMark = treeNode.getParent().getReferenceMark();
+        Integer[] referenceMark = Arrays.copyOf(parentReferenceMark, parentReferenceMark.length + 1);
+        referenceMark[parentReferenceMark.length] = position;
+        treeNode.setReferenceMark(referenceMark);
+
+        int childPosition = 1;
+        for (TreeNode child : treeNode.getChilds()) {
+            initReferenceMark(child, childPosition++);
+        }
     }
 
     /**
@@ -391,7 +427,7 @@ public class LevelTreeCacheService {
             DescItemRepositoryCustom.DescItemTitleInfo title = nodeTitlesMap.get(treeNode.getId());
             result.add(
                     new TreeNodeClient(treeNode.getId(), treeNode.getDepth(),
-                            title == null ? null : title.getValue(), !treeNode.getChilds().isEmpty()));
+                            title == null ? null : title.getValue(), !treeNode.getChilds().isEmpty(), treeNode.getReferenceMark()));
         }
 
         return result;
@@ -437,6 +473,7 @@ public class LevelTreeCacheService {
                 Integer changedVersionId = ((AbstractEventVersion) event).getVersionId();
 
                 //TODO nemazat celou cache, ale provádět co nejvíc změn přímo na cache
+                //TODO aktualizovat referenční označení
                 clearVersionCache(changedVersionId);
             }
         }

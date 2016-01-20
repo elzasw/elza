@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,6 +37,11 @@ public class TreeNode implements Comparable<TreeNode> {
      */
     private TreeNode parent;
     private List<TreeNode> childs = Collections.EMPTY_LIST;
+
+    /**
+     * Referenční označení. Od kořene k uzlu.
+     */
+    private Integer[] referenceMark;
 
     public TreeNode(final Integer nodeId, final Integer position) {
         this.id = nodeId;
@@ -87,6 +93,14 @@ public class TreeNode implements Comparable<TreeNode> {
             childs = new LinkedList<>();
         }
         childs.add(child);
+    }
+
+    public Integer[] getReferenceMark() {
+        return referenceMark;
+    }
+
+    public void setReferenceMark(final Integer[] referenceMark) {
+        this.referenceMark = referenceMark;
     }
 
     @Override

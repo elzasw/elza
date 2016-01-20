@@ -28,15 +28,26 @@ public class TreeNodeClient {
      */
     private boolean hasChildren;
 
+    /**
+     * Referenční označení. Od kořene k uzlu.
+     */
+    private Integer[] referenceMark;
+
     public TreeNodeClient() {
     }
 
-    public TreeNodeClient(final Integer id, final Integer depth, final String name, final boolean hasChildren) {
+    public TreeNodeClient(final Integer id,
+                          final Integer depth,
+                          final String name,
+                          final boolean hasChildren,
+                          final Integer[] referenceMark) {
         this.id = id;
         this.depth = depth;
         this.name = name;
         this.hasChildren = hasChildren;
+        this.referenceMark = referenceMark;
     }
+
 
     public Integer getId() {
         return id;
@@ -68,5 +79,13 @@ public class TreeNodeClient {
 
     public void setHasChildren(final boolean hasChildren) {
         this.hasChildren = hasChildren;
+    }
+
+    public Integer[] getReferenceMark() {
+        return referenceMark;
+    }
+
+    public void setReferenceMark(final Integer[] referenceMark) {
+        this.referenceMark = referenceMark;
     }
 }
