@@ -21,13 +21,15 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderDescItemSpec', 'renderDescItem', 'renderLabel', 'handleDescItemAdd', 'handleDescItemTypeRemove', 'handleDescItemRemove', 'handleChange', 'handleChangeSpec', 'handleBlur', 'handleFocus');
+        this.bindMethods('renderDescItemSpec', 'renderDescItem', 'renderLabel', 'handleDescItemAdd',
+                'handleDescItemTypeRemove', 'handleDescItemRemove', 'handleChange', 'handleChangeSpec',
+                'handleBlur', 'handleFocus', 'handleDescItemTypeLock');
     }
 
     componentWillReceiveProps(nextProps) {
     }
 
-    renderDescItemSpec(descItem, descItemIndex) {
+    renderDescItemSpec(descItem, descItemIndex, locked) {
         var options = this.props.descItemTypeInfo.descItemSpecs.map(itemSpec => (
             <option value={itemSpec.id}>{itemSpec.name}</option>
         ));
@@ -44,6 +46,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             onChange: this.handleChangeSpec.bind(this, descItemIndex),
             onBlur: this.handleBlur.bind(this, descItemIndex),
             onFocus: this.handleFocus.bind(this, descItemIndex),
+            disabled: locked
         }
 
         return (
@@ -75,7 +78,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         this.props.onFocus(descItemIndex);
     }
 
-    renderDescItem(descItemType, descItem, descItemIndex, removeAction) {
+    renderDescItem(descItemType, descItem, descItemIndex, removeAction, locked) {
         var cls = 'desc-item-type-desc-item-container';
         if (removeAction) {
             cls += ' with-action';
@@ -85,7 +88,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
 
         if (this.props.descItemTypeInfo.useSpecification) {
             parts.push(
-                this.renderDescItemSpec(descItem, descItemIndex)
+                this.renderDescItemSpec(descItem, descItemIndex, locked)
             );
         }
 
@@ -94,6 +97,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             onChange: this.handleChange.bind(this, descItemIndex),
             onBlur: this.handleBlur.bind(this, descItemIndex),
             onFocus: this.handleFocus.bind(this, descItemIndex),
+            locked: locked
         }
 
         //parts.push(<div>{this.props.rulDataType.code}-{descItem.id}-{descItemType.type}</div>);
@@ -147,7 +151,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         // Sestavení akcí
         actions.push(<NoFocusButton><Glyphicon glyph="copy" /></NoFocusButton>);
         actions.push(<NoFocusButton><Glyphicon glyph="book" /></NoFocusButton>);
-        actions.push(<NoFocusButton><Glyphicon glyph="lock" /></NoFocusButton>);
+        actions.push(<NoFocusButton onClick={this.handleDescItemTypeLock}><Glyphicon className={this.props.locked ? 'locked' : 'unlocked'}  glyph="lock" /></NoFocusButton>);
 
         var hasDescItemsForDelete = false;
         if (!this.props.descItemType.hasFocus) {
@@ -192,13 +196,17 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         this.props.onDescItemTypeRemove();
     }
 
+    handleDescItemTypeLock() {
+        this.props.onDescItemTypeLock(!this.props.locked);
+    }
+
     render() {
-        const {descItemType, descItemTypeInfo} = this.props;
+        const {descItemType, descItemTypeInfo, locked} = this.props;
 
         var label = this.renderLabel();
 
         var addAction;
-        if (descItemTypeInfo.repeatable) {
+        if (descItemTypeInfo.repeatable && !locked) {
             addAction = <div className='desc-item-type-actions'><NoFocusButton onClick={this.handleDescItemAdd} title={i18n('subNodeForm.addDescItem')}><Glyphicon glyph="plus" /></NoFocusButton></div>
         }
 
@@ -207,7 +215,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             if (descItemTypeInfo.repeatable) {
                 removeAction = <NoFocusButton onClick={this.handleDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Glyphicon glyph="trash" /></NoFocusButton>
             }
-            return this.renderDescItem(descItemType, descItem, descItemIndex, removeAction)
+            return this.renderDescItem(descItemType, descItem, descItemIndex, removeAction, locked)
         })
 
         var cls = classNames({

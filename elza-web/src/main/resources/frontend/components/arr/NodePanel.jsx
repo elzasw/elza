@@ -143,6 +143,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         var form;
         if (!this.props.node.subNodeForm.isFetching && this.props.node.subNodeForm.fetched) {
             form = <SubNodeForm
+                nodeId={this.props.node.id}
                 versionId={this.props.versionId}
                 selectedSubNodeId={this.props.node.selectedSubNodeId}
                 nodeKey={this.props.node.nodeKey}

@@ -3,7 +3,7 @@ var classNames = require('classnames');
 /**
  * Tool třída pro desc item.
  */
-export function decorateValue(component, active, error, additionalClassNames = []) {
+export function decorateValue(component, active, error, locked, additionalClassNames = []) {
     var clsObj = {
         'form-control': true,
         value: true,
@@ -17,6 +17,7 @@ export function decorateValue(component, active, error, additionalClassNames = [
     return {
         className: cls,
         title: error,
+        disabled: locked,
         onFocus: () => component.props.onFocus(),
         onBlur: () => component.props.onBlur()
     }

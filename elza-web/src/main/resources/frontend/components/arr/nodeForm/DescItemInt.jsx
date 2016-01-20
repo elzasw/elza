@@ -25,13 +25,13 @@ var DescItemInt = class DescItemInt extends AbstractReactComponent {
     }
 
     render() {
-        const {descItem} = this.props;
-
+        const {descItem, locked} = this.props;
         return (
             <div className='desc-item-value'>
                 <input
-                    {...decorateValue(this, descItem.hasFocus, descItem.error.value)}
+                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
                     type="text"
+                    disabled={locked}
                     value={descItem.value}
                     onChange={this.handleChange}
                 />

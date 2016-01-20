@@ -3,10 +3,12 @@ import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
 
 import nodes from './nodes'
 import faTree from './faTree'
+import nodeSetting from './nodeSetting'
 
 const initialState = {
     activeIndex: null,
-    fas: []
+    nodeSettings: undefined,
+    fas: [],
 }
 
 function selectFaTab(state, action) {
@@ -121,6 +123,15 @@ export default function arrRegion(state = initialState, action) {
             }
         case types.FA_SELECT_FA_TAB:
             return selectFaTab(state, action);
+
+        case types.NODE_DESC_ITEM_TYPE_LOCK:
+        case types.NODE_DESC_ITEM_TYPE_UNLOCK:
+        case types.NODE_DESC_ITEM_TYPE_UNLOCK_ALL:
+            return {
+                ...state,
+                nodeSettings: nodeSetting(state.nodeSettings, action)
+            }
+
         default:
             return state
     }

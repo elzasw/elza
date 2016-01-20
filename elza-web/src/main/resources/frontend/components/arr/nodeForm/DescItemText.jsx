@@ -16,13 +16,14 @@ var DescItemText = class DescItemText extends AbstractReactComponent {
     }
 
     render() {
-        const {descItem} = this.props;
+        const {descItem, locked} = this.props;
 
         return (
             <div className='desc-item-value'>
                 <textarea
-                    {...decorateValue(this, descItem.hasFocus, descItem.error.value)}
+                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
                     type="text"
+                    disabled={locked}
                     value={descItem.value}
                     onChange={(e) => this.props.onChange(e.target.value)}
                 />

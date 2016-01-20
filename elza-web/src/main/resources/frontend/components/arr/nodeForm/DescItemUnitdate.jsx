@@ -38,12 +38,12 @@ var DescItemUnitdate = class DescItemUnitdate extends AbstractReactComponent {
     }
 
     render() {
-        const {descItem} = this.props;
+        const {descItem, locked} = this.props;
 
         return (
             <div className='desc-item-value desc-item-value-parts'>
                 <select
-                    {...decorateValue(this, descItem.hasFocus, descItem.error.calendarType, ['part1'])}
+                    {...decorateValue(this, descItem.hasFocus, descItem.error.calendarType, locked, ['part1'])}
                     value={descItem.calendarTypeId}
                     onChange={this.handleCalendarTypeChange}
                 >
@@ -53,7 +53,7 @@ var DescItemUnitdate = class DescItemUnitdate extends AbstractReactComponent {
                     ))}
                 </select>
                 <input
-                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, ['part2'])}
+                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, ['part2'])}
                     type="text"
                     value={descItem.value}
                     onChange={this.handleValueChange}

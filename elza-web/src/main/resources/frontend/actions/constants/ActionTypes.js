@@ -36,6 +36,13 @@ export const FA_FA_CLOSE_NODE_TAB = 'FA_FA_CLOSE_NODE_TAB'
 export const FA_FA_SELECT_SUBNODE = 'FA_FA_SELECT_SUBNODE'
 
 /**
+ * Uživatelské nastavení pro JP
+ */
+export const NODE_DESC_ITEM_TYPE_LOCK = 'NODE_DESC_ITEM_TYPE_LOCK'
+export const NODE_DESC_ITEM_TYPE_UNLOCK = 'NODE_DESC_ITEM_TYPE_UNLOCK'
+export const NODE_DESC_ITEM_TYPE_UNLOCK_ALL = 'NODE_DESC_ITEM_TYPE_UNLOCK_ALL'
+
+/**
  * Party.
  */
 export const PARTY_FIND_PARTY_REQUEST = 'PARTY_FIND_PARTY_REQUEST'  // volaní hledání osob

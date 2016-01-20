@@ -25,7 +25,7 @@ var DescItemDecimal = class DescItemDecimal extends AbstractReactComponent {
     }
 
     render() {
-        const {descItem} = this.props;
+        const {descItem, locked} = this.props;
 
         var cls = classNames({
             'form-control': true,
@@ -39,6 +39,7 @@ var DescItemDecimal = class DescItemDecimal extends AbstractReactComponent {
                 <input
                     className={cls}
                     type="text"
+                    disabled={locked}
                     value={descItem.value}
                     title={descItem.error}
                     onChange={this.handleChange}

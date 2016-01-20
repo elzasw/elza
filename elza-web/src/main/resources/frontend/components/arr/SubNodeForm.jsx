@@ -18,11 +18,13 @@ import DescItemString from './nodeForm/DescItemString'
 import DescItemType from './nodeForm/DescItemType'
 import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm'
 
+import {lockDescItemType, unlockDescItemType, unlockAllDescItemType} from 'actions/arr/nodeSetting'
+
 var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderDescItemGroup', 'handleAddDescItemType', 'renderDescItemType', 'handleChange', 'handleChangeSpec', 'handleDescItemTypeRemove', 'handleBlur', 'handleFocus', 'renderFormActions', 'getDescItemTypeInfo', 'handleDescItemAdd', 'handleDescItemRemove');
+        this.bindMethods('renderDescItemGroup', 'handleAddDescItemType', 'renderDescItemType', 'handleChange', 'handleChangeSpec', 'handleDescItemTypeRemove', 'handleBlur', 'handleFocus', 'renderFormActions', 'getDescItemTypeInfo', 'handleDescItemAdd', 'handleDescItemRemove', 'handleDescItemTypeLock', 'handleDescItemTypeUnlockAll');
 
 //console.log("@@@@@-SubNodeForm-@@@@@", props);
         this.dispatch(calendarTypesFetchIfNeeded());
@@ -72,6 +74,18 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         }
 
         this.dispatch(faSubNodeFormDescItemTypeDelete(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation));
+    }
+
+    handleDescItemTypeLock(descItemTypeId, locked) {
+        if (locked) {
+            this.dispatch(lockDescItemType(this.props.nodeId, descItemTypeId));
+        } else {
+            this.dispatch(unlockDescItemType(this.props.nodeId, descItemTypeId));
+        }
+    }
+
+    handleDescItemTypeUnlockAll() {
+        this.dispatch(unlockAllDescItemType(this.props.nodeId));
     }
 
     handleDescItemAdd(descItemGroupIndex, descItemTypeIndex) {
@@ -127,6 +141,25 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         var rulDataType = this.props.rulDataTypes.items[indexById(this.props.rulDataTypes.items, descItemType.dataTypeId)];
         var descItemTypeInfo = this.getDescItemTypeInfo(descItemType);
 
+        var locked = false;
+
+        var nodeSettings = this.props.nodeSettings;
+
+        // existují nějaké nastavení o JP
+        if (nodeSettings) {
+            var nodeSetting = nodeSettings.nodes[nodeSettings.nodes.map(function(node) { return node.id; }).indexOf(this.props.nodeId)];
+
+            // existuje nastavení o JP
+            if (nodeSetting) {
+                var index = nodeSetting.descItemTypeLockIds.indexOf(descItemType.id);
+
+                // existuje type mezi zamknutými
+                if (index >= 0) {
+                    locked = true;
+                }
+            }
+        }
+
         return (
             <DescItemType
                 descItemType={descItemType}
@@ -140,6 +173,8 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 onBlur={this.handleBlur.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onFocus={this.handleFocus.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDescItemTypeRemove={this.handleDescItemTypeRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onDescItemTypeLock={this.handleDescItemTypeLock.bind(this, descItemType.id)}
+                locked={locked}
             />
         )
     }
@@ -172,10 +207,11 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 
     renderFormActions() {
+
         return (
             <div className='node-form-actions'>
                 <NoFocusButton onClick={this.handleAddDescItemType}><Glyphicon glyph="plus" />Přidat prvek</NoFocusButton>
-                <NoFocusButton><Glyphicon glyph="lock" />Odemknout vše</NoFocusButton>
+                <NoFocusButton onClick={this.handleDescItemTypeUnlockAll}><Glyphicon glyph="lock" />Odemknout vše</NoFocusButton>
                 <NoFocusButton><Glyphicon glyph="plus" />Přidat JP před</NoFocusButton>
                 <NoFocusButton><Glyphicon glyph="plus" />Přidat JP za</NoFocusButton>
                 <NoFocusButton><Glyphicon glyph="list" />Rejstříky</NoFocusButton>
@@ -205,5 +241,12 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 }
 
-module.exports = connect()(SubNodeForm);
+function mapStateToProps(state) {
+    const {arrRegion} = state
+    return {
+        nodeSettings: arrRegion.nodeSettings
+    }
+}
+
+module.exports = connect(mapStateToProps)(SubNodeForm);
 

@@ -62,19 +62,21 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
     }
 
     render() {
-        const {descItem} = this.props;
+        const {descItem, locked} = this.props;
 
         return (
             <div className='desc-item-value  desc-item-value-parts'>
                 <input
-                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, ['part1'])}
+                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, ['part1'])}
                     type="text"
+                    disabled={locked}
                     value={this.state.values.value1}
                     onChange={this.handleChange.bind(this, 0)}
                 />
                 <input
-                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, ['part2'])}
+                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, ['part2'])}
                     type="text"
+                    disabled={locked}
                     value={this.state.values.value2}
                     onChange={this.handleChange.bind(this, 1)}
                 />
