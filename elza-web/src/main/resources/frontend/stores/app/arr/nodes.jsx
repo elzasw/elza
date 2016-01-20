@@ -41,6 +41,19 @@ export default function nodes(state = nodesInitialState, action) {
                 action.objectInfo.addNode(node);
             });
             return state
+        case types.FA_FA_SUBNODES_NEXT:
+        case types.FA_FA_SUBNODES_PREV:
+        case types.FA_FA_SUBNODES_NEXT_PAGE:
+        case types.FA_FA_SUBNODES_PREV_PAGE:
+            var index = state.activeIndex;
+            return {
+                ...state,
+                nodes: [
+                    ...state.nodes.slice(0, index),
+                    node(state.nodes[index], action),
+                    ...state.nodes.slice(index + 1)
+                ],
+            }
         case types.FA_FA_SELECT_SUBNODE:
             var newState;
 

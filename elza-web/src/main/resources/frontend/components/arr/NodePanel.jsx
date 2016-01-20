@@ -9,7 +9,7 @@ import {Glyphicon, Button} from 'react-bootstrap';
 import {faSubNodeFormFetchIfNeeded} from 'actions/arr/subNodeForm'
 import {faSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo'
 import {faNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo'
-import {faSelectSubNode} from 'actions/arr/nodes'
+import {faSelectSubNode, faSubNodesNext, faSubNodesPrev, faSubNodesNextPage, faSubNodesPrevPage} from 'actions/arr/nodes'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes'
 import {indexById} from 'stores/app/utils.jsx'
 
@@ -18,7 +18,11 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderParents', 'handleRenderAccordionItemHeader', 'handleRenderAccordionItemContent', 'renderChildren', 'handleOpenItem', 'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick', 'getParentNodes', 'getChildNodes', 'getSiblingNodes');
+        this.bindMethods('renderParents', 'handleRenderAccordionItemHeader', 'handleRenderAccordionItemContent',
+            'renderChildren', 'handleOpenItem', 'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick',
+            'getParentNodes', 'getChildNodes', 'getSiblingNodes',
+            'renderAccordion'
+            );
         
         if (props.node.selectedSubNodeId != null) {
             this.dispatch(faSubNodeFormFetchIfNeeded(props.versionId, props.node.selectedSubNodeId, props.node.nodeKey));
@@ -80,7 +84,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     getParentNodes() {
-        return [this.props.node, ...this.props.node.nodeInfo.parentNodes];
+        return [this.props.node, ...this.props.node.parentNodes];
     }
 
     getChildNodes() {
@@ -88,7 +92,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     getSiblingNodes() {
-        return [...this.props.node.nodeInfo.childNodes];
+        return [...this.props.node.childNodes];
     }
 
     handleCloseItem(item) {
@@ -119,15 +123,60 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         );
     }
 
+    renderAccordion(form) {
+        var {node} = this.props;
+
+        var rows = [];
+
+        if (node.viewStartIndex > 0) {
+            rows.push(
+                <Button onClick={()=>this.dispatch(faSubNodesPrev())}><Glyphicon glyph="chevron-left" />{i18n('arr.fa.prev')}</Button>
+            )
+        }
+
+        for (var a=node.viewStartIndex; (a<node.viewStartIndex + node.pageSize) && (a < node.childNodes.length); a++) {
+            var item = node.childNodes[a];
+
+            if (node.selectedSubNodeId == item.id) {
+                rows.push(
+                    <div className='accordion-header opened' onClick={this.handleCloseItem.bind(this, item)}>
+                        {item.name} [{item.id}]
+                    </div>
+                )
+                rows.push(
+                    <div className='accordion-body'>
+                        {form}
+                    </div>
+                )
+            } else {
+                rows.push(
+                    <div className='accordion-header closed' onClick={this.handleOpenItem.bind(this, item)}>
+                        {item.name} [{item.id}]
+                    </div>
+                )
+            }
+        }
+
+        if (node.viewStartIndex + node.pageSize/2 < node.childNodes.length) {
+            rows.push(
+                <Button onClick={()=>this.dispatch(faSubNodesNext())}><Glyphicon glyph="chevron-right" />{i18n('arr.fa.next')}</Button>
+            )
+        }
+
+        return rows;
+    }
+
     render() {
+        var {node} = this.props;
+
         //console.log("NODE_PANEL", this.props);
-        if (this.props.node.nodeInfo.isFetching || !this.props.node.nodeInfo.fetched) {
+        if (node.isFetching || !node.fetched) {
             return <Loading/>
         }
 
         var parents = this.renderParents(this.getParentNodes());
         var children;
-        if (this.props.node.subNodeInfo.isFetching || !this.props.node.subNodeInfo.fetched) {
+        if (node.subNodeInfo.isFetching || !node.subNodeInfo.fetched) {
             children = <div className='children'><div className='content'><Loading/></div></div>
         } else {
             children = this.renderChildren(this.getChildNodes());
@@ -136,31 +185,37 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         var actions = (
             <div className='actions'>
                 <Button><Glyphicon glyph="plus" />Přidat JP na konec</Button>
+                <Button disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(faSubNodesPrevPage())}><Glyphicon glyph="backward" />{i18n('arr.fa.subNodes.prevPage')}</Button>
+                <Button disabled={node.viewStartIndex + node.pageSize > node.childNodes.length} onClick={()=>this.dispatch(faSubNodesNextPage())}><Glyphicon glyph="forward" />{i18n('arr.fa.subNodes.nextPage')}</Button>
+
                 <input type="text"/><Button>Hledat</Button>
             </div>
         )
 
         var form;
-        if (!this.props.node.subNodeForm.isFetching && this.props.node.subNodeForm.fetched) {
+        if (!node.subNodeForm.isFetching && node.subNodeForm.fetched) {
             form = <SubNodeForm
                 nodeId={this.props.node.id}
                 versionId={this.props.versionId}
-                selectedSubNodeId={this.props.node.selectedSubNodeId}
-                nodeKey={this.props.node.nodeKey}
-                formData={this.props.node.subNodeForm.formData}
-                descItemTypeInfos={this.props.node.subNodeForm.descItemTypeInfos}
+                selectedSubNodeId={node.selectedSubNodeId}
+                nodeKey={node.nodeKey}
+                formData={node.subNodeForm.formData}
+                descItemTypeInfos={node.subNodeForm.descItemTypeInfos}
                 rulDataTypes={this.props.rulDataTypes}
                 calendarTypes={this.props.calendarTypes}
             />
+        } else {
+            form = <Loading/>
         }
 
         var content = (
             <div className='content'>
-                {form}
+                {this.renderAccordion(form)}
+                {false && form}
                 {false && <Accordion
                     closeItem={this.handleCloseItem}
                     openItem={this.handleOpenItem}
-                    selectedId={this.props.node.selectedSubNodeId}
+                    selectedId={node.selectedSubNodeId}
                     items={this.getSiblingNodes()}
                     renderItemHeader={this.handleRenderAccordionItemHeader}
                     renderItemContent={this.handleRenderAccordionItemContent}
@@ -168,8 +223,13 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             </div>
         )
 
+        var accordionInfo = <div>
+            {node.viewStartIndex}-{node.viewStartIndex + node.pageSize} [{node.childNodes.length}]
+        </div>
+
         return (
             <div className='node-panel-container'>
+                {false && accordionInfo}
                 {actions}
                 {parents}
                 {content}

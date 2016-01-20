@@ -53,8 +53,8 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             if (activeFa.nodes.activeIndex != null) {
                 activeNode = activeFa.nodes.nodes[activeFa.nodes.activeIndex];
                 if (activeNode.selectedSubNodeId != null) {
-                    var i = indexById(activeNode.nodeInfo.childNodes, activeNode.selectedSubNodeId);
-                    activeSubNode = activeNode.nodeInfo.childNodes[i];
+                    var i = indexById(activeNode.childNodes, activeNode.selectedSubNodeId);
+                    activeSubNode = activeNode.childNodes[i];
                 }
             }
         }

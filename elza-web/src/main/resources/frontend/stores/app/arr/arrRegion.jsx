@@ -67,6 +67,10 @@ export default function arrRegion(state = initialState, action) {
                 ]
             }
         case types.FA_FA_SELECT_SUBNODE:
+        case types.FA_FA_SUBNODES_NEXT:
+        case types.FA_FA_SUBNODES_PREV:
+        case types.FA_FA_SUBNODES_NEXT_PAGE:
+        case types.FA_FA_SUBNODES_PREV_PAGE:
         case types.FA_FA_CLOSE_NODE_TAB:
         case types.FA_FA_SELECT_NODE_TAB:
             return {

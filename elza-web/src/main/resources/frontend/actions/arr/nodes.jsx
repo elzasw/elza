@@ -78,3 +78,26 @@ export function faSelectSubNode(subNodeId, subNodeParentNode, openNewTab=false) 
     }
 }
 
+export function faSubNodesNext() {
+    return {
+        type: types.FA_FA_SUBNODES_NEXT,
+    }
+}
+
+export function faSubNodesPrev() {
+    return {
+        type: types.FA_FA_SUBNODES_PREV,
+    }
+}
+
+export function faSubNodesNextPage() {
+    return {
+        type: types.FA_FA_SUBNODES_NEXT_PAGE,
+    }
+}
+
+export function faSubNodesPrevPage() {
+    return {
+        type: types.FA_FA_SUBNODES_PREV_PAGE,
+    }
+}

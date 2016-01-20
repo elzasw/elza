@@ -41,7 +41,10 @@ var messages = {
     "arr.fa.arrType": "Typ výstupu",
     "arr.fa.currentVersion": "Aktuální verze",
     
-    "subNodeForm.addDescItem": "Přidat novou hodnotu",
+    "arr.fa.subNodes.prevPage": "Předchozí stránka",
+    "arr.fa.subNodes.nextPage": "Další stránka",
+    "arr.fa.prev": "Předchozí",
+    "arr.fa.next": "Následující",
     "subNodeForm.deleteDescItem": "Odstranit hodnotu",
     "subNodeForm.deleteDescItemType": "Odstranit prvek popisu včetně všech hodnot",
     "subNodeForm.validate.spec.required": "Specifikace musí být uvedena",

@@ -1,20 +1,28 @@
 import * as types from 'actions/constants/actionTypes';
 import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
-import nodeInfo from './nodeInfo'
+//import nodeInfo from './nodeInfo'
 import subNodeForm from './subNodeForm'
 import subNodeInfo from './subNodeInfo'
 
 var _nextNodeKey = 1;
+var _pageSize = 50;
 
 export function nodeInitState(node, prevNodesNode) {
     var result = {
         id: node.id,
         name: node.name,
+        isFetching: false,
+        fetched: false,
+        childNodes: [],
+        parentNodes: [],
+        viewStartIndex: 0,
+        pageSize: _pageSize,
     }
 
     if (prevNodesNode) {
         result.nodeKey = prevNodesNode.nodeKey;
         result.subNodeForm = prevNodesNode.subNodeForm;
+        result.subNodeInfo = prevNodesNode.subNodeInfo;
         result.subNodeInfo = prevNodesNode.subNodeInfo;
     } else {
         result.nodeKey = _nextNodeKey++;
@@ -23,10 +31,18 @@ export function nodeInitState(node, prevNodesNode) {
     }
 
     if (prevNodesNode && prevNodesNode.id == node.id) {
-        result.nodeInfo = prevNodesNode.nodeInfo;
+//        result.nodeInfo = prevNodesNode.nodeInfo;
+        result.isFetching = prevNodesNode.isFetching;
+        result.fetched = prevNodesNode.fetched;
+        result.childNodes = prevNodesNode.childNodes;
+        result.parentNodes = prevNodesNode.parentNodes;
         result.selectedSubNodeId = prevNodesNode.selectedSubNodeId;
     } else {
-        result.nodeInfo = nodeInfo(undefined, {type:''});
+//        result.nodeInfo = nodeInfo(undefined, {type:''});
+        result.isFetching = false;
+        result.fetched = false;
+        result.childNodes = [];
+        result.parentNodes = [];
         result.selectedSubNodeId = null;
     }
 
@@ -38,10 +54,14 @@ const nodeInitialState = {
     name: null,
     nodeKey: _nextNodeKey++,
     selectedSubNodeId: null,
-    nodeInfo: nodeInfo(undefined, {type:''}),
     subNodeForm: subNodeForm(undefined, {type:''}),
     subNodeInfo: subNodeInfo(undefined, {type:''}),
+    isFetching: false,
+    fetched: false,
+    childNodes: [],
+    parentNodes: [],
 }
+    //nodeInfo: nodeInfo(undefined, {type:''}),
 
 export function node(state = nodeInitialState, action) {
     switch (action.type) {
@@ -59,16 +79,60 @@ export function node(state = nodeInitialState, action) {
             return Object.assign({}, state, {
                 subNodeForm: subNodeForm(state.subNodeForm, action),
             });
+        case types.FA_FA_SUBNODES_NEXT:
+            if ((state.viewStartIndex + state.pageSize/2) < state.childNodes.length) {
+                return {
+                    ...state,
+                    viewStartIndex: state.viewStartIndex + state.pageSize/2
+                }
+            } else {
+                return state;
+            }
+        case types.FA_FA_SUBNODES_PREV:
+            if (state.viewStartIndex > 0) {
+                return {
+                    ...state,
+                    viewStartIndex: Math.max(state.viewStartIndex - state.pageSize/2, 0)
+                }
+            } else {
+                return state;
+            }
+        case types.FA_FA_SUBNODES_NEXT_PAGE:
+            if ((state.viewStartIndex + state.pageSize) < state.childNodes.length) {
+                return {
+                    ...state,
+                    viewStartIndex: state.viewStartIndex + state.pageSize
+                }
+            } else {
+                return state;
+            }
+        case types.FA_FA_SUBNODES_PREV_PAGE:
+            if (state.viewStartIndex > 0) {
+                return {
+                    ...state,
+                    viewStartIndex: Math.max(state.viewStartIndex - state.pageSize, 0)
+                }
+            } else {
+                return state;
+            }
         case types.FA_SUB_NODE_INFO_REQUEST:
         case types.FA_SUB_NODE_INFO_RECEIVE:
             return Object.assign({}, state, {
                 subNodeInfo: subNodeInfo(state.subNodeInfo, action),
             });
         case types.FA_NODE_INFO_REQUEST:
+            return Object.assign({}, state, {
+                isFetching: true,
+            })
         case types.FA_NODE_INFO_RECEIVE:
             return Object.assign({}, state, {
-                nodeInfo: nodeInfo(state.nodeInfo, action),
-            });
+                isFetching: false,
+                fetched: true,
+                childNodes: action.childNodes,
+                _childNodes: [...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes],
+                parentNodes: action.parentNodes,
+                lastUpdated: action.receivedAt
+            })
         case types.FA_FA_SELECT_SUBNODE:
             var result = Object.assign({}, state, {
                 selectedSubNodeId: action.subNodeId

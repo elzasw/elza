@@ -7,10 +7,10 @@ import {indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
 import {barrier} from 'components/Utils'
 import * as types from 'actions/constants/actionTypes';
 
-function getNodeInfo(state, versionId, nodeKey) {
+function getNode(state, versionId, nodeKey) {
     var r = findByNodeKeyInGlobalState(state, versionId, nodeKey);
     if (r != null) {
-        return r.node.nodeInfo;
+        return r.node;
     }
 
     return null;
@@ -22,8 +22,8 @@ function getNodeInfo(state, versionId, nodeKey) {
 export function faNodeInfoFetchIfNeeded(versionId, nodeId, nodeKey) {
     return (dispatch, getState) => {
         var state = getState();
-        var nodeInfo = getNodeInfo(state, versionId, nodeKey);
-        if (nodeInfo != null && !nodeInfo.fetched && !nodeInfo.isFetching) {
+        var node = getNode(state, versionId, nodeKey);
+        if (node != null && !node.fetched && !node.isFetching) {
             return dispatch(faNodeInfoFetch(versionId, nodeId, nodeKey));
         }
     }
