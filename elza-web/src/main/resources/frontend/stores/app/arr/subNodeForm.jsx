@@ -82,12 +82,12 @@ function updateFormData(state, rulDataTypes) {
                     )
                 })
             } else {    // není v DB, vytvoříme jen pro možnou inplace editaci
-                useDescItemType = true;
-
                 resultDescItemType.descItems = [];
                 if (descItemType.type == 'REQUIRED' || descItemType.type == 'RECOMMENDED') {
                     var rulDataType = rulDataTypes.items[indexById(rulDataTypes.items, descItemType.dataTypeId)];
                     if (!descItemType.repeatable) { // řešíme jen neopakovatelné, u nich to má smysl
+                        useDescItemType = true;
+
                         var descItemTypeInfo = descItemTypeInfos[indexById(descItemTypeInfos, descItemType.id)];                        
                         var descItem = createDescItem(descItemTypeInfo);
                         descItem.position = 1;

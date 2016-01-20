@@ -93,6 +93,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             onFocus: this.handleFocus.bind(this, descItemIndex),
         }
 
+        parts.push(<div>{this.props.rulDataType.code}-{descItem.id}-{descItemType.type}</div>);
         switch (this.props.rulDataType.code) {
             case 'PARTY_REF':
                 break;
@@ -100,7 +101,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                 break;
             case 'PACKET_REF':
                 break;
-                case 'FORMATTED_TEXT':
+            case 'FORMATTED_TEXT':
                 break;
             case 'UNITDATE':
                 break;
@@ -146,11 +147,13 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         actions.push(<NoFocusButton><Glyphicon glyph="lock" /></NoFocusButton>);
 
         var hasDescItemsForDelete = false;
-        this.props.descItemType.descItems.forEach(descItem => {
-            if (descItem.touched || typeof descItem.id !== 'undefined') {
-                hasDescItemsForDelete = true;
-            }
-        });
+        if (!this.props.descItemType.hasFocus) {
+            this.props.descItemType.descItems.forEach(descItem => {
+                if (descItem.touched || typeof descItem.id !== 'undefined') {
+                    hasDescItemsForDelete = true;
+                }
+            });
+        }
         if (hasDescItemsForDelete) {
             actions.push(<NoFocusButton onClick={this.handleDescItemTypeRemove} title={i18n('subNodeForm.deleteDescItemType')}><Glyphicon glyph="remove" /></NoFocusButton>);
         }

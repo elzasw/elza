@@ -106,6 +106,13 @@ export function faSubNodeFormDescItemTypeDelete(versionId, nodeId, nodeKey, valu
         var subNodeForm = getSubNodeForm(state, versionId, nodeKey);
         var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
+        var hasDescItemsForDelete = false;
+        loc.descItemType.descItems.forEach(descItem => {
+            if (typeof descItem.id !== 'undefined') {
+                hasDescItemsForDelete = true;
+            }
+        });
+
         dispatch({
             type: types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE,
             versionId,
@@ -113,13 +120,6 @@ export function faSubNodeFormDescItemTypeDelete(versionId, nodeId, nodeKey, valu
             nodeKey,
             valueLocation,
         })
-
-        var hasDescItemsForDelete = false;
-        loc.descItemType.descItems.forEach(descItem => {
-            if (typeof descItem.id !== 'undefined') {
-                hasDescItemsForDelete = true;
-            }
-        });
 
         if (hasDescItemsForDelete) {
             faSubNodeFormDeleteDescItemType(versionId, subNodeForm.data.node.id, subNodeForm.data.node.version, loc.descItemType)
