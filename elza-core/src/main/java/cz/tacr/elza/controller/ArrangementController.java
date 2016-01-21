@@ -405,6 +405,21 @@ public class ArrangementController {
 
 
     /**
+     * Provede načtení stromu uzlů. Uzly mohou být rozbaleny.
+     *
+     * @param input vstupní data pro načtení
+     * @return data stromu
+     */
+    @RequestMapping(value = "/fulltext", method = RequestMethod.GET)
+    public Set<Integer> fulltext(final @RequestBody FaFulltextParam input) {
+        Assert.notNull(input);
+        Assert.notNull(input.getVersionId());
+
+        return arrangementService.findNodeIdsByFulltext(input.getVersionId(), input.getNodeId(), input.getSearchValue(),
+                input.getDepth());
+    }
+
+    /**
      * Výstupní objekt pro získaná data pro formulář detailu uzlu.
      */
     public static class NodeFormDataVO {
@@ -617,5 +632,65 @@ public class ArrangementController {
         public void setTransportNodeParent(final ArrNodeVO transportNodeParent) {
             this.transportNodeParent = transportNodeParent;
         }
+    }
+
+    /**
+     * Vstupní parametry pro metodu /fulltext {@link #fulltext(FaFulltextParam)}.
+     */
+    public static class FaFulltextParam {
+
+        /**
+         * Id verze.
+         */
+        private Integer versionId;
+        /**
+         * Id uzlu pod kterým se má hledat.
+         */
+        private Integer nodeId;
+        /**
+         * Hledaná hodnota.
+         */
+        private String searchValue;
+        /**
+         * Hloubka v jaké se má hledat pokud je předáno nodeId.
+         */
+        private Depth depth;
+
+        public Integer getVersionId() {
+            return versionId;
+        }
+        public void setVersionId(Integer versionId) {
+            this.versionId = versionId;
+        }
+        public Integer getNodeId() {
+            return nodeId;
+        }
+        public void setNodeId(Integer nodeId) {
+            this.nodeId = nodeId;
+        }
+        public String getSearchValue() {
+            return searchValue;
+        }
+        public void setSearchValue(String searchValue) {
+            this.searchValue = searchValue;
+        }
+        public Depth getDepth() {
+            return depth;
+        }
+        public void setDepth(Depth depth) {
+            this.depth = depth;
+        }
+
+    }
+
+    /**
+     * Hloubka v jaké se bude ve stromu vyhledávat.
+     */
+    public static enum Depth {
+
+        /** Vyhledává se v celém podstromu. */
+        SUBTREE,
+        /** Vyhledává se jen na úrovni pod předaným nodeId. */
+        ONE_LEVEL;
     }
 }
