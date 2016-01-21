@@ -28,7 +28,7 @@
         font-size: 0.5em;
         line-height: 16px;
         width: 1px;
-        border-left: 1px solid gray;
+        border-left: 1px solid @tree-node-separator-border;
     }
 
     .exp-col {
@@ -48,7 +48,7 @@
         vertical-align: bottom;
         cursor: pointer;
         &:hover {
-            background: @nav-link-hover-bg;
+            background: @tree-node-label-active-bg;
         }         
     }
 
@@ -70,12 +70,12 @@
     }    
 
     .active {
-        background: silver;
+        background: @tree-node-active-bg;
     }  
 
     .focus {
         .node-label {
-            outline: 1px solid darkgray;
+            outline: 1px solid @tree-node-focus-border;
         }
     }    
 }

@@ -4,17 +4,14 @@
 @ribbon-icon-font-size: 16px;
 @ribbon-large-btn-height: 54px;
 @ribbon-large-btn-width: 54px;
-
 @ribbon-btn-padding: 2px;
-
 @ribbon-line-height: @ribbon-btn-padding + @ribbon-font-size;
 @ribbon-small-btn-height: @ribbon-large-btn-height / 3;
 
-@ribbon-background-color: transparent;
-
 .ribbon-menu {
     padding: 4px 0 4px 6px;
-    background: @ribbon-background-color;
+    background: @ribbon-bg;
+    height: 63px;
     .content {
         display: flex;
         flex-direction: row;
@@ -26,9 +23,9 @@
             .btn-default {
                 border: none;
                 margin: 0 2px 0 2px;
-                background: #f8f8f8;
+                background: @ribbon-button-bg;
                 &:hover, &.active {
-                    background: #c0c0c0;
+                    background: @ribbon-button-active-bg;
                 }
             }
 

@@ -1,15 +1,6 @@
-@valueActionWidth: 22px;
+@import "~variables.less";
 
-@node-form-actions-bg: #EEEEEE;
-@node-form-bg: white;
-@node-form-value-error-bg: #FFDCDC;
-@node-form-actions-color: #808080;
-@node-form-group-bg: transparent;
-@node-form-group-border-color: transparent;
-@node-form-group-active-bg: #f9f9f9;
-@node-form-group-active-border-color: #ececec;
-@node-form-item-type-bg: transparent;
-@node-form-item-type-active-bg: #f0f0f0;
+@valueActionWidth: 22px;
 
 .node-form-standard-actions {
     .btn {
@@ -40,10 +31,10 @@
     .desc-item-groups {
         .desc-item-group {
             background: @node-form-group-bg;
-            border: 1px solid @node-form-group-border-color;
+            border: 1px solid @node-form-group-border;
             &.active {
                 background: @node-form-group-active-bg;
-                border: 1px solid @node-form-group-active-border-color;
+                border: 1px solid @node-form-group-active-border;
             }
 
             .desc-item-types {
@@ -58,7 +49,6 @@
                     }                    
                     
                     white-space: nowrap;
-                    _background: yellow;
                     padding: 4px;
                     min-width: 280px;
 
@@ -73,7 +63,7 @@
                             .btn {
 
                                 .unlocked, .nocopy {
-                                    color: #E0E0E0;
+                                    color: @node-form-actions-active-color;
                                 }
 
                                 .locked, .copy {

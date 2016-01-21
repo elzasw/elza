@@ -1,8 +1,18 @@
 @import "~variables.less";
 
+@tabs-height: 32px;
+
 .tabs-container {
+    height: 100%;
+    
+    .nav-tabs {
+        border-bottom-color: @tabs-tab-content-border;
+    }
+    
     .tabs-tabs-container {
         display: flex;
+        height: @tabs-height;
+        
         li{
             overflow:hidden;
             max-width:240px;
@@ -45,13 +55,24 @@
                 }
             }
             &.active a, &.active a:hover {
-                background: #f8f8f8;
+                background: @tabs-tab-active-bg;
+            }
+            a:hover {
+                background: @tabs-tab-active-bg;
+            }
+            &.active a:focus {
+                background: @tabs-tab-active-bg;
             }
         }
     }
     .tab-content {
-        background: @component-content-bg;
+        height: calc(~"100% - "@tabs-height);
+        border-top: none;
+        padding: 4px;
         clear:both;
         overflow:hidden;
+        border: 1px solid @tabs-tab-content-border;
+        border-top: 0;
+        background: @tabs-tab-content-bg;
     }
 }

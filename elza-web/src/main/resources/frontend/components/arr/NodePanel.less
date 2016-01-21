@@ -1,6 +1,6 @@
 @import "~variables.less";
 
-@parts-margin: 6px;
+@parts-margin: 4px;
 @node-panel-actions-height: 26px;
 @node-panel-parents-height: 15%;
 @node-panel-content-height: 70%;
@@ -13,12 +13,8 @@
     width: 100%;
     height: 100%;
 
-    > * {
-        margin: @parts-margin;
-    }
-    
     > .actions {
-        background: #F5F5F5;
+        background: @node-panel-actions-bg;
         height: @node-panel-actions-height;
         .btn {
             background: transparent;
@@ -27,39 +23,38 @@
             border: none;
         }
     }
-    > .actions {
-        background: transparent;
-    }
     .parents {
         height: @node-panel-parents-height;
         overflow-y: auto;
-        border: 1px solid @gray-lighter;
-        background: white;
+        border: 1px solid @node-panel-parents-border;
+        background: @node-panel-parents-bg;
         
         .node {
             cursor: pointer;
             &:hover {
-                background: @nav-link-hover-bg;
+                background: @node-panel-parents-active-bg;
             }
         }
     }
     .content {
+        margin-bottom: @parts-margin;
+        margin-top: @parts-margin;
+        border: 1px solid @node-panel-border;
         height: 100%;
         overflow: auto;
         overflow-x: hidden;
-        _border: 1px solid @gray-lighter;
         
         .accordion-header {
             height: 32px;
-            background: #cfcfcf;
-            border: 1px solid #c0c0c0;
+            background: @accordion-header-bg;
+            border: 1px solid @accordion-header-border;
             padding: 4px;
             margin: 2px 0 2px 0;
             cursor: pointer;
             
             &.opened {
                 font-weight: bold;
-                border-bottom-color: #f0f0f0;
+                border-bottom-color: @accordion-header-bg;
                 margin-bottom: 0;
             }
             &.closed {
@@ -68,21 +63,20 @@
         }
         
         .accordion-body {
-            background: white;
-            border: solid #c0c0c0;
+            border: solid @accordion-header-border;
             border-width: 0 1px 1px 1px;
         }
     }
     .children {
         height: @node-panel-children-height;
         overflow-y: auto;
-        border: 1px solid @gray-lighter;
-        background: white;
+        border: 1px solid @node-panel-children-border;
+        background: @node-panel-children-bg;
         
         .node {
             cursor: pointer;
             &:hover {
-                background: @nav-link-hover-bg;
+                background: @node-panel-children-active-bg;
             }
         }
     }

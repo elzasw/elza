@@ -47,7 +47,7 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
         var rows = [];
         this.props.items.each(item=>{
             rows.push(
-                <NavItem className='fa' key={item.id} disabled>
+                <NavItem className='finding-aid' key={item.id} disabled>
                     {item.name}
                 </NavItem>
             )
