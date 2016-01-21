@@ -97,32 +97,54 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
 
         var expCol;
         if (node.hasChildren) {
-            expCol = <span className='exp-col' onClick={this.handleToggle.bind(this, node, !expanded)}>{expanded ? '-' : '+'}</span>
+            var expColCls = 'exp-col ' + (expanded ? 'fa fa-minus-square-o' : 'fa fa-plus-square-o');
+            expCol = <span className={expColCls} onClick={this.handleToggle.bind(this, node, !expanded)}></span>
         } else {
             expCol = <span className='exp-col'>&nbsp;</span>
         }
 
         var cls = classNames({
             node: true,
-            ['level' + node.depth]: true,
             opened: expanded,
             closed: !expanded,
             active: this.props.selectedId === node.id,
             focus: this.props.focusId === node.id,
         })
 
+        var levels = [];
+        if (node.referenceMark) {
+            node.referenceMark.forEach((i, index) => {
+                if (i < 1000) {
+                    levels.push(<span className="level">{i}</span>)
+                } else {
+                    levels.push(<span className="level">.{i % 1000}</span>)
+                }
+                if (index + 1 < node.referenceMark.length) {
+                    levels.push(<span className="separator"></span>)
+                }
+            });
+        }
+
         var name = node.name ? node.name : <i>{i18n('faTree.node.name.undefined', node.id)}</i>;
+
+        var icon = <span className="node-icon fa fa-briefcase"></span>
+
+        var label = (
+            <span
+                className='node-label'
+                onClick={this.handleNodeClick.bind(this, node)}
+                onContextMenu={this.handleContextMenu.bind(this, node)}
+                >
+                {name}
+            </span>
+        )
 
         return (
             <div key={node.id} className={cls}>
+                {levels}
                 {expCol}
-                <span
-                    className='node-label'
-                    onClick={this.handleNodeClick.bind(this, node)}
-                    onContextMenu={this.handleContextMenu.bind(this, node)}
-                    >
-                    {name}
-                </span>
+                {icon}
+                {label}
             </div>
         )
     }
