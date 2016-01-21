@@ -16,15 +16,20 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
+import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
+import cz.tacr.elza.drools.DirectionLevel;
+import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
+import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 
 
@@ -63,6 +68,12 @@ public class DescriptionItemService {
 
     @Autowired
     private DescItemTypeRepository descItemTypeRepository;
+
+    @Autowired
+    private LevelRepository levelRepository;
+
+    @Autowired
+    private RulesExecutor rulesExecutor;
 
     /**
      * Kontrola otevřené verze.
@@ -204,27 +215,45 @@ public class DescriptionItemService {
         Assert.notNull(nodeVersion);
         Assert.notNull(findingAidVersionId);
 
-        ArrChange change = arrangementService.createChange();
-        ArrFindingAidVersion findingAidVersion = findingAidVersionRepository.findOne(findingAidVersionId);
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(findingAidVersionId);
 
         ArrNode node = nodeRepository.findOne(nodeId);
         Assert.notNull(node);
 
         // uložení uzlu (kontrola optimistických zámků)
+        node.setVersion(nodeVersion);
         saveNode(node);
+
+        return createDescriptionItem(descItem, node, version);
+    }
+
+    /**
+     * Vytvoření hodnoty atributu. Při ukládání nedojde ke zvýšení verze uzlu.
+     * - se spuštěním validace uzlu
+     *
+     * @param descItem hodnota atributu
+     * @param node     uzel, kterému přidáme hodnotu
+     * @param version  verze stromu
+     * @return vytvořená hodnota atributu
+     */
+    public ArrDescItem createDescriptionItem(final ArrDescItem descItem,
+                                             final ArrNode node,
+                                             final ArrFindingAidVersion version) {
+
+        ArrChange change = arrangementService.createChange();
 
         descItem.setNode(node);
         descItem.setCreateChange(change);
         descItem.setDeleteChange(null);
         descItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
 
-        ArrDescItem descItemCreated = createDescriptionItemWithData(descItem, findingAidVersion, change);
+        ArrDescItem descItemCreated = createDescriptionItemWithData(descItem, version, change);
 
         // uložení poslední uživatelské změny nad AP k verzi AP
-        arrangementService.saveLastChangeFaVersion(change, findingAidVersion);
+        arrangementService.saveLastChangeFaVersion(change, version.getFindingAidVersionId());
 
         // validace uzlu
-        ruleService.conformityInfo(findingAidVersionId, Arrays.asList(descItem.getNode().getNodeId()),
+        ruleService.conformityInfo(version.getFindingAidVersionId(), Arrays.asList(descItem.getNode().getNodeId()),
                 NodeTypeOperation.SAVE_DESC_ITEM, Arrays.asList(descItem), null, null);
 
         return descItemCreated;
@@ -454,6 +483,42 @@ public class DescriptionItemService {
                 NodeTypeOperation.SAVE_DESC_ITEM, null, Arrays.asList(descItemUpdated), null);
 
         return descItemUpdated;
+    }
+
+
+    /**
+     * Informace o možných scénářích založení nového uzlu
+     *
+     * @param level          založený uzel
+     * @param directionLevel typ vladani
+     * @param version        verze stromu
+     * @return seznam možných scénařů
+     */
+    public List<ScenarioOfNewLevel> getDescriptionItemTypesForNewLevel(final ArrLevel level,
+                                                                       final DirectionLevel directionLevel,
+                                                                       final ArrFindingAidVersion version
+    ) {
+        Assert.notNull(version);
+        Assert.notNull(level);
+
+        return rulesExecutor.executeScenarioOfNewLevelRules(level, directionLevel, version);
+    }
+
+    /**
+     * Informace o možných scénářích založení nového uzlu
+     * @param nodeId            id uzlu
+     * @param directionLevel    typ vladani
+     * @param faVersionId       id verze
+     * @return seznam možných scénařů
+     */
+    public List<ScenarioOfNewLevel> getDescriptionItemTypesForNewLevel(final Integer nodeId, final DirectionLevel directionLevel, final Integer faVersionId) {
+
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
+        ArrNode node = nodeRepository.findOne(nodeId);
+        ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootLevel().getNode(),
+                version.getLockChange());
+
+        return getDescriptionItemTypesForNewLevel(level, directionLevel, version);
     }
 
     /**

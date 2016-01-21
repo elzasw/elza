@@ -91,6 +91,7 @@ import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.RuleService;
 
 
@@ -179,6 +180,9 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
     @Autowired
     private ArrangementService arrangementService;
 
+    @Autowired
+    private DescriptionItemService descriptionItemService;
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
@@ -224,7 +228,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                 .createVersion(change, findingAid, arrangementType, ruleSet, rootNode);
 
         // vyhledání scénářů
-        List<ScenarioOfNewLevel> scenarioOfNewLevels = getDescriptionItemTypesForNewLevel(
+        List<ScenarioOfNewLevel> scenarioOfNewLevels = descriptionItemService.getDescriptionItemTypesForNewLevel(
                 rootNode.getNode().getNodeId(), DirectionLevel.ROOT, version.getFindingAidVersionId());
 
         // pokud existuje právě jeden, použijeme ho pro založení nových hodnot atributů
@@ -2556,7 +2560,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                                                                              @RequestParam("faVersionId") final Integer faVersionId) {
         Assert.notNull(nodeId);
         Assert.notNull(faVersionId);
-        return getDescriptionItemTypesForNewLevel(nodeId, DirectionLevel.BEFORE, faVersionId);
+        return descriptionItemService.getDescriptionItemTypesForNewLevel(nodeId, DirectionLevel.BEFORE, faVersionId);
     }
 
     @RequestMapping(value = "/getDescriptionItemTypesForNewLevelAfter", method = RequestMethod.GET)
@@ -2565,7 +2569,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                                                                             @RequestParam("faVersionId") final Integer faVersionId) {
         Assert.notNull(nodeId);
         Assert.notNull(faVersionId);
-        return getDescriptionItemTypesForNewLevel(nodeId, DirectionLevel.AFTER, faVersionId);
+        return descriptionItemService.getDescriptionItemTypesForNewLevel(nodeId, DirectionLevel.AFTER, faVersionId);
     }
 
     @RequestMapping(value = "/getDescriptionItemTypesForNewLevelChild", method = RequestMethod.GET)
@@ -2574,30 +2578,10 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
                                                                             @RequestParam("faVersionId") final Integer faVersionId) {
         Assert.notNull(nodeId);
         Assert.notNull(faVersionId);
-        return getDescriptionItemTypesForNewLevel(nodeId, DirectionLevel.CHILD, faVersionId);
+        return descriptionItemService.getDescriptionItemTypesForNewLevel(nodeId, DirectionLevel.CHILD, faVersionId);
     }
 
 
-    /**
-     * Informace o možných scénářích založení nového uzlu
-     * @param nodeId            id uzlu
-     * @param directionLevel    typ vladani
-     * @param faVersionId       id verze
-     * @return seznam možných scénařů
-     */
-    public List<ScenarioOfNewLevel> getDescriptionItemTypesForNewLevel(final Integer nodeId, final DirectionLevel directionLevel, final Integer faVersionId) {
-
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(faVersionId);
-        ArrNode node = nodeRepository.findOne(nodeId);
-        ArrLevel level = levelRepository.findNodeInRootTreeByNodeId(node, version.getRootLevel().getNode(),
-                version.getLockChange());
-
-        Assert.notNull(version);
-        Assert.notNull(node);
-        Assert.notNull(level);
-
-        return rulesExecutor.executeScenarioOfNewLevelRules(level, directionLevel, version);
-    }
 
     /**
      * Uložení poslední uživatelské změny nad AP k verzi AP

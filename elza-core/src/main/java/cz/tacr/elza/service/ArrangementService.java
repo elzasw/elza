@@ -35,7 +35,6 @@ import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.factory.DescItemFactory;
-import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.drools.RulesExecutor;
@@ -85,6 +84,9 @@ public class ArrangementService {
 
     @Autowired
     private IEventNotificationService eventNotificationService;
+
+    @Autowired
+    private DescriptionItemService descriptionItemService;
 
     @Autowired
     private FindingAidVersionRepository findingAidVersionRepository;
@@ -183,16 +185,17 @@ public class ArrangementService {
         ArrLevel rootLevel = version.getRootLevel();
 
         // vyhledání scénářů
-        //TODO přepsat až bude DescItemService
-        List<ScenarioOfNewLevel> scenarioOfNewLevels = arrangementManager.getDescriptionItemTypesForNewLevel(
-                rootLevel.getNode().getNodeId(), DirectionLevel.ROOT, version.getFindingAidVersionId());
+        List<ScenarioOfNewLevel> scenarioOfNewLevels = descriptionItemService.getDescriptionItemTypesForNewLevel(
+                rootLevel, DirectionLevel.ROOT, version);
 
         // pokud existuje právě jeden, použijeme ho pro založení nových hodnot atributů
         if (scenarioOfNewLevels.size() == 1) {
-            ArrLevelWithExtraNode levelWithParentNode = new ArrLevelWithExtraNode();
-            levelWithParentNode.setDescItems(scenarioOfNewLevels.get(0).getDescItems());
-            //TODO přepsat až bude DescItemService
-            arrangementManager.createDescItemsAfterLevelCreate(levelWithParentNode, version, change, rootLevel);
+
+            List<ArrDescItem> descItems = scenarioOfNewLevels.get(0).getDescItems();
+            for (ArrDescItem descItem : descItems) {
+                descItem.setNode(rootLevel.getNode());
+                descriptionItemService.createDescriptionItem(descItem, rootLevel.getNode(), version);
+            }
         } else if (scenarioOfNewLevels.size() > 1) {
             logger.error("Při založení AP bylo nalezeno více scénařů (" + scenarioOfNewLevels.size() + ")");
         }
