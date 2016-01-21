@@ -7,11 +7,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -27,6 +30,7 @@ import org.springframework.util.Assert;
 import com.google.common.eventbus.Subscribe;
 
 import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
@@ -474,9 +478,53 @@ public class LevelTreeCacheService {
 
                 //TODO nemazat celou cache, ale provádět co nejvíc změn přímo na cache
                 //TODO aktualizovat referenční označení
-                clearVersionCache(changedVersionId);
+                    clearVersionCache(changedVersionId);
+                }
             }
         }
+
+    /**
+     * Najde id všech nodů ve verzi.
+     *
+     * @param version verze stromu
+     * @param nodeId id nodu pod kterým se má hledat
+     * @param depth hloubka v jaké se mají hledat potomci
+     *
+     * @return id všech nodů ve verzi
+     */
+    public Set<Integer> getAllNodeIdsByVersionAndParent(final ArrFindingAidVersion version, final Integer nodeId, Depth depth) {
+        Assert.notNull(version);
+
+        Map<Integer, TreeNode> versionTreeCache = getVersionTreeCache(version);
+
+        if (nodeId == null) {
+            return versionTreeCache.keySet();
+        }
+
+        Assert.notNull(depth);
+
+        if (depth == Depth.ONE_LEVEL) {
+            TreeNode node = versionTreeCache.get(nodeId);
+            return node.getChilds().stream().mapToInt(TreeNode::getId).boxed().collect(Collectors.toSet());
+        }
+
+        Set<Integer> nodeIds = new HashSet<>();
+        TreeNode parentNode = versionTreeCache.get(nodeId);
+        Queue<TreeNode> children = new LinkedList<>();
+        children.add(parentNode);
+        while (!children.isEmpty()) {
+            TreeNode node = children.poll();
+
+            List<TreeNode> childs = node.getChilds();
+            if (childs != null) {
+                node.getChilds().forEach(child -> {
+                    nodeIds.add(child.getId());
+                    children.add(child);
+                });
+            }
+        }
+
+        return nodeIds;
     }
 }
 

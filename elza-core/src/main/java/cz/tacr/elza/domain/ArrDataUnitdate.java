@@ -4,13 +4,18 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import org.hibernate.search.annotations.Indexed;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 
 
 /**
  * @author Martin Šlapa
  * @since 1.9.2015
  */
+@Indexed(interceptor = IndexArrDataWhenHasDescItemInterceptor.class)
 @Entity(name = "arr_data_unitdate")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -92,5 +97,26 @@ public class ArrDataUnitdate extends ArrData implements cz.tacr.elza.api.ArrData
     @Override
     public void setFormat(String format) {
         this.format = format;
+    }
+
+    @Override
+    public String getFulltextValue() {
+//        String ret = calendarType == null ? "?" : calendarType.getName() + " ";
+        String ret = "";
+
+        String from = valueFromEstimated == true ? valueFrom + "*" : valueFrom;
+        String to = valueToEstimated == true ? valueTo + "*" : valueTo;
+
+        if (valueFrom != null && valueTo != null) {
+            ret += from + " - " + to;
+        } else if (valueTo != null) {
+            ret += " do " + to;
+        } else if (valueFrom != null) {
+            ret += " od " + from;
+        } else {
+            ret += " ?";
+        }
+
+        return ret;
     }
 }

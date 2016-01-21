@@ -4,13 +4,18 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
+import org.hibernate.search.annotations.Indexed;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 
 
 /**
  * @author Martin Šlapa
  * @since 1.9.2015
  */
+@Indexed(interceptor = IndexArrDataWhenHasDescItemInterceptor.class)
 @Entity(name = "arr_data_party_ref")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -42,4 +47,9 @@ public class ArrDataPartyRef extends ArrData implements cz.tacr.elza.api.ArrData
         this.partyId = partyId;
     }
 
+    @Override
+    public String getFulltextValue() {
+//        return (party != null && party.getRecord() != null) ? party.getRecord().getRecord() : null;
+        return null;
+    }
 }

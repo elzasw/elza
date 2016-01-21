@@ -1,6 +1,6 @@
 elza:
   data:
-      url: jdbc:postgresql://localhost:5432/elza_master
+      url: jdbc:postgresql://localhost:5432/elza
       user: postgres
       pass: postgres
 
@@ -29,3 +29,10 @@ elza:
 #      types:
 #        - code: ZP2015_SIZE
 #          width: 1
+spring:
+  jpa:
+      properties:
+          hibernate:
+              search:
+                  default:
+                      indexBase: ./target/lucene/indexes/
