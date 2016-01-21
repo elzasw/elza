@@ -22,6 +22,7 @@ import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionService;
+import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrChange;
@@ -66,6 +67,9 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 public class ArrangementService {
 
     private Log logger = LogFactory.getLog(this.getClass());
+
+    @Autowired
+    private LevelTreeCacheService levelTreeCacheService;
 
     @Autowired
     private UpdateConformityInfoService updateConformityInfoService;
@@ -528,7 +532,7 @@ public class ArrangementService {
 
         return descItemFactory.getDescItems(itemList);
     }
-    
+
     /**
      * Zjistí, jestli patří vybraný level do dané verze.
      *
@@ -580,5 +584,32 @@ public class ArrangementService {
 
         return version;
 
+    }
+
+    /**
+     * Vyhledání id nodů podle hodnoty atributu.
+     *
+     * @param versionId identifikátor verze AP
+     * @param nodeId    id uzlu pod kterým se má hledat, může být null
+     * @param searchValue hledaná hodnota
+     * @param depth     hloubka v jaké se hledá pod předaným nodeId
+     *
+     * @return seznam id uzlů které vyhovují parametrům
+     */
+    public Set<Integer> findNodeIdsByFulltext(Integer versionId, Integer nodeId, String searchValue, Depth depth) {
+        Assert.notNull(versionId);
+        Assert.notNull(depth);
+
+        ArrFindingAidVersion version = findingAidVersionRepository.getOne(versionId);
+
+        ArrChange lockChange = version.getLockChange();
+        Integer lockChangeId = lockChange == null ? null : lockChange.getChangeId();
+
+        List<ArrNode> nodeIds = nodeRepository.findByFulltextAndVersionLockChangeId(searchValue, lockChangeId);
+
+        Set<Integer> versionNodeIds = levelTreeCacheService.getAllNodeIdsByVersionAndParent(version, nodeId, depth);
+        versionNodeIds.retainAll(nodeIds);
+
+        return versionNodeIds;
     }
 }

@@ -12,6 +12,14 @@ import javax.persistence.Table;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
+import org.apache.lucene.analysis.standard.StandardTokenizerFactory;
+import org.hibernate.search.annotations.Analyzer;
+import org.hibernate.search.annotations.AnalyzerDef;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Store;
+import org.hibernate.search.annotations.TokenFilterDef;
+import org.hibernate.search.annotations.TokenizerDef;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -21,7 +29,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
-
+@AnalyzerDef(name = "customanalyzer",
+tokenizer = @TokenizerDef(factory = StandardTokenizerFactory.class),
+filters = {
+  @TokenFilterDef(factory = LowerCaseFilterFactory.class),
+})
 @Entity(name = "arr_data")
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -32,7 +44,6 @@ public abstract class ArrData<T> implements cz.tacr.elza.api.ArrData<RulDataType
     @GeneratedValue
     private Integer dataId;
 
-
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulDataType.class)
     @JoinColumn(name = "dataTypeId", nullable = false)
     private RulDataType dataType;
@@ -40,6 +51,18 @@ public abstract class ArrData<T> implements cz.tacr.elza.api.ArrData<RulDataType
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrDescItem.class)
     @JoinColumn(name = "descItemId", nullable = true)
     private ArrDescItem descItem;
+
+    /** @return vrací hodnotu pro fulltextové hledání  */
+    @Field
+    @Analyzer(definition = "customanalyzer")
+    public String getFulltextValue() {
+        return null;
+    }
+
+    @Field(store = Store.YES)
+    public String getDescItemId() {
+        return descItem.getDescItemId().toString();
+    }
 
     @Override
     public Integer getDataId() {

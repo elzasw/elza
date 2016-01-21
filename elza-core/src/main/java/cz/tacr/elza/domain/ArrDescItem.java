@@ -10,6 +10,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.NumericField;
+import org.hibernate.search.annotations.Store;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -23,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
+@Indexed
 @Entity(name = "arr_desc_item")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -64,6 +69,27 @@ public class ArrDescItem implements cz.tacr.elza.api.ArrDescItem<ArrChange, RulD
     @Column(nullable = false)
     private Integer position;
 
+    @Field(store = Store.YES)
+    public String getDescItemIdString() {
+        return descItemId.toString();
+    }
+
+    @Field(store = Store.YES)
+    public Integer getNodeId() {
+        return node.getNodeId();
+    }
+
+    @Field
+    @NumericField
+    public Integer getCreateChangeId() {
+        return createChange.getChangeId();
+    }
+
+    @Field
+    @NumericField
+    public Integer getDeleteChangeId() {
+        return deleteChange == null ? Integer.MAX_VALUE : deleteChange.getChangeId();
+    }
 
     @Override
     public Integer getDescItemId() {
