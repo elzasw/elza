@@ -410,7 +410,7 @@ public class ArrangementController {
      * @param input vstupní data pro načtení
      * @return data stromu
      */
-    @RequestMapping(value = "/fulltext", method = RequestMethod.GET)
+    @RequestMapping(value = "/fulltext", method = RequestMethod.POST)
     public Set<Integer> fulltext(final @RequestBody FaFulltextParam input) {
         Assert.notNull(input);
         Assert.notNull(input.getVersionId());

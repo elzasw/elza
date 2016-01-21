@@ -10,7 +10,7 @@ import ReactDOM from 'react-dom';
 require ('./AdminFulltextPage.less');
 
 import {connect} from 'react-redux'
-import {Ribbon} from 'components';
+import {Ribbon, AdminFulltextReindex} from 'components';
 import {PageLayout} from 'pages';
 import {WebApi} from 'actions';
 
@@ -31,7 +31,7 @@ var AdminFulltextPage = class AdminFulltextPage extends React.Component {
 
         var centerPanel = (
             <div>
-                
+                <AdminFulltextReindex />
             </div>
         )
 

@@ -46,4 +46,5 @@ exports.AddPartyOtherForm = require('./party/AddPartyOtherForm');
 
 exports.AdminPackagesList = require('./admin/AdminPackagesList');
 exports.AdminPackagesUpload = require('./admin/AdminPackagesUpload');
+exports.AdminFulltextReindex = require('./admin/AdminFulltextReindex');
 

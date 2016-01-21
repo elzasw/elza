@@ -333,6 +333,10 @@ class WebApi{
                     return json;
                 });
     }
+    
+    reindex(){
+        return AjaxUtils.ajaxGet('/api/admin/reindex');
+    }    
 }
 
 function findNodeById(node, nodeId) {

@@ -109,5 +109,7 @@ var messages = {
     "admin.packages.message.delete.title": "Smazání balíčku",
     "admin.packages.message.delete.message": "Balíček {0} byl úspěšně smazán",
 
+    "admin.fulltext.action.reindex": "Reindexovat",
+	"admin.fulltext.message.reindexing": "Probíhá reindexace...",
     "____": ""
 };
