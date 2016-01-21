@@ -5,7 +5,6 @@ import {i18n} from 'components'
 const initialState = {
     selectedId: null,
     focusId: null,
-    _expandedIds: {'0': true},
     expandedIds: {},
     searchedIds: null,
     isFetching: false,
@@ -13,10 +12,6 @@ const initialState = {
     fetchingIncludeIds: {},   // jaké id aktuálně fetchuje - id na true
     nodes: [],
 }
-/*console.log('eeeeeeeeeeeeexxxxxxxxxxxxppp');
-for (var a=0; a<300000; a++) {
-initialState.expandedIds[a] = true;
-}*/
 
 function removeChildren(nodes, node, selectedId) {
     var index = indexById(nodes, node.id);
@@ -103,7 +98,7 @@ export default function faTree(state = initialState, action) {
                         var node = state.nodes[index];
                         var removeInfo = removeChildren(state.nodes, node, null);
                         var nodes = removeInfo.nodes;
-                        return Object.assign({}, state, {
+                        var result = Object.assign({}, state, {
                             isFetching: false,
                             fetched: true,
                             nodes: [
@@ -115,9 +110,12 @@ export default function faTree(state = initialState, action) {
                             lastUpdated: action.receivedAt
                         })
 
+                        result.expandedIds = {...result.expandedIds};
                         action.expandedIdsExtension.forEach(id => {
                             result.expandedIds[id] = true;
                         });
+
+                        return result;
                     } else {
                         return Object.assign({}, state, { fetchingIncludeIds: {} });
                     }
@@ -134,6 +132,7 @@ export default function faTree(state = initialState, action) {
                     lastUpdated: action.receivedAt
                 })
 
+                result.expandedIds = {...result.expandedIds};
                 action.expandedIdsExtension.forEach(id => {
                     result.expandedIds[id] = true;
                 });
