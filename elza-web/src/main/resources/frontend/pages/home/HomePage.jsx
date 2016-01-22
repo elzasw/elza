@@ -7,10 +7,10 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {i18n} from 'components';
+import {Icon, i18n} from 'components';
 import {AddFaForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components';
 import {ModalDialog, NodeTabs, FaTreeTabs} from 'components';
-import {ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
+import {ButtonGroup, Button} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {modalDialogShow} from 'actions/global/modalDialog'
 import {createFa} from 'actions/arr/fa'
@@ -35,7 +35,7 @@ var HomePage = class HomePage extends AbstractReactComponent {
     buildRibbon() {
         var altActions = [];
         altActions.push(
-            <Button onClick={this.handleAddFa}><Glyphicon glyph="plus" /><div><span className="btnText">{i18n('ribbon.action.arr.fa.add')}</span></div></Button>
+            <Button onClick={this.handleAddFa}><Icon glyph="plus" /><div><span className="btnText">{i18n('ribbon.action.arr.fa.add')}</span></div></Button>
         );
 
         var altSection;

@@ -12,9 +12,9 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Loading} from 'components';
-import {RibbonGroup,Ribbon, ModalDialog, NodeTabs, Search, RegistryPanel, DropDownTree, AddRegistryForm} from 'components';
+import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, Search, RegistryPanel, DropDownTree, AddRegistryForm} from 'components';
 import {WebApi} from 'actions'
-import {MenuItem, DropdownButton, ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
+import {MenuItem, DropdownButton, ButtonGroup, Button} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {Nav, NavItem} from 'react-bootstrap';
 import {registryData, registrySearchData, registryChangeParent, registryRemoveRegistry, registryStartMove, registryStopMove, registryCancelMove} from 'actions/registry/registryData'
@@ -87,7 +87,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
         var altActions = [];
         altActions.push(
-            <DropdownButton title={<span className="dropContent"><Glyphicon glyph='plus-sign' /><div><span className="btnText">Import</span></div></span>}>
+            <DropdownButton title={<span className="dropContent"><Icon glyph='plus-sign' /><div><span className="btnText">Import</span></div></span>}>
                 <MenuItem eventKey="1">Hesel</MenuItem>
             </DropdownButton>
         );
@@ -95,33 +95,33 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         var itemActions = [];
         if (this.props.registry.selectedId) {
             itemActions.push(
-                <Button><Glyphicon glyph="share-alt" /><div><span className="btnText">{i18n('registry.moveRegistry')}</span></div></Button>
+                <Button><Icon glyph="share-alt" /><div><span className="btnText">{i18n('registry.moveRegistry')}</span></div></Button>
             );
             itemActions.push(
-                <Button><Glyphicon glyph="ok" /><div><span className="btnText">{i18n('registry.validate')}</span></div></Button>
+                <Button><Icon glyph="ok" /><div><span className="btnText">{i18n('registry.validate')}</span></div></Button>
             );
             itemActions.push(
-                <Button onClick={this.handleRemoveRegistryDialog.bind(this)}><Glyphicon glyph="remove" /><div><span className="btnText">{i18n('registry.removeRegistry')}</span></div></Button>
+                <Button onClick={this.handleRemoveRegistryDialog.bind(this)}><Icon glyph="remove" /><div><span className="btnText">{i18n('registry.removeRegistry')}</span></div></Button>
             );
             if (!this.props.registry.recordForMove){
                 itemActions.push(
-                    <Button onClick={this.handleStartMoveRegistry.bind(this)}><Glyphicon glyph="move" /><div><span className="btnText">{i18n('registry.startMove')}</span></div></Button>
+                    <Button onClick={this.handleStartMoveRegistry.bind(this)}><Icon glyph="move" /><div><span className="btnText">{i18n('registry.startMove')}</span></div></Button>
                 );
             }
         }
 
         if (this.props.registry.recordForMove){
             itemActions.push(
-                <Button onClick={this.handleSaveMoveRegistry.bind(this)}><Glyphicon glyph="glyphicon glyphicon-ok-sign" /><div><span className="btnText">{i18n('registry.applyMove')}</span></div></Button>
+                <Button onClick={this.handleSaveMoveRegistry.bind(this)}><Icon glyph="glyphicon glyphicon-ok-sign" /><div><span className="btnText">{i18n('registry.applyMove')}</span></div></Button>
             );
             itemActions.push(
-                <Button onClick={this.handleCancelMoveRegistry.bind(this)}><Glyphicon glyph="glyphicon glyphicon-remove-sign" /><div><span className="btnText">{i18n('registry.cancelMove')}</span></div></Button>
+                <Button onClick={this.handleCancelMoveRegistry.bind(this)}><Icon glyph="glyphicon glyphicon-remove-sign" /><div><span className="btnText">{i18n('registry.cancelMove')}</span></div></Button>
             );
         }
 
 
         itemActions.push(
-                <DropdownButton title={<span className="dropContent"><Glyphicon glyph='plus-sign' /><div><span className="btnText">{i18n('registry.addNewRegistry')}</span></div></span>}>
+                <DropdownButton title={<span className="dropContent"><Icon glyph='plus-sign' /><div><span className="btnText">{i18n('registry.addNewRegistry')}</span></div></span>}>
                     {this.props.refTables.recordTypes.items.map(i=> { return <MenuItem eventKey="{i.id}" onClick={this.handleAddRegistry.bind(this, i)} value={i.id}>{i.name}</MenuItem>})}
                 </DropdownButton>
 

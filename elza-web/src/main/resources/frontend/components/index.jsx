@@ -10,6 +10,7 @@ exports.Toastr = require('./shared/toastr/index');
 exports.RibbonMenu = require('./shared/ribbon-menu/RibbonMenu');
 exports.RibbonGroup = require('./shared/ribbon-menu/RibbonGroup');
 exports.RibbonSplit = require('./shared/ribbon-menu/RibbonSplit');
+exports.Icon = require('./shared/icon/Icon');
 exports.ToggleContent = require('./shared/toggle-content/ToggleContent');
 exports.SplitPane = require('./shared/split-pane/SplitPane');
 exports.Tabs = require('./shared/tabs/Tabs');

@@ -18,8 +18,8 @@ import React from 'react';
 
 var classNames = require('classnames');
 
-import {i18n} from 'components';
-import {ButtonToolbar, ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
+import {Icon, i18n} from 'components';
+import {ButtonToolbar, ButtonGroup, Button} from 'react-bootstrap';
 
 var ToggleContent = class ToggleContent extends React.Component {
     constructor(props) {
@@ -75,7 +75,7 @@ var ToggleContent = class ToggleContent extends React.Component {
                     {children}
                 </div>
                 <div className="toggle-container">
-                    <Button className="toggle" title={title} onClick={this.handleToggle}><Glyphicon glyph={toggleGlyph} /></Button>
+                    <Button className="toggle" title={title} onClick={this.handleToggle}><Icon glyph={toggleGlyph} /></Button>
                 </div>
             </div>
         )

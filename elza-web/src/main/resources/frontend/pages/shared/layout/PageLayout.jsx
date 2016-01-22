@@ -13,7 +13,7 @@ import {Link, IndexLink} from 'react-router';
 import {i18n} from 'components';
 import {RibbonMenu, ToggleContent, FindindAidFileTree} from 'components';
 import {ModalDialog, NodeTabs, FaTreeTabs} from 'components';
-import {ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
+import {ButtonGroup, Button} from 'react-bootstrap';
 
 var PageLayout = class PageLayout extends React.Component {
     constructor(props) {

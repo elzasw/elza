@@ -15,8 +15,8 @@
 
 import React from 'react';
 
-import {Button, Glyphicon} from 'react-bootstrap';
-import {i18n} from 'components';
+import {Button} from 'react-bootstrap';
+import {Icon, i18n} from 'components';
 import ReactDOM from 'react-dom'
 
 require ('./DropDownTree.less');
@@ -118,7 +118,7 @@ var DropDownTree = class DropDownTree extends React.Component {
             <div className={"dropDownTree"}>
                 <Button onClick={this.handleOpenClose.bind(this)}>
                     {this.state.label}
-                    <Glyphicon glyph="triangle-bottom" />
+                    <Icon glyph="triangle-bottom" />
                 </Button>
                 <ul className={"menu"}>
                     {tree}

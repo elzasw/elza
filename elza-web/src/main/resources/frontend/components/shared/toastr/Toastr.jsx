@@ -24,7 +24,7 @@ var React = require('react');
 var assign = require('react/lib/Object.assign');
 
 import {i18n, AbstractReactComponent} from 'components';
-import {Alert, Button, Glyphicon} from 'react-bootstrap';
+import {Alert, Button} from 'react-bootstrap';
 //import {connect} from 'react-redux'
 var ToastrStore = require('./ToastrStore');
 var ToastrActions = require('./ToastrActions');
@@ -56,16 +56,16 @@ module.exports = class Toastr extends React.Component {
             var icon = null;
             switch (t.type) {
                 case 'success':
-                    icon = <Glyphicon glyph="ok" />;
+                    icon = <Icon glyph="ok" />;
                 break;
                 case 'warning':
-                    icon = <Glyphicon glyph="warning-sign" />;
+                    icon = <Icon glyph="warning-sign" />;
                 break;
                 case 'info':
-                    icon = <Glyphicon glyph="info-sign" />;
+                    icon = <Icon glyph="info-sign" />;
                 break;
                 case 'danger':
-                    icon = <Glyphicon glyph="exclamation-sign" />;
+                    icon = <Icon glyph="exclamation-sign" />;
                 break;
             }
             return (

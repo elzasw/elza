@@ -10,9 +10,9 @@ import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {Ribbon, i18n} from 'components';
+import {Icon, Ribbon, i18n} from 'components';
 import {AddFaForm, RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FaFileTree, AbstractReactComponent, ModalDialog, NodeTabs, FaTreeTabs} from 'components';
-import {ButtonGroup, Button, DropdownButton, MenuItem, Glyphicon} from 'react-bootstrap';
+import {ButtonGroup, Button, DropdownButton, MenuItem} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
 import {WebApi} from 'actions'
@@ -73,7 +73,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         var itemActions = [];
         if (activeInfo.activeFa) {
             itemActions.push(
-                <Button onClick={this.handleApproveFaVersion}><Glyphicon glyph="plus" /><div><span className="btnText">{i18n('ribbon.action.arr.fa.approveVersion')}</span></div></Button>
+                <Button onClick={this.handleApproveFaVersion}><Icon glyph="plus" /><div><span className="btnText">{i18n('ribbon.action.arr.fa.approveVersion')}</span></div></Button>
             )
         }
 

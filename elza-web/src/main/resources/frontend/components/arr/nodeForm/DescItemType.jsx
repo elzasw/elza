@@ -4,8 +4,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {i18n, AbstractReactComponent, NoFocusButton} from 'components';
-import {Glyphicon} from 'react-bootstrap';
+import {Icon, i18n, AbstractReactComponent, NoFocusButton} from 'components';
 import {connect} from 'react-redux'
 var classNames = require('classnames');
 import DescItemString from './DescItemString'
@@ -149,9 +148,9 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         var actions = [];
 
         // Sestavení akcí
-        actions.push(<NoFocusButton onClick={this.handleDescItemTypeCopy}><Glyphicon className={this.props.copy ? 'copy' : 'nocopy'} glyph="copy" /></NoFocusButton>);
-        actions.push(<NoFocusButton><Glyphicon glyph="book" /></NoFocusButton>);
-        actions.push(<NoFocusButton onClick={this.handleDescItemTypeLock}><Glyphicon className={this.props.locked ? 'locked' : 'unlocked'}  glyph="lock" /></NoFocusButton>);
+        actions.push(<NoFocusButton onClick={this.handleDescItemTypeCopy}><Icon className={this.props.copy ? 'copy' : 'nocopy'} glyph="copy" /></NoFocusButton>);
+        actions.push(<NoFocusButton><Icon glyph="book" /></NoFocusButton>);
+        actions.push(<NoFocusButton onClick={this.handleDescItemTypeLock}><Icon className={this.props.locked ? 'locked' : 'unlocked'}  glyph="lock" /></NoFocusButton>);
 
         var hasDescItemsForDelete = false;
         if (!this.props.descItemType.hasFocus) {
@@ -168,7 +167,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             }
         }
         if (hasDescItemsForDelete) {
-            actions.push(<NoFocusButton onClick={this.handleDescItemTypeRemove} title={i18n('subNodeForm.deleteDescItemType')}><Glyphicon glyph="remove" /></NoFocusButton>);
+            actions.push(<NoFocusButton onClick={this.handleDescItemTypeRemove} title={i18n('subNodeForm.deleteDescItemType')}><Icon glyph="remove" /></NoFocusButton>);
         }
 
         // Render
@@ -211,13 +210,13 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
 
         var addAction;
         if (descItemTypeInfo.repeatable && !locked) {
-            addAction = <div className='desc-item-type-actions'><NoFocusButton onClick={this.handleDescItemAdd} title={i18n('subNodeForm.addDescItem')}><Glyphicon glyph="plus" /></NoFocusButton></div>
+            addAction = <div className='desc-item-type-actions'><NoFocusButton onClick={this.handleDescItemAdd} title={i18n('subNodeForm.addDescItem')}><Icon glyph="plus" /></NoFocusButton></div>
         }
 
         var descItems = descItemType.descItems.map((descItem, descItemIndex) => {
             var removeAction;
             if (descItemTypeInfo.repeatable) {
-                removeAction = <NoFocusButton onClick={this.handleDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Glyphicon glyph="trash" /></NoFocusButton>
+                removeAction = <NoFocusButton onClick={this.handleDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="trash" /></NoFocusButton>
             }
             return this.renderDescItem(descItemType, descItem, descItemIndex, removeAction, locked)
         })

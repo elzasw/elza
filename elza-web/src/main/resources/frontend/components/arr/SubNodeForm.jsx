@@ -6,8 +6,7 @@ require ('./SubNodeForm.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {i18n, AbstractReactComponent, NoFocusButton} from 'components';
-import {Glyphicon} from 'react-bootstrap';
+import {Icon, i18n, AbstractReactComponent, NoFocusButton} from 'components';
 import {connect} from 'react-redux'
 import {indexById} from 'stores/app/utils.jsx'
 import {faSubNodeFormDescItemTypeAdd, faSubNodeFormValueChange, faSubNodeFormDescItemTypeDelete, faSubNodeFormValueChangeSpec,faSubNodeFormValueBlur, faSubNodeFormValueFocus, faSubNodeFormValueAdd, faSubNodeFormValueDelete} from 'actions/arr/subNodeForm'
@@ -236,12 +235,12 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
 
         return (
             <div className='node-form-actions'>
-                <NoFocusButton onClick={this.handleAddDescItemType}><Glyphicon glyph="plus" />Přidat prvek</NoFocusButton>
-                <NoFocusButton onClick={this.handleDescItemTypeUnlockAll}><Glyphicon glyph="lock" />Odemknout vše</NoFocusButton>
-                <NoFocusButton><Glyphicon glyph="plus" />Přidat JP před</NoFocusButton>
-                <NoFocusButton><Glyphicon glyph="plus" />Přidat JP za</NoFocusButton>
-                <NoFocusButton><Glyphicon glyph="list" />Rejstříky</NoFocusButton>
-                <NoFocusButton><Glyphicon glyph="remove" />Zrušit JP</NoFocusButton>
+                <NoFocusButton onClick={this.handleAddDescItemType}><Icon glyph="plus" />Přidat prvek</NoFocusButton>
+                <NoFocusButton onClick={this.handleDescItemTypeUnlockAll}><Icon glyph="lock" />Odemknout vše</NoFocusButton>
+                <NoFocusButton><Icon glyph="plus" />Přidat JP před</NoFocusButton>
+                <NoFocusButton><Icon glyph="plus" />Přidat JP za</NoFocusButton>
+                <NoFocusButton><Icon glyph="list" />Rejstříky</NoFocusButton>
+                <NoFocusButton><Icon glyph="remove" />Zrušit JP</NoFocusButton>
             </div>
         )
     }

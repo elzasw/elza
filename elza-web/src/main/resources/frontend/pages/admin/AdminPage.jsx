@@ -13,7 +13,7 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {i18n} from 'components';
 import {Ribbon, ModalDialog, NodeTabs, PartySearch} from 'components';
-import {ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
+import {ButtonGroup, Button} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 
 var AdminPage = class AdminPage extends React.Component {
