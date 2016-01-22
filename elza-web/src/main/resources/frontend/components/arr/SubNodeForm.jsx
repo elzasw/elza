@@ -16,7 +16,6 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import DescItemString from './nodeForm/DescItemString'
 import DescItemType from './nodeForm/DescItemType'
 import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm'
-
 import {lockDescItemType, unlockDescItemType, unlockAllDescItemType, copyDescItemType, nocopyDescItemType} from 'actions/arr/nodeSetting'
 
 var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
@@ -40,6 +39,12 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         this.dispatch(calendarTypesFetchIfNeeded());
     }
 
+    /**
+     * Renderování skupiny atributů.
+     * @param descItemGroup {Object} skupina
+     * @param descItemGroupIndex {Integer} index skupiny v seznamu
+     * @return {Object} view
+     */
     renderDescItemGroup(descItemGroup, descItemGroupIndex) {
         var descItemTypes = descItemGroup.descItemTypes.map((descItemType, descItemTypeIndex) => (
             this.renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex)
@@ -58,10 +63,21 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         )
     }
 
+    /**
+     * Dohledání předpisu typu atributu pro daný typ.
+     * @param descItemType {Object} typ atributu
+     * @return {Object} předpis typu atributu
+     */
     getDescItemTypeInfo(descItemType) {
         return this.props.descItemTypeInfos[indexById(this.props.descItemTypeInfos, descItemType.id)];
     }
 
+    /**
+     * Odebrání hodnoty atributu.
+     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
+     * @param descItemTypeIndex {Integer} index atributu v seznamu
+     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     */
     handleDescItemRemove(descItemGroupIndex, descItemTypeIndex, descItemIndex) {
         var valueLocation = {
             descItemGroupIndex,
@@ -72,6 +88,11 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         this.dispatch(faSubNodeFormValueDelete(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation));
     }
 
+    /**
+     * Odebrání atributu.
+     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
+     * @param descItemTypeIndex {Integer} index atributu v seznamu
+     */
     handleDescItemTypeRemove(descItemGroupIndex, descItemTypeIndex) {
         var valueLocation = {
             descItemGroupIndex,
@@ -81,6 +102,11 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         this.dispatch(faSubNodeFormDescItemTypeDelete(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation));
     }
 
+    /**
+     * Přidání/odebrání zámku pro atribut.
+     * @param descItemTypeId {String} id atributu
+     * @param locked {Boolean} true, pokud se má zámek povolit
+     */
     handleDescItemTypeLock(descItemTypeId, locked) {
         if (locked) {
             this.dispatch(lockDescItemType(this.props.nodeId, descItemTypeId));
@@ -89,6 +115,11 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         }
     }
 
+    /**
+     * Přidání/odebrání opakovaného pro atribut.
+     * @param descItemTypeId {String} id atributu
+     * @param copy {Boolean} true, pokud se má opakované kopírování povolit
+     */
     handleDescItemTypeCopy(descItemTypeId, copy) {
         if (copy) {
             this.dispatch(copyDescItemType(this.props.nodeId, descItemTypeId));
@@ -97,10 +128,18 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         }
     }
 
+    /**
+     * Odebrání všech zámků pro všechny atributy
+     */
     handleDescItemTypeUnlockAll() {
         this.dispatch(unlockAllDescItemType(this.props.nodeId));
     }
 
+    /**
+     * Přidání nové hodnoty vícehodnotového atributu.
+     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
+     * @param descItemTypeIndex {Integer} index atributu v seznamu
+     */
     handleDescItemAdd(descItemGroupIndex, descItemTypeIndex) {
         var valueLocation = {
             descItemGroupIndex,
@@ -110,6 +149,12 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         this.dispatch(faSubNodeFormValueAdd(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation));
     }
 
+    /**
+     * Opuštění hodnoty atributu.
+     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
+     * @param descItemTypeIndex {Integer} index atributu v seznamu
+     * @param descItemIndex {Integer} index honodty atributu v seznamu
+     */
     handleBlur(descItemGroupIndex, descItemTypeIndex, descItemIndex) {
         var valueLocation = {
             descItemGroupIndex,
@@ -120,6 +165,12 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         this.dispatch(faSubNodeFormValueBlur(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation));
     }
 
+    /**
+     * Nový focus do hodnoty atributu.
+     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
+     * @param descItemTypeIndex {Integer} index atributu v seznamu
+     * @param descItemIndex {Integer} index honodty atributu v seznamu
+     */
     handleFocus(descItemGroupIndex, descItemTypeIndex, descItemIndex) {
         var valueLocation = {
             descItemGroupIndex,
@@ -130,6 +181,13 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         this.dispatch(faSubNodeFormValueFocus(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation));
     }
 
+    /**
+     * Změna hodnoty atributu.
+     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
+     * @param descItemTypeIndex {Integer} index atributu v seznamu
+     * @param descItemIndex {Integer} index honodty atributu v seznamu
+     * @param value {Object} nová hodnota atributu
+     */
     handleChange(descItemGroupIndex, descItemTypeIndex, descItemIndex, value) {
         var valueLocation = {
             descItemGroupIndex,
@@ -140,6 +198,13 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         this.dispatch(faSubNodeFormValueChange(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation, value));
     }
 
+    /**
+     * Změna specifikace u hodnoty atributu.
+     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
+     * @param descItemTypeIndex {Integer} index atributu v seznamu
+     * @param descItemIndex {Integer} index honodty atributu v seznamu
+     * @param value {Object} nová hodnota specifikace u atributu
+     */
     handleChangeSpec(descItemGroupIndex, descItemTypeIndex, descItemIndex, value) {
         var valueLocation = {
             descItemGroupIndex,
@@ -150,6 +215,13 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         this.dispatch(faSubNodeFormValueChangeSpec(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation, value));
     }
 
+    /**
+     * Renderování atributu.
+     * @param descItemType {Object} atribut
+     * @param descItemTypeIndex {Integer} index atributu v seznamu
+     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
+     * @return {Object} view
+     */
     renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex) {
         var rulDataType = this.props.rulDataTypes.items[indexById(this.props.rulDataTypes.items, descItemType.dataTypeId)];
         var descItemTypeInfo = this.getDescItemTypeInfo(descItemType);
@@ -207,6 +279,9 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         )
     }
 
+    /**
+     * Zobrazení dialogu pro přidání atributu.
+     */
     handleAddDescItemType() {
         // Pro přidání chceme jen ty, které zatím ještě nemáme
         var descItemTypesMap = {};
@@ -234,8 +309,11 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         this.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form));
     }
 
+    /**
+     * Renderování globálních akcí pro formulář.
+     * @return {Object} view
+     */
     renderFormActions() {
-
         return (
             <div className='node-form-actions'>
                 <NoFocusButton onClick={this.handleAddDescItemType}><Icon glyph="plus" />Přidat prvek</NoFocusButton>

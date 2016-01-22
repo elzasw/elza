@@ -8,9 +8,7 @@ import React from 'react';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, Tabs, FaTreeLazy} from 'components';
 import {AppActions} from 'stores';
-
 import {selectFaTab, closeFaTab} from 'actions/arr/fa'
-
 
 var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
     constructor(props) {

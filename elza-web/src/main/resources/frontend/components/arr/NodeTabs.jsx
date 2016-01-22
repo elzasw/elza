@@ -8,7 +8,6 @@ import React from 'react';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, NodePanel, Tabs} from 'components';
 import {AppActions} from 'stores';
-
 import {faSelectNodeTab, faCloseNodeTab} from 'actions/arr/nodes'
 
 var NodeTabs = class NodeTabs extends AbstractReactComponent {
