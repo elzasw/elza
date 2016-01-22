@@ -163,7 +163,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 
         if (node.viewStartIndex > 0) {
             rows.push(
-                <Button onClick={()=>this.dispatch(faSubNodesPrev())}><Icon glyph="chevron-left" />{i18n('arr.fa.prev')}</Button>
+                <Button onClick={()=>this.dispatch(faSubNodesPrev())}><Icon glyph="fa-chevron-left" />{i18n('arr.fa.prev')}</Button>
             )
         }
 
@@ -192,7 +192,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 
         if (node.viewStartIndex + node.pageSize/2 < node.childNodes.length) {
             rows.push(
-                <Button onClick={()=>this.dispatch(faSubNodesNext())}><Icon glyph="chevron-right" />{i18n('arr.fa.next')}</Button>
+                <Button onClick={()=>this.dispatch(faSubNodesNext())}><Icon glyph="fa-chevron-right" />{i18n('arr.fa.next')}</Button>
             )
         }
 
@@ -216,9 +216,9 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         var siblings = this.getSiblingNodes().map(s => <span key={s.id}> {s.id}</span>);
         var actions = (
             <div className='actions'>
-                <Button><Icon glyph="plus" />Přidat JP na konec</Button>
-                <Button disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(faSubNodesPrevPage())}><Icon glyph="backward" />{i18n('arr.fa.subNodes.prevPage')}</Button>
-                <Button disabled={node.viewStartIndex + node.pageSize > node.childNodes.length} onClick={()=>this.dispatch(faSubNodesNextPage())}><Icon glyph="forward" />{i18n('arr.fa.subNodes.nextPage')}</Button>
+                <Button><Icon glyph="fa-plus-circle" />Přidat JP na konec</Button>
+                <Button disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(faSubNodesPrevPage())}><Icon glyph="fa-backward" />{i18n('arr.fa.subNodes.prevPage')}</Button>
+                <Button disabled={node.viewStartIndex + node.pageSize > node.childNodes.length} onClick={()=>this.dispatch(faSubNodesNextPage())}><Icon glyph="fa-forward" />{i18n('arr.fa.subNodes.nextPage')}</Button>
 
                 <input type="text"/><Button>Hledat</Button>
             </div>

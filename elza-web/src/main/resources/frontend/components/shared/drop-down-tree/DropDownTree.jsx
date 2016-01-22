@@ -118,7 +118,7 @@ var DropDownTree = class DropDownTree extends React.Component {
             <div className={"dropDownTree"}>
                 <Button onClick={this.handleOpenClose.bind(this)}>
                     {this.state.label}
-                    <Icon glyph="triangle-bottom" />
+                    <Icon glyph="fa-caret-down" />
                 </Button>
                 <ul className={"menu"}>
                     {tree}

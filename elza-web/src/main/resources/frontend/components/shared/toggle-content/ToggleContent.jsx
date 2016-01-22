@@ -28,8 +28,8 @@ var ToggleContent = class ToggleContent extends React.Component {
         this.handleToggle = this.handleToggle.bind(this);
         this.state = {
             opened: typeof this.props.opened == 'undefined' ? true : this.props.opened,
-            openedIcon: this.props.openedIcon || "chevron-up",
-            closedIcon: this.props.closedIcon || "chevron-down",
+            openedIcon: this.props.openedIcon || "fa-chevron-up",
+            closedIcon: this.props.closedIcon || "fa-chevron-down",
             alwaysRender: typeof this.props.alwaysRender == 'undefined' ? false : this.props.alwaysRender
         };        
     }

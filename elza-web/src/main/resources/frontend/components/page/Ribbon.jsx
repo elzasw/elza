@@ -28,8 +28,8 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
         if (this.props.admin) {
             section = (
                 <RibbonGroup className="">
-                    <LinkContainer to="/admin/packages"><Button><Icon glyph="cog" /><div><span className="btnText">{i18n('ribbon.action.admin.packages')}</span></div></Button></LinkContainer>
-                    <LinkContainer to="/admin/fulltext"><Button><Icon glyph="cog" /><div><span className="btnText">{i18n('ribbon.action.admin.fulltext')}</span></div></Button></LinkContainer>
+                    <LinkContainer to="/admin/packages"><Button><Icon glyph="fa-archive" /><div><span className="btnText">{i18n('ribbon.action.admin.packages')}</span></div></Button></LinkContainer>
+                    <LinkContainer to="/admin/fulltext"><Button><Icon glyph="fa-search" /><div><span className="btnText">{i18n('ribbon.action.admin.fulltext')}</span></div></Button></LinkContainer>
                 </RibbonGroup>
             );
         }
@@ -37,11 +37,11 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
         return (
             <RibbonMenu opened onShowHide={this.handleRibbonShowHide}>
                 <RibbonGroup className="large">
-                    <IndexLinkContainer to="/"><Button><Icon glyph="film" /><div><span className="btnText">{i18n('ribbon.action.home')}</span></div></Button></IndexLinkContainer>
-                    <LinkContainer to="/arr"><Button><Icon glyph="th-list" /><div><span className="btnText">{i18n('ribbon.action.arr')}</span></div></Button></LinkContainer>
-                    <LinkContainer to="/registry"><Button><Icon glyph="th-list" /><div><span className="btnText">{i18n('ribbon.action.registry')}</span></div></Button></LinkContainer>
-                    <LinkContainer to="/party"><Button><Icon glyph="th-list" /><div><span className="btnText">{i18n('ribbon.action.party')}</span></div></Button></LinkContainer>
-                    <LinkContainer to="/admin"><Button><Icon glyph="cog" /><div><span className="btnText">{i18n('ribbon.action.admin')}</span></div></Button></LinkContainer>
+                    <IndexLinkContainer to="/"><Button><Icon glyph="fa-home" /><div><span className="btnText">{i18n('ribbon.action.home')}</span></div></Button></IndexLinkContainer>
+                    <LinkContainer to="/arr"><Button><Icon glyph="fa-file-text" /><div><span className="btnText">{i18n('ribbon.action.arr')}</span></div></Button></LinkContainer>
+                    <LinkContainer to="/registry"><Button><Icon glyph="fa-th-list" /><div><span className="btnText">{i18n('ribbon.action.registry')}</span></div></Button></LinkContainer>
+                    <LinkContainer to="/party"><Button><Icon glyph="fa-users" /><div><span className="btnText">{i18n('ribbon.action.party')}</span></div></Button></LinkContainer>
+                    <LinkContainer to="/admin"><Button><Icon glyph="fa-cog" /><div><span className="btnText">{i18n('ribbon.action.admin')}</span></div></Button></LinkContainer>
                 </RibbonGroup>
 
                 <RibbonSplit />

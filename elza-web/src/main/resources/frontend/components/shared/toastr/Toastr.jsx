@@ -56,16 +56,16 @@ module.exports = class Toastr extends React.Component {
             var icon = null;
             switch (t.type) {
                 case 'success':
-                    icon = <Icon glyph="ok" />;
+                    icon = <Icon glyph="fa-check" />;
                 break;
                 case 'warning':
-                    icon = <Icon glyph="warning-sign" />;
+                    icon = <Icon glyph="fa-exclamation" />;
                 break;
                 case 'info':
-                    icon = <Icon glyph="info-sign" />;
+                    icon = <Icon glyph="fa-info-circle" />;
                 break;
                 case 'danger':
-                    icon = <Icon glyph="exclamation-sign" />;
+                    icon = <Icon glyph="fa-exclamation-circle" />;
                 break;
             }
             return (

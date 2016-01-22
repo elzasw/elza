@@ -316,12 +316,12 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     renderFormActions() {
         return (
             <div className='node-form-actions'>
-                <NoFocusButton onClick={this.handleAddDescItemType}><Icon glyph="plus" />Přidat prvek</NoFocusButton>
-                <NoFocusButton onClick={this.handleDescItemTypeUnlockAll}><Icon glyph="lock" />Odemknout vše</NoFocusButton>
-                <NoFocusButton><Icon glyph="plus" />Přidat JP před</NoFocusButton>
-                <NoFocusButton><Icon glyph="plus" />Přidat JP za</NoFocusButton>
-                <NoFocusButton><Icon glyph="list" />Rejstříky</NoFocusButton>
-                <NoFocusButton><Icon glyph="remove" />Zrušit JP</NoFocusButton>
+                <NoFocusButton onClick={this.handleAddDescItemType}><Icon glyph="fa-plus" />Přidat prvek</NoFocusButton>
+                <NoFocusButton onClick={this.handleDescItemTypeUnlockAll}><Icon glyph="fa-lock" />Odemknout vše</NoFocusButton>
+                <NoFocusButton><Icon glyph="fa-plus" />Přidat JP před</NoFocusButton>
+                <NoFocusButton><Icon glyph="fa-plus" />Přidat JP za</NoFocusButton>
+                <NoFocusButton><Icon glyph="fa-list" />Rejstříky</NoFocusButton>
+                <NoFocusButton><Icon glyph="fa-trash" />Zrušit JP</NoFocusButton>
             </div>
         )
     }

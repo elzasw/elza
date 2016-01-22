@@ -97,25 +97,25 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         var isSelected = this.props.partyRegion.selectedPartyID ? true : false;
         var altActions = [];
         altActions.push(
-            <DropdownButton title={<span className="dropContent"><Icon glyph='plus-sign' /><div><span className="btnText">Nová osoba</span></div></span>}>
+            <DropdownButton title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">Nová osoba</span></div></span>}>
                 {this.props.refTables.partyTypes.items.map(i=> {return <MenuItem eventKey="{i.partyTypeId}" onClick={this.handleAddParty.bind(this, i.partyTypeId)}>{i.name}</MenuItem>})}
             </DropdownButton>
         );
         altActions.push(
-            <DropdownButton title={<span className="dropContent"><Icon glyph='plus-sign' /><div><span className="btnText">Import</span></div></span>}>
+            <DropdownButton title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">Import</span></div></span>}>
                 <MenuItem eventKey="1">Osob</MenuItem>
             </DropdownButton>
         );
         var itemActions = [];
         if (isSelected) {
             itemActions.push(
-                <Button><Icon glyph="link" /><div><span className="btnText">Nový vztah</span></div></Button>
+                <Button><Icon glyph="fa-link" /><div><span className="btnText">Nový vztah</span></div></Button>
             );
             itemActions.push(
-                <Button><Icon glyph="ok" /><div><span className="btnText">Validace</span></div></Button>
+                <Button><Icon glyph="fa-check" /><div><span className="btnText">Validace</span></div></Button>
             );
             itemActions.push(
-                <Button onClick={this.handleDeleteParty}><Icon glyph="trash" /><div><span className="btnText">ASmazat osobu</span></div></Button>
+                <Button onClick={this.handleDeleteParty}><Icon glyph="fa-trash" /><div><span className="btnText">ASmazat osobu</span></div></Button>
             );
         }
 

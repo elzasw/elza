@@ -73,7 +73,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         var itemActions = [];
         if (activeInfo.activeFa) {
             itemActions.push(
-                <Button onClick={this.handleApproveFaVersion}><Icon glyph="plus" /><div><span className="btnText">{i18n('ribbon.action.arr.fa.approveVersion')}</span></div></Button>
+                <Button onClick={this.handleApproveFaVersion}><Icon glyph="fa-calendar-check-o"/><div><span className="btnText">{i18n('ribbon.action.arr.fa.approveVersion')}</span></div></Button>
             )
         }
 
@@ -122,7 +122,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         )
 
         var appContentExt = (
-            <ToggleContent className="fa-file-toggle-container" alwaysRender opened={this.state.faFileTreeOpened} onShowHide={(opened)=>this.setState({faFileTreeOpened: opened})} closedIcon="chevron-right" openedIcon="chevron-left">
+            <ToggleContent className="fa-file-toggle-container" alwaysRender opened={this.state.faFileTreeOpened} onShowHide={(opened)=>this.setState({faFileTreeOpened: opened})} closedIcon="fa-chevron-right" openedIcon="fa-chevron-left">
                 <FaFileTree {...this.props.faFileTree} onSelect={()=>this.setState({faFileTreeOpened: false})}/>
             </ToggleContent>
         )
