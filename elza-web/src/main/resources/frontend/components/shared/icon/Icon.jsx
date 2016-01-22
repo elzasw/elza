@@ -7,10 +7,16 @@ var Icon = class Icon extends AbstractReactComponent {
         super(props);
     }
 
+
     render() {
+        var cls = 'icon fa ' + this.props.glyph;
+        if (this.props.className) {
+            cls += ' ' + this.props.className;
+        }
+
         //<Glyphicon className='icon' glyph={this.props.glyph} />
         return (
-            <span className={'icon fa ' + this.props.glyph}/>
+            <span className={cls}/>
         )
     }
 }
