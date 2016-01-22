@@ -327,12 +327,14 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 
     render() {
-        if (this.props.calendarTypes.isFetching && !this.props.calendarTypes.fetched) {
+        var {calendarTypes, formData} = this.props;
+
+        if (calendarTypes.isFetching && !calendarTypes.fetched) {
             return <div className='node-form'></div>
         }
 
         var formActions = this.renderFormActions();
-        var descItemGroups = this.props.formData.descItemGroups.map((group, groupIndex) => (
+        var descItemGroups = formData.descItemGroups.map((group, groupIndex) => (
             this.renderDescItemGroup(group, groupIndex)
         ));
 
@@ -354,5 +356,16 @@ function mapStateToProps(state) {
     }
 }
 
-module.exports = connect(mapStateToProps)(SubNodeForm);
+SubNodeForm.propTypes = {
+    descItemTypeInfos: React.PropTypes.array.isRequired,
+    versionId: React.PropTypes.number.isRequired,
+    selectedSubNodeId: React.PropTypes.number.isRequired,
+    nodeKey: React.PropTypes.number.isRequired,
+    nodeId: React.PropTypes.number.isRequired,
+    nodeSettings: React.PropTypes.object.isRequired,
+    rulDataTypes: React.PropTypes.object.isRequired,
+    calendarTypes: React.PropTypes.object.isRequired,
+    formData: React.PropTypes.object.isRequired,
+}
 
+module.exports = connect(mapStateToProps)(SubNodeForm);

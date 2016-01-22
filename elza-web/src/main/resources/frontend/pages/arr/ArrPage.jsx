@@ -23,16 +23,24 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('getActiveInfo', 'buildRibbon', 'handleApproveFaVersion', 'handleCallApproveFaVersion');
+        this.bindMethods('getActiveInfo', 'buildRibbon',
+            'handleApproveFaVersion', 'handleCallApproveFaVersion');
 
         this.state = {faFileTreeOpened: false};
     }
 
+    /**
+     * Vyvolání akce uzavření verze AP.
+     * @param data {Object} data pro uzavření - z formuláře
+     */
     handleCallApproveFaVersion(data) {
         var activeInfo = this.getActiveInfo();
         this.dispatch(approveFa(activeInfo.activeFa.versionId, data.ruleSetId, data.rulArrTypeId, activeInfo.activeFa.faId));
     }
 
+    /**
+     * Zobrazení dualogu uzavření verze AP.
+     */
     handleApproveFaVersion() {
         var activeInfo = this.getActiveInfo();
         var data = {
@@ -43,6 +51,10 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         this.dispatch(modalDialogShow(this, i18n('arr.fa.title.approveVersion'), <AddFaForm initData={data} onSubmit={this.handleCallApproveFaVersion} />));
     }
 
+    /**
+     * Načtení informačního objektu o aktuálním zobrazení sekce archvní pomůcky.
+     * @return {Object} informace o aktuálním zobrazení sekce archvní pomůcky
+     */
     getActiveInfo() {
         var arrRegion = this.props.arrRegion
         var activeFa = null;
@@ -65,6 +77,10 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         }
     }
 
+    /**
+     * Sestavení Ribbonu.
+     * @return {Object} view
+     */
     buildRibbon() {
         var activeInfo = this.getActiveInfo();
 
@@ -92,8 +108,10 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     render() {
-        var fas = this.props.arrRegion.fas;
-        var activeFa = this.props.arrRegion.activeIndex != null ? this.props.arrRegion.fas[this.props.arrRegion.activeIndex] : null;
+        var {arrRegion, faFileTree, rulDataTypes, calendarTypes} = this.props;
+
+        var fas = arrRegion.fas;
+        var activeFa = arrRegion.activeIndex != null ? arrRegion.fas[arrRegion.activeIndex] : null;
         var leftPanel = (
             <FaTreeTabs
                 fas={fas}
@@ -101,16 +119,15 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             />
         )
 
-        var centerPanel = [];
+        var centerPanel;
         if (activeFa && activeFa.nodes) {
-            var nodes = activeFa.nodes.nodes;
-            centerPanel.push(
+            centerPanel = (
                 <NodeTabs
                     versionId={activeFa.activeVersion.id}
-                    nodes={nodes}
+                    nodes={activeFa.nodes.nodes}
                     activeIndex={activeFa.nodes.activeIndex}
-                    rulDataTypes={this.props.refTables.rulDataTypes}
-                    calendarTypes={this.props.refTables.calendarTypes}
+                    rulDataTypes={rulDataTypes}
+                    calendarTypes={calendarTypes}
                 />
             )
         }
@@ -122,6 +139,8 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         )
 
         var appContentExt = (
+            <ToggleContent className="fa-file-toggle-container" alwaysRender opened={this.state.faFileTreeOpened} onShowHide={(opened)=>this.setState({faFileTreeOpened: opened})} closedIcon="chevron-right" openedIcon="chevron-left">
+                <FaFileTree {...faFileTree} onSelect={()=>this.setState({faFileTreeOpened: false})}/>
             <ToggleContent className="fa-file-toggle-container" alwaysRender opened={this.state.faFileTreeOpened} onShowHide={(opened)=>this.setState({faFileTreeOpened: opened})} closedIcon="fa-chevron-right" openedIcon="fa-chevron-left">
                 <FaFileTree {...this.props.faFileTree} onSelect={()=>this.setState({faFileTreeOpened: false})}/>
             </ToggleContent>
@@ -145,9 +164,16 @@ function mapStateToProps(state) {
     return {
         arrRegion,
         faFileTree,
-        refTables
+        rulDataTypes: refTables.rulDataTypes,
+        calendarTypes: refTables.calendarTypes,
     }
 }
 
-module.exports = connect(mapStateToProps)(ArrPage);
+ArrPage.propTypes = {
+    arrRegion: React.PropTypes.object.isRequired,
+    faFileTree: React.PropTypes.object.isRequired,
+    rulDataTypes: React.PropTypes.object.isRequired,
+    calendarTypes: React.PropTypes.object.isRequired,
+}
 
+module.exports = connect(mapStateToProps)(ArrPage);

@@ -16,11 +16,13 @@ var NodeTabs = class NodeTabs extends AbstractReactComponent {
     }
 
     render() {
-        if (this.props.nodes.length == 0) {
+        var {nodes, activeIndex, versionId, rulDataTypes, calendarTypes} = this.props;
+
+        if (nodes.length == 0) {
             return <div></div>
         }
 
-        var tabs = this.props.nodes.map((node, i) => {
+        var tabs = nodes.map((node, i) => {
             return {
                 id: node.id,
                 index: i,
@@ -30,8 +32,8 @@ var NodeTabs = class NodeTabs extends AbstractReactComponent {
             }
         });
 
-        var activeNode = this.props.nodes[this.props.activeIndex];
-        var activeTab = tabs[this.props.activeIndex];
+        var activeNode = nodes[activeIndex];
+        var activeTab = tabs[activeIndex];
 
         return (
             <Tabs.Container className='node-tabs-container'>
@@ -40,11 +42,19 @@ var NodeTabs = class NodeTabs extends AbstractReactComponent {
                     onClose={item=>this.dispatch(faCloseNodeTab(item.index))}
                 />
                 <Tabs.Content>
-                    {activeNode && <NodePanel versionId={this.props.versionId} node={activeNode} rulDataTypes={this.props.rulDataTypes} calendarTypes={this.props.calendarTypes}/>}
+                    {activeNode && <NodePanel versionId={versionId} node={activeNode} rulDataTypes={rulDataTypes} calendarTypes={calendarTypes}/>}
                 </Tabs.Content>
             </Tabs.Container>
         );
     }
+}
+
+NodeTabs.propTypes = {
+    nodes: React.PropTypes.array.isRequired,
+    activeIndex: React.PropTypes.number,
+    versionId: React.PropTypes.number.isRequired,
+    rulDataTypes: React.PropTypes.object.isRequired,
+    calendarTypes: React.PropTypes.object.isRequired,
 }
 
 module.exports = connect()(NodeTabs);

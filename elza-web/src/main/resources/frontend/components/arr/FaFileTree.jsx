@@ -106,4 +106,12 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
     }
 }
 
+FaFileTree.propTypes = {
+    opened: React.PropTypes.bool.isRequired,
+    onSelect: React.PropTypes.func.isRequired,
+    items: React.PropTypes.array.isRequired,
+    isFetching: React.PropTypes.bool.isRequired,
+    fetched: React.PropTypes.bool.isRequired,
+}
+
 module.exports = connect()(FaFileTree);

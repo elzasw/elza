@@ -258,4 +258,11 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 }
 
+NodePanel.propTypes = {
+    versionId: React.PropTypes.number.isRequired,
+    node: React.PropTypes.object.isRequired,
+    calendarTypes: React.PropTypes.object.isRequired,
+    rulDataTypes: React.PropTypes.object.isRequired,
+}
+
 module.exports = connect()(NodePanel);

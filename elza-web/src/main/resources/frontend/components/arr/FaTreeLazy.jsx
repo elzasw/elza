@@ -203,4 +203,15 @@ FaTreeLazy.defaultProps = {
     rowHeight: 22
 }
 
+FaTreeLazy.propTypes = {
+    versionId: React.PropTypes.number.isRequired,
+    expandedIds: React.PropTypes.object.isRequired,
+    selectedId: React.PropTypes.number,
+    nodes: React.PropTypes.array.isRequired,
+    focusId: React.PropTypes.number,
+    rowHeight: React.PropTypes.number.isRequired,
+    isFetching: React.PropTypes.bool.isRequired,
+    fetched: React.PropTypes.bool.isRequired,
+}
+
 module.exports = connect()(FaTreeLazy);

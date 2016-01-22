@@ -16,11 +16,13 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
     }
 
     render() {
-        if (this.props.fas.length == 0) {
+        var {fas, activeFa} = this.props;
+
+        if (fas.length == 0) {
             return <div></div>
         }
 
-        var tabs = this.props.fas.map((fa) => {
+        var tabs = fas.map((fa) => {
             return {
                 id: fa.id,
                 key: fa.id,
@@ -30,19 +32,24 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
 
         return (
             <Tabs.Container className='fa-tabs-container'>
-                <Tabs.Tabs items={tabs} activeItem={this.props.activeFa}
+                <Tabs.Tabs items={tabs} activeItem={activeFa}
                     onSelect={item=>this.dispatch(selectFaTab(item))}
                     onClose={item=>this.dispatch(closeFaTab(item))}
                 />
                 <Tabs.Content>
                     <FaTreeLazy 
-                        {...this.props.activeFa.faTree}
+                        {...activeFa.faTree}
                         versionId={this.props.activeFa.versionId}
                     /> 
                 </Tabs.Content>
             </Tabs.Container>
         );
     }
+}
+
+FaTreeTabs.propTypes = {
+    fas: React.PropTypes.array.isRequired,
+    activeFa: React.PropTypes.object,
 }
 
 module.exports = connect()(FaTreeTabs);
