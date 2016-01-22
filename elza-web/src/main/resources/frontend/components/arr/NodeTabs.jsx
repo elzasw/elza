@@ -16,7 +16,7 @@ var NodeTabs = class NodeTabs extends AbstractReactComponent {
     }
 
     render() {
-        var {nodes, activeIndex, versionId, rulDataTypes, calendarTypes} = this.props;
+        const {nodes, activeIndex, versionId, rulDataTypes, calendarTypes} = this.props;
 
         if (nodes.length == 0) {
             return <div></div>

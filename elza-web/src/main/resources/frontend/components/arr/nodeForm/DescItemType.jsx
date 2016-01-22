@@ -20,16 +20,25 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderDescItemSpec', 'renderDescItem', 'renderLabel', 'handleDescItemAdd',
-                'handleDescItemTypeRemove', 'handleDescItemRemove', 'handleChange', 'handleChangeSpec',
+        this.bindMethods('renderDescItemSpec', 'renderDescItem', 'renderLabel',
+                'handleChange', 'handleChangeSpec',
                 'handleBlur', 'handleFocus', 'handleDescItemTypeLock', 'handleDescItemTypeCopy');
     }
 
     componentWillReceiveProps(nextProps) {
     }
 
+    /**
+     * Renderování specifikace atributu.
+     * @param descItem {Object} objekt hodnoty atributu
+     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     * @param locked {Boolean}
+     * @return {Object} view
+     */
     renderDescItemSpec(descItem, descItemIndex, locked) {
-        var options = this.props.descItemTypeInfo.descItemSpecs.map(itemSpec => (
+        const {descItemTypeInfo} = this.props;
+
+        var options = descItemTypeInfo.descItemSpecs.map(itemSpec => (
             <option value={itemSpec.id}>{itemSpec.name}</option>
         ));
 
@@ -61,23 +70,52 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         )
     }
 
+    /**
+     * Změna hodnoty atributu.
+     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     * @param value {Object} nová hodnota atibutu
+     */
     handleChange(descItemIndex, value) {
         this.props.onChange(descItemIndex, value);
     }
 
+    /**
+     * Změna hodnoty specifikace atributu.
+     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     * @param e {Object} event od prvku
+     */
     handleChangeSpec(descItemIndex, e) {
         this.props.onChangeSpec(descItemIndex, e.target.value);
     }
 
+    /**
+     * Opuštení focusu hodnoty atributu.
+     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     */
     handleBlur(descItemIndex) {
         this.props.onBlur(descItemIndex);
     }
 
+    /**
+     * Získání focusu na hodnotu atributu.
+     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     */
     handleFocus(descItemIndex) {
         this.props.onFocus(descItemIndex);
     }
 
+    /**
+     * Renderování hodnoty atributu.
+     * @param descItemType {Object} atribut
+     * @param descItem {Object} objekt hodnoty atributu
+     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     * @param removeAction {Object} pokud je uvedeno, obsahuje view akce pro smazání hodnoty atributu
+     * @param locked {Boolean} je atribut uzamčen?
+     * @return {Object} view
+     */
     renderDescItem(descItemType, descItem, descItemIndex, removeAction, locked) {
+        const {descItemTypeInfo, rulDataType, calendarTypes} = this.props;
+
         var cls = 'desc-item-type-desc-item-container';
         if (removeAction) {
             cls += ' with-action';
@@ -85,7 +123,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
 
         var parts = [];
 
-        if (this.props.descItemTypeInfo.useSpecification) {
+        if (descItemTypeInfo.useSpecification) {
             parts.push(
                 this.renderDescItemSpec(descItem, descItemIndex, locked)
             );
@@ -99,8 +137,8 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             locked: locked
         }
 
-        //parts.push(<div>{this.props.rulDataType.code}-{descItem.id}-{descItemType.type}</div>);
-        switch (this.props.rulDataType.code) {
+        //parts.push(<div>{rulDataType.code}-{descItem.id}-{descItemType.type}</div>);
+        switch (rulDataType.code) {
             case 'PARTY_REF':
                 break;
             case 'RECORD_REF':
@@ -108,7 +146,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             case 'PACKET_REF':
                 break;
             case 'UNITDATE':
-                parts.push(<DescItemUnitdate {...descItemProps} calendarTypes={this.props.calendarTypes} />)
+                parts.push(<DescItemUnitdate {...descItemProps} calendarTypes={calendarTypes} />)
                 break;
             case 'UNITID':
                 break;
@@ -131,7 +169,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             case 'ENUM':
                 break;
             default:
-                parts.push(<div>-unsupported type {this.props.rulDataType.code}-</div>)
+                parts.push(<div>-unsupported type {rulDataType.code}-</div>)
         }
 
         return (
@@ -144,37 +182,43 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         )
     }
 
+    /**
+     * Renderování nadpisu atributu - včetně akcí pro atribut.
+     * @return {Object} view
+     */
     renderLabel() {
+        const {copy, locked, descItemType, descItemTypeInfo} = this.props;
+
         var actions = [];
 
         // Sestavení akcí
-        actions.push(<NoFocusButton onClick={this.handleDescItemTypeCopy}><Icon className={this.props.copy ? 'copy' : 'nocopy'} glyph="fa-files-o" /></NoFocusButton>);
+        actions.push(<NoFocusButton onClick={this.handleDescItemTypeCopy}><Icon className={copy ? 'copy' : 'nocopy'} glyph="fa-files-o" /></NoFocusButton>);
         actions.push(<NoFocusButton><Icon glyph="fa-book" /></NoFocusButton>);
-        actions.push(<NoFocusButton onClick={this.handleDescItemTypeLock}><Icon className={this.props.locked ? 'locked' : 'unlocked'}  glyph="fa-lock" /></NoFocusButton>);
+        actions.push(<NoFocusButton onClick={this.handleDescItemTypeLock}><Icon className={locked ? 'locked' : 'unlocked'}  glyph="fa-lock" /></NoFocusButton>);
 
         var hasDescItemsForDelete = false;
-        if (!this.props.descItemType.hasFocus) {
-            this.props.descItemType.descItems.forEach(descItem => {
+        if (!descItemType.hasFocus) {
+            descItemType.descItems.forEach(descItem => {
                 if (descItem.touched || typeof descItem.id !== 'undefined') {
                     hasDescItemsForDelete = true;
                 }
             });
         }
         if (!hasDescItemsForDelete) {
-            if (this.props.descItemTypeInfo.type == 'REQUIRED' || this.props.descItemTypeInfo.type == 'RECOMMENDED') {
+            if (descItemTypeInfo.type == 'REQUIRED' || descItemTypeInfo.type == 'RECOMMENDED') {
             } else {
                 hasDescItemsForDelete = true;
             }
         }
         if (hasDescItemsForDelete) {
-            actions.push(<NoFocusButton onClick={this.handleDescItemTypeRemove} title={i18n('subNodeForm.deleteDescItemType')}><Icon glyph="fa-trash" /></NoFocusButton>);
+            actions.push(<NoFocusButton onClick={this.props.onDescItemTypeRemove} title={i18n('subNodeForm.deleteDescItemType')}><Icon glyph="fa-trash" /></NoFocusButton>);
         }
 
         // Render
         return (
             <div className='desc-item-type-label'>
-                <div className='title' title={this.props.descItemType.name}>
-                    {this.props.descItemTypeInfo.shortcut}
+                <div className='title' title={descItemType.name}>
+                    {descItemTypeInfo.shortcut}
                 </div>
                 <div className='actions'>
                     {actions}
@@ -183,40 +227,34 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         )
     }
 
-    handleDescItemAdd() {
-        this.props.onDescItemAdd();
-    }
-
-    handleDescItemRemove(descItemIndex) {
-        this.props.onDescItemRemove(descItemIndex);
-    }
-
-    handleDescItemTypeRemove() {
-        this.props.onDescItemTypeRemove();
-    }
-
+    /**
+     * Zapnutí/vypnutí zámku na atributu.
+     */
     handleDescItemTypeLock() {
         this.props.onDescItemTypeLock(!this.props.locked);
     }
 
+    /**
+     * Zapnutí/vypnutí opakovaného kopírování na atributu.
+     */
     handleDescItemTypeCopy() {
         this.props.onDescItemTypeCopy(!this.props.copy);
     }
 
     render() {
-        const {descItemType, descItemTypeInfo, locked} = this.props;
+        const {onDescItemRemove, onDescItemAdd, descItemType, descItemTypeInfo, locked} = this.props;
 
         var label = this.renderLabel();
 
         var addAction;
         if (descItemTypeInfo.repeatable && !locked) {
-            addAction = <div className='desc-item-type-actions'><NoFocusButton onClick={this.handleDescItemAdd} title={i18n('subNodeForm.addDescItem')}><Icon glyph="fa-plus" /></NoFocusButton></div>
+            addAction = <div className='desc-item-type-actions'><NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.addDescItem')}><Icon glyph="fa-plus" /></NoFocusButton></div>
         }
 
         var descItems = descItemType.descItems.map((descItem, descItemIndex) => {
             var removeAction;
             if (descItemTypeInfo.repeatable) {
-                removeAction = <NoFocusButton onClick={this.handleDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-trash" /></NoFocusButton>
+                removeAction = <NoFocusButton onClick={onDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-trash" /></NoFocusButton>
             }
             return this.renderDescItem(descItemType, descItem, descItemIndex, removeAction, locked)
         })
@@ -242,5 +280,22 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
     }
 }
 
-module.exports = connect()(DescItemType);
+DescItemType.propTypes = {
+    onChange: React.PropTypes.func.isRequired,
+    onChangeSpec: React.PropTypes.func.isRequired,
+    onBlur: React.PropTypes.func.isRequired,
+    onFocus: React.PropTypes.func.isRequired,
+    onDescItemTypeRemove: React.PropTypes.func.isRequired,
+    onDescItemTypeLock: React.PropTypes.func.isRequired,
+    onDescItemTypeCopy: React.PropTypes.func.isRequired,
+    onDescItemRemove: React.PropTypes.func.isRequired,
+    onDescItemAdd: React.PropTypes.func.isRequired,
+    descItemTypeInfo: React.PropTypes.object.isRequired,
+    descItemType: React.PropTypes.object.isRequired,
+    rulDataType: React.PropTypes.object.isRequired,
+    calendarTypes: React.PropTypes.object.isRequired,
+    locked: React.PropTypes.bool.isRequired,
+    copy: React.PropTypes.bool.isRequired,
+}
 
+module.exports = connect()(DescItemType);

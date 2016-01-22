@@ -157,7 +157,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
      * @return {Object} view
      */
     renderAccordion(form) {
-        var {node} = this.props;
+        const {node} = this.props;
 
         var rows = [];
 
@@ -200,7 +200,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     render() {
-        var {calendarTypes, versionId, rulDataTypes, node} = this.props;
+        const {calendarTypes, versionId, rulDataTypes, node} = this.props;
 
         if (node.isFetching || !node.fetched) {
             return <Loading/>

@@ -16,7 +16,7 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
     }
 
     render() {
-        var {fas, activeFa} = this.props;
+        const {fas, activeFa} = this.props;
 
         if (fas.length == 0) {
             return <div></div>

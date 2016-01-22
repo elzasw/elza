@@ -108,7 +108,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     render() {
-        var {arrRegion, faFileTree, rulDataTypes, calendarTypes} = this.props;
+        const {arrRegion, faFileTree, rulDataTypes, calendarTypes} = this.props;
 
         var fas = arrRegion.fas;
         var activeFa = arrRegion.activeIndex != null ? arrRegion.fas[arrRegion.activeIndex] : null;

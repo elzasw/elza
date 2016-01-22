@@ -223,17 +223,17 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @return {Object} view
      */
     renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex) {
-        var rulDataType = this.props.rulDataTypes.items[indexById(this.props.rulDataTypes.items, descItemType.dataTypeId)];
+        const {rulDataTypes, calendarTypes, nodeSettings, nodeId} = this.props;
+
+        var rulDataType = rulDataTypes.items[indexById(rulDataTypes.items, descItemType.dataTypeId)];
         var descItemTypeInfo = this.getDescItemTypeInfo(descItemType);
 
         var locked = false;
         var copy = false;
 
-        var nodeSettings = this.props.nodeSettings;
-
         // existují nějaké nastavení o JP
         if (nodeSettings) {
-            var nodeSetting = nodeSettings.nodes[nodeSettings.nodes.map(function(node) { return node.id; }).indexOf(this.props.nodeId)];
+            var nodeSetting = nodeSettings.nodes[nodeSettings.nodes.map(function(node) { return node.id; }).indexOf(nodeId)];
 
             // existuje nastavení o JP - zamykání
             if (nodeSetting && nodeSetting.descItemTypeLockIds) {
@@ -263,7 +263,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 descItemType={descItemType}
                 descItemTypeInfo={descItemTypeInfo}
                 rulDataType={rulDataType}
-                calendarTypes={this.props.calendarTypes}
+                calendarTypes={calendarTypes}
                 onDescItemAdd={this.handleDescItemAdd.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDescItemRemove={this.handleDescItemRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onChange={this.handleChange.bind(this, descItemGroupIndex, descItemTypeIndex)}
@@ -283,12 +283,14 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * Zobrazení dialogu pro přidání atributu.
      */
     handleAddDescItemType() {
+        const {descItemTypeInfos, formData, versionId, selectedSubNodeId, nodeKey} = this.props;
+
         // Pro přidání chceme jen ty, které zatím ještě nemáme
         var descItemTypesMap = {};
-        this.props.descItemTypeInfos.forEach(descItemType => {
+        descItemTypeInfos.forEach(descItemType => {
             descItemTypesMap[descItemType.id] = descItemType;
         })
-        this.props.formData.descItemGroups.forEach(group => {
+        formData.descItemGroups.forEach(group => {
             group.descItemTypes.forEach(descItemType => {
                 delete descItemTypesMap[descItemType.id];
             })
@@ -304,7 +306,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         // Modální dialog
         var form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmit={(data) => {
             this.dispatch(modalDialogHide());
-            this.dispatch(faSubNodeFormDescItemTypeAdd(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, data.descItemTypeId));
+            this.dispatch(faSubNodeFormDescItemTypeAdd(versionId, selectedSubNodeId, nodeKey, data.descItemTypeId));
         }} />
         this.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form));
     }
@@ -327,7 +329,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 
     render() {
-        var {calendarTypes, formData} = this.props;
+        const {calendarTypes, formData} = this.props;
 
         if (calendarTypes.isFetching && !calendarTypes.fetched) {
             return <div className='node-form'></div>
