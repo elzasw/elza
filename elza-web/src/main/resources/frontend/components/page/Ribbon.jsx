@@ -1,3 +1,7 @@
+/**
+ * Ribbon aplikace - obsahuje základní globální akce v aplikaci.
+ */
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
@@ -20,6 +24,7 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
     render() {
         var section = null;
 
+        // Aktomatické sekce podle vybrané oblasti
         if (this.props.admin) {
             section = (
                 <RibbonGroup className="">
@@ -27,7 +32,6 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
                     <LinkContainer to="/admin/fulltext"><Button><Icon glyph="cog" /><div><span className="btnText">{i18n('ribbon.action.admin.fulltext')}</span></div></Button></LinkContainer>
                 </RibbonGroup>
             );
-        } else if (this.props.arr) {
         }
 
         return (
@@ -38,14 +42,7 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
                     <LinkContainer to="/registry"><Button><Icon glyph="th-list" /><div><span className="btnText">{i18n('ribbon.action.registry')}</span></div></Button></LinkContainer>
                     <LinkContainer to="/party"><Button><Icon glyph="th-list" /><div><span className="btnText">{i18n('ribbon.action.party')}</span></div></Button></LinkContainer>
                     <LinkContainer to="/admin"><Button><Icon glyph="cog" /><div><span className="btnText">{i18n('ribbon.action.admin')}</span></div></Button></LinkContainer>
-
-                    {false && <DropdownButton title={<span className="dropContent"><Icon glyph='film' /><div><span className="btnText">{i18n('ribbon.action.findingAid')}</span></div></span>}>
-                      <MenuItem eventKey="1">Action</MenuItem>
-                      <MenuItem eventKey="2">Another action jdoias djaos ijdoas i</MenuItem>
-                      <MenuItem eventKey="3">Active Item</MenuItem>
-                    </DropdownButton>}
                 </RibbonGroup>
-
 
                 <RibbonSplit />
 
@@ -53,17 +50,8 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
                 {this.props.altSection}
                 {this.props.altSection && <RibbonSplit />}
                 {this.props.itemSection}
-
             </RibbonMenu>
         )
-    }
-}
-
-function mapStateToProps(state) {
-    const {arrRegion, faFileTree} = state
-    return {
-        arrRegion,
-        faFileTree
     }
 }
 
