@@ -3,6 +3,7 @@
  */
 
 require ('./PartyDetail.less');
+require ('./PartyFormStyles.less');
 
 import React from 'react';
 import {connect} from 'react-redux'
@@ -36,7 +37,7 @@ var PartyDetail = class PartySearch extends AbstractReactComponent {
                     <label>{i18n('party.detail.characteristics')}</label>
                     <p className={"characteristics"}>{data.record.characteristics}</p>
 
-                    <div className="columns">
+                    <div className="line">
                         <Input type="select" className={"aa"} disabled={true} value={data.partyType.partyTypeId} label={i18n('party.detail.type')}>
                             {this.props.refTables.partyTypes.items.map(i=> {return <option value={i.partyTypeId}>{i.name}</option>})}
                         </Input>

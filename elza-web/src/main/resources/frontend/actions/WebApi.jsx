@@ -63,6 +63,22 @@ class WebApi{
             });
     }
 
+    insertRelation(partyId, relationTypeId, note, sources, from, to, entities) {
+        var data = {
+            partyId: partyId,
+            ParRelationTypeVO : {relationTypeId: relationTypeId},
+            note: note,
+            sources: sources,
+            from: from,
+            to: to,
+            relationEntities: entities
+        }
+        return AjaxUtils.ajaxPost('/api/partyManagerV2/relations', null,  data)
+            .then(json=>{
+                return json;
+            });
+    }
+
     deleteParty(partyId) {
         return AjaxUtils.ajaxDelete('/api/partyManagerV2/deleteParty', {partyId: partyId})
             .then(json=>{

@@ -1,0 +1,29 @@
+@import "~variables.less";
+
+.line{
+    display: flex; 
+    flex-direction: row;
+    
+    .form-group, 
+    .column{
+        flex-grow: 1;
+        flex-shrink: 0;
+        margin-left:10px;
+        
+        &.ico{
+            text-align:right;
+        }
+    }
+    .form-group:first-child,
+    .column:first-child{
+        margin-left: 0px;
+    }
+    
+    &.entity{
+        border:1px solid #cccccc;
+        padding:6px;
+        border-radius: px;
+        background-color:#eeeeee;
+        margin-bottom:7px;
+    }
+}

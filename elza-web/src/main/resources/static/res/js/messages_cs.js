@@ -91,10 +91,21 @@ var messages = {
     "party.calendarType": "Typ kalendáře", 
     "party.nameValidRange": "Datace použítí jména od",
     "party.delete.confirm": "Opravdu chcete smazat tuto osobu?",
+    "party.delete.button": "Smazat osobu",
+    "party.relation.class" : "Třída vztahu", 
+    "party.relation.type" : "Typ vztahu", 
+    "party.relation.from" : "Datum počátku", 
+    "party.relation.to" : "Datum konce", 
+    "party.relation.note" : "Poznámka", 
+    "party.relation.sources" : "Zdroj informací", 
+    "party.relation.entities" : "Vztah k entitám", 
+    "party.relation.entity" : "Entita",
+    "party.relation.roleType" : "Typ role",
+    "party.relation.add" : "Nový vztah",
+    
     
     "arr.fa.title.added": "AP byla vytvořena",
     "arr.fa.title.approved": "AP byla uzavřena",
-    
 
     "admin.packages.action.export": "Stáhnout",
     "admin.packages.action.delete": "Smazat",

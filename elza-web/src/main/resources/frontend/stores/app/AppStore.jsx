@@ -18,12 +18,16 @@ import modalDialog from './global/modalDialog';
 import webSocket from './global/webSocket';
 import adminRegion from './admin/adminRegion';
 import addFaForm from './arr/form/addFaForm';
+
 import addPartyPersonForm from './party/form/addPartyPersonForm';
 import addPartyDynastyForm from './party/form/addPartyDynastyForm';
 import addPartyEventForm from './party/form/addPartyEventForm';
 import addPartyGroupForm from './party/form/addPartyGroupForm';
 import addPartyOtherForm from './party/form/addPartyOtherForm';
+import addRelationForm from './party/form/addRelationForm';
+
 import addRegistryForm from './registry/form/addRegistryForm';
+
 
 let reducer = combineReducers({
     arrRegion,
@@ -44,6 +48,7 @@ let reducer = combineReducers({
         addPartyOtherForm: addPartyOtherForm,
         addPartyEventForm: addPartyEventForm,
         addPartyGroupForm: addPartyGroupForm,
+        addRelationForm: addRelationForm,
         addRegistryForm: addRegistryForm
     })
 });

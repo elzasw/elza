@@ -9,16 +9,16 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap'; 
 import {Link, IndexLink} from 'react-router';
-import {Icon, AbstractReactComponent, Ribbon, RibbonGroup, PartySearch, PartyDetail, i18n} from 'components';
-import {AddPartyPersonForm, AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm} from 'components';
-import {ButtonGroup, MenuItem, DropdownButton, Button} from 'react-bootstrap';
+import {Icon, AbstractReactComponent, Ribbon, RibbonGroup, PartySearch, PartyDetail, PartyEntities, i18n} from 'components';
+import {AddRelationForm, AddPartyPersonForm, AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm} from 'components';
+import {ButtonGroup, MenuItem, DropdownButton, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
 import {WebApi} from 'actions'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
 import {partyDetailFetchIfNeeded} from 'actions/party/party'
-import {insertParty, deleteParty} from 'actions/party/party'
+import {insertParty, insertRelation, deleteParty} from 'actions/party/party'
 
 
 var PartyPage = class PartyPage extends AbstractReactComponent {
@@ -26,7 +26,15 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         super(props);
         this.state = {};
         this.dispatch(refPartyTypesFetchIfNeeded());
-        this.bindMethods('buildRibbon', 'handleAddParty', 'handleCallAddParty', 'handleDeleteParty', 'handleCallDeleteParty');
+        this.bindMethods(
+            'buildRibbon', 
+            'handleAddParty', 
+            'handleCallAddParty', 
+            'handleDeleteParty', 
+            'handleCallDeleteParty', 
+            'handleAddRelation', 
+            'handleCallAddRelation'
+        );
     }
 
     handleCallAddParty(data) {
@@ -82,12 +90,26 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         }
     }
 
+    handleCallAddRelation(data) {
+        this.dispatch(insertRelation(this.props.partyRegion.selectedPartyID, data.relationTypeId, data.note, data.source, data.from, data.to, data.entities));               
+    }
+
+    handleAddRelation(){
+        var data = {
+            partyId: this.props.partyRegion.selectedPartyID,
+            entities: [{
+                entity: "aa",
+                roleType : 1,
+            }]
+        }
+        this.dispatch(modalDialogShow(this, this.props.partyRegion.selectedPartyData.record.record , <AddRelationForm initData={data} onSubmit={this.handleCallAddRelation} />));
+    }
+
     handleDeleteParty(){
         var result = confirm(i18n('party.delete.confirm'));
         if (result) {
             this.dispatch(this.handleCallDeleteParty());
         }
-
     }
     handleCallDeleteParty() {
         this.dispatch(deleteParty(this.props.partyRegion.selectedPartyID, this.props.partyRegion.filterText));
@@ -109,13 +131,10 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         var itemActions = [];
         if (isSelected) {
             itemActions.push(
-                <Button><Icon glyph="fa-link" /><div><span className="btnText">Nový vztah</span></div></Button>
+                <Button onClick={this.handleAddRelation}><Icon glyph="fa-link" /><div><span className="btnText">{i18n('party.relation.add')}</span></div></Button>
             );
             itemActions.push(
-                <Button><Icon glyph="fa-check" /><div><span className="btnText">Validace</span></div></Button>
-            );
-            itemActions.push(
-                <Button onClick={this.handleDeleteParty}><Icon glyph="fa-trash" /><div><span className="btnText">ASmazat osobu</span></div></Button>
+                <Button onClick={this.handleDeleteParty}><Icon glyph="fa-trash" /><div><span className="btnText">{i18n('party.delete.button')}</span></div></Button>
             );
         }
 
@@ -135,13 +154,11 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
 
     render() {
         var leftPanel = (
-            <div>
-                <PartySearch 
-                    items={this.props.partyRegion.items} 
-                    selectedPartyID={this.props.partyRegion.selectedPartyID}
-                    filterText={this.props.partyRegion.filterText} 
-                />
-            </div>
+            <PartySearch 
+                items={this.props.partyRegion.items} 
+                selectedPartyID={this.props.partyRegion.selectedPartyID}
+                filterText={this.props.partyRegion.filterText} 
+            />
         )
         
         var centerPanel = (
@@ -149,9 +166,10 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         )
 
         var rightPanel = (
-            <div>
-                
-            </div>
+            <PartyEntities 
+                entities={this.props.partyRegion.entities} 
+                selectedPartyID={this.props.partyRegion.selectedPartyID}
+            />
         )
 
         return (

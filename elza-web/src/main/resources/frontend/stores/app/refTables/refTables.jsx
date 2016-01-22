@@ -7,6 +7,8 @@ import recordTypes from './recordTypes'
 import rulDataTypes from './rulDataTypes';
 import calendarTypes from './calendarTypes';
 import packetTypes from './packetTypes';
+import relationTypes from './relationTypes';
+import relationRoleTypes from './relationRoleTypes';
 
 const initialState = {
     ruleSet: ruleSet(undefined, {type:''}),
@@ -16,10 +18,24 @@ const initialState = {
     rulDataTypes: rulDataTypes(undefined, {type:''}),
     calendarTypes: calendarTypes(undefined, {type:''}),
     packetTypes: packetTypes(undefined, {type:''}),
+    relationTypes: relationTypes(undefined, {type:''}),
+    relationRoleTypes: relationRoleTypes(undefined, {type:''}),
 }
 
 export default function refTables(state = initialState, action) {
     switch (action.type) {
+        case types.REF_RELATION_TYPES_REQUEST:
+        case types.REF_RELATION_TYPES_RECEIVE:
+            return {
+                ...state,
+                relationTypes: relationTypes(state.relationTypes, action),
+            }
+        case types.REF_RELATION_ROLE_TYPES_REQUEST:
+        case types.REF_RELATION_ROLE_TYPES_RECEIVE:
+            return {
+                ...state,
+                relationRoleTypes: relationRoleTypes(state.relationRoleTypes, action),
+            }
         case types.REF_RULE_SET_REQUEST:
         case types.REF_RULE_SET_RECEIVE:
             return {

@@ -10,7 +10,7 @@ const initialState = {
     items: [],
     selectedPartyID : null,
     selectedPartyData: null,
-    partyTypes: []
+    partyTypes: [],
 }
 
 export default function partyRegion(state = initialState, action) {

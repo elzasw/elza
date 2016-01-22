@@ -33,6 +33,25 @@ export function insertParty(partyType, filterText, partyTypeId, nameFormTypeId, 
 }
 
 /**
+ * Volání webového rozhraní pro vložení nové relace (vztahu)
+ * @param int partyId - identifikator osoby, ktere se pridava vztah
+ * @param string note - poznámka ke vztahu
+ * @param string sources - zdroje informaci
+ * @param date from - datum počátku vztahu
+ * @param date to - datum konce vztahu    
+ */
+export function insertRelation(partyId, relationTypeId, note, source, from, to, entities) {
+    return dispatch => {
+        return WebApi.insertRelation(partyId, relationTypeId, note, source, from, to, entities)
+            .then((json) => { 
+                dispatch(modalDialogHide());                // zavření aktualně otevřeného dialogu
+                dispatch(partyDetailFetch(json.partyId));   // otevření detailu aktuálně vložené osoby
+            });
+    }
+}
+
+
+/**
  * Volání webového rozhraní pro smazání osoby
  * @param string partyId - identifikátor osoby, kterou chceme smazat
  * @param string filteredText - aktualni filtr nad seznamem osob - aby se uzivateli vratil, už bez smazané osoby

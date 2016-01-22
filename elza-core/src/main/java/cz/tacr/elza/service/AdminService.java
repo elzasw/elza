@@ -36,10 +36,10 @@ public class AdminService implements ApplicationListener<ContextRefreshedEvent> 
 //            indexerStatus.cancel(true);
         }
 
-        MassIndexer createIndexer = fullTextEntityManager.createIndexer();
+//        MassIndexer createIndexer = fullTextEntityManager.createIndexer();
 //        MassIndexerProgressMonitor monitor = new SimpleIndexingProgressMonitor();
 //        createIndexer.progressMonitor(monitor);
-        indexerStatus = createIndexer.start();
+//        indexerStatus = createIndexer.start();
     }
 
     /**

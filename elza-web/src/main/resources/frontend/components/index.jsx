@@ -39,11 +39,13 @@ exports.AddFaForm = require('./arr/AddFaForm');
 
 exports.PartySearch = require('./party/PartySearch');
 exports.PartyDetail = require('./party/PartyDetail');
+exports.PartyEntities = require('./party/PartyEntities');
 exports.AddPartyPersonForm = require('./party/AddPartyPersonForm');
 exports.AddPartyDynastyForm = require('./party/AddPartyDynastyForm');
 exports.AddPartyEventForm = require('./party/AddPartyEventForm');
 exports.AddPartyGroupForm = require('./party/AddPartyGroupForm');
 exports.AddPartyOtherForm = require('./party/AddPartyOtherForm');
+exports.AddRelationForm = require('./party/AddRelationForm');
 
 exports.AdminPackagesList = require('./admin/AdminPackagesList');
 exports.AdminPackagesUpload = require('./admin/AdminPackagesUpload');
