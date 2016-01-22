@@ -111,9 +111,10 @@ var Tabs = class Tabs extends React.Component {
         var tabs = this.props.items.map((item, i) => {                                                              // vytvoření html seznamu všecch záložek                                        
             var closeTitle = i18n('tabs.action.closeTab');                                          // popisek ikony zavírající záložku
             var key = typeof item.key !== 'undefined' ? item.key : item.id;
-            return <NavItem key={key} ref={"tab"+i} eventKey={key}><span>{item.title}</span><small>{item.desc}</small><Button title={closeTitle} onClick={this.handleTabClose.bind(this, item)}><Icon glyph="remove" /></Button></NavItem>    // vlastni kod založky 
+            return <NavItem key={key} ref={"tab"+i} eventKey={key}><span>{item.title}</span><small>{item.desc}</small><Button title={closeTitle} onClick={this.handleTabClose.bind(this, item)}><Icon glyph="fa-times" /></Button></NavItem>    // vlastni kod založky
         });
-  
+
+
         // vrácení html komponenty záložek
         var activeKey = null;
         if (this.props.activeItem) {
