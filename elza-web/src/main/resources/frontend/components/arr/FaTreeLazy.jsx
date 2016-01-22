@@ -21,12 +21,10 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
         super(props);
 
         this.bindMethods(
-            'renderNode', 'handleToggle', 'handleNodeClick',
+            'renderNode', 'handleOpenCloseNode', 'handleNodeClick',
             'handleContextMenu', 'getParentNode', 'handleSelectInNewTab',
             'callFaSelectSubNode'
         );
-
-        this.dispatch(faTreeFetchIfNeeded(props.versionId, props.expandedIds, props.selectedId));
 
         ResizeStore.listen(status => {
             this.setState({});
@@ -40,13 +38,24 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     }
 
     componentDidMount() {
+        this.dispatch(faTreeFetchIfNeeded(this.props.versionId, this.props.expandedIds, this.props.selectedId));
         this.setState({treeContainer: ReactDOM.findDOMNode(this.refs.treeContainer)});
     }
 
-    handleToggle(node, expand) {
+    /**
+     * Kliknutí na rozbalovací uzel.
+     * @param node {Object} jaký uzel chceme rozbalit/zabalit
+     * @param expand {Boolean} true, pokud uzel chceme rozbalit
+     */
+    handleOpenCloseNode(node, expand) {
         expand ? this.dispatch(faTreeNodeExpand(node)) : this.dispatch(faTreeNodeCollapse(node));
     }
 
+    /**
+     * Načtení nadřazeného uzlu k předanému.
+     * @param node {Object} uzel, pro který chceme vrátit nadřazený
+     * @return {Object} parent nebo null, pokud je předaný uzel kořenový
+     */
     getParentNode(node) {
         var index = indexById(this.props.nodes, node.id);
         while (--index >= 0) {
@@ -57,13 +66,14 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
         return null;
     }
 
+    /**
+     * Zobrazení kontextového menu pro daný uzel.
+     * @param node {Object} uzel
+     * @param e {Object} event
+     */
     handleContextMenu(node, e) {
         e.preventDefault();
         e.stopPropagation();
-
-        console.log(e);
-        console.log(e.clientX);
-        console.log(e.clientY);
 
         var menu = (
             <ul className="dropdown-menu">
@@ -75,12 +85,21 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
         this.dispatch(contextMenuShow(this, menu, {x: e.clientX, y:e.clientY}));
     }
 
+    /**
+     * Otevření uzlu v nové záložce.
+     * @param node {Object} uzel
+     */
     handleSelectInNewTab(node) {
         this.dispatch(contextMenuHide());
 
         this.callFaSelectSubNode(node, true);
     }
 
+    /**
+     * Otevření uzlu v záložce.
+     * @param node {Object} uzel
+     * @param openNewTab {Boolean} true, pokud se má otevřít v nové záložce
+     */
     callFaSelectSubNode(node, openNewTab) {
         var parentNode = this.getParentNode(node);
         if (parentNode != null) {
@@ -88,17 +107,26 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
         }
     }
 
+    /**
+     * Otevření uzlu v aktuální záložce (pokud aktuální není, otevře se v nové).
+     * @param node {Object} uzel
+     */
     handleNodeClick(node) {
         this.callFaSelectSubNode(node, false);
     }
 
+    /**
+     * Renderování uzlu.
+     * @param node {Object} uzel
+     * @return {Object} view
+     */
     renderNode(node) {
         var expanded = node.hasChildren && this.props.expandedIds[node.id];
 
         var expCol;
         if (node.hasChildren) {
             var expColCls = 'exp-col ' + (expanded ? 'fa fa-minus-square-o' : 'fa fa-plus-square-o');
-            expCol = <span className={expColCls} onClick={this.handleToggle.bind(this, node, !expanded)}></span>
+            expCol = <span className={expColCls} onClick={this.handleOpenCloseNode.bind(this, node, !expanded)}></span>
         } else {
             expCol = <span className='exp-col'>&nbsp;</span>
         }

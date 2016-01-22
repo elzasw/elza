@@ -1,5 +1,5 @@
 /**
- * Formulář přidání nové AP.
+ * Formulář přidání nebo uzavření AP.
  */
 
 import React from 'react';
@@ -12,6 +12,9 @@ import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet'
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField} from 'components/form/FormUtils'
 
+/**
+ * Validace formuláře.
+ */
 const validate = (values, props) => {
     const errors = {};
 
@@ -34,14 +37,15 @@ var AddFaForm = class AddFaForm extends AbstractReactComponent {
 
         //this.bindMethods('');
 
-        this.dispatch(refRuleSetFetchIfNeeded());
-
-        this.props.load(props.initData);
-
         this.state = {};
     }
 
     componentWillReceiveProps(nextProps) {
+    }
+
+    componentDidMount() {
+        this.dispatch(refRuleSetFetchIfNeeded());
+        this.props.load(this.props.initData);
     }
 
     render() {

@@ -29,6 +29,9 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 'handleDescItemTypeUnlockAll', 'handleDescItemTypeCopy');
 
 //console.log("@@@@@-SubNodeForm-@@@@@", props);
+    }
+
+    componentDidMount() {
         this.dispatch(calendarTypesFetchIfNeeded());
     }
 

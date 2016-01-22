@@ -14,33 +14,46 @@ import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes'
 import {indexById} from 'stores/app/utils.jsx'
 
 require ('./NodePanel.less');
+
 var NodePanel = class NodePanel extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderParents', 'handleRenderAccordionItemHeader', 'handleRenderAccordionItemContent',
-            'renderChildren', 'handleOpenItem', 'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick',
+        this.bindMethods('renderParents',
+            'renderChildren', 'handleOpenItem',
+            'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick',
             'getParentNodes', 'getChildNodes', 'getSiblingNodes',
             'renderAccordion'
             );
         
-        if (props.node.selectedSubNodeId != null) {
-            this.dispatch(faSubNodeFormFetchIfNeeded(props.versionId, props.node.selectedSubNodeId, props.node.nodeKey));
-            this.dispatch(faSubNodeInfoFetchIfNeeded(props.versionId, props.node.selectedSubNodeId, props.node.nodeKey));
-            this.dispatch(refRulDataTypesFetchIfNeeded());
-        }
-        this.dispatch(faNodeInfoFetchIfNeeded(props.versionId, props.node.id, props.node.nodeKey));
+    }
+
+    componentDidMount() {
+        this.requestData(this.props.versionId, this.props.node);
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.node.selectedSubNodeId != null) {
-            this.dispatch(faSubNodeFormFetchIfNeeded(nextProps.versionId, nextProps.node.selectedSubNodeId, nextProps.node.nodeKey));
-            this.dispatch(faSubNodeInfoFetchIfNeeded(nextProps.versionId, nextProps.node.selectedSubNodeId, nextProps.node.nodeKey));
-            this.dispatch(refRulDataTypesFetchIfNeeded());
-        }
-        this.dispatch(faNodeInfoFetchIfNeeded(nextProps.versionId, nextProps.node.id, nextProps.node.nodeKey));
+        this.requestData(nextProps.versionId, nextProps.node);
     }
 
+    /**
+     * Načtení dat, pokud je potřeba.
+     * @param versionId {String} verze AP
+     * @param node {Object} node
+     */
+    requestData(versionId, node) {
+        if (node.selectedSubNodeId != null) {
+            this.dispatch(faSubNodeFormFetchIfNeeded(versionId, node.selectedSubNodeId, node.nodeKey));
+            this.dispatch(faSubNodeInfoFetchIfNeeded(versionId, node.selectedSubNodeId, node.nodeKey));
+            this.dispatch(refRulDataTypesFetchIfNeeded());
+        }
+        this.dispatch(faNodeInfoFetchIfNeeded(versionId, node.id, node.nodeKey));
+    }
+
+    /**
+     * Kliknutí na položku v seznamu nadřízených NODE.
+     * @param node {Object} node na který se kliklo
+     */
     handleParentNodeClick(node) {
         var parentNodes = this.getParentNodes();
         var index = indexById(parentNodes, node.id);
@@ -50,12 +63,21 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         this.dispatch(faSelectSubNode(subNodeId, subNodeParentNode));
     }
 
+    /**
+     * Kliknutí na položku v seznamu podřízených NODE.
+     * @param node {Object} node na který se kliklo
+     */
     handleChildNodeClick(node) {
         var subNodeId = node.id;
         var subNodeParentNode = this.getSiblingNodes()[indexById(this.getSiblingNodes(), this.props.node.selectedSubNodeId)];
         this.dispatch(faSelectSubNode(subNodeId, subNodeParentNode));
     }
 
+    /**
+     * Renderování seznamu nadřízených NODE.
+     * @param parents {Array} seznam node pro vyrenderování
+     * @return {Object} view
+     */
     renderParents(parents) {
         var rows = parents.map(parent => {
             return (
@@ -69,6 +91,11 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         )
     }
 
+    /**
+     * Renderování seznamu podřízených NODE.
+     * @param children {Array} seznam node pro vyrenderování
+     * @return {Object} view
+     */
     renderChildren(children) {
         var rows = children.map(child => {
             return (
@@ -83,46 +110,52 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         )
     }
 
+    /**
+     * Načtení seznamu nadřízených NODE.
+     * @return {Array} seznam NODE
+     */
     getParentNodes() {
         return [this.props.node, ...this.props.node.parentNodes];
     }
 
+    /**
+     * Načtení seznamu podřízených NODE.
+     * @return {Array} seznam NODE
+     */
     getChildNodes() {
         return [...this.props.node.subNodeInfo.childNodes];
     }
 
+    /**
+     * Načtení seznamu souroyeneckých NODE.
+     * @return {Array} seznam NODE
+     */
     getSiblingNodes() {
         return [...this.props.node.childNodes];
     }
 
+    /**
+     * Zavření položky Accordion.
+     * @param item {Object} na který node v Accordion se kliklo
+     */
     handleCloseItem(item) {
         this.dispatch(faSelectSubNode(null, this.props.node));
     }
 
+    /**
+     * Vybrání a otevření položky Accordion.
+     * @param item {Object} na který node v Accordion se kliklo
+     */
     handleOpenItem(item) {
         var subNodeId = item.id;
         this.dispatch(faSelectSubNode(subNodeId, this.props.node));
     }
 
-    handleRenderAccordionItemHeader(item, opened) {
-        return (
-            <div>{item.name}</div>
-        );
-    }
-
-    handleRenderAccordionItemContent(item) {
-        if (this.props.node.subNodeForm.isFetching || !this.props.node.subNodeForm.fetched) {
-            return <Loading/>
-        }
-        if (this.props.rulDataTypes.isFetching || !this.props.rulDataTypes.fetched) {
-            return <Loading/>
-        }
-
-        return (
-            <SubNodeForm formData={this.props.node.subNodeForm.data} rulDataTypes={this.props.rulDataTypes} calendarTypes={this.props.calendarTypes}/>
-        );
-    }
-
+    /**
+     * Renderování Accordion.
+     * @param form {Object} editační formulář, pokud je k dispozici (k dispozici je, pokud je nějaká položka Accordion vybraná)
+     * @return {Object} view
+     */
     renderAccordion(form) {
         var {node} = this.props;
 
@@ -167,9 +200,8 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     render() {
-        var {node} = this.props;
+        var {calendarTypes, versionId, rulDataTypes, node} = this.props;
 
-        //console.log("NODE_PANEL", this.props);
         if (node.isFetching || !node.fetched) {
             return <Loading/>
         }
@@ -195,33 +227,18 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         var form;
         if (!node.subNodeForm.isFetching && node.subNodeForm.fetched) {
             form = <SubNodeForm
-                nodeId={this.props.node.id}
-                versionId={this.props.versionId}
+                nodeId={node.id}
+                versionId={versionId}
                 selectedSubNodeId={node.selectedSubNodeId}
                 nodeKey={node.nodeKey}
                 formData={node.subNodeForm.formData}
                 descItemTypeInfos={node.subNodeForm.descItemTypeInfos}
-                rulDataTypes={this.props.rulDataTypes}
-                calendarTypes={this.props.calendarTypes}
+                rulDataTypes={rulDataTypes}
+                calendarTypes={calendarTypes}
             />
         } else {
             form = <Loading/>
         }
-
-        var content = (
-            <div className='content'>
-                {this.renderAccordion(form)}
-                {false && form}
-                {false && <Accordion
-                    closeItem={this.handleCloseItem}
-                    openItem={this.handleOpenItem}
-                    selectedId={node.selectedSubNodeId}
-                    items={this.getSiblingNodes()}
-                    renderItemHeader={this.handleRenderAccordionItemHeader}
-                    renderItemContent={this.handleRenderAccordionItemContent}
-                />}
-            </div>
-        )
 
         var accordionInfo = <div>
             {node.viewStartIndex}-{node.viewStartIndex + node.pageSize} [{node.childNodes.length}]
@@ -232,7 +249,9 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 {false && accordionInfo}
                 {actions}
                 {parents}
-                {content}
+                <div className='content'>
+                    {this.renderAccordion(form)}
+                </div>
                 {children}
             </div>
         );

@@ -1,5 +1,5 @@
 /**
- * Strom archivních souborů.
+ * Strom AP s jednotlivými verzemi.
  */
 
 require ('./FaFileTree.less');
@@ -8,7 +8,6 @@ import React from 'react';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Loading} from 'components';
 import {Nav, NavItem} from 'react-bootstrap';
-
 import {faFileTreeFetchIfNeeded} from 'actions/arr/faFileTree'
 import {selectFaTab} from 'actions/arr/fa'
 
@@ -17,10 +16,6 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('handleSelect');
-
-        if (props.opened) {
-            this.dispatch(faFileTreeFetchIfNeeded());
-        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -29,6 +24,17 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
         }
     }
 
+    componentDidMount() {
+        if (this.props.opened) {
+            this.dispatch(faFileTreeFetchIfNeeded());
+        }
+    }
+
+    /**
+     * Vybrání verze AP pro zobrazení.
+     * @param fa {Object} AP
+     * @param version {Object} verze AP
+     */
     handleSelect(fa, version) {
         var fa = Object.assign({}, fa, {faId: fa.id, versionId: version.id, id: version.id, activeVersion: version});
 
@@ -36,6 +42,11 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
         this.props.onSelect(fa);
     }
 
+    /**
+     * Převod datumu do řetězce - v budoucnu při více locale nahradit metodou pracující s locale.
+     * @param date {Date} datum
+     * @return {String} datum
+     */
     dateToString(date) {
         var dd  = date.getDate().toString();
         var mm = (date.getMonth() + 1).toString();
@@ -43,6 +54,10 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
         return (dd[1]?dd:"0"+dd[0]) + "." + (mm[1]?mm:"0"+mm[0]) + "." + yyyy;
     }
 
+    /**
+     * Renderování otevřeného panelu.
+     * @return {Object} view
+     */
     renderOpened() {
         var rows = [];
         this.props.items.each(item=>{
@@ -74,6 +89,10 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
         );
     }
 
+    /**
+     * Renderování zavřeného panelu.
+     * @return {Object} view
+     */
     renderClosed() {
         return (
             <div className='finding-aid-file-tree-container'>
