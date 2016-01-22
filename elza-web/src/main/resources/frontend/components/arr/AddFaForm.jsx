@@ -48,9 +48,11 @@ var AddFaForm = class AddFaForm extends AbstractReactComponent {
         const {fields: {name, ruleSetId, rulArrTypeId}, handleSubmit, onClose} = this.props;
         var ruleSets = this.props.refTables.ruleSet.items;
         var currRuleSetId = this.props.values.ruleSetId;
-        var currRuleSet;
+        var currRuleSet = [];
+        var ruleSetOptions;
         if (!ruleSetId.invalid) {
             currRuleSet = ruleSets[indexById(ruleSets, currRuleSetId)];
+            ruleSetOptions = currRuleSet.arrangementTypes.map(i=> <option key={i.id} value={i.id}>{i.name}</option>);
         }
         return (
             <div>
@@ -58,15 +60,13 @@ var AddFaForm = class AddFaForm extends AbstractReactComponent {
                     <form onSubmit={handleSubmit}>
                         {this.props.create && <Input type="text" label={i18n('arr.fa.name')} {...name} {...decorateFormField(name)} />}
                         <Input type="select" label={i18n('arr.fa.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
-                            <option></option>
+                            <option key='-ruleSetId'></option>
                             {ruleSets.map(i=> {return <option value={i.id}>{i.name}</option>})}
                         </Input>
-                        {!ruleSetId.invalid && (
-                            <Input type="select" label={i18n('arr.fa.arrType')} {...rulArrTypeId} {...decorateFormField(rulArrTypeId)}>
-                                <option></option>
-                                {currRuleSet.arrangementTypes.map(i=> <option value={i.id}>{i.name}</option>)}
-                            </Input>
-                        )}
+                        <Input type="select" disabled={ruleSetId.invalid} label={i18n('arr.fa.arrType')} {...rulArrTypeId} {...decorateFormField(rulArrTypeId)}>
+                            <option key='-rulArrTypeId'></option>
+                            {ruleSetOptions}
+                        </Input>
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

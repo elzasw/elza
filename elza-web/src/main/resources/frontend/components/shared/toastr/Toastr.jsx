@@ -23,7 +23,7 @@ require("./Toastr.less")
 var React = require('react');
 var assign = require('react/lib/Object.assign');
 
-import {i18n, AbstractReactComponent} from 'components';
+import {Icon, i18n, AbstractReactComponent} from 'components';
 import {Alert, Button} from 'react-bootstrap';
 //import {connect} from 'react-redux'
 var ToastrStore = require('./ToastrStore');
