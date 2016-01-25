@@ -10,6 +10,7 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.service.eventnotification.events.EventAddNode;
 import cz.tacr.elza.service.eventnotification.events.EventId;
+import cz.tacr.elza.service.eventnotification.events.EventIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventNodeMove;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.eventnotification.events.vo.NodeInfo;
@@ -33,6 +34,15 @@ public class EventFactory {
     public static EventId createIdEvent(final EventType eventType, final Integer... ids) {
         return new EventId(eventType, ids);
     }
+
+    public static EventIdInVersion createIdInVersionEvent(final EventType eventType,
+                                                          final ArrFindingAidVersion version,
+                                                          final Integer entityId) {
+        Assert.notNull(version);
+
+        return new EventIdInVersion(eventType, version.getFindingAidVersionId(), entityId);
+    }
+
 
     /**
      * Vytvoří událost přesunutí uzlu.

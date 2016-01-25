@@ -303,7 +303,7 @@ public class ArrangementService {
                                 deleteVersion(deleteVersion)
                 );
 
-        deleteLevelCascade(rootLevel);
+        deleteLevelCascadeForce(rootLevel);
         nodeRepository.delete(node);
 
 
@@ -397,25 +397,26 @@ public class ArrangementService {
         nodeConformityInfoRepository.delete(conformityInfo);
     }
 
-    private void deleteLevelCascade(final ArrLevel level) {
+
+    private void deleteLevelCascadeForce(final ArrLevel level) {
         Set<ArrNode> nodes = new HashSet<>();
         ArrNode parentNode = level.getNode();
         for (ArrLevel childLevel : levelRepository.findByParentNode(parentNode)) {
             nodes.add(childLevel.getNode());
-            deleteLevelCascade(childLevel);
+            deleteLevelCascadeForce(childLevel);
         }
 
         for (ArrDescItem descItem : descItemRepository.findByNodeOrderByCreateChangeAsc(parentNode)) {
-            deleteDescItemInner(descItem);
+            deleteDescItemForce(descItem);
         }
 
         levelRepository.delete(level);
         nodes.forEach(node -> {
-            deleteNode(node);
+            deleteNodeForce(node);
         });
     }
 
-    private void deleteNode(ArrNode node) {
+    private void deleteNodeForce(ArrNode node) {
         Assert.notNull(node);
 
         nodeRegisterRepository.findByNode(node).forEach(relation -> {
@@ -429,7 +430,7 @@ public class ArrangementService {
         nodeRepository.delete(node);
     }
 
-    private void deleteDescItemInner(final ArrDescItem descItem) {
+    private void deleteDescItemForce(final ArrDescItem descItem) {
         Assert.notNull(descItem);
 
         dataRepository.findByDescItem(descItem).forEach(data -> dataRepository.delete(data));
