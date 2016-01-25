@@ -8,19 +8,20 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Input} from 'react-bootstrap';
-import {AbstractReactComponent, RegistryLabel, Loading, DropDownTree} from 'components';
+import {AbstractReactComponent, RegistryLabel, Loading, DropDownTree, AddRegistryForm} from 'components';
 import {i18n} from 'components';
 import {WebApi} from 'actions'
 import {getRegistryIfNeeded} from 'actions/registry/registryList'
 import {registryChangeDetail, registryData} from 'actions/registry/registryData'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
 import {registryUpdated} from 'actions/registry/registryData'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 
 
 var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.bindMethods('handleChangeTypeRegistry');
+        this.bindMethods('handleChangeTypeRegistry', 'editRecord');
         if (props.selectedId === null) {
             this.dispatch(getRegistryIfNeeded(props.selectedId));
         }
@@ -45,7 +46,13 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         });
     }
 
+    handleCallEditRegistry(){
 
+    }
+    editRecord(){
+        console.log(this.props.registryData.item.record);
+        this.dispatch(modalDialogShow(this, i18n('registry.editRegistry') , <AddRegistryForm initData={{nameMain: this.props.registryData.item.record , characteristics: this.props.registryData.item.characteristics}} create onSubmit={this.handleCallEditRegistry.bind(this)} />));
+    }
 
     render() {
 
@@ -55,15 +62,10 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
             var detailRegistry = (
                     <div>
                         <h2>
-                            {this.props.registryData.item.record}
+                            {this.props.registryData.item.record} <span onClick={this.editRecord} className='btn glyphicon glyphicon-pencil'/>
                         </h2>
 
-                        <RegistryLabel
-                            label={i18n('registry.detail.charakteristika')}
-                            type='textarea'
-                            value = {this.props.registryData.item.characteristics}
-
-                        />
+                        <p>{this.props.registryData.item.characteristics}</p>
 
                         <RegistryLabel
                             label={i18n('registry.detail.typ.rejstriku')}

@@ -101,30 +101,25 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                     <Button onClick={this.handleStartMoveRegistry.bind(this)}><Glyphicon glyph="share-alt" /><div><span className="btnText">{i18n('registry.moveRegistry')}</span></div></Button>
                 );
             }
-            itemActions.push(
-                <Button><Icon glyph="fa-share-alt" /><div><span className="btnText">{i18n('registry.moveRegistry')}</span></div></Button>
-            );
+            if (this.props.registry.recordForMove){
+                itemActions.push(
+                    <Button onClick={this.handleSaveMoveRegistry.bind(this)}><Icon glyph="fa-check-circle" /><div><span className="btnText">{i18n('registry.applyMove')}</span></div></Button>
+                );
+                itemActions.push(
+                    <Button onClick={this.handleCancelMoveRegistry.bind(this)}><Icon glyph="fa-times" /><div><span className="btnText">{i18n('registry.cancelMove')}</span></div></Button>
+                );
+            }
+
             itemActions.push(
                 <Button><Icon glyph="fa-check" /><div><span className="btnText">{i18n('registry.validate')}</span></div></Button>
             );
             itemActions.push(
                 <Button onClick={this.handleRemoveRegistryDialog.bind(this)}><Icon glyph="fa-trash" /><div><span className="btnText">{i18n('registry.removeRegistry')}</span></div></Button>
             );
-            if (!this.props.registry.recordForMove){
-                itemActions.push(
-                    <Button onClick={this.handleStartMoveRegistry.bind(this)}><Icon glyph="fa-arrows" /><div><span className="btnText">{i18n('registry.startMove')}</span></div></Button>
-                );
-            }
+
         }
 
-        if (this.props.registry.recordForMove){
-            itemActions.push(
-                <Button onClick={this.handleSaveMoveRegistry.bind(this)}><Icon glyph="fa-check-circle" /><div><span className="btnText">{i18n('registry.applyMove')}</span></div></Button>
-            );
-            itemActions.push(
-                <Button onClick={this.handleCancelMoveRegistry.bind(this)}><Icon glyph="fa-times" /><div><span className="btnText">{i18n('registry.cancelMove')}</span></div></Button>
-            );
-        }
+
 
 
         itemActions.push(
