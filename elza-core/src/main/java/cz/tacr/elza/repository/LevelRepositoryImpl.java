@@ -1,11 +1,9 @@
 package cz.tacr.elza.repository;
 
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,7 +12,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import javax.persistence.TemporalType;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Join;
@@ -304,7 +301,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
                 allIds.add((Integer) row[2]);
                 allIds.add((Integer) row[3]);
 
-                leaves.add((Integer) row[3]);
+                leaves.add((Integer) row[4]);
             }
             //množina může obsahovat i null hodnoty, takže je vyhodíme
             leaves.remove(null);
@@ -336,36 +333,27 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
             builder.append("a1.level_id as a1, ");
             builder.append("a2.level_id as a2, ");
             builder.append("a3.level_id as a3, ");
-            builder.append("a4.level_id as a4 ");
-            builder.append("FROM arr_level a1 ");
-            builder.append("LEFT JOIN arr_level a2 ON a2.node_id_parent = a1.node_id ");
-            builder.append("LEFT JOIN arr_level a3 ON a3.node_id_parent = a2.node_id ");
-            builder.append("LEFT JOIN arr_level a4 ON a4.node_id_parent = a3.node_id ");
+            builder.append("a4.level_id as a4, ");
+            builder.append("a4.node_id as n4 ");
 
             if (version.getLockChange() == null) {
+                builder.append("FROM arr_level a1 ");
+                builder.append("LEFT JOIN arr_level a2 ON a2.node_id_parent = a1.node_id ");
+                builder.append("LEFT JOIN arr_level a3 ON a3.node_id_parent = a2.node_id ");
+                builder.append("LEFT JOIN arr_level a4 ON a4.node_id_parent = a3.node_id ");
+
                 builder.append("WHERE a1.delete_change_id IS NULL AND ");
                 builder.append("a2.delete_change_id IS NULL AND ");
                 builder.append("a3.delete_change_id IS NULL AND ");
                 builder.append("a4.delete_change_id IS NULL AND ");
             } else {
-                builder.append("LEFT JOIN arr_change cc1 ON a1.create_change_id = cc1.change_id ");
-                builder.append("LEFT JOIN arr_change cd1 ON a1.delete_change_id = cd1.change_id ");
-                builder.append("LEFT JOIN arr_change cc2 ON a2.create_change_id = cc2.change_id ");
-                builder.append("LEFT JOIN arr_change cd2 ON a2.delete_change_id = cd2.change_id ");
-                builder.append("LEFT JOIN arr_change cc3 ON a3.create_change_id = cc3.change_id ");
-                builder.append("LEFT JOIN arr_change cd3 ON a3.delete_change_id = cd3.change_id ");
-                builder.append("LEFT JOIN arr_change cc4 ON a4.create_change_id = cc4.change_id ");
-                builder.append("LEFT JOIN arr_change cd4 ON a4.delete_change_id = cd4.change_id ");
+                builder.append("FROM arr_level a1 ");
+                builder.append("LEFT JOIN arr_level a2 ON a2.node_id_parent = a1.node_id AND a2.create_change_id < :closeDate AND (a2.delete_change_id IS NULL OR a2.delete_change_id > :closeDate) ");
+                builder.append("LEFT JOIN arr_level a3 ON a3.node_id_parent = a2.node_id AND a3.create_change_id < :closeDate AND (a3.delete_change_id IS NULL OR a3.delete_change_id > :closeDate) ");
+                builder.append("LEFT JOIN arr_level a4 ON a4.node_id_parent = a3.node_id AND a4.create_change_id < :closeDate AND (a4.delete_change_id IS NULL OR a4.delete_change_id > :closeDate) ");
 
 
-                builder.append(
-                        "WHERE ((cc1.change_date IS NULL OR cc1.change_date < :closeDate) AND (a1.delete_change_id IS NULL OR cd1.change_date > :closeDate)) AND ");
-                builder.append(
-                        "((cc2.change_date IS NULL OR cc2.change_date < :closeDate) AND (a2.delete_change_id IS NULL OR cd2.change_date > :closeDate)) AND ");
-                builder.append(
-                        "((cc3.change_date IS NULL OR cc3.change_date < :closeDate) AND (a3.delete_change_id IS NULL OR cd3.change_date > :closeDate)) AND ");
-                builder.append(
-                        "((cc4.change_date IS NULL OR cc4.change_date < :closeDate) AND (a4.delete_change_id IS NULL OR cd4.change_date > :closeDate)) AND ");
+                builder.append("WHERE a1.create_change_id < :closeDate AND (a1.delete_change_id IS NULL OR a1.delete_change_id > :closeDate) AND ");
             }
 
 
@@ -373,9 +361,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
             Query query = entityManager.createNativeQuery(builder.toString());
             if (version.getLockChange() != null) {
-                Date out = Date
-                        .from(version.getLockChange().getChangeDate().atZone(ZoneId.systemDefault()).toInstant());
-                query.setParameter("closeDate", out, TemporalType.TIMESTAMP);
+                query.setParameter("closeDate", version.getLockChange().getChangeId());
             }
 
             query.setParameter("ids", partIds);
