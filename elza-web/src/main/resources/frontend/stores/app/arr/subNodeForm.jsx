@@ -167,6 +167,9 @@ function validate(descItem, descItemTypeInfo) {
         case 'RECORD_REF':
             break;
         case 'PACKET_REF':
+            if (!descItem.value || descItem.value.length === 0) {
+                error.value = i18n('subNodeForm.validate.value.notEmpty');
+            }
             break;
         case 'ENUM':
             break;
