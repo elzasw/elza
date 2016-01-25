@@ -16,7 +16,7 @@ var NodeTabs = class NodeTabs extends AbstractReactComponent {
     }
 
     render() {
-        const {nodes, activeIndex, versionId, rulDataTypes, calendarTypes, packetTypes, packets} = this.props;
+        const {fa, nodes, activeIndex, versionId, rulDataTypes, calendarTypes, packetTypes, packets} = this.props;
 
         if (nodes.length == 0) {
             return <div></div>
@@ -43,6 +43,7 @@ var NodeTabs = class NodeTabs extends AbstractReactComponent {
                 />
                 <Tabs.Content>
                     {activeNode && <NodePanel versionId={versionId}
+                                              fa={fa}
                                               node={activeNode}
                                               rulDataTypes={rulDataTypes}
                                               calendarTypes={calendarTypes}
@@ -55,9 +56,10 @@ var NodeTabs = class NodeTabs extends AbstractReactComponent {
 }
 
 NodeTabs.propTypes = {
+    versionId: React.PropTypes.number.isRequired,
+    fa: React.PropTypes.object.isRequired,
     nodes: React.PropTypes.array.isRequired,
     activeIndex: React.PropTypes.number,
-    versionId: React.PropTypes.number.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
     packetTypes: React.PropTypes.object.isRequired,

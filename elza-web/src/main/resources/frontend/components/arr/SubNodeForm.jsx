@@ -365,7 +365,7 @@ SubNodeForm.propTypes = {
     versionId: React.PropTypes.number.isRequired,
     selectedSubNodeId: React.PropTypes.number.isRequired,
     nodeKey: React.PropTypes.number.isRequired,
-    nodeId: React.PropTypes.number.isRequired,
+    nodeId: React.PropTypes.oneOfType(React.PropTypes.number, React.PropTypes.string),
     nodeSettings: React.PropTypes.object.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,

@@ -15,6 +15,7 @@ import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu'
 import {faSelectSubNode} from 'actions/arr/nodes'
 import {ResizeStore} from 'stores';
 import {indexById} from 'stores/app/utils.jsx'
+import {createFaRoot} from './ArrUtils.jsx'
 
 var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     constructor(props) {
@@ -102,9 +103,10 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
      */
     callFaSelectSubNode(node, openNewTab) {
         var parentNode = this.getParentNode(node);
-        if (parentNode != null) {
-            this.dispatch(faSelectSubNode(node.id, parentNode, openNewTab));
+        if (parentNode == null) {   // root
+            parentNode = createFaRoot(this.props.fa, node);
         }
+        this.dispatch(faSelectSubNode(node.id, parentNode, openNewTab));
     }
 
     /**
@@ -204,6 +206,7 @@ FaTreeLazy.defaultProps = {
 }
 
 FaTreeLazy.propTypes = {
+    activeFa: React.PropTypes.object.isRequired,
     versionId: React.PropTypes.number.isRequired,
     expandedIds: React.PropTypes.object.isRequired,
     selectedId: React.PropTypes.number,

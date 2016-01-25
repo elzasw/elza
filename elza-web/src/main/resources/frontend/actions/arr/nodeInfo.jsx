@@ -5,6 +5,7 @@
 import {WebApi} from 'actions'
 import {indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
 import {barrier} from 'components/Utils'
+import {isFaRootId} from 'components/arr/ArrUtils'
 import * as types from 'actions/constants/actionTypes';
 
 function getNode(state, versionId, nodeKey) {
@@ -36,9 +37,25 @@ export function faNodeInfoFetch(versionId, nodeId, nodeKey) {
     return dispatch => {
         dispatch(faNodeInfoRequest(versionId, nodeId, nodeKey))
 
+        var isRoot = isFaRootId(nodeId);
+
+        var getFaTree, getNodeParents;
+        if (isRoot) {
+            getNodeParents = new Promise(function (resolve, reject) {
+                resolve([]);
+            })
+            getFaTree = WebApi.getFaTree(versionId, null)
+                .then(json => {
+                    return {nodes: [json.nodes[0]]}
+                })
+        } else {
+            getNodeParents = WebApi.getNodeParents(versionId, nodeId);
+            getFaTree = WebApi.getFaTree(versionId, nodeId);
+        }
+
         return barrier(
-            WebApi.getFaTree(versionId, nodeId),
-            WebApi.getNodeParents(versionId, nodeId)
+            getFaTree,
+            getNodeParents
         )
         .then(data => {
             return {

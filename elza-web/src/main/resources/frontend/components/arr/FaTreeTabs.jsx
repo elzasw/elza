@@ -38,6 +38,7 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
                 />
                 <Tabs.Content>
                     <FaTreeLazy 
+                        fa={activeFa}
                         {...activeFa.faTree}
                         versionId={this.props.activeFa.versionId}
                     /> 

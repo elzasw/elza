@@ -12,6 +12,7 @@ import {faNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo'
 import {faSelectSubNode, faSubNodesNext, faSubNodesPrev, faSubNodesNextPage, faSubNodesPrevPage} from 'actions/arr/nodes'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes'
 import {indexById} from 'stores/app/utils.jsx'
+import {createFaRoot, isFaRootId} from './ArrUtils.jsx'
 
 require ('./NodePanel.less');
 
@@ -59,6 +60,9 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         var index = indexById(parentNodes, node.id);
         var subNodeId = node.id;
         var subNodeParentNode = index + 1 < parentNodes.length ? parentNodes[index + 1] : null;
+        if (subNodeParentNode == null) {
+            subNodeParentNode = createFaRoot(this.props.fa, node);
+        }
 
         this.dispatch(faSelectSubNode(subNodeId, subNodeParentNode));
     }
@@ -115,7 +119,12 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
      * @return {Array} seznam NODE
      */
     getParentNodes() {
-        return [this.props.node, ...this.props.node.parentNodes];
+        const {node} = this.props;
+        if (isFaRootId(node.id)) {
+            return [...node.parentNodes];
+        } else {
+            return [node, ...node.parentNodes];
+        }
     }
 
     /**
@@ -262,6 +271,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 
 NodePanel.propTypes = {
     versionId: React.PropTypes.number.isRequired,
+    fa: React.PropTypes.object.isRequired,
     node: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
     packetTypes: React.PropTypes.object.isRequired,
