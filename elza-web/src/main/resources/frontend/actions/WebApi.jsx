@@ -157,8 +157,7 @@ class WebApi{
             });
     }
 
-    saveNewParentRegistry(data, registryParentId) {
-        data['parentRecordId'] = registryParentId;
+    updateRegistry(data) {
         return AjaxUtils.ajaxPut('/api/registryManagerV2/updateRecord', null, data)
             .then(json=>{
                 return json;

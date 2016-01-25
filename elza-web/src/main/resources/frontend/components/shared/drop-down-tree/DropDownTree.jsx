@@ -33,6 +33,9 @@ var DropDownTree = class DropDownTree extends React.Component {
         this.nullValue = undefined;
         this.nullId = null;
         this.myItems = [];
+        if (this.props.items.length)
+            this.myItems = props.items.slice();
+
         if (this.props.nullValue !== undefined){
             this.nullValue = this.props.nullValue;
             if (props.nullId !== undefined) {
@@ -171,9 +174,8 @@ var DropDownTree = class DropDownTree extends React.Component {
         var label = '';
         if (selectedItemID === this.nullId)
             return this.nullValue;
-
         if(!item){
-            this.myItems.map((item, i) => {  
+            this.myItems.map((item) => {
                 var childLabel = this.getItemLabel(selectedItemID, item);
                 if(childLabel != ''){
                    label = childLabel;
@@ -181,6 +183,7 @@ var DropDownTree = class DropDownTree extends React.Component {
             });
         }else{
             if(item.children && item.children.length>0){
+
                 for(var i = 0; i<item.children.length; i++){
                     var childLabel = this.getItemLabel(selectedItemID, item.children[i])
                     if(childLabel != ''){

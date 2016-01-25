@@ -29,6 +29,10 @@ elza:
 #      types:
 #        - code: ZP2015_SIZE
 #          width: 1
+
+server:
+  port: 8081
+  
 spring:
   jpa:
       properties:

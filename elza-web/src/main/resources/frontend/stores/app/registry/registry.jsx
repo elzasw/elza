@@ -12,7 +12,6 @@ const initialState = {
     selectedId: null,
     recordForMove: null,
     isReloadingRegistry: false,
-    reloadedRegistry: false,
     filterText: null,
     registryData: undefined,
     registryParentId: null,
@@ -21,12 +20,11 @@ const initialState = {
     countRecords: 0,
 }
 
-export default function registry(state = initialState, action) {
+export default function registry(state = initialState, action = {}) {
     switch (action.type) {
         case types.REGISTRY_SELECT_REGISTRY:
             return Object.assign({}, state, {
                 selectedId: action.registry.selectedId,
-                reloadedRegistry: false,
                 registryData: registryData(state.registryData, action)
             })
         case types.REGISTRY_REQUEST_REGISTRY_LIST:
@@ -76,14 +74,12 @@ export default function registry(state = initialState, action) {
         case types.REGISTRY_MOVE_REGISTRY_FINISH:
             return Object.assign({}, state, {
                 recordForMove: null,
-                reloadedRegistry: false,
                 fetched: false
             })
         case types.REGISTRY_MOVE_REGISTRY_CANCEL:
             return Object.assign({}, state, {
                 recordForMove: null
             })
-
         default:
             return state
     }

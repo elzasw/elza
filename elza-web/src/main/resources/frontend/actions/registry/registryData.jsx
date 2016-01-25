@@ -54,6 +54,14 @@ export function registryStopMove(registry) {
     }
 }
 
+export function registryUpdated() {
+    return {
+        type: types.REGISTRY_UPDATED,
+
+    }
+}
+
+
 export function registryCancelMove(registry) {
     return {
         type: types.REGISTRY_MOVE_REGISTRY_CANCEL,

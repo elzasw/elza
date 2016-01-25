@@ -49,14 +49,14 @@ export function registrySetTypesId(registryTypesId) {
 export function getRegistryIfNeeded(registryId) {
     return (dispatch, getState) => {
         var state = getState();
-        if (!state.registryData.fetched && !state.registryData.isFetching && registryId !==state.registryData.selectedId) {
-
+        if (!state.registryData.fetched && !state.registryData.isFetching && (registryId !==state.registryData.selectedId || state.registryData.requireReload === true)) {
             return dispatch(getRegistry(registryId));
         }
     }
 }
 
 export function getRegistry(registryId) {
+
     return dispatch => {
         dispatch(requestRegistryGetRegistry())
         return WebApi.getRegistry(registryId)

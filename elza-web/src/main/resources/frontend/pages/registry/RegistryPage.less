@@ -1,5 +1,9 @@
 @import "~variables.less";
 
+
+@registry-panel-actions-height: 26px;
+
+
 .active{
     font-weight: bold;
 }
@@ -64,3 +68,24 @@ div.path span:last-child{
         overflow: hidden;
         white-space: nowrap;
     }
+div.desc-item-type-label {
+   .actions {
+        background: #F5F5F5;
+        height: @registry-panel-actions-height;
+        display: inline-block;
+        .btn {
+            background: transparent;
+            height: @registry-panel-actions-height;
+            font-size: 12px;
+            border: none;
+            margin: 1px;
+            padding: 2px;
+        }
+  }
+   .actions {
+        background: transparent;
+  }
+  div.title {
+        display: inline-block;
+  }
+}

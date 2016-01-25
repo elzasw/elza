@@ -10,11 +10,12 @@ const initialState = {
     isFetching: false,
     fetched: false,
     selectedId: null,
+    requireReload: false,
     item: null,
     LastUpdated: null
 }
 
-export default function registryData(state = initialState, action) {
+export default function registryData(state = initialState, action = {}) {
     switch (action.type) {
         case types.REGISTRY_SELECT_REGISTRY:
             if (state.selectedId === action.registry.selectedId){
@@ -40,12 +41,17 @@ export default function registryData(state = initialState, action) {
 
             return Object.assign({}, state, {
                 selectedId: action.selectedId,
-                item: action.ITEM,
+                item: action.item,
                 isFetching: false,
                 fetched: true,
+                requireReload: false,
                 LastUpdated: action.receivedAt
             })
-        
+        case types.REGISTRY_UPDATED:
+            return Object.assign({}, state, {
+                requireReload: true,
+                fetched: false
+            })
         default:
             return state
     }

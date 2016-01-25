@@ -16,7 +16,7 @@ import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, Search, RegistryPanel, 
 import {WebApi} from 'actions'
 import {MenuItem, DropdownButton, ButtonGroup, Button} from 'react-bootstrap';
 import {PageLayout} from 'pages';
-import {Nav, NavItem} from 'react-bootstrap';
+import {Nav, Glyphicon, NavItem} from 'react-bootstrap';
 import {registryData, registrySearchData, registryChangeParent, registryRemoveRegistry, registryStartMove, registryStopMove, registryCancelMove} from 'actions/registry/registryData'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {fetchRegistryIfNeeded, registrySetTypesId} from 'actions/registry/registryList'
@@ -28,7 +28,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('buildRibbon', 'handleSelect', 'handleSearch', 'handleDoubleClick', 'handleClickNavigation', 'handleAddRegistry', 'handleCallAddRegistry', 'handleCreateRecord', 'handleRemoveRegistryDialog', 'handleRemoveRegistry', 'handleStartMoveRegistry', 'handleSaveMoveRegistry', 'handleCancelMoveRegistry');
+        this.bindMethods('buildRibbon', 'handleSelect', 'handleSearch', 'handleDoubleClick', 'handleClickNavigation', 'handleAddRegistry', 'handleCallAddRegistry', 'handleRemoveRegistryDialog', 'handleRemoveRegistry', 'handleStartMoveRegistry', 'handleSaveMoveRegistry', 'handleCancelMoveRegistry');
         this.dispatch(fetchRegistryIfNeeded(props.registry.filterText, props.registry.registryParentId, props.registry.registryTypesId));
         this.dispatch(refRecordTypesFetchIfNeeded());
 
@@ -54,7 +54,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     handleRemoveRegistryDialog(){
-        var result = confirm(i18n('registry.reallyRemoveRegistry'));
+        var result = confirm(i18n('registry.removeRegistryQuestion'));
         if (result) {
             this.dispatch(this.handleRemoveRegistry());
         }
@@ -73,7 +73,9 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     handleSaveMoveRegistry(){
-        WebApi.saveNewParentRegistry(this.props.registry.recordForMove, this.props.registry.selectedId).then(json => {
+        var data = Object.assign({}, this.props.registry.recordForMove);
+        data['parentRecordId'] = this.props.registry.selectedId;
+        WebApi.updateRegistry(data).then(json => {
             this.dispatch(registryStopMove());
         });
     }
@@ -94,6 +96,11 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
         var itemActions = [];
         if (this.props.registry.selectedId) {
+            if (!this.props.registry.recordForMove){
+                itemActions.push(
+                    <Button onClick={this.handleStartMoveRegistry.bind(this)}><Glyphicon glyph="share-alt" /><div><span className="btnText">{i18n('registry.moveRegistry')}</span></div></Button>
+                );
+            }
             itemActions.push(
                 <Button><Icon glyph="fa-share-alt" /><div><span className="btnText">{i18n('registry.moveRegistry')}</span></div></Button>
             );
