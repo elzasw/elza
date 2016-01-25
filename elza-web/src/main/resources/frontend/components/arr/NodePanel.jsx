@@ -200,7 +200,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     render() {
-        const {calendarTypes, versionId, rulDataTypes, node} = this.props;
+        const {calendarTypes, versionId, rulDataTypes, node, packetTypes, packets} = this.props;
 
         if (node.isFetching || !node.fetched) {
             return <Loading/>
@@ -235,6 +235,8 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 descItemTypeInfos={node.subNodeForm.descItemTypeInfos}
                 rulDataTypes={rulDataTypes}
                 calendarTypes={calendarTypes}
+                packetTypes={packetTypes}
+                packets={packets}
             />
         } else {
             form = <Loading/>
@@ -262,6 +264,8 @@ NodePanel.propTypes = {
     versionId: React.PropTypes.number.isRequired,
     node: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
+    packetTypes: React.PropTypes.object.isRequired,
+    packets: React.PropTypes.object.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
 }
 

@@ -203,8 +203,15 @@ class WebApi{
                 });
     }
 
-    getPacketTypes(versionId, nodeId) {
-        return AjaxUtils.ajaxGet('/api/ruleSetManagerV2/packetTypes')
+    getPacketTypes() {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/packets/types')
+                .then(json=>{
+                    return json
+                });
+    }
+
+    getPackets(findingAidId) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/packets/' + findingAidId)
                 .then(json=>{
                     return json
                 });

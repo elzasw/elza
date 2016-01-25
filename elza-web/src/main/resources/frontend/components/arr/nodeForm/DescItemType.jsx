@@ -13,6 +13,7 @@ import DescItemInt from './DescItemInt'
 import DescItemDecimal from './DescItemDecimal'
 import DescItemCoordinates from './DescItemCoordinates'
 import DescItemUnitdate from './DescItemUnitdate'
+import DescItemPacketRef from './DescItemPacketRef'
 
 require ('./AbstractDescItem.less')
 
@@ -114,7 +115,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
      * @return {Object} view
      */
     renderDescItem(descItemType, descItem, descItemIndex, removeAction, locked) {
-        const {descItemTypeInfo, rulDataType, calendarTypes} = this.props;
+        const {descItemTypeInfo, rulDataType, calendarTypes, packets, packetTypes} = this.props;
 
         var cls = 'desc-item-type-desc-item-container';
         if (removeAction) {
@@ -144,6 +145,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             case 'RECORD_REF':
                 break;
             case 'PACKET_REF':
+                parts.push(<DescItemPacketRef {...descItemProps} packets={packets} packetTypes={packetTypes} />)
                 break;
             case 'UNITDATE':
                 parts.push(<DescItemUnitdate {...descItemProps} calendarTypes={calendarTypes} />)
@@ -294,6 +296,8 @@ DescItemType.propTypes = {
     descItemType: React.PropTypes.object.isRequired,
     rulDataType: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
+    packetTypes: React.PropTypes.object.isRequired,
+    packets: React.PropTypes.object.isRequired,
     locked: React.PropTypes.bool.isRequired,
     copy: React.PropTypes.bool.isRequired,
 }

@@ -21,6 +21,7 @@ import cz.tacr.elza.ElzaRules;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
+import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
 import cz.tacr.elza.controller.vo.ParPartyGroupVO;
 import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
@@ -50,6 +51,7 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroup;
 import cz.tacr.elza.domain.ParPartyGroupIdentifier;
@@ -566,7 +568,8 @@ public class ClientFactoryVO {
 
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrFindingAidVersionVO findingAidVersionVO = mapper.map(version, ArrFindingAidVersionVO.class);
-        Date createDate = Date.from(version.getCreateChange().getChangeDate().atZone(ZoneId.systemDefault()).toInstant());
+        Date createDate = Date.from(
+                version.getCreateChange().getChangeDate().atZone(ZoneId.systemDefault()).toInstant());
         findingAidVersionVO.setCreateDate(createDate);
 
         ArrChange lockChange = version.getLockChange();
@@ -796,5 +799,28 @@ public class ClientFactoryVO {
      */
     public List<RulPacketTypeVO> createPacketTypeList(final List<RulPacketType> packetTypes) {
         return createList(packetTypes, RulPacketTypeVO.class, null);
+    }
+
+    /**
+     * Vytvoření seznamu obalů.
+     *
+     * @param packets seznam DO obalů
+     * @return seznam VO obalů
+     */
+    public List<ArrPacketVO> createPacketList(final List<ArrPacket> packets) {
+        return createList(packets, ArrPacketVO.class, null);
+    }
+
+    /**
+     * Vytvoření obalu.
+     *
+     * @param packet DO obalu
+     * @return VO obalu
+     */
+    public ArrPacketVO createPacket(final ArrPacket packet) {
+        Assert.notNull(packet);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        ArrPacketVO packetVO = mapper.map(packet, ArrPacketVO.class);
+        return packetVO;
     }
 }

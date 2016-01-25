@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -107,6 +108,7 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.repository.PacketRepository;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
@@ -125,6 +127,9 @@ import ma.glasnost.orika.metadata.Type;
 
 @Configuration
 public class ConfigMapperConfiguration {
+
+    @Autowired
+    private PacketRepository packetRepository;
 
     /**
      * @return Tovární třída.
@@ -170,7 +175,24 @@ public class ConfigMapperConfiguration {
                     }
                 }).byDefault().register();
 
-        mapperFactory.classMap(ArrDescItemPacketRef.class, ArrDescItemPacketVO.class).byDefault().field(
+        mapperFactory.classMap(ArrDescItemPacketRef.class, ArrDescItemPacketVO.class).customize(
+                new CustomMapper<ArrDescItemPacketRef, ArrDescItemPacketVO>() {
+                    @Override
+                    public void mapAtoB(final ArrDescItemPacketRef descItemPacketRef,
+                                        final ArrDescItemPacketVO descItemPacketVO,
+                                        final MappingContext context) {
+                        super.mapAtoB(descItemPacketRef, descItemPacketVO, context);
+                        descItemPacketVO.setValue(descItemPacketRef.getPacket().getPacketId());
+                    }
+
+                    @Override
+                    public void mapBtoA(final ArrDescItemPacketVO descItemPacketVO,
+                                        final ArrDescItemPacketRef descItemPacketRef,
+                                        final MappingContext context) {
+                        super.mapBtoA(descItemPacketVO, descItemPacketRef, context);
+                        descItemPacketRef.setPacket(packetRepository.findOne(descItemPacketVO.getValue()));
+                    }
+                }).byDefault().field(
                 "descItemId", "id").register();
         mapperFactory.classMap(ArrDescItemPartyRef.class, ArrDescItemPartyRefVO.class).byDefault().field(
                 "descItemId", "id").register();
@@ -188,9 +210,20 @@ public class ConfigMapperConfiguration {
                                         final ArrPacketVO packetVO,
                                         final MappingContext context) {
                         packetVO.setId(packet.getPacketId());
-                        packetVO.setFindingAidId(packet.getFindingAid().getFindingAidId());
                         packetVO.setInvalidPacket(packet.getInvalidPacket());
-                        packetVO.setPacketTypeId(packet.getPacketType().getPacketTypeId());
+                        if (packet.getPacketType() != null) {
+                            packetVO.setPacketTypeId(packet.getPacketType().getPacketTypeId());
+                        }
+                        packetVO.setStorageNumber(packet.getStorageNumber());
+                    }
+
+                    @Override
+                    public void mapBtoA(final ArrPacketVO packetVO,
+                                        final ArrPacket packet,
+                                        final MappingContext context) {
+                        packet.setPacketId(packetVO.getId());
+                        packet.setInvalidPacket(packetVO.getInvalidPacket());
+                        packet.setStorageNumber(packetVO.getStorageNumber());
                     }
                 }
         ).byDefault().register();

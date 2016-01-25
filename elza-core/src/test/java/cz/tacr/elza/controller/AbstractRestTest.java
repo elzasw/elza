@@ -288,6 +288,9 @@ public abstract class AbstractRestTest {
     protected static final String NODES = ARRANGEMENT_MANAGER_URL_V2 + "/nodes";
     protected static final String GET_NODE_FORM_DATA = NODES + "/{versionId}/{nodeId}/form";
 
+    protected static final String PACKETS = ARRANGEMENT_MANAGER_URL_V2 + "/packets";
+    protected static final String PACKET_TYPES = PACKETS + "/types";
+
     protected static final String FA_NAME_ATT = "name";
     protected static final String FA_ID_ATT = "findingAidId";
     protected static final String ARRANGEMENT_TYPE_ID_ATT = "arrangementTypeId";
@@ -321,7 +324,6 @@ public abstract class AbstractRestTest {
     protected static final String GET_FVDIT_URL = RULE_MANAGER_URL + "/getFaViewDescItemTypes";
     protected static final String SAVE_FVDIT_URL = RULE_MANAGER_URL + "/saveFaViewDescItemTypes";
     protected static final String DATA_TYPES = RULE_MANAGER_URL_V2 + "/dataTypes";
-    protected static final String PACKET_TYPES = RULE_MANAGER_URL_V2 + "/packetTypes";
 
     protected static final String DT_UNITID = "UNITID";
     protected static final String DT_STRING = "STRING";

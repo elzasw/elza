@@ -27,6 +27,8 @@ import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
+import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.RulPacketTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
@@ -39,9 +41,11 @@ import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
@@ -53,6 +57,7 @@ import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.LevelTreeCacheService;
+import cz.tacr.elza.service.PacketService;
 import cz.tacr.elza.service.RuleService;
 
 
@@ -104,6 +109,67 @@ public class ArrangementController {
 
     @Autowired
     private ArrMoveLevelService moveLevelService;
+
+    @Autowired
+    private PacketService packetService;
+
+    @RequestMapping(value = "/packets/types",
+            method = RequestMethod.GET,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<RulPacketTypeVO> getPacketTypes() {
+        List<RulPacketType> packetTypes = packetService.getPacketTypes();
+        return factoryVo.createPacketTypeList(packetTypes);
+    }
+
+    @RequestMapping(value = "/packets/{findingAidId}",
+            method = RequestMethod.GET,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<ArrPacketVO> getPackets(@PathVariable(value = "findingAidId") final Integer findingAidId) {
+        Assert.notNull(findingAidId);
+        List<ArrPacket> packets = packetService.getPackets(findingAidId);
+        return factoryVo.createPacketList(packets);
+    }
+
+    @RequestMapping(value = "/packets/{findingAidId}",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ArrPacketVO insertPacket(@PathVariable(value = "findingAidId") final Integer findingAidId,
+                                          @RequestBody final ArrPacketVO packetVO) {
+        Assert.notNull(findingAidId);
+        Assert.notNull(packetVO);
+
+        ArrPacket packet = factoryDO.createPacket(packetVO, findingAidId);
+        return factoryVo.createPacket(packetService.insertPacket(packet));
+    }
+
+    @RequestMapping(value = "/packets/{findingAidId}/{packetId}",
+            method = RequestMethod.DELETE,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ArrPacketVO deactivatePacket(@PathVariable(value = "findingAidId") final Integer findingAidId,
+                                        @PathVariable(value = "packetId") final Integer packetId) {
+        Assert.notNull(findingAidId);
+        Assert.notNull(packetId);
+
+        ArrPacket packet = packetService.getPacket(findingAidId, packetId);
+        return factoryVo.createPacket(packetService.deactivatePacket(packet));
+    }
+
+    @RequestMapping(value = "/packets/{findingAidId}",
+            method = RequestMethod.PUT,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ArrPacketVO updatePacket(@PathVariable(value = "findingAidId") final Integer findingAidId,
+                                    @RequestBody final ArrPacketVO packetVO) {
+        Assert.notNull(findingAidId);
+        Assert.notNull(packetVO);
+
+        ArrPacket packet = factoryDO.createPacket(packetVO, findingAidId);
+        return factoryVo.createPacket(packetService.updatePacket(packet));
+    }
 
     @Transactional
     @RequestMapping(value = "/descItems/{findingAidVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}",

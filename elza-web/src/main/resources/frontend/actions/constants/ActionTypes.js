@@ -49,6 +49,13 @@ export const NODE_DESC_ITEM_TYPE_COPY = 'NODE_DESC_ITEM_TYPE_COPY'
 export const NODE_DESC_ITEM_TYPE_NOCOPY = 'NODE_DESC_ITEM_TYPE_NOCOPY'
 
 /**
+ * Obaly pro FA
+ */
+export const PACKETS_REQUEST = 'PACKETS_REQUEST'
+export const PACKETS_RECEIVE = 'PACKETS_RECEIVE'
+
+
+/**
  * Party.
  */
 export const PARTY_FIND_PARTY_REQUEST = 'PARTY_FIND_PARTY_REQUEST'  // volaní hledání osob
