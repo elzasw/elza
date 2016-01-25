@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller;
 
 import static com.jayway.restassured.RestAssured.given;
+import static com.jayway.restassured.RestAssured.rootPath;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -43,6 +44,7 @@ import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemCoordinates;
 import cz.tacr.elza.domain.ArrDescItemDecimal;
@@ -90,6 +92,8 @@ import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.service.ArrMoveLevelService;
+
 
 /**
  * Testy pro {@link ArrangementManager}.
@@ -799,6 +803,79 @@ public class ArrangementManagerTest extends AbstractRestTest {
     }
 
     @Test
+    @Transactional
+    public void testAddLevel(){
+        ArrFindingAid fa = createFindingAid("test");
+        ArrFindingAidVersion version = findingAidVersionRepository
+                .findByFindingAidIdAndLockChangeIsNull(fa.getFindingAidId());
+
+        ArrChange createChange = createFaChange(LocalDateTime.now());
+
+        ArrLevel child1 = createLevel(1, version.getRootLevel(), createChange);
+        ArrDescItem descItem = createStringDescItem("Test1", child1.getNode(), version);
+        List<ArrDescItem> child1Items = descItemRepository.findByNodeAndDeleteChangeIsNull(child1.getNode());
+        Assert.assertTrue(!child1Items.isEmpty());
+
+        //1
+
+        Set<RulDescItemType> copyTypes = new HashSet<>();
+        copyTypes.add(descItem.getDescItemType());
+        ArrLevel child2 = moveLevelService.addNewLevel(version, child1.getNode(), child1.getNodeParent(),
+                ArrMoveLevelService.AddLevelDirection.AFTER, null, copyTypes);
+        child1 = levelRepository.findNodeInRootTreeByNodeId(child1.getNode(), version.getRootLevel().getNode(), null);
+        List<ArrLevel> rootChilds = levelRepository.findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(
+                child1.getNodeParent());
+        Assert.assertTrue(rootChilds.size() == 2);
+        Assert.assertTrue(child1.getPosition() < child2.getPosition());
+
+        List<ArrDescItem> child2Items = descItemRepository.findByNodeAndDeleteChangeIsNull(child2.getNode());
+        Assert.assertTrue(!child2Items.isEmpty());
+
+        for (ArrDescItem child2Item : child2Items) {
+            if(child2Item.getDescItemType().equals(descItem.getDescItemType())){
+                Assert.assertTrue(((ArrDataString) dataRepository.findByDescItem(child2Item).get(0)).getValue().equals("Test1"));
+            }
+        }
+
+        //1
+        //2
+        ArrLevel child3 = moveLevelService.addNewLevel(version, child2.getNode(), child2.getNodeParent(),
+                ArrMoveLevelService.AddLevelDirection.BEFORE, null, copyTypes);
+        child1 = levelRepository.findNodeInRootTreeByNodeId(child1.getNode(), version.getRootLevel().getNode(), null);
+        child2 = levelRepository.findNodeInRootTreeByNodeId(child2.getNode(), version.getRootLevel().getNode(), null);
+
+        rootChilds = levelRepository.findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(child1.getNodeParent());
+        Assert.assertTrue(rootChilds.size() == 3);
+        Assert.assertTrue(child1.getPosition() < child3.getPosition());
+        Assert.assertTrue(child3.getPosition() < child2.getPosition());
+
+        List<ArrDescItem> child3Items = descItemRepository.findByNodeAndDeleteChangeIsNull(child3.getNode());
+        Assert.assertTrue(!child3Items.isEmpty());
+
+        for (ArrDescItem child3Item : child3Items) {
+            if(child3Item.getDescItemType().equals(descItem.getDescItemType())){
+                Assert.assertTrue(((ArrDataString) dataRepository.findByDescItem(child3Item).get(0)).getValue().equals("Test1"));
+            }
+        }
+
+        //1
+        //3
+        //2
+
+        ArrLevel child31 = moveLevelService.addNewLevel(version, child3.getNode(), child3.getNode(),
+                ArrMoveLevelService.AddLevelDirection.CHILD, null, copyTypes);
+
+        List<ArrLevel> child3childs = levelRepository.findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(child31.getNodeParent());
+        Assert.assertTrue(child3childs.size() == 1);
+        Assert.assertTrue(child31.getNodeParent().equals(child3.getNode()));
+
+        //1
+        //3
+        //  31
+        //2
+    }
+
+    @Test
     public void testRestMoveLevelUnder() {
         ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
@@ -1387,6 +1464,25 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItemSpec = descItemSpecRepository.save(descItemSpec);
 
         return descItemSpec;
+    }
+
+    protected ArrDescItem createStringDescItem(final String value,
+                                               final ArrNode node,
+                                               final ArrFindingAidVersion version) {
+        RulDataType stringDataType = getDataType(DATA_TYPE_STRING);
+        RulDescItemType type = descItemTypeRepository.findOneByCode("ZP2015_TITLE");
+
+        ArrChange change = arrangementService.createChange();
+
+        ArrDescItemString descItem = new ArrDescItemString();
+        descItem.setDescItemType(type);
+        descItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+        descItem.setNode(node);
+        descItem.setCreateChange(change);
+        descItem.setPosition(1);
+        descItem.setValue(value);
+
+        return descItemFactory.saveDescItemWithData(descItem, true);
     }
 
     @Test

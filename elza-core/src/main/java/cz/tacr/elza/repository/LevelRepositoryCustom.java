@@ -1,6 +1,5 @@
 package cz.tacr.elza.repository;
 
-import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -27,6 +26,16 @@ public interface LevelRepositoryCustom {
      * @return všechny rodiče seřazeny od listu ke kořenu
      */
     List<ArrLevel> findAllParentsByNodeAndVersion(ArrNode node, ArrFindingAidVersion version);
+
+
+    /**
+     * Najde mladšího sourozence daného uzlu.
+     *
+     * @param level      uzel, kterému hledáme sourozence
+     * @param lockChange uzavření verze uzlu, ve které hledáme
+     * @return nalezený sourozenece nebo null
+     */
+    ArrLevel findYoungerSibling(ArrLevel level, @Nullable ArrChange lockChange);
 
 
     /**

@@ -2,6 +2,7 @@ package cz.tacr.elza.repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -43,6 +44,15 @@ public interface DescItemRepository extends JpaRepository<ArrDescItem, Integer>,
     @Query("SELECT i FROM arr_desc_item i JOIN i.descItemType t WHERE i.node = ?1 AND t.descItemTypeId = ?2 AND i.createChange < ?3 AND (i.deleteChange > ?3 OR i.deleteChange IS NULL)")
     List<ArrDescItem> findByNodeDescItemTypeIdAndLockChangeId(ArrNode node, Integer descItemTypeId, ArrChange change);
 
+
+    /**
+     * Najde otevřené atributy s daným nodem a type.
+     * @param node nod uzlu
+     * @param descItemTypes možné typy atributu
+     * @return seznam atributů daného typu
+     */
+    @Query("SELECT i FROM arr_desc_item i WHERE i.node = ?1 AND descItemType IN (?2)")
+    List<ArrDescItem> findOpenByNodeAndTypes(ArrNode node, Set<RulDescItemType> descItemTypes);
 
     /**
      * Vyhledá všechny otevřené (nesmazené) hodnoty atributů podle objectId.

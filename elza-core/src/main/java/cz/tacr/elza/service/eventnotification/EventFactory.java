@@ -7,6 +7,8 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.service.eventnotification.events.EventAddNode;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventNodeMove;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -49,6 +51,22 @@ public class EventFactory {
                 createNodesInfo(transportLevels));
     }
 
+    public static EventAddNode createAddNodeEvent(final EventType eventType,
+                                                  final ArrFindingAidVersion version,
+                                                  final ArrLevel staticLevel,
+                                                  final ArrLevel addLevel) {
+        Assert.notNull(eventType);
+        Assert.notNull(version);
+        Assert.notNull(staticLevel);
+        Assert.notNull(addLevel);
+
+        NodeInfo staticParentNode = staticLevel.getNodeParent() == null ? null
+                                                                        : createNodeInfo(staticLevel.getNodeParent());
+
+        return new EventAddNode(eventType, version.getFindingAidVersionId(), createNodeInfo(staticLevel.getNode()),
+                staticParentNode, createNodeInfo(addLevel));
+    }
+
     /**
      * Vytvoří nodeinfo.
      *
@@ -56,7 +74,11 @@ public class EventFactory {
      * @return nodeinfo
      */
     private static NodeInfo createNodeInfo(final ArrLevel level) {
-        return new NodeInfo(level.getNode().getNodeId(), level.getNode().getVersion());
+        return createNodeInfo(level.getNode());
+    }
+
+    private static NodeInfo createNodeInfo(final ArrNode node){
+        return new NodeInfo(node.getNodeId(), node.getVersion());
     }
 
     private static List<NodeInfo> createNodesInfo(final List<ArrLevel> levels) {

@@ -1,13 +1,16 @@
 package cz.tacr.elza.controller;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -34,12 +37,15 @@ import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulArrangementType;
+import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
+import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
@@ -83,6 +89,9 @@ public class ArrangementController {
 
     @Autowired
     private ArrangementTypeRepository arrangementTypeRepository;
+
+    @Autowired
+    private DescItemTypeRepository descItemTypeRepository;
 
     @Autowired
     private ClientFactoryDO factoryDO;
@@ -405,6 +414,40 @@ public class ArrangementController {
 
 
     /**
+     * Přidání uzlu do stromu.
+     *
+     * @param addLevelParam vstupní parametry
+     * @return nový přidaný uzel
+     */
+    @Transactional
+    @RequestMapping(value = "/addLevel", method = RequestMethod.PUT)
+    public ArrNodeVO addLevel(@RequestBody final AddLevelParam addLevelParam) {
+        Assert.notNull(addLevelParam);
+        Assert.notNull(addLevelParam.getVersionId());
+        Assert.notNull(addLevelParam.getDirection());
+
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(addLevelParam.getVersionId());
+
+        ArrNode staticNode = factoryDO.createNode(addLevelParam.getStaticNode());
+        ArrNode staticParentNode = addLevelParam.getStaticNodeParent() == null ? null : factoryDO
+                .createNode(addLevelParam.getStaticNodeParent());
+
+        Set<RulDescItemType> descItemCopyTypes = new HashSet<>();
+        if (CollectionUtils.isNotEmpty(addLevelParam.getDescItemCopyTypes())) {
+            descItemCopyTypes.addAll(descItemTypeRepository.findAll(addLevelParam.getDescItemCopyTypes()));
+        }
+
+
+        ArrLevel newLevel = moveLevelService.addNewLevel(version, staticNode, staticParentNode,
+                addLevelParam.getDirection(), addLevelParam.getScenarioName(),
+                descItemCopyTypes);
+
+
+        return factoryVo.createArrNode(newLevel.getNode());
+    }
+
+
+    /**
      * Provede načtení stromu uzlů. Uzly mohou být rozbaleny.
      *
      * @param input vstupní data pro načtení
@@ -631,6 +674,88 @@ public class ArrangementController {
 
         public void setTransportNodeParent(final ArrNodeVO transportNodeParent) {
             this.transportNodeParent = transportNodeParent;
+        }
+    }
+
+    /**
+     * Vstupní parametry pro přidání uzlu.
+     */
+    public static class AddLevelParam {
+
+        /**
+         * Id verze stromu.
+         */
+        private Integer versionId;
+        /**
+         * Statický uzel (za/před/pod který přidáváme)
+         */
+        private ArrNodeVO staticNode;
+        /**
+         * Rodič statického uzlu (za/před/pod který přidáváme)
+         */
+        private ArrNodeVO staticNodeParent;
+        /**
+         * Směr přidávání uzlu (před, za, pod)
+         */
+        private ArrMoveLevelService.AddLevelDirection direction;
+        /**
+         * Název scénáře, ze kterého se mají převzít výchozí hodnoty atributů.
+         */
+        @Nullable
+        private String scenarioName;
+
+        /**
+         * Seznam id typů atributů, které budou zkopírovány z uzlu přímo nadřazeným nad přidaným uzlem (jeho mladší sourozenec).
+         */
+        @Nullable
+        private Set<Integer> descItemCopyTypes;
+
+        public Integer getVersionId() {
+            return versionId;
+        }
+
+        public void setVersionId(final Integer versionId) {
+            this.versionId = versionId;
+        }
+
+        public ArrNodeVO getStaticNode() {
+            return staticNode;
+        }
+
+        public void setStaticNode(final ArrNodeVO staticNode) {
+            this.staticNode = staticNode;
+        }
+
+        public ArrNodeVO getStaticNodeParent() {
+            return staticNodeParent;
+        }
+
+        public void setStaticNodeParent(final ArrNodeVO staticNodeParent) {
+            this.staticNodeParent = staticNodeParent;
+        }
+
+        public ArrMoveLevelService.AddLevelDirection getDirection() {
+            return direction;
+        }
+
+        public void setDirection(final ArrMoveLevelService.AddLevelDirection direction) {
+            this.direction = direction;
+        }
+
+        public String getScenarioName() {
+            return scenarioName;
+        }
+
+        public void setScenarioName(final String scenarioName) {
+            this.scenarioName = scenarioName;
+        }
+
+        public Set<Integer> getDescItemCopyTypes() {
+            return descItemCopyTypes;
+        }
+
+        public void setDescItemCopyTypes(final Set<Integer> descItemCopyTypes) {
+            this.descItemCopyTypes = descItemCopyTypes;
         }
     }
 

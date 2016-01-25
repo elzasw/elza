@@ -5,21 +5,29 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
+import cz.tacr.elza.drools.DirectionLevel;
+import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
@@ -49,7 +57,11 @@ public class ArrMoveLevelService {
     @Autowired
     private FindingAidVersionRepository findingAidVersionRepository;
     @Autowired
+    private DescItemRepository descItemRepository;
+    @Autowired
     private IEventNotificationService eventNotificationService;
+    @Autowired
+    private DescriptionItemService descriptionItemService;
 
 
     /**
@@ -115,7 +127,7 @@ public class ArrMoveLevelService {
                                  final ArrLevel transportLevelParent) {
 
         Integer versionId = version.getFindingAidVersionId();
-        isValidAndOpenVersion(versionId);
+        isValidAndOpenVersion(version);
 
         Set<Integer> transportNodeIds = new HashSet<>();
         transportLevels.forEach((t) -> transportNodeIds.add(t.getNode().getNodeId()));
@@ -236,7 +248,7 @@ public class ArrMoveLevelService {
                                 final ArrLevel transportLevelParent) {
 
         Integer versionId = version.getFindingAidVersionId();
-        isValidAndOpenVersion(versionId);
+        isValidAndOpenVersion(version);
 
         Set<Integer> transportNodeIds = new HashSet<>();
         transportLevels.forEach((t) -> transportNodeIds.add(t.getNode().getNodeId()));
@@ -344,7 +356,7 @@ public class ArrMoveLevelService {
                                 final List<ArrLevel> transportLevels) {
 
         Integer versionId = version.getFindingAidVersionId();
-        isValidAndOpenVersion(versionId);
+        isValidAndOpenVersion(version);
 
         Set<Integer> transportNodeIds = new HashSet<>();
         transportLevels.forEach((t) -> transportNodeIds.add(t.getNode().getNodeId()));
@@ -439,10 +451,165 @@ public class ArrMoveLevelService {
 
         for (ArrLevel transportLevel : transportLevels) {
             ArrLevel newLevel = createNewLevelVersion(transportLevel, change);
-            addInLevel(newLevel, parentNode, position++);
+            newLevel.setNodeParent(parentNode);
+            newLevel.setPosition(position++);
+            levelRepository.save(newLevel);
         }
+
         return position;
     }
+
+
+    /**
+     * Vloží nový uzel do stromu. Podle směru zjistí pozici, posune případné sourozence a vloží uzel.
+     *
+     * @param version           verze stromu
+     * @param staticNode        Statický uzel (za/před/pod který přidáváme)
+     * @param staticNodeParent  Rodič statického uzlu (za/před/pod který přidáváme)
+     * @param direction         směr přidávání
+     * @param scenarionName     Název scénáře, ze kterého se mají převzít výchozí hodnoty atributů.
+     * @param descItemCopyTypes id typů atributl, které budou zkopírovány z uzlu přímo nadřazeným nad přidaným uzlem
+     *                          (jeho mladší sourozenec).
+     */
+    public ArrLevel addNewLevel(final ArrFindingAidVersion version,
+                                final ArrNode staticNode,
+                                final ArrNode staticNodeParent,
+                                final AddLevelDirection direction,
+                                @Nullable final String scenarionName,
+                                @Nullable final Set<RulDescItemType> descItemCopyTypes) {
+
+        Assert.notNull(staticNode);
+        Assert.notNull(staticNodeParent);
+        final ArrLevel staticLevel = levelRepository
+                .findNodeInRootTreeByNodeId(staticNode, version.getRootLevel().getNode(), version.getLockChange());
+
+
+        ArrLevel newLevel;
+        switch (direction){
+            case CHILD:
+                newLevel = addLevelUnder(version, staticNode);
+                break;
+            case BEFORE:
+            case AFTER:
+                newLevel = addLevelBeforeAfter(version, staticNode, staticNodeParent, direction);
+                break;
+            default:
+                throw new IllegalStateException("Neznámý typ směru přidání uzlu " + direction.name());
+        }
+
+        Assert.notNull(newLevel);
+        ArrChange change = newLevel.getCreateChange();
+
+        Map<Integer, RulDescItemType> descItemTypeCopyMap = ElzaTools
+                .createEntityMap(descItemCopyTypes, t -> t.getDescItemTypeId());
+
+        if (StringUtils.isNotBlank(scenarionName)) {
+            ScenarioOfNewLevel scenario = descriptionItemService
+                    .getDescriptionItamsOfScenario(scenarionName, staticLevel, direction.getDirectionLevel(), version);
+
+            for (ArrDescItem descItem : scenario.getDescItems()) {
+                //pokud se má typ kopírovat z předchozího uzlu, nebudeme ho vkládat ze scénáře
+                if (descItem.getDescItemType() == null || descItemTypeCopyMap
+                        .containsKey(descItem.getDescItemType().getDescItemTypeId())) {
+                    continue;
+                }
+
+                descItem.setNode(newLevel.getNode());
+                descriptionItemService.createDescriptionItem(descItem, newLevel.getNode(), version, change);
+            }
+        }
+
+
+        ArrLevel youngerSibling = levelRepository.findYoungerSibling(newLevel, version.getLockChange());
+        if(youngerSibling != null && !descItemCopyTypes.isEmpty()){
+            List<ArrDescItem> siblingDescItems = descItemRepository
+                    .findOpenByNodeAndTypes(youngerSibling.getNode(), descItemCopyTypes);
+            descriptionItemService.copyDescItemWithDataToNode(newLevel.getNode(), siblingDescItems, change);
+        }
+
+
+        arrangementService.saveLastChangeFaVersion(change, version.getFindingAidVersionId());
+
+
+        entityManager.flush(); //aktualizace verzí v nodech
+        eventNotificationService
+                .publishEvent(EventFactory.createAddNodeEvent(direction.getEventType(), version, staticLevel, newLevel));
+
+        return newLevel;
+    }
+
+    /**
+     * Vloží nový uzel před nebo za statický uzel.
+     *
+     * @param version          verze stormu
+     * @param staticNode       statický uzel (před/za který přidáváme)
+     * @param staticNodeParent rodič statického uzlu
+     * @param direction        směr přidání uzlu
+     * @return přidaný uzel
+     */
+    private ArrLevel addLevelBeforeAfter(final ArrFindingAidVersion version,
+                                         final ArrNode staticNode,
+                                         final ArrNode staticNodeParent,
+                                         final AddLevelDirection direction) {
+        Assert.notNull(version);
+        Assert.notNull(staticNode);
+        Assert.notNull(staticNodeParent);
+
+
+        isValidAndOpenVersion(version);
+
+        final ArrLevel staticLevelParent = lockNode(staticNodeParent, version);
+        Assert.notNull(staticLevelParent);
+
+        final ArrLevel staticLevel = levelRepository
+                .findNodeInRootTreeByNodeId(staticNode, version.getRootLevel().getNode(), version.getLockChange());
+
+
+        int newLevelPosition = direction.equals(AddLevelDirection.AFTER) ? staticLevel.getPosition() + 1
+                                                                         : staticLevel.getPosition();
+        List<ArrLevel> nodesToShift = nodesToShift(staticLevel);
+        if (direction.equals(AddLevelDirection.BEFORE)) {
+            nodesToShift.add(0, staticLevel);
+        }
+
+        ArrChange change = arrangementService.createChange();
+        shiftNodes(nodesToShift, change, newLevelPosition + 1);
+        ArrLevel newLevel = arrangementService.createLevel(change, staticLevelParent.getNode(), newLevelPosition);
+
+        return newLevel;
+    }
+
+
+    /**
+     * Vloží nový uzel pod statický uzel na poslední pozici.
+     *
+     * @param version    verze stromu
+     * @param staticNode statický uzel (pod který přidáváme)
+     * @return přidaný uzel
+     */
+    private ArrLevel addLevelUnder(final ArrFindingAidVersion version,
+                                   final ArrNode staticNode) {
+        Assert.notNull(version);
+        Assert.notNull(staticNode);
+
+
+        isValidAndOpenVersion(version);
+
+        final ArrLevel staticLevel = lockNode(staticNode, version);
+        Assert.notNull(staticLevel);
+
+
+        Integer maxPosition = levelRepository.findMaxPositionUnderParent(staticLevel.getNode());
+        if (maxPosition == null) {
+            maxPosition = 0;
+        }
+
+        ArrChange change = arrangementService.createChange();
+        ArrLevel newLevel = arrangementService.createLevel(change, staticLevel.getNode(), maxPosition + 1);
+
+        return newLevel;
+    }
+
 
 
     /**
@@ -493,19 +660,16 @@ public class ArrMoveLevelService {
     /**
      * Kontrola verze, že existuje v DB a není uzavřena.
      *
-     * @param versionId Identifikátor verze
-     * @return verze archivni pomucky
+     * @param version verze
      */
-    private ArrFindingAidVersion isValidAndOpenVersion(Integer versionId) {
-        Assert.notNull(versionId);
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+    private void isValidAndOpenVersion(final ArrFindingAidVersion version) {
+        Assert.notNull(version);
         if (version == null) {
             throw new IllegalArgumentException("Verze neexistuje");
         }
         if (version.getLockChange() != null) {
             throw new IllegalArgumentException("Aktuální verze je zamčená");
         }
-        return version;
     }
 
     /**
@@ -519,7 +683,7 @@ public class ArrMoveLevelService {
         Assert.notNull(node);
         Assert.notNull(change);
 
-        ArrLevel newNode = copyLevel(node);
+        ArrLevel newNode = copyLevelData(node);
         newNode.setCreateChange(change);
 
         node.setDeleteChange(change);
@@ -534,7 +698,7 @@ public class ArrMoveLevelService {
      * @param level level
      * @return kopie
      */
-    private ArrLevel copyLevel(ArrLevel level) {
+    private ArrLevel copyLevelData(ArrLevel level) {
         Assert.notNull(level);
 
         ArrLevel newNode = new ArrLevel();
@@ -578,20 +742,30 @@ public class ArrMoveLevelService {
                 movedLevel.getPosition());
     }
 
-    /**
-     * Vloží level do rodiče na konkrétní pozici.
-     *
-     * @param level      level
-     * @param parentNode rodič
-     * @param position   pozice
-     * @return level
-     */
-    private ArrLevel addInLevel(ArrLevel level, ArrNode parentNode, Integer position) {
-        Assert.notNull(level);
-        Assert.notNull(position);
 
-        level.setNodeParent(parentNode);
-        level.setPosition(position);
-        return levelRepository.save(level);
+    /**
+     * Směr přidání nového uzlu.
+     */
+    public enum AddLevelDirection {
+        BEFORE(DirectionLevel.BEFORE, EventType.ADD_LEVEL_BEFORE),
+        AFTER(DirectionLevel.AFTER, EventType.ADD_LEVEL_AFTER),
+        CHILD(DirectionLevel.CHILD, EventType.ADD_LEVEL_UNDER);
+
+        private DirectionLevel directionLevel;
+        private EventType eventType;
+
+        AddLevelDirection(final DirectionLevel directionLevel,
+                          final EventType eventType) {
+            this.directionLevel = directionLevel;
+            this.eventType = eventType;
+        }
+
+        public DirectionLevel getDirectionLevel() {
+            return directionLevel;
+        }
+
+        public EventType getEventType() {
+            return eventType;
+        }
     }
 }

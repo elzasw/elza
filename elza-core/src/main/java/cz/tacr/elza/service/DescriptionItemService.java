@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -224,7 +226,7 @@ public class DescriptionItemService {
         node.setVersion(nodeVersion);
         saveNode(node);
 
-        return createDescriptionItem(descItem, node, version);
+        return createDescriptionItem(descItem, node, version, null);
     }
 
     /**
@@ -238,9 +240,10 @@ public class DescriptionItemService {
      */
     public ArrDescItem createDescriptionItem(final ArrDescItem descItem,
                                              final ArrNode node,
-                                             final ArrFindingAidVersion version) {
+                                             final ArrFindingAidVersion version,
+                                             @Nullable final ArrChange createChange) {
 
-        ArrChange change = arrangementService.createChange();
+        ArrChange change = createChange == null ? arrangementService.createChange() : createChange;
 
         descItem.setNode(node);
         descItem.setCreateChange(change);
@@ -401,6 +404,34 @@ public class DescriptionItemService {
     }
 
     /**
+     * Vytvoří kopii seznamu atributů. Kopírovaný atribut patří zvolenému uzlu.
+     *
+     * @param node            uzel, který dostane kopírované atributy
+     * @param sourceDescItems zdrojové atributy ke zkopírování
+     * @param createChange    čas vytvoření nové kopie
+     */
+    public void copyDescItemWithDataToNode(final ArrNode node,
+                                           final List<ArrDescItem> sourceDescItems,
+                                           final ArrChange createChange) {
+        for (ArrDescItem sourceDescItem : sourceDescItems) {
+            ArrDescItem descItemNew = new ArrDescItem();
+
+            BeanUtils.copyProperties(sourceDescItem, descItemNew);
+            descItemNew.setNode(node);
+            descItemNew.setDescItemId(null);
+            descItemNew.setDeleteChange(null);
+            descItemNew.setCreateChange(createChange);
+            descItemNew.setPosition(sourceDescItem.getPosition());
+            descItemNew.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+
+            descItemRepository.save(descItemNew);
+
+            // pro odverzovanou hodnotu atributu je nutné vytvořit kopii dat
+            copyDescItemData(sourceDescItem, descItemNew);
+        }
+    }
+
+    /**
      * Provede kopii dat mezi hodnotama atributů.
      *
      * @param descItemFrom z hodnoty atributu
@@ -485,6 +516,35 @@ public class DescriptionItemService {
         return descItemUpdated;
     }
 
+
+    /**
+     * Najde scénář podle názvu.
+     *
+     * @param scenarionName  název scénáře
+     * @param level          uzel, pro který hledáme
+     * @param directionLevel směr přidání nového uzlu
+     * @param version        verze stromu
+     * @return scénář uzlu s daným názvem
+     */
+    public ScenarioOfNewLevel getDescriptionItamsOfScenario(final String scenarionName, final ArrLevel level,
+                                                            final DirectionLevel directionLevel,
+                                                            final ArrFindingAidVersion version) {
+        Assert.notNull(scenarionName);
+        Assert.notNull(level);
+        Assert.notNull(directionLevel);
+        Assert.notNull(version);
+
+        List<ScenarioOfNewLevel> scenarioOfNewLevels = getDescriptionItemTypesForNewLevel(level, directionLevel,
+                version);
+
+        for (ScenarioOfNewLevel scenarioOfNewLevel : scenarioOfNewLevels) {
+            if (scenarioOfNewLevel.getName().equals(scenarionName)) {
+                return scenarioOfNewLevel;
+            }
+        }
+
+        throw new IllegalArgumentException("Nebyl nalezen scénář s názvem " + scenarionName);
+    }
 
     /**
      * Informace o možných scénářích založení nového uzlu

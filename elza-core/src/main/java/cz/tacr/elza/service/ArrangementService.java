@@ -198,7 +198,7 @@ public class ArrangementService {
             List<ArrDescItem> descItems = scenarioOfNewLevels.get(0).getDescItems();
             for (ArrDescItem descItem : descItems) {
                 descItem.setNode(rootLevel.getNode());
-                descriptionItemService.createDescriptionItem(descItem, rootLevel.getNode(), version);
+                descriptionItemService.createDescriptionItem(descItem, rootLevel.getNode(), version, change);
             }
         } else if (scenarioOfNewLevels.size() > 1) {
             logger.error("Při založení AP bylo nalezeno více scénařů (" + scenarioOfNewLevels.size() + ")");

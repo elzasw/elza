@@ -6,18 +6,22 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TemporalType;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Order;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -32,7 +36,6 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.utils.ObjectListIterator;
 
 
@@ -104,6 +107,40 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
 
         return parents;
+    }
+
+
+    @Override
+    public ArrLevel findYoungerSibling(final ArrLevel level, @Nullable final ArrChange lockChange) {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<ArrLevel> query = builder.createQuery(ArrLevel.class);
+        Root<ArrLevel> root = query.from(ArrLevel.class);
+
+
+        Predicate nodeParent = builder.equal(root.get("nodeParent"), level.getNodeParent());
+        Predicate position = builder.lt(root.get("position"), level.getPosition());
+
+        Predicate condition;
+        if (lockChange == null) {
+            condition = builder.and(nodeParent, position, builder.isNull(root.get("deleteChange")));
+        } else {
+            Join<Object, Object> createChange = root.join("createChange", JoinType.INNER);
+            Join<Object, Object> deleteChange = root.join("deleteChange", JoinType.LEFT);
+
+            condition = builder.and(
+                    nodeParent,
+                    builder.lt(createChange.get("changeId"), lockChange.getChangeId()),
+                    position, builder.or(
+                            builder.isNull(deleteChange.get("changeId")),
+                            builder.gt(deleteChange.get("changeId"), lockChange.getChangeId()))
+            );
+        }
+
+        Order order = builder.desc(root.get("position"));
+        query.select(root).where(condition).orderBy(order);
+
+        List<ArrLevel> resultList = entityManager.createQuery(query).setFirstResult(0).setMaxResults(1).getResultList();
+        return resultList.isEmpty() ? null : resultList.get(0);
     }
 
     /**

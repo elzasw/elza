@@ -13,6 +13,10 @@ public enum EventType {
 
     NODE_DELETE(EventIdInVersion.class),
 
+    ADD_LEVEL_AFTER(EventAddNode.class),
+    ADD_LEVEL_BEFORE(EventAddNode.class),
+    ADD_LEVEL_UNDER(EventAddNode.class),
+
     MOVE_LEVEL_AFTER(EventNodeMove.class),
     MOVE_LEVEL_BEFORE(EventNodeMove.class),
     MOVE_LEVEL_UNDER(EventNodeMove.class),
