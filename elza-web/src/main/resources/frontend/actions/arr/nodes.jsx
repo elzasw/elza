@@ -72,6 +72,7 @@ export function faCloseNodeTab(index) {
 export function faSelectSubNode(subNodeId, subNodeParentNode, openNewTab=false) {
     return {
         type: types.FA_FA_SELECT_SUBNODE,
+        area: types.FA_TREE_AREA_MAIN,
         subNodeId,
         subNodeParentNode,
         openNewTab,

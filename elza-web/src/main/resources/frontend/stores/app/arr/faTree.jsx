@@ -4,6 +4,7 @@ import {i18n} from 'components'
 
 const initialState = {
     selectedId: null,
+    selectedIds: {},
     focusId: null,
     expandedIds: {},
     searchedIds: null,
@@ -11,6 +12,9 @@ const initialState = {
     fetched: false,
     fetchingIncludeIds: {},   // jaké id aktuálně fetchuje - id na true
     nodes: [],
+    lastSelectedId: null, 
+    multipleSelection: false,
+    multipleSelectionOneLevel: false,
 }
 
 function removeChildren(nodes, node, selectedId) {
@@ -41,6 +45,68 @@ export default function faTree(state = initialState, action) {
     switch (action.type) {
         case types.GLOBAL_CONTEXT_MENU_HIDE:
             return Object.assign({}, state, {focusId: null});
+        case types.FA_FA_TREE_SELECT_NODE:
+            if (state.multipleSelection) {
+                var newState = {...state, lastSelectedId: null}
+                newState.selectedIds = {...state.selectedIds};
+
+                if (action.ctrl) {
+                    if (newState.selectedIds[action.nodeId]) { // byl vybrán a je držen ctrl, odznačíme ho
+                        delete newState.selectedIds[action.nodeId];
+                    } else {    // přidáme na výběr
+                        if (state.multipleSelectionOneLevel) {
+                            var keys = Object.keys(newState.selectedIds);
+                            if (keys.length > 0) {  // kontrolujeme stejný level - depth
+                                var indexSelected = indexById(newState.nodes, keys[0]);
+                                var indexNewSelection = indexById(newState.nodes, action.nodeId);
+                                if (newState.nodes[indexSelected].depth == newState.nodes[indexNewSelection].depth) {
+                                    newState.selectedIds[action.nodeId] = true;
+                                    newState.lastSelectedId = action.nodeId;
+                                }
+                            } else {
+                                newState.selectedIds[action.nodeId] = true;
+                                newState.lastSelectedId = action.nodeId;
+                            }
+                        } else {
+                            newState.selectedIds[action.nodeId] = true;
+                            newState.lastSelectedId = action.nodeId;
+                        }
+                    }
+                } else if (action.shift) {
+                    if (state.lastSelectedId != null) {
+                        var indexSelected = indexById(newState.nodes, state.lastSelectedId);
+                        var indexNewSelection = indexById(newState.nodes, action.nodeId);
+
+                        if (state.multipleSelectionOneLevel) {
+                            var depth = newState.nodes[indexSelected].depth;
+                            if (depth == newState.nodes[indexNewSelection].depth) {
+                                for (var a=Math.min(indexSelected, indexNewSelection); a<= Math.max(indexSelected, indexNewSelection); a++) {
+                                    if (state.nodes[a].depth == depth) {
+                                        newState.selectedIds[state.nodes[a].id] = true;
+                                    }
+                                }
+                            } else {
+                                newState.lastSelectedId = state.lastSelectedId;
+                            }
+                        } else {
+                            for (var a=Math.min(indexSelected, indexNewSelection); a<= Math.max(indexSelected, indexNewSelection); a++) {
+                                newState.selectedIds[state.nodes[a].id] = true;
+                            }
+                        }
+                    } else {
+                        newState.selectedIds = {};
+                        newState.selectedIds[action.nodeId] = true;
+                        newState.lastSelectedId = action.nodeId;
+                    }
+                } else {    // odznačíme vše a vybereme předaný
+                    newState.selectedIds = {};
+                    newState.selectedIds[action.nodeId] = true;
+                    newState.lastSelectedId = action.nodeId;
+                }
+                return newState;
+            } else {
+                return Object.assign({}, state, {selectedId: action.nodeId});
+            }
         case types.FA_FA_SELECT_SUBNODE:
             return Object.assign({}, state, {selectedId: action.subNodeId});
         case types.FA_FA_TREE_FOCUS_NODE:

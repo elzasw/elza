@@ -130,8 +130,6 @@ FaTreeLazy.defaultProps = {
 }
 
 FaTreeLazy.propTypes = {
-    fa: React.PropTypes.object.isRequired,
-    versionId: React.PropTypes.number.isRequired,
     expandedIds: React.PropTypes.object.isRequired,
     selectedId: React.PropTypes.number,
     selectedIds: React.PropTypes.object,

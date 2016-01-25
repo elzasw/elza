@@ -8,14 +8,24 @@ import nodeSetting from './nodeSetting'
 const initialState = {
     activeIndex: null,
     nodeSettings: undefined,
+    extendedView: false,
     packets: {},
     fas: [],
 }
 
 function selectFaTab(state, action) {
-    var faItem = Object.assign({}, action.fa, {faTree: faTree(action.fa.faTree, action), nodes: nodes(undefined, action)});
     var index = indexById(state.fas, action.fa.id);
     if (index == null) {    // není zatím v seznamu, přidáme jí tam
+        var faItem = Object.assign({}, action.fa, {
+            faTree: {...faTree(action.fa.faTree, action)},
+            faTreeMovementsLeft: {...faTree(action.fa.faTreeMovementsLeft, action)},
+            faTreeMovementsRight: {...faTree(action.fa.faTreeMovementsRight, action)},
+            nodes: nodes(undefined, action)
+        });
+
+        faItem.faTreeMovementsLeft.multipleSelection = true;
+        faItem.faTreeMovementsLeft.multipleSelectionOneLevel = true;
+
         return {
             ...state,
             fas: [
@@ -32,6 +42,20 @@ function selectFaTab(state, action) {
     }
 }
 
+function updateFaTree(fa, action) {
+    switch (action.area) {
+        case types.FA_TREE_AREA_MAIN:
+            fa.faTree = faTree(fa.faTree, action)
+            break;
+        case types.FA_TREE_AREA_MOVEMENTS_LEFT:
+            fa.faTreeMovementsLeft = faTree(fa.faTreeMovementsLeft, action)
+            break;
+        case types.FA_TREE_AREA_MOVEMENTS_RIGHT:
+            fa.faTreeMovementsRight = faTree(fa.faTreeMovementsRight, action)
+            break;
+    }
+}
+
 export default function arrRegion(state = initialState, action) {
     switch (action.type) {
         case types.GLOBAL_GET_OBJECT_INFO:
@@ -44,11 +68,14 @@ export default function arrRegion(state = initialState, action) {
         case types.FA_FA_TREE_RECEIVE:
             var index = indexById(state.fas, action.versionId, "versionId");
             if (index != null) {
+                var newFa = Object.assign({}, state.fas[index]);
+                updateFaTree(newFa, action);
+
                 return {
                     ...state,
                     fas: [
                         ...state.fas.slice(0, index),
-                        Object.assign({}, state.fas[index], {faTree: faTree(state.fas[index].faTree, action)}),
+                        newFa,
                         ...state.fas.slice(index + 1)
                     ]
                 }
@@ -58,16 +85,32 @@ export default function arrRegion(state = initialState, action) {
         case types.FA_FA_TREE_FOCUS_NODE:
         case types.FA_FA_TREE_EXPAND_NODE:
         case types.FA_FA_TREE_COLLAPSE_NODE:
+        case types.FA_FA_TREE_SELECT_NODE:
         case types.GLOBAL_CONTEXT_MENU_HIDE:
+            var newFa = Object.assign({}, state.fas[state.activeIndex]);
+            updateFaTree(newFa, action);
+
             return {
                 ...state,
                 fas: [
                     ...state.fas.slice(0, state.activeIndex),
-                    Object.assign({}, state.fas[state.activeIndex], {faTree: faTree(state.fas[state.activeIndex].faTree, action)}),
+                    newFa,
                     ...state.fas.slice(state.activeIndex + 1)
                 ]
             }
         case types.FA_FA_SELECT_SUBNODE:
+            var newFa = Object.assign({}, state.fas[state.activeIndex]);
+            updateFaTree(newFa, action);
+            newFa.nodes = nodes(state.fas[state.activeIndex].nodes, action);
+
+            return {
+                ...state,
+                fas: [
+                    ...state.fas.slice(0, state.activeIndex),
+                    newFa,
+                    ...state.fas.slice(state.activeIndex + 1)
+                ]
+            }
         case types.FA_FA_SUBNODES_NEXT:
         case types.FA_FA_SUBNODES_PREV:
         case types.FA_FA_SUBNODES_NEXT_PAGE:
@@ -78,7 +121,7 @@ export default function arrRegion(state = initialState, action) {
                 ...state,
                 fas: [
                     ...state.fas.slice(0, state.activeIndex),
-                    Object.assign({}, state.fas[state.activeIndex], {nodes: nodes(state.fas[state.activeIndex].nodes, action), faTree: faTree(state.fas[state.activeIndex].faTree, action)}),
+                    Object.assign({}, state.fas[state.activeIndex], {nodes: nodes(state.fas[state.activeIndex].nodes, action)}),
                     ...state.fas.slice(state.activeIndex + 1)
                 ]
             }
@@ -103,7 +146,7 @@ export default function arrRegion(state = initialState, action) {
                     ...state,
                     fas: [
                         ...state.fas.slice(0, faIndex),
-                        Object.assign({}, state.fas[faIndex], {nodes: nodes(state.fas[faIndex].nodes, action), faTree: faTree(state.fas[faIndex].faTree, action)}),
+                        Object.assign({}, state.fas[faIndex], {nodes: nodes(state.fas[faIndex].nodes, action)}),
                         ...state.fas.slice(faIndex + 1)
                     ]
                 }

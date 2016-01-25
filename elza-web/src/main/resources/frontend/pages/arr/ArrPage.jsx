@@ -11,7 +11,7 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Icon, Ribbon, i18n} from 'components';
-import {AddFaForm, RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FaFileTree, AbstractReactComponent, ModalDialog, NodeTabs, FaTreeTabs} from 'components';
+import {FaExtendedView, AddFaForm, RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FaFileTree, AbstractReactComponent, ModalDialog, NodeTabs, FaTreeTabs} from 'components';
 import {ButtonGroup, Button, DropdownButton, MenuItem} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
@@ -140,12 +140,17 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         var fas = arrRegion.fas;
         var activeFa = arrRegion.activeIndex != null ? arrRegion.fas[arrRegion.activeIndex] : null;
-        var leftPanel = (
-            <FaTreeTabs
-                fas={fas}
-                activeFa={activeFa}
-            />
-        )
+        var leftPanel;
+        if (arrRegion.extendedView) {   // rozšířené zobrazení stromu AP
+            leftPanel = <div></div>
+        } else {
+            leftPanel = (
+                <FaTreeTabs
+                    fas={fas}
+                    activeFa={activeFa}
+                />
+            )
+        }
 
         var packets = [];
         var findingAidId = this.getActiveFindingAidId();
@@ -154,19 +159,27 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         }
 
         var centerPanel;
-        if (activeFa && activeFa.nodes) {
-            centerPanel = (
-                <NodeTabs
-                    versionId={activeFa.activeVersion.id}
-                    fa={activeFa}
-                    nodes={activeFa.nodes.nodes}
-                    activeIndex={activeFa.nodes.activeIndex}
-                    rulDataTypes={rulDataTypes}
-                    calendarTypes={calendarTypes}
-                    packetTypes={packetTypes}
-                    packets={packets}
-                />
-            )
+        if (activeFa) {
+            if (arrRegion.extendedView) {   // rozšířené zobrazení stromu AP
+                centerPanel = (
+                    <FaExtendedView
+                        fa={activeFa}
+                    />
+                )
+            } else if (activeFa.nodes) {
+                centerPanel = (
+                    <NodeTabs
+                        versionId={activeFa.activeVersion.id}
+                        fa={activeFa}
+                        nodes={activeFa.nodes.nodes}
+                        activeIndex={activeFa.nodes.activeIndex}
+                        rulDataTypes={rulDataTypes}
+                        calendarTypes={calendarTypes}
+                        packetTypes={packetTypes}
+                        packets={packets}
+                    />
+                )
+            }
         }
 
         var rightPanel = (

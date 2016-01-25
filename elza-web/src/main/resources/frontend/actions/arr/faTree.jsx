@@ -8,6 +8,17 @@ import {WebApi} from 'actions'
 import * as types from 'actions/constants/actionTypes';
 import {indexById} from 'stores/app/utils.jsx'
 
+// jen vyber polozky, vyuzite jen v presunech JP
+export function faTreeSelectNode(area, nodeId, ctrl, shift) {
+    return {
+        type: types.FA_FA_TREE_SELECT_NODE,
+        area,
+        nodeId,
+        ctrl,
+        shift,
+    }
+}
+
 /**
  * Rozbalení uzlu.
  * @param {String} area oblast stromu
@@ -32,7 +43,7 @@ export function faTreeNodeExpand(area, node) {
     return (dispatch, getState) => {
         var state = getState();
         var activeFa = state.arrRegion.fas[state.arrRegion.activeIndex];
-        var faTree = activeFa.faTree;
+        var faTree = getFaTree(activeFa, area);
 
         dispatch(_faTreeNodeExpand(area, node, true))
 
@@ -70,6 +81,17 @@ export function faTreeNodeCollapse(area, node) {
     }
 }
 
+function getFaTree(fa, area) {
+    switch (area) {
+        case types.FA_TREE_AREA_MAIN:
+            return fa.faTree;
+        case types.FA_TREE_AREA_MOVEMENTS_LEFT:
+            return fa.faTreeMovementsLeft;
+        case types.FA_TREE_AREA_MOVEMENTS_RIGHT:
+            return fa.faTreeMovementsRight;
+    }
+}
+
 /**
  * Vyžádání dat - aby byla ve store k dispozici.
  * @param {String} area oblast stromu
@@ -80,7 +102,7 @@ export function faTreeFetchIfNeeded(area, versionId, expandedIds, selectedId) {
     return (dispatch, getState) => {
         var state = getState();
         var activeFa = state.arrRegion.fas[state.arrRegion.activeIndex];
-        var faTree = activeFa.faTree;
+        var faTree = getFaTree(activeFa, area);
 
         var fetch = false;
 

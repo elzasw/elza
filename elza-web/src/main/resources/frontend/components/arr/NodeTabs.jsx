@@ -37,7 +37,7 @@ var NodeTabs = class NodeTabs extends AbstractReactComponent {
 
         return (
             <Tabs.Container className='node-tabs-container'>
-                <Tabs.Tabs items={tabs} activeItem={activeTab}
+                <Tabs.Tabs closable items={tabs} activeItem={activeTab}
                     onSelect={item=>this.dispatch(faSelectNodeTab(item.index))}
                     onClose={item=>this.dispatch(faCloseNodeTab(item.index))}
                 />

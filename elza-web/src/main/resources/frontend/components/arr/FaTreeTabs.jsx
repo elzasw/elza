@@ -6,7 +6,7 @@ require ('./FaTreeTabs.less');
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Tabs, FaTreeLazy} from 'components';
+import {AbstractReactComponent, i18n, Tabs, FaTreeLazy, FaTreeMain} from 'components';
 import * as types from 'actions/constants/actionTypes';
 import {AppActions} from 'stores';
 import {MenuItem} from 'react-bootstrap';
@@ -111,19 +111,24 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
 
         return (
             <Tabs.Container className='fa-tabs-container'>
-                <Tabs.Tabs items={tabs} activeItem={activeFa}
+                <Tabs.Tabs closable items={tabs} activeItem={activeFa}
                     onSelect={item=>this.dispatch(selectFaTab(item))}
                     onClose={item=>this.dispatch(closeFaTab(item))}
                 />
                 <Tabs.Content>
-                    <FaTreeLazy 
+                    <FaTreeMain
+                        fa = {activeFa}
+                        versionId={activeFa.versionId}
+                        {...activeFa.faTree}
+                    />
+                    {false && <FaTreeLazy 
                         fa={activeFa}
                         {...activeFa.faTree}
                         versionId={this.props.activeFa.versionId}
                         onOpenCloseNode={(node, expand) => {expand ? this.dispatch(faTreeNodeExpand(types.FA_TREE_AREA_MAIN, node)) : this.dispatch(faTreeNodeCollapse(types.FA_TREE_AREA_MAIN, node))}}
                         onContextMenu={this.handleContextMenu}
                         onNodeClick={this.handleNodeClick}
-                    /> 
+                    /> }
                 </Tabs.Content>
             </Tabs.Container>
         );
