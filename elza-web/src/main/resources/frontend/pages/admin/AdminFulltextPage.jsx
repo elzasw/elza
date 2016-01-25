@@ -31,7 +31,7 @@ var AdminFulltextPage = class AdminFulltextPage extends React.Component {
 
         var centerPanel = (
             <div>
-                <AdminFulltextReindex />
+                <AdminFulltextReindex {...this.props.fulltext} />
             </div>
         )
 
@@ -53,6 +53,7 @@ var AdminFulltextPage = class AdminFulltextPage extends React.Component {
  */
 function mapStateToProps(state) {
     const {fulltext} = state.adminRegion
+    
     return {
         fulltext
     }

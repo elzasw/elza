@@ -8,10 +8,13 @@ import javax.persistence.PersistenceContext;
 import org.hibernate.search.MassIndexer;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import cz.tacr.elza.search.IndexerProgressMonitor;
 
 /**
  *
@@ -25,6 +28,9 @@ public class AdminService implements ApplicationListener<ContextRefreshedEvent> 
     @PersistenceContext
     private EntityManager entityManager;
 
+    @Autowired
+    private IndexerProgressMonitor indexerProgressMonitor;
+
     private Future<?> indexerStatus;
 
     /** Přeindexuje všechna data. */
@@ -33,12 +39,10 @@ public class AdminService implements ApplicationListener<ContextRefreshedEvent> 
 
         if (isIndexingRunning()) {
             return;
-//            indexerStatus.cancel(true);
         }
 
         MassIndexer createIndexer = fullTextEntityManager.createIndexer();
-//        MassIndexerProgressMonitor monitor = new SimpleIndexingProgressMonitor();
-//        createIndexer.progressMonitor(monitor);
+        createIndexer.progressMonitor(indexerProgressMonitor);
         indexerStatus = createIndexer.start();
     }
 

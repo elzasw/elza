@@ -6,6 +6,7 @@
  */
 import * as types from 'actions/constants/actionTypes';
 import packages from './packages'
+import fulltext from './fulltext'
 
 /**
  * Výchozí stav store
@@ -13,8 +14,8 @@ import packages from './packages'
 const initialState = {
 
     // seznam importovaných balíčků
-    packages: packages()
-
+    packages: packages(),
+    fulltext: fulltext()
 }
 
 export default function adminRegion(state = initialState, action = {}) {
@@ -27,7 +28,11 @@ export default function adminRegion(state = initialState, action = {}) {
             return Object.assign({}, state, {
                 packages: packages(state.packages, action)
             });
-
+        case types.ADMIN_FULLTEXT_REINDEXING_REQUEST:
+        case types.ADMIN_FULLTEXT_REINDEXING_RECIEVE:
+            return Object.assign({}, state, {
+                fulltext: fulltext(state.fulltext, action)
+            });
         default:
             return state;
     }

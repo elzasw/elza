@@ -29,6 +29,7 @@ public enum EventType {
     RECORD_CREATE(EventId.class),
     RECORD_UPDATE(EventId.class);
 
+    INDEXING_FINISHED(ActionEvent.class);
 
     private Class<? extends AbstractEventSimple> eventClass;
 

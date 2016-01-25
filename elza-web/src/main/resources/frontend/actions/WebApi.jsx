@@ -359,6 +359,13 @@ class WebApi{
     reindex(){
         return AjaxUtils.ajaxGet('/api/admin/reindex');
     }    
+    
+    getIndexingState() {
+        return AjaxUtils.ajaxGet('/api/admin/reindexStatus')
+            .then(json=>{
+                return json;
+            });
+    }    
 }
 
 function findNodeById(node, nodeId) {

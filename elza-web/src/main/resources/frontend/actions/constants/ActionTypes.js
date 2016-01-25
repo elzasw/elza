@@ -124,6 +124,13 @@ export const ADMIN_PACKAGES_IMPORT_REQUEST = 'ADMIN_PACKAGES_IMPORT_REQUEST'    
 export const ADMIN_PACKAGES_IMPORT_RECEIVE = 'ADMIN_PACKAGES_IMPORT_RECEIVE'    // odpověď na nahrání balíčku
 
 /**
+ * Admin - Fulltext
+ */
+export const ADMIN_FULLTEXT_REINDEXING_REQUEST = 'ADMIN_FULLTEXT_REINDEXING_REQUEST'    // požadavek na reindexace
+export const ADMIN_FULLTEXT_REINDEXING_STATE_REQUEST = 'ADMIN_FULLTEXT_REINDEXING_STATE_REQUEST'    // dotaz na průběh indexace
+export const ADMIN_FULLTEXT_REINDEXING_STATE_RECIEVE = 'ADMIN_FULLTEXT_REINDEXING_STATE_RECIEVE'    // odpověď na průběh indexace
+		
+/**
  * Ref tables.
  */
 export const REF_RULE_SET_REQUEST = 'REF_RULE_SET_REQUEST'
