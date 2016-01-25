@@ -15,7 +15,17 @@ public class ArrDescItemPacketVO extends ArrDescItemVO {
     /**
      * obal
      */
+    private Integer value;
+
     private ArrPacketVO packet;
+
+    public Integer getValue() {
+        return value;
+    }
+
+    public void setValue(final Integer value) {
+        this.value = value;
+    }
 
     public ArrPacketVO getPacket() {
         return packet;

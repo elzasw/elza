@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.ParDynastyEditVO;
 import cz.tacr.elza.controller.vo.ParEventEditVO;
 import cz.tacr.elza.controller.vo.ParPartyEditVO;
@@ -25,7 +26,9 @@ import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParDynasty;
 import cz.tacr.elza.domain.ParEvent;
 import cz.tacr.elza.domain.ParParty;
@@ -39,8 +42,11 @@ import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
+import cz.tacr.elza.repository.FindingAidRepository;
+import cz.tacr.elza.repository.PacketTypeRepository;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 
@@ -63,6 +69,12 @@ public class ClientFactoryDO {
 
     @Autowired
     private DescItemSpecRepository descItemSpecRepository;
+
+    @Autowired
+    private FindingAidRepository findingAidRepository;
+
+    @Autowired
+    private PacketTypeRepository packetTypeRepository;
 
     /**
      * Vytvoří node z VO.
@@ -246,5 +258,24 @@ public class ClientFactoryDO {
         }
 
         return descItem;
+    }
+
+    public ArrPacket createPacket(final ArrPacketVO packetVO, final Integer findingAidId) {
+        Assert.notNull(findingAidId);
+        Assert.notNull(packetVO);
+
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        ArrPacket packet = mapper.map(packetVO, ArrPacket.class);
+
+        ArrFindingAid findingAid = findingAidRepository.findOne(findingAidId);
+        Assert.notNull(findingAid, "Archivní pomůcka neexistuje (ID=" + findingAidId + ")");
+
+        RulPacketType packetType = packetTypeRepository.findOne(packetVO.getPacketTypeId());
+        Assert.notNull(packetType, "Typ obalu neexistuje (ID=" + packetVO.getPacketTypeId() + ")");
+
+        packet.setPacketType(packetType);
+        packet.setFindingAid(findingAid);
+
+        return packet;
     }
 }

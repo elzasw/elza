@@ -18,15 +18,43 @@ import {AppStore} from 'stores'
 import {WebApi} from 'actions'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {approveFa} from 'actions/arr/fa'
+import {packetsFetchIfNeeded} from 'actions/arr/packets'
+import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes'
 
 var ArrPage = class ArrPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
         this.bindMethods('getActiveInfo', 'buildRibbon',
-            'handleApproveFaVersion', 'handleCallApproveFaVersion');
+            'handleApproveFaVersion', 'handleCallApproveFaVersion', 'getActiveFindingAidId');
 
         this.state = {faFileTreeOpened: false};
+    }
+
+    componentDidMount() {
+        this.dispatch(packetTypesFetchIfNeeded());
+        var findingAidId = this.getActiveFindingAidId();
+        if (findingAidId !== null) {
+            this.dispatch(packetsFetchIfNeeded(findingAidId));
+        }
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.dispatch(packetTypesFetchIfNeeded());
+        var findingAidId = this.getActiveFindingAidId();
+        if (findingAidId !== null) {
+            this.dispatch(packetsFetchIfNeeded(findingAidId));
+        }
+    }
+
+    getActiveFindingAidId() {
+        var arrRegion = this.props.arrRegion;
+        var activeFa = arrRegion.activeIndex != null ? arrRegion.fas[arrRegion.activeIndex] : null;
+        if (activeFa) {
+            return activeFa.faId;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -108,7 +136,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     render() {
-        const {arrRegion, faFileTree, rulDataTypes, calendarTypes} = this.props;
+        const {arrRegion, faFileTree, rulDataTypes, calendarTypes, packetTypes} = this.props;
 
         var fas = arrRegion.fas;
         var activeFa = arrRegion.activeIndex != null ? arrRegion.fas[arrRegion.activeIndex] : null;
@@ -119,6 +147,12 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             />
         )
 
+        var packets = [];
+        var findingAidId = this.getActiveFindingAidId();
+        if (findingAidId && arrRegion.packets[findingAidId]) {
+            packets = arrRegion.packets[findingAidId].items;
+        }
+
         var centerPanel;
         if (activeFa && activeFa.nodes) {
             centerPanel = (
@@ -128,6 +162,8 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                     activeIndex={activeFa.nodes.activeIndex}
                     rulDataTypes={rulDataTypes}
                     calendarTypes={calendarTypes}
+                    packetTypes={packetTypes}
+                    packets={packets}
                 />
             )
         }
@@ -164,6 +200,7 @@ function mapStateToProps(state) {
         faFileTree,
         rulDataTypes: refTables.rulDataTypes,
         calendarTypes: refTables.calendarTypes,
+        packetTypes: refTables.packetTypes,
     }
 }
 
@@ -172,6 +209,7 @@ ArrPage.propTypes = {
     faFileTree: React.PropTypes.object.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
+    packetTypes: React.PropTypes.object.isRequired,
 }
 
 module.exports = connect(mapStateToProps)(ArrPage);

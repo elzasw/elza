@@ -804,7 +804,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
     @Test
     @Transactional
-    public void testAddLevel(){
+    public void testAddDeleteLevel(){
         ArrFindingAid fa = createFindingAid("test");
         ArrFindingAidVersion version = findingAidVersionRepository
                 .findByFindingAidIdAndLockChangeIsNull(fa.getFindingAidId());
@@ -873,6 +873,11 @@ public class ArrangementManagerTest extends AbstractRestTest {
         //3
         //  31
         //2
+
+
+        moveLevelService.deleteLevel(version, child31.getNode(), child31.getNodeParent());
+        child3childs = levelRepository.findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(child3.getNode());
+        Assert.assertTrue(child3childs.isEmpty());
     }
 
     @Test

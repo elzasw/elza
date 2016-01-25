@@ -69,6 +69,9 @@ var messages = {
     "registry.applyMove": "Přesunout sem",
     "registry.detail.charakteristika": "Charakteristika",
     "registry.detail.typ.rejstriku": "Typ rejstříku - hiearchie:",
+    "registry.editRegistry": "Editace rejstříku",
+
+
     
     "party.detail.characteristics": "Charakteristika",
     "party.detail.type": "Typ",

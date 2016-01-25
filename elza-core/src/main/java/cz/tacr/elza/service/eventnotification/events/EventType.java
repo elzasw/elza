@@ -21,6 +21,8 @@ public enum EventType {
     MOVE_LEVEL_BEFORE(EventNodeMove.class),
     MOVE_LEVEL_UNDER(EventNodeMove.class),
 
+    DELETE_LEVEL(EventIdInVersion.class),
+
     PARTY_CREATE(EventId.class),
     PARTY_UPDATE(EventId.class),
 

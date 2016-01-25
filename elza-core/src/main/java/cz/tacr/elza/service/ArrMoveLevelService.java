@@ -2,6 +2,7 @@ package cz.tacr.elza.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -12,6 +13,7 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -392,6 +394,44 @@ public class ArrMoveLevelService {
                 EventFactory.createMoveEvent(EventType.MOVE_LEVEL_BEFORE, staticLevel, transportLevels, version));
     }
 
+
+    /**
+     * Provede smazání levelu.
+     *
+     * @param version          verze stromu
+     * @param deleteNode       node ke smazání
+     * @param deleteNodeParent rodič nodu ke smazání
+     */
+    public void deleteLevel(final ArrFindingAidVersion version,
+                            final ArrNode deleteNode,
+                            final ArrNode deleteNodeParent) {
+        Assert.notNull(version);
+        Assert.notNull(deleteNode);
+
+        ArrLevel deleteLevel = lockNode(deleteNode, version);
+        if (deleteNodeParent != null) {
+            lockNode(deleteNodeParent, version);
+
+            if(!ObjectUtils.equals(deleteLevel.getNodeParent(), deleteNodeParent)){
+                throw new IllegalArgumentException(
+                        "Uzel " + deleteNode.getNodeId() + " nemá rodiče s id " + deleteNodeParent.getNodeId());
+            }
+        }
+
+
+
+
+        ruleService.conformityInfo(version.getFindingAidVersionId(), Arrays.asList(deleteNode.getNodeId()),
+                NodeTypeOperation.DELETE_NODE, null, null, null);
+
+        ArrChange change = arrangementService.createChange();
+        shiftNodes(nodesToShift(deleteLevel), change, deleteLevel.getPosition());
+
+        arrangementService.deleteLevelCascade(deleteLevel, change);
+
+        eventNotificationService.publishEvent(
+                EventFactory.createIdInVersionEvent(EventType.DELETE_LEVEL, version, deleteNode.getNodeId()));
+    }
 
     /**
      * Provede posunutí pozice uzlů. Až narazí na uzel, přes/za který mají být vloženy přesouvané uzly, přesune je a

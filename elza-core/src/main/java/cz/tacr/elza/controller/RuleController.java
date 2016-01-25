@@ -41,9 +41,6 @@ public class RuleController {
     @Autowired
     private DataTypeRepository dataTypeRepository;
 
-    @Autowired
-    private PacketTypeRepository packetTypeRepository;
-
     @RequestMapping(value = "/getRuleSets", method = RequestMethod.GET)
     public List<RulRuleSetVO> getRuleSets() {
         Map<Integer, RulRuleSetVO> ruleSets = new LinkedHashMap<>();
@@ -61,12 +58,6 @@ public class RuleController {
     public List<RulDataTypeVO> getDataTypes() {
         List<RulDataType> dataTypes = dataTypeRepository.findAll();
         return factoryVo.createDataTypeList(dataTypes);
-    }
-
-    @RequestMapping(value = "/packetTypes", method = RequestMethod.GET)
-    public List<RulPacketTypeVO> getPacketTypes() {
-        List<RulPacketType> packetTypes = packetTypeRepository.findAll();
-        return factoryVo.createPacketTypeList(packetTypes);
     }
 
 }

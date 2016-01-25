@@ -16,7 +16,7 @@ var NodeTabs = class NodeTabs extends AbstractReactComponent {
     }
 
     render() {
-        const {nodes, activeIndex, versionId, rulDataTypes, calendarTypes} = this.props;
+        const {nodes, activeIndex, versionId, rulDataTypes, calendarTypes, packetTypes, packets} = this.props;
 
         if (nodes.length == 0) {
             return <div></div>
@@ -42,7 +42,12 @@ var NodeTabs = class NodeTabs extends AbstractReactComponent {
                     onClose={item=>this.dispatch(faCloseNodeTab(item.index))}
                 />
                 <Tabs.Content>
-                    {activeNode && <NodePanel versionId={versionId} node={activeNode} rulDataTypes={rulDataTypes} calendarTypes={calendarTypes}/>}
+                    {activeNode && <NodePanel versionId={versionId}
+                                              node={activeNode}
+                                              rulDataTypes={rulDataTypes}
+                                              calendarTypes={calendarTypes}
+                                              packetTypes={packetTypes}
+                                              packets={packets} />}
                 </Tabs.Content>
             </Tabs.Container>
         );
@@ -55,6 +60,8 @@ NodeTabs.propTypes = {
     versionId: React.PropTypes.number.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
+    packetTypes: React.PropTypes.object.isRequired,
+    packets: React.PropTypes.object.isRequired,
 }
 
 module.exports = connect()(NodeTabs);

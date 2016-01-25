@@ -42,8 +42,9 @@ org.eclipse.jdt.core.prefs
 /elza-core/bulkactions
 /elza-ui/rules
 /elza-web/src/main/resources/frontend/node_modules/
-/elza-ui/config/elza.yaml
-/elza-web/config/elza.yaml
+elza-ui/config/elza.yaml
+elza-web/config/elza.yaml
 /elza-web/bulkactions
 /elza-web/rules
 /elza-ui/config/elza.yaml
+/elza-web/lucene

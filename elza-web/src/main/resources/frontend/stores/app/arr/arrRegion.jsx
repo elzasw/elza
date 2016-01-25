@@ -8,6 +8,7 @@ import nodeSetting from './nodeSetting'
 const initialState = {
     activeIndex: null,
     nodeSettings: undefined,
+    packets: {},
     fas: [],
 }
 
@@ -136,6 +137,45 @@ export default function arrRegion(state = initialState, action) {
             return {
                 ...state,
                 nodeSettings: nodeSetting(state.nodeSettings, action)
+            }
+
+        case types.PACKETS_REQUEST:
+
+            var packets = state.packets;
+            var faPackets = packets[action.findingAidId];
+
+            if (faPackets == null) {
+                faPackets = {
+                        isFetching: true,
+                        fetched: false,
+                        items: []
+                }
+            } else {
+                faPackets.isFetching = true
+            }
+
+
+            packets[action.findingAidId] = faPackets;
+
+            return {
+                ...state,
+                packets
+            }
+
+        case types.PACKETS_RECEIVE:
+
+            var packets = state.packets;
+            var faPackets = packets[action.findingAidId];
+
+            faPackets.isFetching = false;
+            faPackets.fetched = true;
+            faPackets.items = action.items;
+
+            packets[action.findingAidId] = faPackets;
+
+            return {
+                ...state,
+                packets
             }
 
         default:

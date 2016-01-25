@@ -19,11 +19,6 @@ public class ArrPacketVO {
     private Integer packetTypeId;
 
     /**
-     * identifikátor archivní pomůcky
-     */
-    private Integer findingAidId;
-
-    /**
      * ukládací číslo
      */
     private String storageNumber;
@@ -47,14 +42,6 @@ public class ArrPacketVO {
 
     public void setPacketTypeId(final Integer packetTypeId) {
         this.packetTypeId = packetTypeId;
-    }
-
-    public Integer getFindingAidId() {
-        return findingAidId;
-    }
-
-    public void setFindingAidId(final Integer findingAidId) {
-        this.findingAidId = findingAidId;
     }
 
     public String getStorageNumber() {

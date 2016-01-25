@@ -223,7 +223,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @return {Object} view
      */
     renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex) {
-        const {rulDataTypes, calendarTypes, nodeSettings, nodeId} = this.props;
+        const {rulDataTypes, calendarTypes, nodeSettings, nodeId, packetTypes, packets} = this.props;
 
         var rulDataType = rulDataTypes.items[indexById(rulDataTypes.items, descItemType.dataTypeId)];
         var descItemTypeInfo = this.getDescItemTypeInfo(descItemType);
@@ -264,6 +264,8 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 descItemTypeInfo={descItemTypeInfo}
                 rulDataType={rulDataType}
                 calendarTypes={calendarTypes}
+                packetTypes={packetTypes}
+                packets={packets}
                 onDescItemAdd={this.handleDescItemAdd.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDescItemRemove={this.handleDescItemRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onChange={this.handleChange.bind(this, descItemGroupIndex, descItemTypeIndex)}
@@ -367,6 +369,8 @@ SubNodeForm.propTypes = {
     nodeSettings: React.PropTypes.object.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
+    packetTypes: React.PropTypes.object.isRequired,
+    packets: React.PropTypes.object.isRequired,
     formData: React.PropTypes.object.isRequired,
 }
 
