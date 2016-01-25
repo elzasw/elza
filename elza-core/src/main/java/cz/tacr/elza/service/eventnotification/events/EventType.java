@@ -27,7 +27,7 @@ public enum EventType {
     PARTY_UPDATE(EventId.class),
 
     RECORD_CREATE(EventId.class),
-    RECORD_UPDATE(EventId.class);
+    RECORD_UPDATE(EventId.class),
 
     INDEXING_FINISHED(ActionEvent.class);
 
