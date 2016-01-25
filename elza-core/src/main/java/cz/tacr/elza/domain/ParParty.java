@@ -37,6 +37,7 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
     public static final String PARTY_PREFERRED_NAME = "preferredName";
     public static final String HISTORY = "history";
     public static final String SOURCE_INFORMATION = "sourceInformation";
+    public static final String CHARACTERISTICS = "characteristics";
 
     @Id
     @GeneratedValue
@@ -63,6 +64,8 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
     @Column()
     private String sourceInformation;
 
+    @Column(length = 1000, nullable = true)
+    private String characteristics;
 
     @Override
     public Integer getPartyId() {
@@ -122,6 +125,14 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
     @Override
     public void setSourceInformation(final String sourceInformation) {
         this.sourceInformation = sourceInformation;
+    }
+
+    public String getCharacteristics() {
+        return characteristics;
+    }
+
+    public void setCharacteristics(final String characteristics) {
+        this.characteristics = characteristics;
     }
 
     @Override
