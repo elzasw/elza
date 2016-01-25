@@ -1,6 +1,7 @@
 /**
  * Utility pro pořádání.
  */
+import {indexById} from 'stores/app/utils.jsx'
 
 /**
  * Vytvoření virtuálního kořenového uzlu pro kořenový uzel FA.
@@ -28,4 +29,18 @@ export function isFaRootId(nodeId) {
     return isRoot;
 }
 
-
+/**
+ * Načtení nadřazeného uzlu k předanému.
+ * @param node {Object} uzel, pro který chceme vrátit nadřazený
+ * @param faTreeNodes {Array} seznam načtených uzlů pro data stromu
+ * @return {Object} parent nebo null, pokud je předaný uzel kořenový
+ */
+export function getParentNode(node, faTreeNodes) {
+    var index = indexById(faTreeNodes, node.id);
+    while (--index >= 0) {
+        if (faTreeNodes[index].depth < node.depth) {
+            return faTreeNodes[index];
+        }
+    }
+    return null;
+}

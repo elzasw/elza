@@ -8,23 +8,16 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {VirtualList, AbstractReactComponent, i18n, Loading} from 'components';
-import {Nav, NavItem, DropdownButton, MenuItem} from 'react-bootstrap';
+import {Nav, NavItem, DropdownButton} from 'react-bootstrap';
 var classNames = require('classnames');
-import {faTreeFocusNode, faTreeFetchIfNeeded, faTreeNodeExpand, faTreeNodeCollapse} from 'actions/arr/faTree'
-import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu'
-import {faSelectSubNode} from 'actions/arr/nodes'
 import {ResizeStore} from 'stores';
-import {indexById} from 'stores/app/utils.jsx'
-import {createFaRoot} from './ArrUtils.jsx'
 
 var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
         this.bindMethods(
-            'renderNode', 'handleOpenCloseNode', 'handleNodeClick',
-            'handleContextMenu', 'getParentNode', 'handleSelectInNewTab',
-            'callFaSelectSubNode'
+            'renderNode',
         );
 
         ResizeStore.listen(status => {
@@ -35,86 +28,10 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(faTreeFetchIfNeeded(nextProps.versionId, nextProps.expandedIds, nextProps.selectedId));
     }
 
     componentDidMount() {
-        this.dispatch(faTreeFetchIfNeeded(this.props.versionId, this.props.expandedIds, this.props.selectedId));
         this.setState({treeContainer: ReactDOM.findDOMNode(this.refs.treeContainer)});
-    }
-
-    /**
-     * Kliknutí na rozbalovací uzel.
-     * @param node {Object} jaký uzel chceme rozbalit/zabalit
-     * @param expand {Boolean} true, pokud uzel chceme rozbalit
-     */
-    handleOpenCloseNode(node, expand) {
-        expand ? this.dispatch(faTreeNodeExpand(node)) : this.dispatch(faTreeNodeCollapse(node));
-    }
-
-    /**
-     * Načtení nadřazeného uzlu k předanému.
-     * @param node {Object} uzel, pro který chceme vrátit nadřazený
-     * @return {Object} parent nebo null, pokud je předaný uzel kořenový
-     */
-    getParentNode(node) {
-        var index = indexById(this.props.nodes, node.id);
-        while (--index >= 0) {
-            if (this.props.nodes[index].depth < node.depth) {
-                return this.props.nodes[index];
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Zobrazení kontextového menu pro daný uzel.
-     * @param node {Object} uzel
-     * @param e {Object} event
-     */
-    handleContextMenu(node, e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        var menu = (
-            <ul className="dropdown-menu">
-                <MenuItem onClick={this.handleSelectInNewTab.bind(this, node)}>{i18n('faTree.action.openInNewTab')}</MenuItem>
-            </ul>
-        )
-
-        this.dispatch(faTreeFocusNode(node));
-        this.dispatch(contextMenuShow(this, menu, {x: e.clientX, y:e.clientY}));
-    }
-
-    /**
-     * Otevření uzlu v nové záložce.
-     * @param node {Object} uzel
-     */
-    handleSelectInNewTab(node) {
-        this.dispatch(contextMenuHide());
-
-        this.callFaSelectSubNode(node, true);
-    }
-
-    /**
-     * Otevření uzlu v záložce.
-     * @param node {Object} uzel
-     * @param openNewTab {Boolean} true, pokud se má otevřít v nové záložce
-     */
-    callFaSelectSubNode(node, openNewTab) {
-        var parentNode = this.getParentNode(node);
-        if (parentNode == null) {   // root
-            parentNode = createFaRoot(this.props.fa, node);
-        }
-        this.dispatch(faSelectSubNode(node.id, parentNode, openNewTab));
-    }
-
-    /**
-     * Otevření uzlu v aktuální záložce (pokud aktuální není, otevře se v nové).
-     * @param node {Object} uzel
-     */
-    handleNodeClick(node) {
-        this.callFaSelectSubNode(node, false);
     }
 
     /**
@@ -123,21 +40,28 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
      * @return {Object} view
      */
     renderNode(node) {
+        var {onNodeClick, onOpenCloseNode, onContextMenu} = this.props;
+
         var expanded = node.hasChildren && this.props.expandedIds[node.id];
 
         var expCol;
         if (node.hasChildren) {
             var expColCls = 'exp-col ' + (expanded ? 'fa fa-minus-square-o' : 'fa fa-plus-square-o');
-            expCol = <span className={expColCls} onClick={this.handleOpenCloseNode.bind(this, node, !expanded)}></span>
+            expCol = <span className={expColCls} onClick={onOpenCloseNode.bind(this, node, !expanded)}></span>
         } else {
             expCol = <span className='exp-col'>&nbsp;</span>
         }
 
+        var active = false;
+        active |= this.props.selectedId === node.id;
+        if (this.props.selectedIds && this.props.selectedIds[node.id]) {
+            active = true
+        }
         var cls = classNames({
             node: true,
             opened: expanded,
             closed: !expanded,
-            active: this.props.selectedId === node.id,
+            active: active,
             focus: this.props.focusId === node.id,
         })
 
@@ -162,8 +86,8 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
         var label = (
             <span
                 className='node-label'
-                onClick={this.handleNodeClick.bind(this, node)}
-                onContextMenu={this.handleContextMenu.bind(this, node)}
+                onClick={onNodeClick.bind(this, node)}
+                onContextMenu={onContextMenu.bind(this, node)}
                 >
                 {name}
             </span>
@@ -206,15 +130,19 @@ FaTreeLazy.defaultProps = {
 }
 
 FaTreeLazy.propTypes = {
-    activeFa: React.PropTypes.object.isRequired,
+    fa: React.PropTypes.object.isRequired,
     versionId: React.PropTypes.number.isRequired,
     expandedIds: React.PropTypes.object.isRequired,
     selectedId: React.PropTypes.number,
+    selectedIds: React.PropTypes.object,
     nodes: React.PropTypes.array.isRequired,
     focusId: React.PropTypes.number,
     rowHeight: React.PropTypes.number.isRequired,
     isFetching: React.PropTypes.bool.isRequired,
     fetched: React.PropTypes.bool.isRequired,
+    onNodeClick: React.PropTypes.func,
+    onOpenCloseNode: React.PropTypes.func,
+    onContextMenu: React.PropTypes.func,
 }
 
 module.exports = connect()(FaTreeLazy);
