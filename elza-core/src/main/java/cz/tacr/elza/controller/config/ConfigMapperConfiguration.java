@@ -108,6 +108,8 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
@@ -130,6 +132,9 @@ public class ConfigMapperConfiguration {
 
     @Autowired
     private PacketRepository packetRepository;
+
+    @Autowired
+    private CalendarTypeRepository calendarTypeRepository;
 
     /**
      * @return Tovární třída.
@@ -172,6 +177,16 @@ public class ConfigMapperConfiguration {
                                         final MappingContext context) {
                         unitdateVO.setCalendarTypeId(unitdate.getCalendarType().getCalendarTypeId());
                         unitdateVO.setId(unitdate.getDescItemId());
+                        unitdateVO.setValue(UnitDateConvertor.convertToString(unitdate));
+                    }
+
+                    @Override
+                    public void mapBtoA(final ArrDescItemUnitdateVO arrDescItemUnitdateVO,
+                                        final ArrDescItemUnitdate unitdate,
+                                        final MappingContext context) {
+                        unitdate.setCalendarType(calendarTypeRepository.findOne(arrDescItemUnitdateVO.getCalendarTypeId()));
+                        unitdate.setDescItemId(arrDescItemUnitdateVO.getId());
+                        UnitDateConvertor.convertToUnitDate(arrDescItemUnitdateVO.getValue(), unitdate);
                     }
                 }).byDefault().register();
 
