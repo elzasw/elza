@@ -37,7 +37,7 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
                 <Modal.Body>
                     <form onSubmit={handleSubmit}>
                         <Input type="text" label={i18n('registry.name')} {...nameMain} {...decorateFormField(nameMain)} />
-                        <Input type="text" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)} />
+                        <Input type="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)} />
 
                     </form>
                 </Modal.Body>
