@@ -164,6 +164,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                 centerPanel = (
                     <FaExtendedView
                         fa={activeFa}
+                        versionId={activeFa.activeVersion.id}
                     />
                 )
             } else if (activeFa.nodes) {

@@ -10,7 +10,7 @@ export function getNodeParent(nodes, nodeId) {
     if (index != null) {
         var depth = nodes[index].depth;
         index--;
-        while (index > 0) {
+        while (index >= 0) {
             var n = nodes[index];
             if (n.depth < depth) {
                 result = n;
@@ -30,7 +30,7 @@ export function getNodeParents(nodes, nodeId) {
     if (index != null) {
         var depth = nodes[index].depth;
         index--;
-        while (index > 0) {
+        while (index >= 0) {
             var n = nodes[index];
             if (n.depth < depth) {
                 result.push(n);
