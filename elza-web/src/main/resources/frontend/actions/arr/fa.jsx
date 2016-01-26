@@ -56,3 +56,10 @@ export function closeFaTab(fa) {
     }
 }
 
+export function faExtendedView(enable) {
+    return {
+        type: types.FA_EXTENDED_VIEW,
+        enable
+    }
+}
+

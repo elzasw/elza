@@ -64,6 +64,8 @@ export default function arrRegion(state = initialState, action) {
                 nodes(fa.nodes, action);
             });
             return state
+        case types.FA_EXTENDED_VIEW:
+            return {...state, extendedView: action.enable}
         case types.FA_FA_TREE_REQUEST:
         case types.FA_FA_TREE_RECEIVE:
             var index = indexById(state.fas, action.versionId, "versionId");

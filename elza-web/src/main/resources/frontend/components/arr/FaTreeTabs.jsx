@@ -6,11 +6,12 @@ require ('./FaTreeTabs.less');
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Tabs, FaTreeLazy, FaTreeMain} from 'components';
+import {AbstractReactComponent, i18n, Tabs, FaTreeLazy, FaTreeMain, Icon} from 'components';
 import * as types from 'actions/constants/actionTypes';
 import {AppActions} from 'stores';
+import {Button} from 'react-bootstrap';
 import {MenuItem} from 'react-bootstrap';
-import {selectFaTab, closeFaTab} from 'actions/arr/fa'
+import {selectFaTab, closeFaTab, faExtendedView} from 'actions/arr/fa'
 import {faTreeFocusNode, faTreeFetchIfNeeded, faTreeNodeExpand, faTreeNodeCollapse} from 'actions/arr/faTree'
 import {faSelectSubNode} from 'actions/arr/nodes'
 import {createFaRoot, getParentNode} from './ArrUtils.jsx'
@@ -20,7 +21,8 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('callFaSelectSubNode', 'handleNodeClick', 'handleSelectInNewTab', 'handleContextMenu');
+        this.bindMethods('callFaSelectSubNode', 'handleNodeClick', 'handleSelectInNewTab',
+            'handleContextMenu', 'handleToggleExtendedView');
     }
 
     componentDidMount() {
@@ -94,6 +96,10 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
         this.callFaSelectSubNode(node, false);
     }
 
+    handleToggleExtendedView() {
+        this.dispatch(faExtendedView(true));
+    }
+
     render() {
         const {fas, activeFa} = this.props;
 
@@ -111,6 +117,8 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
 
         return (
             <Tabs.Container className='fa-tabs-container'>
+                <Button onClick={this.handleToggleExtendedView} className='extended-view-toggle'><Icon glyph='fa-expand'/></Button>
+
                 <Tabs.Tabs closable items={tabs} activeItem={activeFa}
                     onSelect={item=>this.dispatch(selectFaTab(item))}
                     onClose={item=>this.dispatch(closeFaTab(item))}

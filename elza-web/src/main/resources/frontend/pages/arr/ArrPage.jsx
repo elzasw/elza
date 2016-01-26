@@ -142,7 +142,6 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         var activeFa = arrRegion.activeIndex != null ? arrRegion.fas[arrRegion.activeIndex] : null;
         var leftPanel;
         if (arrRegion.extendedView) {   // rozšířené zobrazení stromu AP
-            leftPanel = <div></div>
         } else {
             leftPanel = (
                 <FaTreeTabs

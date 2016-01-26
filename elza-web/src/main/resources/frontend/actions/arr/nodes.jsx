@@ -4,7 +4,7 @@
 
 import {WebApi} from 'actions'
 import {indexById} from 'stores/app/utils.jsx'
-
+import {faExtendedView} from './fa'
 import * as types from 'actions/constants/actionTypes';
 
 /**
@@ -22,7 +22,7 @@ export function faSelectNodeTab(index) {
             index,
         });
         if (nodeTab.selectedSubNodeId != null) {    // musíme poslat akci vybrání subnode (aby se řádek vybral např. ve stromu)
-            dispatch(faSelectSubNode(nodeTab.selectedSubNodeId, nodeTab, false));
+            dispatch(faSelectSubNodeInt(nodeTab.selectedSubNodeId, nodeTab, false));
         }
     }
 }
@@ -57,7 +57,7 @@ export function faCloseNodeTab(index) {
             if (newActiveFa.nodes.nodes.length > 0) {    // je vybraná nějaká jiná, protože ještě nějaké záložky existují
                 dispatch(faSelectNodeTab(newActiveFa.nodes.activeIndex));
             } else {    // není žádná záložka
-                dispatch(faSelectSubNode(null, null, false));
+                dispatch(faSelectSubNodeInt(null, null, false));
             }
         }
     }
@@ -69,13 +69,20 @@ export function faCloseNodeTab(index) {
  * @param {Object} subNodeParentNode nadřazený JP pro vybíranou JP, předáváno kvůli případnému otevření nové záložky, pokud neexistuje
  * @param {boolean} openNewTab má se otevřít nová záložka? Pokud je false, bude použita existující  aktuálně vybraná, pokud žádná neexistuje, bude nová vytvořena
  */
-export function faSelectSubNode(subNodeId, subNodeParentNode, openNewTab=false) {
+export function faSelectSubNodeInt(subNodeId, subNodeParentNode, openNewTab=false) {
     return {
         type: types.FA_FA_SELECT_SUBNODE,
         area: types.FA_TREE_AREA_MAIN,
         subNodeId,
         subNodeParentNode,
         openNewTab,
+    }
+}
+
+export function faSelectSubNode(subNodeId, subNodeParentNode, openNewTab=false) {
+    return (dispatch, getState) => {
+        dispatch(faExtendedView(false));
+        dispatch(faSelectSubNodeInt(subNodeId, subNodeParentNode, openNewTab));
     }
 }
 

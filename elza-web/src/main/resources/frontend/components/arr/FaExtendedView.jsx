@@ -21,7 +21,7 @@ var FaExtendedView = class FaExtendedView extends AbstractReactComponent {
             'handleMoveBefore', 'getDestNode');
 
         this.tabItems = [{id:0, title: 'Strom AP'}, {id: 1, title: 'Hromadné úpravy JP'}, {id: 2, title: 'Přesuny JP'}];
-        this.state = { selectedTabItem: this.tabItems[2] }
+        this.state = { selectedTabItem: this.tabItems[0] }
     }
 
     componentDidMount() {
