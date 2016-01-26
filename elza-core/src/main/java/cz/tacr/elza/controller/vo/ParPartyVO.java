@@ -23,16 +23,13 @@ public class ParPartyVO {
     /**
      * Rejstříkové heslo.
      */
-    private RegRecordVO record;
+    private String note;
 
     /**
      * Typ osoby.
      */
     private ParPartyTypeVO partyType;
-    /**
-     * Jednoznačné určení preferovaného jména osoby vazbou na tabulku jmen osoby.
-     */
-    private ParPartyNameVO preferredName;
+
     /**
      * Dějiny osoby.
      */
@@ -63,6 +60,11 @@ public class ParPartyVO {
      */
     private List<ParPartyVO> creators;
 
+    /**
+     * Verze záznamu.
+     */
+    private Integer version;
+
 
     public Integer getPartyId() {
         return partyId;
@@ -72,12 +74,12 @@ public class ParPartyVO {
         this.partyId = partyId;
     }
 
-    public RegRecordVO getRecord() {
-        return record;
+    public String getNote() {
+        return note;
     }
 
-    public void setRecord(final RegRecordVO record) {
-        this.record = record;
+    public void setNote(final String note) {
+        this.note = note;
     }
 
     public ParPartyTypeVO getPartyType() {
@@ -88,13 +90,6 @@ public class ParPartyVO {
         this.partyType = partyType;
     }
 
-    public ParPartyNameVO getPreferredName() {
-        return preferredName;
-    }
-
-    public void setPreferredName(final ParPartyNameVO preferredName) {
-        this.preferredName = preferredName;
-    }
 
     public String getHistory() {
         return history;
@@ -150,6 +145,14 @@ public class ParPartyVO {
 
     public void setCreators(final List<ParPartyVO> creators) {
         this.creators = creators;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(final Integer version) {
+        this.version = version;
     }
 
 

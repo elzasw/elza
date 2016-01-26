@@ -1,9 +1,13 @@
 package cz.tacr.elza.domain;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
 
 
 /**
@@ -24,6 +28,9 @@ public class ParPartyGroup extends ParParty implements cz.tacr.elza.api.ParParty
 
     @Column(length = 1000)
     private String organization;
+
+    @OneToMany(mappedBy = "partyGroup", fetch = FetchType.LAZY)
+    private List<ParPartyGroupIdentifier> partyGroupIdentifiers;
 
 
     @Override
@@ -66,4 +73,11 @@ public class ParPartyGroup extends ParParty implements cz.tacr.elza.api.ParParty
         this.organization = organization;
     }
 
+    public List<ParPartyGroupIdentifier> getPartyGroupIdentifiers() {
+        return partyGroupIdentifiers;
+    }
+
+    public void setPartyGroupIdentifiers(final List<ParPartyGroupIdentifier> partyGroupIdentifiers) {
+        this.partyGroupIdentifiers = partyGroupIdentifiers;
+    }
 }

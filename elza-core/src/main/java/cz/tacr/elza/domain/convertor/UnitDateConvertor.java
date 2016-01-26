@@ -9,6 +9,8 @@ import java.time.format.ResolverStyle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import cz.tacr.elza.api.IUnitdate;
+import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDescItemUnitdate;
 
 
@@ -86,7 +88,7 @@ public class UnitDateConvertor {
      * @param unitdate  doplňovaný objekt
      * @return          doplněný objekt
      */
-    public static ArrDescItemUnitdate convertToUnitDate(final String input, final ArrDescItemUnitdate unitdate) {
+    public static <T extends IUnitdate<ArrCalendarType>> T convertToUnitDate(final String input, final T unitdate) {
 
         unitdate.setFormat("");
 
@@ -114,7 +116,7 @@ public class UnitDateConvertor {
      * @param unitdate
      * @return
      */
-    public static String convertToString(final ArrDescItemUnitdate unitdate) {
+    public static String convertToString(final IUnitdate unitdate) {
 
         String format = unitdate.getFormat();
 
@@ -133,7 +135,7 @@ public class UnitDateConvertor {
      * @param unitdate  doplňovaný objekt
      * @return          výsledný řetězec
      */
-    private static String convertInterval(String format, ArrDescItemUnitdate unitdate) {
+    private static String convertInterval(String format, IUnitdate unitdate) {
 
         String[] data = format.split(INTERVAL_DELIMITER);
 
@@ -163,7 +165,7 @@ public class UnitDateConvertor {
      * @param first     zda-li se jedná o první datum
      * @return          výsledný řetězec
      */
-    private static String addEstimate(String format, ArrDescItemUnitdate unitdate, boolean first) {
+    private static String addEstimate(String format, IUnitdate unitdate, boolean first) {
         if (first) {
             if (unitdate.getValueFromEstimated()) {
                 format = "(" + format + ")";
@@ -183,7 +185,7 @@ public class UnitDateConvertor {
      * @param first     zda-li se jedná o první datum
      * @return          výsledný řetězec
      */
-    private static String convertToken(final String format, final ArrDescItemUnitdate unitdate, boolean first) {
+    private static String convertToken(final String format, final IUnitdate unitdate, boolean first) {
 
         if (format.equals("")) {
             return format;
@@ -223,7 +225,7 @@ public class UnitDateConvertor {
      * @param first     zda-li se jedná o první datum
      * @return          výsledný řetězec
      */
-    private static String convertDateTime(String format, ArrDescItemUnitdate unitdate, boolean first) {
+    private static String convertDateTime(String format, IUnitdate unitdate, boolean first) {
         if (first) {
             if (unitdate.getValueFrom() != null) {
                 LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom());
@@ -245,7 +247,7 @@ public class UnitDateConvertor {
      * @param first     zda-li se jedná o první datum
      * @return          výsledný řetězec
      */
-    private static String convertDate(String format, ArrDescItemUnitdate unitdate, boolean first) {
+    private static String convertDate(String format, IUnitdate unitdate, boolean first) {
         if (first) {
             if (unitdate.getValueFrom() != null) {
                 LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom());
@@ -267,7 +269,7 @@ public class UnitDateConvertor {
      * @param first     zda-li se jedná o první datum
      * @return          výsledný řetězec
      */
-    private static String convertYearMonth(String format, ArrDescItemUnitdate unitdate, boolean first) {
+    private static String convertYearMonth(String format, IUnitdate unitdate, boolean first) {
         if (first) {
             if (unitdate.getValueFrom() != null) {
                 LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom());
@@ -289,7 +291,7 @@ public class UnitDateConvertor {
      * @param first     zda-li se jedná o první datum
      * @return          výsledný řetězec
      */
-    private static String convertYear(String format, ArrDescItemUnitdate unitdate, boolean first) {
+    private static String convertYear(String format, IUnitdate unitdate, boolean first) {
         if (first) {
             if (unitdate.getValueFrom() != null) {
                 LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom());
@@ -311,7 +313,7 @@ public class UnitDateConvertor {
      * @param first     zda-li se jedná o první datum
      * @return          výsledný řetězec
      */
-    private static String convertCentury(final String format, final ArrDescItemUnitdate unitdate, boolean first) {
+    private static String convertCentury(final String format, final IUnitdate unitdate, boolean first) {
         if (first) {
             if (unitdate.getValueFrom() != null) {
                 LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom());
@@ -331,7 +333,7 @@ public class UnitDateConvertor {
      * @param input     textový vstup
      * @param unitdate  doplňovaný objekt
      */
-    private static void parseInterval(final String input, final ArrDescItemUnitdate unitdate) {
+    private static void parseInterval(final String input, final IUnitdate unitdate) {
 
         String[] data = input.split(INTERVAL_DELIMITER);
 
@@ -366,7 +368,7 @@ public class UnitDateConvertor {
      * @param unitdate      doplňovaný objekt
      * @return              výsledný token
      */
-    private static Token parseToken(final String tokenString, final ArrDescItemUnitdate unitdate) {
+    private static Token parseToken(final String tokenString, final IUnitdate unitdate) {
         if (tokenString.equals("")) {
             return new Token();
         }
@@ -391,7 +393,7 @@ public class UnitDateConvertor {
      * @param unitdate      doplňovaný objekt
      * @return              výsledný token
      */
-    private static Token parseExpression(final String expression, final ArrDescItemUnitdate unitdate) {
+    private static Token parseExpression(final String expression, final IUnitdate unitdate) {
 
         if (expression.matches(EXP_CENTURY)) {
             return parseCentury(expression, unitdate);
@@ -415,7 +417,7 @@ public class UnitDateConvertor {
      * @param unitdate          doplňovaný objekt
      * @return                  výsledný token
      */
-    private static Token parseYearMonth(String yearMonthString, ArrDescItemUnitdate unitdate) {
+    private static Token parseYearMonth(String yearMonthString, IUnitdate unitdate) {
         unitdate.formatAppend(YEAR_MONTH);
 
         Token token = new Token();
@@ -438,7 +440,7 @@ public class UnitDateConvertor {
      * @param unitdate      doplňovaný objekt
      * @return              výsledný token
      */
-    private static Token parseDateTime(final String dateString, final ArrDescItemUnitdate unitdate) {
+    private static Token parseDateTime(final String dateString, final IUnitdate unitdate) {
         unitdate.formatAppend(DATE_TIME);
 
         Token token = new Token();
@@ -459,7 +461,7 @@ public class UnitDateConvertor {
      * @param unitdate      doplňovaný objekt
      * @return              výsledný token
      */
-    private static Token parseDate(final String dateString, final ArrDescItemUnitdate unitdate) {
+    private static Token parseDate(final String dateString, final IUnitdate unitdate) {
         unitdate.formatAppend(DATE);
 
         Token token = new Token();
@@ -482,7 +484,7 @@ public class UnitDateConvertor {
      * @param unitdate      doplňovaný objekt
      * @return              výsledný token
      */
-    private static Token parseYear(final String yearString, final ArrDescItemUnitdate unitdate) {
+    private static Token parseYear(final String yearString, final IUnitdate unitdate) {
         unitdate.formatAppend(YEAR);
         Token token = new Token();
         try {
@@ -501,7 +503,7 @@ public class UnitDateConvertor {
      * @param unitdate      doplňovaný objekt
      * @return              výsledný token
      */
-    private static Token parseCentury(final String centuryString, final ArrDescItemUnitdate unitdate) {
+    private static Token parseCentury(final String centuryString, final IUnitdate unitdate) {
         unitdate.formatAppend(CENTURY);
         Token token = new Token();
         try {

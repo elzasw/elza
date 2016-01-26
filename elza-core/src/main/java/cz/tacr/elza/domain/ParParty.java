@@ -1,11 +1,24 @@
 package cz.tacr.elza.domain;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.springframework.data.rest.core.annotation.RestResource;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 
 
 /**
@@ -55,6 +68,13 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParUnitdate.class)
     @JoinColumn(name = "toUnitdateId")
     private ParUnitdate to;
+
+    @RestResource(exported = false)
+    @OneToMany(mappedBy = "party", fetch = FetchType.LAZY)
+    private List<ParPartyName> partyNames;
+
+    @OneToMany(mappedBy = "party", fetch = FetchType.LAZY)
+    private List<ParCreator> partyCreators;
 
     @Column()
     private String history;
@@ -121,6 +141,14 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
         this.to = to;
     }
 
+    public List<ParPartyName> getPartyNames() {
+        return partyNames;
+    }
+
+    public void setPartyNames(final List<ParPartyName> partyNames) {
+        this.partyNames = partyNames;
+    }
+
     @Override
     public String getHistory() {
         return history;
@@ -147,6 +175,14 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
 
     public void setCharacteristics(final String characteristics) {
         this.characteristics = characteristics;
+    }
+
+    public List<ParCreator> getPartyCreators() {
+        return partyCreators;
+    }
+
+    public void setPartyCreators(final List<ParCreator> partyCreators) {
+        this.partyCreators = partyCreators;
     }
 
     @Override

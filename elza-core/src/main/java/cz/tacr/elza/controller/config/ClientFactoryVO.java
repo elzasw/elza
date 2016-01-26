@@ -1,27 +1,88 @@
 package cz.tacr.elza.controller.config;
 
-import cz.tacr.elza.ElzaRules;
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemGroupVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTypeGroupVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.repository.*;
-import ma.glasnost.orika.MapperFacade;
-import ma.glasnost.orika.MapperFactory;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
-import java.time.ZoneId;
-import java.util.*;
-import java.util.function.Function;
+import cz.tacr.elza.ElzaRules;
+import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrFindingAidVO;
+import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
+import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.NodeConformityVO;
+import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
+import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyNameVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParRelationEntityVO;
+import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.RegRecordParentVO;
+import cz.tacr.elza.controller.vo.RegRecordVO;
+import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RegVariantRecordVO;
+import cz.tacr.elza.controller.vo.RulArrangementTypeVO;
+import cz.tacr.elza.controller.vo.RulDataTypeVO;
+import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
+import cz.tacr.elza.controller.vo.RulPacketTypeVO;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemGroupVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTypeGroupVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
+import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyNameComplement;
+import cz.tacr.elza.domain.ParPartyNameFormType;
+import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParRelationEntity;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.RulArrangementType;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulDescItemTypeExt;
+import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.repository.DescItemConstraintRepository;
+import cz.tacr.elza.repository.DescItemSpecRepository;
+import cz.tacr.elza.repository.FindingAidVersionRepository;
+import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
+import cz.tacr.elza.repository.PartyNameComplementRepository;
+import cz.tacr.elza.repository.PartyNameRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.RelationEntityRepository;
+import cz.tacr.elza.repository.RelationRepository;
+import cz.tacr.elza.repository.UnitdateRepository;
+import ma.glasnost.orika.MapperFacade;
+import ma.glasnost.orika.MapperFactory;
 
 
 /**
@@ -84,19 +145,7 @@ public class ClientFactoryVO {
 
         ParPartyVO result = mapper.map(party, ParPartyVO.class);
 
-        //donačtení group party identifiers
-        if (party instanceof ParPartyGroup) {
-            List<ParPartyGroupIdentifier> groupIdentifiers = partyGroupIdentifierRepository.findByPartyGroup(
-                    (ParPartyGroup) party);
-            ParPartyGroupVO groupResult = (ParPartyGroupVO) result;
-            groupResult.setGroupIdentifiers(createList(groupIdentifiers, ParPartyGroupIdentifierVO.class, null));
-        }
 
-
-        //partyPreferredName
-        if (party.getPreferredName() != null) {
-            result.setPreferredName(createParPartyNameDetail(party.getPreferredName()));
-        }
         //partyNames
         result.setPartyNames(createList(partyNameRepository.findByParty(party), ParPartyNameVO.class, (n) ->
                         createParPartyNameDetail(n)
@@ -130,22 +179,38 @@ public class ClientFactoryVO {
         unitdateRepository.findForToPartyNameByParties(parties);
         recordRepository.findByParties(parties);
 
+        List<ParPartyName> allPartyNames = partyNameRepository.findByParties(parties);
+        Map<Integer, List<ParPartyName>> partyNameMap = ElzaTools
+                .createGroupMap(allPartyNames, p -> p.getParty().getPartyId());
+
         MapperFacade mapper = mapperFactory.getMapperFacade();
-        Map<Integer, ParPartyVO> partyMap = new HashMap<>();
+        Map<Integer, ParPartyVO> partyMap = new LinkedHashMap<>();
 
         for (final ParParty party : parties) {
             ParPartyVO partyVO = mapper.map(party, ParPartyVO.class);
-            if (party.getPreferredName() != null) {
-                partyVO.setPreferredName(mapper.map(party.getPreferredName(), ParPartyNameVO.class));
-            }
-            partyVO.setRecord(mapper.map(party.getRecord(), RegRecordVO.class));
+            //TODO kubovy načítat seznam jmen až po vygenerování, vyhodit z mapperu
+
+            partyVO.setNote(party.getRecord().getNote());
             partyMap.put(partyVO.getPartyId(), partyVO);
+
+
+            List<ParPartyName> partyNames = partyNameMap.get(party.getPartyId());
+            List<ParPartyNameVO> partyNamesVo = new ArrayList<>(partyNames.size());
+
+            for (ParPartyName partyName : partyNames) {
+                ParPartyNameVO partyNameVo = mapper.map(partyName, ParPartyNameVO.class);
+                if (partyName.equals(party.getPreferredName())) {
+                    partyNameVo.setPrefferedName(true);
+                }
+                partyNamesVo.add(partyNameVo);
+            }
+            partyVO.setPartyNames(partyNamesVo);
         }
 
-        for (final ParPartyName partyName : partyNameRepository.findByParties(parties)) {
-            ParPartyNameVO partyNameVO = mapper.map(partyName, ParPartyNameVO.class);
-            partyMap.get(partyNameVO.getPartyId()).addPartyName(partyNameVO);
-        }
+//        for (final ParPartyName partyName : partyNames) {
+//            ParPartyNameVO partyNameVO = mapper.map(partyName, ParPartyNameVO.class);
+//            partyMap.get(partyNameVO.getPartyId()).addPartyName(partyNameVO);
+//        }
 
         return new ArrayList<>(partyMap.values());
     }
@@ -161,8 +226,11 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ParPartyNameVO result = mapper.map(partyName, ParPartyNameVO.class);
 
-        List<ParPartyNameComplement> nameComplements = partyNameComplementRepository.findByPartyName(partyName);
-        result.setPartyNameComplements(createList(nameComplements, ParPartyNameComplementVO.class, null));
+        if(partyName == partyName.getParty().getPreferredName()){
+            result.setPrefferedName(true);
+        }
+//        List<ParPartyNameComplement> nameComplements = partyNameComplementRepository.findByPartyName(partyName);
+//        result.setPartyNameComplements(createList(nameComplements, ParPartyNameComplementVO.class, null));
 
         return result;
     }
@@ -747,5 +815,17 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrPacketVO packetVO = mapper.map(packet, ArrPacketVO.class);
         return packetVO;
+    }
+
+    /**
+     * Vytvoření informace o validace stavu JP.
+     * @param nodeConformity    stav validace
+     * @return  VO stavu validace
+     */
+    public NodeConformityVO createNodeConformity(final ArrNodeConformityExt nodeConformity) {
+        Assert.notNull(nodeConformity);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        NodeConformityVO nodeConformityVO = mapper.map(nodeConformity, NodeConformityVO.class);
+        return nodeConformityVO;
     }
 }

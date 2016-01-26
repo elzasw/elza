@@ -169,6 +169,11 @@ public class ParUnitdate implements cz.tacr.elza.api.ParUnitdate<ArrCalendarType
     }
 
     @Override
+    public void formatAppend(final String format) {
+        this.format += format;
+    }
+
+    @Override
     public int hashCode() {
         return new HashCodeBuilder().append(unitdateId).toHashCode();
     }

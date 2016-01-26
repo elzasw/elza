@@ -11,7 +11,7 @@ public class ParPartyNameComplementVO {
 
     private Integer partyNameComplementId;
 
-    private ParComplementTypeVO complementType;
+    private Integer complementTypeId;
 
     private String complement;
 
@@ -23,12 +23,12 @@ public class ParPartyNameComplementVO {
         this.partyNameComplementId = partyNameComplementId;
     }
 
-    public ParComplementTypeVO getComplementType() {
-        return complementType;
+    public Integer getComplementTypeId() {
+        return complementTypeId;
     }
 
-    public void setComplementType(final ParComplementTypeVO complementType) {
-        this.complementType = complementType;
+    public void setComplementTypeId(final Integer complementTypeId) {
+        this.complementTypeId = complementTypeId;
     }
 
     public String getComplement() {

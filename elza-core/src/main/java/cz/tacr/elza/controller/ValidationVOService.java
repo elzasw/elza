@@ -7,16 +7,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.controller.vo.ParDynastyEditVO;
-import cz.tacr.elza.controller.vo.ParEventEditVO;
-import cz.tacr.elza.controller.vo.ParPartyEditVO;
-import cz.tacr.elza.controller.vo.ParPartyGroupEditVO;
-import cz.tacr.elza.controller.vo.ParPartyNameEditVO;
-import cz.tacr.elza.controller.vo.ParPersonEditVO;
+import cz.tacr.elza.controller.vo.ParDynastyVO;
+import cz.tacr.elza.controller.vo.ParEventVO;
+import cz.tacr.elza.controller.vo.ParPartyGroupVO;
+import cz.tacr.elza.controller.vo.ParPartyNameVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParPersonVO;
 import cz.tacr.elza.controller.vo.ParRelationEntityVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.ParUnitdateVO;
-import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParRelation;
@@ -65,33 +64,33 @@ public class ValidationVOService {
     @Autowired
     private RelationRoleTypeRepository relationRoleTypeRepository;
 
-    public void checkParty(final ParPartyEditVO partyVO) {
+    public void checkParty(final ParPartyVO partyVO) {
         ParPartyType partyType;
-        if (partyVO.getPartyTypeId() != null) {
-            partyType = partyTypeRepository.getOne(partyVO.getPartyTypeId());
+        if (partyVO.getPartyType() != null && partyVO.getPartyType().getPartyTypeId() != null) {
+            partyType = partyTypeRepository.getOne(partyVO.getPartyType().getPartyTypeId());
         } else {
-            throw new IllegalArgumentException("Nenalezen typ osoby s id: " + partyVO.getPartyTypeId());
+            throw new IllegalArgumentException("Nenalezen typ osoby");
         }
 
         // object type dle party type ?
-        if (partyVO instanceof ParDynastyEditVO
+        if (partyVO instanceof ParDynastyVO
                 && !ParPartyType.PartyTypeEnum.DYNASTY.equals(partyType.getPartyTypeEnum())) {
 
             throw new IllegalArgumentException(
                     "Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
         }
-        if (partyVO instanceof ParPersonEditVO
+        if (partyVO instanceof ParPersonVO
                 && !ParPartyType.PartyTypeEnum.PERSON.equals(partyType.getPartyTypeEnum())) {
 
             throw new IllegalArgumentException(
                     "Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
         }
-        if (partyVO instanceof ParEventEditVO
+        if (partyVO instanceof ParEventVO
                 && !ParPartyType.PartyTypeEnum.EVENT.equals(partyType.getPartyTypeEnum())) {
 
             throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
         }
-        if (partyVO instanceof ParPartyGroupEditVO
+        if (partyVO instanceof ParPartyGroupVO
                 && !ParPartyType.PartyTypeEnum.GROUP_PARTY.equals(partyType.getPartyTypeEnum())) {
 
             throw new IllegalArgumentException("Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
@@ -103,21 +102,17 @@ public class ValidationVOService {
                     "Nenalezen typ rejstříku příslušející typu osoby s kódem: " + partyType.getCode());
         }
 
-        if (partyVO.getPartyNames() != null) {
-            checkPreferredNameExist(partyVO.getPartyNames());
-        } else {
-            throw new IllegalArgumentException("Je povinné alespoň jedno preferované jméno.");
-        }
+        checkPreferredNameExist(partyVO.getPartyNames());
         // end CHECK
     }
 
 
-    public void checkPartyUpdate(final ParPartyEditVO partyVO) {
+    public void checkPartyUpdate(final ParPartyVO partyVO) {
         ParPartyType partyType;
-        if (partyVO.getPartyTypeId() != null) {
-            partyType = partyTypeRepository.getOne(partyVO.getPartyTypeId());
+        if (partyVO.getPartyType().getPartyTypeId() != null) {
+            partyType = partyTypeRepository.getOne(partyVO.getPartyType().getPartyTypeId());
         } else {
-            throw new IllegalArgumentException("Nenalezen typ osoby s id: " + partyVO.getPartyTypeId());
+            throw new IllegalArgumentException("Nenalezen typ osoby s id: " + partyVO.getPartyId());
         }
 
         if (partyVO.getPartyId() == null) {
@@ -125,7 +120,7 @@ public class ValidationVOService {
         }
 
         ParParty parParty = partyRepository.getOne(partyVO.getPartyId());
-        if (!parParty.getPartyType().getPartyTypeId().equals(partyVO.getPartyTypeId())) {
+        if (!parParty.getPartyType().getPartyTypeId().equals(partyVO.getPartyType().getPartyTypeId())) {
             throw new IllegalArgumentException("Nelze měnit typ osoby.");
         }
 
@@ -166,11 +161,7 @@ public class ValidationVOService {
     public void checkUnitDate(final ParUnitdateVO unitdateVO) {
         Assert.notNull(unitdateVO);
 
-        if (unitdateVO.getCalendarType() != null) {
-            Assert.notNull(unitdateVO.getCalendarType().getId(), "Není nastaveno id typu kalendáře datace.");
-            ArrCalendarType calendarType = calendarTypeRepository.findOne(unitdateVO.getCalendarType().getId());
-            Assert.notNull(calendarType, "Nebyl nalezen typ kalendáře s id " + unitdateVO.getCalendarType().getId());
-        }
+        Assert.notNull(unitdateVO.getCalendarTypeId(), "Není nastaveno id typu kalendáře datace.");
     }
 
     public void checkRelationEntity(final ParRelationEntityVO relationEntityVO, final boolean checkRelation) {
@@ -201,15 +192,13 @@ public class ValidationVOService {
     }
 
 
-    private void checkPreferredNameExist(final List<ParPartyNameEditVO> partyNameEditVOs) {
-        boolean isPreferred = false;
-        for (final ParPartyNameEditVO partyName : partyNameEditVOs) {
-            if (partyName.isPreferredName()) {
-                isPreferred = true;
+    private void checkPreferredNameExist(final List<ParPartyNameVO> partyNameEditVOs) {
+
+        for (ParPartyNameVO partyName : partyNameEditVOs) {
+            if (partyName.isPrefferedName()) {
+                return;
             }
         }
-        if (!isPreferred) {
-            throw new IllegalArgumentException("Není přítomno žádné preferované jméno osoby.");
-        }
+        throw new IllegalArgumentException("Není přítomno žádné preferované jméno osoby.");
     }
 }

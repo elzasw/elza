@@ -263,16 +263,19 @@ public class PartyManagerTest extends AbstractRestTest {
         ArrCalendarType calendarType = createCalendarType();
 
         // unitranges
-        ParUnitdateEditVO unitdateEditVO = new ParUnitdateEditVO();
+        ParUnitdateVO unitdateEditVO = new ParUnitdateVO();
         unitdateEditVO.setCalendarTypeId(calendarType.getCalendarTypeId());
-        ParUnitdateEditVO unitdateEditVO2 = new ParUnitdateEditVO();
+        ParUnitdateVO unitdateEditVO2 = new ParUnitdateVO();
         unitdateEditVO2.setCalendarTypeId(calendarType.getCalendarTypeId());
 
+        ParPartyNameFormTypeVO formType = new ParPartyNameFormTypeVO();
+        formType.setNameFormTypeId(nameFormType.getNameFormTypeId());
+
         // names
-        ParPartyNameEditVO partyNameVO = new ParPartyNameEditVO();
+        ParPartyNameVO partyNameVO = new ParPartyNameVO();
         partyNameVO.setMainPart("MAIN_PART" + ElzaTools.getStringOfActualDate());
-        partyNameVO.setNameFormTypeId(nameFormType.getNameFormTypeId());
-        partyNameVO.setPreferredName(true);
+        partyNameVO.setNameFormType(formType);
+        partyNameVO.setPrefferedName(true);
         partyNameVO.setValidFrom(unitdateEditVO);
         partyNameVO.setValidTo(unitdateEditVO2);
 
@@ -280,13 +283,18 @@ public class PartyManagerTest extends AbstractRestTest {
         // register type
         createRegisterType(TEST_CODE + ElzaTools.getStringOfActualDate(), partyType);
 
-        ParDynastyEditVO parPartyVO = new ParDynastyEditVO();
-        parPartyVO.setPartyTypeId(partyType.getPartyTypeId());
+        ParPartyTypeVO partyTypeVO = new ParPartyTypeVO();
+        partyTypeVO.setPartyTypeId(partyType.getPartyTypeId());
+
+        ParDynastyVO parPartyVO = new ParDynastyVO();
+        parPartyVO.setPartyType(partyTypeVO);
         parPartyVO.setPartyNames(Arrays.asList(partyNameVO));
         parPartyVO.setGenealogy("GENEALOGY");
         parPartyVO.setHistory("HISTORY");
         parPartyVO.setFrom(unitdateEditVO);
         parPartyVO.setTo(unitdateEditVO2);
+
+        createRecord("tmpRecord"); //TODO kubovy odstranit po dopočítání regrecord podle names
 
         Response response = post(spec -> spec.body(parPartyVO), INSERT_PARTY_V2);
         ParPartyVO parPartyVORet = response.getBody().as(ParDynastyVO.class);
@@ -345,14 +353,12 @@ public class PartyManagerTest extends AbstractRestTest {
         RegRecordVO recordVO = new RegRecordVO();
         recordVO.setRecordId(record.getRecordId());
 
-        ArrCalendarTypeVO calendarTypeVO = new ArrCalendarTypeVO();
-        calendarTypeVO.setId(calendarType.getCalendarTypeId());
 
         ParRelationVO relationVO = new ParRelationVO();
         relationVO.setComplementType(relationTypeVO);
 
         ParUnitdateVO udFrom = new ParUnitdateVO();
-        udFrom.setCalendarType(calendarTypeVO);
+        udFrom.setCalendarTypeId(calendarType.getCalendarTypeId());
         udFrom.setValueFrom("15.1.2015 16:00");
         udFrom.setValueFromEstimated(Boolean.FALSE);
 

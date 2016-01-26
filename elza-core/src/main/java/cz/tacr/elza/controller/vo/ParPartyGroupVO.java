@@ -19,7 +19,7 @@ public class ParPartyGroupVO extends ParPartyVO {
 
     private String organization;
 
-    private List<ParPartyGroupIdentifierVO> groupIdentifiers;
+    private List<ParPartyGroupIdentifierVO> partyGroupIdentifiers;
 
     public String getScope() {
         return scope;
@@ -53,11 +53,11 @@ public class ParPartyGroupVO extends ParPartyVO {
         this.organization = organization;
     }
 
-    public List<ParPartyGroupIdentifierVO> getGroupIdentifiers() {
-        return groupIdentifiers;
+    public List<ParPartyGroupIdentifierVO> getPartyGroupIdentifiers() {
+        return partyGroupIdentifiers;
     }
 
-    public void setGroupIdentifiers(final List<ParPartyGroupIdentifierVO> groupIdentifiers) {
-        this.groupIdentifiers = groupIdentifiers;
+    public void setPartyGroupIdentifiers(final List<ParPartyGroupIdentifierVO> partyGroupIdentifiers) {
+        this.partyGroupIdentifiers = partyGroupIdentifiers;
     }
 }

@@ -10,7 +10,7 @@ public class ParUnitdateVO {
 
     private Integer unitdateId;
 
-    private ArrCalendarTypeVO calendarType;
+    private Integer calendarTypeId;
 
     private String valueFrom;
 
@@ -32,12 +32,12 @@ public class ParUnitdateVO {
         this.unitdateId = unitdateId;
     }
 
-    public ArrCalendarTypeVO getCalendarType() {
-        return calendarType;
+    public Integer getCalendarTypeId() {
+        return calendarTypeId;
     }
 
-    public void setCalendarType(final ArrCalendarTypeVO calendarType) {
-        this.calendarType = calendarType;
+    public void setCalendarTypeId(final Integer calendarTypeId) {
+        this.calendarTypeId = calendarTypeId;
     }
 
     public String getValueFrom() {

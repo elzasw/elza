@@ -1,7 +1,6 @@
 package cz.tacr.elza.controller;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ParComplementTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyEditVO;
 import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
@@ -245,31 +243,29 @@ public class PartyController {
 
     @RequestMapping(value = "/insertParty", method = RequestMethod.POST)
     @Transactional
-    public ParPartyVO insertParty(@RequestBody final ParPartyEditVO partyVO) {
+    public ParPartyVO insertParty(@RequestBody final ParPartyVO partyVO) {
         if (partyVO == null) {
             return null;
+        }
+
+        if(partyVO.getPartyId() != null){
+            throw new IllegalArgumentException("Nová osoba nesmí mít nastaveno ID");
         }
 
         //CHECK
         validationVOService.checkParty(partyVO);
 
-        //TYPES
-        ParPartyType partyType = partyTypeRepository.getOne(partyVO.getPartyTypeId());
-        // hledám typ rejstříku, který má přiřazen zde použitý typ osoby
-        RegRegisterType registerType = registerTypeRepository.findRegisterTypeByPartyType(partyType).get(0);
+        ParParty party = factoryDO.createParty(partyVO);
 
-        //PARTY
-        ParParty party = partyService.createParty(partyVO, partyType, registerType);
-
-        List<ParPartyVO> partyList = factoryVo.createPartyList(Arrays.asList(party));
-        return partyList.get(0);
+        ParParty savedParty = partyService.saveParty(party);
+        return factoryVo.createParPartyDetail(savedParty);
     }
 
     @RequestMapping(value = "/updateParty/{partyId}", method = RequestMethod.PUT)
     @Transactional
     public ParPartyVO updateParty(
             @PathVariable(value = "partyId") final Integer partyId,
-            @RequestBody final ParPartyEditVO partyVO) {
+            @RequestBody final ParPartyVO partyVO) {
 
         if (partyVO == null) {
             return null;
@@ -280,16 +276,10 @@ public class PartyController {
                 + ") než ve VO (" + partyVO.getPartyId() + ").");
         validationVOService.checkPartyUpdate(partyVO);
 
-        //TYPES
-        ParPartyType partyType = partyTypeRepository.getOne(partyVO.getPartyTypeId());
-        // hledám typ rejstříku, který má přiřazen zde použitý typ osoby
-        RegRegisterType registerType = registerTypeRepository.findRegisterTypeByPartyType(partyType).get(0);
+        ParParty party = factoryDO.createParty(partyVO);
 
-        //PARTY
-        ParParty party = partyService.updateParty(partyVO, partyType);
-
-        List<ParPartyVO> partyList = factoryVo.createPartyList(Arrays.asList(party));
-        return partyList.get(0);
+        ParParty savedParty = partyService.saveParty(party);
+        return factoryVo.createParPartyDetail(savedParty);
     }
 
     /**

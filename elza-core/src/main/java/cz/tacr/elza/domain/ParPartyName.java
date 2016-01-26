@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -13,6 +15,7 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -71,6 +74,8 @@ public class ParPartyName
     private String degreeAfter;
 
 
+    @OneToMany(mappedBy = "partyName", fetch = FetchType.EAGER)
+    private List<ParPartyNameComplement> partyNameComplements;
 
     @Override
     public Integer getPartyNameId() {
@@ -170,6 +175,14 @@ public class ParPartyName
     @Override
     public void setNote(final String note) {
         this.note = note;
+    }
+
+    public List<ParPartyNameComplement> getPartyNameComplements() {
+        return partyNameComplements;
+    }
+
+    public void setPartyNameComplements(final List<ParPartyNameComplement> partyNameComplements) {
+        this.partyNameComplements = partyNameComplements;
     }
 
     @Override

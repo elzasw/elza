@@ -1,22 +1,69 @@
 package cz.tacr.elza.service;
 
-import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.controller.config.ClientFactoryDO;
-import cz.tacr.elza.controller.vo.ParPartyEditVO;
-import cz.tacr.elza.controller.vo.ParPartyNameEditVO;
-import cz.tacr.elza.controller.vo.ParUnitdateEditVO;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.repository.*;
-import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.events.EventType;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
-import java.util.*;
+import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.controller.config.ClientFactoryDO;
+import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ParComplementType;
+import cz.tacr.elza.domain.ParCreator;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyGroup;
+import cz.tacr.elza.domain.ParPartyGroupIdentifier;
+import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyNameComplement;
+import cz.tacr.elza.domain.ParPartyNameFormType;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParRelationEntity;
+import cz.tacr.elza.domain.ParRelationRoleType;
+import cz.tacr.elza.domain.ParRelationType;
+import cz.tacr.elza.domain.ParUnitdate;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.repository.CalendarTypeRepository;
+import cz.tacr.elza.repository.ComplementTypeRepository;
+import cz.tacr.elza.repository.DataPartyRefRepository;
+import cz.tacr.elza.repository.DataRecordRefRepository;
+import cz.tacr.elza.repository.NodeRegisterRepository;
+import cz.tacr.elza.repository.PartyCreatorRepository;
+import cz.tacr.elza.repository.PartyDynastyRepository;
+import cz.tacr.elza.repository.PartyEventRepository;
+import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
+import cz.tacr.elza.repository.PartyGroupRepository;
+import cz.tacr.elza.repository.PartyNameComplementRepository;
+import cz.tacr.elza.repository.PartyNameFormTypeRepository;
+import cz.tacr.elza.repository.PartyNameRepository;
+import cz.tacr.elza.repository.PartyPersonRepository;
+import cz.tacr.elza.repository.PartyRelationRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.PartyTypeRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.RelationEntityRepository;
+import cz.tacr.elza.repository.RelationRepository;
+import cz.tacr.elza.repository.RelationRoleTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRepository;
+import cz.tacr.elza.repository.UnitdateRepository;
+import cz.tacr.elza.repository.VariantRecordRepository;
 
 
 /**
@@ -88,6 +135,10 @@ public class PartyService {
     private NodeRegisterRepository nodeRegisterRepository;
     @Autowired
     private PartyNameComplementRepository partyNameComplementRepository;
+
+    @Autowired
+    private ComplementTypeRepository complementTypeRepository;
+
     @Autowired
     private PartyCreatorRepository partyCreatorRepository;
     @Autowired
@@ -95,7 +146,13 @@ public class PartyService {
     @Autowired
     private PartyGroupIdentifierRepository partyGroupIdentifierRepository;
     @Autowired
+    private PartyTypeRepository partyTypeRepository;
+
+    @Autowired
     private RegistryService registryService;
+
+    @Autowired
+    private EntityManager entityManager;
 
     /**
      * Najde osobu podle rejstříkového hesla.
@@ -132,57 +189,297 @@ public class PartyService {
         return recordIdPartyIdMap;
     }
 
-    public ParParty createParty(final ParPartyEditVO partyVO, final ParPartyType partyType, final RegRegisterType registerType) {
-        ParParty party = factoryDO.createParty(partyVO);
-        party.setPartyType(partyType);
+    /**
+     * Uložení osoby a všech navázaných dat, která musejí být při ukládání vyplněna.
+     * @param newParty nová osoba s navázanými daty
+     * @return uložená osoba
+     */
+    public ParParty saveParty(final ParParty newParty) {
+        Assert.notNull(newParty);
 
-        // Record
-        RegRecord regRecord = genRegRecordFromPartyNames(partyVO.getPartyNames(), registerType);
-        genRegVariantRecordsFromPartyNames(partyVO.getPartyNames(), regRecord);
-        party.setRecord(regRecord);
+        ParPartyType partyType = partyTypeRepository.findOne(newParty.getPartyType().getPartyTypeId());
 
-        // Party
-        partyRepository.save(party);
+        ParParty saveParty;
+        if (newParty.getPartyId() == null) {
+            saveParty = newParty;
+        } else {
+            saveParty = partyRepository.findOne(newParty.getPartyId());
+            Assert.notNull(saveParty);
+            BeanUtils.copyProperties(newParty, saveParty, "partyGroupIdentifiers", "record",
+                    "preferredName", "from", "to", "partyNames", "partyCreators", "version");
+        }
+        saveParty.setPartyType(partyType);
 
-        // Names
-        ParPartyName preferredName = insertPartyNames(partyVO, party);
+        Set<ParUnitdate> removeUnitdate = new HashSet<>();
+        removeUnitdate.add(synchUnitdate(saveParty, newParty.getFrom(), (g) -> g.getFrom(),
+                (g, f) -> g.setFrom(f)));
+        removeUnitdate.add(synchUnitdate(saveParty, newParty.getTo(), (g) -> g.getTo(),
+                (g, f) -> g.setTo(f)));
+        removeUnitdate.remove(null);
+        unitdateRepository.delete(removeUnitdate);
 
-        Assert.notNull(preferredName);
-        party.setPreferredName(preferredName);
-        ParParty result = partyRepository.save(party);
 
-        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.PARTY_CREATE, result.getPartyId()));
-        return result;
-    }
+        //TODO kubovy změnit, až bude generováno regrecord
+        saveParty.setRecord(recordRepository.findAll().get(0));
+        //        // Record
+//                RegRecord regRecord = genRegRecordFromPartyNames(partyVO.getPartyNames(), registerType);
+//        genRegVariantRecordsFromPartyNames(partyVO.getPartyNames(), regRecord);
+//        party.setRecord(regRecord);
 
-    public ParParty updateParty(final ParPartyEditVO partyVO, final ParPartyType partyType) {
-        ParParty origParty = getPartyByType(partyVO.getPartyId(), partyType);
+        ParPartyName newPrefferedName = newParty.getPreferredName();
+        saveParty.setPreferredName(null);
+        partyRepository.save(saveParty);
 
-        factoryDO.updateParty(partyVO, origParty);
+        synchPartyNames(saveParty, newPrefferedName, newParty.getPartyNames());
 
-        // Record
-        List<ParPartyNameEditVO> partyNames = partyVO.getPartyNames();
-        if (partyNames != null) {
-            // pokud nějaké máme, nagenerujeme nové, chování je tedy: null - beze změny, plná - update přegenerováním
-            RegRecord origRecord = origParty.getRecord();
-            updateRegRecordFromPartyNames(partyNames, origRecord);
 
-            variantRecordRepository.deleteInBatch(origRecord.getVariantRecordList());
-            genRegVariantRecordsFromPartyNames(partyNames, origRecord);
+        if (ParPartyGroup.class.isAssignableFrom(saveParty.getClass())) {
+            ParPartyGroup savePartyGroup = (ParPartyGroup) saveParty;
+            ParPartyGroup partyGroup = (ParPartyGroup) newParty;
+            synchPartyGroupIdentifiers(savePartyGroup,
+                    partyGroup.getPartyGroupIdentifiers() == null ? Collections.EMPTY_LIST
+                                                                  : partyGroup.getPartyGroupIdentifiers());
         }
 
-        // Party
-        partyRepository.save(origParty);
 
-        // Names
-        ParPartyName preferredName = updatePartyNames(partyVO, origParty);
+        synchCreators(saveParty, newParty.getPartyCreators() == null ?
+                                 Collections.EMPTY_LIST : newParty.getPartyCreators());
 
-        Assert.notNull(preferredName);
-        origParty.setPreferredName(preferredName);
+        ParParty result = partyRepository.save(saveParty);
+        entityManager.flush();
 
-        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.PARTY_UPDATE, origParty.getPartyId()));
+       return result;
 
-        return partyRepository.save(origParty);
+    }
+
+    /**
+     * Provede synchronizaci tvůrců osoby. CRUD.
+     *
+     * @param party       osoba
+     * @param newCreators nový stav tvůrců
+     */
+    private void synchCreators(final ParParty party, final List<ParCreator> newCreators) {
+        Map<Integer, ParCreator> creatorMap = ElzaTools
+                .createEntityMap(partyCreatorRepository.findByParty(party), c -> c.getCreatorParty().getPartyId());
+
+        Set<ParCreator> remove = new HashSet<>(creatorMap.values());
+
+        for (ParCreator newCreator : newCreators) {
+            Assert.notNull(newCreator.getCreatorParty().getPartyId());
+            ParCreator oldCreator = creatorMap.get(newCreator.getCreatorParty().getPartyId());
+
+            if (oldCreator == null) {
+                oldCreator = newCreator;
+                ParParty creatorParty = partyRepository.findOne(newCreator.getCreatorParty().getPartyId());
+                Assert.notNull(creatorParty);
+                oldCreator.setCreatorParty(creatorParty);
+            } else {
+                remove.remove(oldCreator);
+            }
+            oldCreator.setParty(party);
+            partyCreatorRepository.save(oldCreator);
+        }
+
+        partyCreatorRepository.delete(remove);
+    }
+
+    /**
+     * Pokud se jedná o typ osoby group, dojde k synchronizaci identifikátorů osoby. CRUD.
+     * @param partyGroup osoba
+     * @param newPartyGroupIdentifiers nový stav identifikátorů
+     */
+    private void synchPartyGroupIdentifiers(final ParPartyGroup partyGroup,
+                                            final Collection<ParPartyGroupIdentifier> newPartyGroupIdentifiers) {
+        Assert.notNull(partyGroup);
+
+
+        Map<Integer, ParPartyGroupIdentifier> dbIdentifiersMap = Collections.EMPTY_MAP;
+        if(partyGroup.getPartyId() != null){
+            dbIdentifiersMap = ElzaTools
+                .createEntityMap(partyGroupIdentifierRepository.findByParty(partyGroup),
+                        i -> i.getPartyGroupIdentifierId());
+        }
+        Set<ParPartyGroupIdentifier> removeIdentifiers = new HashSet<>(dbIdentifiersMap.values());
+
+        Set<ParUnitdate> removeUnitdate = new HashSet<>();
+
+        for (ParPartyGroupIdentifier newIdentifier : newPartyGroupIdentifiers) {
+            ParPartyGroupIdentifier oldIdentifier = dbIdentifiersMap
+                    .get(newIdentifier.getPartyGroupIdentifierId());
+
+            if (oldIdentifier == null) {
+                oldIdentifier = newIdentifier;
+                oldIdentifier.setFrom(saveUnitDate(newIdentifier.getFrom()));
+                oldIdentifier.setTo(saveUnitDate(newIdentifier.getTo()));
+            } else {
+                removeIdentifiers.remove(oldIdentifier);
+
+                removeUnitdate.add(synchUnitdate(oldIdentifier, newIdentifier.getFrom(), (g) -> g.getFrom(),
+                        (g, f) -> g.setFrom(f)));
+                removeUnitdate.add(synchUnitdate(oldIdentifier, newIdentifier.getTo(), (g) -> g.getTo(),
+                        (g, f) -> g.setTo(f)));
+            }
+
+            oldIdentifier.setPartyGroup(partyGroup);
+            oldIdentifier.setSource(newIdentifier.getSource());
+            oldIdentifier.setNote(newIdentifier.getNote());
+            oldIdentifier.setIdentifier(newIdentifier.getIdentifier());
+
+            partyGroupIdentifierRepository.save(oldIdentifier);
+        }
+
+        for (ParPartyGroupIdentifier removeIdentifier : removeIdentifiers) {
+            deleteUnitDates(removeIdentifier.getFrom(), removeIdentifier.getTo());
+        }
+
+        removeUnitdate.remove(null);
+        unitdateRepository.delete(removeUnitdate);
+        partyGroupIdentifierRepository.delete(removeIdentifiers);
+    }
+
+    /**
+     * Synchronizace stavu jmen osob. CRUD
+     *
+     * @param savedParty       uložená osoba
+     * @param newPrefferedName preferované jméno osoby
+     * @param newPartyNames    seznam všech jmen osoby (obsahuje i preferované jméno)
+     */
+    private void synchPartyNames(final ParParty savedParty,
+                                 final ParPartyName newPrefferedName,
+                                 final List<ParPartyName> newPartyNames) {
+        Map<Integer, ParPartyName> dbPartyNameMap = ElzaTools
+                .createEntityMap(partyNameRepository.findByParty(savedParty), p -> p.getPartyNameId());
+
+        Set<ParPartyName> removePartyNames = new HashSet<>(dbPartyNameMap.values());
+        Set<ParUnitdate> removeUnitdate = new HashSet<>();
+
+        for (ParPartyName newPartyName : newPartyNames) {
+            ParPartyName oldPartyName = dbPartyNameMap.get(newPartyName.getPartyNameId());
+
+            Assert.notNull(newPartyName.getNameFormType());
+            Assert.notNull(newPartyName.getNameFormType().getNameFormTypeId());
+            ParPartyNameFormType nameFormType = partyNameFormTypeRepository
+                    .findOne(newPartyName.getNameFormType().getNameFormTypeId());
+
+            if (oldPartyName == null) {
+                oldPartyName = newPartyName;
+                oldPartyName.setValidFrom(saveUnitDate(newPartyName.getValidFrom()));
+                oldPartyName.setValidTo(saveUnitDate(newPartyName.getValidTo()));
+            } else {
+                removePartyNames.remove(oldPartyName);
+                removeUnitdate.add(synchUnitdate(oldPartyName, newPartyName.getValidFrom(), g -> g.getValidFrom(),
+                        (n, from) -> n.setValidFrom(from)));
+                removeUnitdate.add(synchUnitdate(oldPartyName, newPartyName.getValidTo(), g -> g.getValidTo(),
+                        (n, to) -> n.setValidTo(to)));
+            }
+
+            oldPartyName.setNameFormType(nameFormType);
+            oldPartyName.setMainPart(newPartyName.getMainPart());
+            oldPartyName.setOtherPart(newPartyName.getOtherPart());
+            oldPartyName.setNote(newPartyName.getNote());
+            oldPartyName.setDegreeBefore(newPartyName.getDegreeBefore());
+            oldPartyName.setDegreeAfter(newPartyName.getDegreeAfter());
+            oldPartyName.setParty(savedParty);
+
+            //nastavení preferovaného jména
+            if (newPartyName == newPrefferedName) {
+                savedParty.setPreferredName(oldPartyName);
+            }
+
+            partyNameRepository.save(oldPartyName);
+            synchComplementTypes(oldPartyName, newPartyName.getPartyNameComplements() == null
+                                               ? Collections.EMPTY_LIST : newPartyName.getPartyNameComplements());
+        }
+
+        removeUnitdate.remove(null);
+        unitdateRepository.delete(removeUnitdate);
+
+        for (ParPartyName removePartyName : removePartyNames) {
+            deletePartyName(removePartyName);
+        }
+    }
+
+    /**
+     * Syncoronizace doplňků jména osoby. CRUD
+     * @param partyName jméno osoby
+     * @param newComplementTypes stav doplňků jména
+     */
+    private void synchComplementTypes(final ParPartyName partyName,
+                                      final List<ParPartyNameComplement> newComplementTypes) {
+        Map<Integer, ParPartyNameComplement> dbComplementMap = ElzaTools
+                .createEntityMap(partyNameComplementRepository.findByPartyName(partyName),
+                        c -> c.getPartyNameComplementId());
+
+        Set<ParPartyNameComplement> removeComplements = new HashSet<>(dbComplementMap.values());
+
+        for (ParPartyNameComplement newComplementType : newComplementTypes) {
+            ParPartyNameComplement oldComplementType = dbComplementMap
+                    .get(newComplementType.getPartyNameComplementId());
+
+            Assert.notNull(newComplementType.getComplementType());
+            Assert.notNull(newComplementType.getComplementType().getComplementTypeId());
+
+            ParComplementType complementType = complementTypeRepository
+                    .findOne(newComplementType.getComplementType().getComplementTypeId());
+            Assert.notNull(complementType);
+
+            if (oldComplementType == null) {
+                oldComplementType = newComplementType;
+            } else {
+                removeComplements.remove(oldComplementType);
+                oldComplementType.setComplement(newComplementType.getComplement());
+            }
+
+            oldComplementType.setComplementType(complementType);
+            oldComplementType.setPartyName(partyName);
+
+            partyNameComplementRepository.save(oldComplementType);
+        }
+
+        partyNameComplementRepository.delete(removeComplements);
+    }
+
+
+    /**
+     * Provede synchronizaci datace entity.
+     *
+     * @param entity      entita, na kterou je datace navázaná
+     * @param newUnitdate nová datace
+     * @param getter      getter datace z entity
+     * @param setter      setter datace do entity
+     * @param <T>         entita s datací
+     * @return datace, která by měla být smazaná
+     */
+    public <T> ParUnitdate synchUnitdate(final T entity,
+                                         final ParUnitdate newUnitdate,
+                                         final Function<T, ParUnitdate> getter,
+                                         final BiConsumer<T, ParUnitdate> setter) {
+
+        ParUnitdate toRemove = null;
+        ParUnitdate oldUnitDate = getter.apply(entity);
+
+        Integer oldId = oldUnitDate == null ? null : oldUnitDate.getUnitdateId();
+        Integer newId = newUnitdate == null ? null : newUnitdate.getUnitdateId();
+
+        //pokud měl nastavenou dataci a nyní došlo k jejímu smazání, bude původní datace smazána
+        if (oldId != null && (newId == null || !newId.equals(oldId))) {
+            toRemove = oldUnitDate;
+        }
+
+        setter.accept(entity, saveUnitDate(newUnitdate));
+        return toRemove;
+    }
+
+
+    /**
+     * Smazání jména osoby.
+     * @param partyName jméno ke smazání
+     */
+    public void deletePartyName(final ParPartyName partyName) {
+        Assert.notNull(partyName);
+        partyNameComplementRepository.delete(partyName.getPartyNameComplements());
+        partyNameRepository.delete(partyName);
+        deleteUnitDates(partyName.getValidFrom(), partyName.getValidTo());
     }
 
     /**
@@ -195,21 +492,14 @@ public class PartyService {
         checkPartyUsage(party);
 
         List<ParPartyName> partyNames = new ArrayList<>(partyNameRepository.findByParty(party));
-        ParPartyName partyName = party.getPreferredName();
-        if (partyName != null) {
-            partyNames.add(partyName);
-        }
 
         party.setPreferredName(null);
         for (ParPartyName parPartyName : partyNames) {
-            partyNameComplementRepository.deleteByPartyName(parPartyName);
-            partyNameRepository.flush();
-
-            deleteUnitDates(parPartyName.getValidFrom(), parPartyName.getValidTo());
-            partyNameRepository.delete(parPartyName);
+            deletePartyName(parPartyName);
         }
 
         partyCreatorRepository.deleteByPartyBoth(party);
+
 
         partyRelationRepository.findByParty(party).forEach((pr) -> {
                     deleteRelation(pr);
@@ -231,6 +521,7 @@ public class PartyService {
 
         partyRepository.delete(party);
         registryService.deleteRecord(party.getRecord(), false);
+        deleteUnitDates(party.getFrom(), party.getTo());
     }
 
 
@@ -419,203 +710,74 @@ public class PartyService {
     }
 
 
-    private ParPartyName insertPartyNames(final ParPartyEditVO partyVO, final ParParty parParty) {
 
-        ParPartyName preferredName = null;
+//    /**
+//     * Nageneruje rejstříkové heslo dle preferovaného jména osoby. Ostatní jména jako variantní hesla k tomuto.
+//     * @param partyNamesVO    jména osob
+//     * @param registerType    typ rejstříku
+//     * @return      rejstříkoví heslo s variantními hesly daného typu
+//     */
+//    private RegRecord genRegRecordFromPartyNames(final List<ParPartyNameEditVO> partyNamesVO,
+//                                                 final RegRegisterType registerType) {
+//        if (partyNamesVO == null) {
+//            return null;
+//        }
+//           //TODO kubovy přepsat při generování rejstříků
+//        RegRecord result = null;
+//        for (final ParPartyNameEditVO pn : partyNamesVO) {
+//            if (pn.isPreferredName()) {
+//                RegRecord regRecord = new RegRecord();
+//                regRecord.setRegisterType(registerType);
+//                regRecord.setRecord(pn.getMainPart() + StringUtils.defaultString(pn.getOtherPart()));
+//                regRecord.setLocal(false);
+//
+//                recordRepository.save(regRecord);
+//                result = regRecord;
+//            }
+//        }
+//
+//        return result;
+//    }
+//
+//    private RegRecord updateRegRecordFromPartyNames(final List<ParPartyNameEditVO> partyNamesVO, final RegRecord regRecord) {
+//        if (partyNamesVO == null) {
+//            return null;
+//        }
+//
+//        RegRecord result = null;
+//        for (final ParPartyNameEditVO pn : partyNamesVO) {
+//            if (pn.isPreferredName()) {
+//                regRecord.setRecord(pn.getMainPart() + StringUtils.defaultString(pn.getOtherPart()));
+//
+//                recordRepository.save(regRecord);
+//                result = regRecord;
+//            }
+//        }
+//
+//        return result;
+//    }
+//
+//    private List<RegVariantRecord> genRegVariantRecordsFromPartyNames(final List<ParPartyNameEditVO> partyNamesVO,
+//                                                         final RegRecord regRecord) {
+//        if (partyNamesVO == null) {
+//            return null;
+//        }
+//
+//        List<RegVariantRecord> result = new ArrayList<>();
+//
+//        for (final ParPartyNameEditVO pn : partyNamesVO) {
+//            if (!pn.isPreferredName()) {
+//                RegVariantRecord regVariantRecord = new RegVariantRecord();
+//                regVariantRecord.setRegRecord(regRecord);
+//                regVariantRecord.setRecord(pn.getMainPart() + StringUtils.defaultString(pn.getOtherPart()));
+//
+//                result.add(variantRecordRepository.save(regVariantRecord));
+//            }
+//        }
+//
+//        return result;
+//    }
 
-        for (final ParPartyNameEditVO partyNameVO : partyVO.getPartyNames()) {
-
-            ParPartyName partyName = factoryDO.createParPartyName(partyNameVO);
-
-            // nf type
-            ParPartyNameFormType nameFormType = partyNameFormTypeRepository.getOne(partyNameVO.getNameFormTypeId());
-            partyName.setNameFormType(nameFormType);
-            partyName.setParty(parParty);
-
-            // unitdates
-            ParUnitdateEditVO validFromVO = partyNameVO.getValidFrom();
-            saveValidFrom(validFromVO, partyName);
-            ParUnitdateEditVO validToVO = partyNameVO.getValidTo();
-            saveValidTo(validToVO, partyName);
-
-            partyNameRepository.save(partyName);
-
-            if (partyNameVO.isPreferredName()) {
-                preferredName = partyName;
-            }
-        }
-
-        return preferredName;
-    }
-
-    private ParPartyName updatePartyNames(final ParPartyEditVO partyVO, final ParParty parParty) {
-
-        List<ParPartyName> namesToDelete = partyNameRepository.findByParty(parParty);
-
-        ParPartyName preferredName = null;
-        for (final ParPartyNameEditVO partyNameVO : partyVO.getPartyNames()) {
-
-            ParPartyName partyName = partyNameRepository.getOne(partyNameVO.getPartyNameId());
-
-            // nf type
-            ParPartyNameFormType nameFormType = partyNameFormTypeRepository.getOne(partyNameVO.getNameFormTypeId());
-            partyName.setNameFormType(nameFormType);
-            partyName.setParty(parParty);
-
-            // UNITDATES
-            ParUnitdateEditVO validFromVO = partyNameVO.getValidFrom();
-            // nedal ho, chce smazat
-            ParUnitdate validFrom = partyName.getValidFrom();
-            if (validFrom != null && validFrom.getUnitdateId() != null
-                    && (validFromVO == null || validFromVO.getUnitdateId() == null)) {
-                partyName.setValidFrom(null);
-                partyNameRepository.save(partyName);
-                unitdateRepository.delete(validFrom);
-            }
-            saveValidFrom(validFromVO, partyName);
-
-            ParUnitdateEditVO validToVO = partyNameVO.getValidTo();
-            // nedal ho, chce smazat
-            ParUnitdate validTo = partyName.getValidTo();
-            if (validTo != null && validTo.getUnitdateId() != null
-                    && (validToVO == null || validToVO.getUnitdateId() == null)) {
-                partyName.setValidTo(null);
-                partyNameRepository.save(partyName);
-                unitdateRepository.delete(validTo);
-            }
-            saveValidTo(validToVO, partyName);
-
-            partyNameRepository.save(partyName);
-
-            if (partyNameVO.isPreferredName()) {
-                preferredName = partyName;
-            }
-
-            // remove from deletion
-            namesToDelete.remove(partyName);
-        }
-
-        partyNameRepository.deleteInBatch(namesToDelete);
-
-        return preferredName;
-    }
-
-    private void saveValidFrom(final ParUnitdateEditVO validFromVO, final ParPartyName partyName) {
-        if (validFromVO != null) {
-            ArrCalendarType calendarType = findCalendarType(validFromVO);
-            // mapovana mapperem
-            partyName.getValidFrom().setCalendarType(calendarType);
-            unitdateRepository.save(partyName.getValidFrom());
-        }
-    }
-
-    private void saveValidTo(final ParUnitdateEditVO validToVO, final ParPartyName partyName) {
-        if (validToVO != null) {
-            ArrCalendarType calendarType = findCalendarType(validToVO);
-            // mapovana mapperem
-            partyName.getValidTo().setCalendarType(calendarType);
-            unitdateRepository.save(partyName.getValidTo());
-        }
-    }
-
-    /**
-     * Nalezne typ kalendáře dle jeho VO.
-     * @return typ kalenddáře DO
-     */
-    private ArrCalendarType findCalendarType(final ParUnitdateEditVO fromVO) {
-        Integer calendarTypeId = fromVO.getCalendarTypeId();
-        if (calendarTypeId != null) {
-            return calendarTypeRepository.findOne(calendarTypeId);
-        }
-
-        return null;
-    }
-
-    /**
-     * Nageneruje rejstříkové heslo dle preferovaného jména osoby. Ostatní jména jako variantní hesla k tomuto.
-     * @param partyNamesVO    jména osob
-     * @param registerType    typ rejstříku
-     * @return      rejstříkoví heslo s variantními hesly daného typu
-     */
-    private RegRecord genRegRecordFromPartyNames(final List<ParPartyNameEditVO> partyNamesVO,
-                                                 final RegRegisterType registerType) {
-        if (partyNamesVO == null) {
-            return null;
-        }
-
-        RegRecord result = null;
-        for (final ParPartyNameEditVO pn : partyNamesVO) {
-            if (pn.isPreferredName()) {
-                RegRecord regRecord = new RegRecord();
-                regRecord.setRegisterType(registerType);
-                regRecord.setRecord(pn.getMainPart() + StringUtils.defaultString(pn.getOtherPart()));
-                regRecord.setLocal(false);
-
-                recordRepository.save(regRecord);
-                result = regRecord;
-            }
-        }
-
-        return result;
-    }
-
-    private RegRecord updateRegRecordFromPartyNames(final List<ParPartyNameEditVO> partyNamesVO, final RegRecord regRecord) {
-        if (partyNamesVO == null) {
-            return null;
-        }
-
-        RegRecord result = null;
-        for (final ParPartyNameEditVO pn : partyNamesVO) {
-            if (pn.isPreferredName()) {
-                regRecord.setRecord(pn.getMainPart() + StringUtils.defaultString(pn.getOtherPart()));
-
-                recordRepository.save(regRecord);
-                result = regRecord;
-            }
-        }
-
-        return result;
-    }
-
-    private List<RegVariantRecord> genRegVariantRecordsFromPartyNames(final List<ParPartyNameEditVO> partyNamesVO,
-                                                         final RegRecord regRecord) {
-        if (partyNamesVO == null) {
-            return null;
-        }
-
-        List<RegVariantRecord> result = new ArrayList<>();
-
-        for (final ParPartyNameEditVO pn : partyNamesVO) {
-            if (!pn.isPreferredName()) {
-                RegVariantRecord regVariantRecord = new RegVariantRecord();
-                regVariantRecord.setRegRecord(regRecord);
-                regVariantRecord.setRecord(pn.getMainPart() + StringUtils.defaultString(pn.getOtherPart()));
-
-                result.add(variantRecordRepository.save(regVariantRecord));
-            }
-        }
-
-        return result;
-    }
-
-    private ParParty getPartyByType(final Integer partyId, final ParPartyType partyType) {
-        switch (partyType.getPartyTypeEnum()) {
-            case DYNASTY:
-                return partyDynastyRepository.getOne(partyId);
-
-            case EVENT:
-                return partyEventRepository.getOne(partyId);
-
-            case GROUP_PARTY:
-                return partyGroupRepository.getOne(partyId);
-
-            case PERSON:
-                return partyPersonRepository.getOne(partyId);
-
-            default:
-                return partyRepository.getOne(partyId);
-        }
-    }
 
     /**
      * Prověří existenci vazeb na osobu. Pokud existují, vyhodí příslušnou výjimku, nelze mazat.

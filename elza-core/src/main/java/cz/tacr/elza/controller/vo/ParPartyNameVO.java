@@ -62,6 +62,12 @@ public class ParPartyNameVO {
      */
     private String degreeAfter;
 
+    /**
+     * Poskládané jméno pro zobrazení.
+     */
+    private String displayName;
+
+    private boolean prefferedName;
 
     public Integer getPartyNameId() {
         return partyNameId;
@@ -149,5 +155,21 @@ public class ParPartyNameVO {
 
     public void setDegreeAfter(final String degreeAfter) {
         this.degreeAfter = degreeAfter;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(final String displayName) {
+        this.displayName = displayName;
+    }
+
+    public boolean isPrefferedName() {
+        return prefferedName;
+    }
+
+    public void setPrefferedName(final boolean prefferedName) {
+        this.prefferedName = prefferedName;
     }
 }
