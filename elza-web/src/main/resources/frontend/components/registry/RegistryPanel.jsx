@@ -72,8 +72,6 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
 
     handleCallAddRegistryVariant(values){
         var data = {record: values.nameMain, regRecordId: this.props.registryData.item.recordId};
-
-        console.log(data);
         WebApi.addRegistryVariant(data).then(json => {
             this.dispatch(registryUpdated());
             this.dispatch(fetchRegistry(this.props.registry.filterText));
@@ -88,17 +86,14 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         var data= {
             variantRecordId: item.variantRecordId,
             regRecordId: this.props.registryData.item.recordId,
-            record: element.target.value
+            record: element.target.value,
+            version: item.version
         }
-        console.log(data);
         WebApi.editRegistryVariant(data).then(json => {
             this.dispatch(registryUpdated());
             this.dispatch(fetchRegistry(this.props.registry.filterText));
         });
-
     }
-
-
 
     render() {
 
@@ -127,7 +122,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
                             Variantní jména:
                         </h3>
 
-                        { (this.props.registryData.item) && this.props.registryData.item.variantRecords && this.props.registryData.item.variantRecords.map(item => { 
+                        { (this.props.registryData.item) && this.props.registryData.item.variantRecords && this.props.registryData.item.variantRecords.map(item => {
                                 return (
 
                                             <RegistryLabel
