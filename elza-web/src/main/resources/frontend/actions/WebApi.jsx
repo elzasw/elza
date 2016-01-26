@@ -369,18 +369,14 @@ class WebApi{
     }
 
     createFindingAid(name, ruleSetId, arrangementTypeId) {
-        return AjaxUtils.ajaxPut('/api/arrangementManager/createFindingAid', {name: name, arrangementTypeId: arrangementTypeId, ruleSetId: ruleSetId})
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/findingAids', {name: name, arrangementTypeId: arrangementTypeId, ruleSetId: ruleSetId})
             .then(json=>{
                 return json;
             });
     }
 
-    approveVersion(versionId, ruleSetId, arrangementTypeId, odebratFindingAidId) {
-        //var obj = {arrangementTypeId: arrangementTypeId, ruleSetId: ruleSetId, findingAid: {findingAidId: odebratFindingAidId, name: '111', createDate:{}},createChange: {},rootLevel:{},arrangementType: {}, ruleSet:{}, lastChange:{}};
-        var obj = {findingAidVersionId: versionId, findingAid: {findingAidId: odebratFindingAidId}};
-        console.log(11111111, {versionId: versionId, ruleSetId: ruleSetId, arrangementTypeId: arrangementTypeId, odebratFindingAidId: odebratFindingAidId});
-        console.log(11111111, obj);
-        return AjaxUtils.ajaxPut('/api/arrangementManager/approveVersion', {arrangementTypeId: arrangementTypeId, ruleSetId: ruleSetId}, obj)
+    approveVersion(versionId, ruleSetId, arrangementTypeId) {
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/approveVersion', {arrangementTypeId: arrangementTypeId, ruleSetId: ruleSetId, versionId: versionId})
             .then(json=>{
                 return json;
             });

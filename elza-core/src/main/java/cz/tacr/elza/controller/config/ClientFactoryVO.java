@@ -531,7 +531,6 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RulDescItemTypeDescItemsVO descItemTypeVO = mapper.map(descItemType, RulDescItemTypeDescItemsVO.class);
         descItemTypeVO.setDataTypeId(descItemType.getDataType().getDataTypeId());
-        descItemTypeVO.setWidth(elzaRules.getTypeWidthByCode(descItemType.getCode()));
         return descItemTypeVO;
     }
 
@@ -683,6 +682,7 @@ public class ClientFactoryVO {
                 descItemTypeGroupVO.setDescItemTypes(descItemTypeList);
             }
 
+            descItemTypeVO.setWidth(elzaRules.getTypeWidthByCode(descItemTypeVO.getCode()));
             descItemTypeList.add(descItemTypeVO);
         }
 

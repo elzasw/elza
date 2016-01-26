@@ -113,6 +113,28 @@ var PageLayout = class PageLayout extends React.Component {
                     </div>
                 </div>
             )
+        } else if (!this.props.leftPanel && this.props.rightPanel) {
+            return (
+                <div className={cls}>
+                    <div className='app-header'>
+                        <ToggleContent className="ribbon-toggle-container" opened={this.state.ribbonOpened} onShowHide={this.handleRibbonShowHide}>
+                            {this.props.ribbon}
+                        </ToggleContent>
+                    </div>
+                    <div className='app-content'>
+                        {this.props.appContentExt}
+                        <div ref="splitPane1" className="split-pane fixed-left">
+                            <div className="split-pane-component" id="left-component">
+                                {this.props.centerPanel}
+                            </div>
+                            <div className="split-pane-divider" id="my-divider"></div>
+                            <div className="split-pane-component" id="right-component-container">
+                                {this.props.leftRight}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )
         }
     }
 }

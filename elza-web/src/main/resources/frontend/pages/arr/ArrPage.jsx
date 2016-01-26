@@ -63,7 +63,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
      */
     handleCallApproveFaVersion(data) {
         var activeInfo = this.getActiveInfo();
-        this.dispatch(approveFa(activeInfo.activeFa.versionId, data.ruleSetId, data.rulArrTypeId, activeInfo.activeFa.faId));
+        this.dispatch(approveFa(activeInfo.activeFa.versionId, data.ruleSetId, data.rulArrTypeId));
     }
 
     /**
@@ -142,7 +142,6 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         var activeFa = arrRegion.activeIndex != null ? arrRegion.fas[arrRegion.activeIndex] : null;
         var leftPanel;
         if (arrRegion.extendedView) {   // rozšířené zobrazení stromu AP
-            leftPanel = <div></div>
         } else {
             leftPanel = (
                 <FaTreeTabs
@@ -164,6 +163,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                 centerPanel = (
                     <FaExtendedView
                         fa={activeFa}
+                        versionId={activeFa.activeVersion.id}
                     />
                 )
             } else if (activeFa.nodes) {

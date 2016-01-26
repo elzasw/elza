@@ -9,9 +9,9 @@ import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Tabs, FaTreeMain, FaTreeMovementsLeft, FaTreeMovementsRight} from 'components';
 import * as types from 'actions/constants/actionTypes';
 import {Button} from 'react-bootstrap';
-import {moveNodesUnder} from 'actions/arr/nodes'
+import {moveNodesUnder, moveNodesBefore, moveNodesAfter} from 'actions/arr/nodes'
 import {indexById} from 'stores/app/utils.jsx'
-import {getNodeParents} from './ArrUtils'
+import {getNodeParents, getNodeParent} from './ArrUtils'
 
 var FaExtendedView = class FaExtendedView extends AbstractReactComponent {
     constructor(props) {
@@ -21,7 +21,7 @@ var FaExtendedView = class FaExtendedView extends AbstractReactComponent {
             'handleMoveBefore', 'getDestNode');
 
         this.tabItems = [{id:0, title: 'Strom AP'}, {id: 1, title: 'Hromadné úpravy JP'}, {id: 2, title: 'Přesuny JP'}];
-        this.state = { selectedTabItem: this.tabItems[2] }
+        this.state = { selectedTabItem: this.tabItems[0] }
     }
 
     componentDidMount() {
@@ -36,30 +36,32 @@ var FaExtendedView = class FaExtendedView extends AbstractReactComponent {
     }
 
     getMoveInfo() {
-        const {fa} = this.props;
+        const {versionId, fa} = this.props;
 
         //  Zjištění seznamu označených NODE na přesun
         var nodes = Object.keys(fa.faTreeMovementsLeft.selectedIds).map(id => fa.faTreeMovementsLeft.nodes[indexById(fa.faTreeMovementsLeft.nodes, id)]);
+        var nodesParent = getNodeParent(fa.faTreeMovementsLeft.nodes, nodes[0].id);
 
         // Zjištění node kam přesouvat
-        var node = this.getDestNode();
+        var dest = this.getDestNode();
+        var destParent = getNodeParent(fa.faTreeMovementsRight.nodes, dest.id);
 
-        return {nodes, node}
+        return {versionId, nodes, nodesParent, dest, destParent}
     }
 
     handleMoveUnder() {
         var info = this.getMoveInfo();
-        this.dispatch(moveNodesUnder(info.nodes, info.node));
+        this.dispatch(moveNodesUnder(info.versionId, info.nodes, info.nodesParent, info.dest, info.destParent));
     }
 
     handleMoveAfter() {
         var info = this.getMoveInfo();
-        this.dispatch(moveNodesAfter(info.nodes, info.node));
+        this.dispatch(moveNodesAfter(info.versionId, info.nodes, info.nodesParent, info.dest, info.destParent));
     }
 
     handleMoveBefore() {
         var info = this.getMoveInfo();
-        this.dispatch(moveNodesBefore(info.nodes, info.node));
+        this.dispatch(moveNodesBefore(info.versionId, info.nodes, info.nodesParent, info.dest, info.destParent));
     }
 
     checkMoveUnder() {
@@ -68,6 +70,29 @@ var FaExtendedView = class FaExtendedView extends AbstractReactComponent {
         var destNode = this.getDestNode();
         var parents = getNodeParents(fa.faTreeMovementsRight.nodes, destNode.id);
         parents.push(destNode);
+
+        // Test, zda se nepřesouvá sám pod sebe
+        var ok = true;
+        for (var a=0; a<parents.length; a++) {
+            if (fa.faTreeMovementsLeft.selectedIds[parents[a].id]) {    // přesouvaný je v nadřazených v cíli, takto nelze přesouvat
+                ok = false;
+                break;
+            }
+        }
+        return ok;
+    }
+
+    checkMoveBeforeAfter() {
+        const {fa} = this.props;
+
+        var destNode = this.getDestNode();
+
+        if (destNode.depth == 1) {  // u kořene nelze tuto akci volat
+            return false;
+        }
+
+        var parents = getNodeParents(fa.faTreeMovementsRight.nodes, destNode.id);
+        //parents.push(destNode);
 
         // Test, zda se nepřesouvá sám pod sebe
         var ok = true;
@@ -109,11 +134,12 @@ var FaExtendedView = class FaExtendedView extends AbstractReactComponent {
             var rightHasSelection = fa.faTreeMovementsRight.selectedId != null;
             var active = leftHasSelection && rightHasSelection;
             var moveUnder = active && this.checkMoveUnder();
+            var moveBeforeAfter = active && this.checkMoveBeforeAfter();
             tabContent.push(
                 <div key={2} className='tree-actions-container'>
                     <Button onClick={this.handleMoveUnder} disabled={!moveUnder}>Přesunout do</Button>
-                    <Button onClick={this.handleMoveBefore} disabled={!active}>Přesunout před</Button>
-                    <Button onClick={this.handleMoveAfter} disabled={!active}>Přesunout za</Button>
+                    <Button onClick={this.handleMoveBefore} disabled={!moveBeforeAfter}>Přesunout před</Button>
+                    <Button onClick={this.handleMoveAfter} disabled={!moveBeforeAfter}>Přesunout za</Button>
                 </div>
             )
             tabContent.push(
@@ -141,7 +167,8 @@ var FaExtendedView = class FaExtendedView extends AbstractReactComponent {
 }
 
 FaExtendedView.propTypes = {
-    fa: React.PropTypes.object,
+    fa: React.PropTypes.object.isRequired,
+    versionId: React.PropTypes.number.isRequired,
 }
 
 module.exports = connect()(FaExtendedView);

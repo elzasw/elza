@@ -80,6 +80,11 @@ public class RulDescItemTypeVO {
      */
     private Boolean repeatable;
 
+    /**
+     * šířka atributu (0 - maximální počet sloupců, 1..N - počet sloupců)
+     */
+    private Integer width;
+
     public Integer getId() {
         return id;
     }
@@ -182,5 +187,13 @@ public class RulDescItemTypeVO {
 
     public void setRepeatable(final Boolean repeatable) {
         this.repeatable = repeatable;
+    }
+
+    public Integer getWidth() {
+        return width;
+    }
+
+    public void setWidth(final Integer width) {
+        this.width = width;
     }
 }

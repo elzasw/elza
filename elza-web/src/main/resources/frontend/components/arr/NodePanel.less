@@ -18,9 +18,23 @@
         height: @node-panel-actions-height;
         .btn {
             background: transparent;
-            height: @node-panel-actions-height;
-            font-size: 12px;
+            height: 2em;
+            font-size: 0.9em;
             border: none;
+            padding: 2px;
+            margin: 0;
+            margin-right: 3px;
+            border-radius: 0;
+            .icon  {
+                color: @node-form-actions-color;
+                height: 1.35em;
+                line-height: 1.35em;
+                width: 1.35em;
+                vertical-align: middle;
+            }
+        }
+        .btn:hover {
+            background-color: @node-form-actions-hover;
         }
     }
     .parents {

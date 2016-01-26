@@ -8,7 +8,6 @@ import {AbstractReactComponent, i18n, Tabs, FaTreeLazy} from 'components';
 import * as types from 'actions/constants/actionTypes';
 import {AppActions} from 'stores';
 import {MenuItem} from 'react-bootstrap';
-import {selectFaTab, closeFaTab} from 'actions/arr/fa'
 import {faTreeFocusNode, faTreeFetchIfNeeded, faTreeNodeExpand, faTreeNodeCollapse} from 'actions/arr/faTree'
 import {faSelectSubNode} from 'actions/arr/nodes'
 import {createFaRoot, getParentNode} from './ArrUtils.jsx'

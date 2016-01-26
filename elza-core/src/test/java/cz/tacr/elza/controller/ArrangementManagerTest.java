@@ -2281,7 +2281,6 @@ public class ArrangementManagerTest extends AbstractRestTest {
         RulDescItemTypeDescItemsVO descItemType = group.getDescItemTypes().get(0);
 
         Assert.assertNotNull(descItemType.getDescItems());
-        Assert.assertEquals(1, (int) descItemType.getWidth());
     }
 
     @Test
