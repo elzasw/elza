@@ -63,7 +63,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
      */
     handleCallApproveFaVersion(data) {
         var activeInfo = this.getActiveInfo();
-        this.dispatch(approveFa(activeInfo.activeFa.versionId, data.ruleSetId, data.rulArrTypeId, activeInfo.activeFa.faId));
+        this.dispatch(approveFa(activeInfo.activeFa.versionId, data.ruleSetId, data.rulArrTypeId));
     }
 
     /**

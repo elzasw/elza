@@ -316,6 +316,7 @@ public class ArrangementService {
 
     /**
      * Uzavře otevřenou verzi archivní pomůcky a otevře novou verzi.
+     * - spustí přepočet stavů uzlů pro novou verzi
      *
      * @param version         verze, která se má uzavřít
      * @param arrangementType typ výstupu nové verze
@@ -360,7 +361,10 @@ public class ArrangementService {
 
         Assert.isTrue(ruleSet.equals(arrangementType.getRuleSet()));
 
-        return createVersion(change, findingAid, arrangementType, ruleSet, version.getRootLevel());
+        ArrFindingAidVersion newVersion = createVersion(change, findingAid, arrangementType, ruleSet, version.getRootLevel());
+        ruleService.conformityInfoAll(newVersion);
+
+        return newVersion;
     }
 
     private void deleteVersion(ArrFindingAidVersion version) {

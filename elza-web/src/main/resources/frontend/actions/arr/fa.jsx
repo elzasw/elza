@@ -21,9 +21,9 @@ export function createFa(data) {
     }
 }
 
-export function approveFa(versionId, ruleSetId, arrangementTypeId, odebratFindingAidId) {
+export function approveFa(versionId, ruleSetId, arrangementTypeId) {
     return dispatch => {
-        return WebApi.approveVersion(versionId, ruleSetId, arrangementTypeId, odebratFindingAidId)
+        return WebApi.approveVersion(versionId, ruleSetId, arrangementTypeId)
             .then((json) => {
                 Toastr.Actions.success({
                     title: i18n("arr.fa.title.approved"),

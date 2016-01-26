@@ -340,6 +340,24 @@ public class RuleService {
         return impactOnConformityInfo;
     }
 
+    /**
+     * Provede vytvoření stavů uzlů podle pravidel u nové verze AP.
+     *
+     * @param findingAidVersion verze AP
+     */
+    public void conformityInfoAll(final ArrFindingAidVersion findingAidVersion) {
+
+        ArrNode rootNode = findingAidVersion.getRootLevel().getNode();
+
+        List<ArrNode> nodes = nodeRepository
+                .findNodesByDirection(rootNode, findingAidVersion, RelatedNodeDirection.ALL);
+
+        nodes.add(rootNode);
+
+        if (!nodes.isEmpty()) {
+            updateConformityInfoService.updateInfoForNodesAfterCommit(nodes, findingAidVersion);
+        }
+    }
 
     /**
      * Zjistí podle pravidel dopad na změnu stavů uzlů.
