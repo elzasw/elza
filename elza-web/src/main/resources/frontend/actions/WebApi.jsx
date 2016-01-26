@@ -369,7 +369,7 @@ class WebApi{
     }
 
     createFindingAid(name, ruleSetId, arrangementTypeId) {
-        return AjaxUtils.ajaxPut('/api/arrangementManager/createFindingAid', {name: name, arrangementTypeId: arrangementTypeId, ruleSetId: ruleSetId})
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/findingAids', {name: name, arrangementTypeId: arrangementTypeId, ruleSetId: ruleSetId})
             .then(json=>{
                 return json;
             });
