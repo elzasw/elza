@@ -263,15 +263,12 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
 
         var cls = classNames({
             'desc-item-type': true,
-            active: descItemType.hasFocus
+            active: descItemType.hasFocus,
+            ['el-' + descItemTypeInfo.with]: true
         });
 
-        var flexToValue = {'1': '25%', '2': '50%', 3: '75%', '4': '100%'};
-        var width = flexToValue[descItemType.width];
-        width = width || '50%';
-
         return (
-            <div className={cls} style={{width: width}}>
+            <div className={cls}>
                 {label}
                 <div className='desc-item-type-desc-items'>
                     {descItems}
