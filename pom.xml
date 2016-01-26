@@ -18,6 +18,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <gpg.skip>true</gpg.skip>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
     </properties>
 
     <modules>
@@ -78,16 +80,16 @@
                 <artifactId>commons-collections4</artifactId>
                 <version>4.0</version>
             </dependency>
-			<dependency>
-			   <groupId>org.hibernate</groupId>
-			   <artifactId>hibernate-search-orm</artifactId>
-			   <version>5.3.0.Final</version>
-			</dependency>
-			<dependency>
-			    <groupId>org.hibernate</groupId>
-			    <artifactId>hibernate-entitymanager</artifactId>
-				<version>4.3.10.Final</version>
-			</dependency>            
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-search-orm</artifactId>
+                <version>5.3.0.Final</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-entitymanager</artifactId>
+                <version>4.3.10.Final</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -185,7 +187,9 @@
                                 -hide java.*
                                 -Xdoclint:none
                             </additionalparam>
-                            <sourcepath>elza-api/src/main/java/cz/tacr/elza/api:elza-core/src/main/java/cz/tacr/elza/domain</sourcepath>
+                            <sourcepath>
+                                elza-api/src/main/java/cz/tacr/elza/api:elza-core/src/main/java/cz/tacr/elza/domain
+                            </sourcepath>
                             <failOnError>false</failOnError>
                         </configuration>
                     </plugin>
