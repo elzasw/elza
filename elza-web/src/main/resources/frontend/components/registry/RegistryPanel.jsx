@@ -4,14 +4,15 @@
  * @param selectedId int vstupní parametr, pomocí kterého načte detail / editaci konkrétního záznamu z rejstříku
  * 
 **/
+require ('./RegistryPanel.less');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Input} from 'react-bootstrap';
-import {AbstractReactComponent, RegistryLabel, Loading, DropDownTree, AddRegistryForm} from 'components';
+import {AbstractReactComponent, RegistryLabel, Loading, DropDownTree, EditRegistryForm, AddRegistryVariantForm} from 'components';
 import {i18n} from 'components';
 import {WebApi} from 'actions'
-import {getRegistryIfNeeded} from 'actions/registry/registryList'
+import {getRegistryIfNeeded, fetchRegistryIfNeeded, fetchRegistry} from 'actions/registry/registryList'
 import {registryChangeDetail, registryData} from 'actions/registry/registryData'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
 import {registryUpdated} from 'actions/registry/registryData'
@@ -21,7 +22,8 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.bindMethods('handleChangeTypeRegistry', 'editRecord');
+        this.bindMethods('handleChangeTypeRegistry', 'editRecord', 'handleAddVaraintRecord', 'handleDeleteVariant', 'handleCallAddRegistryVariant', 'handleBlurVariant');
+
         if (props.selectedId === null) {
             this.dispatch(getRegistryIfNeeded(props.selectedId));
         }
@@ -33,7 +35,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         if (nextProps.selectedId !== null) {
             this.dispatch(getRegistryIfNeeded(nextProps.selectedId));
         }
-        this.dispatch(refRecordTypesFetchIfNeeded());
+        this.dispatch(fetchRegistryIfNeeded());
 
     }
 
@@ -46,13 +48,57 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         });
     }
 
-    handleCallEditRegistry(){
+    handleCallEditRegistry(value){
+        var data = Object.assign({}, this.props.registryData.item)
+        data.record = value.nameMain;
+        data.characteristics = value.characteristics;
+        WebApi.updateRegistry(data).then(json => {
+            this.dispatch(registryUpdated());
+            this.dispatch(fetchRegistry(this.props.registry.filterText));
+            this.dispatch(modalDialogHide())
+        });
+    }
 
+    handleDeleteVariant(item){
+        WebApi.deleteVariantRecord(item.variantRecordId).then(json => {
+            this.dispatch(registryUpdated());
+            this.dispatch(fetchRegistry(this.props.registry.filterText));
+        });
+    }
+
+    handleAddVaraintRecord(){
+        this.dispatch(modalDialogShow(this, i18n('registry.addRegistryVariant') , <AddRegistryVariantForm create onSubmit={this.handleCallAddRegistryVariant.bind(this)} />));
+    }
+
+    handleCallAddRegistryVariant(values){
+        var data = {record: values.nameMain, regRecordId: this.props.registryData.item.recordId};
+
+        console.log(data);
+        WebApi.addRegistryVariant(data).then(json => {
+            this.dispatch(registryUpdated());
+            this.dispatch(fetchRegistry(this.props.registry.filterText));
+            this.dispatch(modalDialogHide())
+        });
     }
     editRecord(){
-        console.log(this.props.registryData.item.record);
-        this.dispatch(modalDialogShow(this, i18n('registry.editRegistry') , <AddRegistryForm initData={{nameMain: this.props.registryData.item.record , characteristics: this.props.registryData.item.characteristics}} create onSubmit={this.handleCallEditRegistry.bind(this)} />));
+        this.dispatch(modalDialogShow(this, i18n('registry.editRegistry') , <EditRegistryForm initData={{nameMain: this.props.registryData.item.record , characteristics: this.props.registryData.item.characteristics}} create onSubmit={this.handleCallEditRegistry.bind(this)} />));
     }
+
+    handleBlurVariant(item, element){
+        var data= {
+            variantRecordId: item.variantRecordId,
+            regRecordId: this.props.registryData.item.recordId,
+            record: element.target.value
+        }
+        console.log(data);
+        WebApi.editRegistryVariant(data).then(json => {
+            this.dispatch(registryUpdated());
+            this.dispatch(fetchRegistry(this.props.registry.filterText));
+        });
+
+    }
+
+
 
     render() {
 
@@ -68,6 +114,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
                         <p>{this.props.registryData.item.characteristics}</p>
 
                         <RegistryLabel
+                            key={this.props.refTables.recordTypes.items.recordId}
                             label={i18n('registry.detail.typ.rejstriku')}
                             type='selectWithChild'
                             items={this.props.refTables.recordTypes.items}
@@ -79,12 +126,23 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
                         <h3>
                             Variantní jména:
                         </h3>
+
                         { (this.props.registryData.item) && this.props.registryData.item.variantRecords && this.props.registryData.item.variantRecords.map(item => { 
                                 return (
-                                    <Input key={item.variantRecordId} type="text" value={item.variantRecordId +": "+ item.record}/>
+
+                                            <RegistryLabel
+                                                key={item.record}
+                                                type='variant'
+                                                value={item.record}
+                                                item={item}
+                                                onBlur={this.handleBlurVariant.bind(this,item)}
+                                                onClickDelete={this.handleDeleteVariant.bind(this, item)}
+                                                />
+
                                 )
                             })
                         }
+                        <span className="btn glyphicon glyphicon-plus-sign" onClick={this.handleAddVaraintRecord} />
                     </div>
             )
         }
@@ -98,10 +156,10 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {registryData, refTables} = state
+    const {registryData, refTables, registry} = state
 
     return {
-        registryData, refTables
+        registryData, refTables, registry
     }
 }
 

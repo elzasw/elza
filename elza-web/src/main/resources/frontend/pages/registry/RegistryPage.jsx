@@ -19,7 +19,7 @@ import {PageLayout} from 'pages';
 import {Nav, Glyphicon, NavItem} from 'react-bootstrap';
 import {registryData, registrySearchData, registryChangeParent, registryRemoveRegistry, registryStartMove, registryStopMove, registryCancelMove} from 'actions/registry/registryData'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {fetchRegistryIfNeeded, registrySetTypesId} from 'actions/registry/registryList'
+import {fetchRegistryIfNeeded, registrySetTypesId, fetchRegistry} from 'actions/registry/registryList'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
 
 
@@ -39,15 +39,14 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             this.dispatch(refRecordTypesFetchIfNeeded());
     }
 
-    handleAddRegistry(registerType, event) {
-       this.dispatch(modalDialogShow(this, i18n('registry.addRegistry') , <AddRegistryForm create onSubmit={this.handleCallAddRegistry.bind(this, registerType)} />));
+    handleAddRegistry(registerType, parentId, event) {
+       this.dispatch(modalDialogShow(this, i18n('registry.addRegistry') , <AddRegistryForm create onSubmit={this.handleCallAddRegistry.bind(this, registerType, parentId)} />));
     }
 
-    handleCallAddRegistry(registerType, data ) {
-        WebApi.insertRegistry( data.nameMain, data.characteristics, registerType ).then(json => {
+    handleCallAddRegistry(registerType, parentId, data ) {
+        WebApi.insertRegistry( data.nameMain, data.characteristics, registerType, parentId ).then(json => {
             this.dispatch(modalDialogHide());
-            var registry = Object.assign({}, registry,{filterText: ''});
-            this.dispatch(registrySearchData(registry));
+            this.dispatch(fetchRegistry(this.props.registry.filterText, this.props.registry.registryParentId, this.props.registry.registryTypesId));
             this.dispatch(registryData({selectedId: json.recordId}));
         });
 
@@ -111,23 +110,30 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             }
 
             itemActions.push(
-                <Button><Icon glyph="fa-check" /><div><span className="btnText">{i18n('registry.validate')}</span></div></Button>
-            );
-            itemActions.push(
                 <Button onClick={this.handleRemoveRegistryDialog.bind(this)}><Icon glyph="fa-trash" /><div><span className="btnText">{i18n('registry.removeRegistry')}</span></div></Button>
             );
-
         }
 
-
-
-
+        console.log(this.props);
         itemActions.push(
                 <DropdownButton title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('registry.addNewRegistry')}</span></div></span>}>
-                    {this.props.refTables.recordTypes.items.map(i=> { return <MenuItem eventKey="{i.id}" onClick={this.handleAddRegistry.bind(this, i)} value={i.id}>{i.name}</MenuItem>})}
+                    {this.props.refTables.recordTypes.items.map(i=> { return <MenuItem eventKey="{i.id}" onClick={this.handleAddRegistry.bind(this, i, this.props.registry.registryParentId)} value={i.id}>{i.name}</MenuItem>})}
                 </DropdownButton>
 
             );
+
+        if (this.props.registry.selectedId !== null && this.props.registry.selectedId!=this.props.registry.registryParentId) {
+            itemActions.push(
+                <DropdownButton
+                    title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('registry.addNewRegistryHere')}</span></div></span>}>
+                    {this.props.refTables.recordTypes.items.map(i=> {
+                        return <MenuItem eventKey="{i.id}"
+                                         onClick={this.handleAddRegistry.bind(this, i, this.props.registry.selectedId)}
+                                         value={i.id}>{i.name}</MenuItem>
+                    })}
+                </DropdownButton>
+            );
+        }
         var altSection;
         if (altActions.length > 0) {
             altSection = <RibbonGroup className="large">{altActions}</RibbonGroup>

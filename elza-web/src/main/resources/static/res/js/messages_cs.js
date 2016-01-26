@@ -55,6 +55,7 @@ var messages = {
     
     "registry.addRegistry": "Nové rejstříkové heslo",
     "registry.addNewRegistry": "Přidat heslo",
+    "registry.addNewRegistryHere": "Přidat heslo sem",
     "registry.name": "Název",
     "registry.characteristics": "Charakteristika",
     "registry.shown": "Zobrazeno",
@@ -70,7 +71,7 @@ var messages = {
     "registry.detail.charakteristika": "Charakteristika",
     "registry.detail.typ.rejstriku": "Typ rejstříku - hiearchie:",
     "registry.editRegistry": "Editace rejstříku",
-
+    "registry.addRegistryVariant": "Přidání varianty jména",
 
     
     "party.detail.characteristics": "Charakteristika",

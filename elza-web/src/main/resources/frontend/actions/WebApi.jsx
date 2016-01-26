@@ -133,11 +133,12 @@ class WebApi{
             });
     }
     
-    insertRegistry(nameMain, characteristics, registerType) {
+    insertRegistry(nameMain, characteristics, registerType, parentId) {
         var data = {
             record: nameMain,
             characteristics: characteristics,
             local: false,
+            parentRecordId: parentId,
             registerType: registerType
             
         }
@@ -159,6 +160,27 @@ class WebApi{
 
     updateRegistry(data) {
         return AjaxUtils.ajaxPut('/api/registryManagerV2/updateRecord', null, data)
+            .then(json=>{
+                return json;
+            });
+    }
+
+    deleteVariantRecord(variantRecordId) {
+        return AjaxUtils.ajaxDelete('/api/registryManagerV2/deleteVariantRecord', {variantRecordId: variantRecordId})
+            .then(json=>{
+                return json;
+            });
+    }
+
+    addRegistryVariant(data){
+        return AjaxUtils.ajaxPut('/api/registryManagerV2/createVariantRecord', null, data)
+            .then(json=>{
+                return json;
+            });
+    }
+
+    editRegistryVariant(data){
+        return AjaxUtils.ajaxPut('/api/registryManagerV2/updateVariantRecord', null, data)
             .then(json=>{
                 return json;
             });

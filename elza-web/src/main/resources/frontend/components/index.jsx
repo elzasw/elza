@@ -28,6 +28,8 @@ exports.Ribbon = require('./page/Ribbon');
 
 exports.RegistryPanel = require('./registry/RegistryPanel');
 exports.AddRegistryForm = require('./registry/AddRegistryForm');
+exports.EditRegistryForm = require('./registry/EditRegistryForm');
+exports.AddRegistryVariantForm = require('./registry/AddRegistryVariantForm');
 exports.RegistryLabel = require('./registry/RegistryLabel');
 
 exports.FaFileTree = require('./arr/FaFileTree');
