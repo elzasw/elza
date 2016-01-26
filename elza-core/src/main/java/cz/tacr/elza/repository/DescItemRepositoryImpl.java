@@ -80,15 +80,17 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
 
         StringBuilder hqlBuilder = new StringBuilder();
 
-        hqlBuilder.append("SELECT DISTINCT a.node_id, ds.value ");
-        hqlBuilder.append("FROM arr_desc_item a ");
+        hqlBuilder.append("SELECT DISTINCT n.node_id, n.version, ds.value ");
+        hqlBuilder.append("FROM arr_node n ");
+        hqlBuilder.append("LEFT JOIN arr_desc_item a ON n.node_id = a.node_id AND a.desc_item_type_id = :descItemTypeId ");
+
         if (lockChange != null) {
-            hqlBuilder.append("INNER JOIN arr_change cc ON a.create_change_id = cc.change_id ");
+            hqlBuilder.append("LEFT JOIN arr_change cc ON a.create_change_id = cc.change_id ");
             hqlBuilder.append("LEFT JOIN arr_change cd ON a.delete_change_id = cd.change_id ");
         }
-        hqlBuilder.append("INNER JOIN arr_data d ON d.desc_item_id = a.desc_item_id ");
-        hqlBuilder.append("INNER JOIN arr_data_string ds ON d.data_id = ds.data_id ");
-        hqlBuilder.append("WHERE a.desc_item_type_id = :descItemTypeId AND a.node_id IN (:ids) ");
+        hqlBuilder.append("LEFT JOIN arr_data d ON d.desc_item_id = a.desc_item_id ");
+        hqlBuilder.append("LEFT JOIN arr_data_string ds ON d.data_id = ds.data_id ");
+        hqlBuilder.append("WHERE n.node_id IN (:ids) ");
 
         if (lockChange == null) {
             hqlBuilder.append("AND a.delete_change_id IS NULL");
@@ -116,7 +118,8 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
 
             for (Object[] row : (List<Object[]>) query.getResultList()) {
                 Integer nodeId = (Integer) row[0];
-                result.put(nodeId, new DescItemTitleInfo(nodeId, (String) row[1]));
+                Integer nodeVersion = (Integer) row[1];
+                result.put(nodeId, new DescItemTitleInfo(nodeId, (String) row[2], nodeVersion));
             }
         }
 

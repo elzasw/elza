@@ -75,12 +75,16 @@ public class LevelTreeCacheService {
 
     @Autowired
     private DescItemTypeRepository descItemTypeRepository;
+    
+    @Autowired
+    private ClientFactoryVO clientFactoryVO;
 
     @Value("${elza.treenode.title}")
     private String titleDescItemTypeCode = null;
 
-    @Autowired
-    private ClientFactoryVO clientFactoryVO;
+    @Value("${elza.treenode.defaultTitle}")
+    private String defaultNodeTitle = "";
+
 
     /**
      * Cache stromu pro danou verzi. (id verze -> nodeid uzlu -> uzel)
@@ -454,18 +458,13 @@ public class LevelTreeCacheService {
             }
         }
 
-        //root uzel bude mít jako title nastavený název AP
-        DescItemRepositoryCustom.DescItemTitleInfo rootDescItem = new DescItemRepositoryCustom.DescItemTitleInfo(
-                version.getRootLevel().getNode().getNodeId(), version.getFindingAid().getName());
-        nodeTitlesMap.put(version.getRootLevel().getNode().getNodeId(), rootDescItem);
-
 
         List<TreeNodeClient> result = new ArrayList<>(nodesMap.size());
         for (TreeNode treeNode : nodesMap.values()) {
             DescItemRepositoryCustom.DescItemTitleInfo title = nodeTitlesMap.get(treeNode.getId());
-            result.add(
-                    new TreeNodeClient(treeNode.getId(), treeNode.getDepth(),
-                            title == null ? null : title.getValue(), !treeNode.getChilds().isEmpty(), treeNode.getReferenceMark()));
+            result.add(new TreeNodeClient(treeNode.getId(), treeNode.getDepth(),
+                    title == null || title.getValue() == null ? defaultNodeTitle : title.getValue(),
+                    !treeNode.getChilds().isEmpty(), treeNode.getReferenceMark(), title.getNodeVersion()));
         }
 
         return result;

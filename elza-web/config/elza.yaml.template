@@ -11,7 +11,7 @@ elza:
 
   treenode:
       title: ZP2015_TITLE
-
+      defaultTitle: <Není nastaven popisek>
 #  type-groups:
 #    GROUP1:
 #      name: Testovací skupina 1

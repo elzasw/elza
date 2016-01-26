@@ -2297,12 +2297,14 @@ public class ArrangementManagerTest extends AbstractRestTest {
     @Test
     @Transactional
     public void testRestGetFaTree(){
-        TestLevelData testLevelData = createTestLevelData();
-        ArrFindingAidVersion version = findingAidVersionRepository.getOne(testLevelData.getVersionId());
+
+        ArrFindingAid fa = createFindingAid("test");
+        ArrFindingAidVersion version = findingAidVersionRepository
+                .findByFindingAidIdAndLockChangeIsNull(fa.getFindingAidId());
 
         ArrChange createChange = createFaChange(LocalDateTime.now());
 
-        ArrLevel child1 = createLevel(1, testLevelData.getParentLevel(), createChange);
+        ArrLevel child1 = createLevel(1, version.getRootLevel(), createChange);
         ArrLevel child12 = createLevel(2, child1, createChange);
         ArrLevel child13 = createLevel(3, child1, createChange);
         ArrLevel child123 = createLevel(3, child12, createChange);
@@ -2311,14 +2313,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
 
         //nastavení title na child12
-        RulDataType stringDataType = getDataType(DATA_TYPE_STRING);
-
-        RulDescItemType descItemType = createDescItemType("ZP2015_TITLE", stringDataType.getDataTypeId());
-        RulDescItemTypeExt rulDescItemTypeExt = new RulDescItemTypeExt();
-        BeanUtils.copyProperties(descItemType, rulDescItemTypeExt);
-        ArrDescItemString stringValue = (ArrDescItemString) createStringValue(child12.getNode(), rulDescItemTypeExt);
-        stringValue.setValue("Title child12");
-        arrangementManager.createDescriptionItem(stringValue, version.getFindingAidVersionId());
+        createStringDescItem("Title child12", child12.getNode(), version);
 
 
 
@@ -2358,7 +2353,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
         Assert.assertTrue(parents.get(0).getId().equals(child123.getNode().getNodeId()));
         Assert.assertTrue(parents.get(1).getId().equals(child12.getNode().getNodeId()));
         Assert.assertTrue(parents.get(2).getId().equals(child1.getNode().getNodeId()));
-        Assert.assertTrue(parents.get(3).getId().equals(testLevelData.getParentLevel().getNode().getNodeId()));
+        Assert.assertTrue(parents.get(3).getId().equals(version.getRootLevel().getNode().getNodeId()));
     }
 
     @Test

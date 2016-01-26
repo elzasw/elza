@@ -34,6 +34,11 @@ public class TreeNodeClient {
     private Integer[] referenceMark;
 
     /**
+     * Verze uzlu.
+     */
+    private Integer version;
+
+    /**
      * Informace o stavu JP.
      */
     private NodeConformityVO nodeConformity;
@@ -45,12 +50,14 @@ public class TreeNodeClient {
                           final Integer depth,
                           final String name,
                           final boolean hasChildren,
-                          final Integer[] referenceMark) {
+                          final Integer[] referenceMark,
+                          final Integer version) {
         this.id = id;
         this.depth = depth;
         this.name = name;
         this.hasChildren = hasChildren;
         this.referenceMark = referenceMark;
+        this.version = version;
     }
 
 
@@ -92,6 +99,14 @@ public class TreeNodeClient {
 
     public void setReferenceMark(final Integer[] referenceMark) {
         this.referenceMark = referenceMark;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(final Integer version) {
+        this.version = version;
     }
 
     public NodeConformityVO getNodeConformity() {

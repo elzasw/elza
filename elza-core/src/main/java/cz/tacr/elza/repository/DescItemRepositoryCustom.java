@@ -51,13 +51,17 @@ public interface DescItemRepositoryCustom {
          */
         private String value;
 
+        private Integer nodeVersion;
+
         public DescItemTitleInfo() {
         }
 
-        public DescItemTitleInfo(final Integer nodeId, final String value) {
+        public DescItemTitleInfo(final Integer nodeId, final String value, final Integer nodeVersion) {
             this.nodeId = nodeId;
             this.value = value;
+            this.nodeVersion = nodeVersion;
         }
+
 
         public Integer getNodeId() {
             return nodeId;
@@ -73,6 +77,14 @@ public interface DescItemRepositoryCustom {
 
         public void setValue(final String value) {
             this.value = value;
+        }
+
+        public Integer getNodeVersion() {
+            return nodeVersion;
+        }
+
+        public void setNodeVersion(final Integer nodeVersion) {
+            this.nodeVersion = nodeVersion;
         }
     }
 }
