@@ -5,7 +5,7 @@
 import React from 'react';
 import {connect} from 'react-redux'
 import {Icon, AbstractReactComponent, i18n, Loading, SubNodeForm, Accordion} from 'components';
-import {Button} from 'react-bootstrap';
+import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {faSubNodeFormFetchIfNeeded} from 'actions/arr/subNodeForm'
 import {faSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo'
 import {faNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo'
@@ -24,7 +24,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             'renderChildren', 'handleOpenItem',
             'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick',
             'getParentNodes', 'getChildNodes', 'getSiblingNodes',
-            'renderAccordion'
+            'renderAccordion', 'renderState', 'transformConformityInfo'
             );
         
     }
@@ -161,6 +161,53 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     /**
+     * Renderování stavu.
+     * @param item {object} na který node v Accordion se kliklo
+     * @return {Object} view
+     */
+    renderState(item) {
+        var icon;
+        var tooltip;
+
+        if (item.nodeConformity) {
+            var description = (item.nodeConformity.description) ? "<br />" + item.nodeConformity.description : "";
+            var messages = new Array();
+
+            var errors = item.nodeConformity.errorList;
+            var missings = item.nodeConformity.missingList;
+
+            if (errors && errors.length > 0) {
+                messages.push(<div className="error">Chyby</div>);
+                errors.forEach(error => { messages.push(<div className="message">{error.description}</div>) });
+            }
+
+            if (missings && missings.length > 0) {
+                messages.push(<div className="missing">Chybějící</div>);
+                missings.forEach(missing => { messages.push(<div className="message">{missing.description}</div>) });
+            }
+
+            if (item.nodeConformity.state === "OK") {
+                icon = <Icon glyph="fa-check" />
+                tooltip = <Tooltip>{i18n('arr.node.status.ok') + description}</Tooltip>
+            } else {
+                icon = <Icon glyph="fa-exclamation-circle" />
+                tooltip = <Tooltip>{i18n('arr.node.status.err')} {description} {messages}</Tooltip>
+            }
+        } else {
+            icon = <Icon glyph="fa-exclamation-triangle" />
+            tooltip = <Tooltip>{i18n('arr.node.status.undefined')}</Tooltip>
+        }
+
+        return (
+                <OverlayTrigger placement="left" overlay={tooltip}>
+                    <div className="status">
+                        {icon}
+                    </div>
+                </OverlayTrigger>
+        );
+    }
+
+    /**
      * Renderování Accordion.
      * @param form {Object} editační formulář, pokud je k dispozici (k dispozici je, pokud je nějaká položka Accordion vybraná)
      * @return {Object} view
@@ -179,10 +226,12 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         for (var a=node.viewStartIndex; (a<node.viewStartIndex + node.pageSize) && (a < node.childNodes.length); a++) {
             var item = node.childNodes[a];
 
+            var state = this.renderState(item);
+
             if (node.selectedSubNodeId == item.id) {
                 rows.push(
                     <div className='accordion-header opened' onClick={this.handleCloseItem.bind(this, item)}>
-                        {item.name} [{item.id}]
+                        {item.name} [{item.id}] {state}
                     </div>
                 )
                 rows.push(
@@ -193,7 +242,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             } else {
                 rows.push(
                     <div className='accordion-header closed' onClick={this.handleOpenItem.bind(this, item)}>
-                        {item.name} [{item.id}]
+                        {item.name} [{item.id}] {state}
                     </div>
                 )
             }
@@ -235,6 +284,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 
         var form;
         if (!node.subNodeForm.isFetching && node.subNodeForm.fetched) {
+            var conformityInfo = this.transformConformityInfo(node);
             form = <SubNodeForm
                 nodeId={node.id}
                 versionId={versionId}
@@ -245,6 +295,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 rulDataTypes={rulDataTypes}
                 calendarTypes={calendarTypes}
                 packetTypes={packetTypes}
+                conformityInfo={conformityInfo}
                 packets={packets}
             />
         } else {
@@ -266,6 +317,53 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 {children}
             </div>
         );
+    }
+
+    /**
+     * Převedení dat do lepších struktur.
+     *
+     * @param node {object} JP
+     * @returns {{errors: {}, missings: {}}}
+     */
+    transformConformityInfo(node) {
+        var nodeId = node.subNodeForm.nodeId;
+
+        var nodeState;
+
+        for (var i = 0; i < node.childNodes.length; i++) {
+            if (node.childNodes[i].id == nodeId) {
+                nodeState = node.childNodes[i].nodeConformity;
+                break;
+            }
+        }
+
+        var conformityInfo = {
+            errors: {},
+            missings: {}
+        };
+
+        if (nodeState) {
+            var errors = nodeState.errorList;
+            if (errors && errors.length > 0) {
+                errors.forEach(error => {
+                    if (conformityInfo.errors[error.descItemObjectId] == null) {
+                        conformityInfo.errors[error.descItemObjectId] = new Array();
+                    }
+                    conformityInfo.errors[error.descItemObjectId].push(error);
+                });
+            }
+
+            var missings = nodeState.missingList;
+            if (missings && missings.length > 0) {
+                missings.forEach(missing => {
+                    if (conformityInfo.missings[missing.descItemTypeId] == null) {
+                        conformityInfo.missings[missing.descItemTypeId] = new Array();
+                    }
+                    conformityInfo.missings[missing.descItemTypeId].push(missing);
+                });
+            }
+        }
+        return conformityInfo;
     }
 }
 

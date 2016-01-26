@@ -47,4 +47,8 @@ public interface NodeConformityRepository extends JpaRepository<ArrNodeConformit
     List<ArrNodeConformity> findByFaVersion(ArrFindingAidVersion deleteVersion);
 
     List<ArrNodeConformity> findByFaVersionAndState(ArrFindingAidVersion deleteVersion, ArrNodeConformity.State state);
+
+
+    @Query("SELECT c FROM arr_node_conformity c JOIN c.node n WHERE n.nodeId in (?1) and c.faVersion = ?2")
+    List<ArrNodeConformity> findByNodeIdsAndFaVersion(Collection<Integer> nodeIds, ArrFindingAidVersion version);
 }

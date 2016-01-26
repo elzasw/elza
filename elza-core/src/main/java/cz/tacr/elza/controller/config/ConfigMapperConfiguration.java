@@ -12,6 +12,9 @@ import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.NodeConformityErrorVO;
+import cz.tacr.elza.controller.vo.NodeConformityMissingVO;
+import cz.tacr.elza.controller.vo.NodeConformityVO;
 import cz.tacr.elza.controller.vo.ParComplementTypeVO;
 import cz.tacr.elza.controller.vo.ParDynastyEditVO;
 import cz.tacr.elza.controller.vo.ParDynastyVO;
@@ -77,6 +80,9 @@ import cz.tacr.elza.domain.ArrDescItemUnitid;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformityError;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParDynasty;
@@ -157,6 +163,45 @@ public class ConfigMapperConfiguration {
     private void initSimpleVO(final MapperFactory mapperFactory) {
         mapperFactory.classMap(ArrCalendarType.class, ArrCalendarTypeVO.class).byDefault().field(
                 "calendarTypeId", "id").register();
+
+        mapperFactory.classMap(ArrNodeConformityExt.class, NodeConformityVO.class).customize(
+                new CustomMapper<ArrNodeConformityExt, NodeConformityVO>() {
+                    @Override
+                    public void mapAtoB(final ArrNodeConformityExt arrNodeConformityExt,
+                                        final NodeConformityVO nodeConformityVO,
+                                        final MappingContext context) {
+                        super.mapAtoB(arrNodeConformityExt, nodeConformityVO, context);
+                        nodeConformityVO.setNodeId(arrNodeConformityExt.getNode().getNodeId());
+                    }
+                }).byDefault().register();
+
+        mapperFactory.classMap(ArrNodeConformityError.class, NodeConformityErrorVO.class).customize(
+                new CustomMapper<ArrNodeConformityError, NodeConformityErrorVO>() {
+                    @Override
+                    public void mapAtoB(final ArrNodeConformityError arrNodeConformityError,
+                                        final NodeConformityErrorVO nodeConformityErrorVO,
+                                        final MappingContext context) {
+                        super.mapAtoB(arrNodeConformityError, nodeConformityErrorVO, context);
+                        nodeConformityErrorVO
+                                .setDescItemObjectId(arrNodeConformityError.getDescItem().getDescItemObjectId());
+                    }
+                }).byDefault().register();
+
+        mapperFactory.classMap(ArrNodeConformityMissing.class, NodeConformityMissingVO.class).customize(
+                new CustomMapper<ArrNodeConformityMissing, NodeConformityMissingVO>() {
+                    @Override
+                    public void mapAtoB(final ArrNodeConformityMissing arrNodeConformityMissing,
+                                        final NodeConformityMissingVO nodeConformityMissingVO,
+                                        final MappingContext context) {
+                        super.mapAtoB(arrNodeConformityMissing, nodeConformityMissingVO, context);
+                        nodeConformityMissingVO.setDescItemTypeId(
+                                arrNodeConformityMissing.getDescItemType().getDescItemTypeId());
+                        nodeConformityMissingVO.setDescItemSpecId(
+                                arrNodeConformityMissing.getDescItemSpec() == null ? null : arrNodeConformityMissing
+                                        .getDescItemSpec().getDescItemSpecId());
+                    }
+                }).byDefault().register();
+
         mapperFactory.classMap(ArrDescItemCoordinates.class, ArrDescItemCoordinatesVO.class).byDefault().field(
                 "descItemId", "id").register();
         mapperFactory.classMap(ArrDescItemEnum.class, ArrDescItemEnumVO.class).byDefault().field(

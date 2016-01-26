@@ -40,7 +40,7 @@ public class ExtendedObjectsFactory {
      * @return rozšířený objekt chyby
      */
     public ArrNodeConformityExt createNodeConformityInfoExt(@Nullable final ArrNodeConformity conformityInfo,
-                                                                final boolean loadErrors) {
+                                                            final boolean loadErrors) {
         if (conformityInfo == null) {
             return null;
         }

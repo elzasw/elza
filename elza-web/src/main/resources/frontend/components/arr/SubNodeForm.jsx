@@ -223,7 +223,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @return {Object} view
      */
     renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex) {
-        const {rulDataTypes, calendarTypes, nodeSettings, nodeId, packetTypes, packets} = this.props;
+        const {rulDataTypes, calendarTypes, nodeSettings, nodeId, packetTypes, packets, conformityInfo} = this.props;
 
         var rulDataType = rulDataTypes.items[indexById(rulDataTypes.items, descItemType.dataTypeId)];
         var descItemTypeInfo = this.getDescItemTypeInfo(descItemType);
@@ -277,6 +277,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 onDescItemTypeCopy={this.handleDescItemTypeCopy.bind(this, descItemType.id)}
                 locked={locked}
                 copy={copy}
+                conformityInfo={conformityInfo}
             />
         )
     }
@@ -372,6 +373,7 @@ SubNodeForm.propTypes = {
     packetTypes: React.PropTypes.object.isRequired,
     packets: React.PropTypes.object.isRequired,
     formData: React.PropTypes.object.isRequired,
+    conformityInfo: React.PropTypes.object.isRequired
 }
 
 module.exports = connect(mapStateToProps)(SubNodeForm);

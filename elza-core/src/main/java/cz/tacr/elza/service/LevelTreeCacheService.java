@@ -2,6 +2,7 @@ package cz.tacr.elza.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,10 +32,12 @@ import com.google.common.eventbus.Subscribe;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.controller.ArrangementController.Depth;
+import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DescItemRepositoryCustom;
@@ -68,11 +71,16 @@ public class LevelTreeCacheService {
     private DescItemRepository descItemRepository;
 
     @Autowired
+    private RuleService ruleService;
+
+    @Autowired
     private DescItemTypeRepository descItemTypeRepository;
 
     @Value("${elza.treenode.title}")
     private String titleDescItemTypeCode = null;
 
+    @Autowired
+    private ClientFactoryVO clientFactoryVO;
 
     /**
      * Cache stromu pro danou verzi. (id verze -> nodeid uzlu -> uzel)
@@ -149,7 +157,33 @@ public class LevelTreeCacheService {
             }
         }
 
-        return new TreeData(createNodesWithTitles(nodesMap, version), expandedIdsExtended);
+        TreeData treeData = new TreeData(createNodesWithTitles(nodesMap, version), expandedIdsExtended);
+
+        addConformityInfo(treeData, version);
+
+        return treeData;
+    }
+
+    /**
+     * Přidá informace o stavu uzlů.
+     *
+     * @param treeData  data stromu pro otevřené uzly
+     * @param version   verze stromu
+     */
+    private void addConformityInfo(final TreeData treeData, final ArrFindingAidVersion version) {
+
+        ArrayList<Integer> nodeIds = treeData.getNodes().stream().map(TreeNodeClient::getId)
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        Map<Integer, ArrNodeConformityExt> conformityInfoForNodes = ruleService
+                .getNodeConformityInfoForNodes(nodeIds, version);
+
+        for (TreeNodeClient treeNode: treeData.getNodes()) {
+            ArrNodeConformityExt nodeConformity = conformityInfoForNodes.get(treeNode.getId());
+            if (nodeConformity != null) {
+                treeNode.setNodeConformity(clientFactoryVO.createNodeConformity(nodeConformity));
+            }
+        }
     }
 
 

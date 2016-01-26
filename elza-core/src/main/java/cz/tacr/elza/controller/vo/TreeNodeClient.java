@@ -33,6 +33,11 @@ public class TreeNodeClient {
      */
     private Integer[] referenceMark;
 
+    /**
+     * Informace o stavu JP.
+     */
+    private NodeConformityVO nodeConformity;
+
     public TreeNodeClient() {
     }
 
@@ -87,5 +92,13 @@ public class TreeNodeClient {
 
     public void setReferenceMark(final Integer[] referenceMark) {
         this.referenceMark = referenceMark;
+    }
+
+    public NodeConformityVO getNodeConformity() {
+        return nodeConformity;
+    }
+
+    public void setNodeConformity(final NodeConformityVO nodeConformity) {
+        this.nodeConformity = nodeConformity;
     }
 }

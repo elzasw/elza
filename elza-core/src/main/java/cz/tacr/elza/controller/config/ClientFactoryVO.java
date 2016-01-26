@@ -22,6 +22,7 @@ import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.NodeConformityVO;
 import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
 import cz.tacr.elza.controller.vo.ParPartyGroupVO;
 import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
@@ -51,6 +52,7 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyGroup;
@@ -822,5 +824,17 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrPacketVO packetVO = mapper.map(packet, ArrPacketVO.class);
         return packetVO;
+    }
+
+    /**
+     * Vytvoření informace o validace stavu JP.
+     * @param nodeConformity    stav validace
+     * @return  VO stavu validace
+     */
+    public NodeConformityVO createNodeConformity(final ArrNodeConformityExt nodeConformity) {
+        Assert.notNull(nodeConformity);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        NodeConformityVO nodeConformityVO = mapper.map(nodeConformity, NodeConformityVO.class);
+        return nodeConformityVO;
     }
 }

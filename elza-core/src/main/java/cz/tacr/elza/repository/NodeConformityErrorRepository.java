@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -38,4 +39,6 @@ public interface NodeConformityErrorRepository extends JpaRepository<ArrNodeConf
     @Query("SELECT c FROM arr_node_conformity_error c WHERE c.nodeConformity in (?1)")
     List<ArrNodeConformityError> findByNodeConformityInfos(Collection<ArrNodeConformity> infos);
 
+    @Query("SELECT c FROM arr_node_conformity_error c JOIN c.nodeConformity n WHERE n.nodeConformityId in (?1)")
+    List<ArrNodeConformityError> findByConformityIds(Collection<Integer> conformityInfoIds);
 }

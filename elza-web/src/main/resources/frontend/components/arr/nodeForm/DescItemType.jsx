@@ -5,6 +5,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Icon, i18n, AbstractReactComponent, NoFocusButton} from 'components';
+import {Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {connect} from 'react-redux'
 var classNames = require('classnames');
 import DescItemString from './DescItemString'
@@ -110,15 +111,15 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
      * @param descItemType {Object} atribut
      * @param descItem {Object} objekt hodnoty atributu
      * @param descItemIndex {Integer} index hodnoty atributu v seznamu
-     * @param removeAction {Object} pokud je uvedeno, obsahuje view akce pro smazání hodnoty atributu
+     * @param actions {Array} pole akcí
      * @param locked {Boolean} je atribut uzamčen?
      * @return {Object} view
      */
-    renderDescItem(descItemType, descItem, descItemIndex, removeAction, locked) {
+    renderDescItem(descItemType, descItem, descItemIndex, actions, locked) {
         const {descItemTypeInfo, rulDataType, calendarTypes, packets, packetTypes} = this.props;
 
         var cls = 'desc-item-type-desc-item-container';
-        if (removeAction) {
+        if (actions.length > 0) {
             cls += ' with-action';
         }
 
@@ -179,7 +180,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                 <div className='desc-item-value-container'>
                     {parts}
                 </div>
-                {removeAction && <div className='desc-item-action-container'>{removeAction}</div>}
+                {actions.length > 0 && <div className='desc-item-action-container'>{actions}</div>}
             </div>
         )
     }
@@ -189,7 +190,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
      * @return {Object} view
      */
     renderLabel() {
-        const {copy, locked, descItemType, descItemTypeInfo} = this.props;
+        const {copy, locked, descItemType, descItemTypeInfo, conformityInfo} = this.props;
 
         var actions = [];
 
@@ -197,6 +198,16 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         actions.push(<NoFocusButton onClick={this.handleDescItemTypeCopy}><Icon className={copy ? 'copy' : 'nocopy'} glyph="fa-files-o" /></NoFocusButton>);
         actions.push(<NoFocusButton><Icon glyph="fa-book" /></NoFocusButton>);
         actions.push(<NoFocusButton onClick={this.handleDescItemTypeLock}><Icon className={locked ? 'locked' : 'unlocked'}  glyph="fa-lock" /></NoFocusButton>);
+
+        // Zprávy o chybějících položkách
+        var missings = conformityInfo.missings[descItemType.id];
+        if (missings) {
+            var messages = missings.map(missing => missing.description);
+            var tooltip = <Tooltip>{messages}</Tooltip>
+            actions.push(<OverlayTrigger placement="right" overlay={tooltip}>
+                <div className='btn btn-default'><Icon glyph="fa-exclamation-triangle" /></div>
+            </OverlayTrigger>);
+        }
 
         var hasDescItemsForDelete = false;
         if (!descItemType.hasFocus) {
@@ -244,7 +255,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
     }
 
     render() {
-        const {onDescItemRemove, onDescItemAdd, descItemType, descItemTypeInfo, locked} = this.props;
+        const {onDescItemRemove, onDescItemAdd, descItemType, descItemTypeInfo, locked, conformityInfo} = this.props;
 
         var label = this.renderLabel();
 
@@ -254,11 +265,22 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         }
 
         var descItems = descItemType.descItems.map((descItem, descItemIndex) => {
-            var removeAction;
+            var actions = new Array;
+
             if (descItemTypeInfo.repeatable) {
-                removeAction = <NoFocusButton onClick={onDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-trash" /></NoFocusButton>
+                actions.push(<NoFocusButton onClick={onDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-trash" /></NoFocusButton>);
             }
-            return this.renderDescItem(descItemType, descItem, descItemIndex, removeAction, locked)
+
+            var errors = conformityInfo.errors[descItem.descItemObjectId];
+            if (errors) {
+                var messages = errors.map(error => error.description);
+                var tooltip = <Tooltip>{messages}</Tooltip>
+                actions.push(<OverlayTrigger placement="left" overlay={tooltip}>
+                    <div className='btn btn-default'><Icon glyph="fa-exclamation-triangle" /></div>
+                </OverlayTrigger>);
+            }
+
+            return this.renderDescItem(descItemType, descItem, descItemIndex, actions, locked)
         })
 
         var cls = classNames({
@@ -297,6 +319,7 @@ DescItemType.propTypes = {
     packets: React.PropTypes.object.isRequired,
     locked: React.PropTypes.bool.isRequired,
     copy: React.PropTypes.bool.isRequired,
+    conformityInfo: React.PropTypes.object.isRequired
 }
 
 module.exports = connect()(DescItemType);

@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 
@@ -20,7 +22,6 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaRules;
 import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.api.ArrNodeConformityExt;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
@@ -31,6 +32,7 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrNodeConformityError;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.domain.RulDescItemConstraint;
@@ -51,6 +53,7 @@ import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.VersionConformityRepository;
+import cz.tacr.elza.utils.ObjectListIterator;
 import cz.tacr.elza.validation.ArrDescItemsPostValidator;
 
 
@@ -229,6 +232,86 @@ public class RuleService {
         }
 
         return extendedObjectsFactory.createNodeConformityInfoExt(conformityInfo, true);
+    }
+
+    /**
+     * Získání stavu JP pro seznam JP.
+     *
+     * @param nodeIds   seznam id nodů, od kterých se získat stav
+     * @param version   verze archivní pomůcky
+     * @return  stavy JP
+     */
+    public Map<Integer, ArrNodeConformityExt> getNodeConformityInfoForNodes(final Collection<Integer> nodeIds,
+                                                                           final ArrFindingAidVersion version) {
+        Map<Integer, ArrNodeConformityExt> result = new HashMap<>();
+
+        if (nodeIds.size() == 0) {
+            return result;
+        }
+
+        ObjectListIterator<Integer> iteratorNodeIds = new ObjectListIterator<>(nodeIds);
+
+        while (iteratorNodeIds.hasNext()) {
+            List<Integer> partNodeIds = iteratorNodeIds.next();
+
+            List<ArrNodeConformity> conformityInfos = nodeConformityInfoRepository
+                    .findByNodeIdsAndFaVersion(partNodeIds, version);
+
+            ArrayList<Integer> conformityInfoIds = conformityInfos.stream().map(ArrNodeConformity::getNodeConformityId)
+                    .collect(Collectors.toCollection(ArrayList::new));
+
+            ObjectListIterator<Integer> iteratorConformityIds = new ObjectListIterator<>(conformityInfoIds);
+
+            Map<Integer, List<ArrNodeConformityMissing>> missings = new HashMap<>();
+            Map<Integer, List<ArrNodeConformityError>> errors = new HashMap<>();
+
+            while (iteratorConformityIds.hasNext()) {
+                List<Integer> partIds = iteratorConformityIds.next();
+
+                List<ArrNodeConformityMissing> partMissings = nodeConformityMissingRepository
+                        .findByConformityIds(partIds);
+
+                for (ArrNodeConformityMissing partMissing : partMissings) {
+                    Integer conformityId = partMissing.getNodeConformity().getNodeConformityId();
+                    List<ArrNodeConformityMissing> missingList = missings.get(conformityId);
+
+                    if (missingList == null) {
+                        missingList = new ArrayList<>();
+                        missings.put(conformityId, missingList);
+                    }
+
+                    missingList.add(partMissing);
+                }
+
+                List<ArrNodeConformityError> partErrors = nodeConformityErrorsRepository.findByConformityIds(partIds);
+                for (ArrNodeConformityError partError : partErrors) {
+                    Integer conformityId = partError.getNodeConformity().getNodeConformityId();
+
+                    List<ArrNodeConformityError> errorList = errors.get(conformityId);
+
+                    if (errorList == null) {
+                        errorList = new ArrayList<>();
+                        errors.put(conformityId, errorList);
+                    }
+
+                    errorList.add(partError);
+                }
+            }
+
+            for (ArrNodeConformity conformityInfo : conformityInfos) {
+
+                ArrNodeConformityExt conformity = new ArrNodeConformityExt();
+                BeanUtils.copyProperties(conformityInfo, conformity);
+
+                conformity.setErrorList(errors.get(conformity.getNodeConformityId()));
+                conformity.setMissingList(missings.get(conformity.getNodeConformityId()));
+
+                result.put(conformityInfo.getNode().getNodeId(), conformity);
+            }
+
+        }
+
+        return result;
     }
 
     /**

@@ -43,7 +43,11 @@
         height: 100%;
         overflow: auto;
         overflow-x: hidden;
-        
+
+        .status {
+            float: right;
+        }
+
         .accordion-header {
             height: 32px;
             background: @accordion-header-bg;
@@ -79,5 +83,19 @@
                 background: @node-panel-children-active-bg;
             }
         }
+    }
+}
+
+.tooltip {
+    .missing {
+        font-weight: bold;
+    }
+
+    .error {
+        font-weight: bold;
+    }
+
+    .missing, .message, .error {
+        text-align: left;
     }
 }

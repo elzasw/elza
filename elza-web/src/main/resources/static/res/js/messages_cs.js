@@ -45,6 +45,11 @@ var messages = {
     "arr.fa.subNodes.nextPage": "Další stránka",
     "arr.fa.prev": "Předchozí",
     "arr.fa.next": "Následující",
+
+    "arr.node.status.ok": "Ok",
+    "arr.node.status.err": "Err",
+    "arr.node.status.undefined": "Nezvalidovaný",
+
     "subNodeForm.deleteDescItem": "Odstranit hodnotu",
     "subNodeForm.deleteDescItemType": "Odstranit prvek popisu včetně všech hodnot",
     "subNodeForm.validate.spec.required": "Specifikace musí být uvedena",
