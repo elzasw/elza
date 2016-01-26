@@ -5,10 +5,10 @@ module.exports = {
     entry: [
         './index.jsx',
     ],
-    debug: true,
-    devtool: 'eval-source-map',
+    debug: false,
     output: {
-        publicPath: 'http://localhost:8090/assets'
+        path: '../../../../target/react-dist',
+        filename: "[name].js"
     },
     module: {
         loaders: [
@@ -23,15 +23,15 @@ module.exports = {
             },
             {
                 test: /\.css$/,
-                loader: 'style-loader!css-loader?outputStyle=expanded&indentedSyntax'
+                loader: 'style-loader!css-loader'
             },
             {
                 test: /\.less$/,
-                loader: "style!css!less?outputStyle=expanded&indentedSyntax"
+                loader: "style!css!less"
             },
             {
                 test: /\.scss$/,
-                loader: "style!css!sass?outputStyle=expanded&indentedSyntax"
+                loader: "style!css!sass"
             },
             {test: /\.woff(\?v=\d+\.\d+\.\d+)?$/, loader: "file"},
             {test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/, loader: "file"},
@@ -59,5 +59,5 @@ module.exports = {
             $: "jquery",
             jQuery: "jquery"
         })
-    ]
+    ]    
 }

@@ -12,12 +12,12 @@
     <name>ELZA WAR</name>
 
     <dependencies>
-        <dependency>
+<!--        <dependency>
             <groupId>cz.tacr.elza</groupId>
             <artifactId>elza-ui</artifactId>
             <version>${project.parent.version}</version>
             <scope>runtime</scope>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>cz.tacr.elza</groupId>
             <artifactId>elza-web</artifactId>
