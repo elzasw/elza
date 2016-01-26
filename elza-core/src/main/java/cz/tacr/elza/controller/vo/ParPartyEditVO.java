@@ -3,7 +3,6 @@ package cz.tacr.elza.controller.vo;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import java.util.LinkedList;
 import java.util.List;
 
 
@@ -36,16 +35,19 @@ public class ParPartyEditVO {
      * Zdroje informací.
      */
     private String sourceInformation;
+    /**
+     * Působnost osoby od
+     */
+    private ParUnitdateEditVO from;
+    /**
+     * Působnost osoby do
+     */
+    private ParUnitdateEditVO to;
 
     /**
      * Seznam jmen osoby.
      */
     private List<ParPartyNameEditVO> partyNames;
-
-    /**
-     * Seznam působností osoby.
-     */
-    private List<ParPartyTimeRangeEditVO> timeRanges;
 
 
     public Integer getPartyId() {
@@ -88,19 +90,20 @@ public class ParPartyEditVO {
         this.partyTypeId = partyTypeId;
     }
 
-    public List<ParPartyTimeRangeEditVO> getTimeRanges() {
-        return timeRanges;
+    public ParUnitdateEditVO getFrom() {
+        return from;
     }
 
-    public void setTimeRanges(final List<ParPartyTimeRangeEditVO> timeRanges) {
-        this.timeRanges = timeRanges;
+    public void setFrom(ParUnitdateEditVO from) {
+        this.from = from;
     }
 
-    public void addPartyTimeRange(final ParPartyTimeRangeEditVO partyTimeRange) {
-        if (timeRanges == null) {
-            timeRanges = new LinkedList<>();
-        }
-        timeRanges.add(partyTimeRange);
+    public ParUnitdateEditVO getTo() {
+        return to;
+    }
+
+    public void setTo(ParUnitdateEditVO to) {
+        this.to = to;
     }
 
 }

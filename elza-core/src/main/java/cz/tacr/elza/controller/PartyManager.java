@@ -1,42 +1,14 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyGroup;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParPartyTypeExt;
-import cz.tacr.elza.domain.ParUnitdate;
-import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.vo.ParPartyWithCount;
-import cz.tacr.elza.repository.DataPartyRefRepository;
-import cz.tacr.elza.repository.DataRecordRefRepository;
-import cz.tacr.elza.repository.NodeRegisterRepository;
-import cz.tacr.elza.repository.PartyCreatorRepository;
-import cz.tacr.elza.repository.PartyDynastyRepository;
-import cz.tacr.elza.repository.PartyEventRepository;
-import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
-import cz.tacr.elza.repository.PartyGroupRepository;
-import cz.tacr.elza.repository.PartyNameComplementRepository;
-import cz.tacr.elza.repository.PartyNameRepository;
-import cz.tacr.elza.repository.PartyPersonRepository;
-import cz.tacr.elza.repository.PartyRelationRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.PartyTimeRangeRepository;
-import cz.tacr.elza.repository.PartyTypeRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.UnitdateRepository;
+import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.RegistryService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
@@ -72,8 +44,6 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
     private NodeRegisterRepository nodeRegisterRepository;
     @Autowired
     private PartyCreatorRepository partyCreatorRepository;
-    @Autowired
-    private PartyTimeRangeRepository partyTimeRangeRepository;
     @Autowired
     private PartyRelationRepository partyRelationRepository;
     @Autowired
@@ -220,15 +190,6 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
         }
 
         partyCreatorRepository.deleteByPartyBoth(party);
-
-
-        partyTimeRangeRepository.findByParty(party).forEach((pt) -> {
-                    ParUnitdate from = pt.getFrom();
-                    ParUnitdate to = pt.getTo();
-                    partyTimeRangeRepository.delete(pt);
-                    deleteUnitDates(from, to);
-                }
-        );
 
         partyRelationRepository.findByParty(party).forEach((pr) -> {
                     ParUnitdate from = pr.getFrom();

@@ -1,54 +1,24 @@
 package cz.tacr.elza.controller.config;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import cz.tacr.elza.controller.vo.ArrPacketVO;
-import cz.tacr.elza.controller.vo.ParDynastyEditVO;
-import cz.tacr.elza.controller.vo.ParEventEditVO;
-import cz.tacr.elza.controller.vo.ParPartyEditVO;
-import cz.tacr.elza.controller.vo.ParPartyGroupEditVO;
-import cz.tacr.elza.controller.vo.ParPartyNameEditVO;
-import cz.tacr.elza.controller.vo.ParPartyTimeRangeEditVO;
-import cz.tacr.elza.controller.vo.ParPersonEditVO;
-import cz.tacr.elza.controller.vo.ParRelationEntityVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegVariantRecordVO;
+import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFindingAid;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.ParDynasty;
-import cz.tacr.elza.domain.ParEvent;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyGroup;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPartyTimeRange;
-import cz.tacr.elza.domain.ParPerson;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -148,16 +118,6 @@ public class ClientFactoryDO {
         return mapper.map(partyNameVOSave, ParPartyName.class);
     }
 
-    /**
-     * Vytvoří objekt působnosti osoby.
-     *
-     * @param parPartyTimeRangeEditVO působnost VO
-     * @return do působnost
-     */
-    public ParPartyTimeRange createParPartyTimeRange(final ParPartyTimeRangeEditVO parPartyTimeRangeEditVO) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        return mapper.map(parPartyTimeRangeEditVO, ParPartyTimeRange.class);
-    }
 
     /**
      * Vytvoření rejstříkového hesla.

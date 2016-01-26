@@ -1,14 +1,13 @@
 package cz.tacr.elza.repository;
 
-import java.util.Collection;
-import java.util.List;
-
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParUnitdate;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParUnitdate;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -26,7 +25,7 @@ public interface UnitdateRepository extends JpaRepository<ParUnitdate, Integer> 
      * @param parties seznam osob
      * @return hodnoty datace pro dané osoby
      */
-    @Query("SELECT u FROM par_unitdate u JOIN u.fromTimeRanges r where r.party IN (?1)")
+    @Query("SELECT p.from FROM par_party p WHERE p IN (?1)")
     List<ParUnitdate> findForFromTimeRangeByParties(Collection<ParParty> parties);
 
 
@@ -36,7 +35,7 @@ public interface UnitdateRepository extends JpaRepository<ParUnitdate, Integer> 
      * @param parties seznam osob
      * @return hodnoty datace pro dané osoby
      */
-    @Query("SELECT u FROM par_unitdate u JOIN u.toTimeRanges r where r.party IN (?1)")
+    @Query("SELECT p.to FROM par_party p WHERE p IN (?1)")
     List<ParUnitdate> findForToTimeRangeByParties(Collection<ParParty> parties);
 
 

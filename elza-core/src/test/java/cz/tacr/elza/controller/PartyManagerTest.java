@@ -1,51 +1,21 @@
 package cz.tacr.elza.controller;
 
-import static com.jayway.restassured.RestAssured.given;
+import com.jayway.restassured.response.Response;
+import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.vo.ParPartyWithCount;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.jayway.restassured.response.Response;
-
-import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ParDynastyEditVO;
-import cz.tacr.elza.controller.vo.ParDynastyVO;
-import cz.tacr.elza.controller.vo.ParPartyNameEditVO;
-import cz.tacr.elza.controller.vo.ParPartyTimeRangeEditVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParRelationEntityVO;
-import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.ParUnitdateEditVO;
-import cz.tacr.elza.controller.vo.ParUnitdateVO;
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.domain.ParPartyTimeRange;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParPartyTypeComplementType;
-import cz.tacr.elza.domain.ParPartyTypeExt;
-import cz.tacr.elza.domain.ParPartyTypeRelation;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.ParRelationRoleType;
-import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.ParRelationTypeRoleType;
-import cz.tacr.elza.domain.ParUnitdate;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.vo.ParPartyWithCount;
+import static com.jayway.restassured.RestAssured.given;
 
 /**
  * Testy pro {@link PartyManager}.
@@ -306,10 +276,6 @@ public class PartyManagerTest extends AbstractRestTest {
         partyNameVO.setValidFrom(unitdateEditVO);
         partyNameVO.setValidTo(unitdateEditVO2);
 
-        // timeranges
-        ParPartyTimeRangeEditVO partyTimeRangeEditVO = new ParPartyTimeRangeEditVO();
-        partyTimeRangeEditVO.setFrom(unitdateEditVO);
-        partyTimeRangeEditVO.setTo(unitdateEditVO2);
 
         // register type
         createRegisterType(TEST_CODE + ElzaTools.getStringOfActualDate(), partyType);
@@ -317,9 +283,10 @@ public class PartyManagerTest extends AbstractRestTest {
         ParDynastyEditVO parPartyVO = new ParDynastyEditVO();
         parPartyVO.setPartyTypeId(partyType.getPartyTypeId());
         parPartyVO.setPartyNames(Arrays.asList(partyNameVO));
-        parPartyVO.addPartyTimeRange(partyTimeRangeEditVO);
         parPartyVO.setGenealogy("GENEALOGY");
         parPartyVO.setHistory("HISTORY");
+        parPartyVO.setFrom(unitdateEditVO);
+        parPartyVO.setTo(unitdateEditVO2);
 
         Response response = post(spec -> spec.body(parPartyVO), INSERT_PARTY_V2);
         ParPartyVO parPartyVORet = response.getBody().as(ParDynastyVO.class);
@@ -327,12 +294,10 @@ public class PartyManagerTest extends AbstractRestTest {
 
         List<ParPartyName> allNames = partyNameRepository.findAll();
         List<ParUnitdate> allUnitDate = unitdateRepository.findAll();
-        List<ParPartyTimeRange> allPartyTimerange = partyTimeRangeRepository.findAll();
         List<ParParty> allParty = partyRepository.findAll();
         List<RegRecord> allRecords = recordRepository.findAll();
 
         Assert.assertTrue(allNames.size() == 1);
-        Assert.assertTrue(allPartyTimerange.size() == 1);
         Assert.assertTrue(allRecords.size() == 1);
         Assert.assertTrue(allUnitDate.size() == 4);
         Assert.assertTrue(allParty.get(0).getHistory().equals("HISTORY"));
@@ -340,7 +305,6 @@ public class PartyManagerTest extends AbstractRestTest {
         // UPDATE
         parPartyVO.setPartyId(parPartyVORet.getPartyId());
         parPartyVO.getPartyNames().get(0).setPartyNameId(parPartyVORet.getPartyNames().get(0).getPartyNameId());
-        parPartyVO.getTimeRanges().get(0).setPartyTimeRangeId(parPartyVORet.getTimeRanges().get(0).getPartyTimeRangeId());
 
         parPartyVO.setGenealogy("GENEALOGYUPDATE");
         parPartyVO.setHistory("HISTORYUPDATED");
@@ -348,8 +312,8 @@ public class PartyManagerTest extends AbstractRestTest {
         parPartyVO.getPartyNames().get(0).getValidTo().setUnitdateId(parPartyVORet.getPartyNames().get(0).getValidTo().getUnitdateId());
         parPartyVO.getPartyNames().get(0).setValidFrom(null);
 
-        parPartyVO.getTimeRanges().get(0).getTo().setUnitdateId(parPartyVORet.getTimeRanges().get(0).getTo().getUnitdateId());
-        parPartyVO.getTimeRanges().get(0).setFrom(null);
+        parPartyVO.setTo(parPartyVO.getFrom());
+        parPartyVO.setFrom(null);
 
         response = put(spec -> spec.pathParameter(ABSTRACT_PARTY_ID_ATT, parPartyVO.getPartyId())
                                    .body(parPartyVO), UPDATE_PARTY_V2);
@@ -357,12 +321,10 @@ public class PartyManagerTest extends AbstractRestTest {
 
         allNames = partyNameRepository.findAll(); //
         allUnitDate = unitdateRepository.findAll();//
-        allPartyTimerange = partyTimeRangeRepository.findAll();
         allParty = partyRepository.findAll();
         allRecords = recordRepository.findAll();
 
         Assert.assertTrue(allNames.size() == 1);
-        Assert.assertTrue(allPartyTimerange.size() == 1);
         Assert.assertTrue(allRecords.size() == 1);
         Assert.assertTrue(allUnitDate.size() == 2);
         Assert.assertTrue(allParty.get(0).getHistory().equals("HISTORYUPDATED"));

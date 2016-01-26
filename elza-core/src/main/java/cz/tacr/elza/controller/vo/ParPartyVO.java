@@ -1,9 +1,9 @@
 package cz.tacr.elza.controller.vo;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import java.util.LinkedList;
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 
 /**
@@ -41,15 +41,19 @@ public class ParPartyVO {
      * Zdroje informací.
      */
     private String sourceInformation;
+    /**
+     * Čas působonosti od
+     */
+    private ParUnitdateVO from;
+    /**
+     * Čas působonosti do
+     */
+    private ParUnitdateVO to;
 
     /**
      * Seznam vazeb osoby.
      */
     private List<ParRelationVO> relations;
-    /**
-     * Seznam působností osoby.
-     */
-    private List<ParPartyTimeRangeVO> timeRanges;
     /**
      * Seznam jmen osoby.
      */
@@ -116,12 +120,20 @@ public class ParPartyVO {
         this.relations = relations;
     }
 
-    public List<ParPartyTimeRangeVO> getTimeRanges() {
-        return timeRanges;
+    public ParUnitdateVO getFrom() {
+        return from;
     }
 
-    public void setTimeRanges(final List<ParPartyTimeRangeVO> timeRanges) {
-        this.timeRanges = timeRanges;
+    public void setFrom(ParUnitdateVO from) {
+        this.from = from;
+    }
+
+    public ParUnitdateVO getTo() {
+        return to;
+    }
+
+    public void setTo(ParUnitdateVO to) {
+        this.to = to;
     }
 
     public List<ParPartyNameVO> getPartyNames() {
@@ -140,12 +152,6 @@ public class ParPartyVO {
         this.creators = creators;
     }
 
-    public void addPartyTimeRange(final ParPartyTimeRangeVO partyTimeRange) {
-        if (timeRanges == null) {
-            timeRanges = new LinkedList<>();
-        }
-        timeRanges.add(partyTimeRange);
-    }
 
     public void addPartyName(final ParPartyNameVO partyName) {
         if (partyNames == null) {

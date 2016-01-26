@@ -1,22 +1,13 @@
 package cz.tacr.elza.xmlimport.v1.vo.party;
 
-import java.util.List;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlID;
-import javax.xml.bind.annotation.XmlIDREF;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlType;
-
+import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
+import cz.tacr.elza.xmlimport.v1.vo.date.ComplexDate;
+import cz.tacr.elza.xmlimport.v1.vo.record.Record;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
-import cz.tacr.elza.xmlimport.v1.vo.record.Record;
+import javax.xml.bind.annotation.*;
+import java.util.List;
 
 /**
  * Abstraktní osoba.
@@ -60,6 +51,18 @@ public abstract class AbstractParty {
     @XmlElement(name = "source-informations")
     private String sourceInformations;
 
+    /**
+     * Působnost od.
+     */
+    @XmlElement(name = "from-date")
+    private ComplexDate fromDate;
+
+    /**
+     * Působnost do.
+     */
+    @XmlElement(name = "to-date")
+    private ComplexDate toDate;
+
     /** Autoři. */
     @XmlIDREF
     @XmlElement(name = "creator")
@@ -70,11 +73,6 @@ public abstract class AbstractParty {
     @XmlElement(name = "relation")
     @XmlElementWrapper(name = "relation-list")
     private List<Relation> events;
-
-    /** Působnosti osoby. */
-    @XmlElement(name = "party-time-range")
-    @XmlElementWrapper(name = "party-time-range-list")
-    private List<PartyTimeRange> partyTimeRanges;
 
     public String getPartyId() {
         return partyId;
@@ -106,6 +104,22 @@ public abstract class AbstractParty {
 
     public void setPreferredName(PartyName prefferedName) {
         this.preferredName = prefferedName;
+    }
+
+    public ComplexDate getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(ComplexDate fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public ComplexDate getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(ComplexDate toDate) {
+        this.toDate = toDate;
     }
 
     public String getHistory() {
@@ -146,14 +160,6 @@ public abstract class AbstractParty {
 
     public void setEvents(List<Relation> events) {
         this.events = events;
-    }
-
-    public List<PartyTimeRange> getPartyTimeRanges() {
-        return partyTimeRanges;
-    }
-
-    public void setPartyTimeRanges(List<PartyTimeRange> partyTimeRanges) {
-        this.partyTimeRanges = partyTimeRanges;
     }
 
     @Override
