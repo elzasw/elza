@@ -1,18 +1,13 @@
 package cz.tacr.elza.xmlimport;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-
-import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.MarshalException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-
+import cz.tacr.elza.ElzaCore;
+import cz.tacr.elza.api.vo.ImportDataFormat;
+import cz.tacr.elza.api.vo.XmlImportConfig;
+import cz.tacr.elza.controller.RuleManager;
+import cz.tacr.elza.repository.PackageRepository;
+import cz.tacr.elza.service.XmlImportService;
+import cz.tacr.elza.service.exception.XmlImportException;
+import cz.tacr.elza.xmlimport.v1.vo.XmlImport;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,14 +22,13 @@ import org.springframework.util.Assert;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import cz.tacr.elza.ElzaCore;
-import cz.tacr.elza.api.vo.ImportDataFormat;
-import cz.tacr.elza.api.vo.XmlImportConfig;
-import cz.tacr.elza.controller.RuleManager;
-import cz.tacr.elza.repository.PackageRepository;
-import cz.tacr.elza.service.XmlImportService;
-import cz.tacr.elza.service.exception.XmlImportException;
-import cz.tacr.elza.xmlimport.v1.vo.XmlImport;
+import javax.xml.XMLConstants;
+import javax.xml.bind.*;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 
 /**
  * Testy na xml import.
@@ -74,8 +68,6 @@ public class XmlImportTest implements ApplicationContextAware {
 
     private static final int PARTY_GROUP_ID_COUNT = 1;
 
-    private static final int PARTY_TIME_RANGE_COUNT = 1;
-
     private static final int PARTY_NAME_COMPLEMENTS_COUNT = 1;
 
     private static final int PACKET_COUNT = 10;
@@ -109,7 +101,7 @@ public class XmlImportTest implements ApplicationContextAware {
     /** Vytvoření xml souboru s osobami a rejstříky. */
 //    @Test
     public void testCreatePartyFile() throws IOException, JAXBException {
-        XmlDataGeneratorConfig config = new XmlDataGeneratorConfig(3, 1, 4, 0, 0, 0, true, 2, 2, 2, 2, 0);
+        XmlDataGeneratorConfig config = new XmlDataGeneratorConfig(3, 1, 4, 0, 0, 0, true, 2, 2, 2, 0);
         XmlImport fa = xmlDataGenerator.createXmlImportData(config);
 
         File out = File.createTempFile("xml-export-parties", ".xml");
@@ -122,7 +114,7 @@ public class XmlImportTest implements ApplicationContextAware {
     /** Vytvoření xml souboru s rejstříky. */
     @Test
     public void testCreateRecordFile() throws IOException, JAXBException {
-        XmlDataGeneratorConfig config = new XmlDataGeneratorConfig(3, 1, 0, 0, 0, 0, true, 0, 0, 0, 0, 0);
+        XmlDataGeneratorConfig config = new XmlDataGeneratorConfig(3, 1, 0, 0, 0, 0, true, 0, 0, 0, 0);
         XmlImport fa = xmlDataGenerator.createXmlImportData(config);
 
         File out = File.createTempFile("xml-export-records", ".xml");
@@ -149,7 +141,7 @@ public class XmlImportTest implements ApplicationContextAware {
         //1,5 GB
 //        XmlDataGeneratorConfig config = new XmlDataGeneratorConfig(50, 10, 50, 50, 15, 10, true, 5, 3, 3, 3);
         //300 MB
-        XmlDataGeneratorConfig config = new XmlDataGeneratorConfig(50, 10, 50, 20, 4, 10, true, 5, 3, 3, 3, 3);
+        XmlDataGeneratorConfig config = new XmlDataGeneratorConfig(50, 10, 50, 20, 4, 10, true, 5, 3, 3, 3);
         XmlImport fa = xmlDataGenerator.createXmlImportData(config);
 
         File out = File.createTempFile("xml-export-large", ".xml");
@@ -242,7 +234,7 @@ public class XmlImportTest implements ApplicationContextAware {
      */
     private XmlDataGeneratorConfig createDefaultGeneratorConfig(final boolean valid) {
        return new XmlDataGeneratorConfig(RECORD_COUNT, VARIANT_RECORD_COUNT, PARTY_COUNT, CHILD_COUNT, TREE_DEPTH_COUNT,
-               DESC_ITEMS_COUNT, valid, EVENT_COUNT, PARTY_GROUP_ID_COUNT, PARTY_TIME_RANGE_COUNT,
+               DESC_ITEMS_COUNT, valid, EVENT_COUNT, PARTY_GROUP_ID_COUNT,
                PARTY_NAME_COMPLEMENTS_COUNT, PACKET_COUNT);
     }
 

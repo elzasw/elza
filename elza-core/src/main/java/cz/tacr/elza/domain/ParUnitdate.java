@@ -5,17 +5,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.springframework.data.rest.core.annotation.RestResource;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.List;
 
 
@@ -69,11 +59,11 @@ public class ParUnitdate implements cz.tacr.elza.api.ParUnitdate<ArrCalendarType
 
     @RestResource(exported = false)
     @OneToMany(mappedBy = "from", fetch = FetchType.LAZY)
-    private List<ParPartyTimeRange> fromTimeRanges;
+    private List<ParParty> fromParty;
 
     @RestResource(exported = false)
     @OneToMany(mappedBy = "to", fetch = FetchType.LAZY)
-    private List<ParPartyTimeRange> toTimeRanges;
+    private List<ParParty> toParty;
 
     @RestResource(exported = false)
     @OneToMany(mappedBy = "validFrom", fetch = FetchType.LAZY)

@@ -1,48 +1,22 @@
 package cz.tacr.elza.xmlimport;
 
+import cz.tacr.elza.xmlimport.v1.vo.XmlImport;
+import cz.tacr.elza.xmlimport.v1.vo.arrangement.*;
+import cz.tacr.elza.xmlimport.v1.vo.date.ComplexDate;
+import cz.tacr.elza.xmlimport.v1.vo.party.*;
+import cz.tacr.elza.xmlimport.v1.vo.record.Coordinate;
+import cz.tacr.elza.xmlimport.v1.vo.record.Record;
+import cz.tacr.elza.xmlimport.v1.vo.record.RecordCoordinates;
+import cz.tacr.elza.xmlimport.v1.vo.record.VariantRecord;
+import org.apache.commons.lang.math.RandomUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-
-import org.apache.commons.lang.math.RandomUtils;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import cz.tacr.elza.xmlimport.v1.vo.XmlImport;
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.AbstractDescItem;
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemCoordinates;
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemDecimal;
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemEnum;
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemFormattedText;
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemInteger;
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemPacketRef;
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemPartyRef;
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemRecordRef;
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemString;
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemText;
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemUnitDate;
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemUnitId;
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.FindingAid;
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.Level;
-import cz.tacr.elza.xmlimport.v1.vo.arrangement.Packet;
-import cz.tacr.elza.xmlimport.v1.vo.date.ComplexDate;
-import cz.tacr.elza.xmlimport.v1.vo.party.AbstractParty;
-import cz.tacr.elza.xmlimport.v1.vo.party.Dynasty;
-import cz.tacr.elza.xmlimport.v1.vo.party.Event;
-import cz.tacr.elza.xmlimport.v1.vo.party.PartyGroup;
-import cz.tacr.elza.xmlimport.v1.vo.party.PartyGroupId;
-import cz.tacr.elza.xmlimport.v1.vo.party.PartyName;
-import cz.tacr.elza.xmlimport.v1.vo.party.PartyNameComplement;
-import cz.tacr.elza.xmlimport.v1.vo.party.PartyTimeRange;
-import cz.tacr.elza.xmlimport.v1.vo.party.Person;
-import cz.tacr.elza.xmlimport.v1.vo.party.Relation;
-import cz.tacr.elza.xmlimport.v1.vo.party.RoleType;
-import cz.tacr.elza.xmlimport.v1.vo.record.Coordinate;
-import cz.tacr.elza.xmlimport.v1.vo.record.Record;
-import cz.tacr.elza.xmlimport.v1.vo.record.RecordCoordinates;
-import cz.tacr.elza.xmlimport.v1.vo.record.VariantRecord;
 
 /**
  * Generátor dat pro testy xml imprtu.
@@ -580,25 +554,8 @@ public class XmlDataGenerator {
         party.setEvents(createEvents(records, config));
         party.setHistory("history " + index);
         party.setSourceInformations("sourceInformations " + index);
-        party.setPartyTimeRanges(createPartyTimeRanges(config));
-    }
-
-    private List<PartyTimeRange> createPartyTimeRanges(XmlDataGeneratorConfig config) {
-        List<PartyTimeRange> partyTimeRanges = new ArrayList<PartyTimeRange>(config.getPartyTimeRangeCount());
-        for (int i = 0; i < config.getPartyTimeRangeCount(); i++) {
-            partyTimeRanges.add(createPartyTimeRange());
-        }
-
-        return partyTimeRanges;
-    }
-
-    private PartyTimeRange createPartyTimeRange() {
-        PartyTimeRange partyTimeRange = new PartyTimeRange();
-
-        partyTimeRange.setFromDate(createComplexDate());
-        partyTimeRange.setToDate(createComplexDate());
-
-        return partyTimeRange;
+        party.setFromDate(createComplexDate());
+        party.setToDate(createComplexDate());
     }
 
     private List<Relation> createEvents(List<Record> records, XmlDataGeneratorConfig config) {

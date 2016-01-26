@@ -1,70 +1,22 @@
 package cz.tacr.elza.service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.controller.config.ClientFactoryDO;
+import cz.tacr.elza.controller.vo.ParPartyEditVO;
+import cz.tacr.elza.controller.vo.ParPartyNameEditVO;
+import cz.tacr.elza.controller.vo.ParUnitdateEditVO;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.controller.config.ClientFactoryDO;
-import cz.tacr.elza.controller.vo.ParPartyEditVO;
-import cz.tacr.elza.controller.vo.ParPartyNameEditVO;
-import cz.tacr.elza.controller.vo.ParPartyTimeRangeEditVO;
-import cz.tacr.elza.controller.vo.ParUnitdateEditVO;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyGroup;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.domain.ParPartyTimeRange;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.ParRelationRoleType;
-import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.ParUnitdate;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.repository.CalendarTypeRepository;
-import cz.tacr.elza.repository.DataPartyRefRepository;
-import cz.tacr.elza.repository.DataRecordRefRepository;
-import cz.tacr.elza.repository.NodeRegisterRepository;
-import cz.tacr.elza.repository.PartyCreatorRepository;
-import cz.tacr.elza.repository.PartyDynastyRepository;
-import cz.tacr.elza.repository.PartyEventRepository;
-import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
-import cz.tacr.elza.repository.PartyGroupRepository;
-import cz.tacr.elza.repository.PartyNameComplementRepository;
-import cz.tacr.elza.repository.PartyNameFormTypeRepository;
-import cz.tacr.elza.repository.PartyNameRepository;
-import cz.tacr.elza.repository.PartyPersonRepository;
-import cz.tacr.elza.repository.PartyRelationRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.PartyTimeRangeRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.RelationEntityRepository;
-import cz.tacr.elza.repository.RelationRepository;
-import cz.tacr.elza.repository.RelationRoleTypeRepository;
-import cz.tacr.elza.repository.RelationTypeRepository;
-import cz.tacr.elza.repository.UnitdateRepository;
-import cz.tacr.elza.repository.VariantRecordRepository;
-import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.events.EventType;
+import javax.annotation.Nullable;
+import java.util.*;
 
 
 /**
@@ -84,9 +36,6 @@ public class PartyService {
 
     @Autowired
     private VariantRecordRepository variantRecordRepository;
-
-    @Autowired
-    private PartyTimeRangeRepository partyTimeRangeRepository;
 
     @Autowired
     private CalendarTypeRepository calendarTypeRepository;
@@ -198,11 +147,6 @@ public class PartyService {
         // Names
         ParPartyName preferredName = insertPartyNames(partyVO, party);
 
-        // TimeRanges
-        if (CollectionUtils.isNotEmpty(partyVO.getTimeRanges())) {
-            insertTimeRanges(partyVO.getTimeRanges(), party);
-        }
-
         Assert.notNull(preferredName);
         party.setPreferredName(preferredName);
         ParParty result = partyRepository.save(party);
@@ -232,11 +176,6 @@ public class PartyService {
 
         // Names
         ParPartyName preferredName = updatePartyNames(partyVO, origParty);
-
-        // TimeRanges
-        if (CollectionUtils.isNotEmpty(partyVO.getTimeRanges())) {
-            updateTimeRanges(partyVO.getTimeRanges(), origParty);
-        }
 
         Assert.notNull(preferredName);
         origParty.setPreferredName(preferredName);
@@ -271,16 +210,6 @@ public class PartyService {
         }
 
         partyCreatorRepository.deleteByPartyBoth(party);
-
-
-        partyTimeRangeRepository.findByParty(party).forEach((pt) -> {
-                    ParUnitdate from = pt.getFrom();
-                    ParUnitdate to = pt.getTo();
-                    partyTimeRangeRepository.delete(pt);
-                    deleteUnitDates(from, to);
-                }
-        );
-
 
         partyRelationRepository.findByParty(party).forEach((pr) -> {
                     deleteRelation(pr);
@@ -586,89 +515,6 @@ public class PartyService {
             // mapovana mapperem
             partyName.getValidTo().setCalendarType(calendarType);
             unitdateRepository.save(partyName.getValidTo());
-        }
-    }
-
-    private void insertTimeRanges(final List<ParPartyTimeRangeEditVO> timeRanges, final ParParty party) {
-        timeRanges.forEach(tr -> {
-            ParPartyTimeRange partyTimeRange = factoryDO.createParPartyTimeRange(tr);
-
-            // unitdates
-            ParUnitdateEditVO fromVO = tr.getFrom();
-            if (fromVO != null) {
-                ArrCalendarType calendarType = findCalendarType(fromVO);
-
-                partyTimeRange.getFrom().setCalendarType(calendarType);
-                unitdateRepository.save(partyTimeRange.getFrom());
-            }
-            ParUnitdateEditVO toVO = tr.getTo();
-            if (toVO != null) {
-                ArrCalendarType calendarType = findCalendarType(toVO);
-
-                partyTimeRange.getTo().setCalendarType(calendarType);
-                unitdateRepository.save(partyTimeRange.getTo());
-            }
-
-            partyTimeRange.setParty(party);
-            partyTimeRangeRepository.save(partyTimeRange);
-        });
-    }
-
-    private void updateTimeRanges(final List<ParPartyTimeRangeEditVO> timeRanges, final ParParty party) {
-
-        List<ParPartyTimeRange> rangesToDelete = partyTimeRangeRepository.findByParty(party);
-
-        timeRanges.forEach(tr -> {
-            ParPartyTimeRange partyTimeRange = partyTimeRangeRepository.getOne(tr.getPartyTimeRangeId());
-
-            // UNITDATES
-            ParUnitdateEditVO fromVO = tr.getFrom();
-            // nedal ho, chce smazat
-            ParUnitdate from = partyTimeRange.getFrom();
-            if (from != null && from.getUnitdateId() != null
-                    && (fromVO == null || fromVO.getUnitdateId() == null)) {
-                partyTimeRange.setFrom(null);
-                partyTimeRangeRepository.save(partyTimeRange);
-                unitdateRepository.delete(from);
-            }
-            saveRangeFrom(fromVO, partyTimeRange);
-
-            ParUnitdateEditVO toVO = tr.getTo();
-            // nedal ho, chce smazat
-            ParUnitdate to = partyTimeRange.getTo();
-            if (to != null && to.getUnitdateId() != null
-                    && (toVO == null || toVO.getUnitdateId() == null)) {
-                partyTimeRange.setTo(null);
-                partyTimeRangeRepository.save(partyTimeRange);
-                unitdateRepository.delete(to);
-            }
-            saveRangeTo(toVO, partyTimeRange);
-
-            partyTimeRange.setParty(party);
-            partyTimeRangeRepository.save(partyTimeRange);
-
-            // remove from deletion
-            rangesToDelete.remove(partyTimeRange);
-        });
-
-        partyTimeRangeRepository.deleteInBatch(rangesToDelete);
-    }
-
-    private void saveRangeFrom(final ParUnitdateEditVO fromVO, final ParPartyTimeRange partyTimeRange) {
-        if (fromVO != null) {
-            ArrCalendarType calendarType = findCalendarType(fromVO);
-
-            partyTimeRange.getFrom().setCalendarType(calendarType);
-            unitdateRepository.save(partyTimeRange.getFrom());
-        }
-    }
-
-    private void saveRangeTo(final ParUnitdateEditVO toVO, final ParPartyTimeRange partyTimeRange) {
-        if (toVO != null) {
-            ArrCalendarType calendarType = findCalendarType(toVO);
-
-            partyTimeRange.getTo().setCalendarType(calendarType);
-            unitdateRepository.save(partyTimeRange.getTo());
         }
     }
 
