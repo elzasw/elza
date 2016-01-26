@@ -102,3 +102,15 @@ export function faSubNodesPrevPage() {
         type: types.FA_FA_SUBNODES_PREV_PAGE,
     }
 }
+
+export function moveNodesUnder(versionId, nodes, nodesParent, dest, destParent) {
+    WebApi.moveNodesUnder(versionId, nodes, nodesParent, dest, destParent);
+}
+
+export function moveNodesBefore(versionId, nodes, nodesParent, dest, destParent) {
+    WebApi.moveNodesBefore(versionId, nodes, nodesParent, dest, destParent);
+}
+
+export function moveNodesAfter(versionId, nodes, nodesParent, dest, destParent) {
+    WebApi.moveNodesAfter(versionId, nodes, nodesParent, dest, destParent);
+}

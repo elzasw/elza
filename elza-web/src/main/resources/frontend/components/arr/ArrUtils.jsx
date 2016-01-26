@@ -3,6 +3,46 @@
  */
 import {indexById} from 'stores/app/utils.jsx'
 
+export function getNodeParent(nodes, nodeId) {
+    var result = null;
+
+    var index = indexById(nodes, nodeId);
+    if (index != null) {
+        var depth = nodes[index].depth;
+        index--;
+        while (index > 0) {
+            var n = nodes[index];
+            if (n.depth < depth) {
+                result = n;
+                break;
+            }
+            index--;
+        }
+    }
+
+    return result;
+}
+
+export function getNodeParents(nodes, nodeId) {
+    var result = [];
+
+    var index = indexById(nodes, nodeId);
+    if (index != null) {
+        var depth = nodes[index].depth;
+        index--;
+        while (index > 0) {
+            var n = nodes[index];
+            if (n.depth < depth) {
+                result.push(n);
+                depth = n.depth;
+            }
+            index--;
+        }
+    }
+
+    return result;
+}
+
 /**
  * Vytvoření virtuálního kořenového uzlu pro kořenový uzel FA.
  * @param {Object} fa fa

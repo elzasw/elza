@@ -63,7 +63,6 @@ var FaTreeMovementsRight = class FaTreeMovementsRight extends AbstractReactCompo
     }
 
     render() {
-console.log(333333333333, this.props);
         const {fa} = this.props;
 
         return (

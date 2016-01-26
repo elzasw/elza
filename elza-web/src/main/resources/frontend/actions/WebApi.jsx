@@ -86,6 +86,39 @@ class WebApi{
             });
     }
 
+    moveNodesUnder(versionId, nodes, nodesParent, dest, destParent) {
+        var data = {
+            versionId: versionId,
+            transportNodes: nodes,
+            transportNodeParent: nodesParent,
+            staticNode: dest,
+            staticNodeParent: destParent
+        }
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/moveLevelUnder', null, data)
+    }
+
+    moveNodesBefore(versionId, nodes, nodesParent, dest, destParent) {
+        var data = {
+            versionId: versionId,
+            transportNodes: nodes,
+            transportNodeParent: nodesParent,
+            staticNode: dest,
+            staticNodeParent: destParent
+        }
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/moveLevelBefore', null, data)
+    }
+
+    moveNodesAfter(versionId, nodes, nodesParent, dest, destParent) {
+        var data = {
+            versionId: versionId,
+            transportNodes: nodes,
+            transportNodeParent: nodesParent,
+            staticNode: dest,
+            staticNodeParent: destParent
+        }
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/moveLevelAfter', null, data)
+    }
+
     createDescItem(versionId, nodeId, nodeVersionId, descItemTypeId, descItem) {
         return AjaxUtils.ajaxPut('/api/arrangementManagerV2/descItems/' + versionId + "/" + nodeId + "/" + nodeVersionId + "/" + descItemTypeId + "/create", null,  descItem);
     }
