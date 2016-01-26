@@ -286,7 +286,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         var cls = classNames({
             'desc-item-type': true,
             active: descItemType.hasFocus,
-            ['el-' + descItemTypeInfo.with]: true
+            ['el-' + descItemTypeInfo.width]: true
         });
 
         return (
