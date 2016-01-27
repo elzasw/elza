@@ -201,15 +201,16 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
         if (registerTypeIds != null) {
             registerTypeIdList = Arrays.asList(registerTypeIds);
         }
-        List<RegRecord> regRecords = regRecordRepository.findRegRecordByTextAndType(search, registerTypeIdList, false,
-                from, count);
+
+        List<RegRecord> regRecords = registryService.findRegRecordByTextAndType(search, registerTypeIdList, false, from, count,null, null);
         regRecords.forEach((record) -> {
             record.getVariantRecordList().forEach((variantRecord) -> {
                 variantRecord.setRegRecord(null);
             });
         });
 
-        long countAll = regRecordRepository.findRegRecordByTextAndTypeCount(search, registerTypeIdList, false);
+        long countAll = regRecordRepository
+                .findRegRecordByTextAndTypeCount(search, registerTypeIdList, false, null, null);
 
         return new RegRecordWithCount(regRecords, countAll);
     }

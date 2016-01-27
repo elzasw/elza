@@ -31,7 +31,8 @@ import java.util.List;
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RegRecord extends AbstractVersionableEntity
-        implements cz.tacr.elza.api.RegRecord<RegRegisterType, RegExternalSource, RegVariantRecord, RegRecord> {
+        implements cz.tacr.elza.api.RegRecord<RegRegisterType, RegExternalSource, RegVariantRecord, RegRecord,
+        RegScope> {
 
     @Id
     @GeneratedValue
@@ -75,6 +76,10 @@ public class RegRecord extends AbstractVersionableEntity
     @Column(name = "externalId", length = 250)
     private String externalId;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RegScope.class)
+    @JoinColumn(name = "scopeId", nullable = false)
+    private RegScope scope;
+
     /* Konstanty pro vazby a fieldy. */
     public static final String VARIANT_RECORD_LIST = "variantRecordList";
     public static final String REGISTER_TYPE = "registerType";
@@ -84,6 +89,7 @@ public class RegRecord extends AbstractVersionableEntity
     public static final String NOTE = "note";
     public static final String LOCAL = "local";
     public static final String RECORD_ID = "recordId";
+    public static final String SCOPE = "scope";
 
 
     @Override
@@ -184,6 +190,16 @@ public class RegRecord extends AbstractVersionableEntity
     @Override
     public List<RegVariantRecord> getVariantRecordList() {
         return variantRecordList;
+    }
+
+    @Override
+    public RegScope getScope() {
+        return scope;
+    }
+
+    @Override
+    public void setScope(final RegScope scope) {
+        this.scope = scope;
     }
 
     @Override

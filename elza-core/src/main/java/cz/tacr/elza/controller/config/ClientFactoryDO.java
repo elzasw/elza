@@ -18,6 +18,7 @@ import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ParRelationEntityVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
+import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
@@ -30,6 +31,7 @@ import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParRelation;
 import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
@@ -244,5 +246,17 @@ public class ClientFactoryDO {
         packet.setFindingAid(findingAid);
 
         return packet;
+    }
+
+    /**
+     * Vytvoří třídu rejstříku.
+     *
+     * @param scopeVO třída rejstříku
+     * @return třída rejstříku
+     */
+    public RegScope createScope(final RegScopeVO scopeVO) {
+        Assert.notNull(scopeVO);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.map(scopeVO, RegScope.class);
     }
 }

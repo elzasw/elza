@@ -21,9 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParCreator;
@@ -46,14 +46,11 @@ import cz.tacr.elza.repository.DataPartyRefRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.PartyCreatorRepository;
-import cz.tacr.elza.repository.PartyDynastyRepository;
-import cz.tacr.elza.repository.PartyEventRepository;
 import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyGroupRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
-import cz.tacr.elza.repository.PartyPersonRepository;
 import cz.tacr.elza.repository.PartyRelationRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
@@ -63,7 +60,6 @@ import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
-import cz.tacr.elza.repository.VariantRecordRepository;
 
 
 /**
@@ -82,13 +78,7 @@ public class PartyService {
     private RegRecordRepository recordRepository;
 
     @Autowired
-    private VariantRecordRepository variantRecordRepository;
-
-    @Autowired
     private CalendarTypeRepository calendarTypeRepository;
-
-    @Autowired
-    private ClientFactoryDO factoryDO;
 
     @Autowired
     private PartyNameFormTypeRepository partyNameFormTypeRepository;
@@ -100,16 +90,7 @@ public class PartyService {
     private UnitdateRepository unitdateRepository;
 
     @Autowired
-    private PartyDynastyRepository partyDynastyRepository;
-
-    @Autowired
-    private PartyEventRepository partyEventRepository;
-
-    @Autowired
     private PartyGroupRepository partyGroupRepository;
-
-    @Autowired
-    private PartyPersonRepository partyPersonRepository;
 
     @Autowired
     private RelationTypeRepository relationTypeRepository;
@@ -119,9 +100,6 @@ public class PartyService {
 
     @Autowired
     private RelationEntityRepository relationEntityRepository;
-
-    @Autowired
-    private IEventNotificationService eventNotificationService;
 
     @Autowired
     private RelationRoleTypeRepository relationRoleTypeRepository;
@@ -187,6 +165,41 @@ public class PartyService {
         }
 
         return recordIdPartyIdMap;
+    }
+
+
+    /**
+     * Osobu vyhledává podle hesla v rejstříku včetně variantních hesel.
+     *
+     * @param searchRecord hledaný řetězec, může být null
+     * @param partyTypeId  typ záznamu
+     * @param firstResult  první vrácená osoba
+     * @param maxResults   max počet vrácených osob
+     * @param findingAid   AP, ze které se použijí třídy rejstříků
+     * @param onlyLocal    vyhledat pouze lokální nebo globální osoby
+     */
+    public List<ParParty> findPartyByTextAndType(final String searchRecord, final Integer partyTypeId,
+                                                 final Integer firstResult, final Integer maxResults,
+                                                 final Boolean onlyLocal, @Nullable final ArrFindingAid findingAid) {
+
+        Set<Integer> scopeIdsForRecord = registryService.getScopeIdsByFindingAid(findingAid);
+        return partyRepository.findPartyByTextAndType(searchRecord, partyTypeId, firstResult, maxResults, onlyLocal,
+                scopeIdsForRecord);
+    }
+
+    /**
+     * Vrátí počet osob vyhovující zadané frázi. Osobu vyhledává podle hesla v rejstříku včetně variantních hesel.
+     * @param searchRecord hledaný řetězec, může být null
+     * @param registerTypeId typ záznamu
+     * @param onlyLocal vyhledat pouze lokální nebo globální osoby
+     * @param findingAid   AP, ze které se použijí třídy rejstříků
+     * @return
+     */
+    public long findPartyByTextAndTypeCount(final String searchRecord, final Integer registerTypeId,
+                                            final Boolean onlyLocal,@Nullable final ArrFindingAid findingAid){
+
+        Set<Integer> scopeIdsForRecord = registryService.getScopeIdsByFindingAid(findingAid);
+        return partyRepository.findPartyByTextAndTypeCount(searchRecord, registerTypeId, onlyLocal, scopeIdsForRecord);
     }
 
     /**

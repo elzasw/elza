@@ -1,10 +1,12 @@
 package cz.tacr.elza.controller;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
@@ -12,6 +14,7 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -23,13 +26,19 @@ import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRecordWithCount;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
+import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.RegistryService;
@@ -66,6 +75,12 @@ public class RegistryController {
     @Autowired
     private VariantRecordRepository variantRecordRepository;
 
+    @Autowired
+    private FindingAidVersionRepository findingAidVersionRepository;
+
+    @Autowired
+    private ScopeRepository scopeRepository;
+
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
      * nebo pole variantního záznamu obsahují hledaný řetězec. V případě, že hledaný řetězec je null, nevyhodnocuje se.
@@ -75,26 +90,36 @@ public class RegistryController {
      * @param count             počet výsledků k vrácení
      * @param registerTypeIds   IDčka typu záznamu, může být null či prázdné (pak vrací vše)
      * @param parentRecordId    id rodiče, pokud je null načtou se všechny záznamy, jinak potomci daného rejstříku
-     *
+     * @param versionId   id verze, podle které se budou filtrovat třídy rejstříků, null - výchozí třídy
      * @return                  vybrané záznamy dle popisu seřazené za text hesla, nebo prázdná množina
      */
     @RequestMapping(value = "/findRecord", method = RequestMethod.GET)
     public RegRecordWithCount findRecord(@RequestParam(required = false) @Nullable final String search,
                                          @RequestParam final Integer from, @RequestParam final Integer count,
                                          @RequestParam(value = "registerTypeIds", required = false) @Nullable final Integer[] registerTypeIds,
-                                         @RequestParam(required = false) @Nullable final Integer parentRecordId) {
+                                         @RequestParam(required = false) @Nullable final Integer parentRecordId,
+                                         @RequestParam(required = false) @Nullable final Integer versionId) {
 
         List<Integer> registerTypeIdList = null;
         if (registerTypeIds != null) {
             registerTypeIdList = Arrays.asList(registerTypeIds);
         }
 
+        ArrFindingAid findingAid;
+        if(versionId == null){
+            findingAid = null;
+        }else{
+            ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+            Assert.notNull(version, "Nebyla nalezena verze archivní pomůcky s id "+versionId);
+            findingAid = version.getFindingAid();
+        }
+
         final boolean onlyLocal = false;
         final long foundRecordsCount = registryService.findRegRecordByTextAndTypeCount(search, registerTypeIdList,
-                onlyLocal, parentRecordId);
+                onlyLocal, parentRecordId, findingAid);
 
         List<RegRecord> foundRecords = registryService
-                .findRegRecordByTextAndType(search, registerTypeIdList, onlyLocal, from, count, parentRecordId);
+                .findRegRecordByTextAndType(search, registerTypeIdList, onlyLocal, from, count, parentRecordId, findingAid);
 
         // děti
         Map<RegRecord, List<RegRecord>> parentChildrenMap = registryService.findChildren(foundRecords);
@@ -286,5 +311,91 @@ public class RegistryController {
 
         variantRecordRepository.delete(variantRecordId);
     }
+
+    /**
+     * Vrací všechny třídy rejstříků z databáze.
+     */
+    @RequestMapping(value = "/scopes", method = RequestMethod.GET)
+    public List<RegScopeVO> getAllScopes(){
+        List<RegScope> scopes = scopeRepository.findAllOrderByCode();
+        return factoryVo.createScopes(scopes);
+    }
+
+    /**
+     * Pokud je nastavená verze, vrací třídy napojené na verzi, jinak vrací třídy nastavené v konfiguraci elzy (YAML).
+     * @param versionId id verze nebo null
+     * @return seznam tříd
+     */
+    @RequestMapping(value = "/faScopes", method = RequestMethod.GET)
+    public List<RegScopeVO> getScopeIdsByVersion(@RequestParam(required = false) @Nullable final Integer versionId) {
+
+        ArrFindingAid findingAid;
+        if (versionId == null) {
+            findingAid = null;
+        } else {
+            ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+            Assert.notNull(version, "Nebyla nalezena verze s id " + versionId);
+            findingAid = version.getFindingAid();
+        }
+
+        Set<Integer> scopeIdsByFindingAid = registryService.getScopeIdsByFindingAid(findingAid);
+        if (scopeIdsByFindingAid.isEmpty()) {
+            return Collections.EMPTY_LIST;
+        } else {
+            List<RegScopeVO> result = factoryVo.createScopes(scopeRepository.findAll(scopeIdsByFindingAid));
+            result.sort((a, b) -> a.getCode().compareTo(b.getCode()));
+            return result;
+        }
+    }
+
+    /**
+     * Vložení nové třídy.
+     *
+     * @param scopeVO objekt třídy
+     * @return nový objekt třídy
+     */
+    @Transactional
+    @RequestMapping(value = "/scopes", method = RequestMethod.POST)
+    public RegScopeVO createScope(@RequestBody final RegScopeVO scopeVO) {
+        Assert.notNull(scopeVO);
+        Assert.isNull(scopeVO.getId());
+
+        RegScope regScope = factoryDO.createScope(scopeVO);
+
+        return factoryVo.createScope(registryService.saveScope(regScope));
+    }
+
+    /**
+     * Aktualizace třídy.
+     *
+     * @param scopeId id třídy
+     * @param scopeVO objekt třídy
+     * @return aktualizovaný objekt třídy
+     */
+    @Transactional
+    @RequestMapping(value = "/scopes/{scopeId}", method = RequestMethod.PUT)
+    public RegScopeVO updateScope(
+            @PathVariable(value = "scopeId") final Integer scopeId,
+            @RequestBody final RegScopeVO scopeVO) {
+        Assert.notNull(scopeVO);
+        scopeVO.setId(scopeId);
+
+        RegScope regScope = factoryDO.createScope(scopeVO);
+        return factoryVo.createScope(registryService.saveScope(regScope));
+    }
+
+    /**
+     * Smazání třídy. Třída nesmí být napojena na rejstříkové heslo.
+     *
+     * @param scopeId id třídy.
+     */
+    @Transactional
+    @RequestMapping(value = "/scopes", method = RequestMethod.DELETE)
+    public void deleteScope(@RequestParam final Integer scopeId) {
+
+        RegScope scope = scopeRepository.findOne(scopeId);
+        registryService.deleteScope(scope);
+    }
+
 
 }

@@ -3,6 +3,7 @@ package cz.tacr.elza.controller;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.vo.ParPartyWithCount;
 import cz.tacr.elza.repository.*;
+import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.RegistryService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -60,6 +61,8 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
     private PartyEventRepository partyEventRepository;
     @Autowired
     private PartyGroupRepository partyGroupRepository;
+    @Autowired
+    private PartyService partyService;
 
 
     //přepsáno do PartyController
@@ -276,8 +279,8 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
                                     @Nullable @RequestParam(value = "partyTypeId", required = false) final Integer partyTypeId,
                                     @Nullable @RequestParam(value = "originator", required = false) final Boolean originator) {
 
-        List<ParParty> resultList = partyRepository
-                .findPartyByTextAndType(search, partyTypeId, from, count, originator);
+        List<ParParty> resultList = partyService
+                .findPartyByTextAndType(search, partyTypeId, from, count, false, null);
         resultList.forEach((party) -> {
             if (party.getRecord() != null) {
                 party.getRecord().getVariantRecordList().forEach((variantRecord) -> {
@@ -289,7 +292,7 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
             }
         });
 
-        long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, originator);
+        long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, false, null);
 
         return new ParPartyWithCount(resultList, countAll);
     }

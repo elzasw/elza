@@ -27,7 +27,6 @@ import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.NodeConformityVO;
-import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
 import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyNameVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
@@ -36,6 +35,7 @@ import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.RegRecordParentVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.controller.vo.RulArrangementTypeVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
@@ -57,12 +57,12 @@ import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPartyNameComplement;
 import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.ParRelation;
 import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDataType;
@@ -827,5 +827,25 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         NodeConformityVO nodeConformityVO = mapper.map(nodeConformity, NodeConformityVO.class);
         return nodeConformityVO;
+    }
+
+    /**
+     * Vytvoří třídu rejstříku.
+     *
+     * @param scope třída rejstříku
+     * @return třída rejstříku
+     */
+    public RegScopeVO createScope(final RegScope scope) {
+        Assert.notNull(scope);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.map(scope, RegScopeVO.class);
+    }
+
+    public List<RegScopeVO> createScopes(final Collection<RegScope> scopes) {
+        Assert.notNull(scopes);
+        List<RegScopeVO> result = new ArrayList<>(scopes.size());
+        scopes.forEach(s -> result.add(createScope(s)));
+
+        return result;
     }
 }

@@ -10,3 +10,7 @@ elza:
   treenode:
     title: ZP2015_TITLE
     defaultTitle: <Není nastaven popisek>
+
+  record:
+    scopeCodes:
+      - GLOBAL

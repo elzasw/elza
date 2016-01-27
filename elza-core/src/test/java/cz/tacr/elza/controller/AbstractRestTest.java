@@ -108,6 +108,8 @@ public abstract class AbstractRestTest {
     protected static final String DELETE_VARIANT_RECORD_URL = REGISTRY_MANAGER_URL + "/deleteVariantRecord";
     protected static final String GET_RECORD_URL = REGISTRY_MANAGER_URL + "/getRecord";
     protected static final String GET_RECORD_URL_V2 = REGISTRY_MANAGER_URL_V2 + "/getRecord";
+    protected static final String SCOPES_V2 = REGISTRY_MANAGER_URL_V2 + "/scopes";
+    protected static final String UPDATE_SCOPES_V2 = REGISTRY_MANAGER_URL_V2 + "/scopes/{scopeId}";
 
 
     protected static final String RECORD_ID_ATT = "recordId";
@@ -258,7 +260,7 @@ public abstract class AbstractRestTest {
     @Autowired
     protected LevelRepository levelRepository;
     @Autowired
-    private FindingAidRepository findingAidRepository;
+    protected FindingAidRepository findingAidRepository;
     @Autowired
     protected DescItemRepository descItemRepository;
     @Autowired
@@ -376,6 +378,12 @@ public abstract class AbstractRestTest {
 
     @Autowired
     protected DescItemFactory descItemFactory;
+
+    @Autowired
+    protected ScopeRepository scopeRepository;
+
+    @Autowired
+    protected FaRegisterScopeRepository faRegisterScopeRepository;
 
 
     @Before

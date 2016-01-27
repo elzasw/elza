@@ -29,6 +29,8 @@ import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationTypeVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyNameFormType;
@@ -42,6 +44,7 @@ import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParRelationTypeRoleType;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.repository.ComplementTypeRepository;
+import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
@@ -110,7 +113,8 @@ public class PartyController {
     @Autowired
     private ValidationVOService validationVOService;
 
-
+    @Autowired
+    private FindingAidVersionRepository findingAidVersionRepository;
 
 
     @RequestMapping(value = "/getParty", method = RequestMethod.GET)
@@ -223,21 +227,32 @@ public class PartyController {
      * @param from        počáteční záznam
      * @param count       počet vrácených záznamů
      * @param partyTypeId id typu osoby
+     * @param versionId   id verze, podle které se budou filtrovat třídy rejstříků, null - výchozí třídy
      * @return seznam osob s počtem všech osob
      */
     @RequestMapping(value = "/findParty", method = RequestMethod.GET)
     public ParPartyWithCount findParty(@Nullable @RequestParam(value = "search", required = false) final String search,
                                        @RequestParam("from") final Integer from,
                                        @RequestParam("count") final Integer count,
-                                       @Nullable @RequestParam(value = "partyTypeId", required = false) final Integer partyTypeId) {
+                                       @Nullable @RequestParam(value = "partyTypeId", required = false) final Integer partyTypeId,
+                                       @RequestParam(required = false) @Nullable final Integer versionId) {
+
+        ArrFindingAid findingAid;
+        if(versionId == null){
+            findingAid = null;
+        }else{
+            ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+            Assert.notNull(version, "Nebyla nalezena verze archivní pomůcky s id "+versionId);
+            findingAid = version.getFindingAid();
+        }
 
         boolean onlyLocal = false;
 
-        List<ParParty> partyList = partyRepository
-                .findPartyByTextAndType(search, partyTypeId, from, count, onlyLocal);
+        List<ParParty> partyList = partyService.findPartyByTextAndType(search, partyTypeId, from, count, onlyLocal,
+                findingAid);
         List<ParPartyVO> resultVo = factoryVo.createPartyList(partyList);
 
-        long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, onlyLocal);
+        long countAll = partyService.findPartyByTextAndTypeCount(search, partyTypeId, onlyLocal, findingAid);
         return new ParPartyWithCount(resultVo, countAll);
     }
 

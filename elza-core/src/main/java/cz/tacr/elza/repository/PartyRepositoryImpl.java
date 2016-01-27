@@ -1,7 +1,9 @@
 package cz.tacr.elza.repository;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -14,12 +16,14 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RegVariantRecord;
 
 /**
@@ -34,15 +38,20 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
     private EntityManager entityManager;
 
     @Override
-    public List<ParParty> findPartyByTextAndType(final String searchRecord, final Integer registerTypeId,
-                                         final Integer firstResult, final Integer maxResults, final Boolean onlyLocal) {
+    public List<ParParty> findPartyByTextAndType(final String searchRecord, final Integer partyTypeId,
+                                         final Integer firstResult, final Integer maxResults, final Boolean onlyLocal,
+                                                 final Set<Integer> scopeIds) {
+
+        if(CollectionUtils.isEmpty(scopeIds)) {
+            return Collections.EMPTY_LIST;
+        }
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<ParParty> query = builder.createQuery(ParParty.class);
         Root<ParParty> record = query.from(ParParty.class);
 
-        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeId, record, builder,
-                onlyLocal);
+        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, partyTypeId, record, builder,
+                onlyLocal, scopeIds);
 
         query.select(record).distinct(true);
         if (condition != null) {
@@ -57,14 +66,19 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
     }
 
     @Override
-    public long findPartyByTextAndTypeCount(final String searchRecord, final Integer registerTypeId, final Boolean onlyLocal) {
+    public long findPartyByTextAndTypeCount(final String searchRecord, final Integer partyTypeId,
+                                            final Boolean onlyLocal, final Set<Integer> scopeIds) {
+
+        if(CollectionUtils.isEmpty(scopeIds)){
+            return 0;
+        }
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Long> query = builder.createQuery(Long.class);
         Root<ParParty> record = query.from(ParParty.class);
 
-        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeId, record, builder,
-                onlyLocal);
+        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, partyTypeId, record, builder,
+                onlyLocal, scopeIds);
 
         query.select(builder.countDistinct(record));
         if (condition != null) {
@@ -82,15 +96,21 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
      * @param partyTypeId       typ záznamu
      * @param builder           buider pro vytváření podmínek
      * @param onlyLocal vyhledat pouze lokální nebo globální osoby
+     * @param scopeIds seznam tříd rejstříků, ve kterých se vyhledává
      * @return výsledné podmínky pro dotaz, nebo null pokud není za co filtrovat
      */
-    private Predicate preparefindRegRecordByTextAndType(final String searchRecord, final Integer partyTypeId,
-                        final Root<ParParty> party, final CriteriaBuilder builder, final Boolean onlyLocal) {
+    private Predicate preparefindRegRecordByTextAndType(final String searchRecord,
+                                                        final Integer partyTypeId,
+                                                        final Root<ParParty> party,
+                                                        final CriteriaBuilder builder,
+                                                        final Boolean onlyLocal,
+                                                        final Set<Integer> scopeIds) {
 
         final String searchString = (searchRecord != null ? searchRecord.toLowerCase() : null);
 
         Join<Object, Object> record = party.join(ParParty.RECORD, JoinType.LEFT);
         Join<Object, Object> variantRecord = record.join(RegRecord.VARIANT_RECORD_LIST, JoinType.LEFT);
+        Join<Object, Object> scope = record.join(RegRecord.SCOPE, JoinType.INNER);
 
         Join<Object, Object> partyType = party.join(ParParty.PARTY_TYPE);
 
@@ -114,6 +134,8 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
         if (partyTypeId != null) {
             condition.add(builder.equal(partyType.get(ParPartyType.PARTY_TYPE_ID), partyTypeId));
         }
+
+        condition.add(scope.get(RegScope.SCOPE_ID).in(scopeIds));
 
         return builder.and(condition.toArray(new Predicate[condition.size()]));
     }

@@ -1,33 +1,42 @@
 package cz.tacr.elza.service;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
+import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegExternalSource;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
+import cz.tacr.elza.repository.FaRegisterScopeRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -39,6 +48,7 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 21.12.2015
  */
+@ConfigurationProperties(prefix = "elza.record")
 @Service
 public class RegistryService {
 
@@ -66,6 +76,22 @@ public class RegistryService {
     @Autowired
     private IEventNotificationService eventNotificationService;
 
+    @Autowired
+    private ScopeRepository scopeRepository;
+
+    @Autowired
+    private FaRegisterScopeRepository faRegisterScopeRepository;
+
+    /**
+     * Kody tříd rejstříků nastavené v konfiguraci elzy.
+     */
+    private List<String> scopeCodes;
+
+    /**
+     * Id tříd rejstříků nastavené v konfiguraci elzy.
+     */
+    private Set<Integer> defaultScopeIds;
+
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (record, charateristics, comment),
@@ -76,6 +102,7 @@ public class RegistryService {
      * @param firstResult     index prvního záznamu, začíná od 0
      * @param maxResults      počet výsledků k vrácení
      * @param parentRecordId  id rodičovského rejstříku
+     * @param findingAid   AP, ze které se použijí třídy rejstříků
      * @return vybrané záznamy dle popisu seřazené za record, nbeo prázdná množina
      */
     public List<RegRecord> findRegRecordByTextAndType(@Nullable final String searchRecord,
@@ -83,10 +110,13 @@ public class RegistryService {
                                                       final Boolean local,
                                                       final Integer firstResult,
                                                       final Integer maxResults,
-                                                      final Integer parentRecordId) {
+                                                      final Integer parentRecordId,
+                                                      @Nullable final ArrFindingAid findingAid) {
+
+        Set<Integer> scopeIdsForRecord = getScopeIdsByFindingAid(findingAid);
 
         if (StringUtils.isBlank(searchRecord) && parentRecordId == null) {
-            return regRecordRepository.findRootRecords(registerTypeIds, local, firstResult, maxResults);
+            return regRecordRepository.findRootRecords(registerTypeIds, local, firstResult, maxResults, scopeIdsForRecord);
         }
 
         RegRecord parentRecord = null;
@@ -98,39 +128,27 @@ public class RegistryService {
         }
 
         return regRecordRepository.findRegRecordByTextAndType(searchRecord, registerTypeIds, local, firstResult,
-                maxResults, parentRecord);
+                maxResults, parentRecord, scopeIdsForRecord);
     }
 
-    /**
-     * Celkový počet záznamů v DB pro funkci {@link #findRegRecordByTextAndType(String, Collection, Boolean, Integer,
-     * Integer)}
-     *
-     * @param searchRecord    hledaný řetězec, může být null
-     * @param registerTypeIds typ záznamu
-     * @return celkový počet záznamů, který je v db za dané parametry
-     */
-    public long findRegRecordByTextAndTypeCount(@Nullable final String searchRecord,
-                                                @Nullable final Collection<Integer> registerTypeIds,
-                                                final Boolean local) {
-
-        return regRecordRepository.findRegRecordByTextAndTypeCount(searchRecord, registerTypeIds, local);
-    }
 
     /**
-     * Celkový počet záznamů v DB pro funkci {@link #findRegRecordByTextAndType(String, Collection, Boolean, Integer,
-     * Integer)}
+     * Celkový počet záznamů v DB pro funkci {@link #findRegRecordByTextAndType(String, Collection, Boolean, Integer, Integer, Integer, ArrFindingAid)}
      *
      * @param searchRecord    hledaný řetězec, může být null
      * @param registerTypeIds typ záznamu
      * @param parentRecordId  id rodičovského rejstříku
+     * @param findingAid   AP, ze které se použijí třídy rejstříků
      * @return celkový počet záznamů, který je v db za dané parametry
      */
     public long findRegRecordByTextAndTypeCount(@Nullable final String searchRecord,
             @Nullable final Collection<Integer> registerTypeIds,
-            final Boolean local, final Integer parentRecordId) {
+            final Boolean local, final Integer parentRecordId, @Nullable final ArrFindingAid findingAid) {
+
+        Set<Integer> scopeIdsForRecord = getScopeIdsByFindingAid(findingAid);
 
         if (StringUtils.isBlank(searchRecord) && parentRecordId == null) {
-            return regRecordRepository.findRootRecordsByTypeCount(registerTypeIds, local);
+            return regRecordRepository.findRootRecordsByTypeCount(registerTypeIds, local, scopeIdsForRecord);
         }
 
         RegRecord parentRecord = null;
@@ -141,7 +159,9 @@ public class RegistryService {
             }
         }
 
-        return regRecordRepository.findRegRecordByTextAndTypeCount(searchRecord, registerTypeIds, local, parentRecord);
+
+        return regRecordRepository
+                .findRegRecordByTextAndTypeCount(searchRecord, registerTypeIds, local, parentRecord, scopeIdsForRecord);
     }
 
     /**
@@ -288,4 +308,103 @@ public class RegistryService {
         return result;
     }
 
+    /**
+     * Uložení třídy rejstříku.
+     *
+     * @param scope třída k uložení
+     * @return uložená třída
+     */
+    public RegScope saveScope(final RegScope scope) {
+        Assert.notNull(scope);
+        checkScopeSave(scope);
+
+        if (scope.getScopeId() == null) {
+            return scopeRepository.save(scope);
+        } else {
+            RegScope targetScope = scopeRepository.findOne(scope.getScopeId());
+            targetScope.setName(scope.getName());
+            return scopeRepository.save(targetScope);
+        }
+    }
+
+    /**
+     * Smazání třídy rejstříku.
+     *
+     * @param scope třída rejstříku
+     */
+    public void deleteScope(final RegScope scope) {
+        Assert.notNull(scope);
+        Assert.notNull(scope.getScopeId());
+
+        List<RegRecord> scopeRecords = regRecordRepository.findByScope(scope);
+        if (!scopeRecords.isEmpty()) {
+            throw new IllegalStateException("Nelze smazat třídu rejstříku, která je nastavena na rejstříku.");
+        }
+
+        faRegisterScopeRepository.delete(faRegisterScopeRepository.findByScope(scope));
+        scopeRepository.delete(scope);
+    }
+
+    /**
+     * Kontrola uložení třídy rejstříku.
+     *
+     * @param scope ukládaná třída
+     */
+    private void checkScopeSave(final RegScope scope) {
+        Assert.notNull(scope);
+        Assert.notNull(scope.getCode(), "Třída musí mít vyplněný kod");
+        Assert.notNull(scope.getName(), "Třída musí mít vyplněný název");
+
+        List<RegScope> scopes = scopeRepository.findByCodes(Arrays.asList(scope.getCode()));
+        RegScope codeScope = scopes.isEmpty() ? null : scopes.get(0);
+        if (scope.getScopeId() == null) {
+            if (!scopes.isEmpty()) {
+                throw new IllegalArgumentException("Kod třídy rejstříku se již nachází v databázi.");
+            }
+        } else {
+            if (codeScope == null) {
+                throw new IllegalArgumentException("Záznam pro editaci nebyl nalezen.");
+            }
+
+            if (!codeScope.getScopeId().equals(scope.getScopeId())) {
+                throw new IllegalArgumentException("Kod třídy rejstříku se již nachází v databázi.");
+            }
+
+            RegScope dbScope = scopeRepository.getOne(scope.getScopeId());
+            if (!dbScope.getCode().equals(scope.getCode())) {
+                throw new IllegalArgumentException("Třídě rejstříku nelze změnít kód, pouze název.");
+            }
+        }
+    }
+
+    /**
+     * Načte seznam id tříd pro archivní pomůcku. Pokud není AP nastavena, vrací výchozí třídy.
+     *
+     * @param findingAid AP, podle jejíž tříd se má hledat (pokud je null, hledá se podle výchozích)
+     * @return množina id tříd, podle kterých se bude hledat
+     */
+    public Set<Integer> getScopeIdsByFindingAid(@Nullable final ArrFindingAid findingAid){
+        if(findingAid == null){
+            return defaultScopeIds;
+        }else{
+            return scopeRepository.findIdsByFindingAid(findingAid);
+        }
+    }
+
+
+    public List<String> getScopeCodes() {
+        return scopeCodes;
+    }
+
+    public void setScopeCodes(final List<String> scopeCodes) {
+        this.scopeCodes = scopeCodes;
+    }
+
+    @PostConstruct
+    public void initScopeIds() throws Exception {
+        if (CollectionUtils.isNotEmpty(scopeCodes)) {
+            List<RegScope> foundCodes = scopeRepository.findByCodes(scopeCodes);
+            defaultScopeIds = foundCodes.stream().map(s -> s.getScopeId()).collect(Collectors.toSet());
+        }
+    }
 }

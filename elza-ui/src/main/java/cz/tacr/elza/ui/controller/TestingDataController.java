@@ -1,5 +1,30 @@
 package cz.tacr.elza.ui.controller;
 
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.sql.DataSource;
+import javax.transaction.Transactional;
+
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.RandomUtils;
+import org.apache.tomcat.util.security.MD5Encoder;
+import org.hibernate.Session;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrCalendarType;
@@ -23,6 +48,7 @@ import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDescItemConstraint;
 import cz.tacr.elza.domain.RulDescItemSpec;
@@ -47,31 +73,9 @@ import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.ArrangementService;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.RandomUtils;
-import org.apache.tomcat.util.security.MD5Encoder;
-import org.hibernate.Session;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.sql.DataSource;
-import javax.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Kontroler pro testovací data.
@@ -129,6 +133,9 @@ public class TestingDataController {
     private CalendarTypeRepository calendarTypeRepository;
     @Autowired
     private PartyNameFormTypeRepository partyNameFormTypeRepository;
+
+    @Autowired
+    private ScopeRepository scopeRepository;
 
     @Autowired
     private ArrangementService arrangementService;
@@ -603,10 +610,13 @@ public class TestingDataController {
 
         List<RegRecord> records = new LinkedList<RegRecord>();
 
+        RegScope scope = scopeRepository.findAll().get(0);
+
         for (RegRecords regRecordEnum : RegRecords.values()) {
             RegRecord regRecord = findRegRecord(regRecordEnum, existingRegRecords, regTypesMap);
             if (regRecord == null) {
-                regRecord = createRegRecord(regRecordEnum.getRecord(), regRecordEnum.getCharacteristics(), regRecordEnum.getRegistryType(), regTypesMap);
+                regRecord = createRegRecord(regRecordEnum.getRecord(), regRecordEnum.getCharacteristics(),
+                        regRecordEnum.getRegistryType(), scope, regTypesMap);
             }
 
             if (regRecordEnum.isReturnRecord()) {
@@ -683,13 +693,14 @@ public class TestingDataController {
         }
     }
 
-    private RegRecord createRegRecord(String record, String characteristics, String registryType,
+    private RegRecord createRegRecord(String record, String characteristics, String registryType, final RegScope scope,
             Map<String, RegRegisterType> regTypesMap) {
         RegRecord regRecord = new RegRecord();
         regRecord.setRecord(record);
         regRecord.setCharacteristics(characteristics);
         regRecord.setRegisterType(regTypesMap.get(registryType));
         regRecord.setLocal(false);
+        regRecord.setScope(scope);
 
         return recordRepository.save(regRecord);
     }

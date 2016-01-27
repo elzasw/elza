@@ -9,7 +9,7 @@ import java.util.List;
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
 public interface RegRecord<RT extends RegRegisterType, ES extends RegExternalSource, VR extends RegVariantRecord,
-        RR extends RegRecord>
+        RR extends RegRecord, RS extends RegScope>
     extends Versionable, Serializable {
 
     /**
@@ -138,4 +138,15 @@ public interface RegRecord<RT extends RegRegisterType, ES extends RegExternalSou
      * @return množina, může být prázdná.
      */
     List<VR> getVariantRecordList();
+
+    /**
+     * @return třída rejstříku
+     */
+    RS getScope();
+
+
+    /**
+     * @param scope třída rejstříku
+     */
+    void setScope(RS scope);
 }

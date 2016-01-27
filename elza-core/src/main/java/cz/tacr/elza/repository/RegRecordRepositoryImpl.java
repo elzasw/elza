@@ -1,7 +1,9 @@
 package cz.tacr.elza.repository;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -16,9 +18,11 @@ import javax.persistence.criteria.Root;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RegVariantRecord;
 
 /**
@@ -33,58 +37,28 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
 
     @Override
     public List<RegRecord> findRegRecordByTextAndType(final String searchRecord,
-            final Collection<Integer> registerTypeIds,
-            final Boolean local,
-            final Integer firstReult,
-            final Integer maxResults) {
+                                                      final Collection<Integer> registerTypeIds,
+                                                      final Boolean local,
+                                                      final Integer firstReult,
+                                                      final Integer maxResults,
+                                                      final RegRecord parentRecord,
+                                                      final Set<Integer> scopeIdsForRecord) {
+        if(CollectionUtils.isEmpty(scopeIdsForRecord)){
+            return Collections.EMPTY_LIST;
+        }
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<RegRecord> query = builder.createQuery(RegRecord.class);
         Root<RegRecord> record = query.from(RegRecord.class);
 
-        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, local, record, builder);
+        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, local, record, builder,
+                scopeIdsForRecord);
 
         query.select(record).distinct(true);
         if (condition != null) {
             Order order = builder.asc(record.get(RegRecord.RECORD));
             query.where(condition).orderBy(order);
         }
-
-
-
-        return entityManager.createQuery(query)
-                .setFirstResult(firstReult)
-                .setMaxResults(maxResults)
-                .getResultList();
-    }
-
-    @Override
-    public List<RegRecord> findRegRecordByTextAndType(final String searchRecord,
-            final Collection<Integer> registerTypeIds,
-            final Boolean local,
-            final Integer firstReult,
-            final Integer maxResults,
-            final RegRecord parentRecord) {
-
-        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<RegRecord> query = builder.createQuery(RegRecord.class);
-        Root<RegRecord> record = query.from(RegRecord.class);
-
-        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, local, record, builder);
-        if (parentRecord != null) {
-            if (condition == null) {
-                condition = builder.equal(record.get(RegRecord.PARENT_RECORD), parentRecord);
-            } else {
-                condition = builder.and(condition, builder.equal(record.get(RegRecord.PARENT_RECORD), parentRecord));
-            }
-        }
-
-        query.select(record).distinct(true);
-        if (condition != null) {
-            Order order = builder.asc(record.get(RegRecord.RECORD));
-            query.where(condition).orderBy(order);
-        }
-
 
 
         return entityManager.createQuery(query)
@@ -95,14 +69,20 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
 
     @Override
     public long findRegRecordByTextAndTypeCount(final String searchRecord,
-            final Collection<Integer> registerTypeIds,
-            final Boolean local) {
+                                                final Collection<Integer> registerTypeIds,
+                                                final Boolean local,
+                                                final RegRecord parentRecord,
+                                                final Set<Integer> scopeIdsForRecord) {
+        if(CollectionUtils.isEmpty(scopeIdsForRecord)){
+            return 0;
+        }
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Long> query = builder.createQuery(Long.class);
         Root<RegRecord> record = query.from(RegRecord.class);
 
-        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, local, record, builder);
+        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, local, record, builder,
+                scopeIdsForRecord);
 
         query.select(builder.countDistinct(record));
         if (condition != null) {
@@ -112,31 +92,6 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
         return entityManager.createQuery(query).getSingleResult();
     }
 
-    @Override
-    public long findRegRecordByTextAndTypeCount(final String searchRecord,
-            final Collection<Integer> registerTypeIds,
-            final Boolean local, final RegRecord parentRecord) {
-
-        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Long> query = builder.createQuery(Long.class);
-        Root<RegRecord> record = query.from(RegRecord.class);
-
-        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, local, record, builder);
-        if (parentRecord != null) {
-            if (condition == null) {
-                condition = builder.equal(record.get(RegRecord.PARENT_RECORD), parentRecord);
-            } else {
-                condition = builder.and(condition, builder.equal(record.get(RegRecord.PARENT_RECORD), parentRecord));
-            }
-        }
-
-        query.select(builder.countDistinct(record));
-        if (condition != null) {
-            query.where(condition);
-        }
-
-        return entityManager.createQuery(query).getSingleResult();
-    }
 
     /**
      * Připraví dotaz pro nalezení rejstříkových záznamů.
@@ -146,15 +101,20 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
      * @param local
      * @param record            kořen dotazu pro danou entitu
      * @param builder           buider pro vytváření podmínek
+     * @param scopeIdsForRecord id tříd, do který spadají rejstříky
      * @return                  výsledné podmínky pro dotaz, nebo null pokud není za co filtrovat
      */
     private Predicate preparefindRegRecordByTextAndType(final String searchRecord,
                                                         final Collection<Integer> registerTypeId,
                                                         final Boolean local,
                                                         final Root<RegRecord> record,
-                                                        final CriteriaBuilder builder) {
+                                                        final CriteriaBuilder builder,
+                                                        final Set<Integer> scopeIdsForRecord) {
+        Assert.notEmpty(scopeIdsForRecord);
+
         Join<Object, Object> variantRecord = record.join(RegRecord.VARIANT_RECORD_LIST, JoinType.LEFT);
         Join<Object, Object> registerType = record.join(RegRecord.REGISTER_TYPE);
+        Join<Object, Object> scope = record.join(RegRecord.SCOPE, JoinType.INNER);
 
         Predicate condition = null;
         if (StringUtils.isNotBlank(searchRecord)) {
@@ -177,18 +137,27 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
             condition = condition == null ? localCond : builder.and(condition, localCond);
         }
 
+
+        Predicate scopeCondition = scope.get(RegScope.SCOPE_ID).in(scopeIdsForRecord);
+        condition = condition == null ? scopeCondition : builder.and(condition, scopeCondition);
+
         return condition;
     }
 
 
     @Override
-    public long findRootRecordsByTypeCount(final Collection<Integer> registerTypeIds, final Boolean local) {
+    public long findRootRecordsByTypeCount(final Collection<Integer> registerTypeIds,
+                                           final Boolean local,
+                                           final Set<Integer> scopeIdsForRecord) {
+        if(CollectionUtils.isEmpty(scopeIdsForRecord)){
+            return 0;
+        }
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Long> query = builder.createQuery(Long.class);
         Root<RegRecord> record = query.from(RegRecord.class);
 
-        Predicate condition = preparefindRegRecordByTextAndType(null, registerTypeIds, local, record, builder);
+        Predicate condition = preparefindRegRecordByTextAndType(null, registerTypeIds, local, record, builder, scopeIdsForRecord);
         if (condition == null) {
             condition = builder.isNull(record.get(RegRecord.PARENT_RECORD));
         } else {
@@ -203,13 +172,16 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
 
     @Override
     public List<RegRecord> findRootRecords(Collection<Integer> registerTypeIds, Boolean local, Integer firstResult,
-            Integer maxResults) {
-
+                                           Integer maxResults, final Set<Integer> scopeIdsForRecord) {
+        if(CollectionUtils.isEmpty(scopeIdsForRecord)){
+            return Collections.EMPTY_LIST;
+        }
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<RegRecord> query = builder.createQuery(RegRecord.class);
         Root<RegRecord> record = query.from(RegRecord.class);
 
-        Predicate condition = preparefindRegRecordByTextAndType(null, registerTypeIds, local, record, builder);
+        Predicate condition = preparefindRegRecordByTextAndType(null, registerTypeIds, local, record, builder,
+                scopeIdsForRecord);
         if (condition == null) {
             condition = builder.isNull(record.get(RegRecord.PARENT_RECORD));
         } else {

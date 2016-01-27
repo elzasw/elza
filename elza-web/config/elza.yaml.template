@@ -12,6 +12,12 @@ elza:
   treenode:
       title: ZP2015_TITLE
       defaultTitle: <Není nastaven popisek>
+
+  #třídy rejstříků a osob, které jsou defaultně zobrazovanány
+  record:
+      scopeCodes:
+        - GLOBAL
+
 #  type-groups:
 #    GROUP1:
 #      name: Testovací skupina 1

@@ -4,8 +4,7 @@ import static com.jayway.restassured.RestAssured.given;
 
 import java.util.Arrays;
 import java.util.List;
-
-import ma.glasnost.orika.MapperFactory;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -16,6 +15,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.jayway.restassured.response.Response;
 
+import cz.tacr.elza.controller.vo.ArrFindingAidVO;
+import cz.tacr.elza.controller.vo.RegScopeVO;
+import cz.tacr.elza.domain.ArrFaRegisterScope;
+import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.RegExternalSource;
 import cz.tacr.elza.domain.RegRecord;
@@ -26,6 +29,7 @@ import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
+import ma.glasnost.orika.MapperFactory;
 
 
 /**
@@ -466,5 +470,62 @@ public class RegistryManagerTest extends AbstractRestTest {
     }
 
 
+
+    @Test
+    public void testScopeV2(){
+        RegScopeVO scope = new RegScopeVO();
+        scope.setCode("CODE1");
+        scope.setName("NAME1");
+
+        int initScopeSize = scopeRepository.findAll().size();
+
+
+        Response response = post(spec -> spec.body(scope), SCOPES_V2);
+        RegScopeVO resultScope = response.getBody().as(RegScopeVO.class);
+
+
+
+        Assert.assertNotNull(resultScope);
+        Assert.assertNotNull(resultScope.getId());
+        Assert.assertEquals(scope.getCode(), resultScope.getCode());
+        Assert.assertEquals(scope.getName(), resultScope.getName());
+        Assert.assertTrue(scopeRepository.findAll().size() == initScopeSize + 1);
+
+
+        ArrFindingAidVO faVo = createFindingAidRestV2("test");
+        ArrFindingAid fa = findingAidRepository.getOne(faVo.getId());
+
+        ArrFaRegisterScope regScope = new ArrFaRegisterScope();
+        regScope.setScope(scopeRepository.findOne(resultScope.getId()));
+        regScope.setFindingAid(fa);
+        faRegisterScopeRepository.save(regScope);
+
+        //defaultní třída má kod GLOBAL
+        Set<Integer> defaultFindingAids = registryService.getScopeIdsByFindingAid(null);
+        Assert.assertTrue(defaultFindingAids.size() == 1);
+        Assert.assertTrue(scopeRepository.findOne(defaultFindingAids.iterator().next()).getCode().equals("GLOBAL"));
+
+        //třída na FA má kod nově vytvořené třídy
+        defaultFindingAids = registryService.getScopeIdsByFindingAid(fa);
+        Assert.assertTrue(defaultFindingAids.size() == 1);
+        Assert.assertTrue(defaultFindingAids.iterator().next().equals(resultScope.getId()));
+
+
+        resultScope.setName("XXX");
+
+        response = put(spec -> spec.pathParameter("scopeId", resultScope.getId()).body(resultScope), UPDATE_SCOPES_V2);
+        RegScopeVO editScope = response.getBody().as(RegScopeVO.class);
+        Assert.assertNotNull(editScope);
+        Assert.assertEquals(editScope.getId(), resultScope.getId());
+        Assert.assertEquals(editScope.getCode(), resultScope.getCode());
+        Assert.assertEquals(editScope.getName(), "XXX");
+        Assert.assertTrue(scopeRepository.findAll().size() == initScopeSize + 1);
+
+        delete(spec -> spec.queryParam("scopeId", editScope.getId()), SCOPES_V2);
+        Assert.assertTrue(scopeRepository.findAll().size() == initScopeSize);
+
+
+
+    }
 
 }

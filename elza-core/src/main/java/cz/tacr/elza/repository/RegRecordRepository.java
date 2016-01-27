@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegScope;
 
 
 /**
@@ -61,4 +62,13 @@ public interface RegRecordRepository extends JpaRepository<RegRecord, Integer>, 
      */
     @Query("SELECT p.record FROM par_party p WHERE p IN (?1)")
     List<RegRecord> findByParties(Collection<ParParty> parties);
+
+
+    /**
+     * Najde hesla podle třídy rejstříku.
+     *
+     * @param scope třída
+     * @return nalezená hesla
+     */
+    List<RegRecord> findByScope(RegScope scope);
 }

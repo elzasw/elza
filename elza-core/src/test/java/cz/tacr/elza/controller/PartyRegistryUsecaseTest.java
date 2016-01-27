@@ -408,7 +408,7 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
             typeIds.add(registerType.getRegisterTypeId());
         }
 
-        return registryService.findRegRecordByTextAndType(searchString, typeIds, null, 0, 10, null);
+        return registryService.findRegRecordByTextAndType(searchString, typeIds, null, 0, 10, null, null);
     }
 
     private List<RegRecordVO> findRecordsRest(final String searchString, final RegRegisterType registerType) {
@@ -439,7 +439,7 @@ public class PartyRegistryUsecaseTest extends AbstractRestTest {
             typeIds.add(registerType.getRegisterTypeId());
         }
 
-        return registryService.findRegRecordByTextAndTypeCount(searchString, typeIds, null);
+        return registryService.findRegRecordByTextAndTypeCount(searchString, typeIds, false, null, null);
     }
 
     /**
