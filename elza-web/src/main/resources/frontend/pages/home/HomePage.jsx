@@ -15,13 +15,26 @@ import {PageLayout} from 'pages';
 import {modalDialogShow} from 'actions/global/modalDialog'
 import {createFa} from 'actions/arr/fa'
 
+import {Combobox} from 'react-input-enhancements'
+
 var HomePage = class HomePage extends AbstractReactComponent {
     constructor(props) {
         super(props);
-
         this.bindMethods('handleAddFa', 'handleCallAddFa');
 
         this.buildRibbon = this.buildRibbon.bind(this);
+
+var options = [
+{value: null, text: 'nevybrano', static: true},
+null,
+{value: '1', text: 'aaa1'},
+{value: '2', text: 'bbb2'}
+]
+var options2 = [...options, {value: '3', text: 'ccc3'}]
+
+        this.state = {options: options}
+
+setTimeout(()=>this.setState({options: options2}), 4000);
     }
 
     handleAddFa() {
@@ -52,6 +65,23 @@ var HomePage = class HomePage extends AbstractReactComponent {
         var centerPanel = (
             <div>
                 HOME
+
+<Combobox defaultValue={'1'}
+              options={this.state.options}
+              dropdownProps={{ style: { width: '100%' } }}
+              onChange={e => console.log('onChange', e.target.value)}
+              onValueChange={c => console.log('onValueChange', c)}
+              autocomplete>
+      {inputProps =>
+        <input {...inputProps}
+               type='text'
+               className={`${inputProps.className} form-control`}
+               placeholder='No Country'
+               addonAfter={<div>ddddddd</div>}
+        />
+      }
+    </Combobox>
+
             </div>
         )
 
