@@ -13,14 +13,41 @@ export function faSubNodeFormValueAdd(versionId, nodeId, nodeKey, valueLocation)
     }
 }
 
-export function faSubNodeFormValueChange(versionId, nodeId, nodeKey, valueLocation, value) {
+export function faSubNodeFormValueValidate(versionId, nodeId, nodeKey, valueLocation) {
+    return (dispatch, getState) => {
+        var state = getState();
+        var subNodeForm = getSubNodeForm(state, versionId, nodeKey);
+        var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
+
+        WebApi.validateUnitdate(loc.descItem.value)
+            .then(json => {
+                dispatch(faSubNodeFormValueValidateResult(versionId, nodeId, nodeKey, valueLocation, json));
+            })
+    }
+}
+
+export function faSubNodeFormValueValidateResult(versionId, nodeId, nodeKey, valueLocation, result) {
     return {
-        type: types.FA_SUB_NODE_FORM_VALUE_CHANGE,
+        type: types.FA_SUB_NODE_FORM_VALUE_VALIDATE_RESULT,
         versionId,
         nodeId,
         nodeKey,
         valueLocation,
-        value,
+        result
+    }
+}
+
+export function faSubNodeFormValueChange(versionId, nodeId, nodeKey, valueLocation, value) {
+    return (dispatch, getState) => {
+        dispatch({
+            type: types.FA_SUB_NODE_FORM_VALUE_CHANGE,
+            versionId,
+            nodeId,
+            nodeKey,
+            valueLocation,
+            value,
+            dispatch
+        })
     }
 }
 

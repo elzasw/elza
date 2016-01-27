@@ -1,6 +1,7 @@
 import * as types from 'actions/constants/actionTypes';
 import {i18n} from 'components'
 import {indexById} from 'stores/app/utils.jsx'
+import {faSubNodeFormValueValidate} from 'actions/arr/subNodeForm'
 
 function getLoc(state, valueLocation) {
     var descItemGroup = state.formData.descItemGroups[valueLocation.descItemGroupIndex];
@@ -150,7 +151,7 @@ function getDescItemType(descItemTypeInfo) {
     }
 }
 
-function validate(descItem, descItemTypeInfo) {
+function validate(descItem, descItemTypeInfo, valueServerError) {
     var error = {};
 
     // Specifikace
@@ -205,6 +206,15 @@ function validate(descItem, descItemTypeInfo) {
             break;
     }
 
+    // Server validační chyba
+    if (valueServerError) {
+        if (error.value) {
+            error.value += " " + valueServerError;
+        } else {
+            error.value = valueServerError;
+        }
+    }
+
     error.hasError = error.spec || error.value || error.calendarType;
 
     return error;
@@ -230,14 +240,32 @@ function createDescItem(descItemTypeInfo) {
 
 export default function subNodeForm(state = initialState, action) {
     switch (action.type) {
+        case types.FA_SUB_NODE_FORM_VALUE_VALIDATE_RESULT:
+            var loc = getLoc(state, action.valueLocation);
+            var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, loc.descItemType.id)];
+
+            var valueServerError;
+            if (!action.result.valid) {
+                valueServerError = action.result.message;
+            }
+            loc.descItem.error = validate(loc.descItem, descItemTypeInfo, valueServerError);
+
+            state.formData = {...state.formData};
+            return state;
         case types.FA_SUB_NODE_FORM_VALUE_CHANGE:
             var loc = getLoc(state, action.valueLocation);
             var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, loc.descItemType.id)];
-            
             switch (descItemTypeInfo.rulDataType.code) {
                 case 'UNITDATE':
                     loc.descItem.value = action.value.value;
                     loc.descItem.calendarTypeId = action.value.calendarTypeId;
+
+                    // Časovač
+                    if (loc.descItem.validateTimer) {
+                        clearTimeout(loc.descItem.validateTimer);
+                    }
+                    var fc = () => action.dispatch(faSubNodeFormValueValidate(action.versionId, action.nodeId, action.nodeKey, action.valueLocation));
+                    loc.descItem.validateTimer = setTimeout(fc, 250);
                     break;
                 default:
                     loc.descItem.value = action.value;

@@ -52,6 +52,10 @@ class WebApi{
             });
     }
 
+    validateUnitdate(value) {
+        return AjaxUtils.ajaxGet('/api/validate/unitDate', {value: value});
+    }
+
     insertParty(partyType, partyTypeId, nameFormTypeId, nameMain, nameOther, degreeBefore, degreeAfter, validRange, calendarType, scope) {
         var data = {
             '@type': partyType, 
