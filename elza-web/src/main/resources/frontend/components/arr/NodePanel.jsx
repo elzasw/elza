@@ -260,7 +260,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     render() {
         const {calendarTypes, versionId, rulDataTypes, node, packetTypes, packets} = this.props;
 
-        if (node.isFetching || !node.fetched) {
+        if (!node.fetched) {
             return <Loading/>
         }
 
@@ -283,7 +283,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         )
 
         var form;
-        if (!node.subNodeForm.isFetching && node.subNodeForm.fetched) {
+        if (node.subNodeForm.fetched) {
             var conformityInfo = this.transformConformityInfo(node);
             form = <SubNodeForm
                 nodeId={node.id}
