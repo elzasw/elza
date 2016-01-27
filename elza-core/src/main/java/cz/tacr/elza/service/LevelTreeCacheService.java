@@ -2,7 +2,6 @@ package cz.tacr.elza.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -75,7 +74,7 @@ public class LevelTreeCacheService {
 
     @Autowired
     private DescItemTypeRepository descItemTypeRepository;
-    
+
     @Autowired
     private ClientFactoryVO clientFactoryVO;
 
@@ -531,7 +530,7 @@ public class LevelTreeCacheService {
         Map<Integer, TreeNode> versionTreeCache = getVersionTreeCache(version);
 
         if (nodeId == null) {
-            return versionTreeCache.keySet();
+            return new HashSet<>(versionTreeCache.keySet());
         }
 
         Assert.notNull(depth);
