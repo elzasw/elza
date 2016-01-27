@@ -10,11 +10,11 @@ import { createHistory, useBasename, useQueries } from 'history';
 import { Provider } from 'react-redux'
 import { AppStore } from 'stores'
 
-import { browserHistory } from 'react-router';
+import useRouterHistory from 'react-router/lib/useRouterHistory'
 
-const history = useBasename(createHistory)({
+const browserHistory = useRouterHistory(useBasename(createHistory))({
     basename: serverContextPath + ''
-})
+});
 
 import {ArrPage, HomePage, RegistryPage, PartyPage, AdminLayout, AdminPage, AdminPackagesPage, AdminFulltextPage, Layout} from 'pages';
 

@@ -24,7 +24,7 @@ function ajaxCallRaw(url, params, method, data) {
     return new Promise(function (resolve, reject) {
         console.log("#AjaxRaw." + method + " " + url, data);
         $.ajax({
-            url: url,
+            url: serverContextPath + url,
             type: method,
             processData: false,
             contentType: false,
@@ -102,7 +102,7 @@ function ajaxCall(url, params, method, data) {
     return new Promise(function (resolve, reject) {
         console.log("#Ajax." + method + " " + url, data);
         $.ajax({
-            url: url,
+            url: serverContextPath + url,
             type: method,
             async: true,
             cache: false,
