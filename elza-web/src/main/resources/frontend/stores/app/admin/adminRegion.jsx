@@ -34,6 +34,19 @@ export default function adminRegion(state = initialState, action = {}) {
             return Object.assign({}, state, {
                 fulltext: fulltext(state.fulltext, action)
             });
+
+        case types.CHANGE_INDEXING_FINISHED:
+
+            var fulltextChange = fulltext(state.fulltext, action);
+
+            if (fulltextChange !== state.fulltext) {
+                return Object.assign({}, state, {
+                    fulltext: fulltextChange
+                });
+            }
+
+            return state;
+
         default:
             return state;
     }

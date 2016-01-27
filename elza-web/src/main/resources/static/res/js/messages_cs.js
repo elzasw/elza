@@ -138,5 +138,7 @@ var messages = {
 
     "admin.fulltext.action.reindex": "Reindexovat",
 	"admin.fulltext.message.reindexing": "Probíhá reindexace...",
+    "admin.fulltext.message.success": "Reindexace fulltextu dokončena",
+
     "____": ""
 };

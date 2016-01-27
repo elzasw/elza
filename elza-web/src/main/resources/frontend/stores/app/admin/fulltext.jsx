@@ -37,7 +37,14 @@ export default function fulltext(state = initialState, action = {}) {
                 fetched: true,            
                 indexing: action.indexingState
             })
-            
+
+        case types.CHANGE_INDEXING_FINISHED:
+            return Object.assign({}, state, {
+                indexing: false
+            })
+
+            break;
+
         default: 
             return state;
     }
