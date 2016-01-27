@@ -166,6 +166,28 @@ class WebApi{
         return AjaxUtils.ajaxDelete('/api/arrangementManagerV2/descItems/' + versionId + "/" + nodeId + "/" + nodeVersionId + "/" + descItemTypeId, null, null);
     }
 
+    addNode(node, parentNode, versionId, direction, descItemCopyTypes) {
+        var data = {
+            versionId,
+            direction,
+            "staticNodeParent": parentNode,
+            "staticNode": node,
+            descItemCopyTypes
+        };
+
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/levels', null, data);
+    }
+
+    deleteNode(node, parentNode, version) {
+        var data = {
+            "versionId": version,
+            "staticNodeParent": parentNode,
+            "staticNode": node
+        };
+
+        return AjaxUtils.ajaxDelete('/api/arrangementManagerV2/levels', null, data);
+    }
+
     getData(data, timeout = 1000) {
         return new Promise(function (resolve, reject) {
             setTimeout(function() {
@@ -398,6 +420,8 @@ class WebApi{
     getRuleSets() {
         return AjaxUtils.ajaxGet('/api/ruleSetManagerV2/getRuleSets');
     }
+
+
 
     createFindingAid(name, ruleSetId, arrangementTypeId) {
         return AjaxUtils.ajaxPost('/api/arrangementManagerV2/findingAids', {name: name, arrangementTypeId: arrangementTypeId, ruleSetId: ruleSetId})

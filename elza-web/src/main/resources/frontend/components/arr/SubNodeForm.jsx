@@ -2,7 +2,7 @@
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
  */
 
-require ('./SubNodeForm.less');
+require('./SubNodeForm.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -17,15 +17,17 @@ import DescItemString from './nodeForm/DescItemString'
 import DescItemType from './nodeForm/DescItemType'
 import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm'
 import {lockDescItemType, unlockDescItemType, unlockAllDescItemType, copyDescItemType, nocopyDescItemType} from 'actions/arr/nodeSetting'
+import {addNode} from 'actions/arr/node'
+import faSelectSubNode from 'actions/arr/nodes'
 
 var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
         this.bindMethods('renderDescItemGroup', 'handleAddDescItemType', 'renderDescItemType', 'handleChange',
-                'handleChangeSpec', 'handleDescItemTypeRemove', 'handleBlur', 'handleFocus', 'renderFormActions',
-                'getDescItemTypeInfo', 'handleDescItemAdd', 'handleDescItemRemove', 'handleDescItemTypeLock',
-                'handleDescItemTypeUnlockAll', 'handleDescItemTypeCopy');
+            'handleChangeSpec', 'handleDescItemTypeRemove', 'handleBlur', 'handleFocus', 'renderFormActions',
+            'getDescItemTypeInfo', 'handleDescItemAdd', 'handleDescItemRemove', 'handleDescItemTypeLock',
+            'handleDescItemTypeUnlockAll', 'handleDescItemTypeCopy', 'handleAddNodeBefore', 'handleAddNodeAfter');
 
 //console.log("@@@@@-SubNodeForm-@@@@@", props);
     }
@@ -136,6 +138,34 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 
     /**
+     * Přidání node před aktuální node a následovné vybrání
+     */
+    handleAddNodeBefore() {
+        var itemsToCopy = null;
+        if (this.props.nodeSettings != "undefined") {
+            var nodeIndex = indexById(this.props.nodeSettings.nodes, this.props.nodeId);
+            if (nodeIndex != null) {
+                itemsToCopy = this.props.nodeSettings.nodes[nodeIndex].descItemTypeCopyIds;
+            }
+        }
+        this.dispatch(addNode(this.props.selectedSubNode, this.props.parentNode, this.props.versionId, "BEFORE", itemsToCopy));
+    }
+
+    /**
+     * Přidání node za aktuální node a následovné vybrání
+     */
+    handleAddNodeAfter() {
+        var itemsToCopy = null;
+        if (this.props.nodeSettings != "undefined") {
+            var nodeIndex = indexById(this.props.nodeSettings.nodes, this.props.nodeId);
+            if (nodeIndex != null) {
+                itemsToCopy = this.props.nodeSettings.nodes[nodeIndex].descItemTypeCopyIds;
+            }
+        }
+        this.dispatch(addNode(this.props.selectedSubNode, this.props.parentNode, this.props.versionId, "AFTER", itemsToCopy))
+    }
+
+    /**
      * Přidání nové hodnoty vícehodnotového atributu.
      * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
      * @param descItemTypeIndex {Integer} index atributu v seznamu
@@ -233,7 +263,9 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
 
         // existují nějaké nastavení o JP
         if (nodeSettings) {
-            var nodeSetting = nodeSettings.nodes[nodeSettings.nodes.map(function(node) { return node.id; }).indexOf(nodeId)];
+            var nodeSetting = nodeSettings.nodes[nodeSettings.nodes.map(function (node) {
+                return node.id;
+            }).indexOf(nodeId)];
 
             // existuje nastavení o JP - zamykání
             if (nodeSetting && nodeSetting.descItemTypeLockIds) {
@@ -301,7 +333,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         var descItemTypes = [];
         Object.keys(descItemTypesMap).forEach(function (key) {
             descItemTypes.push(descItemTypesMap[key]);
-        });       
+        });
 
         // Seřazení podle position
         descItemTypes.sort((a, b) => a.position - b.position);
@@ -310,7 +342,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         var form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmit={(data) => {
             this.dispatch(modalDialogHide());
             this.dispatch(faSubNodeFormDescItemTypeAdd(versionId, selectedSubNodeId, nodeKey, data.descItemTypeId));
-        }} />
+        }}/>
         this.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form));
     }
 
@@ -321,12 +353,13 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     renderFormActions() {
         return (
             <div className='node-form-actions'>
-                <NoFocusButton onClick={this.handleAddDescItemType}><Icon glyph="fa-plus" />Přidat prvek</NoFocusButton>
-                <NoFocusButton onClick={this.handleDescItemTypeUnlockAll}><Icon glyph="fa-lock" />Odemknout vše</NoFocusButton>
-                <NoFocusButton><Icon glyph="fa-plus" />Přidat JP před</NoFocusButton>
-                <NoFocusButton><Icon glyph="fa-plus" />Přidat JP za</NoFocusButton>
-                <NoFocusButton><Icon glyph="fa-list" />Rejstříky</NoFocusButton>
-                <NoFocusButton><Icon glyph="fa-trash" />Zrušit JP</NoFocusButton>
+                <NoFocusButton onClick={this.handleAddDescItemType}><Icon glyph="fa-plus"/>Přidat prvek</NoFocusButton>
+                <NoFocusButton onClick={this.handleDescItemTypeUnlockAll}><Icon glyph="fa-lock"/>Odemknout
+                    vše</NoFocusButton>
+                <NoFocusButton onClick={this.handleAddNodeBefore}><Icon glyph="fa-plus"/>Přidat JP před</NoFocusButton>
+                <NoFocusButton onClick={this.handleAddNodeAfter}><Icon glyph="fa-plus"/>Přidat JP za</NoFocusButton>
+                <NoFocusButton><Icon glyph="fa-list"/>Rejstříky</NoFocusButton>
+                <NoFocusButton><Icon glyph="fa-trash"/>Zrušit JP</NoFocusButton>
             </div>
         )
     }
@@ -364,6 +397,8 @@ function mapStateToProps(state) {
 SubNodeForm.propTypes = {
     descItemTypeInfos: React.PropTypes.array.isRequired,
     versionId: React.PropTypes.number.isRequired,
+    parentNode: React.PropTypes.object.isRequired,
+    selectedSubNode: React.PropTypes.object.isRequired,
     selectedSubNodeId: React.PropTypes.number.isRequired,
     nodeKey: React.PropTypes.number.isRequired,
     nodeId: React.PropTypes.oneOfType(React.PropTypes.number, React.PropTypes.string),

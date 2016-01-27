@@ -57,6 +57,13 @@ export const NODE_DESC_ITEM_TYPE_COPY = 'NODE_DESC_ITEM_TYPE_COPY'
 export const NODE_DESC_ITEM_TYPE_NOCOPY = 'NODE_DESC_ITEM_TYPE_NOCOPY'
 
 /**
+ * JP akce
+ */
+export const NODE_JP_ADD_BEFORE = 'NODE_JP_ADD_BEFORE'
+export const NODE_JP_ADD_AFTER = 'NODE_JP_ADD_AFTER'
+export const FA_NODE_CHANGE = 'FA_NODE_CHANGE'
+
+/**
  * Obaly pro FA
  */
 export const PACKETS_REQUEST = 'PACKETS_REQUEST'

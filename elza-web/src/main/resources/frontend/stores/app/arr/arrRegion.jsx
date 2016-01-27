@@ -173,6 +173,20 @@ export default function arrRegion(state = initialState, action) {
             } else {
                 return state;
             }
+        case types.FA_NODE_CHANGE:
+            var faIndex = indexById(state.fas, action.versionId, "versionId");
+            if (faIndex != null) {
+                return {
+                    ...state,
+                    fas: [
+                        ...state.fas.slice(0, faIndex),
+                        Object.assign({}, state.fas[faIndex], {nodes: nodes(state.fas[faIndex].nodes, action)}),
+                        ...state.fas.slice(faIndex + 1)
+                    ]
+                }
+            } else {
+                return state;
+            }
         case types.FA_CLOSE_FA_TAB:
             var index = indexById(state.fas, action.fa.id);
             var newActiveIndex = state.activeIndex;

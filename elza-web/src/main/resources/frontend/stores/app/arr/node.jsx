@@ -9,8 +9,7 @@ var _pageSize = 50;
 
 export function nodeInitState(node, prevNodesNode) {
     var result = {
-        id: node.id,
-        name: node.name,
+        ...node,
         isFetching: false,
         fetched: false,
         dirty: false,
@@ -151,6 +150,34 @@ export function node(state = nodeInitialState, action) {
         case types.CHANGE_CONFORMITY_INFO:
             return Object.assign({}, state, { dirty: true });
 
+        case types.FA_NODE_CHANGE:
+            switch (action.action) {
+                // Přidání SubNode
+                case "ADD":
+                    /**
+                     * Předpokládá v akci attrs
+                     * indexNode - Node objekt který slouží k nalezení a před/za který umístímě nový node
+                     * parentNode - Parent node
+                     * direction - BEFORE/AFTER - před/za
+                     * newNode - Node objekt
+                     */
+                    var nodeIndex = indexById(state.childNodes, action.indexNode.id);
+                    if (nodeIndex != null) {
+                        nodeIndex = action.direction == "BEFORE" ? nodeIndex : nodeIndex+1;
+
+                        return {
+                            ...state,
+                            childNodes: [
+                                ...state.childNodes.slice(0, nodeIndex),
+                                nodeInitState(action.newNode),
+                                ...state.childNodes.slice(nodeIndex)
+                            ]
+                        }
+                    }
+                    return state;
+                default:
+                    return state;
+            }
         default:
             return state;
     }

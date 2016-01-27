@@ -297,6 +297,8 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 packetTypes={packetTypes}
                 conformityInfo={conformityInfo}
                 packets={packets}
+                parentNode={node}
+                selectedSubNode={node.subNodeForm.data.node}
             />
         } else {
             form = <Loading/>

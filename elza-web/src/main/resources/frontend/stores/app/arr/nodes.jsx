@@ -32,7 +32,7 @@ export default function nodes(state = nodesInitialState, action) {
                         node(state.nodes[r.nodeIndex], action),
                         ...state.nodes.slice(r.nodeIndex + 1)
                     ]
-                }            
+                }
             } else {
                 return state;
             }
@@ -159,7 +159,14 @@ export default function nodes(state = nodesInitialState, action) {
             }
 
             return state;
-
+        case types.FA_NODE_CHANGE:
+            var newState = Object.assign({}, state);
+            for (var i = 0; i < newState.nodes.length; i++) {
+                if(newState.nodes[i].id == action.parentNode.id) {
+                    newState.nodes[i] = node(newState.nodes[i], action);
+                }
+            }
+            return newState;
         default:
             return state
     }
