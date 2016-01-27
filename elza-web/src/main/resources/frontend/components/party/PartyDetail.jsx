@@ -8,7 +8,7 @@ require ('./PartyFormStyles.less');
 import React from 'react';
 import {connect} from 'react-redux'
 import {Button, Input, SplitButton} from 'react-bootstrap';
-import {AbstractReactComponent, Search, i18n} from 'components';
+import {PartyDetailNames, AbstractReactComponent, Search, i18n} from 'components';
 import {AppActions} from 'stores';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
@@ -31,7 +31,7 @@ var PartyDetail = class PartySearch extends AbstractReactComponent {
         if(!data){
             return <div>Nenalezeno</div>
         }
-        console.log(data);
+
         return  <div className={"partyDetail"}>
                     <h1>{data.record.record}</h1>
                     <label>{i18n('party.detail.characteristics')}</label>
@@ -49,6 +49,7 @@ var PartyDetail = class PartySearch extends AbstractReactComponent {
                     <Input type="text" label={i18n('party.detail.validRange')} />
 
                     <label>{i18n('party.detail.name')}</label>
+                    <PartyDetailNames data={this.props.selectedPartyData} partyRegion={this.props.partyRegion} partyId={this.props.selectedPartyId} />    
 
                     <Input type="textarea" label={i18n('party.detail.note')} />
                     <Input type="textarea" label={i18n('party.detail.history')} value={data.history} />

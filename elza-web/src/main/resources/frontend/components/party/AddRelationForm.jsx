@@ -70,7 +70,6 @@ var AddRelationForm = class AddRelationForm extends AbstractReactComponent {
     render() {
         const {fields: {relationClassId, relationTypeId, dateFrom, dateTo, note, sources, entities}, handleSubmit, onClose} = this.props;
         var entities2 = [];
-        //entities.initialValue.map(i=> {alert("a")});
         return (
             <div>
                 <Modal.Body>
@@ -87,7 +86,7 @@ var AddRelationForm = class AddRelationForm extends AbstractReactComponent {
                             <Input type="text" label={i18n('party.relation.from')} {...dateFrom} {...decorateFormField(dateFrom)} />
                             <Input type="text" label={i18n('party.relation.to')} {...dateTo} {...decorateFormField(dateTo)} />      
                         </div>
-                        <Input type="textarea" label={i18n('party.relation.note')} {...note} {...decorateFormField(note)} />
+                        <Input type="text" label={i18n('party.relation.note')} {...note} {...decorateFormField(note)} />
                         <Input type="textarea" label={i18n('party.relation.sources')} {...sources} {...decorateFormField(sources)} />
                         <h5>{i18n('party.relation.entities')}</h5>
                         <div>

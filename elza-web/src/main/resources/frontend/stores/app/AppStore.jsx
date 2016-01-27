@@ -24,6 +24,7 @@ import addPartyDynastyForm from './party/form/addPartyDynastyForm';
 import addPartyEventForm from './party/form/addPartyEventForm';
 import addPartyGroupForm from './party/form/addPartyGroupForm';
 import addPartyOtherForm from './party/form/addPartyOtherForm';
+import addPartyNameForm from './party/form/addPartyNameForm';
 import addRelationForm from './party/form/addRelationForm';
 
 import addRegistryForm from './registry/form/addRegistryForm';
@@ -51,6 +52,7 @@ let reducer = combineReducers({
         addPartyOtherForm: addPartyOtherForm,
         addPartyEventForm: addPartyEventForm,
         addPartyGroupForm: addPartyGroupForm,
+        addPartyNameForm: addPartyNameForm,
         addRelationForm: addRelationForm,
         addRegistryForm: addRegistryForm,
         editRegistryForm: editRegistryForm,

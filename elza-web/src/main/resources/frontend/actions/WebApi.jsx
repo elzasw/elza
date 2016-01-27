@@ -63,6 +63,20 @@ class WebApi{
             });
     }
 
+    updateParty(party) {
+        var data = {
+            partyID:  party.partyID,
+            party: party
+        
+         }   
+         console.log('ukladana osoba');
+         console.log(party);
+        return AjaxUtils.ajaxPut('/api/partyManagerV2/updateParty/'+party.partyId, null,  party)
+            .then(json=>{
+                return json;
+            });
+    }
+
     insertRelation(partyId, relationTypeId, note, sources, from, to, entities) {
         var data = {
             partyId: partyId,
@@ -117,6 +131,13 @@ class WebApi{
             staticNodeParent: destParent
         }
         return AjaxUtils.ajaxPut('/api/arrangementManagerV2/moveLevelAfter', null, data)
+    }
+
+    deleteName(nameId) {
+        return AjaxUtils.ajaxDelete('/api/partyManagerV2/deleteName', {nameId: nameId})
+            .then(json=>{
+                return json;
+            });
     }
 
     createDescItem(versionId, nodeId, nodeVersionId, descItemTypeId, descItem) {
