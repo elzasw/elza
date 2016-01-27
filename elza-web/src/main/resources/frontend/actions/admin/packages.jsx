@@ -27,7 +27,7 @@ export function getPackagesFetch() {
 export function getPackagesFetchIfNeeded() {
     return (dispatch, getState) => {
         var state = getState();
-        if (!state.adminRegion.packages.fetched && !state.adminRegion.packages.isFetching) {
+        if ((!state.adminRegion.packages.fetched || state.adminRegion.packages.dirty) && !state.adminRegion.packages.isFetching) {
             return dispatch(getPackagesFetch());
         }
     }

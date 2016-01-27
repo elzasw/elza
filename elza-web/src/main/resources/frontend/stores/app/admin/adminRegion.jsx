@@ -47,6 +47,18 @@ export default function adminRegion(state = initialState, action = {}) {
 
             return state;
 
+        case types.CHANGE_PACKAGE:
+
+            var packagesChange = packages(state.packages, action);
+
+            if (packagesChange !== state.packages) {
+                return Object.assign({}, state, {
+                    packages: packagesChange
+                });
+            }
+
+            return state;
+
         default:
             return state;
     }

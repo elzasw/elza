@@ -20,3 +20,10 @@ export function changeIndexingFinished() {
         type: types.CHANGE_INDEXING_FINISHED
     }
 }
+
+export function changePackage() {
+
+    return {
+        type: types.CHANGE_PACKAGE
+    }
+}

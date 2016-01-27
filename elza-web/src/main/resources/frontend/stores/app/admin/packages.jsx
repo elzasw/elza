@@ -12,6 +12,7 @@ import * as types from 'actions/constants/actionTypes';
 const initialState = {
     isFetching: false,
     fetched: false,
+    dirty: false,
     items : []
 }
 
@@ -27,13 +28,15 @@ export default function packages(state = initialState, action = {}) {
             return Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,
+                dirty: false,
                 items: action.items
             })
 
         case types.ADMIN_PACKAGES_DELETE_RECEIVE:
         case types.ADMIN_PACKAGES_IMPORT_RECEIVE:
+        case types.CHANGE_PACKAGE:
             return Object.assign({}, state, {
-                fetched: false
+                dirty: true
             })
 
         default:

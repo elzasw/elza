@@ -31,6 +31,8 @@ public enum EventType {
 
     INDEXING_FINISHED(ActionEvent.class),
 
+    PACKAGE(ActionEvent.class),
+
     CONFORMITY_INFO(EventIdInVersion.class);
 
     private Class<? extends AbstractEventSimple> eventClass;

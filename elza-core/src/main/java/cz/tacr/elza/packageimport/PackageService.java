@@ -76,6 +76,9 @@ import cz.tacr.elza.repository.RuleRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.ActionEvent;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 
 
 /**
@@ -184,6 +187,9 @@ public class PackageService {
     @Autowired
     private PacketTypeRepository packetTypeRepository;
 
+    @Autowired
+    private EventNotificationService eventNotificationService;
+
     /**
      * Provede import balíčku.
      *
@@ -239,6 +245,8 @@ public class PackageService {
 
             cleanBackupFiles(dirActions);
             cleanBackupFiles(dirRules);
+
+            eventNotificationService.publishEvent(new ActionEvent(EventType.PACKAGE));
 
         } catch (Exception e) {
             try {
@@ -1208,6 +1216,8 @@ public class PackageService {
             cleanBackupFiles(dirRules);
 
             bulkActionConfigManager.load();
+
+            eventNotificationService.publishEvent(new ActionEvent(EventType.PACKAGE));
 
         } catch (Exception e) {
             try {

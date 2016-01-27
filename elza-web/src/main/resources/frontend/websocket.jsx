@@ -4,7 +4,7 @@ import {EmailSettingsActions, ApplicationActions} from 'actions';
 import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket';
 import {store} from 'stores/app/AppStore';
 
-import {changeConformityInfo, changeIndexingFinished} from 'actions/global/change';
+import {changeConformityInfo, changeIndexingFinished, changePackage} from 'actions/global/change';
 
 
 var SockJS = require('sockjs-client');
@@ -81,6 +81,10 @@ function processEvents(values) {
                 indexingFinished();
                 break;
 
+            case 'PACKAGE':
+                packageEvent();
+                break;
+
             default:
                 console.warn("Nedefinovaný typ eventu: " + value.eventType);
                 break;
@@ -103,6 +107,13 @@ function conformityInfo(value) {
  */
 function indexingFinished() {
     store.dispatch(changeIndexingFinished());
+}
+
+/**
+ * Změna balíčků.
+ */
+function packageEvent() {
+    store.dispatch(changePackage());
 }
 
 /**
