@@ -7,9 +7,9 @@ const initialState = {
     selectedIds: {},
     focusId: null,
     expandedIds: {},
-    searchedIds: null,
+    searchedIds: [],
     filterText: null,
-    filterCurrentIndex: 0,
+    filterCurrentIndex: -1,
     isFetching: false,
     fetched: false,
     dirty: false,
@@ -52,7 +52,7 @@ export default function faTree(state = initialState, action) {
             return {...state, filterText: action.filterText}
         case types.FA_FA_TREE_FULLTEXT_RESULT:
             if (state.filterText == action.filterText) {    // jen pokud výsledek odpovídá aktuálnímu stavu v hledací komponentě
-                return {...state, filterCurrentIndex: 0, searchedIds: action.searchedIds}
+                return {...state, filterCurrentIndex: -1, searchedIds: action.searchedIds}
             } else {
                 return state;
             }

@@ -7,6 +7,7 @@
 import {WebApi} from 'actions'
 import * as types from 'actions/constants/actionTypes';
 import {indexById} from 'stores/app/utils.jsx'
+import {faSelectSubNode} from './nodes'
 
 // jen vyber polozky, vyuzite jen v presunech JP
 export function faTreeSelectNode(area, nodeId, ctrl, shift) {
@@ -40,6 +41,31 @@ export function faTreeFulltextChange(area, versionId, filterText) {
         area,
         versionId,
         filterText,
+    }
+}
+
+export function faTreeFulltextNextItem(area, versionId) {
+    return (dispatch, getState) => {
+        var state = getState();
+        var index = indexById(state.arrRegion.fas, versionId, "versionId");
+        if (index != null) {
+            var fa = state.arrRegion.fas[index];
+            var faTree = getFaTree(fa, area);
+
+            if (faTree.searchedIds.length > 0) {
+                var newIndex;
+                if (faTree.filterCurrentIndex == -1) {
+                    newIndex = 0;
+                } else {
+                    newIndex = Math.max(faTree.filterCurrentIndex + 1, faTree.searchedIds.length - 1);
+                }
+                if (newIndex != faTree.filterCurrentIndex) {
+                    
+//                    dispatch()
+//faSelectSubNode
+                }
+            }
+        }
     }
 }
 

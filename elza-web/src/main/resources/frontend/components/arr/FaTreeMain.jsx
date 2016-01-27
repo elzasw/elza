@@ -18,7 +18,8 @@ var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('callFaSelectSubNode', 'handleNodeClick', 'handleSelectInNewTab',
-        'handleContextMenu', 'handleFulltextChange', 'handleFulltextSearch');
+        'handleContextMenu', 'handleFulltextChange', 'handleFulltextSearch',
+        'handleFulltextPrevItem', 'handleFulltextNextItem');
     }
 
     componentDidMount() {
@@ -94,6 +95,14 @@ var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
         this.dispatch(faTreeFulltextSearch(types.FA_TREE_AREA_MAIN, this.props.versionId));
     }
 
+    handleFulltextPrevItem() {
+        this.dispatch(faTreeFulltextPrevItem(types.FA_TREE_AREA_MAIN, this.props.versionId));
+    }
+
+    handleFulltextNextItem() {
+        this.dispatch(faTreeFulltextNextItem(types.FA_TREE_AREA_MAIN, this.props.versionId));
+    }
+
     render() {
         const {fa} = this.props;
 
@@ -105,6 +114,8 @@ var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
                 onNodeClick={this.handleNodeClick}
                 onFulltextChange={this.handleFulltextChange}
                 onFulltextSearch={this.handleFulltextSearch}
+                onFulltextPrevItem={this.handleFulltextPrevItem}
+                onFulltextNextItem={this.handleFulltextNextItem}
             />
         )
     }
