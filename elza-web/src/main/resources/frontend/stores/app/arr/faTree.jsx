@@ -8,6 +8,8 @@ const initialState = {
     focusId: null,
     expandedIds: {},
     searchedIds: null,
+    filterText: null,
+    filterCurrentIndex: 0,
     isFetching: false,
     fetched: false,
     dirty: false,
@@ -46,6 +48,14 @@ export default function faTree(state = initialState, action) {
     switch (action.type) {
         case types.GLOBAL_CONTEXT_MENU_HIDE:
             return Object.assign({}, state, {focusId: null});
+        case types.FA_FA_TREE_FULLTEXT_CHANGE:
+            return {...state, filterText: action.filterText}
+        case types.FA_FA_TREE_FULLTEXT_RESULT:
+            if (state.filterText == action.filterText) {    // jen pokud výsledek odpovídá aktuálnímu stavu v hledací komponentě
+                return {...state, filterCurrentIndex: 0, searchedIds: action.searchedIds}
+            } else {
+                return state;
+            }
         case types.FA_FA_TREE_SELECT_NODE:
             if (state.multipleSelection) {
                 var newState = {...state, lastSelectedId: null}

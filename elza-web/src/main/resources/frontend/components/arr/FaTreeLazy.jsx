@@ -8,7 +8,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {VirtualList, AbstractReactComponent, i18n, Loading} from 'components';
-import {Nav, NavItem, DropdownButton} from 'react-bootstrap';
+import {Nav, Input, NavItem, Button, DropdownButton} from 'react-bootstrap';
 var classNames = require('classnames');
 import {ResizeStore} from 'stores';
 
@@ -17,7 +17,7 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
         super(props);
 
         this.bindMethods(
-            'renderNode',
+            'renderNode'
         );
 
         ResizeStore.listen(status => {
@@ -105,8 +105,14 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
 
     render() {
         return (
-            <div className='fa-tree-lazy-container' ref="treeContainer">
-                {true && <VirtualList tagName='div' container={this.state.treeContainer} items={this.props.nodes} renderItem={this.renderNode} itemHeight={this.props.rowHeight} />}
+            <div className='fa-tree-lazy-main-container'>
+                <div className='fa-traa-header-container'>
+                    <Input type='search' value={this.props.filterText} onChange={e => this.props.onFulltextChange(e.target.value)} />
+                    <Button onClick={this.props.onFulltextSearch}>Hledat</Button>
+                </div>
+                <div className='fa-tree-lazy-container' ref="treeContainer">
+                    {true && <VirtualList tagName='div' container={this.state.treeContainer} items={this.props.nodes} renderItem={this.renderNode} itemHeight={this.props.rowHeight} />}
+                </div>
             </div>
         )
 

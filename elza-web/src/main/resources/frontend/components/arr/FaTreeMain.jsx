@@ -8,7 +8,7 @@ import {AbstractReactComponent, i18n, Tabs, FaTreeLazy} from 'components';
 import * as types from 'actions/constants/actionTypes';
 import {AppActions} from 'stores';
 import {MenuItem} from 'react-bootstrap';
-import {faTreeFocusNode, faTreeFetchIfNeeded, faTreeNodeExpand, faTreeNodeCollapse} from 'actions/arr/faTree'
+import {faTreeFulltextChange, faTreeFulltextSearch, faTreeFocusNode, faTreeFetchIfNeeded, faTreeNodeExpand, faTreeNodeCollapse} from 'actions/arr/faTree'
 import {faSelectSubNode} from 'actions/arr/nodes'
 import {createFaRoot, getParentNode} from './ArrUtils.jsx'
 import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu'
@@ -17,7 +17,8 @@ var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('callFaSelectSubNode', 'handleNodeClick', 'handleSelectInNewTab', 'handleContextMenu');
+        this.bindMethods('callFaSelectSubNode', 'handleNodeClick', 'handleSelectInNewTab',
+        'handleContextMenu', 'handleFulltextChange', 'handleFulltextSearch');
     }
 
     componentDidMount() {
@@ -85,6 +86,13 @@ var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
         this.callFaSelectSubNode(node, false);
     }
 
+    handleFulltextChange(value) {
+        this.dispatch(faTreeFulltextChange(types.FA_TREE_AREA_MAIN, this.props.versionId, value));
+    }
+
+    handleFulltextSearch() {
+        this.dispatch(faTreeFulltextSearch(types.FA_TREE_AREA_MAIN, this.props.versionId));
+    }
 
     render() {
         const {fa} = this.props;
@@ -95,6 +103,8 @@ var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
                 onOpenCloseNode={(node, expand) => {expand ? this.dispatch(faTreeNodeExpand(types.FA_TREE_AREA_MAIN, node)) : this.dispatch(faTreeNodeCollapse(types.FA_TREE_AREA_MAIN, node))}}
                 onContextMenu={this.handleContextMenu}
                 onNodeClick={this.handleNodeClick}
+                onFulltextChange={this.handleFulltextChange}
+                onFulltextSearch={this.handleFulltextSearch}
             />
         )
     }
