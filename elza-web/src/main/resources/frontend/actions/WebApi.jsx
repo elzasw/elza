@@ -15,6 +15,16 @@ class WebApi{
     constructor() {
     }
 
+    findInFaTree(versionId, nodeId, searchText, type) {
+        var data = {
+            versionId: versionId,
+            nodeId: nodeId,
+            searchValue: searchText,
+            depth: type,
+        }
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/fulltext', null,  data);
+    }
+
     getFaFileTree() {
         return AjaxUtils.ajaxGet('/api/arrangementManager/getFindingAids')
             .then(json=>{

@@ -84,6 +84,24 @@ export default function arrRegion(state = initialState, action) {
             } else {
                 return state;
             }
+        case types.FA_FA_TREE_FULLTEXT_RESULT:
+            var index = indexById(state.fas, action.versionId, "versionId");
+            if (index != null) {
+                var newFa = Object.assign({}, state.fas[index]);
+                updateFaTree(newFa, action);
+
+                return {
+                    ...state,
+                    fas: [
+                        ...state.fas.slice(0, index),
+                        newFa,
+                        ...state.fas.slice(index + 1)
+                    ]
+                }
+            } else {
+                return result;
+            }
+        case types.FA_FA_TREE_FULLTEXT_CHANGE:
         case types.FA_FA_TREE_FOCUS_NODE:
         case types.FA_FA_TREE_EXPAND_NODE:
         case types.FA_FA_TREE_COLLAPSE_NODE:
