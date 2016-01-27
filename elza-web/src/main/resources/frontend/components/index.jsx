@@ -24,6 +24,7 @@ exports.ModalDialog = require('./shared/dialog/ModalDialog');
 exports.WebSocket = require('./shared/web-socket/WebSocket');
 exports.ModalDialogWrapper = require('./shared/dialog/ModalDialogWrapper');
 
+
 exports.Ribbon = require('./page/Ribbon');
 
 exports.RegistryPanel = require('./registry/RegistryPanel');

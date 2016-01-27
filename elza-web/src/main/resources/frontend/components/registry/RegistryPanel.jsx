@@ -60,10 +60,12 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     }
 
     handleDeleteVariant(item){
-        WebApi.deleteVariantRecord(item.variantRecordId).then(json => {
-            this.dispatch(registryUpdated());
-            this.dispatch(fetchRegistry(this.props.registry.filterText));
-        });
+        if(confirm(i18n('registry.removeRegistryQuestion'))) {
+            WebApi.deleteVariantRecord(item.variantRecordId).then(json => {
+                this.dispatch(registryUpdated());
+                this.dispatch(fetchRegistry(this.props.registry.filterText));
+            });
+        }
     }
 
     handleAddVaraintRecord(){

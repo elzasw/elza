@@ -77,6 +77,7 @@ var messages = {
     "registry.detail.typ.rejstriku": "Typ rejstříku - hiearchie:",
     "registry.editRegistry": "Editace rejstříku",
     "registry.addRegistryVariant": "Přidání varianty jména",
+    'registry.placePath': "Cesta k umístění: ",
 
     
     "party.detail.characteristics": "Charakteristika",
