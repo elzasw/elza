@@ -1,15 +1,20 @@
 import React from 'react';
 
 import {EmailSettingsActions, ApplicationActions} from 'actions';
-import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket'
+import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket';
 import {store} from 'stores/app/AppStore';
+
+import {changeConformityInfo} from 'actions/global/change';
+
 
 var SockJS = require('sockjs-client');
 var Stomp = require('stompjs');
 var socket = new SockJS(serverContextPath + '/config/websock');
-
 var client = Stomp.over(socket);
 
+/**
+ * Připojení websocketů.
+ */
 function stompConnect() {
     console.log('STOMP: Pokus o připojení...');
 
@@ -21,6 +26,10 @@ function stompConnect() {
     client.connect('guest', 'guest', stompSuccessCallback, stompFailureCallback);
 }
 
+/**
+ * Callback příchozích dat z websocketů.
+ * @param frame {object}
+ */
 function stompSuccessCallback(frame) {
     store.dispatch(webSocketConnect());
     client.subscribe('/topic/api/changes', function(body, headers) {
@@ -41,12 +50,32 @@ function stompSuccessCallback(frame) {
     });
 }
 
+/**
+ * Callback při ztráně spojení.
+ *
+ * @param error {string} text chyby
+ */
+function stompFailureCallback(error) {
+    store.dispatch(webSocketDisconnect());
+    console.log('STOMP: ' + error);
+    setTimeout(stompConnect, 5000);
+    console.log('STOMP: Obnovení spojení za 5 sekund...');
+}
+
+
+/**
+ * Zpracování eventů.
+ *
+ * @param values {array} seznam příchozí eventů
+ */
 function processEvents(values) {
     values.forEach(value => {
 
         switch (value.eventType) {
 
-
+            case 'CONFORMITY_INFO':
+                conformityInfo(value);
+                break;
 
             default:
                 console.warn("Nedefinovaný typ eventu: " + value.eventType);
@@ -56,12 +85,26 @@ function processEvents(values) {
     });
 }
 
+/**
+ * Validace uzlu.
+ *
+ * @param value {object} informace o provedené validace uzlu
+ */
+function conformityInfo(value) {
+    store.dispatch(changeConformityInfo(value.versionId, value.entityId));
+}
+
+/**
+ * Zpracování validací.
+ *
+ * @param values {array} seznam příchozí validací
+ */
 function processValidations(values) {
     values.forEach(value => {
 
         switch (value.validationType) {
 
-
+            // TODO
 
             default:
                 console.warn("Nedefinovaný typ validace: " + value.validationType);
@@ -71,12 +114,6 @@ function processValidations(values) {
     });
 }
 
-function stompFailureCallback(error) {
-    store.dispatch(webSocketDisconnect());
-    console.log('STOMP: ' + error);
-    setTimeout(stompConnect, 5000);
-    console.log('STOMP: Obnovení spojení za 5 sekund...');
-}
-
+// připojení websocketů
 stompConnect();
 

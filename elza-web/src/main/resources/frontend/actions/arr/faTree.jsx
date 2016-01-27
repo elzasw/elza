@@ -122,6 +122,10 @@ export function faTreeFetchIfNeeded(area, versionId, expandedIds, selectedId) {
             fetch = true;
         }
 
+        if (faTree.dirty && !faTree.isFetching) {
+            fetch = true;
+        }
+
         if (fetch) {
             return dispatch(faTreeFetch(area, versionId, null, expandedIds, includeIds));
         }

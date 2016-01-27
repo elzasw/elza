@@ -10,6 +10,7 @@ const initialState = {
     searchedIds: null,
     isFetching: false,
     fetched: false,
+    dirty: false,
     fetchingIncludeIds: {},   // jaké id aktuálně fetchuje - id na true
     nodes: [],
     lastSelectedId: null, 
@@ -192,6 +193,7 @@ export default function faTree(state = initialState, action) {
                 var result = Object.assign({}, state, {
                     isFetching: false,
                     fetched: true,
+                    dirty: false,
                     nodes: action.nodes,
                     expandedIds: action.expandedIds,
                     fetchingIncludeIds: {},
@@ -205,6 +207,17 @@ export default function faTree(state = initialState, action) {
 
                 return result;
             }
+
+        case types.CHANGE_CONFORMITY_INFO:
+            var index = indexById(state.nodes, action.nodeId);
+
+            // pouze, pokud ho mám načtený
+            if (index != null) {
+                return Object.assign({}, state, { dirty: true });
+            }
+
+            return state;
+
         default:
             return state
     }

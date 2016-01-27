@@ -266,7 +266,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 
         var parents = this.renderParents(this.getParentNodes());
         var children;
-        if (node.subNodeInfo.isFetching || !node.subNodeInfo.fetched) {
+        if ((node.subNodeInfo.isFetching && !node.subNodeInfo.dirty) || !node.subNodeInfo.fetched) {
             children = <div className='children'><div className='content'><Loading/></div></div>
         } else {
             children = this.renderChildren(this.getChildNodes());
