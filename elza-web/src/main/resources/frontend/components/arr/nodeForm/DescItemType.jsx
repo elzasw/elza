@@ -9,6 +9,7 @@ import {Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {connect} from 'react-redux'
 var classNames = require('classnames');
 import DescItemString from './DescItemString'
+import DescItemUnitid from './DescItemUnitid'
 import DescItemText from './DescItemText'
 import DescItemInt from './DescItemInt'
 import DescItemDecimal from './DescItemDecimal'
@@ -152,6 +153,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                 parts.push(<DescItemUnitdate {...descItemProps} calendarTypes={calendarTypes} />)
                 break;
             case 'UNITID':
+                parts.push(<DescItemUnitid {...descItemProps} />)
                 break;
             case 'STRING':
                 parts.push(<DescItemString {...descItemProps} />)
