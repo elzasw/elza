@@ -46,6 +46,28 @@ function removeChildren(nodes, node, selectedId) {
 }
 export default function faTree(state = initialState, action) {
     switch (action.type) {
+        case types.STORE_LOAD:
+            return {
+                ...state,
+                isFetching: false,
+                fetched: false,
+                dirty: false,
+                fetchingIncludeIds: {},
+                nodes: [],
+            }
+        case types.STORE_SAVE:
+            const {selectedId, selectedIds, focusId, expandedIds, searchedIds, filterText, filterCurrentIndex, multipleSelection, multipleSelectionOneLevel} = state;
+            return {
+                selectedId,
+                selectedIds,
+                focusId,
+                expandedIds,
+                searchedIds,
+                filterText,
+                filterCurrentIndex,
+                multipleSelection,
+                multipleSelectionOneLevel,
+            }     
         case types.GLOBAL_CONTEXT_MENU_HIDE:
             return Object.assign({}, state, {focusId: null});
         case types.FA_FA_TREE_FULLTEXT_CHANGE:

@@ -41,6 +41,29 @@ const faInitialState = {
 
 export function fa(state = nodeInitialState, action) {
     switch (action.type) {
+        case types.STORE_LOAD:
+            return {
+                ...state,
+                isFetching: false,
+                fetched: false,
+                dirty: false,
+                faTree: faTree(state.faTree, action),
+                faTreeMovementsLeft: faTree(state.faTreeMovementsLeft, action),
+                faTreeMovementsRight: faTree(state.faTreeMovementsRight, action),
+                nodes: nodes(state.nodes, action),
+            }
+        case types.STORE_SAVE:
+            const {id, faId, versionId, name} = state;
+            return {
+                id,
+                faId,
+                versionId,
+                name,
+                faTree: faTree(state.faTree, action),
+                faTreeMovementsLeft: faTree(state.faTreeMovementsLeft, action),
+                faTreeMovementsRight: faTree(state.faTreeMovementsRight, action),
+                nodes: nodes(state.nodes, action),
+            }
         case types.FA_FA_TREE_REQUEST:
         case types.FA_FA_TREE_RECEIVE:
         case types.FA_FA_TREE_FULLTEXT_RESULT:

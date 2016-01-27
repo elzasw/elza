@@ -94,7 +94,9 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                 activeNode = activeFa.nodes.nodes[activeFa.nodes.activeIndex];
                 if (activeNode.selectedSubNodeId != null) {
                     var i = indexById(activeNode.childNodes, activeNode.selectedSubNodeId);
-                    activeSubNode = activeNode.childNodes[i];
+                    if (i != null) {
+                        activeSubNode = activeNode.childNodes[i];
+                    }
                 }
             }
         }
@@ -163,13 +165,13 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                 centerPanel = (
                     <FaExtendedView
                         fa={activeFa}
-                        versionId={activeFa.activeVersion.id}
+                        versionId={activeFa.versionId}
                     />
                 )
             } else if (activeFa.nodes) {
                 centerPanel = (
                     <NodeTabs
-                        versionId={activeFa.activeVersion.id}
+                        versionId={activeFa.versionId}
                         fa={activeFa}
                         nodes={activeFa.nodes.nodes}
                         activeIndex={activeFa.nodes.activeIndex}

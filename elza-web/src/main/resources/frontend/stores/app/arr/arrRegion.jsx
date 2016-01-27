@@ -35,6 +35,25 @@ function selectFaTab(state, action) {
 
 export default function arrRegion(state = initialState, action) {
     switch (action.type) {
+        case types.STORE_LOAD:
+            if (!action.arrRegion) {
+                return state;
+            }
+
+            return {
+                ...state,
+                packets: {},
+                ...action.arrRegion,
+                fas: action.arrRegion.fas.map(faobj => fa(faobj, action))
+            }
+        case types.STORE_SAVE:
+            const {activeIndex, nodeSettings, extendedView} = state;
+            return {
+                activeIndex,
+                nodeSettings,
+                extendedView,
+                fas: state.fas.map(faobj => fa(faobj, action))
+            }
         case types.GLOBAL_GET_OBJECT_INFO:
             state.fas.forEach(fa => {
                 action.objectInfo.addFa(fa);

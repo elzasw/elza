@@ -68,6 +68,27 @@ const nodeInitialState = {
 
 export function node(state = nodeInitialState, action) {
     switch (action.type) {
+        case types.STORE_LOAD:
+            return {
+                ...state,
+                isFetching: false,
+                fetched: false,
+                dirty: false,
+                childNodes: [],
+                parentNodes: [],
+                pageSize: _pageSize,
+                subNodeForm: subNodeForm(undefined, {type:''}),
+                subNodeInfo: subNodeInfo(undefined, {type:''}),
+                nodeKey: _nextNodeKey++,
+            }
+        case types.STORE_SAVE:
+            const {id, name, selectedSubNodeId, viewStartIndex} = state;
+            return {
+                id,
+                name,
+                selectedSubNodeId,
+                viewStartIndex,
+            }
         case types.FA_SUB_NODE_FORM_REQUEST:
         case types.FA_SUB_NODE_FORM_RECEIVE:
         case types.FA_SUB_NODE_FORM_VALUE_CHANGE:

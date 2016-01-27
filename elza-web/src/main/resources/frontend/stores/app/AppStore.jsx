@@ -1,3 +1,4 @@
+import * as types from 'actions/constants/actionTypes';
 import {combineReducers, createStore, applyMiddleware} from 'redux'
 import thunkMiddleware from 'redux-thunk'
 import createLogger from 'redux-logger'
@@ -18,6 +19,7 @@ import modalDialog from './global/modalDialog';
 import webSocket from './global/webSocket';
 import adminRegion from './admin/adminRegion';
 import addFaForm from './arr/form/addFaForm';
+import stateRegion from './state/stateRegion';
 
 import addPartyPersonForm from './party/form/addPartyPersonForm';
 import addPartyDynastyForm from './party/form/addPartyDynastyForm';
@@ -45,6 +47,7 @@ let reducer = combineReducers({
     modalDialog,
     webSocket,
     adminRegion,
+    stateRegion,
     form: formReducer.plugin({
         addFaForm: addFaForm,
         addPartyPersonForm: addPartyPersonForm,
@@ -89,8 +92,23 @@ function handleChange() {
     }
 }
 
-store.subscribe(handleChange);
+//store.subscribe(handleChange);
+
+var save = function(store) {
+    var action = {
+        type: types.STORE_SAVE
+    }
+
+    var result = {
+        partyRegion: partyRegion(store.partyRegion, action),
+        registryRegion: registry(store.registry, action),
+        arrRegion: arrRegion(store.arrRegion, action)
+    }
+
+    return result
+}
 
 module.exports = {
-    store
+    store,
+    save
 }

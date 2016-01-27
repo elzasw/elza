@@ -22,6 +22,31 @@ const initialState = {
 
 export default function registry(state = initialState, action = {}) {
     switch (action.type) {
+        case types.STORE_LOAD:
+            if (!action.registryRegion) {
+                return state;
+            }
+
+            return {
+                ...state,
+                isFetching: false,
+                fetched: false,
+                recordForMove: null,
+                isReloadingRegistry: false,
+                registryData: undefined,
+                partyTypes: [],
+                records: [],
+                countRecords: 0,
+                ...action.registryRegion
+            }
+        case types.STORE_SAVE:
+            const {selectedId, filterText, registryParentId, registryTypesId} = state;
+            return {
+                selectedId,
+                filterText,
+                registryParentId,
+                registryTypesId
+            }
         case types.REGISTRY_SELECT_REGISTRY:
             return Object.assign({}, state, {
                 selectedId: action.registry.selectedId,

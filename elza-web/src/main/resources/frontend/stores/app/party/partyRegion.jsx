@@ -15,6 +15,29 @@ const initialState = {
 
 export default function partyRegion(state = initialState, action) {
     switch (action.type) {
+        case types.STORE_LOAD:
+            if (!action.partyRegion) {
+                return state;
+            }
+
+            return {
+                ...state,
+                isFetchingSearch: false,
+                fetchedSearch: false,
+                isFetchingDetail: false,
+                fetchedDetail: false,
+                items: [],
+                selectedPartyData: null,
+                partyTypes: [],
+                ...action.partyRegion
+            }
+        case types.STORE_SAVE:
+            const {selectedId, filterText, selectedPartyID} = state;
+            return {
+                selectedId,
+                filterText,
+                selectedPartyID
+            }
         case types.PARTY_FIND_PARTY_REQUEST:
             return Object.assign({}, state, {
                 isFetchingSearch: true,

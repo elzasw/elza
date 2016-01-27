@@ -8,6 +8,17 @@ const nodesInitialState = {
 }
 export default function nodes(state = nodesInitialState, action) {
     switch (action.type) {
+        case types.STORE_LOAD:
+            return {
+                ...state,
+                nodes: state.nodes.map(nodeobj => node(nodeobj, action))
+            }
+        case types.STORE_SAVE:
+            const {activeIndex} = state;
+            return {
+                activeIndex,
+                nodes: state.nodes.map(nodeobj => node(nodeobj, action))
+            }
         case types.FA_NODE_INFO_REQUEST:
         case types.FA_NODE_INFO_RECEIVE:
         case types.FA_SUB_NODE_FORM_REQUEST:

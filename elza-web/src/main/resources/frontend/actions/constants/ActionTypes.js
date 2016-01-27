@@ -126,6 +126,13 @@ export const GLOBAL_WEB_SOCKET_CONNECT = 'GLOBAL_WEB_SOCKET_CONNECT'
 export const GLOBAL_WEB_SOCKET_DISCONNECT = 'GLOBAL_WEB_SOCKET_DISCONNECT'
 
 /**
+ * Ukládání a načítání store.
+ */
+export const STORE_SAVE = 'STORE_SAVE'
+export const STORE_LOAD = 'STORE_LOAD'
+export const STORE_STATE_DATA = 'STORE_STATE_DATA'
+
+/**
  * Admin - Packages
  */
 export const ADMIN_PACKAGES_REQUEST = 'ADMIN_PACKAGES_REQUEST'                  // dotaz na načtení balíčků

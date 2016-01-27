@@ -2,6 +2,8 @@
  * Home stránka
  */
 
+require ('./HomePage.less')
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
@@ -10,17 +12,18 @@ import {Link, IndexLink} from 'react-router';
 import {Icon, i18n} from 'components';
 import {AddFaForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components';
 import {ModalDialog, NodeTabs, FaTreeTabs} from 'components';
-import {ButtonGroup, Button} from 'react-bootstrap';
+import {ButtonGroup, Button, Panel} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {modalDialogShow} from 'actions/global/modalDialog'
 import {createFa} from 'actions/arr/fa'
-
+import {storeLoadData, storeSave, storeLoad} from 'actions/store/store'
 import {Combobox} from 'react-input-enhancements'
 
 var HomePage = class HomePage extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.bindMethods('handleAddFa', 'handleCallAddFa');
+        this.bindMethods('handleAddFa', 'handleCallAddFa', 'renderHistory',
+            'renderHistoryItem');
 
         this.buildRibbon = this.buildRibbon.bind(this);
 
@@ -61,10 +64,48 @@ setTimeout(()=>this.setState({options: options2}), 4000);
         )
     }
 
+    renderHistoryItem(name, type, data) {
+        return (
+            <Panel className='history-list-item' header={name} onClick={() => this.dispatch(storeLoadData(type, data))}>
+                ...[{type}]
+            </Panel>
+        )
+    }
+
+    renderHistory() {
+        var items = [];
+
+        const {stateRegion} = this.props;
+
+        if (stateRegion.partyRegion) {
+            items.push(this.renderHistoryItem('Osoby', 'PARTY_REGION', stateRegion.partyRegion));
+        }
+        if (stateRegion.registryRegion) {
+            items.push(this.renderHistoryItem('Rejstříky', 'REGISTRY_REGION', stateRegion.registryRegion));
+        }
+        if (stateRegion.arrRegion) {
+            items.push(this.renderHistoryItem('Pořádání', 'ARR_REGION', stateRegion.arrRegion));
+        }
+        Object.keys(stateRegion.faData).forEach(versionId => {
+            var fa = stateRegion.faData[versionId];
+            items.push(this.renderHistoryItem('Pořádání [' + fa.name + ']', 'ARR_REGION_FA', fa));
+        })
+
+        return (
+            <div className='history-list-container'>
+                {items}
+            </div>
+        )
+    }
+
     render() {
+
         var centerPanel = (
             <div>
                 HOME
+                <Button onClick={() => this.dispatch(storeSave())}>STORE</Button>
+                <Button onClick={() => this.dispatch(storeLoad())}>LOAD</Button>
+                {this.renderHistory()}
 
 <Combobox defaultValue={'1'}
               options={this.state.options}
@@ -96,10 +137,11 @@ setTimeout(()=>this.setState({options: options2}), 4000);
 }
 
 function mapStateToProps(state) {
-    const {arrRegion, refTables} = state
+    const {arrRegion, refTables, stateRegion} = state
     return {
         arrRegion,
-        refTables
+        refTables,
+        stateRegion
     }
 }
 
