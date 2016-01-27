@@ -9,17 +9,23 @@ import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap';
 import {AbstractReactComponent, i18n} from 'components';
 import {WebApi} from 'actions'
-import {getIndexStateFetchIfNeeded, actionReindex} from 'actions/admin/fulltext';
+import {getIndexStateFetchIfNeeded, reindex} from 'actions/admin/fulltext';
 
 var AdminFulltextReindex = class AdminFulltextReindex extends AbstractReactComponent {
     constructor(props) {
         super(props);
-
-        this.dispatch(getIndexStateFetchIfNeeded());
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(getIndexStateFetchIfNeeded());
+        if (!nextProps.fetched) {
+            this.dispatch(getIndexStateFetchIfNeeded());
+        }
+    }
+
+    componentDidMount() {
+        if (!this.props.fetched) {
+            this.dispatch(getIndexStateFetchIfNeeded());
+        }
     }
     
     renderReindexing() {
@@ -35,7 +41,7 @@ var AdminFulltextReindex = class AdminFulltextReindex extends AbstractReactCompo
     }
 
     startReindexing() {
-        this.dispatch(actionReindex());
+        this.dispatch(reindex());
     }
 
     render() {

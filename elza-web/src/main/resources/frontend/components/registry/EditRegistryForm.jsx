@@ -17,6 +17,10 @@ const validate = (values, props) => {
     if (props.create && !values.nameMain) {
         errors.nameMain = i18n('global.validation.required');
     }
+
+    if (props.create && !values.characteristics) {
+        errors.characteristics = i18n('global.validation.required');
+    }
     return errors;
 };
 

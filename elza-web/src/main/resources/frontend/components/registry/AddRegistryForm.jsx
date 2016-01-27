@@ -17,6 +17,10 @@ const validate = (values, props) => {
     if (props.create && !values.nameMain) {
         errors.nameMain = i18n('global.validation.required');
     }
+
+    if (props.create && !values.characteristics) {
+        errors.characteristics = i18n('global.validation.required');
+    }
     return errors;
 };
 
@@ -36,9 +40,9 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
             <div>
                 <Modal.Body>
                     <form onSubmit={handleSubmit}>
+                        <p>{i18n('registry.placePath')+this.props.addressParent}</p>
                         <Input type="text" label={i18n('registry.name')} {...nameMain} {...decorateFormField(nameMain)} />
                         <Input type="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)} />
-                        
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

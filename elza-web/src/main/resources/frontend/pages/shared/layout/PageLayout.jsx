@@ -129,7 +129,7 @@ var PageLayout = class PageLayout extends React.Component {
                             </div>
                             <div className="split-pane-divider" id="my-divider"></div>
                             <div className="split-pane-component" id="right-component-container">
-                                {this.props.leftRight}
+                                {this.props.rightPanel}
                             </div>
                         </div>
                     </div>

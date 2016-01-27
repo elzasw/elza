@@ -34,6 +34,39 @@ export function _faTreeNodeExpand(area, node, addWaitingNode=false) {
     }
 }
 
+export function faTreeFulltextChange(area, versionId, filterText) {
+    return {
+        type: types.FA_FA_TREE_FULLTEXT_CHANGE,
+        area,
+        versionId,
+        filterText,
+    }
+}
+
+export function faTreeFulltextSearch(area, versionId) {
+    return (dispatch, getState) => {
+        var state = getState();
+        var index = indexById(state.arrRegion.fas, versionId, "versionId");
+        if (index != null) {
+            var fa = state.arrRegion.fas[index];
+            var faTree = getFaTree(fa, area);
+
+            return WebApi.findInFaTree(versionId, null, faTree.filterText, 'SUBTREE')
+                .then(json => dispatch(faTreeFulltextResult(area, versionId, faTree.filterText, json)));
+        }
+    }
+}
+
+function faTreeFulltextResult(area, versionId, filterText, searchedIds) {
+    return {
+        type: types.FA_FA_TREE_FULLTEXT_RESULT,
+        area,
+        versionId,
+        filterText,
+        searchedIds
+    }
+}
+
 /**
  * Rozbalení uzlu.
  * @param {String} area oblast stromu
@@ -119,6 +152,10 @@ export function faTreeFetchIfNeeded(area, versionId, expandedIds, selectedId) {
         }
 
         if (!faTree.fetched && !faTree.isFetching) {
+            fetch = true;
+        }
+
+        if (faTree.dirty && !faTree.isFetching) {
             fetch = true;
         }
 

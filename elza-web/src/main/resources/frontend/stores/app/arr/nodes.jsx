@@ -114,7 +114,52 @@ export default function nodes(state = nodesInitialState, action) {
             return {
                 ...state,
                 activeIndex: action.index
-            }            
+            }
+
+        case types.CHANGE_CONFORMITY_INFO:
+
+            var nodes = state.nodes;
+            var nodesChange = [
+                    ...nodes
+            ];
+
+                var changed = false;
+
+            for (var i = 0; i < nodes.length; i++) {
+                var index = indexById(nodes[i].childNodes, action.nodeId);
+
+                // změna se ho netýká, vracím původní stav
+                if (index == null) {
+                    continue;
+                }
+
+                var nodeChange = node(nodes[i], action);
+
+                // nezměnil se stav podřízených, nemusím nic měnit
+                if (nodeChange === nodes[i]) {
+                    continue;
+                }
+
+                changed = true;
+
+                nodesChange = [
+                    ...nodesChange.slice(0, i),
+                    nodeChange,
+                    ...nodesChange.slice(i + 1)
+                ];
+
+            }
+
+
+            if (changed) {
+                return {
+                    ...state,
+                    nodes: nodesChange,
+                }
+            }
+
+            return state;
+
         default:
             return state
     }

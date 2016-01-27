@@ -40,7 +40,31 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     handleAddRegistry(registerType, parentId, event) {
-       this.dispatch(modalDialogShow(this, i18n('registry.addRegistry') , <AddRegistryForm create onSubmit={this.handleCallAddRegistry.bind(this, registerType, parentId)} />));
+        var path = '';
+        if (this.props.registry.records[0] && this.props.registry.filterText === null && this.props.registry.records[0].parents.length>0){
+            var parentsArr = this.props.registry.records[0].parents.slice();
+            parentsArr.reverse().map(item => {
+                path += '/'+item.record;
+            });
+        }
+
+        if (parentId !== this.props.registry.registryParentId) {
+            path += '/'+this.props.registry.registryData.item.record;
+        }
+
+        if (!path)
+            path = '/';
+
+       this.dispatch(
+           modalDialogShow(this,
+               i18n('registry.addRegistry'),
+               <AddRegistryForm
+                   create
+                   onSubmit={this.handleCallAddRegistry.bind(this, registerType, parentId)}
+                   addressParent={path}
+                   />
+           )
+       );
     }
 
     handleCallAddRegistry(registerType, parentId, data ) {
@@ -268,6 +292,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         var centerPanel = (
             <div>
                 <RegistryPanel selectedId = {this.props.registry.selectedId}/>
+
             </div>
         )
 

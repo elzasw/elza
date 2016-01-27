@@ -24,6 +24,7 @@ exports.ModalDialog = require('./shared/dialog/ModalDialog');
 exports.WebSocket = require('./shared/web-socket/WebSocket');
 exports.ModalDialogWrapper = require('./shared/dialog/ModalDialogWrapper');
 
+
 exports.Ribbon = require('./page/Ribbon');
 
 exports.RegistryPanel = require('./registry/RegistryPanel');
@@ -46,12 +47,14 @@ exports.FaTreeMovementsRight = require('./arr/FaTreeMovementsRight');
 
 exports.PartySearch = require('./party/PartySearch');
 exports.PartyDetail = require('./party/PartyDetail');
+exports.PartyDetailNames = require('./party/PartyDetailNames');
 exports.PartyEntities = require('./party/PartyEntities');
 exports.AddPartyPersonForm = require('./party/AddPartyPersonForm');
 exports.AddPartyDynastyForm = require('./party/AddPartyDynastyForm');
 exports.AddPartyEventForm = require('./party/AddPartyEventForm');
 exports.AddPartyGroupForm = require('./party/AddPartyGroupForm');
 exports.AddPartyOtherForm = require('./party/AddPartyOtherForm');
+exports.AddPartyNameForm = require('./party/AddPartyNameForm');
 exports.AddRelationForm = require('./party/AddRelationForm');
 
 exports.AdminPackagesList = require('./admin/AdminPackagesList');

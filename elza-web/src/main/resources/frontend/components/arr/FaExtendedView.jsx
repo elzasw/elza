@@ -6,9 +6,10 @@ require ('./FaExtendedView.less');
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Tabs, FaTreeMain, FaTreeMovementsLeft, FaTreeMovementsRight} from 'components';
+import {AbstractReactComponent, i18n, Tabs, Icon, FaTreeMain, FaTreeMovementsLeft, FaTreeMovementsRight} from 'components';
 import * as types from 'actions/constants/actionTypes';
 import {Button} from 'react-bootstrap';
+import {faExtendedView} from 'actions/arr/fa'
 import {moveNodesUnder, moveNodesBefore, moveNodesAfter} from 'actions/arr/nodes'
 import {indexById} from 'stores/app/utils.jsx'
 import {getNodeParents, getNodeParent} from './ArrUtils'
@@ -18,7 +19,7 @@ var FaExtendedView = class FaExtendedView extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('handleMoveUnder', 'getMoveInfo', 'handleMoveAfter',
-            'handleMoveBefore', 'getDestNode');
+            'handleMoveBefore', 'getDestNode', 'handleToggleExtendedView');
 
         this.tabItems = [{id:0, title: 'Strom AP'}, {id: 1, title: 'Hromadné úpravy JP'}, {id: 2, title: 'Přesuny JP'}];
         this.state = { selectedTabItem: this.tabItems[0] }
@@ -92,7 +93,7 @@ var FaExtendedView = class FaExtendedView extends AbstractReactComponent {
         }
 
         var parents = getNodeParents(fa.faTreeMovementsRight.nodes, destNode.id);
-        //parents.push(destNode);
+        parents.push(destNode);
 
         // Test, zda se nepřesouvá sám pod sebe
         var ok = true;
@@ -103,6 +104,10 @@ var FaExtendedView = class FaExtendedView extends AbstractReactComponent {
             }
         }
         return ok;
+    }
+
+    handleToggleExtendedView() {
+        this.dispatch(faExtendedView(false));
     }
 
     render() {
@@ -155,6 +160,7 @@ var FaExtendedView = class FaExtendedView extends AbstractReactComponent {
 
         return (
             <Tabs.Container className='fa-extended-view-container'>
+                <Button onClick={this.handleToggleExtendedView} className='extended-view-toggle'><Icon glyph='fa-compress'/></Button>
                 <Tabs.Tabs items={this.tabItems} activeItem={this.state.selectedTabItem}
                     onSelect={item=>this.setState({selectedTabItem: item})}
                 />

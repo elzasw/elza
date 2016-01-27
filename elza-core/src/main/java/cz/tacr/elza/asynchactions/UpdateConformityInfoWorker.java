@@ -19,6 +19,9 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.exception.LockVersionChangeException;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 
 
 /**
@@ -41,6 +44,9 @@ public class UpdateConformityInfoWorker implements Runnable {
 
     @Autowired
     private UpdateConformityInfoService updateConformityInfoService;
+
+    @Autowired
+    private EventNotificationService eventNotificationService;
 
     /**
      * Fronta nodů k aktualizaci stavu.
@@ -85,6 +91,10 @@ public class UpdateConformityInfoWorker implements Runnable {
                         version.getLockChange());
                 try {
                     updateConformityInfoService.updateConformityInfo(node.getNodeId(), level.getLevelId(), versionId);
+
+                    eventNotificationService.publishEvent(
+                            EventFactory.createIdInVersionEvent(EventType.CONFORMITY_INFO, version, node.getNodeId()));
+
                 } catch (LockVersionChangeException e) {
                     logger.info(
                             "Node " + node.getNodeId() + " nema aktualizovany stav. Behem validace ke zmene uzlu.");

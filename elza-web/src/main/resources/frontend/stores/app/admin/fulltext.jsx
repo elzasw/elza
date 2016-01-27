@@ -31,13 +31,20 @@ export default function fulltext(state = initialState, action = {}) {
                 indexing: false
             })
             
-        case types.ADMIN_FULLTEXT_REINDEXING_STATE_RECIEVE: 
+        case types.ADMIN_FULLTEXT_REINDEXING_STATE_RECIEVE:
             return Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,            
                 indexing: action.indexingState
             })
-            
+
+        case types.CHANGE_INDEXING_FINISHED:
+            return Object.assign({}, state, {
+                indexing: false
+            })
+
+            break;
+
         default: 
             return state;
     }

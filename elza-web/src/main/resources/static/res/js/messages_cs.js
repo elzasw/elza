@@ -77,6 +77,7 @@ var messages = {
     "registry.detail.typ.rejstriku": "Typ rejstříku - hiearchie:",
     "registry.editRegistry": "Editace rejstříku",
     "registry.addRegistryVariant": "Přidání varianty jména",
+    'registry.placePath': "Cesta k umístění: ",
 
     
     "party.detail.characteristics": "Charakteristika",
@@ -84,6 +85,9 @@ var messages = {
     "party.detail.number": "Pořadové číslo",
     "party.detail.validRange": "Působnost od do",
     "party.detail.name": "Jméno",
+    "party.detail.name.preferred" : "(jméno, pod nímž je entita nejvíce známa)",
+    "party.detail.name.new":"Nové jméno",
+    "party.detail.name.delete": "Opravdu chcete ostranit toto jméno?",
     "party.detail.note": "Poznámka",
     "party.detail.history": "Dějiny",
     "party.detail.sources": "Zdroje Informací",
@@ -99,6 +103,8 @@ var messages = {
     "party.nameFormType": "Typ formy jména",
     "party.calendarType": "Typ kalendáře", 
     "party.nameValidRange": "Datace použítí jména od",
+    "party.nameValidFrom": "Datace od",
+    "party.nameValidTo": "Datace do",
     "party.delete.confirm": "Opravdu chcete smazat tuto osobu?",
     "party.delete.button": "Smazat osobu",
     "party.relation.class" : "Třída vztahu", 
@@ -111,6 +117,7 @@ var messages = {
     "party.relation.entity" : "Entita",
     "party.relation.roleType" : "Typ role",
     "party.relation.add" : "Nový vztah",
+    "party.detail.complement.delete" : "Opravdu chcete smazat doplněk jména?",
     
     
     "arr.fa.title.added": "AP byla vytvořena",
@@ -131,5 +138,7 @@ var messages = {
 
     "admin.fulltext.action.reindex": "Reindexovat",
 	"admin.fulltext.message.reindexing": "Probíhá reindexace...",
+    "admin.fulltext.message.success": "Reindexace fulltextu dokončena",
+
     "____": ""
 };

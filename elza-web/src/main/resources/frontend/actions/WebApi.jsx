@@ -15,6 +15,16 @@ class WebApi{
     constructor() {
     }
 
+    findInFaTree(versionId, nodeId, searchText, type) {
+        var data = {
+            versionId: versionId,
+            nodeId: nodeId,
+            searchValue: searchText,
+            depth: type,
+        }
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/fulltext', null,  data);
+    }
+
     getFaFileTree() {
         return AjaxUtils.ajaxGet('/api/arrangementManager/getFindingAids')
             .then(json=>{
@@ -58,6 +68,20 @@ class WebApi{
             }]
         }
         return AjaxUtils.ajaxPost('/api/partyManagerV2/insertParty', null,  data)
+            .then(json=>{
+                return json;
+            });
+    }
+
+    updateParty(party) {
+        var data = {
+            partyID:  party.partyID,
+            party: party
+        
+         }   
+         console.log('ukladana osoba');
+         console.log(party);
+        return AjaxUtils.ajaxPut('/api/partyManagerV2/updateParty/'+party.partyId, null,  party)
             .then(json=>{
                 return json;
             });
@@ -117,6 +141,13 @@ class WebApi{
             staticNodeParent: destParent
         }
         return AjaxUtils.ajaxPut('/api/arrangementManagerV2/moveLevelAfter', null, data)
+    }
+
+    deleteName(nameId) {
+        return AjaxUtils.ajaxDelete('/api/partyManagerV2/deleteName', {nameId: nameId})
+            .then(json=>{
+                return json;
+            });
     }
 
     createDescItem(versionId, nodeId, nodeVersionId, descItemTypeId, descItem) {

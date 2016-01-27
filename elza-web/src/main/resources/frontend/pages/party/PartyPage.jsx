@@ -162,7 +162,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         )
         
         var centerPanel = (
-            <PartyDetail refTables={this.props.refTables} selectedPartyData={this.props.partyRegion.selectedPartyData} />
+            <PartyDetail refTables={this.props.refTables} partyRegion={this.props.partyRegion} selectedPartyData={this.props.partyRegion.selectedPartyData} />
         )
 
         var rightPanel = (

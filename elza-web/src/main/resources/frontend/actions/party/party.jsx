@@ -67,6 +67,65 @@ export function deleteParty(partyId, filterText) {
     }
 }
 
+
+/**
+ * Volání webového rozhraní pro vložení nového jména osobě
+ * @param int partyId - identifikator osoby, ktere se pridava jméno
+ * @param int nameFormTypeId - identifikator typu jmena (uredni, svetske, za svobodna, ...)  
+ * @param string nameMain - hlavní jméno osoby
+ * @param string nameOther - doplňující jméno osoby
+ * @param string validFrom - rozsah období, ve kterém je záznam platný/aktivní (1.1.2000 - 31.5.2003, 19. století, leden 1978, ...)
+ * @param string validTo - rozsah období, ve kterém je záznam platný/aktivní (1.1.2000 - 31.5.2003, 19. století, leden 1978, ...)
+ * @param int calendarType - identifikator kalendáře, ve kterém je rozsah období uveden (Gregoriánský, Juliánský)
+ * @param string degreeBefore - titul před jménem osoby
+ * @param string degreeAfter - titul za jménem osoby
+ */
+export function insertName(partyId, nameFormTypeId, nameMain, nameOther, validRange, calendarType, degreeBefore, degreeAfter){
+    return dispatch => {
+        return WebApi.insertRelation(partyId, relationTypeId, note, source, from, to, entities)
+            .then((json) => { 
+                dispatch(modalDialogHide());                // zavření aktualně otevřeného dialogu
+                dispatch(partyDetailFetch(json.partyId));   // otevření detailu aktuálně vložené osoby
+            });
+    }
+}
+
+/**
+ * Volání webového rozhraní pro vložení nového jména osobě
+ * @param int partyId - identifikator osoby, ktere se pridava jméno
+ * @param int nameFormTypeId - identifikator typu jmena (uredni, svetske, za svobodna, ...)  
+ * @param string nameMain - hlavní jméno osoby
+ * @param string nameOther - doplňující jméno osoby
+ * @param string validFrom - rozsah období, ve kterém je záznam platný/aktivní (1.1.2000 - 31.5.2003, 19. století, leden 1978, ...)
+ * @param string validTo - rozsah období, ve kterém je záznam platný/aktivní (1.1.2000 - 31.5.2003, 19. století, leden 1978, ...)
+ * @param int calendarType - identifikator kalendáře, ve kterém je rozsah období uveden (Gregoriánský, Juliánský)
+ * @param string degreeBefore - titul před jménem osoby
+ * @param string degreeAfter - titul za jménem osoby
+ */
+export function insertName(partyId, nameFormTypeId, nameMain, nameOther, validRange, calendarType, degreeBefore, degreeAfter){
+    return dispatch => {
+        return WebApi.insertRelation(partyId, relationTypeId, note, source, from, to, entities)
+            .then((json) => { 
+                dispatch(modalDialogHide());                // zavření aktualně otevřeného dialogu
+                dispatch(partyDetailFetch(json.partyId));   // otevření detailu aktuálně vložené osoby
+            });
+    }
+}
+
+/**
+ * Volání webového rozhraní pro upraveni osoby
+ * @param object party
+ */
+export function updateParty(party) {
+    return dispatch => {
+        return WebApi.updateParty(party)
+            .then((json) => {
+                dispatch(modalDialogHide());                // zavření aktualně otevřeného dialogu
+                dispatch(partyDetailFetch(partyId));        // otevření detailu aktuálně vložené osoby
+            });
+    }
+}
+
 /**
  * Volání webového rozhraní pro získání hledaný osob (pokud již není načten)
  * @param string filteredText - hledaná fráze/text/jméno

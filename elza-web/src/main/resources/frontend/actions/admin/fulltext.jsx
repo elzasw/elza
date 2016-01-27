@@ -33,21 +33,10 @@ export function getIndexStateFetchIfNeeded() {
 }
 
 /**
- * Získání stavu indexování ze serveru pokud není načtený.
- *
- * @returns {Function}
- */
-export function actionReindex() {
-    return (dispatch, getState) => {
-        dispatch(reindex());
-        return WebApi.reindex();
-    }
-}
-
-/**
  * Akce pro spuštění indexování.
  */
 export function reindex() {
+    WebApi.reindex();
     return {
         type: types.ADMIN_FULLTEXT_REINDEXING_REQUEST
     }

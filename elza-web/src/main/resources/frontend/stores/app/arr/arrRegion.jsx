@@ -84,6 +84,24 @@ export default function arrRegion(state = initialState, action) {
             } else {
                 return state;
             }
+        case types.FA_FA_TREE_FULLTEXT_RESULT:
+            var index = indexById(state.fas, action.versionId, "versionId");
+            if (index != null) {
+                var newFa = Object.assign({}, state.fas[index]);
+                updateFaTree(newFa, action);
+
+                return {
+                    ...state,
+                    fas: [
+                        ...state.fas.slice(0, index),
+                        newFa,
+                        ...state.fas.slice(index + 1)
+                    ]
+                }
+            } else {
+                return result;
+            }
+        case types.FA_FA_TREE_FULLTEXT_CHANGE:
         case types.FA_FA_TREE_FOCUS_NODE:
         case types.FA_FA_TREE_EXPAND_NODE:
         case types.FA_FA_TREE_COLLAPSE_NODE:
@@ -221,6 +239,32 @@ export default function arrRegion(state = initialState, action) {
             return {
                 ...state,
                 packets
+            }
+
+        case types.CHANGE_CONFORMITY_INFO:
+
+            var index = indexById(state.fas, action.findingAidVersionId);
+
+            // změna se ho netýká, vracím původní stav
+            if (index == null) {
+                return state;
+            }
+
+            var faTreeChange = faTree(state.fas[index].faTree, action);
+            var nodesChange = nodes(state.fas[index].nodes, action);
+
+            // nezměnil se stav podřízených, nemusím nic měnit
+            if (faTreeChange === state.fas[index].faTree && nodesChange === state.fas[index].nodes) {
+                return state;
+            }
+
+            return {
+                ...state,
+                fas: [
+                    ...state.fas.slice(0, index),
+                    Object.assign({}, state.fas[index], {faTree: faTreeChange, nodes: nodesChange}),
+                    ...state.fas.slice(index + 1)
+                ]
             }
 
         default:

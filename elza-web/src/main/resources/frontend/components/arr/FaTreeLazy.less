@@ -2,78 +2,90 @@
 
 @rowHeight: 22px;
 
-.fa-tree-lazy-container {
-    height:100%;
-    overflow: auto;
-
-    .level {
-        display: inline-block;
-        height: 16px;
-        line-height: 16px;
-        width: 10px;
-        color: gray;
-        font-size: 0.8em;
-        text-align: center;
-        vertical-align: bottom;
+.fa-tree-lazy-main-container {
+    height: 100%;
+    .fa-traa-header-container {
+        height: 32px;
         overflow: hidden;
-        padding: 0 2px;
-    }
-
-    .level:first-child  {
-        margin-left: 3px;
-    }
-    .separator {
-        font-size: 0.5em;
-        line-height: 16px;
-        width: 1px;
-        border-left: 1px solid @tree-node-separator-border;
-    }
-
-    .exp-col {
-        display: inline-block;
-        height: 16px;
-        line-height: 16px;
-        width: 16px;
-        text-align: center;
-        vertical-align: bottom;
-        cursor: pointer;
-    }
-
-    .node-label {
-        display: inline-block;
-        height: 16px;
-        line-height: 16px;
-        vertical-align: bottom;
-        cursor: pointer;
-        &:hover {
-            background: @tree-node-label-active-bg;
-        }         
-    }
-
-    .node-icon {
-        display: inline-block;
-        height: 16px;
-        line-height: 16px;
-        vertical-align: bottom;
-    }
-
-    .node {
-        display: block;
-        height: @rowHeight;
-        white-space: nowrap;
-    }
-
-    .level.small {
-        font-size: 0.5em;
-    }    
-
-    .active {
-        background: @tree-node-active-bg;
-    }  
-
-    .focus {
-        .node-label {
-            outline: 1px solid @tree-node-focus-border;
+        > * {
+            display: inline-block;
         }
-    }    
+    }
+    
+    .fa-tree-lazy-container {
+        height: 100%;
+        height: calc(~"100% - 32px");
+        overflow: auto;
+
+        .level {
+            display: inline-block;
+            height: 16px;
+            line-height: 16px;
+            width: 10px;
+            color: gray;
+            font-size: 0.8em;
+            text-align: center;
+            vertical-align: bottom;
+            overflow: hidden;
+            padding: 0 2px;
+        }
+
+        .level:first-child  {
+            margin-left: 3px;
+        }
+        .separator {
+            font-size: 0.5em;
+            line-height: 16px;
+            width: 1px;
+            border-left: 1px solid @tree-node-separator-border;
+        }
+
+        .exp-col {
+            display: inline-block;
+            height: 16px;
+            line-height: 16px;
+            width: 16px;
+            text-align: center;
+            vertical-align: bottom;
+            cursor: pointer;
+        }
+
+        .node-label {
+            display: inline-block;
+            height: 16px;
+            line-height: 16px;
+            vertical-align: bottom;
+            cursor: pointer;
+            &:hover {
+                background: @tree-node-label-active-bg;
+            }         
+        }
+
+        .node-icon {
+            display: inline-block;
+            height: 16px;
+            line-height: 16px;
+            vertical-align: bottom;
+        }
+
+        .node {
+            display: block;
+            height: @rowHeight;
+            white-space: nowrap;
+        }
+
+        .level.small {
+            font-size: 0.5em;
+        }    
+
+        .active {
+            background: @tree-node-active-bg;
+        }  
+
+        .focus {
+            .node-label {
+                outline: 1px solid @tree-node-focus-border;
+            }
+        }    
+    }
 }

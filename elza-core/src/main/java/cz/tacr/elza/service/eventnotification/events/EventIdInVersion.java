@@ -18,4 +18,11 @@ public class EventIdInVersion extends AbstractEventVersion<EventIdInVersion> {
         this.entityId = entityId;
     }
 
+    public Integer getEntityId() {
+        return entityId;
+    }
+
+    public void setEntityId(final Integer entityId) {
+        this.entityId = entityId;
+    }
 }
