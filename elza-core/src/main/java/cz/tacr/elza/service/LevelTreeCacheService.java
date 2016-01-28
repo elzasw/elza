@@ -31,6 +31,7 @@ import com.google.common.eventbus.Subscribe;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.controller.ArrangementController.Depth;
+import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNode;
@@ -557,6 +558,85 @@ public class LevelTreeCacheService {
         }
 
         return nodeIds;
+    }
+
+    /**
+     * Najde rodiče pro předané id nodů. Vrátí seznam objektů ve kterém je id nodu a jeho rodič.
+     *
+     * @param nodeIds id nodů
+     * @param version verze AP
+     *
+     * @return seznam id nodů a jejich rodičů
+     */
+    public List<TreeNodeFulltext> findParentsForNodes(Set<Integer> nodeIds, ArrFindingAidVersion version) {
+        Assert.notNull(nodeIds);
+        Assert.notNull(version);
+
+        Map<Integer, TreeNode> versionTreeCache = getVersionTreeCache(version);
+        Map<Integer, TreeNode> nodeIdParentMap = new HashMap<>(nodeIds.size());
+        Map<Integer, TreeNode> parentIdParentMap = new HashMap<>(nodeIds.size());
+        List<TreeNodeFulltext> result =  new ArrayList<>(nodeIds.size());
+
+        for (Integer nodeId : nodeIds) {
+            TreeNode treeNode = versionTreeCache.get(nodeId);
+            TreeNode parent = treeNode.getParent();
+            if (parent == null) {
+                TreeNodeFulltext treeNodeFulltext = new TreeNodeFulltext();
+                treeNodeFulltext.setNodeId(nodeId);
+                result.add(treeNodeFulltext);
+            } else {
+                parentIdParentMap.put(parent.getId(), parent);
+                nodeIdParentMap.put(nodeId, parent);
+            }
+        }
+
+        Map<Integer, TreeNodeClient> parentIdTreeNodeClientMap = createNodesWithTitles(parentIdParentMap, version);
+
+        for (Integer nodeId : nodeIdParentMap.keySet()) {
+            Integer parentId = nodeIdParentMap.get(nodeId).getId();
+            TreeNodeClient parentTreeNodeClient = parentIdTreeNodeClientMap.get(parentId);
+
+            TreeNodeFulltext treeNodeFulltext = new TreeNodeFulltext();
+            treeNodeFulltext.setNodeId(nodeId);
+            treeNodeFulltext.setParent(parentTreeNodeClient);
+            result.add(treeNodeFulltext);
+        }
+
+        return result;
+    }
+
+    private Map<Integer, TreeNodeClient> createNodesWithTitles(Map<Integer, TreeNode> treeNodeMap, ArrFindingAidVersion version) {
+        Assert.notNull(treeNodeMap);
+        Assert.notNull(version);
+
+        //node id -> title info
+        Map<Integer, DescItemRepositoryCustom.DescItemTitleInfo> nodeTitlesMap = new HashMap<>();
+
+        if (StringUtils.isBlank(titleDescItemTypeCode)) {
+            logger.warn("Není nastaven typ atributu, jehož hodnota bude použita pro popisek uzlu."
+                    + " Nastavte kód v konfiguraci pro hodnotu 'elza.treenode.title'");
+        } else {
+
+            RulDescItemType titleDescItemType = descItemTypeRepository.findOneByCode(titleDescItemTypeCode);
+            if (titleDescItemType == null) {
+                logger.warn("Nepodařilo se nalézt typ atributu s kódem " + titleDescItemTypeCode + ". Změňte kód v"
+                        + " konfiguraci pro hodnotu 'elza.treenode.title'");
+            } else {
+                nodeTitlesMap = descItemRepository
+                        .findDescItemTitleInfoByNodeId(treeNodeMap.keySet(), titleDescItemType, version.getLockChange());
+            }
+        }
+
+
+        Map<Integer, TreeNodeClient> result = new HashMap<>(treeNodeMap.size());
+        for (TreeNode treeNode : treeNodeMap.values()) {
+            DescItemRepositoryCustom.DescItemTitleInfo title = nodeTitlesMap.get(treeNode.getId());
+            result.put(treeNode.getId(), new TreeNodeClient(treeNode.getId(), treeNode.getDepth(),
+                    title == null || title.getValue() == null ? defaultNodeTitle : title.getValue(),
+                    !treeNode.getChilds().isEmpty(), treeNode.getReferenceMark(), title.getNodeVersion()));
+        }
+
+        return result;
     }
 }
 

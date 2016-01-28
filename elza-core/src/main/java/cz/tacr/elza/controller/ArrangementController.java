@@ -543,12 +543,16 @@ public class ArrangementController {
      * @return data stromu
      */
     @RequestMapping(value = "/fulltext", method = RequestMethod.POST)
-    public Set<Integer> fulltext(final @RequestBody FaFulltextParam input) {
+    public List<TreeNodeFulltext> fulltext(final @RequestBody FaFulltextParam input) {
         Assert.notNull(input);
         Assert.notNull(input.getVersionId());
 
-        return arrangementService.findNodeIdsByFulltext(input.getVersionId(), input.getNodeId(), input.getSearchValue(),
-                input.getDepth());
+        ArrFindingAidVersion version = findingAidVersionRepository.getOne(input.getVersionId());
+
+        Set<Integer> nodeIds = arrangementService.findNodeIdsByFulltext(version, input.getNodeId(),
+                input.getSearchValue(), input.getDepth());
+
+        return levelTreeCacheService.findParentsForNodes(nodeIds, version);
     }
 
     /**
@@ -872,5 +876,31 @@ public class ArrangementController {
         SUBTREE,
         /** Vyhledává se jen na úrovni pod předaným nodeId. */
         ONE_LEVEL;
+    }
+
+    /** Výstup metody /fulltext {@link #fulltext(FaFulltextParam)}. */
+    public static class TreeNodeFulltext {
+
+        /** Id nalezeného nodu. */
+        private Integer nodeId;
+
+        /** Rodič nalezeného nodu. */
+        private TreeNodeClient parent;
+
+        public Integer getNodeId() {
+            return nodeId;
+        }
+
+        public void setNodeId(Integer nodeId) {
+            this.nodeId = nodeId;
+        }
+
+        public TreeNodeClient getParent() {
+            return parent;
+        }
+
+        public void setParent(TreeNodeClient parent) {
+            this.parent = parent;
+        }
     }
 }

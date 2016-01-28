@@ -594,18 +594,16 @@ public class ArrangementService {
     /**
      * Vyhledání id nodů podle hodnoty atributu.
      *
-     * @param versionId identifikátor verze AP
+     * @param version   verze AP
      * @param nodeId    id uzlu pod kterým se má hledat, může být null
      * @param searchValue hledaná hodnota
      * @param depth     hloubka v jaké se hledá pod předaným nodeId
      *
      * @return seznam id uzlů které vyhovují parametrům
      */
-    public Set<Integer> findNodeIdsByFulltext(Integer versionId, Integer nodeId, String searchValue, Depth depth) {
-        Assert.notNull(versionId);
+    public Set<Integer> findNodeIdsByFulltext(ArrFindingAidVersion version, Integer nodeId, String searchValue, Depth depth) {
+        Assert.notNull(version);
         Assert.notNull(depth);
-
-        ArrFindingAidVersion version = findingAidVersionRepository.getOne(versionId);
 
         ArrChange lockChange = version.getLockChange();
         Integer lockChangeId = lockChange == null ? null : lockChange.getChangeId();
