@@ -1,6 +1,8 @@
 import {WebApi} from 'actions'
 
 import * as types from 'actions/constants/actionTypes';
+import {modalDialogHide} from 'actions/global/modalDialog'
+import {faSubNodeFormValueChange, faSubNodeFormValueBlur} from 'actions/arr/subNodeForm'
 
 export function packetsFetchIfNeeded(findingAidId) {
     return (dispatch, getState) => {
@@ -35,3 +37,31 @@ export function packetsRequest(findingAidId) {
         findingAidId: findingAidId
     }
 }
+
+export function createPacketRequest() {
+    return {
+        type: types.CREATE_PACKET_REQUEST
+    }
+}
+
+export function createPacketReceive(findingAidId, data) {
+    return {
+        type: types.CREATE_PACKET_RECEIVE,
+        data: data,
+        findingAidId: findingAidId
+    }
+}
+
+export function createPacket(findingAidId, storageNumber, packetTypeId, invalidPacket, valueLocation, versionId, selectedSubNodeId, nodeKey) {
+    return dispatch => {
+        dispatch(createPacketRequest())
+        return WebApi.insertPacket(findingAidId, storageNumber, packetTypeId, invalidPacket)
+                .then(json => dispatch(createPacketReceive(findingAidId, json)))
+                .then(action => {
+                    dispatch(faSubNodeFormValueChange(versionId, selectedSubNodeId, nodeKey, valueLocation, action.data.id));
+                    dispatch(faSubNodeFormValueBlur(versionId, selectedSubNodeId, nodeKey, valueLocation));
+                    dispatch(modalDialogHide())
+                });
+    }
+}
+

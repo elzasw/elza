@@ -6,7 +6,7 @@ require('./SubNodeForm.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Icon, i18n, AbstractReactComponent, NoFocusButton} from 'components';
+import {Icon, i18n, AbstractReactComponent, NoFocusButton, AddPacketForm} from 'components';
 import {connect} from 'react-redux'
 import {indexById} from 'stores/app/utils.jsx'
 import {faSubNodeFormDescItemTypeAdd, faSubNodeFormValueChange, faSubNodeFormDescItemTypeDelete, faSubNodeFormValueChangeSpec,faSubNodeFormValueBlur, faSubNodeFormValueFocus, faSubNodeFormValueAdd, faSubNodeFormValueDelete} from 'actions/arr/subNodeForm'
@@ -18,6 +18,7 @@ import DescItemType from './nodeForm/DescItemType'
 import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm'
 import {lockDescItemType, unlockDescItemType, unlockAllDescItemType, copyDescItemType, nocopyDescItemType} from 'actions/arr/nodeSetting'
 import {addNode} from 'actions/arr/node'
+import {createPacket} from 'actions/arr/packets'
 import faSelectSubNode from 'actions/arr/nodes'
 
 var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
@@ -27,7 +28,8 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         this.bindMethods('renderDescItemGroup', 'handleAddDescItemType', 'renderDescItemType', 'handleChange',
             'handleChangeSpec', 'handleDescItemTypeRemove', 'handleBlur', 'handleFocus', 'renderFormActions',
             'getDescItemTypeInfo', 'handleDescItemAdd', 'handleDescItemRemove', 'handleDescItemTypeLock',
-            'handleDescItemTypeUnlockAll', 'handleDescItemTypeCopy', 'handleAddNodeBefore', 'handleAddNodeAfter');
+            'handleDescItemTypeUnlockAll', 'handleDescItemTypeCopy', 'handleAddNodeBefore', 'handleAddNodeAfter',
+            'handleCreatePacket', 'handleCreatePacketSubmit');
 
 //console.log("@@@@@-SubNodeForm-@@@@@", props);
     }
@@ -180,6 +182,48 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 
     /**
+     * Vytvoření nového obalu.
+     *
+     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
+     * @param descItemTypeIndex {Integer} index atributu v seznamu
+     * @param descItemIndex {Integer} index honodty atributu v seznamu
+     */
+    handleCreatePacket(descItemGroupIndex, descItemTypeIndex, descItemIndex) {
+        var valueLocation = {
+            descItemGroupIndex,
+            descItemTypeIndex,
+            descItemIndex
+        }
+
+        const {findingAidId} = this.props;
+
+        var initData = {
+            packetTypeId: null,
+            storageNumber: "",
+            invalidPacket: false
+        };
+
+        this.dispatch(modalDialogShow(this, i18n('arr.packet.title.add'), <AddPacketForm initData={initData} create findingAidId={findingAidId} onSubmit={this.handleCreatePacketSubmit.bind(this, valueLocation)} />));
+    }
+
+    /**
+     * Vytvoření obalu po vyplnění formuláře.
+     *
+     * @param valueLocation pozice hodnoty atributu
+     * @param form {Object} data z formuláře
+     */
+    handleCreatePacketSubmit(valueLocation, form) {
+        const {findingAidId, versionId, selectedSubNodeId, nodeKey} = this.props;
+
+        var storageNumber = form.storageNumber;
+        var packetTypeId = form.packetTypeId === "" ? null : parseInt(form.packetTypeId);
+        var invalidPacket = form.invalidPacket;
+
+        this.dispatch(createPacket(findingAidId, storageNumber, packetTypeId, invalidPacket, valueLocation,
+                versionId, selectedSubNodeId, nodeKey));
+    }
+
+    /**
      * Opuštění hodnoty atributu.
      * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
      * @param descItemTypeIndex {Integer} index atributu v seznamu
@@ -298,6 +342,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 calendarTypes={calendarTypes}
                 packetTypes={packetTypes}
                 packets={packets}
+                onCreatePacket={this.handleCreatePacket.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDescItemAdd={this.handleDescItemAdd.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDescItemRemove={this.handleDescItemRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onChange={this.handleChange.bind(this, descItemGroupIndex, descItemTypeIndex)}

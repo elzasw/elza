@@ -1,7 +1,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent} from 'components';
+import {Icon, i18n, AbstractReactComponent, NoFocusButton} from 'components';
 import {connect} from 'react-redux'
 import {decorateValue} from './DescItemUtils'
 
@@ -52,6 +52,7 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
                             <option value={packet.id}>{this.packetName(packet)}</option>
                     ))}
                 </select>
+                <div className='desc-item-type-actions'><NoFocusButton onClick={this.props.onCreatePacket} title={i18n('subNodeForm.addDescItem')}><Icon glyph="fa-plus" /></NoFocusButton></div>
             </div>
         )
     }

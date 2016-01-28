@@ -239,10 +239,12 @@ public class ClientFactoryDO {
         ArrFindingAid findingAid = findingAidRepository.findOne(findingAidId);
         Assert.notNull(findingAid, "Archivní pomůcka neexistuje (ID=" + findingAidId + ")");
 
-        RulPacketType packetType = packetTypeRepository.findOne(packetVO.getPacketTypeId());
-        Assert.notNull(packetType, "Typ obalu neexistuje (ID=" + packetVO.getPacketTypeId() + ")");
+        if (packetVO.getPacketTypeId() != null) {
+            RulPacketType packetType = packetTypeRepository.findOne(packetVO.getPacketTypeId());
+            Assert.notNull(packetType, "Typ obalu neexistuje (ID=" + packetVO.getPacketTypeId() + ")");
+            packet.setPacketType(packetType);
+        }
 
-        packet.setPacketType(packetType);
         packet.setFindingAid(findingAid);
 
         return packet;

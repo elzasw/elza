@@ -58,6 +58,11 @@ var messages = {
     "arr.node.status.err": "Err",
     "arr.node.status.undefined": "Nezvalidovaný",
 
+    "arr.packet.title.add": "Přidání nového obalu",
+    "arr.packet.packetType": "Typ",
+    "arr.packet.storageNumber": "Ukládací číslo",
+    "arr.packet.invalidPacket": "Znevalidnění",
+
     "subNodeForm.deleteDescItem": "Odstranit hodnotu",
     "subNodeForm.deleteDescItemType": "Odstranit prvek popisu včetně všech hodnot",
     "subNodeForm.validate.spec.required": "Specifikace musí být uvedena",

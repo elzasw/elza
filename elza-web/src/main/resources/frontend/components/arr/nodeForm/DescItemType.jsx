@@ -24,7 +24,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('renderDescItemSpec', 'renderDescItem', 'renderLabel',
-                'handleChange', 'handleChangeSpec',
+                'handleChange', 'handleChangeSpec', 'handleCreatePacket',
                 'handleBlur', 'handleFocus', 'handleDescItemTypeLock', 'handleDescItemTypeCopy');
     }
 
@@ -81,6 +81,14 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
      */
     handleChange(descItemIndex, value) {
         this.props.onChange(descItemIndex, value);
+    }
+
+    /**
+     * Změna hodnoty atributu.
+     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     */
+    handleCreatePacket(descItemIndex) {
+        this.props.onCreatePacket(descItemIndex);
     }
 
     /**
@@ -148,7 +156,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             case 'RECORD_REF':
                 break;
             case 'PACKET_REF':
-                parts.push(<DescItemPacketRef key="PACKET_REF" {...descItemProps} packets={packets} packetTypes={packetTypes} />)
+                parts.push(<DescItemPacketRef key="PACKET_REF" {...descItemProps} onCreatePacket={this.handleCreatePacket.bind(this, descItemIndex)} packets={packets} packetTypes={packetTypes} />)
                 break;
             case 'UNITDATE':
                 parts.push(<DescItemUnitdate key="UNITDATE" {...descItemProps} calendarTypes={calendarTypes} />)
@@ -311,6 +319,7 @@ DescItemType.propTypes = {
     onChangeSpec: React.PropTypes.func.isRequired,
     onBlur: React.PropTypes.func.isRequired,
     onFocus: React.PropTypes.func.isRequired,
+    onCreatePacket: React.PropTypes.func.isRequired,
     onDescItemTypeRemove: React.PropTypes.func.isRequired,
     onDescItemTypeLock: React.PropTypes.func.isRequired,
     onDescItemTypeCopy: React.PropTypes.func.isRequired,

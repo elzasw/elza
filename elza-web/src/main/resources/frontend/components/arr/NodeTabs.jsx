@@ -16,7 +16,7 @@ var NodeTabs = class NodeTabs extends AbstractReactComponent {
     }
 
     render() {
-        const {fa, nodes, activeIndex, versionId, rulDataTypes, calendarTypes, packetTypes, packets} = this.props;
+        const {fa, nodes, activeIndex, versionId, rulDataTypes, calendarTypes, packetTypes, packets, findingAidId} = this.props;
 
         if (nodes.length == 0) {
             return <div></div>
@@ -44,6 +44,7 @@ var NodeTabs = class NodeTabs extends AbstractReactComponent {
                 <Tabs.Content>
                     {activeNode && <NodePanel versionId={versionId}
                                               fa={fa}
+                                              findingAidId={findingAidId}
                                               node={activeNode}
                                               rulDataTypes={rulDataTypes}
                                               calendarTypes={calendarTypes}
@@ -60,6 +61,7 @@ NodeTabs.propTypes = {
     fa: React.PropTypes.object.isRequired,
     nodes: React.PropTypes.array.isRequired,
     activeIndex: React.PropTypes.number,
+    findingAidId: React.PropTypes.number,
     rulDataTypes: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
     packetTypes: React.PropTypes.object.isRequired,

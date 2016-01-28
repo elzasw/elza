@@ -19,6 +19,7 @@ import modalDialog from './global/modalDialog';
 import webSocket from './global/webSocket';
 import adminRegion from './admin/adminRegion';
 import addFaForm from './arr/form/addFaForm';
+import addPacketForm from './arr/form/addPacketForm';
 import stateRegion from './state/stateRegion';
 import router from './router';
 
@@ -52,6 +53,7 @@ let reducer = combineReducers({
     router,
     form: formReducer.plugin({
         addFaForm: addFaForm,
+        addPacketForm: addPacketForm,
         addPartyPersonForm: addPartyPersonForm,
         addPartyDynastyForm: addPartyDynastyForm,
         addPartyOtherForm: addPartyOtherForm,
@@ -90,11 +92,12 @@ function handleChange() {
     curr = store.getState().arrRegion;
 
     if (curr !== prev) {
-        console.log("@@@@@@@@@@@@@@@@@@@@@@CHANGE", prev, curr);
+        console.log("Velikost store: " + JSON.stringify(curr).length + " B");
+        //console.log("@@@@@@@@@@@@@@@@@@@@@@CHANGE", prev, curr);
     }
 }
 
-//store.subscribe(handleChange);
+store.subscribe(handleChange);
 
 var save = function(store) {
     var action = {

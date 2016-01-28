@@ -258,7 +258,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     render() {
-        const {calendarTypes, versionId, rulDataTypes, node, packetTypes, packets} = this.props;
+        const {calendarTypes, versionId, rulDataTypes, node, packetTypes, packets, findingAidId} = this.props;
 
         if (!node.fetched) {
             return <Loading/>
@@ -298,6 +298,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 conformityInfo={conformityInfo}
                 packets={packets}
                 parentNode={node}
+                findingAidId={findingAidId}
                 selectedSubNode={node.subNodeForm.data.node}
             />
         } else {
@@ -377,6 +378,7 @@ NodePanel.propTypes = {
     packetTypes: React.PropTypes.object.isRequired,
     packets: React.PropTypes.array.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
+    findingAidId: React.PropTypes.number,
 }
 
 module.exports = connect()(NodePanel);

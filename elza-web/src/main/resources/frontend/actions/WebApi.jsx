@@ -329,6 +329,16 @@ class WebApi{
                 });
     }
 
+    insertPacket(findingAidId, storageNumber, packetTypeId, invalidPacket) {
+
+        var data = {packetTypeId: packetTypeId, storageNumber: storageNumber, invalidPacket: invalidPacket};
+
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/packets/' + findingAidId, {}, data)
+                .then(json=>{
+                    return json
+                });
+    }
+
     getFaNodeForm1(versionId, nodeId) {
         var node = findNodeById(_faRootNode, nodeId);
         var data = {

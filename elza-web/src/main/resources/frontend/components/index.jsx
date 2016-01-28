@@ -40,6 +40,7 @@ exports.FaTreeTabs = require('./arr/FaTreeTabs');
 exports.FaTreeLazy = require('./arr/FaTreeLazy');
 exports.SubNodeForm = require('./arr/SubNodeForm');
 exports.AddFaForm = require('./arr/AddFaForm');
+exports.AddPacketForm = require('./arr/AddPacketForm');
 exports.FaExtendedView = require('./arr/FaExtendedView');
 exports.FaTreeMain = require('./arr/FaTreeMain');
 exports.FaTreeMovementsLeft = require('./arr/FaTreeMovementsLeft');

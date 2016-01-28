@@ -182,6 +182,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                         calendarTypes={calendarTypes}
                         packetTypes={packetTypes}
                         packets={packets}
+                        findingAidId={findingAidId}
                     />
                 )
             }
