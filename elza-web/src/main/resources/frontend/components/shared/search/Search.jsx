@@ -8,7 +8,7 @@
 import React from 'react';
 
 import {Button, Input} from 'react-bootstrap';
-import {i18n} from 'components';
+import {i18n, Icon} from 'components';
 import ReactDOM from 'react-dom'
 
 require ('./Search.less');
@@ -54,20 +54,26 @@ var Search = class Search extends React.Component {
         if (this.props.className) {
             cls += " " + this.props.className;
         }
+        var afterInput = '';
+        if (this.props.afterInput) {
+            afterInput = <div className='search-after-input'>{this.props.afterInput} </div>
+        }
         var searchLabel = i18n('search.action.search');  
         return (
             <div className={cls}>
-                <Input
-                    type="text"
-                    value={this.state.filterText}
-                    ref="input"
-                    labelClassName="label-class"
-                    placeholder={this.props.placeholder}
-                    onChange={this.handleChange}
-                    onKeyUp={this.handleKeyUp}
-                />
-                {this.props.afterInput}
-                <Button onClick={this.handleSearch}>{searchLabel}</Button> 
+                <div className='search-input'>
+                    <Input
+                        type="text"
+                        value={this.state.filterText}
+                        ref="input"
+                        labelClassName="label-class"
+                        placeholder={this.props.placeholder}
+                        onChange={this.handleChange}
+                        onKeyUp={this.handleKeyUp}
+                    />
+                    <div><Icon glyph='fa-search' onClick={this.handleSearch}/></div>
+                </div>
+                {afterInput}
             </div>
         );
     }
