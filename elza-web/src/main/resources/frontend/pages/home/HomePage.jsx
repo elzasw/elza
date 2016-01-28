@@ -159,15 +159,13 @@ setTimeout(()=>this.setState({options: options2}), 4000);
     }
 
     render() {
-
         var centerPanel = (
             <div>
-                HOME
-                <Button onClick={() => this.dispatch(storeSave())}>STORE</Button>
-                <Button onClick={() => this.dispatch(storeLoad())}>LOAD</Button>
+                {false && <div>
+                    <Button onClick={() => this.dispatch(storeSave())}>STORE</Button>
+                    <Button onClick={() => this.dispatch(storeLoad())}>LOAD</Button></div>}
                 {this.renderHistory()}
-
-<Combobox defaultValue={'1'}
+{false && <Combobox defaultValue={'1'}
               options={this.state.options}
               dropdownProps={{ style: { width: '100%' } }}
               onChange={e => console.log('onChange', e.target.value)}
@@ -181,7 +179,7 @@ setTimeout(()=>this.setState({options: options2}), 4000);
                addonAfter={<div>ddddddd</div>}
         />
       }
-    </Combobox>
+    </Combobox>}
 
             </div>
         )
