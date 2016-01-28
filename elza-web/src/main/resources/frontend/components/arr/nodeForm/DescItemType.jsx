@@ -42,7 +42,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         const {descItemTypeInfo} = this.props;
 
         var options = descItemTypeInfo.descItemSpecs.map(itemSpec => (
-            <option value={itemSpec.id}>{itemSpec.name}</option>
+            <option key={itemSpec.id} value={itemSpec.id}>{itemSpec.name}</option>
         ));
 
         var cls = classNames({
@@ -62,12 +62,13 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
 
         return (
             <select
+                key='spec'
                 className={cls}
                 {...descItemSpecProps}
                 value={descItem.descItemSpecId}
                 title={descItem.error.spec}
             >
-                <option></option>
+                <option key="novalue"></option>
                 {options}
             </select>
         )
@@ -147,38 +148,38 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             case 'RECORD_REF':
                 break;
             case 'PACKET_REF':
-                parts.push(<DescItemPacketRef {...descItemProps} packets={packets} packetTypes={packetTypes} />)
+                parts.push(<DescItemPacketRef key="PACKET_REF" {...descItemProps} packets={packets} packetTypes={packetTypes} />)
                 break;
             case 'UNITDATE':
-                parts.push(<DescItemUnitdate {...descItemProps} calendarTypes={calendarTypes} />)
+                parts.push(<DescItemUnitdate key="UNITDATE" {...descItemProps} calendarTypes={calendarTypes} />)
                 break;
             case 'UNITID':
-                parts.push(<DescItemUnitid {...descItemProps} />)
+                parts.push(<DescItemUnitid key="UNITID" {...descItemProps} />)
                 break;
             case 'STRING':
-                parts.push(<DescItemString {...descItemProps} />)
+                parts.push(<DescItemString key="STRING" {...descItemProps} />)
                 break;
             case 'FORMATTED_TEXT':
             case 'TEXT':
-                parts.push(<DescItemText {...descItemProps} />)
+                parts.push(<DescItemText key="TEXT" {...descItemProps} />)
                 break;
             case 'DECIMAL':
-                parts.push(<DescItemDecimal {...descItemProps} />)
+                parts.push(<DescItemDecimal key="DECIMAL" {...descItemProps} />)
                 break;
             case 'INT':
-                parts.push(<DescItemInt {...descItemProps} />)
+                parts.push(<DescItemInt key="INT" {...descItemProps} />)
                 break;
             case 'COORDINATES':
-                parts.push(<DescItemCoordinates {...descItemProps} />)
+                parts.push(<DescItemCoordinates key="COORDINATES" {...descItemProps} />)
                 break;
             case 'ENUM':
                 break;
             default:
-                parts.push(<div>-unsupported type {rulDataType.code}-</div>)
+                parts.push(<div key="unsupported">-unsupported type {rulDataType.code}-</div>)
         }
 
         return (
-            <div className={cls}>
+            <div key={descItemType.code + "-" + descItem.descItemObjectId} className={cls}>
                 <div className='desc-item-value-container'>
                     {parts}
                 </div>
@@ -197,16 +198,16 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         var actions = [];
 
         // Sestavení akcí
-        actions.push(<NoFocusButton onClick={this.handleDescItemTypeCopy}><Icon className={copy ? 'copy' : 'nocopy'} glyph="fa-files-o" /></NoFocusButton>);
-        actions.push(<NoFocusButton><Icon glyph="fa-book" /></NoFocusButton>);
-        actions.push(<NoFocusButton onClick={this.handleDescItemTypeLock}><Icon className={locked ? 'locked' : 'unlocked'}  glyph="fa-lock" /></NoFocusButton>);
+        actions.push(<NoFocusButton key="copy"onClick={this.handleDescItemTypeCopy}><Icon className={copy ? 'copy' : 'nocopy'} glyph="fa-files-o" /></NoFocusButton>);
+        actions.push(<NoFocusButton key="book"><Icon glyph="fa-book" /></NoFocusButton>);
+        actions.push(<NoFocusButton key="lock" onClick={this.handleDescItemTypeLock}><Icon className={locked ? 'locked' : 'unlocked'}  glyph="fa-lock" /></NoFocusButton>);
 
         // Zprávy o chybějících položkách
         var missings = conformityInfo.missings[descItemType.id];
         if (missings) {
             var messages = missings.map(missing => missing.description);
             var tooltip = <Tooltip>{messages}</Tooltip>
-            actions.push(<OverlayTrigger placement="right" overlay={tooltip}>
+            actions.push(<OverlayTrigger key="state" placement="right" overlay={tooltip}>
                 <div className='btn btn-default'><Icon glyph="fa-exclamation-triangle" /></div>
             </OverlayTrigger>);
         }
@@ -226,7 +227,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             }
         }
         if (hasDescItemsForDelete) {
-            actions.push(<NoFocusButton onClick={this.props.onDescItemTypeRemove} title={i18n('subNodeForm.deleteDescItemType')}><Icon glyph="fa-trash" /></NoFocusButton>);
+            actions.push(<NoFocusButton key="delete" onClick={this.props.onDescItemTypeRemove} title={i18n('subNodeForm.deleteDescItemType')}><Icon glyph="fa-trash" /></NoFocusButton>);
         }
 
         // Render
@@ -318,7 +319,7 @@ DescItemType.propTypes = {
     rulDataType: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
     packetTypes: React.PropTypes.object.isRequired,
-    packets: React.PropTypes.object.isRequired,
+    packets: React.PropTypes.array.isRequired,
     locked: React.PropTypes.bool.isRequired,
     copy: React.PropTypes.bool.isRequired,
     conformityInfo: React.PropTypes.object.isRequired

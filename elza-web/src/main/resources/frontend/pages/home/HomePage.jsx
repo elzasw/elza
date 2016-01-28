@@ -51,7 +51,7 @@ setTimeout(()=>this.setState({options: options2}), 4000);
     buildRibbon() {
         var altActions = [];
         altActions.push(
-            <Button onClick={this.handleAddFa}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.fa.add')}</span></div></Button>
+            <Button key="add-fa" onClick={this.handleAddFa}><Icon glyph="fa-plus-circle" /><div><span className="btnText">{i18n('ribbon.action.arr.fa.add')}</span></div></Button>
         );
 
         var altSection;

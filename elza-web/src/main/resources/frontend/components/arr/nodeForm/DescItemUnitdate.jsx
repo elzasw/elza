@@ -49,7 +49,7 @@ var DescItemUnitdate = class DescItemUnitdate extends AbstractReactComponent {
                 >
                     <option />
                     {this.props.calendarTypes.items.map(calendarType => (
-                        <option value={calendarType.id}>{calendarType.name}</option>
+                        <option key={calendarType.id} value={calendarType.id}>{calendarType.name}</option>
                     ))}
                 </select>
                 <input

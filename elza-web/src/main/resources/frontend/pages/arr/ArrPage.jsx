@@ -122,7 +122,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         );
         if (activeInfo.activeFa) {
             itemActions.push(
-                <Button onClick={this.handleApproveFaVersion}><Icon glyph="fa-calendar-check-o"/><div><span className="btnText">{i18n('ribbon.action.arr.fa.approveVersion')}</span></div></Button>
+                <Button key="approve-version" onClick={this.handleApproveFaVersion}><Icon glyph="fa-calendar-check-o"/><div><span className="btnText">{i18n('ribbon.action.arr.fa.approveVersion')}</span></div></Button>
             )
         }
 

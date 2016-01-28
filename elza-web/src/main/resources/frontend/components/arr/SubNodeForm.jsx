@@ -57,7 +57,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         });
 
         return (
-            <div className={cls}>
+            <div key={'type-' + descItemGroup + '-' + descItemGroupIndex} className={cls}>
                 <div className='desc-item-types'>
                     {descItemTypes}
                 </div>
@@ -291,7 +291,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         }
 
         return (
-            <DescItemType
+            <DescItemType key={descItemType.code}
                 descItemType={descItemType}
                 descItemTypeInfo={descItemTypeInfo}
                 rulDataType={rulDataType}
@@ -406,7 +406,7 @@ SubNodeForm.propTypes = {
     rulDataTypes: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
     packetTypes: React.PropTypes.object.isRequired,
-    packets: React.PropTypes.object.isRequired,
+    packets: React.PropTypes.array.isRequired,
     formData: React.PropTypes.object.isRequired,
     conformityInfo: React.PropTypes.object.isRequired
 }

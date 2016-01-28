@@ -20,10 +20,6 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
             'renderNode'
         );
 
-        ResizeStore.listen(status => {
-            this.setState({});
-        });
-
         this.state = {};
     }
 
@@ -31,7 +27,14 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     }
 
     componentDidMount() {
+        this.unsubscribe = ResizeStore.listen(status => {
+            this.setState({});
+        });
         this.setState({treeContainer: ReactDOM.findDOMNode(this.refs.treeContainer)});
+    }
+
+    componentWillUnmount() {
+        this.unsubscribe();
     }
 
     /**
@@ -69,12 +72,12 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
         if (node.referenceMark) {
             node.referenceMark.forEach((i, index) => {
                 if (i < 1000) {
-                    levels.push(<span className="level">{i}</span>)
+                    levels.push(<span key={'level' + index} className="level">{i}</span>)
                 } else {
-                    levels.push(<span className="level">.{i % 1000}</span>)
+                    levels.push(<span key={'level' + index} className="level">.{i % 1000}</span>)
                 }
                 if (index + 1 < node.referenceMark.length) {
-                    levels.push(<span className="separator"></span>)
+                    levels.push(<span  key={'sep' + index} className="separator"></span>)
                 }
             });
         }

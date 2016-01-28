@@ -63,7 +63,7 @@ NodeTabs.propTypes = {
     rulDataTypes: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
     packetTypes: React.PropTypes.object.isRequired,
-    packets: React.PropTypes.object.isRequired,
+    packets: React.PropTypes.array.isRequired,
 }
 
 module.exports = connect()(NodeTabs);

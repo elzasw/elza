@@ -26,7 +26,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             'getParentNodes', 'getChildNodes', 'getSiblingNodes',
             'renderAccordion', 'renderState', 'transformConformityInfo'
             );
-        
+
     }
 
     componentDidMount() {
@@ -219,7 +219,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 
         if (node.viewStartIndex > 0) {
             rows.push(
-                <Button onClick={()=>this.dispatch(faSubNodesPrev())}><Icon glyph="fa-chevron-left" />{i18n('arr.fa.prev')}</Button>
+                <Button key="prev" onClick={()=>this.dispatch(faSubNodesPrev())}><Icon glyph="fa-chevron-left" />{i18n('arr.fa.prev')}</Button>
             )
         }
 
@@ -230,18 +230,18 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 
             if (node.selectedSubNodeId == item.id) {
                 rows.push(
-                    <div className='accordion-header opened' onClick={this.handleCloseItem.bind(this, item)}>
+                    <div key={item.id} className='accordion-header opened' onClick={this.handleCloseItem.bind(this, item)}>
                         {item.name} [{item.id}] {state}
                     </div>
                 )
                 rows.push(
-                    <div className='accordion-body'>
+                    <div key="body" className='accordion-body'>
                         {form}
                     </div>
                 )
             } else {
                 rows.push(
-                    <div className='accordion-header closed' onClick={this.handleOpenItem.bind(this, item)}>
+                    <div key={item.id} className='accordion-header closed' onClick={this.handleOpenItem.bind(this, item)}>
                         {item.name} [{item.id}] {state}
                     </div>
                 )
@@ -250,7 +250,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 
         if (node.viewStartIndex + node.pageSize/2 < node.childNodes.length) {
             rows.push(
-                <Button onClick={()=>this.dispatch(faSubNodesNext())}><Icon glyph="fa-chevron-right" />{i18n('arr.fa.next')}</Button>
+                <Button key="next" onClick={()=>this.dispatch(faSubNodesNext())}><Icon glyph="fa-chevron-right" />{i18n('arr.fa.next')}</Button>
             )
         }
 
@@ -375,7 +375,7 @@ NodePanel.propTypes = {
     node: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
     packetTypes: React.PropTypes.object.isRequired,
-    packets: React.PropTypes.object.isRequired,
+    packets: React.PropTypes.array.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
 }
 
