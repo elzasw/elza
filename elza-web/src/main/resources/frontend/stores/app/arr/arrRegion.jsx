@@ -8,7 +8,7 @@ import nodeSetting from './nodeSetting'
 
 const initialState = {
     activeIndex: null,
-    nodeSettings: undefined,
+    nodeSettings: nodeSetting(undefined, {}),
     extendedView: false,
     packets: {},
     fas: [],
