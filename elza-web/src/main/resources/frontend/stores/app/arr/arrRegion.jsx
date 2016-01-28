@@ -177,6 +177,7 @@ export default function arrRegion(state = initialState, action) {
                 faPackets = {
                         isFetching: true,
                         fetched: false,
+                        dirty: false,
                         items: []
                 }
             } else {
@@ -191,6 +192,25 @@ export default function arrRegion(state = initialState, action) {
                 packets
             }
 
+        case types.CHANGE_PACKETS:
+
+            var packets = state.packets;
+            var faPackets = packets[action.findingAidId];
+
+            if (faPackets == null) {
+                return state;
+            } else {
+                faPackets.dirty = true;
+            }
+
+            packets[action.findingAidId] = faPackets;
+
+            return {
+                ...state,
+                packets
+            }
+
+
         case types.PACKETS_RECEIVE:
 
             var packets = state.packets;
@@ -198,6 +218,7 @@ export default function arrRegion(state = initialState, action) {
 
             faPackets.isFetching = false;
             faPackets.fetched = true;
+            faPackets.dirty = false;
             faPackets.items = action.items;
 
             packets[action.findingAidId] = faPackets;

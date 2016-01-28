@@ -27,3 +27,11 @@ export function changePackage() {
         type: types.CHANGE_PACKAGE
     }
 }
+
+export function changePackets(findingAidId) {
+
+    return {
+        type: types.CHANGE_PACKETS,
+        findingAidId: findingAidId
+    }
+}

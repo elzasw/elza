@@ -4,7 +4,7 @@ import {EmailSettingsActions, ApplicationActions} from 'actions';
 import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket';
 import {store} from 'stores/app/AppStore';
 
-import {changeConformityInfo, changeIndexingFinished, changePackage} from 'actions/global/change';
+import {changeConformityInfo, changeIndexingFinished, changePackage, changePackets} from 'actions/global/change';
 
 
 var SockJS = require('sockjs-client');
@@ -85,6 +85,10 @@ function processEvents(values) {
                 packageEvent();
                 break;
 
+            case 'PACKETS_CHANGE':
+                packetsChangeEvent(value);
+                break;
+
             default:
                 console.warn("Nedefinovaný typ eventu: " + value.eventType);
                 break;
@@ -114,6 +118,13 @@ function indexingFinished() {
  */
 function packageEvent() {
     store.dispatch(changePackage());
+}
+
+/**
+ * Změna obalů.
+ */
+function packetsChangeEvent(value) {
+    store.dispatch(changePackets(value.ids[0]));
 }
 
 /**

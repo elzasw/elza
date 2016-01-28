@@ -33,6 +33,8 @@ public enum EventType {
 
     PACKAGE(ActionEvent.class),
 
+    PACKETS_CHANGE(EventId.class),
+
     CONFORMITY_INFO(EventIdInVersion.class);
 
     private Class<? extends AbstractEventSimple> eventClass;

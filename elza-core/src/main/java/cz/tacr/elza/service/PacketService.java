@@ -12,6 +12,10 @@ import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventId;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 
 
 /**
@@ -31,6 +35,9 @@ public class PacketService {
 
     @Autowired
     private PacketTypeRepository packetTypeRepository;
+
+    @Autowired
+    private EventNotificationService eventNotificationService;
 
     /**
      * Vrací seznam typů obalů.
@@ -93,6 +100,10 @@ public class PacketService {
         Assert.notNull(packet);
 
         checkPacketDuplicate(packet);
+
+        EventId event = EventFactory
+                .createIdEvent(EventType.PACKETS_CHANGE, packet.getFindingAid().getFindingAidId());
+        eventNotificationService.publishEvent(event);
 
         return packetRepository.save(packet);
     }

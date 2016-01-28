@@ -132,6 +132,7 @@ public class ArrangementController {
         return factoryVo.createPacketList(packets);
     }
 
+    @Transactional
     @RequestMapping(value = "/packets/{findingAidId}",
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -145,6 +146,7 @@ public class ArrangementController {
         return factoryVo.createPacket(packetService.insertPacket(packet));
     }
 
+    @Transactional
     @RequestMapping(value = "/packets/{findingAidId}/{packetId}",
             method = RequestMethod.DELETE,
             consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -158,6 +160,7 @@ public class ArrangementController {
         return factoryVo.createPacket(packetService.deactivatePacket(packet));
     }
 
+    @Transactional
     @RequestMapping(value = "/packets/{findingAidId}",
             method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE,

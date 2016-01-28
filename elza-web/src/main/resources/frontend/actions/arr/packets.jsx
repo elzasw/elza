@@ -8,7 +8,7 @@ export function packetsFetchIfNeeded(findingAidId) {
     return (dispatch, getState) => {
         var state = getState();
         var packets = state.arrRegion.packets[findingAidId];
-        if (packets == null || (!packets.fetched && !packets.isFetching)) {
+        if (packets == null || ((!packets.fetched || packets.dirty) && !packets.isFetching)) {
             return dispatch(packetsFetch(findingAidId));
         }
     }
