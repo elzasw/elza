@@ -1,15 +1,28 @@
 @import "~variables.less";
 
 .search-container {
-    display: flex;
+    display: block;
     margin:0 10px 0 10px;
     
     .form-group{
-        flex-grow:2;
-        flex-shrink:1;
         margin-bottom: 0px;
     }
-    button{
-        flex-grow:1;
-    }   
+
+    div.search-input,
+    div.search-button,
+    div.search-after-input {
+        display: inline-block;
+        width: 100%;
+    }
+    div.search-input input{
+      width: calc(~"100% - 20px");
+    }
+    div.search-input div{
+      display: inline-block
+    }
+
+    div.search-after-input div.dropDownTree button{
+      width: 100%;
+    }
+
 }
