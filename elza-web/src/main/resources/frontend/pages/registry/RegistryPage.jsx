@@ -255,11 +255,10 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                         placeholder={i18n('search.input.search')}
                         afterInput={
                             <DropDownTree
-                                nullValue = {i18n('registry.all')}
-                                nullId = {null}
+                                nullValue = {{id: null, name: i18n('registry.all')}}
                                 key='search'
                                 items = {this.props.refTables.recordTypes.items}
-                                selectedItemID = {this.props.registry.registryTypesId}
+                                value = {this.props.registry.registryTypesId}
                                 onSelect = {this.hlandleRegistryTypesSelect.bind(this)}
                             />
                         }

@@ -2,9 +2,15 @@
 @levelIndent : 25px;
 @maxLevel: 30;
 
-
 .dropDownTree{
     button{
+        .dropDownTree-label {
+            display: inline-block;
+            overflow: hidden;
+            max-width: 120px;
+            text-overflow: ellipsis;
+        }
+        
         .icon{
             margin:0px 0px 0px 5px;
             position:relative;
@@ -12,7 +18,9 @@
         }
     }
     
-    .menu{
+    .menu {
+        z-index: 1000;
+        width: 320px;
         overflow-y: scroll;
         max-height:200px;
         margin:2px 0px;

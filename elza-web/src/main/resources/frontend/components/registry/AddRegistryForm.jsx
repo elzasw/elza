@@ -49,9 +49,10 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
                 <Modal.Body>
                     <form onSubmit={handleSubmit}>
                         {true && <DropDownTree
+                            label={i18n('xxx')}
                             items = {this.props.refTables.recordTypes.items}
                             selectedItemID = {this.props.registry.registryTypesId}
-
+                            nullValue = {{id: null, name: i18n('registry.all')}}
                             />}
 
                         <Input type="text" label={i18n('registry.name')} {...nameMain} {...decorateFormField(nameMain)} />

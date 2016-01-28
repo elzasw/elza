@@ -4,10 +4,9 @@
  *  Použití 
         <DropDownTree 
             items = {items} 
-            selectedItemID = {13}
+            value = {13}
             label = {"Vyberte si něco"}
-            null = {"Pro hodnotu null"} // text ktery se zobrazi
-            nullValue = {null} // hodnota která bude předána. default null pokud je definovano null
+            nullValue = {id: null, name: 'vychozi'}
             opened = {[10]}
             onSelect = {this.selectHandler}
         />
@@ -41,11 +40,11 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
         this.props.items.map((item, i) => {
             opened = opened.concat(this.getOpenedDefault(item)); 
         });
-        var label = this.getItemLabel(this.props.selectedItemID);
+        var label = this.getItemLabel(this.props.value);
         this.state = {                                                  // inicializace stavu komponenty
-            "opened": opened,                                           // seznam rozbalenych uzlu  
-            "label": (label != '' ? label : this.props.label),          // pokus je vybrany nejaká položka, vypíše se její název, jinak se vypíše defaultní popisek
-            "selectedItemID" : this.props.selectedItemID                // id vybrane položky     
+            opened: opened,                                           // seznam rozbalenych uzlu  
+            label: (label != '' ? label : this.props.label),          // pokus je vybrany nejaká položka, vypíše se její název, jinak se vypíše defaultní popisek
+            value : this.props.value                // id vybrane položky     
         }
     }
 
@@ -69,10 +68,10 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
     handleItemSelect(item, e){
         this.handleOpenClose(e);
         this.setState({
-            "label": this.getItemLabel(item.id),
-            "selectedItemID": item.id,
+            label: item.name,
+            value: item.id,
         });
-        if(this.props.onSelect){
+        if (this.props.onSelect){
             this.props.onSelect(item.id);  
         }
     }
@@ -81,8 +80,8 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
         var menu = $(e.target).closest(".dropDownTree").find(".menu");
         menu.toggle();
 
-        if(this.props.selectedItemID){
-            var selectedItem = $(e.target).closest(".dropDownTree").find(".itemID"+this.state.selectedItemID);
+        if(this.props.value){
+            var selectedItem = $(e.target).closest(".dropDownTree").find(".itemID"+this.state.value);
             if(selectedItem.length){
                 selectedItem[0].scrollIntoView();
             }
@@ -92,25 +91,32 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
 
     // metoda pro renderovani obsahu komponenty
     render() {
-        const {nullValue, nullId, items, selectedItemID} = this.props;
+        const {nullValue, nullId, items, value} = this.props;
 
-        var itemsData = items.slice();
-        var cls = "dropTree-container";     // třída komponenty                 
+        var cls = "dropDownTree form-group";     // třída komponenty                 
         if (this.props.className) {
             cls += " " + this.props.className;
         }
         
-        if (nullValue !== undefined){
-            itemsData.unshift({id: nullId, name: nullValue});
+        var itemsData = [...items]
+        if (nullValue){
+            itemsData = [nullValue, ...itemsData];
         }
 
         var tree = itemsData.map((item) => {
-                return this.renderNode(item, 1); 
+            return this.renderNode(item, 1); 
         });
+
+        var inputLabel;
+        if (this.props.label) {
+            inputLabel = <label className='control-label'><span>{this.props.label}</span></label>
+        }
+
         return (
-            <div className={"dropDownTree"}>
-                <Button onClick={this.handleOpenClose.bind(this)}>
-                    {this.state.label}
+            <div className={cls}>
+                {inputLabel}
+                <Button className='form-control' onClick={this.handleOpenClose.bind(this)}>
+                    <div className='dropDownTree-label'>{this.state.label}</div>
                     <Icon glyph="fa-caret-down" />
                 </Button>
                 <ul className={"menu"}>
@@ -128,7 +134,7 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
                 subList[subList.length] = this.renderNode(item.children[i], depth+1);
             };
         }
-console.log(item.id);
+
         return  <li
                     key={item.id}
                     eventKey={item.id} 
@@ -136,7 +142,7 @@ console.log(item.id);
                 >
                     <span className={"switcher " + (item.children && item.children.length>0 ? "enabled" : "") } onClick={this.handleToggleNode.bind(this,item)}>{item.children && item.children.length>0 ? (isOpened ? "−" : "+") : ''}</span>
                     <span 
-                        className={"itemLabel " + (item.id==this.state.selectedItemID ? "active" : "")} 
+                        className={"itemLabel " + (item.id==this.state.value ? "active" : "")} 
                         onClick={this.handleItemSelect.bind(this,item)}
                     >
                         {item.name}
@@ -153,39 +159,35 @@ console.log(item.id);
                 opened = opened.concat(this.getOpenedDefault(item.children[i]));
             };
         }
-        if(item.id == this.props.selectedItemID || opened.length>0){
+        if(item.id == this.props.value || opened.length>0){
             opened[opened.length]=item.id;
         }
         return opened;
     }
 
     //vrati popisek vybrane polozky
-    getItemLabel(selectedItemID, item = false){
-        var label = '';
-        if (selectedItemID === this.props.nullId)
-            return this.props.nullValue;
-        if(!item){
-            this.props.items.map((item) => {
-                var childLabel = this.getItemLabel(selectedItemID, item);
-                if(childLabel != ''){
-                   label = childLabel;
-                }
-            });
-        }else{
-            if(item.children && item.children.length>0){
+    getItemLabel(value){
+        if (this.props.nullValue && this.props.nullValue.id == value) {
+            return this.props.nullValue.name;
+        }
+        return getItemLabelInt(value, this.props.items);
+    }
 
-                for(var i = 0; i<item.children.length; i++){
-                    var childLabel = this.getItemLabel(selectedItemID, item.children[i])
-                    if(childLabel != ''){
-                        label = childLabel;
-                    };
-                };
+    //vrati popisek vybrane polozky
+    getItemLabelInt(value, items) {
+        for (var a=0; a<items.length; a++) {
+            var item = items[a];
+            if (item.id == value) {
+                return item.name;
+            }
+            if (item.children) {
+                var res = getItemLabelInt(value, item.children);
+                if (res) {
+                    return res;
+                }
             }
         }
-        if(item.id == selectedItemID){
-            label = item.name;
-        }
-        return label;
+        return null;
     }
 
     isNodeOpened(nodeID){
@@ -195,16 +197,13 @@ console.log(item.id);
             }
         }
         return false;
-
     }
-
 }
 
 DropDownTree.propTypes = {
-    nullValue: React.PropTypes.string,
-    nullId: React.PropTypes.int,
+    nullValue: React.PropTypes.object,
     items: React.PropTypes.array.isRequired,
-    selectedItemID: React.PropTypes.int,
+    value: React.PropTypes.number,
 
 }
 
