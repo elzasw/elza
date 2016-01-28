@@ -40,6 +40,7 @@ import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
 import cz.tacr.elza.repository.DataPartyRefRepository;
@@ -60,6 +61,7 @@ import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
+import cz.tacr.elza.repository.VariantRecordRepository;
 
 
 /**
@@ -132,6 +134,12 @@ public class PartyService {
     @Autowired
     private EntityManager entityManager;
 
+    @Autowired
+    private VariantRecordRepository variantRecordRepository;
+
+    @Autowired
+    private GroovyScriptService groovyScriptService;
+
     /**
      * Najde osobu podle rejstříkového hesla.
      *
@@ -176,14 +184,13 @@ public class PartyService {
      * @param firstResult  první vrácená osoba
      * @param maxResults   max počet vrácených osob
      * @param findingAid   AP, ze které se použijí třídy rejstříků
-     * @param onlyLocal    vyhledat pouze lokální nebo globální osoby
      */
     public List<ParParty> findPartyByTextAndType(final String searchRecord, final Integer partyTypeId,
                                                  final Integer firstResult, final Integer maxResults,
-                                                 final Boolean onlyLocal, @Nullable final ArrFindingAid findingAid) {
+                                                 @Nullable final ArrFindingAid findingAid) {
 
         Set<Integer> scopeIdsForRecord = registryService.getScopeIdsByFindingAid(findingAid);
-        return partyRepository.findPartyByTextAndType(searchRecord, partyTypeId, firstResult, maxResults, onlyLocal,
+        return partyRepository.findPartyByTextAndType(searchRecord, partyTypeId, firstResult, maxResults,
                 scopeIdsForRecord);
     }
 
@@ -191,15 +198,14 @@ public class PartyService {
      * Vrátí počet osob vyhovující zadané frázi. Osobu vyhledává podle hesla v rejstříku včetně variantních hesel.
      * @param searchRecord hledaný řetězec, může být null
      * @param registerTypeId typ záznamu
-     * @param onlyLocal vyhledat pouze lokální nebo globální osoby
      * @param findingAid   AP, ze které se použijí třídy rejstříků
      * @return
      */
     public long findPartyByTextAndTypeCount(final String searchRecord, final Integer registerTypeId,
-                                            final Boolean onlyLocal,@Nullable final ArrFindingAid findingAid){
+                                            @Nullable final ArrFindingAid findingAid){
 
         Set<Integer> scopeIdsForRecord = registryService.getScopeIdsByFindingAid(findingAid);
-        return partyRepository.findPartyByTextAndTypeCount(searchRecord, registerTypeId, onlyLocal, scopeIdsForRecord);
+        return partyRepository.findPartyByTextAndTypeCount(searchRecord, registerTypeId, scopeIdsForRecord);
     }
 
     /**
@@ -223,6 +229,7 @@ public class PartyService {
         }
         saveParty.setPartyType(partyType);
 
+        //synchronizace datace
         Set<ParUnitdate> removeUnitdate = new HashSet<>();
         removeUnitdate.add(synchUnitdate(saveParty, newParty.getFrom(), (g) -> g.getFrom(),
                 (g, f) -> g.setFrom(f)));
@@ -231,21 +238,17 @@ public class PartyService {
         removeUnitdate.remove(null);
         unitdateRepository.delete(removeUnitdate);
 
+        //synchronizace rejstříkového hesla
+        synchRecord(newParty);
 
-        //TODO kubovy změnit, až bude generováno regrecord
-        saveParty.setRecord(recordRepository.findAll().get(0));
-        //        // Record
-//                RegRecord regRecord = genRegRecordFromPartyNames(partyVO.getPartyNames(), registerType);
-//        genRegVariantRecordsFromPartyNames(partyVO.getPartyNames(), regRecord);
-//        party.setRecord(regRecord);
 
+        //synchronizace jmen osoby
         ParPartyName newPrefferedName = newParty.getPreferredName();
         saveParty.setPreferredName(null);
         partyRepository.save(saveParty);
-
         synchPartyNames(saveParty, newPrefferedName, newParty.getPartyNames());
 
-
+        //synchronizace skupinových identifikátorů
         if (ParPartyGroup.class.isAssignableFrom(saveParty.getClass())) {
             ParPartyGroup savePartyGroup = (ParPartyGroup) saveParty;
             ParPartyGroup partyGroup = (ParPartyGroup) newParty;
@@ -255,6 +258,7 @@ public class PartyService {
         }
 
 
+        //synchronizace tvůrců osoby
         synchCreators(saveParty, newParty.getPartyCreators() == null ?
                                  Collections.EMPTY_LIST : newParty.getPartyCreators());
 
@@ -264,6 +268,42 @@ public class PartyService {
        return result;
 
     }
+
+    /**
+     * V groovy scriptu vytvoří rejstříkové heslo pro osobu a upraví jej v databázi.
+     * @param party osoba
+     */
+    private void synchRecord(final ParParty party) {
+        Assert.notNull(party);
+
+        Assert.notNull(party.getRecord(), "Osoba nemá zadané rejstříkové heslo.");
+        Assert.notNull(party.getRecord().getRegisterType(), "Není vyplněný typ rejstříkového helsa.");
+        Assert.notNull(party.getRecord().getScope(), "Není nastavena třída rejstříkového hesla");
+        Assert.notNull(party.getRecord().getScope().getScopeId(), "Není nastaveno id třídy rejstříkového hesla");
+
+        //vytvoření rejstříkového hesla v groovy
+        RegRecord recordFromGroovy = groovyScriptService.getRecordFromGroovy(party);
+        List<RegVariantRecord> variantRecords = new ArrayList<>(recordFromGroovy.getVariantRecordList());
+
+        //uložení hesla
+        if (party.getPartyId() != null) {
+            ParParty dbParty = partyRepository.findOne(party.getPartyId());
+            recordFromGroovy.setRecordId(dbParty.getRecord().getRecordId());
+            recordFromGroovy.setVersion(dbParty.getRecord().getVersion());
+        }
+        RegRecord savedRecord = registryService.saveRecord(recordFromGroovy, false);
+        party.setRecord(savedRecord);
+
+        //smazání a uložení nových variantních hesel
+        List<RegVariantRecord> oldVariants = variantRecordRepository.findByRegRecordId(savedRecord.getRecordId());
+        variantRecordRepository.delete(oldVariants);
+
+        for (RegVariantRecord variantRecord : variantRecords) {
+            variantRecord.setRegRecord(savedRecord);
+            registryService.saveVariantRecord(variantRecord);
+        }
+    }
+
 
     /**
      * Provede synchronizaci tvůrců osoby. CRUD.
@@ -723,75 +763,6 @@ public class PartyService {
     }
 
 
-
-//    /**
-//     * Nageneruje rejstříkové heslo dle preferovaného jména osoby. Ostatní jména jako variantní hesla k tomuto.
-//     * @param partyNamesVO    jména osob
-//     * @param registerType    typ rejstříku
-//     * @return      rejstříkoví heslo s variantními hesly daného typu
-//     */
-//    private RegRecord genRegRecordFromPartyNames(final List<ParPartyNameEditVO> partyNamesVO,
-//                                                 final RegRegisterType registerType) {
-//        if (partyNamesVO == null) {
-//            return null;
-//        }
-//           //TODO kubovy přepsat při generování rejstříků
-//        RegRecord result = null;
-//        for (final ParPartyNameEditVO pn : partyNamesVO) {
-//            if (pn.isPreferredName()) {
-//                RegRecord regRecord = new RegRecord();
-//                regRecord.setRegisterType(registerType);
-//                regRecord.setRecord(pn.getMainPart() + StringUtils.defaultString(pn.getOtherPart()));
-//                regRecord.setLocal(false);
-//
-//                recordRepository.save(regRecord);
-//                result = regRecord;
-//            }
-//        }
-//
-//        return result;
-//    }
-//
-//    private RegRecord updateRegRecordFromPartyNames(final List<ParPartyNameEditVO> partyNamesVO, final RegRecord regRecord) {
-//        if (partyNamesVO == null) {
-//            return null;
-//        }
-//
-//        RegRecord result = null;
-//        for (final ParPartyNameEditVO pn : partyNamesVO) {
-//            if (pn.isPreferredName()) {
-//                regRecord.setRecord(pn.getMainPart() + StringUtils.defaultString(pn.getOtherPart()));
-//
-//                recordRepository.save(regRecord);
-//                result = regRecord;
-//            }
-//        }
-//
-//        return result;
-//    }
-//
-//    private List<RegVariantRecord> genRegVariantRecordsFromPartyNames(final List<ParPartyNameEditVO> partyNamesVO,
-//                                                         final RegRecord regRecord) {
-//        if (partyNamesVO == null) {
-//            return null;
-//        }
-//
-//        List<RegVariantRecord> result = new ArrayList<>();
-//
-//        for (final ParPartyNameEditVO pn : partyNamesVO) {
-//            if (!pn.isPreferredName()) {
-//                RegVariantRecord regVariantRecord = new RegVariantRecord();
-//                regVariantRecord.setRegRecord(regRecord);
-//                regVariantRecord.setRecord(pn.getMainPart() + StringUtils.defaultString(pn.getOtherPart()));
-//
-//                result.add(variantRecordRepository.save(regVariantRecord));
-//            }
-//        }
-//
-//        return result;
-//    }
-
-
     /**
      * Prověří existenci vazeb na osobu. Pokud existují, vyhodí příslušnou výjimku, nelze mazat.
      * @param party osoba
@@ -827,4 +798,5 @@ public class PartyService {
             unitdateRepository.delete(to);
         }
     }
+
 }

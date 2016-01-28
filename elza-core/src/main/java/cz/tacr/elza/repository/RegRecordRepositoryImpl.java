@@ -38,7 +38,6 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
     @Override
     public List<RegRecord> findRegRecordByTextAndType(final String searchRecord,
                                                       final Collection<Integer> registerTypeIds,
-                                                      final Boolean local,
                                                       final Integer firstReult,
                                                       final Integer maxResults,
                                                       final RegRecord parentRecord,
@@ -51,7 +50,7 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
         CriteriaQuery<RegRecord> query = builder.createQuery(RegRecord.class);
         Root<RegRecord> record = query.from(RegRecord.class);
 
-        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, local, record, builder,
+        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, record, builder,
                 scopeIdsForRecord);
 
         query.select(record).distinct(true);
@@ -70,7 +69,6 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
     @Override
     public long findRegRecordByTextAndTypeCount(final String searchRecord,
                                                 final Collection<Integer> registerTypeIds,
-                                                final Boolean local,
                                                 final RegRecord parentRecord,
                                                 final Set<Integer> scopeIdsForRecord) {
         if(CollectionUtils.isEmpty(scopeIdsForRecord)){
@@ -81,7 +79,7 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
         CriteriaQuery<Long> query = builder.createQuery(Long.class);
         Root<RegRecord> record = query.from(RegRecord.class);
 
-        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, local, record, builder,
+        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, record, builder,
                 scopeIdsForRecord);
 
         query.select(builder.countDistinct(record));
@@ -98,7 +96,6 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
      *
      * @param searchRecord      hledaný řetězec, může být null
      * @param registerTypeId    ty záznamu
-     * @param local
      * @param record            kořen dotazu pro danou entitu
      * @param builder           buider pro vytváření podmínek
      * @param scopeIdsForRecord id tříd, do který spadají rejstříky
@@ -106,7 +103,6 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
      */
     private Predicate preparefindRegRecordByTextAndType(final String searchRecord,
                                                         final Collection<Integer> registerTypeId,
-                                                        final Boolean local,
                                                         final Root<RegRecord> record,
                                                         final CriteriaBuilder builder,
                                                         final Set<Integer> scopeIdsForRecord) {
@@ -132,11 +128,6 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
             condition = condition == null ? typePred : builder.and(condition, typePred);
         }
 
-        if (local != null) {
-            Predicate localCond = builder.equal(record.get(RegRecord.LOCAL), local);
-            condition = condition == null ? localCond : builder.and(condition, localCond);
-        }
-
 
         Predicate scopeCondition = scope.get(RegScope.SCOPE_ID).in(scopeIdsForRecord);
         condition = condition == null ? scopeCondition : builder.and(condition, scopeCondition);
@@ -147,7 +138,6 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
 
     @Override
     public long findRootRecordsByTypeCount(final Collection<Integer> registerTypeIds,
-                                           final Boolean local,
                                            final Set<Integer> scopeIdsForRecord) {
         if(CollectionUtils.isEmpty(scopeIdsForRecord)){
             return 0;
@@ -157,7 +147,7 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
         CriteriaQuery<Long> query = builder.createQuery(Long.class);
         Root<RegRecord> record = query.from(RegRecord.class);
 
-        Predicate condition = preparefindRegRecordByTextAndType(null, registerTypeIds, local, record, builder, scopeIdsForRecord);
+        Predicate condition = preparefindRegRecordByTextAndType(null, registerTypeIds, record, builder, scopeIdsForRecord);
         if (condition == null) {
             condition = builder.isNull(record.get(RegRecord.PARENT_RECORD));
         } else {
@@ -171,7 +161,7 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
     }
 
     @Override
-    public List<RegRecord> findRootRecords(Collection<Integer> registerTypeIds, Boolean local, Integer firstResult,
+    public List<RegRecord> findRootRecords(Collection<Integer> registerTypeIds, Integer firstResult,
                                            Integer maxResults, final Set<Integer> scopeIdsForRecord) {
         if(CollectionUtils.isEmpty(scopeIdsForRecord)){
             return Collections.EMPTY_LIST;
@@ -180,7 +170,7 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
         CriteriaQuery<RegRecord> query = builder.createQuery(RegRecord.class);
         Root<RegRecord> record = query.from(RegRecord.class);
 
-        Predicate condition = preparefindRegRecordByTextAndType(null, registerTypeIds, local, record, builder,
+        Predicate condition = preparefindRegRecordByTextAndType(null, registerTypeIds, record, builder,
                 scopeIdsForRecord);
         if (condition == null) {
             condition = builder.isNull(record.get(RegRecord.PARENT_RECORD));

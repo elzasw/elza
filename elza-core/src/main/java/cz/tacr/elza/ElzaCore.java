@@ -14,6 +14,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.scripting.ScriptEvaluator;
+import org.springframework.scripting.groovy.GroovyScriptEvaluator;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.google.common.eventbus.EventBus;
@@ -55,6 +57,12 @@ public class ElzaCore {
         return new EventBus((exception, context) -> {
             logger.error("Subscriber exception " + context.getSubscriberMethod(), exception);
         });
+    }
+
+
+    @Bean
+    public ScriptEvaluator groovyScriptEvaluator() {
+        return new GroovyScriptEvaluator();
     }
 
     @Bean @Qualifier(value = "threadPoolTaskExecutor")

@@ -18,7 +18,7 @@ public class RegRecordVO {
     /**
      * Typ rejstříku.
      */
-    private RegRegisterTypeVO registerType;
+    private Integer registerTypeId;
 
     /**
      * Id nadřazeného hesla.
@@ -28,6 +28,11 @@ public class RegRecordVO {
      * Id osoby.
      */
     private Integer partyId;
+
+    /**
+     * Id třídy rejstříku.
+     */
+    private Integer scopeId;
 
     /**
      * Externí zdroj hesel.
@@ -47,11 +52,6 @@ public class RegRecordVO {
      * Poznámka k heslu v rejstříku.
      */
     private String note;
-    /**
-     * Příznak, zda se jedná o lokální nebo globální rejstříkové heslo. Lokální heslo je přiřazené pouze konkrétnímu
-     * archivnímu popisu/pomůcce.
-     */
-    private Boolean local;
     /**
      * Externí identifikátor rejstříkového hesla v externím zdroji záznamů, například interpi.
      */
@@ -86,12 +86,12 @@ public class RegRecordVO {
         this.recordId = recordId;
     }
 
-    public RegRegisterTypeVO getRegisterType() {
-        return registerType;
+    public Integer getRegisterTypeId() {
+        return registerTypeId;
     }
 
-    public void setRegisterType(final RegRegisterTypeVO registerType) {
-        this.registerType = registerType;
+    public void setRegisterTypeId(final Integer registerTypeId) {
+        this.registerTypeId = registerTypeId;
     }
 
     public Integer getParentRecordId() {
@@ -134,14 +134,6 @@ public class RegRecordVO {
         this.note = note;
     }
 
-    public Boolean getLocal() {
-        return local;
-    }
-
-    public void setLocal(final Boolean local) {
-        this.local = local;
-    }
-
     public String getExternalId() {
         return externalId;
     }
@@ -156,6 +148,14 @@ public class RegRecordVO {
 
     public void setPartyId(final Integer partyId) {
         this.partyId = partyId;
+    }
+
+    public Integer getScopeId() {
+        return scopeId;
+    }
+
+    public void setScopeId(final Integer scopeId) {
+        this.scopeId = scopeId;
     }
 
     public List<RegRecordVO> getChilds() {

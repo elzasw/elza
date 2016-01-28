@@ -70,9 +70,6 @@ public class RegRecord extends AbstractVersionableEntity
     @Column()
     private String note;
 
-    @Column(nullable = false)
-    private Boolean local;
-
     @Column(name = "externalId", length = 250)
     private String externalId;
 
@@ -160,16 +157,6 @@ public class RegRecord extends AbstractVersionableEntity
     @Override
     public void setNote(final String note) {
         this.note = note;
-    }
-
-    @Override
-    public Boolean getLocal() {
-        return local;
-    }
-
-    @Override
-    public void setLocal(final Boolean local) {
-        this.local = local;
     }
 
     @Override

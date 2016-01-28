@@ -246,13 +246,12 @@ public class PartyController {
             findingAid = version.getFindingAid();
         }
 
-        boolean onlyLocal = false;
 
-        List<ParParty> partyList = partyService.findPartyByTextAndType(search, partyTypeId, from, count, onlyLocal,
+        List<ParParty> partyList = partyService.findPartyByTextAndType(search, partyTypeId, from, count,
                 findingAid);
         List<ParPartyVO> resultVo = factoryVo.createPartyList(partyList);
 
-        long countAll = partyService.findPartyByTextAndTypeCount(search, partyTypeId, onlyLocal, findingAid);
+        long countAll = partyService.findPartyByTextAndTypeCount(search, partyTypeId, findingAid);
         return new ParPartyWithCount(resultVo, countAll);
     }
 

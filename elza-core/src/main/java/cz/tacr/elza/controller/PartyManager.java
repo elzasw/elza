@@ -280,7 +280,7 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
                                     @Nullable @RequestParam(value = "originator", required = false) final Boolean originator) {
 
         List<ParParty> resultList = partyService
-                .findPartyByTextAndType(search, partyTypeId, from, count, false, null);
+                .findPartyByTextAndType(search, partyTypeId, from, count, null);
         resultList.forEach((party) -> {
             if (party.getRecord() != null) {
                 party.getRecord().getVariantRecordList().forEach((variantRecord) -> {
@@ -292,7 +292,7 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
             }
         });
 
-        long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, false, null);
+        long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, null);
 
         return new ParPartyWithCount(resultList, countAll);
     }

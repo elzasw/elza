@@ -107,7 +107,6 @@ public class RegistryService {
      */
     public List<RegRecord> findRegRecordByTextAndType(@Nullable final String searchRecord,
                                                       @Nullable final Collection<Integer> registerTypeIds,
-                                                      final Boolean local,
                                                       final Integer firstResult,
                                                       final Integer maxResults,
                                                       final Integer parentRecordId,
@@ -116,7 +115,7 @@ public class RegistryService {
         Set<Integer> scopeIdsForRecord = getScopeIdsByFindingAid(findingAid);
 
         if (StringUtils.isBlank(searchRecord) && parentRecordId == null) {
-            return regRecordRepository.findRootRecords(registerTypeIds, local, firstResult, maxResults, scopeIdsForRecord);
+            return regRecordRepository.findRootRecords(registerTypeIds, firstResult, maxResults, scopeIdsForRecord);
         }
 
         RegRecord parentRecord = null;
@@ -127,13 +126,13 @@ public class RegistryService {
             }
         }
 
-        return regRecordRepository.findRegRecordByTextAndType(searchRecord, registerTypeIds, local, firstResult,
+        return regRecordRepository.findRegRecordByTextAndType(searchRecord, registerTypeIds, firstResult,
                 maxResults, parentRecord, scopeIdsForRecord);
     }
 
 
     /**
-     * Celkový počet záznamů v DB pro funkci {@link #findRegRecordByTextAndType(String, Collection, Boolean, Integer, Integer, Integer, ArrFindingAid)}
+     * Celkový počet záznamů v DB pro funkci {@link #findRegRecordByTextAndType(String, Collection, Integer, Integer, Integer, ArrFindingAid)}
      *
      * @param searchRecord    hledaný řetězec, může být null
      * @param registerTypeIds typ záznamu
@@ -142,13 +141,12 @@ public class RegistryService {
      * @return celkový počet záznamů, který je v db za dané parametry
      */
     public long findRegRecordByTextAndTypeCount(@Nullable final String searchRecord,
-            @Nullable final Collection<Integer> registerTypeIds,
-            final Boolean local, final Integer parentRecordId, @Nullable final ArrFindingAid findingAid) {
+            @Nullable final Collection<Integer> registerTypeIds, final Integer parentRecordId, @Nullable final ArrFindingAid findingAid) {
 
         Set<Integer> scopeIdsForRecord = getScopeIdsByFindingAid(findingAid);
 
         if (StringUtils.isBlank(searchRecord) && parentRecordId == null) {
-            return regRecordRepository.findRootRecordsByTypeCount(registerTypeIds, local, scopeIdsForRecord);
+            return regRecordRepository.findRootRecordsByTypeCount(registerTypeIds, scopeIdsForRecord);
         }
 
         RegRecord parentRecord = null;
@@ -161,7 +159,7 @@ public class RegistryService {
 
 
         return regRecordRepository
-                .findRegRecordByTextAndTypeCount(searchRecord, registerTypeIds, local, parentRecord, scopeIdsForRecord);
+                .findRegRecordByTextAndTypeCount(searchRecord, registerTypeIds, parentRecord, scopeIdsForRecord);
     }
 
     /**
@@ -194,21 +192,31 @@ public class RegistryService {
      * @param record naplněný objekt, bez vazeb
      * @return výslendný objekt
      */
-    @Transactional
     public RegRecord saveRecord(final RegRecord record, boolean checkPartyType) {
         Assert.notNull(record);
 
         Assert.notNull(record.getRecord(), "Není vyplněné Record.");
-        Assert.notNull(record.getCharacteristics(), "Není vyplněné Characteristics.");
-        Assert.notNull(record.getLocal(), "Není vyplněné Local.");
 
         RegRegisterType regRegisterType = record.getRegisterType();
         Assert.notNull(regRegisterType, "Není vyplněné RegisterType.");
-        Integer registerTypeId = regRegisterType.getRegisterTypeId();
-        Assert.notNull(registerTypeId, "RegisterType nemá vyplněné ID.");
-        regRegisterType = registerTypeRepository.findOne(registerTypeId);
-        Assert.notNull(regRegisterType, "RegisterType nebylo nalezeno podle id " + registerTypeId);
+        Assert.notNull(regRegisterType.getRegisterTypeId(), "RegisterType nemá vyplněné ID.");
+        regRegisterType = registerTypeRepository.findOne(regRegisterType.getRegisterTypeId());
+        Assert.notNull(regRegisterType, "RegisterType nebylo nalezeno podle id " + regRegisterType.getRegisterTypeId());
         record.setRegisterType(regRegisterType);
+
+
+        Assert.notNull(record.getScope(), "Není vyplněna třída rejstříku");
+        Assert.notNull(record.getScope().getScopeId(), "Není vyplněno id třídy rejstříku");
+        RegScope scope = scopeRepository.findOne(record.getScope().getScopeId());
+        Assert.notNull(scope, "Nebyla nalezena třída rejstříku s id " + record.getScope().getScopeId());
+        if (record.getRecordId() != null) {
+            RegRecord dbRecord = regRecordRepository.findOne(record.getRecordId());
+            if (!record.getScope().getScopeId().equals(dbRecord.getScope().getScopeId())) {
+                throw new IllegalArgumentException("Nelze změnit třídu rejstříku.");
+            }
+        }
+        record.setScope(scope);
+
 
         if (checkPartyType) {
             if (record.getRecordId() == null) {
@@ -271,7 +279,6 @@ public class RegistryService {
      * @param variantRecord variantní záznam, bez vazeb
      * @return výslendný objekt uložený do db
      */
-    @Transactional
     public RegVariantRecord saveVariantRecord(final RegVariantRecord variantRecord) {
         Assert.notNull(variantRecord);
 

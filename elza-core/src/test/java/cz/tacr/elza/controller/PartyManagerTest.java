@@ -281,7 +281,7 @@ public class PartyManagerTest extends AbstractRestTest {
 
 
         // register type
-        createRegisterType(TEST_CODE + ElzaTools.getStringOfActualDate(), partyType);
+        RegRegisterType registerType = createRegisterType(TEST_CODE + ElzaTools.getStringOfActualDate(), partyType);
 
         ParPartyTypeVO partyTypeVO = new ParPartyTypeVO();
         partyTypeVO.setPartyTypeId(partyType.getPartyTypeId());
@@ -294,7 +294,11 @@ public class PartyManagerTest extends AbstractRestTest {
         parPartyVO.setFrom(unitdateEditVO);
         parPartyVO.setTo(unitdateEditVO2);
 
-        createRecord("tmpRecord"); //TODO kubovy odstranit po dopočítání regrecord podle names
+        RegRecordVO record = new RegRecordVO();
+        record.setRegisterTypeId(registerType.getRegisterTypeId());
+        record.setScopeId(scopeRepository.findAll().get(0).getScopeId());
+        parPartyVO.setRecord(record);
+
 
         Response response = post(spec -> spec.body(parPartyVO), INSERT_PARTY_V2);
         ParPartyVO parPartyVORet = response.getBody().as(ParDynastyVO.class);
@@ -310,6 +314,9 @@ public class PartyManagerTest extends AbstractRestTest {
         Assert.assertTrue(allUnitDate.size() == 4);
         Assert.assertTrue(allParty.get(0).getHistory().equals("HISTORY"));
 
+        Assert.assertTrue(
+                recordRepository.findOne(parPartyVORet.getRecord().getRecordId()).getRecord().contains("MAIN_PART"));
+
         // UPDATE
         parPartyVO.setPartyId(parPartyVORet.getPartyId());
         parPartyVO.getPartyNames().get(0).setPartyNameId(parPartyVORet.getPartyNames().get(0).getPartyNameId());
@@ -319,6 +326,7 @@ public class PartyManagerTest extends AbstractRestTest {
 
         parPartyVO.getPartyNames().get(0).getValidTo().setUnitdateId(parPartyVORet.getPartyNames().get(0).getValidTo().getUnitdateId());
         parPartyVO.getPartyNames().get(0).setValidFrom(null);
+        parPartyVO.getPartyNames().get(0).setMainPart("MAIN2");
 
         parPartyVO.setTo(parPartyVO.getFrom());
         parPartyVO.setFrom(null);
@@ -336,7 +344,7 @@ public class PartyManagerTest extends AbstractRestTest {
         Assert.assertTrue(allRecords.size() == 1);
         Assert.assertTrue(allUnitDate.size() == 2);
         Assert.assertTrue(allParty.get(0).getHistory().equals("HISTORYUPDATED"));
-
+        Assert.assertTrue(recordRepository.findOne(parPartyVORet.getRecord().getRecordId()).getRecord().contains("MAIN2"));
 
 
         //TEST RELATIONS
@@ -349,9 +357,8 @@ public class PartyManagerTest extends AbstractRestTest {
         ParRelationTypeVO relationTypeVO = new ParRelationTypeVO();
         relationTypeVO.setRelationTypeId(relationType.getRelationTypeId());
 
-        RegRecord record = createRecord(1);
         RegRecordVO recordVO = new RegRecordVO();
-        recordVO.setRecordId(record.getRecordId());
+        recordVO.setRecordId(parPartyVORet.getRecord().getRecordId());
 
 
         ParRelationVO relationVO = new ParRelationVO();

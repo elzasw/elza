@@ -699,7 +699,6 @@ public class TestingDataController {
         regRecord.setRecord(record);
         regRecord.setCharacteristics(characteristics);
         regRecord.setRegisterType(regTypesMap.get(registryType));
-        regRecord.setLocal(false);
         regRecord.setScope(scope);
 
         return recordRepository.save(regRecord);

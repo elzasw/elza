@@ -188,9 +188,7 @@ public class ClientFactoryVO {
 
         for (final ParParty party : parties) {
             ParPartyVO partyVO = mapper.map(party, ParPartyVO.class);
-            //TODO kubovy načítat seznam jmen až po vygenerování, vyhodit z mapperu
 
-            partyVO.setNote(party.getRecord().getNote());
             partyMap.put(partyVO.getPartyId(), partyVO);
 
 

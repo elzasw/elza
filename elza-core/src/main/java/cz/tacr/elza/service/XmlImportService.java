@@ -834,9 +834,8 @@ public class XmlImportService {
 
     private RegRecord createRecord(String externalId, String externalSourceCode, boolean local) {
         RegRecord regRecord = new RegRecord();
-        regRecord.setLocal(local);
         regRecord.setExternalId(externalId);
-
+        //TODO doplnit scope a odebrat local
         RegExternalSource externalSource = externalSourceRepository.findExternalSourceByCode(externalSourceCode);
         regRecord.setExternalSource(externalSource);
 

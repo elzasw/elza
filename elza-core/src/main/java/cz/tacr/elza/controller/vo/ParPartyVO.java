@@ -21,11 +21,6 @@ public class ParPartyVO {
     private Integer partyId;
 
     /**
-     * Rejstříkové heslo.
-     */
-    private String note;
-
-    /**
      * Typ osoby.
      */
     private ParPartyTypeVO partyType;
@@ -61,6 +56,11 @@ public class ParPartyVO {
     private List<ParPartyVO> creators;
 
     /**
+     * Rejstříkové heslo.
+     */
+    private RegRecordVO record;
+
+    /**
      * Verze záznamu.
      */
     private Integer version;
@@ -72,14 +72,6 @@ public class ParPartyVO {
 
     public void setPartyId(final Integer partyId) {
         this.partyId = partyId;
-    }
-
-    public String getNote() {
-        return note;
-    }
-
-    public void setNote(final String note) {
-        this.note = note;
     }
 
     public ParPartyTypeVO getPartyType() {
@@ -155,6 +147,13 @@ public class ParPartyVO {
         this.version = version;
     }
 
+    public RegRecordVO getRecord() {
+        return record;
+    }
+
+    public void setRecord(final RegRecordVO record) {
+        this.record = record;
+    }
 
     public void addPartyName(final ParPartyNameVO partyName) {
         if (partyNames == null) {

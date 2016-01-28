@@ -743,7 +743,6 @@ public abstract class AbstractRestTest {
         registerTypeRepository.save(registerType);
         RegRecord record = new RegRecord();
         record.setCharacteristics(" dobrovolny hasicsky sbor");
-        record.setLocal(Boolean.TRUE);
         record.setRegisterType(registerType);
         record.setRecord("Sbor dobrovolnych hasicu Topol");
         return recordRepository.save(record);
@@ -846,7 +845,6 @@ public abstract class AbstractRestTest {
         RegRecord regRecord = new RegRecord();
         regRecord.setRecord(TEST_NAME);
         regRecord.setCharacteristics("CHARACTERISTICS");
-        regRecord.setLocal(false);
         regRecord.setRegisterType(createRegisterType(uniqueCode, null));
 
         return recordRepository.save(regRecord);
@@ -875,13 +873,12 @@ public abstract class AbstractRestTest {
         RegRecordVO recordVO = new RegRecordVO();
         recordVO.setRecord(TEST_NAME);
         recordVO.setCharacteristics("CHARACTERISTICS");
-        recordVO.setLocal(false);
 
         RegRegisterType registerType = createRegisterType(uniqueCode, null);
 
         RegRegisterTypeVO registerTypeVO = factoryVO.createRegRegisterType(registerType);
 
-        recordVO.setRegisterType(registerTypeVO);
+        recordVO.setRegisterTypeId(registerTypeVO.getId());
 
         return recordVO;
     }
@@ -1126,7 +1123,6 @@ public abstract class AbstractRestTest {
         RegRecord regRecord = new RegRecord();
         regRecord.setRecord(TEST_NAME);
         regRecord.setCharacteristics("CHARACTERISTICS");
-        regRecord.setLocal(false);
 
         RegRegisterType registerType = createRegisterType(uniqueCode, null);
         regRecord.setRegisterType(registerType);

@@ -96,21 +96,6 @@ public interface RegRecord<RT extends RegRegisterType, ES extends RegExternalSou
      */
     void setNote(String note);
 
-    /**
-     * Příznak, zda se jedná o lokální nebo globální rejstříkové heslo. Lokální heslo je přiřazené pouze konkrétnímu
-     * archivnímu popisu/pomůcce.
-     *
-     * @return příznak, zda se jedná o lokální nebo globální rejstříkové heslo
-     */
-    Boolean getLocal();
-
-    /**
-     * Příznak, zda se jedná o lokální nebo globální rejstříkové heslo. Lokální heslo je přiřazené pouze konkrétnímu
-     * archivnímu popisu/pomůcce.
-     *
-     * @param local příznak, zda se jedná o lokální nebo globální rejstříkové heslo
-     */
-    void setLocal(Boolean local);
 
     /**
      * Externí identifikátor rejstříkového hesla v externím zdroji záznamů, například interpi.

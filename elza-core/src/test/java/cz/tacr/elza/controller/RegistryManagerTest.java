@@ -6,6 +6,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import javax.transaction.Transactional;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -80,6 +82,7 @@ public class RegistryManagerTest extends AbstractRestTest {
      * Vytvoření, aktualizace a smazání rejstříkového hesla.
      */
     @Test
+    @Transactional
     public void testSaveUpdateDeleteRecord() {
         RegRecord record = createRecord2("SR1");
         record.setCharacteristics("abc");
@@ -358,8 +361,8 @@ public class RegistryManagerTest extends AbstractRestTest {
         RegRecord regRecord = new RegRecord();
         regRecord.setRecord("XXX");
         regRecord.setCharacteristics("CHAR");
-        regRecord.setLocal(false);
         regRecord.setRegisterType(createRegisterType(uniqueCode, null));
+        regRecord.setScope(scopeRepository.findAll().get(0));
 
         return recordRepository.save(regRecord);
     }

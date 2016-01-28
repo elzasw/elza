@@ -202,7 +202,7 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
             registerTypeIdList = Arrays.asList(registerTypeIds);
         }
 
-        List<RegRecord> regRecords = registryService.findRegRecordByTextAndType(search, registerTypeIdList, false, from, count,null, null);
+        List<RegRecord> regRecords = registryService.findRegRecordByTextAndType(search, registerTypeIdList, from, count,null, null);
         regRecords.forEach((record) -> {
             record.getVariantRecordList().forEach((variantRecord) -> {
                 variantRecord.setRegRecord(null);
@@ -210,7 +210,7 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
         });
 
         long countAll = regRecordRepository
-                .findRegRecordByTextAndTypeCount(search, registerTypeIdList, false, null, null);
+                .findRegRecordByTextAndTypeCount(search, registerTypeIdList, null, null);
 
         return new RegRecordWithCount(regRecords, countAll);
     }

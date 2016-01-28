@@ -289,22 +289,14 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ParComplementType.class, ParComplementTypeVO.class).byDefault().register();
         mapperFactory.classMap(ParDynasty.class, ParDynastyVO.class).byDefault().register();
         mapperFactory.classMap(ParParty.class, ParPartyVO.class).exclude("prefferedName").exclude("partyNames").exclude(
-                "partyCreators")   //TODO kubovy vyzkoušet sql na partyNames
+                "partyCreators")
                 .customize(new CustomMapper<ParParty, ParPartyVO>() {
-                    @Override
-                    public void mapAtoB(final ParParty party,
-                                        final ParPartyVO parPartyVO,
-                                        final MappingContext context) {
-                        parPartyVO.setNote(party.getRecord().getNote());
-                    }
 
                     @Override
                     public void mapBtoA(final ParPartyVO parPartyVO,
                                         final ParParty party,
                                         final MappingContext context) {
-                        RegRecord record = new RegRecord();
-                        record.setNote(parPartyVO.getNote());
-                        party.setRecord(record);
+
 
 
                         if (CollectionUtils.isNotEmpty(parPartyVO.getCreators())) {
@@ -489,6 +481,8 @@ public class ConfigMapperConfiguration {
                         }).byDefault().register();
 
         mapperFactory.classMap(RegRecord.class, RegRecordVO.class)
+                .exclude("registerType")
+                .exclude("scope")
                 .exclude("variantRecordList")
                 .customize(new CustomMapper<RegRecord, RegRecordVO>() {
                     @Override
@@ -499,6 +493,9 @@ public class ConfigMapperConfiguration {
                         if (parentRecord != null) {
                             regRecordVO.setParentRecordId(parentRecord.getRecordId());
                         }
+
+                        regRecordVO.setRegisterTypeId(regRecord.getRegisterType().getRegisterTypeId());
+                        regRecordVO.setScopeId(regRecord.getScope().getScopeId());
                     }
 
                     @Override
@@ -509,6 +506,18 @@ public class ConfigMapperConfiguration {
                             RegRecord parent = new RegRecord();
                             parent.setRecordId(regRecordVO.getParentRecordId());
                             regRecord.setParentRecord(parent);
+                        }
+
+                        if(regRecordVO.getRegisterTypeId() != null){
+                            RegRegisterType regRegisterType = new RegRegisterType();
+                            regRegisterType.setRegisterTypeId(regRecordVO.getRegisterTypeId());
+                            regRecord.setRegisterType(regRegisterType);
+                        }
+
+                        if(regRecordVO.getScopeId() != null){
+                            RegScope scope = new RegScope();
+                            scope.setScopeId(regRecordVO.getScopeId());
+                            regRecord.setScope(scope);
                         }
                     }
                 }).byDefault().register();

@@ -114,12 +114,11 @@ public class RegistryController {
             findingAid = version.getFindingAid();
         }
 
-        final boolean onlyLocal = false;
         final long foundRecordsCount = registryService.findRegRecordByTextAndTypeCount(search, registerTypeIdList,
-                onlyLocal, parentRecordId, findingAid);
+                parentRecordId, findingAid);
 
         List<RegRecord> foundRecords = registryService
-                .findRegRecordByTextAndType(search, registerTypeIdList, onlyLocal, from, count, parentRecordId, findingAid);
+                .findRegRecordByTextAndType(search, registerTypeIdList, from, count, parentRecordId, findingAid);
 
         // děti
         Map<RegRecord, List<RegRecord>> parentChildrenMap = registryService.findChildren(foundRecords);
@@ -209,6 +208,7 @@ public class RegistryController {
      * @param record VO rejstříkové heslo
      * @return vytvořený záznam
      */
+    @Transactional
     @RequestMapping(value = "/createRecord", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
     public RegRecordVO createRecord(@RequestBody final RegRecordVO record) {
         Assert.isNull(record.getRecordId(), "Při vytváření záznamu nesmí být vyplněno ID (recordId).");
@@ -226,6 +226,7 @@ public class RegistryController {
      * @param record VO rejstříkové heslo
      * @return aktualizovaný záznam
      */
+    @Transactional
     @RequestMapping(value = "/updateRecord", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
     public RegRecordVO updateRecord(@RequestBody final RegRecordVO record) {
         Assert.notNull(record.getRecordId(), "Očekáváno ID (recordId) pro update.");
@@ -265,6 +266,7 @@ public class RegistryController {
      * @param variantRecord VO rejstříkové heslo
      * @return vytvořený záznam
      */
+    @Transactional
     @RequestMapping(value = "/createVariantRecord", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
     public RegVariantRecordVO createVariantRecord(@RequestBody final RegVariantRecordVO variantRecord) {
         Assert.isNull(variantRecord.getVariantRecordId(),
@@ -282,6 +284,7 @@ public class RegistryController {
      * @param variantRecord VO rejstříkové heslo
      * @return aktualizovaný záznam
      */
+    @Transactional
     @RequestMapping(value = "/updateVariantRecord", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
     public RegVariantRecordVO updateVariantRecord(@RequestBody final RegVariantRecordVO variantRecord) {
         Assert.notNull(variantRecord.getVariantRecordId(), "Očekáváno ID pro update.");

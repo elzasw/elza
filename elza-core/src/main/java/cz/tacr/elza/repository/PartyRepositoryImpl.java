@@ -39,7 +39,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 
     @Override
     public List<ParParty> findPartyByTextAndType(final String searchRecord, final Integer partyTypeId,
-                                         final Integer firstResult, final Integer maxResults, final Boolean onlyLocal,
+                                         final Integer firstResult, final Integer maxResults,
                                                  final Set<Integer> scopeIds) {
 
         if(CollectionUtils.isEmpty(scopeIds)) {
@@ -50,8 +50,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
         CriteriaQuery<ParParty> query = builder.createQuery(ParParty.class);
         Root<ParParty> record = query.from(ParParty.class);
 
-        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, partyTypeId, record, builder,
-                onlyLocal, scopeIds);
+        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, partyTypeId, record, builder, scopeIds);
 
         query.select(record).distinct(true);
         if (condition != null) {
@@ -67,7 +66,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 
     @Override
     public long findPartyByTextAndTypeCount(final String searchRecord, final Integer partyTypeId,
-                                            final Boolean onlyLocal, final Set<Integer> scopeIds) {
+                                            final Set<Integer> scopeIds) {
 
         if(CollectionUtils.isEmpty(scopeIds)){
             return 0;
@@ -77,8 +76,7 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
         CriteriaQuery<Long> query = builder.createQuery(Long.class);
         Root<ParParty> record = query.from(ParParty.class);
 
-        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, partyTypeId, record, builder,
-                onlyLocal, scopeIds);
+        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, partyTypeId, record, builder, scopeIds);
 
         query.select(builder.countDistinct(record));
         if (condition != null) {
@@ -95,7 +93,6 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
      * @param searchRecord      hledaný řetězec, může být null
      * @param partyTypeId       typ záznamu
      * @param builder           buider pro vytváření podmínek
-     * @param onlyLocal vyhledat pouze lokální nebo globální osoby
      * @param scopeIds seznam tříd rejstříků, ve kterých se vyhledává
      * @return výsledné podmínky pro dotaz, nebo null pokud není za co filtrovat
      */
@@ -103,7 +100,6 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
                                                         final Integer partyTypeId,
                                                         final Root<ParParty> party,
                                                         final CriteriaBuilder builder,
-                                                        final Boolean onlyLocal,
                                                         final Set<Integer> scopeIds) {
 
         final String searchString = (searchRecord != null ? searchRecord.toLowerCase() : null);
@@ -125,10 +121,6 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
                     builder.like(builder.lower(variantRecord.get(RegVariantRecord.RECORD)), searchValue)
                 )
             );
-        }
-
-        if (onlyLocal != null) {
-            condition.add(builder.equal(record.get(RegRecord.LOCAL), onlyLocal));
         }
 
         if (partyTypeId != null) {
