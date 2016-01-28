@@ -178,8 +178,10 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                 parts.push(<div key="unsupported">-unsupported type {rulDataType.code}-</div>)
         }
 
+        var key = descItem.descItemObjectId ? descItem.descItemObjectId + '-' + descItem.position : descItem.position;
+
         return (
-            <div key={descItemType.code + "-" + descItem.descItemObjectId} className={cls}>
+            <div key={descItemType.code + "-" + key} className={cls}>
                 <div className='desc-item-value-container'>
                     {parts}
                 </div>
