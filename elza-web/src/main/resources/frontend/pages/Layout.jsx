@@ -7,6 +7,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import { AppStore, ResizeStore } from 'stores';
 import {AbstractReactComponent, ContextMenu, Toastr, ModalDialog, WebSocket} from 'components';
+var AppRouter = require ('./AppRouter')
 
 require('./Layout.less');
 //var Ukazky = require('./../components/Ukazky.jsx');
@@ -27,6 +28,7 @@ var Layout = class Layout extends AbstractReactComponent {
                 <ContextMenu {...this.props.contextMenu}/>
                 <ModalDialog {...this.props.modalDialog}/>
                 <WebSocket />
+                <AppRouter/>
             </div>
         )
     }

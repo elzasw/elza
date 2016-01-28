@@ -20,6 +20,7 @@ import webSocket from './global/webSocket';
 import adminRegion from './admin/adminRegion';
 import addFaForm from './arr/form/addFaForm';
 import stateRegion from './state/stateRegion';
+import router from './router';
 
 import addPartyPersonForm from './party/form/addPartyPersonForm';
 import addPartyDynastyForm from './party/form/addPartyDynastyForm';
@@ -48,6 +49,7 @@ let reducer = combineReducers({
     webSocket,
     adminRegion,
     stateRegion,
+    router,
     form: formReducer.plugin({
         addFaForm: addFaForm,
         addPartyPersonForm: addPartyPersonForm,

@@ -1,5 +1,6 @@
 import * as types from 'actions/constants/actionTypes';
 import {save} from 'stores/app/AppStore'
+import {routerNavigate} from 'actions/router'
 
 var _data;
 export function storeSave() {
@@ -17,21 +18,24 @@ export function storeStateData(data) {
         ...data
     }
 }
-
 export function storeLoadData(type, data) {
     return (dispatch, getState) => {
         switch (type) {
             case 'PARTY_REGION':
                 dispatch(storeLoad({partyRegion: data}));
+                dispatch(routerNavigate('/party'));
                 break;
             case 'REGISTRY_REGION':
                 dispatch(storeLoad({registryRegion: data}));
+                dispatch(routerNavigate('/registry'));
                 break;
             case 'ARR_REGION':
                 dispatch(storeLoad({arrRegion: data}));
+                dispatch(routerNavigate('/arr'));
                 break;
             case 'ARR_REGION_FA':
                 dispatch(storeLoad({arrRegionFa: data}));
+                dispatch(routerNavigate('/arr'));
                 break;
         }
     }

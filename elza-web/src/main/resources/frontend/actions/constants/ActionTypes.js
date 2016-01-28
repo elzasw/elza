@@ -133,6 +133,12 @@ export const STORE_LOAD = 'STORE_LOAD'
 export const STORE_STATE_DATA = 'STORE_STATE_DATA'
 
 /**
+ * Router.
+ */
+export const ROUTER_NAVIGATE = 'ROUTER_NAVIGATE'
+export const ROUTER_NAVIGATE_CLEAR = 'ROUTER_NAVIGATE_CLEAR'
+
+/**
  * Admin - Packages
  */
 export const ADMIN_PACKAGES_REQUEST = 'ADMIN_PACKAGES_REQUEST'                  // dotaz na načtení balíčků
