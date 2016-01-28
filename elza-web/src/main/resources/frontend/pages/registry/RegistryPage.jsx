@@ -39,7 +39,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             this.dispatch(refRecordTypesFetchIfNeeded());
     }
 
-    handleAddRegistry(registerType, parentId, event) {
+    handleAddRegistry( parentId, event) {
         var path = '';
         if (this.props.registry.records[0] && this.props.registry.filterText === null && this.props.registry.records[0].parents.length>0){
             var parentsArr = this.props.registry.records[0].parents.slice();
@@ -60,15 +60,15 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                i18n('registry.addRegistry'),
                <AddRegistryForm
                    create
-                   onSubmit={this.handleCallAddRegistry.bind(this, registerType, parentId)}
+                   onSubmit={this.handleCallAddRegistry.bind(this, parentId)}
                    addressParent={path}
                    />
            )
        );
     }
 
-    handleCallAddRegistry(registerType, parentId, data ) {
-        WebApi.insertRegistry( data.nameMain, data.characteristics, registerType, parentId ).then(json => {
+    handleCallAddRegistry(parentId, data ) {
+        WebApi.insertRegistry( data.nameMain, data.characteristics, data.registerType, parentId ).then(json => {
             this.dispatch(modalDialogHide());
             this.dispatch(fetchRegistry(this.props.registry.filterText, this.props.registry.registryParentId, this.props.registry.registryTypesId));
             this.dispatch(registryData({selectedId: json.recordId}));
@@ -112,13 +112,27 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
         var altActions = [];
         altActions.push(
-            <DropdownButton title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">Import</span></div></span>}>
-                <MenuItem eventKey="1">Hesel</MenuItem>
-            </DropdownButton>
+            <Button onClick={this.handleAddRegistry.bind(this, this.props.registry.registryParentId)}><Icon glyph="fa-download" /><div><span className="btnText">{i18n('registry.addNewRegistry')}</span></div></Button>
+        );
+
+
+        altActions.push(
+            <Button><Icon glyph='fa-download' /><div><span className="btnText">{i18n('ribbon.action.registry.import')}</span></div></Button>
         );
 
         var itemActions = [];
         if (this.props.registry.selectedId) {
+
+            itemActions.push(
+                <Button onClick={this.handleRemoveRegistryDialog.bind(this)}><Icon glyph="fa-trash" /><div><span className="btnText">{i18n('registry.removeRegistry')}</span></div></Button>
+            );
+
+            if (this.props.registry.selectedId!=this.props.registry.registryParentId) {
+                itemActions.push(
+                    <Button onClick={this.handleAddRegistry.bind(this, this.props.registry.selectedId)}><Icon glyph="fa-download" /><div><span className="btnText">{i18n('registry.addNewRegistryHere')}</span></div></Button>
+                );
+            }
+
             if (!this.props.registry.recordForMove){
                 itemActions.push(
                     <Button onClick={this.handleStartMoveRegistry.bind(this)}><Glyphicon glyph="share-alt" /><div><span className="btnText">{i18n('registry.moveRegistry')}</span></div></Button>
@@ -132,32 +146,11 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                     <Button onClick={this.handleCancelMoveRegistry.bind(this)}><Icon glyph="fa-times" /><div><span className="btnText">{i18n('registry.cancelMove')}</span></div></Button>
                 );
             }
-
-            itemActions.push(
-                <Button onClick={this.handleRemoveRegistryDialog.bind(this)}><Icon glyph="fa-trash" /><div><span className="btnText">{i18n('registry.removeRegistry')}</span></div></Button>
-            );
         }
 
-        console.log(this.props);
-        itemActions.push(
-                <DropdownButton title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('registry.addNewRegistry')}</span></div></span>}>
-                    {this.props.refTables.recordTypes.items.map(i=> { return <MenuItem eventKey="{i.id}" onClick={this.handleAddRegistry.bind(this, i, this.props.registry.registryParentId)} value={i.id}>{i.name}</MenuItem>})}
-                </DropdownButton>
 
-            );
 
-        if (this.props.registry.selectedId !== null && this.props.registry.selectedId!=this.props.registry.registryParentId) {
-            itemActions.push(
-                <DropdownButton
-                    title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('registry.addNewRegistryHere')}</span></div></span>}>
-                    {this.props.refTables.recordTypes.items.map(i=> {
-                        return <MenuItem eventKey="{i.id}"
-                                         onClick={this.handleAddRegistry.bind(this, i, this.props.registry.selectedId)}
-                                         value={i.id}>{i.name}</MenuItem>
-                    })}
-                </DropdownButton>
-            );
-        }
+
         var altSection;
         if (altActions.length > 0) {
             altSection = <RibbonGroup className="large">{altActions}</RibbonGroup>

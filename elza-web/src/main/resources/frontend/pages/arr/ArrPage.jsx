@@ -117,6 +117,9 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         var altActions = [];
 
         var itemActions = [];
+        altActions.push(
+            <Button><Icon glyph='fa-download' /><div><span className="btnText">{i18n('ribbon.action.arr.fa.import')}</span></div></Button>
+        );
         if (activeInfo.activeFa) {
             itemActions.push(
                 <Button onClick={this.handleApproveFaVersion}><Icon glyph="fa-calendar-check-o"/><div><span className="btnText">{i18n('ribbon.action.arr.fa.approveVersion')}</span></div></Button>

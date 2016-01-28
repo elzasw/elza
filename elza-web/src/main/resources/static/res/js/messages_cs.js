@@ -22,6 +22,9 @@ var messages = {
     "ribbon.action.admin": "Administrace",
     "ribbon.action.admin.packages": "Správa balíčků",
     "ribbon.action.admin.fulltext": "Fulltext",
+    "ribbon.action.party.import" : "Import osob",
+    "ribbon.action.arr.fa.import" : "Import pomůcky",
+    "ribbon.action.registry.import" : "Import Hesel",
 
     "toggle.action.minimize": "Minimalizovat",
     "toggle.action.restore": "Zobrazit",
@@ -59,7 +62,7 @@ var messages = {
     "subNodeForm.descItemType.title.add": "Přidání prvku",
     
     "registry.addRegistry": "Nové rejstříkové heslo",
-    "registry.addNewRegistry": "Přidat heslo",
+    "registry.addNewRegistry": "Nové heslo",
     "registry.addNewRegistryHere": "Přidat heslo sem",
     "registry.name": "Název",
     "registry.characteristics": "Charakteristika",

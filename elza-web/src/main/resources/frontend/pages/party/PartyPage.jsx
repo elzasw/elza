@@ -123,10 +123,9 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
                 {this.props.refTables.partyTypes.items.map(i=> {return <MenuItem eventKey="{i.partyTypeId}" onClick={this.handleAddParty.bind(this, i.partyTypeId)}>{i.name}</MenuItem>})}
             </DropdownButton>
         );
+
         altActions.push(
-            <DropdownButton title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">Import</span></div></span>}>
-                <MenuItem eventKey="1">Osob</MenuItem>
-            </DropdownButton>
+            <Button><Icon glyph='fa-download' /><div><span className="btnText">{i18n('ribbon.action.party.import')}</span></div></Button>
         );
         var itemActions = [];
         if (isSelected) {
