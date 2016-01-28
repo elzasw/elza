@@ -5,8 +5,7 @@
 'use strict'
 
 // Import css Bootstrapu
-require ('bootstrap/less/bootstrap.less');
-require ('./variables.less');
+require ('./elza-styles.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
