@@ -45,7 +45,9 @@ var AddFaForm = class AddFaForm extends AbstractReactComponent {
 
     componentDidMount() {
         this.dispatch(refRuleSetFetchIfNeeded());
-        this.props.load(this.props.initData);
+        if (this.props.initData) {
+            this.props.load(this.props.initData);
+        }
     }
 
     render() {
