@@ -28,7 +28,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('buildRibbon', 'handleSelect', 'handleSearch', 'handleDoubleClick', 'handleClickNavigation', 'handleAddRegistry', 'handleCallAddRegistry', 'handleRemoveRegistryDialog', 'handleRemoveRegistry', 'handleStartMoveRegistry', 'handleSaveMoveRegistry', 'handleCancelMoveRegistry');
+        this.bindMethods('buildRibbon', 'handleSelectType', 'handleSelect', 'handleSearch', 'handleDoubleClick', 'handleClickNavigation', 'handleAddRegistry', 'handleCallAddRegistry', 'handleRemoveRegistryDialog', 'handleRemoveRegistry', 'handleStartMoveRegistry', 'handleSaveMoveRegistry', 'handleCancelMoveRegistry');
         this.dispatch(fetchRegistryIfNeeded(props.registry.filterText, props.registry.registryParentId, props.registry.registryTypesId));
         this.dispatch(refRecordTypesFetchIfNeeded());
 
@@ -39,21 +39,11 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             this.dispatch(refRecordTypesFetchIfNeeded());
     }
 
+    handleSelectType(){
+
+    }
+
     handleAddRegistry( parentId, event) {
-        var path = '';
-        if (this.props.registry.records[0] && this.props.registry.filterText === null && this.props.registry.records[0].parents.length>0){
-            var parentsArr = this.props.registry.records[0].parents.slice();
-            parentsArr.reverse().map(item => {
-                path += '/'+item.record;
-            });
-        }
-
-        if (parentId !== this.props.registry.registryParentId) {
-            path += '/'+this.props.registry.registryData.item.record;
-        }
-
-        if (!path)
-            path = '/';
 
        this.dispatch(
            modalDialogShow(this,
@@ -61,7 +51,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                <AddRegistryForm
                    create
                    onSubmit={this.handleCallAddRegistry.bind(this, parentId)}
-                   addressParent={path}
+
                    />
            )
        );
@@ -190,9 +180,11 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     render() {
+
         var navRows = (
             <div>
                 <div key='registrysList'>
+
                     {this.props.registry.records.map(item=>{
                         var cls = classNames({
                                     active: this.props.registry.selectedId === item.recordId,
@@ -217,10 +209,10 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
                             return (
                                 <div key={item.recordId} className={cls} onDoubleClick={doubleClick} onClick={this.handleSelect.bind(this, item)}>
-                                    <div className="path">
-                                        <span>{path}</span>
+                                    <div key={item.recordId} className="path">
+                                        <span key={item.recordId}>{path}</span>
                                     </div>
-                                    <span className={clsItem}>{item.record}</span>
+                                    <span key={item.recordId} className={clsItem}>{item.record}</span>
                                 </div>
                             )
                         }
@@ -228,13 +220,13 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                             // jednořádkový výsledek
                             return (
                                 <div key={item.recordId} className={cls} onDoubleClick={doubleClick} onClick={this.handleSelect.bind(this, item)}>
-                                    <span className={clsItem}>{item.record}</span>
+                                    <span key={item.recordId} className={clsItem}>{item.record}</span>
                                 </div>
                             )
                         }
                     })}
                 </div>
-                <div key='registrysCouns' className='registry-list-count'>{i18n('registry.shown')} {this.props.registry.records.length} {i18n('registry.z.celkoveho.poctu')} {this.props.registry.countRecords}</div>
+                <div key='registryCount' className='registry-list-count'>{i18n('registry.shown')} {this.props.registry.records.length} {i18n('registry.z.celkoveho.poctu')} {this.props.registry.countRecords}</div>
             </div>
         )
 
@@ -244,10 +236,10 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             navParents = (
                 <ul className='breadcrumbs'>
                 <li onClick={this.handleClickNavigation.bind(this, {id:null})}>/</li>
-                {parentsArr.reverse().map(item => {
+                {parentsArr.reverse().mapmap(item => {
                     if (this.props.registry.selectedId===item.id)
-                        return <li className='selected'>{item.record}</li>
-                    return <li onClick={this.handleClickNavigation.bind(this, item)}>{item.record}</li>
+                        return <li key={item.id} className='selected'>{item.record}</li>
+                    return <li key={item.id} onClick={this.handleClickNavigation.bind(this, item)}>{item.record}</li>
                     }
                 )}
                 </ul>
@@ -261,7 +253,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                     <Search
                         onSearch={this.handleSearch.bind(this)}
                         afterInput={
-                            <DropDownTree 
+                            <DropDownTree
                                 nullValue = {i18n('registry.all')}
                                 nullId = {null}
                                 items = {this.props.refTables.recordTypes.items}

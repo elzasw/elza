@@ -69,6 +69,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     }
 
     handleAddVaraintRecord(){
+
         this.dispatch(modalDialogShow(this, i18n('registry.addRegistryVariant') , <AddRegistryVariantForm create onSubmit={this.handleCallAddRegistryVariant.bind(this)} />));
     }
 

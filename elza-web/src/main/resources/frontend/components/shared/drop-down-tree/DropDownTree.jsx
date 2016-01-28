@@ -14,9 +14,10 @@
 **/
 
 import React from 'react';
-
+import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap';
-import {Icon, i18n} from 'components';
+import {Icon, i18n, AbstractReactComponent} from 'components';
+
 import ReactDOM from 'react-dom'
 
 require ('./DropDownTree.less');
@@ -26,22 +27,9 @@ require ('./DropDownTree.less');
  *  @param string className             třída komponenty
  *  $param string filterText            hledaný předvyplněný řezězec
 **/
-var DropDownTree = class DropDownTree extends React.Component {
+var DropDownTree = class DropDownTree extends AbstractReactComponent {
     constructor(props) {
         super(props);                                                   // volaní nadřazeného konstruktoru
-
-        this.nullValue = undefined;
-        this.nullId = null;
-        this.myItems = [];
-        if (this.props.items.length)
-            this.myItems = props.items.slice();
-
-        if (this.props.nullValue !== undefined){
-            this.nullValue = this.props.nullValue;
-            if (props.nullId !== undefined) {
-                this.nullId = props.nullId;
-            }
-        }
 
         this.getOpenedDefault = this.getOpenedDefault.bind(this);       // funkce pro zjisteni uzlu, ktere maji byt automaticky otevrene
         this.isNodeOpened = this.isNodeOpened.bind(this);               // funkce pro kontrolu jestli je uzel otevřený
@@ -50,7 +38,7 @@ var DropDownTree = class DropDownTree extends React.Component {
 
         
         var opened = (props.opened ? props.opened : []);
-        this.myItems.map((item, i) => {   
+        this.props.items.map((item, i) => {
             opened = opened.concat(this.getOpenedDefault(item)); 
         });
         var label = this.getItemLabel(this.props.selectedItemID);
@@ -103,18 +91,20 @@ var DropDownTree = class DropDownTree extends React.Component {
     }
 
     // metoda pro renderovani obsahu komponenty
-    render() {     
-        this.myItems = this.props.items.slice();
+    render() {
+        const {nullValue, nullId, items, selectedItemID} = this.props;
+
+
         var cls = "dropTree-container";     // třída komponenty                 
         if (this.props.className) {
             cls += " " + this.props.className;
         }
         
-        if (this.nullValue !== undefined){
-            this.myItems.unshift({id: this.nullId, name: this.nullValue});
+        if (nullValue !== undefined){
+            items.unshift({id: nullId, name: nullValue});
         }
 
-        var tree = this.myItems.map((item) => {   
+        var tree = items.map((item) => {
                 return this.renderNode(item, 1); 
         });
         return (
@@ -172,10 +162,10 @@ var DropDownTree = class DropDownTree extends React.Component {
     //vrati popisek vybrane polozky
     getItemLabel(selectedItemID, item = false){
         var label = '';
-        if (selectedItemID === this.nullId)
-            return this.nullValue;
+        if (selectedItemID === this.props.nullId)
+            return this.props.nullValue;
         if(!item){
-            this.myItems.map((item) => {
+            this.props.items.map((item) => {
                 var childLabel = this.getItemLabel(selectedItemID, item);
                 if(childLabel != ''){
                    label = childLabel;
@@ -205,9 +195,17 @@ var DropDownTree = class DropDownTree extends React.Component {
             }
         }
         return false;
+
     }
 
 }
 
+DropDownTree.propTypes = {
+    nullValue: React.PropTypes.string,
+    nullId: React.PropTypes.int,
+    items: React.PropTypes.array.isRequired,
+    selectedItemID: React.PropTypes.int,
+
+}
 
 module.exports = DropDownTree;
