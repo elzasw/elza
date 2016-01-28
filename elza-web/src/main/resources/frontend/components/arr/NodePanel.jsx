@@ -274,11 +274,11 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         var siblings = this.getSiblingNodes().map(s => <span key={s.id}> {s.id}</span>);
         var actions = (
             <div className='actions'>
-                <Button><Icon glyph="fa-plus-circle" />Přidat JP na konec</Button>
-                <Button disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(faSubNodesPrevPage())}><Icon glyph="fa-backward" />{i18n('arr.fa.subNodes.prevPage')}</Button>
-                <Button disabled={node.viewStartIndex + node.pageSize > node.childNodes.length} onClick={()=>this.dispatch(faSubNodesNextPage())}><Icon glyph="fa-forward" />{i18n('arr.fa.subNodes.nextPage')}</Button>
+                <div className='btn btn-default'><Icon glyph="fa-plus-circle" />Přidat JP na konec</div>
+                <div className='btn btn-default' disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(faSubNodesPrevPage())}><Icon glyph="fa-backward" />{i18n('arr.fa.subNodes.prevPage')}</div>
+                <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize > node.childNodes.length} onClick={()=>this.dispatch(faSubNodesNextPage())}><Icon glyph="fa-forward" />{i18n('arr.fa.subNodes.nextPage')}</div>
 
-                <input type="text"/><Button>Hledat</Button>
+                <input className="form-control" type="text"/><Button>Hledat</Button>
             </div>
         )
 

@@ -15,7 +15,8 @@
 
     > .actions {
         background: @node-panel-actions-bg;
-        height: @node-panel-actions-height;
+        height: 2.5em;;
+        line-height: 2.5em;
         .btn {
             background: transparent;
             height: 2em;
@@ -35,6 +36,16 @@
         }
         .btn:hover {
             background-color: @node-form-actions-hover;
+        }
+        button.btn {
+            padding: 0 10px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+        }
+        .form-control {
+            width: 165px;
+            display: inline-block;
+            vertical-align: middle;
         }
     }
     .parents {

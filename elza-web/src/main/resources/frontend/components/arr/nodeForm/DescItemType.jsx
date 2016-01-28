@@ -273,7 +273,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
             var actions = new Array;
 
             if (descItemTypeInfo.repeatable) {
-                actions.push(<NoFocusButton onClick={onDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-trash" /></NoFocusButton>);
+                actions.push(<NoFocusButton onClick={onDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-times" /></NoFocusButton>);
             }
 
             var errors = conformityInfo.errors[descItem.descItemObjectId];
