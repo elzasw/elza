@@ -3,6 +3,11 @@ import {combineReducers, createStore, applyMiddleware} from 'redux'
 import thunkMiddleware from 'redux-thunk'
 import createLogger from 'redux-logger'
 import {reducer as formReducer} from 'redux-form';
+import {lenToBytesStr, roughSizeOfObject} from 'components/Utils';
+
+// Nastavení úrovně logování
+const _logStoreState = false;
+const _logStoreSize = false;
 
 /**
  * Sestavení reducerů.
@@ -69,10 +74,17 @@ let reducer = combineReducers({
 
 // Store a middleware
 const loggerMiddleware = createLogger()
-const createStoreWithMiddleware = applyMiddleware(
-    thunkMiddleware,
-    loggerMiddleware
-)(createStore)
+var createStoreWithMiddleware;
+if (_logStoreState) {
+    createStoreWithMiddleware = applyMiddleware(
+        thunkMiddleware,
+        loggerMiddleware
+    )(createStore)
+} else {
+    createStoreWithMiddleware = applyMiddleware(
+        thunkMiddleware
+    )(createStore)
+}
 
 var initialState = {
 }
@@ -86,18 +98,21 @@ var fa = Object.assign({id: 1, versionId: 1});
 store.dispatch(selectFaTab(fa));
 */
 
-let curr
-function handleChange() {
-    let prev = curr
-    curr = store.getState().arrRegion;
+if (_logStoreSize) {
+    let curr
+    function handleChange() {
+        let prev = curr
+        curr = store.getState().arrRegion;
 
-    if (curr !== prev) {
-        console.log("Velikost store: " + JSON.stringify(curr).length + " B");
-        //console.log("@@@@@@@@@@@@@@@@@@@@@@CHANGE", prev, curr);
+        if (curr !== prev) {
+            var lenStr = lenToBytesStr(roughSizeOfObject(curr));
+            console.log("Velikost store", lenStr);
+            //console.log("@@@@@@@@@@@@@@@@@@@@@@CHANGE", prev, curr);
+        }
     }
-}
 
-store.subscribe(handleChange);
+    store.subscribe(handleChange);
+}
 
 var save = function(store) {
     var action = {

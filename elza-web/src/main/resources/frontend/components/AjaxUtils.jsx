@@ -5,8 +5,14 @@
  * @since 8.12.2015
  */
 
+// Nastavení úrovně logování
+var _logCalls = true;
+var _logErrors = true;
+var _logResults = false;
+
 var React = require('react');
 import {i18n, Toastr, LongText} from 'components';
+import {lenToBytesStr} from 'components/Utils';
 
 /**
  * Zavolání raw ajaxového volání podle vložených parametrů.
@@ -95,12 +101,25 @@ function ajaxCallRaw(url, params, method, data) {
  * @param {Object} data - Odesílaná data
  * @returns {Promise} - Výsledek volání
  */
+var _callIndex = 0;
 function ajaxCall(url, params, method, data) {
 
     url = updateQueryStringParameters(url, params);
 
     return new Promise(function (resolve, reject) {
-        console.log("#Ajax." + method + " " + url, data);
+        var callStr;
+        if (_logCalls || _logResults) {
+            var callIndex = _callIndex++;
+            var indexStr = callIndex;
+            if (callIndex < 10) indexStr = "0" + indexStr;
+            if (callIndex < 100) indexStr = "0" + indexStr;
+            if (callIndex < 1000) indexStr = "0" + indexStr;
+            if (callIndex < 10000) indexStr = "0" + indexStr;
+            callStr = "(" + indexStr + ") " + method + " " + url;
+        }
+        if (_logCalls) {
+            console.log(callStr, "[CALL]", data);
+        }
         $.ajax({
             url: serverContextPath + url,
             type: method,
@@ -114,12 +133,19 @@ function ajaxCall(url, params, method, data) {
             success: function (data,    // data ze serveru
                                status,  // status - 'success'
                                xhr) {   // xhr - responseText, responseJSON, status a statusText
+                 if (_logResults) {
+                    var len = JSON.stringify(data).length;
+                    var lenStr = '(' + lenToBytesStr(len) + ')';
+                    console.log("  " + callStr, "[OK]", lenStr, data);
+                 }
                 resolve(data);
             },
             error: function (xhr,
                              status,
                              err) {
-                console.log("#Ajax [" + xhr.status + "-" + status + "]", xhr);
+                if (_logErrors) {
+                    console.log("  " + callStr, "[ERROR]", "[" + xhr.status + "-" + status + "]", xhr);
+                }
 
                 var message;
                 if (xhr.responseJSON && xhr.responseJSON.message) {

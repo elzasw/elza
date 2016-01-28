@@ -6,7 +6,7 @@ require ('./FaFileTree.less');
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Loading} from 'components';
+import {AbstractReactComponent, i18n, Icon, Loading} from 'components';
 import {Nav, NavItem} from 'react-bootstrap';
 import {faFileTreeFetchIfNeeded} from 'actions/arr/faFileTree'
 import {selectFaTab} from 'actions/arr/fa'
@@ -63,12 +63,26 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
         this.props.items.each(item=>{
             rows.push(
                 <NavItem className='finding-aid' key={item.id} disabled>
+                    <Icon glyph='fa-align-justify'/>
                     {item.name}
                 </NavItem>
             )
             item.versions.each(ver => {
+                var glyph = '';
+                switch (ver.arrangementType.code) {
+                    case 'MAN':
+                        glyph = 'fa-list';
+                        break;
+                    case 'INV':
+                        glyph = 'fa-th-large';
+                        break;
+                    case 'KAT':
+                        glyph = 'fa-files-o';
+                        break;
+                }
                 rows.push(
                     <NavItem className='version' key={item.id + '_' + ver.id} onClick={this.handleSelect.bind(this, item, ver)}>
+                        <Icon glyph={glyph}/>
                         {ver.lockDate ? this.dateToString(ver.lockDate) : i18n('arr.fa.currentVersion')}
                     </NavItem>
                 )

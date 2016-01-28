@@ -2,6 +2,52 @@
  * Utility metody.
  */
 
+function lenToBytesStr(len) {
+    var lenStr;
+    if (len < 1000) {
+        lenStr = ('' + len).substring(0, 3) + " B";
+    } else if (len < 1000000) {
+        lenStr = ('' + (len/1000)).substring(0, 3) + " kB";
+    } else {
+        lenStr = ('' + (len/1000000)).substring(0, 3) + " MB";
+    }
+    return lenStr;
+}
+
+function roughSizeOfObject( object ) {
+
+    var objectList = [];
+    var stack = [ object ];
+    var bytes = 0;
+
+    while ( stack.length ) {
+        var value = stack.pop();
+
+        if ( typeof value === 'boolean' ) {
+            bytes += 4;
+        }
+        else if ( typeof value === 'string' ) {
+            bytes += value.length * 2;
+        }
+        else if ( typeof value === 'number' ) {
+            bytes += 8;
+        }
+        else if
+        (
+            typeof value === 'object'
+            && objectList.indexOf( value ) === -1
+        )
+        {
+            objectList.push( value );
+
+            for( var i in value ) {
+                stack.push( value[ i ] );
+            }
+        }
+    }
+    return bytes;
+}
+
 function StringSet() {
     var setObj = {}, val = {};
 
@@ -139,6 +185,8 @@ module.exports = {
     StringSet: StringSet,
     StringMap: StringMap,
     barrier: barrier,
+    lenToBytesStr: lenToBytesStr,
+    roughSizeOfObject: roughSizeOfObject,
     init: function() {
         init();
     }
