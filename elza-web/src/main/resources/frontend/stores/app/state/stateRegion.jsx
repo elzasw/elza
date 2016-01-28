@@ -1,13 +1,34 @@
 import * as types from 'actions/constants/actionTypes';
+import {indexById} from 'stores/app/utils.jsx'
 
 const initialState = {
-    partyRegion: null,
-    registryRegion: null,
+    partyRegionFront: [],
+    registryRegionFront: [],
     arrRegion: null,
-    faData: {},
+    arrRegionFront: [],
 }
 
-export default function partyRegion(state = initialState, action) {
+function updateFront(front, item, index) {
+    var result;
+
+    if (index !== null) {    // není ve frontě, přidáme ho tam
+        result = [
+            ...front.slice(0, index),
+            ...front.slice(index + 1),
+            item
+        ]
+    } else {
+        result = [...front, item]
+    }
+
+    if (result.length > 20) {   // pokud máme moc dlouhou frontu, zkrátíme ji
+        result = [...front.slice(1, result.length)]
+    }
+
+    return result;
+}
+
+export default function stateRegion(state = initialState, action) {
     switch (action.type) {
         case types.STORE_STATE_DATA:
             var result = {
@@ -15,16 +36,19 @@ export default function partyRegion(state = initialState, action) {
             }
 
             if (action.partyRegion) {
-                result.partyRegion = action.partyRegion
+                var index = indexById(result.partyRegionFront, action.partyRegion.selectedId, 'selectedId');
+                result.partyRegionFront = updateFront(result.partyRegionFront, action.partyRegion, index);
             }
             if (action.registryRegion) {
-                result.registryRegion = action.registryRegion
+                var index = indexById(result.registryRegionFront, action.registryRegion.selectedId, 'selectedId');
+                result.registryRegionFront = updateFront(result.registryRegionFront, action.registryRegion, index);
             }
             if (action.arrRegion) {
                 result.arrRegion = action.arrRegion
-                result.faData = {...result.faData}
+
                 action.arrRegion.fas.map(faobj => {
-                    result.faData[faobj.versionId] = {...faobj};
+                    var index = indexById(result.arrRegionFront, faobj.versionId, 'versionId');
+                    result.arrRegionFront = updateFront(result.arrRegionFront, faobj, index);
                 })
             }
 

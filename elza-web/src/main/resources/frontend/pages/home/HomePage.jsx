@@ -77,18 +77,17 @@ setTimeout(()=>this.setState({options: options2}), 4000);
 
         const {stateRegion} = this.props;
 
-        if (stateRegion.partyRegion) {
-            items.push(this.renderHistoryItem('Osoby', 'PARTY_REGION', stateRegion.partyRegion));
-        }
-        if (stateRegion.registryRegion) {
-            items.push(this.renderHistoryItem('Rejstříky', 'REGISTRY_REGION', stateRegion.registryRegion));
-        }
+        stateRegion.partyRegionFront.forEach(x => {
+            items.push(this.renderHistoryItem('Osoby [' + x.selectedId + ']', 'PARTY_REGION', x));
+        })
+        stateRegion.registryRegionFront.forEach(x => {
+            items.push(this.renderHistoryItem('Rejstříky [' + x.selectedId + ']', 'REGISTRY_REGION', x));
+        })
         if (stateRegion.arrRegion) {
             items.push(this.renderHistoryItem('Pořádání', 'ARR_REGION', stateRegion.arrRegion));
         }
-        Object.keys(stateRegion.faData).forEach(versionId => {
-            var fa = stateRegion.faData[versionId];
-            items.push(this.renderHistoryItem('Pořádání [' + fa.name + ']', 'ARR_REGION_FA', fa));
+        stateRegion.arrRegionFront.forEach(x => {
+            items.push(this.renderHistoryItem('Pořádání [' + x.name + ']', 'ARR_REGION_FA', x));
         })
 
         return (
