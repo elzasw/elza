@@ -7,6 +7,7 @@ var messages = {
     "global.action.close": "Zavřít",
     "global.action.store": "Uložit",
     "global.action.show.more": "Zobrazit více",
+    "search.input.search": "Vyhledat...",
 
     "global.validation.required": "Pole je povinné",
 

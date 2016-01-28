@@ -252,10 +252,12 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 <div>
                     <Search
                         onSearch={this.handleSearch.bind(this)}
+                        placeholder={i18n('search.input.search')}
                         afterInput={
                             <DropDownTree
                                 nullValue = {i18n('registry.all')}
                                 nullId = {null}
+                                key='search'
                                 items = {this.props.refTables.recordTypes.items}
                                 selectedItemID = {this.props.registry.registryTypesId}
                                 onSelect = {this.hlandleRegistryTypesSelect.bind(this)}

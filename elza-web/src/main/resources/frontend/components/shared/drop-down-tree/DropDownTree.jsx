@@ -94,17 +94,17 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
     render() {
         const {nullValue, nullId, items, selectedItemID} = this.props;
 
-
+        var itemsData = items.slice();
         var cls = "dropTree-container";     // třída komponenty                 
         if (this.props.className) {
             cls += " " + this.props.className;
         }
         
         if (nullValue !== undefined){
-            items.unshift({id: nullId, name: nullValue});
+            itemsData.unshift({id: nullId, name: nullValue});
         }
 
-        var tree = items.map((item) => {
+        var tree = itemsData.map((item) => {
                 return this.renderNode(item, 1); 
         });
         return (
@@ -128,7 +128,7 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
                 subList[subList.length] = this.renderNode(item.children[i], depth+1);
             };
         }
-
+console.log(item.id);
         return  <li
                     key={item.id}
                     eventKey={item.id} 

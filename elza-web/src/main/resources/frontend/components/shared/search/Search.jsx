@@ -62,6 +62,7 @@ var Search = class Search extends React.Component {
                     value={this.state.filterText}
                     ref="input"
                     labelClassName="label-class"
+                    placeholder={this.props.placeholder}
                     onChange={this.handleChange}
                     onKeyUp={this.handleKeyUp}
                 />
