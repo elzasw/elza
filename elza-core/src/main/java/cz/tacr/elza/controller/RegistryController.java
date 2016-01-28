@@ -31,11 +31,13 @@ import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
+import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
@@ -80,6 +82,9 @@ public class RegistryController {
 
     @Autowired
     private ScopeRepository scopeRepository;
+
+    @Autowired
+    private PartyTypeRepository partyTypeRepository;
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
@@ -199,7 +204,30 @@ public class RegistryController {
     public List<RegRegisterTypeVO> getRecordTypes(){
           List<RegRegisterType> allTypes = registerTypeRepository.findAll();
 
-          return factoryVo.createRegisterTypesTree(allTypes);
+          return factoryVo.createRegisterTypesTree(allTypes, false, null);
+    }
+
+
+    /**
+     * Vrátí seznam kořenů typů rejstříku (typů hesel) pro typ osoby. Pokud je null, pouze pro typy, které nejsou pro osoby.
+     *
+     * @return seznam kořenů typů rejstříku (typů hesel)
+     */
+    @RequestMapping(value = "/recordTypesForPartyType", method = RequestMethod.GET)
+    public List<RegRegisterTypeVO> getRecordTypesForPartyType(
+            @RequestParam(value = "partyTypeId", required = false) @Nullable final Integer partyTypeId) {
+
+        ParPartyType partyType = null;
+        if (partyTypeId != null) {
+            partyType = partyTypeRepository.findOne(partyTypeId);
+            Assert.notNull(partyType, "Nebyl nalezen typ osoby s id " + partyTypeId);
+        }
+
+        List<RegRegisterType> allTypes = partyType == null ? registerTypeRepository
+                .findNullPartyTypeEnableAdding() : registerTypeRepository
+                                                 .findByPartyTypeEnableAdding(partyType);
+
+        return factoryVo.createRegisterTypesTree(allTypes, true, partyType);
     }
 
     /**

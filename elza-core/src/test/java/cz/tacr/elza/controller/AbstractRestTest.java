@@ -98,6 +98,7 @@ public abstract class AbstractRestTest {
 
     // REGISTRY MANAGER CONSTANTS
     protected static final String GET_REGISTER_TYPES_URL = REGISTRY_MANAGER_URL + "/getRegisterTypes";
+    protected static final String GET_REGISTER_TYPES_URL_V2 = REGISTRY_MANAGER_URL_V2 + "/recordTypesForPartyType";
     protected static final String CREATE_RECORD_URL = REGISTRY_MANAGER_URL + "/createRecord";
     protected static final String CREATE_VARIANT_RECORD_URL = REGISTRY_MANAGER_URL + "/createVariantRecord";
     protected static final String FIND_RECORD_URL = REGISTRY_MANAGER_URL + "/findRecord";
@@ -825,10 +826,14 @@ public abstract class AbstractRestTest {
      * Vytvoření jednoho typu rejstříku.
      * @return  vytvořený objekt, zapsaný do db
      */
-    protected RegRegisterType createRegisterType(final String uniqueCode, @Nullable final ParPartyType partyType) {
+    protected RegRegisterType createRegisterType(final String uniqueCode,
+                                                 @Nullable final ParPartyType partyType,
+                                                 final RegRegisterType parent) {
         RegRegisterType regRegisterType = new RegRegisterType();
         regRegisterType.setCode(uniqueCode);
         regRegisterType.setName(TEST_NAME);
+        regRegisterType.setParentRegisterType(parent);
+        regRegisterType.setAddRecord(true);
 
         if (partyType != null) {
             regRegisterType.setPartyType(partyType);
@@ -845,7 +850,7 @@ public abstract class AbstractRestTest {
         RegRecord regRecord = new RegRecord();
         regRecord.setRecord(TEST_NAME);
         regRecord.setCharacteristics("CHARACTERISTICS");
-        regRecord.setRegisterType(createRegisterType(uniqueCode, null));
+        regRecord.setRegisterType(createRegisterType(uniqueCode, null, null));
 
         return recordRepository.save(regRecord);
     }
@@ -874,7 +879,7 @@ public abstract class AbstractRestTest {
         recordVO.setRecord(TEST_NAME);
         recordVO.setCharacteristics("CHARACTERISTICS");
 
-        RegRegisterType registerType = createRegisterType(uniqueCode, null);
+        RegRegisterType registerType = createRegisterType(uniqueCode, null, null);
 
         RegRegisterTypeVO registerTypeVO = factoryVO.createRegRegisterType(registerType);
 
@@ -1124,7 +1129,7 @@ public abstract class AbstractRestTest {
         regRecord.setRecord(TEST_NAME);
         regRecord.setCharacteristics("CHARACTERISTICS");
 
-        RegRegisterType registerType = createRegisterType(uniqueCode, null);
+        RegRegisterType registerType = createRegisterType(uniqueCode, null, null);
         regRecord.setRegisterType(registerType);
 
         Response response = put(spec -> spec.body(regRecord), CREATE_RECORD_URL);

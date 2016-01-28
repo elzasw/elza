@@ -281,7 +281,8 @@ public class PartyManagerTest extends AbstractRestTest {
 
 
         // register type
-        RegRegisterType registerType = createRegisterType(TEST_CODE + ElzaTools.getStringOfActualDate(), partyType);
+        RegRegisterType registerType = createRegisterType(TEST_CODE + ElzaTools.getStringOfActualDate(), partyType,
+                null);
 
         ParPartyTypeVO partyTypeVO = new ParPartyTypeVO();
         partyTypeVO.setPartyTypeId(partyType.getPartyTypeId());

@@ -1,12 +1,13 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.RegRegisterType;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.RegRegisterType;
 
 
 /**
@@ -41,4 +42,22 @@ public interface RegisterTypeRepository extends JpaRepository<RegRegisterType, I
      */
     List<RegRegisterType> findRegisterTypeByPartyType(ParPartyType partyType);
 
+
+    /**
+     * Hledá typy, které mají true pro přidání záznamu a jsou daného typu osoby.
+     *
+     * @param partyType typ osoby
+     * @return seznam typů
+     */
+    @Query("SELECT t FROM reg_register_type t WHERE t.partyType = ?1 AND t.addRecord = true ORDER BY t.code ASC")
+    List<RegRegisterType> findByPartyTypeEnableAdding(ParPartyType partyType);
+
+
+    /**
+     * Hledá typy, které mají true pro přidání záznamu a nejsou pro typ osob.
+     *
+     * @return seznam typů
+     */
+    @Query("SELECT t FROM reg_register_type t WHERE t.partyType IS NULL AND t.addRecord = true ORDER BY t.code ASC")
+    List<RegRegisterType> findNullPartyTypeEnableAdding();
 }

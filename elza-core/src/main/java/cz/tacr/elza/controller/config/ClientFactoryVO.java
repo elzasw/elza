@@ -15,6 +15,7 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -58,6 +59,7 @@ import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
 import cz.tacr.elza.domain.ParPartyNameFormType;
+import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParRelation;
 import cz.tacr.elza.domain.ParRelationEntity;
 import cz.tacr.elza.domain.RegRecord;
@@ -404,9 +406,13 @@ public class ClientFactoryVO {
      * Vytváří stromovou strukturu pro všechny typy rejstříků.
      *
      * @param allTypes všechny typy rejstříků
+     * @param checkPartyType true -> bude nastaven parametr addRecord podle toho, jestli se partytype rovná typu osoby v rejstříku
+     * @param  partyType typ osoby, který musí mít nastaven typ rejstříku, jinak nelze vkládat nové záznamy
      * @return seznam kořenových typů rejstříků
      */
-    public List<RegRegisterTypeVO> createRegisterTypesTree(final List<RegRegisterType> allTypes) {
+    public List<RegRegisterTypeVO> createRegisterTypesTree(final List<RegRegisterType> allTypes,
+                                                           final boolean checkPartyType,
+                                                           @Nullable final ParPartyType partyType) {
         if (CollectionUtils.isEmpty(allTypes)) {
             return Collections.EMPTY_LIST;
         }
@@ -414,9 +420,10 @@ public class ClientFactoryVO {
         Map<Integer, RegRegisterTypeVO> typeMap = new HashMap<>();
         List<RegRegisterTypeVO> roots = new LinkedList<>();
         for (final RegRegisterType registerType : allTypes) {
-            RegRegisterTypeVO registerTypeVO = createRegisterTypeTree(registerType, typeMap);
-            if (registerTypeVO.getParentRegisterTypeId() == null) {
-                roots.add(registerTypeVO);
+            if (checkPartyType) {
+                createRegisterTypeTreeForPartyType(registerType, partyType, typeMap, roots);
+            }else{
+                createRegisterTypeTree(registerType, typeMap, roots);
             }
         }
 
@@ -428,10 +435,12 @@ public class ClientFactoryVO {
      *
      * @param registerType typ hesla
      * @param typeMap      mapa všech typů (id typu ->typ)
+     * @param roots     kořeny stromu
      * @return typ rejstříkového hesla
      */
     private RegRegisterTypeVO createRegisterTypeTree(final RegRegisterType registerType,
-                                                     final Map<Integer, RegRegisterTypeVO> typeMap) {
+                                                     final Map<Integer, RegRegisterTypeVO> typeMap,
+                                                     final List<RegRegisterTypeVO> roots) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
         RegRegisterTypeVO result = typeMap.get(registerType.getRegisterTypeId());
@@ -441,13 +450,51 @@ public class ClientFactoryVO {
 
         result = mapper.map(registerType, RegRegisterTypeVO.class);
         typeMap.put(result.getId(), result);
-        if (registerType.getParentRegisterType() != null) {
-            RegRegisterTypeVO parent = createRegisterTypeTree(registerType.getParentRegisterType(), typeMap);
+        if (registerType.getParentRegisterType() == null) {
+            roots.add(result);
+        }else{
+            RegRegisterTypeVO parent = createRegisterTypeTree(registerType.getParentRegisterType(), typeMap, roots);
             parent.addChild(result);
         }
 
         return result;
     }
+
+    /**
+     * Vytvoří typ rejstříkového hesla a vloží jeje do mapy všech hesel.
+     *
+     * @param registerType typ hesla
+     * @param parPartyType typ osoby, který musí mít nastaven typ rejstříku, jinak nelze vkládat nové záznamy
+     * @param typeMap      mapa všech typů (id typu ->typ)
+     * @param roots        kořeny stromu
+     * @return typ rejstříkového hesla
+     */
+    private RegRegisterTypeVO createRegisterTypeTreeForPartyType(final RegRegisterType registerType,
+                                                                 @Nullable final ParPartyType parPartyType,
+                                                                 final Map<Integer, RegRegisterTypeVO> typeMap,
+                                                                 final List<RegRegisterTypeVO> roots) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+
+        RegRegisterTypeVO result = typeMap.get(registerType.getRegisterTypeId());
+        if (result != null) {
+            return result;
+        }
+        boolean addRecord = registerType.getAddRecord() && ObjectUtils.equals(registerType.getPartyType(), parPartyType);
+        result = mapper.map(registerType, RegRegisterTypeVO.class);
+        result.setAddRecord(addRecord);
+
+        typeMap.put(result.getId(), result);
+        if (registerType.getParentRegisterType() == null) {
+            roots.add(result);
+        }else{
+            RegRegisterTypeVO parent = createRegisterTypeTreeForPartyType(registerType.getParentRegisterType(),
+                    parPartyType, typeMap, roots);
+            parent.addChild(result);
+        }
+
+        return result;
+    }
+
 
     /**
      * Vytvoří seznam VO objektů z objektů.

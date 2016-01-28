@@ -535,6 +535,21 @@ public class ConfigMapperConfiguration {
                         if (parentType != null) {
                             regRegisterTypeVO.setParentRegisterTypeId(parentType.getRegisterTypeId());
                         }
+
+                        if(regRegisterType.getPartyType() != null){
+                            regRegisterTypeVO.setPartyTypeId(regRegisterType.getPartyType().getPartyTypeId());
+                        }
+                    }
+
+                    @Override
+                    public void mapBtoA(final RegRegisterTypeVO registerTypeVO,
+                                        final RegRegisterType regRegisterType,
+                                        final MappingContext context) {
+                        if (registerTypeVO.getPartyTypeId() != null) {
+                            ParPartyType partyType = new ParPartyType();
+                            partyType.setPartyTypeId(registerTypeVO.getPartyTypeId());
+                            regRegisterType.setPartyType(partyType);
+                        }
                     }
                 }).field("registerTypeId", "id").byDefault()
                 .register();

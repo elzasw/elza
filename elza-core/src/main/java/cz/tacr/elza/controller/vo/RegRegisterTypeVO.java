@@ -39,7 +39,7 @@ public class RegRegisterTypeVO {
     /**
      * Určení, zda hesla daného typu mohou být "abstraktní" osobou/původcem a jakého typu.
      */
-    private ParPartyTypeVO partyType;
+    private Integer partyTypeId;
     /**
      * Seznam potomků.
      */
@@ -85,12 +85,12 @@ public class RegRegisterTypeVO {
         this.addRecord = addRecord;
     }
 
-    public ParPartyTypeVO getPartyType() {
-        return partyType;
+    public Integer getPartyTypeId() {
+        return partyTypeId;
     }
 
-    public void setPartyType(final ParPartyTypeVO partyType) {
-        this.partyType = partyType;
+    public void setPartyTypeId(final Integer partyTypeId) {
+        this.partyTypeId = partyTypeId;
     }
 
     public Integer getParentRegisterTypeId() {

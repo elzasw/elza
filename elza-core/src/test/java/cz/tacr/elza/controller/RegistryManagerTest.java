@@ -17,7 +17,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.jayway.restassured.response.Response;
 
+import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.controller.vo.ArrFindingAidVO;
+import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.domain.ArrFaRegisterScope;
 import cz.tacr.elza.domain.ArrFindingAid;
@@ -131,7 +133,7 @@ public class RegistryManagerTest extends AbstractRestTest {
         Assert.assertTrue("Původní jméno", record.getRecord().equals(TEST_NAME));
         record.setRecord(TEST_UPDATE_NAME);
 
-        RegRegisterType newRegisterType = createRegisterType("KOD3", null);
+        RegRegisterType newRegisterType = createRegisterType("KOD3", null, null);
         record.setRegisterType(newRegisterType);
 
         Response response =
@@ -255,8 +257,8 @@ public class RegistryManagerTest extends AbstractRestTest {
      */
     @Test
     public void testRestGetRegisterTypes() {
-        createRegisterType("KOD8", null);
-        createRegisterType("KOD9", null);
+        createRegisterType("KOD8", null, null);
+        createRegisterType("KOD9", null, null);
 
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).get(GET_REGISTER_TYPES_URL);
         logger.info(response.asString());
@@ -264,6 +266,45 @@ public class RegistryManagerTest extends AbstractRestTest {
 
         List<RegRegisterType> registerTypes = Arrays.asList(response.getBody().as(RegRegisterType[].class));
         Assert.assertTrue("Nenalezeny typy záznamů (" + registerTypes.size() + ")", registerTypes.size() >= 2);
+    }
+
+    /**
+     * Test načtení typů rejstříkových záznamů - 2ks.
+     */
+    @Test
+    public void testRestGetRegisterTypesV2() {
+        RegRegisterType kod10 = createRegisterType("KOD10", null, null);
+        RegRegisterType kod11 = createRegisterType("KOD11", null, kod10);
+
+
+
+        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).get(GET_REGISTER_TYPES_URL_V2);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        List<RegRegisterTypeVO> registerTypes = Arrays.asList(response.getBody().as(RegRegisterTypeVO[].class));
+        Assert.assertTrue(registerTypes.size() == 1);
+        Assert.assertTrue(registerTypes.get(0).getCode().equals("KOD10"));
+        Assert.assertTrue(registerTypes.get(0).getChildren().get(0).getCode().equals("KOD11"));
+
+
+        ParPartyType partyType = createPartyType("PT" + ElzaTools.getStringOfActualDate());
+        kod11.setPartyType(partyType);
+        registerTypeRepository.save(kod11);
+
+        response = get(spec->spec.parameter("partyTypeId", partyType.getPartyTypeId()), GET_REGISTER_TYPES_URL_V2);
+        logger.info(response.asString());
+        Assert.assertEquals(200, response.statusCode());
+
+        registerTypes = Arrays.asList(response.getBody().as(RegRegisterTypeVO[].class));
+        Assert.assertTrue(registerTypes.size() == 1);
+        Assert.assertTrue(registerTypes.get(0).getCode().equals("KOD10"));
+        Assert.assertTrue(registerTypes.get(0).getPartyTypeId() == null);
+        Assert.assertFalse(registerTypes.get(0).getAddRecord());
+        RegRegisterTypeVO child = registerTypes.get(0).getChildren().get(0);
+        Assert.assertTrue(child.getCode().equals("KOD11"));
+        Assert.assertTrue(child.getPartyTypeId().equals(partyType.getPartyTypeId()));
+        Assert.assertTrue(child.getAddRecord());
     }
 
     /**
@@ -361,7 +402,7 @@ public class RegistryManagerTest extends AbstractRestTest {
         RegRecord regRecord = new RegRecord();
         regRecord.setRecord("XXX");
         regRecord.setCharacteristics("CHAR");
-        regRecord.setRegisterType(createRegisterType(uniqueCode, null));
+        regRecord.setRegisterType(createRegisterType(uniqueCode, null, null));
         regRecord.setScope(scopeRepository.findAll().get(0));
 
         return recordRepository.save(regRecord);
