@@ -30,6 +30,11 @@ function updateFront(front, item, index) {
 
 export default function stateRegion(state = initialState, action) {
     switch (action.type) {
+        case types.STORE_STATE_DATA_INIT:
+            return {
+                ...state,
+                ...action.storageData
+            }
         case types.STORE_STATE_DATA:
             var result = {
                 ...state,

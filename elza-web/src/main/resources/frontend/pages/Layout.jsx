@@ -7,6 +7,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import { AppStore, ResizeStore } from 'stores';
 import {AbstractReactComponent, ContextMenu, Toastr, ModalDialog, WebSocket} from 'components';
+import {storeSave, storeRestoreFromStorage} from 'actions/store/store';
 var AppRouter = require ('./AppRouter')
 
 require('./Layout.less');
@@ -15,8 +16,21 @@ require('./Layout.less');
 var Layout = class Layout extends AbstractReactComponent {
     constructor(props) {
         super(props);
+
+        this.bindMethods('scheduleStoreSave');
     }
 
+    scheduleStoreSave() {
+        setTimeout(() => {
+            this.dispatch(storeSave());
+            this.scheduleStoreSave();
+        }, 5000)
+    }
+
+    componentDidMount() {
+        this.dispatch(storeRestoreFromStorage());
+        this.scheduleStoreSave();
+    }
 
     render() {
         return (

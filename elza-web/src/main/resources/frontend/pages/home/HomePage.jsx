@@ -23,7 +23,7 @@ var HomePage = class HomePage extends AbstractReactComponent {
     constructor(props) {
         super(props);
         this.bindMethods('handleAddFa', 'handleCallAddFa', 'renderHistory',
-            'renderHistoryItem');
+            'renderHistoryItem', 'getFaDesc');
 
         this.buildRibbon = this.buildRibbon.bind(this);
 
@@ -64,12 +64,57 @@ setTimeout(()=>this.setState({options: options2}), 4000);
         )
     }
 
-    renderHistoryItem(name, type, data) {
+    renderHistoryItem(name, desc, type, data) {
+        var glyph;
+        switch (type) {
+            case 'PARTY_REGION':
+                glyph = 'fa-users';
+                break;
+            case 'REGISTRY_REGION':
+                glyph = 'fa-th-list';
+                break;
+            case 'ARR_REGION':
+                glyph = 'fa-file-text';
+                break;
+            case 'ARR_REGION_FA':
+                glyph = 'fa-file-text';
+                break;            
+        }
+
+        var hasDesc = desc && desc.length > 0
+        var descComp;
+        if (hasDesc) {
+            descComp = <small>{desc}</small>
+        } else {
+            descComp = <small>&nbsp;</small>
+        }
+        return (
+            <Button onClick={() => this.dispatch(storeLoadData(type, data))}>
+                <Icon glyph={glyph}/>
+                <div className='history-name'>{name}</div>
+                {descComp}
+            </Button>
+        )
         return (
             <Panel className='history-list-item' header={name} onClick={() => this.dispatch(storeLoadData(type, data))}>
                 ...[{type}]
             </Panel>
         )
+    }
+
+    arrToString(arr) {
+        return arr.map((d, index) => {
+            if (index > 0 && index < arr.length) {
+                return ',  ' + d;
+            } else {
+                return d;
+            }
+        })
+    }
+
+    getFaDesc(fa) {
+        var descs = fa.nodes.nodes.map(nodeobj => nodeobj.name);
+        return this.arrToString(descs);
     }
 
     renderHistory() {
@@ -78,16 +123,32 @@ setTimeout(()=>this.setState({options: options2}), 4000);
         const {stateRegion} = this.props;
 
         stateRegion.partyRegionFront.forEach(x => {
-            items.push(this.renderHistoryItem('Osoby [' + x.selectedId + ']', 'PARTY_REGION', x));
+            if (x.selectedId != null) {
+                var name = x.selectedId;
+                var desc = ''
+                items.push(this.renderHistoryItem(name, desc, 'PARTY_REGION', x));
+            } else {
+                items.push(this.renderHistoryItem(i18n('home.action.party'), '', 'PARTY_REGION', x));
+            }
         })
         stateRegion.registryRegionFront.forEach(x => {
-            items.push(this.renderHistoryItem('Rejstříky [' + x.selectedId + ']', 'REGISTRY_REGION', x));
+            if (x.selectedId != null) {
+                var name = x.selectedId;
+                var desc = ''
+                items.push(this.renderHistoryItem(name, desc, 'REGISTRY_REGION', x));
+            } else {
+                items.push(this.renderHistoryItem(i18n('home.action.registry'), '', 'REGISTRY_REGION', x));
+            }
         })
         if (stateRegion.arrRegion) {
-            items.push(this.renderHistoryItem('Pořádání', 'ARR_REGION', stateRegion.arrRegion));
+            var descs = stateRegion.arrRegion.fas.map(faobj => faobj.name);
+            var desc = this.arrToString(descs)
+            items.push(this.renderHistoryItem(i18n('home.action.arr'), desc, 'ARR_REGION', stateRegion.arrRegion));
         }
         stateRegion.arrRegionFront.forEach(x => {
-            items.push(this.renderHistoryItem('Pořádání [' + x.name + ']', 'ARR_REGION_FA', x));
+            var name = x.name;
+            var desc = this.getFaDesc(x)
+            items.push(this.renderHistoryItem(name, desc, 'ARR_REGION_FA', x));
         })
 
         return (

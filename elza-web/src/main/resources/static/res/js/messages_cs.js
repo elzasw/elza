@@ -26,6 +26,10 @@ var messages = {
     "ribbon.action.arr.fa.import" : "Import pomůcky",
     "ribbon.action.registry.import" : "Import Hesel",
 
+    "home.action.arr": "Archivní pomůcky",
+    "home.action.party": "Osoby",
+    "home.action.registry": "Rejstříky",
+
     "toggle.action.minimize": "Minimalizovat",
     "toggle.action.restore": "Zobrazit",
     
