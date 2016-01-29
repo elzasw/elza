@@ -8,6 +8,8 @@ import {modalDialogHide} from 'actions/global/modalDialog'
 
 
 /**
+ * INSERT PARTY
+ * *********************************************
  * Volání webového rozhraní pro vložení nové osoby
  * @param string partyType - typ osoby (ParPersonEditVO, ParDynastyEditVO, ...)
  * @param string filteredText - aktualni filtr nad seznamem osob - aby se uzivateli vratil, doplneny pripadne o novou osobu
@@ -21,9 +23,9 @@ import {modalDialogHide} from 'actions/global/modalDialog'
  * @param string degreeAfter - titul za jménem osoby
  * @param string scope - !! cosi co netuším k čemu je, ale nejde bez toho uložit korporace - uklada se aktualne vždycky prazdny řetězec !!
  */
-export function insertParty(partyType, filterText, partyTypeId, nameFormTypeId, nameMain, nameOther, validRange, calendarType, degreeBefore, degreeAfter, scope) {
+export function insertParty(partyType, filterText, partyTypeId, nameFormTypeId, nameMain, nameOther, validFrom, valiedTo, calendarTypeId, degreeBefore, degreeAfter, scope) {
     return dispatch => {
-        return WebApi.insertParty(partyType, partyTypeId, nameFormTypeId, nameMain, nameOther, degreeBefore, degreeAfter, validRange, calendarType, scope)
+        return WebApi.insertParty(partyType, partyTypeId, nameFormTypeId, nameMain, nameOther, degreeBefore, degreeAfter, validFrom, valiedTo, calendarTypeId, scope)
             .then((json) => { 
                 dispatch(modalDialogHide());                // zavření aktualně otevřeného dialogu
                 dispatch(findPartyFetch(filterText));       // znovu načtení leveho panelu s vyfiltrovanými osobami (aby se tam pridala nová)
@@ -33,25 +35,24 @@ export function insertParty(partyType, filterText, partyTypeId, nameFormTypeId, 
 }
 
 /**
- * Volání webového rozhraní pro vložení nové relace (vztahu)
- * @param int partyId - identifikator osoby, ktere se pridava vztah
- * @param string note - poznámka ke vztahu
- * @param string sources - zdroje informaci
- * @param date from - datum počátku vztahu
- * @param date to - datum konce vztahu    
- */
-export function insertRelation(partyId, relationTypeId, note, source, from, to, entities) {
+ * UPDATE PARTY
+ * *********************************************
+ * Volání webového rozhraní pro upravu základních udaju ossob (inplace editace)
+ * @param json object party - kompletni objekt osoby se všemi změnami
+*/
+export function updateParty(party){ 
     return dispatch => {
-        return WebApi.insertRelation(partyId, relationTypeId, note, source, from, to, entities)
-            .then((json) => { 
+        return WebApi.updateParty(party)
+            .then((json) => {
                 dispatch(modalDialogHide());                // zavření aktualně otevřeného dialogu
-                dispatch(partyDetailFetch(json.partyId));   // otevření detailu aktuálně vložené osoby
+                dispatch(partyDetailFetch(party.partyId));   // otevření detailu aktuálně vložené osoby
             });
     }
 }
 
-
 /**
+ * DELETE PARTY
+ * *********************************************
  * Volání webového rozhraní pro smazání osoby
  * @param string partyId - identifikátor osoby, kterou chceme smazat
  * @param string filteredText - aktualni filtr nad seznamem osob - aby se uzivateli vratil, už bez smazané osoby
@@ -67,66 +68,9 @@ export function deleteParty(partyId, filterText) {
     }
 }
 
-
 /**
- * Volání webového rozhraní pro vložení nového jména osobě
- * @param int partyId - identifikator osoby, ktere se pridava jméno
- * @param int nameFormTypeId - identifikator typu jmena (uredni, svetske, za svobodna, ...)  
- * @param string nameMain - hlavní jméno osoby
- * @param string nameOther - doplňující jméno osoby
- * @param string validFrom - rozsah období, ve kterém je záznam platný/aktivní (1.1.2000 - 31.5.2003, 19. století, leden 1978, ...)
- * @param string validTo - rozsah období, ve kterém je záznam platný/aktivní (1.1.2000 - 31.5.2003, 19. století, leden 1978, ...)
- * @param int calendarType - identifikator kalendáře, ve kterém je rozsah období uveden (Gregoriánský, Juliánský)
- * @param string degreeBefore - titul před jménem osoby
- * @param string degreeAfter - titul za jménem osoby
- */
-export function insertName(partyId, nameFormTypeId, nameMain, nameOther, validRange, calendarType, degreeBefore, degreeAfter){
-    return dispatch => {
-        return WebApi.insertRelation(partyId, relationTypeId, note, source, from, to, entities)
-            .then((json) => { 
-                dispatch(modalDialogHide());                // zavření aktualně otevřeného dialogu
-                dispatch(partyDetailFetch(json.partyId));   // otevření detailu aktuálně vložené osoby
-            });
-    }
-}
-
-/**
- * Volání webového rozhraní pro vložení nového jména osobě
- * @param int partyId - identifikator osoby, ktere se pridava jméno
- * @param int nameFormTypeId - identifikator typu jmena (uredni, svetske, za svobodna, ...)  
- * @param string nameMain - hlavní jméno osoby
- * @param string nameOther - doplňující jméno osoby
- * @param string validFrom - rozsah období, ve kterém je záznam platný/aktivní (1.1.2000 - 31.5.2003, 19. století, leden 1978, ...)
- * @param string validTo - rozsah období, ve kterém je záznam platný/aktivní (1.1.2000 - 31.5.2003, 19. století, leden 1978, ...)
- * @param int calendarType - identifikator kalendáře, ve kterém je rozsah období uveden (Gregoriánský, Juliánský)
- * @param string degreeBefore - titul před jménem osoby
- * @param string degreeAfter - titul za jménem osoby
- */
-export function insertName(partyId, nameFormTypeId, nameMain, nameOther, validRange, calendarType, degreeBefore, degreeAfter){
-    return dispatch => {
-        return WebApi.insertRelation(partyId, relationTypeId, note, source, from, to, entities)
-            .then((json) => { 
-                dispatch(modalDialogHide());                // zavření aktualně otevřeného dialogu
-                dispatch(partyDetailFetch(json.partyId));   // otevření detailu aktuálně vložené osoby
-            });
-    }
-}
-
-/**
- * Volání webového rozhraní pro upraveni osoby
- * @param object party
- */
-export function updateParty(party) {
-    return dispatch => {
-        return WebApi.updateParty(party)
-            .then((json) => {
-                dispatch(modalDialogHide());                // zavření aktualně otevřeného dialogu
-                dispatch(partyDetailFetch(partyId));        // otevření detailu aktuálně vložené osoby
-            });
-    }
-}
-
-/**
+ * FIND PARTY FETCH IF NEEDED
+ * *********************************************
  * Volání webového rozhraní pro získání hledaný osob (pokud již není načten)
  * @param string filteredText - hledaná fráze/text/jméno
  */
@@ -143,7 +87,9 @@ export function findPartyFetchIfNeeded(filterText) {
 }
 
 /**
- * Volání webového rozhraní pro získání hledaný osob 
+ * FIND PARTY FETCH
+ * *********************************************
+ * Volání webového rozhraní pro získání seznamu osob na základě hledané fráze
  * @param string filteredText - hledaná fráze/text/jméno
  */
 export function findPartyFetch(filterText) {
@@ -154,6 +100,13 @@ export function findPartyFetch(filterText) {
     }
 }
 
+/**
+ * FIND PARTY RECETVE
+ * *********************************************
+ * Seznam osob z webového rozhraní byl získán
+ * @param string filteredText - hledaná fráze/text/jméno
+ * @param obj json - objekt obsahující nalezené osoby
+ */
 export function findPartyReceive(filterText, json) {
     return {
         type: types.PARTY_FIND_PARTY_RECEIVE,
@@ -162,6 +115,12 @@ export function findPartyReceive(filterText, json) {
     }
 }
 
+/**
+ * FIND PARTY REQUEST
+ * *********************************************
+ * Byl odeslán požadavek na získání seznamu hledaných osob
+ * @param string filteredText - hledaná fráze/text/jméno
+ */
 export function findPartyRequest(filterText) {
     return {
         type: types.PARTY_FIND_PARTY_REQUEST,
@@ -169,6 +128,12 @@ export function findPartyRequest(filterText) {
     }
 }
 
+/**
+ * PARTY DETAIL FETCH IF NEEDED
+ * *********************************************
+ * Volání webového rozhraní pro získání detailu osoby (pokud již není načten)
+ * @param int selectedPartyID - identifikátor hledané osoby
+ */
 export function partyDetailFetchIfNeeded(selectedPartyID) {
     return (dispatch, getState) => {
         var state = getState();
@@ -180,14 +145,28 @@ export function partyDetailFetchIfNeeded(selectedPartyID) {
     }
 }
 
+/**
+ * PARTY DETAIL FETCH
+ * *********************************************
+ * Volání webového rozhraní pro získání detailu osoby
+ * @param int selectedPartyID - identifikátor hledané osoby
+ */
 export function partyDetailFetch(selectedPartyID) {
     return dispatch => {
         dispatch(partyDetailRequest(selectedPartyID))
+        
         return WebApi.getParty(selectedPartyID)
             .then(json => dispatch(partyDetailReceive(selectedPartyID, json)));
     }
 }
 
+/**
+ * PARTY DETAIL RECIVE
+ * *********************************************
+ * Volání webového rozhraní pro získání detailu osoby
+ * @param int selectedPartyID - identifikátor hledané osoby
+ * @param obj selectedPartyData - získaná data osoby
+ */
 export function partyDetailReceive(selectedPartyID, selectedPartyData) {
     return {
         type: types.PARTY_DETAIL_RECEIVE,
@@ -196,6 +175,13 @@ export function partyDetailReceive(selectedPartyID, selectedPartyData) {
     }
 }
 
+/**
+ * PARTY DETAIL REQUEST
+ * *********************************************
+ * Volání webového rozhraní pro získání detailu osoby
+ * @param int selectedPartyID - identifikátor hledané osoby
+ * @param obj selectedPartyData - získaná data osoby
+ */
 export function partyDetailRequest(selectedPartyID) {
     return {
         type: types.PARTY_DETAIL_REQUEST,
@@ -203,10 +189,37 @@ export function partyDetailRequest(selectedPartyID) {
     }
 }
 
-export function partyDeleted() {
-    return {
-        type: types.PARTY_DELETED
-    }
+
+/**
+ * INSERT RELATION
+ * *********************************************
+ * Volání webového rozhraní pro vložení nové relace
+ * @param obj relation - objekt vztahu, který se má vytvořit
+ * @param int partyId - identidikátor osoby, které se vztah zakládá
+ */
+export function insertRelation(relation, partyId) {
+    return dispatch => {
+        return WebApi.insertRelation(relation)
+            .then((json) => { 
+                dispatch(modalDialogHide());                // zavření aktualně otevřeného dialogu
+                dispatch(partyDetailFetch(partyId));        // přenačtení detailu osoby
+            });
+    };
 }
 
-
+/**
+ * UPDATE RELATION
+ * *********************************************
+ * Volání webového rozhraní pro uložení změny vztahu
+ * @param obj relation - změněný objekt vztahu
+ * @param int partyId - identidikátor osoby, které vztah patří
+ */
+export function updateRelation(relation, partyId) {
+    return dispatch => {
+        return WebApi.updateRelation(relation)
+            .then((json) => { 
+                dispatch(modalDialogHide());                // zavření aktualně otevřeného dialogu
+                dispatch(partyDetailFetch(partyId));        // přenačtení detailu osoby
+            });
+    };
+}

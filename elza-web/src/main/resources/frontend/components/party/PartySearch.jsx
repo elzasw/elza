@@ -40,7 +40,7 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
                                 onClick={this.handlePartyDetail.bind(this,item)}
                             >                                          
                                 <span className="name">{item.record.record}</span> 
-                                <span>{item.record.registerType.name}</span>
+                                <span>{item.partyType.description}</span>
                                 <span>1976-2015</span>
                             </li>                          
             });

@@ -10,7 +10,7 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap'; 
 import {Link, IndexLink} from 'react-router';
 import {Icon, AbstractReactComponent, Ribbon, RibbonGroup, PartySearch, PartyDetail, PartyEntities, i18n} from 'components';
-import {AddRelationForm, AddPartyPersonForm, AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm} from 'components';
+import {RelationForm, AddPartyPersonForm, AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm} from 'components';
 import {ButtonGroup, MenuItem, DropdownButton, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
@@ -38,28 +38,53 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
     }
 
     handleCallAddParty(data) {
+        var partyType = '';                                     // typ osoby - je potreba uvest i jako specialni klivcove slovo 
         switch(data.partyTypeId){
-            case 1:
-                // vytvoření fyzicke osoby
-                this.dispatch(insertParty('ParPersonEditVO', this.props.partyRegion.filterText, data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange, data.calendarType, data.degreeBefore, data.degreeAfter));
-                break; 
-            case 2:
-                // vytvoření rodu
-                this.dispatch(insertParty('ParDynastyEditVO', this.props.partyRegion.filterText, data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange, data.calendarType));
-                break;
-            case 3:
-                // vytvoření korporace
-                this.dispatch(insertParty('ParPartyGroupEditVO', this.props.partyRegion.filterText, data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange, data.calendarType, '', '', ''));
-                break;
-            case 4:
-                // vytvoření dočasné korporace
-                this.dispatch(insertParty('ParEventEditVO', this.props.partyRegion.filterText, data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange, data.calendarType));
-                break; 
-            default:
-                // vytvoření jine osoby - ostatni
-                this.dispatch(insertParty('', this.props.partyRegion.filterText, data.partyTypeId, data.nameFormTypeId, data.nameMain, data.nameOther, data.validRange, data.calendarType));
-                break; 
+            case 1: partyType = '.ParPersonVO'; break;          // typ osoby osoba
+            case 2: partyType = '.ParDynastyVO'; break;         // typ osoby rod
+            case 3: partyType = '.ParPartyGroupVO'; break;      // typ osoby korporace
+            case 4: partyType = '.ParEventVO'; break;           // typ osoby docasna korporace - udalost
         }
+        var party = {
+            '@type': partyType, 
+            partyType: {
+                partyTypeId: data.partyTypeId
+            },
+            genealogy: data.nameMain,
+            scope: '',
+            record: {
+                registerTypeId: 1,
+                scopeId:1
+            },
+            from: {
+                textDate: data.validFrom,
+                calendarTypeId: data.calendarTypeIdFrom
+            },
+            to: {
+                textDate: data.validTo,
+                calendarTypeId: data.calendarTypeIdTo
+            },
+            partyNames : [{
+                nameFormType: {
+                    nameFormTypeId: data.nameFormTypeId
+                },
+                displayName: data.nameMain,
+                mainPart: data.nameMain,
+                otherPart: data.nameOther,
+                degreeBefore: data.degreeBefore,
+                degreeAfter: data.degreeAfter,
+                prefferedName: true,
+                validFrom: {
+                    textDate: data.validFrom,
+                    calendarTypeId: data.calendarTypeIdFrom
+                },
+                validTo: {
+                    textDate: data.validTo,
+                    calendarTypeId: data.calendarTypeIdTo
+                }
+            }]
+        }
+        this.dispatch(insertParty(party)); 
     }
 
     handleAddParty(partyTypeId, event) {
@@ -91,7 +116,22 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
     }
 
     handleCallAddRelation(data) {
-        this.dispatch(insertRelation(this.props.partyRegion.selectedPartyID, data.relationTypeId, data.note, data.source, data.from, data.to, data.entities));               
+        var entities = {};
+        var relation = {
+            partyId: this.props.partyRegion.selectedPartyID,
+            dateNote: data.note,
+            note: data.note,
+            from: {
+                    textDate: data.from,
+                    calendarTypeId: data.calendarTypeId
+            },
+            to: {
+                    textDate: data.to,
+                    calendarTypeId: data.calendarTypeId
+            },
+            relationEntities: entities,
+        };   
+        this.dispatch(insertRelation(relation, this.props.partyRegion.selectedPartyID));               
     }
 
     handleAddRelation(){
@@ -102,7 +142,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
                 roleType : 1,
             }]
         }
-        this.dispatch(modalDialogShow(this, this.props.partyRegion.selectedPartyData.record.record , <AddRelationForm initData={data} onSubmit={this.handleCallAddRelation} />));
+        this.dispatch(modalDialogShow(this, this.props.partyRegion.selectedPartyData.partyId , <RelationForm initData={data} refTables={this.props.refTables} onSubmit={this.handleCallAddRelation} />));
     }
 
     handleDeleteParty(){
@@ -161,13 +201,15 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         )
         
         var centerPanel = (
-            <PartyDetail refTables={this.props.refTables} partyRegion={this.props.partyRegion} selectedPartyData={this.props.partyRegion.selectedPartyData} />
+            <PartyDetail 
+                refTables={this.props.refTables} 
+                partyRegion={this.props.partyRegion} 
+            />
         )
 
         var rightPanel = (
             <PartyEntities 
-                entities={this.props.partyRegion.entities} 
-                selectedPartyID={this.props.partyRegion.selectedPartyID}
+                partyRegion={this.props.partyRegion}
             />
         )
 

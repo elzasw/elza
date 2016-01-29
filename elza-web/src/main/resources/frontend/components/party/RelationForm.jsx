@@ -11,6 +11,7 @@ import {Modal, Button, Input, Glyphicon} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField} from 'components/form/FormUtils'
 import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes'
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 
 require ('./PartyFormStyles.less');
 
@@ -19,14 +20,20 @@ const validate = (values, props) => {
     if ((!values.relationTypeId || values.relationTypeId==0 )) {
         errors.relationTypeId = i18n('global.validation.required');
     }
+    if ((!values.calendarTypeIdTo || values.calendarTypeIdTo==0 )) {
+        errors.calendarTypeIdTo = i18n('global.validation.required');
+    }
+
+    if ((!values.calendarTypeIdFrom || values.calendarTypeIdFrom==0 )) {
+        errors.calendarTypeIdFrom = i18n('global.validation.required');
+    }
     return errors;
 };
 
-var AddRelationForm = class AddRelationForm extends AbstractReactComponent {
+var RelationForm = class RelationForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        //this.dispatch(refPartyNameFormTypesFetchIfNeeded());
-        //this.dispatch(calendarTypesFetchIfNeeded());
+        this.dispatch(calendarTypesFetchIfNeeded());
         this.state = {
             entities : props.initData.entities
         };
@@ -68,7 +75,7 @@ var AddRelationForm = class AddRelationForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {relationClassId, relationTypeId, dateFrom, dateTo, note, sources, entities}, handleSubmit, onClose} = this.props;
+        const {fields: {relationClassId, relationTypeId, dateFrom, dateTo, calendarTypeIdFrom, calendarTypeIdTo, note, entities}, handleSubmit, onClose} = this.props;
         var entities2 = [];
         return (
             <div>
@@ -83,35 +90,45 @@ var AddRelationForm = class AddRelationForm extends AbstractReactComponent {
                                 <option value="0" key="0"></option> 
                                 <option value="1" key="1">členství</option> 
                             </Input>
+                        </div>                            
+                        <div className="line">
                             <Input type="text" label={i18n('party.relation.from')} {...dateFrom} {...decorateFormField(dateFrom)} />
-                            <Input type="text" label={i18n('party.relation.to')} {...dateTo} {...decorateFormField(dateTo)} />      
+                            <Input type="select" label={i18n('party.calendarTypeFrom')} {...calendarTypeIdFrom} {...decorateFormField(calendarTypeIdFrom)}>
+                                <option value="0" key="0"></option> 
+                                {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id}>{i.name}</option>})}
+                            </Input>   
+                        </div>
+                        <div className="line">
+                            <Input type="text" label={i18n('party.relation.to')} {...dateTo} {...decorateFormField(dateTo)} /> 
+                            <Input type="select" label={i18n('party.calendarTypeTo')} {...calendarTypeIdTo} {...decorateFormField(calendarTypeIdTo)}>
+                                <option value="0" key="0"></option> 
+                                {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id}>{i.name}</option>})}
+                            </Input>
                         </div>
                         <Input type="text" label={i18n('party.relation.note')} {...note} {...decorateFormField(note)} />
-                        <Input type="textarea" label={i18n('party.relation.sources')} {...sources} {...decorateFormField(sources)} />
                         <h5>{i18n('party.relation.entities')}</h5>
                         <div>
-                            {this.state.entities.map((i,index)=> {return <div className="line entity">
-                                <div className="column">
-                                    <strong>{i.record}</strong><br/>
-                                    {i.roleType}
-                                </div>
-                                <div className="column ico">
+                            {this.state.entities.map((i,index)=> {return <div className="block entity">
+                                <Input type="select" label={i18n('party.relation.record')} value={i.record} >
+                                    <option value="0" key="0"></option> 
+                                    <option value="1" key="1">Záznam 1</option> 
+                                </Input> 
+                                <Input type="select" label={i18n('party.relation.roleType')} value={i.roleTypeId}>
+                                    <option value="0" key="0"></option> 
+                                    <option value="1" key="1">Role 1</option> 
+                                </Input> 
+                                <Input type="textarea" label={i18n('party.relation.sources')} value={i.sources}/>
+                                <div className="ico">
                                     <Button onClick={this.removeEntity.bind(this, index)}><Glyphicon glyph="trash" /></Button>
                                 </div> 
                             </div>})}
-                        </div>
-                        <input type="hidden" name="entities" value='{JSON.stringify(this.state.entities)}' />
-                        <Search/>
-                        <Input type="select" label={i18n('party.relation.class')}>
-                            <option value="0" key="0"></option> 
-                            <option value="1" key="1">Vznik</option> 
-                        </Input>     
+                        </div>   
                         <hr/>
                         <Button onClick={this.addEntity}><Glyphicon glyph="plus" /></Button>
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={handleSubmit}>{i18n('global.action.create')}</Button>
+                    <Button onClick={handleSubmit}>{i18n('global.action.store')}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
@@ -120,15 +137,15 @@ var AddRelationForm = class AddRelationForm extends AbstractReactComponent {
 }
 
 module.exports = reduxForm({
-    form: 'addRelationForm',
-    fields: ['relationClassId', 'relationTypeId', 'dateFrom', 'dateTo', 'note', 'sources', 'entities'],
+    form: 'relationForm',
+    fields: ['relationClassId', 'relationTypeId', 'dateFrom', 'dateTo', 'calendarTypeIdFrom', 'calendarTypeIdTo', 'note', 'entities'],
     validate
 },state => ({
-    initialValues: state.form.addRelationForm.initialValues,
+    initialValues: state.form.relationForm.initialValues,
     refTables: state.refTables
 }),
-{load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addRelationForm', data})}
-)(AddRelationForm)
+{load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'relationForm', data})}
+)(RelationForm)
 
 
 

@@ -83,6 +83,7 @@ export const PARTY_SELECT_PARTY = 'PARTY_SELECT_PARTY'              // dokončen
 export const PARTY_DETAIL_REQUEST = 'PARTY_DETAIL_REQUEST'          // pořadavek na načtení detailu osoby
 export const PARTY_DETAIL_RECEIVE = 'PARTY_DETAIL_RECIVE'           // dokončení požadavku na hledání osoby
 export const PARTY_DELETED = 'PARTY_DELETED'                        // smazani osoby
+export const PARTY_UPDATED = 'REGISTRY_UPDATED'                     // provedena aktualizace osoby
 
 /**
  * Toastr

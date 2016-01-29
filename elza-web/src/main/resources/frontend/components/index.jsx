@@ -54,9 +54,8 @@ exports.AddPartyPersonForm = require('./party/AddPartyPersonForm');
 exports.AddPartyDynastyForm = require('./party/AddPartyDynastyForm');
 exports.AddPartyEventForm = require('./party/AddPartyEventForm');
 exports.AddPartyGroupForm = require('./party/AddPartyGroupForm');
-exports.AddPartyOtherForm = require('./party/AddPartyOtherForm');
 exports.AddPartyNameForm = require('./party/AddPartyNameForm');
-exports.AddRelationForm = require('./party/AddRelationForm');
+exports.RelationForm = require('./party/RelationForm');
 
 exports.AdminPackagesList = require('./admin/AdminPackagesList');
 exports.AdminPackagesUpload = require('./admin/AdminPackagesUpload');

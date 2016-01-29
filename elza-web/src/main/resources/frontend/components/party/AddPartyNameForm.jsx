@@ -20,6 +20,14 @@ const validate = (values, props) => {
         errors.nameMain = i18n('global.validation.required');
     }
 
+    if ((!values.calendarTypeId || values.calendarTypeId==0 )) {
+        errors.calendarTypeId = i18n('global.validation.required');
+    }
+
+    if ((!values.nameFormTypeId || values.nameFormTypeId==0 )) {
+        errors.nameFormTypeId = i18n('global.validation.required');
+    }
+
     return errors;
 };
 
@@ -37,7 +45,7 @@ var AddPartyNameForm = class AddPartyNameForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {nameFormTypeId, mainPart, otherPart, degreeBefore, degreeAfter, validFrom, validTo, calendarType}, handleSubmit, onClose} = this.props;
+        const {fields: {nameFormTypeId, mainPart, otherPart, degreeBefore, degreeAfter, validFrom, validTo, calendarTypeId}, handleSubmit, onClose} = this.props;
         return (
             <div>
                 <Modal.Body>
@@ -52,13 +60,14 @@ var AddPartyNameForm = class AddPartyNameForm extends AbstractReactComponent {
                         </div>
                         <Input type="text" label={i18n('party.nameMain')} {...mainPart} {...decorateFormField(mainPart)} />
                         <Input type="text" label={i18n('party.nameOther')} {...otherPart} {...decorateFormField(otherPart)} />
-                        <Input type="select" label={i18n('party.calendarType')}>
-                            {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.partyTypeId}>{i.name}</option>})}
+                        <Input type="select" label={i18n('party.calendarType')} {...calendarTypeId} {...decorateFormField(calendarTypeId)}>
+                            <option value="0" key="0"></option> 
+                            {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id}>{i.name}</option>})}
                         </Input>
                         <div className="line">
                             <Input type="text" label={i18n('party.nameValidFrom')} {...validFrom} {...decorateFormField(validFrom)} />
                             <Input type="text" label={i18n('party.nameValidTo')} {...validTo} {...decorateFormField(validTo)} />
-¨                       </div>
+                        </div>
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
@@ -72,7 +81,7 @@ var AddPartyNameForm = class AddPartyNameForm extends AbstractReactComponent {
 
 module.exports = reduxForm({
     form: 'addPartyNameForm',
-    fields: ['nameFormTypeId', 'mainPart', 'otherPart', 'degreeBefore', 'degreeAfter', 'validFrom', 'validTo', 'calendarType'],
+    fields: ['nameFormTypeId', 'mainPart', 'otherPart', 'degreeBefore', 'degreeAfter', 'validFrom', 'validTo', 'calendarTypeId'],
     validate
 },state => ({
     initialValues: state.form.addPartyNameForm.initialValues,

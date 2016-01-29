@@ -45,15 +45,28 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
     }
 
     handleCallAddName(data) {
+        alert("aa");
         var party = this.props.partyRegion.selectedPartyData;
         party.partyNames[party.partyNames.length] = {
-            nameFormTypeId: data.nameFormTypeId,
+            nameFormType: {
+                nameFormTypeId:data.nameFormTypeId,
+            },
+            displayName: data.mainPart,
             mainPart: data.mainPart,
             otherPart: data.otherPart,
             degreeBefore: data.degreeBefore,
-            degreeAfter: data.degreeAfter
+            degreeAfter: data.degreeAfter,
+            validFrom: {
+                    textDate:validFrom,
+                    calendarTypeId:calendarTypeId
+            },
+            validTo: {
+                    textDate:validTo,
+                    calendarTypeId:calendarTypeId
+            }
         }
-        this.dispatch(updateParty(party));               
+        console.log(party);
+        //this.dispatch(updateParty(party));               
     }
 
     handleAddName(){
@@ -79,17 +92,17 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
     }
 
     render() {
-        console.log(this.props.data);
+        var party = this.props.partyRegion.selectedPartyData;
         return  <div className="partyNames">
                     <table>
                         <tbody>
-                            {this.props.data.partyNames.map(i=> {return <tr className="name">
+                            {party.partyNames.map(i=> {return <tr className="name">
                                 <th className="name column">{i.mainPart}</th> 
                                 <td className="buttons">
                                     <Button className="column" onClick={this.handleEditName.bind(this, i.partyNameId)}><Glyphicon glyph="edit" /></Button>
                                     <Button className="column" onClick={this.handleDeleteName.bind(this, i.partyNameId)}><Glyphicon glyph="trash" /></Button>
                                 </td>
-                                <td className="description">{(i.partyNameId == this.props.data.preferredName.partyNameId ? i18n('party.detail.name.preferred') : "" )}</td>
+                                <td className="description">{(i.preferred ? i18n('party.detail.name.preferred') : "" )}</td>
                             </tr>})}
                         </tbody>
                     </table>
