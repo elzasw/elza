@@ -125,8 +125,6 @@ public class RegistryController {
         List<RegRecord> foundRecords = registryService
                 .findRegRecordByTextAndType(search, registerTypeIdList, from, count, parentRecordId, findingAid);
 
-        // děti
-        Map<RegRecord, List<RegRecord>> parentChildrenMap = registryService.findChildren(foundRecords);
 
         Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(foundRecords);
 
@@ -136,11 +134,6 @@ public class RegistryController {
         for (RegRecordVO regRecordVO : foundRecordVOList) {
             parentRecordVOMap.put(regRecordVO.getRecordId(), regRecordVO);
         }
-
-        foundRecords.forEach(record -> {
-            List<RegRecord> children = parentChildrenMap.get(record);
-            parentRecordVOMap.get(record.getRecordId()).setHasChildren(children == null ? false : !children.isEmpty());
-        });
 
 //        for (RegRecord record : parentChildrenMap.keySet()) {
 //            List<RegRecord> children = parentChildrenMap.get(record);

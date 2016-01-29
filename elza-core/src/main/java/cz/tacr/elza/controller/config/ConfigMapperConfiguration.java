@@ -405,6 +405,7 @@ public class ConfigMapperConfiguration {
                         }
 
                         regRecordVO.setRegisterTypeId(regRecord.getRegisterType().getRegisterTypeId());
+                        regRecordVO.setAddRecord(regRecord.getRegisterType().getAddRecord());
                         regRecordVO.setScopeId(regRecord.getScope().getScopeId());
                     }
 
