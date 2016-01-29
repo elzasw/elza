@@ -10,7 +10,7 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Icon, i18n} from 'components';
-import {AddFaForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components';
+import {Autocomplete, AddFaForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components';
 import {ModalDialog, NodeTabs, FaTreeTabs} from 'components';
 import {ButtonGroup, Button, Panel} from 'react-bootstrap';
 import {PageLayout} from 'pages';
@@ -20,7 +20,6 @@ import {storeLoadData, storeSave, storeLoad} from 'actions/store/store'
 import {Combobox} from 'react-input-enhancements'
 import {WebApi} from 'actions'
 
-var Autocomplete  = require('./Autocomplete')
 let styles = {
   item: {
     padding: '2px 6px',
