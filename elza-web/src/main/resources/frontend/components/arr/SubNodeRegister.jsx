@@ -35,7 +35,7 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
 
         return (
             <div className='node-registers'>
-                Ahooooj
+                TODO
             </div>
         )
     }
