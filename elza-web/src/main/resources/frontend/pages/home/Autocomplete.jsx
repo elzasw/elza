@@ -43,16 +43,17 @@ var keyDownHandlers = {
         } else {
             var item = this.getFilteredItems()[this.state.highlightedIndex]
             this.setState({
-                value: this.props.getItemValue(item),
+                inputStrValue: this.props.getItemName(item),
+                value: item,
                 isOpen: false,
                 highlightedIndex: null
             }, () => {
                 //ReactDOM.findDOMNode(this.refs.input).focus() // TODO: file issue
                 ReactDOM.findDOMNode(this.refs.input).setSelectionRange(
-                    this.state.value.length,
-                    this.state.value.length
+                    this.state.inputStrValue.length,
+                    this.state.inputStrValue.length
                 )
-                this.props.onSelect(this.state.value, item)
+                this.props.onSelect(this.state.inputStrValue, item)
             })
         }
     },
@@ -74,20 +75,21 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
             'handleKeyDown')
 
         this.state = {
-            value: props.initialValue || '',
+            value: props.value,
+            inputStrValue: props.getItemName(props.value),
             isOpen: false,
             highlightedIndex: null,
         }
     }
 
-    renderMenuItems(items, value, style) {
+    renderMenuContainer(items, value, style) {
         return (
             <div className='autocomplete-menu-container'>
                 <div className='autocomplete-menu'>
                     {items}
                 </div>
                 <div className='autocomplete-menu-actions'>
-                    actions...
+                    this.props.renderActions()
                 </div>
             </div>
         )
@@ -138,9 +140,9 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
     handleChange (event) {
         this._performAutoCompleteOnKeyUp = true
         this.setState({
-            value: event.target.value,
+            inputStrValue: event.target.value,
         }, () => {
-            this.props.onChange(event, this.state.value)
+            this.props.onChange(event, this.state.inputStrValue)
         })
     }
 
@@ -156,13 +158,13 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
 
         if (this.props.shouldItemRender) {
             items = items.filter((item) => (
-                this.props.shouldItemRender(item, this.state.value)
+                this.props.shouldItemRender(item, this.state.inputStrValue)
             ))
         }
 
         if (this.props.sortItems) {
             items.sort((a, b) => (
-              this.props.sortItems(a, b, this.state.value)
+              this.props.sortItems(a, b, this.state.inputStrValue)
             ))
         }
 
@@ -170,7 +172,7 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
     }
 
     maybeAutoCompleteText() {
-        if (this.state.value === '') {
+        if (this.state.inputStrValue === '') {
             return
         }
 
@@ -182,14 +184,14 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
         }
 
         var matchedItem = highlightedIndex !== null ? items[highlightedIndex] : items[0]
-        var itemValue = this.props.getItemValue(matchedItem)
-        var itemValueDoesMatch = (itemValue.toLowerCase().indexOf(this.state.value.toLowerCase()) === 0)
+        var itemValue = this.props.getItemName(matchedItem)
+        var itemValueDoesMatch = (itemValue.toLowerCase().indexOf(this.state.inputStrValue.toLowerCase()) === 0)
       
         if (itemValueDoesMatch) {
             var node = ReactDOM.findDOMNode(this.refs.input)
             var setSelection = () => {
                 node.value = itemValue
-                node.setSelectionRange(this.state.value.length, itemValue.length)
+                node.setSelectionRange(this.state.inputStrValue.length, itemValue.length)
             }
             if (highlightedIndex === null) {
                 this.setState({ highlightedIndex: 0 }, setSelection)
@@ -219,11 +221,12 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
 
     selectItemFromMouse(item) {
         this.setState({
-            value: this.props.getItemValue(item),
+            inputStrValue: this.props.getItemName(item),
+            value: item,
             isOpen: false,
             highlightedIndex: null
         }, () => {
-            this.props.onSelect(this.state.value, item)
+            this.props.onSelect(this.state.inputStrValue, item)
             ReactDOM.findDOMNode(this.refs.input).focus()
             this.setIgnoreBlur(false)
         })
@@ -238,7 +241,7 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
             var element = this.props.renderItem(
                 item,
                 this.state.highlightedIndex === index,
-                {cursor: 'default'}
+                this.state.value && this.props.getItemId(this.state.value) === this.props.getItemId(item)
             )
             return React.cloneElement(element, {
                 onMouseDown: () => this.setIgnoreBlur(true),
@@ -252,7 +255,7 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
             top: this.state.menuTop,
             minWidth: this.state.menuWidth,
         }
-        var menu = this.renderMenuItems(items, this.state.value, style)
+        var menu = this.renderMenuContainer(items, this.state.value, style)
         return React.cloneElement(menu, { ref: 'menu' })
     }
 
@@ -262,7 +265,8 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
         }
         this.setState({
             isOpen: false,
-            highlightedIndex: null
+            highlightedIndex: null,
+            inputStrValue: this.props.getItemName(this.state.value)
         })
     }
 
@@ -303,7 +307,7 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
                     onKeyDown={(event) => this.handleKeyDown(event)}
                     onKeyUp={(event) => this.handleKeyUp(event)}
                     onClick={this.handleInputClick}
-                    value={this.state.value}
+                    value={this.state.inputStrValue}
                 />
                 {this.state.isOpen && this.renderMenu()}
                 {this.props.debug && (

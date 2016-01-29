@@ -10,6 +10,15 @@
         overflow: auto;
         height: calc(~"100% - 32px");
         background: yellow;
+        
+        .item {
+            &.active {
+                background: red;
+            }
+            &.focus {
+                background: blue;
+            }
+        }
     }
     .autocomplete-menu-actions {
         height: 32px;

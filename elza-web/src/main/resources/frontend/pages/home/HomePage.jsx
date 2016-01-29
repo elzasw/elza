@@ -51,57 +51,58 @@ function sortStates (a, b, value) {
   )
 }
 function getStates() {
+var _id = 0;
   return [
-    { abbr: "AL", name: "Alabama"},
-    { abbr: "AK", name: "Alaska"},
-    { abbr: "AZ", name: "Arizona"},
-    { abbr: "AR", name: "Arkansas"},
-    { abbr: "CA", name: "California"},
-    { abbr: "CO", name: "Colorado"},
-    { abbr: "CT", name: "Connecticut"},
-    { abbr: "DE", name: "Delaware"},
-    { abbr: "FL", name: "Florida"},
-    { abbr: "GA", name: "Georgia"},
-    { abbr: "HI", name: "Hawaii"},
-    { abbr: "ID", name: "Idaho"},
-    { abbr: "IL", name: "Illinois"},
-    { abbr: "IN", name: "Indiana"},
-    { abbr: "IA", name: "Iowa"},
-    { abbr: "KS", name: "Kansas"},
-    { abbr: "KY", name: "Kentucky"},
-    { abbr: "LA", name: "Louisiana"},
-    { abbr: "ME", name: "Maine"},
-    { abbr: "MD", name: "Maryland"},
-    { abbr: "MA", name: "Massachusetts"},
-    { abbr: "MI", name: "Michigan"},
-    { abbr: "MN", name: "Minnesota"},
-    { abbr: "MS", name: "Mississippi"},
-    { abbr: "MO", name: "Missouri"},
-    { abbr: "MT", name: "Montana"},
-    { abbr: "NE", name: "Nebraska"},
-    { abbr: "NV", name: "Nevada"},
-    { abbr: "NH", name: "New Hampshire"},
-    { abbr: "NJ", name: "New Jersey"},
-    { abbr: "NM", name: "New Mexico"},
-    { abbr: "NY", name: "New York"},
-    { abbr: "NC", name: "North Carolina"},
-    { abbr: "ND", name: "North Dakota"},
-    { abbr: "OH", name: "Ohio"},
-    { abbr: "OK", name: "Oklahoma"},
-    { abbr: "OR", name: "Oregon"},
-    { abbr: "PA", name: "Pennsylvania"},
-    { abbr: "RI", name: "Rhode Island"},
-    { abbr: "SC", name: "South Carolina"},
-    { abbr: "SD", name: "South Dakota"},
-    { abbr: "TN", name: "Tennessee"},
-    { abbr: "TX", name: "Texas"},
-    { abbr: "UT", name: "Utah"},
-    { abbr: "VT", name: "Vermont"},
-    { abbr: "VA", name: "Virginia"},
-    { abbr: "WA", name: "Washington"},
-    { abbr: "WV", name: "West Virginia"},
-    { abbr: "WI", name: "Wisconsin"},
-    { abbr: "WY", name: "Wyoming"}
+    { id: _id++, abbr: "AL", name: "Alabama"},
+    { id: _id++, abbr: "AK", name: "Alaska"},
+    { id: _id++, abbr: "AZ", name: "Arizona"},
+    { id: _id++, abbr: "AR", name: "Arkansas"},
+    { id: _id++, abbr: "CA", name: "California"},
+    { id: _id++, abbr: "CO", name: "Colorado"},
+    { id: _id++, abbr: "CT", name: "Connecticut"},
+    { id: _id++, abbr: "DE", name: "Delaware"},
+    { id: _id++, abbr: "FL", name: "Florida"},
+    { id: _id++, abbr: "GA", name: "Georgia"},
+    { id: _id++, abbr: "HI", name: "Hawaii"},
+    { id: _id++, abbr: "ID", name: "Idaho"},
+    { id: _id++, abbr: "IL", name: "Illinois"},
+    { id: _id++, abbr: "IN", name: "Indiana"},
+    { id: _id++, abbr: "IA", name: "Iowa"},
+    { id: _id++, abbr: "KS", name: "Kansas"},
+    { id: _id++, abbr: "KY", name: "Kentucky"},
+    { id: _id++, abbr: "LA", name: "Louisiana"},
+    { id: _id++, abbr: "ME", name: "Maine"},
+    { id: _id++, abbr: "MD", name: "Maryland"},
+    { id: _id++, abbr: "MA", name: "Massachusetts"},
+    { id: _id++, abbr: "MI", name: "Michigan"},
+    { id: _id++, abbr: "MN", name: "Minnesota"},
+    { id: _id++, abbr: "MS", name: "Mississippi"},
+    { id: _id++, abbr: "MO", name: "Missouri"},
+    { id: _id++, abbr: "MT", name: "Montana"},
+    { id: _id++, abbr: "NE", name: "Nebraska"},
+    { id: _id++, abbr: "NV", name: "Nevada"},
+    { id: _id++, abbr: "NH", name: "New Hampshire"},
+    { id: _id++, abbr: "NJ", name: "New Jersey"},
+    { id: _id++, abbr: "NM", name: "New Mexico"},
+    { id: _id++, abbr: "NY", name: "New York"},
+    { id: _id++, abbr: "NC", name: "North Carolina"},
+    { id: _id++, abbr: "ND", name: "North Dakota"},
+    { id: _id++, abbr: "OH", name: "Ohio"},
+    { id: _id++, abbr: "OK", name: "Oklahoma"},
+    { id: _id++, abbr: "OR", name: "Oregon"},
+    { id: _id++, abbr: "PA", name: "Pennsylvania"},
+    { id: _id++, abbr: "RI", name: "Rhode Island"},
+    { id: _id++, abbr: "SC", name: "South Carolina"},
+    { id: _id++, abbr: "SD", name: "South Dakota"},
+    { id: _id++, abbr: "TN", name: "Tennessee"},
+    { id: _id++, abbr: "TX", name: "Texas"},
+    { id: _id++, abbr: "UT", name: "Utah"},
+    { id: _id++, abbr: "VT", name: "Vermont"},
+    { id: _id++, abbr: "VA", name: "Virginia"},
+    { id: _id++, abbr: "WA", name: "Washington"},
+    { id: _id++, abbr: "WV", name: "West Virginia"},
+    { id: _id++, abbr: "WI", name: "Wisconsin"},
+    { id: _id++, abbr: "WY", name: "Wyoming"}
   ]
 }
 
@@ -244,7 +245,27 @@ setTimeout(()=>this.setState({options: options2}), 4000);
         )
     }
 
+
     render() {
+var items = getStates();
+
+    var renderItem = (item, isHighlighted, isSelected) => {
+        var cls = 'item';
+        if (isHighlighted) {
+            cls += ' focus'
+        }
+        if (isSelected) {
+            cls += ' active'
+        }
+
+        return (
+            <div
+                className={cls}
+                key={item.id}
+            >{item.name}</div>
+        )
+    }
+
         var centerPanel = (
             <div>
                 {false && <div>
@@ -254,20 +275,17 @@ setTimeout(()=>this.setState({options: options2}), 4000);
 
 
 <Autocomplete
-          initialValue="Ma"
-          items={getStates()}
-          getItemValue={(item) => item.abbr}
-          shouldItemRender={matchStateToTerm}
-          sortItems={sortStates}
-          onBlur={()=>{console.log('ON BLUR')}}
-          onFocus={()=>{console.log('ON FOCUS')}}
-          onChange={(x, y)=>{console.log('ON CHANGE', x, y)}}
-          onSelect={(x)=>{console.log('ON SELECT', x)}}
-          renderItem={(item, isHighlighted) => (
-            <div
-              style={isHighlighted ? styles.highlightedItem : styles.item}
-              key={item.abbr}
-            >{item.name}</div>)}
+    value={items[0]}
+    items={items}
+    getItemId={(item) => item.id}
+    getItemName={(item) => item.name}
+    shouldItemRender={matchStateToTerm}
+    sortItems={sortStates}
+    onBlur={()=>{console.log('ON BLUR')}}
+    onFocus={()=>{console.log('ON FOCUS')}}
+    onChange={(x, y)=>{console.log('ON CHANGE', x, y)}}
+    onSelect={(x, y)=>{console.log('ON SELECT', x, y)}}
+    renderItem={renderItem}
 />
 
 

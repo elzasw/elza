@@ -28,8 +28,8 @@ var Layout = class Layout extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        this.dispatch(storeRestoreFromStorage());
-        this.scheduleStoreSave();
+        //this.dispatch(storeRestoreFromStorage());
+        //this.scheduleStoreSave();
     }
 
     render() {
