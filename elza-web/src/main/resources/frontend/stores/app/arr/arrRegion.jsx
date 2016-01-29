@@ -175,7 +175,7 @@ export default function arrRegion(state = initialState, action) {
         case types.NODE_DESC_ITEM_TYPE_NOCOPY:
             var result =  {
                 ...state,
-                nodeSettings: newNodeSettingsnodeSetting(state.nodeSettings, action)
+                nodeSettings: nodeSetting(state.nodeSettings, action)
             }
             return consolidateState(state, result);
         case types.PACKETS_REQUEST:

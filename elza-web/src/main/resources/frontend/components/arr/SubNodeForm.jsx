@@ -20,6 +20,7 @@ import {lockDescItemType, unlockDescItemType, unlockAllDescItemType, copyDescIte
 import {addNode} from 'actions/arr/node'
 import {createPacket} from 'actions/arr/packets'
 import faSelectSubNode from 'actions/arr/nodes'
+import {isFaRootId} from './ArrUtils.jsx'
 
 var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     constructor(props) {
@@ -29,7 +30,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             'handleChangeSpec', 'handleDescItemTypeRemove', 'handleBlur', 'handleFocus', 'renderFormActions',
             'getDescItemTypeInfo', 'handleDescItemAdd', 'handleDescItemRemove', 'handleDescItemTypeLock',
             'handleDescItemTypeUnlockAll', 'handleDescItemTypeCopy', 'handleAddNodeBefore', 'handleAddNodeAfter',
-            'handleCreatePacket', 'handleCreatePacketSubmit');
+            'handleCreatePacket', 'handleCreatePacketSubmit', 'handleAddChildNode');
 
 //console.log("@@@@@-SubNodeForm-@@@@@", props);
     }
@@ -140,9 +141,9 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 
     /**
-     * Přidání node před aktuální node a následovné vybrání
+     * Vrátí pole ke zkopírování
      */
-    handleAddNodeBefore() {
+    getDescItemTypeCopyIds() {
         var itemsToCopy = null;
         if (this.props.nodeSettings != "undefined") {
             var nodeIndex = indexById(this.props.nodeSettings.nodes, this.props.nodeId);
@@ -150,21 +151,28 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 itemsToCopy = this.props.nodeSettings.nodes[nodeIndex].descItemTypeCopyIds;
             }
         }
-        this.dispatch(addNode(this.props.selectedSubNode, this.props.parentNode, this.props.versionId, "BEFORE", itemsToCopy));
+        return itemsToCopy;
+    }
+
+    /**
+     * Přidání node před aktuální node a následovné vybrání
+     */
+    handleAddNodeBefore() {
+        this.dispatch(addNode(this.props.selectedSubNode, this.props.parentNode, this.props.versionId, "BEFORE", this.getDescItemTypeCopyIds()));
     }
 
     /**
      * Přidání node za aktuální node a následovné vybrání
      */
     handleAddNodeAfter() {
-        var itemsToCopy = null;
-        if (this.props.nodeSettings != "undefined") {
-            var nodeIndex = indexById(this.props.nodeSettings.nodes, this.props.nodeId);
-            if (nodeIndex != null) {
-                itemsToCopy = this.props.nodeSettings.nodes[nodeIndex].descItemTypeCopyIds;
-            }
-        }
-        this.dispatch(addNode(this.props.selectedSubNode, this.props.parentNode, this.props.versionId, "AFTER", itemsToCopy))
+        this.dispatch(addNode(this.props.selectedSubNode, this.props.parentNode, this.props.versionId, "AFTER", this.getDescItemTypeCopyIds()))
+    }
+
+    /**
+     * Přidání podřízeného záznamu
+     */
+    handleAddChildNode() {
+        this.dispatch(addNode(this.props.selectedSubNode, this.props.selectedSubNode, this.props.versionId, "CHILD", this.getDescItemTypeCopyIds()));
     }
 
     /**
@@ -396,15 +404,28 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @return {Object} view
      */
     renderFormActions() {
+        let notRoot = !isFaRootId(this.props.nodeId);
         return (
             <div className='node-form-actions'>
                 <NoFocusButton onClick={this.handleAddDescItemType}><Icon glyph="fa-plus"/>Přidat prvek</NoFocusButton>
                 <NoFocusButton onClick={this.handleDescItemTypeUnlockAll}><Icon glyph="fa-lock"/>Odemknout
                     vše</NoFocusButton>
-                <NoFocusButton onClick={this.handleAddNodeBefore}><Icon glyph="fa-plus"/>Přidat JP před</NoFocusButton>
-                <NoFocusButton onClick={this.handleAddNodeAfter}><Icon glyph="fa-plus"/>Přidat JP za</NoFocusButton>
+                {
+                    notRoot &&
+                    <NoFocusButton onClick={this.handleAddNodeBefore}><Icon glyph="fa-plus"/>Přidat JP
+                        před</NoFocusButton>
+                }
+                {
+                    notRoot &&
+                    <NoFocusButton onClick={this.handleAddNodeAfter}><Icon glyph="fa-plus"/>Přidat JP za</NoFocusButton>
+                }
+                <NoFocusButton onClick={this.handleAddChildNode}><Icon glyph="fa-plus"/>Přidat podřízený
+                    JP</NoFocusButton>
                 <NoFocusButton><Icon glyph="fa-list"/>Rejstříky</NoFocusButton>
-                <NoFocusButton><Icon glyph="fa-trash"/>Zrušit JP</NoFocusButton>
+                {
+                    notRoot &&
+                    <NoFocusButton><Icon glyph="fa-trash"/>Zrušit JP</NoFocusButton>
+                }
             </div>
         )
     }

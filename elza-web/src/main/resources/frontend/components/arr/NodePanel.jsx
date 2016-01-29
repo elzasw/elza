@@ -10,6 +10,7 @@ import {faSubNodeFormFetchIfNeeded} from 'actions/arr/subNodeForm'
 import {faSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo'
 import {faNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo'
 import {faSelectSubNode, faSubNodesNext, faSubNodesPrev, faSubNodesNextPage, faSubNodesPrevPage} from 'actions/arr/nodes'
+import {addNode} from 'actions/arr/node'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes'
 import {indexById} from 'stores/app/utils.jsx'
 import {createFaRoot, isFaRootId} from './ArrUtils.jsx'
@@ -25,7 +26,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             'renderChildren', 'handleOpenItem',
             'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick',
             'getParentNodes', 'getChildNodes', 'getSiblingNodes',
-            'renderAccordion', 'renderState', 'transformConformityInfo'
+            'renderAccordion', 'renderState', 'transformConformityInfo', 'handleAddNodeAtEnd'
             );
 
     }
@@ -168,6 +169,20 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     /**
+     * Přidání JP na konec do aktuálního node
+     */
+    handleAddNodeAtEnd() {
+        var itemsToCopy = null;
+        if (this.props.nodeSettings != "undefined") {
+            var nodeIndex = indexById(this.props.nodeSettings.nodes, this.props.node.id);
+            if (nodeIndex != null) {
+                itemsToCopy = this.props.nodeSettings.nodes[nodeIndex].descItemTypeCopyIds;
+            }
+        }
+        this.dispatch(addNode(this.props.node, this.props.node, this.props.fa.versionId, "CHILD", itemsToCopy));
+    }
+
+    /**
      * Renderování stavu.
      * @param item {object} na který node v Accordion se kliklo
      * @return {Object} view
@@ -282,7 +297,11 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         var siblings = this.getSiblingNodes().map(s => <span key={s.id}> {s.id}</span>);
         var actions = (
             <div className='actions'>
-                <div className='btn btn-default'><Icon glyph="fa-plus-circle" />Přidat JP na konec</div>
+                {
+                    node.fetched && !isFaRootId(node.id) &&
+                    <div className='btn btn-default' onClick={this.handleAddNodeAtEnd}><Icon glyph="fa-plus-circle"/>Přidat
+                        JP na konec</div>
+                }
                 <div className='btn btn-default' disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(faSubNodesPrevPage())}><Icon glyph="fa-backward" />{i18n('arr.fa.subNodes.prevPage')}</div>
                 <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize > node.childNodes.length} onClick={()=>this.dispatch(faSubNodesNextPage())}><Icon glyph="fa-forward" />{i18n('arr.fa.subNodes.nextPage')}</div>
 
@@ -390,11 +409,19 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 }
 
+function mapStateToProps(state) {
+    const {arrRegion} = state
+    return {
+        nodeSettings: arrRegion.nodeSettings
+    }
+}
+
 NodePanel.propTypes = {
     versionId: React.PropTypes.number.isRequired,
     fa: React.PropTypes.object.isRequired,
     node: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
+    nodeSettings: React.PropTypes.object.isRequired,
     packetTypes: React.PropTypes.object.isRequired,
     packets: React.PropTypes.array.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
@@ -402,4 +429,4 @@ NodePanel.propTypes = {
     showRegisterJp: React.PropTypes.bool.isRequired,
 }
 
-module.exports = connect()(NodePanel);
+module.exports = connect(mapStateToProps)(NodePanel);

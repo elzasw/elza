@@ -194,15 +194,27 @@ export function node(state = nodeInitialState, action) {
                      */
                     var nodeIndex = indexById(state.childNodes, action.indexNode.id);
                     if (nodeIndex != null) {
-                        nodeIndex = action.direction == "BEFORE" ? nodeIndex : nodeIndex+1;
+                        switch (action.direction) {
+                            case "AFTER":
+                            case "BEFORE":
+                                nodeIndex = action.direction == "BEFORE" ? nodeIndex : nodeIndex + 1;
 
-                        return {
-                            ...state,
-                            childNodes: [
-                                ...state.childNodes.slice(0, nodeIndex),
-                                nodeInitState(action.newNode),
-                                ...state.childNodes.slice(nodeIndex)
-                            ]
+                                return {
+                                    ...state,
+                                    childNodes: [
+                                        ...state.childNodes.slice(0, nodeIndex),
+                                        nodeInitState(action.newNode),
+                                        ...state.childNodes.slice(nodeIndex)
+                                    ]
+                                };
+                            case "CHILD":
+                                return {
+                                    ...state,
+                                    childNodes: [
+                                        ...state.childNodes,
+                                        nodeInitState(action.newNode)
+                                    ]
+                                };
                         }
                     }
                     return state;
