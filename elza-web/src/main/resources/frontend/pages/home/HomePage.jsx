@@ -18,6 +18,7 @@ import {modalDialogShow} from 'actions/global/modalDialog'
 import {createFa} from 'actions/arr/fa'
 import {storeLoadData, storeSave, storeLoad} from 'actions/store/store'
 import {Combobox} from 'react-input-enhancements'
+import {WebApi} from 'actions'
 
 var Autocomplete  = require('./Autocomplete')
 let styles = {
@@ -44,12 +45,6 @@ function matchStateToTerm (state, value) {
   )
 }
 
-function sortStates (a, b, value) {
-  return (
-    a.name.toLowerCase().indexOf(value.toLowerCase()) >
-    b.name.toLowerCase().indexOf(value.toLowerCase()) ? 1 : -1
-  )
-}
 function getStates() {
 var _id = 0;
   return [
@@ -110,7 +105,7 @@ var HomePage = class HomePage extends AbstractReactComponent {
     constructor(props) {
         super(props);
         this.bindMethods('handleAddFa', 'handleCallAddFa', 'renderHistory',
-            'renderHistoryItem', 'getFaDesc');
+            'renderHistoryItem', 'getFaDesc', 'handleFindParty', 'renderRecord');
 
         this.buildRibbon = this.buildRibbon.bind(this);
 
@@ -122,7 +117,7 @@ null,
 ]
 var options2 = [...options, {value: '3', text: 'ccc3'}]
 
-        this.state = {options: options}
+        this.state = {options: options, registryList: []}
 
 setTimeout(()=>this.setState({options: options2}), 4000);
     }
@@ -245,11 +240,18 @@ setTimeout(()=>this.setState({options: options2}), 4000);
         )
     }
 
+    handleFindParty(text) {
+        WebApi.findRegistry(text)
+            .then(json => {
+                this.setState({
+                    registryList: json.recordList.map(pp => {
+                        return {id: pp.recordId, name: pp.record}
+                    })
+                })
+            })
+    }
 
-    render() {
-var items = getStates();
-
-    var renderItem = (item, isHighlighted, isSelected) => {
+    renderRecord(item, isHighlighted, isSelected) {
         var cls = 'item';
         if (isHighlighted) {
             cls += ' focus'
@@ -262,9 +264,15 @@ var items = getStates();
             <div
                 className={cls}
                 key={item.id}
-            >{item.name}</div>
+            >
+                <div className='c1'>{item.id}</div>
+                <div className='c2'>{item.name}</div>
+            </div>
         )
     }
+
+    render() {
+var items = getStates();
 
         var centerPanel = (
             <div>
@@ -273,19 +281,30 @@ var items = getStates();
                     <Button onClick={() => this.dispatch(storeLoad())}>LOAD</Button></div>}
                 {this.renderHistory()}
 
-
+<h1>Autocomplete input - local data and local filter</h1>
 <Autocomplete
-    value={items[0]}
+    value={null}
     items={items}
-    getItemId={(item) => item.id}
-    getItemName={(item) => item.name}
+    getItemId={(item) => item ? item.id : null}
+    getItemName={(item) => item ? item.name : ''}
     shouldItemRender={matchStateToTerm}
-    sortItems={sortStates}
-    onBlur={()=>{console.log('ON BLUR')}}
-    onFocus={()=>{console.log('ON FOCUS')}}
+    onSearchChange={(x, y)=>{console.log('ON SEARCH CHANGE', x, y)}}
     onChange={(x, y)=>{console.log('ON CHANGE', x, y)}}
-    onSelect={(x, y)=>{console.log('ON SELECT', x, y)}}
-    renderItem={renderItem}
+/>
+
+<h1>Autocomplete input - server data and server filter</h1>
+<Autocomplete
+    customFilter
+    className='autocomplete-registry'
+    footer=<div><Button onClick={()=>{alert('klik')}}>xxx</Button></div>
+    header=<div><div className='c1'>id</div><div className='c2'>jmeno</div></div>
+    value={null}
+    items={this.state.registryList}
+    getItemId={(item) => item ? item.id : null}
+    getItemName={(item) => item ? item.name : ''}
+    onSearchChange={this.handleFindParty}
+    onChange={(x, y)=>{console.log('ON CHANGE', x, y)}}
+    renderItem={this.renderRecord}
 />
 
 

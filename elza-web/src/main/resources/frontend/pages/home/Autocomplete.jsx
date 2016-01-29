@@ -79,10 +79,7 @@ var keyDownHandlers = {
     },
 
     Escape: function(event) {
-        this.setState({
-            highlightedIndex: null,
-            isOpen: false
-        })
+        this.closeMenu();
     }
 }
 
@@ -211,7 +208,7 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
         this.setState({
             inputStrValue: event.target.value,
         }, () => {
-            this.props.onSearchChange(event, this.state.inputStrValue)
+            this.props.onSearchChange(this.state.inputStrValue)
         })
     }
 
@@ -225,16 +222,22 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
     getFilteredItems () {
         let items = this.props.items
 
-        if (this.props.shouldItemRender) {
-            items = items.filter((item) => (
-                this.props.shouldItemRender(item, this.state.inputStrValue)
-            ))
+        if (!this.props.customFilter) {
+            if (this.props.shouldItemRender) {
+                items = items.filter((item) => (
+                    this.props.shouldItemRender(item, this.state.inputStrValue)
+                ))
+            }
         }
 
         return items
     }
 
     maybeAutoCompleteText() {
+        if (this.props.customFilter) {
+            return
+        }
+
         if (this.state.inputStrValue === '') {
             return
         }
@@ -343,12 +346,20 @@ return true;
     }
 
     openMenu() {
+        if (this.state.isOpen) {
+            return
+        }
+
         this.setState({ isOpen: true }, () => {
                 ReactDOM.findDOMNode(this.refs.input).select()
             })
     }
 
     closeMenu() {
+        if (!this.state.isOpen) {
+            return;
+        }
+
         this.setState({
             isOpen: false,
             highlightedIndex: null,
@@ -365,10 +376,15 @@ return true;
     }
 
     render() {
+        var cls = 'autocomplete-control-container'
+        if (this.props.className) {
+            cls += ' ' + this.props.className;
+        }
+
         var glyph = this.state.isOpen ? 'fa-angle-up' : 'fa-angle-down';
 
         return (
-            <div className='autocomplete-control-container'>
+            <div className={cls}>
                 <div className='autocomplete-control-box'>
                     <input
                         {...this.props.inputProps}
