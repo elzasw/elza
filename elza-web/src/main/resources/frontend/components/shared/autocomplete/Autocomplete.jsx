@@ -365,7 +365,7 @@ return true;
             highlightedIndex: null,
             inputStrValue: this.props.getItemName(this.state.value)
         }, () => {
-                ReactDOM.findDOMNode(this.refs.input).select()
+                //ReactDOM.findDOMNode(this.refs.input).select()
             })
     }
 
