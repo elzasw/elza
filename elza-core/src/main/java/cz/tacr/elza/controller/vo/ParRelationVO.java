@@ -26,6 +26,8 @@ public class ParRelationVO {
 
     private Integer partyId;
 
+    private Integer version;
+
 
     private List<ParRelationEntityVO> relationEntities;
 
@@ -84,6 +86,14 @@ public class ParRelationVO {
 
     public void setPartyId(final Integer partyId) {
         this.partyId = partyId;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(final Integer version) {
+        this.version = version;
     }
 
     public List<ParRelationEntityVO> getRelationEntities() {

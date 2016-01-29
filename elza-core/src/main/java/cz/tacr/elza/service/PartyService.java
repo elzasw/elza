@@ -225,7 +225,7 @@ public class PartyService {
             saveParty = partyRepository.findOne(newParty.getPartyId());
             Assert.notNull(saveParty);
             BeanUtils.copyProperties(newParty, saveParty, "partyGroupIdentifiers", "record",
-                    "preferredName", "from", "to", "partyNames", "partyCreators", "version");
+                    "preferredName", "from", "to", "partyNames", "partyCreators");
         }
         saveParty.setPartyType(partyType);
 
@@ -607,6 +607,7 @@ public class PartyService {
 
         } else {
             relation = relationRepository.findOne(relationSource.getRelationId());
+            relation.setVersion(relationSource.getVersion());
 
 
             Integer fromId = relation.getFrom() == null ? null : relation.getFrom().getUnitdateId();
