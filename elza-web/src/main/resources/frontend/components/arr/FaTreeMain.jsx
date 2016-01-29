@@ -8,7 +8,7 @@ import {AbstractReactComponent, i18n, Tabs, FaTreeLazy} from 'components';
 import * as types from 'actions/constants/actionTypes';
 import {AppActions} from 'stores';
 import {MenuItem} from 'react-bootstrap';
-import {faTreeFulltextChange, faTreeFulltextSearch, faTreeFocusNode, faTreeFetchIfNeeded, faTreeNodeExpand, faTreeNodeCollapse} from 'actions/arr/faTree'
+import {faTreeFulltextChange, faTreeFulltextSearch, faTreeFocusNode, faTreeFetchIfNeeded, faTreeNodeExpand, faTreeFulltextNextItem, faTreeFulltextPrevItem, faTreeNodeCollapse, faTreeCollapse} from 'actions/arr/faTree'
 import {faSelectSubNode} from 'actions/arr/nodes'
 import {createFaRoot, getParentNode} from './ArrUtils.jsx'
 import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu'
@@ -19,7 +19,7 @@ var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
 
         this.bindMethods('callFaSelectSubNode', 'handleNodeClick', 'handleSelectInNewTab',
         'handleContextMenu', 'handleFulltextChange', 'handleFulltextSearch',
-        'handleFulltextPrevItem', 'handleFulltextNextItem');
+            'handleFulltextPrevItem', 'handleFulltextNextItem', 'handleCollapse');
     }
 
     componentDidMount() {
@@ -103,6 +103,11 @@ var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
         this.dispatch(faTreeFulltextNextItem(types.FA_TREE_AREA_MAIN, this.props.versionId));
     }
 
+    handleCollapse() {
+        // TODO Detekce area
+        this.dispatch(faTreeCollapse(types.FA_TREE_AREA_MAIN, this.props.fa))
+    }
+
     render() {
         const {fa} = this.props;
 
@@ -116,6 +121,7 @@ var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
                 onFulltextSearch={this.handleFulltextSearch}
                 onFulltextPrevItem={this.handleFulltextPrevItem}
                 onFulltextNextItem={this.handleFulltextNextItem}
+                onCollapse={this.handleCollapse}
             />
         )
     }

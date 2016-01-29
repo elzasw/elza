@@ -160,6 +160,17 @@ export default function faTree(state = initialState, action) {
                     expandedIds: {...state.expandedIds, [action.node.id]: true}
                 });
             }
+        case types.FA_FA_TREE_COLLAPSE:
+            return Object.assign({}, state, {
+                isFetching: false,
+                fetched: true,
+                expandedIds: initialState.expandedIds,
+                nodes: [
+                    state.nodes[0]
+                ],
+                selectedId: initialState.selectedId,
+                selectedIds: initialState.selectedIds
+            });
         case types.FA_FA_TREE_COLLAPSE_NODE:
             var expandedIds = {...state.expandedIds};
             delete expandedIds[action.node.id];
@@ -239,7 +250,6 @@ export default function faTree(state = initialState, action) {
 
                 return result;
             }
-
         case types.CHANGE_CONFORMITY_INFO:
             var index = indexById(state.nodes, action.nodeId);
 

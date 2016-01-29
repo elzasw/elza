@@ -35,6 +35,14 @@ export function _faTreeNodeExpand(area, node, addWaitingNode=false) {
     }
 }
 
+export function faTreeCollapse(area, node) {
+    return {
+        type: types.FA_FA_TREE_COLLAPSE,
+        area,
+        node
+    }
+}
+
 export function faTreeFulltextChange(area, versionId, filterText) {
     return {
         type: types.FA_FA_TREE_FULLTEXT_CHANGE,
