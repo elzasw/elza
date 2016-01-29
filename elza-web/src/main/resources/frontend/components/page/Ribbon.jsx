@@ -27,7 +27,7 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
         // Aktomatické sekce podle vybrané oblasti
         if (this.props.admin) {
             section = (
-                <RibbonGroup className="">
+                <RibbonGroup className="large">
                     <LinkContainer to="/admin/packages"><Button><Icon glyph="fa-archive" /><div><span className="btnText">{i18n('ribbon.action.admin.packages')}</span></div></Button></LinkContainer>
                     <LinkContainer to="/admin/fulltext"><Button><Icon glyph="fa-search" /><div><span className="btnText">{i18n('ribbon.action.admin.fulltext')}</span></div></Button></LinkContainer>
                 </RibbonGroup>

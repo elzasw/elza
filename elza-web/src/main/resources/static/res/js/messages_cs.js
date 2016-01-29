@@ -2,8 +2,9 @@ var messages = {
     "global.data.loading": "Načítání dat...",
 
     "global.data.loading.register": "Načítání rejstříků",
-    "global.data.loading.form": "Načítání formuláře jednotky popisu",
-    "global.data.loading.node": "Načítání seznamu jednotek popisu",
+    "global.data.loading.form": "Načítání formuláře JP",
+    "global.data.loading.node": "Načítání seznamu JP",
+    "global.data.loading.node.children": "Načítání seznamu potomků JP",
 
     "global.error.ajax": "Problém ajaxového volání",
     "global.action.create": "Vytvořit",

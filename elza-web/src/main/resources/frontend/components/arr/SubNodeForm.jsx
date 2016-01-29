@@ -421,7 +421,6 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 }
                 <NoFocusButton onClick={this.handleAddChildNode}><Icon glyph="fa-plus"/>Přidat podřízený
                     JP</NoFocusButton>
-                <NoFocusButton><Icon glyph="fa-list"/>Rejstříky</NoFocusButton>
                 {
                     notRoot &&
                     <NoFocusButton><Icon glyph="fa-trash"/>Zrušit JP</NoFocusButton>

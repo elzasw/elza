@@ -296,10 +296,10 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 
         var parents = this.renderParents(this.getParentNodes());
         var children;
-        if ((node.subNodeInfo.isFetching && !node.subNodeInfo.dirty) || !node.subNodeInfo.fetched) {
-            children = <div className='children'><div className='content'><Loading/></div></div>
-        } else {
+        if (node.subNodeInfo.fetched || node.selectedSubNodeId == null) {
             children = this.renderChildren(this.getChildNodes());
+        } else {
+            children = <div className='children'><Loading value={i18n('global.data.loading.node.children')} /></div>
         }
         var siblings = this.getSiblingNodes().map(s => <span key={s.id}> {s.id}</span>);
         var actions = (

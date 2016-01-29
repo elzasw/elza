@@ -139,7 +139,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         itemActions.push(
                 <Button active={show} onClick={this.handleRegisterJp.bind(this, !show)} key="toggle-record-jp">
-                    <Icon glyph="fa-calendar-check-o" />
+                    <Icon glyph="fa-th-list" />
                     <div>
                         <span className="btnText">{i18n('ribbon.action.arr.show-register-jp')}</span>
                     </div>
