@@ -8,7 +8,7 @@ export function faInitState(faWithVersion) {
     var result = {
         ...faWithVersion,
         id: faWithVersion.versionId,
-        faId: faWithVersion.id,
+        faId: faWithVersion.faId,
         versionId: faWithVersion.versionId,
         name: faWithVersion.name,
         isFetching: false,
