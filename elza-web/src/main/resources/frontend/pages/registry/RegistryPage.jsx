@@ -19,7 +19,7 @@ import {PageLayout} from 'pages';
 import {Nav, Glyphicon, NavItem} from 'react-bootstrap';
 import {registryData, registrySearchData, registryChangeParent, registryRemoveRegistry, registryStartMove, registryStopMove, registryCancelMove} from 'actions/registry/registryData'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {fetchRegistryIfNeeded, registrySetTypesId, fetchRegistry} from 'actions/registry/registryList'
+import {fetchRegistryIfNeeded, registrySetTypesId, fetchRegistry, registryRemoveRegistryTypesFilter} from 'actions/registry/registryList'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
 
 
@@ -28,7 +28,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('buildRibbon', 'handleSelectType', 'handleSelect', 'handleSearch', 'handleDoubleClick', 'handleClickNavigation', 'handleAddRegistry', 'handleCallAddRegistry', 'handleRemoveRegistryDialog', 'handleRemoveRegistry', 'handleStartMoveRegistry', 'handleSaveMoveRegistry', 'handleCancelMoveRegistry');
+        this.bindMethods('buildRibbon', 'handleSelectType', 'handleSelect', 'handleSearch', 'handleDoubleClick', 'handleClickNavigation', 'handleAddRegistry', 'handleCallAddRegistry', 'handleRemoveRegistryDialog', 'handleRemoveRegistry', 'handleStartMoveRegistry', 'handleSaveMoveRegistry', 'handleCancelMoveRegistry', 'handleCloseTypesRegistry');
         this.dispatch(fetchRegistryIfNeeded(props.registry.filterText, props.registry.registryParentId, props.registry.registryTypesId));
         this.dispatch(refRecordTypesFetchIfNeeded());
 
@@ -102,38 +102,38 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
         var altActions = [];
         altActions.push(
-            <Button onClick={this.handleAddRegistry.bind(this, this.props.registry.registryParentId)}><Icon glyph="fa-download" /><div><span className="btnText">{i18n('registry.addNewRegistry')}</span></div></Button>
+            <Button key='addRegistry' onClick={this.handleAddRegistry.bind(this, this.props.registry.registryParentId)}><Icon glyph="fa-download" /><div><span className="btnText">{i18n('registry.addNewRegistry')}</span></div></Button>
         );
 
 
         altActions.push(
-            <Button><Icon glyph='fa-download' /><div><span className="btnText">{i18n('ribbon.action.registry.import')}</span></div></Button>
+            <Button key='registryImport'><Icon glyph='fa-download' /><div><span className="btnText">{i18n('ribbon.action.registry.import')}</span></div></Button>
         );
 
         var itemActions = [];
         if (this.props.registry.selectedId) {
 
             itemActions.push(
-                <Button onClick={this.handleRemoveRegistryDialog.bind(this)}><Icon glyph="fa-trash" /><div><span className="btnText">{i18n('registry.removeRegistry')}</span></div></Button>
+                <Button key='registryRemove' onClick={this.handleRemoveRegistryDialog.bind(this)}><Icon glyph="fa-trash" /><div><span className="btnText">{i18n('registry.removeRegistry')}</span></div></Button>
             );
 
             if (this.props.registry.selectedId!=this.props.registry.registryParentId) {
                 itemActions.push(
-                    <Button onClick={this.handleAddRegistry.bind(this, this.props.registry.selectedId)}><Icon glyph="fa-download" /><div><span className="btnText">{i18n('registry.addNewRegistryHere')}</span></div></Button>
+                    <Button key='registryAddHere' onClick={this.handleAddRegistry.bind(this, this.props.registry.selectedId)}><Icon glyph="fa-download" /><div><span className="btnText">{i18n('registry.addNewRegistryHere')}</span></div></Button>
                 );
             }
 
             if (!this.props.registry.recordForMove){
                 itemActions.push(
-                    <Button onClick={this.handleStartMoveRegistry.bind(this)}><Glyphicon glyph="share-alt" /><div><span className="btnText">{i18n('registry.moveRegistry')}</span></div></Button>
+                    <Button key='registryMove' onClick={this.handleStartMoveRegistry.bind(this)}><Glyphicon glyph="share-alt" /><div><span className="btnText">{i18n('registry.moveRegistry')}</span></div></Button>
                 );
             }
             if (this.props.registry.recordForMove){
                 itemActions.push(
-                    <Button onClick={this.handleSaveMoveRegistry.bind(this)}><Icon glyph="fa-check-circle" /><div><span className="btnText">{i18n('registry.applyMove')}</span></div></Button>
+                    <Button key='registryMoveApply' onClick={this.handleSaveMoveRegistry.bind(this)}><Icon glyph="fa-check-circle" /><div><span className="btnText">{i18n('registry.applyMove')}</span></div></Button>
                 );
                 itemActions.push(
-                    <Button onClick={this.handleCancelMoveRegistry.bind(this)}><Icon glyph="fa-times" /><div><span className="btnText">{i18n('registry.cancelMove')}</span></div></Button>
+                    <Button key='registryMoveCancel' onClick={this.handleCancelMoveRegistry.bind(this)}><Icon glyph="fa-times" /><div><span className="btnText">{i18n('registry.cancelMove')}</span></div></Button>
                 );
             }
         }
@@ -163,6 +163,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     handleDoubleClick(item, event) {
         var registry = Object.assign({}, registry,{registryParentId: item.recordId});
         this.dispatch(registryChangeParent(registry));
+        this.dispatch(registrySetTypesId(item.registerTypeId));
     }
 
     handleClickNavigation(item, event) {
@@ -179,6 +180,9 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         this.dispatch(registrySetTypesId(selectedId));
     }
 
+    handleCloseTypesRegistry() {
+        this.dispatch(registrySetTypesId(null));
+    }
     render() {
 
         var navRows = (
@@ -236,7 +240,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             navParents = (
                 <ul className='breadcrumbs'>
                 <li onClick={this.handleClickNavigation.bind(this, {id:null})}>/</li>
-                {parentsArr.reverse().mapmap(item => {
+                {parentsArr.reverse().map(item => {
                     if (this.props.registry.selectedId===item.id)
                         return <li key={item.id} className='selected'>{item.record}</li>
                     return <li key={item.id} onClick={this.handleClickNavigation.bind(this, item)}>{item.record}</li>
@@ -245,7 +249,25 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 </ul>
             )
         }
-
+console.log(this.props.refTables.recordTypes.items);
+        if (!this.props.registry.registryTypesId) {
+            var RegistryTypes = <DropDownTree
+                nullValue={{id: null, name: i18n('registry.all')}}
+                key='search'
+                items={this.props.refTables.recordTypes.items}
+                value={this.props.registry.registryTypesId}
+                onSelect={this.hlandleRegistryTypesSelect.bind(this)}
+                />;
+        }
+        else {
+/**
+ * TODO - stepina - je zapotřebí získat od kluků flat pole s typy rejstříků případně i se všema rodiči abych mohl složit cestu
+ */
+            var RegistryTypes = <div className='registry-types-filter'>
+                    <div>Je vybrán typ rejstriku s ID: {this.props.registry.registryTypesId}</div>
+                    <Button onClick={this.handleCloseTypesRegistry}><Icon glyph="fa-close" /></Button>
+                </div>
+        }
 
         var leftPanel = (
             <div className="registry-list">
@@ -253,15 +275,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                     <Search
                         onSearch={this.handleSearch.bind(this)}
                         placeholder={i18n('search.input.search')}
-                        afterInput={
-                            <DropDownTree
-                                nullValue = {{id: null, name: i18n('registry.all')}}
-                                key='search'
-                                items = {this.props.refTables.recordTypes.items}
-                                value = {this.props.registry.registryTypesId}
-                                onSelect = {this.hlandleRegistryTypesSelect.bind(this)}
-                            />
-                        }
+                        afterInput={RegistryTypes}
                         filterText={this.props.registry.filterText}
                     />
                 </div>
@@ -293,6 +307,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         return (
             <PageLayout
                 className='registry-page'
+                key='registryPage'
                 ribbon={this.buildRibbon()}
                 leftPanel={leftPanel}
                 centerPanel={centerPanel}

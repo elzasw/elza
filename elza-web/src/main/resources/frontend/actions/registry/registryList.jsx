@@ -79,5 +79,10 @@ export function receiveRegistryGetRegistry(registryId, json) {
     }
 }
 
+export function registryRemoveRegistryTypesFilter(){
+    return {
+        type: types.REGISTRY_REMOVE_REGISTRY_TYPES_FILTER,
+    }
+}
 
 

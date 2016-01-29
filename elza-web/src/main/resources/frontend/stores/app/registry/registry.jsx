@@ -94,7 +94,7 @@ export default function registry(state = initialState, action = {}) {
             })
         case types.REGISTRY_MOVE_REGISTRY_START:
             return Object.assign({}, state, {
-                recordForMove: state.registryData.item,
+                recordForMove: state.registryData.item
             })
         case types.REGISTRY_MOVE_REGISTRY_FINISH:
             return Object.assign({}, state, {
