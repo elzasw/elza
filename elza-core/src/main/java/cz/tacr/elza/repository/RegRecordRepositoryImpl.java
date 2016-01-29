@@ -53,6 +53,14 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
         Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, record, builder,
                 scopeIdsForRecord);
 
+        if (parentRecord != null) {
+            if (condition == null) {
+                condition = builder.equal(record.get(RegRecord.PARENT_RECORD), parentRecord);
+            } else {
+                condition = builder.and(condition, builder.equal(record.get(RegRecord.PARENT_RECORD), parentRecord));
+            }
+        }
+
         query.select(record).distinct(true);
         if (condition != null) {
             Order order = builder.asc(record.get(RegRecord.RECORD));
@@ -81,6 +89,14 @@ public class RegRecordRepositoryImpl implements RegRecordRepositoryCustom {
 
         Predicate condition = preparefindRegRecordByTextAndType(searchRecord, registerTypeIds, record, builder,
                 scopeIdsForRecord);
+
+        if (parentRecord != null) {
+            if (condition == null) {
+                condition = builder.equal(record.get(RegRecord.PARENT_RECORD), parentRecord);
+            } else {
+                condition = builder.and(condition, builder.equal(record.get(RegRecord.PARENT_RECORD), parentRecord));
+            }
+        }
 
         query.select(builder.countDistinct(record));
         if (condition != null) {

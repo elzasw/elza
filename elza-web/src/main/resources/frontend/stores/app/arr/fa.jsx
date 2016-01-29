@@ -76,6 +76,7 @@ export function fa(state = nodeInitialState, action) {
         case types.FA_FA_TREE_FOCUS_NODE:
         case types.FA_FA_TREE_EXPAND_NODE:
         case types.FA_FA_TREE_COLLAPSE_NODE:
+        case types.FA_FA_TREE_COLLAPSE:
         case types.FA_FA_TREE_SELECT_NODE:
         case types.GLOBAL_CONTEXT_MENU_HIDE:
             var result = {...state};

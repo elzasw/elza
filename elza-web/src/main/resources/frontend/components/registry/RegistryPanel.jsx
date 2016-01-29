@@ -103,6 +103,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
 
         if (!this.props.registryData.isFetching && this.props.registryData.fetched) {
 
+            console.log(this.props.refTables.recordTypes);
             var detailRegistry = (
                     <div>
                         <h2>
@@ -112,11 +113,11 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
                         <p>{this.props.registryData.item.characteristics}</p>
 
                         <RegistryLabel
-                            key={this.props.refTables.recordTypes.items.recordId}
+                            key='searchTypesRegistry'
                             label={i18n('registry.detail.typ.rejstriku')}
                             type='selectWithChild'
                             items={this.props.refTables.recordTypes.items}
-                            value = {this.props.registryData.item.registerType.id}
+                            value = {this.props.registryData.item.registerTypeId}
                             onSelect = {this.handleChangeTypeRegistry}
                         />
 

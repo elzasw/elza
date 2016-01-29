@@ -33,6 +33,7 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
         this.getOpenedDefault = this.getOpenedDefault.bind(this);       // funkce pro zjisteni uzlu, ktere maji byt automaticky otevrene
         this.isNodeOpened = this.isNodeOpened.bind(this);               // funkce pro kontrolu jestli je uzel otevřený
         this.getItemLabel = this.getItemLabel.bind(this);               // funkce zjisteni popisku (nazvu) vybrané položky
+//        this.getItemLabelInt = this.getItemLabelInt.bind(this);               // funkce zjisteni popisku (nazvu) vybrané položky
         this.handleItemSelect = this.handleItemSelect.bind(this);       // funkce po kliknutí pro výběr
 
         
@@ -45,6 +46,16 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
             opened: opened,                                           // seznam rozbalenych uzlu  
             label: (label != '' ? label : this.props.label),          // pokus je vybrany nejaká položka, vypíše se její název, jinak se vypíše defaultní popisek
             value : this.props.value                // id vybrane položky     
+        }
+    }
+
+    componentWillReceiveProps(nextProps) {
+        var opened = (nextProps.opened ? nextProps.opened : []);
+        var label = this.getItemLabel(nextProps.value);
+        this.state = {                                                  // inicializace stavu komponenty
+            opened: opened,                                           // seznam rozbalenych uzlu
+            label: (label != '' ? label : nextProps.label),          // pokus je vybrany nejaká položka, vypíše se její název, jinak se vypíše defaultní popisek
+            value : nextProps.value                // id vybrane položky
         }
     }
 
@@ -170,7 +181,7 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
         if (this.props.nullValue && this.props.nullValue.id == value) {
             return this.props.nullValue.name;
         }
-        return getItemLabelInt(value, this.props.items);
+        return this.getItemLabelInt(value, this.props.items);
     }
 
     //vrati popisek vybrane polozky
@@ -181,7 +192,7 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
                 return item.name;
             }
             if (item.children) {
-                var res = getItemLabelInt(value, item.children);
+                var res = this.getItemLabelInt(value, item.children);
                 if (res) {
                     return res;
                 }

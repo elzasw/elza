@@ -18,8 +18,11 @@ var RegistryLabel = class RegistryLabel extends AbstractReactComponent {
         }
 
     }
-    componentWillReceiveProps(nextProps) {
+
+    componentWillReceiveProps(nextProps){
+
     }
+
     handleVariantKeyUp(e){
         if (e.keyCode == 13){
             this.handleSearch(e);
