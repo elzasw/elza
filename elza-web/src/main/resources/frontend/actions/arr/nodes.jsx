@@ -69,20 +69,21 @@ export function faCloseNodeTab(index) {
  * @param {Object} subNodeParentNode nadřazený JP pro vybíranou JP, předáváno kvůli případnému otevření nové záložky, pokud neexistuje
  * @param {boolean} openNewTab má se otevřít nová záložka? Pokud je false, bude použita existující  aktuálně vybraná, pokud žádná neexistuje, bude nová vytvořena
  */
-export function faSelectSubNodeInt(subNodeId, subNodeParentNode, openNewTab=false) {
+export function faSelectSubNodeInt(subNodeId, subNodeParentNode, openNewTab=false, newFilterCurrentIndex = null) {
     return {
         type: types.FA_FA_SELECT_SUBNODE,
         area: types.FA_TREE_AREA_MAIN,
         subNodeId,
         subNodeParentNode,
         openNewTab,
+        newFilterCurrentIndex
     }
 }
 
-export function faSelectSubNode(subNodeId, subNodeParentNode, openNewTab=false) {
+export function faSelectSubNode(subNodeId, subNodeParentNode, openNewTab=false, newFilterCurrentIndex = null) {
     return (dispatch, getState) => {
         dispatch(faExtendedView(false));
-        dispatch(faSelectSubNodeInt(subNodeId, subNodeParentNode, openNewTab));
+        dispatch(faSelectSubNodeInt(subNodeId, subNodeParentNode, openNewTab, newFilterCurrentIndex));
     }
 }
 

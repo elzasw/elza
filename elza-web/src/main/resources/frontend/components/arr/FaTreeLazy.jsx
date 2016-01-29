@@ -35,7 +35,7 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        var eqProps = ['expandedIds', 'selectedId', 'selectedIds', 'nodes', 'focusId', 'isFetching', 'fetched', '', '']
+        var eqProps = ['filterText', 'expandedIds', 'selectedId', 'selectedIds', 'nodes', 'focusId', 'isFetching', 'fetched', 'searchedIds', 'searchedParents', 'filterCurrentIndex']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -113,10 +113,22 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     }
 
     render() {
+        const {searchedIds, searchedParents, filterCurrentIndex} = this.props;
+
+        var searchedInfo;
+        if (searchedIds.length > 0 && filterCurrentIndex !== -1) {
+            searchedInfo = (
+                <div className='fa-tree-lazy-search-info'>
+                    ({filterCurrentIndex + 1}-{searchedIds.length})
+                </div>
+            )
+        }
+
         return (
             <div className='fa-tree-lazy-main-container'>
                 <div className='fa-traa-header-container'>
                     <Input type='search' value={this.props.filterText} onChange={e => this.props.onFulltextChange(e.target.value)} />
+                    {searchedInfo}
                     <Button onClick={this.props.onFulltextSearch}>Hledat</Button>
                     <Button onClick={this.props.onFulltextPrevItem}>Předchozí</Button>
                     <Button onClick={this.props.onFulltextNextItem}>Další</Button>
@@ -151,6 +163,10 @@ FaTreeLazy.propTypes = {
     expandedIds: React.PropTypes.object.isRequired,
     selectedId: React.PropTypes.number,
     selectedIds: React.PropTypes.object,
+    filterText: React.PropTypes.string,
+    searchedIds: React.PropTypes.object,
+    searchedParents: React.PropTypes.object,
+    filterCurrentIndex: React.PropTypes.number,
     nodes: React.PropTypes.array.isRequired,
     focusId: React.PropTypes.number,
     rowHeight: React.PropTypes.number.isRequired,

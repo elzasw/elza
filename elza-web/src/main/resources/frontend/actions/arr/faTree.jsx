@@ -10,13 +10,14 @@ import {indexById} from 'stores/app/utils.jsx'
 import {faSelectSubNode} from './nodes'
 
 // jen vyber polozky, vyuzite jen v presunech JP
-export function faTreeSelectNode(area, nodeId, ctrl, shift) {
+export function faTreeSelectNode(area, nodeId, ctrl, shift, newFilterCurrentIndex = null) {
     return {
         type: types.FA_FA_TREE_SELECT_NODE,
         area,
         nodeId,
         ctrl,
         shift,
+        newFilterCurrentIndex
     }
 }
 
@@ -52,27 +53,63 @@ export function faTreeFulltextChange(area, versionId, filterText) {
     }
 }
 
+function getFaTreeForFa(state, area, versionId) {
+    var index = indexById(state.arrRegion.fas, versionId, "versionId");
+    if (index != null) {
+        var fa = state.arrRegion.fas[index];
+        var faTree = getFaTree(fa, area);
+
+        return faTree;
+    } else {
+        return null;
+    }
+}
+
+function changeCurrentIndex(dispatch, area, faTree, newIndex) {
+    if (newIndex != faTree.filterCurrentIndex) {
+        var nodeId = faTree.searchedIds[newIndex];
+        var nodeParent = faTree.searchedParents[nodeId];
+        switch (area) {
+            case types.FA_TREE_AREA_MAIN:
+                dispatch(faSelectSubNode(nodeId, nodeParent, false, newIndex));
+            case types.FA_TREE_AREA_MOVEMENTS_LEFT:
+                dispatch(faTreeSelectNode(area, nodeId, false, false, newIndex))
+            case types.FA_TREE_AREA_MOVEMENTS_RIGHT:
+                dispatch(faTreeSelectNode(area, nodeId, false, false, newIndex))
+        }
+    }
+}
+
 export function faTreeFulltextNextItem(area, versionId) {
     return (dispatch, getState) => {
         var state = getState();
-        var index = indexById(state.arrRegion.fas, versionId, "versionId");
-        if (index != null) {
-            var fa = state.arrRegion.fas[index];
-            var faTree = getFaTree(fa, area);
+        var faTree = getFaTreeForFa(state, area, versionId);
 
-            if (faTree.searchedIds.length > 0) {
-                var newIndex;
-                if (faTree.filterCurrentIndex == -1) {
-                    newIndex = 0;
-                } else {
-                    newIndex = Math.max(faTree.filterCurrentIndex + 1, faTree.searchedIds.length - 1);
-                }
-                if (newIndex != faTree.filterCurrentIndex) {
-                    
-//                    dispatch()
-//faSelectSubNode
-                }
+        if (faTree && faTree.searchedIds.length > 0) {
+            var newIndex;
+            if (faTree.filterCurrentIndex == -1) {
+                newIndex = 0;
+            } else {
+                newIndex = Math.min(faTree.filterCurrentIndex + 1, faTree.searchedIds.length - 1);
             }
+            changeCurrentIndex(dispatch,area,  faTree, newIndex);
+        }
+    }
+}
+
+export function faTreeFulltextPrevItem(area, versionId) {
+    return (dispatch, getState) => {
+        var state = getState();
+        var faTree = getFaTreeForFa(state, area, versionId);
+
+        if (faTree && faTree.searchedIds.length > 0) {
+            var newIndex;
+            if (faTree.filterCurrentIndex == -1) {
+                newIndex = 0;
+            } else {
+                newIndex = Math.max(faTree.filterCurrentIndex - 1, 0);
+            }
+            changeCurrentIndex(dispatch, area, faTree, newIndex);
         }
     }
 }
@@ -80,24 +117,31 @@ export function faTreeFulltextNextItem(area, versionId) {
 export function faTreeFulltextSearch(area, versionId) {
     return (dispatch, getState) => {
         var state = getState();
-        var index = indexById(state.arrRegion.fas, versionId, "versionId");
-        if (index != null) {
-            var fa = state.arrRegion.fas[index];
-            var faTree = getFaTree(fa, area);
-
-            return WebApi.findInFaTree(versionId, null, faTree.filterText, 'SUBTREE')
-                .then(json => dispatch(faTreeFulltextResult(area, versionId, faTree.filterText, json)));
+        var faTree = getFaTreeForFa(state, area, versionId);
+        if (faTree) {
+            if (faTree.filterText.length > 0) {
+                return WebApi.findInFaTree(versionId, null, faTree.filterText, 'SUBTREE')
+                    .then(json => {
+                        dispatch(faTreeFulltextResult(area, versionId, faTree.filterText, json))
+                        if (json.length > 0) {
+                            var newFaTree = getFaTreeForFa(getState(), area, versionId)
+                            changeCurrentIndex(dispatch, area, newFaTree, 0);
+                        }
+                    });
+            } else {
+                dispatch(faTreeFulltextResult(area, versionId, faTree.filterText, []))
+            }
         }
     }
 }
 
-function faTreeFulltextResult(area, versionId, filterText, searchedIds) {
+function faTreeFulltextResult(area, versionId, filterText, searchedData) {
     return {
         type: types.FA_FA_TREE_FULLTEXT_RESULT,
         area,
         versionId,
         filterText,
-        searchedIds
+        searchedData
     }
 }
 

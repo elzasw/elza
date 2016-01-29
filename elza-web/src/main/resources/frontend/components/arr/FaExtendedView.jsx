@@ -69,6 +69,8 @@ var FaExtendedView = class FaExtendedView extends AbstractReactComponent {
         const {fa} = this.props;
 
         var destNode = this.getDestNode();
+        if (!destNode) return false;
+
         var parents = getNodeParents(fa.faTreeMovementsRight.nodes, destNode.id);
         parents.push(destNode);
 
@@ -87,6 +89,7 @@ var FaExtendedView = class FaExtendedView extends AbstractReactComponent {
         const {fa} = this.props;
 
         var destNode = this.getDestNode();
+        if (!destNode) return false;
 
         if (destNode.depth == 1) {  // u kořene nelze tuto akci volat
             return false;

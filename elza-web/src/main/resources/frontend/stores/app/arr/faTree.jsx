@@ -9,6 +9,7 @@ const initialState = {
     focusId: null,
     expandedIds: {},
     searchedIds: [],
+    searchedParents: {},
     filterText: null,
     filterCurrentIndex: -1,
     isFetching: false,
@@ -79,13 +80,34 @@ export default function faTree(state = initialState, action) {
             return {...state, filterText: action.filterText}
         case types.FA_FA_TREE_FULLTEXT_RESULT:
             if (state.filterText == action.filterText) {    // jen pokud výsledek odpovídá aktuálnímu stavu v hledací komponentě
-                return {...state, filterCurrentIndex: -1, searchedIds: action.searchedIds}
+                var searchedIds = [];
+                var searchedParents = {};
+                action.searchedData.forEach(i => {
+                    searchedIds.push(i.nodeId);
+                    searchedParents[i.nodeId] = i.parent;
+                })
+
+                return {
+                    ...state,
+                    filterCurrentIndex: -1,
+                    searchedIds: searchedIds,
+                    searchedParents: searchedParents
+                }
             } else {
                 return state;
             }
         case types.FA_FA_TREE_SELECT_NODE:
             if (state.multipleSelection) {
-                var newState = {...state, lastSelectedId: null}
+                var newCurrentIndex = state.filterCurrentIndex;
+                if (action.newFilterCurrentIndex != null) {
+                    newCurrentIndex = action.newFilterCurrentIndex;
+                }
+
+                var newState = {
+                    ...state,
+                    lastSelectedId: null,
+                    filterCurrentIndex: newCurrentIndex
+                }
                 newState.selectedIds = {...state.selectedIds};
 
                 if (action.ctrl) {
@@ -143,15 +165,33 @@ export default function faTree(state = initialState, action) {
                 }
                 return newState;
             } else {
-                if (state.selectedId !== action.nodeId) {
-                    return Object.assign({}, state, {selectedId: action.nodeId});
+                if (state.selectedId !== action.nodeId || (action.newFilterCurrentIndex != null && state.filterCurrentIndex != action.newFilterCurrentIndex)) {
+                    var newCurrentIndex = state.filterCurrentIndex;
+                    if (action.newFilterCurrentIndex != null) {
+                        newCurrentIndex = action.newFilterCurrentIndex;
+                    }
+
+                    return {
+                        ...state, 
+                        selectedId: action.nodeId,
+                        filterCurrentIndex: newCurrentIndex
+                    }
                 } else {
                     return state;
                 }
             }
         case types.FA_FA_SELECT_SUBNODE:
-            if (state.selectedId !== action.subNodeId) {
-                return Object.assign({}, state, {selectedId: action.subNodeId});
+            if (state.selectedId !== action.subNodeId || (action.newFilterCurrentIndex != null && state.filterCurrentIndex != action.newFilterCurrentIndex)) {
+                var newCurrentIndex = state.filterCurrentIndex;
+                if (action.newFilterCurrentIndex != null) {
+                    newCurrentIndex = action.newFilterCurrentIndex;
+                }
+
+                return {
+                    ...state,
+                    selectedId: action.subNodeId,
+                    filterCurrentIndex: newCurrentIndex
+                }
             } else {
                 return state;
             }

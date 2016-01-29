@@ -9,7 +9,7 @@ import * as types from 'actions/constants/actionTypes';
 import {AppActions} from 'stores';
 import {MenuItem} from 'react-bootstrap';
 import {selectFaTab, closeFaTab} from 'actions/arr/fa'
-import {faTreeSelectNode, faTreeFocusNode, faTreeFetchIfNeeded, faTreeNodeExpand, faTreeNodeCollapse, faTreeCollapse} from 'actions/arr/faTree'
+import {faTreeFulltextChange, faTreeFulltextSearch, faTreeFulltextNextItem, faTreeFulltextPrevItem, faTreeSelectNode, faTreeCollapse, faTreeFocusNode, faTreeFetchIfNeeded, faTreeNodeExpand, faTreeNodeCollapse} from 'actions/arr/faTree'
 import {faSelectSubNode} from 'actions/arr/nodes'
 import {createFaRoot, getParentNode} from './ArrUtils.jsx'
 import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu'
@@ -18,7 +18,8 @@ var FaTreeMovementsRight = class FaTreeMovementsRight extends AbstractReactCompo
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleNodeClick', 'handleContextMenu', 'handleCollapse');
+        this.bindMethods('handleNodeClick', 'handleContextMenu', 'handleCollapse', 'handleFulltextChange', 'handleFulltextSearch',
+            'handleFulltextPrevItem', 'handleFulltextNextItem');
     }
 
     componentDidMount() {
@@ -33,6 +34,22 @@ var FaTreeMovementsRight = class FaTreeMovementsRight extends AbstractReactCompo
 
     requestFaTreeData(versionId, expandedIds, selectedId) {
         this.dispatch(faTreeFetchIfNeeded(types.FA_TREE_AREA_MOVEMENTS_RIGHT, versionId, expandedIds, selectedId));
+    }
+
+    handleFulltextChange(value) {
+        this.dispatch(faTreeFulltextChange(types.FA_TREE_AREA_MOVEMENTS_RIGHT, this.props.versionId, value));
+    }
+
+    handleFulltextSearch() {
+        this.dispatch(faTreeFulltextSearch(types.FA_TREE_AREA_MOVEMENTS_RIGHT, this.props.versionId));
+    }
+
+    handleFulltextPrevItem() {
+        this.dispatch(faTreeFulltextPrevItem(types.FA_TREE_AREA_MOVEMENTS_RIGHT, this.props.versionId));
+    }
+
+    handleFulltextNextItem() {
+        this.dispatch(faTreeFulltextNextItem(types.FA_TREE_AREA_MOVEMENTS_RIGHT, this.props.versionId));
     }
 
     /**
@@ -79,6 +96,10 @@ var FaTreeMovementsRight = class FaTreeMovementsRight extends AbstractReactCompo
                 onContextMenu={this.handleContextMenu}
                 onNodeClick={this.handleNodeClick}
                 onCollapse={this.handleCollapse}
+                onFulltextChange={this.handleFulltextChange}
+                onFulltextSearch={this.handleFulltextSearch}
+                onFulltextPrevItem={this.handleFulltextPrevItem}
+                onFulltextNextItem={this.handleFulltextNextItem}
             />
         )
     }
