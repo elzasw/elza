@@ -3,56 +3,68 @@
 
 @registry-panel-actions-height: 26px;
 
+.registry-page {
 
-.active{
-    font-weight: bold;
-}
-.registry-list-count{
-    padding-top: 10px;
-}
+    .btn {
+        border: none;
+    }
 
-div.search-result-row div{
-  display: inline-block;
-}
+    .registry-label {
+        margin-bottom: 4px;
+    }
 
-.registry-list-icon-list:hover, .registry-list-icon-record:hover{
-    cursor: pointer;
-}
+    .registry-record-edit {
+        font-size: 1em;
+    }
 
-div.desc-item-type-label {
-   .actions {
-        background: #F5F5F5;
-        height: @registry-panel-actions-height;
+    .registry-list-count{
+        padding-top: 10px;
+    }
+
+    div.search-result-row div{
         display: inline-block;
-        .btn {
-            background: transparent;
+    }
+
+    .registry-list-icon-list:hover, .registry-list-icon-record:hover{
+        cursor: pointer;
+    }
+
+    div.desc-item-type-label {
+        .actions {
+            background: #F5F5F5;
             height: @registry-panel-actions-height;
-            font-size: 12px;
-            border: none;
-            margin: 1px;
-            padding: 2px;
+            display: inline-block;
+            .btn {
+                background: transparent;
+                height: @registry-panel-actions-height;
+                font-size: 12px;
+                border: none;
+                margin: 1px;
+                padding: 2px;
+            }
         }
-  }
-   .actions {
-        background: transparent;
-  }
-  div.title {
-        display: inline-block;
-  }
+        .actions {
+            background: transparent;
+        }
+        div.title {
+            display: inline-block;
+        }
+    }
+
+    div.record-parent-info {
+        padding-bottom: 10px;
+        div.record-selected-name {
+            width: 100%;
+            div{
+                display: inline-block;
+                width: 80%;
+            }
+        }
+        div.record-selected-breadcrumbs{
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
 }
 
-div.record-parent-info {
-  padding-bottom: 10px;
-  div.record-selected-name {
-      width: 100%;
-      div{
-          display: inline-block;
-          width: 80%;
-      }
-  }
-  div.record-selected-breadcrumbs{
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-}

@@ -1,24 +1,31 @@
 @import "~variables.less";
 
 .partySearch {
-    padding:0px;
-    margin:10px 0 0 0;
-    border-top:1px solid #AAAAAA;
+    padding: 0;
     li{
-        padding:5px 8px;
+        padding: 5px;
         list-style-type: none;
-        border-bottom:1px solid #AAAAAA;
+        border-bottom:1px solid #EEEEEE;
         cursor:pointer;
         &:hover{
             background-color:#EEEEEE;
             color:#000000;
         }
         span{
-            font-size:80%;
+            font-size:0.8em;
             display:block;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
         }
         .name {
-            font-size:100%;
+            font-size:1em;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
         }
+    }
+    li.active {
+        background: #C0C0C0;
     }
 }

@@ -105,9 +105,9 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
 
             console.log(this.props.refTables.recordTypes);
             var detailRegistry = (
-                    <div>
+                    <div className="registry-title">
                         <h2>
-                            {this.props.registryData.item.record} <Button onClick={this.editRecord}><Icon glyph='fa-edit'/></Button>
+                            {this.props.registryData.item.record} <Button className="registry-record-edit" onClick={this.editRecord}><Icon glyph='fa-pencil'/></Button>
                         </h2>
 
                         <p>{this.props.registryData.item.characteristics}</p>
@@ -141,7 +141,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
                                 )
                             })
                         }
-                        <Button onClick={this.handleAddVaraintRecord} ><Icon glyph='fa-plus' /></Button>
+                        <Button className="registry-variant-add" onClick={this.handleAddVaraintRecord} ><Icon glyph='fa-plus' /></Button>
                     </div>
             )
         }
