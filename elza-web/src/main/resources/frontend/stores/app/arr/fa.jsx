@@ -6,7 +6,7 @@ import {consolidateState} from 'components/Utils'
 
 export function faInitState(faWithVersion) {
     var result = {
-        faObj: {...faWithVersion},
+        ...faWithVersion,
         id: faWithVersion.versionId,
         faId: faWithVersion.id,
         versionId: faWithVersion.versionId,
