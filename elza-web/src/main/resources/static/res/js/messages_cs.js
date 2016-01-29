@@ -1,5 +1,10 @@
 var messages = {
     "global.data.loading": "Načítání dat...",
+
+    "global.data.loading.register": "Načítání rejstříků",
+    "global.data.loading.form": "Načítání formuláře jednotky popisu",
+    "global.data.loading.node": "Načítání seznamu jednotek popisu",
+
     "global.error.ajax": "Problém ajaxového volání",
     "global.action.create": "Vytvořit",
     "global.action.add": "Přidat",

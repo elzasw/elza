@@ -44,7 +44,7 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
 function mapStateToProps(state) {
     const {arrRegion} = state
     return {
-        nodeSettings: arrRegion.nodeSettings
+        arrRegion: arrRegion
     }
 }
 
