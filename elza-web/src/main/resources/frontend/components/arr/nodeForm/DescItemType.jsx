@@ -35,7 +35,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
     shouldComponentUpdate(nextProps, nextState) {
 return true;
         var eqProps = ['descItemTypeInfo', 'descItemType', 'rulDataType', 'calendarTypes', 'packetTypes', 'packets', 'locked', 'copy']
-        rerturn !propsEquals(this.props, nextProps, eqProps);
+        return !propsEquals(this.props, nextProps, eqProps);
     }
 
     /**
