@@ -63,3 +63,9 @@ export function faExtendedView(enable) {
     }
 }
 
+export function showRegisterJp(show) {
+    return {
+        type: types.SHOW_REGISTER_JP,
+        showRegisterJp: show
+    }
+}

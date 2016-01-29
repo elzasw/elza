@@ -291,7 +291,7 @@ public class PartyService {
             recordFromGroovy.setRecordId(dbParty.getRecord().getRecordId());
             recordFromGroovy.setVersion(dbParty.getRecord().getVersion());
         }
-        RegRecord savedRecord = registryService.saveRecord(recordFromGroovy, false);
+        RegRecord savedRecord = registryService.saveRecord(recordFromGroovy, true);
         party.setRecord(savedRecord);
 
         //smazání a uložení nových variantních hesel

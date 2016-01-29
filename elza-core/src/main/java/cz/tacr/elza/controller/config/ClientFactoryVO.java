@@ -23,17 +23,20 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaRules;
 import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.bulkaction.BulkActionConfig;
+import cz.tacr.elza.bulkaction.BulkActionState;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.BulkActionStateVO;
+import cz.tacr.elza.controller.vo.BulkActionVO;
 import cz.tacr.elza.controller.vo.NodeConformityVO;
 import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
 import cz.tacr.elza.controller.vo.ParPartyNameVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ParRelationEntityVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.RegRecordParentVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
@@ -320,25 +323,16 @@ public class ClientFactoryVO {
         result.setPartyId(partyId);
 
         if (fillParents) {
-            List<RegRecordParentVO> parents = new LinkedList<>();
+            List<String> parents = new LinkedList<>();
             RegRecord parentRecord = regRecord.getParentRecord();
             while (parentRecord != null) {
-                parents.add(createRegRecordParent(parentRecord));
+                parents.add(parentRecord.getRecord());
                 parentRecord = parentRecord.getParentRecord();
             }
             result.setParents(parents);
         }
 
         return result;
-    }
-
-    private RegRecordParentVO createRegRecordParent(RegRecord parentRecord) {
-        RegRecordParentVO parent = new RegRecordParentVO();
-
-        parent.setId(parentRecord.getRecordId());
-        parent.setRecord(parentRecord.getRecord());
-
-        return parent;
     }
 
     /**
@@ -455,6 +449,8 @@ public class ClientFactoryVO {
         }else{
             RegRegisterTypeVO parent = createRegisterTypeTree(registerType.getParentRegisterType(), typeMap, roots);
             parent.addChild(result);
+            result.addParent(parent.getName());
+            result.addParents(parent.getParents());
         }
 
         return result;
@@ -490,6 +486,9 @@ public class ClientFactoryVO {
             RegRegisterTypeVO parent = createRegisterTypeTreeForPartyType(registerType.getParentRegisterType(),
                     parPartyType, typeMap, roots);
             parent.addChild(result);
+
+            result.addParent(parent.getName());
+            result.addParents(parent.getParents());
         }
 
         return result;
@@ -892,5 +891,40 @@ public class ClientFactoryVO {
         scopes.forEach(s -> result.add(createScope(s)));
 
         return result;
+    }
+
+    /**
+     * Vytvoření seznamu stavu hromadných akcí
+     *
+     * @param bulkActionStates seznam DO stavu hromadných akcí
+     * @return seznam VO stavu hromadných akcí
+     */
+    public List<BulkActionStateVO> createBulkActionStateList(final List<BulkActionState> bulkActionStates) {
+        return createList(bulkActionStates, BulkActionStateVO.class, null);
+    }
+
+
+    /**
+     * Vytvoření seznamu hromadných akcí
+     *
+     * @param bulkActions seznam DO hromadných akcí
+     * @return seznam VO hromadných akcí
+     */
+    public List<BulkActionVO> createBulkActionList(final List<BulkActionConfig> bulkActions) {
+        return createList(bulkActions, BulkActionVO.class, this::createBulkAction);
+    }
+
+    public BulkActionVO createBulkAction(final BulkActionConfig bulkAction) {
+        Assert.notNull(bulkAction);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        BulkActionVO bulkActionVO = mapper.map(bulkAction, BulkActionVO.class);
+        bulkActionVO.setDescription((String) bulkAction.getProperty("description"));
+        return bulkActionVO;
+    }
+
+    public BulkActionStateVO createBulkActionState(final BulkActionState bulkActionState) {
+        Assert.notNull(bulkActionState);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.map(bulkActionState, BulkActionStateVO.class);
     }
 }

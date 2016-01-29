@@ -1,117 +1,14 @@
 package cz.tacr.elza.controller.config;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrFindingAidVO;
-import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
-import cz.tacr.elza.controller.vo.ArrPacketVO;
-import cz.tacr.elza.controller.vo.NodeConformityErrorVO;
-import cz.tacr.elza.controller.vo.NodeConformityMissingVO;
-import cz.tacr.elza.controller.vo.NodeConformityVO;
-import cz.tacr.elza.controller.vo.ParComplementTypeVO;
-import cz.tacr.elza.controller.vo.ParDynastyVO;
-import cz.tacr.elza.controller.vo.ParEventVO;
-import cz.tacr.elza.controller.vo.ParPartyGroupIdentifierVO;
-import cz.tacr.elza.controller.vo.ParPartyGroupVO;
-import cz.tacr.elza.controller.vo.ParPartyNameComplementVO;
-import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyNameVO;
-import cz.tacr.elza.controller.vo.ParPartyTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParPersonVO;
-import cz.tacr.elza.controller.vo.ParRelationEntityVO;
-import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.ParUnitdateVO;
-import cz.tacr.elza.controller.vo.RegExternalSourceVO;
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
-import cz.tacr.elza.controller.vo.RegVariantRecordVO;
-import cz.tacr.elza.controller.vo.RulArrangementTypeVO;
-import cz.tacr.elza.controller.vo.RulDataTypeVO;
-import cz.tacr.elza.controller.vo.RulDescItemConstraintVO;
-import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
-import cz.tacr.elza.controller.vo.RulPacketTypeVO;
-import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.bulkaction.BulkActionConfig;
+import cz.tacr.elza.bulkaction.BulkActionState;
+import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemCoordinatesVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemEnumVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemFormattedTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemIntVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemPacketVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemPartyRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemRecordRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemStringVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemUnitdateVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemUnitidVO;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrDescItemCoordinates;
-import cz.tacr.elza.domain.ArrDescItemEnum;
-import cz.tacr.elza.domain.ArrDescItemFormattedText;
-import cz.tacr.elza.domain.ArrDescItemInt;
-import cz.tacr.elza.domain.ArrDescItemPacketRef;
-import cz.tacr.elza.domain.ArrDescItemPartyRef;
-import cz.tacr.elza.domain.ArrDescItemRecordRef;
-import cz.tacr.elza.domain.ArrDescItemString;
-import cz.tacr.elza.domain.ArrDescItemText;
-import cz.tacr.elza.domain.ArrDescItemUnitdate;
-import cz.tacr.elza.domain.ArrDescItemUnitid;
-import cz.tacr.elza.domain.ArrFindingAid;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformityError;
-import cz.tacr.elza.domain.ArrNodeConformityExt;
-import cz.tacr.elza.domain.ArrNodeConformityMissing;
-import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.domain.ParCreator;
-import cz.tacr.elza.domain.ParDynasty;
-import cz.tacr.elza.domain.ParEvent;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyGroup;
-import cz.tacr.elza.domain.ParPartyGroupIdentifier;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPartyNameComplement;
-import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParPerson;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.ParRelationRoleType;
-import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.ParUnitdate;
-import cz.tacr.elza.domain.RegExternalSource;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.domain.RulArrangementType;
-import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulDescItemConstraint;
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemSpecExt;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulDescItemTypeExt;
-import cz.tacr.elza.domain.RulPacketType;
-import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.controller.vo.nodes.descitems.*;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.PacketRepository;
@@ -122,6 +19,18 @@ import ma.glasnost.orika.converter.BidirectionalConverter;
 import ma.glasnost.orika.converter.builtin.PassThroughConverter;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
 import ma.glasnost.orika.metadata.Type;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -285,7 +194,8 @@ public class ConfigMapperConfiguration {
                     }
                 }
         ).byDefault().register();
-
+        mapperFactory.classMap(BulkActionConfig.class, BulkActionVO.class).byDefault().register();
+        mapperFactory.classMap(BulkActionState.class, BulkActionStateVO.class).byDefault().register();
         mapperFactory.classMap(ParComplementType.class, ParComplementTypeVO.class).byDefault().register();
         mapperFactory.classMap(ParDynasty.class, ParDynastyVO.class).byDefault().register();
         mapperFactory.classMap(ParParty.class, ParPartyVO.class).exclude("prefferedName").exclude("partyNames").exclude(
@@ -495,6 +405,7 @@ public class ConfigMapperConfiguration {
                         }
 
                         regRecordVO.setRegisterTypeId(regRecord.getRegisterType().getRegisterTypeId());
+                        regRecordVO.setAddRecord(regRecord.getRegisterType().getAddRecord());
                         regRecordVO.setScopeId(regRecord.getScope().getScopeId());
                     }
 

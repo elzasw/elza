@@ -9,7 +9,7 @@ import * as types from 'actions/constants/actionTypes';
 import {AppActions} from 'stores';
 import {MenuItem} from 'react-bootstrap';
 import {selectFaTab, closeFaTab} from 'actions/arr/fa'
-import {faTreeSelectNode, faTreeFocusNode, faTreeFetchIfNeeded, faTreeNodeExpand, faTreeNodeCollapse} from 'actions/arr/faTree'
+import {faTreeSelectNode, faTreeFocusNode, faTreeFetchIfNeeded, faTreeNodeExpand, faTreeNodeCollapse, faTreeCollapse} from 'actions/arr/faTree'
 import {faSelectSubNode} from 'actions/arr/nodes'
 import {createFaRoot, getParentNode} from './ArrUtils.jsx'
 import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu'
@@ -18,7 +18,7 @@ var FaTreeMovementsLeft = class FaTreeMovementsLeft extends AbstractReactCompone
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleNodeClick', 'handleContextMenu');
+        this.bindMethods('handleNodeClick', 'handleContextMenu', 'handleCollapse');
     }
 
     componentDidMount() {
@@ -62,6 +62,13 @@ var FaTreeMovementsLeft = class FaTreeMovementsLeft extends AbstractReactCompone
         this.dispatch(faTreeSelectNode(types.FA_TREE_AREA_MOVEMENTS_LEFT, node.id, e.ctrlKey, e.shiftKey));
     }
 
+    /**
+     * Zabalení stromu
+     */
+    handleCollapse() {
+        this.dispatch(faTreeCollapse(types.FA_TREE_AREA_MOVEMENTS_LEFT, this.props.fa))
+    }
+
     render() {
         const {fa} = this.props;
 
@@ -71,6 +78,7 @@ var FaTreeMovementsLeft = class FaTreeMovementsLeft extends AbstractReactCompone
                 onOpenCloseNode={(node, expand) => {expand ? this.dispatch(faTreeNodeExpand(types.FA_TREE_AREA_MOVEMENTS_LEFT, node)) : this.dispatch(faTreeNodeCollapse(types.FA_TREE_AREA_MOVEMENTS_LEFT, node))}}
                 onContextMenu={this.handleContextMenu}
                 onNodeClick={this.handleNodeClick}
+                onCollapse={this.handleCollapse}
             />
         )
     }

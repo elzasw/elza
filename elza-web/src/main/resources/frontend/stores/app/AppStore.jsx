@@ -6,7 +6,7 @@ import {reducer as formReducer} from 'redux-form';
 import {lenToBytesStr, roughSizeOfObject} from 'components/Utils';
 
 // Nastavení úrovně logování
-const _logStoreState = false;
+const _logStoreState = true;
 const _logStoreSize = false;
 
 /**

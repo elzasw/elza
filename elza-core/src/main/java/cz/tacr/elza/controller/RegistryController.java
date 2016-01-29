@@ -125,8 +125,6 @@ public class RegistryController {
         List<RegRecord> foundRecords = registryService
                 .findRegRecordByTextAndType(search, registerTypeIdList, from, count, parentRecordId, findingAid);
 
-        // děti
-        Map<RegRecord, List<RegRecord>> parentChildrenMap = registryService.findChildren(foundRecords);
 
         Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(foundRecords);
 
@@ -136,11 +134,6 @@ public class RegistryController {
         for (RegRecordVO regRecordVO : foundRecordVOList) {
             parentRecordVOMap.put(regRecordVO.getRecordId(), regRecordVO);
         }
-
-        foundRecords.forEach(record -> {
-            List<RegRecord> children = parentChildrenMap.get(record);
-            parentRecordVOMap.get(record.getRecordId()).setHasChildren(children == null ? false : !children.isEmpty());
-        });
 
 //        for (RegRecord record : parentChildrenMap.keySet()) {
 //            List<RegRecord> children = parentChildrenMap.get(record);
@@ -242,7 +235,7 @@ public class RegistryController {
         Assert.isNull(record.getRecordId(), "Při vytváření záznamu nesmí být vyplněno ID (recordId).");
 
         RegRecord recordDO = factoryDO.createRegRecord(record);
-        RegRecord newRecordDO = registryService.saveRecord(recordDO, true);
+        RegRecord newRecordDO = registryService.saveRecord(recordDO, false);
 
         ParParty recordParty = partyService.findParPartyByRecord(newRecordDO);
         return factoryVo.createRegRecord(newRecordDO, recordParty == null ? null : recordParty.getPartyId(), false);
@@ -262,7 +255,7 @@ public class RegistryController {
         Assert.notNull(recordTest, "Nebyl nalezen záznam pro update s id " + record.getRecordId());
 
         RegRecord recordDO = factoryDO.createRegRecord(record);
-        RegRecord newRecordDO = registryService.saveRecord(recordDO, true);
+        RegRecord newRecordDO = registryService.saveRecord(recordDO, false);
 
         ParParty recordParty = partyService.findParPartyByRecord(newRecordDO);
         return factoryVo.createRegRecord(newRecordDO, recordParty == null ? null : recordParty.getPartyId(), false);

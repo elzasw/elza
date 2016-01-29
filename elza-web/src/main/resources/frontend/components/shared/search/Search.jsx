@@ -55,12 +55,17 @@ var Search = class Search extends React.Component {
             cls += " " + this.props.className;
         }
         var afterInput = '';
+        var beforeInput = '';
         if (this.props.afterInput) {
-            afterInput = <div className='search-after-input'>{this.props.afterInput} </div>
+            afterInput = <div className='search-input-after'>{this.props.afterInput} </div>
+        }
+        if (this.props.beforeInput) {
+            beforeInput = <div className='search-input-before'>{this.props.beforeInput} </div>
         }
         var searchLabel = i18n('search.action.search');  
         return (
             <div className={cls}>
+                {beforeInput}
                 <div className='search-input'>
                     <Input
                         type="text"
@@ -71,7 +76,7 @@ var Search = class Search extends React.Component {
                         onChange={this.handleChange}
                         onKeyUp={this.handleKeyUp}
                     />
-                    <div><Button onClick={this.handleSearch}><Icon glyph='fa-search'/></Button></div>
+                    <div className='search-button'><Button onClick={this.handleSearch}><Icon glyph='fa-search'/></Button></div>
                 </div>
                 {afterInput}
             </div>

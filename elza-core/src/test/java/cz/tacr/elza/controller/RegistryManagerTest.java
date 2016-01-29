@@ -89,7 +89,7 @@ public class RegistryManagerTest extends AbstractRestTest {
         RegRecord record = createRecord2("SR1");
         record.setCharacteristics("abc");
 
-        RegRecord updatedRecord = registryService.saveRecord(record, true);
+        RegRecord updatedRecord = registryService.saveRecord(record, false);
         Assert.assertEquals(updatedRecord.getCharacteristics(), "abc");
 
         Integer recordId = updatedRecord.getRecordId();

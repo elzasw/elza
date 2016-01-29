@@ -17,12 +17,14 @@ var NodeTabs = class NodeTabs extends AbstractReactComponent {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        var eqProps = ['versionId', 'fa', 'nodes', 'activeIndex', 'findingAidId', 'rulDataTypes', 'calendarTypes', 'packetTypes', 'packets']
+        var eqProps = ['versionId', 'fa', 'nodes', 'activeIndex', 'findingAidId',
+            'rulDataTypes', 'calendarTypes', 'packetTypes', 'packets', 'showRegisterJp']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
     render() {
-        const {fa, nodes, activeIndex, versionId, rulDataTypes, calendarTypes, packetTypes, packets, findingAidId} = this.props;
+        const {fa, nodes, activeIndex, versionId, rulDataTypes, showRegisterJp,
+                calendarTypes, packetTypes, packets, findingAidId} = this.props;
 
         if (nodes.length == 0) {
             return <div></div>
@@ -55,6 +57,7 @@ var NodeTabs = class NodeTabs extends AbstractReactComponent {
                                               rulDataTypes={rulDataTypes}
                                               calendarTypes={calendarTypes}
                                               packetTypes={packetTypes}
+                                              showRegisterJp={showRegisterJp}
                                               packets={packets} />}
                 </Tabs.Content>
             </Tabs.Container>
@@ -72,6 +75,7 @@ NodeTabs.propTypes = {
     calendarTypes: React.PropTypes.object.isRequired,
     packetTypes: React.PropTypes.object.isRequired,
     packets: React.PropTypes.array.isRequired,
+    showRegisterJp: React.PropTypes.bool.isRequired,
 }
 
 module.exports = connect()(NodeTabs);

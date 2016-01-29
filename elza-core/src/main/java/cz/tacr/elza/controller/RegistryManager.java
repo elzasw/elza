@@ -86,7 +86,7 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
     public RegRecord createRecord(@RequestBody final RegRecord record) {
         Assert.isNull(record.getRecordId(), "Při vytváření záznamu nesmí být vyplněno ID (recordId).");
 
-        return registryService.saveRecord(record, true);
+        return registryService.saveRecord(record, false);
     }
 
     //přepsáno do RegistryController
@@ -97,7 +97,7 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
         RegRecord recordTest = regRecordRepository.findOne(record.getRecordId());
         Assert.notNull(recordTest, "Nebyl nalezen záznam pro update s id " + record.getRecordId());
 
-        registryService.saveRecord(record, true);
+        registryService.saveRecord(record, false);
         record.getVariantRecordList().forEach((variantRecord) -> {
             variantRecord.setRegRecord(null);
         });
