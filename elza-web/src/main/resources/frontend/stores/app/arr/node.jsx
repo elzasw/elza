@@ -2,6 +2,7 @@ import * as types from 'actions/constants/actionTypes';
 import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
 //import nodeInfo from './nodeInfo'
 import subNodeForm from './subNodeForm'
+import subNodeRegister from './subNodeRegister'
 import subNodeInfo from './subNodeInfo'
 import {consolidateState} from 'components/Utils'
 
@@ -24,11 +25,12 @@ export function nodeInitState(node, prevNodesNode) {
         result.nodeKey = prevNodesNode.nodeKey;
         result.subNodeForm = prevNodesNode.subNodeForm;
         result.subNodeInfo = prevNodesNode.subNodeInfo;
-        result.subNodeInfo = prevNodesNode.subNodeInfo;
+        result.subNodeRegister = prevNodesNode.subNodeRegister;
     } else {
         result.nodeKey = _nextNodeKey++;
         result.subNodeForm = subNodeForm(undefined, {type:''});
         result.subNodeInfo = subNodeInfo(undefined, {type:''});
+        result.subNodeRegister = subNodeRegister(undefined, {type:''});
     }
 
     if (prevNodesNode && prevNodesNode.id == node.id) {
@@ -58,6 +60,7 @@ const nodeInitialState = {
     nodeKey: _nextNodeKey++,
     selectedSubNodeId: null,
     subNodeForm: subNodeForm(undefined, {type:''}),
+    subNodeRegister: subNodeRegister(undefined, {type:''}),
     subNodeInfo: subNodeInfo(undefined, {type:''}),
     isFetching: false,
     fetched: false,
@@ -79,6 +82,7 @@ export function node(state = nodeInitialState, action) {
                 parentNodes: [],
                 pageSize: _pageSize,
                 subNodeForm: subNodeForm(undefined, {type:''}),
+                subNodeRegister: subNodeRegister(undefined, {type:''}),
                 subNodeInfo: subNodeInfo(undefined, {type:''}),
                 nodeKey: _nextNodeKey++,
             }
@@ -150,6 +154,13 @@ export function node(state = nodeInitialState, action) {
                 subNodeInfo: subNodeInfo(state.subNodeInfo, action),
             }
             return consolidateState(state, result);
+        case types.FA_SUB_NODE_REGISTER_REQUEST:
+        case types.FA_SUB_NODE_REGISTER_RECEIVE:
+            var result = {
+                ...state,
+                subNodeRegister: subNodeRegister(state.subNodeRegister, action),
+            }
+            return consolidateState(state, result);
         case types.FA_NODE_INFO_REQUEST:
             return {
                 ...state,
@@ -175,6 +186,7 @@ export function node(state = nodeInitialState, action) {
                 selectedSubNodeId: action.subNodeId
             }
             if (state.selectedSubNodeId != action.subNodeId) {
+                result.subNodeRegister = subNodeRegister(undefined, {type:''});
                 result.subNodeForm = subNodeForm(undefined, {type:''});
                 result.subNodeInfo = subNodeInfo(undefined, {type:''});
             }

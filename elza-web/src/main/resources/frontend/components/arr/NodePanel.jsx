@@ -7,6 +7,7 @@ import {connect} from 'react-redux'
 import {Icon, AbstractReactComponent, i18n, Loading, SubNodeForm, Accordion, SubNodeRegister} from 'components';
 import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {faSubNodeFormFetchIfNeeded} from 'actions/arr/subNodeForm'
+import {faSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister'
 import {faSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo'
 import {faNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo'
 import {faSelectSubNode, faSubNodesNext, faSubNodesPrev, faSubNodesNextPage, faSubNodesPrevPage} from 'actions/arr/nodes'
@@ -36,7 +37,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.requestData(nextProps.versionId, nextProps.node);
+        this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -49,12 +50,18 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
      * Načtení dat, pokud je potřeba.
      * @param versionId {String} verze AP
      * @param node {Object} node
+     * @param showRegisterJp {bool} zobrazení rejstřílů vázené k jednotce popisu
      */
-    requestData(versionId, node) {
+    requestData(versionId, node, showRegisterJp) {
         if (node.selectedSubNodeId != null) {
             this.dispatch(faSubNodeFormFetchIfNeeded(versionId, node.selectedSubNodeId, node.nodeKey));
             this.dispatch(faSubNodeInfoFetchIfNeeded(versionId, node.selectedSubNodeId, node.nodeKey));
             this.dispatch(refRulDataTypesFetchIfNeeded());
+
+            if (showRegisterJp) {
+                this.dispatch(faSubNodeRegisterFetchIfNeeded(versionId, node.selectedSubNodeId, node.nodeKey));
+            }
+
         }
         this.dispatch(faNodeInfoFetchIfNeeded(versionId, node.id, node.nodeKey));
     }
@@ -284,7 +291,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         const {calendarTypes, versionId, rulDataTypes, node, packetTypes, packets, findingAidId, showRegisterJp} = this.props;
 
         if (!node.fetched) {
-            return <Loading/>
+            return <Loading value={i18n('global.data.loading.node')}/>
         }
 
         var parents = this.renderParents(this.getParentNodes());
@@ -329,17 +336,17 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 selectedSubNode={node.subNodeForm.data.node}
             />
         } else {
-            form = <Loading/>
+            form = <Loading value={i18n('global.data.loading.form')}/>
         }
 
         var record;
 
         if (showRegisterJp) {
 
-            if (node.subNodeForm.fetched) {
+            if (node.subNodeRegister.fetched) {
                 record = <SubNodeRegister />
             } else {
-                record = <Loading/>
+                record = <Loading value={i18n('global.data.loading.register')} />
             }
 
         }

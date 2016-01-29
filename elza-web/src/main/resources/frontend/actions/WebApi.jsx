@@ -309,6 +309,13 @@ class WebApi{
             });
     }
 
+    getFaNodeRegister(versionId, nodeId) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/registerLinks/' + nodeId + '/' + versionId)
+                .then(json=>{
+                    return json
+                });
+    }
+
     getRulDataTypes(versionId, nodeId) {
         return AjaxUtils.ajaxGet('/api/ruleSetManagerV2/dataTypes')
             .then(json=>{

@@ -570,6 +570,8 @@ public class ArrMoveLevelService {
 
         arrangementService.saveLastChangeFaVersion(change, version.getFindingAidVersionId());
 
+        ruleService.conformityInfo(version.getFindingAidVersionId(), Arrays.asList(newLevel.getNode().getNodeId()),
+                NodeTypeOperation.CREATE_NODE, null, null, null);
 
         entityManager.flush(); //aktualizace verzí v nodech
         eventNotificationService
