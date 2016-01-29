@@ -7,7 +7,8 @@ import java.io.Serializable;
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
-public interface ParRelation<PP extends ParParty, PRT extends ParRelationType, PU extends ParUnitdate > extends Serializable {
+public interface ParRelation<PP extends ParParty, PRT extends ParRelationType, PU extends ParUnitdate>
+        extends Versionable, Serializable {
 
     /**
      * Primární ID.

@@ -331,6 +331,7 @@ public class PartyManagerTest extends AbstractRestTest {
 
         parPartyVO.setTo(parPartyVO.getFrom());
         parPartyVO.setFrom(null);
+        parPartyVO.setVersion(parPartyVORet.getVersion());
 
         response = put(spec -> spec.pathParameter(ABSTRACT_PARTY_ID_ATT, parPartyVO.getPartyId())
                                    .body(parPartyVO), UPDATE_PARTY_V2);
@@ -400,6 +401,7 @@ public class PartyManagerTest extends AbstractRestTest {
         relationVO.setRelationId(relationResult.getRelationId());
         relationVO.setRelationEntities(Collections.EMPTY_LIST);
         relationVO.setNote("update");
+        relationVO.setVersion(relationResult.getVersion());
 
         relationResp = put(
                 (spec) -> spec.pathParameter(ABSTRACT_RELATION_ID_ATT, relationVO.getRelationId()).body(relationVO),

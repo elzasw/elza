@@ -27,7 +27,7 @@ import javax.persistence.Table;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ParRelation implements cz.tacr.elza.api.ParRelation<ParParty, ParRelationType, ParUnitdate> {
+public class ParRelation extends AbstractVersionableEntity implements cz.tacr.elza.api.ParRelation<ParParty, ParRelationType, ParUnitdate> {
 
     @Id
     @GeneratedValue
