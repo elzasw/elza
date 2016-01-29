@@ -120,7 +120,7 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
                     <Button onClick={this.props.onFulltextSearch}>Hledat</Button>
                     <Button onClick={this.props.onFulltextPrevItem}>Předchozí</Button>
                     <Button onClick={this.props.onFulltextNextItem}>Další</Button>
-                    <Button onClick={this.props.onCollapse}>Collapse</Button>
+                    <Button onClick={this.props.onCollapse}>Zabalit</Button>
                 </div>
                 <div className='fa-tree-lazy-container' ref="treeContainer">
                     {true && <VirtualList tagName='div' container={this.state.treeContainer} items={this.props.nodes} renderItem={this.renderNode} itemHeight={this.props.rowHeight} />}

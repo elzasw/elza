@@ -109,8 +109,10 @@ var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
         this.dispatch(faTreeFulltextNextItem(types.FA_TREE_AREA_MAIN, this.props.versionId));
     }
 
+    /**
+     * Zabalení stromu
+     */
     handleCollapse() {
-        // TODO Detekce area
         this.dispatch(faTreeCollapse(types.FA_TREE_AREA_MAIN, this.props.fa))
     }
 
