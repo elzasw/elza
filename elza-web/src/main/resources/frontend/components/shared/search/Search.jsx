@@ -71,7 +71,7 @@ var Search = class Search extends React.Component {
                         onChange={this.handleChange}
                         onKeyUp={this.handleKeyUp}
                     />
-                    <div><Icon glyph='fa-search' onClick={this.handleSearch}/></div>
+                    <div><Button onClick={this.handleSearch}><Icon glyph='fa-search'/></Button></div>
                 </div>
                 {afterInput}
             </div>
