@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -22,8 +23,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegExternalSource;
@@ -34,7 +38,9 @@ import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.ExternalSourceRepository;
 import cz.tacr.elza.repository.FaRegisterScopeRepository;
+import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.NodeRegisterRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
@@ -82,6 +88,15 @@ public class RegistryService {
 
     @Autowired
     private FaRegisterScopeRepository faRegisterScopeRepository;
+
+    @Autowired
+    private FindingAidVersionRepository findingAidVersionRepository;
+
+    @Autowired
+    private NodeRepository nodeRepository;
+
+    @Autowired
+    private ArrangementService arrangementService;
 
     /**
      * Kody tříd rejstříků nastavené v konfiguraci elzy.
@@ -495,6 +510,155 @@ public class RegistryService {
         }
     }
 
+    /**
+     * Vrátí vazby mezi uzlem a rejstříkovými hesly za danou verzi.
+     *
+     * @param findingAidVersionId   identifikátor verze AP
+     * @param nodeId                identifikátor JP
+     * @return  seznam vazeb, může být prázdný
+     */
+    public List<ArrNodeRegister> findRegisterLinks(final Integer findingAidVersionId,
+                                                   final Integer nodeId) {
+        Assert.notNull(findingAidVersionId);
+        Assert.notNull(nodeId);
+
+        ArrNode node = nodeRepository.findOne(nodeId);
+
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(findingAidVersionId);
+
+        Assert.notNull(version, "Verze AP neexistuje");
+
+        boolean open = version.getLockChange() == null;
+
+        if (open) {
+            return nodeRegisterRepository.findByNodeAndDeleteChangeIsNull(node);
+        } else {
+            return nodeRegisterRepository.findClosedVersion(node, version.getLockChange().getChangeId());
+        }
+    }
+
+    /**
+     * Vytvoření vazby rejstřík-jednotka popisu.
+     *
+     * @param versionId     identifikátor verze AP
+     * @param nodeId        identifikátor JP
+     * @param nodeRegister  vazba
+     * @return  vazba
+     */
+    public ArrNodeRegister createRegisterLink(final Integer versionId,
+                                              final Integer nodeId,
+                                              final ArrNodeRegister nodeRegister) {
+        Assert.notNull(nodeRegister);
+        Assert.isNull(nodeRegister.getNodeRegisterId());
+
+        ArrNode node = nodeRepository.findOne(nodeId);
+
+        node.setVersion(nodeRegister.getNode().getVersion());
+        node.setLastUpdate(LocalDateTime.now());  // change kvůli locking
+        node = nodeRepository.save(node);
+
+        ArrChange change = arrangementService.createChange();
+
+        validateNodeRegisterLink(nodeRegister);
+
+        arrangementService.saveLastChangeFaVersion(change, versionId);
+
+        nodeRegister.setNode(node);
+        nodeRegister.setCreateChange(change);
+        return nodeRegisterRepository.save(nodeRegister);
+    }
+
+    /**
+     * Upravení vazby rejstřík-jednotka popisu.
+     *
+     * @param versionId     identifikátor verze AP
+     * @param nodeId        identifikátor JP
+     * @param nodeRegister  vazba
+     * @return  vazba
+     */
+    public ArrNodeRegister updateRegisterLink(final Integer versionId,
+                                              final Integer nodeId,
+                                              final ArrNodeRegister nodeRegister) {
+        Assert.notNull(nodeRegister);
+        Assert.notNull(nodeRegister.getNodeRegisterId());
+
+        ArrNodeRegister nodeRegisterDB = nodeRegisterRepository.findOne(nodeRegister.getNodeRegisterId());
+
+        ArrNode node = nodeRepository.findOne(nodeId);
+
+        node.setVersion(nodeRegister.getNode().getVersion());
+        node.setLastUpdate(LocalDateTime.now());  // change kvůli locking
+        node = nodeRepository.save(node);
+
+        ArrChange change = arrangementService.createChange();
+
+        validateNodeRegisterLink(nodeRegister);
+        validateNodeRegisterLink(nodeRegisterDB);
+
+        nodeRegisterDB.setDeleteChange(change);
+        nodeRegisterRepository.save(nodeRegisterDB);
+
+
+        arrangementService.saveLastChangeFaVersion(change, versionId);
+
+        nodeRegister.setNodeRegisterId(null);
+        nodeRegister.setNode(node);
+        nodeRegister.setRecord(nodeRegister.getRecord());
+        nodeRegister.setCreateChange(change);
+        return nodeRegisterRepository.save(nodeRegister);
+    }
+
+    /**
+     * Smazání vazby rejstřík-jednotka popisu.
+     *
+     * @param versionId     identifikátor verze AP
+     * @param nodeId        identifikátor JP
+     * @param nodeRegister  vazba
+     * @return  vazba
+     */
+    public ArrNodeRegister deleteRegisterLink(final Integer versionId,
+                                              final Integer nodeId,
+                                              final ArrNodeRegister nodeRegister) {
+        Assert.notNull(nodeRegister);
+        Assert.notNull(nodeRegister.getNodeRegisterId());
+
+        ArrNodeRegister nodeRegisterDB = nodeRegisterRepository.findOne(nodeRegister.getNodeRegisterId());
+
+        ArrNode node = nodeRepository.findOne(nodeId);
+
+        node.setVersion(nodeRegister.getNode().getVersion());
+        node.setLastUpdate(LocalDateTime.now());  // change kvůli locking
+        nodeRepository.save(node);
+
+        ArrChange change = arrangementService.createChange();
+
+        validateNodeRegisterLink(nodeRegisterDB);
+
+        nodeRegisterDB.setDeleteChange(change);
+
+        arrangementService.saveLastChangeFaVersion(change, versionId);
+
+        return nodeRegisterRepository.save(nodeRegisterDB);
+    }
+
+    /**
+     * Validuje entitu před uložením.
+     *
+     * @param nodeRegister  entita
+     */
+    private void validateNodeRegisterLink(final ArrNodeRegister nodeRegister) {
+        if (nodeRegister.getDeleteChange() != null) {
+            throw new IllegalStateException("Nelze vytvářet či modifikovat změnu," +
+                    " která již byla smazána (má delete change).");
+        }
+
+        if (nodeRegister.getNode() == null) {
+            throw new IllegalArgumentException("Není vyplněn uzel.");
+        }
+        if (nodeRegister.getRecord() == null) {
+            throw new IllegalArgumentException("Není vyplněno rejstříkové heslo.");
+        }
+    }
 
     public List<String> getScopeCodes() {
         return scopeCodes;

@@ -168,6 +168,9 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ArrDescItemString.class, ArrDescItemStringVO.class).byDefault().field(
                 "descItemId", "id").register();
 
+        mapperFactory.classMap(ArrNodeRegister.class, ArrNodeRegisterVO.class).byDefault().field(
+                "nodeRegisterId", "id").register();
+
         mapperFactory.classMap(ArrNode.class, ArrNodeVO.class).byDefault().field("nodeId", "id").register();
 
         mapperFactory.classMap(ArrPacket.class, ArrPacketVO.class).customize(

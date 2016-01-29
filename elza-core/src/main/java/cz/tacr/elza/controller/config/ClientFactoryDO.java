@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.ParPartyNameVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
@@ -25,6 +26,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
@@ -39,7 +41,9 @@ import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 
@@ -68,6 +72,12 @@ public class ClientFactoryDO {
 
     @Autowired
     private PacketTypeRepository packetTypeRepository;
+
+    @Autowired
+    private RegRecordRepository regRecordRepository;
+
+    @Autowired
+    private NodeRepository nodeRepository;
 
     /**
      * Vytvoří node z VO.
@@ -260,5 +270,17 @@ public class ClientFactoryDO {
         Assert.notNull(scopeVO);
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(scopeVO, RegScope.class);
+    }
+
+    public ArrNodeRegister createRegisterLink(final ArrNodeRegisterVO nodeRegisterVO) {
+        Assert.notNull(nodeRegisterVO);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        ArrNodeRegister nodeRegister = mapper.map(nodeRegisterVO, ArrNodeRegister.class);
+
+        if (nodeRegisterVO.getRecordId() != null) {
+            nodeRegister.setRecord(regRecordRepository.findOne(nodeRegisterVO.getRecordId()));
+        }
+
+        return nodeRegister;
     }
 }

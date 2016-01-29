@@ -27,6 +27,7 @@ import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
+import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.RulPacketTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
@@ -41,6 +42,7 @@ import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDescItemType;
@@ -58,6 +60,7 @@ import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.PacketService;
+import cz.tacr.elza.service.RegistryService;
 import cz.tacr.elza.service.RuleService;
 
 
@@ -112,6 +115,9 @@ public class ArrangementController {
 
     @Autowired
     private PacketService packetService;
+
+    @Autowired
+    private RegistryService registryService;
 
     @RequestMapping(value = "/packets/types",
             method = RequestMethod.GET,
@@ -553,6 +559,55 @@ public class ArrangementController {
                 input.getSearchValue(), input.getDepth());
 
         return levelTreeCacheService.findParentsForNodes(nodeIds, version);
+    }
+
+    @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}",
+            method = RequestMethod.GET,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<ArrNodeRegisterVO> findRegisterLinks(final @PathVariable(value = "versionId") Integer versionId,
+                                                     final @PathVariable(value = "nodeId") Integer nodeId) {
+        List<ArrNodeRegister> registerLinks = registryService.findRegisterLinks(versionId, nodeId);
+        return factoryVo.createRegisterLinkList(registerLinks);
+    }
+
+    @Transactional
+    @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}/create",
+            method = RequestMethod.PUT,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ArrNodeRegisterVO createRegisterLinks(final @PathVariable(value = "versionId") Integer versionId,
+                                                       final @PathVariable(value = "nodeId") Integer nodeId,
+                                                       final @RequestBody ArrNodeRegisterVO nodeRegisterVO) {
+        ArrNodeRegister nodeRegister = factoryDO.createRegisterLink(nodeRegisterVO);
+        nodeRegister = registryService.createRegisterLink(versionId, nodeId, nodeRegister);
+        return factoryVo.createRegisterLink(nodeRegister);
+    }
+
+    @Transactional
+    @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}/update",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ArrNodeRegisterVO updateRegisterLinks(final @PathVariable(value = "versionId") Integer versionId,
+                                                 final @PathVariable(value = "nodeId") Integer nodeId,
+                                                 final @RequestBody ArrNodeRegisterVO nodeRegisterVO) {
+        ArrNodeRegister nodeRegister = factoryDO.createRegisterLink(nodeRegisterVO);
+        nodeRegister = registryService.updateRegisterLink(versionId, nodeId, nodeRegister);
+        return factoryVo.createRegisterLink(nodeRegister);
+    }
+
+    @Transactional
+    @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}/delete",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ArrNodeRegisterVO deleteRegisterLinks(final @PathVariable(value = "versionId") Integer versionId,
+                                                 final @PathVariable(value = "nodeId") Integer nodeId,
+                                                 final @RequestBody ArrNodeRegisterVO nodeRegisterVO) {
+        ArrNodeRegister nodeRegister = factoryDO.createRegisterLink(nodeRegisterVO);
+        nodeRegister = registryService.deleteRegisterLink(versionId, nodeId, nodeRegister);
+        return factoryVo.createRegisterLink(nodeRegister);
     }
 
     /**

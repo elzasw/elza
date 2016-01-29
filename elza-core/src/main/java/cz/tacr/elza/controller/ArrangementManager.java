@@ -2329,6 +2329,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         return calendarTypes;
     }
 
+    // přepsáno
     @Override
     @RequestMapping(value = "/findNodeRegisterLinks", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ArrNodeRegister> findNodeRegisterLinks(final @RequestParam(value = "versionId") Integer versionId,

@@ -28,6 +28,7 @@ import cz.tacr.elza.bulkaction.BulkActionState;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
+import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
 import cz.tacr.elza.controller.vo.ArrPacketVO;
 import cz.tacr.elza.controller.vo.BulkActionStateVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
@@ -58,6 +59,7 @@ import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
@@ -926,5 +928,18 @@ public class ClientFactoryVO {
         Assert.notNull(bulkActionState);
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(bulkActionState, BulkActionStateVO.class);
+    }
+
+    public List<ArrNodeRegisterVO> createRegisterLinkList(final List<ArrNodeRegister> registerLinks) {
+        return createList(registerLinks, ArrNodeRegisterVO.class, this::createRegisterLink);
+    }
+
+    public ArrNodeRegisterVO createRegisterLink(final ArrNodeRegister nodeRegister) {
+        Assert.notNull(nodeRegister);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        ArrNodeRegisterVO nodeRegisterVO = mapper.map(nodeRegister, ArrNodeRegisterVO.class);
+        nodeRegisterVO.setNodeId(nodeRegister.getNode().getNodeId());
+        nodeRegisterVO.setRecordId(nodeRegister.getRecord().getRecordId());
+        return nodeRegisterVO;
     }
 }
