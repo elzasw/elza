@@ -4,7 +4,7 @@
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {Icon, AbstractReactComponent, i18n, Loading, SubNodeForm, Accordion} from 'components';
+import {Icon, AbstractReactComponent, i18n, Loading, SubNodeForm, Accordion, SubNodeRegister} from 'components';
 import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {faSubNodeFormFetchIfNeeded} from 'actions/arr/subNodeForm'
 import {faSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo'
@@ -39,7 +39,8 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        var eqProps = ['versionId', 'fa', 'node', 'calendarTypes', 'packetTypes', 'packets', 'rulDataTypes', 'findingAidId']
+        var eqProps = ['versionId', 'fa', 'node', 'calendarTypes',
+            'packetTypes', 'packets', 'rulDataTypes', 'findingAidId', 'showRegisterJp']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -218,7 +219,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
      * @param form {Object} editační formulář, pokud je k dispozici (k dispozici je, pokud je nějaká položka Accordion vybraná)
      * @return {Object} view
      */
-    renderAccordion(form) {
+    renderAccordion(form, recordInfo) {
         const {node} = this.props;
 
         var rows = [];
@@ -243,6 +244,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 rows.push(
                     <div key="body" className='accordion-body'>
                         {form}
+                        {recordInfo}
                     </div>
                 )
             } else {
@@ -264,7 +266,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     render() {
-        const {calendarTypes, versionId, rulDataTypes, node, packetTypes, packets, findingAidId} = this.props;
+        const {calendarTypes, versionId, rulDataTypes, node, packetTypes, packets, findingAidId, showRegisterJp} = this.props;
 
         if (!node.fetched) {
             return <Loading/>
@@ -311,6 +313,18 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             form = <Loading/>
         }
 
+        var record;
+
+        if (showRegisterJp) {
+
+            if (node.subNodeForm.fetched) {
+                record = <SubNodeRegister />
+            } else {
+                record = <Loading/>
+            }
+
+        }
+
         var accordionInfo = <div>
             {node.viewStartIndex}-{node.viewStartIndex + node.pageSize} [{node.childNodes.length}]
         </div>
@@ -321,7 +335,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 {actions}
                 {parents}
                 <div className='content'>
-                    {this.renderAccordion(form)}
+                    {this.renderAccordion(form, record)}
                 </div>
                 {children}
             </div>
@@ -385,6 +399,7 @@ NodePanel.propTypes = {
     packets: React.PropTypes.array.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
     findingAidId: React.PropTypes.number,
+    showRegisterJp: React.PropTypes.bool.isRequired,
 }
 
 module.exports = connect()(NodePanel);

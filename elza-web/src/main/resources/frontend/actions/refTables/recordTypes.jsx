@@ -25,7 +25,7 @@ export function refRecordTypesFetch() {
     return dispatch => {
         dispatch(refRecordTypesRequest())
         return WebApi.getRecordTypes()
-            .then(json => {dispatch(refRecordTypesReceive(json))});
+            .then(json => {console.log('načtene typy', json); dispatch(refRecordTypesReceive(json))});
     }
 }
 

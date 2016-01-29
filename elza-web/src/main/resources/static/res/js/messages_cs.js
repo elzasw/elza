@@ -18,6 +18,7 @@ var messages = {
     "ribbon.action.arr": "Archivní pomůcky",
     "ribbon.action.arr.fa.add": "Vytvořit AP",
     "ribbon.action.arr.fa.approveVersion": "Uzavřít verzi AP",
+    "ribbon.action.arr.show-register-jp": "Rejstříky k JP",
     "ribbon.action.registry": "Rejstříky",
     "ribbon.action.party": "Osoby",
     "ribbon.action.admin": "Administrace",

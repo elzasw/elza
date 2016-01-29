@@ -58,7 +58,8 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     handleCallAddRegistry(parentId, data ) {
-
+        console.log('addParent', parentId);
+        console.log('addData', data);
         WebApi.insertRegistry( data.nameMain, data.characteristics, data.registerType, parentId ).then(json => {
             this.dispatch(modalDialogHide());
             this.dispatch(fetchRegistry(this.props.registry.filterText, this.props.registry.registryParentId, this.props.registry.registryTypesId));
@@ -245,24 +246,6 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             )
         }
 
-        if (!this.props.registry.registryTypesId) {
-            var RegistryTypes = <DropDownTree
-                nullValue={{id: null, name: i18n('registry.all')}}
-                key='search'
-                items={this.props.refTables.recordTypes.items}
-                value={this.props.registry.registryTypesId}
-                onSelect={this.hlandleRegistryTypesSelect.bind(this)}
-                />;
-        }
-        else {
-/**
- * TODO - stepina - je zapotřebí získat od kluků flat pole s typy rejstříků případně i se všema rodiči abych mohl složit cestu
- */
-            var RegistryTypes = <div className='registry-types-filter'>
-                    <div>Je vybrán typ rejstriku s ID: {this.props.registry.registryTypesId}</div>
-                    <Button onClick={this.handleCloseTypesRegistry}><Icon glyph="fa-close" /></Button>
-                </div>
-        }
 
         var leftPanel = (
             <div className="registry-list">
@@ -270,7 +253,13 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                     <Search
                         onSearch={this.handleSearch.bind(this)}
                         placeholder={i18n('search.input.search')}
-                        beforeInput={RegistryTypes}
+                        beforeInput=<DropDownTree
+                                        nullValue={{id: null, name: i18n('registry.all')}}
+                                        key='search'
+                                        items={this.props.refTables.recordTypes.items}
+                                        value={this.props.registry.registryTypesId}
+                                        onSelect={this.hlandleRegistryTypesSelect.bind(this)}
+                                        />
                         filterText={this.props.registry.filterText}
                     />
                 </div>

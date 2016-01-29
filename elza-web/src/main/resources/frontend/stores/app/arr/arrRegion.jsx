@@ -11,6 +11,7 @@ const initialState = {
     activeIndex: null,
     nodeSettings: nodeSetting(undefined, {}),
     extendedView: false,
+    showRegisterJp: false,
     packets: {},
     fas: [],
 }
@@ -59,6 +60,14 @@ function processFa(state, action, index) {
 
 export default function arrRegion(state = initialState, action) {
     switch (action.type) {
+
+        case types.SHOW_REGISTER_JP: {
+            return {
+                ...state,
+                showRegisterJp: action.showRegisterJp
+            }
+        }
+
         case types.STORE_LOAD:
             if (action.arrRegion) {
                 return {

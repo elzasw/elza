@@ -2,19 +2,26 @@
 @levelIndent : 25px;
 @maxLevel: 30;
 
+.dropDownTree.form-group{
+    margin-bottom: 10px;
+}
+
 .dropDownTree{
+
     button{
         .dropDownTree-label {
-            display: inline-block;
             overflow: hidden;
-            max-width: 120px;
+            max-width: 100%;
             text-overflow: ellipsis;
+            text-align: left;
         }
         
         .icon{
-            margin:0 0 0 0;
-            position:relative;
-            font-size:10px;
+            margin: 0;
+            position: relative;
+            float: right;
+            top: -1.6em;
+            font-size: 0.9em;
         }
     }
     
