@@ -57,10 +57,10 @@ var Search = class Search extends React.Component {
         var afterInput = '';
         var beforeInput = '';
         if (this.props.afterInput) {
-            afterInput = <div className='search-after-input'>{this.props.afterInput} </div>
+            afterInput = <div className='search-input-after'>{this.props.afterInput} </div>
         }
         if (this.props.beforeInput) {
-            beforeInput = <div className='search-after-input'>{this.props.beforeInput} </div>
+            beforeInput = <div className='search-input-before'>{this.props.beforeInput} </div>
         }
         var searchLabel = i18n('search.action.search');  
         return (
