@@ -303,7 +303,7 @@ class WebApi{
     }
 
     getFaNodeForm(versionId, nodeId) {
-        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + nodeId + '/' + versionId + '/form', {versionId, nodeId})
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + nodeId + '/' + versionId + '/form')
             .then(json=>{
                 return json
             });

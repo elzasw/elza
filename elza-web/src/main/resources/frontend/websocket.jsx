@@ -16,10 +16,11 @@ var client = Stomp.over(socket);
  * Připojení websocketů.
  */
 function stompConnect() {
-    console.log('STOMP: Pokus o připojení...');
+    console.info('WebSocket: Pokus o připojení...');
 
     socket = new SockJS(serverContextPath + '/web/websock');
     client = Stomp.over(socket);
+    client.debug = null;
 
     client.heartbeat.outgoing = 5000;
     client.heartbeat.incoming = 0;
@@ -34,6 +35,7 @@ function stompSuccessCallback(frame) {
     store.dispatch(webSocketConnect());
     client.subscribe('/topic/api/changes', function(body, headers) {
         var change = JSON.parse(body.body);
+        console.info("WebSocket", change);
         switch (change.area) {
             case 'EVENT':
                 processEvents(change.value);
@@ -57,9 +59,9 @@ function stompSuccessCallback(frame) {
  */
 function stompFailureCallback(error) {
     store.dispatch(webSocketDisconnect());
-    console.log('STOMP: ' + error);
+    console.error('WebSocket: ' + error);
     setTimeout(stompConnect, 5000);
-    console.log('STOMP: Obnovení spojení za 5 sekund...');
+    console.info('WebSocket: Obnovení spojení za 5 sekund...');
 }
 
 
