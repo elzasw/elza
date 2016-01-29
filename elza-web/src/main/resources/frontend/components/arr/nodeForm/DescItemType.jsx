@@ -16,6 +16,8 @@ import DescItemDecimal from './DescItemDecimal'
 import DescItemCoordinates from './DescItemCoordinates'
 import DescItemUnitdate from './DescItemUnitdate'
 import DescItemPacketRef from './DescItemPacketRef'
+import DescItemPartyRef from './DescItemPartyRef'
+import DescItemRecordRef from './DescItemRecordRef'
 import {propsEquals} from 'components/Utils'
 
 require ('./AbstractDescItem.less')
@@ -159,8 +161,10 @@ return true;
         //parts.push(<div>{rulDataType.code}-{descItem.id}-{descItemType.type}</div>);
         switch (rulDataType.code) {
             case 'PARTY_REF':
+                parts.push(<DescItemPartyRef key="PARTY_REF" {...descItemProps} />)
                 break;
             case 'RECORD_REF':
+                parts.push(<DescItemPacketRef key="RECORD_REF" {...descItemProps} />)
                 break;
             case 'PACKET_REF':
                 parts.push(<DescItemPacketRef key="PACKET_REF" {...descItemProps} onCreatePacket={this.handleCreatePacket.bind(this, descItemIndex)} packets={packets} packetTypes={packetTypes} />)

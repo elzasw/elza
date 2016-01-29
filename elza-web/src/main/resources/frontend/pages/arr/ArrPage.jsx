@@ -17,7 +17,7 @@ import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
 import {WebApi} from 'actions'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {approveFa} from 'actions/arr/fa'
+import {approveFa, showRegisterJp} from 'actions/arr/fa'
 import {packetsFetchIfNeeded} from 'actions/arr/packets'
 import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes'
 
@@ -25,7 +25,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('getActiveInfo', 'buildRibbon',
+        this.bindMethods('getActiveInfo', 'buildRibbon', 'handleRegisterJp',
             'handleApproveFaVersion', 'handleCallApproveFaVersion', 'getActiveFindingAidId');
 
         this.state = {faFileTreeOpened: false};
@@ -108,6 +108,15 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     /**
+     * Zobrazení / skrytí záznamů u JP o rejstřících.
+     *
+     * @param show zobrazit/skrýt
+     */
+    handleRegisterJp(show) {
+        this.dispatch(showRegisterJp(show));
+    }
+
+    /**
      * Sestavení Ribbonu.
      * @return {Object} view
      */
@@ -126,6 +135,17 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             )
         }
 
+        var show = this.props.arrRegion.showRegisterJp;
+
+        itemActions.push(
+                <Button active={show} onClick={this.handleRegisterJp.bind(this, !show)} key="toggle-record-jp">
+                    <Icon glyph="fa-calendar-check-o" />
+                    <div>
+                        <span className="btnText">{i18n('ribbon.action.arr.fa.record-jp')}</span>
+                    </div>
+                </Button>
+        )
+
         var altSection;
         if (altActions.length > 0) {
             altSection = <RibbonGroup className="large">{altActions}</RibbonGroup>
@@ -142,6 +162,8 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
     render() {
         const {arrRegion, faFileTree, rulDataTypes, calendarTypes, packetTypes} = this.props;
+
+        var showRegisterJp = arrRegion.showRegisterJp;
 
         var fas = arrRegion.fas;
         var activeFa = arrRegion.activeIndex != null ? arrRegion.fas[arrRegion.activeIndex] : null;
@@ -183,6 +205,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                         packetTypes={packetTypes}
                         packets={packets}
                         findingAidId={findingAidId}
+                        showRegisterJp={showRegisterJp}
                     />
                 )
             }
