@@ -5,6 +5,7 @@ import nodes from './nodes'
 import {fa, faInitState} from './fa'
 import faTree from './faTree'
 import nodeSetting from './nodeSetting'
+import {consolidateState} from 'components/Utils'
 
 const initialState = {
     activeIndex: null,
@@ -25,11 +26,34 @@ function selectFaTab(state, action) {
             ],
             activeIndex: state.fas.length
         }
-    } else {
+    } else if (index !== state.activeIndex) {
         return {
             ...state,
             activeIndex: index
         }
+    } else {
+        return state;
+    }
+}
+
+function processFa(state, action, index) {
+    if (index != null) {
+        var newFa = fa(state.fas[index], action);
+        if (newFa !== state.fas[index]) {
+            var result = {
+                ...state,
+                fas: [
+                    ...state.fas.slice(0, index),
+                    newFa,
+                    ...state.fas.slice(index + 1)
+                ]
+            }
+            return consolidateState(state, result);
+        } else {
+            return state;
+        }
+    } else {
+        return state;
     }
 }
 
@@ -76,14 +100,9 @@ export default function arrRegion(state = initialState, action) {
                 extendedView,
                 fas: state.fas.map(faobj => fa(faobj, action))
             }
-        case types.GLOBAL_GET_OBJECT_INFO:
-            state.fas.forEach(fa => {
-                action.objectInfo.addFa(fa);
-                nodes(fa.nodes, action);
-            });
-            return state
         case types.FA_EXTENDED_VIEW:
-            return {...state, extendedView: action.enable}
+            var result = {...state, extendedView: action.enable}
+            return consolidateState(state, result);
         case types.FA_FA_TREE_REQUEST:
         case types.FA_FA_TREE_RECEIVE:
         case types.FA_FA_TREE_FULLTEXT_RESULT:
@@ -105,18 +124,7 @@ export default function arrRegion(state = initialState, action) {
         case types.FA_SUB_NODE_INFO_RECEIVE:
         case types.FA_NODE_CHANGE:
             var index = indexById(state.fas, action.versionId, "versionId");
-            if (index != null) {
-                return {
-                    ...state,
-                    fas: [
-                        ...state.fas.slice(0, index),
-                        fa(state.fas[index], action),
-                        ...state.fas.slice(index + 1)
-                    ]
-                }
-            } else {
-                return state;
-            }
+            return processFa(state, action, index);
         case types.FA_FA_TREE_FULLTEXT_CHANGE:
         case types.FA_FA_TREE_FOCUS_NODE:
         case types.FA_FA_TREE_EXPAND_NODE:
@@ -131,14 +139,7 @@ export default function arrRegion(state = initialState, action) {
         case types.FA_FA_CLOSE_NODE_TAB:
         case types.FA_FA_SELECT_NODE_TAB:
             var index = state.activeIndex;
-            return {
-                ...state,
-                fas: [
-                    ...state.fas.slice(0, index),
-                    fa(state.fas[index], action),
-                    ...state.fas.slice(index + 1)
-                ]
-            }
+            return processFa(state, action, index);
         case types.FA_CLOSE_FA_TAB:
             var index = indexById(state.fas, action.fa.id);
             var newActiveIndex = state.activeIndex;
@@ -157,19 +158,17 @@ export default function arrRegion(state = initialState, action) {
             }
         case types.FA_SELECT_FA_TAB:
             return selectFaTab(state, action);
-
         case types.NODE_DESC_ITEM_TYPE_LOCK:
         case types.NODE_DESC_ITEM_TYPE_UNLOCK:
         case types.NODE_DESC_ITEM_TYPE_UNLOCK_ALL:
         case types.NODE_DESC_ITEM_TYPE_COPY:
         case types.NODE_DESC_ITEM_TYPE_NOCOPY:
-            return {
+            var result =  {
                 ...state,
-                nodeSettings: nodeSetting(state.nodeSettings, action)
+                nodeSettings: newNodeSettingsnodeSetting(state.nodeSettings, action)
             }
-
+            return consolidateState(state, result);
         case types.PACKETS_REQUEST:
-
             var packets = state.packets;
             var faPackets = packets[action.findingAidId];
 
@@ -184,7 +183,6 @@ export default function arrRegion(state = initialState, action) {
                 faPackets.isFetching = true
             }
 
-
             packets[action.findingAidId] = faPackets;
 
             return {
@@ -193,7 +191,6 @@ export default function arrRegion(state = initialState, action) {
             }
 
         case types.CHANGE_PACKETS:
-
             var packets = state.packets;
             var faPackets = packets[action.findingAidId];
 
@@ -209,10 +206,7 @@ export default function arrRegion(state = initialState, action) {
                 ...state,
                 packets
             }
-
-
         case types.PACKETS_RECEIVE:
-
             var packets = state.packets;
             var faPackets = packets[action.findingAidId];
 
@@ -227,9 +221,7 @@ export default function arrRegion(state = initialState, action) {
                 ...state,
                 packets
             }
-
         case types.CREATE_PACKET_RECEIVE:
-
             var packets = Object.assign({}, state.packets);
 
             packets[action.findingAidId].items.push(action.data);
@@ -238,7 +230,6 @@ export default function arrRegion(state = initialState, action) {
                 ...state,
                 packets: packets
             }
-
         case types.CHANGE_CONFORMITY_INFO:
             var index = indexById(state.fas, action.findingAidVersionId);
 

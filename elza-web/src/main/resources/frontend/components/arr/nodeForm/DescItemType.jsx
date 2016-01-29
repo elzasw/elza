@@ -16,6 +16,7 @@ import DescItemDecimal from './DescItemDecimal'
 import DescItemCoordinates from './DescItemCoordinates'
 import DescItemUnitdate from './DescItemUnitdate'
 import DescItemPacketRef from './DescItemPacketRef'
+import {propsEquals} from 'components/Utils'
 
 require ('./AbstractDescItem.less')
 
@@ -29,6 +30,12 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+return true;
+        var eqProps = ['descItemTypeInfo', 'descItemType', 'rulDataType', 'calendarTypes', 'packetTypes', 'packets', 'locked', 'copy']
+        rerturn !propsEquals(this.props, nextProps, eqProps);
     }
 
     /**

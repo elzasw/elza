@@ -2,10 +2,15 @@ import * as types from 'actions/constants/actionTypes';
 import {indexById} from 'stores/app/utils.jsx'
 import faTree from './faTree'
 import nodes from './nodes'
+import {consolidateState} from 'components/Utils'
 
 export function faInitState(faWithVersion) {
     var result = {
-        ...faWithVersion,
+        faObj: {...faWithVersion},
+        id: faWithVersion.versionId,
+        faId: faWithVersion.id,
+        versionId: faWithVersion.versionId,
+        name: faWithVersion.name,
         isFetching: false,
         fetched: false,
         dirty: false,
@@ -75,11 +80,11 @@ export function fa(state = nodeInitialState, action) {
         case types.GLOBAL_CONTEXT_MENU_HIDE:
             var result = {...state};
             updateFaTree(result, action);
-            return result;
+            return consolidateState(state, result);
         case types.FA_FA_SELECT_SUBNODE:
             var result = {...state, nodes: nodes(state.nodes, action)}
             updateFaTree(result, action);
-            return result;
+            return consolidateState(state, result);
         case types.FA_FA_SUBNODES_NEXT:
         case types.FA_FA_SUBNODES_PREV:
         case types.FA_FA_SUBNODES_NEXT_PAGE:
@@ -87,7 +92,8 @@ export function fa(state = nodeInitialState, action) {
         case types.FA_FA_CLOSE_NODE_TAB:
         case types.FA_FA_SELECT_NODE_TAB:
         case types.FA_NODE_CHANGE:
-            return {...state, nodes: nodes(state.nodes, action)}
+            var result = {...state, nodes: nodes(state.nodes, action)}
+            return consolidateState(state, result);
         case types.FA_NODE_INFO_REQUEST:
         case types.FA_NODE_INFO_RECEIVE:
         case types.FA_SUB_NODE_FORM_REQUEST:
@@ -104,9 +110,11 @@ export function fa(state = nodeInitialState, action) {
         case types.FA_SUB_NODE_FORM_VALUE_RESPONSE:
         case types.FA_SUB_NODE_INFO_REQUEST:
         case types.FA_SUB_NODE_INFO_RECEIVE:
-            return {...state, nodes: nodes(state.nodes, action)}
+            var result = {...state, nodes: nodes(state.nodes, action)}
+            return consolidateState(state, result);
         case types.CHANGE_CONFORMITY_INFO:
-            return {...state, faTree: faTree(state.faTree, action), nodes: nodes(state.nodes, action)}
+            var result = {...state, faTree: faTree(state.faTree, action), nodes: nodes(state.nodes, action)}
+            return consolidateState(state, result);
         default:
             return state;
     }

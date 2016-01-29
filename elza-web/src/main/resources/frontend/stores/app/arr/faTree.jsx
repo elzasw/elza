@@ -1,6 +1,7 @@
 import * as types from 'actions/constants/actionTypes';
 import {indexById} from 'stores/app/utils.jsx'
 import {i18n} from 'components'
+import {consolidateState} from 'components/Utils'
 
 const initialState = {
     selectedId: null,
@@ -69,7 +70,11 @@ export default function faTree(state = initialState, action) {
                 multipleSelectionOneLevel,
             }     
         case types.GLOBAL_CONTEXT_MENU_HIDE:
-            return Object.assign({}, state, {focusId: null});
+            var result = {
+                ...state,
+                focusId: null
+            }
+            return consolidateState(state, result);
         case types.FA_FA_TREE_FULLTEXT_CHANGE:
             return {...state, filterText: action.filterText}
         case types.FA_FA_TREE_FULLTEXT_RESULT:
@@ -138,12 +143,24 @@ export default function faTree(state = initialState, action) {
                 }
                 return newState;
             } else {
-                return Object.assign({}, state, {selectedId: action.nodeId});
+                if (state.selectedId !== action.nodeId) {
+                    return Object.assign({}, state, {selectedId: action.nodeId});
+                } else {
+                    return state;
+                }
             }
         case types.FA_FA_SELECT_SUBNODE:
-            return Object.assign({}, state, {selectedId: action.subNodeId});
+            if (state.selectedId !== action.subNodeId) {
+                return Object.assign({}, state, {selectedId: action.subNodeId});
+            } else {
+                return state;
+            }
         case types.FA_FA_TREE_FOCUS_NODE:
-            return Object.assign({}, state, {focusId: action.node.id});
+            if (state.focusId !== action.node.id) {
+                return Object.assign({}, state, {focusId: action.node.id});
+            } else {
+                return state;
+            }
         case types.FA_FA_TREE_EXPAND_NODE:
             if (action.addWaitingNode) {
                 var index = indexById(state.nodes, action.node.id);

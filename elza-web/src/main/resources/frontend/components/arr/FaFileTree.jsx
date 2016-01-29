@@ -10,6 +10,7 @@ import {AbstractReactComponent, i18n, Icon, Loading} from 'components';
 import {Nav, NavItem} from 'react-bootstrap';
 import {faFileTreeFetchIfNeeded} from 'actions/arr/faFileTree'
 import {selectFaTab} from 'actions/arr/fa'
+import {propsEquals} from 'components/Utils'
 
 var FaFileTree = class FaFileTree extends AbstractReactComponent {
     constructor(props) {
@@ -28,6 +29,11 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
         if (this.props.opened) {
             this.dispatch(faFileTreeFetchIfNeeded());
         }
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        var eqProps = ['opened', 'items', 'isFetching', 'fetched']
+        return !propsEquals(this.props, nextProps, eqProps);
     }
 
     /**

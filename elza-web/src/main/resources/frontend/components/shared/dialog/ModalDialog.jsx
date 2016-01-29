@@ -3,12 +3,18 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {ModalDialogWrapper, AbstractReactComponent} from 'components';
 import {modalDialogHide} from 'actions/global/modalDialog'
+import {propsEquals} from 'components/Utils'
 
 var ModalDialog = class extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
         this.bindMethods('handleClose');
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        var eqProps = ['visible', 'content', 'title']
+        return !propsEquals(this.props, nextProps, eqProps);
     }
 
     handleClose() {

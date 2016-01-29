@@ -3,6 +3,7 @@ import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
 //import nodeInfo from './nodeInfo'
 import subNodeForm from './subNodeForm'
 import subNodeInfo from './subNodeInfo'
+import {consolidateState} from 'components/Utils'
 
 var _nextNodeKey = 1;
 var _pageSize = 50;
@@ -101,9 +102,11 @@ export function node(state = nodeInitialState, action) {
         case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
         case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
         case types.FA_SUB_NODE_FORM_VALUE_RESPONSE:
-            return Object.assign({}, state, {
+            var result = {
+                ...state, 
                 subNodeForm: subNodeForm(state.subNodeForm, action),
-            });
+            };
+            return consolidateState(state, result);
         case types.FA_FA_SUBNODES_NEXT:
             if ((state.viewStartIndex + state.pageSize/2) < state.childNodes.length) {
                 return {
@@ -142,36 +145,42 @@ export function node(state = nodeInitialState, action) {
             }
         case types.FA_SUB_NODE_INFO_REQUEST:
         case types.FA_SUB_NODE_INFO_RECEIVE:
-            return Object.assign({}, state, {
+            var result = {
+                ...state,
                 subNodeInfo: subNodeInfo(state.subNodeInfo, action),
-            });
+            }
+            return consolidateState(state, result);
         case types.FA_NODE_INFO_REQUEST:
-            return Object.assign({}, state, {
+            return {
+                ...state,
                 isFetching: true,
-            })
+            }
         case types.FA_NODE_INFO_RECEIVE:
-            return Object.assign({}, state, {
+            return {
+                ...state,
                 isFetching: false,
                 fetched: true,
                 dirty: false,
                 childNodes: action.childNodes,
-                _childNodes: [...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes, ...action.childNodes],
                 parentNodes: action.parentNodes,
                 lastUpdated: action.receivedAt
-            })
+            }
         case types.FA_FA_SELECT_SUBNODE:
-            var result = Object.assign({}, state, {
+            if (state.selectedSubNodeId === action.subNodeId) {
+                return state;
+            }
+
+            var result = {
+                ...state,
                 selectedSubNodeId: action.subNodeId
-            });
+            }
             if (state.selectedSubNodeId != action.subNodeId) {
                 result.subNodeForm = subNodeForm(undefined, {type:''});
                 result.subNodeInfo = subNodeInfo(undefined, {type:''});
             }
             return result;
-
         case types.CHANGE_CONFORMITY_INFO:
             return Object.assign({}, state, { dirty: true });
-
         case types.FA_NODE_CHANGE:
             switch (action.action) {
                 // Přidání SubNode

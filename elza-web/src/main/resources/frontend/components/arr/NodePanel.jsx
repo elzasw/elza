@@ -13,6 +13,7 @@ import {faSelectSubNode, faSubNodesNext, faSubNodesPrev, faSubNodesNextPage, faS
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes'
 import {indexById} from 'stores/app/utils.jsx'
 import {createFaRoot, isFaRootId} from './ArrUtils.jsx'
+import {propsEquals} from 'components/Utils'
 
 require ('./NodePanel.less');
 
@@ -35,6 +36,11 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps) {
         this.requestData(nextProps.versionId, nextProps.node);
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        var eqProps = ['versionId', 'fa', 'node', 'calendarTypes', 'packetTypes', 'packets', 'rulDataTypes', 'findingAidId']
+        return !propsEquals(this.props, nextProps, eqProps);
     }
 
     /**

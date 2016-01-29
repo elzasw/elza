@@ -1,11 +1,34 @@
 import * as types from 'actions/constants/actionTypes';
 import {indexById, findByNodeKeyInNodes, selectedAfterClose} from 'stores/app/utils.jsx'
 import {node, nodeInitState} from './node.jsx'
+import {consolidateState} from 'components/Utils'
 
 const nodesInitialState = {
     activeIndex: null,
     nodes: []
 }
+
+function processNode(state, action, index) {
+    if (index != null) {
+        var newNode = node(state.nodes[index], action);
+        if (newNode !== state.nodes[index]) {
+            var result = {
+                ...state,
+                nodes: [
+                    ...state.nodes.slice(0, index),
+                    newNode,
+                    ...state.nodes.slice(index + 1)
+                ]
+            }
+            return consolidateState(state, result);
+        } else {
+            return state;
+        }
+    } else {
+        return state;
+    }
+}
+
 export default function nodes(state = nodesInitialState, action) {
     switch (action.type) {
         case types.STORE_LOAD:
@@ -37,35 +60,17 @@ export default function nodes(state = nodesInitialState, action) {
         case types.FA_SUB_NODE_INFO_RECEIVE:
             var r = findByNodeKeyInNodes(state, action.versionId, action.nodeKey);
             if (r) {
-                return {
-                    ...state,
-                    nodes: [
-                        ...state.nodes.slice(0, r.nodeIndex),
-                        node(state.nodes[r.nodeIndex], action),
-                        ...state.nodes.slice(r.nodeIndex + 1)
-                    ]
-                }
+                var index = r.nodeIndex;
+                return processNode(state, action, index);
             } else {
                 return state;
             }
-        case types.GET_OBJECT_INFO:
-            state.nodes.forEach(node => {
-                action.objectInfo.addNode(node);
-            });
-            return state
         case types.FA_FA_SUBNODES_NEXT:
         case types.FA_FA_SUBNODES_PREV:
         case types.FA_FA_SUBNODES_NEXT_PAGE:
         case types.FA_FA_SUBNODES_PREV_PAGE:
             var index = state.activeIndex;
-            return {
-                ...state,
-                nodes: [
-                    ...state.nodes.slice(0, index),
-                    node(state.nodes[index], action),
-                    ...state.nodes.slice(index + 1)
-                ],
-            }
+            return processNode(state, action, index);
         case types.FA_FA_SELECT_SUBNODE:
             var newState;
 
@@ -86,25 +91,34 @@ export default function nodes(state = nodesInitialState, action) {
                 }
             } else {    // pokusí se použít aktuální
                 var index = state.activeIndex;
-                newState = {
-                    ...state,
-                    nodes: [
-                        ...state.nodes.slice(0, index),
-                        nodeInitState(action.subNodeParentNode, state.nodes[index]),
-                        ...state.nodes.slice(index + 1)
-                    ],
+                if (state.nodes[index].id !== action.subNodeParentNode.id) {
+                    newState = {
+                        ...state,
+                        nodes: [
+                            ...state.nodes.slice(0, index),
+                            nodeInitState(action.subNodeParentNode, state.nodes[index]),
+                            ...state.nodes.slice(index + 1)
+                        ],
+                    }
+                } else {
+                    newState = {...state}
                 }
             }
 
             // 2. Výběr subnode
             var index = newState.activeIndex;
-            return {
-                ...newState,
-                nodes: [
-                    ...newState.nodes.slice(0, index),
-                    node(newState.nodes[index], action),
-                    ...newState.nodes.slice(index + 1)
-                ],
+            var newNode = node(newState.nodes[index], action);
+            if (newNode !== newState.nodes[index]) {
+                return {
+                    ...newState,
+                    nodes: [
+                        ...newState.nodes.slice(0, index),
+                        newNode,
+                        ...newState.nodes.slice(index + 1)
+                    ],
+                }
+            } else {
+                return consolidateState(state, newState);
             }
         case types.FA_FA_CLOSE_NODE_TAB:
             var index = action.index;
@@ -123,19 +137,21 @@ export default function nodes(state = nodesInitialState, action) {
                 activeIndex: newActiveIndex
             }
         case types.FA_FA_SELECT_NODE_TAB:
-            return {
-                ...state,
-                activeIndex: action.index
+            if (state.activeIndex !== action.index) {
+                return {
+                    ...state,
+                    activeIndex: action.index
+                }
+            } else {
+                return state;
             }
-
         case types.CHANGE_CONFORMITY_INFO:
-
             var nodes = state.nodes;
             var nodesChange = [
-                    ...nodes
+                ...nodes
             ];
 
-                var changed = false;
+            var changed = false;
 
             for (var i = 0; i < nodes.length; i++) {
                 var index = indexById(nodes[i].childNodes, action.nodeId);
@@ -159,9 +175,7 @@ export default function nodes(state = nodesInitialState, action) {
                     nodeChange,
                     ...nodesChange.slice(i + 1)
                 ];
-
             }
-
 
             if (changed) {
                 return {

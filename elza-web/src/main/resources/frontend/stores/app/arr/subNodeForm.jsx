@@ -251,7 +251,7 @@ export default function subNodeForm(state = initialState, action) {
             loc.descItem.error = validate(loc.descItem, descItemTypeInfo, valueServerError);
 
             state.formData = {...state.formData};
-            return state;
+            return {...state};
         case types.FA_SUB_NODE_FORM_VALUE_CHANGE:
             var loc = getLoc(state, action.valueLocation);
             var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, loc.descItemType.id)];
@@ -275,7 +275,7 @@ export default function subNodeForm(state = initialState, action) {
             loc.descItem.error = validate(loc.descItem, descItemTypeInfo);
 
             state.formData = {...state.formData};
-            return state;
+            return {...state};
         case types.FA_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
             var loc = getLoc(state, action.valueLocation);
             var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, loc.descItemType.id)];
@@ -285,16 +285,16 @@ export default function subNodeForm(state = initialState, action) {
             loc.descItem.error = validate(loc.descItem, descItemTypeInfo);
 
             state.formData = {...state.formData};
-            return state;
+            return {...state};
         case types.FA_SUB_NODE_FORM_VALUE_BLUR:
             var loc = getLoc(state, action.valueLocation);
 
             loc.descItem.hasFocus = false;
             loc.descItemType.hasFocus = false;
             loc.descItemGroup.hasFocus = false;
-            
+
             state.formData = {...state.formData};
-            return state;
+            return {...state};
         case types.FA_SUB_NODE_FORM_VALUE_FOCUS:
             var loc = getLoc(state, action.valueLocation);
 
@@ -304,7 +304,7 @@ export default function subNodeForm(state = initialState, action) {
             loc.descItemGroup.hasFocus = true;
             
             state.formData = {...state.formData};
-            return state;
+            return {...state};
         case types.FA_SUB_NODE_FORM_VALUE_ADD:
             var loc = getLoc(state, action.valueLocation);
 
@@ -315,7 +315,7 @@ export default function subNodeForm(state = initialState, action) {
             loc.descItemType.descItems = [...loc.descItemType.descItems, descItem];
             
             state.formData = {...state.formData};
-            return state;
+            return {...state};
         case types.FA_SUB_NODE_FORM_VALUE_RESPONSE:
             var loc = getLoc(state, action.valueLocation);
 
@@ -351,7 +351,7 @@ export default function subNodeForm(state = initialState, action) {
             }
 
             state.formData = {...state.formData};
-            return state;
+            return {...state};
         case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
             // Dohledání skupiny a desc item type
             var addGroup, addItemType;
@@ -391,7 +391,7 @@ export default function subNodeForm(state = initialState, action) {
             descItemGroup.descItemTypes.sort((a, b) => a.viewOrder - b.viewOrder);
 
             state.formData = {...state.formData};
-            return state;
+            return {...state};
         case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
             var loc = getLoc(state, action.valueLocation);
 
@@ -415,7 +415,7 @@ export default function subNodeForm(state = initialState, action) {
             }
 
             state.formData = {...state.formData};
-            return state;
+            return {...state};
         case types.FA_SUB_NODE_FORM_VALUE_DELETE:
             var loc = getLoc(state, action.valueLocation);
 

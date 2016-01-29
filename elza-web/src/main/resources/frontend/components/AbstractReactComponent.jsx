@@ -1,4 +1,5 @@
 import React from 'react';
+import {stateEquals} from 'components/Utils'
 
 var AbstractReactComponent = class AbstractReactComponent extends React.Component {
     constructor(props) {
@@ -7,6 +8,10 @@ var AbstractReactComponent = class AbstractReactComponent extends React.Componen
         if (props && props.dispatch) {
             this.dispatch = props.dispatch;
         }
+    }
+
+    componentWillUpdate() {
+    //console.log(this);
     }
 
     bindMethods(...methods) {

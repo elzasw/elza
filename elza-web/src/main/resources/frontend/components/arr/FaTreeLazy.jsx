@@ -11,6 +11,7 @@ import {VirtualList, AbstractReactComponent, i18n, Loading} from 'components';
 import {Nav, Input, NavItem, Button, DropdownButton} from 'react-bootstrap';
 var classNames = require('classnames');
 import {ResizeStore} from 'stores';
+import {propsEquals} from 'components/Utils'
 
 var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     constructor(props) {
@@ -31,6 +32,11 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
             this.setState({});
         });
         this.setState({treeContainer: ReactDOM.findDOMNode(this.refs.treeContainer)});
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        var eqProps = ['expandedIds', 'selectedId', 'selectedIds', 'nodes', 'focusId', 'isFetching', 'fetched', '', '']
+        return !propsEquals(this.props, nextProps, eqProps);
     }
 
     componentWillUnmount() {

@@ -175,7 +175,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                 centerPanel = (
                     <NodeTabs
                         versionId={activeFa.versionId}
-                        fa={activeFa}
+                        fa={activeFa.faObj}
                         nodes={activeFa.nodes.nodes}
                         activeIndex={activeFa.nodes.activeIndex}
                         rulDataTypes={rulDataTypes}

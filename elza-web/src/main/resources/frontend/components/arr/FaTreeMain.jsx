@@ -12,6 +12,7 @@ import {faTreeFulltextChange, faTreeFulltextSearch, faTreeFocusNode, faTreeFetch
 import {faSelectSubNode} from 'actions/arr/nodes'
 import {createFaRoot, getParentNode} from './ArrUtils.jsx'
 import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu'
+import {propsEquals} from 'components/Utils'
 
 var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
     constructor(props) {
@@ -30,6 +31,11 @@ var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
     componentWillReceiveProps(nextProps) {
         const {versionId, expandedIds, selectedId} = nextProps;
         this.requestFaTreeData(versionId, expandedIds, selectedId);
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        var eqProps = ['dirty', 'expandedIds', 'fa', 'fetched', 'searchedIds', 'nodes', 'selectedId', 'selectedIds', 'fetchingIncludeIds', 'filterCurrentIndex', 'filterText', 'focusId', 'isFetching']
+        return !propsEquals(this.props, nextProps, eqProps);
     }
 
     requestFaTreeData(versionId, expandedIds, selectedId) {

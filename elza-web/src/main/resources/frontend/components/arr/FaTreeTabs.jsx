@@ -16,6 +16,7 @@ import {faTreeFocusNode, faTreeFetchIfNeeded, faTreeNodeExpand, faTreeNodeCollap
 import {faSelectSubNode} from 'actions/arr/nodes'
 import {createFaRoot, getParentNode} from './ArrUtils.jsx'
 import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu'
+import {propsEquals} from 'components/Utils'
 
 var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
     constructor(props) {
@@ -39,6 +40,11 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
         if (activeFa) {
             this.requestFaTreeData(activeFa);
         }
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        var eqProps = ['fas', 'activeFa']
+        return !propsEquals(this.props, nextProps, eqProps);
     }
 
     requestFaTreeData(activeFa) {
@@ -125,7 +131,7 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
                 />
                 <Tabs.Content>
                     <FaTreeMain
-                        fa = {activeFa}
+                        fa = {activeFa.faObj}
                         versionId={activeFa.versionId}
                         {...activeFa.faTree}
                     />
