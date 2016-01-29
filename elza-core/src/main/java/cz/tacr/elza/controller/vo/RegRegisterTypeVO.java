@@ -45,6 +45,11 @@ public class RegRegisterTypeVO {
      */
     private List<RegRegisterTypeVO> children;
 
+    /**
+     * Seznam rodičů seřazený od přímého rodiče po kořen.
+     */
+    private List<String> parents;
+
     public Integer getId() {
         return id;
     }
@@ -114,5 +119,29 @@ public class RegRegisterTypeVO {
             children = new LinkedList<>();
         }
         children.add(child);
+    }
+
+    public List<String> getParents() {
+        return parents;
+    }
+
+    public void setParents(final List<String> parents) {
+        this.parents = parents;
+    }
+
+    public void addParent(final String parentName){
+        if(parents == null){
+            parents = new LinkedList<>();
+        }
+        parents.add(parentName);
+    }
+
+    public void addParents(final List<String> nextParents){
+        if(parents == null){
+            parents = new LinkedList<>();
+        }
+        if(nextParents != null){
+            parents.addAll(nextParents);
+        }
     }
 }
