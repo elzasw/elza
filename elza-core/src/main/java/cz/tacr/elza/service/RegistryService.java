@@ -12,15 +12,16 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
-import javax.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrNodeRegister;
@@ -183,54 +184,33 @@ public class RegistryService {
         if (CollectionUtils.isNotEmpty(nodeRegisterList)) {
             throw new IllegalStateException("Nalezeno použití hesla v tabulce ArrDataRecordRef.");
         }
+
+        List<RegRecord> childs = regRecordRepository.findByParentRecord(record);
+        if (!childs.isEmpty()) {
+            throw new IllegalStateException("Nelze smazat rejstříkové heslo, které má potomky.");
+        }
+
+
     }
 
 
     /**
      * Uložení či update záznamu.
      *
-     * @param record naplněný objekt, bez vazeb
+     * @param record    naplněný objekt, bez vazeb
+     * @param partySave true - jedná se o ukládání přes ukládání osoby, false -> editace z klienta
      * @return výslendný objekt
      */
-    public RegRecord saveRecord(final RegRecord record, boolean checkPartyType) {
+    public RegRecord saveRecord(final RegRecord record, final boolean partySave) {
         Assert.notNull(record);
 
-        Assert.notNull(record.getRecord(), "Není vyplněné Record.");
+        checkRecordSave(record, partySave);
 
-        RegRegisterType regRegisterType = record.getRegisterType();
-        Assert.notNull(regRegisterType, "Není vyplněné RegisterType.");
-        Assert.notNull(regRegisterType.getRegisterTypeId(), "RegisterType nemá vyplněné ID.");
-        regRegisterType = registerTypeRepository.findOne(regRegisterType.getRegisterTypeId());
-        Assert.notNull(regRegisterType, "RegisterType nebylo nalezeno podle id " + regRegisterType.getRegisterTypeId());
-        record.setRegisterType(regRegisterType);
+        RegRegisterType registerType = registerTypeRepository.findOne(record.getRegisterType().getRegisterTypeId());
+        record.setRegisterType(registerType);
 
-
-        Assert.notNull(record.getScope(), "Není vyplněna třída rejstříku");
-        Assert.notNull(record.getScope().getScopeId(), "Není vyplněno id třídy rejstříku");
         RegScope scope = scopeRepository.findOne(record.getScope().getScopeId());
-        Assert.notNull(scope, "Nebyla nalezena třída rejstříku s id " + record.getScope().getScopeId());
-        if (record.getRecordId() != null) {
-            RegRecord dbRecord = regRecordRepository.findOne(record.getRecordId());
-            if (!record.getScope().getScopeId().equals(dbRecord.getScope().getScopeId())) {
-                throw new IllegalArgumentException("Nelze změnit třídu rejstříku.");
-            }
-        }
         record.setScope(scope);
-
-
-        if (checkPartyType) {
-            if (record.getRecordId() == null) {
-                if (regRegisterType != null && regRegisterType.getPartyType() != null) {
-                    throw new IllegalArgumentException("Typ hesla nesmí mít vazbu na typ osoby.");
-                }
-            } else {
-                ParParty party = partyService.findParPartyByRecord(record);
-                if (party != null) {
-                    throw new IllegalArgumentException("Nelze editovat rejstříkové heslo, které má navázanou osobu.");
-                }
-            }
-        }
-
 
         RegExternalSource externalSource = record.getExternalSource();
         if (externalSource != null) {
@@ -241,11 +221,22 @@ public class RegistryService {
             record.setExternalSource(externalSource);
         }
 
+        RegRecord parentRecord = null;
         if(record.getParentRecord() != null && record.getParentRecord().getRecordId() != null){
-            RegRecord parentRecord = regRecordRepository.findOne(record.getParentRecord().getRecordId());
-            Assert.notNull(parentRecord,
-                    "Nebylo nalezeno rejstříkové heslo s id " + record.getParentRecord().getRecordId());
+            parentRecord = regRecordRepository.findOne(record.getParentRecord().getRecordId());
             record.setParentRecord(parentRecord);
+        }
+
+
+        if(record.getRecordId() != null){
+            //při editaci typu kořenového hesla promítnout změnu na všechny potomky
+            RegRecord dbRecord = regRecordRepository.findOne(record.getRecordId());
+            if (dbRecord.getParentRecord() == null) {
+                if (!ObjectUtils.equals(record.getRegisterType(), dbRecord.getRegisterType())) {
+                    List<RegRecord> childs = regRecordRepository.findByParentRecord(dbRecord);
+                    childs.forEach(child -> hierarchicalUpdateRegisterType(child, registerType));
+                }
+            }
         }
 
 
@@ -256,6 +247,15 @@ public class RegistryService {
         return result;
     }
 
+    private void hierarchicalUpdateRegisterType(final RegRecord record, final RegRegisterType type) {
+        Assert.notNull(record);
+        Assert.notNull(type);
+
+        record.setRegisterType(type);
+
+        List<RegRecord> childs = regRecordRepository.findByParentRecord(record);
+        childs.forEach(child -> hierarchicalUpdateRegisterType(child, type));
+    }
 
     /**
      * Smaže rej. heslo a jeho variantní hesla. Předpokládá, že již proběhlo ověření, že je možné ho smazat (vazby atd...).
@@ -271,6 +271,103 @@ public class RegistryService {
         variantRecordRepository.delete(variantRecordRepository.findByRegRecordId(record.getRecordId()));
         regRecordRepository.delete(record);
     }
+
+
+    /**
+     * Validace uložení záznamu.
+     *
+     * @param record    heslo
+     * @param partySave true - jedná se o ukládání přes ukládání osoby, false -> editace z klienta
+     */
+    private void checkRecordSave(final RegRecord record, final boolean partySave) {
+        Assert.notNull(record);
+
+        Assert.notNull(record.getRecord(), "Není vyplněné Record.");
+
+        RegRegisterType regRegisterType = record.getRegisterType();
+        Assert.notNull(regRegisterType, "Není vyplněné RegisterType.");
+        Assert.notNull(regRegisterType.getRegisterTypeId(), "RegisterType nemá vyplněné ID.");
+        regRegisterType = registerTypeRepository.findOne(regRegisterType.getRegisterTypeId());
+        Assert.notNull(regRegisterType, "RegisterType nebylo nalezeno podle id " + regRegisterType.getRegisterTypeId());
+
+        if (partySave) {
+            if (regRegisterType.getPartyType() == null) {
+                throw new IllegalArgumentException("Typ hesla musí mít vazbu na typ osoby.");
+            }
+        } else {
+            if (record.getRecordId() == null && regRegisterType.getPartyType() != null) {
+                throw new IllegalArgumentException("Nelze vytvořit rejstříkové heslo, které je navázané na typ osoby");
+            }
+        }
+
+        Assert.notNull(record.getScope(), "Není vyplněna třída rejstříku");
+        Assert.notNull(record.getScope().getScopeId(), "Není vyplněno id třídy rejstříku");
+        RegScope scope = scopeRepository.findOne(record.getScope().getScopeId());
+        Assert.notNull(scope, "Nebyla nalezena třída rejstříku s id " + record.getScope().getScopeId());
+
+        RegRecord parentRecord = null;
+        if (record.getParentRecord() != null && record.getParentRecord().getRecordId() != null) {
+            parentRecord = regRecordRepository.findOne(record.getParentRecord().getRecordId());
+            Assert.notNull(parentRecord,
+                    "Nebylo nalezeno rejstříkové heslo s id " + record.getParentRecord().getRecordId());
+        }
+
+
+        if (parentRecord != null) {
+            if (ObjectUtils.equals(parentRecord.getRecordId(), record.getRecordId())) {
+                throw new IllegalArgumentException("Nelze nastavit rodiče rejstříkovému heslu sebe samotného.");
+            }
+
+            ElzaTools.checkEquals(record.getRegisterType(), parentRecord.getRegisterType(),
+                    "Potomek rejstříkového hesla musí mít stejný typ jako jeho rodič. ");
+        }
+
+
+        if (record.getRecordId() == null) {
+            if (!regRegisterType.getAddRecord()) {
+                throw new IllegalArgumentException(
+                        "Nelze přidávat heslo do typu, který nemá přidávání hesel povolené.");
+            }
+
+            if (parentRecord != null && !parentRecord.getRegisterType().getHierarchical()) {
+                throw new IllegalArgumentException("Nelze přidávat heslo k rodiči, který není hierarchický.");
+            }
+
+
+        } else {
+            RegRecord dbRecord = regRecordRepository.findOne(record.getRecordId());
+            if (!record.getScope().getScopeId().equals(dbRecord.getScope().getScopeId())) {
+                throw new IllegalArgumentException("Nelze změnit třídu rejstříku.");
+            }
+
+            ParParty party = partyService.findParPartyByRecord(dbRecord);
+            if (party == null) {
+                if (regRegisterType.getPartyType() != null) {
+                    throw new IllegalArgumentException("Nelze nastavit typ hesla, které je navázané na typ osoby.");
+                }
+
+            } else {
+                ElzaTools.checkEquals(regRegisterType.getPartyType(), party.getPartyType(),
+                        "Nelze změnit typ rejstříkového hesla osoby, který odkazuje na jiný typ osoby.");
+
+                //pokud editujeme heslo přes insert/update, a né přes ukládání osoby
+                if (!partySave) {
+                    ElzaTools.checkEquals(record.getRecord(), dbRecord.getRecord(),
+                            "Nelze editovat hodnotu rejstříkového hesla napojeného na osobu.");
+                    ElzaTools.checkEquals(record.getCharacteristics(), dbRecord.getCharacteristics(),
+                            "Nelze editovat charakteristiku rejstříkového hesla napojeného na osobu.");
+                    ElzaTools.checkEquals(record.getExternalId(), dbRecord.getExternalId(),
+                            "Nelze editovat externí id rejstříkového hesla napojeného na osobu.");
+                    ElzaTools.checkEquals(record.getRecord(), dbRecord.getRecord(),
+                            "Nelze editovat hodnotu rejstříkového hesla napojeného na osobu.");
+                    ElzaTools.checkEquals(record.getExternalSource(), record.getExternalSource(),
+                            "Nelze editovat externí zdroj rejstříkového hesla, které je napojené na osobu.");
+                }
+
+            }
+        }
+    }
+
 
 
     /**

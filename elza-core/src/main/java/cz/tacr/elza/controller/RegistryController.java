@@ -242,7 +242,7 @@ public class RegistryController {
         Assert.isNull(record.getRecordId(), "Při vytváření záznamu nesmí být vyplněno ID (recordId).");
 
         RegRecord recordDO = factoryDO.createRegRecord(record);
-        RegRecord newRecordDO = registryService.saveRecord(recordDO, true);
+        RegRecord newRecordDO = registryService.saveRecord(recordDO, false);
 
         ParParty recordParty = partyService.findParPartyByRecord(newRecordDO);
         return factoryVo.createRegRecord(newRecordDO, recordParty == null ? null : recordParty.getPartyId(), false);
@@ -262,7 +262,7 @@ public class RegistryController {
         Assert.notNull(recordTest, "Nebyl nalezen záznam pro update s id " + record.getRecordId());
 
         RegRecord recordDO = factoryDO.createRegRecord(record);
-        RegRecord newRecordDO = registryService.saveRecord(recordDO, true);
+        RegRecord newRecordDO = registryService.saveRecord(recordDO, false);
 
         ParParty recordParty = partyService.findParPartyByRecord(newRecordDO);
         return factoryVo.createRegRecord(newRecordDO, recordParty == null ? null : recordParty.getPartyId(), false);

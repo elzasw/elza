@@ -1,7 +1,5 @@
 package cz.tacr.elza;
 
-import org.apache.commons.collections4.CollectionUtils;
-
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
@@ -9,6 +7,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.ObjectUtils;
 
 
 /**
@@ -94,4 +95,17 @@ public class ElzaTools {
         return LocalDateTime.now().toString();
     }
 
+
+    /**
+     * Pokud se nerovanjí objekty, vyhodí výjimku.
+     * @param valueA objekt A
+     * @param valueB objekt B
+     * @param message zpráva výjimky
+     */
+    public static void checkEquals(final Object valueA, final Object valueB, final String message)
+            throws IllegalArgumentException {
+        if (!ObjectUtils.equals(valueA, valueB)) {
+            throw new IllegalArgumentException(message);
+        }
+    }
 }
