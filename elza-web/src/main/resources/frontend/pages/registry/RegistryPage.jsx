@@ -58,6 +58,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     handleCallAddRegistry(parentId, data ) {
+
         WebApi.insertRegistry( data.nameMain, data.characteristics, data.registerType, parentId ).then(json => {
             this.dispatch(modalDialogHide());
             this.dispatch(fetchRegistry(this.props.registry.filterText, this.props.registry.registryParentId, this.props.registry.registryTypesId));
@@ -116,12 +117,6 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             itemActions.push(
                 <Button key='registryRemove' onClick={this.handleRemoveRegistryDialog.bind(this)}><Icon glyph="fa-trash" /><div><span className="btnText">{i18n('registry.removeRegistry')}</span></div></Button>
             );
-
-            if (this.props.registry.selectedId!=this.props.registry.registryParentId) {
-                itemActions.push(
-                    <Button key='registryAddHere' onClick={this.handleAddRegistry.bind(this, this.props.registry.selectedId)}><Icon glyph="fa-download" /><div><span className="btnText">{i18n('registry.addNewRegistryHere')}</span></div></Button>
-                );
-            }
 
             if (!this.props.registry.recordForMove){
                 itemActions.push(
@@ -249,7 +244,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 </ul>
             )
         }
-console.log(this.props.refTables.recordTypes.items);
+
         if (!this.props.registry.registryTypesId) {
             var RegistryTypes = <DropDownTree
                 nullValue={{id: null, name: i18n('registry.all')}}
@@ -275,7 +270,7 @@ console.log(this.props.refTables.recordTypes.items);
                     <Search
                         onSearch={this.handleSearch.bind(this)}
                         placeholder={i18n('search.input.search')}
-                        afterInput={RegistryTypes}
+                        beforeInput={RegistryTypes}
                         filterText={this.props.registry.filterText}
                     />
                 </div>

@@ -33,7 +33,7 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
         this.getOpenedDefault = this.getOpenedDefault.bind(this);       // funkce pro zjisteni uzlu, ktere maji byt automaticky otevrene
         this.isNodeOpened = this.isNodeOpened.bind(this);               // funkce pro kontrolu jestli je uzel otevřený
         this.getItemLabel = this.getItemLabel.bind(this);               // funkce zjisteni popisku (nazvu) vybrané položky
-//        this.getItemLabelInt = this.getItemLabelInt.bind(this);               // funkce zjisteni popisku (nazvu) vybrané položky
+
         this.handleItemSelect = this.handleItemSelect.bind(this);       // funkce po kliknutí pro výběr
 
         
@@ -218,4 +218,4 @@ DropDownTree.propTypes = {
 
 }
 
-module.exports = DropDownTree;
+module.exports =connect()( DropDownTree);

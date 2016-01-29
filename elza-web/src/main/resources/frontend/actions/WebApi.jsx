@@ -232,6 +232,7 @@ class WebApi{
             registerType: registerType
             
         }
+        return;
         return AjaxUtils.ajaxPut('/api/registryManagerV2/createRecord', null,  data)
             .then(json=>{
                 return json;
