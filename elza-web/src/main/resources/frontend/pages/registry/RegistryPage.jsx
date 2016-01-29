@@ -189,7 +189,11 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                         var cls = classNames({
                                     active: this.props.registry.selectedId === item.recordId,
                                     'search-result-row': 'search-result-row'
-                                    });
+                        });
+                        var iconName = 'fa-file';
+                        if (item.addRecord === true) {
+                            iconName = 'fa-folder';
+                        }
 
                         var clsItem = 'registry-list-icon-list';
                         var doubleClick = this.handleDoubleClick.bind(this, item);
@@ -209,10 +213,10 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
                             return (
                                 <div key={item.recordId} className={cls} onDoubleClick={doubleClick} onClick={this.handleSelect.bind(this, item)}>
+                                    <Icon glyph={iconName} key={item.recordId} /><span key={item.recordId} className={clsItem}>{item.record}</span>
                                     <div key={item.recordId} className="path">
                                         <span key={item.recordId}>{path}</span>
                                     </div>
-                                    <span key={item.recordId} className={clsItem}>{item.record}</span>
                                 </div>
                             )
                         }
@@ -220,7 +224,8 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                             // jednořádkový výsledek
                             return (
                                 <div key={item.recordId} className={cls} onDoubleClick={doubleClick} onClick={this.handleSelect.bind(this, item)}>
-                                    <span key={item.recordId} className={clsItem}>{item.record}</span>
+                                    <div><Icon glyph={iconName} key={item.recordId} /></div>
+                                    <div key={item.recordId} className={clsItem}>{item.record}</div>
                                 </div>
                             )
                         }
@@ -232,20 +237,27 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
         var navParents = '';
         if (this.props.registry.records[0] && this.props.registry.filterText === null && this.props.registry.records[0].parents.length>0){
-            var parentsArr = this.props.registry.records[0].parents.slice();
+            console.log('rodiče', this.props.registry);
+
             navParents = (
-                <ul className='breadcrumbs'>
-                <li onClick={this.handleClickNavigation.bind(this, {id:null})}>/</li>
-                {parentsArr.reverse().map(item => {
-                    if (this.props.registry.selectedId===item.id)
-                        return <li key={item.id} className='selected'>{item.record}</li>
-                    return <li key={item.id} onClick={this.handleClickNavigation.bind(this, item)}>{item.record}</li>
-                    }
-                )}
-                </ul>
+                <div className="record-parent-info">
+                    <div className='record-selected-name'>
+                        <Icon glyph="fa-folder-open" />
+                        <div>{this.props.registry.records[0].parents[0]}</div>
+                        <Icon glyph="fa-mail-reply" />
+                    </div>
+                    <div className='record-selected-breadcrumbs'>{this.props.registry.records[0].parents.join(' | ')}</div>
+                </div>
             )
         }
 
+        var dropDownForSearch = <DropDownTree
+            nullValue={{id: null, name: i18n('registry.all')}}
+            key='search'
+            items={this.props.refTables.recordTypes.items}
+            value={this.props.registry.registryTypesId}
+            onSelect={this.hlandleRegistryTypesSelect.bind(this)}
+            />
 
         var leftPanel = (
             <div className="registry-list">
@@ -253,13 +265,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                     <Search
                         onSearch={this.handleSearch.bind(this)}
                         placeholder={i18n('search.input.search')}
-                        beforeInput=<DropDownTree
-                                        nullValue={{id: null, name: i18n('registry.all')}}
-                                        key='search'
-                                        items={this.props.refTables.recordTypes.items}
-                                        value={this.props.registry.registryTypesId}
-                                        onSelect={this.hlandleRegistryTypesSelect.bind(this)}
-                                        />
+                        beforeInput={dropDownForSearch}
                         filterText={this.props.registry.filterText}
                     />
                 </div>

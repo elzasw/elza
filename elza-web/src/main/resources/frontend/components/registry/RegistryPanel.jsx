@@ -8,8 +8,8 @@ require ('./RegistryPanel.less');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Input} from 'react-bootstrap';
-import {AbstractReactComponent, RegistryLabel, Loading, DropDownTree, EditRegistryForm, AddRegistryVariantForm} from 'components';
+import {Input, Button} from 'react-bootstrap';
+import {Icon, AbstractReactComponent, RegistryLabel, Loading, DropDownTree, EditRegistryForm, AddRegistryVariantForm} from 'components';
 import {i18n} from 'components';
 import {WebApi} from 'actions'
 import {getRegistryIfNeeded, fetchRegistryIfNeeded, fetchRegistry} from 'actions/registry/registryList'
@@ -107,7 +107,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
             var detailRegistry = (
                     <div>
                         <h2>
-                            {this.props.registryData.item.record} <span onClick={this.editRecord} className='btn glyphicon glyphicon-pencil'/>
+                            {this.props.registryData.item.record} <Button onClick={this.editRecord}><Icon glyph='fa-edit'/></Button>
                         </h2>
 
                         <p>{this.props.registryData.item.characteristics}</p>
@@ -141,7 +141,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
                                 )
                             })
                         }
-                        <span className="btn glyphicon glyphicon-plus-sign" onClick={this.handleAddVaraintRecord} />
+                        <Button onClick={this.handleAddVaraintRecord} ><Icon glyph='fa-plus' /></Button>
                     </div>
             )
         }

@@ -4,8 +4,8 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Input} from 'react-bootstrap';
-import {AbstractReactComponent, DropDownTree} from 'components';
+import {Input, Button} from 'react-bootstrap';
+import {Icon, AbstractReactComponent, DropDownTree} from 'components';
 import {connect} from 'react-redux'
 
 var RegistryLabel = class RegistryLabel extends AbstractReactComponent {
@@ -62,7 +62,7 @@ var RegistryLabel = class RegistryLabel extends AbstractReactComponent {
                             onBlur={this.props.onBlur}
                             />
                         </span>
-                    <span className = 'btn glyphicon glyphicon-remove-sign' onClick = {this.props.onClickDelete} />
+                    <Button onClick = {this.props.onClickDelete}><Icon glyph='fa-edit' /></Button>
                 </div>
                 break;
         }

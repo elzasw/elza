@@ -42,7 +42,7 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: { nameMain, characteristics, registryTypes}, handleSubmit, onClose} = this.props;
+        const {fields: { nameMain, characteristics, registryTypeId}, handleSubmit, onClose} = this.props;
 
         return (
             <div key={this.props.key}>
@@ -51,8 +51,8 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
                         <DropDownTree
                             label={i18n('registry.detail.typ.rejstriku')}
                             items = {this.props.refTables.recordTypes.items}
-                            value = {this.props.registry.registryTypesId}
-                            {...registryTypes}
+                            //value = {this.props.registry.registryTypesId}
+                            {...registryTypeId}
                             />
 
                         <Input type="text" label={i18n('registry.name')} {...nameMain} {...decorateFormField(nameMain)} />
@@ -70,7 +70,7 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
 
 module.exports = reduxForm({
     form: 'addRegistryForm',
-    fields: ['nameMain', 'characteristics', 'registryTypes'],
+    fields: ['nameMain', 'characteristics', 'registryTypeId'],
     validate
 },state => ({
         initialValues: state.form.addRegistryForm.initialValues,
