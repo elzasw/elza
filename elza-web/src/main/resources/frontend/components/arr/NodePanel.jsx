@@ -342,13 +342,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         var record;
 
         if (showRegisterJp) {
-
-            if (node.subNodeRegister.fetched) {
-                record = <SubNodeRegister />
-            } else {
-                record = <Loading value={i18n('global.data.loading.register')} />
-            }
-
+            record = <SubNodeRegister register={node.subNodeRegister} />
         }
 
         var accordionInfo = <div>
