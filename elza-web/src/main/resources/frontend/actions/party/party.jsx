@@ -63,10 +63,11 @@ export function deleteParty(partyId, filterText) {
             .then((json) => {
                 dispatch(modalDialogHide());                // zavření aktualně otevřeného dialogu
                 dispatch(findPartyFetch(filterText));       // znovu načtení leveho panelu s vyfiltrovanými osobami (aby zmizela ta smazaná)
-                dispatch(partyDeleted());                   // zavolání funkce co hlavně odstraní ze storu detail smazané osoby, tj dojde k přegenerování na výchozí detail (nejspíš osoba nenalezena)
+                dispatch(clearPartyDetail())
             });
     }
 }
+
 
 /**
  * FIND PARTY FETCH IF NEEDED
@@ -97,6 +98,17 @@ export function findPartyFetch(filterText) {
         dispatch(findPartyRequest(filterText))
         return WebApi.findParty(filterText)
             .then(json => dispatch(findPartyReceive(filterText, json)));
+    }
+}
+
+/**
+ * PARTY CLEAR SELECTED PARTY
+ * *********************************************
+ * Zruší zobrazeni detailu osoby - zobrazí defaultní stránku - pravděpodobně "nenalezeno"
+ */
+export function clearPartyDetail() {
+    return {
+        type: types.PARTY_DETAIL_CLEAR
     }
 }
 
@@ -222,4 +234,21 @@ export function updateRelation(relation, partyId) {
                 dispatch(partyDetailFetch(partyId));        // přenačtení detailu osoby
             });
     };
+}
+
+
+/**
+ * DELETE RELATION
+ * *********************************************
+ * Volání webového rozhraní pro smazání relace
+ * @param int relationID - identifikator mazané relace
+ * @param int partyId - identifikátor osoby, kterou chceme smazat
+ */
+export function deleteRelation(relationId, partyId) {
+    return dispatch => {
+        return WebApi.deleteRelation(relationId)
+            .then((json) => {
+                dispatch(partyDetailFetch(partyId));        // přenačtení detailu osoby
+            });
+    }
 }

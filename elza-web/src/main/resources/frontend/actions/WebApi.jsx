@@ -33,26 +33,26 @@ class WebApi{
     }
 
     insertRelation(relation) {
-        return AjaxUtils.ajaxPost('/api/partyManagerV2/insertRelation', null,  relation)
+        return AjaxUtils.ajaxPost('/api/partyManagerV2/relations', null,  relation)
             .then(json=>{
                 return json;
             });
     }
 
     updateRelation(relation) {
-        return AjaxUtils.ajaxPut('/api/partyManagerV2/relations/'+relation.relationId, null,  {partyId:relation.partyId, relation})
+        return AjaxUtils.ajaxPut('/api/partyManagerV2/relations/'+relation.relationId, null,  relation)
             .then(json=>{
                 return json;
             });
     }
 
     deleteRelation(relationId) {
-        return AjaxUtils.ajaxDelete('/api/partyManagerV2/deleteRelation/', null,  relation)
+        return AjaxUtils.ajaxDelete('/api/partyManagerV2/relations/'+relationId, {relationId: relationId})
             .then(json=>{
                 return json;
             });
     }
-
+   
     findParty(search = null){
         return AjaxUtils.ajaxGet('/api/partyManagerV2/findParty', {
             search: search,
@@ -61,14 +61,13 @@ class WebApi{
             partyTypeId: null,
             originator: false
         }).then(json=>{
-            console.log(json.recordList);
             return json.recordList;
         });
     }
 
 
     deleteParty(partyId) {
-        return AjaxUtils.ajaxDelete('/api/partyManagerV2/deleteParty', {partyId: 141})
+        return AjaxUtils.ajaxDelete('/api/partyManagerV2/deleteParty', {partyId: partyId})
             .then(json=>{
                 return json;
             });
@@ -93,19 +92,13 @@ class WebApi{
     }
 
     updateParty(party) {
-        var data = {
-            partyID:  party.partyId,
-            party: party
-        }   
-        console.log('ukladana osoba');
-        console.log(party);
         return AjaxUtils.ajaxPut('/api/partyManagerV2/updateParty/'+party.partyId, null,  party)
             .then(json=>{
                 return json;
             });
     }
 
-    insertRelation(partyId, relationTypeId, note, sources, from, to, entities) {
+    aainsertRelation(partyId, relationTypeId, note, sources, from, to, entities) {
         var data = {
             partyId: partyId,
             ParRelationTypeVO : {relationTypeId: relationTypeId},
@@ -318,6 +311,13 @@ class WebApi{
 
     getCalendarTypes(versionId, nodeId) {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/calendarTypes')
+                .then(json=>{
+                    return json
+                });
+    }
+
+    getRegisterTypes(partyTypeId) {
+        return AjaxUtils.ajaxGet('/api/registryManagerV2/recordTypes', {partyTypeId: partyTypeId})
                 .then(json=>{
                     return json
                 });

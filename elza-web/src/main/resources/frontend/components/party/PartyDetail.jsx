@@ -84,8 +84,8 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
 
         return <div className={"partyDetail"}>
                     <h1>{party.record.record}</h1>
-                    <label>{i18n('party.record.characteristics')}</label>
-                    <p className={"characteristics"}>{party.partyId}</p>
+                    <label>{i18n('party.detail.characteristics')}</label>
+                    <p className={"characteristics"}>{party.record.characteristics}</p>
 
                     <div className="line">
                         <Input type="select" disabled={true} value={party.partyType.partyTypeId} label={i18n('party.detail.type')}>
@@ -95,7 +95,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
                     </div>
                     <div className="line">
                         <Input type="text" label={i18n('party.nameValidFrom')} name="from" value={(party.from != null ? party.from.textDate : '')} onChange={this.handleChangeValue} onBlur={this.handleUpdateValue}/>
-                        <Input type="select" label={i18n('party.calendarTypeFrom')} name="calendarTypeIdFrom" value={party.from.calendarTypeId} onBlur={this.handleUpdateValue}>
+                        <Input type="select" label={i18n('party.calendarTypeFrom')} name="calendarTypeIdFrom" value={party.from != null ? party.from.calendarTypeIdFrom : 0} onBlur={this.handleUpdateValue}>
                             <option value="0" key="0"></option> 
                             {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id}>{i.name}</option>})}
                         </Input>
@@ -103,7 +103,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
  
                     <div className="line">
                         <Input type="text" label={i18n('party.nameValidTo')} name="to" value={(party.to != null ? party.to.textDate : '')} onBlur={this.handleUpdateValue}/>
-                        <Input type="select" label={i18n('party.calendarTypeTo')} name="calendarTypeIdTo" value={party.to.calendarTypeId} onBlur={this.handleUpdateValue}>
+                        <Input type="select" label={i18n('party.calendarTypeTo')} name="calendarTypeIdTo" value={party.to != null ? party.to.calendarTypeIdTo : 0} onBlur={this.handleUpdateValue}>
                             <option value="0" key="0"></option> 
                             {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id}>{i.name}</option>})}
                         </Input>

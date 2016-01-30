@@ -53,8 +53,8 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
             genealogy: data.nameMain,
             scope: '',
             record: {
-                registerTypeId: 1,
-                scopeId:1
+                registerTypeId: data.recordTypeId,              // typ záznamu 
+                scopeId:1                                       //trida rejstriku 
             },
             from: {
                 textDate: data.validFrom,
@@ -116,33 +116,44 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
     }
 
     handleCallAddRelation(data) {
-        var entities = {};
+        var entities = [{
+            source: "aaa",
+            record: {recordId: 1},
+            roleType: {roleTypeId: 1}
+        },{
+            source: "aaa",
+            record: {recordId: 2},
+            roleType: {roleTypeId: 1}       
+        }];
         var relation = {
             partyId: this.props.partyRegion.selectedPartyID,
-            dateNote: data.note,
+            dateNote: data.dateNote,
             note: data.note,
             from: {
-                    textDate: data.from,
-                    calendarTypeId: data.calendarTypeId
+                    textDate: "aa",
+                    calendarTypeId: data.calendarTypeIdFrom
             },
             to: {
-                    textDate: data.to,
-                    calendarTypeId: data.calendarTypeId
+                    textDate: "bb",
+                    calendarTypeId: data.calendarTypeIdTo
             },
             relationEntities: entities,
+            complementType:{relationTypeId:1}
         };   
         this.dispatch(insertRelation(relation, this.props.partyRegion.selectedPartyID));               
     }
 
     handleAddRelation(){
         var data = {
+            partyTypeId: this.props.partyRegion.selectedPartyData.partyType.partyTypeId,
             partyId: this.props.partyRegion.selectedPartyID,
             entities: [{
-                entity: "aa",
-                roleType : 1,
+                recordId: null,
+                roleTypeId : null,
+                sources: 'aaa',
             }]
         }
-        this.dispatch(modalDialogShow(this, this.props.partyRegion.selectedPartyData.partyId , <RelationForm initData={data} refTables={this.props.refTables} onSubmit={this.handleCallAddRelation} />));
+        this.dispatch(modalDialogShow(this, this.props.partyRegion.selectedPartyData.record.record , <RelationForm initData={data} refTables={this.props.refTables} onSubmit={this.handleCallAddRelation} />));
     }
 
     handleDeleteParty(){
@@ -159,7 +170,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         var isSelected = this.props.partyRegion.selectedPartyID ? true : false;
         var altActions = [];
         altActions.push(
-            <DropdownButton title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">Nová osoba</span></div></span>}>
+            <DropdownButton title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('party.addParty')}</span></div></span>}>
                 {this.props.refTables.partyTypes.items.map(i=> {return <MenuItem eventKey="{i.partyTypeId}" onClick={this.handleAddParty.bind(this, i.partyTypeId)}>{i.name}</MenuItem>})}
             </DropdownButton>
         );

@@ -83,7 +83,8 @@ export const PARTY_FIND_PARTY_RECEIVE = 'PARTY_FIND_PARTY_RECEIVE'  // dokončen
 export const PARTY_SELECT_PARTY = 'PARTY_SELECT_PARTY'              // dokončení hledání osob
 export const PARTY_DETAIL_REQUEST = 'PARTY_DETAIL_REQUEST'          // pořadavek na načtení detailu osoby
 export const PARTY_DETAIL_RECEIVE = 'PARTY_DETAIL_RECIVE'           // dokončení požadavku na hledání osoby
-export const PARTY_DELETED = 'PARTY_DELETED'                        // smazani osoby
+export const PARTY_DETAIL_CLEAR = 'PARTY_DETAIL_CLEAR'              // zrusi zobrazeni detailu osoby
+
 export const PARTY_UPDATED = 'REGISTRY_UPDATED'                     // provedena aktualizace osoby
 
 /**
@@ -178,6 +179,10 @@ export const REF_CALENDAR_TYPES_REQUEST = 'REF_CALENDAR_TYPES_REQUEST'
 export const REF_CALENDAR_TYPES_RECEIVE = 'REF_CALENDAR_TYPES_RECEIVE'
 export const REF_PACKET_TYPES_REQUEST = 'REF_PACKET_TYPES_REQUEST'
 export const REF_PACKET_TYPES_RECEIVE = 'REF_PACKET_TYPES_RECEIVE'
+export const REF_REGISTER_TYPES_REQUEST = 'REF_REGISTER_TYPES_REQUEST'
+export const REF_REGISTER_TYPES_RECEIVE = 'REF_REGISTER_TYPES_RECEIVE'
+export const REF_REGISTRY_LIST_REQUEST = 'REF_REGISTRY_LIST_REQUEST'
+export const REF_REGISTRY_LIST_RECEIVE = 'REF_REGISTRY_LIST_RECEIVE'
 
 /**
  * Akce od websocketů.

@@ -12,6 +12,9 @@ import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField} from 'components/form/FormUtils'
 import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
+import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
+import {refRegistryListFetchIfNeeded} from 'actions/refTables/registryList'
+
 
 require ('./PartyFormStyles.less');
 
@@ -27,6 +30,7 @@ const validate = (values, props) => {
     if ((!values.calendarTypeIdFrom || values.calendarTypeIdFrom==0 )) {
         errors.calendarTypeIdFrom = i18n('global.validation.required');
     }
+    console.log(values.entities);
     return errors;
 };
 
@@ -34,13 +38,16 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
         this.dispatch(calendarTypesFetchIfNeeded());
+        this.dispatch(refPartyTypesFetchIfNeeded());
+        this.dispatch(refRegistryListFetchIfNeeded());
         this.state = {
             entities : props.initData.entities
         };
         this.props.load(props.initData);
         this.bindMethods(
             'addEntity',
-            'removeEntity'
+            'removeEntity',
+            'changeEntityValue'
         );
     }
 
@@ -53,8 +60,9 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
     addEntity(){
         var entities = this.state.entities;
         entities[entities.length]={
-            record: "ab",
-            roleType: 1
+            recordId: null,
+            roleTypeId: null,
+            sources: '',
         }
         this.setState({
             entities : entities
@@ -74,50 +82,85 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
         });
     }
 
+    
+    changeEntityValue(data, event){
+        var entities = this.state.entities;
+        for(var i=0; i<this.state.entities.length; i++){
+            if(i == data.index){
+                switch(data.variable){
+                    case "record" : entities[data.index].recordId = event.target.value; break;
+                    case "role" : entities[data.index].roleTypeId = event.target.value; break;
+                    case "sources" : entities[data.index].sources = event.target.value; break;
+                }
+            }
+        }
+        this.setState({
+            entities : entities
+        });
+    }
+
+    handleUpdateValue(e){
+        var value = e.target.value;
+        var variable = e.target.name;
+        var party = this.state.party;   
+        this.dispatch(updateParty(party));
+    }
+
     render() {
-        const {fields: {relationClassId, relationTypeId, dateFrom, dateTo, calendarTypeIdFrom, calendarTypeIdTo, note, entities}, handleSubmit, onClose} = this.props;
+        console.log(this.props.refTables);
+        var relationTypes = [];
+        for(var i=0; i<this.props.refTables.partyTypes.items.length; i++){
+            if(this.props.refTables.partyTypes.items[i].partyTypeId == this.props.initData.partyTypeId){
+                relationTypes = this.props.refTables.partyTypes.items[i].relationTypes;
+            }
+        }
+        var roleTypes = [];
+        for(var i=0; i<relationTypes.length; i++){
+            if(relationTypes[i].relationTypeId == this.props.initData.relationTypeId){
+                roleTypes = relationTypes[i].relationRoleTypes;
+            }
+        }
+        const {fields: {relationId, relationTypeId, dateFrom, dateTo, calendarTypeIdFrom, calendarTypeIdTo, note, dateNote, entities}, handleSubmit, onClose} = this.props;
         var entities2 = [];
         return (
             <div>
                 <Modal.Body>
                     <form onSubmit={handleSubmit}>
-                        <div className="line">
-                            <Input type="select" label={i18n('party.relation.class')} {...relationClassId} {...decorateFormField(relationClassId)}>
-                                <option value="0" key="0"></option> 
-                                <option value="1" key="1">Vznik</option> 
-                            </Input>
-                            <Input type="select" label={i18n('party.relation.type')} {...relationTypeId} {...decorateFormField(relationTypeId)}>
-                                <option value="0" key="0"></option> 
-                                <option value="1" key="1">členství</option> 
-                            </Input>
-                        </div>                            
+                        <input type="hidden" {...relationId}/>
+                        <Input type="select" label={i18n('party.relation.type')} {...relationTypeId} {...decorateFormField(relationTypeId)}>
+                            <option value="0" key="0"></option> 
+                            {relationTypes.map(i=> {return <option value={i.relationTypeId} key={i.relationTypeId}>{i.name}</option>})}
+                        </Input>
+                        <Input type="text" label={i18n('party.relation.note')} {...note} {...decorateFormField(note)} />
+                        <hr/>
                         <div className="line">
                             <Input type="text" label={i18n('party.relation.from')} {...dateFrom} {...decorateFormField(dateFrom)} />
                             <Input type="select" label={i18n('party.calendarTypeFrom')} {...calendarTypeIdFrom} {...decorateFormField(calendarTypeIdFrom)}>
                                 <option value="0" key="0"></option> 
-                                {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id}>{i.name}</option>})}
+                                {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
                             </Input>   
                         </div>
                         <div className="line">
                             <Input type="text" label={i18n('party.relation.to')} {...dateTo} {...decorateFormField(dateTo)} /> 
                             <Input type="select" label={i18n('party.calendarTypeTo')} {...calendarTypeIdTo} {...decorateFormField(calendarTypeIdTo)}>
                                 <option value="0" key="0"></option> 
-                                {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id}>{i.name}</option>})}
+                                {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
                             </Input>
                         </div>
-                        <Input type="text" label={i18n('party.relation.note')} {...note} {...decorateFormField(note)} />
+                        <Input type="text" label={i18n('party.relation.dateNote')} {...dateNote} {...decorateFormField(dateNote)} />
+                        <hr/>
                         <h5>{i18n('party.relation.entities')}</h5>
                         <div>
-                            {this.state.entities.map((i,index)=> {return <div className="block entity">
-                                <Input type="select" label={i18n('party.relation.record')} value={i.record} >
-                                    <option value="0" key="0"></option> 
-                                    <option value="1" key="1">Záznam 1</option> 
+                            {this.state.entities.map((j,index)=> {return <div className="block entity">
+                                <Input type="select" label={i18n('party.relation.record')} value={j.record} onChange={this.changeEntityValue.bind(this, {index:index, variable: 'record'})}>
+                                    <option value={0} key={0}></option> 
+                                    {this.props.refTables.registryList.items.recordList.map(i=> {return <option key={i.recordId} value={i.recordId}>{i.record}</option>})}
                                 </Input> 
-                                <Input type="select" label={i18n('party.relation.roleType')} value={i.roleTypeId}>
-                                    <option value="0" key="0"></option> 
-                                    <option value="1" key="1">Role 1</option> 
-                                </Input> 
-                                <Input type="textarea" label={i18n('party.relation.sources')} value={i.sources}/>
+                                <Input type="select" label={i18n('party.relation.roleType')} value={j.roleTypeId} onChange={this.changeEntityValue.bind(this, {index:index, variable: 'role'})}>
+                                    <option value={0} key={0}></option> 
+                                    {roleTypes ? roleTypes.map(i=> {return <option value={i.roleTypeId} key={i.roleTypeId}>{i.name}</option>}) : ''}
+                                </Input>
+                                <Input type="text" label={i18n('party.relation.sources')} value={j.sources} onChange={this.changeEntityValue.bind(this, {index:index, variable: 'sources'})}/>
                                 <div className="ico">
                                     <Button onClick={this.removeEntity.bind(this, index)}><Glyphicon glyph="trash" /></Button>
                                 </div> 
@@ -138,7 +181,7 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
 
 module.exports = reduxForm({
     form: 'relationForm',
-    fields: ['relationClassId', 'relationTypeId', 'dateFrom', 'dateTo', 'calendarTypeIdFrom', 'calendarTypeIdTo', 'note', 'entities'],
+    fields: ['relationId','relationTypeId', 'dateFrom', 'dateTo', 'calendarTypeIdFrom', 'calendarTypeIdTo', 'note', 'dateNote', 'entities'],
     validate
 },state => ({
     initialValues: state.form.relationForm.initialValues,

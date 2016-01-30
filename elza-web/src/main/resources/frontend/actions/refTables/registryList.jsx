@@ -1,5 +1,5 @@
 /**
- * Akce pro seznam forem jmena osob - partyTypes.
+ * Načtení seznamu všech rejstříků
  */
 
 import {WebApi} from 'actions'
@@ -9,11 +9,11 @@ import * as types from 'actions/constants/actionTypes';
 /**
  * Vyžádání dat - aby byla ve store k dispozici.
  */
-export function refFetchRegistryIfNeeded() {
+export function refRegistryListFetchIfNeeded() {
     return (dispatch, getState) => {
         var state = getState();
-        if (!state.refTables.partyTypes.fetched && !state.refTables.partyTypes.isFetching) {
-            return dispatch(refPartyTypesFetch());
+        if (!state.refTables.registryList.fetched && !state.refTables.registryList.isFetching) {
+            return dispatch(refRegistryListFetch());
         }
     }
 }
@@ -21,11 +21,11 @@ export function refFetchRegistryIfNeeded() {
 /**
  * Nové načtení dat.
  */
-export function refPartyTypesFetch() {
+export function refRegistryListFetch() {
     return dispatch => {
-        dispatch(refPartyTypesRequest())
-        return WebApi.getPartyTypes()
-            .then(json => dispatch(refPartyTypesReceive(json)));
+        dispatch(refRegistryListRequest())
+        return WebApi.findRegistry('')
+            .then(json => dispatch(refRegistryListReceive(json)));
     }
 }
 
@@ -33,9 +33,9 @@ export function refPartyTypesFetch() {
  * Nová data byla načtena.
  * @param {Object} json objekt s daty
  */
-export function refPartyTypesReceive(json) {
+export function refRegistryListReceive(json) {
     return {
-        type: types.REF_PARTY_TYPES_RECEIVE,
+        type: types.REF_REGISTRY_LIST_RECEIVE,
         items: json,
         receivedAt: Date.now()
     }
@@ -44,8 +44,8 @@ export function refPartyTypesReceive(json) {
 /**
  * Bylo zahájeno nové načítání dat.
  */
-export function refPartyTypesRequest() {
+export function refRegistryListRequest() {
     return {
-        type: types.REF_PARTY_TYPES_REQUEST
+        type: types.REF_REGISTRY_LIST_REQUEST
     }
 }

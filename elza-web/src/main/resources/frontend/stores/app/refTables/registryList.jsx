@@ -3,16 +3,19 @@ import * as types from 'actions/constants/actionTypes';
 const initialState = {
     isFetching: false,
     fetched: false,
-    items: []
+    items: {
+        count:0,
+        recordList: []
+    }
 }
 
-export default function reltionRoleTypes(state = initialState, action) {
+export default function registryList(state = initialState, action) {
     switch (action.type) {
-        case types.REF_RELATION_ROLE_TYPES_REQUEST:
+        case types.REF_REGISTRY_LIST_REQUEST:
             return Object.assign({}, state, {
                 isFetching: true,
             })
-        case types.REF_RELATION_ROLE_TYPES_RECEIVE:
+        case types.REF_REGISTRY_LIST_RECEIVE:
             return Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,

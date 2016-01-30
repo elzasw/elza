@@ -7,7 +7,7 @@ require ('./partyEntities.less');
 import React from 'react';
 import {connect} from 'react-redux'
 import {Button, Glyphicon} from 'react-bootstrap';
-import {AddPartyNameForm, AbstractReactComponent, Search, i18n} from 'components';
+import {PartyNameForm, AbstractReactComponent, i18n} from 'components';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {AppActions} from 'stores';
 import {deleteName, updateParty} from 'actions/party/party'
@@ -36,7 +36,7 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
         var party = this.props.partyRegion.selectedPartyData;
         var names = []
         for(var i = 0; i<party.partyNames.length; i++){
-            if(i.partyNameId != nameId){
+            if(party.partyNames[i].partyNameId != nameId){
                 names[names.length] = party.partyNames[i];
             }
         }
@@ -45,7 +45,6 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
     }
 
     handleCallAddName(data) {
-        alert("aa");
         var party = this.props.partyRegion.selectedPartyData;
         party.partyNames[party.partyNames.length] = {
             nameFormType: {
@@ -57,37 +56,60 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
             degreeBefore: data.degreeBefore,
             degreeAfter: data.degreeAfter,
             validFrom: {
-                    textDate:validFrom,
-                    calendarTypeId:calendarTypeId
+                    textDate:data.validFrom,
+                    calendarTypeId:data.calendarTypeIdFrom
             },
             validTo: {
-                    textDate:validTo,
-                    calendarTypeId:calendarTypeId
+                    textDate:data.validTo,
+                    calendarTypeId:data.calendarTypeIdTo
             }
         }
-        console.log(party);
-        //this.dispatch(updateParty(party));               
+        this.dispatch(updateParty(party));               
     }
 
     handleAddName(){
-        this.dispatch(modalDialogShow(this, i18n('party.detail.name.new') , <AddPartyNameForm onSubmit={this.handleCallAddName} />));
+        this.dispatch(modalDialogShow(this, i18n('party.detail.name.new') , <PartyNameForm onSubmit={this.handleCallAddName} />));
     }
 
     handleEditName(nameId){
         var party = this.props.partyRegion.selectedPartyData;
-        var data = {};
+        var name = {};
         for(var i = 0; i<party.partyNames.length; i++){
             if(party.partyNames[i].partyNameId == nameId){
-                data = party.partyNames[i];
+                name = party.partyNames[i];
             }
+        };
+        var data = {
+            partyNameId: name.partyNameId,
+            nameFormTypeId : name.nameFormType.nameFormTypeId,
+            mainPart: name.mainPart,
+            otherPart: name.otherPart,
+            degreeBefore: name.degreeBefore,
+            degreeAfter: name.degreeAfter,  
+            validFrom: name.validFrom.textDate,
+            validTo: name.validTo.textDate,
+            calendarTypeIdFrom: (name.validFrom != null ? name.validFrom.calendarTypeId : 0),
+            calendarTypeIdTo: (name.validTo != null ? name.validTo.calendarTypeId : 0),
         }
-        console.log(data);
-        this.dispatch(modalDialogShow(this, i18n('party.detail.name.new') , <AddPartyNameForm initData={data} onSubmit={this.handleCallEditName} />));
+        this.dispatch(modalDialogShow(this, i18n('party.detail.name.new') , <PartyNameForm initData={data} onSubmit={this.handleCallEditName} />));
     }
 
     handleCallEditName(data){
         var party = this.props.partyRegion.selectedPartyData;
-        names = [];
+        for(var i = 0; i<party.partyNames.length; i++){
+            if(party.partyNames[i].partyNameId == data.partyNameId){
+                party.partyNames[i].nameFormType.nameFormTypeId = data.nameFormTypeId;
+                party.partyNames[i].displayName = data.mainPart;
+                party.partyNames[i].mainPart =  data.mainPart;
+                party.partyNames[i].otherPart = data.otherPart;
+                party.partyNames[i].degreeBefore = data.degreeBefore;
+                party.partyNames[i].degreeAfter = data.degreeAfter;
+                party.partyNames[i].validFrom.textDate = data.validFrom;
+                party.partyNames[i].validFrom.calendarTypeId = data.calendarTypeIdFrom;
+                party.partyNames[i].validTo.textDate = data.validTo;
+                party.partyNames[i].validTo.calendarTypeId = data.calendarTypeIdTo;
+            }
+        }
         this.dispatch(updateParty(party));         
     }
 
