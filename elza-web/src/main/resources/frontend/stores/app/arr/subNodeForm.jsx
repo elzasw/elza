@@ -337,6 +337,8 @@ export default function subNodeForm(state = initialState, action) {
                     loc.descItem.descItemObjectId = action.descItemResult.descItem.descItemObjectId;
                     loc.descItem.id = action.descItemResult.descItem.id;
                     loc.descItem.prevValue = action.descItemResult.descItem.value;
+                    loc.descItem.party = action.descItemResult.descItem.party;
+                    loc.descItem.record = action.descItemResult.descItem.record;
                     if (loc.descItemType.useSpecification) {
                         loc.descItem.prevDescItemSpecId = action.descItemResult.descItem.descItemSpecId;
                     }
