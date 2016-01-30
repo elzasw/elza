@@ -48,3 +48,4 @@ elza-web/config/elza.yaml
 /elza-web/rules
 /elza-ui/config/elza.yaml
 /elza-web/lucene
+/elza-web/groovy
