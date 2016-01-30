@@ -206,25 +206,25 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             var missings = item.nodeConformity.missingList;
 
             if (errors && errors.length > 0) {
-                messages.push(<div className="error">Chyby</div>);
-                errors.forEach(error => { messages.push(<div className="message">{error.description}</div>) });
+                messages.push(<div key="errors" className="error">Chyby</div>);
+                errors.forEach(error => { messages.push(<div key={error.id} className="message">{error.description}</div>) });
             }
 
             if (missings && missings.length > 0) {
-                messages.push(<div className="missing">Chybějící</div>);
-                missings.forEach(missing => { messages.push(<div className="message">{missing.description}</div>) });
+                messages.push(<div key="missings" className="missing">Chybějící</div>);
+                missings.forEach(missing => { messages.push(<div key={missing.id}  className="message">{missing.description}</div>) });
             }
 
             if (item.nodeConformity.state === "OK") {
                 icon = <Icon glyph="fa-check" />
-                tooltip = <Tooltip>{i18n('arr.node.status.ok') + description}</Tooltip>
+                tooltip = <Tooltip id="status-ok">{i18n('arr.node.status.ok') + description}</Tooltip>
             } else {
                 icon = <Icon glyph="fa-exclamation-circle" />
-                tooltip = <Tooltip>{i18n('arr.node.status.err')} {description} {messages}</Tooltip>
+                tooltip = <Tooltip id="status-err">{i18n('arr.node.status.err')} {description} {messages}</Tooltip>
             }
         } else {
             icon = <Icon glyph="fa-exclamation-triangle" />
-            tooltip = <Tooltip>{i18n('arr.node.status.undefined')}</Tooltip>
+            tooltip = <Tooltip id="status-undefined">{i18n('arr.node.status.undefined')}</Tooltip>
         }
 
         return (

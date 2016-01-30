@@ -213,10 +213,10 @@ return true;
 
         return (
             <div key={descItemType.code + "-" + key} className={cls}>
-                <div className='desc-item-value-container'>
+                <div key="container" className='desc-item-value-container'>
                     {parts}
                 </div>
-                {actions.length > 0 && <div className='desc-item-action-container'>{actions}</div>}
+                {actions.length > 0 && <div key="actions" className='desc-item-action-container'>{actions}</div>}
             </div>
         )
     }
@@ -239,7 +239,7 @@ return true;
         var missings = conformityInfo.missings[descItemType.id];
         if (missings) {
             var messages = missings.map(missing => missing.description);
-            var tooltip = <Tooltip>{messages}</Tooltip>
+            var tooltip = <Tooltip id="messages">{messages}</Tooltip>
             actions.push(<OverlayTrigger key="state" placement="right" overlay={tooltip}>
                 <div className='btn btn-default'><Icon glyph="fa-exclamation-triangle" /></div>
             </OverlayTrigger>);
@@ -304,14 +304,14 @@ return true;
             var actions = new Array;
 
             if (descItemTypeInfo.repeatable) {
-                actions.push(<NoFocusButton onClick={onDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-times" /></NoFocusButton>);
+                actions.push(<NoFocusButton key="delete" onClick={onDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-times" /></NoFocusButton>);
             }
 
             var errors = conformityInfo.errors[descItem.descItemObjectId];
             if (errors) {
                 var messages = errors.map(error => error.description);
-                var tooltip = <Tooltip>{messages}</Tooltip>
-                actions.push(<OverlayTrigger placement="left" overlay={tooltip}>
+                var tooltip = <Tooltip id="info">{messages}</Tooltip>
+                actions.push(<OverlayTrigger key="info" placement="left" overlay={tooltip}>
                     <div className='btn btn-default'><Icon glyph="fa-exclamation-triangle" /></div>
                 </OverlayTrigger>);
             }

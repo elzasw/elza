@@ -47,9 +47,9 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
                         value={descItem.value}
                         disabled={locked}
                         onChange={(e) => this.props.onChange(e.target.value)} >
-                    <option />
+                    <option key="novalue" />
                     {packets.map(packet => (
-                            <option value={packet.id}>{this.packetName(packet)}</option>
+                            <option key={packet.id} value={packet.id}>{this.packetName(packet)}</option>
                     ))}
                 </select>
                 <div className='desc-item-type-actions'><NoFocusButton onClick={this.props.onCreatePacket} title={i18n('subNodeForm.addDescItem')}><Icon glyph="fa-plus" /></NoFocusButton></div>
