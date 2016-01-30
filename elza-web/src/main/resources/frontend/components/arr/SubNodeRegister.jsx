@@ -1,29 +1,15 @@
-
-
-require('./SubNodeForm.less');
-
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Icon, i18n, AbstractReactComponent, NoFocusButton, AddPacketForm} from 'components';
+import {Icon, i18n, AbstractReactComponent, Loading, NoFocusButton} from 'components';
 import {connect} from 'react-redux'
-import {indexById} from 'stores/app/utils.jsx'
-import {faSubNodeFormDescItemTypeAdd, faSubNodeFormValueChange, faSubNodeFormDescItemTypeDelete, faSubNodeFormValueChangeSpec,faSubNodeFormValueBlur, faSubNodeFormValueFocus, faSubNodeFormValueAdd, faSubNodeFormValueDelete} from 'actions/arr/subNodeForm'
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
-var classNames = require('classnames');
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import DescItemString from './nodeForm/DescItemString'
-import DescItemType from './nodeForm/DescItemType'
-import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm'
-import {lockDescItemType, unlockDescItemType, unlockAllDescItemType, copyDescItemType, nocopyDescItemType} from 'actions/arr/nodeSetting'
-import {addNode} from 'actions/arr/node'
-import {createPacket} from 'actions/arr/packets'
-import faSelectSubNode from 'actions/arr/nodes'
+
+// TODO slapa: dopsat
 
 var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        //this.bindMethods();
+        this.bindMethods('renderLink', 'renderForm', 'handleAddClick');
 
     }
 
@@ -31,24 +17,56 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
 
     }
 
+    handleAddClick() {
+
+    }
+
+    renderLink(link, index) {
+
+        return (
+                <div className="link" key={"link-" + index}>
+                    {index}
+                </div>
+        );
+    }
+
+    renderForm() {
+        const {register} = this.props;
+
+        var links = [];
+        register.data.forEach((link, index) => links.push(this.renderLink(link, index)));
+
+        return (
+                <div className="form">
+                    {links}
+                    <div className='action'><NoFocusButton onClick={this.handleAddClick}><Icon glyph="fa-plus" /></NoFocusButton></div>
+                </div>
+        );
+
+    }
+
     render() {
+
+        const {register} = this.props;
+
+        var form;
+
+        if (register.fetched) {
+            form = this.renderForm();
+        } else {
+            form = <Loading value={i18n('global.data.loading.register')} />
+        }
 
         return (
             <div className='node-registers'>
-                TODO
+                {form}
             </div>
         )
     }
 }
 
-function mapStateToProps(state) {
-    const {arrRegion} = state
-    return {
-        arrRegion: arrRegion
-    }
-}
-
 SubNodeRegister.propTypes = {
+    register: React.PropTypes.object.isRequired
 }
 
-module.exports = connect(mapStateToProps)(SubNodeRegister);
+module.exports = connect()(SubNodeRegister);
