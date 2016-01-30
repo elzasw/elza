@@ -17,11 +17,21 @@ public class ArrDescItemRecordRefVO extends ArrDescItemVO {
      */
     private RegRecordVO record;
 
+    private Integer value;
+
     public RegRecordVO getRecord() {
         return record;
     }
 
     public void setRecord(final RegRecordVO record) {
         this.record = record;
+    }
+
+    public Integer getValue() {
+        return value;
+    }
+
+    public void setValue(final Integer value) {
+        this.value = value;
     }
 }

@@ -223,16 +223,15 @@ class WebApi{
             });
     }
     
-    insertRegistry(nameMain, characteristics, registerType, parentId) {
+    insertRegistry(nameMain, characteristics, registerTypeId, parentId) {
         var data = {
             record: nameMain,
             characteristics: characteristics,
             local: false,
             parentRecordId: parentId,
-            registerType: registerType
+            registerTypeId: registerTypeId
             
         }
-        return;
         return AjaxUtils.ajaxPut('/api/registryManagerV2/createRecord', null,  data)
             .then(json=>{
                 return json;

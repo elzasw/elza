@@ -27,7 +27,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('renderDescItemSpec', 'renderDescItem', 'renderLabel',
-                'handleChange', 'handleChangeSpec', 'handleCreatePacket',
+                'handleChange', 'handleChangeSpec', 'handleCreatePacket', 'handleCreateParty', 'handleCreateRecord',
                 'handleBlur', 'handleFocus', 'handleDescItemTypeLock', 'handleDescItemTypeCopy');
     }
 
@@ -101,6 +101,14 @@ return true;
         this.props.onCreatePacket(descItemIndex);
     }
 
+    /**
+     * Vytvoření nového hesla.
+     *
+     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     */
+    handleCreateRecord(descItemIndex) {
+        this.props.onCreateRecord(descItemIndex);
+    }
 
     /**
      * Vytvoření nové osoby.
@@ -176,7 +184,7 @@ return true;
                 parts.push(<DescItemPartyRef key="PARTY_REF"  {...descItemProps} onCreateParty={this.handleCreateParty.bind(this, descItemIndex)} />)
                 break;
             case 'RECORD_REF':
-                parts.push(<DescItemPacketRef key="RECORD_REF" {...descItemProps} />)
+                parts.push(<DescItemRecordRef key="RECORD_REF" {...descItemProps} onCreateRecord={this.handleCreateRecord.bind(this, descItemIndex)} />)
                 break;
             case 'PACKET_REF':
                 parts.push(<DescItemPacketRef key="PACKET_REF" {...descItemProps} onCreatePacket={this.handleCreatePacket.bind(this, descItemIndex)} packets={packets} packetTypes={packetTypes} />)
@@ -344,6 +352,7 @@ DescItemType.propTypes = {
     onFocus: React.PropTypes.func.isRequired,
     onCreatePacket: React.PropTypes.func.isRequired,
     onCreateParty: React.PropTypes.func.isRequired,
+    onCreateRecord: React.PropTypes.func.isRequired,
     onDescItemTypeRemove: React.PropTypes.func.isRequired,
     onDescItemTypeLock: React.PropTypes.func.isRequired,
     onDescItemTypeCopy: React.PropTypes.func.isRequired,

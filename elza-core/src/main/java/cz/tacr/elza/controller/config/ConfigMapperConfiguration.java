@@ -13,6 +13,7 @@ import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
@@ -50,6 +51,8 @@ public class ConfigMapperConfiguration {
     private CalendarTypeRepository calendarTypeRepository;
     @Autowired
     private PartyRepository partyRepository;
+    @Autowired
+    private RegRecordRepository recordRepository;
 
     /**
      * @return Tovární třída.
@@ -183,7 +186,24 @@ public class ConfigMapperConfiguration {
                     }
                 }).byDefault().field(
                 "descItemId", "id").register();
-        mapperFactory.classMap(ArrDescItemRecordRef.class, ArrDescItemRecordRefVO.class).byDefault().field(
+        mapperFactory.classMap(ArrDescItemRecordRef.class, ArrDescItemRecordRefVO.class).customize(
+                new CustomMapper<ArrDescItemRecordRef, ArrDescItemRecordRefVO>() {
+                    @Override
+                    public void mapAtoB(final ArrDescItemRecordRef recordRef,
+                                        final ArrDescItemRecordRefVO recordRefVO,
+                                        final MappingContext context) {
+                        super.mapAtoB(recordRef, recordRefVO, context);
+                        recordRefVO.setValue(recordRef.getRecord().getRecordId());
+                    }
+
+                    @Override
+                    public void mapBtoA(final ArrDescItemRecordRefVO recordRefVO,
+                                        final ArrDescItemRecordRef recordRef,
+                                        final MappingContext context) {
+                        super.mapBtoA(recordRefVO, recordRef, context);
+                        recordRef.setRecord(recordRepository.findOne(recordRefVO.getValue()));
+                    }
+                }).byDefault().field(
                 "descItemId", "id").register();
         mapperFactory.classMap(ArrDescItemString.class, ArrDescItemStringVO.class).byDefault().field(
                 "descItemId", "id").register();

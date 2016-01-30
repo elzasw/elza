@@ -6,17 +6,21 @@ require('./SubNodeForm.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Icon, i18n, AbstractReactComponent, NoFocusButton, AddPacketForm, AddPartyPersonForm, AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm} from 'components';
+import {Icon, i18n, AbstractReactComponent, NoFocusButton, AddPacketForm, AddPartyPersonForm, AddRegistryForm,
+        AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm} from 'components';
 import {connect} from 'react-redux'
 import {indexById} from 'stores/app/utils.jsx'
-import {faSubNodeFormDescItemTypeAdd, faSubNodeFormValueChange, faSubNodeFormDescItemTypeDelete, faSubNodeFormValueChangeSpec,faSubNodeFormValueBlur, faSubNodeFormValueFocus, faSubNodeFormValueAdd, faSubNodeFormValueDelete} from 'actions/arr/subNodeForm'
+import {faSubNodeFormDescItemTypeAdd, faSubNodeFormValueChange, faSubNodeFormDescItemTypeDelete,
+        faSubNodeFormValueChangeSpec,faSubNodeFormValueBlur, faSubNodeFormValueFocus, faSubNodeFormValueAdd,
+        faSubNodeFormValueDelete} from 'actions/arr/subNodeForm'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 var classNames = require('classnames');
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import DescItemString from './nodeForm/DescItemString'
 import DescItemType from './nodeForm/DescItemType'
 import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm'
-import {lockDescItemType, unlockDescItemType, unlockAllDescItemType, copyDescItemType, nocopyDescItemType} from 'actions/arr/nodeSetting'
+import {lockDescItemType, unlockDescItemType, unlockAllDescItemType,
+        copyDescItemType, nocopyDescItemType} from 'actions/arr/nodeSetting'
 import {addNode} from 'actions/arr/node'
 import {createPacket} from 'actions/arr/packets'
 import faSelectSubNode from 'actions/arr/nodes'
@@ -32,7 +36,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             'getDescItemTypeInfo', 'handleDescItemAdd', 'handleDescItemRemove', 'handleDescItemTypeLock',
             'handleDescItemTypeUnlockAll', 'handleDescItemTypeCopy', 'handleAddNodeBefore', 'handleAddNodeAfter',
             'handleCreatePacket', 'handleCreatePacketSubmit', 'handleAddChildNode', 'handleCreateParty',
-            'handleCreatePartySubmit'
+            'handleCreatePartySubmit', 'handleCreateRecord',  'handleCreateRecordSubmit'
         );
 
 //console.log("@@@@@-SubNodeForm-@@@@@", props);
@@ -232,6 +236,37 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
 
         this.dispatch(createPacket(findingAidId, storageNumber, packetTypeId, invalidPacket, valueLocation,
                 versionId, selectedSubNodeId, nodeKey));
+    }
+
+    /**
+     * Vytvoření nového hesla.
+     *
+     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
+     * @param descItemTypeIndex {Integer} index atributu v seznamu
+     * @param descItemIndex {Integer} index honodty atributu v seznamu
+     */
+    handleCreateRecord(descItemGroupIndex, descItemTypeIndex, descItemIndex) {
+        var valueLocation = {
+            descItemGroupIndex,
+            descItemTypeIndex,
+            descItemIndex
+        }
+
+        this.dispatch(modalDialogShow(this, i18n('registry.addRegistry'),
+                <AddRegistryForm create onSubmit={this.handleCreateRecordSubmit.bind(this, valueLocation)}/>));
+    }
+
+    /**
+     * Vytvoření hesla po vyplnění formuláře.
+     *
+     * @param valueLocation pozice hodnoty atributu
+     * @param form {Object} data z formuláře
+     */
+    handleCreateRecordSubmit(valueLocation, data) {
+        const {versionId, selectedSubNodeId, nodeKey} = this.props;
+
+        // TODO slapa: Až se dodělají rejstříky, napojit
+        console.warn(valueLocation, data);
     }
 
     /**
@@ -456,6 +491,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 packets={packets}
                 onCreatePacket={this.handleCreatePacket.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onCreateParty={this.handleCreateParty.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onCreateRecord={this.handleCreateRecord.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDescItemAdd={this.handleDescItemAdd.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDescItemRemove={this.handleDescItemRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onChange={this.handleChange.bind(this, descItemGroupIndex, descItemTypeIndex)}

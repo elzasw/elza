@@ -1,0 +1,87 @@
+@import "~variables.less";
+
+.desc-item-value {
+
+    .autocomplete-record {
+
+        @record-item-padding: 5px;
+        @max-width-container: 600px;
+
+        width: 100%;
+
+        .autocomplete-control-box {
+            width: 100%;
+            input {
+                width: 100%;
+            }
+        }
+
+        .autocomplete-menu-container {
+
+            min-width: auto;
+            height: auto;
+            width: 100%;
+
+            .autocomplete-menu-footer {
+
+                background-color: @node-form-bg;
+
+                .create-record {
+                    position: fixed;
+                    padding: 5px;
+                    .create-record-label {
+                        margin-left: 3px;
+                    }
+                }
+            }
+
+            .autocomplete-menu {
+
+                height: auto;
+                max-width: none;
+                min-width: auto;
+                max-height: 135px;
+                overflow-y: auto;
+                overflow-x: hidden;
+
+                .item {
+                    display: table-row;
+
+                    &.active {
+                        font-weight: bold;
+                    }
+                    &.focus {
+                        background: #afafaf;
+                    }
+
+                    .name {
+                        padding: @record-item-padding;
+                        display: table-cell;
+                    }
+
+                    .type {
+                        padding: @record-item-padding;
+                        display: table-cell;;
+                    }
+
+                    .interval {
+                        padding: @record-item-padding;
+                        display: table-cell;
+                    }
+
+                    .characteristics {
+                        padding: @record-item-padding;
+                        max-width: 300px;
+                        text-overflow: ellipsis;
+                        display: table-cell;
+                        overflow: hidden;
+                    }
+                }
+            }
+
+        }
+
+    }
+
+}
+

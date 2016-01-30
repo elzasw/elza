@@ -164,8 +164,10 @@ function validate(descItem, descItemTypeInfo, valueServerError) {
     // Hodnota
     switch (descItemTypeInfo.rulDataType.code) {
         case 'PARTY_REF':
-            break;
         case 'RECORD_REF':
+            if (!descItem.value || typeof descItem.value !== 'number') {
+                error.value = i18n('subNodeForm.validate.value.notEmpty');
+            }
             break;
         case 'PACKET_REF':
             if (!descItem.value || descItem.value.length === 0) {

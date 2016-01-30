@@ -58,9 +58,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     handleCallAddRegistry(parentId, data ) {
-        console.log('addParent', parentId);
-        console.log('addData', data);
-        WebApi.insertRegistry( data.nameMain, data.characteristics, data.registerType, parentId ).then(json => {
+        WebApi.insertRegistry( data.nameMain, data.characteristics, data.registerTypeId, parentId ).then(json => {
             this.dispatch(modalDialogHide());
             this.dispatch(fetchRegistry(this.props.registry.filterText, this.props.registry.registryParentId, this.props.registry.registryTypesId));
             this.dispatch(registryData({selectedId: json.recordId}));
