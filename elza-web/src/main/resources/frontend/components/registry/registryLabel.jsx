@@ -62,14 +62,14 @@ var RegistryLabel = class RegistryLabel extends AbstractReactComponent {
                             onBlur={this.props.onBlur}
                             />
                         </span>
-                    <Button onClick = {this.props.onClickDelete}><Icon glyph='fa-edit' /></Button>
+                    <Button onClick = {this.props.onClickDelete}><Icon glyph='fa-times' /></Button>
                 </div>
                 break;
         }
 
         var actions = [];
         return (
-            <div>
+            <div className="registry-label">
                 <div className='title' title={this.props.label}>
                     {this.props.label}
                 </div>

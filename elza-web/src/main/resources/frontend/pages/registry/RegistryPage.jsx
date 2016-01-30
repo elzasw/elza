@@ -182,7 +182,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     render() {
 
         var navRows = (
-            <div>
+            <div className="registry-nav">
                 <div key='registrysList'>
 
                     {this.props.registry.records.map(item=>{
@@ -190,7 +190,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                                     active: this.props.registry.selectedId === item.recordId,
                                     'search-result-row': 'search-result-row'
                         });
-                        var iconName = 'fa-file';
+                        var iconName = 'fa-file-o';
                         if (item.addRecord === true) {
                             iconName = 'fa-folder';
                         }
@@ -280,7 +280,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         )
 
         var centerPanel = (
-            <div>
+            <div className='registry-page'>
                 <RegistryPanel selectedId = {this.props.registry.selectedId}/>
 
             </div>
@@ -296,7 +296,6 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
         return (
             <PageLayout
-                className='registry-page'
                 key='registryPage'
                 ribbon={this.buildRibbon()}
                 leftPanel={leftPanel}

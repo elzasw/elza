@@ -7,9 +7,11 @@ import {connect} from 'react-redux'
 import {Icon, AbstractReactComponent, i18n, Loading, SubNodeForm, Accordion, SubNodeRegister} from 'components';
 import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {faSubNodeFormFetchIfNeeded} from 'actions/arr/subNodeForm'
+import {faSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister'
 import {faSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo'
 import {faNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo'
 import {faSelectSubNode, faSubNodesNext, faSubNodesPrev, faSubNodesNextPage, faSubNodesPrevPage} from 'actions/arr/nodes'
+import {addNode} from 'actions/arr/node'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes'
 import {indexById} from 'stores/app/utils.jsx'
 import {createFaRoot, isFaRootId} from './ArrUtils.jsx'
@@ -25,7 +27,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             'renderChildren', 'handleOpenItem',
             'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick',
             'getParentNodes', 'getChildNodes', 'getSiblingNodes',
-            'renderAccordion', 'renderState', 'transformConformityInfo'
+            'renderAccordion', 'renderState', 'transformConformityInfo', 'handleAddNodeAtEnd'
             );
 
     }
@@ -35,7 +37,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.requestData(nextProps.versionId, nextProps.node);
+        this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp);
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -48,12 +50,18 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
      * Načtení dat, pokud je potřeba.
      * @param versionId {String} verze AP
      * @param node {Object} node
+     * @param showRegisterJp {bool} zobrazení rejstřílů vázené k jednotce popisu
      */
-    requestData(versionId, node) {
+    requestData(versionId, node, showRegisterJp) {
         if (node.selectedSubNodeId != null) {
             this.dispatch(faSubNodeFormFetchIfNeeded(versionId, node.selectedSubNodeId, node.nodeKey));
             this.dispatch(faSubNodeInfoFetchIfNeeded(versionId, node.selectedSubNodeId, node.nodeKey));
             this.dispatch(refRulDataTypesFetchIfNeeded());
+
+            if (showRegisterJp) {
+                this.dispatch(faSubNodeRegisterFetchIfNeeded(versionId, node.selectedSubNodeId, node.nodeKey));
+            }
+
         }
         this.dispatch(faNodeInfoFetchIfNeeded(versionId, node.id, node.nodeKey));
     }
@@ -168,6 +176,20 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     /**
+     * Přidání JP na konec do aktuálního node
+     */
+    handleAddNodeAtEnd() {
+        var itemsToCopy = null;
+        if (this.props.nodeSettings != "undefined") {
+            var nodeIndex = indexById(this.props.nodeSettings.nodes, this.props.node.id);
+            if (nodeIndex != null) {
+                itemsToCopy = this.props.nodeSettings.nodes[nodeIndex].descItemTypeCopyIds;
+            }
+        }
+        this.dispatch(addNode(this.props.node, this.props.node, this.props.fa.versionId, "CHILD", itemsToCopy));
+    }
+
+    /**
      * Renderování stavu.
      * @param item {object} na který node v Accordion se kliklo
      * @return {Object} view
@@ -269,20 +291,24 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         const {calendarTypes, versionId, rulDataTypes, node, packetTypes, packets, findingAidId, showRegisterJp} = this.props;
 
         if (!node.fetched) {
-            return <Loading/>
+            return <Loading value={i18n('global.data.loading.node')}/>
         }
 
         var parents = this.renderParents(this.getParentNodes());
         var children;
-        if ((node.subNodeInfo.isFetching && !node.subNodeInfo.dirty) || !node.subNodeInfo.fetched) {
-            children = <div className='children'><div className='content'><Loading/></div></div>
-        } else {
+        if (node.subNodeInfo.fetched || node.selectedSubNodeId == null) {
             children = this.renderChildren(this.getChildNodes());
+        } else {
+            children = <div className='children'><Loading value={i18n('global.data.loading.node.children')} /></div>
         }
         var siblings = this.getSiblingNodes().map(s => <span key={s.id}> {s.id}</span>);
         var actions = (
             <div className='actions'>
-                <div className='btn btn-default'><Icon glyph="fa-plus-circle" />Přidat JP na konec</div>
+                {
+                    node.fetched && !isFaRootId(node.id) &&
+                    <div className='btn btn-default' onClick={this.handleAddNodeAtEnd}><Icon glyph="fa-plus-circle"/>Přidat
+                        JP na konec</div>
+                }
                 <div className='btn btn-default' disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(faSubNodesPrevPage())}><Icon glyph="fa-backward" />{i18n('arr.fa.subNodes.prevPage')}</div>
                 <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize > node.childNodes.length} onClick={()=>this.dispatch(faSubNodesNextPage())}><Icon glyph="fa-forward" />{i18n('arr.fa.subNodes.nextPage')}</div>
 
@@ -310,17 +336,17 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 selectedSubNode={node.subNodeForm.data.node}
             />
         } else {
-            form = <Loading/>
+            form = <Loading value={i18n('global.data.loading.form')}/>
         }
 
         var record;
 
         if (showRegisterJp) {
 
-            if (node.subNodeForm.fetched) {
+            if (node.subNodeRegister.fetched) {
                 record = <SubNodeRegister />
             } else {
-                record = <Loading/>
+                record = <Loading value={i18n('global.data.loading.register')} />
             }
 
         }
@@ -390,11 +416,19 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 }
 
+function mapStateToProps(state) {
+    const {arrRegion} = state
+    return {
+        nodeSettings: arrRegion.nodeSettings
+    }
+}
+
 NodePanel.propTypes = {
     versionId: React.PropTypes.number.isRequired,
     fa: React.PropTypes.object.isRequired,
     node: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
+    nodeSettings: React.PropTypes.object.isRequired,
     packetTypes: React.PropTypes.object.isRequired,
     packets: React.PropTypes.array.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
@@ -402,4 +436,4 @@ NodePanel.propTypes = {
     showRegisterJp: React.PropTypes.bool.isRequired,
 }
 
-module.exports = connect()(NodePanel);
+module.exports = connect(mapStateToProps)(NodePanel);

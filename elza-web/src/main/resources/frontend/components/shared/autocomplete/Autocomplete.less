@@ -1,0 +1,65 @@
+@autocomplete-dropdown-width: 20px;
+@autocomplete-dropdown-height: 18px;
+.autocomplete-control-container {
+    display: inline-block;
+    
+    .autocomplete-control-box {
+        .btn {
+            position: relative;
+            top:0;
+            border: none;
+            right: @autocomplete-dropdown-width;
+            height: @autocomplete-dropdown-height;
+        }
+
+        input {
+            padding-right: @autocomplete-dropdown-width;
+            display: inline-block;
+            width: auto;
+        }
+    }
+    
+    .autocomplete-menu-container {
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        background: white;
+        z-index: 1000;
+        position: fixed;
+        overflow: hidden;
+        max-height: 50%; // TODO: dont cheat, let it flow to the bottom    
+        height: 300px;
+        max-width: 600px;
+        min-width: 300px;
+        border: 1px solid #bfbfbf;
+
+        .autocomplete-menu {
+            overflow: auto;
+            height: 100%;
+
+            .item {
+                &.active {
+                    font-weight: bold;
+                }
+                &.focus {
+                    background: #afafaf;
+                }
+            }
+        }
+        .autocomplete-menu-footer {
+            height: 32px;
+            background: #cfcfcf;
+        }
+        .autocomplete-menu-header {
+            height: 32px;
+            background: #cfcfcf;
+        }
+        &.has-header .autocomplete-menu {
+            height: calc(~"100% - 32px");
+        }
+        &.has-footer .autocomplete-menu {
+            height: calc(~"100% - 32px");
+        }
+        &.has-header.has-footer .autocomplete-menu {
+            height: calc(~"100% - 64px");
+        }
+    }
+}

@@ -127,7 +127,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         var itemActions = [];
         altActions.push(
-            <Button><Icon glyph='fa-download' /><div><span className="btnText">{i18n('ribbon.action.arr.fa.import')}</span></div></Button>
+            <Button key="fa-import"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('ribbon.action.arr.fa.import')}</span></div></Button>
         );
         if (activeInfo.activeFa) {
             itemActions.push(
@@ -139,7 +139,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         itemActions.push(
                 <Button active={show} onClick={this.handleRegisterJp.bind(this, !show)} key="toggle-record-jp">
-                    <Icon glyph="fa-calendar-check-o" />
+                    <Icon glyph="fa-th-list" />
                     <div>
                         <span className="btnText">{i18n('ribbon.action.arr.show-register-jp')}</span>
                     </div>
@@ -148,11 +148,12 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         var altSection;
         if (altActions.length > 0) {
-            altSection = <RibbonGroup className="large">{altActions}</RibbonGroup>
+            altSection = <RibbonGroup key="alt" className="large">{altActions}</RibbonGroup>
         }
+
         var itemSection;
         if (itemActions.length > 0) {
-            itemSection = <RibbonGroup className="large">{itemActions}</RibbonGroup>
+            itemSection = <RibbonGroup key="item" className="large">{itemActions}</RibbonGroup>
         }
 
         return (

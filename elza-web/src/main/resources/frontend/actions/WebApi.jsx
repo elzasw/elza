@@ -296,10 +296,17 @@ class WebApi{
     }
 
     getFaNodeForm(versionId, nodeId) {
-        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + nodeId + '/' + versionId + '/form', {versionId, nodeId})
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + nodeId + '/' + versionId + '/form')
             .then(json=>{
                 return json
             });
+    }
+
+    getFaNodeRegister(versionId, nodeId) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/registerLinks/' + nodeId + '/' + versionId)
+                .then(json=>{
+                    return json
+                });
     }
 
     getRulDataTypes(versionId, nodeId) {

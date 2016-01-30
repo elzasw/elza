@@ -23,6 +23,7 @@ exports.ContextMenu = require('./shared/context-menu/ContextMenu');
 exports.ModalDialog = require('./shared/dialog/ModalDialog');
 exports.WebSocket = require('./shared/web-socket/WebSocket');
 exports.ModalDialogWrapper = require('./shared/dialog/ModalDialogWrapper');
+exports.Autocomplete = require('./shared/autocomplete/Autocomplete');
 
 
 exports.Ribbon = require('./page/Ribbon');

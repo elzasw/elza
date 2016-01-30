@@ -14,6 +14,23 @@ var React = require('react');
 import {i18n, Toastr, LongText} from 'components';
 import {lenToBytesStr} from 'components/Utils';
 
+
+var _callIndex = 0;
+
+function requestCounter(method, url, data) {
+    var callStr;
+    if (_logCalls || _logResults) {
+        var callIndex = _callIndex++;
+        var indexStr = callIndex;
+        if (callIndex < 10) indexStr = "0" + indexStr;
+        if (callIndex < 100) indexStr = "0" + indexStr;
+        if (callIndex < 1000) indexStr = "0" + indexStr;
+        if (callIndex < 10000) indexStr = "0" + indexStr;
+        callStr = "(" + indexStr + ") " + method + " " + url;
+    }
+    return callStr;
+}
+
 /**
  * Zavolání raw ajaxového volání podle vložených parametrů.
  *
@@ -28,7 +45,12 @@ function ajaxCallRaw(url, params, method, data) {
     url = updateQueryStringParameters(url, params);
 
     return new Promise(function (resolve, reject) {
-        console.log("#AjaxRaw." + method + " " + url, data);
+        var callStr = requestCounter(method, url, data);
+
+        if (_logCalls) {
+            console.info("->", callStr);
+        }
+
         $.ajax({
             url: serverContextPath + url,
             type: method,
@@ -38,12 +60,19 @@ function ajaxCallRaw(url, params, method, data) {
             success: function (data,    // data ze serveru
                                status,  // status - 'success'
                                xhr) {   // xhr - responseText, responseJSON, status a statusText
+                if (_logResults) {
+                    var len = JSON.stringify(data).length;
+                    var lenStr = '(' + lenToBytesStr(len) + ')';
+                    console.info("<-", callStr, lenStr, data);
+                }
                 resolve(data);
             },
             error: function (xhr,
                              status,
                              err) {
-                console.log("#AjaxRaw [" + xhr.status + "-" + status + "]",  xhr);
+                if (_logErrors) {
+                    console.error("<-", callStr, "[" + xhr.status + "-" + status + "]", xhr);
+                }
 
                 var message;
                 if (xhr.responseJSON && xhr.responseJSON.message) {
@@ -101,25 +130,17 @@ function ajaxCallRaw(url, params, method, data) {
  * @param {Object} data - Odesílaná data
  * @returns {Promise} - Výsledek volání
  */
-var _callIndex = 0;
 function ajaxCall(url, params, method, data) {
 
     url = updateQueryStringParameters(url, params);
 
     return new Promise(function (resolve, reject) {
-        var callStr;
-        if (_logCalls || _logResults) {
-            var callIndex = _callIndex++;
-            var indexStr = callIndex;
-            if (callIndex < 10) indexStr = "0" + indexStr;
-            if (callIndex < 100) indexStr = "0" + indexStr;
-            if (callIndex < 1000) indexStr = "0" + indexStr;
-            if (callIndex < 10000) indexStr = "0" + indexStr;
-            callStr = "(" + indexStr + ") " + method + " " + url;
-        }
+        var callStr = requestCounter(method, url, data);
+
         if (_logCalls) {
-            console.log(callStr, "[CALL]", data);
+            console.info("->", callStr, data);
         }
+
         $.ajax({
             url: serverContextPath + url,
             type: method,
@@ -136,7 +157,7 @@ function ajaxCall(url, params, method, data) {
                  if (_logResults) {
                     var len = JSON.stringify(data).length;
                     var lenStr = '(' + lenToBytesStr(len) + ')';
-                    console.log("  " + callStr, "[OK]", lenStr, data);
+                    console.info("<-", callStr, lenStr, data);
                  }
                 resolve(data);
             },
@@ -144,7 +165,7 @@ function ajaxCall(url, params, method, data) {
                              status,
                              err) {
                 if (_logErrors) {
-                    console.log("  " + callStr, "[ERROR]", "[" + xhr.status + "-" + status + "]", xhr);
+                    console.error("<-", callStr, "[" + xhr.status + "-" + status + "]", xhr);
                 }
 
                 var message;
