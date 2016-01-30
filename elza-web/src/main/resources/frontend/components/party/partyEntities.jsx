@@ -20,8 +20,8 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
         this.bindMethods(
             'handleUpdateRelation', 
             'handleCallUpdateRelation',
-            'handleDeleteRelation', 
-            'handleCallDeleteRelation'
+            'handleDeleteRelation'/*,
+            'handleCallDeleteRelation'*/
         );
     }
     

@@ -5,6 +5,7 @@
 import {WebApi} from 'actions'
 import * as types from 'actions/constants/actionTypes'
 import {modalDialogHide} from 'actions/global/modalDialog'
+import {faSubNodeFormValueChangeParty, faSubNodeFormValueBlur} from 'actions/arr/subNodeForm'
 
 
 /**
@@ -25,12 +26,35 @@ import {modalDialogHide} from 'actions/global/modalDialog'
  */
 export function insertParty(partyType, filterText, partyTypeId, nameFormTypeId, nameMain, nameOther, validFrom, valiedTo, calendarTypeId, degreeBefore, degreeAfter, scope) {
     return dispatch => {
-        return WebApi.insertParty(partyType, partyTypeId, nameFormTypeId, nameMain, nameOther, degreeBefore, degreeAfter, validFrom, valiedTo, calendarTypeId, scope)
+        return WebApi.insertParty(partyType)
             .then((json) => { 
                 dispatch(modalDialogHide());                // zavření aktualně otevřeného dialogu
                 dispatch(findPartyFetch(filterText));       // znovu načtení leveho panelu s vyfiltrovanými osobami (aby se tam pridala nová)
                 dispatch(partyDetailFetch(json.partyId));   // otevření detailu aktuálně vložené osoby
             });
+    }
+}
+
+/**
+ * Vytvoření osoby z pořádání.
+ *
+ * @param partyType - typ osoby (ParPersonEditVO, ParDynastyEditVO, ...)
+ * @param valueLocation
+ * @param versionId
+ * @param selectedSubNodeId
+ * @param nodeKey
+ * @returns {Function}
+ */
+export function insertPartyArr(partyType, valueLocation, versionId, selectedSubNodeId, nodeKey) {
+    return dispatch => {
+        return WebApi.insertParty(partyType)
+                .then((json) => {
+                    dispatch(faSubNodeFormValueChangeParty(versionId, selectedSubNodeId, nodeKey, valueLocation, json));
+                    dispatch(faSubNodeFormValueBlur(versionId, selectedSubNodeId, nodeKey, valueLocation));
+                    dispatch(modalDialogHide());
+                    // TODO: dopsat redirect
+                    dispatch(partyDetailFetch(json.partyId));
+                });
     }
 }
 

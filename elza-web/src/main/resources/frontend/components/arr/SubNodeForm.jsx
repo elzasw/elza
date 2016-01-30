@@ -6,7 +6,7 @@ require('./SubNodeForm.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Icon, i18n, AbstractReactComponent, NoFocusButton, AddPacketForm} from 'components';
+import {Icon, i18n, AbstractReactComponent, NoFocusButton, AddPacketForm, AddPartyPersonForm, AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm} from 'components';
 import {connect} from 'react-redux'
 import {indexById} from 'stores/app/utils.jsx'
 import {faSubNodeFormDescItemTypeAdd, faSubNodeFormValueChange, faSubNodeFormDescItemTypeDelete, faSubNodeFormValueChangeSpec,faSubNodeFormValueBlur, faSubNodeFormValueFocus, faSubNodeFormValueAdd, faSubNodeFormValueDelete} from 'actions/arr/subNodeForm'
@@ -21,6 +21,7 @@ import {addNode} from 'actions/arr/node'
 import {createPacket} from 'actions/arr/packets'
 import faSelectSubNode from 'actions/arr/nodes'
 import {isFaRootId} from './ArrUtils.jsx'
+import {insertPartyArr} from 'actions/party/party'
 
 var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     constructor(props) {
@@ -30,7 +31,9 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             'handleChangeSpec', 'handleDescItemTypeRemove', 'handleBlur', 'handleFocus', 'renderFormActions',
             'getDescItemTypeInfo', 'handleDescItemAdd', 'handleDescItemRemove', 'handleDescItemTypeLock',
             'handleDescItemTypeUnlockAll', 'handleDescItemTypeCopy', 'handleAddNodeBefore', 'handleAddNodeAfter',
-            'handleCreatePacket', 'handleCreatePacketSubmit', 'handleAddChildNode');
+            'handleCreatePacket', 'handleCreatePacketSubmit', 'handleAddChildNode', 'handleCreateParty',
+            'handleCreatePartySubmit'
+        );
 
 //console.log("@@@@@-SubNodeForm-@@@@@", props);
     }
@@ -232,6 +235,107 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 
     /**
+     * Vytvoření nové osoby.
+     *
+     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
+     * @param descItemTypeIndex {Integer} index atributu v seznamu
+     * @param descItemIndex {Integer} index honodty atributu v seznamu
+     * @param partyTypeId {Integer} identifikátor typu osoby
+     */
+    handleCreateParty(descItemGroupIndex, descItemTypeIndex, descItemIndex, partyTypeId) {
+        var valueLocation = {
+            descItemGroupIndex,
+            descItemTypeIndex,
+            descItemIndex
+        }
+
+        var data = {
+            partyTypeId: partyTypeId
+        }
+        switch(partyTypeId){
+            case 1:
+                // zobrazení formuláře fyzicke osoby
+                this.dispatch(modalDialogShow(this, i18n('party.addParty') , <AddPartyPersonForm initData={data} onSubmit={this.handleCreatePartySubmit.bind(this, valueLocation)} />));
+                break;
+            case 2:
+                // zobrazení formuláře rodu
+                this.dispatch(modalDialogShow(this, i18n('party.addPartyDynasty') , <AddPartyDynastyForm initData={data} onSubmit={this.handleCreatePartySubmit.bind(this, valueLocation)} />));
+                break;
+            case 3:
+                // zobrazení formuláře korporace
+                this.dispatch(modalDialogShow(this, i18n('party.addPartyGroup') , <AddPartyGroupForm initData={data} onSubmit={this.handleCreatePartySubmit.bind(this, valueLocation)} />));
+                break;
+            case 4:
+                // zobrazení formuláře dočasné korporace
+                this.dispatch(modalDialogShow(this, i18n('party.addPartyEvent') , <AddPartyEventForm initData={data} onSubmit={this.handleCreatePartySubmit.bind(this, valueLocation)} />));
+                break;
+            default:
+                // zobrazení formuláře jine osoby - ostatni
+                this.dispatch(modalDialogShow(this, i18n('party.addPartyOther') , <AddPartyOtherForm initData={data} onSubmit={this.handleCreatePartySubmit.bind(this, valueLocation)} />));
+                break;
+        }
+
+    }
+
+    /**
+     * Vytvoření obalu po vyplnění formuláře.
+     *
+     * @param valueLocation pozice hodnoty atributu
+     * @param form {Object} data z formuláře
+     */
+    handleCreatePartySubmit(valueLocation, data) {
+        const {versionId, selectedSubNodeId, nodeKey} = this.props;
+
+        var partyType = '';                                     // typ osoby - je potreba uvest i jako specialni klivcove slovo
+        switch(data.partyTypeId){
+            case 1: partyType = '.ParPersonVO'; break;          // typ osoby osoba
+            case 2: partyType = '.ParDynastyVO'; break;         // typ osoby rod
+            case 3: partyType = '.ParPartyGroupVO'; break;      // typ osoby korporace
+            case 4: partyType = '.ParEventVO'; break;           // typ osoby docasna korporace - udalost
+        }
+        var party = {
+            '@type': partyType,
+            partyType: {
+                partyTypeId: data.partyTypeId
+            },
+            genealogy: data.nameMain,
+            scope: '',
+            record: {
+                registerTypeId: data.recordTypeId,              // typ záznamu
+                scopeId:1                                       //trida rejstriku
+            },
+            from: {
+                textDate: data.validFrom,
+                calendarTypeId: data.calendarTypeIdFrom
+            },
+            to: {
+                textDate: data.validTo,
+                calendarTypeId: data.calendarTypeIdTo
+            },
+            partyNames : [{
+                nameFormType: {
+                    nameFormTypeId: data.nameFormTypeId
+                },
+                displayName: data.nameMain,
+                mainPart: data.nameMain,
+                otherPart: data.nameOther,
+                degreeBefore: data.degreeBefore,
+                degreeAfter: data.degreeAfter,
+                prefferedName: true,
+                validFrom: {
+                    textDate: data.validFrom,
+                    calendarTypeId: data.calendarTypeIdFrom
+                },
+                validTo: {
+                    textDate: data.validTo,
+                    calendarTypeId: data.calendarTypeIdTo
+                }
+            }]
+        }
+        this.dispatch(insertPartyArr(party, valueLocation, versionId, selectedSubNodeId, nodeKey));
+    }
+
+    /**
      * Opuštění hodnoty atributu.
      * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
      * @param descItemTypeIndex {Integer} index atributu v seznamu
@@ -351,6 +455,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 packetTypes={packetTypes}
                 packets={packets}
                 onCreatePacket={this.handleCreatePacket.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onCreateParty={this.handleCreateParty.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDescItemAdd={this.handleDescItemAdd.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDescItemRemove={this.handleDescItemRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onChange={this.handleChange.bind(this, descItemGroupIndex, descItemTypeIndex)}

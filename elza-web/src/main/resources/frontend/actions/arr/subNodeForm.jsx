@@ -51,6 +51,34 @@ export function faSubNodeFormValueChange(versionId, nodeId, nodeKey, valueLocati
     }
 }
 
+export function faSubNodeFormValueChangeParty(versionId, nodeId, nodeKey, valueLocation, value) {
+    return (dispatch, getState) => {
+        dispatch({
+            type: types.FA_SUB_NODE_FORM_VALUE_CHANGE_PARTY,
+            versionId,
+            nodeId,
+            nodeKey,
+            valueLocation,
+            value,
+            dispatch
+        })
+    }
+}
+
+export function faSubNodeFormValueChangeRecord(versionId, nodeId, nodeKey, valueLocation, value) {
+    return (dispatch, getState) => {
+        dispatch({
+            type: types.FA_SUB_NODE_FORM_VALUE_CHANGE_RECORD,
+            versionId,
+            nodeId,
+            nodeKey,
+            valueLocation,
+            value,
+            dispatch
+        })
+    }
+}
+
 export function faSubNodeFormValueChangeSpec(versionId, nodeId, nodeKey, valueLocation, value) {
     return {
         type: types.FA_SUB_NODE_FORM_VALUE_CHANGE_SPEC,

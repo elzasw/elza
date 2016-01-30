@@ -50,6 +50,8 @@ export default function nodes(state = nodesInitialState, action) {
         case types.FA_SUB_NODE_FORM_RECEIVE:
         case types.FA_SUB_NODE_FORM_VALUE_CHANGE:
         case types.FA_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
+        case types.FA_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
+        case types.FA_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
         case types.FA_SUB_NODE_FORM_VALUE_VALIDATE_RESULT:
         case types.FA_SUB_NODE_FORM_VALUE_BLUR:
         case types.FA_SUB_NODE_FORM_VALUE_FOCUS:

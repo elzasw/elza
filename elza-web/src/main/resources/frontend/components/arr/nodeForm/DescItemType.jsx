@@ -93,11 +93,23 @@ return true;
     }
 
     /**
-     * Změna hodnoty atributu.
+     * Vytvoření nového obalu.
+     *
      * @param descItemIndex {Integer} index hodnoty atributu v seznamu
      */
     handleCreatePacket(descItemIndex) {
         this.props.onCreatePacket(descItemIndex);
+    }
+
+
+    /**
+     * Vytvoření nové osoby.
+     *
+     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     * @param partyTypeId {Integer} identifikátor typu osoby
+     */
+    handleCreateParty(descItemIndex, partyTypeId) {
+        this.props.onCreateParty(descItemIndex, partyTypeId);
     }
 
     /**
@@ -161,7 +173,7 @@ return true;
         //parts.push(<div>{rulDataType.code}-{descItem.id}-{descItemType.type}</div>);
         switch (rulDataType.code) {
             case 'PARTY_REF':
-                parts.push(<DescItemPartyRef key="PARTY_REF" {...descItemProps} />)
+                parts.push(<DescItemPartyRef key="PARTY_REF"  {...descItemProps} onCreateParty={this.handleCreateParty.bind(this, descItemIndex)} />)
                 break;
             case 'RECORD_REF':
                 parts.push(<DescItemPacketRef key="RECORD_REF" {...descItemProps} />)
@@ -331,6 +343,7 @@ DescItemType.propTypes = {
     onBlur: React.PropTypes.func.isRequired,
     onFocus: React.PropTypes.func.isRequired,
     onCreatePacket: React.PropTypes.func.isRequired,
+    onCreateParty: React.PropTypes.func.isRequired,
     onDescItemTypeRemove: React.PropTypes.func.isRequired,
     onDescItemTypeLock: React.PropTypes.func.isRequired,
     onDescItemTypeCopy: React.PropTypes.func.isRequired,

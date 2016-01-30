@@ -42,6 +42,10 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
                 })
     }
 
+    handleCreateParty(partyTypeId) {
+        this.props.onCreateParty(partyTypeId);
+    }
+
     renderParty(item, isHighlighted, isSelected) {
         var cls = 'item';
         if (isHighlighted) {
@@ -71,7 +75,7 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
         return (
                 <div className="create-party">
                     <DropdownButton noCaret title={<div><Icon glyph='fa-download' /><span className="create-party-label">{i18n('party.addParty')}</span></div>}>
-                        {refTables.partyTypes.items.map(i=> {return <MenuItem eventKey={i.partyTypeId}>{i.name}</MenuItem>})}
+                        {refTables.partyTypes.items.map(i=> {return <MenuItem onClick={this.handleCreateParty.bind(this, i.partyTypeId)} eventKey={i.partyTypeId}>{i.name}</MenuItem>})}
                     </DropdownButton>
                 </div>
         )
