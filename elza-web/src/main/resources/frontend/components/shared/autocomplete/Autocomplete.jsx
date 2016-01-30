@@ -326,6 +326,7 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
     }
 
     handleInputBlur () {
+        this.props.inputProps.onBlur && this.props.inputProps.onBlur();
 return true;
         if (this._ignoreBlur) {
             return
@@ -338,6 +339,7 @@ return true;
     }
 
     handleInputFocus () {
+        this.props.inputProps.onFocus && this.props.inputProps.onFocus();
 return true;
         if (this._ignoreBlur) {
             return
@@ -400,7 +402,7 @@ return true;
                         onClick={this.handleInputClick}
                         value={this.state.inputStrValue}
                     />
-                    <Button ref='openClose' className={this.state.isOpen ? 'opened' : 'closed'} onClick={()=>{this.state.isOpen ? this.closeMenu() : this.openMenu()}}><Icon glyph={glyph}/></Button>
+                    <div disabled={this.props.inputProps.disabled} ref='openClose' className={this.state.isOpen ? 'btn btn-default opened' : 'btn btn-default closed'} onClick={()=>{this.state.isOpen ? this.closeMenu() : this.openMenu()}}><Icon glyph={glyph}/></div>
                 </div>
                 {this.state.isOpen && this.renderMenu()}
             </div>
