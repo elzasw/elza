@@ -1,4 +1,5 @@
 var React = require('react');
+var ReactDOM = require('react-dom');
 var utils = require('./utils');
 
 var VirtualList = React.createClass({
@@ -71,8 +72,21 @@ return true;
         this.onScrollDebounced = utils.debounce(this.onScroll, nextProps.scrollDelay, false);
 
         nextProps.container.addEventListener('scroll', this.onScrollDebounced);
-        
-        this.setState(state);
+
+        if (nextProps.scrollToIndex) {
+            this.setState(state, () => {
+                var box = ReactDOM.findDOMNode(this.refs.box)
+                console.log('BOX', box, this.state);
+                var itemTop = nextProps.scrollToIndex * this.props.itemHeight;
+                //console.log('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', itemTop, this.state.bufferStart, this.state.height, box.clientHeight, box.parentNode.clientHeight)
+                if (itemTop < this.state.bufferStart || itemTop > this.state.bufferStart + box.parentNode.clientHeight) {
+                    box.parentNode.scrollTop = itemTop;
+                }
+            });
+        } else {
+            this.setState(state);
+        }
+
     },
     componentWillMount: function() {
         this.onScrollDebounced = utils.debounce(this.onScroll, this.props.scrollDelay, false);
@@ -98,7 +112,7 @@ return true;
     },
     render: function() {
         return (
-        <this.props.tagName {...this.props} style={{boxSizing: 'border-box', height: this.state.height, paddingTop: this.state.bufferStart }} >
+        <this.props.tagName ref='box' {...this.props} style={{boxSizing: 'border-box', height: this.state.height, paddingTop: this.state.bufferStart }} >
             {this.state.items.map(this.props.renderItem)}
         </this.props.tagName>
         );

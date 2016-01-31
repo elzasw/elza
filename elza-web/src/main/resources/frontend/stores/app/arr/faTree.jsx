@@ -9,6 +9,7 @@ const initialState = {
     focusId: null,
     expandedIds: {},
     searchedIds: [],
+    ensureItemVisible: false,
     searchedParents: {},
     filterText: null,
     filterCurrentIndex: -1,
@@ -20,6 +21,16 @@ const initialState = {
     lastSelectedId: null, 
     multipleSelection: false,
     multipleSelectionOneLevel: false,
+}
+
+function getOneSelectedIdIfExists(state) {
+    if (state.multipleSelection && Object.keys(state.selectedIds).length == 1) {
+        return Object.keys(state.selectedIds)[0];
+    } else if (!state.multipleSelection && state.selectedId != null) {
+        return state.selectedId;
+    } else {
+        return null;
+    }
 }
 
 function removeChildren(nodes, node, selectedId) {
@@ -90,6 +101,7 @@ export default function faTree(state = initialState, action) {
                 return {
                     ...state,
                     filterCurrentIndex: -1,
+                    ensureItemVisible: false,
                     searchedIds: searchedIds,
                     searchedParents: searchedParents
                 }
@@ -106,6 +118,7 @@ export default function faTree(state = initialState, action) {
                 var newState = {
                     ...state,
                     lastSelectedId: null,
+                    ensureItemVisible: false,
                     filterCurrentIndex: newCurrentIndex
                 }
                 newState.selectedIds = {...state.selectedIds};
@@ -173,6 +186,7 @@ export default function faTree(state = initialState, action) {
 
                     return {
                         ...state, 
+                        ensureItemVisible: false, 
                         selectedId: action.nodeId,
                         filterCurrentIndex: newCurrentIndex
                     }
@@ -189,6 +203,7 @@ export default function faTree(state = initialState, action) {
 
                 return {
                     ...state,
+                    ensureItemVisible: action.ensureItemVisible,
                     selectedId: action.subNodeId,
                     filterCurrentIndex: newCurrentIndex
                 }
@@ -197,7 +212,11 @@ export default function faTree(state = initialState, action) {
             }
         case types.FA_FA_TREE_FOCUS_NODE:
             if (state.focusId !== action.node.id) {
-                return Object.assign({}, state, {focusId: action.node.id});
+                return {
+                    ...state,
+                    focusId: action.node.id,
+                    ensureItemVisible: false
+                };
             } else {
                 return state;
             }
@@ -206,6 +225,7 @@ export default function faTree(state = initialState, action) {
                 var index = indexById(state.nodes, action.node.id);
                 return Object.assign({}, state, {
                     expandedIds: {...state.expandedIds, [action.node.id]: true},
+                    ensureItemVisible: false,
                     nodes: [
                         ...state.nodes.slice(0, index + 1),
                         {id: '___' + Math.random(), name: i18n('global.data.loading'), depth: action.node.depth + 1},
@@ -214,6 +234,7 @@ export default function faTree(state = initialState, action) {
                 });
             } else {
                 return Object.assign({}, state, {
+                    ensureItemVisible: false,
                     expandedIds: {...state.expandedIds, [action.node.id]: true}
                 });
             }
@@ -221,6 +242,7 @@ export default function faTree(state = initialState, action) {
             return Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,
+                ensureItemVisible: false,
                 expandedIds: initialState.expandedIds,
                 nodes: [
                     state.nodes[0]
@@ -241,6 +263,7 @@ export default function faTree(state = initialState, action) {
             }
 
             var ret = Object.assign({}, state, {
+                ensureItemVisible: false,
                 expandedIds: expandedIds,
                 nodes: removeInfo.nodes,
                 selectedId: newSelectedId,
@@ -255,6 +278,7 @@ export default function faTree(state = initialState, action) {
             }
             return Object.assign({}, state, {
                 isFetching: true,
+                ensureItemVisible: false,
                 fetchingIncludeIds: fetchingIncludeIds
             })
         case types.FA_FA_TREE_RECEIVE:
@@ -265,7 +289,17 @@ export default function faTree(state = initialState, action) {
                         var node = state.nodes[index];
                         var removeInfo = removeChildren(state.nodes, node, null);
                         var nodes = removeInfo.nodes;
+
+                        var ensureItemVisible = false;
+                        var oneSelectedId = getOneSelectedIdIfExists(state);
+                        if (oneSelectedId !== null) {
+                            if (indexById(action.nodes, oneSelectedId) !== null) {    // je označená položka z těch, co se právě načetly
+                                ensureItemVisible = true;
+                            }
+                        }
+
                         var result = Object.assign({}, state, {
+                            ensureItemVisible: ensureItemVisible,
                             isFetching: false,
                             fetched: true,
                             nodes: [
@@ -284,17 +318,26 @@ export default function faTree(state = initialState, action) {
 
                         return result;
                     } else {
-                        return Object.assign({}, state, { fetchingIncludeIds: {} });
+                        return Object.assign({}, state, { ensureItemVisible: false, fetchingIncludeIds: {} });
                     }
                 } else {
-                    return Object.assign({}, state, { fetchingIncludeIds: {} });
+                    return Object.assign({}, state, { ensureItemVisible: false, fetchingIncludeIds: {} });
                 }
             } else {
+                var ensureItemVisible = false;
+                var oneSelectedId = getOneSelectedIdIfExists(state);
+                if (oneSelectedId !== null) {
+                    if (indexById(action.nodes, oneSelectedId) !== null) {    // je označená položka z těch, co se právě načetly
+                        ensureItemVisible = true;
+                    }
+                }
+
                 var result = Object.assign({}, state, {
                     isFetching: false,
                     fetched: true,
                     dirty: false,
                     nodes: action.nodes,
+                    ensureItemVisible: ensureItemVisible,
                     expandedIds: action.expandedIds,
                     fetchingIncludeIds: {},
                     lastUpdated: action.receivedAt
@@ -312,7 +355,7 @@ export default function faTree(state = initialState, action) {
 
             // pouze, pokud ho mám načtený
             if (index != null) {
-                return Object.assign({}, state, { dirty: true });
+                return Object.assign({}, state, { ensureItemVisible: false, dirty: true });
             }
 
             return state;

@@ -34,7 +34,7 @@ var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        var eqProps = ['dirty', 'expandedIds', 'fa', 'fetched', 'searchedIds', 'nodes', 'selectedId', 'selectedIds', 'fetchingIncludeIds', 'filterCurrentIndex', 'filterText', 'focusId', 'isFetching']
+        var eqProps = ['ensureItemVisible', 'dirty', 'expandedIds', 'fa', 'fetched', 'searchedIds', 'nodes', 'selectedId', 'selectedIds', 'fetchingIncludeIds', 'filterCurrentIndex', 'filterText', 'focusId', 'isFetching']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -81,7 +81,7 @@ var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
         if (parentNode == null) {   // root
             parentNode = createFaRoot(this.props.fa, node);
         }
-        this.dispatch(faSelectSubNode(node.id, parentNode, openNewTab));
+        this.dispatch(faSelectSubNode(node.id, parentNode, openNewTab, null, false));
     }
 
     /**

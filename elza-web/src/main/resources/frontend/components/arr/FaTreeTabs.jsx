@@ -90,7 +90,7 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
         if (parentNode == null) {   // root
             parentNode = createFaRoot(this.props.activeFa, node);
         }
-        this.dispatch(faSelectSubNode(node.id, parentNode, openNewTab));
+        this.dispatch(faSelectSubNode(node.id, parentNode, openNewTab, null, false));
     }
 
     /**

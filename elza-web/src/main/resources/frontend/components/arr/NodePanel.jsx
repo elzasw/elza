@@ -79,7 +79,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             subNodeParentNode = createFaRoot(this.props.fa, node);
         }
 
-        this.dispatch(faSelectSubNode(subNodeId, subNodeParentNode));
+        this.dispatch(faSelectSubNode(subNodeId, subNodeParentNode, false, null, true));
     }
 
     /**
@@ -89,7 +89,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     handleChildNodeClick(node) {
         var subNodeId = node.id;
         var subNodeParentNode = this.getSiblingNodes()[indexById(this.getSiblingNodes(), this.props.node.selectedSubNodeId)];
-        this.dispatch(faSelectSubNode(subNodeId, subNodeParentNode));
+        this.dispatch(faSelectSubNode(subNodeId, subNodeParentNode, false, null, true));
     }
 
     /**
@@ -163,7 +163,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
      * @param item {Object} na který node v Accordion se kliklo
      */
     handleCloseItem(item) {
-        this.dispatch(faSelectSubNode(null, this.props.node));
+        this.dispatch(faSelectSubNode(null, this.props.node, false, null, false));
     }
 
     /**
@@ -172,7 +172,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
      */
     handleOpenItem(item) {
         var subNodeId = item.id;
-        this.dispatch(faSelectSubNode(subNodeId, this.props.node));
+        this.dispatch(faSelectSubNode(subNodeId, this.props.node, false, null, true));
     }
 
     /**

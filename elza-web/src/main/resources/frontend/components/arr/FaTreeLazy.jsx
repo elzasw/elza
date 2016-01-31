@@ -12,6 +12,7 @@ import {Nav, Input, NavItem, Button, DropdownButton} from 'react-bootstrap';
 var classNames = require('classnames');
 import {ResizeStore} from 'stores';
 import {propsEquals} from 'components/Utils'
+import {indexById} from 'stores/app/utils.jsx'
 
 var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     constructor(props) {
@@ -35,7 +36,7 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        var eqProps = ['filterText', 'expandedIds', 'selectedId', 'selectedIds', 'nodes', 'focusId', 'isFetching', 'fetched', 'searchedIds', 'searchedParents', 'filterCurrentIndex']
+        var eqProps = ['ensureItemVisible', 'filterText', 'expandedIds', 'selectedId', 'selectedIds', 'nodes', 'focusId', 'isFetching', 'fetched', 'searchedIds', 'searchedParents', 'filterCurrentIndex']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -98,7 +99,7 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
                 onClick={onNodeClick.bind(this, node)}
                 onContextMenu={onContextMenu.bind(this, node)}
                 >
-                {name}
+                {name}{node.id}
             </span>
         )
 
@@ -124,6 +125,12 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
             )
         }
 
+        var index;
+        if (this.props.ensureItemVisible) {
+            index = indexById(this.props.nodes, this.props.selectedId);
+            console.log('iiiiiiiii', this.props, index);
+        }
+
         return (
             <div className='fa-tree-lazy-main-container'>
                 <div className='fa-traa-header-container'>
@@ -135,7 +142,14 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
                     <Button onClick={this.props.onCollapse}>Zabalit</Button>
                 </div>
                 <div className='fa-tree-lazy-container' ref="treeContainer">
-                    {true && <VirtualList tagName='div' container={this.state.treeContainer} items={this.props.nodes} renderItem={this.renderNode} itemHeight={this.props.rowHeight} />}
+                    <VirtualList
+                        tagName='div'
+                        scrollToIndex={index}
+                        container={this.state.treeContainer}
+                        items={this.props.nodes}
+                        renderItem={this.renderNode}
+                        itemHeight={this.props.rowHeight}
+                    />
                 </div>
             </div>
         )

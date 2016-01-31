@@ -22,7 +22,7 @@ export function faSelectNodeTab(index) {
             index,
         });
         if (nodeTab.selectedSubNodeId != null) {    // musíme poslat akci vybrání subnode (aby se řádek vybral např. ve stromu)
-            dispatch(faSelectSubNodeInt(nodeTab.selectedSubNodeId, nodeTab, false));
+            dispatch(faSelectSubNodeInt(nodeTab.selectedSubNodeId, nodeTab, false, null, true));
         }
     }
 }
@@ -57,7 +57,7 @@ export function faCloseNodeTab(index) {
             if (newActiveFa.nodes.nodes.length > 0) {    // je vybraná nějaká jiná, protože ještě nějaké záložky existují
                 dispatch(faSelectNodeTab(newActiveFa.nodes.activeIndex));
             } else {    // není žádná záložka
-                dispatch(faSelectSubNodeInt(null, null, false));
+                dispatch(faSelectSubNodeInt(null, null, false, false));
             }
         }
     }
@@ -69,21 +69,22 @@ export function faCloseNodeTab(index) {
  * @param {Object} subNodeParentNode nadřazený JP pro vybíranou JP, předáváno kvůli případnému otevření nové záložky, pokud neexistuje
  * @param {boolean} openNewTab má se otevřít nová záložka? Pokud je false, bude použita existující  aktuálně vybraná, pokud žádná neexistuje, bude nová vytvořena
  */
-export function faSelectSubNodeInt(subNodeId, subNodeParentNode, openNewTab=false, newFilterCurrentIndex = null) {
+export function faSelectSubNodeInt(subNodeId, subNodeParentNode, openNewTab=false, newFilterCurrentIndex = null, ensureItemVisible=false) {
     return {
         type: types.FA_FA_SELECT_SUBNODE,
         area: types.FA_TREE_AREA_MAIN,
         subNodeId,
         subNodeParentNode,
         openNewTab,
-        newFilterCurrentIndex
+        newFilterCurrentIndex,
+        ensureItemVisible
     }
 }
 
-export function faSelectSubNode(subNodeId, subNodeParentNode, openNewTab=false, newFilterCurrentIndex = null) {
+export function faSelectSubNode(subNodeId, subNodeParentNode, openNewTab=false, newFilterCurrentIndex = null, ensureItemVisible=false) {
     return (dispatch, getState) => {
         dispatch(faExtendedView(false));
-        dispatch(faSelectSubNodeInt(subNodeId, subNodeParentNode, openNewTab, newFilterCurrentIndex));
+        dispatch(faSelectSubNodeInt(subNodeId, subNodeParentNode, openNewTab, newFilterCurrentIndex, ensureItemVisible));
     }
 }
 

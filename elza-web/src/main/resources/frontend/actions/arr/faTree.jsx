@@ -71,11 +71,11 @@ function changeCurrentIndex(dispatch, area, faTree, newIndex) {
         var nodeParent = faTree.searchedParents[nodeId];
         switch (area) {
             case types.FA_TREE_AREA_MAIN:
-                dispatch(faSelectSubNode(nodeId, nodeParent, false, newIndex));
+                dispatch(faSelectSubNode(nodeId, nodeParent, false, newIndex, true));
             case types.FA_TREE_AREA_MOVEMENTS_LEFT:
-                dispatch(faTreeSelectNode(area, nodeId, false, false, newIndex))
+                dispatch(faTreeSelectNode(area, nodeId, false, false, newIndex, true))
             case types.FA_TREE_AREA_MOVEMENTS_RIGHT:
-                dispatch(faTreeSelectNode(area, nodeId, false, false, newIndex))
+                dispatch(faTreeSelectNode(area, nodeId, false, false, newIndex, true))
         }
     }
 }
