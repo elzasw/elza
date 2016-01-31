@@ -24,8 +24,8 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
         this.dispatch(refPartyTypesFetchIfNeeded());
     }
 
-    handleChange(text, value) {
-        this.props.onChange(value.id);
+    handleChange(id, valueObj) {
+        this.props.onChange(id);
     }
 
     handleSearchChange(text) {
@@ -88,7 +88,7 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
         return (
             <div className='desc-item-value desc-item-value-parts'>
                 <Autocomplete
-                        inputProps={decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
+                        {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
                         customFilter
                         className='autocomplete-party'
                         footer={footer}

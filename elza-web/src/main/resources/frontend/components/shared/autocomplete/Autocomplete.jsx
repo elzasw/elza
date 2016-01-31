@@ -1,6 +1,6 @@
 const React = require('react')
 import ReactDOM from 'react-dom';
-import {Button} from 'react-bootstrap';
+import {Button, Input} from 'react-bootstrap';
 const scrollIntoView = require('dom-scroll-into-view')
 import {Icon, AbstractReactComponent} from 'components';
 
@@ -58,7 +58,7 @@ var keyDownHandlers = {
             this.setState({
                 isOpen: false
             }, () => {
-                ReactDOM.findDOMNode(this.refs.input).select()
+                ReactDOM.findDOMNode(this.refs.input.getInputDOMNode()).select()
             })
         } else {
             var item = this.getFilteredItems()[this.state.highlightedIndex]
@@ -68,12 +68,12 @@ var keyDownHandlers = {
                 isOpen: false,
                 highlightedIndex: null
             }, () => {
-                //ReactDOM.findDOMNode(this.refs.input).focus() // TODO: file issue
-                ReactDOM.findDOMNode(this.refs.input).setSelectionRange(
+                //ReactDOM.findDOMNode(this.refs.input.getInputDOMNode()).focus() // TODO: file issue
+                ReactDOM.findDOMNode(this.refs.input.getInputDOMNode()).setSelectionRange(
                     this.state.inputStrValue.length,
                     this.state.inputStrValue.length
                 )
-                this.props.onChange(this.state.inputStrValue, item)
+                this.props.onChange(this.props.getItemId(item), item)
             })
         }
     },
@@ -100,7 +100,7 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
     }
 
     handleDocumentClick(e) {
-        var el1 = ReactDOM.findDOMNode(this.refs.input);
+        var el1 = ReactDOM.findDOMNode(this.refs.input.getInputDOMNode());
         var el2 = ReactDOM.findDOMNode(this.refs.menuParent);
         var el3 = ReactDOM.findDOMNode(this.refs.openClose);
         var el = e.target;
@@ -254,7 +254,7 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
         var itemValueDoesMatch = (itemValue.toLowerCase().indexOf(this.state.inputStrValue.toLowerCase()) === 0)
       
         if (itemValueDoesMatch) {
-            var node = ReactDOM.findDOMNode(this.refs.input)
+            var node = ReactDOM.findDOMNode(this.refs.input.getInputDOMNode())
             var setSelection = () => {
                 node.value = itemValue
                 node.setSelectionRange(this.state.inputStrValue.length, itemValue.length)
@@ -268,7 +268,7 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
     }
 
     setMenuPositions() {
-        var node = ReactDOM.findDOMNode(this.refs.input)
+        var node = ReactDOM.findDOMNode(this.refs.input.getInputDOMNode())
         var rect = node.getBoundingClientRect()
         var computedStyle = getComputedStyle(node)
         var marginBottom = parseInt(computedStyle.marginBottom, 10)
@@ -292,8 +292,8 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
             isOpen: false,
             highlightedIndex: null
         }, () => {
-            this.props.onChange(this.state.inputStrValue, item)
-            ReactDOM.findDOMNode(this.refs.input).focus()
+            this.props.onChange(this.props.getItemId(item), item)
+            ReactDOM.findDOMNode(this.refs.input.getInputDOMNode()).focus()
             this.setIgnoreBlur(false)
         })
     }
@@ -326,7 +326,7 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
     }
 
     handleInputBlur () {
-        this.props.inputProps.onBlur && this.props.inputProps.onBlur();
+        this.props.onBlur && this.props.onBlur();
 return true;
         if (this._ignoreBlur) {
             return
@@ -339,7 +339,7 @@ return true;
     }
 
     handleInputFocus () {
-        this.props.inputProps.onFocus && this.props.inputProps.onFocus();
+            this.props.onFocus && this.props.onFocus();
 return true;
         if (this._ignoreBlur) {
             return
@@ -353,7 +353,7 @@ return true;
         }
 
         this.setState({ isOpen: true }, () => {
-                ReactDOM.findDOMNode(this.refs.input).select()
+                ReactDOM.findDOMNode(this.refs.input.getInputDOMNode()).select()
             })
     }
 
@@ -367,7 +367,7 @@ return true;
             highlightedIndex: null,
             inputStrValue: this.props.getItemName(this.state.value)
         }, () => {
-                //ReactDOM.findDOMNode(this.refs.input).select()
+                //ReactDOM.findDOMNode(this.refs.input.getInputDOMNode()).select()
             })
     }
 
@@ -388,9 +388,14 @@ return true;
         return (
             <div className={cls}>
                 <div className='autocomplete-control-box'>
-                    <input
+                    <Input
+                        type='text'
                         {...this.props.inputProps}
-                        className='form-control'
+                        label={this.props.label}
+                        disabled={this.props.disabled}
+                        bsStyle={this.props.bsStyle}
+                        hasFeedback={this.props.hasFeedback}
+                        help={this.props.help}
                         role="combobox"
                         aria-autocomplete="both"
                         ref="input"
@@ -402,7 +407,7 @@ return true;
                         onClick={this.handleInputClick}
                         value={this.state.inputStrValue}
                     />
-                    <div disabled={this.props.inputProps.disabled} ref='openClose' className={this.state.isOpen ? 'btn btn-default opened' : 'btn btn-default closed'} onClick={()=>{this.state.isOpen ? this.closeMenu() : this.openMenu()}}><Icon glyph={glyph}/></div>
+                    <Button disabled={this.props.disabled} ref='openClose' className={this.state.isOpen ? 'btn btn-default opened' : 'btn btn-default closed'} onClick={()=>{this.state.isOpen ? this.closeMenu() : this.openMenu()}}><Icon glyph={glyph}/></Button>
                 </div>
                 {this.state.isOpen && this.renderMenu()}
             </div>
@@ -424,11 +429,18 @@ Autocomplete.defaultProps = {
             cls += ' active'
         }
 
+        var itemStr;
+        if (item.name && item.name.length > 0) {
+            itemStr = item.name;
+        } else {
+            itemStr = <div>&nbsp;</div>;
+        }
+
         return (
             <div
                 className={cls}
                 key={item.id}
-            >{item.name}</div>
+            >{itemStr}</div>
         )
     }
 }

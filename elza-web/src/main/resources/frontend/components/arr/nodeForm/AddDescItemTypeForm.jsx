@@ -6,7 +6,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/actionTypes';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n} from 'components';
+import {Autocomplete, AbstractReactComponent, i18n} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField} from 'components/form/FormUtils'
@@ -35,10 +35,26 @@ var AddDescItemTypeForm = class AddDescItemTypeForm extends AbstractReactCompone
 
     render() {
         const {fields: {descItemTypeId}, handleSubmit, onClose} = this.props;
+
+var ac = (
+    <Autocomplete
+    label={i18n('subNodeForm.descItemType')}
+    {...descItemTypeId}
+    {...decorateFormField(descItemTypeId)}
+    onFocus={undefined}
+    _onBlur={undefined}
+    items={[{id: '', name: ''}, ...this.props.descItemTypes]}
+    getItemId={(item) => item ? item.id : null}
+    getItemName={(item) => item ? item.name : ''}
+    />
+)
+
         return (
             <div>
                 <Modal.Body>
                     <form onSubmit={handleSubmit}>
+                        {false && ac}
+
                         <Input type="select" label={i18n('subNodeForm.descItemType')} {...descItemTypeId} {...decorateFormField(descItemTypeId)}>
                             <option></option>
                             {this.props.descItemTypes.map(i=> <option value={i.id}>{i.name}</option>)}

@@ -21,8 +21,8 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
     componentDidMount() {
     }
 
-    handleChange(text, value) {
-        this.props.onChange(value.id);
+    handleChange(id, valueObj) {
+        this.props.onChange(id);
     }
 
     handleSearchChange(text) {
@@ -75,7 +75,7 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
         return (
                 <div className='desc-item-value desc-item-value-parts'>
                     <Autocomplete
-                            inputProps={decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
+                            {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
                             customFilter
                             className='autocomplete-record'
                             footer={footer}
