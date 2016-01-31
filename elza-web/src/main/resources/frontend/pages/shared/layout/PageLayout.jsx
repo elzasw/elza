@@ -2,18 +2,19 @@
  * Standardní layout stránky, který ribbon, obsahuje levý panel, prostřední panel a pravý panel, které jsou odděleny splitterem.
  */
 
-import React from 'react';
-import ReactDOM from 'react-dom';
-
 require ('./PageLayout.less');
 
+import React from 'react';
+import ReactDOM from 'react-dom';
+import {connect} from 'react-redux'
 var classNames = require('classnames');
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {i18n} from 'components';
-import {RibbonMenu, ToggleContent, FindindAidFileTree} from 'components';
+import {Splitter, RibbonMenu, ToggleContent, FindindAidFileTree} from 'components';
 import {ModalDialog, NodeTabs, FaTreeTabs} from 'components';
 import {ButtonGroup, Button} from 'react-bootstrap';
+import {splitterResize} from 'actions/global/splitter';
 
 var PageLayout = class PageLayout extends React.Component {
     constructor(props) {
@@ -27,35 +28,6 @@ var PageLayout = class PageLayout extends React.Component {
     }
 
     componentDidMount() {
-        if (this.refs.splitPane1) {
-            var splitPane1 = $(this.refs.splitPane1);
-            var splitPane2 = $(this.refs.splitPane2);
-            splitPane1.splitPane();
-            splitPane2.splitPane();
-
-            // Ukázka nastavení šířek, které budou předány, ve verzi 0.6.0 je již na toto funkce, zatím tato verze ale není v npm
-            this.setLeftSplitterWidth(260);
-            this.setRightSplitterWidth(100);
-        }
-    }
-
-    setLeftSplitterWidth(width) {
-        var splitPane = $(this.refs.splitPane1);
-
-        var size = width + "px";
-        $('.split-pane-component', splitPane)[0].style.width = size
-        $('.split-pane-component', splitPane)[1].style.left = size
-        $('.split-pane-divider', splitPane)[0].style.left = size
-        splitPane.resize()
-    }
-
-    setRightSplitterWidth(width) {
-        var splitPane = $(this.refs.splitPane2);
-        var size = width + "px";
-        $('.split-pane-component', splitPane)[1].style.width = size
-        $('.split-pane-component', splitPane)[0].style.right = size
-        $('.split-pane-divider', splitPane)[0].style.right = size
-        splitPane.resize()
     }
 
     handleRibbonShowHide(opened) {
@@ -69,76 +41,31 @@ var PageLayout = class PageLayout extends React.Component {
             [this.props.className]: true
         });
 
-        if (this.props.leftPanel && this.props.rightPanel) {
-            return (
-                <div className={cls}>
-                    <div className='app-header'>
-                        <ToggleContent className="ribbon-toggle-container" opened={this.state.ribbonOpened} onShowHide={this.handleRibbonShowHide}>
-                            {this.props.ribbon}
-                        </ToggleContent>
-                    </div>
-                    <div className='app-content'>
-                        {this.props.appContentExt}
-                        <div ref="splitPane1" className="split-pane fixed-left">
-                            <div className="split-pane-component" id="left-component">
-                                {this.props.leftPanel}
-                            </div>
-                            <div className="split-pane-divider" id="my-divider"></div>
-                            <div className="split-pane-component" id="right-component-container">
-                                <div ref="splitPane2" className="split-pane fixed-right">
-                                    <div className="split-pane-component" id="inner-left-component">
-                                        {this.props.centerPanel}
-                                    </div>
-                                    <div className="split-pane-divider" id="inner-my-divider"></div>
-                                    <div className="split-pane-component" id="inner-right-component">
-                                        {this.props.rightPanel}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        return (
+            <div className={cls}>
+                <div className='app-header'>
+                    <ToggleContent className="ribbon-toggle-container" opened={this.state.ribbonOpened} onShowHide={this.handleRibbonShowHide}>
+                        {this.props.ribbon}
+                    </ToggleContent>
                 </div>
-            )
-        } else if (!this.props.leftPanel && !this.props.rightPanel) {
-            return (
-                <div className={cls}>
-                    <div className='app-header'>
-                        <ToggleContent className="ribbon-toggle-container" opened={this.state.ribbonOpened} onShowHide={this.handleRibbonShowHide}>
-                            {this.props.ribbon}
-                        </ToggleContent>
-                    </div>
-                    <div className='app-content'>
-                        {this.props.appContentExt}
-                        {this.props.centerPanel}
-                    </div>
+
+                <div className='app-content'>
+                    {this.props.appContentExt}
+
+                    <Splitter
+                        leftSize={this.props.splitter.leftWidth}
+                        rightSize={this.props.splitter.rightWidth}
+                        onChange={(size) => {this.props.dispatch(splitterResize(size.leftSize, size.rightSize))}}
+                        left={this.props.leftPanel}
+                        center={this.props.centerPanel}
+                        right={this.props.rightPanel}
+                    />
                 </div>
-            )
-        } else if (!this.props.leftPanel && this.props.rightPanel) {
-            return (
-                <div className={cls}>
-                    <div className='app-header'>
-                        <ToggleContent className="ribbon-toggle-container" opened={this.state.ribbonOpened} onShowHide={this.handleRibbonShowHide}>
-                            {this.props.ribbon}
-                        </ToggleContent>
-                    </div>
-                    <div className='app-content'>
-                        {this.props.appContentExt}
-                        <div ref="splitPane1" className="split-pane fixed-left">
-                            <div className="split-pane-component" id="left-component">
-                                {this.props.centerPanel}
-                            </div>
-                            <div className="split-pane-divider" id="my-divider"></div>
-                            <div className="split-pane-component" id="right-component-container">
-                                {this.props.rightPanel}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )
-        }
+            </div>
+        )
     }
 }
 
-module.exports = PageLayout;
+module.exports = connect()(PageLayout);
 
 

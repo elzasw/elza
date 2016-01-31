@@ -22,6 +22,7 @@ import partyRegion from './party/partyRegion';
 import contextMenu from './global/contextMenu';
 import modalDialog from './global/modalDialog';
 import webSocket from './global/webSocket';
+import splitter from './global/splitter';
 import adminRegion from './admin/adminRegion';
 import addFaForm from './arr/form/addFaForm';
 import addPacketForm from './arr/form/addPacketForm';
@@ -39,8 +40,6 @@ import addRegistryForm from './registry/form/addRegistryForm';
 import editRegistryForm from './registry/form/editRegistryForm';
 import addRegistryVariantForm from './registry/form/addRegistryVariantForm';
 
-
-
 let reducer = combineReducers({
     arrRegion,
     refTables,
@@ -52,6 +51,7 @@ let reducer = combineReducers({
     contextMenu,
     modalDialog,
     webSocket,
+    splitter,
     adminRegion,
     stateRegion,
     router,
@@ -120,7 +120,8 @@ var save = function(store) {
     var result = {
         partyRegion: partyRegion(store.partyRegion, action),
         registryRegion: registry(store.registry, action),
-        arrRegion: arrRegion(store.arrRegion, action)
+        arrRegion: arrRegion(store.arrRegion, action),
+        splitter: splitter(store.splitter, action),
     }
 
     return result

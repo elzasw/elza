@@ -6,6 +6,7 @@
  */
 import React from 'react';
 import ReactDOM from 'react-dom';
+import {connect} from 'react-redux'
 
 require ('./AdminPage.less');
 
@@ -30,6 +31,7 @@ var AdminPage = class AdminPage extends React.Component {
     }
 
     render() {
+        const {splitter} = this.props;
 
         var centerPanel = (
                 <div>
@@ -38,14 +40,23 @@ var AdminPage = class AdminPage extends React.Component {
         )
 
         return (
-                <PageLayout
-                        className='admin-packages-page'
-                        ribbon={this.buildRibbon()}
-                        centerPanel={centerPanel}
-                        />
+            <PageLayout
+                splitter={splitter}
+                    className='admin-packages-page'
+                    ribbon={this.buildRibbon()}
+                    centerPanel={centerPanel}
+            />
         )
     }
 }
 
-module.exports = AdminPage;
+function mapStateToProps(state) {
+    const {splitter} = state
+    
+    return {
+        splitter
+    }
+}
+
+module.exports = connect(mapStateToProps)(AdminPage);
 

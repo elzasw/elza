@@ -10,7 +10,7 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Icon, i18n} from 'components';
-import {Autocomplete, AddFaForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components';
+import {Splitter, Autocomplete, AddFaForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components';
 import {ModalDialog, NodeTabs, FaTreeTabs} from 'components';
 import {ButtonGroup, Button, Panel} from 'react-bootstrap';
 import {PageLayout} from 'pages';
@@ -271,10 +271,20 @@ setTimeout(()=>this.setState({options: options2}), 4000);
     }
 
     render() {
+        const {splitter} = this.props;
+
+    if (false) return <Splitter
+        leftSize={50}
+        rightSize={25}
+        left=<div>left</div>
+        right=<div>right</div>
+        center=<div>center</div>
+    />
+
 var items = getStates();
 
         var centerPanel = (
-            <div>
+            <div className='splitter-test'>
                 {false && <div>
                     <Button onClick={() => this.dispatch(storeSave())}>STORE</Button>
                     <Button onClick={() => this.dispatch(storeLoad())}>LOAD</Button></div>}
@@ -328,6 +338,7 @@ var items = getStates();
 
         return (
             <PageLayout
+                splitter={splitter}
                 className='party-page'
                 ribbon={this.buildRibbon()}
                 centerPanel={centerPanel}
@@ -337,8 +348,9 @@ var items = getStates();
 }
 
 function mapStateToProps(state) {
-    const {arrRegion, refTables, stateRegion} = state
+    const {splitter, arrRegion, refTables, stateRegion} = state
     return {
+        splitter,
         arrRegion,
         refTables,
         stateRegion

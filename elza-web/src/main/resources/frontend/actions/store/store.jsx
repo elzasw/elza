@@ -6,22 +6,23 @@ export function storeRestoreFromStorage() {
     return (dispatch, getState) => {
         // Načtení z local storage
         if(typeof(Storage) !== "undefined") {
-            var data = localStorage.getItem('ELZA-STORE-STATE');
-            if (data) {
-                data = JSON.parse(data);
+            var localStorageData = localStorage.getItem('ELZA-STORE-STATE');
+            if (localStorageData) {
+                localStorageData = JSON.parse(localStorageData);
             }
-            if (data) {
-                console.log('Local storage data', data);
-                dispatch(storeStateDataInit(data));
+            if (localStorageData) {
+                console.log('Local storage data', localStorageData);
+                dispatch(storeStateDataInit(localStorageData));
 
-                if (data.arrRegion) {
-                    dispatch(storeLoadData('ARR_REGION', data.arrRegion, false));
+                var stateRegion = localStorageData.stateRegion;
+                if (stateRegion.arrRegion) {
+                    dispatch(storeLoadData('ARR_REGION', stateRegion.arrRegion, false));
                 }
-                if (data.partyRegionFront && data.partyRegionFront.length > 0) {
-                    dispatch(storeLoadData('PARTY_REGION', data.partyRegionFront[data.partyRegionFront.length - 1], false));
+                if (stateRegion.partyRegionFront && stateRegion.partyRegionFront.length > 0) {
+                    dispatch(storeLoadData('PARTY_REGION', stateRegion.partyRegionFront[stateRegion.partyRegionFront.length - 1], false));
                 }
-                if (data.registryRegionFront && data.registryRegionFront.length > 0) {
-                    dispatch(storeLoadData('REGISTRY_REGION', data.registryRegionFront[data.registryRegionFront.length - 1], false));
+                if (stateRegion.registryRegionFront && stateRegion.registryRegionFront.length > 0) {
+                    dispatch(storeLoadData('REGISTRY_REGION', stateRegion.registryRegionFront[stateRegion.registryRegionFront.length - 1], false));
                 }
             }
         }
@@ -34,14 +35,21 @@ export function storeSave() {
 
         // Načtení dat pro uložení
         var data = save(store);
+        console.log('@@@@storeSave', data);
 
-        // Uložení dat do store - pro zobrazování home stránky
+        // Uložení dat do store - pro zobrazování home stránky a pro uložení dalších inicializačních dat, např. splitter atp.
         dispatch(storeStateData(data))
 
         // Uložení do local storage
         if(typeof(Storage) !== "undefined") {
             var storeNew = getState();
-            localStorage.setItem('ELZA-STORE-STATE', JSON.stringify(storeNew.stateRegion));
+
+            var localStorageData = {
+                stateRegion: storeNew.stateRegion,
+                splitter: storeNew.splitter,
+            }
+
+            localStorage.setItem('ELZA-STORE-STATE', JSON.stringify(localStorageData));
         }
     }
 }

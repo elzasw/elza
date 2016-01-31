@@ -2,9 +2,6 @@ import airflux from 'airflux';
 
 import React from 'react';
 
-require ('components/shared/split-pane/split-pane.js');
-require ('components/shared/split-pane/split-pane.css');
-
 /**
  * Store informující o změně velikosti komponent - změna okna prohlížeče nebo změna v závislosti na splitteru.
  */
@@ -27,7 +24,7 @@ var fn = function() {
     s.handleResize();
 };
 window.addEventListener('resize', fn);
-$.fn.splitPane("addResizeListener", fn);
+//$.fn.splitPane("addResizeListener", fn);
 
 module.exports = s;
 

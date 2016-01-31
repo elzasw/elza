@@ -17,7 +17,6 @@ import { Utils } from 'components'
 // Globální init
 Utils.init();
 //var es5Shim = require('es5-shim');
-import {SplitPane} from 'components';
 
 // Web socket
 var websocket = require('./websocket');

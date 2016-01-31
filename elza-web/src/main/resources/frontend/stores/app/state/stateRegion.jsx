@@ -33,7 +33,7 @@ export default function stateRegion(state = initialState, action) {
         case types.STORE_STATE_DATA_INIT:
             return {
                 ...state,
-                ...action.storageData
+                ...action.storageData.stateRegion
             }
         case types.STORE_STATE_DATA:
             var result = {

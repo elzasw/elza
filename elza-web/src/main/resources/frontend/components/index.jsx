@@ -12,7 +12,6 @@ exports.RibbonGroup = require('./shared/ribbon-menu/RibbonGroup');
 exports.RibbonSplit = require('./shared/ribbon-menu/RibbonSplit');
 exports.Icon = require('./shared/icon/Icon');
 exports.ToggleContent = require('./shared/toggle-content/ToggleContent');
-exports.SplitPane = require('./shared/split-pane/SplitPane');
 exports.Tabs = require('./shared/tabs/Tabs');
 exports.Search = require('./shared/search/Search');
 exports.DropDownTree = require('./shared/drop-down-tree/DropDownTree');
@@ -24,7 +23,7 @@ exports.ModalDialog = require('./shared/dialog/ModalDialog');
 exports.WebSocket = require('./shared/web-socket/WebSocket');
 exports.ModalDialogWrapper = require('./shared/dialog/ModalDialogWrapper');
 exports.Autocomplete = require('./shared/autocomplete/Autocomplete');
-
+exports.Splitter = require('./shared/splitter/Splitter');
 
 exports.Ribbon = require('./page/Ribbon');
 

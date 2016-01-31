@@ -162,7 +162,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     render() {
-        const {arrRegion, faFileTree, rulDataTypes, calendarTypes, packetTypes} = this.props;
+        const {splitter, arrRegion, faFileTree, rulDataTypes, calendarTypes, packetTypes} = this.props;
 
         var showRegisterJp = arrRegion.showRegisterJp;
 
@@ -226,6 +226,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         return (
             <PageLayout
+                splitter={splitter}
                 className='fa-page'
                 ribbon={this.buildRibbon()}
                 leftPanel={leftPanel}
@@ -238,8 +239,9 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {arrRegion, faFileTree, refTables, form} = state
+    const {splitter, arrRegion, faFileTree, refTables, form} = state
     return {
+        splitter,
         arrRegion,
         faFileTree,
         rulDataTypes: refTables.rulDataTypes,
@@ -249,6 +251,7 @@ function mapStateToProps(state) {
 }
 
 ArrPage.propTypes = {
+    splitter: React.PropTypes.object.isRequired,
     arrRegion: React.PropTypes.object.isRequired,
     faFileTree: React.PropTypes.object.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,

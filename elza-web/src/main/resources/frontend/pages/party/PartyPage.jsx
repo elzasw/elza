@@ -20,7 +20,6 @@ import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
 import {partyDetailFetchIfNeeded} from 'actions/party/party'
 import {insertParty, insertRelation, deleteParty} from 'actions/party/party'
 
-
 var PartyPage = class PartyPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
@@ -203,6 +202,8 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
     }
 
     render() {
+        const {splitter} = this.props;
+
         var leftPanel = (
             <PartySearch 
                 items={this.props.partyRegion.items} 
@@ -226,6 +227,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
 
         return (
             <PageLayout
+                splitter={splitter}
                 className='party-page'
                 ribbon={this.buildRibbon()}
                 leftPanel={leftPanel}
@@ -238,8 +240,9 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
 
 
 function mapStateToProps(state) {
-    const {partyRegion, refTables} = state
+    const {splitter, partyRegion, refTables} = state
     return {
+        splitter,
         partyRegion,
         refTables
     }

@@ -22,8 +22,6 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {fetchRegistryIfNeeded, registrySetTypesId, fetchRegistry, registryRemoveRegistryTypesFilter} from 'actions/registry/registryList'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
 
-
-
 var RegistryPage = class RegistryPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
@@ -178,6 +176,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         this.dispatch(registrySetTypesId(null));
     }
     render() {
+        const {splitter} = this.props;
 
         var navRows = (
             <div className="registry-nav">
@@ -290,10 +289,9 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             </div>
         )
 
-
-
         return (
             <PageLayout
+                splitter={splitter}
                 key='registryPage'
                 ribbon={this.buildRibbon()}
                 leftPanel={leftPanel}
@@ -305,9 +303,11 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 }
 function mapStateToProps(state) {
-    const {registry, refTables} = state
+    const {splitter, registry, refTables} = state
     return {
-        registry, refTables
+        splitter,
+        registry,
+        refTables
     }
 }
 
