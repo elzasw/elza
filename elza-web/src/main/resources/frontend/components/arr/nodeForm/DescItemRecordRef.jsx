@@ -97,6 +97,7 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
                             onSearchChange={this.handleSearchChange}
                             onChange={this.handleChange}
                             renderItem={this.renderRecord}
+                            actions={[actions]}
                             />
                 </div>
         )

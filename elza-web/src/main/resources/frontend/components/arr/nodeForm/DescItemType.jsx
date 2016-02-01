@@ -120,7 +120,7 @@ return true;
      * @param record {Integer} identifikátor typu osoby
      */
     handleDetailRecord(descItemIndex, recordId) {
-        this.props.onDetailParty(descItemIndex, recordId);
+        this.props.onDetailRecord(descItemIndex, recordId);
     }
 
     /**
