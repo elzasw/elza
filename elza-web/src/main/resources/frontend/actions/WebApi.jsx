@@ -238,6 +238,13 @@ class WebApi{
             });
     }
 
+    getScopes(versionId = null) {
+        return AjaxUtils.ajaxGet('/api/registryManagerV2/faScopes', {versionId: versionId})
+            .then(json=>{
+                return json
+            });
+    }
+
     removeRegistry(registryId) {
         var data = {
             recordId: registryId

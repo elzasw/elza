@@ -13,6 +13,9 @@ var ModalDialog = class extends AbstractReactComponent {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
+        if (this.state !== nextState) {
+            return true;
+        }
         var eqProps = ['visible', 'content', 'title']
         return !propsEquals(this.props, nextProps, eqProps);
     }

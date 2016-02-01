@@ -12,6 +12,7 @@ import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField} from 'components/form/FormUtils'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
+import {requestScopesIfNeeded} from 'actions/scopes/scopesData'
 
 const validate = (values, props) => {
     const errors = {};
@@ -28,8 +29,7 @@ const validate = (values, props) => {
 var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        console.log(props, this.props);
-
+        this.dispatch(requestScopesIfNeeded());
         this.state = {};
     }
 
@@ -38,6 +38,7 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
 
     componentDidMount() {
         this.dispatch(refRecordTypesFetchIfNeeded());
+        this.dispatch(requestScopesIfNeeded());
         if (this.props.initData) {
             this.props.load(this.props.initData);
         }
@@ -46,6 +47,7 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
     render() {
         const {fields: { nameMain, characteristics, registerTypeId}, handleSubmit, onClose} = this.props;
 
+console.log(this.props.refTables);
         return (
             <div key={this.props.key}>
                 <Modal.Body>

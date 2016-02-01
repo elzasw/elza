@@ -8,6 +8,7 @@ import rulDataTypes from './rulDataTypes';
 import calendarTypes from './calendarTypes';
 import packetTypes from './packetTypes';
 import registryList from './registryList';
+import scopesData from './scopesData';
 
 const initialState = {
     ruleSet: ruleSet(undefined, {type:''}),
@@ -17,7 +18,8 @@ const initialState = {
     rulDataTypes: rulDataTypes(undefined, {type:''}),
     calendarTypes: calendarTypes(undefined, {type:''}),
     packetTypes: packetTypes(undefined, {type:''}),
-    registryList: registryList(undefined, {type:''})
+    registryList: registryList(undefined, {type:''}),
+    scopesData: scopesData(undefined, {type:''})
 }
 
 export default function refTables(state = initialState, action) {
@@ -69,6 +71,12 @@ export default function refTables(state = initialState, action) {
             return {
                 ...state,
                 packetTypes: packetTypes(state.packetTypes, action),
+            }
+        case types.REF_SCOPES_TYPES_REQUEST:
+        case types.REF_SCOPES_TYPES_RECEIVE:
+            return {
+                ...state,
+                scopesData: scopesData(state.scopesData, action),
             }
         default:
             return state

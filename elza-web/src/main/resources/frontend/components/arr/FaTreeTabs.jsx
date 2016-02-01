@@ -43,6 +43,9 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
+        if (this.state !== nextState) {
+            return true;
+        }
         var eqProps = ['fas', 'activeFa']
         return !propsEquals(this.props, nextProps, eqProps);
     }

@@ -34,6 +34,9 @@ var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
+        if (this.state !== nextState) {
+            return true;
+        }
         var eqProps = ['ensureItemVisible', 'dirty', 'expandedIds', 'fa', 'fetched', 'searchedIds', 'nodes', 'selectedId', 'selectedIds', 'fetchingIncludeIds', 'filterCurrentIndex', 'filterText', 'focusId', 'isFetching']
         return !propsEquals(this.props, nextProps, eqProps);
     }

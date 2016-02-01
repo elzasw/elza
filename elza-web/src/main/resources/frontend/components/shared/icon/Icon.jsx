@@ -9,6 +9,9 @@ var Icon = class Icon extends AbstractReactComponent {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
+        if (this.state !== nextState) {
+            return true;
+        }
         var eqProps = ['className', 'glyph']
         return !propsEquals(this.props, nextProps, eqProps);
     }

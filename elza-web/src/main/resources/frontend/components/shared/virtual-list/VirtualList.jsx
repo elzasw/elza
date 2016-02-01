@@ -20,7 +20,7 @@ var VirtualList = React.createClass({
             itemBuffer: 0
         };
     },
-    getVirtualState: function(props) {
+    getVirtualState: function(props, isMounted) {
         // default values
         var state = {
             items: [],
@@ -29,7 +29,7 @@ var VirtualList = React.createClass({
         };
         
         // early return if nothing to render
-        if (typeof props.container === 'undefined' || props.items.length === 0 || props.itemHeight <= 0 || !this.isMounted()) return state;
+        if (typeof props.container === 'undefined' || props.items.length === 0 || props.itemHeight <= 0 || !isMounted) return state;
         
         var items = props.items;
         
@@ -59,13 +59,16 @@ var VirtualList = React.createClass({
         return state;
     },
     getInitialState: function() {
-        return this.getVirtualState(this.props);
+        return {
+            ...this.getVirtualState(this.props, false),
+            isMounted: false
+        }
     },
     shouldComponentUpdate: function(nextProps, nextState) {
 return true;
     },
     componentWillReceiveProps: function(nextProps) {
-        var state = this.getVirtualState(nextProps);
+        var state = this.getVirtualState(nextProps, this.state.isMounted);
 
         this.props.container.removeEventListener('scroll', this.onScrollDebounced);
 
@@ -76,9 +79,7 @@ return true;
         if (nextProps.scrollToIndex) {
             this.setState(state, () => {
                 var box = ReactDOM.findDOMNode(this.refs.box)
-                console.log('BOX', box, this.state);
                 var itemTop = nextProps.scrollToIndex * this.props.itemHeight;
-                //console.log('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', itemTop, this.state.bufferStart, this.state.height, box.clientHeight, box.parentNode.clientHeight)
                 if (itemTop < this.state.bufferStart || itemTop > this.state.bufferStart + box.parentNode.clientHeight) {
                     box.parentNode.scrollTop = itemTop;
                 }
@@ -86,15 +87,17 @@ return true;
         } else {
             this.setState(state);
         }
-
     },
     componentWillMount: function() {
         this.onScrollDebounced = utils.debounce(this.onScroll, this.props.scrollDelay, false);
     },
     componentDidMount: function() {
-        var state = this.getVirtualState(this.props);
+        var state = this.getVirtualState(this.props, true);
         
-        this.setState(state);
+        this.setState({
+            ...state,
+            isMounted: true
+        })
         
         this.props.container.addEventListener('scroll', this.onScrollDebounced);
     },
@@ -102,7 +105,7 @@ return true;
         this.props.container.removeEventListener('scroll', this.onScrollDebounced);
     },
     onScroll: function() {
-        var state = this.getVirtualState(this.props);
+        var state = this.getVirtualState(this.props, this.state.isMounted);
         
         this.setState(state);
     },
