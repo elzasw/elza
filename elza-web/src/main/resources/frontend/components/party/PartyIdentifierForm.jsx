@@ -12,6 +12,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField} from 'components/form/FormUtils'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
+import {refPartyListFetchIfNeeded} from 'actions/refTables/partyList'
 
 /**
  * PARTY IDENTIFIER FORM
@@ -21,6 +22,7 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 var PartyIdentifierForm = class PartyIdentifierForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
+        this.dispatch(refPartyListFetchIfNeeded());         // načtení osob pro autory osoby
         this.dispatch(calendarTypesFetchIfNeeded());        // seznam typů kalendářů (gregoriánský, juliánský, ...)
         this.state = {                                      // ve state jsou uložena a průběžně udržová data formuláře
             data : this.props.initData,                     // předvyplněná data formuláře
@@ -140,7 +142,7 @@ var PartyIdentifierForm = class PartyIdentifierForm extends AbstractReactCompone
                                 </div>
                             </div>
                         </div>
-                        </hr>
+                        <hr/>
 ¨                       <Input type="text" label={i18n('party.identifier.note')} name="note" value={this.state.data.note} onChange={this.updateValue} />
                         
                     </form>

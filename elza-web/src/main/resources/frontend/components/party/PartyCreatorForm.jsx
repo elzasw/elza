@@ -10,6 +10,7 @@ import {AbstractReactComponent, i18n} from 'components';
 import {Modal, Button, Input, Glyphicon} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
+import {refPartyListFetchIfNeeded} from 'actions/refTables/partyList'
 
 /**
  * PARTY CREATOR FORM
@@ -19,6 +20,7 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 var PartyCreatorForm = class PartyCreatorForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
+        this.dispatch(refPartyListFetchIfNeeded());         // načtení osob pro autory osoby
         this.state = {                                      // ve state jsou uložena a průběžně udržová data formuláře
             data : this.props.initData,                     // předvyplněná data formuláře
             errors: []                                      // sezn chyb k vypsání uživateli
@@ -108,6 +110,7 @@ var PartyCreatorForm = class PartyCreatorForm extends AbstractReactComponent {
                         
                         <Input type="select" label={i18n('party.creator.creator')} name="creatorId" value={this.state.data.creatorId} onChange={this.updateValue} >
                             <option value="0" key="0"></option> 
+                            {this.props.refTables.partyList.items.map(i=> {return <option value={i.id} key={i.id}>{i.record.record}</option>})}
                         </Input>   
                         
                     </form>

@@ -4,12 +4,12 @@
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {Button, Glyphicon} from 'react-bootstrap';
+import {Input, Button, Glyphicon} from 'react-bootstrap';
 import {PartyCreatorForm, AbstractReactComponent, i18n} from 'components';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {AppActions} from 'stores';
 import {deleteCreator, updateParty} from 'actions/party/party'
-
+import {refPartyListFetchIfNeeded} from 'actions/refTables/partyList'
 
 /**
  * PARTY DETAIL CREATORS
@@ -19,6 +19,7 @@ import {deleteCreator, updateParty} from 'actions/party/party'
 var PartyDetailCreators = class PartyDetailCreators extends AbstractReactComponent {
     constructor(props) {
         super(props);
+        this.dispatch(refPartyListFetchIfNeeded());         // načtení osob pro autory osoby
         this.bindMethods(
             'handleAddCreator',
             'handleDeleteCreator', 
@@ -66,7 +67,8 @@ var PartyDetailCreators = class PartyDetailCreators extends AbstractReactCompone
     addCreator(data) {
         var party = this.props.partyRegion.selectedPartyData;                   // aktuálně upravovaná osoba
         party.creators[party.creators.length] = {                               // nového autora vložíme na konec seznamu autorů
-            creatorId: data.creatorId
+            partyId: data.partyId,
+            '@type': 'ParPartyVO'
         }
         this.dispatch(updateParty(party));                                      // aurtor se uloží a osoba znovu načte     
     }
@@ -79,9 +81,10 @@ var PartyDetailCreators = class PartyDetailCreators extends AbstractReactCompone
     handleAddCreator(){
         var party = this.props.partyRegion.selectedPartyData;                       // načtení aktualní osoby ze store
         var data = {                                                                // výchozí data formuláře
-            partyTypeId: party.partyType.partyTypeId,                               // identifikátor typu osoby, jejíž jménu upravujeme
-        }
-        this.dispatch(modalDialogShow(this, i18n('party.detail.creator.new') , <PartyCreatorForm initData={data} onSave={this.addCreator} />));    // otevře se formulář nového autora   
+            partyId: 401,                                                           // identifikátor typu osoby, jejíž jménu upravujeme
+        };
+        this.addCreator(data);                                                      // uložení dat
+        //this.dispatch(modalDialogShow(this, i18n('party.detail.creator.new') , <PartyCreatorForm initData={data} onSave={this.addCreator} />));    // otevře se formulář nového autora   
     }
 
    /**
@@ -135,8 +138,12 @@ var PartyDetailCreators = class PartyDetailCreators extends AbstractReactCompone
                         <tbody>
                             {party.creators.map(i=> {return <tr className="creator">
                                 <th className="creator column">{i.name}</th> 
+                                <td>
+                                    <Input type="select" name="creatorId" value={i.reatorId} onChange={this.updateValue} >
+                                        {this.props.refTables.partyList.items.map(i=> {return <option value={i.id} key={i.id}>{i.record.record}</option>})}
+                                    </Input>
+                                </td>
                                 <td className="buttons">
-                                    <Button classCreator="column" onClick={this.handleUpdateCreator.bind(this, i.creatorId)}><Glyphicon glyph="edit" /></Button>
                                     <Button classCreator="column" onClick={this.handleDeleteCreator.bind(this, i.creatorId)}><Glyphicon glyph="trash" /></Button>
                                 </td>
                             </tr>})}

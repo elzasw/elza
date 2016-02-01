@@ -32,19 +32,18 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
     render() {
         if(this.props.items && this.props.items.length>0){
             var description = '';
-            for(var i = 0; i<this.props.items.length; i++){
-                if(this.props.items[i].record && this.props.items[i].record.characteristics){
-                    var lineEndPosition = this.props.items[i].record.characteristics.indexOf("\n")
-                    if(lineEndPosition>=0){
-                        description = this.props.items[i].record.characteristics.substring(0, lineEndPosition); 
+            for(var i = 0; i<this.props.items.length; i++){                                                     // projdu vsechny polozky abych jim nastavil popisek
+                if(this.props.items[i].record && this.props.items[i].record.characteristics){                   // pokud ma popisek zadany
+                    var lineEndPosition = this.props.items[i].record.characteristics.indexOf("\n")              // zjistim kde konci první řádek
+                    if(lineEndPosition>=0){                                                                     // pokud vubec nekde konci (popisek muze mit jen 1 radek)
+                        description = this.props.items[i].record.characteristics.substring(0, lineEndPosition); // oriznu ho do konce radku
                     }else{
-                        description = this.props.item[i].record.characteristics;
+                        description = this.props.item[i].record.characteristics;                                // jinak ho necham cely                
                     }   
-                    this.props.items[i].record.description = description;  
+                    this.props.items[i].record.description = description;                                       // ulozim popisek k objektu                
                 }else{
-                    description = '';
+                    description = '';                                                                           // popisek nezadan, nastavim prazdny
                 }
-                console.log(description);
             }
             
             var partyList = this.props.items.map((item) => {                                               // přidání všech nazelených osob

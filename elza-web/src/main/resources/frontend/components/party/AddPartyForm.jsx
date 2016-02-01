@@ -6,7 +6,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/actionTypes';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n} from 'components';
+import {DropDownTree, AbstractReactComponent, i18n} from 'components';
 import {Modal, Button, Input, Glyphicon} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes'
@@ -37,7 +37,8 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
             'updateValue',                                  // funkce pro změnu nějaké hodnoty vztahu
             'handleClose',                                  // funkce pro zavření dialogu formuláře
             'handleSubmit',                                 // funkce pro odeslání formuláře
-            'validate'                                      // funkce pro kontrolu zadaných dat formuláře
+            'validate',                                     // funkce pro kontrolu zadaných dat formuláře
+            'selectRecordType'                              // výběr typu záznamu                      
         );
     }
     
@@ -91,6 +92,18 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
         });
     }
 
+    /**
+     * SELECT RECORD TYPE
+     * *********************************************
+     * vybrání typu záznamu z droptreeboxu
+     */
+    selectRecordType(recordTypeId){
+        var data = this.state.data;                                                         // puvodni data formuláře
+        data.recordTypeId = recordTypeId;                                                   // identifikátor typu záznamu
+        this.setState({
+            data : data                                                                     // uložení změn do state
+        });
+    }
 
     /**
      * ADD COMPLEMENT
@@ -223,6 +236,7 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
                     </ul>
                     <form>
                         <div className="line">
+                            <DropDownTree items={recordTypes} onSelect={this.selectRecordType}/>
                             <Input type="select" label={i18n('party.recordType')} name="recordTypeId" value={this.state.data.recordTypeId} onChange={this.updateValue} >
                                 <option value="0" key="0"></option> 
                                 {recordTypes.map(i=> {return <option value={i.id} key={i.nameFormTypeId}>{i.name}</option>})}

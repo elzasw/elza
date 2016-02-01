@@ -8,6 +8,7 @@ import rulDataTypes from './rulDataTypes';
 import calendarTypes from './calendarTypes';
 import packetTypes from './packetTypes';
 import registryList from './registryList';
+import partyList from './partyList';
 import scopesData from './scopesData';
 
 const initialState = {
@@ -19,11 +20,18 @@ const initialState = {
     calendarTypes: calendarTypes(undefined, {type:''}),
     packetTypes: packetTypes(undefined, {type:''}),
     registryList: registryList(undefined, {type:''}),
+    partyList: partyList(undefined, {type:''}),
     scopesData: scopesData(undefined, {type:''})
 }
 
 export default function refTables(state = initialState, action) {
     switch (action.type) {
+        case types.REF_PARTY_LIST_REQUEST:
+        case types.REF_PARTY_LIST_RECEIVE:
+            return {
+                ...state,
+                partyList: partyList(state.partyList, action),
+            }
         case types.REF_REGISTRY_LIST_REQUEST:
         case types.REF_REGISTRY_LIST_RECEIVE:
             return {

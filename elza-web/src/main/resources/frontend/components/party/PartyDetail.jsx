@@ -114,6 +114,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
             case "scopeNorm" : party.scopeNorm = value; break;
             case "scope" : party.scope = value; break;
             case "note" : party.record.note = value; break;
+            case "characteristics" : party.characteristics = value; break;
         };
         return party;
     }
@@ -134,8 +135,8 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
         }
         return <div className={"partyDetail"}>
                     <h1>{party.record.record}</h1>
-                    <label>{i18n('party.detail.characteristics')}</label>
-                    <p className={"characteristics"}>{party.record.characteristics}</p>
+                    <Input type="textarea" label={i18n('party.detail.characteristics')} name="characteristics" value={party.characteristics != undefined ? party.record.characteristics : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
+                    
 
                     <div className="line">
                         <Input type="select" disabled={true} value={party.partyType.partyTypeId} label={i18n('party.detail.type')}>
@@ -192,10 +193,10 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
                         <Input type="text" label={i18n('party.detail.groupScope')} name="scope" value={party.scope != undefined ? party.scope : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
                     </div> :  ''}
     
-
+                    <hr/>
                     <div className="party-creators">
                         <label>{i18n('party.detail.creators')}</label>
-                        <PartyDetailCreators partyRegion={this.props.partyRegion} /> 
+                        <PartyDetailCreators partyRegion={this.props.partyRegion} refTables={this.props.refTables}/> 
                         <hr/>
                     </div>
 
