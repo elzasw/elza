@@ -5,7 +5,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Icon, AbstractReactComponent, i18n, Loading, SubNodeForm, Accordion, SubNodeRegister} from 'components';
+import {Icon, AbstractReactComponent, i18n, Loading, SubNodeForm, Accordion, SubNodeRegister, AddNodeDropdown} from 'components';
 import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {faSubNodeFormFetchIfNeeded} from 'actions/arr/subNodeForm'
 import {faSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister'
@@ -202,8 +202,19 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 
     /**
      * Přidání JP na konec do aktuálního node
+     * Využito v dropdown buttonu pro přidání node
+     *
+     * @param event Event selectu
+     * @param scenario name vybraného scénáře
      */
-    handleAddNodeAtEnd() {
+    handleAddNodeAtEnd(event, scenario) {
+        this.dispatch(addNode(this.props.node, this.props.node, this.props.fa.versionId, "CHILD", this.getDescItemTypeCopyIds(), scenario));
+    }
+
+    /**
+     * Vrátí pole ke zkopírování
+     */
+    getDescItemTypeCopyIds() {
         var itemsToCopy = null;
         if (this.props.nodeSettings != "undefined") {
             var nodeIndex = indexById(this.props.nodeSettings.nodes, this.props.node.id);
@@ -211,7 +222,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 itemsToCopy = this.props.nodeSettings.nodes[nodeIndex].descItemTypeCopyIds;
             }
         }
-        this.dispatch(addNode(this.props.node, this.props.node, this.props.fa.versionId, "CHILD", itemsToCopy));
+        return itemsToCopy;
     }
 
     /**
@@ -339,8 +350,14 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             <div className='actions'>
                 {
                     node.fetched && !isFaRootId(node.id) &&
-                    <div className='btn btn-default' onClick={this.handleAddNodeAtEnd}><Icon glyph="fa-plus-circle"/>Přidat
-                        JP na konec</div>
+                    <AddNodeDropdown key="end"
+                                     title="Přidat JP na konec"
+                                     glyph="fa-plus-circle"
+                                     action={this.handleAddNodeAtEnd}
+                                     node={this.props.node}
+                                     version={this.props.fa.versionId}
+                                     direction="CHILD"
+                    />
                 }
                 <div className='btn btn-default' disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(faSubNodesPrevPage())}><Icon glyph="fa-backward" />{i18n('arr.fa.subNodes.prevPage')}</div>
                 <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize >= node.childNodes.length} onClick={()=>this.dispatch(faSubNodesNextPage())}><Icon glyph="fa-forward" />{i18n('arr.fa.subNodes.nextPage')}</div>

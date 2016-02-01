@@ -67,8 +67,6 @@ export const SHOW_REGISTER_JP = 'SHOW_REGISTER_JP'
 /**
  * JP akce
  */
-export const NODE_JP_ADD_BEFORE = 'NODE_JP_ADD_BEFORE'
-export const NODE_JP_ADD_AFTER = 'NODE_JP_ADD_AFTER'
 export const FA_NODE_CHANGE = 'FA_NODE_CHANGE'
 
 /**

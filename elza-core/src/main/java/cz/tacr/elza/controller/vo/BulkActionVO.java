@@ -3,7 +3,7 @@ package cz.tacr.elza.controller.vo;
 /**
  * Hromadné akce
  *
- * @author Petr Comple [petr.compel@marbes.cz]
+ * @author Petr Compel [petr.compel@marbes.cz]
  * @since 29. 1. 2016
  */
 public class BulkActionVO {

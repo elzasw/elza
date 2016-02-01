@@ -12,13 +12,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.websocket.server.PathParam;
 import java.util.List;
 
 
 /**
  * Controller pro hromadné akce
  *
- * @author Petr Comple [petr.compel@marbes.cz]
+ * @author Petr Compel [petr.compel@marbes.cz]
  * @since 29. 1. 2016
  */
 @RestController
@@ -38,7 +39,8 @@ public class BulkActionController {
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    List<BulkActionVO> getBulkActions(Integer findingAidVersionId, Boolean mandatory) {
+    List<BulkActionVO> getBulkActions(final @PathParam("versionId") Integer findingAidVersionId,
+                                      final @PathParam("mandatory") Boolean mandatory) {
         return factoryVo.createBulkActionList(bulkActionService.getBulkActions(findingAidVersionId, mandatory));
     }
 
@@ -46,7 +48,7 @@ public class BulkActionController {
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    List<BulkActionVO> validate(Integer findingAidVersionId) {
+    List<BulkActionVO> validate(final @PathParam("versionId") Integer findingAidVersionId) {
         return factoryVo.createBulkActionList(bulkActionService.runValidation(findingAidVersionId));
     }
 
@@ -54,7 +56,7 @@ public class BulkActionController {
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    BulkActionStateVO run(Integer findingAidVersionId, String code) {
+    BulkActionStateVO run(final @PathParam("versionId") Integer findingAidVersionId, final @PathParam("code") String code) {
         BulkActionConfig action = bulkActionService.getBulkAction(code);
         return factoryVo.createBulkActionState(bulkActionService.run(action, findingAidVersionId));
     }
@@ -63,7 +65,7 @@ public class BulkActionController {
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    List<BulkActionStateVO> getBulkActionState(Integer findingAidVersionId) {
+    List<BulkActionStateVO> getBulkActionState(final @PathParam("versionId") Integer findingAidVersionId) {
         return factoryVo.createBulkActionStateList(bulkActionService.getBulkActionState(findingAidVersionId));
     }
 }

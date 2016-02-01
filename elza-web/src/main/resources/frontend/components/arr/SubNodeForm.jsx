@@ -7,7 +7,7 @@ require('./SubNodeForm.less');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Icon, i18n, AbstractReactComponent, NoFocusButton, AddPacketForm, AddPartyForm, AddRegistryForm,
-        AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm} from 'components';
+    AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm, AddNodeDropdown} from 'components';
 import {connect} from 'react-redux'
 import {indexById} from 'stores/app/utils.jsx'
 import {faSubNodeFormDescItemTypeAdd, faSubNodeFormValueChange, faSubNodeFormDescItemTypeDelete,
@@ -21,12 +21,13 @@ import DescItemType from './nodeForm/DescItemType'
 import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm'
 import {lockDescItemType, unlockDescItemType, unlockAllDescItemType,
         copyDescItemType, nocopyDescItemType} from 'actions/arr/nodeSetting'
-import {addNode} from 'actions/arr/node'
+import {addNode} from '../../actions/arr/node'
 import {createPacket} from 'actions/arr/packets'
 import faSelectSubNode from 'actions/arr/nodes'
 import {isFaRootId} from './ArrUtils.jsx'
 import {insertPartyArr, partyDetailFetchIfNeeded} from 'actions/party/party'
 import {routerNavigate} from 'actions/router'
+//import {} from './AddNodeDropdown.jsx'
 
 var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     constructor(props) {
@@ -163,24 +164,35 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 
     /**
+     * @param event Event selectu
+     * @param scenario id vybraného scénáře
+     *
      * Přidání node před aktuální node a následovné vybrání
+     * Využito v dropdown buttonu pro přidání node
      */
-    handleAddNodeBefore() {
-        this.dispatch(addNode(this.props.selectedSubNode, this.props.parentNode, this.props.versionId, "BEFORE", this.getDescItemTypeCopyIds()));
+    handleAddNodeBefore(event, scenario) {
+        this.dispatch(addNode(this.props.selectedSubNode, this.props.parentNode, this.props.versionId, "BEFORE", this.getDescItemTypeCopyIds(), scenario));
     }
 
     /**
+     * @param event Event selectu
+     * @param scenario name vybraného scénáře
+     *
      * Přidání node za aktuální node a následovné vybrání
+     * Využito v dropdown buttonu pro přidání node
      */
-    handleAddNodeAfter() {
-        this.dispatch(addNode(this.props.selectedSubNode, this.props.parentNode, this.props.versionId, "AFTER", this.getDescItemTypeCopyIds()))
+    handleAddNodeAfter(event, scenario) {
+        this.dispatch(addNode(this.props.selectedSubNode, this.props.parentNode, this.props.versionId, "AFTER", this.getDescItemTypeCopyIds(), scenario))
     }
 
     /**
+     * @param event Event selectu
+     * @param scenario id vybraného scénáře
+     *
      * Přidání podřízeného záznamu
      */
-    handleAddChildNode() {
-        this.dispatch(addNode(this.props.selectedSubNode, this.props.selectedSubNode, this.props.versionId, "CHILD", this.getDescItemTypeCopyIds()));
+    handleAddChildNode(event, scenario) {
+        this.dispatch(addNode(this.props.selectedSubNode, this.props.selectedSubNode, this.props.versionId, "CHILD", this.getDescItemTypeCopyIds(), scenario));
     }
 
     /**
@@ -531,15 +543,34 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                     vše</NoFocusButton>
                 {
                     notRoot &&
-                    <NoFocusButton onClick={this.handleAddNodeBefore}><Icon glyph="fa-plus"/>Přidat JP
-                        před</NoFocusButton>
+                    <AddNodeDropdown key="before"
+                                     title="Přidat JP před"
+                                     glyph="fa-plus"
+                                     action={this.handleAddNodeBefore}
+                                     node={this.props.selectedSubNode}
+                                     version={this.props.versionId}
+                                     direction="BEFORE"
+                    />
                 }
                 {
                     notRoot &&
-                    <NoFocusButton onClick={this.handleAddNodeAfter}><Icon glyph="fa-plus"/>Přidat JP za</NoFocusButton>
+                    <AddNodeDropdown key="after"
+                                     title="Přidat JP za"
+                                     glyph="fa-plus"
+                                     action={this.handleAddNodeAfter}
+                                     node={this.props.selectedSubNode}
+                                     version={this.props.versionId}
+                                     direction="AFTER"
+                    />
                 }
-                <NoFocusButton onClick={this.handleAddChildNode}><Icon glyph="fa-plus"/>Přidat podřízený
-                    JP</NoFocusButton>
+                <AddNodeDropdown key="child"
+                                 title="Přidat podřízený JP"
+                                 glyph="fa-plus"
+                                 action={this.handleAddChildNode}
+                                 node={this.props.selectedSubNode}
+                                 version={this.props.versionId}
+                                 direction="CHILD"
+                />
                 {
                     notRoot &&
                     <NoFocusButton><Icon glyph="fa-trash"/>Zrušit JP</NoFocusButton>

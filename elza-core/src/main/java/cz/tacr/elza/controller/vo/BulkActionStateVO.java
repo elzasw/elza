@@ -5,7 +5,7 @@ import cz.tacr.elza.api.vo.BulkActionState;
 /**
  * Stav hromadných akcí
  *
- * @author Petr Comple [petr.compel@marbes.cz]
+ * @author Petr Compel [petr.compel@marbes.cz]
  * @since 29. 1. 2016
  */
 public class BulkActionStateVO {

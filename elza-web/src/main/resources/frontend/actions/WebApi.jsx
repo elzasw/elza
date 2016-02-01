@@ -170,26 +170,31 @@ class WebApi{
         return AjaxUtils.ajaxDelete('/api/arrangementManagerV2/descItems/' + versionId + "/" + nodeId + "/" + nodeVersionId + "/" + descItemTypeId, null, null);
     }
 
-    addNode(node, parentNode, versionId, direction, descItemCopyTypes) {
-        var data = {
+    addNode(node, parentNode, versionId, direction, descItemCopyTypes, scenarioName) {
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/levels', null, {
             versionId,
             direction,
-            "staticNodeParent": parentNode,
-            "staticNode": node,
-            descItemCopyTypes
-        };
-
-        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/levels', null, data);
+            staticNodeParent: parentNode,
+            staticNode: node,
+            descItemCopyTypes,
+            scenarioName
+        });
     }
 
     deleteNode(node, parentNode, version) {
-        var data = {
-            "versionId": version,
-            "staticNodeParent": parentNode,
-            "staticNode": node
-        };
+        return AjaxUtils.ajaxDelete('/api/arrangementManagerV2/levels', null, {
+            versionId: version,
+            staticNodeParent: parentNode,
+            staticNode: node
+        });
+    }
 
-        return AjaxUtils.ajaxDelete('/api/arrangementManagerV2/levels', null, data);
+    getNodeAddScenarios(node, versionId, direction) {
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/getDescriptionItemTypesForNewLevel', null, {
+            versionId,
+            direction,
+            node
+        });
     }
 
     getData(data, timeout = 1000) {
