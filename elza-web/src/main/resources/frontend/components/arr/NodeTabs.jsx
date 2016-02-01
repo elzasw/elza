@@ -17,6 +17,9 @@ var NodeTabs = class NodeTabs extends AbstractReactComponent {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
+        if (this.state !== nextState) {
+            return true;
+        }
         var eqProps = ['versionId', 'fa', 'nodes', 'activeIndex', 'findingAidId',
             'rulDataTypes', 'calendarTypes', 'packetTypes', 'packets', 'showRegisterJp']
         return !propsEquals(this.props, nextProps, eqProps);

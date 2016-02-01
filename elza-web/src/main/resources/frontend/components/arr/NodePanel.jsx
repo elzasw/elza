@@ -41,6 +41,9 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
+        if (this.state !== nextState) {
+            return true;
+        }
         var eqProps = ['versionId', 'fa', 'node', 'calendarTypes',
             'packetTypes', 'packets', 'rulDataTypes', 'findingAidId', 'showRegisterJp']
         return !propsEquals(this.props, nextProps, eqProps);

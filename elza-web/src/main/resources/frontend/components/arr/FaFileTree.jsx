@@ -32,6 +32,9 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
+        if (this.state !== nextState) {
+            return true;
+        }
         var eqProps = ['opened', 'items', 'isFetching', 'fetched']
         return !propsEquals(this.props, nextProps, eqProps);
     }
