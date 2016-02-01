@@ -274,8 +274,8 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 
             if (node.selectedSubNodeId == item.id) {
                 rows.push(
-                    <div key={item.id} ref={'accheader-' + item.id} className='accordion-item opened' onClick={this.handleCloseItem.bind(this, item)}>
-                        <div className='accordion-header'>
+                    <div key={item.id} ref={'accheader-' + item.id} className='accordion-item opened'>
+                        <div className='accordion-header' onClick={this.handleCloseItem.bind(this, item)}>
                             {item.name} [{item.id}] {state}
                         </div>
                         <div key="body" className='accordion-body'>
@@ -292,8 +292,8 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 )
             } else {
                 rows.push(
-                    <div key={item.id} ref={'accheader-' + item.id} className='accordion-item closed' onClick={this.handleOpenItem.bind(this, item)}>
-                        <div className='accordion-header'>
+                    <div key={item.id} ref={'accheader-' + item.id} className='accordion-item closed'>
+                        <div className='accordion-header' onClick={this.handleOpenItem.bind(this, item)}>
                             {item.name} [{item.id}] {state}
                         </div>
                     </div>
