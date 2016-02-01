@@ -33,10 +33,13 @@ var Search = class Search extends React.Component {
     }
 
     handleSearch(e){
-       this.props.onSearch(this.state.filterText);  
+       this.props.onSearch(this.state.filterText);
     }
 
     handleClear(e){
+        this.state = {
+            filterText: null,
+        }
         this.props.onClear();
     }
 
