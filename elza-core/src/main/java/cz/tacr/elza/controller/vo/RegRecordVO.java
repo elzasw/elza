@@ -76,6 +76,11 @@ public class RegRecordVO {
     private List<String> parents;
 
     /**
+     * Názvy typů rejstříku od typu až po kořenový typ.
+     */
+    private List<String> typesToRoot;
+
+    /**
      * Lze přidat podřízený záznam.
      */
     private boolean addRecord;
@@ -198,5 +203,13 @@ public class RegRecordVO {
 
     public void setParents(List<String> parents) {
         this.parents = parents;
+    }
+
+    public List<String> getTypesToRoot() {
+        return typesToRoot;
+    }
+
+    public void setTypesToRoot(final List<String> typesToRoot) {
+        this.typesToRoot = typesToRoot;
     }
 }

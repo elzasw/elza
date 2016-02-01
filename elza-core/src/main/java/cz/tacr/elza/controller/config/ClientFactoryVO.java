@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -85,6 +86,7 @@ import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
@@ -137,6 +139,9 @@ public class ClientFactoryVO {
 
     @Autowired
     private FindingAidVersionRepository findingAidVersionRepository;
+
+    @Autowired
+    private RegisterTypeRepository registerTypeRepository;
 
     @Autowired
     private ElzaRules elzaRules;
@@ -335,6 +340,32 @@ public class ClientFactoryVO {
         }
 
         return result;
+    }
+
+    /**
+     * Pro heslo vytvoří seznam typů až po kořen typů nebo po typ v seznamu.
+     *
+     * @param record        heslo
+     * @param parentTypeIds prázdný seznam nebo seznam typů, po které se mají načítat rodiče
+     */
+    public void fillRegisterTypeNamesToParents(final RegRecordVO record, final Set<Integer> parentTypeIds) {
+
+        List<String> parentTypeNames = new ArrayList<>();
+
+        RegRegisterType recordType = registerTypeRepository.findOne(record.getRegisterTypeId());
+        parentTypeNames.add(recordType.getName());
+
+        if (parentTypeIds.contains(recordType.getRegisterTypeId())) {
+            return;
+        }
+
+        RegRegisterType parentType = recordType.getParentRegisterType();
+        while (parentType != null && !parentTypeIds.contains(parentType.getRegisterTypeId())) {
+            parentTypeNames.add(parentType.getName());
+            parentType = parentType.getParentRegisterType();
+        }
+
+        record.setTypesToRoot(parentTypeNames);
     }
 
     /**

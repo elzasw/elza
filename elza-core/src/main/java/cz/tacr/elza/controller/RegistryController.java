@@ -3,6 +3,7 @@ package cz.tacr.elza.controller;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -105,9 +107,9 @@ public class RegistryController {
                                          @RequestParam(required = false) @Nullable final Integer parentRecordId,
                                          @RequestParam(required = false) @Nullable final Integer versionId) {
 
-        List<Integer> registerTypeIdList = null;
+        Set<Integer> registerTypeIdList = Collections.EMPTY_SET;
         if (registerTypeIds != null) {
-            registerTypeIdList = Arrays.asList(registerTypeIds);
+            registerTypeIdList = new HashSet<>(Arrays.asList(registerTypeIds));
         }
 
         ArrFindingAid findingAid;
@@ -117,6 +119,12 @@ public class RegistryController {
             ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
             Assert.notNull(version, "Nebyla nalezena verze archivní pomůcky s id "+versionId);
             findingAid = version.getFindingAid();
+        }
+
+        RegRecord parentRecord = null;
+        if(parentRecordId != null) {
+            parentRecord = regRecordRepository.findOne(parentRecordId);
+            Assert.notNull(parentRecord, "Nebylo nalezeno rejstříkové heslo s id " + parentRecordId);
         }
 
         final long foundRecordsCount = registryService.findRegRecordByTextAndTypeCount(search, registerTypeIdList,
@@ -133,6 +141,13 @@ public class RegistryController {
         Map<Integer, RegRecordVO> parentRecordVOMap = new HashMap<>();
         for (RegRecordVO regRecordVO : foundRecordVOList) {
             parentRecordVOMap.put(regRecordVO.getRecordId(), regRecordVO);
+
+        }
+
+        if(CollectionUtils.isEmpty(registerTypeIdList)){
+            for (RegRecordVO recordVO : foundRecordVOList) {
+                factoryVo.fillRegisterTypeNamesToParents(recordVO, registerTypeIdList);
+            }
         }
 
 //        for (RegRecord record : parentChildrenMap.keySet()) {
