@@ -58,6 +58,7 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParComplementType;
+import cz.tacr.elza.domain.ParCreator;
 import cz.tacr.elza.domain.ParDynasty;
 import cz.tacr.elza.domain.ParEvent;
 import cz.tacr.elza.domain.ParParty;
@@ -98,6 +99,7 @@ import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
+import cz.tacr.elza.repository.PartyCreatorRepository;
 import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
 import cz.tacr.elza.repository.PartyNameComplementRepository;
 import cz.tacr.elza.repository.PartyNameFormTypeRepository;
@@ -253,6 +255,9 @@ public class XmlImportService {
 
     @Autowired
     private UnitdateRepository unitdateRepository;
+
+    @Autowired
+    private PartyCreatorRepository partyCreatorRepository;
 
     /**
      * Naimportuje data.
@@ -745,8 +750,55 @@ public class XmlImportService {
             }
         }
 
-        //TODO vanek import autorů osob
+        // import autorů osob
+        for (AbstractParty party : parties) {
+            if (usedParties.contains(party.getPartyId())) {
+                try {
+                    importCreators(party, xmlIdIntIdPartyMap);
+                } catch (NonFatalXmlImportException e) {
+                    if (stopOnError) {
+                        throw e;
+                    }
+                }
+            }
+        }
+
         return xmlIdIntIdPartyMap;
+    }
+
+    private void importCreators(AbstractParty party, Map<String, Integer> xmlIdIntIdPartyMap) throws PartyImportException {
+        List<AbstractParty> creators = party.getCreators();
+        if (CollectionUtils.isEmpty(creators)) {
+            return;
+        }
+
+        Integer partyInternalId = xmlIdIntIdPartyMap.get(party.getPartyId());
+        if (partyInternalId == null) {
+            throw new PartyImportException("Nebyla nalezena osoba s externím identifikátorem " + party.getPartyId());
+        }
+
+        ParParty parParty = partyRepository.findOne(partyInternalId);
+        if (parParty == null) {
+            throw new PartyImportException("Nebyla nalezena osoba s interním identifikátorem " + partyInternalId);
+        }
+
+        for (AbstractParty creator : creators) {
+            Integer creatorInternalId = xmlIdIntIdPartyMap.get(creator.getPartyId());
+            if (creatorInternalId == null) {
+                throw new PartyImportException("Nebyl nalezen autor osoby s externím identifikátorem " + creator.getPartyId());
+            }
+
+            ParParty parPartyCreator = partyRepository.findOne(creatorInternalId);
+            if (parPartyCreator == null) {
+                throw new PartyImportException("Nebyl nalezen autor osoby s interním identifikátorem " + creatorInternalId);
+            }
+
+            ParCreator parCreator = new ParCreator();
+            parCreator.setCreatorParty(parPartyCreator);
+            parCreator.setParty(parParty);
+
+            partyCreatorRepository.save(parCreator);
+        }
     }
 
     private ParParty importParty(AbstractParty party, boolean stopOnError, Map<String, Integer> xmlIdIntIdRecordMap)
