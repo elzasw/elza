@@ -60,6 +60,23 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
         relation.to = data.to;                                                      // datace vztahu do
         relation.relationEntities = entities;                                       // seznamm entit ve vztahu
         relation.complementType.relationTypeId = data.relationTypeId;               // typ vztahu
+        if(
+            !relation.from ||
+            relation.from.textDate == "" || 
+            relation.from.textDate == null || 
+            relation.from.textDate == undefined
+        ){  
+            relation.from = null;                                                   // pokud není zadaný textová část data, celý fatum se ruší
+        }
+        if(
+            !relation.to || 
+            relation.to.textDate == "" || 
+            relation.to.textDate == null || 
+            relation.to.textDate == undefined
+        ){  
+            relation.to = null;                                                     // pokud není zadaný textová část data, celý fatum se ruší
+        }
+
         this.dispatch(updateRelation(relation,partyId));                            // uložení změn a znovu načtení dat osoby              
     }
 
@@ -95,11 +112,11 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
             dateNote: relation.dateNote,                                            // poznámka k dataci vztahu
             from: {                                                                 // datace od
                 textDate: (relation.from != null ? relation.from.textDate : ""),    
-                calendarTypeId: (relation.from != null ? relation.from.calendarTypeId : 0)
+                calendarTypeId: (relation.from != null ? relation.from.calendarTypeId : this.props.partyRegion.gregorianCalendarId )
             },
             to: {                                                                   // datace do
                 textDate: (relation.to != null ? relation.to.textDate : ""), 
-                calendarTypeId: (relation.to != null ? relation.to.calendarTypeId : 0)
+                calendarTypeId: (relation.to != null ? relation.to.calendarTypeId : this.props.partyRegion.gregorianCalendarId)
             },
             entities: entities,                                                     // entity ve vztahu
         }

@@ -60,6 +60,22 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
         var variable = event.target.name;                           // políčko (název hodnoty) změny
         var party = this.props.partyRegion.selectedPartyData;       // původní osoba
         party = this.mergePartyChanges(party, variable, value);     // osoba po změne 
+        if(
+            !party.from ||
+            party.from.textDate == "" || 
+            party.from.textDate == null || 
+            party.from.textDate == undefined
+        ){  
+            party.from = null;                                      // pokud není zadaný textová část data, celý fatum se ruší
+        }
+        if(
+            !party.to || 
+            party.to.textDate == "" || 
+            party.to.textDate == null || 
+            party.to.textDate == undefined
+        ){  
+            party.to = null;                                        // pokud není zadaný textová část data, celý fatum se ruší
+        }
         this.dispatch(updateParty(party));                          // uložení změn a znovu načtení dat osoby   
         this.setState({party:null});
     }
@@ -73,6 +89,18 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
      * @param value - nová hoddnota měnené položky
      */ 
     mergePartyChanges(party, variable, value){
+        if((variable=="fromText" || variable=="fromCalendar") && !party.from){  // pokud neni definovane datumove pole a je aktualizováno
+            party.from={
+                calendarTypeId: this.props.partyRegion.gregorianCalendarId,     // nastaví se mu defaultně gregoriánský kalendář
+                textDate: ""                                                    // a prázdný text
+            };
+        }
+        if((variable=="toText" || variable=="toCalendar") && !party.to){        // pokud neni definovane datumove pole a je aktualizováno
+            party.to={
+                calendarTypeId: this.props.partyRegion.gregorianCalendarId,     // nastaví se mu defaultně gregoriánský kalendář
+                textDate: ""                                                    // a prázdný text
+            };
+        }
         switch(variable){
             case "history" : party.history = value; break;
             case "sourceInformation" : party.sourceInformation = value; break;
@@ -82,6 +110,10 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
             case "toCalendar" : party.to.calendarTypeId = value;  break;
             case "genealogy" : party.genealogy = value; break;
             case "organization" : party.organization = value; break;
+            case "foundingNorm" : party.foundingNorm = value; break;
+            case "scopeNorm" : party.scopeNorm = value; break;
+            case "scope" : party.scope = value; break;
+            case "note" : party.record.note = value; break;
         };
         return party;
     }
@@ -109,22 +141,28 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
                         <Input type="select" disabled={true} value={party.partyType.partyTypeId} label={i18n('party.detail.type')}>
                             {this.props.refTables.partyTypes.items.map(i=> {return <option key={i.partyTypeId} value={i.partyTypeId}>{i.name}</option>})}
                         </Input>
-                        <Input type="text" label={i18n('party.detail.number')}/>
                     </div>
-                    <div className="line">
-                        <Input type="text" label={i18n('party.nameValidFrom')} name="fromText" value={party.from == null || party.from.textDate == null ? '' : party.from.textDate} onChange={this.changeValue} onBlur={this.updateValue}/>
-                        <Input type="select" label={i18n('party.calendarTypeFrom')} name="fromCalendar" value={party.from == null || party.from.calendarTypeId == null ? 0 : party.from.calendarTypeId} onChange={this.updateValue}>
-                            <option value="0" key="0"></option> 
-                            {this.props.refTables.calendarTypes.items.map(i=> {return <option key={i.id} value={i.id}>{i.name}</option>})}
-                        </Input>
-                    </div>
-
-                    <div className="line">
-                        <Input type="text" label={i18n('party.nameValidTo')} name="toText" value={(party.to == null || party.to.textDate == null ? '' : party.to.textDate)} onChange={this.changeValue} onBlur={this.updateValue}/>
-                        <Input type="select" label={i18n('party.calendarTypeTo')} name="toCalendar" value={party.to == null || party.to.calendarTypeId == null ? 0 : party.to.calendarTypeId} onChange={this.updateValue}>
-                            <option value="0" key="0"></option> 
-                            {this.props.refTables.calendarTypes.items.map(i=> {return <option key={i.id} value={i.id}>{i.name}</option>})}
-                        </Input>
+                    <div className="line datation">
+                        <div className="date line">
+                            <div>
+                                <label>{i18n('party.nameValidFrom')}</label>
+                                <div className="line">
+                                    <Input type="select" name="fromCalendar" value={party.from == null || party.from.calendarTypeId == null ? 0 : party.from.calendarTypeId} onChange={this.updateValue} >
+                                        {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
+                                    </Input>
+                                    <Input type="text"  name="fromText" value={party.from == null || party.from.textDate == null ? '' : party.from.textDate} onChange={this.changeValue} onBlue={this.updateValue} />
+                                </div>
+                            </div>
+                            <div>
+                                <label>{i18n('party.nameValidTo')}</label>
+                                <div className="line">
+                                    <Input type="select" name="toCalendar" value={party.to == null || party.to.calendarTypeId == null ? 0 : party.to.calendarTypeId} onChange={this.updateValue} >
+                                        {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
+                                    </Input>
+                                    <Input type="text" name="toText" value={party.to == null || party.to.textDate == null ? '' : party.to.textDate} onChange={this.changeValue} onBlur={this.updateValue} />
+                                </div>
+                            </div>
+                        </div>
                     </div>                       
                     <hr/>
 
@@ -136,18 +174,23 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
 
                     {party.partyType.partyTypeId == this.state.groupId ? <div className="party-identifiers">
                         <label>{i18n('party.detail.identifiers')}</label>
-                        <PartyDetailIdentifiers partyRegion={this.props.partyRegion} />
+                        <PartyDetailIdentifiers partyRegion={this.props.partyRegion} refTables={this.props.refTables}/>
                         <hr/>
                     </div> :  ''}
 
 
-                    {party.partyType.partyTypeId == this.state.dynastyId ? <Input type="text" label={i18n('party.detail.history')} name="genealogy" value={party.genealogy != undefined ? party.genealogy : ''} onChange={this.changeValue} onBlur={this.updateValue}/> :  ''}
+                    {party.partyType.partyTypeId == this.state.dynastyId ? <Input type="text" label={i18n('party.detail.genealogy')} name="genealogy" value={party.genealogy != undefined ? party.genealogy : ''} onChange={this.changeValue} onBlur={this.updateValue}/> :  ''}
 
-                    <Input type="text" label={i18n('party.detail.note')} name="note" />
+                    <Input type="text" label={i18n('party.detail.note')} name="note" value={party.record.note != undefined ? party.record.note : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
                     <Input type="text" label={i18n('party.detail.history')} name="history" value={party.history != undefined ? party.history : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
                     <Input type="text" label={i18n('party.detail.sources')} name="sourceInformation" value={party.sourceInformation == null ? '' : party.sourceInformation} onChange={this.changeValue} onBlur={this.updateValue}/>
 
-                    {party.partyType.partyTypeId == this.state.groupId ? <Input type="text" label={i18n('party.detail.groupFunction')} name="organization" value={party.organization != undefined ? party.organization : ''} onChange={this.changeValue} onBlur={this.updateValue}/> :  ''}
+                    {party.partyType.partyTypeId == this.state.groupId ? <div className="group-panel">
+                        <Input type="text" label={i18n('party.detail.groupOrganization')} name="organization" value={party.organization != undefined ? party.organization : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
+                        <Input type="text" label={i18n('party.detail.groupFoundingNorm')} name="foundingNorm" value={party.foundingNorm != undefined ? party.foundingNorm : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
+                        <Input type="text" label={i18n('party.detail.groupScopeNorm')} name="scopeNorm" value={party.scopeNorm != undefined ? party.scopeNorm : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
+                        <Input type="text" label={i18n('party.detail.groupScope')} name="scope" value={party.scope != undefined ? party.scope : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
+                    </div> :  ''}
     
 
                     <div className="party-creators">

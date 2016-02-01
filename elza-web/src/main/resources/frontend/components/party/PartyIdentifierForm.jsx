@@ -49,7 +49,7 @@ var PartyIdentifierForm = class PartyIdentifierForm extends AbstractReactCompone
             case "note" : data.note = event.target.value; break;                            // změna poznámky
             case "identifier" : data.identifier = event.target.value; break;                // změna názvu identifikátoru
             case "fromText" : data.from.textDate = event.target.value; break;               // změna data od
-            case "toText" : data.from.textDate = event.target.value; break;                 // změna data do
+            case "toText" : data.to.textDate = event.target.value; break;                   // změna data do
             case "fromCalendar" : data.from.calendarTypeId = event.target.value; break;     // změna typu kalendáře od
             case "toCalendar" : data.to.calendarTypeId = event.target.value; break;         // změna typu kalendáře do
         }
@@ -71,14 +71,6 @@ var PartyIdentifierForm = class PartyIdentifierForm extends AbstractReactCompone
         //kontrola vyplnění názvu identifikátoru
         if(data.identifier == "" || data.identifier == null ||  data.identifier == undefined){
             errors[errors.length] = i18n('party.identifier.errors.undefinedIdentifierText');
-        }
-
-        //oba typy kalendáře musí být zadané
-        if(
-            data.from.calendarTypeId == 0 || data.from.calendarTypeId == null ||  data.from.calendarTypeId == undefined || 
-            data.to.calendarTypeId == 0 || data.to.calendarTypeId == null ||  data.to.calendarTypeId == undefined 
-        ){
-            errors[errors.length] = i18n('party.name.errors.undefinedCalendarType');
         }
 
         return errors;                                          // vrácení seznamu chyb
@@ -123,23 +115,34 @@ var PartyIdentifierForm = class PartyIdentifierForm extends AbstractReactCompone
                         {this.state.errors.map(i=> {return <li>{i}</li>})}
                     </ul>
                     <form>
-                        <Input type="text" label={i18n('party.identifier.identifierText')} name="identifier" value={this.state.data.identifier} onChange={this.updateValue} />
-                        <Input type="text" label={i18n('party.identifier.note')} name="note" value={this.state.data.note} onChange={this.updateValue} />
                         <Input type="text" label={i18n('party.identifier.source')} name="source" value={this.state.data.source} onChange={this.updateValue} />
-                        <div className="line">
-                            <Input type="text" label={i18n('party.identifier.from')} name="fromText" value={this.state.data.from.textDate} onChange={this.updateValue} />
-                            <Input type="select" label={i18n('party.calendarTypeFrom')} name="fromCalendar" value={this.state.data.from.calendarTypeId} onChange={this.updateValue} >
-                                <option value="0" key="0"></option> 
-                                {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
-                            </Input>   
+                        <Input type="text" label={i18n('party.identifier.identifierText')} name="identifier" value={this.state.data.identifier} onChange={this.updateValue} />
+                        <hr/>
+                        <div className="line datation">
+                            <div className="date line">
+                                <div>
+                                    <label>{i18n('party.identifier.from')}</label>
+                                    <div className="line">
+                                        <Input type="select" name="fromCalendar" value={this.state.data.from.calendarTypeId} onChange={this.updateValue} >
+                                            {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
+                                        </Input>
+                                        <Input type="text"  name="fromText" value={this.state.data.from.textDate} onChange={this.updateValue} />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label>{i18n('party.identifier.to')}</label>
+                                    <div className="line">
+                                        <Input type="select" name="toCalendar" value={this.state.data.to.calendarTypeId} onChange={this.updateValue} >
+                                            {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
+                                        </Input>
+                                        <Input type="text" name="toText" value={this.state.data.to.textDate} onChange={this.updateValue} />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div className="line">
-                            <Input type="text" label={i18n('party.identifier.to')} name="toText" value={this.state.data.to.textDate} onChange={this.updateValue} />
-                            <Input type="select" label={i18n('party.calendarTypeTo')} name="toCalendar" value={this.state.data.to.calendarTypeId} onChange={this.updateValue} >
-                                <option value="0" key="0"></option> 
-                                {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
-                            </Input>
-                        </div>
+                        </hr>
+¨                       <Input type="text" label={i18n('party.identifier.note')} name="note" value={this.state.data.note} onChange={this.updateValue} />
+                        
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

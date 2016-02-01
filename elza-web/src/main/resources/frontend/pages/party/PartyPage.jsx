@@ -17,6 +17,7 @@ import {AppStore} from 'stores'
 import {WebApi} from 'actions'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 import {partyDetailFetchIfNeeded} from 'actions/party/party'
 import {insertParty, insertRelation, deleteParty} from 'actions/party/party'
 
@@ -28,18 +29,20 @@ import {insertParty, insertRelation, deleteParty} from 'actions/party/party'
 var PartyPage = class PartyPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.state = {};
+        this.state = {};                                // id gregoriánského kalendáře - TODO: potřeba ho dovypočíst
         this.dispatch(refPartyTypesFetchIfNeeded());
-        this.bindMethods(               // pripojení funkcím "this"
-            'buildRibbon',              // sestavení menu
-            'handleAddParty',           // kliknutí na tlačítko přidat osobu
-            'handleDeleteParty',        // kliknutí na tlačítko smazzat osobu
-            'handleAddRelation',        // kliknutí na tlačítko přidat ossobě vztah
-            'addParty',                 // vytvoření osoby
-            'deleteParty',              // smazání osoby
-            'addRelation',              // vytvoření relace
+        this.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
+        this.bindMethods(                               // pripojení funkcím "this"
+            'buildRibbon',                              // sestavení menu
+            'handleAddParty',                           // kliknutí na tlačítko přidat osobu
+            'handleDeleteParty',                        // kliknutí na tlačítko smazzat osobu
+            'handleAddRelation',                        // kliknutí na tlačítko přidat ossobě vztah
+            'addParty',                                 // vytvoření osoby
+            'deleteParty',                              // smazání osoby
+            'addRelation',                              // vytvoření relace
         );
     }
+
 
     /**
      * ADD PARTY
@@ -82,6 +85,12 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
                 partyNameComplements: data.complements          // doplnky jména    
             }]
         }
+        if(party.from.textDate == "" || party.from.textDate == null || party.from.textDate == undefined){  
+            party.from = null;                                  // pokud není zadaný textová část data, celý fatum se ruší
+        }
+        if(party.to.textDate == "" || party.to.textDate == null || party.to.textDate == undefined){  
+            party.to = null;                                    // pokud není zadaný textová část data, celý fatum se ruší
+        }
         this.dispatch(insertParty(party));                      // uložení nové osoby
     }
 
@@ -96,11 +105,11 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
             partyTypeId: partyTypeId,       // identifikátor typu osoby (osoba, rod, událost, ..)
             from: {
                 textDate: "",    
-                calendarTypeId: null           
+                calendarTypeId: this.props.partyRegion.gregorianCalendarId         
             },
             to: {
                 textDate: "",    
-                calendarTypeId: null           
+                calendarTypeId: this.props.partyRegion.gregorianCalendarId           
             },
             complements: []
         }
@@ -137,6 +146,12 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
             relationEntities: entities,                                             // entity ve vztahu
             complementType:{relationTypeId:data.relationTypeId}                     // typ vztahu
         };   
+        if(relation.from.textDate == "" || relation.from.textDate == null || relation.from.textDate == undefined){  
+            relation.from = null;                                                   // pokud není zadaný textová část data, celý fatum se ruší
+        }
+        if(relation.to.textDate == "" || relation.to.textDate == null || relation.to.textDate == undefined){  
+            relation.to = null;                                                   // pokud není zadaný textová část data, celý fatum se ruší
+        }
         this.dispatch(insertRelation(relation, this.props.partyRegion.selectedPartyID));  //uložení vztahu a znovunačtení osoby             
     }
 
@@ -153,11 +168,11 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
             dateNote:"",
             from: {
                 textDate: "",    
-                calendarTypeId: null           
+                calendarTypeId: this.props.partyRegion.gregorianCalendarId            
             },
             to: {
                 textDate: "",    
-                calendarTypeId: null           
+                calendarTypeId: this.props.partyRegion.gregorianCalendarId            
             },
             entities: [{
                 recordId: null,
