@@ -1,1 +1,17 @@
 @import "~variables.less";
+
+ .party-list {
+    padding: 10px;
+    background: @fa-file-tree-bg;
+    border: 1px solid @fa-file-tree-border;
+    border-top: none;
+    height: 100%;
+
+    .partySearch {
+       background: @fa-file-tree-bg-list;
+       border: 1px solid @fa-file-tree-border;
+       height: calc(~'100% - 30px');
+       overflow-y: auto;
+       overflow-x: hidden;
+    }
+}

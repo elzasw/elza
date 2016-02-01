@@ -408,6 +408,7 @@ return true;
                         value={this.state.inputStrValue}
                     />
                     <Button disabled={this.props.disabled} ref='openClose' className={this.state.isOpen ? 'btn btn-default opened' : 'btn btn-default closed'} onClick={()=>{this.state.isOpen ? this.closeMenu() : this.openMenu()}}><Icon glyph={glyph}/></Button>
+                    {this.props.actions}
                 </div>
                 {this.state.isOpen && this.renderMenu()}
             </div>
@@ -452,7 +453,8 @@ Autocomplete.propTypes = {
     onChange: React.PropTypes.func,
     shouldItemRender: React.PropTypes.func,
     renderItem: React.PropTypes.func,
-    inputProps: React.PropTypes.object
+    inputProps: React.PropTypes.object,
+    actions: React.PropTypes.array
 }
 
 module.exports = Autocomplete

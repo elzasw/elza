@@ -3,6 +3,57 @@
 
 @registry-panel-actions-height: 26px;
 
+.registry-list {
+    padding: 10px;
+    background: @fa-file-tree-bg;
+    border: 1px solid @fa-file-tree-border;
+    border-top: none;
+    height: 100%;
+
+    .registry-list-results {
+        height: 100%;
+
+        .registry-nav {
+            background: @fa-file-tree-bg-list;
+            border: 1px solid @fa-file-tree-border;
+            height: calc(~'100% - 80px');
+
+            &>div:first-child {
+                height: 100%;
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+
+            .search-result-row {
+                padding: 2px 5px;
+
+                div {
+                    display: inline-block;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+
+                .registry-list-icon-record,.registry-list-icon-list {
+                    padding-left: 5px;
+                    width: calc(~'100% - 15px');
+                }
+            }
+            .search-result-row:hover {
+                background-color: #EEEEEE;
+            }
+
+            .active {
+                background:@fa-file-tree-active-bg;
+            }
+
+            .registry-list-count {
+                padding: 5px;
+            }
+        }
+    }
+}
+
 .registry-page {
 
     .btn {

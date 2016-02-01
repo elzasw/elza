@@ -6,6 +6,7 @@ import {WebApi} from 'actions'
 import * as types from 'actions/constants/actionTypes'
 import {modalDialogHide} from 'actions/global/modalDialog'
 import {faSubNodeFormValueChangeParty, faSubNodeFormValueBlur} from 'actions/arr/subNodeForm'
+import {routerNavigate} from 'actions/router'
 
 
 /**
@@ -53,8 +54,8 @@ export function insertPartyArr(partyType, valueLocation, versionId, selectedSubN
                     dispatch(faSubNodeFormValueChangeParty(versionId, selectedSubNodeId, nodeKey, valueLocation, json));
                     dispatch(faSubNodeFormValueBlur(versionId, selectedSubNodeId, nodeKey, valueLocation));
                     dispatch(modalDialogHide());
-                    // TODO: dopsat redirect
                     dispatch(partyDetailFetch(json.partyId));
+                    dispatch(routerNavigate('party'));
                 });
     }
 }

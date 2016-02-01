@@ -28,7 +28,8 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
 
         this.bindMethods('renderDescItemSpec', 'renderDescItem', 'renderLabel',
                 'handleChange', 'handleChangeSpec', 'handleCreatePacket', 'handleCreateParty', 'handleCreateRecord',
-                'handleBlur', 'handleFocus', 'handleDescItemTypeLock', 'handleDescItemTypeCopy');
+                'handleBlur', 'handleFocus', 'handleDescItemTypeLock', 'handleDescItemTypeCopy', 'handleDetailParty',
+                'handleDetailRecord');
     }
 
     componentWillReceiveProps(nextProps) {
@@ -69,9 +70,11 @@ return true;
             disabled: locked
         }
 
+        var key = descItem.id != null ? 'spec_' + descItem.id : '_spec_' + descItemIndex;
+
         return (
             <select
-                key='spec'
+                key={key}
                 className={cls}
                 {...descItemSpecProps}
                 value={descItem.descItemSpecId}
@@ -111,6 +114,16 @@ return true;
     }
 
     /**
+     * Zobrazení detailu rejstříku
+     *
+     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     * @param record {Integer} identifikátor typu osoby
+     */
+    handleDetailRecord(descItemIndex, recordId) {
+        this.props.onDetailRecord(descItemIndex, recordId);
+    }
+
+    /**
      * Vytvoření nové osoby.
      *
      * @param descItemIndex {Integer} index hodnoty atributu v seznamu
@@ -118,6 +131,16 @@ return true;
      */
     handleCreateParty(descItemIndex, partyTypeId) {
         this.props.onCreateParty(descItemIndex, partyTypeId);
+    }
+
+    /**
+     * Zobrazení detailu osoby
+     *
+     * @param descItemIndex {Integer} index hodnoty atributu v seznamu
+     * @param partyId {Integer} identifikátor osoby
+     */
+    handleDetailParty(descItemIndex, partyId) {
+        this.props.onDetailParty(descItemIndex, partyId);
     }
 
     /**
@@ -178,43 +201,49 @@ return true;
             locked: locked
         }
 
+        var key = descItem.id != null ? 'value_' + descItem.id : '_value_' + descItemIndex;
+
         //parts.push(<div>{rulDataType.code}-{descItem.id}-{descItemType.type}</div>);
         switch (rulDataType.code) {
             case 'PARTY_REF':
-                parts.push(<DescItemPartyRef key="PARTY_REF"  {...descItemProps} onCreateParty={this.handleCreateParty.bind(this, descItemIndex)} />)
+                parts.push(<DescItemPartyRef key={descItemType.id}  {...descItemProps}
+                                             onDetail={this.handleDetailParty.bind(this, descItemIndex)}
+                                             onCreateParty={this.handleCreateParty.bind(this, descItemIndex)} />)
                 break;
             case 'RECORD_REF':
-                parts.push(<DescItemRecordRef key="RECORD_REF" {...descItemProps} onCreateRecord={this.handleCreateRecord.bind(this, descItemIndex)} />)
+                parts.push(<DescItemRecordRef key={key} {...descItemProps}
+                                              onDetail={this.handleDetailRecord.bind(this, descItemIndex)}
+                                              onCreateRecord={this.handleCreateRecord.bind(this, descItemIndex)} />)
                 break;
             case 'PACKET_REF':
-                parts.push(<DescItemPacketRef key="PACKET_REF" {...descItemProps} onCreatePacket={this.handleCreatePacket.bind(this, descItemIndex)} packets={packets} packetTypes={packetTypes} />)
+                parts.push(<DescItemPacketRef key={key} {...descItemProps} onCreatePacket={this.handleCreatePacket.bind(this, descItemIndex)} packets={packets} packetTypes={packetTypes} />)
                 break;
             case 'UNITDATE':
-                parts.push(<DescItemUnitdate key="UNITDATE" {...descItemProps} calendarTypes={calendarTypes} />)
+                parts.push(<DescItemUnitdate key={key} {...descItemProps} calendarTypes={calendarTypes} />)
                 break;
             case 'UNITID':
-                parts.push(<DescItemUnitid key="UNITID" {...descItemProps} />)
+                parts.push(<DescItemUnitid key={key} {...descItemProps} />)
                 break;
             case 'STRING':
-                parts.push(<DescItemString key="STRING" {...descItemProps} />)
+                parts.push(<DescItemString key={key} {...descItemProps} />)
                 break;
             case 'FORMATTED_TEXT':
             case 'TEXT':
-                parts.push(<DescItemText key="TEXT" {...descItemProps} />)
+                parts.push(<DescItemText key={key} {...descItemProps} />)
                 break;
             case 'DECIMAL':
-                parts.push(<DescItemDecimal key="DECIMAL" {...descItemProps} />)
+                parts.push(<DescItemDecimal key={key} {...descItemProps} />)
                 break;
             case 'INT':
-                parts.push(<DescItemInt key="INT" {...descItemProps} />)
+                parts.push(<DescItemInt key={key} {...descItemProps} />)
                 break;
             case 'COORDINATES':
-                parts.push(<DescItemCoordinates key="COORDINATES" {...descItemProps} />)
+                parts.push(<DescItemCoordinates key={key} {...descItemProps} />)
                 break;
             case 'ENUM':
                 break;
             default:
-                parts.push(<div key="unsupported">-unsupported type {rulDataType.code}-</div>)
+                parts.push(<div key={key}>-unsupported type {rulDataType.code}-</div>)
         }
 
         var key = descItem.descItemObjectId ? descItem.descItemObjectId + '-' + descItem.position : descItem.position;
@@ -352,7 +381,9 @@ DescItemType.propTypes = {
     onFocus: React.PropTypes.func.isRequired,
     onCreatePacket: React.PropTypes.func.isRequired,
     onCreateParty: React.PropTypes.func.isRequired,
+    onDetailParty: React.PropTypes.func.isRequired,
     onCreateRecord: React.PropTypes.func.isRequired,
+    onDetailRecord: React.PropTypes.func.isRequired,
     onDescItemTypeRemove: React.PropTypes.func.isRequired,
     onDescItemTypeLock: React.PropTypes.func.isRequired,
     onDescItemTypeCopy: React.PropTypes.func.isRequired,

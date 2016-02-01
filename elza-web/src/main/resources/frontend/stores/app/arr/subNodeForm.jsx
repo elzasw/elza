@@ -442,7 +442,7 @@ export default function subNodeForm(state = initialState, action) {
             ];
             
             state.formData = {...state.formData};
-            return state;
+            return {...state};
         case types.FA_SUB_NODE_FORM_REQUEST:
             return Object.assign({}, state, {
                 isFetching: true,
