@@ -274,7 +274,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 <div>
                     {navParents}
                 </div>
-                <div>
+                <div className="registry-list-results">
                     {(this.props.registry.isFetching || !this.props.registry.fetched) && <Loading/>}
                     {(!this.props.registry.isFetching && this.props.registry.fetched) && navRows}
                 </div>
@@ -301,6 +301,8 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 ribbon={this.buildRibbon()}
                 leftPanel={leftPanel}
                 centerPanel={centerPanel}
+                rightPanel={rightPanel}
+
             />
         )
     }
