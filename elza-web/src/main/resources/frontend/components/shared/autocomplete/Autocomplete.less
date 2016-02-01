@@ -1,22 +1,36 @@
+@import "~variables.less";
+
 @autocomplete-dropdown-width: 20px;
 @autocomplete-dropdown-height: 18px;
+@party-item-padding: 5px;
+
 .autocomplete-control-container {
     display: inline-block;
-    
+    width: 100%;
+
     .autocomplete-control-box {
+        width: 100%;
+        position: relative;
         .btn {
-            position: relative;
-            top:0;
+            position: absolute;
+            top: 3px;
+            right: 3px;
             border: none;
-            right: @autocomplete-dropdown-width;
-            height: @autocomplete-dropdown-height;
+            padding: 0;
+            height: 16px;
+            line-height: 16px;
+            .icon {
+                height: 16px;
+                line-height: 16px;
+                width: 16px;
+            }
         }
 
         .form-group {
-            width: auto;
+            width: 100%;
             input {
                 padding-right: @autocomplete-dropdown-width;
-                width: auto;
+                width: 100%;
             }
             display: inline-block;
         }
@@ -27,18 +41,22 @@
         background: white;
         z-index: 1000;
         position: fixed;
-        overflow: hidden;
-        max-height: 50%; // TODO: dont cheat, let it flow to the bottom    
-        height: 300px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        max-height: 200px;
+        min-height: 30px;
         max-width: 600px;
-        min-width: 300px;
+        min-width: 200px;
         border: 1px solid #bfbfbf;
 
         .autocomplete-menu {
-            overflow: auto;
+            display: table;
             height: 100%;
 
             .item {
+                display: table-row;
+                width: calc(~'100% - 20px');
+
                 &.active {
                     font-weight: bold;
                 }
@@ -63,6 +81,20 @@
         }
         &.has-header.has-footer .autocomplete-menu {
             height: calc(~"100% - 64px");
+        }
+
+        .autocomplete-menu-footer {
+
+            background-color: @node-form-bg;
+            //position: relative;
+
+            .create-party {
+                position: fixed;
+                padding: 5px;
+                .create-party-label {
+                    margin-left: 3px;
+                }
+            }
         }
     }
 }

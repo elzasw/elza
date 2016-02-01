@@ -5,59 +5,12 @@
     .autocomplete-party {
 
         @party-item-padding: 5px;
-        @max-width-container: 600px;
-
-        width: 100%;
-
-        .autocomplete-control-box {
-            width: 100%;
-            input {
-                width: 100%;
-            }
-
-            .detail {
-                right: 58px;
-                height: 18px;
-            }
-        }
 
         .autocomplete-menu-container {
 
-            min-width: auto;
-            height: auto;
-            width: 100%;
-
-            .autocomplete-menu-footer {
-
-                background-color: @node-form-bg;
-
-                .create-party {
-                    position: fixed;
-                    padding: 5px;
-                    .create-party-label {
-                        margin-left: 3px;
-                    }
-                }
-            }
-
             .autocomplete-menu {
 
-                height: auto;
-                max-width: none;
-                min-width: auto;
-                max-height: 135px;
-                overflow-y: auto;
-                overflow-x: hidden;
-
                 .item {
-                    display: table-row;
-
-                    &.active {
-                        font-weight: bold;
-                    }
-                    &.focus {
-                        background: #afafaf;
-                    }
 
                     .name {
                         padding: @party-item-padding;
