@@ -21,7 +21,7 @@ import DescItemType from './nodeForm/DescItemType'
 import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm'
 import {lockDescItemType, unlockDescItemType, unlockAllDescItemType,
         copyDescItemType, nocopyDescItemType} from 'actions/arr/nodeSetting'
-import {addNode} from '../../actions/arr/node'
+import {addNode,deleteNode} from '../../actions/arr/node'
 import {createPacket} from 'actions/arr/packets'
 import faSelectSubNode from 'actions/arr/nodes'
 import {isFaRootId} from './ArrUtils.jsx'
@@ -38,7 +38,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             'getDescItemTypeInfo', 'handleDescItemAdd', 'handleDescItemRemove', 'handleDescItemTypeLock',
             'handleDescItemTypeUnlockAll', 'handleDescItemTypeCopy', 'handleAddNodeBefore', 'handleAddNodeAfter',
             'handleCreatePacket', 'handleCreatePacketSubmit', 'handleAddChildNode', 'handleCreateParty',
-            'handleCreatePartySubmit', 'handleCreateRecord',  'handleCreateRecordSubmit'
+            'handleCreatePartySubmit', 'handleCreateRecord', 'handleCreateRecordSubmit', 'handleDeleteNode'
         );
 
 //console.log("@@@@@-SubNodeForm-@@@@@", props);
@@ -424,6 +424,12 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         this.dispatch(faSubNodeFormValueChangeSpec(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation, value));
     }
 
+    handleDeleteNode() {
+        if (window.confirm('Opravdu chcete smazat tento JP?')) {
+            this.dispatch(deleteNode(this.props.selectedSubNode, this.props.parentNode, this.props.versionId));
+        }
+    }
+
     /**
      * Renderování atributu.
      * @param descItemType {Object} atribut
@@ -573,7 +579,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 />
                 {
                     notRoot &&
-                    <NoFocusButton><Icon glyph="fa-trash"/>Zrušit JP</NoFocusButton>
+                    <NoFocusButton onClick={this.handleDeleteNode}><Icon glyph="fa-trash"/>Zrušit JP</NoFocusButton>
                 }
             </div>
         )

@@ -21,6 +21,24 @@ export function addNode(indexNode, parentNode, versionId, direction, descItemCop
     }
 }
 
+export function deleteNode(node, parentNode, versionId) {
+    return (dispatch) => {
+        parentNode = {
+            id: parentNode.id,
+            lastUpdate: parentNode.lastUpdate,
+            version: parentNode.version
+        };
+        node = {
+            id: node.id,
+            lastUpdate: node.lastUpdate,
+            version: node.version
+        };
+        return WebApi.deleteNode(node, parentNode, versionId).then((json) => {
+            dispatch(faNodeChange(versionId, {node: node, parentNode: parentNode, action: "DELETE"}));
+        });
+    }
+}
+
 export function faNodeChange(versionId, data) {
     return {
         ...data,

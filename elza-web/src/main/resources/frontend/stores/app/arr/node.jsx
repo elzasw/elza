@@ -256,6 +256,18 @@ export function node(state = nodeInitialState, action) {
                         }
                     }
                     return state;
+                case "DELETE":
+                    var nodeIndex = indexById(state.childNodes, action.node.id);
+                    if (nodeIndex != null) {
+                        return {
+                            ...state,
+                            childNodes: [
+                                ...state.childNodes.slice(0, nodeIndex - 1),
+                                ...state.childNodes.slice(nodeIndex + 1)
+                            ]
+                        };
+                    }
+                    return state;
                 default:
                     return state;
             }
