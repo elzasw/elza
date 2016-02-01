@@ -30,7 +30,7 @@ public class Relation {
     private String classTypeCode;
 
     /** Typ vztahu. */
-    @XmlAttribute(name = "relation-type-code")
+    @XmlAttribute(name = "relation-type-code", required = true)
     private String relationTypeCode;
 
     /** Datum počátku. */

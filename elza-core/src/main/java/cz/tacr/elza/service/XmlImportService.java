@@ -692,7 +692,6 @@ public class XmlImportService {
         }
     }
 
-
     private Map<String, Integer> importPackets(List<Packet> packets, Set<String> usedPackets, ArrFindingAid findingAid,
             boolean stopOnError) throws InvalidDataException {
         Map<String, Integer> xmlIdIntIdPacketMap = new HashMap<>();
@@ -731,7 +730,8 @@ public class XmlImportService {
         return packetRepository.save(arrPacket);
     }
 
-    private Map<String, Integer> importParties(List<AbstractParty> parties, Set<String> usedParties, boolean stopOnError, Map<String, Integer> xmlIdIntIdRecordMap) throws NonFatalXmlImportException {
+    private Map<String, Integer> importParties(List<AbstractParty> parties, Set<String> usedParties, boolean stopOnError,
+            Map<String, Integer> xmlIdIntIdRecordMap) throws NonFatalXmlImportException {
         Map<String, Integer> xmlIdIntIdPartyMap = new HashMap<>();
         if (CollectionUtils.isEmpty(parties)) {
             return xmlIdIntIdPartyMap;
@@ -872,7 +872,6 @@ public class XmlImportService {
                 }
             }
         }
-        // TODO vanek co s relation.getClassTypeCode()?
 
         return parRelation;
     }
@@ -906,10 +905,22 @@ public class XmlImportService {
             InvalidDataException {
         ParRelation parRelation = new ParRelation();
 
+
         String relationTypeCode = relation.getRelationTypeCode();
-        ParRelationType parRelationType = relationTypeRepository.findByCode(relationTypeCode);
-        if (parRelationType ==  null) {
-            throw new PartyImportException("Nebyl nalezen typ vztahu s kódem " + relationTypeCode);
+        String classTypeCode = relation.getClassTypeCode();
+
+        ParRelationType parRelationType;
+        if (classTypeCode == null) {
+            parRelationType = relationTypeRepository.findByCodeAndClassTypeIsNull(relationTypeCode);
+            if (parRelationType ==  null) {
+                throw new PartyImportException("Nebyl nalezen typ vztahu s kódem " + relationTypeCode);
+            }
+        } else {
+            parRelationType = relationTypeRepository.findByCodeAndClassType(relationTypeCode, classTypeCode);
+            if (parRelationType ==  null) {
+                throw new PartyImportException("Nebyl nalezen typ vztahu s kódem " + relationTypeCode
+                        + " a s třídou " + classTypeCode);
+            }
         }
         parRelation.setComplementType(parRelationType);
 
@@ -927,7 +938,7 @@ public class XmlImportService {
             List<ParPartyGroupIdentifier> parPartyGroupIdentifiers = new ArrayList<ParPartyGroupIdentifier>(partyGroupIds.size());
             for (PartyGroupId partyGroupId : partyGroupIds) {
                 try {
-                    ParPartyGroupIdentifier parPartyGroupIdentifier = createparPartyGroupIdentifier(parPartyGroup,
+                    ParPartyGroupIdentifier parPartyGroupIdentifier = createPartyGroupIdentifier(parPartyGroup,
                             partyGroupId, stopOnError);
 
                     partyGroupIdentifierRepository.save(parPartyGroupIdentifier);
@@ -946,7 +957,7 @@ public class XmlImportService {
         }
     }
 
-    private ParPartyGroupIdentifier createparPartyGroupIdentifier(ParPartyGroup parPartyGroup, PartyGroupId partyGroupId, boolean stopOnError)
+    private ParPartyGroupIdentifier createPartyGroupIdentifier(ParPartyGroup parPartyGroup, PartyGroupId partyGroupId, boolean stopOnError)
             throws InvalidDataException {
         ParPartyGroupIdentifier parPartyGroupIdentifier = new ParPartyGroupIdentifier();
         parPartyGroupIdentifier.setIdentifier(XmlImportUtils.trimStringValue(partyGroupId.getId(), StringLength.LENGTH_50, stopOnError));
