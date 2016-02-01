@@ -43,6 +43,10 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
         this.props.onCreateRecord();
     }
 
+    handleDetail(recordId) {
+        this.props.onDetail(recordId);
+    }
+
     renderRecord(item, isHighlighted, isSelected) {
         var cls = 'item';
         if (isHighlighted) {
@@ -72,6 +76,13 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
         const {descItem, locked} = this.props;
         var footer = this.renderFooter();
         var value = descItem.record ? {id: descItem.record.recordId, name: descItem.record.record} : null;
+
+        var actions = new Array;
+
+        if (descItem.record) {
+            actions.push(<div onClick={this.handleDetail.bind(this, descItem.record.recordId)} className={'btn btn-default detail'}><Icon glyph={'fa-user'}/></div>);
+        }
+
         return (
                 <div className='desc-item-value desc-item-value-parts'>
                     <Autocomplete

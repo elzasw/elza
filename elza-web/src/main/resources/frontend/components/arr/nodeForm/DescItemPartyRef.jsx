@@ -15,7 +15,7 @@ import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
 var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.bindMethods('handleChange', 'renderParty', 'handleSearchChange', 'renderFooter');
+        this.bindMethods('handleChange', 'renderParty', 'handleSearchChange', 'renderFooter', 'handleDetail');
 
         this.state = {partyList: []};
     }
@@ -81,10 +81,21 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
         )
     }
 
+    handleDetail(partyId) {
+        this.props.onDetail(partyId);
+    }
+
     render() {
         const {descItem, locked} = this.props;
         var footer = this.renderFooter();
         var value = descItem.party ? {id: descItem.party.partyId, name: descItem.party.record.record} : null;
+
+        var actions = new Array;
+
+        if (descItem.party) {
+            actions.push(<div onClick={this.handleDetail.bind(this, descItem.party.partyId)} className={'btn btn-default detail'}><Icon glyph={'fa-user'}/></div>);
+        }
+
         return (
             <div className='desc-item-value desc-item-value-parts'>
                 <Autocomplete
@@ -99,6 +110,7 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
                         onSearchChange={this.handleSearchChange}
                         onChange={this.handleChange}
                         renderItem={this.renderParty}
+                        actions={[actions]}
                 />
             </div>
         )

@@ -6,7 +6,7 @@ require('./SubNodeForm.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Icon, i18n, AbstractReactComponent, NoFocusButton, AddPacketForm, AddPartyPersonForm, AddRegistryForm,
+import {Icon, i18n, AbstractReactComponent, NoFocusButton, AddPacketForm, AddPartyForm, AddRegistryForm,
         AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm} from 'components';
 import {connect} from 'react-redux'
 import {indexById} from 'stores/app/utils.jsx'
@@ -25,7 +25,8 @@ import {addNode} from 'actions/arr/node'
 import {createPacket} from 'actions/arr/packets'
 import faSelectSubNode from 'actions/arr/nodes'
 import {isFaRootId} from './ArrUtils.jsx'
-import {insertPartyArr} from 'actions/party/party'
+import {insertPartyArr, partyDetailFetchIfNeeded} from 'actions/party/party'
+import {routerNavigate} from 'actions/router'
 
 var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     constructor(props) {
@@ -252,8 +253,12 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             descItemIndex
         }
 
-        this.dispatch(modalDialogShow(this, i18n('registry.addRegistry'),
-                <AddRegistryForm create onSubmit={this.handleCreateRecordSubmit.bind(this, valueLocation)}/>));
+        // TODO: slapa - čeká se na dodělání REJSTŘÍKŮ
+        console.warn("TODO: slapa - čeká se na dodělání REJSTŘÍKŮ - handleCreateRecord");
+
+        // TODO: slapa - předělat => volat metodu na vyvoření jednotně
+        /*this.dispatch(modalDialogShow(this, i18n('registry.addRegistry'),
+                <AddRegistryForm create onSubmit={this.handleCreateRecordSubmit.bind(this, valueLocation)}/>));*/
     }
 
     /**
@@ -265,8 +270,29 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     handleCreateRecordSubmit(valueLocation, data) {
         const {versionId, selectedSubNodeId, nodeKey} = this.props;
 
-        // TODO slapa: Až se dodělají rejstříky, napojit
-        console.warn(valueLocation, data);
+        // TODO: slapa - čeká se na dodělání REJSTŘÍKŮ
+        console.warn("TODO: slapa - čeká se na dodělání REJSTŘÍKŮ - handleCreateRecordSubmit");
+    }
+
+    /**
+     * Zobrazení detailu rejstříku.
+     *
+     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
+     * @param descItemTypeIndex {Integer} index atributu v seznamu
+     * @param descItemIndex {Integer} index honodty atributu v seznamu
+     * @param recordId {Integer} identifikátor rejstříku
+     */
+    handleDetailRecord(descItemGroupIndex, descItemTypeIndex, descItemIndex, recordId) {
+        var valueLocation = {
+            descItemGroupIndex,
+            descItemTypeIndex,
+            descItemIndex
+        }
+
+        // TODO: slapa - čeká se na dodělání REJSTŘÍKŮ
+        //this.dispatch(recordSelect(recordId));
+        console.warn("TODO: slapa - čeká se na dodělání OSOB - handleDetailRecord");
+        this.dispatch(routerNavigate('registry'));
     }
 
     /**
@@ -284,32 +310,8 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             descItemIndex
         }
 
-        var data = {
-            partyTypeId: partyTypeId
-        }
-        switch(partyTypeId){
-            case 1:
-                // zobrazení formuláře fyzicke osoby
-                this.dispatch(modalDialogShow(this, i18n('party.addParty') , <AddPartyPersonForm initData={data} onSubmit={this.handleCreatePartySubmit.bind(this, valueLocation)} />));
-                break;
-            case 2:
-                // zobrazení formuláře rodu
-                this.dispatch(modalDialogShow(this, i18n('party.addPartyDynasty') , <AddPartyDynastyForm initData={data} onSubmit={this.handleCreatePartySubmit.bind(this, valueLocation)} />));
-                break;
-            case 3:
-                // zobrazení formuláře korporace
-                this.dispatch(modalDialogShow(this, i18n('party.addPartyGroup') , <AddPartyGroupForm initData={data} onSubmit={this.handleCreatePartySubmit.bind(this, valueLocation)} />));
-                break;
-            case 4:
-                // zobrazení formuláře dočasné korporace
-                this.dispatch(modalDialogShow(this, i18n('party.addPartyEvent') , <AddPartyEventForm initData={data} onSubmit={this.handleCreatePartySubmit.bind(this, valueLocation)} />));
-                break;
-            default:
-                // zobrazení formuláře jine osoby - ostatni
-                this.dispatch(modalDialogShow(this, i18n('party.addPartyOther') , <AddPartyOtherForm initData={data} onSubmit={this.handleCreatePartySubmit.bind(this, valueLocation)} />));
-                break;
-        }
-
+        // TODO: slapa - čeká se na dodělání OSOB
+        console.warn("TODO: slapa - čeká se na dodělání OSOB - handleCreateParty");
     }
 
     /**
@@ -319,55 +321,29 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param form {Object} data z formuláře
      */
     handleCreatePartySubmit(valueLocation, data) {
-        const {versionId, selectedSubNodeId, nodeKey} = this.props;
+        // TODO: slapa - čeká se na dodělání OSOB
+        console.warn("TODO: slapa - čeká se na dodělání OSOB - handleCreatePartySubmit");
+    }
 
-        var partyType = '';                                     // typ osoby - je potreba uvest i jako specialni klivcove slovo
-        switch(data.partyTypeId){
-            case 1: partyType = '.ParPersonVO'; break;          // typ osoby osoba
-            case 2: partyType = '.ParDynastyVO'; break;         // typ osoby rod
-            case 3: partyType = '.ParPartyGroupVO'; break;      // typ osoby korporace
-            case 4: partyType = '.ParEventVO'; break;           // typ osoby docasna korporace - udalost
+    /**
+     * Zobrazení detailu osoby.
+     *
+     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
+     * @param descItemTypeIndex {Integer} index atributu v seznamu
+     * @param descItemIndex {Integer} index honodty atributu v seznamu
+     * @param partyId {Integer} identifikátor osoby
+     */
+    handleDetailParty(descItemGroupIndex, descItemTypeIndex, descItemIndex, partyId) {
+        var valueLocation = {
+            descItemGroupIndex,
+            descItemTypeIndex,
+            descItemIndex
         }
-        var party = {
-            '@type': partyType,
-            partyType: {
-                partyTypeId: data.partyTypeId
-            },
-            genealogy: data.nameMain,
-            scope: '',
-            record: {
-                registerTypeId: data.recordTypeId,              // typ záznamu
-                scopeId:1                                       //trida rejstriku
-            },
-            from: {
-                textDate: data.validFrom,
-                calendarTypeId: data.calendarTypeIdFrom
-            },
-            to: {
-                textDate: data.validTo,
-                calendarTypeId: data.calendarTypeIdTo
-            },
-            partyNames : [{
-                nameFormType: {
-                    nameFormTypeId: data.nameFormTypeId
-                },
-                displayName: data.nameMain,
-                mainPart: data.nameMain,
-                otherPart: data.nameOther,
-                degreeBefore: data.degreeBefore,
-                degreeAfter: data.degreeAfter,
-                prefferedName: true,
-                validFrom: {
-                    textDate: data.validFrom,
-                    calendarTypeId: data.calendarTypeIdFrom
-                },
-                validTo: {
-                    textDate: data.validTo,
-                    calendarTypeId: data.calendarTypeIdTo
-                }
-            }]
-        }
-        this.dispatch(insertPartyArr(party, valueLocation, versionId, selectedSubNodeId, nodeKey));
+
+        // TODO: slapa - čeká se na dodělání OSOB
+        //this.dispatch(partySelect(partyId));
+        console.warn("TODO: slapa - čeká se na dodělání OSOB - handleDetailParty");
+        this.dispatch(routerNavigate('party'));
     }
 
     /**
@@ -482,7 +458,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         }
 
         return (
-            <DescItemType key={descItemType.code}
+            <DescItemType key={descItemType.id}
                 descItemType={descItemType}
                 descItemTypeInfo={descItemTypeInfo}
                 rulDataType={rulDataType}
@@ -491,7 +467,9 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 packets={packets}
                 onCreatePacket={this.handleCreatePacket.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onCreateParty={this.handleCreateParty.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onDetailParty={this.handleDetailParty.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onCreateRecord={this.handleCreateRecord.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onDetailRecord={this.handleDetailRecord.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDescItemAdd={this.handleDescItemAdd.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDescItemRemove={this.handleDescItemRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onChange={this.handleChange.bind(this, descItemGroupIndex, descItemTypeIndex)}
