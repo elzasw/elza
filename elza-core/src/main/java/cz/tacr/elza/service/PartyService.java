@@ -245,7 +245,7 @@ public class PartyService {
         //synchronizace jmen osoby
         ParPartyName newPrefferedName = newParty.getPreferredName();
         saveParty.setPreferredName(null);
-        partyRepository.save(saveParty);
+        saveParty = partyRepository.save(saveParty);
         synchPartyNames(saveParty, newPrefferedName, newParty.getPartyNames());
 
         //synchronizace skupinových identifikátorů
