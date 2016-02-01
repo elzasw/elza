@@ -15,10 +15,13 @@ export function nodeInitState(node, prevNodesNode) {
         isFetching: false,
         fetched: false,
         dirty: false,
+        allChildNodes: [],
         childNodes: [],
         parentNodes: [],
         viewStartIndex: 0,
         pageSize: _pageSize,
+        filterText: '',
+        searchedIds: {}
     }
 
     if (prevNodesNode) {
@@ -39,16 +42,22 @@ export function nodeInitState(node, prevNodesNode) {
         result.fetched = prevNodesNode.fetched;
         result.dirty = prevNodesNode.dirty;
         result.childNodes = prevNodesNode.childNodes;
+        result.allChildNodes = prevNodesNode.allChildNodes;
         result.parentNodes = prevNodesNode.parentNodes;
         result.selectedSubNodeId = prevNodesNode.selectedSubNodeId;
+        result.filterText = prevNodesNode.filterText;
+        result.searchedIds = prevNodesNode.searchedIds;
     } else {
 //        result.nodeInfo = nodeInfo(undefined, {type:''});
         result.isFetching = false;
         result.fetched = false;
         result.dirty = false;
         result.childNodes = [];
+        result.allChildNodes = [];
         result.parentNodes = [];
         result.selectedSubNodeId = null;
+        result.filterText = '';
+        result.searchedIds = {};
     }
 
     return result;
@@ -76,6 +85,7 @@ const nodeInitialState = {
     fetched: false,
     dirty: false,
     childNodes: [],
+    allChildNodes: [],
     parentNodes: [],
 }
     //nodeInfo: nodeInfo(undefined, {type:''}),
@@ -89,6 +99,7 @@ export function node(state = nodeInitialState, action) {
                 fetched: false,
                 dirty: false,
                 childNodes: [],
+                allChildNodes: [],
                 parentNodes: [],
                 pageSize: _pageSize,
                 subNodeForm: subNodeForm(undefined, {type:''}),
@@ -124,7 +135,7 @@ export function node(state = nodeInitialState, action) {
             };
             return consolidateState(state, result);
         case types.FA_FA_SUBNODES_NEXT:
-            if ((state.viewStartIndex + state.pageSize/2) < state.childNodes.length) {
+            if ((state.viewStartIndex + state.pageSize/2) < state.allChildNodes.length) {
                 return {
                     ...state,
                     viewStartIndex: state.viewStartIndex + state.pageSize/2
@@ -142,7 +153,7 @@ export function node(state = nodeInitialState, action) {
                 return state;
             }
         case types.FA_FA_SUBNODES_NEXT_PAGE:
-            if ((state.viewStartIndex + state.pageSize) < state.childNodes.length) {
+            if ((state.viewStartIndex + state.pageSize) < state.allChildNodes.length) {
                 return {
                     ...state,
                     viewStartIndex: state.viewStartIndex + state.pageSize
@@ -159,6 +170,43 @@ export function node(state = nodeInitialState, action) {
             } else {
                 return state;
             }
+        case types.FA_FA_SUBNODES_FULLTEXT_SEARCH:
+            return {
+                ...state,
+                filterText: action.filterText
+            }
+        case types.FA_FA_SUBNODES_FULLTEXT_RESULT:
+            if (state.filterText === '') {
+                var result = {
+                    ...state,
+                    childNodes: [...state.allChildNodes],
+                    searchedIds: {},
+                    viewStartIndex: 0
+                }
+                result.viewStartIndex = getViewStartIndex(result, state.selectedSubNodeId);
+                return result;
+            }
+
+            var searchedIds = {}
+            action.nodeIds.forEach(n => {
+                searchedIds[n.nodeId] = true;
+            })
+
+            var childNodes = [];
+            state.allChildNodes.forEach(n => {
+                if (searchedIds[n.id]) {
+                    childNodes.push(n);
+                }
+            })
+
+            var result = {
+                ...state,
+                childNodes: childNodes,
+                searchedIds: searchedIds,
+                viewStartIndex: 0
+            }
+            result.viewStartIndex = getViewStartIndex(result, state.selectedSubNodeId);
+            return result;
         case types.FA_SUB_NODE_INFO_REQUEST:
         case types.FA_SUB_NODE_INFO_RECEIVE:
             var result = {
@@ -185,6 +233,7 @@ export function node(state = nodeInitialState, action) {
                 fetched: true,
                 dirty: false,
                 childNodes: action.childNodes,
+                allChildNodes: action.childNodes,
                 parentNodes: action.parentNodes,
                 lastUpdated: action.receivedAt
             }
@@ -205,9 +254,17 @@ export function node(state = nodeInitialState, action) {
                 selectedSubNodeId: action.subNodeId
             }
 
+            // Pokud daná položka není ve filtrovaných položkách, zrušíme filtr
+            if (action.subNodeId !== null && indexById(state.childNodes, action.subNodeId) === null) {
+                result.filterText = ''
+                result.searchedIds = {}
+                result.childNodes = [...state.allChildNodes]
+                result.viewStartIndex = 0;
+            }
+
             // Změna view tak, aby byla daná položka vidět
             if (action.subNodeId !== null) {
-                result.viewStartIndex = getViewStartIndex(state, action.subNodeId);
+                result.viewStartIndex = getViewStartIndex(result, action.subNodeId);
             }
 
             // Data vztahující se k vybranému ID
@@ -230,30 +287,52 @@ export function node(state = nodeInitialState, action) {
                      * direction - BEFORE/AFTER - před/za
                      * newNode - Node objekt
                      */
-                    var nodeIndex = indexById(state.childNodes, action.indexNode.id);
+                    var nodeIndex = indexById(state.allChildNodes, action.indexNode.id);
                     if (nodeIndex != null) {
                         switch (action.direction) {
                             case "AFTER":
                             case "BEFORE":
                                 nodeIndex = action.direction == "BEFORE" ? nodeIndex : nodeIndex + 1;
 
+                                var allChildNodes = [
+                                    ...state.allChildNodes.slice(0, nodeIndex),
+                                    nodeInitState(action.newNode),
+                                    ...state.allChildNodes.slice(nodeIndex)
+                                ]
+
                                 return {
                                     ...state,
-                                    childNodes: [
-                                        ...state.childNodes.slice(0, nodeIndex),
-                                        nodeInitState(action.newNode),
-                                        ...state.childNodes.slice(nodeIndex)
-                                    ]
+                                    allChildNodes: allChildNodes,
+                                    childNodes: [...allChildNodes],
+                                    filterText: '',
+                                    searchedIds: {}
                                 };
                             case "CHILD":
+                                var allChildNodes = [
+                                    ...state.allChildNodes,
+                                    nodeInitState(action.newNode)
+                                ]
+
                                 return {
                                     ...state,
-                                    childNodes: [
-                                        ...state.childNodes,
-                                        nodeInitState(action.newNode)
-                                    ]
+                                    allChildNodes: allChildNodes,
+                                    childNodes: [...allChildNodes],
+                                    filterText: '',
+                                    searchedIds: {}
                                 };
                         }
+                    }
+                    return state;
+                case "DELETE":
+                    var nodeIndex = indexById(state.childNodes, action.node.id);
+                    if (nodeIndex != null) {
+                        return {
+                            ...state,
+                            childNodes: [
+                                ...state.childNodes.slice(0, nodeIndex - 1),
+                                ...state.childNodes.slice(nodeIndex + 1)
+                            ]
+                        };
                     }
                     return state;
                 default:
