@@ -41,7 +41,15 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     componentWillReceiveProps(nextProps) {
         this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp);
 
-        this.setState({}, this.ensureItemVisible)
+        var scroll = false;
+        if (!this.props.node.fetched && nextProps.node.fetched) {
+            scroll = true;
+        } else if (nextProps.node.selectedSubNodeId !== null && this.props.node.selectedSubNodeId !== nextProps.node.selectedSubNodeId) {
+            scroll = true;
+        }
+        if (scroll) {
+            this.setState({}, this.ensureItemVisible)
+        }
     }
 
     ensureItemVisible() {
@@ -333,7 +341,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                         JP na konec</div>
                 }
                 <div className='btn btn-default' disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(faSubNodesPrevPage())}><Icon glyph="fa-backward" />{i18n('arr.fa.subNodes.prevPage')}</div>
-                <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize > node.childNodes.length} onClick={()=>this.dispatch(faSubNodesNextPage())}><Icon glyph="fa-forward" />{i18n('arr.fa.subNodes.nextPage')}</div>
+                <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize >= node.childNodes.length} onClick={()=>this.dispatch(faSubNodesNextPage())}><Icon glyph="fa-forward" />{i18n('arr.fa.subNodes.nextPage')}</div>
 
                 <input className="form-control" type="text"/><Button>Hledat</Button>
             </div>
