@@ -30,23 +30,25 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
     }
 
     render() {
-        if(this.props.items && this.props.items.length>0){
+        var partyList = this.props.items;
+        if(partyList && partyList.length>0){
             var description = '';
-            for(var i = 0; i<this.props.items.length; i++){                                                     // projdu vsechny polozky abych jim nastavil popisek
-                if(this.props.items[i].record && this.props.items[i].record.characteristics){                   // pokud ma popisek zadany
-                    var lineEndPosition = this.props.items[i].record.characteristics.indexOf("\n")              // zjistim kde konci první řádek
+            for(var i = 0; i<partyList.length; i++){                                                            // projdu vsechny polozky abych jim nastavil popisek
+                if(partyList[i].record && partyList[i].record.characteristics){                                 // pokud ma popisek zadany
+                    var lineEndPosition = partyList[i].record.characteristics.indexOf("\n")                     // zjistim kde konci první řádek
                     if(lineEndPosition>=0){                                                                     // pokud vubec nekde konci (popisek muze mit jen 1 radek)
-                        description = this.props.items[i].record.characteristics.substring(0, lineEndPosition); // oriznu ho do konce radku
+                        description = partyList[i].record.characteristics.substring(0, lineEndPosition);        // oriznu ho do konce radku
                     }else{
-                        description = this.props.item[i].record.characteristics;                                // jinak ho necham cely                
+                        description = partyList[i].record.characteristics;                                      // jinak ho necham cely                
                     }   
-                    this.props.items[i].record.description = description;                                       // ulozim popisek k objektu                
+                    partyList[i].record.description = description;                                              // ulozim popisek k objektu                
                 }else{
-                    description = '';                                                                           // popisek nezadan, nastavim prazdny
+                    partyList[i].record.description = '';                                                       // ulozim popisek k objektu                                                                           // popisek nezadan, nastavim prazdny
                 }
+                console.log(partyList[i].record.description);
             }
             
-            var partyList = this.props.items.map((item) => {                                               // přidání všech nazelených osob
+            var partyList = partyList.map((item) => {                                                           // přidání všech nazelených osob
 
                     return  <li 
                                 key={item.partyId} 

@@ -68,7 +68,7 @@ var PartyDetailCreators = class PartyDetailCreators extends AbstractReactCompone
         var party = this.props.partyRegion.selectedPartyData;                   // aktuálně upravovaná osoba
         party.creators[party.creators.length] = {                               // nového autora vložíme na konec seznamu autorů
             partyId: data.partyId,
-            '@type': 'ParPartyVO'
+            '@type': '.ParPartyVO'
         }
         this.dispatch(updateParty(party));                                      // aurtor se uloží a osoba znovu načte     
     }
@@ -81,7 +81,7 @@ var PartyDetailCreators = class PartyDetailCreators extends AbstractReactCompone
     handleAddCreator(){
         var party = this.props.partyRegion.selectedPartyData;                       // načtení aktualní osoby ze store
         var data = {                                                                // výchozí data formuláře
-            partyId: 401,                                                           // identifikátor typu osoby, jejíž jménu upravujeme
+            partyId: 481,                                                           // identifikátor typu osoby, jejíž jménu upravujeme
         };
         this.addCreator(data);                                                      // uložení dat
         //this.dispatch(modalDialogShow(this, i18n('party.detail.creator.new') , <PartyCreatorForm initData={data} onSave={this.addCreator} />));    // otevře se formulář nového autora   
