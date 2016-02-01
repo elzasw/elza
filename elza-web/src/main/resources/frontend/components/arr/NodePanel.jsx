@@ -18,6 +18,7 @@ import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes'
 import {indexById} from 'stores/app/utils.jsx'
 import {createFaRoot, isFaRootId} from './ArrUtils.jsx'
 import {propsEquals} from 'components/Utils'
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 const scrollIntoView = require('dom-scroll-into-view')
 
 require ('./NodePanel.less');
@@ -41,11 +42,13 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 
     componentDidMount() {
         this.requestData(this.props.versionId, this.props.node);
+        this.dispatch(calendarTypesFetchIfNeeded());
         this.ensureItemVisible();
     }
 
     componentWillReceiveProps(nextProps) {
         this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp);
+        this.dispatch(calendarTypesFetchIfNeeded());
 
         var newState = {
             filterText: nextProps.node.filterText
@@ -386,7 +389,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         )
 
         var form;
-        if (node.subNodeForm.fetched) {
+        if (node.subNodeForm.fetched && calendarTypes.fetched) {
             var conformityInfo = this.transformConformityInfo(node);
             form = <SubNodeForm
                 nodeId={node.id}

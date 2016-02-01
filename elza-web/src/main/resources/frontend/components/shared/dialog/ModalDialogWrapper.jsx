@@ -3,13 +3,25 @@
  */
 
 import React from 'react';
-
+import ReactDOM from 'react-dom';
 import {i18n} from 'components';
 import {Modal} from 'react-bootstrap';
+import {setInputFocus} from 'components/Utils'
 
 var ModalDialogWrapper = class ModalDialogWrapper extends React.Component {
     constructor(props) {
         super(props);
+    }
+
+    componentDidMount() {
+        this.setState({}, () => {
+            if (this.refs.modalBody) {
+                var el = ReactDOM.findDOMNode(this.refs.modalBody);
+                if (el) {
+                    setInputFocus(el, false);
+                }
+            }
+        })
     }
 
     render() {

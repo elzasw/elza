@@ -13,7 +13,6 @@ import {indexById} from 'stores/app/utils.jsx'
 import {faSubNodeFormDescItemTypeAdd, faSubNodeFormValueChange, faSubNodeFormDescItemTypeDelete,
         faSubNodeFormValueChangeSpec,faSubNodeFormValueBlur, faSubNodeFormValueFocus, faSubNodeFormValueAdd,
         faSubNodeFormValueDelete} from 'actions/arr/subNodeForm'
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 var classNames = require('classnames');
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import DescItemString from './nodeForm/DescItemString'
@@ -27,6 +26,7 @@ import faSelectSubNode from 'actions/arr/nodes'
 import {isFaRootId} from './ArrUtils.jsx'
 import {insertPartyArr, partyDetailFetchIfNeeded} from 'actions/party/party'
 import {routerNavigate} from 'actions/router'
+import {setInputFocus} from 'components/Utils'
 //import {} from './AddNodeDropdown.jsx'
 
 var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
@@ -45,12 +45,18 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        this.dispatch(calendarTypesFetchIfNeeded());
+        this.setState({}, () => {
+            if (this.refs.nodeForm) {
+                var el = ReactDOM.findDOMNode(this.refs.nodeForm);
+                if (el) {
+                    setInputFocus(el, false);
+                }
+            }
+        })
     }
 
     componentWillReceiveProps(nextProps) {
 //console.log("@@@@@-SubNodeForm-@@@@@", props);
-        this.dispatch(calendarTypesFetchIfNeeded());
     }
 
     /**
@@ -588,10 +594,6 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     render() {
         const {calendarTypes, formData} = this.props;
 
-        if (calendarTypes.isFetching && !calendarTypes.fetched) {
-            return <div className='node-form'></div>
-        }
-
         var formActions = this.renderFormActions();
         var descItemGroups = formData.descItemGroups.map((group, groupIndex) => (
             this.renderDescItemGroup(group, groupIndex)
@@ -600,7 +602,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         return (
             <div className='node-form'>
                 {formActions}
-                <div className='desc-item-groups'>
+                <div ref='nodeForm' className='desc-item-groups'>
                     {descItemGroups}
                 </div>
             </div>

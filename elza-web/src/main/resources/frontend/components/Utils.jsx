@@ -10,6 +10,53 @@ function consolidateState(prevState, newState) {
     return equals ? prevState : newState;
 }
 
+function chooseInputEl(el1, el2) {
+    var result = null;
+
+    if (el1 && el2) {
+        var el1Rect = el1.getBoundingClientRect();
+        var el2Rect = el2.getBoundingClientRect();
+
+        if (el1Rect.top < el2Rect.top) {
+            result = el1;
+        } else if (el1Rect.top == el2Rect.top && el1Rect.left < el2Rect.left) {
+            result = el1;
+        } else {
+            result = el2;
+        }
+    } else if (!el1 && el2) {
+        result = el2;
+    } else if (el1 && !el2) {
+        result = el1;
+    }
+    return result;
+}
+
+/**
+ * Nastavení focusu na první viditelný nezakázaný element pro editaci.
+ * @param el {Object} container
+ * @param setInputFocus {bool} true, pokud má být obsah vybraný (např. u input type text)
+ */
+function setInputFocus(el, selectContent) {
+
+    var elem = $('input:visible:enabled', el).get(0);
+    var select = $('select:visible:enabled', el).get(0);
+    elem = chooseInputEl(elem, select);
+
+    var textarea = $('textarea:visible:enabled', el).get(0);
+    elem = chooseInputEl(elem, textarea);
+
+    var button = $('button:visible:enabled', el).get(0);
+    elem = chooseInputEl(elem, button);
+
+    if (elem) {
+        elem.focus();
+        if (selectContent) {
+            elem.select();
+        }
+    }
+}
+
 function propsEquals(x, y, attrs) {
     for (var a=0; a<attrs.length; a++) {
         var p = attrs[a];
@@ -279,6 +326,7 @@ module.exports = {
     consolidateState: consolidateState,
     stateEquals: stateEquals,
     propsEquals: propsEquals,
+    setInputFocus: setInputFocus,
     init: function() {
         init();
     }
