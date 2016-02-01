@@ -204,6 +204,16 @@ public class PartyController {
             partyTypeVO.addRegisterType(regRegisterTypeVO);
         }
 
+
+        for (ParPartyTypeVO partyTypeVO : partyTypeVoMap.values()) {
+            ParPartyType partyType = partyTypeRepository.findOne(partyTypeVO.getPartyTypeId());
+            List<RegRegisterType> partyRegisterTypes = registerTypeRepository
+                    .findByPartyTypeEnableAdding(partyType);
+
+            partyTypeVO.setRegisterTypes(factoryVo.createRegisterTypesTree(partyRegisterTypes, true, partyType));
+        }
+
+
         return new ArrayList<>(partyTypeVoMap.values());
     }
 
