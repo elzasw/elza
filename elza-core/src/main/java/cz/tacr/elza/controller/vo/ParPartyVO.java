@@ -61,6 +61,11 @@ public class ParPartyVO {
     private RegRecordVO record;
 
     /**
+     * Charakteristika.
+     */
+    private String characteristics;
+
+    /**
      * Verze záznamu.
      */
     private Integer version;
@@ -153,6 +158,14 @@ public class ParPartyVO {
 
     public void setRecord(final RegRecordVO record) {
         this.record = record;
+    }
+
+    public String getCharacteristics() {
+        return characteristics;
+    }
+
+    public void setCharacteristics(final String characteristics) {
+        this.characteristics = characteristics;
     }
 
     public void addPartyName(final ParPartyNameVO partyName) {
