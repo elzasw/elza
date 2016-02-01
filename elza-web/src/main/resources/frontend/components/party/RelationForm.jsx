@@ -6,108 +6,203 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/actionTypes';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, Search, i18n} from 'components';
+import {AbstractReactComponent, Autocomplete, i18n} from 'components';
 import {Modal, Button, Input, Glyphicon} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
-import {decorateFormField} from 'components/form/FormUtils'
-import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
 import {refRegistryListFetchIfNeeded} from 'actions/refTables/registryList'
+import {modalDialogHide} from 'actions/global/modalDialog'
+import {Combobox} from 'react-input-enhancements'
 
 
 require ('./PartyFormStyles.less');
 
-const validate = (values, props) => {
-    const errors = {};
-    if ((!values.relationTypeId || values.relationTypeId==0 )) {
-        errors.relationTypeId = i18n('global.validation.required');
-    }
-    if ((!values.calendarTypeIdTo || values.calendarTypeIdTo==0 )) {
-        errors.calendarTypeIdTo = i18n('global.validation.required');
-    }
-
-    if ((!values.calendarTypeIdFrom || values.calendarTypeIdFrom==0 )) {
-        errors.calendarTypeIdFrom = i18n('global.validation.required');
-    }
-    console.log(values.entities);
-    return errors;
-};
-
+/**
+  * RELATION FORM
+  * *********************************************
+  * Formulář vztahu osoby
+  */ 
 var RelationForm = class RelationForm extends AbstractReactComponent {
     constructor(props) {
-        super(props);
-        this.dispatch(calendarTypesFetchIfNeeded());
-        this.dispatch(refPartyTypesFetchIfNeeded());
-        this.dispatch(refRegistryListFetchIfNeeded());
-        this.state = {
-            entities : props.initData.entities
+        super(props);                                       
+        this.dispatch(calendarTypesFetchIfNeeded());        // budeme potřebovat seznam typů kaledáře, tj pokud není ještě načtený, se načte
+        this.dispatch(refPartyTypesFetchIfNeeded());        // budeme potřebovt také seznam typů osob 
+        this.dispatch(refRegistryListFetchIfNeeded());      // a budeme potřebovat potřebovat seznam rejstříkových položek
+        
+        this.state = {                                      // ve state jsou uložena a průběžně udržová data formuláře
+            data : this.props.initData,                     // předvyplněná data formuláře
+            errors: []                                      // sezn chyb k vypsání uživateli
         };
-        this.props.load(props.initData);
-        this.bindMethods(
-            'addEntity',
-            'removeEntity',
-            'changeEntityValue'
+        this.bindMethods(                                   // pripojení potřebných metod - aby měly k dispozici tento objekt (formulář)
+            'addEntity',                                    // funkce pro přidání nové entity do vztahu
+            'removeEntity',                                 // funkce pro odebrání entity ze vztahu
+            'updateEntityValue',                            // funkce pro změnu nějaké položky jedné entity
+            'updateValue',                                  // funkce pro změnu nějaké hodnoty vztahu
+            'handleClose',                                  // funkce pro zavření dialogu formuláře
+            'handleSubmit',                                 // funkce pro odeslání formuláře
+            'validate'                                      // funkce pro kontrolu zadaných dat formuláře
         );
     }
 
-    componentWillReceiveProps(nextProps) {
-    }
-
-    componentDidMount(){
-    }
-
+     /**
+     * ADD ENTITY
+     * *********************************************
+     * přidání nové prázdné entity do vztahu
+     */ 
     addEntity(){
-        var entities = this.state.entities;
-        entities[entities.length]={
+        var data = this.state.data;                         // původní data vztahu(formuláře)
+        data.entities[data.entities.length]={               // pridání nové prázdné entity na konec seznamu entit
             recordId: null,
             roleTypeId: null,
             sources: '',
         }
         this.setState({
-            entities : entities
+            data : data                                     // uložení výsledku do state
         });
     }
 
+     /**
+     * REMOVE ENTITY
+     * *********************************************
+     * odstranění jedné entity ze vztahu
+     * @params int index - lokální index entity, kterou odstranit 
+     * @params event - událost která změnu vyvolala
+     */ 
     removeEntity(index, event){
-        var entities = [];
-        
-        for(var i=0; i<this.state.entities.length; i++){
-            if(i != index){
-               entities[entities.length] = this.state.entities[i]; 
+        var data = this.state.data;                                 // původní data formuláře
+        var entities = [];                                          // nový seznnam entit
+        for(var i=0; i<data.entities.length; i++){                  // procházejí se původní entity
+            if(i != index){                                         // a všechny co nejsou mazaná entita
+               entities[entities.length] = data.entities[i];        // přidáme do nových entit
             }
         }
+        data.entities = entities;                                   // stare entity v datech vymeníme za nové
         this.setState({
-            entities : entities
+            data : data                                             // a uložíme nová data do state
         });
     }
 
-    
-    changeEntityValue(data, event){
-        var entities = this.state.entities;
-        for(var i=0; i<this.state.entities.length; i++){
-            if(i == data.index){
-                switch(data.variable){
-                    case "record" : entities[data.index].recordId = event.target.value; break;
-                    case "role" : entities[data.index].roleTypeId = event.target.value; break;
-                    case "sources" : entities[data.index].sources = event.target.value; break;
+    /**
+     * UPDATE VALUE
+     * *********************************************
+     * aktualizace nějaké hodnoty ve formuláři (kromě entit)
+     * @params event - událost která změnu vyvolala
+     */
+    updateValue(event){
+        var value = event.target.value;                                                 // hodnota změněného pole formuláře
+        var variable = event.target.name;                                               // nazeb měněné hodnoty
+        var data = this.state.data;                                                     // puvodni data formuláře
+        switch(variable){
+            case "relationTypeId" : data.relationTypeId = event.target.value; break;    // změna typu vztahu
+            case "note" : data.note = event.target.value; break;                        // změna poznámky
+            case "dateNote" : data.dateNote = event.target.value; break;                // změna poznámky k času
+            case "fromText" : data.from.textDate = event.target.value; break;           // změna data od
+            case "toText" : data.to.textDate = event.target.value; break;               // změna data do
+            case "fromCalendar" : data.from.calendarTypeId = event.target.value; break; // změna typu kalendáře od
+            case "toCalendar" : data.to.calendarTypeId = event.target.value; break;     // změna typu kalendáře do
+        }
+        this.setState({
+            data : data                                                                 // uložení změn do state
+        });
+    }
+
+     /**
+     * UPDATE ENTITY VALUE
+     * *********************************************
+     * aktualizace nějaké hodnoty entity ve formuláři 
+     * @params obj entity - obsahuje index entity a měněnou hodnotu, např {index 5, variable: 'record'} 
+     * @params event - událost která změnu vyvolala
+     */   
+    updateEntityValue(entity, event){
+        var data = this.state.data;                             // puvodní data formuláře
+        for(var i=0; i<data.entities.length; i++){              // procházejí se všechny entity
+            if(i == entity.index){                              // nalezení té pravé, krou máme změnit
+                switch(entity.variable){                        
+                    case "record" : data.entities[entity.index].recordId = event.target.value; break;
+                    case "role" : data.entities[entity.index].roleTypeId = event.target.value; break;
+                    case "sources" : data.entities[entity.index].sources = event.target.value; break;
                 }
             }
         }
         this.setState({
-            entities : entities
+            data : data                                         // uložení změny do state
         });
     }
 
-    handleUpdateValue(e){
-        var value = e.target.value;
-        var variable = e.target.name;
-        var party = this.state.party;   
-        this.dispatch(updateParty(party));
+
+    /**
+     * HANDLE SUBMIT
+     * *********************************************
+     * Odeslání formuláře
+     */
+    handleSubmit(e){
+        var errors = this.validate();               // seznam  chyb ve vyplněných datech
+        if(errors.length > 0){                      // pokud je formulář chybně vyplnění
+            this.setState({             
+                errors : errors                     // seznam chyb se uloží do state => dojde s přerenderování, při kterém budou chyby vypsany
+            });
+        }else{                                      // formulář je vyplněn dobře
+            this.props.onSave(this.state.data);     // vyplněná data se pošlou do funkce definované nadřazenou komponentou v proměnné onSave 
+        }
     }
 
+
+    /**
+     * VALIDATE
+     * *********************************************
+     * Kontrola vyplnění formuláře vztahu
+     * @return array errors - seznam chyb 
+     */
+    validate(){
+        var errors = [];                                        // seznam chyb
+        var data = this.state.data;                             // zadaná data z formuláře
+
+        //kontrola vyplnění typu vztahu
+        if(data.relationTypeId == 0 || data.relationTypeId == null ||  data.relationTypeId == undefined){
+            errors[errors.length] = i18n('party.relation.errors.undefinedRelationType');
+        }
+
+        //oba typy kalendáře musí být zadané
+        if(
+            data.from.calendarTypeId == 0 || data.from.calendarTypeId == null ||  data.from.calendarTypeId == undefined || 
+            data.to.calendarTypeId == 0 || data.to.calendarTypeId == null ||  data.to.calendarTypeId == undefined 
+        ){
+            errors[errors.length] = i18n('party.relation.errors.undefinedCalendarType');
+        }
+
+        for(var i=0; i<data.entities.length; i++){
+            if(data.entities[i].recordId == 0 || data.entities[i].recordId == null ||  data.entities[i].recordId == undefined){
+                errors[errors.length] = i18n('party.relation.errors.undefinedRecord');
+                break;
+            }
+        }
+
+        for(var i=0; i<data.entities.length; i++){
+            if(data.entities[i].roleTypeId ==0 || data.entities[i].roleTypeId == null ||  data.entities[i].roleTypeId == undefined){
+                errors[errors.length] = i18n('party.relation.errors.undefinedRoleType');
+                break;
+            }
+        }
+
+        return errors;                                          // vrácení seznamu chyb
+    }
+
+    /**
+     * HANDLE CLOSE
+     * *********************************************
+     * Zavření dialogového okénka formuláře
+     */
+    handleClose(){
+        this.dispatch(modalDialogHide());
+    }
+
+    /**
+     * RENDER
+     * *********************************************
+     * Vykreslení formuláře
+     */
     render() {
-        console.log(this.props.refTables);
         var relationTypes = [];
         for(var i=0; i<this.props.refTables.partyTypes.items.length; i++){
             if(this.props.refTables.partyTypes.items[i].partyTypeId == this.props.initData.partyTypeId){
@@ -115,52 +210,62 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
             }
         }
         var roleTypes = [];
-        for(var i=0; i<relationTypes.length; i++){
-            if(relationTypes[i].relationTypeId == this.props.initData.relationTypeId){
-                roleTypes = relationTypes[i].relationRoleTypes;
+        if(relationTypes){
+            for(var i=0; i<relationTypes.length; i++){
+                if(relationTypes[i].relationTypeId == this.state.data.relationTypeId){
+                    roleTypes = relationTypes[i].relationRoleTypes;
+                }
             }
         }
-        const {fields: {relationId, relationTypeId, dateFrom, dateTo, calendarTypeIdFrom, calendarTypeIdTo, note, dateNote, entities}, handleSubmit, onClose} = this.props;
-        var entities2 = [];
+        // zaznamy pro autocomplate
+        var records = [];
+        for(var i = 0; i<this.props.refTables.registryList.items.recordList.length; i++){
+            records[records.length] = {
+                id: this.props.refTables.registryList.items.recordList[i].recordId,
+                name: this.props.refTables.registryList.items.recordList[i].record,
+            }
+        } 
         return (
             <div>
                 <Modal.Body>
-                    <form onSubmit={handleSubmit}>
-                        <input type="hidden" {...relationId}/>
-                        <Input type="select" label={i18n('party.relation.type')} {...relationTypeId} {...decorateFormField(relationTypeId)}>
+                    <form>
+                        <ul className="errors">
+                            {this.state.errors.map(i=> {return <li>{i}</li>})}
+                        </ul>
+                        <Input type="select" label={i18n('party.relation.type')} name="relationTypeId" value={this.state.data.relationTypeId} onChange={this.updateValue}>
                             <option value="0" key="0"></option> 
-                            {relationTypes.map(i=> {return <option value={i.relationTypeId} key={i.relationTypeId}>{i.name}</option>})}
+                            {relationTypes ? relationTypes.map(i=> {return <option value={i.relationTypeId} key={i.relationTypeId}>{i.name}</option>}) : null}
                         </Input>
-                        <Input type="text" label={i18n('party.relation.note')} {...note} {...decorateFormField(note)} />
+                        <Input type="text" label={i18n('party.relation.note')} name="note" value={this.state.data.note} onChange={this.updateValue} />
                         <hr/>
                         <div className="line">
-                            <Input type="text" label={i18n('party.relation.from')} {...dateFrom} {...decorateFormField(dateFrom)} />
-                            <Input type="select" label={i18n('party.calendarTypeFrom')} {...calendarTypeIdFrom} {...decorateFormField(calendarTypeIdFrom)}>
+                            <Input type="text" label={i18n('party.relation.from')} name="fromText" value={this.state.data.from.textDate} onChange={this.updateValue} />
+                            <Input type="select" label={i18n('party.calendarTypeFrom')} name="fromCalendar" value={this.state.data.from.calendarTypeId} onChange={this.updateValue} >
                                 <option value="0" key="0"></option> 
                                 {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
                             </Input>   
                         </div>
                         <div className="line">
-                            <Input type="text" label={i18n('party.relation.to')} {...dateTo} {...decorateFormField(dateTo)} /> 
-                            <Input type="select" label={i18n('party.calendarTypeTo')} {...calendarTypeIdTo} {...decorateFormField(calendarTypeIdTo)}>
+                            <Input type="text" label={i18n('party.relation.to')} name="toText" value={this.state.data.to.textDate} onChange={this.updateValue} />
+                            <Input type="select" label={i18n('party.calendarTypeTo')} name="toCalendar" value={this.state.data.to.calendarTypeId} onChange={this.updateValue} >
                                 <option value="0" key="0"></option> 
                                 {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
                             </Input>
                         </div>
-                        <Input type="text" label={i18n('party.relation.dateNote')} {...dateNote} {...decorateFormField(dateNote)} />
+                        <Input type="text" label={i18n('party.relation.dateNote')}  name="dateNote" value={this.state.data.dateNote} onChange={this.updateValue} />
                         <hr/>
                         <h5>{i18n('party.relation.entities')}</h5>
                         <div>
-                            {this.state.entities.map((j,index)=> {return <div className="block entity">
-                                <Input type="select" label={i18n('party.relation.record')} value={j.record} onChange={this.changeEntityValue.bind(this, {index:index, variable: 'record'})}>
+                            {this.state.data.entities.map((j,index)=> {return <div className="block entity">
+                                <Input type="select" label={i18n('party.relation.record')} value={j.recordId} onChange={this.updateEntityValue.bind(this, {index:index, variable: 'record'})}>
                                     <option value={0} key={0}></option> 
                                     {this.props.refTables.registryList.items.recordList.map(i=> {return <option key={i.recordId} value={i.recordId}>{i.record}</option>})}
                                 </Input> 
-                                <Input type="select" label={i18n('party.relation.roleType')} value={j.roleTypeId} onChange={this.changeEntityValue.bind(this, {index:index, variable: 'role'})}>
+                                <Input type="select" label={i18n('party.relation.roleType')} value={j.roleTypeId} onChange={this.updateEntityValue.bind(this, {index:index, variable: 'role'})}>
                                     <option value={0} key={0}></option> 
-                                    {roleTypes ? roleTypes.map(i=> {return <option value={i.roleTypeId} key={i.roleTypeId}>{i.name}</option>}) : ''}
+                                    {roleTypes ? roleTypes.map(i=> {return <option value={i.roleTypeId} key={i.roleTypeId}>{i.name}</option>}) : null}
                                 </Input>
-                                <Input type="text" label={i18n('party.relation.sources')} value={j.sources} onChange={this.changeEntityValue.bind(this, {index:index, variable: 'sources'})}/>
+                                <Input type="text" label={i18n('party.relation.sources')} value={j.sources} onChange={this.updateEntityValue.bind(this, {index:index, variable: 'sources'})}/>
                                 <div className="ico">
                                     <Button onClick={this.removeEntity.bind(this, index)}><Glyphicon glyph="trash" /></Button>
                                 </div> 
@@ -171,8 +276,8 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={handleSubmit}>{i18n('global.action.store')}</Button>
-                    <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
+                    <Button onClick={this.handleSubmit}>{i18n('global.action.store')}</Button>
+                    <Button bsStyle="link" onClick={this.handleClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
         )
@@ -181,8 +286,7 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
 
 module.exports = reduxForm({
     form: 'relationForm',
-    fields: ['relationId','relationTypeId', 'dateFrom', 'dateTo', 'calendarTypeIdFrom', 'calendarTypeIdTo', 'note', 'dateNote', 'entities'],
-    validate
+    fields: [],
 },state => ({
     initialValues: state.form.relationForm.initialValues,
     refTables: state.refTables

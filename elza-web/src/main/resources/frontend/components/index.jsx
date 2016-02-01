@@ -50,12 +50,13 @@ exports.FaTreeMovementsRight = require('./arr/FaTreeMovementsRight');
 exports.PartySearch = require('./party/PartySearch');
 exports.PartyDetail = require('./party/PartyDetail');
 exports.PartyDetailNames = require('./party/PartyDetailNames');
+exports.PartyDetailIdentifiers = require('./party/PartyDetailIdentifiers');
+exports.PartyDetailCreators = require('./party/PartyDetailCreators');
 exports.PartyEntities = require('./party/PartyEntities');
-exports.AddPartyPersonForm = require('./party/AddPartyPersonForm');
-exports.AddPartyDynastyForm = require('./party/AddPartyDynastyForm');
-exports.AddPartyEventForm = require('./party/AddPartyEventForm');
-exports.AddPartyGroupForm = require('./party/AddPartyGroupForm');
+exports.AddPartyForm = require('./party/AddPartyForm');
 exports.PartyNameForm = require('./party/PartyNameForm');
+exports.PartyIdentifierForm = require('./party/PartyIdentifierForm');
+exports.PartyCreatorForm = require('./party/PartyCreatorForm');
 exports.RelationForm = require('./party/RelationForm');
 
 exports.AdminPackagesList = require('./admin/AdminPackagesList');

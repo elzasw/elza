@@ -29,11 +29,10 @@ import addPacketForm from './arr/form/addPacketForm';
 import stateRegion from './state/stateRegion';
 import router from './router';
 
-import addPartyPersonForm from './party/form/addPartyPersonForm';
-import addPartyDynastyForm from './party/form/addPartyDynastyForm';
-import addPartyEventForm from './party/form/addPartyEventForm';
-import addPartyGroupForm from './party/form/addPartyGroupForm';
+import addPartyForm from './party/form/addPartyForm';
 import partyNameForm from './party/form/partyNameForm';
+import partyIdentifierForm from './party/form/partyIdentifierForm';
+import partyCreatorForm from './party/form/partyCreatorForm';
 import relationForm from './party/form/relationForm';
 
 import addRegistryForm from './registry/form/addRegistryForm';
@@ -58,11 +57,10 @@ let reducer = combineReducers({
     form: formReducer.plugin({
         addFaForm: addFaForm,
         addPacketForm: addPacketForm,
-        addPartyPersonForm: addPartyPersonForm,
-        addPartyDynastyForm: addPartyDynastyForm,
-        addPartyEventForm: addPartyEventForm,
-        addPartyGroupForm: addPartyGroupForm,
+        addPartyForm: addPartyForm,
         partyNameForm: partyNameForm,
+        partyIdentifierForm: partyIdentifierForm,
+        partyCreatorForm: partyCreatorForm,
         relationForm: relationForm,
         addRegistryForm: addRegistryForm,
         editRegistryForm: editRegistryForm,

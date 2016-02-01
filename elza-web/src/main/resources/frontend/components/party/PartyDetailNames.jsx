@@ -2,8 +2,6 @@
  * Jména zadané osoby
  */
 
-require ('./partyEntities.less');
-
 import React from 'react';
 import {connect} from 'react-redux'
 import {Button, Glyphicon} from 'react-bootstrap';
@@ -13,40 +11,64 @@ import {AppActions} from 'stores';
 import {deleteName, updateParty} from 'actions/party/party'
 
 
+/**
+  * PARTY DETAIL NAMES
+  * *********************************************
+  * Blok v detailu osoby se zobrazení a funkcemi pri správu jmen
+  */ 
 var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
     constructor(props) {
         super(props);
         this.bindMethods(
-            'handleDeleteName', 
-            'deleteName',
-            'handleCallAddName',
             'handleAddName',
-            'handleCallEditName',
-            'handleEditName'
+            'handleUpdateName',
+            'handleDeleteName', 
+            'addName',
+            'updateName',
+            'deleteName',
         );
     }
-    
+
+   /**
+     * HANDLE DELETE NAME
+     * *********************************************
+     * Kliknutí na tlačítko smazání jména
+     * @param nameId - identifikátor jména osoby
+     * @param event - událost kliknutí
+     */     
     handleDeleteName(nameId, event){
-        if(confirm(i18n('party.detail.name.delete'))){
-            this.deleteName(nameId);
+        if(confirm(i18n('party.detail.name.delete'))){              // pokud uživatel potvrdí smazání
+            this.deleteName(nameId);                                // jméno se smaže
         }
     }
 
+   /**
+     * DELETE NAME
+     * *********************************************
+     * Smazání jména
+     * @param nameId - identifikátor jména osoby
+     */ 
     deleteName(nameId){
-        var party = this.props.partyRegion.selectedPartyData;
-        var names = []
-        for(var i = 0; i<party.partyNames.length; i++){
-            if(party.partyNames[i].partyNameId != nameId){
-                names[names.length] = party.partyNames[i];
+        var party = this.props.partyRegion.selectedPartyData;       // aktuální osoba
+        var names = []                                              // nový seznam jmen
+        for(var i = 0; i<party.partyNames.length; i++){             // projdeme původní jména
+            if(party.partyNames[i].partyNameId != nameId){          // a pokud se nejedna o mazané jméno
+                names[names.length] = party.partyNames[i];          // přidáme ho do seznamu jmen, co budou zachována
             }
         }
-        party.partyNames = names;
-        this.dispatch(updateParty(party));    
+        party.partyNames = names;                                   // vyměníme starý seznam jmen za nový
+        this.dispatch(updateParty(party));                          // změny uložíme
     }
 
-    handleCallAddName(data) {
-        var party = this.props.partyRegion.selectedPartyData;
-        party.partyNames[party.partyNames.length] = {
+   /**
+     * ADD NAME
+     * *********************************************
+     * Vložení nového jména
+     * @param obj data - data jména z formuláře
+     */ 
+    addName(data) {
+        var party = this.props.partyRegion.selectedPartyData;       // aktuálně upravovaná osoba
+        party.partyNames[party.partyNames.length] = {               // nové jméno vložíme na mkonec seznamu jmen
             nameFormType: {
                 nameFormTypeId:data.nameFormTypeId,
             },
@@ -55,62 +77,110 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
             otherPart: data.otherPart,
             degreeBefore: data.degreeBefore,
             degreeAfter: data.degreeAfter,
+            validFrom: data.validFrom,
+            validTo: data.validTo,
+            partyNameComplements: data.complements
+        }
+        this.dispatch(updateParty(party));                          // jméno se uloží a osoba znovu načte     
+    }
+
+   /**
+     * HANDLE ADD NAME
+     * *********************************************
+     * Kliknutí na vložení nového jména
+     */ 
+    handleAddName(){
+        var party = this.props.partyRegion.selectedPartyData;                       // načtení aktualní osoby ze store
+        var data = {                                                                // výchozí data formuláře
+            partyTypeId: party.partyType.partyTypeId,                               // identifikátor typu osoby, jejíž jménu upravujeme
             validFrom: {
-                    textDate:data.validFrom,
-                    calendarTypeId:data.calendarTypeIdFrom
+                textDate: "",    
+                calendarTypeId: null           
             },
             validTo: {
-                    textDate:data.validTo,
-                    calendarTypeId:data.calendarTypeIdTo
-            }
+                textDate: "",    
+                calendarTypeId: null           
+            },
+            complements:[]
         }
-        this.dispatch(updateParty(party));               
+        this.dispatch(modalDialogShow(this, i18n('party.detail.name.new') , <PartyNameForm initData={data} onSave={this.addName} />));    // otevře se formuláš nového jména   
     }
 
-    handleAddName(){
-        this.dispatch(modalDialogShow(this, i18n('party.detail.name.new') , <PartyNameForm onSubmit={this.handleCallAddName} />));
-    }
-
-    handleEditName(nameId){
-        var party = this.props.partyRegion.selectedPartyData;
-        var name = {};
-        for(var i = 0; i<party.partyNames.length; i++){
-            if(party.partyNames[i].partyNameId == nameId){
-                name = party.partyNames[i];
+   /**
+     * HANDLE UPDATE RELATION
+     * *********************************************
+     * Kliknutí na ikonu editace vztahu
+     * @param nameId - identifikátor jména osoby
+     */ 
+    handleUpdateName(nameId){
+        var party = this.props.partyRegion.selectedPartyData;                       // načtení aktualní osoby ze store
+            var name = {};                                                          // pripravený onbjekt pro jméno
+        for(var i = 0; i<party.partyNames.length; i++){                             // prohledáme všechna jména
+            if(party.partyNames[i].partyNameId == nameId){                          // a to které hledáme
+                name = party.partyNames[i];                                         // si uložíme
             }
         };
-        var data = {
-            partyNameId: name.partyNameId,
-            nameFormTypeId : name.nameFormType.nameFormTypeId,
-            mainPart: name.mainPart,
-            otherPart: name.otherPart,
-            degreeBefore: name.degreeBefore,
-            degreeAfter: name.degreeAfter,  
-            validFrom: name.validFrom.textDate,
-            validTo: name.validTo.textDate,
-            calendarTypeIdFrom: (name.validFrom != null ? name.validFrom.calendarTypeId : 0),
-            calendarTypeIdTo: (name.validTo != null ? name.validTo.calendarTypeId : 0),
+        var complements = [];                                                       // seznam doplňků jména
+        if(name.partyNameComplements){                                              // pokud má vztah nějakké doplňky
+            for(var i = 0; i<name.partyNameComplements.length; i++){                // tak se projdou
+                complements[complements.length]={                                   // a přidají so seznamu doplňků
+                    complementTypeId: name.partyNameComplements[i].complementTypeId,// identifikátor typu doplňku jména
+                    complement : name.partyNameComplements[i].complement,           // textový doplňek jména
+                    partyNameComplementId : name.partyNameComplements[i].partyNameComplementId,       // identifikátor doplňku
+                };
+            };
         }
-        this.dispatch(modalDialogShow(this, i18n('party.detail.name.new') , <PartyNameForm initData={data} onSubmit={this.handleCallEditName} />));
+        var data = {                                                                // data, která udou poslána formuláři
+            partyNameId: name.partyNameId,                                          // identifikátor upravovaného jména
+            partyTypeId: party.partyType.partyTypeId,                               // identifikátor typu osoby, jejíž jménu upravujeme
+            nameFormTypeId : name.nameFormType.nameFormTypeId,                      // identifikátor typu jména
+            mainPart: name.mainPart,                                                // hlavní část jména
+            otherPart: name.otherPart,                                              // doplňková část jména
+            degreeBefore: name.degreeBefore,                                        // titul před jménem
+            degreeAfter: name.degreeAfter,                                          // titul za jménem
+            validFrom: {                                                            // datace od
+                textDate: (name.validFrom != null ? name.validFrom.textDate : ""),    
+                calendarTypeId: (name.validFrom != null ? name.validFrom.calendarTypeId : 0)
+            },
+            validTo: {                                                              // datace do
+                textDate: (name.validTo != null ? name.validTo.textDate : ""), 
+                calendarTypeId: (name.validTo != null ? name.validTo.calendarTypeId : 0)
+            },
+            complements: complements,
+        }
+        this.dispatch(modalDialogShow(this, name.mainPart , <PartyNameForm initData={data} onSave={this.updateName} />));
     }
 
-    handleCallEditName(data){
-        var party = this.props.partyRegion.selectedPartyData;
-        for(var i = 0; i<party.partyNames.length; i++){
-            if(party.partyNames[i].partyNameId == data.partyNameId){
-                party.partyNames[i].nameFormType.nameFormTypeId = data.nameFormTypeId;
-                party.partyNames[i].displayName = data.mainPart;
-                party.partyNames[i].mainPart =  data.mainPart;
-                party.partyNames[i].otherPart = data.otherPart;
-                party.partyNames[i].degreeBefore = data.degreeBefore;
-                party.partyNames[i].degreeAfter = data.degreeAfter;
-                party.partyNames[i].validFrom.textDate = data.validFrom;
-                party.partyNames[i].validFrom.calendarTypeId = data.calendarTypeIdFrom;
-                party.partyNames[i].validTo.textDate = data.validTo;
-                party.partyNames[i].validTo.calendarTypeId = data.calendarTypeIdTo;
+   /**
+     * UPDATE RELATION
+     * *********************************************
+     * Uložení změn ve jménu
+     * @param obj data - data vyplněná v formuláři 
+     */ 
+    updateName(data){
+        var party = this.props.partyRegion.selectedPartyData;                           // identifikátor osoby, které patří měněné jméno
+
+        var complements = [];                                                           // nový (zatím prázdný) seznam doplnku jména
+        for(var i = 0; i<data.complements.length; i++){                                 // projdeme data doplňků z formuláře
+            complements[complements.length] = {                                         // a přidáme je do seznamu nových doplňků
+                complement: data.complements[i].complement,                             // textová hodnota doplňky
+                complementTypeId: data.complements[i].complementTypeId,                 // identifikátor typu doplňku
+                partyNameComplementId: data.complements[i].partyNameComplementId        // identifikátor doplňku
+            }
+        }        
+
+        var names = party.partyNames;                                                   // původní jména osoby
+        for(var i = 0; i<names.length; i++){                                            // je potřeba ho najít mezi ostatními jmény
+            if(names[i].partyNameId == data.partyNameId){                               // to je ono            
+                party.partyNames[i].mainPart = data.mainPart;                           // hlavní část jména
+                party.partyNames[i].otherPart = data.otherPart;                         // vedlejší část jména
+                party.partyNames[i].validFrom = data.validFrom;                         // datace jména od
+                party.partyNames[i].validTo = data.validTo;                             // datace jména do
+                party.partyNames[i].partyNameComplements = complements;                 // seznamm entit ve vztahu
+                party.partyNames[i].nameFormType.nameFormTypeId = data.nameFormTypeId;  // identifikátor typu jména
             }
         }
-        this.dispatch(updateParty(party));         
+        this.dispatch(updateParty(party));                                              // uložení změn a znovu načtení dat osoby              
     }
 
     render() {
@@ -121,7 +191,7 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
                             {party.partyNames.map(i=> {return <tr className="name">
                                 <th className="name column">{i.mainPart}</th> 
                                 <td className="buttons">
-                                    <Button className="column" onClick={this.handleEditName.bind(this, i.partyNameId)}><Glyphicon glyph="edit" /></Button>
+                                    <Button className="column" onClick={this.handleUpdateName.bind(this, i.partyNameId)}><Glyphicon glyph="edit" /></Button>
                                     <Button className="column" onClick={this.handleDeleteName.bind(this, i.partyNameId)}><Glyphicon glyph="trash" /></Button>
                                 </td>
                                 <td className="description">{(i.preferred ? i18n('party.detail.name.preferred') : "" )}</td>

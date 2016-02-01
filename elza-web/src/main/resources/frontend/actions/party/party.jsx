@@ -29,8 +29,9 @@ export function insertParty(partyType, filterText, partyTypeId, nameFormTypeId, 
         return WebApi.insertParty(partyType)
             .then((json) => { 
                 dispatch(modalDialogHide());                // zavření aktualně otevřeného dialogu
-                dispatch(findPartyFetch(filterText));       // znovu načtení leveho panelu s vyfiltrovanými osobami (aby se tam pridala nová)
                 dispatch(partyDetailFetch(json.partyId));   // otevření detailu aktuálně vložené osoby
+                dispatch(findPartyFetch(filterText));       // znovu načtení leveho panelu s vyfiltrovanými osobami (aby se tam pridala nová)
+                
             });
     }
 }

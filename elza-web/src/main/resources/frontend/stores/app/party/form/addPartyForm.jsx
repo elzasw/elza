@@ -1,9 +1,9 @@
 import * as types from 'actions/constants/actionTypes';
 
-export default function addPartyGroupForm(state, action) {
+export default function addPartyForm(state, action) {
     switch (action.type) {
         case types.GLOBAL_INIT_FORM_DATA:
-            if (action.form == 'addPartyGroupForm') {
+            if (action.form == 'addPartyForm') {
                 return {
                     ...state,
                     initialValues: action.data

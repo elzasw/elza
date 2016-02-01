@@ -1,5 +1,5 @@
 /**
- * Formulář přidání nového jména osobě
+ * Formulář přidání nového osoby
  */
 
 import React from 'react';
@@ -9,27 +9,26 @@ import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n} from 'components';
 import {Modal, Button, Input, Glyphicon} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
-import {decorateFormField} from 'components/form/FormUtils'
 import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
-
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 
 /**
- * PARTY NAME FORM
+ * ADD PARTY FORM
  * *********************************************
- * Formulář jména osoby
+ * formulář nové osoby
  */
-var PartyNameForm = class PartyNameForm extends AbstractReactComponent {
+var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.dispatch(refPartyNameFormTypesFetchIfNeeded());// seznam typů jmén (uřední, ...)
         this.dispatch(calendarTypesFetchIfNeeded());        // seznam typů kalendářů (gregoriánský, juliánský, ...)
-        this.dispatch(refPartyTypesFetchIfNeeded());        // budeme potřebovat také seznam typů osob (osoba, rod, korporace, ..)
+        this.dispatch(refPartyNameFormTypesFetchIfNeeded());// nacteni seznamů typů forem jmen (uřední, ...)
+        this.dispatch(refPartyTypesFetchIfNeeded());        // načtení seznamu typů jmen
         this.state = {                                      // ve state jsou uložena a průběžně udržová data formuláře
             data : this.props.initData,                     // předvyplněná data formuláře
-            errors: []                                      // sezn chyb k vypsání uživateli
+            errors: [],                                     // seznam chyb k vypsání uživateli
+            personId: 1,                                    // identifikátor osoby
         };
         this.bindMethods(                                   // pripojení potřebných metod - aby měly k dispozici tento objekt (formulář)
             'addComplement',                                // funkce pro přidání nového doplňku jména
@@ -45,7 +44,7 @@ var PartyNameForm = class PartyNameForm extends AbstractReactComponent {
     /**
      * UPDATE VALUE
      * *********************************************
-     * aktualizace nějaké hodnoty ve formuláři (kromě doplňků jmen)
+     * aktualizace nějaké hodnoty ve formuláři
      * @params event - událost která změnu vyvolala
      */
     updateValue(event){
@@ -53,18 +52,22 @@ var PartyNameForm = class PartyNameForm extends AbstractReactComponent {
         var variable = event.target.name;                                                   // nazeb měněné hodnoty
         var data = this.state.data;                                                         // puvodni data formuláře
         switch(variable){
-            case "nameFormTypeId" : data.nameFormTypeId = event.target.value; break;        // změna typu jména
-            case "mainPart" : data.mainPart = event.target.value; break;                    // změna hlavní části jména
+            case "recordTypeId" : data.recordTypeId = event.target.value; break;            // identifikátor typu záznamu
+            case "nameFormTypeId" : data.nameFormTypeId = event.target.value; break;        // identifikátor typu jména
+            case "mainPart" : data.mainPart = event.target.value; break;                    // změna hlavní části ména
             case "otherPart" : data.otherPart = event.target.value; break;                  // změna vedlejší části jména
-            case "fromText" : data.validFrom.textDate = event.target.value; break;          // změna data od
-            case "toText" : data.validTo.textDate = event.target.value; break;              // změna data do
-            case "fromCalendar" : data.validFrom.calendarTypeId = event.target.value; break;// změna typu kalendáře od
-            case "toCalendar" : data.validTo.calendarTypeId = event.target.value; break;    // změna typu kalendáře do
+            case "degreeBefore" : data.degreeBefore = event.target.value; break;            // změna titulu před jménem
+            case "degreeAfter" : data.degreeAfter = event.target.value; break;              // změna titulu za jménem
+            case "fromText" : data.from.textDate = event.target.value; break;               // změna data od
+            case "toText" : data.to.textDate = event.target.value; break;                   // změna data do
+            case "fromCalendar" : data.from.calendarTypeId = event.target.value; break;     // změna typu kalendáře od
+            case "toCalendar" : data.to.calendarTypeId = event.target.value; break;         // změna typu kalendáře do
         }
         this.setState({
             data : data                                                                     // uložení změn do state
         });
     }
+
 
     /**
      * UPDATE COMPLEMENT VALUE
@@ -129,27 +132,32 @@ var PartyNameForm = class PartyNameForm extends AbstractReactComponent {
     /**
      * VALIDATE
      * *********************************************
-     * Kontrola vyplnění formuláře jména
+     * Kontrola vyplnění formuláře identifikátoru
      * @return array errors - seznam chyb 
      */
     validate(){
         var errors = [];                                        // seznam chyb
         var data = this.state.data;                             // zadaná data z formuláře
 
-        //kontrola vyplnění typu jména
-        if(data.nameFormTypeId == 0 || data.nameFormTypeId == null ||  data.nameFormTypeId == undefined){
-            errors[errors.length] = i18n('party.name.errors.undefinedNameFormType');
+        //kontrola vyplnění názvu identifikátoru
+        if(data.mainPart == "" || data.mainPart == null ||  data.mainPart == undefined){
+            errors[errors.length] = i18n('party.errors.undefinedMainPart');
         }
 
-        //kontrola vyplnění hlavního jména
-        if(data.mainPart == "" || data.mainPart == null ||  data.mainPart == undefined){
-            errors[errors.length] = i18n('party.name.errors.undefinedMainPart');
+        //kontrola vyplnění typu jména
+        if(data.nameFormTypeId == 0 || data.nameFormTypeId == null ||  data.nameFormTypeId == undefined){
+            errors[errors.length] = i18n('party.errors.undefinedNameFormType');
+        }
+
+        //kontrola vyplnění typu jména
+        if(data.recordTypeId == 0 || data.recordTypeId == null ||  data.recordTypeId == undefined){
+            errors[errors.length] = i18n('party.errors.undefinedRecordType');
         }
 
         //oba typy kalendáře musí být zadané
         if(
-            data.validFrom.calendarTypeId == 0 || data.validFrom.calendarTypeId == null ||  data.validFrom.calendarTypeId == undefined || 
-            data.validTo.calendarTypeId == 0 || data.validTo.calendarTypeId == null ||  data.validTo.calendarTypeId == undefined 
+            data.from.calendarTypeId == 0 || data.from.calendarTypeId == null ||  data.from.calendarTypeId == undefined || 
+            data.to.calendarTypeId == 0 || data.to.calendarTypeId == null ||  data.to.calendarTypeId == undefined 
         ){
             errors[errors.length] = i18n('party.name.errors.undefinedCalendarType');
         }
@@ -196,19 +204,25 @@ var PartyNameForm = class PartyNameForm extends AbstractReactComponent {
         }
     }
 
-
     /**
      * RENDER
      * *********************************************
      * Vykreslení formuláře
      */
     render() {
+        var recordTypes = [];                                                                                   // typy rejstříkového hesla
+        for(var i=0; i<this.props.refTables.partyTypes.items.length; i++){                                      // projdu všechny typy postav
+            if(this.props.refTables.partyTypes.items[i].partyTypeId == this.state.data.partyTypeId){            // pokud se jedna o muj typ
+                recordTypes = this.props.refTables.partyTypes.items[i].registerTypes;                           // uložím si seznam typů rejstříkového hesla
+            }
+        }
         var complementsTypes = [];                                                                              // seznam aktuálních typů doplňků možných pro daný typ osoby
         for(var i=0; i<this.props.refTables.partyTypes.items.length; i++){                                      // projdu všechny typy osob co jsou
             if(this.props.refTables.partyTypes.items[i].partyTypeId == this.props.initData.partyTypeId){        // a z té která odpovídá typu této osoby
                 complementsTypes = this.props.refTables.partyTypes.items[i].complementTypes;                    // si vemu seznam typů doplňků jmen
             }
         }
+        
         return (
             <div>
                 <Modal.Body>
@@ -216,26 +230,35 @@ var PartyNameForm = class PartyNameForm extends AbstractReactComponent {
                         {this.state.errors.map(i=> {return <li>{i}</li>})}
                     </ul>
                     <form>
-                        <Input type="select" label={i18n('party.nameFormType')} name="nameFormTypeId" value={this.state.data.nameFormTypeId} onChange={this.updateValue}>
-                            <option value="0" key="0"></option> 
-                            {this.props.refTables.partyNameFormTypes.items.map(i=> {return <option value={i.nameFormTypeId} key={i.nameFormTypeId}>{i.name}</option>})}
-                        </Input>
                         <div className="line">
+                            <Input type="select" label={i18n('party.recordType')} name="recordTypeId" value={this.state.data.recordTypeId} onChange={this.updateValue} >
+                                <option value="0" key="0"></option> 
+                                {recordTypes.map(i=> {return <option value={i.id} key={i.nameFormTypeId}>{i.name}</option>})}
+                            </Input>
+                            <Input type="select" label={i18n('party.nameFormType')} name="nameFormTypeId" value={this.state.data.nameFormTypeId} onChange={this.updateValue} >
+                                <option value="0" key="0"></option> 
+                                {this.props.refTables.partyNameFormTypes.items.map(i=> {return <option value={i.nameFormTypeId} key={i.nameFormTypeId}>{i.name}</option>})}
+                            </Input>
+                        </div>
+                        <hr/>
+                        {this.state.data.partyTypeId == this.state.personId ?  <div className="line">
                             <Input type="text" label={i18n('party.degreeBefore')} name="degreeBefore" value={this.state.data.degreeBefore} onChange={this.updateValue} />
                             <Input type="text" label={i18n('party.degreeAfter')} name="degreeAfter" value={this.state.data.degreeAfter} onChange={this.updateValue} />
-                        </div>
+                        </div> : ""}
+                        
                         <Input type="text" label={i18n('party.nameMain')} name="mainPart" value={this.state.data.mainPart} onChange={this.updateValue} />
                         <Input type="text" label={i18n('party.nameOther')} name="otherPart" value={this.state.data.otherPart} onChange={this.updateValue} />
+                        <hr/>
                         <div className="line">
-                            <Input type="text" label={i18n('party.nameValidFrom')} name="fromText" value={this.state.data.validFrom.textDate} onChange={this.updateValue} />
-                            <Input type="select" label={i18n('party.calendarTypeFrom')} name="fromCalendar" value={this.state.data.validFrom.calendarTypeId} onChange={this.updateValue} >
+                            <Input type="text" label={i18n('party.identifier.from')} name="fromText" value={this.state.data.from.textDate} onChange={this.updateValue} />
+                            <Input type="select" label={i18n('party.calendarTypeFrom')} name="fromCalendar" value={this.state.data.from.calendarTypeId} onChange={this.updateValue} >
                                 <option value="0" key="0"></option> 
                                 {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
                             </Input>   
                         </div>
                         <div className="line">
-                            <Input type="text" label={i18n('party.nameValidTo')} name="toText" value={this.state.data.validTo.textDate} onChange={this.updateValue} />
-                            <Input type="select" label={i18n('party.calendarTypeTo')} name="toCalendar" value={this.state.data.validTo.calendarTypeId} onChange={this.updateValue} >
+                            <Input type="text" label={i18n('party.identifier.to')} name="toText" value={this.state.data.to.textDate} onChange={this.updateValue} />
+                            <Input type="select" label={i18n('party.calendarTypeTo')} name="toCalendar" value={this.state.data.to.calendarTypeId} onChange={this.updateValue} >
                                 <option value="0" key="0"></option> 
                                 {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
                             </Input>
@@ -267,14 +290,14 @@ var PartyNameForm = class PartyNameForm extends AbstractReactComponent {
 }
 
 module.exports = reduxForm({
-    form: 'PartyNameForm',
+    form: 'AddPartyForm',
     fields: [],
 },state => ({
-    initialValues: state.form.partyNameForm.initialValues,
+    initialValues: state.form.addPartyForm.initialValues,
     refTables: state.refTables
 }),
-{load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'partyNameForm', data})}
-)(PartyNameForm)
+{load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addPartyForm', data})}
+)(AddPartyForm)
 
 
 

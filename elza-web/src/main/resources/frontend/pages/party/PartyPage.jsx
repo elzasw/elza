@@ -10,7 +10,7 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap'; 
 import {Link, IndexLink} from 'react-router';
 import {Icon, AbstractReactComponent, Ribbon, RibbonGroup, PartySearch, PartyDetail, PartyEntities, i18n} from 'components';
-import {RelationForm, AddPartyPersonForm, AddPartyEventForm, AddPartyGroupForm, AddPartyDynastyForm, AddPartyOtherForm} from 'components';
+import {RelationForm, AddPartyForm} from 'components';
 import {ButtonGroup, MenuItem, DropdownButton, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
@@ -20,23 +20,33 @@ import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
 import {partyDetailFetchIfNeeded} from 'actions/party/party'
 import {insertParty, insertRelation, deleteParty} from 'actions/party/party'
 
+/**
+ * PARTY PAGE
+ * *********************************************
+ * Stránka osob
+ */ 
 var PartyPage = class PartyPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
         this.state = {};
         this.dispatch(refPartyTypesFetchIfNeeded());
-        this.bindMethods(
-            'buildRibbon', 
-            'handleAddParty', 
-            'handleCallAddParty', 
-            'handleDeleteParty', 
-            'handleCallDeleteParty', 
-            'handleAddRelation', 
-            'handleCallAddRelation'
+        this.bindMethods(               // pripojení funkcím "this"
+            'buildRibbon',              // sestavení menu
+            'handleAddParty',           // kliknutí na tlačítko přidat osobu
+            'handleDeleteParty',        // kliknutí na tlačítko smazzat osobu
+            'handleAddRelation',        // kliknutí na tlačítko přidat ossobě vztah
+            'addParty',                 // vytvoření osoby
+            'deleteParty',              // smazání osoby
+            'addRelation',              // vytvoření relace
         );
     }
 
-    handleCallAddParty(data) {
+    /**
+     * ADD PARTY
+     * *********************************************
+     * Uložení nové osoby
+     */ 
+    addParty(data) {
         var partyType = '';                                     // typ osoby - je potreba uvest i jako specialni klivcove slovo 
         switch(data.partyTypeId){
             case 1: partyType = '.ParPersonVO'; break;          // typ osoby osoba
@@ -44,133 +54,153 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
             case 3: partyType = '.ParPartyGroupVO'; break;      // typ osoby korporace
             case 4: partyType = '.ParEventVO'; break;           // typ osoby docasna korporace - udalost
         }
-        var party = {
-            '@type': partyType, 
-            partyType: {
-                partyTypeId: data.partyTypeId
+        var party = {                                           // objekt osoby
+            '@type': partyType,                                 // typ osoby - speciální klíčové slovo
+            partyType: {                                        // typ osoby
+                partyTypeId: data.partyTypeId                   // identikátor typu osoby
             },
-            genealogy: data.nameMain,
-            scope: '',
-            record: {
-                registerTypeId: data.recordTypeId,              // typ záznamu 
-                scopeId:1                                       //trida rejstriku 
+            genealogy: data.mainPart,                           // název rodu pro soby typu rod
+            scope: '',                                          // cosi, co tu musí být
+            record: {                                           // záznam patřící k ossobě
+                registerTypeId: data.recordTypeId,              // identifikátor typu záznamu 
+                scopeId:1                                       // identifikátor tridy rejstriku 
             },
-            from: {
-                textDate: data.validFrom,
-                calendarTypeId: data.calendarTypeIdFrom
-            },
-            to: {
-                textDate: data.validTo,
-                calendarTypeId: data.calendarTypeIdTo
-            },
-            partyNames : [{
-                nameFormType: {
-                    nameFormTypeId: data.nameFormTypeId
+            from: data.from,                                    // datace od
+            to: data.to,                                        // datace do
+            partyNames : [{                                     // jména osoby
+                nameFormType: {                                 // typ formy jména
+                    nameFormTypeId: data.nameFormTypeId         // identifikátor typu jména osoby
                 },
-                displayName: data.nameMain,
-                mainPart: data.nameMain,
-                otherPart: data.nameOther,
-                degreeBefore: data.degreeBefore,
-                degreeAfter: data.degreeAfter,
-                prefferedName: true,
-                validFrom: {
-                    textDate: data.validFrom,
-                    calendarTypeId: data.calendarTypeIdFrom
-                },
-                validTo: {
-                    textDate: data.validTo,
-                    calendarTypeId: data.calendarTypeIdTo
-                }
+                displayName: data.mainPart,                     
+                mainPart: data.mainPart,                        // hlavní část jména
+                otherPart: data.otherPart,                      // vedlejší část jména
+                degreeBefore: data.degreeBefore,                // titul před jménem
+                degreeAfter: data.degreeAfter,                  // titul za jménem
+                prefferedName: true,                            // hlavní jmno osoby
+                from: data.from,                                // datace od
+                to: data.to,                                    // datace do
+                partyNameComplements: data.complements          // doplnky jména    
             }]
         }
-        this.dispatch(insertParty(party)); 
+        this.dispatch(insertParty(party));                      // uložení nové osoby
     }
 
-    handleAddParty(partyTypeId, event) {
-        var data = {
-            partyTypeId: partyTypeId
-        }
-        switch(partyTypeId){
-            case 1:
-                // zobrazení formuláře fyzicke osoby
-                this.dispatch(modalDialogShow(this, i18n('party.addParty') , <AddPartyPersonForm initData={data} onSubmit={this.handleCallAddParty} />));
-                break; 
-            case 2:
-                // zobrazení formuláře rodu
-                this.dispatch(modalDialogShow(this, i18n('party.addPartyDynasty') , <AddPartyDynastyForm initData={data} onSubmit={this.handleCallAddParty} />));
-                break;
-            case 3:
-                // zobrazení formuláře korporace
-                this.dispatch(modalDialogShow(this, i18n('party.addPartyGroup') , <AddPartyGroupForm initData={data} onSubmit={this.handleCallAddParty} />));
-                break;
-            case 4:
-                // zobrazení formuláře dočasné korporace
-                this.dispatch(modalDialogShow(this, i18n('party.addPartyEvent') , <AddPartyEventForm initData={data} onSubmit={this.handleCallAddParty} />));
-                break; 
-            default:
-                // zobrazení formuláře jine osoby - ostatni
-                this.dispatch(modalDialogShow(this, i18n('party.addPartyOther') , <AddPartyOtherForm initData={data} onSubmit={this.handleCallAddParty} />));
-                break; 
-        }
-    }
-
-    handleCallAddRelation(data) {
-        var entities = [{
-            source: "aaa",
-            record: {recordId: 1},
-            roleType: {roleTypeId: 1}
-        },{
-            source: "aaa",
-            record: {recordId: 2},
-            roleType: {roleTypeId: 1}       
-        }];
-        var relation = {
-            partyId: this.props.partyRegion.selectedPartyID,
-            dateNote: data.dateNote,
-            note: data.note,
+    /**
+     * HANDLE ADD PARTY
+     * *********************************************
+     * Kliknutí na tlačítko pro založení nové osoby
+     * @param partyTypeId - identifikátor typu osoby (osoba, rod, korporace, ..)
+     */ 
+    handleAddParty(partyTypeId) {
+        var data = {                        // data předávaná do formuláře osoby
+            partyTypeId: partyTypeId,       // identifikátor typu osoby (osoba, rod, událost, ..)
             from: {
-                    textDate: "aa",
-                    calendarTypeId: data.calendarTypeIdFrom
+                textDate: "",    
+                calendarTypeId: null           
             },
             to: {
-                    textDate: "bb",
-                    calendarTypeId: data.calendarTypeIdTo
+                textDate: "",    
+                calendarTypeId: null           
             },
-            relationEntities: entities,
-            complementType:{relationTypeId:1}
-        };   
-        this.dispatch(insertRelation(relation, this.props.partyRegion.selectedPartyID));               
+            complements: []
+        }
+        var label = i18n('party.addParty');
+        switch(partyTypeId){                                        // podle typu osoby bude různý nadpis
+            case 2: label = i18n('party.addPartyDynasty'); break;   // rod
+            case 4: label = i18n('party.addPartyGroup'); break;     // korporace
+            case 2: label = i18n('party.addPartyEvent'); break;     // událost
+        }
+        this.dispatch(modalDialogShow(this, label , <AddPartyForm initData={data} onSave={this.addParty} />));
     }
 
+    /**
+     * ADD RELATION
+     * *********************************************
+     * Uložení nového vztahu
+     * @param data - data vztahu z formuláře
+     */ 
+    addRelation(data) {
+        var entities = [];                                                          // seznam entit vztahu
+        for(var i = 0; i<data.entities.length; i++){                                // projdeme data entit z formuláře
+            entities[entities.length] = {                                           // a přidáme je do seznamu nových entit
+                source: data.entities[i].sources,                                   // poznámka ke vztahu o zdrojích dat
+                record: {recordId: data.entities[i].recordId},                      // rejstříková položka
+                roleType: {roleTypeId: data.entities[i].roleTypeId}                 // typ vztahu osoby a rejstříkové položky
+            }
+        }  
+        var relation = {
+            partyId: this.props.partyRegion.selectedPartyData.partyId,              // identifikátor osoby, které patří vkládaný vztah
+            dateNote: data.dateNote,                                                // poznámka k dataci
+            note: data.note,                                                        // poznámka
+            from: data.from,                                                        // datace od
+            to: data.to,                                                            // datace do
+            relationEntities: entities,                                             // entity ve vztahu
+            complementType:{relationTypeId:data.relationTypeId}                     // typ vztahu
+        };   
+        this.dispatch(insertRelation(relation, this.props.partyRegion.selectedPartyID));  //uložení vztahu a znovunačtení osoby             
+    }
+
+    /**
+     * HANDLE ADD RELATION
+     * *********************************************
+     * Kliknutí na volnu přidání nového vztahu
+     */     
     handleAddRelation(){
-        var data = {
+        var data = {                    
             partyTypeId: this.props.partyRegion.selectedPartyData.partyType.partyTypeId,
             partyId: this.props.partyRegion.selectedPartyID,
+            note: "",
+            dateNote:"",
+            from: {
+                textDate: "",    
+                calendarTypeId: null           
+            },
+            to: {
+                textDate: "",    
+                calendarTypeId: null           
+            },
             entities: [{
                 recordId: null,
                 roleTypeId : null,
-                sources: 'aaa',
+                sources: '',
             }]
         }
-        this.dispatch(modalDialogShow(this, this.props.partyRegion.selectedPartyData.record.record , <RelationForm initData={data} refTables={this.props.refTables} onSubmit={this.handleCallAddRelation} />));
+        this.dispatch(modalDialogShow(this, this.props.partyRegion.selectedPartyData.record.record , <RelationForm initData={data} refTables={this.props.refTables} onSave={this.addRelation} />));
     }
 
+    /**
+     * HANDLE DELETE PARTY
+     * *********************************************
+     * Kliknutí na tlačítko pro smazání osoby
+     */ 
     handleDeleteParty(){
-        var result = confirm(i18n('party.delete.confirm'));
-        if (result) {
-            this.dispatch(this.handleCallDeleteParty());
+        var result = confirm(i18n('party.delete.confirm')); // potvrzení smazání
+        if (result) {                                       // pokud uživatel potvrdil smazání
+            this.dispatch(this.deleteParty());    // smaže osobu - smazána bude aktualně vybraná osoba uložená party regionu
         }
     }
-    handleCallDeleteParty() {
-        this.dispatch(deleteParty(this.props.partyRegion.selectedPartyID, this.props.partyRegion.filterText));
+
+    /**
+     * DELETE PARTY
+     * *********************************************
+     * Smazání osoby
+     */ 
+    deleteParty() {
+        var partyId = this.props.partyRegion.selectedPartyData.partyId;                         // bude smazána aktuální osoba, uložená v partyRegionu
+        this.dispatch(deleteParty(partyId, this.props.partyRegion.filterText));                 // smazání osoby, znovunačtení osoby i hledaných osob
     }    
 
+    /**
+     * BUILD RIBBON
+     * *********************************************
+     * Sestavení Ribbon Menu - přidání položek pro osoby
+     */ 
     buildRibbon() {
         var isSelected = this.props.partyRegion.selectedPartyID ? true : false;
         var altActions = [];
         altActions.push(
             <DropdownButton title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('party.addParty')}</span></div></span>}>
-                {this.props.refTables.partyTypes.items.map(i=> {return <MenuItem eventKey="{i.partyTypeId}" onClick={this.handleAddParty.bind(this, i.partyTypeId)}>{i.name}</MenuItem>})}
+                {this.props.refTables.partyTypes.items.map(i=> {return <MenuItem key={i.partyTypeId} eventKey="{i.partyTypeId}" onClick={this.handleAddParty.bind(this, i.partyTypeId)}>{i.name}</MenuItem>})}
             </DropdownButton>
         );
 
@@ -201,6 +231,11 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         )
     }
 
+    /**
+     * RENDER
+     * *********************************************
+     * Vykreslení stránky pro osoby
+     */ 
     render() {
         const {splitter} = this.props;
 
