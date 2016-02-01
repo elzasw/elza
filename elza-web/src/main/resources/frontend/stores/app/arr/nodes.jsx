@@ -62,6 +62,7 @@ export default function nodes(state = nodesInitialState, action) {
         case types.FA_SUB_NODE_FORM_VALUE_RESPONSE:
         case types.FA_SUB_NODE_INFO_REQUEST:
         case types.FA_SUB_NODE_INFO_RECEIVE:
+        case types.FA_FA_SUBNODES_FULLTEXT_RESULT:
             var r = findByNodeKeyInNodes(state, action.versionId, action.nodeKey);
             if (r) {
                 var index = r.nodeIndex;
@@ -73,6 +74,7 @@ export default function nodes(state = nodesInitialState, action) {
         case types.FA_FA_SUBNODES_PREV:
         case types.FA_FA_SUBNODES_NEXT_PAGE:
         case types.FA_FA_SUBNODES_PREV_PAGE:
+        case types.FA_FA_SUBNODES_FULLTEXT_SEARCH:
             var index = state.activeIndex;
             return processNode(state, action, index);
         case types.FA_FA_SELECT_SUBNODE:

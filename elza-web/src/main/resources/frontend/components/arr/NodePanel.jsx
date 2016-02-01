@@ -6,12 +6,13 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Icon, AbstractReactComponent, i18n, Loading, SubNodeForm, Accordion, SubNodeRegister, AddNodeDropdown} from 'components';
-import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
+import {Button, Tooltip, OverlayTrigger, Input} from 'react-bootstrap';
 import {faSubNodeFormFetchIfNeeded} from 'actions/arr/subNodeForm'
 import {faSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister'
 import {faSubNodeInfoFetchIfNeeded} from 'actions/arr/subNodeInfo'
 import {faNodeInfoFetchIfNeeded} from 'actions/arr/nodeInfo'
 import {faSelectSubNode, faSubNodesNext, faSubNodesPrev, faSubNodesNextPage, faSubNodesPrevPage} from 'actions/arr/nodes'
+import {faNodeSubNodeFulltextSearch} from 'actions/arr/node'
 import {addNode} from 'actions/arr/node'
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes'
 import {indexById} from 'stores/app/utils.jsx'
@@ -29,8 +30,13 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             'renderChildren', 'handleOpenItem',
             'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick',
             'getParentNodes', 'getChildNodes', 'getSiblingNodes',
-            'renderAccordion', 'renderState', 'transformConformityInfo', 'handleAddNodeAtEnd'
+            'renderAccordion', 'renderState', 'transformConformityInfo', 'handleAddNodeAtEnd',
+            'handleChangeFilterText'
             );
+
+        this.state = {
+            filterText: props.node.filterText
+        }
     }
 
     componentDidMount() {
@@ -41,6 +47,10 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     componentWillReceiveProps(nextProps) {
         this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp);
 
+        var newState = {
+            filterText: nextProps.node.filterText
+        }
+
         var scroll = false;
         if (!this.props.node.fetched && nextProps.node.fetched) {
             scroll = true;
@@ -48,8 +58,16 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             scroll = true;
         }
         if (scroll) {
-            this.setState({}, this.ensureItemVisible)
+            this.setState(newState, this.ensureItemVisible)
+        } else {
+            this.setState(newState);
         }
+    }
+
+    handleChangeFilterText(e) {
+        this.setState({
+            filterText: e.target.value
+        })
     }
 
     ensureItemVisible() {
@@ -362,7 +380,8 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 <div className='btn btn-default' disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(faSubNodesPrevPage())}><Icon glyph="fa-backward" />{i18n('arr.fa.subNodes.prevPage')}</div>
                 <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize >= node.childNodes.length} onClick={()=>this.dispatch(faSubNodesNextPage())}><Icon glyph="fa-forward" />{i18n('arr.fa.subNodes.nextPage')}</div>
 
-                <input className="form-control" type="text"/><Button>Hledat</Button>
+                <Input type="text" onChange={this.handleChangeFilterText} value={this.state.filterText}/>
+                <Button onClick={() => {this.dispatch(faNodeSubNodeFulltextSearch(this.state.filterText))}}>Hledat</Button>
             </div>
         )
 

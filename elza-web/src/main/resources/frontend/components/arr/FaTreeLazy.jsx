@@ -180,7 +180,7 @@ FaTreeLazy.propTypes = {
     selectedId: React.PropTypes.number,
     selectedIds: React.PropTypes.object,
     filterText: React.PropTypes.string,
-    searchedIds: React.PropTypes.object,
+    searchedIds: React.PropTypes.array,
     searchedParents: React.PropTypes.object,
     filterCurrentIndex: React.PropTypes.number,
     nodes: React.PropTypes.array.isRequired,
