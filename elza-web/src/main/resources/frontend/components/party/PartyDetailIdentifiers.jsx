@@ -84,11 +84,11 @@ var PartyDetailIdentifiers = class PartyDetailIdentifiers extends AbstractReactC
             partyTypeId: party.partyType.partyTypeId,                               // identifikátor typu osoby, jejíž jménu upravujeme
             from: {
                 textDate: "",    
-                calendarTypeId: null           
+                calendarTypeId: this.props.partyRegion.gregorianCalendarId        
             },
             to: {
                 textDate: "",    
-                calendarTypeId: null           
+                calendarTypeId: this.props.partyRegion.gregorianCalendarId           
             }
         }
         this.dispatch(modalDialogShow(this, i18n('party.detail.identifier.new') , <PartyIdentifierForm initData={data} onSave={this.addIdentifier} />));    // otevře se formuláš nového identifikátoru   

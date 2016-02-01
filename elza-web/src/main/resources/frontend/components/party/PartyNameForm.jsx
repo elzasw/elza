@@ -146,14 +146,6 @@ var PartyNameForm = class PartyNameForm extends AbstractReactComponent {
             errors[errors.length] = i18n('party.name.errors.undefinedMainPart');
         }
 
-        //oba typy kalendáře musí být zadané
-        if(
-            data.validFrom.calendarTypeId == 0 || data.validFrom.calendarTypeId == null ||  data.validFrom.calendarTypeId == undefined || 
-            data.validTo.calendarTypeId == 0 || data.validTo.calendarTypeId == null ||  data.validTo.calendarTypeId == undefined 
-        ){
-            errors[errors.length] = i18n('party.name.errors.undefinedCalendarType');
-        }
-
         for(var i=0; i<data.complements.length; i++){
             if(data.complements[i].complementTypeId == 0 || data.complements[i].complementTypeId == null ||  data.complements[i].complementTypeId == undefined){
                 errors[errors.length] = i18n('party.name.errors.undefinedComplementType');
@@ -226,19 +218,27 @@ var PartyNameForm = class PartyNameForm extends AbstractReactComponent {
                         </div>
                         <Input type="text" label={i18n('party.nameMain')} name="mainPart" value={this.state.data.mainPart} onChange={this.updateValue} />
                         <Input type="text" label={i18n('party.nameOther')} name="otherPart" value={this.state.data.otherPart} onChange={this.updateValue} />
-                        <div className="line">
-                            <Input type="text" label={i18n('party.nameValidFrom')} name="fromText" value={this.state.data.validFrom.textDate} onChange={this.updateValue} />
-                            <Input type="select" label={i18n('party.calendarTypeFrom')} name="fromCalendar" value={this.state.data.validFrom.calendarTypeId} onChange={this.updateValue} >
-                                <option value="0" key="0"></option> 
-                                {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
-                            </Input>   
-                        </div>
-                        <div className="line">
-                            <Input type="text" label={i18n('party.nameValidTo')} name="toText" value={this.state.data.validTo.textDate} onChange={this.updateValue} />
-                            <Input type="select" label={i18n('party.calendarTypeTo')} name="toCalendar" value={this.state.data.validTo.calendarTypeId} onChange={this.updateValue} >
-                                <option value="0" key="0"></option> 
-                                {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
-                            </Input>
+                        <div className="line datation">
+                            <div className="date line">
+                                <div>
+                                    <label>{i18n('party.name.from')}</label>
+                                    <div className="line">
+                                        <Input type="select" name="fromCalendar" value={this.state.data.validFrom.calendarTypeId} onChange={this.updateValue} >
+                                            {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
+                                        </Input>
+                                        <Input type="text"  name="fromText" value={this.state.data.validFrom.textDate} onChange={this.updateValue} />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label>{i18n('party.name.to')}</label>
+                                    <div className="line">
+                                        <Input type="select" name="toCalendar" value={this.state.data.validTo.calendarTypeId} onChange={this.updateValue} >
+                                            {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
+                                        </Input>
+                                        <Input type="text" name="toText" value={this.state.data.validTo.textDate} onChange={this.updateValue} />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <hr/>
                         <h5>{i18n('party.nameComplements')}</h5>

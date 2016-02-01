@@ -31,8 +31,24 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
 
     render() {
         if(this.props.items && this.props.items.length>0){
-            console.log(this.props.items);
+            var description = '';
+            for(var i = 0; i<this.props.items.length; i++){
+                if(this.props.items[i].record && this.props.items[i].record.characteristics){
+                    var lineEndPosition = this.props.items[i].record.characteristics.indexOf("\n")
+                    if(lineEndPosition>=0){
+                        description = this.props.items[i].record.characteristics.substring(0, lineEndPosition); 
+                    }else{
+                        description = this.props.item[i].record.characteristics;
+                    }   
+                    this.props.items[i].record.description = description;  
+                }else{
+                    description = '';
+                }
+                console.log(description);
+            }
+            
             var partyList = this.props.items.map((item) => {                                               // přidání všech nazelených osob
+
                     return  <li 
                                 key={item.partyId} 
                                 eventKey={item.partyId} 
@@ -41,7 +57,7 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
                             >                                          
                                 <span className="name">{item.record.record}</span> 
                                 <span>{item.partyType.description}</span>
-                                <span>1976-2015</span>
+                                <span title={item.record.description}>{item.record.description}</span>
                             </li>                          
             });
         }else{

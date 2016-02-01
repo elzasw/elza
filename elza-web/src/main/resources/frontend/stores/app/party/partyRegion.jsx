@@ -11,6 +11,7 @@ const initialState = {
     selectedPartyID : null,
     selectedPartyData: null,
     partyTypes: [],
+    gregorianCalendarId: 1,         // id gregoriánského kalendáře - TODO: potřeba ho dovypočíst
 }
 
 export default function partyRegion(state = initialState, action) {

@@ -236,23 +236,33 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
                             <option value="0" key="0"></option> 
                             {relationTypes ? relationTypes.map(i=> {return <option value={i.relationTypeId} key={i.relationTypeId}>{i.name}</option>}) : null}
                         </Input>
-                        <Input type="text" label={i18n('party.relation.note')} name="note" value={this.state.data.note} onChange={this.updateValue} />
                         <hr/>
-                        <div className="line">
-                            <Input type="text" label={i18n('party.relation.from')} name="fromText" value={this.state.data.from.textDate} onChange={this.updateValue} />
-                            <Input type="select" label={i18n('party.calendarTypeFrom')} name="fromCalendar" value={this.state.data.from.calendarTypeId} onChange={this.updateValue} >
-                                <option value="0" key="0"></option> 
-                                {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
-                            </Input>   
+                        <div className="line datation">
+                            <div className="date line">
+                                <div>
+                                    <label>{i18n('party.relation.from')}</label>
+                                    <div className="line">
+                                        <Input type="select" name="fromCalendar" value={this.state.data.from.calendarTypeId} onChange={this.updateValue} >
+                                            <option value={0} key={0}></option>
+                                            {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
+                                        </Input>
+                                        <Input type="text"  name="fromText" value={this.state.data.from.textDate} onChange={this.updateValue} />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label>{i18n('party.relation.to')}</label>
+                                    <div className="line">
+                                        <Input type="select" name="toCalendar" value={this.state.data.to.calendarTypeId} onChange={this.updateValue} >
+                                            {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
+                                        </Input>
+                                        <Input type="text" name="toText" value={this.state.data.to.textDate} onChange={this.updateValue} />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div className="line">
-                            <Input type="text" label={i18n('party.relation.to')} name="toText" value={this.state.data.to.textDate} onChange={this.updateValue} />
-                            <Input type="select" label={i18n('party.calendarTypeTo')} name="toCalendar" value={this.state.data.to.calendarTypeId} onChange={this.updateValue} >
-                                <option value="0" key="0"></option> 
-                                {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
-                            </Input>
-                        </div>
-                        <Input type="text" label={i18n('party.relation.dateNote')}  name="dateNote" value={this.state.data.dateNote} onChange={this.updateValue} />
+                        <Input type="textarea" label={i18n('party.relation.dateNote')}  name="dateNote" value={this.state.data.dateNote} onChange={this.updateValue} />
+                        <hr/>
+                        <Input type="textarea" label={i18n('party.relation.note')} name="note" value={this.state.data.note} onChange={this.updateValue} />
                         <hr/>
                         <h5>{i18n('party.relation.entities')}</h5>
                         <div>
@@ -265,7 +275,7 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
                                     <option value={0} key={0}></option> 
                                     {roleTypes ? roleTypes.map(i=> {return <option value={i.roleTypeId} key={i.roleTypeId}>{i.name}</option>}) : null}
                                 </Input>
-                                <Input type="text" label={i18n('party.relation.sources')} value={j.sources} onChange={this.updateEntityValue.bind(this, {index:index, variable: 'sources'})}/>
+                                <Input type="textarea" label={i18n('party.relation.sources')} value={j.sources} onChange={this.updateEntityValue.bind(this, {index:index, variable: 'sources'})}/>
                                 <div className="ico">
                                     <Button onClick={this.removeEntity.bind(this, index)}><Glyphicon glyph="trash" /></Button>
                                 </div> 
@@ -282,6 +292,29 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
             </div>
         )
     }
+
+    /**
+     * GET GREGORIAN CALENDAR ID
+     * *********************************************
+     * Získání identifikátorů gregoriánského kalendáře, který bude výchozí
+     */
+     getGregorianCalendarId(){
+        var id = null;
+        for(var i = 0; i<this.props.refTables.calendarTypes.items.length; i++){
+            if(this.props.refTables.calendarTypes.items[i].code == "GREGORIAN"){
+                id = this.props.refTables.calendarTypes.items[i].id;
+            }
+        }
+        return id;
+     }
+}
+
+
+
+function matchStateToTerm (state, value) {
+  return (
+    state.name.toLowerCase().indexOf(value.toLowerCase()) !== -1 
+  )
 }
 
 module.exports = reduxForm({

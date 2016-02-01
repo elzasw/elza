@@ -9,7 +9,7 @@ import {PartyNameForm, AbstractReactComponent, i18n} from 'components';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {AppActions} from 'stores';
 import {deleteName, updateParty} from 'actions/party/party'
-
+import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 
 /**
   * PARTY DETAIL NAMES
@@ -19,13 +19,14 @@ import {deleteName, updateParty} from 'actions/party/party'
 var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
     constructor(props) {
         super(props);
+        this.dispatch(calendarTypesFetchIfNeeded());    // seznam typů kalendářů (gregoriánský, juliánský, ...)
         this.bindMethods(
-            'handleAddName',
-            'handleUpdateName',
-            'handleDeleteName', 
-            'addName',
-            'updateName',
-            'deleteName',
+            'handleAddName',                            // kliknutí na tlačítko přidat jméno
+            'handleUpdateName',                         // kliknutí na tlačítko upravit jméno
+            'handleDeleteName',                         // kliknutí na tlačítko smazat jméno
+            'addName',                                  // uložení nového jména
+            'updateName',                               // aktualizace jména
+            'deleteName',                               // smazání jména
         );
     }
 
@@ -95,11 +96,11 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
             partyTypeId: party.partyType.partyTypeId,                               // identifikátor typu osoby, jejíž jménu upravujeme
             validFrom: {
                 textDate: "",    
-                calendarTypeId: null           
+                calendarTypeId: this.props.partyRegion.gregorianCalendarId            
             },
             validTo: {
                 textDate: "",    
-                calendarTypeId: null           
+                calendarTypeId: this.props.partyRegion.gregorianCalendarId            
             },
             complements:[]
         }
@@ -140,11 +141,11 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
             degreeAfter: name.degreeAfter,                                          // titul za jménem
             validFrom: {                                                            // datace od
                 textDate: (name.validFrom != null ? name.validFrom.textDate : ""),    
-                calendarTypeId: (name.validFrom != null ? name.validFrom.calendarTypeId : 0)
+                calendarTypeId: (name.validFrom != null ? name.validFrom.calendarTypeId : this.props.partyRegion.gregorianCalendarId)
             },
             validTo: {                                                              // datace do
                 textDate: (name.validTo != null ? name.validTo.textDate : ""), 
-                calendarTypeId: (name.validTo != null ? name.validTo.calendarTypeId : 0)
+                calendarTypeId: (name.validTo != null ? name.validTo.calendarTypeId : this.props.partyRegion.gregorianCalendarId)
             },
             complements: complements,
         }
@@ -179,17 +180,38 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
                 party.partyNames[i].partyNameComplements = complements;                 // seznamm entit ve vztahu
                 party.partyNames[i].nameFormType.nameFormTypeId = data.nameFormTypeId;  // identifikátor typu jména
             }
+            if(
+                !party.partyNames[i].validFrom ||
+                party.partyNames[i].validFrom.textDate == "" || 
+                party.partyNames[i].validFrom.textDate == null || 
+                party.partyNames[i].validFrom.textDate == undefined
+            ){  
+                party.partyNames[i].validFrom = null;                                            // pokud není zadaný textová část data, celý fatum se ruší
+            }
+            if(
+                !party.partyNames[i].validTo || 
+                party.partyNames[i].validTo.textDate == "" || 
+                party.partyNames[i].validTo.textDate == null || 
+                party.partyNames[i].validTo.textDate == undefined
+            ){  
+                party.partyNames[i].validTo = null;                                              // pokud není zadaný textová část data, celý fatum se ruší
+            }
         }
         this.dispatch(updateParty(party));                                              // uložení změn a znovu načtení dat osoby              
     }
 
+   /**
+     * RENDER
+     * *********************************************
+     * Vykreslení bloku jmen
+     */ 
     render() {
         var party = this.props.partyRegion.selectedPartyData;
         return  <div className="partyNames">
                     <table>
                         <tbody>
                             {party.partyNames.map(i=> {return <tr className="name">
-                                <th className="name column">{i.mainPart}</th> 
+                                <th className="name column">{i.displayName}</th> 
                                 <td className="buttons">
                                     <Button className="column" onClick={this.handleUpdateName.bind(this, i.partyNameId)}><Glyphicon glyph="edit" /></Button>
                                     <Button className="column" onClick={this.handleDeleteName.bind(this, i.partyNameId)}><Glyphicon glyph="trash" /></Button>
