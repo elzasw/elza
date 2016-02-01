@@ -18,6 +18,8 @@ import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import cz.tacr.elza.domain.enumeration.StringLength;
+
 /**
  * Číselník obalů.
  * @author by Ondřej Buriánek, burianek@marbes.cz.
@@ -49,7 +51,7 @@ public class ArrPacket implements cz.tacr.elza.api.ArrPacket<RulPacketType, ArrF
     @JoinColumn(name = "findingAidId", nullable = false)
     private ArrFindingAid findingAid;
 
-    @Column(length = 50, nullable = false)
+    @Column(length = StringLength.LENGTH_50, nullable = false)
     private String storageNumber;
 
     @Column(nullable = false)

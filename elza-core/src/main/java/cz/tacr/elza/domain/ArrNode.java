@@ -12,6 +12,8 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import cz.tacr.elza.domain.enumeration.StringLength;
+
 
 /**
  * Entita zajišťuje zámek pro uzel kvůli konkurentnímu přístupu.
@@ -29,7 +31,7 @@ public class ArrNode extends AbstractVersionableEntity implements cz.tacr.elza.a
     @Column(nullable = true)
     private LocalDateTime lastUpdate;
 
-    @Column(nullable = false)
+    @Column(length = StringLength.LENGTH_36, nullable = false)
     private String uuid;
 
     @Override

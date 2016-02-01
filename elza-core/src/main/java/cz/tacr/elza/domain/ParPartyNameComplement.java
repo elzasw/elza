@@ -1,10 +1,5 @@
 package cz.tacr.elza.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.springframework.data.rest.core.annotation.RestResource;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -15,6 +10,14 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 
 /**
@@ -45,7 +48,7 @@ public class ParPartyNameComplement implements cz.tacr.elza.api.ParPartyNameComp
     @JoinColumn(name = "partyNameId", nullable = false)
     private ParPartyName partyName;
 
-    @Column(length = 1000)
+    @Column(length = StringLength.LENGTH_1000)
     private String complement;
 
 

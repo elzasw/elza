@@ -2,12 +2,14 @@ package cz.tacr.elza.domain;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 
 /**
@@ -17,16 +19,16 @@ import javax.persistence.OneToMany;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ParPartyGroup extends ParParty implements cz.tacr.elza.api.ParPartyGroup {
 
-    @Column(length = 1000, nullable = false)
+    @Column(length = StringLength.LENGTH_1000, nullable = false)
     private String scope;
 
-    @Column(length = 50)
+    @Column(length = StringLength.LENGTH_50)
     private String foundingNorm;
 
-    @Column(length = 250)
+    @Column(length = StringLength.LENGTH_250)
     private String scopeNorm;
 
-    @Column(length = 1000)
+    @Column(length = StringLength.LENGTH_1000)
     private String organization;
 
     @OneToMany(mappedBy = "partyGroup", fetch = FetchType.LAZY)

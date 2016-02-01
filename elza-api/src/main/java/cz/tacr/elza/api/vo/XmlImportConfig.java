@@ -24,6 +24,8 @@ public class XmlImportConfig {
 
     private Integer arrangementTypeId;
 
+    private Integer recordScopeId;
+
     public boolean isStopOnError() {
         return stopOnError;
     }
@@ -78,5 +80,13 @@ public class XmlImportConfig {
 
     public void setArrangementTypeId(Integer arrangementTypeId) {
         this.arrangementTypeId = arrangementTypeId;
+    }
+
+    public Integer getRecordScopeId() {
+        return recordScopeId;
+    }
+
+    public void setRecordScopeId(Integer recordScopeId) {
+        this.recordScopeId = recordScopeId;
     }
 }

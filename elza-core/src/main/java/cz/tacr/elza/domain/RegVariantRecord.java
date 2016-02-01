@@ -17,6 +17,8 @@ import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import cz.tacr.elza.domain.enumeration.StringLength;
+
 
 /**
  * Variantní rejstříková hesla.
@@ -43,7 +45,7 @@ public class RegVariantRecord extends AbstractVersionableEntity implements  cz.t
 //    @JoinColumn(name = "recordId", nullable = false, insertable = false, updatable = false)
 //    private RegRecord regRecordPar;
 
-    @Column(length = 1000)
+    @Column(length = StringLength.LENGTH_1000)
     private String record;
 
     /* Konstanty pro vazby a fieldy. */

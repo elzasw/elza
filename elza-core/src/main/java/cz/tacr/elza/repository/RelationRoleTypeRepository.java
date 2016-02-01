@@ -15,4 +15,6 @@ import cz.tacr.elza.domain.ParRelationRoleType;
 @Repository
 public interface RelationRoleTypeRepository extends JpaRepository<ParRelationRoleType, Integer> {
 
+    ParRelationRoleType findByCode(String roleTypeCode);
+
 }

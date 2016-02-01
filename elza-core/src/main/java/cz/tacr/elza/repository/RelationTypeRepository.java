@@ -13,4 +13,6 @@ import cz.tacr.elza.domain.ParRelationType;
  */
 public interface RelationTypeRepository extends JpaRepository<ParRelationType, Integer> {
 
+    ParRelationType findByCode(String relationTypeCode);
+
 }

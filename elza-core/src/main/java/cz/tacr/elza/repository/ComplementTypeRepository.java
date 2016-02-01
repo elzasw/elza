@@ -28,4 +28,6 @@ public interface ComplementTypeRepository extends JpaRepository<ParComplementTyp
     @Query("SELECT pc.complementType FROM par_party_type_complement_type pc WHERE pc.partyType = ?1")
     List<ParComplementType> findComplementTypesByPartyType(ParPartyType parPartyType);
 
+    ParComplementType findByCode(String partyNameComplementTypeCode);
+
 }

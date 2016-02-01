@@ -22,19 +22,19 @@ import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
 public class PartyNameComplement {
 
     /** Kód typu doplňku jména. */
-    @XmlAttribute(name = "party-name-complement-type-name", required = true)
-    private String partyNameComplementTypeName;
+    @XmlAttribute(name = "party-name-complement-type-code", required = true)
+    private String partyNameComplementTypeCode;
 
     /** Doplněk*/
     @XmlElement(name = "complement", required = true)
     private String complement;
 
-    public String getPartyNameComplementTypeName() {
-        return partyNameComplementTypeName;
+    public String getPartyNameComplementTypeCode() {
+        return partyNameComplementTypeCode;
     }
 
-    public void setPartyNameComplementTypeName(String partyNameComplementTypeName) {
-        this.partyNameComplementTypeName = partyNameComplementTypeName;
+    public void setPartyNameComplementTypeCode(String partyNameComplementTypeCode) {
+        this.partyNameComplementTypeCode = partyNameComplementTypeCode;
     }
 
     public String getComplement() {

@@ -8,6 +8,7 @@ import org.hibernate.search.annotations.Indexed;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 
 
@@ -22,7 +23,7 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataCoordinates extends ArrData implements cz.tacr.elza.api.ArrDataCoordinates {
 
-    @Column(length = 250, nullable = false)
+    @Column(length = StringLength.LENGTH_250, nullable = false)
     private String value;
 
     @Override

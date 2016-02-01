@@ -1,13 +1,23 @@
 package cz.tacr.elza.xmlimport.v1.vo.party;
 
-import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
-import cz.tacr.elza.xmlimport.v1.vo.date.ComplexDate;
-import cz.tacr.elza.xmlimport.v1.vo.record.Record;
+import java.util.List;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlID;
+import javax.xml.bind.annotation.XmlIDREF;
+import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlType;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import javax.xml.bind.annotation.*;
-import java.util.List;
+import cz.tacr.elza.xmlimport.v1.vo.NamespaceInfo;
+import cz.tacr.elza.xmlimport.v1.vo.date.ComplexDate;
+import cz.tacr.elza.xmlimport.v1.vo.record.Record;
 
 /**
  * Abstraktní osoba.
@@ -73,6 +83,10 @@ public abstract class AbstractParty {
     @XmlElement(name = "relation")
     @XmlElementWrapper(name = "relation-list")
     private List<Relation> events;
+
+    /** Stručný popis osoby. Délka 1000. */
+    @XmlElement(name = "characteristics")
+    private String characteristics;
 
     public String getPartyId() {
         return partyId;
@@ -160,6 +174,14 @@ public abstract class AbstractParty {
 
     public void setEvents(List<Relation> events) {
         this.events = events;
+    }
+
+    public String getCharacteristics() {
+        return characteristics;
+    }
+
+    public void setCharacteristics(String characteristics) {
+        this.characteristics = characteristics;
     }
 
     @Override

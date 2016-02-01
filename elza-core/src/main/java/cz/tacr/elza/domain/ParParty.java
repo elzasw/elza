@@ -2,11 +2,6 @@ package cz.tacr.elza.domain;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.springframework.data.rest.core.annotation.RestResource;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -19,6 +14,14 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 
 /**
@@ -82,7 +85,7 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
     @Column()
     private String sourceInformation;
 
-    @Column(length = 1000, nullable = true)
+    @Column(length = StringLength.LENGTH_1000, nullable = true)
     private String characteristics;
 
     @Override

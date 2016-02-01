@@ -2,10 +2,6 @@ package cz.tacr.elza.domain;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -22,6 +18,8 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 
 /**
@@ -58,19 +56,19 @@ public class ParPartyName
     @JoinColumn(name = "partyId", nullable = false)
     private ParParty party;
 
-    @Column(length = 250, nullable = false)
+    @Column(length = StringLength.LENGTH_250, nullable = false)
     private String mainPart;
 
-    @Column(length = 250)
+    @Column(length = StringLength.LENGTH_250)
     private String otherPart;
 
     @Column()
     private String note;
 
-    @Column(length = 50)
+    @Column(length = StringLength.LENGTH_50)
     private String degreeBefore;
 
-    @Column(length = 50)
+    @Column(length = StringLength.LENGTH_50)
     private String degreeAfter;
 
 

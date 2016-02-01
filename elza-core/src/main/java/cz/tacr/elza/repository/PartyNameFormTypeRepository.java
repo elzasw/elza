@@ -1,7 +1,8 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ParPartyNameFormType;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import cz.tacr.elza.domain.ParPartyNameFormType;
 
 /**
  * Repository pro abstraktní osoby.
@@ -10,5 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 
 public interface PartyNameFormTypeRepository extends JpaRepository<ParPartyNameFormType, Integer> {
+
+    ParPartyNameFormType findByCode(String partyNameFormTypeCode);
 
 }
