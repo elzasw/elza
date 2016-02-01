@@ -73,28 +73,28 @@
             float: right;
         }
 
-        .accordion-header {
-            height: 32px;
-            background: @accordion-header-bg;
-            border: 1px solid @accordion-header-border;
-            padding: 4px;
-            margin: 2px 0 2px 0;
-            cursor: pointer;
-            
+        .accordion-item {
             &.opened {
-                font-weight: bold;
-                border-bottom-color: @accordion-header-bg;
-                margin-bottom: 0;
+                .accordion-header {
+                    font-weight: bold;
+                    border-bottom-color: @accordion-header-bg;
+                    margin-bottom: 0;
+                }
             }
-            &.closed {
-                
+            .accordion-header {
+                min-height: 32px;
+                background: @accordion-header-bg;
+                border-bottom: 1px solid @accordion-header-border;
+                padding: 4px;
+                cursor: pointer;
+            }
+            
+            .accordion-body {
+                border: solid @accordion-header-border;
+                border-width: 0 0 1px 0;
             }
         }
         
-        .accordion-body {
-            border: solid @accordion-header-border;
-            border-width: 0 1px 1px 1px;
-        }
     }
     .children {
         height: @node-panel-children-height;

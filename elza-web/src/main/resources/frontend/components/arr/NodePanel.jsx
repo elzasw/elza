@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Icon, AbstractReactComponent, i18n, Loading, SubNodeForm, Accordion, SubNodeRegister} from 'components';
 import {Button, Tooltip, OverlayTrigger} from 'react-bootstrap';
@@ -16,6 +17,7 @@ import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes'
 import {indexById} from 'stores/app/utils.jsx'
 import {createFaRoot, isFaRootId} from './ArrUtils.jsx'
 import {propsEquals} from 'components/Utils'
+const scrollIntoView = require('dom-scroll-into-view')
 
 require ('./NodePanel.less');
 
@@ -29,15 +31,25 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             'getParentNodes', 'getChildNodes', 'getSiblingNodes',
             'renderAccordion', 'renderState', 'transformConformityInfo', 'handleAddNodeAtEnd'
             );
-
     }
 
     componentDidMount() {
         this.requestData(this.props.versionId, this.props.node);
+        this.ensureItemVisible();
     }
 
     componentWillReceiveProps(nextProps) {
         this.requestData(nextProps.versionId, nextProps.node, nextProps.showRegisterJp);
+
+        this.setState({}, this.ensureItemVisible)
+    }
+
+    ensureItemVisible() {
+        if (this.props.node.selectedSubNodeId !== null) {
+            var itemNode = ReactDOM.findDOMNode(this.refs['accheader-' + this.props.node.selectedSubNodeId])
+            var contentNode = ReactDOM.findDOMNode(this.refs.content)
+            scrollIntoView(itemNode, contentNode, { onlyScrollIfNeeded: true, alignWithTop:true })
+        }
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -262,11 +274,17 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 
             if (node.selectedSubNodeId == item.id) {
                 rows.push(
-                    <div key={item.id} className='accordion-header opened' onClick={this.handleCloseItem.bind(this, item)}>
-                        {item.name} [{item.id}] {state}
+                    <div key={item.id} ref={'accheader-' + item.id} className='accordion-item opened' onClick={this.handleCloseItem.bind(this, item)}>
+                        <div className='accordion-header'>
+                            {item.name} [{item.id}] {state}
+                        </div>
+                        <div key="body" className='accordion-body'>
+                            {form}
+                            {recordInfo}
+                        </div>
                     </div>
                 )
-                rows.push(
+                if (false) rows.push(
                     <div key="body" className='accordion-body'>
                         {form}
                         {recordInfo}
@@ -274,8 +292,10 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 )
             } else {
                 rows.push(
-                    <div key={item.id} className='accordion-header closed' onClick={this.handleOpenItem.bind(this, item)}>
-                        {item.name} [{item.id}] {state}
+                    <div key={item.id} ref={'accheader-' + item.id} className='accordion-item closed' onClick={this.handleOpenItem.bind(this, item)}>
+                        <div className='accordion-header'>
+                            {item.name} [{item.id}] {state}
+                        </div>
                     </div>
                 )
             }
@@ -357,7 +377,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 {false && accordionInfo}
                 {actions}
                 {parents}
-                <div className='content'>
+                <div className='content' ref='content'>
                     {this.renderAccordion(form, record)}
                 </div>
                 {children}
