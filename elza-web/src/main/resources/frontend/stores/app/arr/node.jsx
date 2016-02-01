@@ -54,6 +54,16 @@ export function nodeInitState(node, prevNodesNode) {
     return result;
 }
 
+function getViewStartIndex(state, selectedId) {
+    var index = indexById(state.childNodes, selectedId)
+    if (index !== null) {   // null může být, pokud nejsou data seznamu položek accordionu (childNodes) ještě načtena
+        if (index < state.viewStartIndex || index >= state.viewStartIndex + state.pageSize) {
+            return state.pageSize * Math.floor(index / state.pageSize);
+        }
+    }
+    return state.viewStartIndex;
+}
+
 const nodeInitialState = {
     id: null,
     name: null,
@@ -169,7 +179,7 @@ export function node(state = nodeInitialState, action) {
                 isFetching: true,
             }
         case types.FA_NODE_INFO_RECEIVE:
-            return {
+            var result = {
                 ...state,
                 isFetching: false,
                 fetched: true,
@@ -178,6 +188,13 @@ export function node(state = nodeInitialState, action) {
                 parentNodes: action.parentNodes,
                 lastUpdated: action.receivedAt
             }
+
+            // Změna view tak, aby byla daná položka vidět
+            if (state.selectedSubNodeId !== null) {
+                result.viewStartIndex = getViewStartIndex(result, state.selectedSubNodeId);
+            }
+
+            return result;
         case types.FA_FA_SELECT_SUBNODE:
             if (state.selectedSubNodeId === action.subNodeId) {
                 return state;
@@ -187,6 +204,13 @@ export function node(state = nodeInitialState, action) {
                 ...state,
                 selectedSubNodeId: action.subNodeId
             }
+
+            // Změna view tak, aby byla daná položka vidět
+            if (action.subNodeId !== null) {
+                result.viewStartIndex = getViewStartIndex(state, action.subNodeId);
+            }
+
+            // Data vztahující se k vybranému ID
             if (state.selectedSubNodeId != action.subNodeId) {
                 result.subNodeRegister = subNodeRegister(undefined, {type:''});
                 result.subNodeForm = subNodeForm(undefined, {type:''});

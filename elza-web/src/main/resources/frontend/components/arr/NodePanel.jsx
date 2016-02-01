@@ -55,8 +55,10 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     ensureItemVisible() {
         if (this.props.node.selectedSubNodeId !== null) {
             var itemNode = ReactDOM.findDOMNode(this.refs['accheader-' + this.props.node.selectedSubNodeId])
-            var contentNode = ReactDOM.findDOMNode(this.refs.content)
-            scrollIntoView(itemNode, contentNode, { onlyScrollIfNeeded: true, alignWithTop:true })
+            if (itemNode !== null) {
+                var contentNode = ReactDOM.findDOMNode(this.refs.content)
+                scrollIntoView(itemNode, contentNode, { onlyScrollIfNeeded: true, alignWithTop:true })
+            }
         }
     }
 
