@@ -144,6 +144,10 @@ export const STORE_STATE_DATA = 'STORE_STATE_DATA'
 export const STORE_STATE_DATA_INIT = 'STORE_STATE_DATA_INIT'
 
 /**
+ * scopes
+ */
+export const SCOPES_PREPARE_SCOPES_DATE = 'SCOPES_PREPARE_SCOPES_DATE'
+/**
  * Router.
  */
 export const ROUTER_NAVIGATE = 'ROUTER_NAVIGATE'

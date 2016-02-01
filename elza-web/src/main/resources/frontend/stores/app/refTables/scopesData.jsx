@@ -1,11 +1,11 @@
 import * as types from 'actions/constants/actionTypes';
 
 const initialState = {
-    scopes:[]
+    scopes:[],
 }
 
 export default function scopesData(state = initialState, action = {}) {
-
+    console.log('tady je moje action', action);
     switch (action.type) {
         case types.REF_SCOPES_TYPES_RECEIVE:
             var exist = false;
@@ -15,9 +15,10 @@ export default function scopesData(state = initialState, action = {}) {
                 }
             })
             if (!exist){
-                state.scopes.push({versionId: action.data.versionId, scopes: action.data.data});
+                state.scopes.push({versionId: action.data.versionId, scopes: action.data});
             }
-            return state;
+            return Object.assign({}, state);
+
         default:
             return state
     }

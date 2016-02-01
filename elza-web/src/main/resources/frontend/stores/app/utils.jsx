@@ -58,3 +58,4 @@ function selectedAfterClose(arr, index) {
     }
 }
 exports.selectedAfterClose = selectedAfterClose
+

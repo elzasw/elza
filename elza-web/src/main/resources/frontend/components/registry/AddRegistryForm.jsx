@@ -7,12 +7,12 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/actionTypes';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, DropDownTree} from 'components';
+import {AbstractReactComponent, i18n, DropDownTree, Scope} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField} from 'components/form/FormUtils'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
-import {requestScopesIfNeeded} from 'actions/scopes/scopesData'
+
 
 const validate = (values, props) => {
     const errors = {};
@@ -29,7 +29,6 @@ const validate = (values, props) => {
 var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.dispatch(requestScopesIfNeeded());
         this.state = {};
     }
 
@@ -38,7 +37,6 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
 
     componentDidMount() {
         this.dispatch(refRecordTypesFetchIfNeeded());
-        this.dispatch(requestScopesIfNeeded());
         if (this.props.initData) {
             this.props.load(this.props.initData);
         }
@@ -47,11 +45,12 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
     render() {
         const {fields: { nameMain, characteristics, registerTypeId}, handleSubmit, onClose} = this.props;
 
-console.log(this.props.refTables);
+
         return (
             <div key={this.props.key}>
                 <Modal.Body>
                     <form onSubmit={handleSubmit}>
+                        <Scope versionId={null} label='Scope'/>
                         <DropDownTree
                             label={i18n('registry.detail.typ.rejstriku')}
                             items = {this.props.refTables.recordTypes.items}
