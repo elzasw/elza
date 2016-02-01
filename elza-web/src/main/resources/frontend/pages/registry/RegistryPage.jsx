@@ -301,8 +301,6 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 ribbon={this.buildRibbon()}
                 leftPanel={leftPanel}
                 centerPanel={centerPanel}
-                rightPanel={rightPanel}
-
             />
         )
     }
