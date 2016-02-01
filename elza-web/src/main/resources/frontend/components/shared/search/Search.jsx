@@ -23,6 +23,7 @@ var Search = class Search extends React.Component {
         super(props);                                                   // volaní nadřazeného konstruktoru
 
         this.handleSearch = this.handleSearch.bind(this);               // funkce pro akci spoustící vyhledávání
+        this.handleClear = this.handleClear.bind(this);
         this.handleChange = this.handleChange.bind(this);               // funckce pro aktualizaci hledaneho textu v komponentě
         this.handleKeyUp = this.handleKeyUp.bind(this);                 // funckce pro odchycení stisknutí klávesy enter a odeslání search
 
@@ -33,6 +34,10 @@ var Search = class Search extends React.Component {
 
     handleSearch(e){
        this.props.onSearch(this.state.filterText);  
+    }
+
+    handleClear(e){
+        this.props.onClear();
     }
 
     handleKeyUp(e){
@@ -62,7 +67,10 @@ var Search = class Search extends React.Component {
         if (this.props.beforeInput) {
             beforeInput = <div className='search-input-before'>{this.props.beforeInput} </div>
         }
-        var searchLabel = i18n('search.action.search');  
+        var searchLabel = i18n('search.action.search');
+        var clearButton = '';
+        if(this.state.filterText)
+            clearButton = <div className='clear-search-button'><Button onClick={this.handleClear}><Icon glyph='fa-close'/></Button></div>;
         return (
             <div className={cls}>
                 {beforeInput}
@@ -77,6 +85,8 @@ var Search = class Search extends React.Component {
                         onKeyUp={this.handleKeyUp}
                     />
                     <div className='search-button'><Button onClick={this.handleSearch}><Icon glyph='fa-search'/></Button></div>
+                    {clearButton}
+
                 </div>
                 {afterInput}
             </div>

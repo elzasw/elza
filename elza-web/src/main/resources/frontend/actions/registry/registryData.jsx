@@ -68,3 +68,15 @@ export function registryCancelMove(registry) {
         registry
     }
 }
+
+export function registryUnsetParents() {
+    return {
+        type: types.REGISTRY_UNSET_PARENT
+    }
+}
+
+export function registryClearSearch(){
+    return {
+        type: types.REGISTRY_CLEAR_SEARCH,
+    }
+}

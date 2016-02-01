@@ -17,7 +17,7 @@ import {WebApi} from 'actions'
 import {MenuItem, DropdownButton, ButtonGroup, Button} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {Nav, Glyphicon, NavItem} from 'react-bootstrap';
-import {registryData, registrySearchData, registryChangeParent, registryRemoveRegistry, registryStartMove, registryStopMove, registryCancelMove} from 'actions/registry/registryData'
+import {registryData, registrySearchData, registryClearSearch, registryChangeParent, registryRemoveRegistry, registryStartMove, registryStopMove, registryCancelMove, registryUnsetParents} from 'actions/registry/registryData'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {fetchRegistryIfNeeded, registrySetTypesId, fetchRegistry, registryRemoveRegistryTypesFilter} from 'actions/registry/registryList'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
@@ -26,7 +26,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('buildRibbon', 'handleSelectType', 'handleSelect', 'handleSearch', 'handleDoubleClick', 'handleClickNavigation', 'handleAddRegistry', 'handleCallAddRegistry', 'handleRemoveRegistryDialog', 'handleRemoveRegistry', 'handleStartMoveRegistry', 'handleSaveMoveRegistry', 'handleCancelMoveRegistry', 'handleCloseTypesRegistry');
+        this.bindMethods('buildRibbon', 'handleSelectType', 'handleSelect', 'handleSearch', 'handleSearchClear', 'handleDoubleClick', 'handleClickNavigation', 'handleAddRegistry', 'handleCallAddRegistry', 'handleRemoveRegistryDialog', 'handleRemoveRegistry', 'handleStartMoveRegistry', 'handleSaveMoveRegistry', 'handleCancelMoveRegistry', 'handleCloseTypesRegistry', 'handleUnsetParents');
         this.dispatch(fetchRegistryIfNeeded(props.registry.filterText, props.registry.registryParentId, props.registry.registryTypesId));
         this.dispatch(refRecordTypesFetchIfNeeded());
 
@@ -153,7 +153,9 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     handleDoubleClick(item, event) {
-        var registry = Object.assign({}, registry,{registryParentId: item.recordId});
+        var rodice = item.parents.slice();
+        rodice.push(item.record);
+        var registry = Object.assign({}, registry,{registryParentId: item.recordId, parents: rodice});
         this.dispatch(registryChangeParent(registry));
         this.dispatch(registrySetTypesId(item.registerTypeId));
     }
@@ -168,6 +170,10 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         this.dispatch(registrySearchData(registry));
     }
 
+    handleSearchClear(){
+        this.dispatch(registryClearSearch());
+    }
+
     hlandleRegistryTypesSelect(selectedId, event) {
         this.dispatch(registrySetTypesId(selectedId));
     }
@@ -175,9 +181,12 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     handleCloseTypesRegistry() {
         this.dispatch(registrySetTypesId(null));
     }
+
+    handleUnsetParents(){
+        this.dispatch(registryUnsetParents(null));
+    }
     render() {
         const {splitter} = this.props;
-
         var navRows = (
             <div className="registry-nav">
                 <div key='registrysList'>
@@ -194,26 +203,20 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
                         var clsItem = 'registry-list-icon-list';
                         var doubleClick = this.handleDoubleClick.bind(this, item);
-                        if (item.hasChildren === false) {
+
+                        if (item.addRecord === false) {
                             clsItem = 'registry-list-icon-record';
                             doubleClick = false;
                         }
 
                         // výsledky z vyhledávání
                         if ( this.props.registry.filterText!==null ) {
-                            var path = '';
-                            item.parents.map(parent => {
-                                if (path !== '')
-                                    path += '<';
-                                path += parent.record;
-                            });
-
+                            var path = item.parents.join('<');
                             return (
                                 <div key={item.recordId} className={cls} onDoubleClick={doubleClick} onClick={this.handleSelect.bind(this, item)}>
-                                    <Icon glyph={iconName} key={item.recordId} /><span key={item.recordId} className={clsItem}>{item.record}</span>
-                                    <div key={item.recordId} className="path">
-                                        <span key={item.recordId}>{path}</span>
-                                    </div>
+                                    <div><Icon glyph={iconName} /></div>
+                                    <span className={clsItem}>{item.record}</span>
+                                    <div className="path">{path}</div>
                                 </div>
                             )
                         }
@@ -233,17 +236,18 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         )
 
         var navParents = '';
-        if (this.props.registry.records[0] && this.props.registry.filterText === null && this.props.registry.records[0].parents.length>0){
-            console.log('rodiče', this.props.registry);
-
+        if (this.props.registry.parents){
+            var nazevRodice = this.props.registry.parents[this.props.registry.parents.length-1];
+            var cestaRodice = this.props.registry.parents.slice();
+            cestaRodice.pop();
             navParents = (
                 <div className="record-parent-info">
                     <div className='record-selected-name'>
                         <Icon glyph="fa-folder-open" />
-                        <div>{this.props.registry.records[0].parents[0]}</div>
-                        <Icon glyph="fa-mail-reply" />
+                        <div>{nazevRodice}</div>
+                        <div onClick={this.handleUnsetParents}><Icon glyph="fa-mail-reply" /></div>
                     </div>
-                    <div className='record-selected-breadcrumbs'>{this.props.registry.records[0].parents.join(' | ')}</div>
+                    <div className='record-selected-breadcrumbs'>{cestaRodice.join(' | ')}</div>
                 </div>
             )
         }
@@ -261,6 +265,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 <div>
                     <Search
                         onSearch={this.handleSearch.bind(this)}
+                        onClear={this.handleSearchClear.bind(this)}
                         placeholder={i18n('search.input.search')}
                         beforeInput={dropDownForSearch}
                         filterText={this.props.registry.filterText}

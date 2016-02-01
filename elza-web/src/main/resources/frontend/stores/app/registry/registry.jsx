@@ -16,6 +16,7 @@ const initialState = {
     registryData: undefined,
     registryParentId: null,
     registryTypesId: null,
+    parents: '',
     records: [],
     countRecords: 0,
 }
@@ -61,17 +62,15 @@ export default function registry(state = initialState, action = {}) {
                 action.registry.filterText = null;
             return Object.assign({}, state, {
                 filterText: action.registry.filterText,
-                registryParentId: null,
+                // registryParentId: null, v nové verzy DD se filtruje pod aktuálním rodičem
                 fetched: false
             })
             // {...state, filterText: action.registry.filterText, registryParentId: null, fetched: false}
 
         case types.REGISTRY_CHANGED_PARENT_REGISTRY:
-            if (action.registry.filterText === undefined)
-                action.registry.filterText = null;
             return Object.assign({}, state, {
                 registryParentId: action.registry.registryParentId,
-                filterText: action.registry.filterText,
+                parents: action.registry.parents,
                 fetched: false
             })
         case types.REGISTRY_RECEIVE_REGISTRY_LIST:
@@ -104,6 +103,17 @@ export default function registry(state = initialState, action = {}) {
         case types.REGISTRY_MOVE_REGISTRY_CANCEL:
             return Object.assign({}, state, {
                 recordForMove: null
+            })
+        case types.REGISTRY_UNSET_PARENT:
+            return Object.assign({}, state, {
+                registryParentId: null,
+                parents: '',
+                fetched: false
+            })
+        case types.REGISTRY_CLEAR_SEARCH:
+            return Object.assign({}, state, {
+                filterText: null,
+                fetched: false
             })
         default:
             return state
