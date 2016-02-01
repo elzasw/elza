@@ -36,6 +36,9 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
+        if (this.state !== nextState) {
+            return true;
+        }
         var eqProps = ['ensureItemVisible', 'filterText', 'expandedIds', 'selectedId', 'selectedIds', 'nodes', 'focusId', 'isFetching', 'fetched', 'searchedIds', 'searchedParents', 'filterCurrentIndex']
         return !propsEquals(this.props, nextProps, eqProps);
     }
@@ -128,7 +131,6 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
         var index;
         if (this.props.ensureItemVisible) {
             index = indexById(this.props.nodes, this.props.selectedId);
-            console.log('iiiiiiiii', this.props, index);
         }
 
         return (
@@ -142,14 +144,14 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
                     <Button onClick={this.props.onCollapse}>Zabalit</Button>
                 </div>
                 <div className='fa-tree-lazy-container' ref="treeContainer">
-                    <VirtualList
+                    {this.state.treeContainer && <VirtualList
                         tagName='div'
                         scrollToIndex={index}
                         container={this.state.treeContainer}
                         items={this.props.nodes}
                         renderItem={this.renderNode}
                         itemHeight={this.props.rowHeight}
-                    />
+                    />}
                 </div>
             </div>
         )
