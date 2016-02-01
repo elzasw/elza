@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import java.util.Comparator;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -114,5 +116,16 @@ public class ParPartyNameComplement implements cz.tacr.elza.api.ParPartyNameComp
     @Override
     public String toString() {
         return "ParPartyNameComplement pk=" + partyNameComplementId;
+    }
+
+    /**
+     * Řazení objektů.
+     */
+    public static class ParPartyNameComplementComparator implements Comparator<ParPartyNameComplement> {
+
+        @Override
+        public int compare(final ParPartyNameComplement o1, final ParPartyNameComplement o2) {
+            return o1.getComplementType().getViewOrder().compareTo(o2.getComplementType().getViewOrder());
+        }
     }
 }

@@ -64,6 +64,7 @@ import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyNameComplement;
 import cz.tacr.elza.domain.ParPartyNameFormType;
 import cz.tacr.elza.domain.ParPartyType;
 import cz.tacr.elza.domain.ParRelation;
@@ -163,10 +164,6 @@ public class ClientFactoryVO {
                         createParPartyNameDetail(n)
         ));
 
-        //partyNames
-        result.setPartyNames(createList(partyNameRepository.findByParty(party), ParPartyNameVO.class,
-                this::createParPartyNameDetail));
-
         result.setRelations(createPartyRelations(party));
         result.setCreators(createPartyList(partyRepository.findCreatorsByParty(party)));
 
@@ -233,6 +230,11 @@ public class ClientFactoryVO {
      * @return vo jména osoba
      */
     private ParPartyNameVO createParPartyNameDetail(final ParPartyName partyName) {
+
+        if(partyName.getPartyNameComplements() != null){
+            partyName.getPartyNameComplements().sort(new ParPartyNameComplement.ParPartyNameComplementComparator());
+        }
+
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ParPartyNameVO result = mapper.map(partyName, ParPartyNameVO.class);
 
@@ -256,10 +258,11 @@ public class ClientFactoryVO {
         if (CollectionUtils.isEmpty(relations)) {
             return null;
         }
+        relations.sort(new ParRelation.ParRelationComparator());
 
         MapperFacade mapper = mapperFactory.getMapperFacade();
 
-        Map<Integer, ParRelationVO> relationVOMap = new HashMap<>();
+        Map<Integer, ParRelationVO> relationVOMap = new LinkedHashMap<>();
         for (final ParRelation relation : relations) {
             relationVOMap.put(relation.getRelationId(), mapper.map(relation, ParRelationVO.class));
         }

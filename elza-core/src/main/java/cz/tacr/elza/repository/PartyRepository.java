@@ -50,7 +50,7 @@ public interface PartyRepository extends JpaRepository<ParParty, Integer>, Party
      * @param party vytvořená osoba
      * @return seznam tvůrců
      */
-    @Query("SELECT c.creatorParty FROM par_creator c WHERE c.party = ?1")
+    @Query("SELECT c.creatorParty FROM par_creator c WHERE c.party = ?1 ORDER BY c.creatorId")
     List<ParParty> findCreatorsByParty(ParParty party);
 
 }

@@ -28,6 +28,8 @@ public class ParRelationVO {
 
     private Integer version;
 
+    private String displayName;
+
 
     private List<ParRelationEntityVO> relationEntities;
 
@@ -96,6 +98,14 @@ public class ParRelationVO {
         this.version = version;
     }
 
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(final String displayName) {
+        this.displayName = displayName;
+    }
+
     public List<ParRelationEntityVO> getRelationEntities() {
         return relationEntities;
     }
@@ -110,4 +120,6 @@ public class ParRelationVO {
         }
         relationEntities.add(relationEntity);
     }
+
+
 }

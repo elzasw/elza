@@ -1,5 +1,9 @@
 package cz.tacr.elza.domain;
 
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -31,6 +35,18 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ParRelation extends AbstractVersionableEntity implements cz.tacr.elza.api.ParRelation<ParParty, ParRelationType, ParUnitdate> {
+
+    /**
+     * Výchozí řazení objektů podle class_type ( vznik, zánik, vztah).
+     */
+    private static final Map<String, Integer> classTypeOrderMap = new HashMap<>();
+
+    static {
+        classTypeOrderMap.put("vznik", 1);
+        classTypeOrderMap.put("zánik", 2);
+        classTypeOrderMap.put("vztah", 3);
+    }
+
 
     @Id
     @GeneratedValue
@@ -153,5 +169,28 @@ public class ParRelation extends AbstractVersionableEntity implements cz.tacr.el
     @Override
     public String toString() {
         return "ParRelation pk=" + relationId;
+    }
+
+
+    /**
+     * Řazení objektů.
+     */
+    public static class ParRelationComparator implements Comparator<ParRelation> {
+
+        @Override
+        public int compare(final ParRelation o1, final ParRelation o2) {
+
+            Integer class1 = classTypeOrderMap.get(o1.getComplementType().getClassType());
+            Integer class2 = classTypeOrderMap.get(o2.getComplementType().getClassType());
+            class1 = class1 == null ? Integer.MAX_VALUE : class1;
+            class2 = class2 == null ? Integer.MAX_VALUE : class2;
+
+            int result = class1.compareTo(class2);
+            if (result == 0) {
+                result = o1.getRelationId().compareTo(o2.getRelationId());
+            }
+
+            return result;
+        }
     }
 }
