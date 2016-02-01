@@ -8,8 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
+import org.hibernate.proxy.HibernateProxy;
 
 
 /**
@@ -106,6 +109,27 @@ public class ElzaTools {
             throws IllegalArgumentException {
         if (!ObjectUtils.equals(valueA, valueB)) {
             throw new IllegalArgumentException(message);
+        }
+    }
+
+
+    /**
+     * Pokud je entity z DB typu {@link HibernateProxy}, je převedena na DO objekt.
+     *
+     * @param entity      entita
+     * @param tergetClass cílová třída entity (DO objekt class)
+     * @param <T>         DO objekt class
+     * @return implementace entity
+     */
+    public static <T> T unproxyEntity(@Nullable final Object entity, Class<T> tergetClass) {
+        if (entity == null) {
+            return null;
+        }
+
+        if (entity instanceof HibernateProxy) {
+            return (T) ((HibernateProxy) entity).getHibernateLazyInitializer().getImplementation();
+        } else {
+            return (T) entity;
         }
     }
 }

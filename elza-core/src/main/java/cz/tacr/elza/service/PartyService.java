@@ -15,6 +15,7 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.hibernate.proxy.HibernateProxy;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -224,6 +225,8 @@ public class PartyService {
         } else {
             saveParty = partyRepository.findOne(newParty.getPartyId());
             Assert.notNull(saveParty);
+            saveParty = ElzaTools.unproxyEntity(saveParty, ParParty.class);
+
             BeanUtils.copyProperties(newParty, saveParty, "partyGroupIdentifiers", "record",
                     "preferredName", "from", "to", "partyNames", "partyCreators");
         }
