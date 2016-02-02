@@ -10,7 +10,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -309,11 +308,12 @@ public class ClientFactoryVO {
      * @return seznam rejstříkových hesel
      */
     public List<RegRecordVO> createRegRecords(final List<RegRecord> records,
-                                              final Map<Integer, Integer> recordIdPartyIdMap, boolean fillParents) {
+                                              final Map<Integer, Integer> recordIdPartyIdMap, boolean fillParents,
+                                              @Nullable final RegRecord fillToParent) {
         List<RegRecordVO> result = new ArrayList<>(records.size());
         for (final RegRecord record : records) {
             Integer partyId = recordIdPartyIdMap.get(record.getRecordId());
-            result.add(createRegRecord(record, partyId, fillParents));
+            result.add(createRegRecord(record, partyId, fillParents, fillToParent));
         }
 
         return result;
@@ -325,11 +325,12 @@ public class ClientFactoryVO {
      * @param regRecord   rejstříkové heslo
      * @param partyId     id osoby
      * @param fillParents příznak zda se mají načíst rodiče rejstříku
+     * @param fillToParent
      * @return rejstříkové heslo
      */
     public RegRecordVO createRegRecord(final RegRecord regRecord,
                                        @Nullable final Integer partyId,
-                                       boolean fillParents) {
+                                       boolean fillParents, final RegRecord fillToParent) {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         RegRecordVO result = mapper.map(regRecord, RegRecordVO.class);
         result.setPartyId(partyId);
@@ -337,7 +338,7 @@ public class ClientFactoryVO {
         if (fillParents) {
             List<String> parents = new LinkedList<>();
             RegRecord parentRecord = regRecord.getParentRecord();
-            while (parentRecord != null) {
+            while (parentRecord != null && !parentRecord.equals(fillToParent)) {
                 parents.add(parentRecord.getRecord());
                 parentRecord = parentRecord.getParentRecord();
             }
@@ -349,23 +350,23 @@ public class ClientFactoryVO {
 
     /**
      * Pro heslo vytvoří seznam typů až po kořen typů nebo po typ v seznamu.
-     *
-     * @param record        heslo
-     * @param parentTypeIds prázdný seznam nebo seznam typů, po které se mají načítat rodiče
+     *  @param record        heslo
+     * @param parentTypeId null nebo id typu, po který se mají načítat rodiče
      */
-    public void fillRegisterTypeNamesToParents(final RegRecordVO record, final Set<Integer> parentTypeIds) {
+    public void fillRegisterTypeNamesToParents(final RegRecordVO record, @Nullable final Integer parentTypeId) {
 
         List<String> parentTypeNames = new ArrayList<>();
 
         RegRegisterType recordType = registerTypeRepository.findOne(record.getRegisterTypeId());
         parentTypeNames.add(recordType.getName());
 
-        if (parentTypeIds.contains(recordType.getRegisterTypeId())) {
+
+        if (recordType.getRegisterTypeId().equals(parentTypeId)) {
             return;
         }
 
         RegRegisterType parentType = recordType.getParentRegisterType();
-        while (parentType != null && !parentTypeIds.contains(parentType.getRegisterTypeId())) {
+        while (parentType != null && !parentType.getRegisterTypeId().equals(parentTypeId)) {
             parentTypeNames.add(parentType.getName());
             parentType = parentType.getParentRegisterType();
         }

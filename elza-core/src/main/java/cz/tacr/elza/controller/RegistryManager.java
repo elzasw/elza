@@ -197,9 +197,9 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
                  @RequestParam final Integer from, @RequestParam final Integer count,
                  @RequestParam(value = "registerTypeIds", required = false) @Nullable final Integer[] registerTypeIds) {
 
-        List<Integer> registerTypeIdList = null;
+        Set<Integer> registerTypeIdList = null;
         if (registerTypeIds != null) {
-            registerTypeIdList = Arrays.asList(registerTypeIds);
+            registerTypeIdList = registerTypeRepository.findSubtreeIds(registerTypeIds[0]);
         }
 
         List<RegRecord> regRecords = registryService.findRegRecordByTextAndType(search, registerTypeIdList, from, count,null, null);

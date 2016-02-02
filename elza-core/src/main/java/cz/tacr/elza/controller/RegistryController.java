@@ -1,9 +1,7 @@
 package cz.tacr.elza.controller;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +10,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -103,13 +100,13 @@ public class RegistryController {
     @RequestMapping(value = "/findRecord", method = RequestMethod.GET)
     public RegRecordWithCount findRecord(@RequestParam(required = false) @Nullable final String search,
                                          @RequestParam final Integer from, @RequestParam final Integer count,
-                                         @RequestParam(value = "registerTypeIds", required = false) @Nullable final Integer[] registerTypeIds,
+                                         @RequestParam(value = "registerTypeId", required = false) @Nullable final Integer registerTypeId,
                                          @RequestParam(required = false) @Nullable final Integer parentRecordId,
                                          @RequestParam(required = false) @Nullable final Integer versionId) {
 
-        Set<Integer> registerTypeIdList = Collections.EMPTY_SET;
-        if (registerTypeIds != null) {
-            registerTypeIdList = new HashSet<>(Arrays.asList(registerTypeIds));
+        Set<Integer> registerTypeIdTree = Collections.EMPTY_SET;
+        if (registerTypeId != null) {
+            registerTypeIdTree = registerTypeRepository.findSubtreeIds(registerTypeId);
         }
 
         ArrFindingAid findingAid;
@@ -121,22 +118,25 @@ public class RegistryController {
             findingAid = version.getFindingAid();
         }
 
+
+
         RegRecord parentRecord = null;
         if(parentRecordId != null) {
             parentRecord = regRecordRepository.findOne(parentRecordId);
             Assert.notNull(parentRecord, "Nebylo nalezeno rejstříkové heslo s id " + parentRecordId);
         }
 
-        final long foundRecordsCount = registryService.findRegRecordByTextAndTypeCount(search, registerTypeIdList,
+        final long foundRecordsCount = registryService.findRegRecordByTextAndTypeCount(search, registerTypeIdTree,
                 parentRecordId, findingAid);
 
         List<RegRecord> foundRecords = registryService
-                .findRegRecordByTextAndType(search, registerTypeIdList, from, count, parentRecordId, findingAid);
+                .findRegRecordByTextAndType(search, registerTypeIdTree, from, count, parentRecordId, findingAid);
 
 
         Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(foundRecords);
 
-        List<RegRecordVO> foundRecordVOList = factoryVo.createRegRecords(foundRecords, recordIdPartyIdMap, true);
+        List<RegRecordVO> foundRecordVOList = factoryVo
+                .createRegRecords(foundRecords, recordIdPartyIdMap, true, parentRecord);
 
         Map<Integer, RegRecordVO> parentRecordVOMap = new HashMap<>();
         for (RegRecordVO regRecordVO : foundRecordVOList) {
@@ -144,9 +144,10 @@ public class RegistryController {
 
         }
 
-        if(CollectionUtils.isEmpty(registerTypeIdList)){
+        if (registerTypeId != null) {
+
             for (RegRecordVO recordVO : foundRecordVOList) {
-                factoryVo.fillRegisterTypeNamesToParents(recordVO, registerTypeIdList);
+                factoryVo.fillRegisterTypeNamesToParents(recordVO, registerTypeId);
             }
         }
 
@@ -195,8 +196,8 @@ public class RegistryController {
         Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(records);
 
         Integer partyId = recordIdPartyIdMap.get(recordId);
-        RegRecordVO result = factoryVo.createRegRecord(record, partyId, false);
-        result.setChilds(factoryVo.createRegRecords(childs, recordIdPartyIdMap, false));
+        RegRecordVO result = factoryVo.createRegRecord(record, partyId, false, record);
+        result.setChilds(factoryVo.createRegRecords(childs, recordIdPartyIdMap, false, null));
 
         result.setVariantRecords(factoryVo.createRegVariantRecords(record.getVariantRecordList()));
 
@@ -253,7 +254,8 @@ public class RegistryController {
         RegRecord newRecordDO = registryService.saveRecord(recordDO, false);
 
         ParParty recordParty = partyService.findParPartyByRecord(newRecordDO);
-        return factoryVo.createRegRecord(newRecordDO, recordParty == null ? null : recordParty.getPartyId(), false);
+        return factoryVo.createRegRecord(newRecordDO, recordParty == null ? null : recordParty.getPartyId(), false,
+                null);
     }
 
     /**
@@ -273,7 +275,8 @@ public class RegistryController {
         RegRecord newRecordDO = registryService.saveRecord(recordDO, false);
 
         ParParty recordParty = partyService.findParPartyByRecord(newRecordDO);
-        return factoryVo.createRegRecord(newRecordDO, recordParty == null ? null : recordParty.getPartyId(), false);
+        return factoryVo.createRegRecord(newRecordDO, recordParty == null ? null : recordParty.getPartyId(), false,
+                null);
     }
 
 

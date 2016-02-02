@@ -16,7 +16,7 @@ import cz.tacr.elza.domain.RegRegisterType;
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
 @Repository
-public interface RegisterTypeRepository extends JpaRepository<RegRegisterType, Integer> {
+public interface RegisterTypeRepository extends JpaRepository<RegRegisterType, Integer>, RegisterTypeRepositoryCustom {
 
     /**
      * Najde všechny typy rejstříkových hesel, které jsou napojeny na typy osob.
