@@ -453,9 +453,28 @@ return true;
 
         var glyph = this.state.isOpen ? 'fa-angle-up' : 'fa-angle-down';
 _debugStates && console.log(this.props);
-        return (
-            <div className={cls}>
-                <div className='autocomplete-control-box'>
+
+        var cls = 'form-group';
+        var feedbackIcon = '';
+        if (this.props.hasFeedback) {
+            cls += ' has-feedback';
+        }
+        if (this.props.bsStyle) {
+            cls += ' has-' + this.props.bsStyle;
+            switch (this.props.bsStyle) {
+                case 'success':
+                    feedbackIcon = 'ok'
+                    break;
+                case 'warning':
+                    feedbackIcon = 'warning-sign'
+                    break;
+                case 'error':
+                    feedbackIcon = 'remove'
+                    break;
+            }
+        }
+
+/*
                     <Input
                         type='text'
                         {...this.props.inputProps}
@@ -477,6 +496,37 @@ _debugStates && console.log(this.props);
                     />
                     <div disabled={this.props.disabled} ref='openClose' className={this.state.isOpen ? 'btn btn-default opened' : 'btn btn-default closed'} onClick={()=>{this.state.isOpen ? this.closeMenu() : this.openMenu()}}><Icon glyph={glyph}/></div>
                     {this.props.actions}
+*/
+
+        return (
+            <div className={cls}>
+                <div className='autocomplete-control-box'>
+                    <div className={cls}>
+                        {this.props.label && <label className='control-label'>{this.props.label}</label>}
+                        <div className='autocomplete-input-container'>
+                            <input
+                                className='form-control'
+                                type='text'
+                                {...this.props.inputProps}
+                                label={this.props.label}
+                                disabled={this.props.disabled}
+                                role='combobox'
+                                aria-autocomplete="both"
+                                ref="input"
+                                onFocus={this.handleInputFocus}
+                                onBlur={this.handleInputBlur}
+                                onChange={(event) => this.handleChange(event)}
+                                onKeyDown={(event) => this.handleKeyDown(event)}
+                                onKeyUp={(event) => this.handleKeyUp(event)}
+                                onClick={this.handleInputClick}
+                                value={this.state.inputStrValue}
+                            />
+                            <div disabled={this.props.disabled} ref='openClose' className={this.state.isOpen ? 'btn btn-default opened' : 'btn btn-default closed'} onClick={()=>{this.state.isOpen ? this.closeMenu() : this.openMenu()}}><Icon glyph={glyph}/></div>
+                            {this.props.actions}                            
+                        </div>
+                        {this.props.hasFeedback && <span className={'glyphicon form-control-feedback glyphicon-' + feedbackIcon}></span>}
+                        {this.props.help && <span className='help-block'>{this.props.help}</span>}
+                    </div>
                 </div>
                 {this.state.isOpen && this.renderMenu()}
             </div>
