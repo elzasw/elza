@@ -64,7 +64,7 @@ export function normalizeInt(number) {
     var pole = (''+number).split('');
     var output = [];
     for( var i = 0, len = pole.length; i < len; i++ ) {
-        if( (i===0 && pole[i] === '-') ||  parseInt(pole[i])) {
+        if( (i===0 && pole[i] === '-') || pole[i] === "0" ||  parseInt(pole[i])) {
             output.push(pole[i]);
         }
     }

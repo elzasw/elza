@@ -216,6 +216,12 @@ export function node(state = nodeInitialState, action) {
             return consolidateState(state, result);
         case types.FA_SUB_NODE_REGISTER_REQUEST:
         case types.FA_SUB_NODE_REGISTER_RECEIVE:
+        case types.FA_SUB_NODE_REGISTER_VALUE_RESPONSE:
+        case types.FA_SUB_NODE_REGISTER_VALUE_DELETE:
+        case types.FA_SUB_NODE_REGISTER_VALUE_ADD:
+        case types.FA_SUB_NODE_REGISTER_VALUE_CHANGE:
+        case types.FA_SUB_NODE_REGISTER_VALUE_FOCUS:
+        case types.FA_SUB_NODE_REGISTER_VALUE_BLUR:
             var result = {
                 ...state,
                 subNodeRegister: subNodeRegister(state.subNodeRegister, action),

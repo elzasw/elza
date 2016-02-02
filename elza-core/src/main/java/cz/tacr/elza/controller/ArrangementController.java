@@ -645,6 +645,17 @@ public class ArrangementController {
         return factoryVo.createRegisterLinkList(registerLinks);
     }
 
+    @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}/form",
+            method = RequestMethod.GET,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public NodeRegisterDataVO findRegisterLinksForm(final @PathVariable(value = "versionId") Integer versionId,
+                                                    final @PathVariable(value = "nodeId") Integer nodeId) {
+        List<ArrNodeRegisterVO> nodeRegistersVO = findRegisterLinks(versionId, nodeId);
+        ArrNode node = nodeRepository.findOne(nodeId);
+        return new NodeRegisterDataVO(factoryVo.createArrNode(node), nodeRegistersVO);
+    }
+
     @Transactional
     @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}/create",
             method = RequestMethod.PUT,
@@ -682,6 +693,43 @@ public class ArrangementController {
         ArrNodeRegister nodeRegister = factoryDO.createRegisterLink(nodeRegisterVO);
         nodeRegister = registryService.deleteRegisterLink(versionId, nodeId, nodeRegister);
         return factoryVo.createRegisterLink(nodeRegister);
+    }
+
+    /**
+     * Výstupní objekt pro získaná data pro formulář detailu uzlu.
+     */
+    public static class NodeRegisterDataVO {
+
+        /**
+         * Uzel
+         */
+        private ArrNodeVO node;
+
+        /**
+         * Seznam odkazů
+         */
+        private List<ArrNodeRegisterVO> nodeRegisters;
+
+        public NodeRegisterDataVO(final ArrNodeVO node, final List<ArrNodeRegisterVO> nodeRegisters) {
+            this.node = node;
+            this.nodeRegisters = nodeRegisters;
+        }
+
+        public ArrNodeVO getNode() {
+            return node;
+        }
+
+        public void setNode(final ArrNodeVO node) {
+            this.node = node;
+        }
+
+        public List<ArrNodeRegisterVO> getNodeRegisters() {
+            return nodeRegisters;
+        }
+
+        public void setNodeRegisters(final List<ArrNodeRegisterVO> nodeRegisters) {
+            this.nodeRegisters = nodeRegisters;
+        }
     }
 
     /**

@@ -414,7 +414,12 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         var record;
 
         if (showRegisterJp) {
-            record = <SubNodeRegister register={node.subNodeRegister} />
+            record = <SubNodeRegister
+                        nodeId={node.id}
+                        versionId={versionId}
+                        selectedSubNodeId={node.selectedSubNodeId}
+                        nodeKey={node.nodeKey}
+                        register={node.subNodeRegister} />
         }
 
         var accordionInfo = <div>

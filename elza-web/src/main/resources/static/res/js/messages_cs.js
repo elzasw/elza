@@ -77,7 +77,10 @@ var messages = {
     "subNodeForm.validate.value.notEmpty": "Hodnota musí být uvedena",
     "subNodeForm.descItemType": "Prvek",
     "subNodeForm.descItemType.title.add": "Přidání prvku",
-    
+
+    "subNodeRegister.title": "Rejstříková hesla",
+    "subNodeRegister.title.add": "Přidání hesla",
+
     "registry.addRegistry": "Nové rejstříkové heslo",
     "registry.addNewRegistry": "Nové heslo",
     "registry.addNewRegistryHere": "Přidat heslo sem",

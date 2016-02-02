@@ -538,6 +538,19 @@ public class RegistryService {
     }
 
     /**
+     * Uložení uzlu - optimistické zámky
+     *
+     * @param node uzel
+     * @return uložený uzel
+     */
+    private ArrNode saveNode(final ArrNode node) {
+        node.setLastUpdate(LocalDateTime.now());
+        nodeRepository.save(node);
+        nodeRepository.flush();
+        return node;
+    }
+
+    /**
      * Vytvoření vazby rejstřík-jednotka popisu.
      *
      * @param versionId     identifikátor verze AP
@@ -554,8 +567,7 @@ public class RegistryService {
         ArrNode node = nodeRepository.findOne(nodeId);
 
         node.setVersion(nodeRegister.getNode().getVersion());
-        node.setLastUpdate(LocalDateTime.now());  // change kvůli locking
-        node = nodeRepository.save(node);
+        saveNode(node);
 
         ArrChange change = arrangementService.createChange();
 
@@ -587,8 +599,7 @@ public class RegistryService {
         ArrNode node = nodeRepository.findOne(nodeId);
 
         node.setVersion(nodeRegister.getNode().getVersion());
-        node.setLastUpdate(LocalDateTime.now());  // change kvůli locking
-        node = nodeRepository.save(node);
+        saveNode(node);
 
         ArrChange change = arrangementService.createChange();
 
@@ -627,8 +638,7 @@ public class RegistryService {
         ArrNode node = nodeRepository.findOne(nodeId);
 
         node.setVersion(nodeRegister.getNode().getVersion());
-        node.setLastUpdate(LocalDateTime.now());  // change kvůli locking
-        nodeRepository.save(node);
+        saveNode(node);
 
         ArrChange change = arrangementService.createChange();
 

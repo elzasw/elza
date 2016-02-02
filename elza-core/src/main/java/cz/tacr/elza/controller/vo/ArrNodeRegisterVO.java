@@ -18,7 +18,7 @@ public class ArrNodeRegisterVO {
 
     private RegRecordVO record;
 
-    private Integer recordId;
+    private Integer value;
 
     public Integer getId() {
         return id;
@@ -52,11 +52,11 @@ public class ArrNodeRegisterVO {
         this.record = record;
     }
 
-    public Integer getRecordId() {
-        return recordId;
+    public Integer getValue() {
+        return value;
     }
 
-    public void setRecordId(final Integer recordId) {
-        this.recordId = recordId;
+    public void setValue(final Integer value) {
+        this.value = value;
     }
 }

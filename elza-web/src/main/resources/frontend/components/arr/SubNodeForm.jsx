@@ -75,7 +75,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         });
 
         return (
-            <div key={'type-' + descItemGroup + '-' + descItemGroupIndex} className={cls}>
+            <div key={'type-' + descItemGroup.code + '-' + descItemGroupIndex} className={cls}>
                 <div className='desc-item-types'>
                     {descItemTypes}
                 </div>
@@ -309,7 +309,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
 
         // TODO: slapa - čeká se na dodělání REJSTŘÍKŮ
         //this.dispatch(recordSelect(recordId));
-        console.warn("TODO: slapa - čeká se na dodělání OSOB - handleDetailRecord");
+        console.warn("TODO: slapa - čeká se na dodělání REJSTŘÍKŮ - handleDetailRecord");
         this.dispatch(routerNavigate('registry'));
     }
 

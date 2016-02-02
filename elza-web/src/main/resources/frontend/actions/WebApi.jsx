@@ -315,7 +315,28 @@ class WebApi{
     }
 
     getFaNodeRegister(versionId, nodeId) {
-        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/registerLinks/' + nodeId + '/' + versionId)
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/registerLinks/' + nodeId + '/' + versionId + '/form')
+                .then(json=>{
+                    return json
+                });
+    }
+
+    deleteFaNodeRegister(versionId, nodeId, data) {
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/registerLinks/' + nodeId + '/' + versionId + '/delete', null, data)
+                .then(json=>{
+                    return json
+                });
+    }
+
+    createFaNodeRegister(versionId, nodeId, data) {
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/registerLinks/' + nodeId + '/' + versionId + '/create', null, data)
+                .then(json=>{
+                    return json
+                });
+    }
+
+    updateFaNodeRegister(versionId, nodeId, data) {
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/registerLinks/' + nodeId + '/' + versionId + '/update', null, data)
                 .then(json=>{
                     return json
                 });

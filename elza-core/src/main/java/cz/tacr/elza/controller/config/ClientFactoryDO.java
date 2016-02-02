@@ -277,8 +277,8 @@ public class ClientFactoryDO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrNodeRegister nodeRegister = mapper.map(nodeRegisterVO, ArrNodeRegister.class);
 
-        if (nodeRegisterVO.getRecordId() != null) {
-            nodeRegister.setRecord(regRecordRepository.findOne(nodeRegisterVO.getRecordId()));
+        if (nodeRegisterVO.getValue() != null) {
+            nodeRegister.setRecord(regRecordRepository.findOne(nodeRegisterVO.getValue()));
         }
 
         return nodeRegister;

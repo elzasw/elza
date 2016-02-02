@@ -990,7 +990,7 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrNodeRegisterVO nodeRegisterVO = mapper.map(nodeRegister, ArrNodeRegisterVO.class);
         nodeRegisterVO.setNodeId(nodeRegister.getNode().getNodeId());
-        nodeRegisterVO.setRecordId(nodeRegister.getRecord().getRecordId());
+        nodeRegisterVO.setValue(nodeRegister.getRecord().getRecordId());
         return nodeRegisterVO;
     }
 
