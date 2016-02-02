@@ -36,29 +36,24 @@ var AddDescItemTypeForm = class AddDescItemTypeForm extends AbstractReactCompone
     render() {
         const {fields: {descItemTypeId}, handleSubmit, onClose} = this.props;
 
-var ac = (
-    <Autocomplete
-    label={i18n('subNodeForm.descItemType')}
-    {...descItemTypeId}
-    {...decorateFormField(descItemTypeId)}
-    onFocus={undefined}
-    _onBlur={undefined}
-    items={[{id: '', name: ''}, ...this.props.descItemTypes]}
-    getItemId={(item) => item ? item.id : null}
-    getItemName={(item) => item ? item.name : ''}
-    />
-)
+        var ac = (
+            <Autocomplete
+            label={i18n('subNodeForm.descItemType')}
+            {...descItemTypeId}
+            {...decorateFormField(descItemTypeId)}
+            items={this.props.descItemTypes}
+            />
+        )
 
         return (
             <div>
                 <Modal.Body>
                     <form onSubmit={handleSubmit}>
-                        {false && ac}
-
-                        <Input type="select" label={i18n('subNodeForm.descItemType')} {...descItemTypeId} {...decorateFormField(descItemTypeId)}>
+                        {true && ac}
+                        {false && <Input type="select" label={i18n('subNodeForm.descItemType')} {...descItemTypeId} {...decorateFormField(descItemTypeId)}>
                             <option></option>
                             {this.props.descItemTypes.map(i=> <option value={i.id}>{i.name}</option>)}
-                        </Input>
+                        </Input>}
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
