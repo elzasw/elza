@@ -38,6 +38,7 @@ import cz.tacr.elza.controller.vo.ParPartyNameVO;
 import cz.tacr.elza.controller.vo.ParPartyVO;
 import cz.tacr.elza.controller.vo.ParRelationEntityVO;
 import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.RegRecordSimple;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
@@ -372,6 +373,23 @@ public class ClientFactoryVO {
         }
 
         record.setTypesToRoot(parentTypeNames);
+    }
+
+    /**
+     * Vytvoří seznam jedhoduchých rejstříkových hesel.
+     *
+     * @param records seznam rej. hesel
+     * @return seznam jednoduchých rejs. hesel
+     */
+    public List<RegRecordSimple> createRegRecordsSimple(final Collection<RegRecord> records) {
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        List<RegRecordSimple> result = new ArrayList<>(records.size());
+
+        for (RegRecord record : records) {
+            result.add(mapper.map(record, RegRecordSimple.class));
+        }
+
+        return result;
     }
 
     /**

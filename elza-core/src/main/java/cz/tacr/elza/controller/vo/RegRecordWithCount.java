@@ -10,12 +10,12 @@ import java.util.List;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 21.12.2015
  */
-public class RegRecordWithCount {
+public class RegRecordWithCount<T> {
 
     /**
      * Seznam osob.
      */
-    private List<RegRecordVO> recordList = new ArrayList<>();
+    private List<T> recordList = new ArrayList<>();
 
     /**
      * Celkový počet dle užitého filtru. Nikoliv aktuální vracený.
@@ -35,7 +35,7 @@ public class RegRecordWithCount {
      * @param recordList list záznamů
      * @param count      počet celkem za minulý dotaz
      */
-    public RegRecordWithCount(final List<RegRecordVO> recordList, final Long count) {
+    public RegRecordWithCount(final List<T> recordList, final Long count) {
         this.recordList = recordList;
         this.count = count;
     }
@@ -45,7 +45,7 @@ public class RegRecordWithCount {
      *
      * @param recordList list záznamů
      */
-    public void setRecordList(final List<RegRecordVO> recordList) {
+    public void setRecordList(final List<T> recordList) {
         this.recordList = recordList;
     }
 
@@ -54,7 +54,7 @@ public class RegRecordWithCount {
      *
      * @return list záznamů
      */
-    public List<RegRecordVO> getRecordList() {
+    public List<T> getRecordList() {
         return recordList;
     }
 

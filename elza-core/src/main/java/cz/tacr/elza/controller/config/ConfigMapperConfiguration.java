@@ -478,6 +478,7 @@ public class ConfigMapperConfiguration {
                         }
                     }
                 }).byDefault().register();
+        mapperFactory.classMap(RegRecord.class, RegRecordSimple.class).field("recordId", "id").byDefault().register();
 
         mapperFactory.classMap(RegExternalSource.class, RegExternalSourceVO.class).byDefault().register();
 

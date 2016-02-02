@@ -2,10 +2,12 @@ package cz.tacr.elza.controller;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.RegRecordSimple;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegRecordWithCount;
 import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
@@ -31,14 +34,17 @@ import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RegRegisterType;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
+import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
 import cz.tacr.elza.service.PartyService;
@@ -84,6 +90,12 @@ public class RegistryController {
 
     @Autowired
     private PartyTypeRepository partyTypeRepository;
+
+    @Autowired
+    private PartyRepository partyRepository;
+
+    @Autowired
+    private RelationRoleTypeRepository relationRoleTypeRepository;
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
@@ -169,6 +181,47 @@ public class RegistryController {
 //        }
 
         return new RegRecordWithCount(foundRecordVOList, foundRecordsCount);
+    }
+
+
+    /**
+     * Najde seznam rejstříkových hesel, která jsou typu napojeného na dané relationRoleTypeId a mají třídu rejstříku
+     * stejnou jako daná osoba.
+     *
+     * @param search     hledaný řetězec
+     * @param from       odkud se mají vracet výsledka
+     * @param count      počet vracených výsledků
+     * @param roleTypeId id typu vztahu
+     * @param partyId    id osoby, ze které je načtena hledaná třída rejstříku
+     * @return seznam rejstříkových hesel s počtem všech nalezených
+     */
+    @RequestMapping(value = "/findRecordForRelation", method = RequestMethod.GET)
+    public RegRecordWithCount findRecordForRelation(@RequestParam(required = false) @Nullable final String search,
+                                                    @RequestParam final Integer from, @RequestParam final Integer count,
+                                                    @RequestParam(required = true) @Nullable final Integer roleTypeId,
+                                                    @RequestParam(required = true) @Nullable final Integer partyId) {
+
+        ParParty party = partyRepository.findOne(partyId);
+        Assert.notNull(party, "Nebyla nalezena osoba s id " + partyId);
+
+        ParRelationRoleType relationRoleType = relationRoleTypeRepository.findOne(roleTypeId);
+        Assert.notNull(roleTypeId, "Nebyl nalezen typ vztahu s id " + roleTypeId);
+
+        Set<Integer> registerTypeIds = registerTypeRepository.findByRelationRoleType(relationRoleType)
+                .stream().map(t -> t.getRegisterTypeId()).collect(Collectors.toSet());
+
+        Set<Integer> scopeIds = new HashSet<>();
+        scopeIds.add(party.getRecord().getScope().getScopeId());
+
+
+        final long foundRecordsCount = regRecordRepository
+                .findRegRecordByTextAndTypeCount(search, registerTypeIds, null, scopeIds);
+
+        final List<RegRecord> foundRecords = regRecordRepository
+                .findRegRecordByTextAndType(search, registerTypeIds, from, count, null, scopeIds);
+
+        List<RegRecordSimple> foundRecordsVO = factoryVo.createRegRecordsSimple(foundRecords);
+        return new RegRecordWithCount(foundRecordsVO, foundRecordsCount);
     }
 
 

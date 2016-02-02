@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.RegRegisterType;
 
 
@@ -60,4 +61,14 @@ public interface RegisterTypeRepository extends JpaRepository<RegRegisterType, I
      */
     @Query("SELECT t FROM reg_register_type t WHERE t.partyType IS NULL AND t.addRecord = true ORDER BY t.code ASC")
     List<RegRegisterType> findNullPartyTypeEnableAdding();
+
+
+    /**
+     * Najde typy rejstříků napojené na typ vztahu.
+     *
+     * @param relationRoleType typ vztahu
+     * @return typy rejstříků
+     */
+    @Query("SELECT rr.registerType FROM par_registry_role rr WHERE rr.roleType = ?1")
+    List<RegRegisterType> findByRelationRoleType(ParRelationRoleType relationRoleType);
 }
