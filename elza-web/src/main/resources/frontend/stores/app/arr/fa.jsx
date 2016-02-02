@@ -11,6 +11,7 @@ export function faInitState(faWithVersion) {
         faId: faWithVersion.faId,
         versionId: faWithVersion.versionId,
         name: faWithVersion.name,
+        isFetching: false,
         dirty: false,
         faTree: faTree(undefined, {type: ''}),
         faTreeMovementsLeft: faTree(undefined, {type: ''}),
@@ -66,11 +67,25 @@ export function fa(state = nodeInitialState, action) {
                 faTreeMovementsRight: faTree(state.faTreeMovementsRight, action),
                 nodes: nodes(state.nodes, action),
             }
+        case types.FA_NODES_RECEIVE:
+        case types.FA_NODES_REQUEST:
+            var result = {...state, nodes: nodes(state.nodes, action)}
+            return consolidateState(state, result);
+        case types.FA_FAS_REQUEST:
+            if (action.faMap[state.versionId]) {
+                return {
+                    ...state,
+                    isFetching: true,
+                }
+            } else {
+                return state
+            }
         case types.FA_FAS_RECEIVE:
             if (action.faMap[state.versionId]) {
                 return {
                     ...state,
                     dirty: false,
+                    isFetching: false,
                     ...action.faMap[state.versionId]
                 }
             } else {

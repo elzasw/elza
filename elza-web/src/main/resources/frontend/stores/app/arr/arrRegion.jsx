@@ -143,7 +143,9 @@ export default function arrRegion(state = initialState, action) {
         case types.FA_SUB_NODE_INFO_RECEIVE:
         case types.FA_FA_SUBNODES_FULLTEXT_RESULT:
         case types.FA_NODE_CHANGE:
-            var index = indexById(state.fas, action.versionId, "versionId");
+        case types.FA_NODES_RECEIVE:
+        case types.FA_NODES_REQUEST:
+            var index = indexById(state.fas, action.versionId, "versionId")
             return processFa(state, action, index);
         case types.FA_FAS_RECEIVE:
             var changed = false;

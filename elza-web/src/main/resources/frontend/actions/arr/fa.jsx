@@ -16,7 +16,7 @@ export function fasFetchIfNeeded() {
 
         var versionIds = [];
         fas.forEach(fa => {
-            if (fa.dirty) {
+            if (fa.dirty && !fa.isFetching) {
                 versionIds.push(fa.versionId);
             }
         })

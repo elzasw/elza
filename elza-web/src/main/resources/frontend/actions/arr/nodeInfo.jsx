@@ -24,7 +24,7 @@ export function faNodeInfoFetchIfNeeded(versionId, nodeId, nodeKey) {
     return (dispatch, getState) => {
         var state = getState();
         var node = getNode(state, versionId, nodeKey);
-        if (node != null && (!node.fetched || node.dirty ) && !node.isFetching) {
+        if (node != null && (!node.nodeInfoFetched || node.nodeInfoDirty ) && !node.isNodeInfoFetching) {
             return dispatch(faNodeInfoFetch(versionId, nodeId, nodeKey));
         }
     }

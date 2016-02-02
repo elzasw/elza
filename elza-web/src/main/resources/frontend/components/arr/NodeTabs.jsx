@@ -9,11 +9,20 @@ import {connect} from 'react-redux'
 import {AbstractReactComponent, NodePanel, Tabs} from 'components';
 import {AppActions} from 'stores';
 import {faSelectNodeTab, faCloseNodeTab} from 'actions/arr/nodes'
+import {nodesFetchIfNeeded} from 'actions/arr/node'
 import {propsEquals} from 'components/Utils'
 
 var NodeTabs = class NodeTabs extends AbstractReactComponent {
     constructor(props) {
         super(props);
+    }
+
+    componentDidMount() {
+        this.dispatch(nodesFetchIfNeeded(this.props.versionId));
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.dispatch(nodesFetchIfNeeded(nextProps.versionId));
     }
 
     shouldComponentUpdate(nextProps, nextState) {

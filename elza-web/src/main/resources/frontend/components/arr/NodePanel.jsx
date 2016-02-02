@@ -55,7 +55,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         }
 
         var scroll = false;
-        if (!this.props.node.fetched && nextProps.node.fetched) {
+        if (!this.props.node.nodeInfoFetched && nextProps.node.nodeInfoFetched) {
             scroll = true;
         } else if (nextProps.node.selectedSubNodeId !== null && this.props.node.selectedSubNodeId !== nextProps.node.selectedSubNodeId) {
             scroll = true;
@@ -355,7 +355,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     render() {
         const {calendarTypes, versionId, rulDataTypes, node, packetTypes, packets, findingAidId, showRegisterJp} = this.props;
 
-        if (!node.fetched) {
+        if (!node.nodeInfoFetched) {
             return <Loading value={i18n('global.data.loading.node')}/>
         }
 
@@ -370,7 +370,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         var actions = (
             <div className='actions'>
                 {
-                    node.fetched && !isFaRootId(node.id) &&
+                    node.nodeInfoFetched && !isFaRootId(node.id) &&
                     <AddNodeDropdown key="end"
                                      title="Přidat JP na konec"
                                      glyph="fa-plus-circle"

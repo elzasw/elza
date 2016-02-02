@@ -42,6 +42,40 @@ export default function nodes(state = nodesInitialState, action) {
                 activeIndex,
                 nodes: state.nodes.map(nodeobj => node(nodeobj, action))
             }
+        case types.FA_NODES_REQUEST:
+        case types.FA_NODES_RECEIVE:
+            var changed = false;
+            var newNodes = state.nodes.map(nodeObj => {
+                var newNode = node(nodeObj, action);
+                if (nodeObj !== newNode) {
+                    changed = true;
+                }
+                return newNode;
+            })
+            if (changed) {
+                return {
+                    ...state,
+                    nodes: newNodes
+                }
+            } else {
+                return state
+            }
+            var changed = false;
+            var newNodes = state.nodes.map(nodeObj => {
+                var newNode = node(nodeObj, action);
+                if (nodeObj !== newNode) {
+                    changed = true;
+                }
+                return newNode;
+            })
+            if (changed) {
+                return {
+                    ...state,
+                    nodes: newNodes
+                }
+            } else {
+                return state
+            }
         case types.FA_NODE_INFO_REQUEST:
         case types.FA_NODE_INFO_RECEIVE:
         case types.FA_SUB_NODE_REGISTER_REQUEST:

@@ -1,6 +1,59 @@
 import {WebApi} from 'actions';
 import * as types from 'actions/constants/actionTypes';
 import {faSelectSubNodeInt,faSelectSubNode} from 'actions/arr/nodes';
+import {indexById} from 'stores/app/utils.jsx'
+
+export function nodesFetchIfNeeded(versionId) {
+    return (dispatch, getState) => {
+        var state = getState();
+        var index = indexById(state.arrRegion.fas, versionId, "versionId");
+        if (index !== null) {
+            var fa = state.arrRegion.fas[index]
+            var nodeIds = [];
+            fa.nodes.nodes.forEach(node => {
+                if (node.dirty && !node.isFetching) {
+                    nodeIds.push(node.id);
+                }
+            })
+
+            if (nodeIds.length > 0) {
+                dispatch(nodesRequest(versionId, nodeIds));
+
+                WebApi.getNodes(nodeIds)
+                    .then(json => {
+                        dispatch(nodesReceive(versionId, json));
+                    })
+            }
+        }
+    }
+}
+
+export function nodesRequest(versionId, nodeIds) {
+    var nodeMap = {}
+    nodeIds.forEach(id => {
+        nodeMap[id] = true
+    })
+
+    return {
+        type: types.FA_NODES_REQUEST,
+        versionId,
+        nodeMap
+    }
+}
+
+export function nodesReceive(versionId, nodes) {
+    var nodeMap = {}
+    nodes.forEach(node => {
+        nodeMap[node.id] = node
+    })
+
+    return {
+        type: types.FA_NODES_RECEIVE,
+        versionId,
+        nodes,
+        nodeMap
+    }
+}
 
 export function faNodeSubNodeFulltextResult(versionId, nodeId, nodeKey, nodeIds) {
     return {

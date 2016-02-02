@@ -1,6 +1,5 @@
 import * as types from 'actions/constants/actionTypes';
 import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
-//import nodeInfo from './nodeInfo'
 import subNodeForm from './subNodeForm'
 import subNodeRegister from './subNodeRegister'
 import subNodeInfo from './subNodeInfo'
@@ -12,9 +11,11 @@ var _pageSize = 50;
 export function nodeInitState(node, prevNodesNode) {
     var result = {
         ...node,
-        isFetching: false,
-        fetched: false,
         dirty: false,
+        isFetching: false,
+        isNodeInfoFetching: false,
+        nodeInfoFetched: false,
+        nodeInfoDirty: false,
         allChildNodes: [],
         childNodes: [],
         parentNodes: [],
@@ -38,9 +39,11 @@ export function nodeInitState(node, prevNodesNode) {
 
     if (prevNodesNode && prevNodesNode.id == node.id) {
 //        result.nodeInfo = prevNodesNode.nodeInfo;
-        result.isFetching = prevNodesNode.isFetching;
-        result.fetched = prevNodesNode.fetched;
         result.dirty = prevNodesNode.dirty;
+        result.isFetching = prevNodesNode.isFetching;
+        result.isNodeInfoFetching = prevNodesNode.isNodeInfoFetching;
+        result.nodeInfoFetched = prevNodesNode.nodeInfoFetched;
+        result.nodeInfoDirty = prevNodesNode.nodeInfoDirty;
         result.childNodes = prevNodesNode.childNodes;
         result.allChildNodes = prevNodesNode.allChildNodes;
         result.parentNodes = prevNodesNode.parentNodes;
@@ -49,9 +52,11 @@ export function nodeInitState(node, prevNodesNode) {
         result.searchedIds = prevNodesNode.searchedIds;
     } else {
 //        result.nodeInfo = nodeInfo(undefined, {type:''});
-        result.isFetching = false;
-        result.fetched = false;
         result.dirty = false;
+        result.isFetching = false;
+        result.isNodeInfoFetching = false;
+        result.nodeInfoFetched = false;
+        result.nodeInfoDirty = false;
         result.childNodes = [];
         result.allChildNodes = [];
         result.parentNodes = [];
@@ -81,9 +86,9 @@ const nodeInitialState = {
     subNodeForm: subNodeForm(undefined, {type:''}),
     subNodeRegister: subNodeRegister(undefined, {type:''}),
     subNodeInfo: subNodeInfo(undefined, {type:''}),
-    isFetching: false,
-    fetched: false,
-    dirty: false,
+    isNodeInfoFetching: false,
+    nodeInfoFetched: false,
+    nodeInfoDirty: false,
     childNodes: [],
     allChildNodes: [],
     parentNodes: [],
@@ -95,9 +100,11 @@ export function node(state = nodeInitialState, action) {
         case types.STORE_LOAD:
             return {
                 ...state,
+                dirty: true,
                 isFetching: false,
-                fetched: false,
-                dirty: false,
+                isNodeInfoFetching: false,
+                nodeInfoFetched: false,
+                nodeInfoDirty: false,
                 childNodes: [],
                 allChildNodes: [],
                 parentNodes: [],
@@ -115,6 +122,26 @@ export function node(state = nodeInitialState, action) {
                 selectedSubNodeId,
                 viewStartIndex,
             }
+        case types.FA_NODES_REQUEST:
+            if (action.nodeMap[state.id]) {
+                return {
+                    ...state,
+                    isFetching: true,
+                }
+            } else {
+                return state
+            }        
+        case types.FA_NODES_RECEIVE:
+            if (action.nodeMap[state.id]) {
+                return {
+                    ...state,
+                    dirty: false,
+                    isFetching: false,
+                    ...action.nodeMap[state.id]
+                }
+            } else {
+                return state
+            }        
         case types.FA_SUB_NODE_FORM_REQUEST:
         case types.FA_SUB_NODE_FORM_RECEIVE:
         case types.FA_SUB_NODE_FORM_VALUE_CHANGE:
@@ -230,14 +257,14 @@ export function node(state = nodeInitialState, action) {
         case types.FA_NODE_INFO_REQUEST:
             return {
                 ...state,
-                isFetching: true,
+                isNodeInfoFetching: true,
             }
         case types.FA_NODE_INFO_RECEIVE:
             var result = {
                 ...state,
-                isFetching: false,
-                fetched: true,
-                dirty: false,
+                isNodeInfoFetching: false,
+                nodeInfoFetched: true,
+                nodeInfoDirty: false,
                 childNodes: action.childNodes,
                 allChildNodes: action.childNodes,
                 parentNodes: action.parentNodes,
@@ -281,7 +308,7 @@ export function node(state = nodeInitialState, action) {
             }
             return result;
         case types.CHANGE_CONFORMITY_INFO:
-            return Object.assign({}, state, { dirty: true });
+            return Object.assign({}, state, { nodeInfoDirty: true });
         case types.FA_NODE_CHANGE:
             switch (action.action) {
                 // Přidání SubNode
