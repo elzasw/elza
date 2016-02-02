@@ -159,21 +159,20 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
         var entities = <div></div>;
         if(this.props.partyRegion.selectedPartyData && this.props.partyRegion.selectedPartyData.relations != null){
             entities = this.props.partyRegion.selectedPartyData.relations.map(i=> {
-                return <div className="relation">
+                return <div className="relation-entity">
                             <strong>{i.note}</strong>
                                 {i.relationEntities==null ? '' : i.relationEntities.map(j=>{
                                     return <div className="entity">
-                                       <div className="name">{j.record.record}</div>
+                                        <div className="name">{j.record.record}</div>
                                         <div className="role">{j.roleType.name}</div>
                                     </div>
                                 })}
                             <Button className="column" onClick={this.handleUpdateRelation.bind(this, i.relationId)}><Glyphicon glyph="edit" /></Button>  
-                            <Button className="column" onClick={this.handleDeleteRelation.bind(this, i.relationId)}><Glyphicon glyph="trash" /></Button>       
-                            <hr/>
+                            <Button className="column" onClick={this.handleDeleteRelation.bind(this, i.relationId)}><Glyphicon glyph="trash" /></Button>
                         </div>
                 })
         };
-        return  <div className="relation">
+        return  <div className="relations">
                     {entities}
                 </div>
     }
