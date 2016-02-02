@@ -39,7 +39,7 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
 
         var opened = (props.opened ? props.opened : []);
         this.props.items.map((item, i) => {
-            opened = opened.concat(this.getOpenedDefault(item)); 
+            opened = opened.concat(this.getOpenedDefault(item));
         });
         var label = this.getItemLabel(this.props.value);
         this.state = {                                                  // inicializace stavu komponenty
@@ -110,7 +110,7 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
         if (this.props.className) {
             cls += " " + this.props.className;
         }
-        
+
             var itemsData = [...items]
         if (nullValue){
             itemsData = [nullValue, ...itemsData];
@@ -152,7 +152,7 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
         }
         var addClassName = '';
         var clickEvent = this.handleItemSelect.bind(this,item);
-        console.log(item);
+
         if (this.props.addRegistryRecord && item.addRecord === false){
             addClassName = ' unavailable';
             clickEvent = null;

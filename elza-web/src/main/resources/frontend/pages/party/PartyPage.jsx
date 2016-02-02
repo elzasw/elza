@@ -31,7 +31,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         super(props);
         this.state = {};                                // id gregoriánského kalendáře - TODO: potřeba ho dovypočíst
         this.dispatch(refPartyTypesFetchIfNeeded());
-        this.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
+
         this.bindMethods(                               // pripojení funkcím "this"
             'buildRibbon',                              // sestavení menu
             'handleAddParty',                           // kliknutí na tlačítko přidat osobu
@@ -63,7 +63,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
                 partyTypeId: data.partyTypeId                   // identikátor typu osoby
             },
             genealogy: data.mainPart,                           // název rodu pro soby typu rod
-            scope: '',                                          // cosi, co tu musí být
+            scope: data.scopeId,                                          // cosi, co tu musí být
             record: {                                           // záznam patřící k ossobě
                 registerTypeId: data.recordTypeId,              // identifikátor typu záznamu 
                 scopeId:1                                       // identifikátor tridy rejstriku 

@@ -264,8 +264,8 @@ class WebApi{
                 return json;
             });
     }
-    getRecordTypesForAdd(){
-        return AjaxUtils.ajaxGet('/api/registryManagerV2/recordTypesForPartyType', {partyTypeId: null})
+    getRecordTypesForAdd(partyTypeId = null){
+        return AjaxUtils.ajaxGet('/api/registryManagerV2/recordTypesForPartyType', {partyTypeId: partyTypeId})
             .then(json=>{
                 return json;
             });

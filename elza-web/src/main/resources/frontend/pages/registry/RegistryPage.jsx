@@ -19,7 +19,7 @@ import {PageLayout} from 'pages';
 import {Nav, Glyphicon, NavItem} from 'react-bootstrap';
 import {registryData, registrySearchData, registryClearSearch, registryChangeParent, registryRemoveRegistry, registryStartMove, registryStopMove, registryCancelMove, registryUnsetParents} from 'actions/registry/registryData'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {fetchRegistryIfNeeded, registrySetTypesId, fetchRegistry, getRegistryRecordTypesIfNeeded} from 'actions/registry/registryList'
+import {fetchRegistryIfNeeded, registrySetTypesId, fetchRegistry} from 'actions/registry/registryList'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
 
 var RegistryPage = class RegistryPage extends AbstractReactComponent {
@@ -29,14 +29,14 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         this.bindMethods('buildRibbon', 'handleSelectType', 'handleSelect', 'handleSearch', 'handleSearchClear', 'handleDoubleClick', 'handleClickNavigation', 'handleAddRegistry', 'handleCallAddRegistry', 'handleRemoveRegistryDialog', 'handleRemoveRegistry', 'handleStartMoveRegistry', 'handleSaveMoveRegistry', 'handleCancelMoveRegistry', 'handleCloseTypesRegistry', 'handleUnsetParents');
         this.dispatch(fetchRegistryIfNeeded(props.registry.filterText, props.registry.registryParentId, props.registry.registryTypesId));
         this.dispatch(refRecordTypesFetchIfNeeded());
-        this.dispatch(getRegistryRecordTypesIfNeeded());
+
 
     }
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(fetchRegistryIfNeeded(nextProps.registry.filterText, nextProps.registry.registryParentId, nextProps.registry.registryTypesId));
         this.dispatch(refRecordTypesFetchIfNeeded());
-        this.dispatch(getRegistryRecordTypesIfNeeded());
+        this.dispatch(refRecordTypesFetchIfNeeded());
     }
 
     handleSelectType(){

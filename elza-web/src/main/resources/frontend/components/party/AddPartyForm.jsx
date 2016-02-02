@@ -6,13 +6,14 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/actionTypes';
 import {reduxForm} from 'redux-form';
-import {DropDownTree, AbstractReactComponent, i18n, Icon} from 'components';
+import {DropDownTree, AbstractReactComponent, i18n, Scope, Icon} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
+import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryList'
 
 /**
  * ADD PARTY FORM
@@ -25,6 +26,7 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
         this.dispatch(calendarTypesFetchIfNeeded());        // seznam typů kalendářů (gregoriánský, juliánský, ...)
         this.dispatch(refPartyNameFormTypesFetchIfNeeded());// nacteni seznamů typů forem jmen (uřední, ...)
         this.dispatch(refPartyTypesFetchIfNeeded());        // načtení seznamu typů jmen
+
         this.state = {                                      // ve state jsou uložena a průběžně udržová data formuláře
             data : this.props.initData,                     // předvyplněná data formuláře
             errors: [],                                     // seznam chyb k vypsání uživateli
@@ -38,9 +40,20 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
             'handleClose',                                  // funkce pro zavření dialogu formuláře
             'handleSubmit',                                 // funkce pro odeslání formuláře
             'validate',                                     // funkce pro kontrolu zadaných dat formuláře
-            'selectRecordType'                              // výběr typu záznamu                      
+            'selectRecordType',                             // výběr typu záznamu
+            'dropDownTreeUpdateValue'                       // výběr typu záznamu dropdowntree
         );
     }
+
+    componentWillReceiveProps(nextProps) {
+
+        this.dispatch(getRegistryRecordTypesIfNeeded(this.props.initData.partyTypeId));
+    }
+
+    componentDidMount() {
+        this.dispatch(getRegistryRecordTypesIfNeeded(this.props.initData.partyTypeId));
+    }
+
     
     /**
      * UPDATE VALUE
@@ -49,9 +62,10 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
      * @params event - událost která změnu vyvolala
      */
     updateValue(event){
-        var value = event.target.value;                                                     // hodnota změněného pole formuláře
+
         var variable = event.target.name;                                                   // nazeb měněné hodnoty
         var data = this.state.data;                                                         // puvodni data formuláře
+
         switch(variable){
             case "recordTypeId" : data.recordTypeId = event.target.value; break;            // identifikátor typu záznamu
             case "nameFormTypeId" : data.nameFormTypeId = event.target.value; break;        // identifikátor typu jména
@@ -63,10 +77,16 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
             case "toText" : data.to.textDate = event.target.value; break;                   // změna data do
             case "fromCalendar" : data.from.calendarTypeId = event.target.value; break;     // změna typu kalendáře od
             case "toCalendar" : data.to.calendarTypeId = event.target.value; break;         // změna typu kalendáře do
+            case "scopeId" : data.scopeId = event.target.value; break;                      // změna scope
+
         }
         this.setState({
             data : data                                                                     // uložení změn do state
         });
+    }
+
+    dropDownTreeUpdateValue(value){
+        this.updateValue({target:{value:value, name:'recordTypeId'}});
     }
 
 
@@ -163,6 +183,7 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
         }
 
         //kontrola vyplnění typu jména
+
         if(data.recordTypeId == 0 || data.recordTypeId == null ||  data.recordTypeId == undefined){
             errors[errors.length] = i18n('party.errors.undefinedRecordType');
         }
@@ -215,19 +236,17 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
      * Vykreslení formuláře
      */
     render() {
-        var recordTypes = [];                                                                                   // typy rejstříkového hesla
-        for(var i=0; i<this.props.refTables.partyTypes.items.length; i++){                                      // projdu všechny typy postav
-            if(this.props.refTables.partyTypes.items[i].partyTypeId == this.state.data.partyTypeId){            // pokud se jedna o muj typ
-                recordTypes = this.props.refTables.partyTypes.items[i].registerTypes;                           // uložím si seznam typů rejstříkového hesla
-            }
-        }
+
         var complementsTypes = [];                                                                              // seznam aktuálních typů doplňků možných pro daný typ osoby
         for(var i=0; i<this.props.refTables.partyTypes.items.length; i++){                                      // projdu všechny typy osob co jsou
             if(this.props.refTables.partyTypes.items[i].partyTypeId == this.props.initData.partyTypeId){        // a z té která odpovídá typu této osoby
                 complementsTypes = this.props.refTables.partyTypes.items[i].complementTypes;                    // si vemu seznam typů doplňků jmen
             }
         }
-        
+        var polozky = [];
+        if (this.props.registryRecordTypes && this.props.registryRecordTypes.fetched){
+            polozky = this.props.registryRecordTypes.item;
+        }
         return (
             <div>
                 <Modal.Body>
@@ -236,14 +255,10 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
                     </ul>
                     <form>
                         <div className="line">
-                            <DropDownTree items={recordTypes} onSelect={this.selectRecordType}/>
-                            <Input type="select" label={i18n('party.recordType')} name="recordTypeId" value={this.state.data.recordTypeId} onChange={this.updateValue} >
-                                <option value="0" key="0"></option> 
-                                {recordTypes.map(i=> {return <option value={i.id} key={i.nameFormTypeId}>{i.name}</option>})}
-                            </Input>
-                            <Input type="select" label={i18n('party.recordScope')} name="scope" value={this.state.data.scope} onChange={this.updateValue} >
-                                <option value="0" key="0"></option> 
-                            </Input>
+                            <DropDownTree label={i18n('party.recordType')} addRegistryRecord={true} items = {polozky}  name="recordTypeId" onChange={this.dropDownTreeUpdateValue}/>
+
+
+                            <Scope versionId={null} name="scopeId" label={i18n('party.recordScope')} onChange={this.updateValue}/>
                         </div>
                         <Input type="select" label={i18n('party.nameFormType')} name="nameFormTypeId" value={this.state.data.nameFormTypeId} onChange={this.updateValue} >
                             <option value="0" key="0"></option> 
@@ -312,7 +327,8 @@ module.exports = reduxForm({
     fields: [],
 },state => ({
     initialValues: state.form.addPartyForm.initialValues,
-    refTables: state.refTables
+    refTables: state.refTables,
+        registryRecordTypes: state.registryRecordTypes
 }),
 {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addPartyForm', data})}
 )(AddPartyForm)

@@ -79,20 +79,20 @@ export function receiveRegistryGetRegistry(registryId, json) {
     }
 }
 
-export function getRegistryRecordTypesIfNeeded(){
+export function getRegistryRecordTypesIfNeeded(partyTypeId = null){
     return (dispatch, getState) => {
         var state = getState();
-        if (!state.registryRecordTypes.fetched && !state.registryRecordTypes.isFetching) {
-            return dispatch(getRegistryRecordTypes());
+        if ((!state.registryRecordTypes.fetched && !state.registryRecordTypes.isFetching) || state.registryRecordTypes.partyTypeId !== partyTypeId) {
+            return dispatch(getRegistryRecordTypes(partyTypeId));
         }
     }
 }
 
-export function getRegistryRecordTypes(){
+export function getRegistryRecordTypes(partyTypeId = null){
     return dispatch => {
         dispatch(requestRegistryRecordTypes())
-        return WebApi.getRecordTypesForAdd()
-            .then(json => {dispatch(receiveRegistryRecordTypes(json))});
+        return WebApi.getRecordTypesForAdd(partyTypeId)
+            .then(json => {dispatch(receiveRegistryRecordTypes(json, partyTypeId))});
     }
 }
 
@@ -102,9 +102,10 @@ export function requestRegistryRecordTypes() {
     }
 }
 
-export function receiveRegistryRecordTypes(json){
+export function receiveRegistryRecordTypes(json, partyTypeId){
     return {
         item: json,
+        partyTypeId: partyTypeId,
         type: types.REGISTRY_RECIVE_REGISTRY_RECORD_TYPES,
         receivedAt: Date.now()
     }

@@ -11,7 +11,7 @@ import {AbstractReactComponent, i18n, DropDownTree, Scope} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField} from 'components/form/FormUtils'
-
+import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryList'
 
 
 const validate = (values, props) => {
@@ -42,12 +42,14 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+        this.dispatch(getRegistryRecordTypesIfNeeded());
     }
 
     componentDidMount() {
         if (this.props.initData) {
             this.props.load(this.props.initData);
         }
+        this.dispatch(getRegistryRecordTypesIfNeeded());
     }
 
     render() {
