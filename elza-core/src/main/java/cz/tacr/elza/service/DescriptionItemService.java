@@ -33,6 +33,9 @@ import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 
 
 /**
@@ -76,6 +79,9 @@ public class DescriptionItemService {
 
     @Autowired
     private RulesExecutor rulesExecutor;
+
+    @Autowired
+    private EventNotificationService notificationService;
 
     /**
      * Kontrola otevřené verze.
@@ -259,6 +265,9 @@ public class DescriptionItemService {
         ruleService.conformityInfo(version.getFindingAidVersionId(), Arrays.asList(descItem.getNode().getNodeId()),
                 NodeTypeOperation.SAVE_DESC_ITEM, Arrays.asList(descItem), null, null);
 
+        // sockety
+        publishChangeDescItem(version, descItemCreated);
+
         return descItemCreated;
     }
 
@@ -368,10 +377,14 @@ public class DescriptionItemService {
                     descItem.getNode(),
                     descItem.getPosition());
 
-            copyDescItemsWithData(change, descItems, -1);
+            copyDescItemsWithData(change, descItems, -1, version);
         }
 
         descItem.setDeleteChange(change);
+
+        // sockety
+        publishChangeDescItem(version, descItem);
+
         return descItemRepository.save(descItem);
     }
 
@@ -382,7 +395,8 @@ public class DescriptionItemService {
      * @param descItems seznam posunovaných hodnot atributu
      * @param diff      počet a směr posunu
      */
-    private void copyDescItemsWithData(final ArrChange change, final List<ArrDescItem> descItems, final Integer diff) {
+    private void copyDescItemsWithData(final ArrChange change, final List<ArrDescItem> descItems, final Integer diff,
+                                       final ArrFindingAidVersion version) {
         for (ArrDescItem descItemMove : descItems) {
 
             descItemMove.setDeleteChange(change);
@@ -398,6 +412,9 @@ public class DescriptionItemService {
 
             descItemRepository.save(descItemNew);
 
+            // sockety
+            publishChangeDescItem(version, descItemNew);
+
             // pro odverzovanou hodnotu atributu je nutné vytvořit kopii dat
             copyDescItemData(descItemMove, descItemNew);
         }
@@ -412,7 +429,8 @@ public class DescriptionItemService {
      */
     public void copyDescItemWithDataToNode(final ArrNode node,
                                            final List<ArrDescItem> sourceDescItems,
-                                           final ArrChange createChange) {
+                                           final ArrChange createChange,
+                                           final ArrFindingAidVersion version) {
         for (ArrDescItem sourceDescItem : sourceDescItems) {
             ArrDescItem descItemNew = new ArrDescItem();
 
@@ -426,9 +444,24 @@ public class DescriptionItemService {
 
             descItemRepository.save(descItemNew);
 
+            // sockety
+            publishChangeDescItem(version, descItemNew);
+
             // pro odverzovanou hodnotu atributu je nutné vytvořit kopii dat
             copyDescItemData(sourceDescItem, descItemNew);
         }
+    }
+
+    /**
+     * Vypropagovani zmeny hodnoty atributu - sockety.
+     *
+     * @param version   verze archivní pomůcky
+     * @param descItem  hodnota atributu
+     */
+    private void publishChangeDescItem(final ArrFindingAidVersion version, final ArrDescItem descItem) {
+        notificationService.publishEvent(
+                new EventChangeDescItem(EventType.DESC_ITEM_CHANGE, version.getFindingAidVersionId(),
+                        descItem.getDescItemObjectId(), descItem.getNode().getNodeId()));
     }
 
     /**
@@ -648,7 +681,7 @@ public class DescriptionItemService {
                     descItemsMove = findDescItemsBetweenPosition(descItemOrig, positionOrig + 1, positionNew);
                 }
 
-                copyDescItemsWithData(change, descItemsMove, diff);
+                copyDescItemsWithData(change, descItemsMove, diff, version);
 
             }
 
@@ -673,6 +706,9 @@ public class DescriptionItemService {
             descItemOrig.setDescItemSpec(descItem.getDescItemSpec());
             descItemUpdated = descItemFactory.saveDescItemWithData(descItemOrig, false);
         }
+
+        // sockety
+        publishChangeDescItem(version, descItemUpdated);
 
         return descItemUpdated;
     }

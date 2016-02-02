@@ -35,3 +35,13 @@ export function changePackets(findingAidId) {
         findingAidId: findingAidId
     }
 }
+
+export function changeDescItem(versionId, nodeId, descItemObjectId) {
+
+    return {
+        type: types.CHANGE_DESC_ITEM,
+        versionId: versionId,
+        nodeId: nodeId,
+        descItemObjectId: descItemObjectId,
+    }
+}

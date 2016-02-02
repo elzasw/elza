@@ -29,6 +29,8 @@ public enum EventType {
     RECORD_CREATE(EventId.class),
     RECORD_UPDATE(EventId.class),
 
+    DESC_ITEM_CHANGE(EventChangeDescItem.class),
+
     INDEXING_FINISHED(ActionEvent.class),
 
     PACKAGE(ActionEvent.class),

@@ -4,7 +4,8 @@ import {EmailSettingsActions, ApplicationActions} from 'actions';
 import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket';
 import {store} from 'stores/app/AppStore';
 
-import {changeConformityInfo, changeIndexingFinished, changePackage, changePackets} from 'actions/global/change';
+import {changeConformityInfo, changeIndexingFinished, changePackage, changePackets,
+        changeDescItem} from 'actions/global/change';
 
 
 var SockJS = require('sockjs-client');
@@ -87,12 +88,16 @@ function processEvents(values) {
                 packageEvent();
                 break;
 
+            case 'DESC_ITEM_CHANGE':
+                descItemChange(value);
+                break;
+
             case 'PACKETS_CHANGE':
                 packetsChangeEvent(value);
                 break;
 
             default:
-                console.warn("Nedefinovaný typ eventu: " + value.eventType);
+                console.warn("Nedefinovaný typ eventu: " + value.eventType, value);
                 break;
         }
 
@@ -127,6 +132,10 @@ function packageEvent() {
  */
 function packetsChangeEvent(value) {
     store.dispatch(changePackets(value.ids[0]));
+}
+
+function descItemChange(value) {
+    store.dispatch(changeDescItem(value.versionId, value.nodeId, value.descItemObjectId));
 }
 
 /**

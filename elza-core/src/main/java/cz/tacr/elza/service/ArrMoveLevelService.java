@@ -564,7 +564,7 @@ public class ArrMoveLevelService {
         if(youngerSibling != null && !descItemCopyTypes.isEmpty()){
             List<ArrDescItem> siblingDescItems = descItemRepository
                     .findOpenByNodeAndTypes(youngerSibling.getNode(), descItemCopyTypes);
-            descriptionItemService.copyDescItemWithDataToNode(newLevel.getNode(), siblingDescItems, change);
+            descriptionItemService.copyDescItemWithDataToNode(newLevel.getNode(), siblingDescItems, change, version);
         }
 
 
