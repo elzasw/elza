@@ -1,13 +1,18 @@
 package cz.tacr.elza;
 
+import java.util.Map;
 import java.util.concurrent.Executor;
+
+import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.orm.jpa.EntityScan;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -38,6 +43,9 @@ import cz.tacr.elza.service.websocket.ClientDataChangesService;
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @EnableTransactionManagement
 public class ElzaCore {
+
+    @Autowired
+    private ApplicationContext context;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -85,4 +93,15 @@ public class ElzaCore {
         return new ClientDataChangesService();
     }
 
+
+    @PostConstruct
+    public void registerEventBusListeners() {
+        Map<String, Object> busListenerMap = context.getBeansWithAnnotation(EventBusListener.class);
+
+        for (Map.Entry<String, Object> listenerEntry : busListenerMap.entrySet()) {
+            logger.info("Registrace objektu " + listenerEntry.getKey() + " pro příjem událostí.");
+            eventBus().register(listenerEntry.getValue());
+
+        }
+    }
 }

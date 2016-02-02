@@ -2,6 +2,7 @@ package cz.tacr.elza.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,6 +31,7 @@ import org.springframework.util.Assert;
 import com.google.common.eventbus.Subscribe;
 
 import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.EventBusListener;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
@@ -48,6 +50,10 @@ import cz.tacr.elza.repository.LevelRepositoryCustom;
 import cz.tacr.elza.service.eventnotification.EventChangeMessage;
 import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
 import cz.tacr.elza.service.eventnotification.events.AbstractEventVersion;
+import cz.tacr.elza.service.eventnotification.events.EventAddNode;
+import cz.tacr.elza.service.eventnotification.events.EventIdInVersion;
+import cz.tacr.elza.service.eventnotification.events.EventNodeMove;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 
 
 /**
@@ -57,6 +63,7 @@ import cz.tacr.elza.service.eventnotification.events.AbstractEventVersion;
  * @since 11.01.2016
  */
 @Service
+@EventBusListener
 public class LevelTreeCacheService {
 
     final Log logger = LogFactory.getLog(this.getClass());
@@ -326,7 +333,7 @@ public class LevelTreeCacheService {
             treeNode.getChilds().sort(comparator);
         }
 
-        initReferenceMarks(allMap.get(rootId));
+        initReferenceMarksAndDepth(allMap.get(rootId));
 
 
         return allMap;
@@ -355,11 +362,8 @@ public class LevelTreeCacheService {
         if (levelInfo.getParentId() != null) {
             TreeNode parentNode = createTreeNodeMap(levelInfoMap.get(levelInfo.getParentId()), levelInfoMap,
                     allNodesMap);
-            result.setDepth(parentNode.getDepth() + 1);
             result.setParent(parentNode);
             parentNode.addChild(result);
-        } else {
-            result.setDepth(1);
         }
 
         return result;
@@ -369,12 +373,13 @@ public class LevelTreeCacheService {
      * Projde celým stromem od kořene a nastaví referenční označení.
      * @param rootNode kořen stromu
      */
-    private void initReferenceMarks(final TreeNode rootNode) {
+    private void initReferenceMarksAndDepth(final TreeNode rootNode) {
 
         rootNode.setReferenceMark(new Integer[0]);
+        rootNode.setDepth(1);
         int childPosition = 1;
         for (TreeNode child : rootNode.getChilds()) {
-            initReferenceMark(child, childPosition++);
+            initReferenceMarkAndDepth(child, childPosition++);
         }
     }
 
@@ -384,16 +389,17 @@ public class LevelTreeCacheService {
      * @param treeNode uzel
      * @param position pozice uzlu v seznamu sourozenců
      */
-    private void initReferenceMark(final TreeNode treeNode, final int position) {
+    private void initReferenceMarkAndDepth(final TreeNode treeNode, final int position) {
 
         Integer[] parentReferenceMark = treeNode.getParent().getReferenceMark();
         Integer[] referenceMark = Arrays.copyOf(parentReferenceMark, parentReferenceMark.length + 1);
         referenceMark[parentReferenceMark.length] = position;
         treeNode.setReferenceMark(referenceMark);
+        treeNode.setDepth(referenceMark.length + 1);
 
         int childPosition = 1;
         for (TreeNode child : treeNode.getChilds()) {
-            initReferenceMark(child, childPosition++);
+            initReferenceMarkAndDepth(child, childPosition++);
         }
     }
 
@@ -483,7 +489,7 @@ public class LevelTreeCacheService {
             versionTreeMap = createVersionTreeCache(version);
             versionCache.put(version.getFindingAidVersionId(), versionTreeMap);
 //        }
-
+         //TODO kubovy zapnout, až bude na klientu aktualizace nodů
         return versionTreeMap;
     }
 
@@ -498,23 +504,50 @@ public class LevelTreeCacheService {
     }
 
 
-
     @Subscribe
-    public void onDataUpdate(final EventChangeMessage changeMessage){
+    public void onDataUpdate(final EventChangeMessage changeMessage) {
 
         List<AbstractEventSimple> events = changeMessage.getEvents();
-
         for (AbstractEventSimple event : events) {
+            logger.info("Zpracování události "+event.getEventType());
             //projdeme všechny změny, které jsou změny ve stromu uzlů verze a smažeme cache verzí
             if (AbstractEventVersion.class.isAssignableFrom(event.getClass())) {
                 Integer changedVersionId = ((AbstractEventVersion) event).getVersionId();
+                ArrFindingAidVersion version = findingAidVersionRepository.findOne(changedVersionId);
 
                 //TODO nemazat celou cache, ale provádět co nejvíc změn přímo na cache
                 //TODO aktualizovat referenční označení
-                    clearVersionCache(changedVersionId);
+//                clearVersionCache(changedVersionId);
+
+                switch (event.getEventType()) {
+                    case NODE_DELETE:
+                        break;
+                    case ADD_LEVEL_AFTER:
+                    case ADD_LEVEL_BEFORE:
+                    case ADD_LEVEL_UNDER:
+                        EventAddNode eventAddNode = (EventAddNode) event;
+                        actionAddLevel(eventAddNode.getNode().getNodeId(), eventAddNode.getStaticNode().getNodeId(),
+                                version, event.getEventType());
+                        break;
+                    case MOVE_LEVEL_AFTER:
+                    case MOVE_LEVEL_BEFORE:
+                    case MOVE_LEVEL_UNDER:
+                        EventNodeMove eventNodeMove = (EventNodeMove) event;
+                        List<Integer> transportIds = eventNodeMove.getTransportLevels().stream()
+                                .map(n -> n.getNodeId()).collect(Collectors.toList());
+                        actionMoveLevel(eventNodeMove.getStaticLevel().getNodeId(), transportIds,
+                                version, event.getEventType());
+
+                        break;
+                    case DELETE_LEVEL:
+                        EventIdInVersion eventIdInVersion = (EventIdInVersion) event;
+                        actionDeleteLevel(eventIdInVersion.getEntityId(), version);
+                        break;
                 }
+
             }
         }
+    }
 
     /**
      * Najde id všech nodů ve verzi.
@@ -638,6 +671,239 @@ public class LevelTreeCacheService {
 
         return result;
     }
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////CACHE UPDATE///////////////////////////////////////////////////////
+
+    /**
+     * Aktualizace cache po smazání uzlu.
+     * @param nodeId
+     * @param version
+     */
+    synchronized private void actionDeleteLevel(final Integer nodeId, final ArrFindingAidVersion version) {
+        Map<Integer, TreeNode> versionTreeMap = getVersionTreeCache(version);
+
+
+        if (versionTreeMap != null) {
+            TreeNode deleteNode = versionTreeMap.get(nodeId);
+            TreeNode parent = deleteNode.getParent();
+            if (parent != null) {
+                int deleteNodeIndex = parent.getChilds().indexOf(deleteNode);
+                parent.getChilds().remove(deleteNode);
+                repositionList(parent.getChilds());
+
+                if (parent.getChilds().size() > deleteNodeIndex) {
+                    initReferenceMarkLower(parent.getChilds(), parent.getChilds().get(deleteNodeIndex));
+                }
+            }
+            removeFromCacheTree(versionTreeMap, deleteNode);
+        }
+    }
+
+    /**
+     * Rekurzivně smaže uzel a jeho potomky z cache.
+     *
+     * @param versionTreeMap cache
+     * @param deleteNode     uzel ke smazání
+     */
+    private void removeFromCacheTree(final Map<Integer, TreeNode> versionTreeMap,
+                                     final TreeNode deleteNode) {
+        versionTreeMap.remove(deleteNode.getId());
+        for (TreeNode child : deleteNode.getChilds()) {
+            removeFromCacheTree(versionTreeMap, child);
+        }
+    }
+
+    /**
+     * Aktualizace cache po přidání uzlu do cache
+     *
+     * @param newNodeId    id přidaného uzlu
+     * @param staticId     id statického uzlu
+     * @param version      verzes tromu
+     * @param addLevelType typ akce
+     */
+    synchronized private void actionAddLevel(final Integer newNodeId,
+                                             final Integer staticId,
+                                             final ArrFindingAidVersion version,
+                                             final EventType addLevelType) {
+        Map<Integer, TreeNode> versionTreeMap = getVersionTreeCache(version);
+        if (versionTreeMap != null) {
+            TreeNode staticNode = versionTreeMap.get(staticId);
+            TreeNode newNode;
+            switch (addLevelType) {
+                case ADD_LEVEL_BEFORE: {
+                    newNode = createEmptyTreeNode(newNodeId, staticNode.getParent());
+
+                    LinkedList<TreeNode> parentChilds = staticNode.getParent().getChilds();
+                    int staticNodeIndex = parentChilds.indexOf(staticNode);
+                    parentChilds.add(staticNodeIndex, newNode);
+                    repositionList(parentChilds);
+                    initReferenceMarkLower(parentChilds, newNode);
+                    break;
+                }
+                case ADD_LEVEL_AFTER: {
+                    newNode = createEmptyTreeNode(newNodeId, staticNode.getParent());
+
+                    LinkedList<TreeNode> parentChilds = staticNode.getParent().getChilds();
+                    int staticNodeIndex = parentChilds.indexOf(staticNode) + 1;
+                    parentChilds.add(staticNodeIndex, newNode);
+                    repositionList(parentChilds);
+                    initReferenceMarkLower(parentChilds, newNode);
+                    break;
+                }
+                case ADD_LEVEL_UNDER: {
+                    newNode = createEmptyTreeNode(newNodeId, staticNode);
+                    LinkedList<TreeNode> parentChilds = staticNode.getChilds();
+                    parentChilds.addLast(newNode);
+                    repositionList(parentChilds);
+                    initReferenceMarkAndDepth(newNode, newNode.getPosition());
+                    break;
+                }
+                default:
+                    throw new IllegalArgumentException("Neplatny typ přidání nodu " + addLevelType);
+            }
+            versionTreeMap.put(newNode.getId(), newNode);
+        }
+    }
+
+    /**
+     * Aktualizace cache pro přesunutí uzlu.
+     *
+     * @param staticId      id statického nodu
+     * @param nodeIds       seznam id nodů k přesunutí
+     * @param version       verze stromu
+     * @param moveLevelType typ události
+     */
+    synchronized private void actionMoveLevel(final Integer staticId,
+                                              final List<Integer> nodeIds,
+                                              final ArrFindingAidVersion version,
+                                              final EventType moveLevelType) {
+        if (CollectionUtils.isEmpty(nodeIds)) {
+            return;
+        }
+
+        Map<Integer, TreeNode> versionTreeMap = getVersionTreeCache(version);
+        if (versionTreeMap != null) {
+            TreeNode staticNode = versionTreeMap.get(staticId);
+            TreeNode staticParent = moveLevelType == EventType.MOVE_LEVEL_UNDER ? staticNode : staticNode.getParent();
+
+
+            List<TreeNode> transportNodes = new ArrayList<>(nodeIds.size());
+
+            for (Integer transportNodeId : nodeIds) {
+                TreeNode transportNode = versionTreeMap.get(transportNodeId);
+                transportNode.getParent().getChilds().remove(transportNode);
+                transportNodes.add(transportNode);
+            }
+            TreeNode transportParent = transportNodes.get(0);
+            repositionList(transportParent.getChilds());
+
+            boolean siblingMove = false;
+            if (!transportParent.equals(staticParent) && !transportParent.getChilds().isEmpty()) {
+                //při přesunu přečíslujeme všechny node, které jsou pod rodičem, jehož děti přesouváme
+                initReferenceMarkLower(transportParent.getChilds(), transportParent.getChilds().getFirst());
+                siblingMove = true;
+            }
+
+
+            switch (moveLevelType) {
+                case MOVE_LEVEL_BEFORE: {
+                    LinkedList<TreeNode> staticParentChilds = staticParent.getChilds();
+                    int staticIndex = staticParentChilds.indexOf(staticNode);
+
+                    for (TreeNode transportNode : transportNodes) {
+                        transportNode.setParent(staticParent);
+                    }
+
+                    staticParentChilds.addAll(staticIndex, transportNodes);
+                    repositionList(staticParentChilds);
+
+
+                    break;
+                }
+                case MOVE_LEVEL_AFTER: {
+                    LinkedList<TreeNode> staticParentChilds = staticParent.getChilds();
+                    int staticIndex = staticParentChilds.indexOf(staticNode) + 1;
+
+                    for (TreeNode transportNode : transportNodes) {
+                        transportNode.setParent(staticParent);
+                    }
+
+                    staticParentChilds.addAll(staticIndex, transportNodes);
+                    repositionList(staticParentChilds);
+                    break;
+                }
+                case MOVE_LEVEL_UNDER: {
+                    LinkedList<TreeNode> staticParentChilds = staticNode.getChilds();
+
+                    for (TreeNode transportNode : transportNodes) {
+                        transportNode.setParent(staticNode);
+                        staticParentChilds.addLast(transportNode);
+                    }
+
+                    repositionList(staticParentChilds);
+                    break;
+                }
+            }
+
+
+            //přečíslujeme všechny prvky pod prvním přidaným (včetně) -> pokud přesouváme na stejné úrovni, přečíslujeme všechny
+            if (siblingMove) {
+                initReferenceMarkLower(staticParent.getChilds(), staticParent.getChilds().getFirst());
+            } else {
+                initReferenceMarkLower(staticParent.getChilds(), transportNodes.get(0));
+            }
+
+
+        }
+    }
+
+    /**
+     * Přečísluje všechny uzly od jedné
+     * @param childs uzly k přečíslování
+     */
+    private void repositionList(final Collection<TreeNode> childs){
+        int position = 1;
+        for (TreeNode child : childs) {
+            child.setPosition(position++);
+        }
+    }
+
+
+    /**
+     * Projde celý seznam a až narazí na zadaný uzel, začne od něho aktualizovat hierarchicky referenční označení.
+     *
+     * @param childs          seznam všech potomků, ve kterých hledáme
+     * @param firstReposition první uzel, od kterého se začnou aktualizovat označení
+     */
+    private void initReferenceMarkLower(final LinkedList<TreeNode> childs, final TreeNode firstReposition) {
+
+        boolean initReference = false;
+        for (TreeNode child : childs) {
+            initReference = initReference || child.equals(firstReposition);
+            if (initReference) {
+                initReferenceMarkAndDepth(child, firstReposition.getPosition());
+            }
+        }
+    }
+
+
+    /**
+     * Vytvoří nový prázdný uzel.
+     *
+     * @param nodeId     id uzlu
+     * @param parentNode rodič, do kterého bude přidán nový potomek
+     * @return nový uzel
+     */
+    private TreeNode createEmptyTreeNode(final Integer nodeId, final TreeNode parentNode) {
+        TreeNode newNode = new TreeNode(nodeId, 0);
+        newNode.setParent(parentNode);
+        newNode.setDepth(parentNode.getDepth() + 1);
+        return newNode;
+    }
+
 }
 
 

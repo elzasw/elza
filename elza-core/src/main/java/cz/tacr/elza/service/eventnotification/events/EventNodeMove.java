@@ -33,6 +33,22 @@ public class EventNodeMove extends AbstractEventVersion<EventNodeMove> {
     }
 
 
+    public NodeInfo getStaticLevel() {
+        return staticLevel;
+    }
+
+    public void setStaticLevel(final NodeInfo staticLevel) {
+        this.staticLevel = staticLevel;
+    }
+
+    public List<NodeInfo> getTransportLevels() {
+        return transportLevels;
+    }
+
+    public void setTransportLevels(final List<NodeInfo> transportLevels) {
+        this.transportLevels = transportLevels;
+    }
+
     @Override
     public String toString() {
         return "EventNodeMove{" +
