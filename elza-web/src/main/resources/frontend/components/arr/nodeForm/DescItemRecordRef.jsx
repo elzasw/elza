@@ -48,7 +48,7 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
     }
 
     renderRecord(item, isHighlighted, isSelected) {
-        var cls = 'item-wrapper';
+        var cls = 'item';
         if (isHighlighted) {
             cls += ' focus'
         }
@@ -58,10 +58,8 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
 
         return (
                 <div className={cls} key={item.id} >
-                    <div className="item">
-                        <div className="name" title={item.name}>{item.name}</div>
-                        <div className="characteristics" title={item.characteristics}>{item.characteristics}</div>
-                    </div>
+                    <div className="name" title={item.name}>{item.name}</div>
+                    <div className="characteristics" title={item.characteristics}>{item.characteristics}</div>
                 </div>
         )
     }

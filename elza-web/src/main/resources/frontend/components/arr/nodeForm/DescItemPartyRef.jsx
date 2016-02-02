@@ -47,7 +47,7 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
     }
 
     renderParty(item, isHighlighted, isSelected) {
-        var cls = 'item-wrapper';
+        var cls = 'item';
         if (isHighlighted) {
             cls += ' focus'
         }
@@ -62,12 +62,10 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
 
         return (
                 <div className={cls} key={item.id} >
-                    <div className="item">
-                        <div className="name" title={item.name}>{item.name}</div>
-                        <div className="type">{item.type}</div>
-                        <div className="interval">{interval}</div>
-                        <div  className="characteristics" title={item.characteristics}>{item.characteristics}</div>
-                    </div>
+                    <div className="name" title={item.name}>{item.name}</div>
+                    <div className="type">{item.type}</div>
+                    <div className="interval">{interval}</div>
+                    <div  className="characteristics" title={item.characteristics}>{item.characteristics}</div>
                 </div>
         )
     }
