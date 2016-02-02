@@ -31,6 +31,11 @@ var Search = class Search extends React.Component {
             filterText: this.props.filterText,                          // hledaný text
         }
     }
+    componentWillReceiveProps(nexProps){
+        this.state = {                                                  // inicializace stavu komponenty
+            filterText: this.props.filterText,                          // hledaný text
+        }
+    }
 
     handleSearch(e){
        this.props.onSearch(this.state.filterText);
