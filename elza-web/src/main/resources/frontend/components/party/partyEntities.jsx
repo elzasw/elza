@@ -6,8 +6,8 @@ require ('./partyEntities.less');
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {Button, Glyphicon} from 'react-bootstrap';
-import {RelationForm, AbstractReactComponent, i18n} from 'components'
+import {Button} from 'react-bootstrap';
+import {RelationForm, AbstractReactComponent, i18n, Icon} from 'components'
 import {AppActions} from 'stores';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {updateRelation, deleteRelation} from 'actions/party/party'
@@ -167,8 +167,8 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
                                         <div className="role">{j.roleType.name}</div>
                                     </div>
                                 })}
-                            <Button className="column" onClick={this.handleUpdateRelation.bind(this, i.relationId)}><Glyphicon glyph="edit" /></Button>  
-                            <Button className="column" onClick={this.handleDeleteRelation.bind(this, i.relationId)}><Glyphicon glyph="trash" /></Button>
+                            <Button className="column" onClick={this.handleUpdateRelation.bind(this, i.relationId)}><Icon glyph="fa-edit"/></Button>
+                            <Button className="column" onClick={this.handleDeleteRelation.bind(this, i.relationId)}><Icon glyph="fa-trash"/></Button>
                         </div>
                 })
         };

@@ -4,8 +4,8 @@
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {Button, Glyphicon} from 'react-bootstrap';
-import {PartyNameForm, AbstractReactComponent, i18n} from 'components';
+import {Button} from 'react-bootstrap';
+import {PartyNameForm, AbstractReactComponent, i18n, Icon} from 'components';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {AppActions} from 'stores';
 import {deleteName, updateParty} from 'actions/party/party'
@@ -213,14 +213,14 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
                             {party.partyNames.map(i=> {return <tr className="name">
                                 <th className="name column">{i.displayName}</th> 
                                 <td className="buttons">
-                                    <Button className="column" onClick={this.handleUpdateName.bind(this, i.partyNameId)}><Glyphicon glyph="edit" /></Button>
-                                    <Button className="column" onClick={this.handleDeleteName.bind(this, i.partyNameId)}><Glyphicon glyph="trash" /></Button>
+                                    <Button className="column" onClick={this.handleUpdateName.bind(this, i.partyNameId)}><Icon glyph="fa-pencil"/></Button>
+                                    <Button className="column" onClick={this.handleDeleteName.bind(this, i.partyNameId)}><Icon glyph="fa-trash"/></Button>
                                 </td>
                                 <td className="description">{(i.preferred ? i18n('party.detail.name.preferred') : "" )}</td>
                             </tr>})}
                         </tbody>
                     </table>
-                    <Button className="column" onClick={this.handleAddName}><Glyphicon glyph="plus" /> { i18n('party.detail.name.new')}</Button>
+                    <Button className="column" onClick={this.handleAddName}><Icon glyph="fa-plus"/> { i18n('party.detail.name.new')}</Button>
                 </div>
     }
 }

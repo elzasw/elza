@@ -4,8 +4,8 @@
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {Input, Button, Glyphicon} from 'react-bootstrap';
-import {PartyCreatorForm, AbstractReactComponent, i18n} from 'components';
+import {Input, Button} from 'react-bootstrap';
+import {PartyCreatorForm, AbstractReactComponent, i18n, Icon} from 'components';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {AppActions} from 'stores';
 import {deleteCreator, updateParty} from 'actions/party/party'
@@ -144,12 +144,12 @@ var PartyDetailCreators = class PartyDetailCreators extends AbstractReactCompone
                                     </Input>
                                 </td>
                                 <td className="buttons">
-                                    <Button classCreator="column" onClick={this.handleDeleteCreator.bind(this, i.creatorId)}><Glyphicon glyph="trash" /></Button>
+                                    <Button classCreator="column" onClick={this.handleDeleteCreator.bind(this, i.creatorId)}><Icon glyph="fa-trash"/></Button>
                                 </td>
                             </tr>})}
                         </tbody>
                     </table>
-                    <Button className="column" onClick={this.handleAddCreator}><Glyphicon glyph="plus" /> { i18n('party.detail.creator.new')}</Button>
+                    <Button className="column" onClick={this.handleAddCreator}><Icon glyph="fa-plus"/> { i18n('party.detail.creator.new')}</Button>
                 </div>
     }
 }

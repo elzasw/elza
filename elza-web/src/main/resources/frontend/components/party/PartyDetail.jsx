@@ -135,8 +135,9 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
         }
         return <div className={"partyDetail"}>
                     <h1>{party.record.record}</h1>
+                    <div className="line">
                     <Input type="textarea" label={i18n('party.detail.characteristics')} name="characteristics" value={party.record.characteristics != undefined ? party.record.characteristics : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
-                    
+                    </div>
 
                     <div className="line">
                         <Input type="select" disabled={true} value={party.partyType.partyTypeId} label={i18n('party.detail.type')}>
@@ -144,10 +145,10 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
                         </Input>
                     </div>
                     <div className="line datation">
-                        <div className="date line">
+                        <div className="date-group">
                             <div>
                                 <label>{i18n('party.nameValidFrom')}</label>
-                                <div className="line">
+                                <div className="date">
                                     <Input type="select" name="fromCalendar" value={party.from == null || party.from.calendarTypeId == null ? 0 : party.from.calendarTypeId} onChange={this.updateValue} >
                                         {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
                                     </Input>
@@ -156,7 +157,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
                             </div>
                             <div>
                                 <label>{i18n('party.nameValidTo')}</label>
-                                <div className="line">
+                                <div className="date">
                                     <Input type="select" name="toCalendar" value={party.to == null || party.to.calendarTypeId == null ? 0 : party.to.calendarTypeId} onChange={this.updateValue} >
                                         {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
                                     </Input>
@@ -165,39 +166,35 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
                             </div>
                         </div>
                     </div>                       
-                    <hr/>
 
-                    <div className="party-names">
+                    <div className="line party-names">
                         <label>{i18n('party.detail.names')}</label>
                         <PartyDetailNames partyRegion={this.props.partyRegion} /> 
-                        <hr/>
                     </div>
 
-                    {party.partyType.partyTypeId == this.state.groupId ? <div className="party-identifiers">
+                    {party.partyType.partyTypeId == this.state.groupId ? <div className="line party-identifiers">
                         <label>{i18n('party.detail.identifiers')}</label>
                         <PartyDetailIdentifiers partyRegion={this.props.partyRegion} refTables={this.props.refTables}/>
-                        <hr/>
-                    </div> :  ''}
+                    </div> :  null}
 
 
-                    {party.partyType.partyTypeId == this.state.dynastyId ? <Input type="text" label={i18n('party.detail.genealogy')} name="genealogy" value={party.genealogy != undefined ? party.genealogy : ''} onChange={this.changeValue} onBlur={this.updateValue}/> :  ''}
+                    {party.partyType.partyTypeId == this.state.dynastyId ? <div className="line">
+                        <Input type="text" label={i18n('party.detail.genealogy')} name="genealogy" value={party.genealogy != undefined ? party.genealogy : ''} onChange={this.changeValue} onBlur={this.updateValue}/> </div>:  null}
 
-                    <Input type="text" label={i18n('party.detail.note')} name="note" value={party.record.note != undefined ? party.record.note : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
-                    <Input type="text" label={i18n('party.detail.history')} name="history" value={party.history != undefined ? party.history : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
-                    <Input type="text" label={i18n('party.detail.sources')} name="sourceInformation" value={party.sourceInformation == null ? '' : party.sourceInformation} onChange={this.changeValue} onBlur={this.updateValue}/>
+                    <div className="line"><Input type="text" label={i18n('party.detail.note')} name="note" value={party.record.note != undefined ? party.record.note : ''} onChange={this.changeValue} onBlur={this.updateValue}/></div>
+                    <div className="line"><Input type="text" label={i18n('party.detail.history')} name="history" value={party.history != undefined ? party.history : ''} onChange={this.changeValue} onBlur={this.updateValue}/></div>
+                    <div className="line"><Input type="text" label={i18n('party.detail.sources')} name="sourceInformation" value={party.sourceInformation == null ? '' : party.sourceInformation} onChange={this.changeValue} onBlur={this.updateValue}/></div>
 
-                    {party.partyType.partyTypeId == this.state.groupId ? <div className="group-panel">
+                    {party.partyType.partyTypeId == this.state.groupId ? <div className="line group-panel">
                         <Input type="text" label={i18n('party.detail.groupOrganization')} name="organization" value={party.organization != undefined ? party.organization : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
                         <Input type="text" label={i18n('party.detail.groupFoundingNorm')} name="foundingNorm" value={party.foundingNorm != undefined ? party.foundingNorm : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
                         <Input type="text" label={i18n('party.detail.groupScopeNorm')} name="scopeNorm" value={party.scopeNorm != undefined ? party.scopeNorm : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
                         <Input type="text" label={i18n('party.detail.groupScope')} name="scope" value={party.scope != undefined ? party.scope : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
                     </div> :  ''}
     
-                    <hr/>
-                    <div className="party-creators">
+                    <div className="line party-creators">
                         <label>{i18n('party.detail.creators')}</label>
                         <PartyDetailCreators partyRegion={this.props.partyRegion} refTables={this.props.refTables}/> 
-                        <hr/>
                     </div>
 
                 </div>

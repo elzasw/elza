@@ -6,8 +6,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/actionTypes';
 import {reduxForm} from 'redux-form';
-import {DropDownTree, AbstractReactComponent, i18n} from 'components';
-import {Modal, Button, Input, Glyphicon} from 'react-bootstrap';
+import {DropDownTree, AbstractReactComponent, i18n, Icon} from 'components';
+import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
@@ -295,7 +295,7 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
                                 </div>
                             </div>})}
                         </div>   
-                        <Button onClick={this.addComplement}><Glyphicon glyph="plus" /></Button>
+                        <Button onClick={this.addComplement}><Icon glyph="fa-plus"/></Button>
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

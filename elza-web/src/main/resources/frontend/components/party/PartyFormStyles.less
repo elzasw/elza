@@ -1,14 +1,11 @@
 @import "~variables.less";
 
 .line{
-    display: flex; 
-    flex-direction: row;
-    
-    .form-group, 
+    .form-group,
     .column{
         flex-grow: 2;
         flex-shrink: 0;
-        margin-left:10px;
+        margin:0;
         
         &.ico{
             text-align:right;
@@ -20,13 +17,24 @@
     .column:first-child{
         margin-left: 0px;
     }
+    .date-group {
+        &>div {
+            display: inline-block;
+        }
+        .date {
+            margin-right: 15px;
+            .form-group {
+                display: inline-block;
+                max-width: 250px;
+            }
+        }
+    }
 }
 
 .block{
     &.entity{
         border:1px solid #cccccc;
         padding:6px;
-        border-radius: px;
         background-color:#eeeeee;
         margin-bottom:7px;
     }

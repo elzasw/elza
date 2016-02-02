@@ -15,14 +15,16 @@ export function storeRestoreFromStorage() {
                 dispatch(storeStateDataInit(localStorageData));
 
                 var stateRegion = localStorageData.stateRegion;
-                if (stateRegion.arrRegion) {
-                    dispatch(storeLoadData('ARR_REGION', stateRegion.arrRegion, false));
-                }
-                if (stateRegion.partyRegionFront && stateRegion.partyRegionFront.length > 0) {
-                    dispatch(storeLoadData('PARTY_REGION', stateRegion.partyRegionFront[stateRegion.partyRegionFront.length - 1], false));
-                }
-                if (stateRegion.registryRegionFront && stateRegion.registryRegionFront.length > 0) {
-                    dispatch(storeLoadData('REGISTRY_REGION', stateRegion.registryRegionFront[stateRegion.registryRegionFront.length - 1], false));
+                if (stateRegion) {
+                    if (stateRegion.arrRegion) {
+                        dispatch(storeLoadData('ARR_REGION', stateRegion.arrRegion, false));
+                    }
+                    if (stateRegion.partyRegionFront && stateRegion.partyRegionFront.length > 0) {
+                        dispatch(storeLoadData('PARTY_REGION', stateRegion.partyRegionFront[stateRegion.partyRegionFront.length - 1], false));
+                    }
+                    if (stateRegion.registryRegionFront && stateRegion.registryRegionFront.length > 0) {
+                        dispatch(storeLoadData('REGISTRY_REGION', stateRegion.registryRegionFront[stateRegion.registryRegionFront.length - 1], false));
+                    }
                 }
             }
         }
