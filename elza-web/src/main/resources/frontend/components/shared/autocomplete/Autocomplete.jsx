@@ -233,7 +233,6 @@ _debugStates && console.log("@CLICK:", inside);
         if (this.state.isOpen === true && this.state.highlightedIndex !== null) {
           var itemNode = ReactDOM.findDOMNode(this.refs[`item-${this.state.highlightedIndex}`])
           var menuNode = ReactDOM.findDOMNode(this.refs.menu).parentNode
-console.log('sssssssss', itemNode, menuNode);
           scrollIntoView(itemNode, menuNode, { onlyScrollIfNeeded: true })
         }
     }
