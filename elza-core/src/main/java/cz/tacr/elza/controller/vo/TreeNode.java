@@ -36,7 +36,8 @@ public class TreeNode implements Comparable<TreeNode> {
      * Rodič uzluz
      */
     private TreeNode parent;
-    private List<TreeNode> childs = Collections.EMPTY_LIST;
+
+    private LinkedList<TreeNode> childs = new LinkedList<>();
 
     /**
      * Referenční označení. Od kořene k uzlu.
@@ -80,18 +81,15 @@ public class TreeNode implements Comparable<TreeNode> {
         this.parent = parent;
     }
 
-    public List<TreeNode> getChilds() {
+    public LinkedList<TreeNode> getChilds() {
         return childs;
     }
 
-    public void setChilds(final List<TreeNode> childs) {
+    public void setChilds(final LinkedList<TreeNode> childs) {
         this.childs = childs;
     }
 
     public void addChild(final TreeNode child) {
-        if (childs == Collections.EMPTY_LIST) {
-            childs = new LinkedList<>();
-        }
         childs.add(child);
     }
 

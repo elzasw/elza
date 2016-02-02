@@ -290,31 +290,33 @@ var items = getStates();
                     <Button onClick={() => this.dispatch(storeLoad())}>LOAD</Button></div>}
                 {this.renderHistory()}
 
-<h1>Autocomplete input - local data and local filter</h1>
-<Autocomplete
-    value={null}
-    items={items}
-    getItemId={(item) => item ? item.id : null}
-    getItemName={(item) => item ? item.name : ''}
-    shouldItemRender={matchStateToTerm}
-    onSearchChange={(x, y)=>{console.log('ON SEARCH CHANGE', x, y)}}
-    onChange={(x, y)=>{console.log('ON CHANGE', x, y)}}
-/>
+{false && <div>
+    <h1>Autocomplete input - local data and local filter</h1>
+    <Autocomplete
+        value={null}
+        items={items}
+        getItemId={(item) => item ? item.id : null}
+        getItemName={(item) => item ? item.name : ''}
+        shouldItemRender={matchStateToTerm}
+        onSearchChange={(x, y)=>{console.log('ON SEARCH CHANGE', x, y)}}
+        onChange={(x, y)=>{console.log('ON CHANGE', x, y)}}
+    />
 
-<h1>Autocomplete input - server data and server filter</h1>
-<Autocomplete
-    customFilter
-    className='autocomplete-registry'
-    footer=<div><Button onClick={()=>{alert('klik')}}>xxx</Button></div>
-    header=<div><div className='c1'>id</div><div className='c2'>jmeno</div></div>
-    value={null}
-    items={this.state.registryList}
-    getItemId={(item) => item ? item.id : null}
-    getItemName={(item) => item ? item.name : ''}
-    onSearchChange={this.handleFindParty}
-    onChange={(x, y)=>{console.log('ON CHANGE', x, y)}}
-    renderItem={this.renderRecord}
-/>
+    <h1>Autocomplete input - server data and server filter</h1>
+    <Autocomplete
+        customFilter
+        className='autocomplete-registry'
+        footer=<div><Button onClick={()=>{alert('klik')}}>xxx</Button></div>
+        header=<div><div className='c1'>id</div><div className='c2'>jmeno</div></div>
+        value={null}
+        items={this.state.registryList}
+        getItemId={(item) => item ? item.id : null}
+        getItemName={(item) => item ? item.name : ''}
+        onSearchChange={this.handleFindParty}
+        onChange={(x, y)=>{console.log('ON CHANGE', x, y)}}
+        renderItem={this.renderRecord}
+    />
+    </div>}
 
 
 {false && <Combobox defaultValue={'1'}

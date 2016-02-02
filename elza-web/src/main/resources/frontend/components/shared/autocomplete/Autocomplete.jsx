@@ -61,6 +61,9 @@ var keyDownHandlers = {
                 ReactDOM.findDOMNode(this.refs.input.getInputDOMNode()).select()
             })
         } else {
+            event.stopPropagation();
+            event.preventDefault();
+
             var item = this.getFilteredItems()[this.state.highlightedIndex]
             this.setState({
                 inputStrValue: this.props.getItemName(item),
@@ -91,15 +94,39 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
             'maybeScrollItemIntoView', 'handleInputFocus', 'handleInputClick', 'handleInputBlur',
             'handleKeyDown', 'openMenu', 'closeMenu', 'handleDocumentClick')
 
+        this._ignoreBlur = false;
+
+        var shouldItemRender;
+        if (props.shouldItemRender) {
+            shouldItemRender = props.shouldItemRender;
+        } else if (props.customFilter) {
+            shouldItemRender = () => true;
+        } else {
+            shouldItemRender = (state, value) => state.name.toLowerCase().indexOf(value.toLowerCase()) !== -1
+        }
+
         this.state = {
+            shouldItemRender: shouldItemRender,
             value: props.value,
             inputStrValue: props.getItemName(props.value),
             isOpen: false,
             highlightedIndex: null,
+            hasFocus: false
         }
     }
 
+    isUnderEl(parentEl, el) {
+        while (el !== null) {
+            if (el === parentEl) {
+                return true;
+            }
+            el = el.parentNode;
+        }
+        return false;
+    }
+
     handleDocumentClick(e) {
+_debugStates && console.log("STATE has focus", this.state.hasFocus, "ignore blur", this._ignoreBlur);
         var el1 = ReactDOM.findDOMNode(this.refs.input.getInputDOMNode());
         var el2 = ReactDOM.findDOMNode(this.refs.menuParent);
         var el3 = ReactDOM.findDOMNode(this.refs.openClose);
@@ -112,17 +139,32 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
             }
             el = el.parentNode;
         }
+_debugStates && console.log("@CLICK:", inside);
         if (!inside) {
+            var el = ReactDOM.findDOMNode(this.refs.input.getInputDOMNode());
+            if (this.state.hasFocus && document.activeElement !== el) {   // víme, že má focus, ale nemá focus vlastní input, budeme simulovat blur
+                this._ignoreBlur = true;
+                el.focus();
+                this._ignoreBlur = false;
+                el.blur();
+            }
+            this._ignoreBlur = false;
             this.closeMenu();
+        } else if (this.state.hasFocus && (this.isUnderEl(el2, e.target) || this.isUnderEl(el3, e.target))) {
+            this._ignoreBlur = true;
+        } else {
+            this._ignoreBlur = false;
         }
     }
 
     componentDidMount() {
-        document.addEventListener("click", this.handleDocumentClick, false)
+        //document.addEventListener("click", this.handleDocumentClick, false)
+        document.addEventListener("mousedown", this.handleDocumentClick, false)
     }
 
     componentWillUnmount() {
-        document.removeEventListener("click", this.handleDocumentClick, false)
+        //document.removeEventListener("click", this.handleDocumentClick, false)
+        document.removeEventListener("mousedown", this.handleDocumentClick, false)
     }
 
     renderMenuContainer(items, value, style) {
@@ -225,9 +267,9 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
         let items = this.props.items
 
         if (!this.props.customFilter) {
-            if (this.props.shouldItemRender) {
+            if (this.state.shouldItemRender) {
                 items = items.filter((item) => (
-                    this.props.shouldItemRender(item, this.state.inputStrValue)
+                    this.state.shouldItemRender(item, this.state.inputStrValue)
                 ))
             }
         }
@@ -327,8 +369,20 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
         return React.cloneElement(menu)
     }
 
-    handleInputBlur () {
-        this.props.onBlur && this.props.onBlur();
+    handleInputBlur() {
+_debugStates && console.log('...handleInputBlur', 'state.hasFocus', this.state.hasFocus, '_ignoreBlur', this._ignoreBlur);
+
+        if (!this._ignoreBlur) {
+            this.setState({hasFocus: false})
+            if (this.state.isOpen) {
+                this.closeMenu();
+            }
+            this.props.onBlur && this.props.onBlur();
+        } else {
+            this._ignoreBlur = false;
+        }
+
+
 return true;
         if (this._ignoreBlur) {
             return
@@ -341,7 +395,19 @@ return true;
     }
 
     handleInputFocus () {
+_debugStates && console.log('...handleInputFocus', 'state.hasFocus', this.state.hasFocus, '_ignoreBlur', this._ignoreBlur);
+
+        if (this.state.hasFocus) {
+            return;
+        }
+
+        this.setState({hasFocus: true})
+
+        if (!this._ignoreBlur) {
             this.props.onFocus && this.props.onFocus();
+        } else {
+            this._ignoreBlur = false;
+        }
 return true;
         if (this._ignoreBlur) {
             return
@@ -386,7 +452,7 @@ return true;
         }
 
         var glyph = this.state.isOpen ? 'fa-angle-up' : 'fa-angle-down';
-
+_debugStates && console.log(this.props);
         return (
             <div className={cls}>
                 <div className='autocomplete-control-box'>
@@ -409,7 +475,7 @@ return true;
                         onClick={this.handleInputClick}
                         value={this.state.inputStrValue}
                     />
-                    <Button disabled={this.props.disabled} ref='openClose' className={this.state.isOpen ? 'btn btn-default opened' : 'btn btn-default closed'} onClick={()=>{this.state.isOpen ? this.closeMenu() : this.openMenu()}}><Icon glyph={glyph}/></Button>
+                    <div disabled={this.props.disabled} ref='openClose' className={this.state.isOpen ? 'btn btn-default opened' : 'btn btn-default closed'} onClick={()=>{this.state.isOpen ? this.closeMenu() : this.openMenu()}}><Icon glyph={glyph}/></div>
                     {this.props.actions}
                 </div>
                 {this.state.isOpen && this.renderMenu()}
@@ -422,7 +488,8 @@ Autocomplete.defaultProps = {
     inputProps: {},
     onSearchChange () {},
     onChange (value, item) {},
-    shouldItemRender () { return true },
+    getItemId: (item) => item ? item.id : null,
+    getItemName: (item) => item ? item.name : '',
     renderItem: (item, isHighlighted, isSelected) => {
         var cls = 'item';
         if (isHighlighted) {
