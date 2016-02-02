@@ -21,6 +21,7 @@ function getLoc(state, valueLocation) {
 const initialState = {
     isFetching: false,
     fetched: false,
+    dirty: false,
     versionId: null,
     nodeId: null,
     data: null,
@@ -29,6 +30,11 @@ const initialState = {
 
 
 function updateFormData(state, rulDataTypes) {
+    if (state.formData) {
+        console.log("### MERGE FORM DATA ###", state);
+return state;
+    }
+
     // Mapa id descItemType na descItemType
     var descItemTypesMap = {};
     state.data.descItemGroups.forEach(group => {
@@ -331,6 +337,8 @@ export default function subNodeForm(state = initialState, action) {
             
             state.formData = {...state.formData};
             return {...state};
+        case types.CHANGE_DESC_ITEM:
+            return {...state, dirty: true}
         case types.FA_SUB_NODE_FORM_VALUE_RESPONSE:
             var loc = getLoc(state, action.valueLocation);
 
@@ -451,6 +459,7 @@ export default function subNodeForm(state = initialState, action) {
             var result = Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,
+                dirty: false,
                 versionId: action.versionId,
                 nodeId: action.nodeId,
                 data: action.data,

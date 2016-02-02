@@ -6,7 +6,7 @@ import {Icon, AbstractReactComponent} from 'components';
 import {getBootstrapInputComponentInfo} from 'components/form/FormUtils';
 
 require ('./Autocomplete.less')
-let _debugStates = []
+let _debugStates = false
 
 var keyDownHandlers = {
     ArrowRight: ()=>{},

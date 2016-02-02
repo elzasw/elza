@@ -67,10 +67,6 @@ export function fa(state = nodeInitialState, action) {
                 faTreeMovementsRight: faTree(state.faTreeMovementsRight, action),
                 nodes: nodes(state.nodes, action),
             }
-        case types.FA_NODES_RECEIVE:
-        case types.FA_NODES_REQUEST:
-            var result = {...state, nodes: nodes(state.nodes, action)}
-            return consolidateState(state, result);
         case types.FA_FAS_REQUEST:
             if (action.faMap[state.versionId]) {
                 return {
@@ -116,8 +112,9 @@ export function fa(state = nodeInitialState, action) {
         case types.FA_FA_CLOSE_NODE_TAB:
         case types.FA_FA_SELECT_NODE_TAB:
         case types.FA_NODE_CHANGE:
-            var result = {...state, nodes: nodes(state.nodes, action)}
-            return consolidateState(state, result);
+        case types.FA_NODES_RECEIVE:
+        case types.FA_NODES_REQUEST:
+        case types.CHANGE_DESC_ITEM:
         case types.FA_NODE_INFO_REQUEST:
         case types.FA_NODE_INFO_RECEIVE:
         case types.FA_SUB_NODE_FORM_REQUEST:

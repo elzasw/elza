@@ -218,22 +218,22 @@ export function faSubNodeFormValueFocus(versionId, nodeId, nodeKey, valueLocatio
 }
 
 export function faSubNodeFormUpdateDescItem(versionId, nodeVersionId, descItem) {
-    console.log("ULOZENI desc item", versionId, nodeVersionId, descItem);
+    //console.log("ULOZENI desc item", versionId, nodeVersionId, descItem);
     return WebApi.updateDescItem(versionId, nodeVersionId, descItem);
 }
 
 export function faSubNodeFormCreateDescItem(versionId, nodeId, nodeVersionId, descItemTypeId, descItem) {
-    console.log("VYTVORENI desc item", versionId, nodeId, nodeVersionId, descItemTypeId, descItem);
+    //console.log("VYTVORENI desc item", versionId, nodeId, nodeVersionId, descItemTypeId, descItem);
     return WebApi.createDescItem(versionId, nodeId, nodeVersionId, descItemTypeId, descItem);
 }
 
 export function faSubNodeFormDeleteDescItem(versionId, nodeVersionId, descItem) {
-    console.log("SMAZANI desc item", versionId, nodeVersionId, descItem);
+    //console.log("SMAZANI desc item", versionId, nodeVersionId, descItem);
     return WebApi.deleteDescItem(versionId, nodeVersionId, descItem);
 }
 
 export function faSubNodeFormDeleteDescItemType(versionId, nodeId, nodeVersionId, descItemType) {
-    console.log("SMAZANI desc item type", versionId, nodeId, nodeVersionId, descItemType);
+    //console.log("SMAZANI desc item type", versionId, nodeId, nodeVersionId, descItemType);
     return WebApi.deleteDescItemType(versionId, nodeId, nodeVersionId, descItemType.id);
 }
 
@@ -243,7 +243,7 @@ export function faSubNodeFormFetchIfNeeded(versionId, nodeId, nodeKey) {
         var subNodeForm = getSubNodeForm(state, versionId, nodeKey);
 
         if (subNodeForm != null) {
-            if (!subNodeForm.fetched && !subNodeForm.isFetching) {
+            if ((!subNodeForm.fetched && !subNodeForm.isFetching) || (subNodeForm.dirty && !subNodeForm.isFetching)) {
                 return dispatch(faSubNodeFormFetch(versionId, nodeId, nodeKey));
             }
         }
