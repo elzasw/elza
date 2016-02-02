@@ -71,6 +71,7 @@ export default function registry(state = initialState, action = {}) {
             return Object.assign({}, state, {
                 registryParentId: action.registry.registryParentId,
                 parents: action.registry.parents,
+                filterText: action.registry.filterText,
                 fetched: false
             })
         case types.REGISTRY_RECEIVE_REGISTRY_LIST:
