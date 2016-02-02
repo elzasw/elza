@@ -69,10 +69,8 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
                         <DropDownTree
                             label={i18n('registry.detail.typ.rejstriku')}
                             items = {this.props.refTables.recordTypes.items}
-
                             {...registerTypeId}
                             {...decorateFormField(registerTypeId)}
-                            onSelect={registerTypeId.onChange}
                             disabled={disabled}
                             />
 

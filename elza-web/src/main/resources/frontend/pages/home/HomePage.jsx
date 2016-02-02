@@ -170,10 +170,10 @@ setTimeout(()=>this.setState({options: options2}), 4000);
             descComp = <small>&nbsp;</small>
         }
         return (
-            <Button onClick={() => this.dispatch(storeLoadData(type, data))}>
+            <Button className='history-list-item' onClick={() => this.dispatch(storeLoadData(type, data))}>
                 <Icon glyph={glyph}/>
                 <div className='history-name'>{name}</div>
-                {descComp}
+                {false && descComp}
             </Button>
         )
         return (
@@ -209,7 +209,7 @@ setTimeout(()=>this.setState({options: options2}), 4000);
                 var desc = ''
                 items.push(this.renderHistoryItem(name, desc, 'PARTY_REGION', x));
             } else {
-                items.push(this.renderHistoryItem(i18n('home.action.party'), '', 'PARTY_REGION', x));
+                //items.push(this.renderHistoryItem(i18n('home.action.party'), '', 'PARTY_REGION', x));
             }
         })
         stateRegion.registryRegionFront.forEach(x => {
@@ -218,10 +218,10 @@ setTimeout(()=>this.setState({options: options2}), 4000);
                 var desc = ''
                 items.push(this.renderHistoryItem(name, desc, 'REGISTRY_REGION', x));
             } else {
-                items.push(this.renderHistoryItem(i18n('home.action.registry'), '', 'REGISTRY_REGION', x));
+                //items.push(this.renderHistoryItem(i18n('home.action.registry'), '', 'REGISTRY_REGION', x));
             }
         })
-        if (stateRegion.arrRegion) {
+        if (false && stateRegion.arrRegion) {
             var descs = stateRegion.arrRegion.fas.map(faobj => faobj.name);
             var desc = this.arrToString(descs)
             items.push(this.renderHistoryItem(i18n('home.action.arr'), desc, 'ARR_REGION', stateRegion.arrRegion));

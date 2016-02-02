@@ -26,6 +26,8 @@ exports.Autocomplete = require('./shared/autocomplete/Autocomplete');
 exports.Splitter = require('./shared/splitter/Splitter');
 exports.Scope = require('./shared/Scope/Scope');
 
+exports.FormUtils = require('./form/FormUtils');
+
 
 exports.Ribbon = require('./page/Ribbon');
 

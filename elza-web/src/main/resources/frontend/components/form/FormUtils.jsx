@@ -16,3 +16,29 @@ export function decorateFormField(field) {
         }
     }
 }
+
+export function getBootstrapInputComponentInfo(props) {
+    var cls = 'form-group';
+    var feedbackIcon = '';
+    if (props.hasFeedback) {
+        cls += ' has-feedback';
+    }
+    if (props.bsStyle) {
+        cls += ' has-' + props.bsStyle;
+        switch (props.bsStyle) {
+            case 'success':
+                feedbackIcon = 'ok'
+                break;
+            case 'warning':
+                feedbackIcon = 'warning-sign'
+                break;
+            case 'error':
+                feedbackIcon = 'remove'
+                break;
+        }
+    }
+    return {
+        cls,
+        feedbackIcon
+    }
+}

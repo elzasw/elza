@@ -8,7 +8,7 @@
             label = {"Vyberte si něco"}
             nullValue = {id: null, name: 'vychozi'}
             opened = {[10]}
-            onSelect = {this.selectHandler}
+            onChange = {this.selectHandler}
         />
 **/
 
@@ -16,6 +16,7 @@ import React from 'react';
 import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap';
 import {Icon, i18n, AbstractReactComponent} from 'components';
+import {getBootstrapInputComponentInfo} from 'components/form/FormUtils';
 
 import ReactDOM from 'react-dom'
 
@@ -81,8 +82,8 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
             label: item.name,
             value: item.id,
         });
-        if (this.props.onSelect){
-            this.props.onSelect(item.id);  
+        if (this.props.onChange){
+            this.props.onChange(item.id, item);  
         }
     }
 
@@ -103,7 +104,9 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
     render() {
         const {nullValue, nullId, items, value} = this.props;
 
-        var cls = "dropDownTree form-group";     // třída komponenty                 
+        var bootInfo = getBootstrapInputComponentInfo(this.props);
+
+        var cls = bootInfo.cls + " dropDownTree";     // třída komponenty                 
         if (this.props.className) {
             cls += " " + this.props.className;
         }
@@ -117,22 +120,24 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
             return this.renderNode(item, 1); 
         });
 
-        var inputLabel;
-        if (this.props.label) {
-            inputLabel = <label className='control-label'><span>{this.props.label}</span></label>
-        }
         var {refTables, ...other} = this.props;
-        console.log(other);
         return (
             <div className={cls}>
-                {inputLabel}
-                <Button className='form-control' {...other} onClick={this.handleOpenClose.bind(this)}>
+                {this.props.label && <label className='control-label'>{this.props.label}</label>}
+                <Button
+                    className='form-control'
+                    onClick={this.handleOpenClose.bind(this)}
+                    onFocus={this.props.onFocus}
+                    onBlur={this.props.onBlur}
+                >
                     <div className='dropDownTree-label'>{this.state.label}</div>
                     <Icon glyph="fa-caret-down" />
                 </Button>
                 <ul className={"menu"}>
                     {tree}
                 </ul>
+                {this.props.hasFeedback && <span className={'glyphicon form-control-feedback glyphicon-' + bootInfo.feedbackIcon}></span>}
+                {this.props.help && <span className='help-block'>{this.props.help}</span>}
             </div>
         );
           
