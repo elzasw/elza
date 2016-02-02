@@ -153,8 +153,10 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
         return (
             <div ref='menuParent' className={cls}>
                 {header}
-                <div ref='menu' className='autocomplete-menu'>
-                    {items}
+                <div className='autocomplete-menu-wrapper'>
+                    <div ref='menu' className='autocomplete-menu'>
+                        {items}
+                    </div>
                 </div>
                 {footer}
             </div>
