@@ -3,6 +3,7 @@ import * as types from 'actions/constants/actionTypes';
 const initialState = {
     isFetching: false,
     fetched: false,
+    dirty: false,
     items: []
 }
 
@@ -16,8 +17,13 @@ export default function ruleSet(state = initialState, action) {
             return Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,
+                dirty: false,
                 items: action.items,
                 lastUpdated: action.receivedAt
+            })
+        case types.CHANGE_PACKAGE:
+            return Object.assign({}, state, {
+                dirty: true
             })
         default:
             return state

@@ -12,7 +12,7 @@ import * as types from 'actions/constants/actionTypes';
 export function refRuleSetFetchIfNeeded() {
     return (dispatch, getState) => {
         var state = getState();
-        if (!state.refTables.ruleSet.fetched && !state.refTables.ruleSet.isFetching) {
+        if ((!state.refTables.ruleSet.fetched || state.refTables.ruleSet.dirty) && !state.refTables.ruleSet.isFetching) {
             return dispatch(refRuleSetFetch());
         }
     }

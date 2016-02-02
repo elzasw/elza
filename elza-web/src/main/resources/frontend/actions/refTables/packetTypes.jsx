@@ -12,7 +12,7 @@ import * as types from 'actions/constants/actionTypes';
 export function packetTypesFetchIfNeeded() {
     return (dispatch, getState) => {
         var state = getState();
-        if (!state.refTables.packetTypes.fetched && !state.refTables.packetTypes.isFetching) {
+        if ((!state.refTables.packetTypes.fetched || state.refTables.packetTypes.dirty) && !state.refTables.packetTypes.isFetching) {
             return dispatch(packetTypesFetch());
         }
     }

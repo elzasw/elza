@@ -3,6 +3,7 @@ import * as types from 'actions/constants/actionTypes';
 const initialState = {
     isFetching: false,
     fetched: false,
+    dirty: false,
     items: []
 }
 
@@ -16,6 +17,7 @@ export default function recordTypes(state = initialState, action) {
             return Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,
+                dirty: false,
                 items: action.items,
                 lastUpdated: action.receivedAt
             })

@@ -12,7 +12,7 @@ import * as types from 'actions/constants/actionTypes';
 export function refPartyNameFormTypesFetchIfNeeded() {
     return (dispatch, getState) => {
         var state = getState();
-        if (!state.refTables.partyNameFormTypes.fetched && !state.refTables.partyNameFormTypes.isFetching) {
+        if ((!state.refTables.partyNameFormTypes.fetched || state.refTables.partyNameFormTypes.dirty) && !state.refTables.partyNameFormTypes.isFetching) {
             return dispatch(refPartyNameFormTypesFetch());
         }
     }

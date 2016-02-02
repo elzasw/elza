@@ -38,6 +38,7 @@ export default function refTables(state = initialState, action) {
                 ...state,
                 registryList: registryList(state.registryList, action),
             }
+        case types.CHANGE_PACKAGE:
         case types.REF_RULE_SET_REQUEST:
         case types.REF_RULE_SET_RECEIVE:
             return {
@@ -74,6 +75,7 @@ export default function refTables(state = initialState, action) {
                 ...state,
                 calendarTypes: calendarTypes(state.calendarTypes, action),
             }
+        case types.CHANGE_PACKAGE:
         case types.REF_PACKET_TYPES_REQUEST:
         case types.REF_PACKET_TYPES_RECEIVE:
             return {

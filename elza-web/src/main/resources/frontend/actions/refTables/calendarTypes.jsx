@@ -12,7 +12,7 @@ import * as types from 'actions/constants/actionTypes';
 export function calendarTypesFetchIfNeeded() {
     return (dispatch, getState) => {
         var state = getState();
-        if (!state.refTables.calendarTypes.fetched && !state.refTables.calendarTypes.isFetching) {
+        if ((!state.refTables.calendarTypes.fetched || state.refTables.calendarTypes.dirty) && !state.refTables.calendarTypes.isFetching) {
             return dispatch(calendarTypesFetch());
         }
     }

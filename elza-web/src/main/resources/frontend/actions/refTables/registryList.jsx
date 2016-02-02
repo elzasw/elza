@@ -12,7 +12,7 @@ import * as types from 'actions/constants/actionTypes';
 export function refRegistryListFetchIfNeeded() {
     return (dispatch, getState) => {
         var state = getState();
-        if (!state.refTables.registryList.fetched && !state.refTables.registryList.isFetching) {
+        if ((!state.refTables.registryList.fetched || state.refTables.registryList.dirty) && !state.refTables.registryList.isFetching) {
             return dispatch(refRegistryListFetch());
         }
     }

@@ -12,7 +12,7 @@ import * as types from 'actions/constants/actionTypes';
 export function refRecordTypesFetchIfNeeded() {
     return (dispatch, getState) => {
         var state = getState();
-        if (!state.refTables.recordTypes.fetched && !state.refTables.recordTypes.isFetching) {
+        if ((!state.refTables.recordTypes.fetched || state.refTables.recordTypes.dirty) && !state.refTables.recordTypes.isFetching) {
             return dispatch(refRecordTypesFetch());
         }
     }
