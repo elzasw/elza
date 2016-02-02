@@ -150,16 +150,23 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
                 subList[subList.length] = this.renderNode(item.children[i], depth+1);
             };
         }
+        var addClassName = '';
+        var clickEvent = this.handleItemSelect.bind(this,item);
+        console.log(item);
+        if (this.props.addRegistryRecord && item.addRecord === false){
+            addClassName = ' unavailable';
+            clickEvent = null;
+        }
 
         return  <li
                     key={item.id}
                     eventKey={item.id} 
-                    className={"depth" + depth + " itemID" + item.id}
+                    className={"depth" + depth + " itemID" + item.id + addClassName}
                 >
                     <span className={"switcher " + (item.children && item.children.length>0 ? "enabled" : "") } onClick={this.handleToggleNode.bind(this,item)}>{item.children && item.children.length>0 ? (isOpened ? "−" : "+") : ''}</span>
                     <span 
                         className={"itemLabel " + (item.id==this.state.value ? "active" : "")} 
-                        onClick={this.handleItemSelect.bind(this,item)}
+                        onClick={clickEvent}
                     >
                         {item.name}
                     </span>

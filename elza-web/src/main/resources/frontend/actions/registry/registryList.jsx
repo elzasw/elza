@@ -79,11 +79,33 @@ export function receiveRegistryGetRegistry(registryId, json) {
     }
 }
 
-export function registryRemoveRegistryTypesFilter(){
-    return {
-        type: types.REGISTRY_REMOVE_REGISTRY_TYPES_FILTER,
+export function getRegistryRecordTypesIfNeeded(){
+    return (dispatch, getState) => {
+        var state = getState();
+        if (!state.registryRecordTypes.fetched && !state.registryRecordTypes.isFetching) {
+            return dispatch(getRegistryRecordTypes());
+        }
     }
 }
 
+export function getRegistryRecordTypes(){
+    return dispatch => {
+        dispatch(requestRegistryRecordTypes())
+        return WebApi.getRecordTypesForAdd()
+            .then(json => {dispatch(receiveRegistryRecordTypes(json))});
+    }
+}
 
+export function requestRegistryRecordTypes() {
+    return {
+        type: types.REGISTRY_REQUEST_REGISTRY_RECORD_TYPES
+    }
+}
 
+export function receiveRegistryRecordTypes(json){
+    return {
+        item: json,
+        type: types.REGISTRY_RECIVE_REGISTRY_RECORD_TYPES,
+        receivedAt: Date.now()
+    }
+}

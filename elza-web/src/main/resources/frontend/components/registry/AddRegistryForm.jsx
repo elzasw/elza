@@ -11,7 +11,7 @@ import {AbstractReactComponent, i18n, DropDownTree, Scope} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField} from 'components/form/FormUtils'
-import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
+
 
 
 const validate = (values, props) => {
@@ -45,7 +45,6 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        this.dispatch(refRecordTypesFetchIfNeeded());
         if (this.props.initData) {
             this.props.load(this.props.initData);
         }
@@ -61,14 +60,17 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
             disabled = true;
         }
 
+
+
         return (
             <div key={this.props.key}>
                 <Modal.Body>
                     <form onSubmit={handleSubmit}>
-                        <Scope versionId={null} label='Scope'  {...scopeId} {...decorateFormField(scopeId)}/>
+                        <Scope versionId={null} label={i18n('registry.scope.class')}  {...scopeId} {...decorateFormField(scopeId)}/>
                         <DropDownTree
-                            label={i18n('registry.detail.typ.rejstriku')}
-                            items = {this.props.refTables.recordTypes.items}
+                            label={i18n('registry.add.typ.rejstriku')}
+                            items = {this.props.registryRecordTypes.item}
+                            addRegistryRecord={true}
                             {...registerTypeId}
                             {...decorateFormField(registerTypeId)}
                             disabled={disabled}
@@ -94,7 +96,8 @@ module.exports = reduxForm({
 },state => ({
         initialValues: state.form.addRegistryForm.initialValues,
         refTables: state.refTables,
-        registry: state.registry
+        registry: state.registry,
+        registryRecordTypes: state.registryRecordTypes
 
 }),
 {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addRegistryForm', data})}

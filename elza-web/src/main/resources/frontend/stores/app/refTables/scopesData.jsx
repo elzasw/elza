@@ -5,7 +5,6 @@ const initialState = {
 }
 
 export default function scopesData(state = initialState, action = {}) {
-    console.log('tady je moje action', action);
     switch (action.type) {
         case types.REF_SCOPES_TYPES_RECEIVE:
             var exist = false;
