@@ -92,7 +92,7 @@ public class RegistryController {
      * @param search            hledaný řetězec, může být null či prázdný (pak vrací vše)
      * @param from              index prvního záznamu, začíná od 0
      * @param count             počet výsledků k vrácení
-     * @param registerTypeIds   IDčka typu záznamu, může být null či prázdné (pak vrací vše)
+     * @param registerTypeId   IDčka typu záznamu, může být null
      * @param parentRecordId    id rodiče, pokud je null načtou se všechny záznamy, jinak potomci daného rejstříku
      * @param versionId   id verze, podle které se budou filtrovat třídy rejstříků, null - výchozí třídy
      * @return                  vybrané záznamy dle popisu seřazené za text hesla, nebo prázdná množina
@@ -196,7 +196,8 @@ public class RegistryController {
         Map<Integer, Integer> recordIdPartyIdMap = partyService.findParPartyIdsByRecords(records);
 
         Integer partyId = recordIdPartyIdMap.get(recordId);
-        RegRecordVO result = factoryVo.createRegRecord(record, partyId, false, record);
+        RegRecordVO result = factoryVo.createRegRecord(record, partyId, true, null);
+        factoryVo.fillRegisterTypeNamesToParents(result, null);
         result.setChilds(factoryVo.createRegRecords(childs, recordIdPartyIdMap, false, null));
 
         result.setVariantRecords(factoryVo.createRegVariantRecords(record.getVariantRecordList()));
