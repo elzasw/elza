@@ -194,7 +194,7 @@ _debugStates && console.log("@CLICK:", inside);
         }
 
         return (
-            <div ref='menuParent' className={cls}>
+            <div ref='menuParent' className={cls} _style={style}>
                 {header}
                 <div className='autocomplete-menu-wrapper'>
                     <div ref='menu' className='autocomplete-menu'>
@@ -364,7 +364,7 @@ _debugStates && console.log("@CLICK:", inside);
         var style = {
             left: this.state.menuLeft,
             top: this.state.menuTop,
-            minWidth: this.state.menuWidth,
+            _minWidth: this.state.menuWidth,
         }
         var menu = this.renderMenuContainer(items, this.state.value, style)
         return React.cloneElement(menu)
