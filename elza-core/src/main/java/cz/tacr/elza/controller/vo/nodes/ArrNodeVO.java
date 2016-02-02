@@ -18,16 +18,6 @@ public class ArrNodeVO {
     private Integer id;
 
     /**
-     * datum posledné změny
-     */
-    private LocalDateTime lastUpdate;
-
-    /**
-     * jedinečné id
-     */
-    private String uuid;
-
-    /**
      * verze uzlu
      */
     private Integer version;
@@ -38,22 +28,6 @@ public class ArrNodeVO {
 
     public void setId(final Integer id) {
         this.id = id;
-    }
-
-    public LocalDateTime getLastUpdate() {
-        return lastUpdate;
-    }
-
-    public void setLastUpdate(final LocalDateTime lastUpdate) {
-        this.lastUpdate = lastUpdate;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(final String uuid) {
-        this.uuid = uuid;
     }
 
     public Integer getVersion() {
