@@ -7,6 +7,7 @@
 .autocomplete-control-container {
     display: inline-block;
     width: 100%;
+    position: relative;
 
     .autocomplete-control-box {
         width: 100%;
@@ -39,32 +40,34 @@
     .autocomplete-menu-container {
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
         background: white;
-        z-index: 1000;
-        position: fixed;
-        overflow-y: auto;
-        overflow-x: hidden;
-        max-height: 200px;
-        min-height: 30px;
-        max-width: 600px;
-        min-width: 200px;
         border: 1px solid #bfbfbf;
+        position: fixed;
+        z-index: 9999;
 
-        .autocomplete-menu {
-            display: table;
-            height: 100%;
+        .autocomplete-menu-wrapper {
+            max-height: 160px;
+            max-width: 600px;
+            min-width: 200px;
+            overflow-y: auto;
+            overflow-x: hidden;
 
-            .item {
-                display: table-row;
-                width: calc(~'100% - 20px');
+            .autocomplete-menu {
+                display: table;
+                height: 100%;
+                padding-right: 20px;
+                .item {
+                    display: table-row;
 
-                &.active {
-                    font-weight: bold;
-                }
-                &.focus {
-                    background: #afafaf;
+                    &.active {
+                        font-weight: bold;
+                    }
+                    &.focus {
+                        background: #afafaf;
+                    }
                 }
             }
         }
+
         .autocomplete-menu-footer {
             height: 32px;
             background: #cfcfcf;
@@ -85,7 +88,7 @@
 
         .autocomplete-menu-footer {
 
-            background-color: @node-form-bg;
+            background-color: @node-form-actions-bg;
             //position: relative;
 
             .create-party {
