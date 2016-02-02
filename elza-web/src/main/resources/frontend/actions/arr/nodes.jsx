@@ -57,7 +57,7 @@ export function faCloseNodeTab(index) {
             if (newActiveFa.nodes.nodes.length > 0) {    // je vybraná nějaká jiná, protože ještě nějaké záložky existují
                 dispatch(faSelectNodeTab(newActiveFa.nodes.activeIndex));
             } else {    // není žádná záložka
-                dispatch(faSelectSubNodeInt(null, null, false, false));
+                dispatch(faSelectSubNodeInt(null, null, false, null, false));
             }
         }
     }

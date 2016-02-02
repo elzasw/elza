@@ -150,7 +150,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             )
         }).reverse();
         return (
-            <div className='parents'>
+            <div key='parents' className='parents'>
                 {rows}
             </div>
         )
@@ -169,7 +169,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         });
 
         return (
-            <div className='children'>
+            <div key='children' className='children'>
                 {rows}
             </div>
         )
@@ -256,6 +256,8 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         var tooltip;
 
         if (item.nodeConformity) {
+            var _id=0;
+
             var description = (item.nodeConformity.description) ? "<br />" + item.nodeConformity.description : "";
             var messages = new Array();
 
@@ -264,12 +266,12 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 
             if (errors && errors.length > 0) {
                 messages.push(<div key="errors" className="error">Chyby</div>);
-                errors.forEach(error => { messages.push(<div key={error.id} className="message">{error.description}</div>) });
+                errors.forEach(error => { messages.push(<div key={'err' + _id++} className="message">{error.description}</div>) });
             }
 
             if (missings && missings.length > 0) {
                 messages.push(<div key="missings" className="missing">Chybějící</div>);
-                missings.forEach(missing => { messages.push(<div key={missing.id}  className="message">{missing.description}</div>) });
+                missings.forEach(missing => { messages.push(<div key={'mis' + _id++}  className="message">{missing.description}</div>) });
             }
 
             if (item.nodeConformity.state === "OK") {
@@ -326,12 +328,6 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                         </div>
                     </div>
                 )
-                if (false) rows.push(
-                    <div key="body" className='accordion-body'>
-                        {form}
-                        {recordInfo}
-                    </div>
-                )
             } else {
                 rows.push(
                     <div key={item.id} ref={'accheader-' + item.id} className='accordion-item closed'>
@@ -364,11 +360,11 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         if (node.subNodeInfo.fetched || node.selectedSubNodeId == null) {
             children = this.renderChildren(this.getChildNodes());
         } else {
-            children = <div className='children'><Loading value={i18n('global.data.loading.node.children')} /></div>
+            children = <div key='children' className='children'><Loading value={i18n('global.data.loading.node.children')} /></div>
         }
         var siblings = this.getSiblingNodes().map(s => <span key={s.id}> {s.id}</span>);
         var actions = (
-            <div className='actions'>
+            <div key='actions' className='actions'>
                 {
                     node.nodeInfoFetched && !isFaRootId(node.id) &&
                     <AddNodeDropdown key="end"
@@ -431,7 +427,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 {false && accordionInfo}
                 {actions}
                 {parents}
-                <div className='content' ref='content'>
+                <div key='content' className='content' ref='content'>
                     {this.renderAccordion(form, record)}
                 </div>
                 {children}

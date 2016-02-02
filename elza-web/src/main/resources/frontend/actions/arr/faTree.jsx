@@ -73,9 +73,9 @@ function changeCurrentIndex(dispatch, area, faTree, newIndex) {
             case types.FA_TREE_AREA_MAIN:
                 dispatch(faSelectSubNode(nodeId, nodeParent, false, newIndex, true));
             case types.FA_TREE_AREA_MOVEMENTS_LEFT:
-                dispatch(faTreeSelectNode(area, nodeId, false, false, newIndex, true))
+                dispatch(faTreeSelectNode(area, nodeId, false, false, newIndex))
             case types.FA_TREE_AREA_MOVEMENTS_RIGHT:
-                dispatch(faTreeSelectNode(area, nodeId, false, false, newIndex, true))
+                dispatch(faTreeSelectNode(area, nodeId, false, false, newIndex))
         }
     }
 }
