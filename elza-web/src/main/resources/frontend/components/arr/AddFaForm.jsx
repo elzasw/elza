@@ -55,10 +55,12 @@ var AddFaForm = class AddFaForm extends AbstractReactComponent {
         var ruleSets = this.props.refTables.ruleSet.items;
         var currRuleSetId = this.props.values.ruleSetId;
         var currRuleSet = [];
-        var ruleSetOptions;
+        var ruleSetOptions = [];
         if (!ruleSetId.invalid) {
             currRuleSet = ruleSets[indexById(ruleSets, currRuleSetId)];
-            ruleSetOptions = currRuleSet.arrangementTypes.map(i=> <option key={i.id} value={i.id}>{i.name}</option>);
+            if (currRuleSet) {
+                ruleSetOptions = currRuleSet.arrangementTypes.map(i=> <option key={i.id} value={i.id}>{i.name}</option>);
+            }
         }
         return (
             <div>

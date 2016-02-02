@@ -12,6 +12,12 @@ var ModalDialog = class extends AbstractReactComponent {
         this.bindMethods('handleClose');
     }
 
+    componentWillReceiveProps(nextProps) {
+        if (this.props.visible && !nextProps.visible) {
+            this.refs.wrapper.dialogWillHide();
+        }
+    }
+
     shouldComponentUpdate(nextProps, nextState) {
         if (this.state !== nextState) {
             return true;
@@ -37,7 +43,7 @@ var ModalDialog = class extends AbstractReactComponent {
         });
 
         return (
-            <ModalDialogWrapper title={this.props.title} onHide={this.handleClose}>
+            <ModalDialogWrapper ref='wrapper' title={this.props.title} onHide={this.handleClose}>
                 {children}
             </ModalDialogWrapper>
         )

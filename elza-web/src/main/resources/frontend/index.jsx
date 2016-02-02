@@ -16,6 +16,7 @@ import { Utils } from 'components'
 
 // Globální init
 Utils.init();
+var es6promise = require('es6-promise');
 //var es5Shim = require('es5-shim');
 
 // Web socket

@@ -11,6 +11,8 @@ import {setInputFocus} from 'components/Utils'
 var ModalDialogWrapper = class ModalDialogWrapper extends React.Component {
     constructor(props) {
         super(props);
+
+        this.dialogWillHide = this.dialogWillHide.bind(this);
     }
 
     componentDidMount() {
@@ -24,9 +26,13 @@ var ModalDialogWrapper = class ModalDialogWrapper extends React.Component {
         })
     }
 
+    dialogWillHide() {
+        this.refs.modal._onHide();
+    }
+
     render() {
         return (
-            <Modal show={true} onHide={this.props.onHide}>
+            <Modal ref='modal' show={true} onHide={this.props.onHide}>
                 <Modal.Header closeButton onHide={this.props.onHide}>
                     <Modal.Title>{this.props.title}</Modal.Title>
                 </Modal.Header>
