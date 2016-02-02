@@ -524,11 +524,11 @@ _debugStates && console.log(this.props);
                             <div disabled={this.props.disabled} ref='openClose' className={this.state.isOpen ? 'btn btn-default opened' : 'btn btn-default closed'} onClick={()=>{this.state.isOpen ? this.closeMenu() : this.openMenu()}}><Icon glyph={glyph}/></div>
                             {this.props.actions}                            
                         </div>
+                        {this.state.isOpen && this.renderMenu()}
                         {this.props.hasFeedback && <span className={'glyphicon form-control-feedback glyphicon-' + feedbackIcon}></span>}
                         {this.props.help && <span className='help-block'>{this.props.help}</span>}
                     </div>
                 </div>
-                {this.state.isOpen && this.renderMenu()}
             </div>
         )
     }
