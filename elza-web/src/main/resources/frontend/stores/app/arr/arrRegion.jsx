@@ -145,6 +145,27 @@ export default function arrRegion(state = initialState, action) {
         case types.FA_NODE_CHANGE:
             var index = indexById(state.fas, action.versionId, "versionId");
             return processFa(state, action, index);
+        case types.FA_FAS_RECEIVE:
+            var changed = false;
+            var newFas = state.fas.map(faObj => {
+                if (action.faMap[faObj.versionId]) {
+                    var newFa = fa(faObj, action);
+                    if (faObj !== newFa) {
+                        changed = true;
+                    }
+                    return newFa;
+                } else {
+                    return faObj;
+                }
+            })
+            if (changed) {
+                return {
+                    ...state,
+                    fas: newFas
+                }
+            } else {
+                return state
+            }
         case types.FA_FA_TREE_FULLTEXT_CHANGE:
         case types.FA_FA_TREE_FOCUS_NODE:
         case types.FA_FA_TREE_EXPAND_NODE:

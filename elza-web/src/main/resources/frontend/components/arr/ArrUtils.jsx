@@ -3,6 +3,11 @@
  */
 import {indexById} from 'stores/app/utils.jsx'
 
+export function getFaFromFaAndVersion(fa, version) {
+    var fa = Object.assign({}, fa, {faId: fa.id, versionId: version.id, id: version.id, activeVersion: version});
+    return fa;
+}
+
 export function getNodeParent(nodes, nodeId) {
     var result = null;
 

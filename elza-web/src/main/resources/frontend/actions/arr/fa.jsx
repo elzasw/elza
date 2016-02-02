@@ -7,6 +7,42 @@ import {Toastr, i18n} from 'components';
 import * as types from 'actions/constants/actionTypes';
 import {modalDialogHide} from 'actions/global/modalDialog'
 import {faFileTreeFetch} from 'actions/arr/faFileTree'
+import {getFaFromFaAndVersion} from 'components/arr/ArrUtils'
+
+export function fasFetchIfNeeded() {
+    return (dispatch, getState) => {
+        var state = getState();
+        var fas = state.arrRegion.fas;
+
+        var versionIds = [];
+        fas.forEach(fa => {
+            if (fa.dirty) {
+                versionIds.push(fa.versionId);
+            }
+        })
+
+        if (versionIds.length > 0) {
+            WebApi.getFindingAidsByVersionIds(versionIds)
+                .then(json => {
+                    var fas = json.map(x => getFaFromFaAndVersion(x, x.versions[0]))
+                    dispatch(fasReceive(fas));
+                })
+        }
+    }
+}
+
+export function fasReceive(fas) {
+    var faMap = {}
+    fas.forEach(fa => {
+        faMap[fa.versionId] = fa
+    })
+
+    return {
+        type: types.FA_FAS_RECEIVE,
+        fas,
+        faMap
+    }
+}
 
 export function createFa(data) {
     return dispatch => {

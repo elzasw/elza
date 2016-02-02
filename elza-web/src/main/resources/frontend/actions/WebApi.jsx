@@ -32,6 +32,10 @@ class WebApi{
             });
     }
 
+    getFindingAidsByVersionIds(versionIds) {
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/getVersions', null, {ids: versionIds});
+    }
+
     insertRelation(relation) {
         return AjaxUtils.ajaxPost('/api/partyManagerV2/relations', null,  relation)
             .then(json=>{

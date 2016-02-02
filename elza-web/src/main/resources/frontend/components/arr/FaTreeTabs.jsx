@@ -11,7 +11,7 @@ import * as types from 'actions/constants/actionTypes';
 import {AppActions} from 'stores';
 import {Button} from 'react-bootstrap';
 import {MenuItem} from 'react-bootstrap';
-import {selectFaTab, closeFaTab, faExtendedView} from 'actions/arr/fa'
+import {fasFetchIfNeeded, selectFaTab, closeFaTab, faExtendedView} from 'actions/arr/fa'
 import {faTreeFocusNode, faTreeFetchIfNeeded, faTreeNodeExpand, faTreeNodeCollapse} from 'actions/arr/faTree'
 import {faSelectSubNode} from 'actions/arr/nodes'
 import {createFaRoot, getParentNode} from './ArrUtils.jsx'
@@ -29,6 +29,7 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
     componentDidMount() {
         const {activeFa} = this.props;
 
+        this.dispatch(fasFetchIfNeeded());
         if (activeFa) {
             this.requestFaTreeData(activeFa);
         }
@@ -37,6 +38,7 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
     componentWillReceiveProps(nextProps) {
         const {activeFa} = nextProps;
         
+        this.dispatch(fasFetchIfNeeded());
         if (activeFa) {
             this.requestFaTreeData(activeFa);
         }
