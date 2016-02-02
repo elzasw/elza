@@ -499,7 +499,7 @@ _debugStates && console.log(this.props);
 */
 
         return (
-            <div className={cls}>
+            <div className={this.props.className}>
                 <div className='autocomplete-control-box'>
                     <div className={cls}>
                         {this.props.label && <label className='control-label'>{this.props.label}</label>}
