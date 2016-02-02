@@ -27,7 +27,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         if (props.selectedId === null) {
             this.dispatch(getRegistryIfNeeded(props.selectedId));
         }
-
+        this.addVariant = 0;
         this.dispatch(refRecordTypesFetchIfNeeded());
     }
 
@@ -69,8 +69,8 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     }
 
     handleAddVaraintRecord(){
-
-        this.dispatch(modalDialogShow(this, i18n('registry.addRegistryVariant') , <AddRegistryVariantForm create onSubmit={this.handleCallAddRegistryVariant.bind(this)} />));
+        this.addVariant = 1;
+        //this.dispatch(modalDialogShow(this, i18n('registry.addRegistryVariant') , <AddRegistryVariantForm create onSubmit={this.handleCallAddRegistryVariant.bind(this)} />));
     }
 
     handleCallAddRegistryVariant(values){
@@ -98,51 +98,56 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         });
     }
 
+
+
     render() {
 
 
         if (!this.props.registryData.isFetching && this.props.registryData.fetched) {
+            var addVariant = <Button className="registry-variant-add" onClick={this.handleAddVaraintRecord} ><Icon glyph='fa-plus' /></Button>
+            if (this.addVariant){
+                <RegistryLabel
+                    key={addVariant}
+                    type='variant'
+                    value=''
+                    onBlur={this.handleBlurAddVariant.bind(this,item)}
+                    />
+            }
 
-            console.log(this.props.refTables.recordTypes);
             var detailRegistry = (
-                    <div className="registry-title">
-                        <h2>
-                            {this.props.registryData.item.record} <Button className="registry-record-edit" onClick={this.editRecord}><Icon glyph='fa-pencil'/></Button>
-                        </h2>
+                <div className="registry-title">
+                    <h2>
+                        {this.props.registryData.item.record} <Button className="registry-record-edit" onClick={this.editRecord}><Icon glyph='fa-pencil'/></Button>
+                    </h2>
+                    <label>{i18n('registry.detail.charakteristika')}</label>
+                    <div>{this.props.registryData.item.characteristics}</div>
 
-                        <p>{this.props.registryData.item.characteristics}</p>
-
-                        <RegistryLabel
-                            key='searchTypesRegistry'
-                            label={i18n('registry.detail.typ.rejstriku')}
-                            type='selectWithChild'
-                            items={this.props.refTables.recordTypes.items}
-                            value = {this.props.registryData.item.registerTypeId}
-                            onSelect = {this.handleChangeTypeRegistry}
-                        />
+                    <label>{i18n('registry.detail.typ.rejstriku')}</label>
+                    <div>{this.props.registryData.item.registerTypeId}</div>
 
 
-                        <h3>
-                            Variantní jména:
-                        </h3>
+                    <h3>
+                        Variantní jména:
+                    </h3>
 
-                        { (this.props.registryData.item) && this.props.registryData.item.variantRecords && this.props.registryData.item.variantRecords.map(item => {
-                                return (
+                    { (this.props.registryData.item) && this.props.registryData.item.variantRecords && this.props.registryData.item.variantRecords.map(item => {
+                            return (
 
-                                            <RegistryLabel
-                                                key={item.record}
-                                                type='variant'
-                                                value={item.record}
-                                                item={item}
-                                                onBlur={this.handleBlurVariant.bind(this,item)}
-                                                onClickDelete={this.handleDeleteVariant.bind(this, item)}
-                                                />
+                                        <RegistryLabel
+                                            key={item.record}
+                                            type='variant'
+                                            value={item.record}
+                                            item={item}
+                                            onBlur={this.handleBlurVariant.bind(this,item)}
+                                            onClickDelete={this.handleDeleteVariant.bind(this, item)}
+                                            />
 
-                                )
-                            })
-                        }
-                        <Button className="registry-variant-add" onClick={this.handleAddVaraintRecord} ><Icon glyph='fa-plus' /></Button>
-                    </div>
+                            )
+                        })
+                    }
+
+                    {addVariant}
+                </div>
             )
         }
 

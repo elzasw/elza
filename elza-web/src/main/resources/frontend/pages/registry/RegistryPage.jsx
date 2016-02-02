@@ -42,22 +42,26 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     handleAddRegistry( parentId, event) {
-
-       this.dispatch(
+        var registryParentTypesId = this.props.registry.registryTypesId;
+        if (this.props.registry.registryData){
+            registryParentTypesId = this.props.registry.registryData.item.registerTypeId;
+        }
+        this.dispatch(
            modalDialogShow(this,
                i18n('registry.addRegistry'),
                <AddRegistryForm
                    create
                    onSubmit={this.handleCallAddRegistry.bind(this, parentId)}
-
+                   parentRecordId = {parentId}
+                   parentRegisterTypeId = {registryParentTypesId}
                    />
            )
        );
     }
 
     handleCallAddRegistry(parentId, data ) {
-        console.log('pridani', data);
-        WebApi.insertRegistry( data.nameMain, data.characteristics, data.registerTypeId, parentId ).then(json => {
+
+        WebApi.insertRegistry( data.nameMain, data.characteristics, data.registerTypeId, parentId, data.scopeId ).then(json => {
             this.dispatch(modalDialogHide());
             this.dispatch(fetchRegistry(this.props.registry.filterText, this.props.registry.registryParentId, this.props.registry.registryTypesId));
             this.dispatch(registryData({selectedId: json.recordId}));

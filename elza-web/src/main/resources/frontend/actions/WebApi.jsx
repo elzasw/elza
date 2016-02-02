@@ -228,11 +228,12 @@ class WebApi{
             });
     }
     
-    insertRegistry(nameMain, characteristics, registerTypeId, parentId) {
+    insertRegistry(nameMain, characteristics, registerTypeId, parentId, scopeId) {
         var data = {
             record: nameMain,
             characteristics: characteristics,
             local: false,
+            scopeId: scopeId,
             parentRecordId: parentId,
             registerTypeId: registerTypeId
             

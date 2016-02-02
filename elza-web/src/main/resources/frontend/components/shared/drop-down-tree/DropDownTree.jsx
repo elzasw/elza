@@ -36,16 +36,15 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
 
         this.handleItemSelect = this.handleItemSelect.bind(this);       // funkce po kliknutí pro výběr
 
-        
         var opened = (props.opened ? props.opened : []);
         this.props.items.map((item, i) => {
             opened = opened.concat(this.getOpenedDefault(item)); 
         });
         var label = this.getItemLabel(this.props.value);
         this.state = {                                                  // inicializace stavu komponenty
-            opened: opened,                                           // seznam rozbalenych uzlu  
+            opened: opened,                                           // seznam rozbalenych uzlu
             label: (label != '' ? label : this.props.label),          // pokus je vybrany nejaká položka, vypíše se její název, jinak se vypíše defaultní popisek
-            value : this.props.value                // id vybrane položky     
+            value : this.props.value                // id vybrane položky
         }
     }
 
@@ -122,11 +121,12 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
         if (this.props.label) {
             inputLabel = <label className='control-label'><span>{this.props.label}</span></label>
         }
-
+        var {refTables, ...other} = this.props;
+        console.log(other);
         return (
             <div className={cls}>
                 {inputLabel}
-                <Button className='form-control' onClick={this.handleOpenClose.bind(this)}>
+                <Button className='form-control' {...other} onClick={this.handleOpenClose.bind(this)}>
                     <div className='dropDownTree-label'>{this.state.label}</div>
                     <Icon glyph="fa-caret-down" />
                 </Button>

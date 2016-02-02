@@ -23,6 +23,15 @@ const validate = (values, props) => {
     if (props.create && !values.characteristics) {
         errors.characteristics = i18n('global.validation.required');
     }
+
+    if (props.create && !values.scopeId) {
+        errors.scopeId = i18n('global.validation.required');
+    }
+
+    if (props.create && !values.registerTypeId) {
+        errors.registerTypeId = i18n('global.validation.required');
+    }
+
     return errors;
 };
 
@@ -43,20 +52,28 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: { nameMain, characteristics, registerTypeId}, handleSubmit, onClose} = this.props;
-
+        const {fields: { nameMain, characteristics, registerTypeId, scopeId}, handleSubmit, onClose} = this.props;
+        var disabled = false;
+        if (this.props.parentRegisterTypeId){
+            registerTypeId.value=this.props.parentRegisterTypeId;
+        }
+        if (this.props.parentRecordId){
+            disabled = true;
+        }
 
         return (
             <div key={this.props.key}>
                 <Modal.Body>
                     <form onSubmit={handleSubmit}>
-                        <Scope versionId={null} label='Scope'/>
+                        <Scope versionId={null} label='Scope'  {...scopeId} {...decorateFormField(scopeId)}/>
                         <DropDownTree
                             label={i18n('registry.detail.typ.rejstriku')}
                             items = {this.props.refTables.recordTypes.items}
-                            //value = {this.props.registry.registryTypesId}
+
                             {...registerTypeId}
+                            {...decorateFormField(registerTypeId)}
                             onSelect={registerTypeId.onChange}
+                            disabled={disabled}
                             />
 
                         <Input type="text" label={i18n('registry.name')} {...nameMain} {...decorateFormField(nameMain)} />
@@ -74,7 +91,7 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
 
 module.exports = reduxForm({
     form: 'addRegistryForm',
-    fields: ['nameMain', 'characteristics', 'registerTypeId'],
+    fields: ['nameMain', 'characteristics', 'registerTypeId', 'scopeId'],
     validate
 },state => ({
         initialValues: state.form.addRegistryForm.initialValues,
