@@ -1,9 +1,11 @@
 package cz.tacr.elza.controller;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -296,6 +298,35 @@ public class ArrangementController {
 
 
         return new ArrayList<ArrFindingAidVO>(findingAids.values());
+    }
+
+    /**
+     * Načte FA pro dané verze.
+     *
+     * @param idsParam id verzí
+     * @return seznam FA, každá obsahuje pouze jednu verzi, jinak je vrácená víckrát
+     */
+    @RequestMapping(value = "/getVersions", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public List<ArrFindingAidVO> getFindingAidsByVersionIds(@RequestBody final IdsParam idsParam) {
+
+        if (CollectionUtils.isEmpty(idsParam.getIds())) {
+            return Collections.EMPTY_LIST;
+        }
+
+
+        List<ArrFindingAidVersion> versions = findingAidVersionRepository.findAll(idsParam.getIds());
+
+
+        List<ArrFindingAidVO> result = new LinkedList<>();
+        for (ArrFindingAidVersion version : versions) {
+            ArrFindingAidVO findingAid = factoryVo.createArrFindingAidVO(version.getFindingAid(), false);
+            ArrFindingAidVersionVO versionVo = factoryVo.createFindingAidVersion(version);
+            findingAid.setVersions(Arrays.asList(versionVo));
+
+            result.add(findingAid);
+        }
+
+        return result;
     }
 
 
