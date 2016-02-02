@@ -2,8 +2,10 @@ package cz.tacr.elza.controller;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
@@ -264,6 +266,39 @@ public class PartyController {
         long countAll = partyService.findPartyByTextAndTypeCount(search, partyTypeId, findingAid);
         return new ParPartyWithCount(resultVo, countAll);
     }
+
+    /**
+     * Načte stránkovaný seznam osob.
+     *
+     * @param search      hledaný řetězec
+     * @param from        počáteční záznam
+     * @param count       počet vrácených záznamů
+     * @param partyTypeId id typu osoby
+     * @param partyId     id osoby, v jejíž scopeid budou filtrovány výsledky
+     * @return seznam osob s počtem všech osob
+     */
+    @RequestMapping(value = "/findPartyForParty", method = RequestMethod.GET)
+    public ParPartyWithCount findPartyForParty(
+            @Nullable @RequestParam(value = "search", required = false) final String search,
+            @RequestParam("from") final Integer from,
+            @RequestParam("count") final Integer count,
+            @Nullable @RequestParam(value = "partyTypeId", required = false) final Integer partyTypeId,
+            @RequestParam(value = "partyId", required = true) @Nullable final Integer partyId) {
+
+        ParParty party = partyRepository.getOne(partyId);
+        Assert.notNull(party, "Nebyla nalezena osoba s id " + partyId);
+        Set<Integer> scopeIds = new HashSet<>();
+        scopeIds.add(party.getRecord().getScope().getScopeId());
+
+
+        List<ParParty> partyList = partyRepository.findPartyByTextAndType(search, partyTypeId, from, count, scopeIds);
+
+        List<ParPartyVO> resultVo = factoryVo.createPartyList(partyList);
+
+        long countAll = partyRepository.findPartyByTextAndTypeCount(search, partyTypeId, scopeIds);
+        return new ParPartyWithCount(resultVo, countAll);
+    }
+
 
     @RequestMapping(value = "/insertParty", method = RequestMethod.POST)
     @Transactional
