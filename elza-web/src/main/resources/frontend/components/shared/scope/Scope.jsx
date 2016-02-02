@@ -14,6 +14,7 @@ import ReactDOM from 'react-dom'
 import {requestScopesIfNeeded} from 'actions/scopes/scopesData'
 require ('./Scope.less');
 
+
 /**
  *  Komponenta pro scope
  *  @param versionId zadat null nebo id verze
@@ -22,29 +23,33 @@ require ('./Scope.less');
 var Scope = class Scope extends AbstractReactComponent {
     constructor(props) {
         super(props);
-
         this.bindMethods('handleChange');
         this.dispatch(requestScopesIfNeeded(this.props.versionId));
-        this.state = {}
-        console.log(this.props);
-    }
-
-    componentWillReceiveProps(nextProps) {
-        this.dispatch(requestScopesIfNeeded(this.props.versionId));
         this.state = {
-            value: this.props.value,
+            value: props.value,
         }
     }
 
-    handleChange(e){
+    componentWillReceiveProps(nextProps) {
+        this.dispatch(requestScopesIfNeeded(nextProps.versionId));
+        this.state = {
+            value: nextProps.value,
+        }
+    }
+
+    handleChange( e) {
         this.setState({
             value: e.target.value
         });
+        if (this.props.onSelect){
+            this.props.onSelect(e.target.value);
+        }
 
     }
 
-
     render() {
+        const {value} = this.props;
+
         var inputLabel;
         if (this.props.label) {
             inputLabel = <label className='control-label'><span>{this.props.label}</span></label>
@@ -53,9 +58,7 @@ var Scope = class Scope extends AbstractReactComponent {
         var data = [];
         this.props.refTables.scopesData.scopes.map(scope => {
                 if (scope.versionId === this.props.versionId) {
-                    scope.scopes.data.map(value => {
-                        data.push(value);
-                    })
+                    data = scope.scopes.data;
                 }
             }
         );
@@ -63,7 +66,7 @@ var Scope = class Scope extends AbstractReactComponent {
         return (
             <div>
                 {inputLabel}
-                <Input type='select' options={data} value={this.state.value} onChange={this.handleChange}>
+                <Input type='select' options={data} onChange={this.handleChange}>
                     <option value="0" key="0"></option>
                     {data.map((i)=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
                 </Input>

@@ -156,9 +156,10 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     handleDoubleClick(item, event) {
         var rodice = item.parents.slice();
         rodice.push(item.record);
-        var registry = Object.assign({}, registry,{registryParentId: item.recordId, parents: rodice});
+        var registry = Object.assign({}, registry,{registryParentId: item.recordId, parents: rodice, filterText: ''});
         this.dispatch(registryChangeParent(registry));
-        this.dispatch(registrySetTypesId(item.registerTypeId));
+        this.dispatch(registryClearSearch());
+
     }
 
     handleClickNavigation(item, event) {
@@ -169,6 +170,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     handleSearch(search, event) {
         var registry = Object.assign({}, registry,{filterText: search});
         this.dispatch(registrySearchData(registry));
+        this.dispatch(registryUnsetParents(null));
     }
 
     handleSearchClear(){
@@ -188,49 +190,59 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
     render() {
         const {splitter} = this.props;
+
+        var listOfRecord = <div className='search-norecord'>{i18n('registry.list.norecord')}</div>;
+        if (this.props.registry.records.length) {
+            listOfRecord = this.props.registry.records.map(item=>{
+                var cls = classNames({
+                    active: this.props.registry.selectedId === item.recordId,
+                    'search-result-row': 'search-result-row'
+                });
+                var iconName = 'fa-file-o';
+                if (item.addRecord === true) {
+                    iconName = 'fa-folder';
+                }
+
+                var clsItem = 'registry-list-icon-list';
+                var doubleClick = this.handleDoubleClick.bind(this, item);
+
+                if (item.addRecord === false) {
+                    clsItem = 'registry-list-icon-record';
+                    doubleClick = false;
+                }
+
+                // výsledky z vyhledávání
+                if ( this.props.registry.filterText!==null ) {
+                    var path = item.parents.join(' | ');
+                    if (path && item.typesToRoot)
+                        path += ' | ';
+                    if (item.typesToRoot)
+                        path += item.typesToRoot.join(' | ');
+
+                    return (
+                        <div key={item.recordId} title={path} className={cls} onDoubleClick={doubleClick} onClick={this.handleSelect.bind(this, item)}>
+                            <div><Icon glyph={iconName} /></div>
+                            <div className={clsItem}>{item.record}</div>
+                            <div className="path" >{path}</div>
+                        </div>
+                    )
+                }
+                else{
+                    // jednořádkový výsledek
+                    return (
+                        <div key={item.recordId} className={cls} onDoubleClick={doubleClick} onClick={this.handleSelect.bind(this, item)}>
+                            <div><Icon glyph={iconName} key={item.recordId} /></div>
+                            <div key={item.recordId} className={clsItem}>{item.record}</div>
+                        </div>
+                    )
+                }
+            })
+        }
         var navRows = (
             <div className="registry-nav">
                 <div key='registrysList'>
 
-                    {this.props.registry.records.map(item=>{
-                        var cls = classNames({
-                                    active: this.props.registry.selectedId === item.recordId,
-                                    'search-result-row': 'search-result-row'
-                        });
-                        var iconName = 'fa-file-o';
-                        if (item.addRecord === true) {
-                            iconName = 'fa-folder';
-                        }
-
-                        var clsItem = 'registry-list-icon-list';
-                        var doubleClick = this.handleDoubleClick.bind(this, item);
-
-                        if (item.addRecord === false) {
-                            clsItem = 'registry-list-icon-record';
-                            doubleClick = false;
-                        }
-
-                        // výsledky z vyhledávání
-                        if ( this.props.registry.filterText!==null ) {
-                            var path = item.parents.join('<');
-                            return (
-                                <div key={item.recordId} className={cls} onDoubleClick={doubleClick} onClick={this.handleSelect.bind(this, item)}>
-                                    <div><Icon glyph={iconName} /></div>
-                                    <span className={clsItem}>{item.record}</span>
-                                    <div className="path">{path}</div>
-                                </div>
-                            )
-                        }
-                        else{
-                            // jednořádkový výsledek
-                            return (
-                                <div key={item.recordId} className={cls} onDoubleClick={doubleClick} onClick={this.handleSelect.bind(this, item)}>
-                                    <div><Icon glyph={iconName} key={item.recordId} /></div>
-                                    <div key={item.recordId} className={clsItem}>{item.record}</div>
-                                </div>
-                            )
-                        }
-                    })}
+                    {listOfRecord}
                 </div>
                 <div key='registryCount' className='registry-list-count'>{i18n('registry.shown')} {this.props.registry.records.length} {i18n('registry.z.celkoveho.poctu')} {this.props.registry.countRecords}</div>
             </div>
@@ -244,7 +256,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             navParents = (
                 <div className="record-parent-info">
                     <div className='record-selected-name'>
-                        <Icon glyph="fa-folder-open" />
+                        <div><Icon glyph="fa-folder-open" /></div>
                         <div>{nazevRodice}</div>
                         <div onClick={this.handleUnsetParents}><Icon glyph="fa-mail-reply" /></div>
                     </div>

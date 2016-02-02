@@ -109,7 +109,7 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
             cls += " " + this.props.className;
         }
         
-        var itemsData = [...items]
+            var itemsData = [...items]
         if (nullValue){
             itemsData = [nullValue, ...itemsData];
         }

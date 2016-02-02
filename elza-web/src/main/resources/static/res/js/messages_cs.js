@@ -98,6 +98,7 @@ var messages = {
     "registry.editRegistry": "Editace rejstříku",
     "registry.addRegistryVariant": "Přidání varianty jména",
     'registry.placePath': "Cesta k umístění: ",
+    'registry.list.norecord': "Zadanému filtru neodpovídají žádná data",
 
     
     "party.detail.characteristics": "Charakteristika",
