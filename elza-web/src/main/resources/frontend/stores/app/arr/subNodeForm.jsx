@@ -2,6 +2,7 @@ import * as types from 'actions/constants/actionTypes';
 import {i18n} from 'components'
 import {indexById} from 'stores/app/utils.jsx'
 import {faSubNodeFormValueValidate} from 'actions/arr/subNodeForm'
+import {getDescItemType, updateFormData, createDescItem} from './subNodeFormUtils'
 
 function getLoc(state, valueLocation) {
     var descItemGroup = state.formData.descItemGroups[valueLocation.descItemGroupIndex];
@@ -26,135 +27,6 @@ const initialState = {
     nodeId: null,
     data: null,
     getLoc: getLoc
-}
-
-
-function updateFormData(state, rulDataTypes) {
-    if (state.formData) {
-        console.log("### MERGE FORM DATA ###", state);
-return state;
-    }
-
-    // Mapa id descItemType na descItemType
-    var descItemTypesMap = {};
-    state.data.descItemGroups.forEach(group => {
-        group.descItemTypes.forEach(descItemType => {
-            descItemTypesMap[descItemType.id] = descItemType;
-        })
-    })
-
-    // Seznam všech atributů - obecně, doplněný o rulDataType
-    // Doplnění position ke skupině
-    var descItemTypeInfos = [];
-    state.descItemTypeGroupsMap = {};
-    state.data.descItemTypeGroups.forEach((descItemGroup, descItemGroupIndex) => {
-        state.descItemTypeGroupsMap[descItemGroup.id] = descItemGroup;
-        descItemGroup.position = descItemGroupIndex;
-        descItemGroup.descItemTypes.forEach(descItemType => {
-            var rulDataType = rulDataTypes.items[indexById(rulDataTypes.items, descItemType.dataTypeId)];
-
-            var descItemTypeInfo = Object.assign({}, descItemType, { descItemGroup: descItemGroup, rulDataType: rulDataType});
-            descItemTypeInfos.push(descItemTypeInfo);
-        });
-    });
-
-    // Vytvoření formuláře se všemi povinnými a doporučenými položkami, které jsou doplněné reálnými daty ze serveru
-    var descItemGroups = [];
-    state.data.descItemTypeGroups.forEach(group => {
-        var resultGroup = {
-            ...group,
-            hasFocus: false
-        };
-
-        resultGroup.descItemTypes = [];
-        group.descItemTypes.forEach(descItemType => {
-            var resultDescItemType = {
-                ...descItemType,
-                hasFocus: false
-            }
-
-            var dbDescItemType = descItemTypesMap[descItemType.id];
-            var useDescItemType = false;    // jestli se má nakonec objevit na formuláři
-            if (dbDescItemType) {   // použijeme DB hodnotu
-                useDescItemType = true;
-
-                resultDescItemType.descItems = dbDescItemType.descItems.map(descItem => {
-                    return Object.assign(
-                        {},
-                        descItem,
-                        {
-                            prevDescItemSpecId: descItem.descItemSpecId,
-                            prevValue: descItem.value,
-                            hasFocus: false,
-                            touched: false,
-                            visited: false,
-                            error: {hasError:false}
-                        }
-                    )
-                })
-            } else {    // není v DB, vytvoříme jen pro možnou inplace editaci
-                resultDescItemType.descItems = [];
-                if (descItemType.type == 'REQUIRED' || descItemType.type == 'RECOMMENDED') {
-                    var rulDataType = rulDataTypes.items[indexById(rulDataTypes.items, descItemType.dataTypeId)];
-                    if (!descItemType.repeatable) { // řešíme jen neopakovatelné, u nich to má smysl
-                        useDescItemType = true;
-
-                        var descItemTypeInfo = descItemTypeInfos[indexById(descItemTypeInfos, descItemType.id)];                        
-                        var descItem = createDescItem(descItemTypeInfo);
-                        descItem.position = 1;
-                        resultDescItemType.descItems.push(descItem);
-                    }
-                }
-            }
-
-            if (useDescItemType) {
-                resultGroup.descItemTypes.push(resultDescItemType);
-            }
-        });
-
-        if (resultGroup.descItemTypes.length > 0) { // skupinu budeme uvádět pouze pokud má nějaké atributy k zobrazení (povinné nebo doporučené)
-            descItemGroups.push(resultGroup);
-        }
-    })
-
-    var formData = {
-        descItemGroups: descItemGroups
-    }
-
-    state.formData = formData;
-    state.descItemTypeInfos = descItemTypeInfos;
-}
-
-function getDescItemType(descItemTypeInfo) {
-    switch (descItemTypeInfo.rulDataType.code) {
-        case 'TEXT':
-            return '.ArrDescItemTextVO';
-        case 'STRING':
-            return '.ArrDescItemStringVO';
-        case 'INT':
-            return '.ArrDescItemIntVO';
-        case 'COORDINATES':
-            return '.ArrDescItemCoordinatesVO';
-        case 'DECIMAL':
-            return '.ArrDescItemDecimalVO';
-        case 'PARTY_REF':
-            return '.ArrDescItemPartyRefVO';
-        case 'RECORD_REF':
-            return '.ArrDescItemRecordRefVO';
-        case 'PACKET_REF':
-            return '.ArrDescItemPacketVO';
-        case 'ENUM':
-            return '.ArrDescItemEnumVO';
-        case 'FORMATTED_TEXT':
-            return '.ArrDescItemFormattedTextVO';
-        case 'UNITDATE':
-            return '.ArrDescItemUnitdateVO';
-        case 'UNITID':
-            return '.ArrDescItemUnitidVO';
-        default:
-            console.error("Unsupported data type", descItemTypeInfo.rulDataType);
-            return null;
-    }
 }
 
 function validate(descItem, descItemTypeInfo, valueServerError) {
@@ -228,23 +100,7 @@ function validate(descItem, descItemTypeInfo, valueServerError) {
     return error;
 }
 
-function createDescItem(descItemTypeInfo) {
-    var result = {
-        '@type': getDescItemType(descItemTypeInfo),
-        prevValue: null,
-        hasFocus: false,
-        touched: false,
-        visited: false,
-        value: '',
-        error: {hasError:false}
-    };
 
-    if (descItemTypeInfo.useSpecification) {
-        result.descItemSpecId = '';
-    }
-
-    return result;
-}
 
 export default function subNodeForm(state = initialState, action) {
     switch (action.type) {
@@ -331,7 +187,7 @@ export default function subNodeForm(state = initialState, action) {
 
             var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, loc.descItemType.id)];
 
-            var descItem = createDescItem(descItemTypeInfo);
+            var descItem = createDescItem(descItemTypeInfo, true);
             descItem.position = loc.descItemType.descItems.length + 1;
             loc.descItemType.descItems = [...loc.descItemType.descItems, descItem];
             
@@ -409,7 +265,7 @@ export default function subNodeForm(state = initialState, action) {
             // Pokud je ale atribut jednohodnotový, musíme ponechat prázdnou hodnotu
             if (!descItemType.repeatable) {
                 var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, addItemType.id)];
-                var descItem = createDescItem(descItemTypeInfo);
+                var descItem = createDescItem(descItemTypeInfo, true);
                 descItem.position = 1;
                 descItemType.descItems.push(descItem);
             }
@@ -428,7 +284,7 @@ export default function subNodeForm(state = initialState, action) {
                 // Pokud je ale atribut jednohodnotový, musíme ponechat prázdnou hodnotu
                 if (!loc.descItemType.repeatable) {
                     var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, loc.descItemType.id)];
-                    var descItem = createDescItem(descItemTypeInfo);
+                    var descItem = createDescItem(descItemTypeInfo, true);
                     descItem.position = 1;
                     loc.descItemType.descItems.push(descItem);
                 }
@@ -462,10 +318,9 @@ export default function subNodeForm(state = initialState, action) {
                 dirty: false,
                 versionId: action.versionId,
                 nodeId: action.nodeId,
-                data: action.data,
             })
 
-            updateFormData(result, action.rulDataTypes);
+            updateFormData(result, action.data, action.rulDataTypes);
 
             return result;
         default:
