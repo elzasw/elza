@@ -114,7 +114,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
             case "scopeNorm" : party.scopeNorm = value; break;
             case "scope" : party.scope = value; break;
             case "note" : party.record.note = value; break;
-            case "characteristics" : party.record.characteristics = value; break;
+            case "characteristics" : party.characteristics = value; break;
         };
         return party;
     }
@@ -136,7 +136,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
         return <div className={"partyDetail"}>
                     <h1>{party.record.record}</h1>
                     <div className="line">
-                    <Input type="textarea" label={i18n('party.detail.characteristics')} name="characteristics" value={party.record.characteristics != undefined ? party.record.characteristics : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
+                    <Input type="textarea" label={i18n('party.detail.characteristics')} name="characteristics" value={party.characteristics != undefined ? party.characteristics : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
                     </div>
 
                     <div className="line">
