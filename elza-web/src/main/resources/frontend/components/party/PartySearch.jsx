@@ -56,8 +56,8 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
                                 className={item.partyId==this.props.selectedPartyID ? 'active' : ''} 
                                 onClick={this.handlePartyDetail.bind(this,item)}
                             >                                          
-                                <span className="name">{item.record.record}</span> 
-                                <span>{item.partyType.description}</span>
+                                <span className="name">{item.record.record}</span>
+                                <span>{item.partyType.description + " | " + item.partyId}</span>
                                 <span title={item.record.description}>{item.record.description}</span>
                             </li>                          
             });
