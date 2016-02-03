@@ -275,7 +275,6 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             nullValue={{id: null, name: i18n('registry.all')}}
             key='search'
             items={this.props.refTables.recordTypes.items}
-            value={this.props.registry.registryTypesId}
             onSelect={this.hlandleRegistryTypesSelect.bind(this)}
             />
 
