@@ -1,31 +1,26 @@
 package cz.tacr.elza.bulkaction.generator;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
+import cz.tacr.elza.api.vo.BulkActionState.State;
+import cz.tacr.elza.bulkaction.BulkActionConfig;
+import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
+import cz.tacr.elza.bulkaction.BulkActionState;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.factory.DescItemFactory;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.DescItemSpecRepository;
+import cz.tacr.elza.repository.DescItemTypeRepository;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.api.vo.BulkActionState.State;
-import cz.tacr.elza.bulkaction.BulkActionConfig;
-import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
-import cz.tacr.elza.bulkaction.BulkActionState;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrDescItemString;
-import cz.tacr.elza.domain.ArrDescItemUnitid;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.factory.DescItemFactory;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.DescItemSpecRepository;
-import cz.tacr.elza.repository.DescItemTypeRepository;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Hromadná akce prochází strom otevřené verze archivní pomůcky a doplňuje u položek požadované atributy.
@@ -103,6 +98,9 @@ public class UnitIdBulkAction extends BulkAction {
 
     @Autowired
     private DescItemFactory descItemFactory;
+
+    @Autowired
+    private EventNotificationService eventNotificationService;
 
     /**
      * Inicializace hromadné akce.
@@ -306,6 +304,7 @@ public class UnitIdBulkAction extends BulkAction {
         this.bulkActionState.setRunChange(this.change);
 
         generate(version.getRootLevel(), null, null);
+        eventNotificationService.publishEvent(EventFactory.createStringInVersionEvent(EventType.BULK_ACTION_STATE_CHANGE, faVersionId, bulkAction.getCode()), true);
     }
 
     /**

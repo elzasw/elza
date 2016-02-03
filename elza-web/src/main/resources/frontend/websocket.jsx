@@ -2,6 +2,7 @@ import React from 'react';
 
 import {EmailSettingsActions, ApplicationActions} from 'actions';
 import {webSocketConnect, webSocketDisconnect} from 'actions/global/webSocket';
+import {buklActionStateChange} from 'actions/arr/bulkActions';
 import {store} from 'stores/app/AppStore';
 
 import {changeConformityInfo, changeIndexingFinished, changePackage, changePackets,
@@ -96,6 +97,10 @@ function processEvents(values) {
                 packetsChangeEvent(value);
                 break;
 
+            case 'BULK_ACTION_STATE_CHANGE':
+                bulkActionStateChange(value);
+                break;
+
             default:
                 console.warn("Nedefinovaný typ eventu: " + value.eventType, value);
                 break;
@@ -136,6 +141,13 @@ function packetsChangeEvent(value) {
 
 function descItemChange(value) {
     store.dispatch(changeDescItem(value.versionId, value.nodeId, value.descItemObjectId));
+}
+
+/**
+ * Změna hromadných akcí.
+ */
+function bulkActionStateChange(value) {
+    store.dispatch(buklActionStateChange(value));
 }
 
 /**

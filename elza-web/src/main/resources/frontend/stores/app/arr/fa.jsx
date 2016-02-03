@@ -2,6 +2,7 @@ import * as types from 'actions/constants/actionTypes';
 import {indexById} from 'stores/app/utils.jsx'
 import faTree from './faTree'
 import nodes from './nodes'
+import bulkActions from './bulkActions'
 import {consolidateState} from 'components/Utils'
 
 export function faInitState(faWithVersion) {
@@ -16,7 +17,8 @@ export function faInitState(faWithVersion) {
         faTree: faTree(undefined, {type: ''}),
         faTreeMovementsLeft: faTree(undefined, {type: ''}),
         faTreeMovementsRight: faTree(undefined, {type: ''}),
-        nodes: nodes(undefined, {type: ''})
+        nodes: nodes(undefined, {type: ''}),
+        bulkActions: bulkActions(undefined, {type: ''})
     }
 
     result.faTreeMovementsLeft = {...result.faTreeMovementsLeft};
@@ -146,6 +148,16 @@ export function fa(state = nodeInitialState, action) {
             return consolidateState(state, result);
         case types.CHANGE_CONFORMITY_INFO:
             var result = {...state, faTree: faTree(state.faTree, action), nodes: nodes(state.nodes, action)}
+            return consolidateState(state, result);
+        case types.BULK_ACTIONS_DATA_LOADING:
+        case types.BULK_ACTIONS_DATA_LOADED:
+        case types.BULK_ACTIONS_RECEIVED_DATA:
+        case types.BULK_ACTIONS_RECEIVED_ACTIONS:
+        case types.BULK_ACTIONS_RECEIVED_STATES:
+        case types.BULK_ACTIONS_RECEIVED_STATE:
+        case types.BULK_ACTIONS_STATE_CHANGE:
+        case types.BULK_ACTIONS_STATE_IS_DIRTY:
+            var result = {...state, bulkActions: bulkActions(state.bulkActions, action)}
             return consolidateState(state, result);
         default:
             return state;

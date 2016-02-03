@@ -45,6 +45,7 @@ var AddNodeDropdown = class AddNodeDropdown extends AbstractReactComponent {
      * Načte scénáře a vrátí je pro zobrazení v DropDown
      */
     handleToggle(isOpen, isDropdown) {
+        // TODO Zkontrolovat načítání
         if (isOpen && !this.state.loading) {
             this.setState({
                 ...this.state,

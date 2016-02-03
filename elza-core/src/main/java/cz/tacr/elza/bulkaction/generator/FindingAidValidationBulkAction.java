@@ -1,16 +1,5 @@
 package cz.tacr.elza.bulkaction.generator;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-
 import cz.tacr.elza.api.ArrNodeConformity;
 import cz.tacr.elza.api.ArrNodeConformityExt;
 import cz.tacr.elza.api.vo.BulkActionState.State;
@@ -18,12 +7,24 @@ import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
 import cz.tacr.elza.bulkaction.BulkActionState;
-import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -71,6 +72,9 @@ public class FindingAidValidationBulkAction extends BulkAction {
 
     @Autowired
     private UpdateConformityInfoService updateConformityInfoService;
+
+    @Autowired
+    private EventNotificationService eventNotificationService;
 
     /**
      * Inicializace hromadné akce.
@@ -158,6 +162,7 @@ public class FindingAidValidationBulkAction extends BulkAction {
         }
 
         ruleService.setVersionConformityInfo(state, stateDescription, version);
+        eventNotificationService.publishEvent(EventFactory.createStringInVersionEvent(EventType.BULK_ACTION_STATE_CHANGE, faVersionId, bulkAction.getCode()), true);
     }
 
     @Override

@@ -340,7 +340,38 @@ function barrier(...promises) {
     })
 }
 
+/**
+ * Převod datumu do řetězce - v budoucnu při více locale nahradit metodou pracující s locale.
+ * @param date {Date} datum
+ * @return {String} datum
+ */
+function dateToString(date) {
+    var dd = date.getDate().toString();
+    var mm = (date.getMonth() + 1).toString();
+    var yyyy = date.getFullYear().toString();
+    return (dd[1] ? dd : "0" + dd[0]) + "." + (mm[1] ? mm : "0" + mm[0]) + "." + yyyy;
+}
+
+/**
+ * Převod Obejct:Date do řetězce včetně času
+ * @param date {Date} datum a čas
+ * @return {String} datum
+ * TODO Možná změnit dateTimeToString => dateToDateTimeString a dateToString => dateToDateString
+ */
+function dateTimeToString(date) {
+    var dd = date.getDate().toString();
+    var mm = (date.getMonth() + 1).toString();
+    var yyyy = date.getFullYear().toString();
+    var hh = date.getHours().toString();
+    var ii = date.getMinutes().toString();
+    /** Formátování - místo 01 = 1 **/
+    var f = (col) => (col[1] ? col : "0" + col[0]);
+    return f(dd) + "." + f(mm) + "." + yyyy + " " + f(hh) + ":" + f(ii);
+}
+
 module.exports = {
+    dateToString: dateToString,
+    dateTimeToString: dateTimeToString,
     StringSet: StringSet,
     StringMap: StringMap,
     barrier: barrier,

@@ -1,20 +1,14 @@
 package cz.tacr.elza.service.eventnotification;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.util.Assert;
-
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
-import cz.tacr.elza.service.eventnotification.events.EventAddNode;
-import cz.tacr.elza.service.eventnotification.events.EventId;
-import cz.tacr.elza.service.eventnotification.events.EventIdInVersion;
-import cz.tacr.elza.service.eventnotification.events.EventNodeMove;
-import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.eventnotification.events.*;
 import cz.tacr.elza.service.eventnotification.events.vo.NodeInfo;
+import org.springframework.util.Assert;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -42,6 +36,14 @@ public class EventFactory {
         Assert.notNull(version);
 
         return new EventIdInVersion(eventType, version.getFindingAidVersionId(), entityId);
+    }
+
+    public static EventStringInVersion createStringInVersionEvent(final EventType eventType,
+                                                                  final Integer versionId,
+                                                                  final String entityString) {
+        Assert.notNull(versionId);
+
+        return new EventStringInVersion(eventType, versionId, entityString);
     }
 
 

@@ -11,7 +11,7 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Icon, Ribbon, i18n} from 'components';
-import {FaExtendedView, AddFaForm, RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FaFileTree, AbstractReactComponent, ModalDialog, NodeTabs, FaTreeTabs} from 'components';
+import {FaExtendedView, AddFaForm, BulkActionsDialog, RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FaFileTree, AbstractReactComponent, ModalDialog, NodeTabs, FaTreeTabs} from 'components';
 import {ButtonGroup, Button, DropdownButton, MenuItem} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
@@ -26,7 +26,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('getActiveInfo', 'buildRibbon', 'handleRegisterJp',
-            'handleApproveFaVersion', 'handleCallApproveFaVersion', 'getActiveFindingAidId');
+            'handleApproveFaVersion', 'handleCallApproveFaVersion', 'getActiveFindingAidId', 'handleBulkActionsDialog');
 
         this.state = {faFileTreeOpened: false};
     }
@@ -116,6 +116,14 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         this.dispatch(showRegisterJp(show));
     }
 
+
+    handleBulkActionsDialog() {
+        this.dispatch(modalDialogShow(this, i18n('arr.fa.title.bulkActions'),
+            <BulkActionsDialog mandatory={false}/>
+            )
+        );
+    }
+
     /**
      * Sestavení Ribbonu.
      * @return {Object} view
@@ -131,7 +139,12 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         );
         if (activeInfo.activeFa) {
             itemActions.push(
-                <Button key="approve-version" onClick={this.handleApproveFaVersion}><Icon glyph="fa-calendar-check-o"/><div><span className="btnText">{i18n('ribbon.action.arr.fa.approveVersion')}</span></div></Button>
+                <Button key="approve-version" onClick={this.handleApproveFaVersion}><Icon glyph="fa-calendar-check-o"/>
+                    <div><span className="btnText">{i18n('ribbon.action.arr.fa.approveVersion')}</span></div>
+                </Button>,
+                <Button key="bulkActions" onClick={this.handleBulkActionsDialog}><Icon glyph="fa-cogs"/>
+                    <div><span className="btnText">{i18n('ribbon.action.arr.fa.bulkActions')}</span></div>
+                </Button>
             )
         }
 

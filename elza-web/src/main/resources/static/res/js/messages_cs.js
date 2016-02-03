@@ -24,6 +24,7 @@ var messages = {
     "ribbon.action.arr": "Archivní pomůcky",
     "ribbon.action.arr.fa.add": "Vytvořit AP",
     "ribbon.action.arr.fa.approveVersion": "Uzavřít verzi AP",
+    "ribbon.action.arr.fa.bulkActions": "Hromadné akce",
     "ribbon.action.arr.show-register-jp": "Rejstříky k JP",
     "ribbon.action.registry": "Rejstříky",
     "ribbon.action.party": "Osoby",
@@ -51,6 +52,7 @@ var messages = {
 
     "arr.fa.title.add": "Vytvoření nové AP",
     "arr.fa.title.approveVersion": "Uzavření verze AP",
+    "arr.fa.title.bulkActions": "Hromadné akce",
     "arr.fa.name": "Název",
     "arr.fa.ruleSet": "Pravidla tvorby",
     "arr.fa.arrType": "Typ výstupu",

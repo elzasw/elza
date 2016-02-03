@@ -146,6 +146,7 @@ export default function arrRegion(state = initialState, action) {
         case types.FA_NODES_RECEIVE:
         case types.FA_NODES_REQUEST:
         case types.CHANGE_DESC_ITEM:
+        case types.BULK_ACTIONS_STATE_CHANGE:
             var index = indexById(state.fas, action.versionId, "versionId")
             return processFa(state, action, index);
         case types.FA_FAS_RECEIVE:
@@ -184,6 +185,13 @@ export default function arrRegion(state = initialState, action) {
         case types.FA_FA_SUBNODES_FULLTEXT_SEARCH:
         case types.FA_FA_CLOSE_NODE_TAB:
         case types.FA_FA_SELECT_NODE_TAB:
+        case types.BULK_ACTIONS_DATA_LOADING:
+        case types.BULK_ACTIONS_DATA_LOADED:
+        case types.BULK_ACTIONS_RECEIVED_DATA:
+        case types.BULK_ACTIONS_RECEIVED_ACTIONS:
+        case types.BULK_ACTIONS_RECEIVED_STATES:
+        case types.BULK_ACTIONS_RECEIVED_STATE:
+        case types.BULK_ACTIONS_STATE_IS_DIRTY:
             var index = state.activeIndex;
             return processFa(state, action, index);
         case types.FA_CLOSE_FA_TAB:

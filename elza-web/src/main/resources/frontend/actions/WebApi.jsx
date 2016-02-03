@@ -229,6 +229,22 @@ class WebApi{
         });
     }
 
+    getBulkActions(versionId, mandatory = false) {
+        return AjaxUtils.ajaxGet('/api/bulkActionManagerV2/' + versionId + '/' + mandatory, null);
+    }
+
+    getBulkActionsState(versionId) {
+        return AjaxUtils.ajaxGet('/api/bulkActionManagerV2/states/' + versionId, null);
+    }
+
+    bulkActionRun(versionId, code) {
+        return AjaxUtils.ajaxGet('/api/bulkActionManagerV2/run/' + versionId + '/' + code, null);
+    }
+
+    bulkActionValidate(versionId) {
+        return AjaxUtils.ajaxGet('/api/bulkActionManagerV2/validate/' + versionId, null);
+    }
+
     getRegistry(registryId){
         return AjaxUtils.ajaxGet('/api/registryManagerV2/getRecord', {recordId: registryId})
             .then(json=>{

@@ -10,11 +10,21 @@ import cz.tacr.elza.api.vo.BulkActionState;
  */
 public class BulkActionStateVO {
 
+    private ArrChangeVO runChange;
+
     private String code;
 
     private BulkActionState.State state;
 
     private int processId;
+
+    public ArrChangeVO getRunChange() {
+        return runChange;
+    }
+
+    public void setRunChange(ArrChangeVO runChange) {
+        this.runChange = runChange;
+    }
 
     public String getCode() {
         return code;

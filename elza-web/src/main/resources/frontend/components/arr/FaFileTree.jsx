@@ -10,7 +10,7 @@ import {AbstractReactComponent, i18n, Icon, Loading} from 'components';
 import {Nav, NavItem} from 'react-bootstrap';
 import {faFileTreeFetchIfNeeded} from 'actions/arr/faFileTree'
 import {selectFaTab} from 'actions/arr/fa'
-import {propsEquals} from 'components/Utils'
+import {propsEquals, dateToString} from 'components/Utils'
 import {getFaFromFaAndVersion} from 'components/arr/ArrUtils'
 
 var FaFileTree = class FaFileTree extends AbstractReactComponent {
@@ -53,18 +53,6 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
     }
 
     /**
-     * Převod datumu do řetězce - v budoucnu při více locale nahradit metodou pracující s locale.
-     * @param date {Date} datum
-     * @return {String} datum
-     */
-    dateToString(date) {
-        var dd  = date.getDate().toString();
-        var mm = (date.getMonth() + 1).toString();
-        var yyyy = date.getFullYear().toString();
-        return (dd[1]?dd:"0"+dd[0]) + "." + (mm[1]?mm:"0"+mm[0]) + "." + yyyy;
-    }
-
-    /**
      * Renderování otevřeného panelu.
      * @return {Object} view
      */
@@ -93,7 +81,7 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
                 rows.push(
                     <NavItem className='version' key={item.id + '_' + ver.id} onClick={this.handleSelect.bind(this, item, ver)}>
                         <Icon glyph={glyph}/>
-                        {ver.lockDate ? this.dateToString(ver.lockDate) : i18n('arr.fa.currentVersion')}
+                        {ver.lockDate ? dateToString(ver.lockDate) : i18n('arr.fa.currentVersion')}
                     </NavItem>
                 )
             });

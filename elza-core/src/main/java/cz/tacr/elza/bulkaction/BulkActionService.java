@@ -1,11 +1,17 @@
 package cz.tacr.elza.bulkaction;
 
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
+import cz.tacr.elza.api.vo.BulkActionState.State;
+import cz.tacr.elza.bulkaction.factory.BulkActionFactory;
+import cz.tacr.elza.bulkaction.generator.*;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.repository.BulkActionRunRepository;
+import cz.tacr.elza.repository.FindingAidVersionRepository;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -16,19 +22,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
-import cz.tacr.elza.api.vo.BulkActionState.State;
-import cz.tacr.elza.bulkaction.factory.BulkActionFactory;
-import cz.tacr.elza.bulkaction.generator.BulkAction;
-import cz.tacr.elza.bulkaction.generator.CleanDescriptionItemBulkAction;
-import cz.tacr.elza.bulkaction.generator.FindingAidValidationBulkAction;
-import cz.tacr.elza.bulkaction.generator.SerialNumberBulkAction;
-import cz.tacr.elza.bulkaction.generator.UnitIdBulkAction;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.repository.BulkActionRunRepository;
-import cz.tacr.elza.repository.FindingAidVersionRepository;
-import org.springframework.beans.factory.annotation.Qualifier;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -67,6 +64,9 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
      * Seznam úloh instancí hromadných akcí.
      */
     private List<BulkActionWorker> workers = new ArrayList<>();
+
+    @Autowired
+    private EventNotificationService eventNotificationService;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -295,6 +295,7 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         logger.info("Hromadná akce naplánována ke spuštění: " + bulkActionWorker);
         ListenableFuture future = taskExecutor.submitListenable(bulkActionWorker);
         future.addCallback(this);
+        this.eventNotificationService.forcePublish(EventFactory.createStringInVersionEvent(EventType.BULK_ACTION_STATE_CHANGE, bulkActionWorker.getVersionId(), bulkActionWorker.getBulkActionConfig().getCode()));
     }
 
     /**

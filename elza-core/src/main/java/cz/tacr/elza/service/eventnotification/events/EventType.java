@@ -39,7 +39,9 @@ public enum EventType {
 
     PACKETS_CHANGE(EventId.class),
 
-    CONFORMITY_INFO(EventIdInVersion.class);
+    CONFORMITY_INFO(EventIdInVersion.class),
+
+    BULK_ACTION_STATE_CHANGE(EventStringInVersion.class);
 
     private Class<? extends AbstractEventSimple> eventClass;
 

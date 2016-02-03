@@ -238,8 +238,19 @@ public class ConfigMapperConfiguration {
                     }
                 }
         ).byDefault().register();
-        mapperFactory.classMap(BulkActionConfig.class, BulkActionVO.class).byDefault().register();
-        mapperFactory.classMap(BulkActionState.class, BulkActionStateVO.class).byDefault().register();
+
+        mapperFactory.classMap(ArrChange.class, ArrChangeVO.class).byDefault().field("changeId", "id").register();
+        mapperFactory.classMap(BulkActionConfig.class, BulkActionVO.class).customize(
+                new CustomMapper<BulkActionConfig, BulkActionVO>() {
+                    @Override
+                    public void mapAtoB(final BulkActionConfig bulkActionConfig,
+                                        final BulkActionVO bulkActionVO,
+                                        final MappingContext context) {
+                        bulkActionVO.setName((String) bulkActionConfig.getProperty("name"));
+                    }
+                }
+        ).byDefault().register();
+        mapperFactory.classMap(BulkActionState.class, BulkActionStateVO.class).field("bulkActionCode", "code").byDefault().register();
         mapperFactory.classMap(ParComplementType.class, ParComplementTypeVO.class).byDefault().register();
         mapperFactory.classMap(ParDynasty.class, ParDynastyVO.class).byDefault().register();
         mapperFactory.classMap(ParParty.class, ParPartyVO.class).exclude("prefferedName").exclude("partyNames").exclude(

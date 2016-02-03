@@ -1,10 +1,9 @@
 package cz.tacr.elza.service.eventnotification;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.eventbus.EventBus;
+import cz.tacr.elza.service.IClientDataChangesService;
+import cz.tacr.elza.service.IEventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -12,12 +11,9 @@ import org.springframework.transaction.support.TransactionSynchronizationAdapter
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
-import com.google.common.eventbus.EventBus;
-
-import cz.tacr.elza.service.IClientDataChangesService;
-import cz.tacr.elza.service.IEventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
-import cz.tacr.elza.service.eventnotification.events.EventType;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 
 /**
@@ -39,9 +35,16 @@ public class EventNotificationService implements IEventNotificationService {
 
     private List<AbstractEventSimple> committedEvents = new LinkedList<>();
 
+    public void forcePublish(final AbstractEventSimple event) {
+        this.clientDataChangesService.fireEvents(Arrays.asList(event));
+    }
 
     @Override
     public void publishEvent(final AbstractEventSimple event) {
+        this.publishEvent(event, false);
+    }
+
+    public void publishEvent(final AbstractEventSimple event, final boolean onRollBack) {
         Assert.notNull(event);
 
         AfterTransactionListener listener = null;
@@ -57,6 +60,9 @@ public class EventNotificationService implements IEventNotificationService {
             TransactionSynchronizationManager.registerSynchronization(listener);
         }
         listener.registerEvent(event);
+        if (onRollBack) {
+            listener.registerRollBackEvent(event);
+        }
     }
 
     /**
@@ -98,6 +104,7 @@ public class EventNotificationService implements IEventNotificationService {
          * Mapa připravených událostí.
          */
         private List<AbstractEventSimple> uncommittedEvents = new LinkedList<>();
+        private List<AbstractEventSimple> uncommittedRollBackEvents = new LinkedList<>();
 
         /**
          * Přidá připravenou událost do mapy.
@@ -108,10 +115,22 @@ public class EventNotificationService implements IEventNotificationService {
             uncommittedEvents.add(event);
         }
 
+        public void registerRollBackEvent(final AbstractEventSimple event) {
+            uncommittedRollBackEvents.add(event);
+        }
+
 
         @Override
         public void afterCommit() {
             commitEvents(uncommittedEvents);
+        }
+
+        @Override
+        public void afterCompletion(int status) {
+            if (status == STATUS_ROLLED_BACK) {
+                commitEvents(uncommittedRollBackEvents);
+            }
+            super.afterCompletion(status);
         }
     }
 
