@@ -111,7 +111,7 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
             cls += " " + this.props.className;
         }
 
-            var itemsData = [...items]
+        var itemsData = [...items]
         if (nullValue){
             itemsData = [nullValue, ...itemsData];
         }
@@ -129,6 +129,7 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
                     onClick={this.handleOpenClose.bind(this)}
                     onFocus={this.props.onFocus}
                     onBlur={this.props.onBlur}
+                    disabled={this.props.disabled}
                 >
                     <div className='dropDownTree-label'>{this.state.label}</div>
                     <Icon glyph="fa-caret-down" />

@@ -96,7 +96,8 @@ var messages = {
     "registry.removeRegistry": "Smazat heslo",
     "registry.cancelMove": "Zrušit přesun",
     "registry.applyMove": "Přesunout sem",
-    "registry.detail.charakteristika": "Charakteristika",
+    "registry.detail.charakteristika": "Charakteristika:",
+    "registry.detail.poznamka" : "Poznámka",
     "registry.detail.typ.rejstriku": "Typ rejstříku - hiearchie:",
     "registry.add.typ.rejstriku": "Rejstřík",
     "registry.editRegistry": "Editace rejstříku",
@@ -104,6 +105,7 @@ var messages = {
     "registry.addRegistryVariant": "Přidání varianty jména",
     'registry.placePath': "Cesta k umístění: ",
     'registry.list.norecord': "Zadanému filtru neodpovídají žádná data",
+    'registry.detail.variant.name': "Variantní jména:",
 
     
     "party.detail.characteristics": "Charakteristika",

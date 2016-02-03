@@ -36,7 +36,6 @@ const validate = (values, props) => {
 var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.props.load(props.initData);
         this.state = {};
     }
 
@@ -54,7 +53,6 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
 
     render() {
         const {fields: { nameMain, characteristics, registerTypeId, scopeId}, handleSubmit, onClose} = this.props;
-
         var disabled = false;
         if (this.props.parentRegisterTypeId){
             registerTypeId.value=this.props.parentRegisterTypeId;

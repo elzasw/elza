@@ -54,6 +54,10 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
 
     render() {
         const {fields: { nameMain, characteristics, registerTypeId, scopeId}, handleSubmit, onClose} = this.props;
+        var itemsForDropDownTree = [];
+        if (this.props.registryRecordTypes.item) {
+            itemsForDropDownTree = this.props.registryRecordTypes.item;
+        }
         var disabled = false;
         if (this.props.parentRegisterTypeId){
             registerTypeId.value=this.props.parentRegisterTypeId;
@@ -62,10 +66,7 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
             disabled = true;
         }
 
-        var itemsForDropDownTree = [];
-        if (this.props.registryRecordTypes.item) {
-            itemsForDropDownTree = this.props.registryRecordTypes.item;
-        }
+
 
         return (
             <div key={this.props.key}>
@@ -80,7 +81,6 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
                             {...decorateFormField(registerTypeId)}
                             disabled={disabled}
                             />
-
                         <Input type="text" label={i18n('registry.name')} {...nameMain} {...decorateFormField(nameMain)} />
                         <Input type="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)} />
                     </form>

@@ -24,8 +24,8 @@ var RegistryLabel = class RegistryLabel extends AbstractReactComponent {
     }
 
     handleVariantKeyUp(e){
-        if (e.keyCode == 13){
-            this.handleSearch(e);
+        if (e.keyCode == 13 && this.props.onEnter){
+            this.props.onEnter(e);
         }
     }
 
@@ -34,7 +34,6 @@ var RegistryLabel = class RegistryLabel extends AbstractReactComponent {
         this.setState({
             variant: e.target.value                                  // uložení zadaného řezezce ve stavu komponenty
         });
-
     }
 
 
@@ -62,7 +61,8 @@ var RegistryLabel = class RegistryLabel extends AbstractReactComponent {
                             onBlur={this.props.onBlur}
                             />
                         </span>
-                    <Button onClick = {this.props.onClickDelete}><Icon glyph='fa-times' /></Button>
+                    {this.props.onClickDelete && <Button onClick = {this.props.onClickDelete}><Icon glyph='fa-times' /></Button>}
+
                 </div>
                 break;
         }
