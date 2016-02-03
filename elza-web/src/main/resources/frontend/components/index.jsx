@@ -48,6 +48,7 @@ exports.AddNodeDropdown = require('./arr/AddNodeDropdown');
 exports.AddFaForm = require('./arr/AddFaForm');
 exports.AddPacketForm = require('./arr/AddPacketForm');
 exports.BulkActionsDialog = require('./arr/BulkActionsDialog');
+exports.BulkActionsTable = require('./arr/BulkActionsTable');
 exports.FaExtendedView = require('./arr/FaExtendedView');
 exports.FaTreeMain = require('./arr/FaTreeMain');
 exports.FaTreeMovementsLeft = require('./arr/FaTreeMovementsLeft');

@@ -6,7 +6,6 @@ import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.BulkActionStateVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,7 +26,6 @@ import java.util.List;
 @RequestMapping("/api/bulkActionManagerV2")
 public class BulkActionController {
 
-    private final org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     private FindingAidVersionRepository findingAidVersionRepository;
 
