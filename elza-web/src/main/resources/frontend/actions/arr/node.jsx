@@ -19,7 +19,7 @@ export function nodesFetchIfNeeded(versionId) {
             if (nodeIds.length > 0) {
                 dispatch(nodesRequest(versionId, nodeIds));
 
-                WebApi.getNodes(nodeIds)
+                WebApi.getNodes(versionId, nodeIds)
                     .then(json => {
                         dispatch(nodesReceive(versionId, json));
                     })

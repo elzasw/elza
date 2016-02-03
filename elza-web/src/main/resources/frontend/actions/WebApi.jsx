@@ -36,8 +36,8 @@ class WebApi{
         return AjaxUtils.ajaxPost('/api/arrangementManagerV2/getVersions', null, {ids: versionIds});
     }
 
-    getNodes(nodeIds) {
-        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/nodes', null, {ids: nodeIds});
+    getNodes(versionId, nodeIds) {
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/nodes', null, {versionId: versionId, ids: nodeIds});
     }
 
     insertRelation(relation) {

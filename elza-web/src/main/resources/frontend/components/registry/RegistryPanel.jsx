@@ -82,7 +82,22 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         });
     }
     editRecord(){
-        this.dispatch(modalDialogShow(this, i18n('registry.editRegistry') , <EditRegistryForm initData={{nameMain: this.props.registryData.item.record , characteristics: this.props.registryData.item.characteristics}} create onSubmit={this.handleCallEditRegistry.bind(this)} />));
+        this.dispatch(
+            modalDialogShow(
+                this,
+                i18n('registry.editRegistry'),
+                <EditRegistryForm
+                    initData={{
+                            nameMain: this.props.registryData.item.record,
+                            characteristics: this.props.registryData.item.characteristics,
+                            scopeId: this.props.registryData.item.scopeId,
+                            registerTypeId: this.props.registryData.item.registerTypeId
+                        }}
+                    create
+                    onSubmit={this.handleCallEditRegistry.bind(this)}
+                />
+            )
+        );
     }
 
     handleBlurVariant(item, element){
