@@ -194,7 +194,7 @@ _debugStates && console.log("@CLICK:", inside);
         }
 
         return (
-            <div ref='menuParent' className={cls} _style={style}>
+            <div ref='menuParent' className={cls} style={style}>
                 {header}
                 <div className='autocomplete-menu-wrapper'>
                     <div ref='menu' className='autocomplete-menu'>
