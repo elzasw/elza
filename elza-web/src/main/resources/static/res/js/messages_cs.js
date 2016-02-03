@@ -6,7 +6,7 @@ var messages = {
     "global.data.loading.node": "Načítání seznamu JP",
     "global.data.loading.node.children": "Načítání seznamu potomků JP",
 
-    "global.error.ajax": "Problém ajaxového volání",
+    "global.error.ajax": "Při komunikaci nastala chyba",
     "global.action.create": "Vytvořit",
     "global.action.add": "Přidat",
     "global.action.cancel": "Storno",

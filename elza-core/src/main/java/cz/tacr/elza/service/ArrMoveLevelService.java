@@ -83,10 +83,9 @@ public class ArrMoveLevelService {
 
         Assert.notEmpty(transportNodes);
 
-        ArrLevel staticLevelParent = lockNode(staticParentNode, version);
-        ArrLevel transportLevelParent = transportParentNode.equals(staticParentNode) ? staticLevelParent
-                                                                                     : lockNode(transportParentNode,
-                                                                                             version);
+        ArrLevel staticLevelParent = arrangementService.lockNode(staticParentNode, version);
+        ArrLevel transportLevelParent = transportParentNode.equals(staticParentNode)
+                                        ? staticLevelParent: arrangementService.lockNode(transportParentNode, version);
         ArrLevel staticLevel = levelRepository
                 .findNodeInRootTreeByNodeId(staticNode, version.getRootLevel().getNode(), version.getLockChange());
         Assert.notNull(staticLevel);
@@ -95,7 +94,7 @@ public class ArrMoveLevelService {
         List<ArrLevel> transportLevels = new ArrayList<>(transportNodes.size());
         for (ArrNode transportNode : transportNodes) {
             ArrLevel transportLevel = transportNode.equals(staticParentNode)
-                                      ? staticLevelParent : lockNode(transportNode, version);
+                                      ? staticLevelParent : arrangementService.lockNode(transportNode, version);
 
             if (!transportLevel.getNodeParent().equals(transportParentNode)) {
                 throw new IllegalStateException("Všechny přesouvané uzly musejí mít stejného rodiče.");
@@ -129,7 +128,7 @@ public class ArrMoveLevelService {
                                  final ArrLevel transportLevelParent) {
 
         Integer versionId = version.getFindingAidVersionId();
-        isValidAndOpenVersion(version);
+        arrangementService.isValidAndOpenVersion(version);
 
         Set<Integer> transportNodeIds = new HashSet<>();
         transportLevels.forEach((t) -> transportNodeIds.add(t.getNode().getNodeId()));
@@ -203,10 +202,9 @@ public class ArrMoveLevelService {
                                 final ArrNode transportParentNode) {
         Assert.notEmpty(transportNodes);
 
-        ArrLevel staticLevelParent = lockNode(staticParentNode, version);
-        ArrLevel transportLevelParent = transportParentNode.equals(staticParentNode) ? staticLevelParent
-                                                                                     : lockNode(transportParentNode,
-                                                                                             version);
+        ArrLevel staticLevelParent = arrangementService.lockNode(staticParentNode, version);
+        ArrLevel transportLevelParent = transportParentNode.equals(staticParentNode)
+                                        ? staticLevelParent : arrangementService.lockNode(transportParentNode, version);
         ArrLevel staticLevel = levelRepository
                 .findNodeInRootTreeByNodeId(staticNode, version.getRootLevel().getNode(), version.getLockChange());
         Assert.notNull(staticLevel);
@@ -215,7 +213,7 @@ public class ArrMoveLevelService {
         List<ArrLevel> transportLevels = new ArrayList<>(transportNodes.size());
         for (ArrNode transportNode : transportNodes) {
             ArrLevel transportLevel = transportNode.equals(staticParentNode)
-                                      ? staticLevelParent : lockNode(transportNode, version);
+                                      ? staticLevelParent : arrangementService.lockNode(transportNode, version);
 
             if (!transportLevel.getNodeParent().equals(transportParentNode)) {
                 throw new IllegalStateException("Všechny přesouvané uzly musejí mít stejného rodiče.");
@@ -250,7 +248,7 @@ public class ArrMoveLevelService {
                                 final ArrLevel transportLevelParent) {
 
         Integer versionId = version.getFindingAidVersionId();
-        isValidAndOpenVersion(version);
+        arrangementService.isValidAndOpenVersion(version);
 
         Set<Integer> transportNodeIds = new HashSet<>();
         transportLevels.forEach((t) -> transportNodeIds.add(t.getNode().getNodeId()));
@@ -317,9 +315,9 @@ public class ArrMoveLevelService {
                                 final ArrNode staticNode,
                                 final Collection<ArrNode> transportNodes,
                                 final ArrNode transportParentNode) {
-        ArrLevel staticLevel = lockNode(staticNode, version);
-        ArrLevel transportLevelParent = staticNode.equals(transportParentNode) ? staticLevel
-                                                                               : lockNode(transportParentNode, version);
+        ArrLevel staticLevel = arrangementService.lockNode(staticNode, version);
+        ArrLevel transportLevelParent = staticNode.equals(transportParentNode)
+                                        ? staticLevel : arrangementService.lockNode(transportParentNode, version);
 
         List<ArrLevel> transportLevels = new ArrayList<>(transportNodes.size());
 
@@ -328,7 +326,7 @@ public class ArrMoveLevelService {
                 throw new IllegalStateException("Nelze vložit záznam na stejné místo ve stromu");
             }
 
-            ArrLevel transportLevel = lockNode(transportNode, version);
+            ArrLevel transportLevel = arrangementService.lockNode(transportNode, version);
 
             if (!transportLevel.getNodeParent().equals(transportParentNode)) {
                 throw new IllegalStateException("Všechny přesouvané uzly musejí mít stejného rodiče.");
@@ -358,7 +356,7 @@ public class ArrMoveLevelService {
                                 final List<ArrLevel> transportLevels) {
 
         Integer versionId = version.getFindingAidVersionId();
-        isValidAndOpenVersion(version);
+        arrangementService.isValidAndOpenVersion(version);
 
         Set<Integer> transportNodeIds = new HashSet<>();
         transportLevels.forEach((t) -> transportNodeIds.add(t.getNode().getNodeId()));
@@ -408,9 +406,9 @@ public class ArrMoveLevelService {
         Assert.notNull(version);
         Assert.notNull(deleteNode);
 
-        ArrLevel deleteLevel = lockNode(deleteNode, version);
+        ArrLevel deleteLevel = arrangementService.lockNode(deleteNode, version);
         if (deleteNodeParent != null) {
-            lockNode(deleteNodeParent, version);
+            arrangementService.lockNode(deleteNodeParent, version);
 
             if(!ObjectUtils.equals(deleteLevel.getNodeParent(), deleteNodeParent)){
                 throw new IllegalArgumentException(
@@ -560,10 +558,10 @@ public class ArrMoveLevelService {
         }
 
 
-        ArrLevel youngerSibling = levelRepository.findYoungerSibling(newLevel, version.getLockChange());
-        if(youngerSibling != null && !descItemCopyTypes.isEmpty()){
+        ArrLevel olderSibling = levelRepository.findOlderSibling(newLevel, version.getLockChange());
+        if(olderSibling != null && !descItemCopyTypes.isEmpty()){
             List<ArrDescItem> siblingDescItems = descItemRepository
-                    .findOpenByNodeAndTypes(youngerSibling.getNode(), descItemCopyTypes);
+                    .findOpenByNodeAndTypes(olderSibling.getNode(), descItemCopyTypes);
             descriptionItemService.copyDescItemWithDataToNode(newLevel.getNode(), siblingDescItems, change, version);
         }
 
@@ -598,9 +596,9 @@ public class ArrMoveLevelService {
         Assert.notNull(staticNodeParent);
 
 
-        isValidAndOpenVersion(version);
+        arrangementService.isValidAndOpenVersion(version);
 
-        final ArrLevel staticLevelParent = lockNode(staticNodeParent, version);
+        final ArrLevel staticLevelParent = arrangementService.lockNode(staticNodeParent, version);
         Assert.notNull(staticLevelParent);
 
         final ArrLevel staticLevel = levelRepository
@@ -635,9 +633,9 @@ public class ArrMoveLevelService {
         Assert.notNull(staticNode);
 
 
-        isValidAndOpenVersion(version);
+        arrangementService.isValidAndOpenVersion(version);
 
-        final ArrLevel staticLevel = lockNode(staticNode, version);
+        final ArrLevel staticLevel = arrangementService.lockNode(staticNode, version);
         Assert.notNull(staticLevel);
 
 
@@ -652,27 +650,6 @@ public class ArrMoveLevelService {
         return newLevel;
     }
 
-
-
-    /**
-     * Provede uzamčení nodu (zvýšení verze uzlu)
-     *
-     * @param lockNode uzamykaný node
-     * @param version  verze stromu, do které patří uzel
-     * @return level nodu
-     */
-    private ArrLevel lockNode(final ArrNode lockNode, final ArrFindingAidVersion version) {
-        ArrLevel lockLevel = levelRepository
-                .findNodeInRootTreeByNodeId(lockNode, version.getRootLevel().getNode(), version.getLockChange());
-        Assert.notNull(lockLevel);
-        ArrNode staticNodeDb = lockLevel.getNode();
-
-        lockNode.setUuid(staticNodeDb.getUuid());
-        lockNode.setLastUpdate(LocalDateTime.now());
-        nodeRepository.save(lockNode);
-
-        return lockLevel;
-    }
 
     /**
      * Zkontroluje, pře přesouvaný uzel není rodičem cílového uzlu.
@@ -698,21 +675,6 @@ public class ArrMoveLevelService {
         }
     }
 
-
-    /**
-     * Kontrola verze, že existuje v DB a není uzavřena.
-     *
-     * @param version verze
-     */
-    private void isValidAndOpenVersion(final ArrFindingAidVersion version) {
-        Assert.notNull(version);
-        if (version == null) {
-            throw new IllegalArgumentException("Verze neexistuje");
-        }
-        if (version.getLockChange() != null) {
-            throw new IllegalArgumentException("Aktuální verze je zamčená");
-        }
-    }
 
     /**
      * Smaže uzel (uzamkne) a vytvoří jeho kopii.

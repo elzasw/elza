@@ -29,13 +29,13 @@ public interface LevelRepositoryCustom {
 
 
     /**
-     * Najde mladšího sourozence daného uzlu.
+     * Najde staršího sourozence daného uzlu.
      *
      * @param level      uzel, kterému hledáme sourozence
      * @param lockChange uzavření verze uzlu, ve které hledáme
      * @return nalezený sourozenece nebo null
      */
-    ArrLevel findYoungerSibling(ArrLevel level, @Nullable ArrChange lockChange);
+    ArrLevel findOlderSibling(ArrLevel level, @Nullable ArrChange lockChange);
 
 
     /**

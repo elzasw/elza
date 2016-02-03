@@ -51,7 +51,7 @@ public interface DescItemRepository extends JpaRepository<ArrDescItem, Integer>,
      * @param descItemTypes možné typy atributu
      * @return seznam atributů daného typu
      */
-    @Query("SELECT i FROM arr_desc_item i WHERE i.node = ?1 AND descItemType IN (?2)")
+    @Query("SELECT i FROM arr_desc_item i WHERE i.node = ?1 AND i.deleteChange IS NULL AND descItemType IN (?2)")
     List<ArrDescItem> findOpenByNodeAndTypes(ArrNode node, Set<RulDescItemType> descItemTypes);
 
     /**

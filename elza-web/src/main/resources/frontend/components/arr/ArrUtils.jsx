@@ -51,11 +51,10 @@ export function getNodeParents(nodes, nodeId) {
 /**
  * Vytvoření virtuálního kořenového uzlu pro kořenový uzel FA.
  * @param {Object} fa fa
- * @param {Object} rootNode kořenový node fa
  * @return {Object} virtuální kořenový uzel pro kořenový uzel FA
  */
-export function createFaRoot(fa, rootNode) {
-    return {id: 'ROOT_' + rootNode.id, name: fa.name, root: true};
+export function createFaRoot(fa) {
+    return {id: 'ROOT_' + fa.versionId, name: fa.name, root: true};
 }
 
 /**

@@ -21,10 +21,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionState;
+import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
@@ -716,6 +716,20 @@ public class ClientFactoryVO {
         Integer specId = (descItem.getDescItemSpec() == null) ? null : descItem.getDescItemSpec().getDescItemSpecId();
         descItemVO.setDescItemSpecId(specId);
         return descItemVO;
+    }
+
+    /**
+     * Vytvoří seznam atributů.
+     *
+     * @param descItems seznam DO atributů
+     * @return seznam VO atributů
+     */
+    public List<ArrDescItemVO> createDescItems(final List<ArrDescItem> descItems) {
+        List<ArrDescItemVO> result = new ArrayList<>(descItems.size());
+        for (ArrDescItem descItem : descItems) {
+            result.add(createDescItem(descItem));
+        }
+        return result;
     }
 
     /**

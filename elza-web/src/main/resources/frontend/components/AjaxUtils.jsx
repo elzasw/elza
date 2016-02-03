@@ -105,10 +105,10 @@ function ajaxCallRaw(url, params, method, data) {
                 if (result.error) {
 
                     var messages = new Array();
-                    messages.push(<small>{result.statusText} [{result.status}]</small>);
                     if (result.message) {
                         messages.push(<p><LongText text={result.message}/></p>);
                     }
+                    messages.push(<small>{result.statusText} [{result.status}]</small>);
                     Toastr.Actions.danger({title: result.title, message: messages});
                 }
 
@@ -199,10 +199,10 @@ function ajaxCall(url, params, method, data) {
                 if (result.error) {
 
                     var messages = new Array();
-                    messages.push(<small>{result.statusText} [{result.status}]</small>);
                     if (result.message) {
                         messages.push(<p><LongText text={result.message}/></p>);
                     }
+                    messages.push(<small>{result.statusText} [{result.status}]</small>);
                     Toastr.Actions.danger({title: result.title, message: messages});
                 }
 
