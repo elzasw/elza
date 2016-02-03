@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.ElzaRules;
+import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionState;
@@ -147,7 +147,7 @@ public class ClientFactoryVO {
     private RegisterTypeRepository registerTypeRepository;
 
     @Autowired
-    private ElzaRules elzaRules;
+    private ConfigRules elzaRules;
 
     /**
      * Vytvoří detailní objekt osoby. Načte všechna navázaná data.
@@ -750,7 +750,7 @@ public class ClientFactoryVO {
 
         // rozřazení do skupin podle konfigurace
         for (RulDescItemTypeDescItemsVO descItemTypeVO : descItemTypeVOList) {
-            ElzaRules.Group group = elzaRules.getGroupByType(descItemTypeVO.getCode());
+            ConfigRules.Group group = elzaRules.getGroupByType(descItemTypeVO.getCode());
             ArrDescItemGroupVO descItemGroupVO = descItemGroupVOMap.get(group.getCode());
 
             if (descItemGroupVO == null) {
@@ -837,7 +837,7 @@ public class ClientFactoryVO {
         Map<String, ArrDescItemTypeGroupVO> descItemTypeGroupVOMap = new HashMap<>();
 
         for (RulDescItemTypeExtVO descItemTypeVO : descItemTypeExtList) {
-            ElzaRules.Group group = elzaRules.getGroupByType(descItemTypeVO.getCode());
+            ConfigRules.Group group = elzaRules.getGroupByType(descItemTypeVO.getCode());
             ArrDescItemTypeGroupVO descItemTypeGroupVO = descItemTypeGroupVOMap.get(group.getCode());
 
             if (descItemTypeGroupVO == null) {

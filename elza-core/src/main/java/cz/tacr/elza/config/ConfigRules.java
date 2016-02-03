@@ -1,4 +1,4 @@
-package cz.tacr.elza;
+package cz.tacr.elza.config;
 
 
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ import cz.tacr.elza.repository.FindingAidVersionRepository;
  */
 @Component
 @ConfigurationProperties(prefix = "elza")
-public class ElzaRules {
+public class ConfigRules {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 

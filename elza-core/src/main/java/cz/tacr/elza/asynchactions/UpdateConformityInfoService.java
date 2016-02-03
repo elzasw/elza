@@ -24,8 +24,7 @@ import org.springframework.util.Assert;
 
 import com.google.common.eventbus.EventBus;
 
-import cz.tacr.elza.ElzaRules;
-import cz.tacr.elza.controller.RuleManager;
+import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
@@ -56,7 +55,7 @@ public class UpdateConformityInfoService {
     private EventBus eventBus;
 
     @Autowired
-    private ElzaRules elzaRules;
+    private ConfigRules elzaRules;
 
     private ThreadLocal<Set<ArrNode>> nodesToUpdate = new ThreadLocal<>();
 

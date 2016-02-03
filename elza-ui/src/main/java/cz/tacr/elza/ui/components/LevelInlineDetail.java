@@ -27,7 +27,7 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
 import cz.req.ax.AxAction;
 import cz.req.ax.AxWindow;
-import cz.tacr.elza.ElzaRules;
+import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.api.controller.PartyManager;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.ParPartyWithCount;
@@ -70,21 +70,6 @@ import cz.tacr.elza.ui.utils.ConcurrentUpdateExceptionHandler;
 import cz.tacr.elza.ui.utils.ElzaNotifications;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.ui.view.FindingAidDetailView;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 
 /**
@@ -120,7 +105,7 @@ public class LevelInlineDetail extends CssLayout implements Components, Initiali
     private RegistryManager registryManager;
 
     @Autowired
-    private ElzaRules elzaRules;
+    private ConfigRules elzaRules;
 
     @Autowired
     private EntityManager entityManager;

@@ -20,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.ElzaRules;
+import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
@@ -75,7 +75,7 @@ public class RuleService {
     @Autowired
     private RulesExecutor rulesExecutor;
     @Autowired
-    private ElzaRules elzaRules;
+    private ConfigRules elzaRules;
 
     @Autowired
     private VersionConformityRepository versionConformityRepository;
