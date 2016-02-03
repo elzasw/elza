@@ -37,7 +37,7 @@ export function storeSave() {
 
         // Načtení dat pro uložení
         var data = save(store);
-        console.log('@@@@storeSave', data);
+        //console.log('@@@@storeSave', data);
 
         // Uložení dat do store - pro zobrazování home stránky a pro uložení dalších inicializačních dat, např. splitter atp.
         dispatch(storeStateData(data))

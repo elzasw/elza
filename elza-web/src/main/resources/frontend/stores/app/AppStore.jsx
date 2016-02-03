@@ -71,7 +71,12 @@ let reducer = combineReducers({
 });
 
 // Store a middleware
-const loggerMiddleware = createLogger()
+const loggerMiddleware = createLogger({
+    collapsed: true,
+    duration: true,
+    predicate: (getState, action) => action.type !== types.STORE_STATE_DATA
+})
+
 var createStoreWithMiddleware;
 if (_logStoreState) {
     createStoreWithMiddleware = applyMiddleware(
