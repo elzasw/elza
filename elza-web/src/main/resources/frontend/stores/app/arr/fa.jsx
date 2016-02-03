@@ -42,10 +42,7 @@ function updateFaTree(state, action) {
     }
 }
 
-const faInitialState = {
-}
-
-export function fa(state = nodeInitialState, action) {
+export function fa(state, action) {
     switch (action.type) {
         case types.STORE_LOAD:
             return {
@@ -56,6 +53,7 @@ export function fa(state = nodeInitialState, action) {
                 faTreeMovementsLeft: faTree(state.faTreeMovementsLeft, action),
                 faTreeMovementsRight: faTree(state.faTreeMovementsRight, action),
                 nodes: nodes(state.nodes, action),
+                bulkActions: bulkActions(undefined, {type: ''})
             }
         case types.STORE_SAVE:
             const {id, faId, versionId, name} = state;
