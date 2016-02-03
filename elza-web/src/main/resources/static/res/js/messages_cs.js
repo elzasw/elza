@@ -119,6 +119,7 @@ var messages = {
     "party.detail.name.preferred" : "(jméno, pod nímž je entita nejvíce známa)",
     "party.detail.name.new":"Nové jméno",
     "party.detail.name.delete": "Opravdu chcete ostranit toto jméno?",
+    "party.detail.name.prefferedName": "Opravdu chcete nastavit nové hlavní jméno osoby?",
     "party.detail.note": "Poznámka",
     "party.detail.history": "Dějiny",
     "party.detail.sources": "Zdroje Informací",

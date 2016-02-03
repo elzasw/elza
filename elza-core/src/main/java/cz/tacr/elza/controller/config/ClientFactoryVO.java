@@ -166,6 +166,11 @@ public class ClientFactoryVO {
                         createParPartyNameDetail(n)
         ));
 
+        result.getPartyNames().sort((a,b)->
+            a.isPrefferedName() ? -1 : a.getPartyNameId().compareTo(b.getPartyNameId())
+        );
+
+
         result.setRelations(createPartyRelations(party));
         result.setCreators(createPartyList(partyRepository.findCreatorsByParty(party)));
 

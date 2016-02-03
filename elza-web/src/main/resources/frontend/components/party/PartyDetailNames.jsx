@@ -43,6 +43,12 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
         }
     }
 
+    handleSelectPrefferedName(nameId, event){
+        if(confirm(i18n('party.detail.name.prefferedName'))){
+            this.setPrefferedName(nameId);
+        }
+    }
+
    /**
      * DELETE NAME
      * *********************************************
@@ -59,6 +65,20 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
         }
         party.partyNames = names;                                   // vyměníme starý seznam jmen za nový
         this.dispatch(updateParty(party));                          // změny uložíme
+    }
+
+    /**
+     * Nastaví preferované jméno osoby.
+     * @param nameId id preferovaného jména
+     */
+    setPrefferedName(nameId) {
+        var party = this.props.partyRegion.selectedPartyData;
+
+        party.partyNames.forEach(p => {
+            p.prefferedName = p.partyNameId == nameId;
+        });
+
+        this.dispatch(updateParty(party));
     }
 
    /**
@@ -207,15 +227,25 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
      */ 
     render() {
         var party = this.props.partyRegion.selectedPartyData;
+       console.log("render xxx");
         return  <div className="partyNames">
                     <table>
                         <tbody>
-                            {party.partyNames.map(i=> {return <tr className="name">
-                                <th className="name column">{i.displayName}</th> 
-                                <td className="buttons">
-                                    <Button className="column" onClick={this.handleUpdateName.bind(this, i.partyNameId)}><Icon glyph="fa-pencil"/></Button>
-                                    <Button className="column" onClick={this.handleDeleteName.bind(this, i.partyNameId)}><Icon glyph="fa-trash"/></Button>
-                                </td>
+                            {party.partyNames.map(i=> {
+                                var cls = "name column";
+                                if(i.prefferedName){
+                                    cls += " text-bold";
+                                }
+
+                                var prefferedBtn = i.prefferedName ? "" :
+                                                   <Button className="column" onClick={this.handleSelectPrefferedName.bind(this, i.partyNameId)}><Icon glyph="fa-check"/></Button>;
+                                return <tr className="name">
+                                <td className={cls}>{i.displayName}</td>
+                                    <td className="buttons">
+                                        <Button className="column" onClick={this.handleUpdateName.bind(this, i.partyNameId)}><Icon glyph="fa-pencil"/></Button>
+                                        <Button className="column" onClick={this.handleDeleteName.bind(this, i.partyNameId)}><Icon glyph="fa-trash"/></Button>
+                                        {prefferedBtn}
+                                    </td>
                                 <td className="description">{(i.preferred ? i18n('party.detail.name.preferred') : "" )}</td>
                             </tr>})}
                         </tbody>
