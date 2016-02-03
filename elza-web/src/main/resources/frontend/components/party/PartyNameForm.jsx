@@ -6,8 +6,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/actionTypes';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n} from 'components';
-import {Modal, Button, Input, Glyphicon} from 'react-bootstrap';
+import {AbstractReactComponent, i18n, Icon} from 'components';
+import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField} from 'components/form/FormUtils'
 import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFormTypes'
@@ -240,7 +240,6 @@ var PartyNameForm = class PartyNameForm extends AbstractReactComponent {
                                 </div>
                             </div>
                         </div>
-                        <hr/>
                         <h5>{i18n('party.nameComplements')}</h5>
                         <div>
                             {this.state.data.complements.map((j,index)=> {return <div className="block complement">
@@ -250,11 +249,11 @@ var PartyNameForm = class PartyNameForm extends AbstractReactComponent {
                                         <option value={0} key={0}></option> 
                                         {complementsTypes ? complementsTypes.map(i=> {return <option value={i.complementTypeId} key={i.complementTypeId}>{i.name}</option>}) : null}
                                     </Input> 
-                                    <Button onClick={this.removeComplement.bind(this, index)}><Glyphicon glyph="trash" /></Button>  
+                                    <Button onClick={this.removeComplement.bind(this, index)}><Icon glyph="fa-trash"/></Button>
                                 </div>
                             </div>})}
                         </div>   
-                        <Button onClick={this.addComplement}><Glyphicon glyph="plus" /></Button>
+                        <Button onClick={this.addComplement}><Icon glyph="fa-plus"/></Button>
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

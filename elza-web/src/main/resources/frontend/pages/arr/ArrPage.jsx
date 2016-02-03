@@ -213,7 +213,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         }
 
         var rightPanel = (
-            <div>
+            <div className="fa-right-container">
                 
             </div>
         )

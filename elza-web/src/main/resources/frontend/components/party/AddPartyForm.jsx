@@ -306,7 +306,7 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
                                         <option value={0} key={0}></option> 
                                         {complementsTypes ? complementsTypes.map(i=> {return <option value={i.complementTypeId} key={i.complementTypeId}>{i.name}</option>}) : null}
                                     </Input> 
-                                    <Button onClick={this.removeComplement.bind(this, index)}><Glyphicon glyph="trash" /></Button>  
+                                    <Button onClick={this.removeComplement.bind(this, index)}><Icon glyph="fa-trash"/></Button>
                                 </div>
                             </div>})}
                         </div>   
