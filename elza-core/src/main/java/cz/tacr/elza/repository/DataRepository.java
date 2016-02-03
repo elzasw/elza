@@ -17,7 +17,7 @@ import java.util.List;
  * @since 20.8.2015
  */
 @Repository
-public interface DataRepository extends JpaRepository<ArrData, Integer> {
+public interface DataRepository extends JpaRepository<ArrData, Integer>, DataRepositoryCustom {
 
     @Query(value = "SELECT d FROM arr_data d join fetch d.descItem i "
             + "left join fetch i.createChange cc "
