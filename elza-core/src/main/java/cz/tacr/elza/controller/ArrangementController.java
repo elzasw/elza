@@ -581,15 +581,15 @@ public class ArrangementController {
      */
     @RequestMapping(value = "/nodes", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<ArrNodeVO> getNodes(@RequestBody final IdsParam idsParam) {
+    public List<TreeNodeClient> getNodes(@RequestBody final IdsParam idsParam) {
+        Assert.notNull(idsParam.getVersionId(), "Nebyla zadána verze stromu.");
 
-        Set<Integer> nodeIds = idsParam.getIds();
+        List<Integer> nodeIds = idsParam.getIds();
         if (nodeIds.isEmpty()) {
             return Collections.EMPTY_LIST;
         }
 
-        List<ArrNode> nodes = nodeRepository.findAll(nodeIds);
-        return factoryVo.createArrNodes(nodes);
+        return levelTreeCacheService.getNodesByIds(nodeIds, idsParam.getVersionId());
     }
 
 
@@ -1113,15 +1113,24 @@ public class ArrangementController {
     }
 
     public static class IdsParam {
-        private Set<Integer> ids;
 
+        private List<Integer> ids;
+        private Integer versionId;
 
-        public Set<Integer> getIds() {
+        public List<Integer> getIds() {
             return ids;
         }
 
-        public void setIds(final Set<Integer> ids) {
+        public void setIds(final List<Integer> ids) {
             this.ids = ids;
+        }
+
+        public Integer getVersionId() {
+            return versionId;
+        }
+
+        public void setVersionId(final Integer versionId) {
+            this.versionId = versionId;
         }
     }
 }

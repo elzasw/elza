@@ -16,7 +16,7 @@ import cz.tacr.elza.domain.ArrLevel;
  * @since 22.7.15
  */
 @Repository
-public interface FindingAidVersionRepository extends JpaRepository<ArrFindingAidVersion, Integer> {
+public interface FindingAidVersionRepository extends ElzaJpaRepository<ArrFindingAidVersion, Integer> {
 
     @Query(value = "select v from arr_finding_aid_version v join v.createChange ch join v.findingAid fa where fa.findingAidId = :findingAidId order by ch.changeDate asc")
     List<ArrFindingAidVersion> findVersionsByFindingAidIdOrderByCreateDateAsc(@Param(value = "findingAidId") Integer findingAidId);
@@ -31,4 +31,10 @@ public interface FindingAidVersionRepository extends JpaRepository<ArrFindingAid
 
     @Query(value = "SELECT v FROM arr_finding_aid_version v join fetch v.findingAid fa join fetch v.arrangementType at join fetch at.ruleSet join fetch v.createChange left join fetch v.lockChange order by fa.name asc, v.createChange.changeId desc")
     List<ArrFindingAidVersion> findAllFetchFindingAids();
+
+
+    @Override
+    default String getClassName() {
+        return ArrFindingAidVersion.class.getSimpleName();
+    }
 }

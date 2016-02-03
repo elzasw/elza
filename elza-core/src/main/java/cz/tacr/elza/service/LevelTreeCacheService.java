@@ -176,6 +176,30 @@ public class LevelTreeCacheService {
     }
 
     /**
+     * Načte seznam nodů podle jejich id v dané verzi AP. Vrácený seznam je ve stejném pořadí jako id.
+     *
+     * @param nodeIds   id uzlů
+     * @param versionId id verze stromu
+     * @return nalezené uzly
+     */
+    public List<TreeNodeClient> getNodesByIds(final Collection<Integer> nodeIds, final Integer versionId) {
+
+        ArrFindingAidVersion version = findingAidVersionRepository.getOneCheckExist(versionId);
+
+        Map<Integer, TreeNode> versionTreeCache = getVersionTreeCache(version);
+
+        Map<Integer, TreeNode> subMap = new LinkedHashMap<>();
+        for (Integer nodeId : nodeIds) {
+            TreeNode treeNode = versionTreeCache.get(nodeId);
+            if (treeNode != null) {
+                subMap.put(treeNode.getId(), treeNode);
+            }
+        }
+
+        return new ArrayList<>(createNodesWithTitles(subMap, version).values());
+    }
+
+    /**
      * Přidá informace o stavu uzlů.
      *
      * @param treeData  data stromu pro otevřené uzly
@@ -661,7 +685,7 @@ public class LevelTreeCacheService {
         }
 
 
-        Map<Integer, TreeNodeClient> result = new HashMap<>(treeNodeMap.size());
+        Map<Integer, TreeNodeClient> result = new LinkedHashMap<>(treeNodeMap.size());
         for (TreeNode treeNode : treeNodeMap.values()) {
             DescItemRepositoryCustom.DescItemTitleInfo title = nodeTitlesMap.get(treeNode.getId());
             result.put(treeNode.getId(), new TreeNodeClient(treeNode.getId(), treeNode.getDepth(),
