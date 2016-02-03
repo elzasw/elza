@@ -37,6 +37,7 @@ import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTypeGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
@@ -53,6 +54,7 @@ import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulPacketType;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
@@ -123,6 +125,9 @@ public class ArrangementController {
 
     @Autowired
     private RegistryService registryService;
+
+    @Autowired
+    private DescItemFactory descItemFactory;
 
     @RequestMapping(value = "/packets/types",
             method = RequestMethod.GET,
@@ -648,6 +653,38 @@ public class ArrangementController {
 
 
     /**
+     * Provede zkopírování atributu daného typu ze staršího bratra uzlu.
+     *
+     * @param versionId      id verze stromu
+     * @param descItemTypeId typ atributu, který chceme zkopírovat
+     * @param nodeVO         uzel, na který nastavíme hodnoty ze staršího bratra
+     * @return vytvořené hodnoty
+     */
+    @Transactional
+    @RequestMapping(value = "/copyOlderSiblingAttribute", method = RequestMethod.PUT)
+    public CopySiblingResult copyOlderSiblingAttribute(
+            @RequestParam(required = true) final Integer versionId,
+            @RequestParam(required = true) final Integer descItemTypeId,
+            @RequestBody final ArrNodeVO nodeVO) {
+
+        ArrFindingAidVersion version = findingAidVersionRepository.getOneCheckExist(versionId);
+        RulDescItemType descItemType = descItemTypeRepository.getOneCheckExist(descItemTypeId);
+        ArrNode node = factoryDO.createNode(nodeVO);
+        ArrLevel level = arrangementService.lockNode(node, version);
+
+        List<ArrDescItem> newDescItems = arrangementService.copyOlderSiblingAttribute(version, descItemType, level);
+        newDescItems = descItemFactory.getDescItems(newDescItems);
+
+        RulDescItemTypeDescItemsVO descItemTypeVO = factoryVo.createDescItemTypeVO(descItemType);
+        descItemTypeVO.setDescItems(factoryVo.createDescItems(newDescItems));
+
+        ArrNodeVO resultNode = factoryVo.createArrNode(level.getNode());
+
+        return new CopySiblingResult(resultNode, descItemTypeVO);
+    }
+
+
+    /**
      * Provede načtení stromu uzlů. Uzly mohou být rozbaleny.
      *
      * @param input vstupní data pro načtení
@@ -1131,6 +1168,33 @@ public class ArrangementController {
 
         public void setVersionId(final Integer versionId) {
             this.versionId = versionId;
+        }
+    }
+
+    public static class CopySiblingResult {
+
+        private ArrNodeVO node;
+        private RulDescItemTypeDescItemsVO type;
+
+        public CopySiblingResult(final ArrNodeVO node, final RulDescItemTypeDescItemsVO type) {
+            this.node = node;
+            this.type = type;
+        }
+
+        public ArrNodeVO getNode() {
+            return node;
+        }
+
+        public void setNode(final ArrNodeVO node) {
+            this.node = node;
+        }
+
+        public RulDescItemTypeDescItemsVO getType() {
+            return type;
+        }
+
+        public void setType(final RulDescItemTypeDescItemsVO type) {
+            this.type = type;
         }
     }
 }

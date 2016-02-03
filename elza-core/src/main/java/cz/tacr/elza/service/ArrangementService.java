@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,6 +35,7 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.domain.RulArrangementType;
+import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
@@ -538,6 +540,55 @@ public class ArrangementService {
         return descItemFactory.getDescItems(itemList);
     }
 
+
+    /**
+     * Provede zkopírování atributu daného typu ze staršího bratra uzlu.
+     *
+     * @param version      verze stromu
+     * @param descItemType typ atributu, který chceme zkopírovat
+     * @param level        uzel, na který nastavíme hodnoty ze staršího bratra
+     * @return vytvořené hodnoty
+     */
+    public List<ArrDescItem> copyOlderSiblingAttribute(final ArrFindingAidVersion version,
+                                                       final RulDescItemType descItemType,
+                                                       final ArrLevel level) {
+        Assert.notNull(version);
+        Assert.notNull(descItemType);
+        Assert.notNull(level);
+
+        isValidAndOpenVersion(version);
+
+        Set<RulDescItemType> typeSet = new HashSet<>();
+        typeSet.add(descItemType);
+
+        ArrLevel olderSibling = levelRepository.findOlderSibling(level, version.getLockChange());
+        if (olderSibling != null) {
+
+            ArrChange change = createChange();
+
+            List<ArrDescItem> siblingDescItems = descItemRepository.findOpenByNodeAndTypes(olderSibling.getNode(),
+                    typeSet);
+            List<ArrDescItem> nodeDescItems = descItemRepository.findOpenByNodeAndTypes(level.getNode(), typeSet);
+
+            if (CollectionUtils.isNotEmpty(nodeDescItems)) {
+                for (ArrDescItem nodeDescItem : nodeDescItems) {
+                    descriptionItemService.deleteDescriptionItem(nodeDescItem, version, change, false);
+                }
+            }
+
+
+            descriptionItemService
+                    .copyDescItemWithDataToNode(level.getNode(), siblingDescItems, change, version);
+        }
+
+        descItemRepository.flush();
+
+        eventNotificationService.publishEvent(EventFactory
+                .createIdInVersionEvent(EventType.COPY_OLDER_SIBLING_ATTRIBUTE, version, level.getNode().getNodeId()));
+
+        return descItemRepository.findOpenByNodeAndTypes(level.getNode(), typeSet);
+    }
+
     /**
      * Zjistí, jestli patří vybraný level do dané verze.
      *
@@ -615,4 +666,41 @@ public class ArrangementService {
 
         return versionNodeIds;
     }
+
+    /**
+     * Kontrola verze, že existuje v DB a není uzavřena.
+     *
+     * @param version verze
+     */
+    public void isValidAndOpenVersion(final ArrFindingAidVersion version) {
+        Assert.notNull(version);
+        if (version == null) {
+            throw new IllegalArgumentException("Verze neexistuje");
+        }
+        if (version.getLockChange() != null) {
+            throw new IllegalArgumentException("Aktuální verze je zamčená");
+        }
+    }
+
+
+    /**
+     * Provede uzamčení nodu (zvýšení verze uzlu)
+     *
+     * @param lockNode uzamykaný node
+     * @param version  verze stromu, do které patří uzel
+     * @return level nodu
+     */
+    public ArrLevel lockNode(final ArrNode lockNode, final ArrFindingAidVersion version) {
+        ArrLevel lockLevel = levelRepository
+                .findNodeInRootTreeByNodeId(lockNode, version.getRootLevel().getNode(), version.getLockChange());
+        Assert.notNull(lockLevel);
+        ArrNode staticNodeDb = lockLevel.getNode();
+
+        lockNode.setUuid(staticNodeDb.getUuid());
+        lockNode.setLastUpdate(LocalDateTime.now());
+        nodeRepository.save(lockNode);
+
+        return lockLevel;
+    }
+
 }

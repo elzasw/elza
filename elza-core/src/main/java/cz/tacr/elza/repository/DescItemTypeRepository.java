@@ -17,7 +17,7 @@ import cz.tacr.elza.domain.RulPackage;
  * @since 20.8.2015
  */
 @Repository
-public interface DescItemTypeRepository extends JpaRepository<RulDescItemType, Integer> {
+public interface DescItemTypeRepository extends ElzaJpaRepository<RulDescItemType, Integer> {
 
     @Query("SELECT DISTINCT t.dataType FROM rul_desc_item_type t WHERE t = ?1")
     List<RulDataType> findRulDataType(RulDescItemType descItemType);
@@ -51,4 +51,10 @@ public interface DescItemTypeRepository extends JpaRepository<RulDescItemType, I
 
 
     RulDescItemType findOneByCode(String code);
+
+
+    @Override
+    default String getClassName() {
+        return RulDescItemType.class.getSimpleName();
+    }
 }

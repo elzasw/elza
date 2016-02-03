@@ -108,7 +108,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
 
     @Override
-    public ArrLevel findYoungerSibling(final ArrLevel level, @Nullable final ArrChange lockChange) {
+    public ArrLevel findOlderSibling(final ArrLevel level, @Nullable final ArrChange lockChange) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<ArrLevel> query = builder.createQuery(ArrLevel.class);
         Root<ArrLevel> root = query.from(ArrLevel.class);
