@@ -172,7 +172,7 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
 }
 
 FaTreeLazy.defaultProps = {
-    rowHeight: 22
+    rowHeight: 16
 }
 
 FaTreeLazy.propTypes = {

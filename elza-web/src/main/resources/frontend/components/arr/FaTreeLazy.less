@@ -1,6 +1,6 @@
 @import "~variables.less";
 
-@rowHeight: 22px;
+@rowHeight: 16px;
 
 .fa-tree-lazy-main-container {
     height: 100%;
@@ -27,7 +27,7 @@
             color: gray;
             font-size: 0.8em;
             text-align: center;
-            vertical-align: bottom;
+            vertical-align: middle;
             overflow: hidden;
             padding: 0 2px;
         }
@@ -45,7 +45,7 @@
             line-height: 16px;
             width: 16px;
             text-align: center;
-            vertical-align: bottom;
+            vertical-align: middle;
             cursor: pointer;
         }
 
@@ -53,7 +53,7 @@
             display: inline-block;
             height: 16px;
             line-height: 16px;
-            vertical-align: bottom;
+            vertical-align: middle;
             cursor: pointer;
             &:hover {
                 background: @tree-node-label-active-bg;
@@ -64,7 +64,7 @@
             display: inline-block;
             height: 16px;
             line-height: 16px;
-            vertical-align: bottom;
+            vertical-align: middle;
             margin: 0 5px 0 3px;
         }
 
@@ -85,7 +85,7 @@
 
         .focus {
             .node-label {
-                outline: 1px solid @tree-node-focus-border;
+                /*outline: 1px solid @tree-node-focus-border;*/
             }
         }    
     }
