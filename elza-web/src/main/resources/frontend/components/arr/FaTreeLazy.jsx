@@ -7,12 +7,13 @@ require ('./FaTreeLazy.less');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {VirtualList, AbstractReactComponent, i18n, Loading} from 'components';
+import {VirtualList, AbstractReactComponent, i18n, Loading, Icon} from 'components';
 import {Nav, Input, NavItem, Button, DropdownButton} from 'react-bootstrap';
 var classNames = require('classnames');
 import {ResizeStore} from 'stores';
 import {propsEquals} from 'components/Utils'
 import {indexById} from 'stores/app/utils.jsx'
+import {createReferenceMark, getGlyph} from 'components/arr/ArrUtils'
 
 var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     constructor(props) {
@@ -78,31 +79,20 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
             focus: this.props.focusId === node.id,
         })
 
-        var levels = [];
-        if (node.referenceMark) {
-            node.referenceMark.forEach((i, index) => {
-                if (i < 1000) {
-                    levels.push(<span key={'level' + index} className="level">{i}</span>)
-                } else {
-                    levels.push(<span key={'level' + index} className="level">.{i % 1000}</span>)
-                }
-                if (index + 1 < node.referenceMark.length) {
-                    levels.push(<span  key={'sep' + index} className="separator"></span>)
-                }
-            });
-        }
+        var levels = createReferenceMark(node);
 
-        var name = node.name ? node.name : <i>{i18n('faTree.node.name.undefined', node.id)}</i>;
+        var name = node.name ? node.name : i18n('faTree.node.name.undefined', node.id);
 
-        var icon = <span className="node-icon fa fa-briefcase"></span>
+        var icon = <Icon className="node-icon" glyph={getGlyph(node.icon)} />
 
         var label = (
             <span
+                title={name}
                 className='node-label'
                 onClick={onNodeClick.bind(this, node)}
                 onContextMenu={onContextMenu.bind(this, node)}
                 >
-                {name}{node.id}
+                {name}
             </span>
         )
 
