@@ -7,7 +7,8 @@ import {Toastr, i18n} from 'components';
 import * as types from 'actions/constants/actionTypes';
 import {modalDialogHide} from 'actions/global/modalDialog'
 import {faFileTreeFetch} from 'actions/arr/faFileTree'
-import {getFaFromFaAndVersion} from 'components/arr/ArrUtils'
+import {nodesRequest, nodesReceive} from 'actions/arr/node'
+import {createFaRoot, getFaFromFaAndVersion} from 'components/arr/ArrUtils'
 
 export function fasFetchIfNeeded() {
     return (dispatch, getState) => {
@@ -26,6 +27,13 @@ export function fasFetchIfNeeded() {
                 .then(json => {
                     var fas = json.map(x => getFaFromFaAndVersion(x, x.versions[0]))
                     dispatch(fasReceive(fas));
+
+                    // Ještě musíme provést aktualizaci node, pokud je otevřený v záložce takový, který reprezentuje AP - virtuální kořenový NODE
+                    fas.forEach(fa => {
+                        var node = createFaRoot(fa);
+                        dispatch(nodesRequest(fa.versionId, [node.id]));
+                        dispatch(nodesReceive(fa.versionId, [node]));
+                    })
                 })
         }
     }

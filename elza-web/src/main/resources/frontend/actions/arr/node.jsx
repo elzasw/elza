@@ -2,6 +2,7 @@ import {WebApi} from 'actions';
 import * as types from 'actions/constants/actionTypes';
 import {faSelectSubNodeInt,faSelectSubNode} from 'actions/arr/nodes';
 import {indexById} from 'stores/app/utils.jsx'
+import {isFaRootId} from 'components/arr/ArrUtils'
 
 export function nodesFetchIfNeeded(versionId) {
     return (dispatch, getState) => {
@@ -12,7 +13,11 @@ export function nodesFetchIfNeeded(versionId) {
             var nodeIds = [];
             fa.nodes.nodes.forEach(node => {
                 if (node.dirty && !node.isFetching) {
-                    nodeIds.push(node.id);
+                    if (isFaRootId(node.id)) {  // virtuální představující AP, je nutné aktualizovat z AP
+                        // bude se aktualizovat až s načtením a obnovením AP
+                    } else {
+                        nodeIds.push(node.id);
+                    }
                 }
             })
 

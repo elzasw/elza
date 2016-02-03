@@ -122,7 +122,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         var subNodeId = node.id;
         var subNodeParentNode = index + 1 < parentNodes.length ? parentNodes[index + 1] : null;
         if (subNodeParentNode == null) {
-            subNodeParentNode = createFaRoot(this.props.fa, node);
+            subNodeParentNode = createFaRoot(this.props.fa);
         }
 
         this.dispatch(faSelectSubNode(subNodeId, subNodeParentNode, false, null, true));
