@@ -6,11 +6,12 @@ require ('./NodeTabs.less');
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, NodePanel, Tabs} from 'components';
+import {AbstractReactComponent, NodePanel, Tabs, i18n} from 'components';
 import {AppActions} from 'stores';
 import {faSelectNodeTab, faCloseNodeTab} from 'actions/arr/nodes'
 import {nodesFetchIfNeeded} from 'actions/arr/node'
 import {propsEquals} from 'components/Utils'
+import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils'
 
 var NodeTabs = class NodeTabs extends AbstractReactComponent {
     constructor(props) {
@@ -43,12 +44,13 @@ var NodeTabs = class NodeTabs extends AbstractReactComponent {
         }
 
         var tabs = nodes.map((node, i) => {
+            var name = node.name ? node.name : i18n('faTree.node.name.undefined', node.id);
             return {
                 id: node.id,
                 index: i,
                 key: node.id + "_" + i,
-                title: <span>{node.name}</span>,
-                desc: <span>id:{node.id}</span>
+                title: <span title={name} className="node-tab-title">{name}</span>,
+                desc: <span className="node-tab-desc">{createReferenceMarkString(node)}</span>
             }
         });
 

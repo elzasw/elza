@@ -48,6 +48,8 @@ var messages = {
     
     "faTree.action.openInNewTab": "Otevřít v nové záložce",
     "faTree.node.name.undefined": "<JP ID={0}>",
+    "accordion.title.left.name.undefined": "<JP-Accordion left ID={0}>",
+    "accordion.title.right.name.undefined": "<JP-Accordion right ID={0}>",
 
     "arr.fa.title.add": "Vytvoření nové AP",
     "arr.fa.title.approveVersion": "Uzavření verze AP",

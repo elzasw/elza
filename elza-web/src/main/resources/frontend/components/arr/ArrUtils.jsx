@@ -2,6 +2,8 @@
  * Utility pro pořádání.
  */
 import {indexById} from 'stores/app/utils.jsx'
+import React from 'react';
+import ReactDOM from 'react-dom';
 
 export function getFaFromFaAndVersion(fa, version) {
     var fa = Object.assign({}, fa, {faId: fa.id, versionId: version.id, id: version.id, activeVersion: version});
@@ -87,4 +89,53 @@ export function getParentNode(node, faTreeNodes) {
         }
     }
     return null;
+}
+
+/**
+ * Vytvoření referenčního označení.
+ *
+ * @param node {Object} jednotka popisu
+ */
+export function createReferenceMark(node) {
+    var levels = [];
+    if (node.referenceMark) {
+        node.referenceMark.forEach((i, index) => {
+            if (i < 1000) {
+                var cls = "level";
+                if (i > 99) {
+                    cls = "level small";
+                }
+                levels.push(<span key={'level' + index} className={cls}>{i}</span>)
+            } else {
+                levels.push(<span key={'level' + index} className="level">.{i % 1000}</span>)
+            }
+            if (index + 1 < node.referenceMark.length) {
+                levels.push(<span key={'sep' + index} className="separator"></span>)
+            }
+        });
+    }
+    return levels;
+}
+
+/**
+ * Vytvoření referenčního označení - textově.
+ *
+ * @param node {Object} jednotka popisu
+ */
+export function createReferenceMarkString(node) {
+    return node && node.referenceMark && node.referenceMark.join(" | ");
+}
+
+/**
+ * Nastavuje typ ikony podle kódu zobrazení.
+ *
+ * @param type kódu zobrazení
+ */
+export function getGlyph(type) {
+    // TODO slapa: dopsat typy podle serveru
+
+    switch (type) {
+        default:
+            return "fa-exclamation-triangle"
+    }
 }

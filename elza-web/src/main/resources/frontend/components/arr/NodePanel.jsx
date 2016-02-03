@@ -19,6 +19,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import {createFaRoot, isFaRootId} from './ArrUtils.jsx'
 import {propsEquals} from 'components/Utils'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
+import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils'
 const scrollIntoView = require('dom-scroll-into-view')
 
 require ('./NodePanel.less');
@@ -27,7 +28,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderParents',
+        this.bindMethods('renderParents', 'renderRow',
             'renderChildren', 'handleOpenItem',
             'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick',
             'getParentNodes', 'getChildNodes', 'getSiblingNodes',
@@ -144,16 +145,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
      * @return {Object} view
      */
     renderParents(parents) {
-        var rows = parents.map(parent => {
-            return (
-                <div key={parent.id} className='node' onClick={this.handleParentNodeClick.bind(this, parent)}>{parent.name}</div>
-            )
-        }).reverse();
-        return (
-            <div key='parents' className='parents'>
-                {rows}
-            </div>
-        )
+        return this.renderRow(parents, 'parents', 'parents', this.handleParentNodeClick);
     }
 
     /**
@@ -162,16 +154,36 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
      * @return {Object} view
      */
     renderChildren(children) {
-        var rows = children.map(child => {
+        return this.renderRow(children, 'children', 'children', this.handleChildNodeClick);
+    }
+
+    /**
+     * Renderování seznamu NODE.
+     *
+     * @param items {Array} seznam node pro vyrenderování
+     * @param key {String} klíč objektu
+     * @param myClass {String} třída objektu
+     * @param onClick {Functions} callback po kliku na položku
+     * @return {Object} view
+     */
+    renderRow(items, key, myClass, onClick) {
+        var rows = items.map(item => {
+            var icon = <Icon className="node-icon" glyph={getGlyph(item.icon)} />
+            var levels = <span className="reference-mark">{createReferenceMarkString(item)}</span>
+            var name = item.name ? item.name : <i>{i18n('faTree.node.name.undefined', item.id)}</i>;
+            name = <span title={name} className="name">{name}</span>
+
             return (
-                <div key={child.id} className='node' onClick={this.handleChildNodeClick.bind(this, child)}>{child.name}</div>
+                    <div key={item.id} className='node' onClick={onClick.bind(this, item)}>
+                        {icon} {levels} {name}
+                    </div>
             )
         });
 
         return (
-            <div key='children' className='children'>
-                {rows}
-            </div>
+                <div key={key} className={myClass}>
+                    {rows}
+                </div>
         )
     }
 
@@ -315,12 +327,20 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             var item = node.childNodes[a];
 
             var state = this.renderState(item);
+            var accordionLeft = item.accordionLeft ? item.accordionLeft : i18n('accordion.title.left.name.undefined', item.id)
+            var accordionRight = item.accordionRight ? item.accordionRight : ''
+            var referenceMark = <span className="reference-mark">{createReferenceMarkString(item)}</span>
 
             if (node.selectedSubNodeId == item.id) {
                 rows.push(
                     <div key={item.id} ref={'accheader-' + item.id} className='accordion-item opened'>
                         <div className='accordion-header' onClick={this.handleCloseItem.bind(this, item)}>
-                            {item.name} [{item.id}] {state}
+                            <div title={accordionLeft} className='accordion-header-left' key='accordion-header-left'>
+                                {referenceMark} <span title={accordionLeft}>{accordionLeft}</span>
+                            </div>
+                            <div title={accordionRight} className='accordion-header-right' key='accordion-header-right'>
+                                <span title={accordionRight}>{accordionRight}</span> {state}
+                            </div>
                         </div>
                         <div key="body" className='accordion-body'>
                             {form}
@@ -332,7 +352,12 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 rows.push(
                     <div key={item.id} ref={'accheader-' + item.id} className='accordion-item closed'>
                         <div className='accordion-header' onClick={this.handleOpenItem.bind(this, item)}>
-                            {item.name} [{item.id}] {state}
+                            <div title={accordionLeft} className='accordion-header-left' key='accordion-header-left'>
+                                {referenceMark} <span title={accordionLeft}>{accordionLeft}</span>
+                            </div>
+                            <div title={accordionRight} className='accordion-header-right' key='accordion-header-right'>
+                                <span title={accordionRight}>{accordionRight}</span> {state}
+                            </div>
                         </div>
                     </div>
                 )
