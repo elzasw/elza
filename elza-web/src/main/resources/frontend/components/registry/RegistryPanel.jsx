@@ -104,15 +104,6 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
             registryParentTypesId = this.props.registry.registryData.item.registerTypeId;
         }
 
-        console.log('posilam data',{
-            nameMain: this.props.registryData.item.record,
-            characteristics: this.props.registryData.item.characteristics,
-            scopeId: this.props.registryData.item.scopeId,
-            registerTypeId: this.props.registryData.item.registerTypeId,
-            parentRecordId: {parentId},
-            parentRegisterTypeId: {registryParentTypesId}
-        });
-
         this.dispatch(
             modalDialogShow(
                 this,
@@ -161,7 +152,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
 
     render() {
 
-console.log(this.props)
+
         if (!this.props.registryData.isFetching && this.props.registryData.fetched) {
 
             var addVariant = <Button className="registry-variant-add" onClick={this.handleClickAddVariant} ><Icon glyph='fa-plus' /></Button>

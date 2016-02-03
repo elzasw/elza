@@ -217,13 +217,13 @@ class WebApi{
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/getFindingAids');
     }
 
-    findRegistry(search = null, registryParent = null, registerTypeIds = null){
+    findRegistry(search = null, registryParent = null, registerTypeId = null){
         return AjaxUtils.ajaxGet('/api/registryManagerV2/findRecord', {
             search: search,
             from: 0,
             count: 200,
             parentRecordId: registryParent,
-            registerTypeIds: registerTypeIds
+            registerTypeId: registerTypeId
         }).then(json=>{
             return json;
         });
