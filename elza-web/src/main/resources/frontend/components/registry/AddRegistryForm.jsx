@@ -62,7 +62,10 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
             disabled = true;
         }
 
-
+        var itemsForDropDownTree = [];
+        if (this.props.registryRecordTypes.item) {
+            itemsForDropDownTree = this.props.registryRecordTypes.item;
+        }
 
         return (
             <div key={this.props.key}>
@@ -71,7 +74,7 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
                         <Scope versionId={null} label={i18n('registry.scope.class')}  {...scopeId} {...decorateFormField(scopeId)}/>
                         <DropDownTree
                             label={i18n('registry.add.typ.rejstriku')}
-                            items = {this.props.registryRecordTypes.item}
+                            items = {itemsForDropDownTree}
                             addRegistryRecord={true}
                             {...registerTypeId}
                             {...decorateFormField(registerTypeId)}
