@@ -18,6 +18,21 @@ elza:
       scopeCodes:
         - GLOBAL
 
+#zobrazování popisků
+#
+#  finding-aid-view:
+#    ZP2015:
+#      default:
+#        tree-item:
+#          - ZP2015_TITLE
+#          - ZP2015_UNIT_DATE
+#        accordeon-left:
+#          - ZP2015_TITLE
+#          - ZP2015_UNIT_DATE
+#        accordeon-right:
+#          - ZP2015_FOLDER_TYPE
+#          - ZP2015_STORAGE_ID
+
 #  type-groups:
 #    GROUP1:
 #      name: Testovací skupina 1

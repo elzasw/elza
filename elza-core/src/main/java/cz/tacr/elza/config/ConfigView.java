@@ -33,12 +33,17 @@ public class ConfigView {
 
         private List<String> accordionRight;
 
+        private String icon;
+
         public ViewTitles(final List<String> treeItem,
                           final List<String> accordionLeft,
-                          final List<String> accordionRight) {
+                          final List<String> accordionRight,
+                          final String icon) {
             this.treeItem = treeItem;
             this.accordionLeft = accordionLeft;
             this.accordionRight = accordionRight;
+            this.accordionRight = accordionRight;
+            this.icon = icon;
         }
 
         public List<String> getTreeItem() {
@@ -51,6 +56,10 @@ public class ConfigView {
 
         public List<String> getAccordionRight() {
             return accordionRight;
+        }
+
+        public String getIcon() {
+            return icon;
         }
     }
 
@@ -90,7 +99,8 @@ public class ConfigView {
 
         return new ViewTitles(viewByFa.get("tree-item"),
                 viewByFa.get("accordion-left"),
-                viewByFa.get("accordion-right"));
+                viewByFa.get("accordion-right"),
+                "ZP2015_LEVEL_TYPE"); // TODO: kde definovat?
     }
 
     public Map<String, Map<String, Map<String, List<String>>>> getFindingAidView() {
