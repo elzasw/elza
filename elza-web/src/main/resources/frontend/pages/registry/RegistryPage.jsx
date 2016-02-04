@@ -200,18 +200,18 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                     active: this.props.registry.selectedId === item.recordId,
                     'search-result-row': 'search-result-row'
                 });
-                var iconName = 'fa-file-o';
-                if (item.addRecord === true) {
-                    iconName = 'fa-folder';
-                }
 
-                var clsItem = 'registry-list-icon-list';
                 var doubleClick = this.handleDoubleClick.bind(this, item);
+                var iconName = 'fa-folder';
+                var clsItem = 'registry-list-icon-record';
 
-                if (item.addRecord === false) {
-                    clsItem = 'registry-list-icon-record';
+                console.log(item);
+                if (item.hierarchical === false) {
+                    iconName = 'fa-file-o';
+                    clsItem = 'registry-list-icon-list';
                     doubleClick = false;
                 }
+
 
                 // výsledky z vyhledávání
                 if ( this.props.registry.filterText!==null ) {
