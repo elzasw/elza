@@ -170,7 +170,7 @@ public class PartyService {
         List<Object[]> recordIdsAndPartyIds = partyRepository.findRecordIdAndPartyIdByRecords(records);
         Map<Integer, Integer> recordIdPartyIdMap = new HashMap<>(recordIdsAndPartyIds.size());
         for (Object[] row : recordIdsAndPartyIds) {
-            recordIdPartyIdMap.put((Integer) row[0], (Integer) row[1]);
+            recordIdPartyIdMap.put((Integer) row[1], (Integer) row[0]);
         }
 
         return recordIdPartyIdMap;
