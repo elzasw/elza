@@ -25,6 +25,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         super(props);
         this.bindMethods('editRecord', 'handleDeleteVariant', 'handleCallAddRegistryVariant', 'handleBlurVariant', 'handleClickAddVariant', 'handleOnEnterAdd', 'handleBlurVariant', 'handlePoznamkaBlur', 'handleChangeNote');
 
+        this.state = {}
     }
 
     componentWillReceiveProps(nextProps) {

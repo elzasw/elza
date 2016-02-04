@@ -33,8 +33,17 @@ export default function partyRegion(state = initialState, action) {
                 ...action.partyRegion
             }
         case types.STORE_SAVE:
-            const {selectedId, filterText, selectedPartyID} = state;
+            const {selectedPartyData, selectedId, filterText, selectedPartyID} = state;
+
+            var _info
+            if (selectedPartyData && selectedPartyData.partyId === selectedPartyID) {
+                _info = {name: selectedPartyData.record.record, desc: selectedPartyData.record.characteristics}
+            } else {
+                _info = null
+            }
+
             return {
+                _info,
                 selectedId,
                 filterText,
                 selectedPartyID

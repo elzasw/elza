@@ -41,7 +41,7 @@ export default function stateRegion(state = initialState, action) {
             }
 
             if (action.partyRegion) {
-                var index = indexById(result.partyRegionFront, action.partyRegion.selectedId, 'selectedId');
+                var index = indexById(result.partyRegionFront, action.partyRegion.selectedPartyID, 'selectedPartyID');
                 result.partyRegionFront = updateFront(result.partyRegionFront, action.partyRegion, index);
             }
             if (action.registryRegion) {

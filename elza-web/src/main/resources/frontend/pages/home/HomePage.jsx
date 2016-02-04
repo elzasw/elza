@@ -204,21 +204,17 @@ setTimeout(()=>this.setState({options: options2}), 4000);
         const {stateRegion} = this.props;
 
         stateRegion.partyRegionFront.forEach(x => {
-            if (x.selectedId != null) {
-                var name = x.selectedId;
-                var desc = ''
+            if (x._info) {
+                var name = x._info.name;
+                var desc = x._info.desc
                 items.push(this.renderHistoryItem(name, desc, 'PARTY_REGION', x));
-            } else {
-                //items.push(this.renderHistoryItem(i18n('home.action.party'), '', 'PARTY_REGION', x));
             }
         })
         stateRegion.registryRegionFront.forEach(x => {
-            if (x.selectedId != null) {
-                var name = x.selectedId;
-                var desc = ''
+            if (x._info) {
+                var name = x._info.name;
+                var desc = x._info.desc
                 items.push(this.renderHistoryItem(name, desc, 'REGISTRY_REGION', x));
-            } else {
-                //items.push(this.renderHistoryItem(i18n('home.action.registry'), '', 'REGISTRY_REGION', x));
             }
         })
         if (false && stateRegion.arrRegion) {

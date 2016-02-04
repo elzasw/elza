@@ -41,13 +41,24 @@ export default function registry(state = initialState, action = {}) {
                 ...action.registryRegion
             }
         case types.STORE_SAVE:
-            const {selectedId, filterText, registryParentId, registryTypesId, parents} = state;
-            return {
-                selectedId,
-                filterText,
-                parents,
-                registryParentId,
-                registryTypesId,
+            {
+                const {registryData, isFetching, fetched, selectedId, filterText, registryParentId, registryTypesId, parents} = state;
+
+                var _info
+                if (registryData && registryData.item.recordId === selectedId) {
+                    _info = {name: registryData.item.record, desc: registryData.item.characteristics}
+                } else {
+                    _info = null
+                }
+
+                return {
+                    selectedId,
+                    filterText,
+                    parents,
+                    registryParentId,
+                    registryTypesId,
+                    _info
+                }
             }
         case types.REGISTRY_SELECT_REGISTRY:
             return Object.assign({}, state, {
