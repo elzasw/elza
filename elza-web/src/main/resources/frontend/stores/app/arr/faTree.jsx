@@ -68,6 +68,29 @@ export default function faTree(state = initialState, action) {
                 fetchingIncludeIds: {},
                 nodes: [],
             }
+
+        case types.CHANGE_DELETE_LEVEL:
+
+            var refresh = false;
+
+            if (action.nodeId == state.selectedId || action.parentNodeId == state.selectedId) {
+                refresh = true;
+            }
+
+            state.nodes.forEach(node => {
+                if (node.id == action.nodeId || node.id == action.parentNodeId) {
+                refresh = true;
+                }
+            });
+
+            if (refresh) {
+                return {...state, selectedId: null}
+            }
+
+            return state;
+
+        case types.FA_NODE_CHANGE:
+            return {...state, dirty: true}
         case types.STORE_SAVE:
             const {selectedId, selectedIds, focusId, expandedIds, searchedIds, filterText, filterCurrentIndex, multipleSelection, multipleSelectionOneLevel} = state;
             return {

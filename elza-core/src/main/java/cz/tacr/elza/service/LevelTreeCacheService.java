@@ -51,6 +51,7 @@ import cz.tacr.elza.service.eventnotification.EventChangeMessage;
 import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
 import cz.tacr.elza.service.eventnotification.events.AbstractEventVersion;
 import cz.tacr.elza.service.eventnotification.events.EventAddNode;
+import cz.tacr.elza.service.eventnotification.events.EventDeleteNode;
 import cz.tacr.elza.service.eventnotification.events.EventIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventNodeMove;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -138,7 +139,10 @@ public class LevelTreeCacheService {
 
         Map<Integer, TreeNode> expandedNodes = new TreeMap<Integer, TreeNode>();
         for (Integer expandedId : nodesToExpandIDs) {
-            createExpandedTreeNodeMap(treeMap.get(expandedId), expandedNodes);
+            TreeNode treeNode = treeMap.get(expandedId);
+            if(treeNode != null){
+                createExpandedTreeNodeMap(treeNode, expandedNodes);
+            }
         }
 
         //seřazené otevřené nody tak jak půjdou v seznamu po sobě
@@ -564,8 +568,8 @@ public class LevelTreeCacheService {
 
                         break;
                     case DELETE_LEVEL:
-                        EventIdInVersion eventIdInVersion = (EventIdInVersion) event;
-                        actionDeleteLevel(eventIdInVersion.getEntityId(), version);
+                        EventDeleteNode eventIdInVersion = (EventDeleteNode) event;
+                        actionDeleteLevel(eventIdInVersion.getNodeId(), version);
                         break;
                 }
 

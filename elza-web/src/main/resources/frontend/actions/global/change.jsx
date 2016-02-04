@@ -45,3 +45,13 @@ export function changeDescItem(versionId, nodeId, descItemObjectId) {
         descItemObjectId,
     }
 }
+
+export function changeDeleteLevel(versionId, nodeId, parentNodeId) {
+
+    return {
+        type: types.CHANGE_DELETE_LEVEL,
+        versionId,
+        nodeId,
+        parentNodeId
+    }
+}

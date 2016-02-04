@@ -34,6 +34,7 @@ import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.events.EventDeleteNode;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 
 
@@ -427,8 +428,9 @@ public class ArrMoveLevelService {
 
         arrangementService.deleteLevelCascade(deleteLevel, change);
 
-        eventNotificationService.publishEvent(
-                EventFactory.createIdInVersionEvent(EventType.DELETE_LEVEL, version, deleteNode.getNodeId()));
+        eventNotificationService.publishEvent(new EventDeleteNode(EventType.DELETE_LEVEL,
+                version.getFindingAidVersionId(),
+                deleteNode.getNodeId(),deleteNodeParent.getNodeId()));
     }
 
     /**

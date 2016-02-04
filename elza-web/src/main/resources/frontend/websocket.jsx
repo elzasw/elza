@@ -6,7 +6,7 @@ import {buklActionStateChange} from 'actions/arr/bulkActions';
 import {store} from 'stores/app/AppStore';
 
 import {changeConformityInfo, changeIndexingFinished, changePackage, changePackets,
-        changeDescItem} from 'actions/global/change';
+        changeDescItem, changeDeleteLevel} from 'actions/global/change';
 
 
 var SockJS = require('sockjs-client');
@@ -101,6 +101,10 @@ function processEvents(values) {
                 bulkActionStateChange(value);
                 break;
 
+            case 'DELETE_LEVEL':
+                deleteLevelChange(value);
+                break;
+
             default:
                 console.warn("Nedefinovaný typ eventu: " + value.eventType, value);
                 break;
@@ -141,6 +145,10 @@ function packetsChangeEvent(value) {
 
 function descItemChange(value) {
     store.dispatch(changeDescItem(value.versionId, value.nodeId, value.descItemObjectId));
+}
+
+function deleteLevelChange(value) {
+    store.dispatch(changeDeleteLevel(value.versionId, value.nodeId, value.parentNodeId));
 }
 
 /**

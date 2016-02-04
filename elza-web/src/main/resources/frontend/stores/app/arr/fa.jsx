@@ -142,7 +142,12 @@ export function fa(state, action) {
         case types.FA_SUB_NODE_INFO_REQUEST:
         case types.FA_SUB_NODE_INFO_RECEIVE:
         case types.FA_FA_SUBNODES_FULLTEXT_RESULT:
-            var result = {...state, nodes: nodes(state.nodes, action)}
+        case types.FA_NODE_CHANGE:
+        case types.CHANGE_DELETE_LEVEL:
+            var result = {...state,
+                nodes: nodes(state.nodes, action),
+                faTree: faTree(state.faTree, action),
+            }
             return consolidateState(state, result);
         case types.CHANGE_CONFORMITY_INFO:
             var result = {...state, faTree: faTree(state.faTree, action), nodes: nodes(state.nodes, action)}
