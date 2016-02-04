@@ -80,48 +80,6 @@ const loggerMiddleware = createLogger({
     predicate: (getState, action) => action.type !== types.STORE_STATE_DATA
 })
 
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-var _utilsIsPlainObject = require('redux/lib/utils/isPlainObject');
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-var _utilsIsPlainObject2 = _interopRequireDefault(_utilsIsPlainObject);
-var crtStr = function (reducer, initialState) {
-console.log('lLLLLLL', createStore);
-console.log('lLLLLLL', createStore.prototype);
-console.log('lLLLLLL', createStore.listeners);
-    var result = createStore(reducer, initialState);
-
-console.log('lLLLLLL', result.listeners);
-
-    result.dispatch = function (action) {
-        if (!_utilsIsPlainObject2['default'](action)) {
-          throw new Error('Actions must be plain objects. ' + 'Use custom middleware for async actions.');
-        }
-
-        if (typeof action.type === 'undefined') {
-          throw new Error('Actions may not have an undefined "type" property. ' + 'Have you misspelled a constant?');
-        }
-
-        if (result.isDispatching) {
-          throw new Error('Reducers may not dispatch actions.');
-        }
-
-        try {
-          result.isDispatching = true;
-          result.currentState = currentReducer(result.currentState, action);
-        }catch (e) {
-            console.error(111111, e)
-        } finally {
-          result.isDispatching = false;
-        }
-
-        result.listeners.slice().forEach(function (listener) {
-          return listener();
-        });
-        return action;
-      }.bind(result)
-    return result;
-}
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 var createStoreWithMiddleware;
 if (_logStoreState) {
