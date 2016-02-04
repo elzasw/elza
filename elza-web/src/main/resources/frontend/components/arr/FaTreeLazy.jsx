@@ -128,12 +128,12 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
                 <div className='fa-traa-header-container'>
                     <Input type='search' value={this.props.filterText} onChange={e => this.props.onFulltextChange(e.target.value)} />
                     {searchedInfo}
-                    <Button onClick={this.props.onFulltextSearch}>Hledat</Button>
-                    <Button onClick={this.props.onFulltextPrevItem}>Předchozí</Button>
-                    <Button onClick={this.props.onFulltextNextItem}>Další</Button>
-                    <Button onClick={this.props.onCollapse}>Zabalit</Button>
+                    <Button className="search" onClick={this.props.onFulltextSearch}><Icon glyph='fa-search'/></Button>
+                    <Button className="prev" onClick={this.props.onFulltextPrevItem}><Icon glyph='fa-chevron-up'/></Button>
+                    <Button className="next" onClick={this.props.onFulltextNextItem}><Icon glyph='fa-chevron-down'/></Button>
                 </div>
                 <div className='fa-tree-lazy-container' ref="treeContainer">
+                    <Button className="tree-collapse" onClick={this.props.onCollapse}><Icon glyph='fa-compress'/>Sbalit vše</Button>
                     {this.state.treeContainer && <VirtualList
                         tagName='div'
                         scrollToIndex={index}
