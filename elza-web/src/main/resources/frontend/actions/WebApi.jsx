@@ -54,6 +54,10 @@ class WebApi{
             });
     }
 
+    copyOlderSiblingAttribute(versionId, nodeId, nodeVersionId, descItemTypeId) {
+        return AjaxUtils.ajaxPut('/api/arrangementManagerV2/copyOlderSiblingAttribute/', {versionId, descItemTypeId},  {id: nodeId, version: nodeVersionId});
+    }
+
     deleteRelation(relationId) {
         return AjaxUtils.ajaxDelete('/api/partyManagerV2/relations/'+relationId, {relationId: relationId})
             .then(json=>{

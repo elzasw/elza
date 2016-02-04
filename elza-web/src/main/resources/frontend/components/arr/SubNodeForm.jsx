@@ -12,7 +12,7 @@ import {connect} from 'react-redux'
 import {indexById} from 'stores/app/utils.jsx'
 import {faSubNodeFormDescItemTypeAdd, faSubNodeFormValueChange, faSubNodeFormDescItemTypeDelete,
         faSubNodeFormValueChangeSpec,faSubNodeFormValueBlur, faSubNodeFormValueFocus, faSubNodeFormValueAdd,
-        faSubNodeFormValueDelete} from 'actions/arr/subNodeForm'
+        faSubNodeFormValueDelete, faSubNodeFormValuesCopyFromPrev} from 'actions/arr/subNodeForm'
 var classNames = require('classnames');
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import DescItemString from './nodeForm/DescItemString'
@@ -38,7 +38,8 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             'getDescItemTypeInfo', 'handleDescItemAdd', 'handleDescItemRemove', 'handleDescItemTypeLock',
             'handleDescItemTypeUnlockAll', 'handleDescItemTypeCopy', 'handleAddNodeBefore', 'handleAddNodeAfter',
             'handleCreatePacket', 'handleCreatePacketSubmit', 'handleAddChildNode', 'handleCreateParty',
-            'handleCreatePartySubmit', 'handleCreateRecord', 'handleCreateRecordSubmit', 'handleDeleteNode'
+            'handleCreatePartySubmit', 'handleCreateRecord', 'handleCreateRecordSubmit', 'handleDeleteNode',
+            'handleDescItemTypeCopyFromPrev'
         );
 
 //console.log("@@@@@-SubNodeForm-@@@@@", props);
@@ -430,6 +431,22 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         this.dispatch(faSubNodeFormValueChangeSpec(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation, value));
     }
 
+    /**
+     * Akce okamžitého kopírování hodnot atributu z předcházející JP.
+     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
+     * @param descItemTypeIndex {Integer} index atributu v seznamu
+     * @param descItemTypeId {Integer} id desc item type
+     */
+    handleDescItemTypeCopyFromPrev(descItemGroupIndex, descItemTypeIndex, descItemTypeId) {
+        const {nodeKey} = this.props
+
+        var valueLocation = {
+            descItemGroupIndex,
+            descItemTypeIndex,
+        }
+        this.dispatch(faSubNodeFormValuesCopyFromPrev(this.props.versionId, this.props.selectedSubNode.id, this.props.selectedSubNode.version, descItemTypeId, nodeKey, valueLocation));
+    }
+
     handleDeleteNode() {
         if (window.confirm('Opravdu chcete smazat tento JP?')) {
             this.dispatch(deleteNode(this.props.selectedSubNode, this.props.parentNode, this.props.versionId));
@@ -444,7 +461,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @return {Object} view
      */
     renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex) {
-        const {rulDataTypes, calendarTypes, nodeSettings, nodeId, packetTypes, packets, conformityInfo} = this.props;
+        const {descItemCopyFromPrevEnabled, rulDataTypes, calendarTypes, nodeSettings, nodeId, packetTypes, packets, conformityInfo} = this.props;
 
         var rulDataType = rulDataTypes.items[indexById(rulDataTypes.items, descItemType.dataTypeId)];
         var descItemTypeInfo = this.getDescItemTypeInfo(descItemType);
@@ -503,9 +520,11 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 onDescItemTypeRemove={this.handleDescItemTypeRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDescItemTypeLock={this.handleDescItemTypeLock.bind(this, descItemType.id)}
                 onDescItemTypeCopy={this.handleDescItemTypeCopy.bind(this, descItemType.id)}
+                onDescItemTypeCopyFromPrev={this.handleDescItemTypeCopyFromPrev.bind(this, descItemGroupIndex, descItemTypeIndex, descItemType.id)}
                 locked={locked}
                 copy={copy}
                 conformityInfo={conformityInfo}
+                descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
             />
         )
     }
@@ -631,7 +650,8 @@ SubNodeForm.propTypes = {
     packetTypes: React.PropTypes.object.isRequired,
     packets: React.PropTypes.array.isRequired,
     formData: React.PropTypes.object.isRequired,
-    conformityInfo: React.PropTypes.object.isRequired
+    conformityInfo: React.PropTypes.object.isRequired,
+    descItemCopyFromPrevEnabled: React.PropTypes.bool.isRequired,
 }
 
 module.exports = connect(mapStateToProps)(SubNodeForm);

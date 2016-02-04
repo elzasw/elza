@@ -81,6 +81,9 @@ var messages = {
     "subNodeForm.validate.value.notEmpty": "Hodnota musí být uvedena",
     "subNodeForm.descItemType": "Prvek",
     "subNodeForm.descItemType.title.add": "Přidání prvku",
+    "subNodeForm.descItemType.copy": "Nastavení opakovaného kopírování hodnot PP",
+    "subNodeForm.descItemType.lock": "Nastavení zamknutí úprav hodnot PP",
+    "subNodeForm.descItemType.copyFromPrev": "Kopírovat hodnoty PP z předchozí JP",
 
     "subNodeRegister.title": "Rejstříková hesla",
     "subNodeRegister.title.add": "Přidání hesla",

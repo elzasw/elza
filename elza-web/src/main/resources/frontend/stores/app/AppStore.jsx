@@ -1,9 +1,10 @@
 import * as types from 'actions/constants/actionTypes';
-import {combineReducers, createStore, applyMiddleware} from 'redux'
+import {combineReducers, createStore, applyMiddleware, compose} from 'redux'
 import thunkMiddleware from 'redux-thunk'
 import createLogger from 'redux-logger'
 import {reducer as formReducer} from 'redux-form';
 import {lenToBytesStr, roughSizeOfObject} from 'components/Utils';
+//import devTools from 'remote-redux-devtools';
 
 // Nastavení úrovně logování
 const _logStoreState = true;
@@ -138,6 +139,14 @@ var store = function configureStore(initialState) {
     return createStoreWithMiddleware(reducer, initialState)
 }(initialState);
 
+/*
+  const finalCreateStore = compose(
+    applyMiddleware(thunkMiddleware),
+    typeof window === 'object' && typeof window.devToolsExtension !== 'undefined' ? window.devToolsExtension() : f => f
+  )(createStore);
+
+  const _store = finalCreateStore(reducer, initialState);
+*/
 /*
 import {selectFaTab} from 'actions/arr/fa'
 var fa = Object.assign({id: 1, versionId: 1});

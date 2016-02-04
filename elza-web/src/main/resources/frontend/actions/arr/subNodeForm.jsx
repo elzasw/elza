@@ -51,6 +51,13 @@ export function faSubNodeFormValueChange(versionId, nodeId, nodeKey, valueLocati
     }
 }
 
+export function faSubNodeFormValuesCopyFromPrev(versionId, nodeId, nodeVersionId, descItemTypeId, nodeKey, valueLocation) {
+    return (dispatch, getState) => {
+        dispatch(faSubNodeFormDescItemTypeDeleteInStore(versionId, nodeId, nodeKey, valueLocation, true));
+        WebApi.copyOlderSiblingAttribute(versionId, nodeId, nodeVersionId, descItemTypeId);
+    }
+}
+
 export function faSubNodeFormValueChangeParty(versionId, nodeId, nodeKey, valueLocation, value) {
     return (dispatch, getState) => {
         dispatch({
@@ -165,6 +172,17 @@ export function faSubNodeFormDescItemTypeAdd(versionId, nodeId, nodeKey, descIte
     }
 }
 
+export function faSubNodeFormDescItemTypeDeleteInStore(versionId, nodeId, nodeKey, valueLocation, onlyDescItems) {
+    return {
+        type: types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE,
+        versionId,
+        nodeId,
+        nodeKey,
+        valueLocation,
+        onlyDescItems
+    }
+}
+
 export function faSubNodeFormDescItemTypeDelete(versionId, nodeId, nodeKey, valueLocation) {
     return (dispatch, getState) => {
         var state = getState();
@@ -178,13 +196,7 @@ export function faSubNodeFormDescItemTypeDelete(versionId, nodeId, nodeKey, valu
             }
         });
 
-        dispatch({
-            type: types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE,
-            versionId,
-            nodeId,
-            nodeKey,
-            valueLocation,
-        })
+        dispatch(faSubNodeFormDescItemTypeStoreDelete(versionId, nodeId, nodeKey, valueLocation, false));
 
         if (hasDescItemsForDelete) {
             faSubNodeFormDeleteDescItemType(versionId, subNodeForm.data.node.id, subNodeForm.data.node.version, loc.descItemType)

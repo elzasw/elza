@@ -280,23 +280,27 @@ export default function subNodeForm(state = initialState, action) {
         case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
             var loc = getLoc(state, action.valueLocation);
 
-            // Odebereme pouze pokud je pole jiné než: REQUIRED nebo RECOMMENDED
-            if (loc.descItemType.type == 'REQUIRED' || loc.descItemType.type == 'RECOMMENDED') { // ponecháme, pouze odebereme hodnoty
-                // Hodnoty odebereme
-                loc.descItemType.descItems = [];
+            if (action.onlyDescItems) { // jen desc items, nic víc
+                loc.descItemType.descItems = []
+            } else {
+                // Odebereme pouze pokud je pole jiné než: REQUIRED nebo RECOMMENDED
+                if (loc.descItemType.type == 'REQUIRED' || loc.descItemType.type == 'RECOMMENDED') { // ponecháme, pouze odebereme hodnoty
+                    // Hodnoty odebereme
+                    loc.descItemType.descItems = [];
 
-                // Pokud je ale atribut jednohodnotový, musíme ponechat prázdnou hodnotu
-                if (!loc.descItemType.repeatable) {
-                    var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, loc.descItemType.id)];
-                    var descItem = createDescItem(descItemTypeInfo, true);
-                    descItem.position = 1;
-                    loc.descItemType.descItems.push(descItem);
+                    // Pokud je ale atribut jednohodnotový, musíme ponechat prázdnou hodnotu
+                    if (!loc.descItemType.repeatable) {
+                        var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, loc.descItemType.id)];
+                        var descItem = createDescItem(descItemTypeInfo, true);
+                        descItem.position = 1;
+                        loc.descItemType.descItems.push(descItem);
+                    }
+                } else { // kompletně odebereme
+                    loc.descItemGroup.descItemTypes = [
+                        ...loc.descItemGroup.descItemTypes.slice(0, action.valueLocation.descItemTypeIndex),
+                        ...loc.descItemGroup.descItemTypes.slice(action.valueLocation.descItemTypeIndex + 1)
+                    ]
                 }
-            } else { // kompletně odebereme
-                loc.descItemGroup.descItemTypes = [
-                    ...loc.descItemGroup.descItemTypes.slice(0, action.valueLocation.descItemTypeIndex),
-                    ...loc.descItemGroup.descItemTypes.slice(action.valueLocation.descItemTypeIndex + 1)
-                ]
             }
 
             state.formData = {...state.formData};

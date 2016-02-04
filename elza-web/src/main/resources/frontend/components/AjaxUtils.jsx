@@ -12,7 +12,7 @@ var _logResults = false;
 
 var React = require('react');
 import {i18n, Toastr, LongText} from 'components';
-import {lenToBytesStr} from 'components/Utils';
+import {lenToBytesStr, roughSizeOfObject} from 'components/Utils';
 
 
 var _callIndex = 0;
@@ -61,8 +61,7 @@ function ajaxCallRaw(url, params, method, data) {
                                status,  // status - 'success'
                                xhr) {   // xhr - responseText, responseJSON, status a statusText
                 if (_logResults) {
-                    var len = JSON.stringify(data).length;
-                    var lenStr = '(' + lenToBytesStr(len) + ')';
+                    var lenStr = '(' + lenToBytesStr(roughSizeOfObject(data)) + ')';
                     console.info("<-", callStr, lenStr, data);
                 }
                 resolve(data);

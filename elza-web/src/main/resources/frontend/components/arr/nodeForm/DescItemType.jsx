@@ -29,7 +29,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         this.bindMethods('renderDescItemSpec', 'renderDescItem', 'renderLabel',
                 'handleChange', 'handleChangeSpec', 'handleCreatePacket', 'handleCreateParty', 'handleCreateRecord',
                 'handleBlur', 'handleFocus', 'handleDescItemTypeLock', 'handleDescItemTypeCopy', 'handleDetailParty',
-                'handleDetailRecord');
+                'handleDetailRecord', 'handleDescItemTypeCopyFromPrev');
     }
 
     componentWillReceiveProps(nextProps) {
@@ -263,14 +263,14 @@ return true;
      * @return {Object} view
      */
     renderLabel() {
-        const {copy, locked, descItemType, descItemTypeInfo, conformityInfo} = this.props;
+        const {descItemCopyFromPrevEnabled, copy, locked, descItemType, descItemTypeInfo, conformityInfo} = this.props;
 
         var actions = [];
-
+console.log(descItemCopyFromPrevEnabled);
         // Sestavení akcí
-        actions.push(<NoFocusButton key="copy"onClick={this.handleDescItemTypeCopy}><Icon className={copy ? 'copy' : 'nocopy'} glyph="fa-files-o" /></NoFocusButton>);
-        actions.push(<NoFocusButton key="book"><Icon glyph="fa-book" /></NoFocusButton>);
-        actions.push(<NoFocusButton key="lock" onClick={this.handleDescItemTypeLock}><Icon className={locked ? 'locked' : 'unlocked'}  glyph="fa-lock" /></NoFocusButton>);
+        actions.push(<NoFocusButton title={i18n('subNodeForm.descItemType.copy')} key="copy" onClick={this.handleDescItemTypeCopy}><Icon className={copy ? 'copy' : 'nocopy'} glyph="fa-files-o" /></NoFocusButton>);
+        actions.push(<NoFocusButton disabled={!descItemCopyFromPrevEnabled} title={i18n('subNodeForm.descItemType.copyFromPrev')} key="book" onClick={this.handleDescItemTypeCopyFromPrev}><Icon glyph="fa-book" /></NoFocusButton>);
+        actions.push(<NoFocusButton title={i18n('subNodeForm.descItemType.lock')} key="lock" onClick={this.handleDescItemTypeLock}><Icon className={locked ? 'locked' : 'unlocked'}  glyph="fa-lock" /></NoFocusButton>);
 
         // Zprávy o chybějících položkách
         var missings = conformityInfo.missings[descItemType.id];
@@ -300,10 +300,17 @@ return true;
             actions.push(<NoFocusButton key="delete" onClick={this.props.onDescItemTypeRemove} title={i18n('subNodeForm.deleteDescItemType')}><Icon glyph="fa-trash" /></NoFocusButton>);
         }
 
+        var titleText = descItemType.name;
+        if (descItemTypeInfo.description && descItemTypeInfo.description.length > 0) {
+            if (descItemTypeInfo.description != titleText) {
+                titleText = [titleText, descItemTypeInfo.description].join('\n')
+            }
+        }
+
         // Render
         return (
             <div className='desc-item-type-label'>
-                <div className='title' title={descItemType.name}>
+                <div className='title' title={titleText}>
                     {descItemTypeInfo.shortcut}
                 </div>
                 <div className='actions'>
@@ -325,6 +332,13 @@ return true;
      */
     handleDescItemTypeCopy() {
         this.props.onDescItemTypeCopy(!this.props.copy);
+    }
+
+    /**
+     * Akce okamžitého kopírování hodnoty atributu z předcházející JP.
+     */
+    handleDescItemTypeCopyFromPrev() {
+        this.props.onDescItemTypeCopyFromPrev();
     }
 
     render() {
@@ -387,6 +401,7 @@ DescItemType.propTypes = {
     onDescItemTypeRemove: React.PropTypes.func.isRequired,
     onDescItemTypeLock: React.PropTypes.func.isRequired,
     onDescItemTypeCopy: React.PropTypes.func.isRequired,
+    onDescItemTypeCopyFromPrev: React.PropTypes.func.isRequired,
     onDescItemRemove: React.PropTypes.func.isRequired,
     onDescItemAdd: React.PropTypes.func.isRequired,
     descItemTypeInfo: React.PropTypes.object.isRequired,

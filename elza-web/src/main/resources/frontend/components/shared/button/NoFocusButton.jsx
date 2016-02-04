@@ -7,8 +7,13 @@ var NoFocusButton = class NoFocusButton extends AbstractReactComponent {
     }
 
     render() {
+        var cls = 'btn btn-default';
+        if (this.props.disabled) {
+            cls += ' disabled';
+        }
+
         return (
-            <div title={this.props.title} className='btn btn-default' onClick={this.props.onClick}>{this.props.children}</div>
+            <div title={this.props.title} className={cls} onClick={this.props.onClick}>{this.props.children}</div>
         )
     }
 }
