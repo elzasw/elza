@@ -29,7 +29,7 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
             'handleDeleteRelation'
         );
     }
-    
+
     /**
      * UPDATE RELATION
      * *********************************************
@@ -151,25 +151,58 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
     }
 
     /**
+     * Převede datum na text.
+     * @param dateVo datum
+     * @returns datum jako text
+     */
+    formatDateToText(dateVo) {
+        if(dateVo == undefined){
+            return "";
+        }
+
+        var result;
+        if (dateVo.format && dateVo.format.indexOf("-") > -1) {
+            result = "[" + dateVo.textDate + "]";
+        } else {
+            result = dateVo.textDate;
+        }
+        return result;
+    }
+
+    /**
      * RENDER
      * *********************************************
      * Vykreslení panelu vztahů
      */ 
     render() {
         var entities = <div></div>;
+
         if(this.props.partyRegion.selectedPartyData && this.props.partyRegion.selectedPartyData.relations != null){
             entities = this.props.partyRegion.selectedPartyData.relations.map(i=> {
+                var icon;
+                switch (i.complementType.classType){
+                    case "B": icon = "fa-plus"; break;
+                    case "E": icon = "fa-minus"; break;
+                    case "R": icon = "fa-code-fork"; break;
+                }
+
+                var relationEntities = i.relationEntities.map(e =>e.record.record).join(", ");
+
+                var date = this.formatDateToText(i.from);
+                date += i.from != undefined && i.to != undefined  ? " - " + this.formatDateToText(i.to) : this.formatDateToText(i.to);
+
                 return <div className="relation-entity">
-                            <strong>{i.note}</strong>
-                                {i.relationEntities==null ? '' : i.relationEntities.map(j=>{
-                                    return <div className="entity">
-                                        <div className="name">{j.record.record}</div>
-                                        <div className="role">{j.roleType.name}</div>
-                                    </div>
-                                })}
-                            <Button className="column" onClick={this.handleUpdateRelation.bind(this, i.relationId)}><Icon glyph="fa-edit"/></Button>
-                            <Button className="column" onClick={this.handleDeleteRelation.bind(this, i.relationId)}><Icon glyph="fa-trash"/></Button>
-                        </div>
+                            <div className="block-row"><Icon glyph={icon}/> <strong>{i.complementType.name}</strong></div>
+
+                            <div className="block-row">{relationEntities}</div>
+
+                            {date ? <div className="block-row">{date}</div> : ""}
+
+                            <div className="block-row">
+                                   <Button className="column" onClick={this.handleUpdateRelation.bind(this, i.relationId)}><Icon glyph="fa-edit"/></Button>
+                                   <Button className="column" onClick={this.handleDeleteRelation.bind(this, i.relationId)}><Icon glyph="fa-trash"/></Button>
+                            </div>
+                       </div>
                 })
         };
         return  <div className="relations">

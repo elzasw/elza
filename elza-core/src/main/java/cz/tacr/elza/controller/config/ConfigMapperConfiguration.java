@@ -407,7 +407,6 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ParUnitdate.class, ParUnitdateVO.class)
                 .exclude("valueFrom").exclude("valueFromEstimated")
                 .exclude("valueTo").exclude("valueToEstimated")
-                .exclude("format")
                 .customize(
                         new CustomMapper<ParUnitdate, ParUnitdateVO>() {
                             @Override
