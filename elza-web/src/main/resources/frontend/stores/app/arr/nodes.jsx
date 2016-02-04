@@ -224,6 +224,14 @@ export default function nodes(state = nodesInitialState, action) {
                 }
             }
             return newState;
+        case types.CHANGE_ADD_LEVEL:
+            var newState = Object.assign({}, state);
+            for (var i = 0; i < newState.nodes.length; i++) {
+                if(newState.nodes[i].id == action.parentNodeId) {
+                    newState.nodes[i] = node(newState.nodes[i], action);
+                }
+            }
+            return newState;
         default:
             return state
     }

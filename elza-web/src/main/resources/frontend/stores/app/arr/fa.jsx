@@ -143,6 +143,7 @@ export function fa(state, action) {
         case types.FA_SUB_NODE_INFO_RECEIVE:
         case types.FA_FA_SUBNODES_FULLTEXT_RESULT:
         case types.CHANGE_DELETE_LEVEL:
+        case types.CHANGE_ADD_LEVEL:
             var result = {...state,
                 nodes: nodes(state.nodes, action),
                 faTree: faTree(state.faTree, action),

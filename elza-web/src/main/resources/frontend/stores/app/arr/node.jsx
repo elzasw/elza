@@ -310,6 +310,10 @@ export function node(state = nodeInitialState, action) {
             return result;
         case types.CHANGE_CONFORMITY_INFO:
             return Object.assign({}, state, { nodeInfoDirty: true });
+
+        case types.CHANGE_ADD_LEVEL:
+            return Object.assign({}, state, { dirty: true });
+
         case types.FA_NODE_CHANGE:
             switch (action.action) {
                 // Přidání SubNode

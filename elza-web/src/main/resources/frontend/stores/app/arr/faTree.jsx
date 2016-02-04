@@ -69,6 +69,7 @@ export default function faTree(state = initialState, action) {
                 nodes: [],
             }
 
+        case types.CHANGE_ADD_LEVEL:
         case types.CHANGE_DELETE_LEVEL:
 
             var refresh = false;

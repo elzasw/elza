@@ -55,3 +55,13 @@ export function changeDeleteLevel(versionId, nodeId, parentNodeId) {
         parentNodeId
     }
 }
+
+export function changeAddLevel(versionId, nodeId, parentNodeId) {
+
+    return {
+        type: types.CHANGE_ADD_LEVEL,
+        versionId,
+        nodeId,
+        parentNodeId
+    }
+}

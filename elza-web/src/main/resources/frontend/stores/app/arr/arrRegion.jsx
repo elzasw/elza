@@ -148,6 +148,7 @@ export default function arrRegion(state = initialState, action) {
         case types.CHANGE_DESC_ITEM:
         case types.BULK_ACTIONS_STATE_CHANGE:
         case types.CHANGE_DELETE_LEVEL:
+        case types.CHANGE_ADD_LEVEL:
             var index = indexById(state.fas, action.versionId, "versionId")
             return processFa(state, action, index);
         case types.FA_FAS_RECEIVE:

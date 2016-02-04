@@ -6,7 +6,7 @@ import {buklActionStateChange} from 'actions/arr/bulkActions';
 import {store} from 'stores/app/AppStore';
 
 import {changeConformityInfo, changeIndexingFinished, changePackage, changePackets,
-        changeDescItem, changeDeleteLevel} from 'actions/global/change';
+        changeDescItem, changeDeleteLevel, changeAddLevel} from 'actions/global/change';
 
 
 var SockJS = require('sockjs-client');
@@ -105,12 +105,36 @@ function processEvents(values) {
                 deleteLevelChange(value);
                 break;
 
+            case 'ADD_LEVEL_AFTER':
+                addLevelAfterChange(value);
+                break;
+
+            case 'ADD_LEVEL_BEFORE':
+                addLevelBeforeChange(value);
+                break;
+
+            case 'ADD_LEVEL_UNDER':
+                addLevelUnderChange(value);
+                break;
+
             default:
                 console.warn("Nedefinovaný typ eventu: " + value.eventType, value);
                 break;
         }
 
     });
+}
+
+function addLevelAfterChange(value) {
+    store.dispatch(changeAddLevel(value.versionId, value.node.nodeId, value.staticNodeParent.nodeId));
+}
+
+function addLevelBeforeChange(value) {
+    store.dispatch(changeAddLevel(value.versionId, value.node.nodeId, value.staticNodeParent.nodeId));
+}
+
+function addLevelUnderChange(value) {
+    store.dispatch(changeAddLevel(value.versionId, value.node.nodeId, value.staticNode.nodeId));
 }
 
 /**

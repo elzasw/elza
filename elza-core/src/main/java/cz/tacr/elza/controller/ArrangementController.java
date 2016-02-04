@@ -418,7 +418,12 @@ public class ArrangementController {
         Assert.notNull(node, "Uzel neexistuje");
 
         List<ArrDescItem> descItems = arrangementService.getDescItems(version, node);
-        List<RulDescItemTypeExt> descItemTypes = ruleService.getDescriptionItemTypes(versionId, nodeId);
+        List<RulDescItemTypeExt> descItemTypes;
+        try {
+            descItemTypes = ruleService.getDescriptionItemTypes(versionId, nodeId);
+        } catch (Exception e) {
+            descItemTypes = new ArrayList<>();
+        }
 
         ArrNodeVO nodeVO = factoryVo.createArrNode(node);
         List<ArrDescItemGroupVO> descItemGroupsVO = factoryVo.createDescItemGroups(descItems);

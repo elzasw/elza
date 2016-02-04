@@ -312,6 +312,9 @@ public class LevelTreeCacheService {
 
             for (Integer includedId : includedIds) {
                 TreeNode node = treeMap.get(includedId);
+                if (node == null) {
+                    continue;
+                }
                 TreeNode parent = node.getParent();
                 while (parent != null) {
                     result.add(parent.getId());
