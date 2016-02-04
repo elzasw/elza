@@ -44,6 +44,7 @@ var RegistryLabel = class RegistryLabel extends AbstractReactComponent {
         switch (this.props.type) {
             case 'selectWithChild':
                 body = <DropDownTree
+                    disabled={this.props.disabled}
                     items = {this.props.items}
                     selectedItemID = {this.props.value}
                     onSelect = {this.props.onSelect}
@@ -54,6 +55,7 @@ var RegistryLabel = class RegistryLabel extends AbstractReactComponent {
                 body = <div className="desc-item-value-container">
                     <span>
                         <Input
+                            disabled={this.props.disabled}
                             type='text'
                             value={this.state.variant}
                             onChange={this.handleVariantChange}
@@ -61,7 +63,7 @@ var RegistryLabel = class RegistryLabel extends AbstractReactComponent {
                             onBlur={this.props.onBlur}
                             />
                         </span>
-                    {this.props.onClickDelete && <Button onClick = {this.props.onClickDelete}><Icon glyph='fa-times' /></Button>}
+                    {this.props.onClickDelete && <Button disabled={this.props.disabled} onClick = {this.props.onClickDelete}><Icon glyph='fa-times' /></Button>}
 
                 </div>
                 break;

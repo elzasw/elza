@@ -160,14 +160,19 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
 
 
         if (!this.props.registryData.isFetching && this.props.registryData.fetched) {
+            var disableEdit = false;
+            if (this.props.registryData.item.partyId){
+                disableEdit = true;
+            }
 
-            var addVariant = <Button className="registry-variant-add" onClick={this.handleClickAddVariant} ><Icon glyph='fa-plus' /></Button>
+            var addVariant = <Button disabled={disableEdit} className="registry-variant-add" onClick={this.handleClickAddVariant} ><Icon glyph='fa-plus' /></Button>
 
             if (this.state.addVariant){
                 addVariant = <div><RegistryLabel
                     key='addVariant'
                     type='variant'
                     value=''
+                    disabled={disableEdit}
                     onBlur={this.handleCallAddRegistryVariant.bind(this)}
                     onEnter={this.handleOnEnterAdd.bind(this)}
                     />{addVariant}</div>
@@ -182,11 +187,13 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
                 hiearchie = parents.reverse().join(' > ');
             }
 
+
+
             var detailRegistry = (
                 <div className="registry-title">
                     <h1 className='registry'>
                         {this.props.registryData.item.record}
-                        <Button className="registry-record-edit" onClick={this.editRecord.bind(this, this.props.registry.registryParentId)}>
+                        <Button disabled={disableEdit} className="registry-record-edit" onClick={this.editRecord.bind(this, this.props.registry.registryParentId)}>
                             <Icon glyph='fa-pencil'/>
                         </Button>
                         {this.props.registryData.item.partyId && <Button className="registry-record-party" onClick={this.handleGoToPartyPerson.bind(this, this.props.registryData.item.partyId)}>
@@ -212,6 +219,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
                                         type='variant'
                                         value={item.record}
                                         item={item}
+                                        disabled={disableEdit}
                                         onBlur={this.handleBlurVariant.bind(this,item)}
                                         onEnter={this.handleOnEnterUpdate.bind(this,item)}
                                         onClickDelete={this.handleDeleteVariant.bind(this, item)}
@@ -225,7 +233,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
                     </div>
                     <div className='line note'>
                         <label>{i18n('registry.detail.poznamka')}</label>
-                        <Input type='textarea' value={this.state.note} onChange={this.handleChangeNote} onBlur={this.handlePoznamkaBlur.bind(this)} />
+                        <Input disabled={disableEdit} type='textarea' value={this.state.note} onChange={this.handleChangeNote} onBlur={this.handlePoznamkaBlur.bind(this)} />
                     </div>
                 </div>
             )
