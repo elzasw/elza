@@ -41,12 +41,13 @@ export default function registry(state = initialState, action = {}) {
                 ...action.registryRegion
             }
         case types.STORE_SAVE:
-            const {selectedId, filterText, registryParentId, registryTypesId} = state;
+            const {selectedId, filterText, registryParentId, registryTypesId, parents} = state;
             return {
                 selectedId,
                 filterText,
+                parents,
                 registryParentId,
-                registryTypesId
+                registryTypesId,
             }
         case types.REGISTRY_SELECT_REGISTRY:
             return Object.assign({}, state, {

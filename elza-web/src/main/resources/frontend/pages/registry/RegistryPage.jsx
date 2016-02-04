@@ -25,22 +25,18 @@ import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
 var RegistryPage = class RegistryPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
-
-        this.bindMethods('buildRibbon', 'handleSelectType', 'handleSelect', 'handleSearch', 'handleSearchClear', 'handleDoubleClick', 'handleClickNavigation', 'handleAddRegistry', 'handleCallAddRegistry', 'handleRemoveRegistryDialog', 'handleRemoveRegistry', 'handleStartMoveRegistry', 'handleSaveMoveRegistry', 'handleCancelMoveRegistry', 'handleCloseTypesRegistry', 'handleUnsetParents');
-        this.dispatch(fetchRegistryIfNeeded(props.registry.filterText, props.registry.registryParentId, props.registry.registryTypesId));
-        this.dispatch(refRecordTypesFetchIfNeeded());
-
+        this.bindMethods('buildRibbon', 'handleSelect', 'handleSearch', 'handleSearchClear', 'handleDoubleClick', 'handleClickNavigation', 'handleAddRegistry', 'handleCallAddRegistry', 'handleRemoveRegistryDialog', 'handleRemoveRegistry', 'handleStartMoveRegistry', 'handleSaveMoveRegistry', 'handleCancelMoveRegistry', 'handleCloseTypesRegistry', 'handleUnsetParents');
 
     }
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(fetchRegistryIfNeeded(nextProps.registry.filterText, nextProps.registry.registryParentId, nextProps.registry.registryTypesId));
         this.dispatch(refRecordTypesFetchIfNeeded());
-        this.dispatch(refRecordTypesFetchIfNeeded());
     }
 
-    handleSelectType(){
-
+    componentDidMount(){
+        this.dispatch(fetchRegistryIfNeeded(this.props.registry.filterText, this.props.registry.registryParentId, this.props.registry.registryTypesId));
+        this.dispatch(refRecordTypesFetchIfNeeded());
     }
 
     handleAddRegistry( parentId, event) {
@@ -250,7 +246,6 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
                     {listOfRecord}
                 </div>
-                <div key='registryCount' className='registry-list-count'>{i18n('registry.shown')} {this.props.registry.records.length} {i18n('registry.z.celkoveho.poctu')} {this.props.registry.countRecords}</div>
             </div>
         )
 

@@ -15,6 +15,7 @@ import {WebApi} from 'actions'
 import {getRegistryIfNeeded, fetchRegistryIfNeeded, fetchRegistry} from 'actions/registry/registryList'
 import {registryChangeDetail, registryData} from 'actions/registry/registryData'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
+import {routerNavigate} from 'actions/router'
 import {registryUpdated} from 'actions/registry/registryData'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 
@@ -24,15 +25,6 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         super(props);
         this.bindMethods('editRecord', 'handleDeleteVariant', 'handleCallAddRegistryVariant', 'handleBlurVariant', 'handleClickAddVariant', 'handleOnEnterAdd', 'handleBlurVariant', 'handlePoznamkaBlur', 'handleChangeNote');
 
-        if (props.selectedId === null) {
-            this.dispatch(getRegistryIfNeeded(props.selectedId));
-        }
-
-        this.dispatch(refRecordTypesFetchIfNeeded());
-        this.state = {
-            addVariant: 0,
-            note: ''
-        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -45,11 +37,21 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         }
 
         this.dispatch(fetchRegistryIfNeeded());
+        this.setState({
+            note: notes
+        });
+
+    }
+
+    componentDidMount(){
+        if (this.props.selectedId === null) {
+            this.dispatch(getRegistryIfNeeded(this.props.selectedId));
+        }
+        this.dispatch(refRecordTypesFetchIfNeeded());
         this.state = {
             addVariant: 0,
-            note: notes
+            note: ''
         }
-
     }
 
     handleChangeNote(e){
@@ -149,6 +151,10 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         });
     }
 
+    handleGoToPartyPerson(partyId){
+// TODO Stepina - dodělat zobrazení konkrétního detailu osoby
+        this.dispatch(routerNavigate('party'));
+    }
 
     render() {
 
@@ -179,7 +185,13 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
             var detailRegistry = (
                 <div className="registry-title">
                     <h1 className='registry'>
-                        {this.props.registryData.item.record} <Button className="registry-record-edit" onClick={this.editRecord.bind(this, this.props.registry.registryParentId)}><Icon glyph='fa-pencil'/></Button>
+                        {this.props.registryData.item.record}
+                        <Button className="registry-record-edit" onClick={this.editRecord.bind(this, this.props.registry.registryParentId)}>
+                            <Icon glyph='fa-pencil'/>
+                        </Button>
+                        {this.props.registryData.item.partyId && <Button className="registry-record-party" onClick={this.handleGoToPartyPerson.bind(this, this.props.registryData.item.partyId)}>
+                            <Icon glyph='fa-user'/>
+                        </Button>}
                     </h1>
                     <div className='line charakteristik'>
                         <label>{i18n('registry.detail.charakteristika')}</label>
