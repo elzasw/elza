@@ -266,7 +266,6 @@ return true;
         const {descItemCopyFromPrevEnabled, copy, locked, descItemType, descItemTypeInfo, conformityInfo} = this.props;
 
         var actions = [];
-console.log(descItemCopyFromPrevEnabled);
         // Sestavení akcí
         actions.push(<NoFocusButton title={i18n('subNodeForm.descItemType.copy')} key="copy" onClick={this.handleDescItemTypeCopy}><Icon className={copy ? 'copy' : 'nocopy'} glyph="fa-files-o" /></NoFocusButton>);
         actions.push(<NoFocusButton disabled={!descItemCopyFromPrevEnabled} title={i18n('subNodeForm.descItemType.copyFromPrev')} key="book" onClick={this.handleDescItemTypeCopyFromPrev}><Icon glyph="fa-book" /></NoFocusButton>);
