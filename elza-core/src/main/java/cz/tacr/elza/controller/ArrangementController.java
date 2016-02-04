@@ -1,28 +1,78 @@
 package cz.tacr.elza.controller;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrFindingAidVO;
+import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
+import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
+import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.RulPacketTypeVO;
+import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTypeGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeConformityError;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
+import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.RulArrangementType;
+import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulDescItemTypeExt;
+import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
-import cz.tacr.elza.repository.*;
-import cz.tacr.elza.service.*;
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
-
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-import java.util.*;
+import cz.tacr.elza.repository.ArrangementTypeRepository;
+import cz.tacr.elza.repository.CalendarTypeRepository;
+import cz.tacr.elza.repository.DescItemTypeRepository;
+import cz.tacr.elza.repository.FindingAidVersionRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.service.ArrMoveLevelService;
+import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.DescriptionItemService;
+import cz.tacr.elza.service.LevelTreeCacheService;
+import cz.tacr.elza.service.PacketService;
+import cz.tacr.elza.service.RegistryService;
+import cz.tacr.elza.service.RuleService;
 
 
 /**
@@ -676,6 +726,101 @@ public class ArrangementController {
         ArrNodeRegister nodeRegister = factoryDO.createRegisterLink(nodeRegisterVO);
         nodeRegister = registryService.deleteRegisterLink(versionId, nodeId, nodeRegister);
         return factoryVo.createRegisterLink(nodeRegister);
+    }
+
+    /**
+     * Validuje verzi archivní pomůcky a vrátí list chyb.
+     * Pokud je počet chyb 0 pak předpokládáme že stav AP = OK
+     *
+     * @param versionId         verze, která se má validovat
+     * @return Objekt s listem (prvních 20) chyb
+     */
+    @RequestMapping(value = "/validateVersion/{versionId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<VersionValidationItem> validateVersion(@PathVariable("versionId") final Integer versionId) {
+        Assert.notNull(versionId);
+
+        ArrFindingAidVersion findingAidVersion = findingAidVersionRepository.findOne(versionId);
+        if (findingAidVersion == null) {
+            throw new IllegalStateException("Neexistuje verze archivní pomůcky s id " + versionId);
+        }
+
+        List<ArrNodeConformity> validationErrors = arrangementService.findConformityErrors(findingAidVersion);
+
+        Map<Integer, String> validations = new LinkedHashMap<Integer, String>();
+        for (ArrNodeConformity conformity : validationErrors) {
+            String description = validations.get(conformity.getNode().getNodeId());
+
+            if (description == null) {
+                description = "";
+            }
+
+            List<String> descriptions = new LinkedList<String>();
+            for (ArrNodeConformityError error : conformity.getErrorConformity()) {
+                descriptions.add(error.getDescription());
+            }
+
+            for (ArrNodeConformityMissing missing : conformity.getMissingConformity()) {
+                descriptions.add(missing.getDescription());
+            }
+
+            description += description + StringUtils.join(descriptions, " ");
+
+            validations.put(conformity.getNode().getNodeId(), description);
+        }
+
+        List<VersionValidationItem> versionValidationItems = new ArrayList<>(validations.size());
+        for (Integer nodeId : validations.keySet()) {
+            String description = validations.get(nodeId);
+            VersionValidationItem versionValidationItem = new VersionValidationItem();
+            versionValidationItem.setDescription(description);
+            versionValidationItem.setNodeId(nodeId);
+
+            versionValidationItems.add(versionValidationItem);
+        }
+
+        return versionValidationItems;
+    }
+
+    /**
+     * Validuje verzi archivní pomůcky a vrátí počet chyb
+     * Pokud je počet chyb 0 pak předpokládáme že stav AP = OK
+     *
+     * @param versionId         verze, která se má validovat
+     * @return počet chyb
+     */
+    @RequestMapping(value = "/validateVersionCount/{versionId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Integer validateVersionCount(@PathVariable("versionId") final Integer versionId) {
+        Assert.notNull(versionId);
+
+        ArrFindingAidVersion findingAidVersion = findingAidVersionRepository.findOne(versionId);
+        if (findingAidVersion == null) {
+            throw new IllegalStateException("Neexistuje verze archivní pomůcky s id " + versionId);
+        }
+
+        return arrangementService.getVersionErrorCount(findingAidVersion);
+    }
+
+    public static class VersionValidationItem {
+
+        private int nodeId;
+
+        private String description;
+
+        public int getNodeId() {
+            return nodeId;
+        }
+
+        public void setNodeId(int nodeId) {
+            this.nodeId = nodeId;
+        }
+
+        public String getDesciption() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
     }
 
     /**

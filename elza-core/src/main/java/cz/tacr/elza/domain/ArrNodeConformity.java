@@ -1,6 +1,7 @@
 package cz.tacr.elza.domain;
 
 import java.util.Date;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -52,6 +54,14 @@ public class ArrNodeConformity implements cz.tacr.elza.api.ArrNodeConformity<Arr
 
     @Column(nullable = true)
     private Date date;
+
+    @RestResource(exported = false)
+    @OneToMany(mappedBy = "nodeConformity", fetch = FetchType.LAZY)
+    private Set<ArrNodeConformityError> errorConformity;
+
+    @RestResource(exported = false)
+    @OneToMany(mappedBy = "nodeConformity", fetch = FetchType.LAZY)
+    private Set<ArrNodeConformityMissing> missingConformity;
 
     @Override
     public Integer getNodeConformityId() {
@@ -111,6 +121,22 @@ public class ArrNodeConformity implements cz.tacr.elza.api.ArrNodeConformity<Arr
     @Override
     public void setDate(final Date date) {
         this.date = date;
+    }
+
+    public Set<ArrNodeConformityError> getErrorConformity() {
+        return errorConformity;
+    }
+
+    public void setErrorConformity(Set<ArrNodeConformityError> errorConformity) {
+        this.errorConformity = errorConformity;
+    }
+
+    public Set<ArrNodeConformityMissing> getMissingConformity() {
+        return missingConformity;
+    }
+
+    public void setMissingConformity(Set<ArrNodeConformityMissing> missingConformity) {
+        this.missingConformity = missingConformity;
     }
 
     @Override

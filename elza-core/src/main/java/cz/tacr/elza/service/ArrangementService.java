@@ -1,6 +1,7 @@
 package cz.tacr.elza.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import cz.tacr.elza.api.ArrNodeConformity.State;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
@@ -703,4 +705,24 @@ public class ArrangementService {
         return lockLevel;
     }
 
+    /**
+     * Načte počet chyb verze archivní pomůcky.
+     *
+     * @param findingAidVersion verze archivní pomůcky
+     *
+     * @return počet chyb
+     */
+    public Integer getVersionErrorCount(ArrFindingAidVersion findingAidVersion) {
+        return nodeConformityInfoRepository.findCountByVersionAndState(findingAidVersion, State.ERR);
+    }
+
+    public List<ArrNodeConformity> findConformityErrors(ArrFindingAidVersion findingAidVersion) {
+        List<ArrNodeConformity> conformity = nodeConformityInfoRepository.findFirst20ByStateOrderByNodeConformityIdAsc(State.ERR);
+
+        if (conformity.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return nodeConformityInfoRepository.fetchErrorAndMissingConformity(conformity, findingAidVersion, State.ERR);
+    }
 }

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import cz.tacr.elza.api.ArrNodeConformity.State;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
@@ -51,4 +52,16 @@ public interface NodeConformityRepository extends JpaRepository<ArrNodeConformit
 
     @Query("SELECT c FROM arr_node_conformity c JOIN c.node n WHERE n.nodeId in (?1) and c.faVersion = ?2")
     List<ArrNodeConformity> findByNodeIdsAndFaVersion(Collection<Integer> nodeIds, ArrFindingAidVersion version);
+
+    @Query("SELECT COUNT(c) FROM arr_node_conformity c WHERE c.faVersion = ?1 and c.state = ?2")
+    Integer findCountByVersionAndState(ArrFindingAidVersion findingAidVersion, State state);
+
+    @Query("SELECT distinct c FROM arr_node_conformity c "
+            + "join fetch c.node n "
+            + "left join fetch c.errorConformity ec "
+            + "left join fetch c.missingConformity mc "
+            + "WHERE c in (?1) and c.faVersion = ?2 and c.state = ?3 order by c.nodeConformityId asc")
+    List<ArrNodeConformity> fetchErrorAndMissingConformity(List<ArrNodeConformity> nodeConformity, ArrFindingAidVersion findingAidVersion, State state);
+
+    List<ArrNodeConformity> findFirst20ByStateOrderByNodeConformityIdAsc(State state);
 }
