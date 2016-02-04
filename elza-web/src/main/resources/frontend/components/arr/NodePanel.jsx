@@ -404,8 +404,10 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 <div className='btn btn-default' disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(faSubNodesPrevPage())}><Icon glyph="fa-backward" />{i18n('arr.fa.subNodes.prevPage')}</div>
                 <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize >= node.childNodes.length} onClick={()=>this.dispatch(faSubNodesNextPage())}><Icon glyph="fa-forward" />{i18n('arr.fa.subNodes.nextPage')}</div>
 
-                <Input type="text" onChange={this.handleChangeFilterText} value={this.state.filterText}/>
-                <Button onClick={() => {this.dispatch(faNodeSubNodeFulltextSearch(this.state.filterText))}}>Hledat</Button>
+                <div className="search-input">
+                    <Input type="text" onChange={this.handleChangeFilterText} value={this.state.filterText}/>
+                    <Button onClick={() => {this.dispatch(faNodeSubNodeFulltextSearch(this.state.filterText))}}><Icon glyph='fa-search'/></Button>
+                </div>
             </div>
         )
 
