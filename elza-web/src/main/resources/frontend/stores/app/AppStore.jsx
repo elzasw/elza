@@ -9,6 +9,8 @@ import {lenToBytesStr, roughSizeOfObject} from 'components/Utils';
 // Nastavení úrovně logování
 const _logStoreState = true;
 const _logStoreSize = false;
+const _logActionDuration = false;
+const _logCollapsed = true;
 
 /**
  * Sestavení reducerů.
@@ -73,8 +75,8 @@ let reducer = combineReducers({
 
 // Store a middleware
 const loggerMiddleware = createLogger({
-    collapsed: true,
-    duration: true,
+    collapsed: _logCollapsed,
+    duration: _logActionDuration,
     predicate: (getState, action) => action.type !== types.STORE_STATE_DATA
 })
 

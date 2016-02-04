@@ -278,7 +278,7 @@ export function updateFormData(state, data, rulDataTypes) {
         //console.log("--- INIT FORM DATA to", newNodeVersionId);
     }
     if (currentNodeVersionId <= newNodeVersionId) { // rovno musí být, protože i když mám danou verzi, nemusím mít nově přidané povinné položky na základě aktuálně upravené mnou
-        console.log("--- FORM DATA RUN");
+        //console.log("--- FORM DATA RUN");
         var newFormData = merge(state.formData, data, descItemTypesMap, rulDataTypes, descItemTypeInfos);
         state.formData = newFormData;
     } else {
