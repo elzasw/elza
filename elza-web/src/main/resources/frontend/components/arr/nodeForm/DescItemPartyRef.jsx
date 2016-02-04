@@ -25,7 +25,7 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
     }
 
     handleChange(id, valueObj) {
-        this.props.onChange(id);
+        this.props.onChange(valueObj);
     }
 
     handleSearchChange(text) {
@@ -36,7 +36,7 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
                 .then(json => {
                     this.setState({
                         partyList: json.map(party => {
-                            return {id: party.partyId, name: party.record.record, type: party.partyType.name, from: party.from, to: party.to, characteristics: party.record.characteristics}
+                            return party
                         })
                     })
                 })
@@ -61,11 +61,11 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
         }
 
         return (
-                <div className={cls} key={item.id} >
-                    <div className="name" title={item.name}>{item.name}</div>
-                    <div className="type">{item.type}</div>
+                <div className={cls} key={item.partyId} >
+                    <div className="name" title={item.record.record}>{item.record.record}</div>
+                    <div className="type">{item.partyType.name}</div>
                     <div className="interval">{interval}</div>
-                    <div  className="characteristics" title={item.characteristics}>{item.characteristics}</div>
+                    <div  className="characteristics" title={item.record.characteristics}>{item.record.characteristics}</div>
                 </div>
         )
     }
@@ -88,7 +88,7 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
     render() {
         const {descItem, locked} = this.props;
         var footer = this.renderFooter();
-        var value = descItem.party ? {id: descItem.party.partyId, name: descItem.party.record.record} : null;
+        var value = descItem.party ? descItem.party : null;
 
         var actions = new Array;
 
@@ -105,8 +105,8 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
                         footer={footer}
                         value={value}
                         items={this.state.partyList}
-                        getItemId={(item) => item ? item.id : null}
-                        getItemName={(item) => item ? item.name : ''}
+                        getItemId={(item) => item ? item.partyId : null}
+                        getItemName={(item) => item ? item.record.record : ''}
                         onSearchChange={this.handleSearchChange}
                         onChange={this.handleChange}
                         renderItem={this.renderParty}

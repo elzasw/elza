@@ -122,6 +122,14 @@ export default function subNodeForm(state = initialState, action) {
             var loc = getLoc(state, action.valueLocation);
             var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, loc.descItemType.id)];
             switch (descItemTypeInfo.rulDataType.code) {
+                case 'PARTY_REF':
+                    loc.descItem.value = action.value.partyId;
+                    loc.descItem.party = action.value;
+                    break;
+                case 'RECORD_REF':
+                    loc.descItem.value = action.value.recordId;
+                    loc.descItem.record = action.value;
+                    break;
                 case 'UNITDATE':
                     loc.descItem.value = action.value.value;
                     loc.descItem.calendarTypeId = action.value.calendarTypeId;
@@ -135,17 +143,6 @@ export default function subNodeForm(state = initialState, action) {
                     break;
                 default:
                     loc.descItem.value = action.value;
-
-                    // TODO: vyřešit lépe - probrat s Pavlem
-                    if (types.FA_SUB_NODE_FORM_VALUE_CHANGE_PARTY == action.type) {
-                        loc.descItem.value = action.value.partyId;
-                        loc.descItem.party = action.value;
-                    }
-                    if (types.FA_SUB_NODE_FORM_VALUE_CHANGE_RECORD == action.type) {
-                        loc.descItem.value = action.value.recordId;
-                        loc.descItem.record = action.value;
-                    }
-
                     break;
             }
             loc.descItem.touched = true;

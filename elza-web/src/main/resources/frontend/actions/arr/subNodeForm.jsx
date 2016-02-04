@@ -196,7 +196,7 @@ export function faSubNodeFormDescItemTypeDelete(versionId, nodeId, nodeKey, valu
             }
         });
 
-        dispatch(faSubNodeFormDescItemTypeStoreDelete(versionId, nodeId, nodeKey, valueLocation, false));
+        dispatch(faSubNodeFormDescItemTypeDeleteInStore(versionId, nodeId, nodeKey, valueLocation, false));
 
         if (hasDescItemsForDelete) {
             faSubNodeFormDeleteDescItemType(versionId, subNodeForm.data.node.id, subNodeForm.data.node.version, loc.descItemType)

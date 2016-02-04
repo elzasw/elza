@@ -93,7 +93,7 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
 
         this.bindMethods('handleKeyDown', 'handleChange', 'handleKeyUp', 'getFilteredItems', 'maybeAutoCompleteText',
             'maybeScrollItemIntoView', 'handleInputFocus', 'handleInputClick', 'handleInputBlur',
-            'handleKeyDown', 'openMenu', 'closeMenu', 'handleDocumentClick')
+            'handleKeyDown', 'openMenu', 'closeMenu', 'handleDocumentClick', 'getStateFromProps')
 
         this._ignoreBlur = false;
 
@@ -107,9 +107,10 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
         }
 
         this.state = {
-            shouldItemRender: shouldItemRender,
-            value: props.value,
-            inputStrValue: props.getItemName(props.value),
+            ...this.getStateFromProps({}, props, {inputStrValue: ''}),
+            _shouldItemRender: shouldItemRender,
+            _value: props.value,
+            _inputStrValue: props.getItemName(props.value),
             isOpen: false,
             highlightedIndex: null,
             hasFocus: false
@@ -124,6 +125,43 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
             el = el.parentNode;
         }
         return false;
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this._performAutoCompleteOnUpdate = true
+
+        this.setState(this.getStateFromProps(this.props, nextProps, this.state));
+    }
+
+    getStateFromProps(props, nextProps, state) {
+        var shouldItemRender;
+        if (nextProps.shouldItemRender) {
+            shouldItemRender = nextProps.shouldItemRender;
+        } else if (nextProps.customFilter) {
+            shouldItemRender = () => true;
+        } else {
+            shouldItemRender = (state, value) => {
+                return state.name.toLowerCase().indexOf(value.toLowerCase()) !== -1
+            }
+        }
+
+        var inputStrValue;
+        var prevId = props.getItemId ? props.getItemId(props.value) : nextProps.getItemId(props.value)
+        var newId = nextProps.getItemId(nextProps.value)
+        if (prevId != newId) {
+            inputStrValue = nextProps.getItemName(nextProps.value)
+            if (typeof inputStrValue === 'undefined') {
+                inputStrValue = ''
+            }
+        } else {
+            inputStrValue = state.inputStrValue;
+        }
+
+        return {
+            shouldItemRender: shouldItemRender,
+            value: nextProps.value,
+            inputStrValue: inputStrValue,
+        }
     }
 
     handleDocumentClick(e) {
@@ -212,10 +250,6 @@ _debugStates && console.log("@CLICK:", inside);
         this._performAutoCompleteOnKeyUp = false
     }
 
-    componentWillReceiveProps () {
-        this._performAutoCompleteOnUpdate = true
-    }
-
     componentDidUpdate(prevProps, prevState) {
         if (this.state.isOpen === true && prevState.isOpen === false) {
             this.setMenuPositions()
@@ -296,7 +330,7 @@ _debugStates && console.log("@CLICK:", inside);
 
         var matchedItem = highlightedIndex !== null ? items[highlightedIndex] : items[0]
         var itemValue = this.props.getItemName(matchedItem)
-        var itemValueDoesMatch = (itemValue.toLowerCase().indexOf(this.state.inputStrValue.toLowerCase()) === 0)
+        var itemValueDoesMatch = this.state.inputStrValue && (itemValue.toLowerCase().indexOf(this.state.inputStrValue.toLowerCase()) === 0)
       
         if (itemValueDoesMatch) {
             var node = ReactDOM.findDOMNode(this.refs.input)

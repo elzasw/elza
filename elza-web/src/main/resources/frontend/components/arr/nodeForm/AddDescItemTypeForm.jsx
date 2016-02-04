@@ -57,16 +57,25 @@ var AddDescItemTypeForm = class AddDescItemTypeForm extends AbstractReactCompone
     render() {
         const {fields: {descItemTypeId}, handleSubmit, onClose} = this.props;
 
+        var descItemTypeValue;
+        if (typeof descItemTypeId.value !== 'undefined') {
+            var index = indexById(this.props.descItemTypes, descItemTypeId.value);
+            if (index !== null) {
+                descItemTypeValue = this.props.descItemTypes[index]
+            }
+        }
+
         var ac = (
-                <div className="autocomplete-desc-item-type">
-                    <Autocomplete
-                    label={i18n('subNodeForm.descItemType')}
-                    {...descItemTypeId}
-                    {...decorateFormField(descItemTypeId)}
-                    items={this.props.descItemTypes}
-                    renderItem={this.renderItem}
-                    />
-                </div>
+            <div className="autocomplete-desc-item-type">
+                <Autocomplete
+                label={i18n('subNodeForm.descItemType')}
+                {...descItemTypeId}
+                {...decorateFormField(descItemTypeId)}
+                value={descItemTypeValue}
+                items={this.props.descItemTypes}
+                renderItem={this.renderItem}
+                />
+            </div>
         )
 
         return (

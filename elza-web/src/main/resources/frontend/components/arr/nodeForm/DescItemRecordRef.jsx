@@ -22,7 +22,7 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
     }
 
     handleChange(id, valueObj) {
-        this.props.onChange(id);
+        this.props.onChange(valueObj);
     }
 
     handleSearchChange(text) {
@@ -33,7 +33,7 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
                 .then(json => {
                     this.setState({
                         recordList: json.recordList.map(record => {
-                            return {id: record.recordId, name: record.record, characteristics: record.characteristics, parents: record.parents}
+                            return record
                         })
                     })
                 })
@@ -57,8 +57,8 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
         }
 
         return (
-                <div className={cls} key={item.id} >
-                    <div className="name" title={item.name}>{item.name}</div>
+                <div className={cls} key={item.recordId} >
+                    <div className="name" title={item.record}>{item.record}</div>
                     <div className="characteristics" title={item.characteristics}>{item.characteristics}</div>
                 </div>
         )
@@ -75,7 +75,7 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
     render() {
         const {descItem, locked} = this.props;
         var footer = this.renderFooter();
-        var value = descItem.record ? {id: descItem.record.recordId, name: descItem.record.record} : null;
+        var value = descItem.record ? descItem.record : null;
 
         var actions = new Array;
 
@@ -92,8 +92,8 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
                             footer={footer}
                             value={value}
                             items={this.state.recordList}
-                            getItemId={(item) => item ? item.id : null}
-                            getItemName={(item) => item ? item.name : ''}
+                            getItemId={(item) => item ? item.recordId : null}
+                            getItemName={(item) => item ? item.record : ''}
                             onSearchChange={this.handleSearchChange}
                             onChange={this.handleChange}
                             renderItem={this.renderRecord}
