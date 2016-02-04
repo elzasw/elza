@@ -250,13 +250,17 @@ export default function subNodeForm(state = initialState, action) {
             // ##
 
             // Dohledání skupiny, pokud existuje
-            var descItemGroup = state.formData.descItemGroups[indexById(state.formData.descItemGroups, addGroup.id)];
+            var grpIndex = indexById(state.formData.descItemGroups, addGroup.code, 'code');
+            var descItemGroup;
+            if (grpIndex !== null) {
+                descItemGroup = state.formData.descItemGroups[grpIndex];
+            }
             if (!descItemGroup) {   // skupina není, je nutné ji nejdříve přidat a následně seřadit skupiny podle pořadí
                 descItemGroup = {...addGroup, descItemTypes: []};
                 state.formData.descItemGroups.push(descItemGroup);
 
                 // Seřazení
-                state.formData.descItemGroups.sort((a, b) => state.data.descItemTypeGroups[a.id].position - state.data.descItemTypeGroups[a.id].position);
+                state.formData.descItemGroups.sort((a, b) => state.descItemTypeGroupsMap[a.code].position - state.descItemTypeGroupsMap[b.code].position);
             }
 
             // Přidání prvku do skupiny a seřazení prvků podle position
