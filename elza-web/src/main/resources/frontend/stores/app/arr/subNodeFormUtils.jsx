@@ -135,8 +135,13 @@ function mergeDescItems(resultDescItemType, prevType, newType, descItemTypeInfos
                 }
             })
 
-            // Chceme ji pokud, má nějaké hodnoty nebo je vícehodnotová - ještě ale uživatel 68dnou hodnotu nepřidal
-            return resultDescItemType.descItems.length > 0 || resultDescItemType.repeatable;
+            if (forceVisibility && !resultDescItemType.repeatable && resultDescItemType.descItems.length === 0) { // má být vidět, je jednohodnotový ale nemáme žádnou hodnotu, přidáme implcitiní prázdnou
+                // Přidáme jednu hodnotu - jedná se o jednohodnotový atribut
+                resultDescItemType.descItems.push(createImplicitDescItem(resultDescItemType, descItemTypeInfos));
+            }
+
+            // Chceme ji pokud, má nějaké hodnoty nebo je vícehodnotová - ještě ale uživatel žádnou hodnotu nepřidal, nebo pokud má být vidět - forceVisibility
+            return resultDescItemType.descItems.length > 0 || resultDescItemType.repeatable || forceVisibility;
         } else {    // je v db a my ji také máme, musíme provést merge
             // Vezmeme jako primární nově příchoz hodnoty a do nich přidáme ty, které aktualní klient má přidané, ale nemá je ještě uložené např. kvůli validaci atp.
 
@@ -236,7 +241,6 @@ export function updateFormData(state, data, rulDataTypes) {
     var descItemTypesMap = getDescItemTypesMap(data);
 
     // Seznam všech atributů - obecně, doplněný o rulDataType
-    // Doplnění position ke skupině
     var typesInfo = getDescItemTypeGroupsInfo(data, rulDataTypes);
     var descItemTypeInfos = typesInfo.descItemTypeInfos;
     state.descItemTypeGroupsMap = typesInfo.descItemTypeGroupsMap;
