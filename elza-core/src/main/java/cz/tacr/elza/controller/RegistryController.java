@@ -253,7 +253,7 @@ public class RegistryController {
         factoryVo.fillRegisterTypeNamesToParents(result, null);
         result.setChilds(factoryVo.createRegRecords(childs, recordIdPartyIdMap, false, null));
 
-        result.setVariantRecords(factoryVo.createRegVariantRecords(record.getVariantRecordList()));
+        result.setVariantRecords(factoryVo.createRegVariantRecords(variantRecordRepository.findByRegRecordId(recordId)));
 
         return result;
     }

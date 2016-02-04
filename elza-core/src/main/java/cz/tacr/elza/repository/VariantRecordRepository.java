@@ -17,7 +17,7 @@ public interface VariantRecordRepository extends JpaRepository<RegVariantRecord,
      * @param recordId  id záznamu rejtříku
      * @return  záznamy patřící danému záznamu v rejstříku
      */
-    @Query("SELECT vr FROM reg_variant_record vr JOIN vr.regRecord r WHERE r.recordId = ?1")
+    @Query("SELECT vr FROM reg_variant_record vr JOIN vr.regRecord r WHERE r.recordId = ?1 ORDER BY vr.variantRecordId")
     List<RegVariantRecord> findByRegRecordId(Integer recordId);
 
 }
