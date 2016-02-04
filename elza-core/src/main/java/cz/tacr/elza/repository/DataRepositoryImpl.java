@@ -31,7 +31,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                                                 final ArrFindingAidVersion version) {
 
 
-        String hql = "SELECT d FROM arr_data d JOIN FETCH d.descItem di JOIN FETCH di.node n WHERE ";
+        String hql = "SELECT d FROM arr_data d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.descItemType dit JOIN FETCH d.dataType dt WHERE ";
         if (version.getLockChange() == null) {
             hql += "di.deleteChange IS NULL ";
         } else {
@@ -53,6 +53,38 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         ObjectListIterator<Integer> nodeIdsIterator = new ObjectListIterator<Integer>(nodeIds);
         while (nodeIdsIterator.hasNext()) {
             query.setParameter("nodeIds", nodeIdsIterator.next());
+
+            result.addAll(query.getResultList());
+        }
+
+        return query.getResultList();
+    }
+
+
+    @Override
+    public List<ArrData> findByDataIdsAndVersionFetchSpecification(Set<Integer> dataIds, final Set<RulDescItemType> descItemTypes, ArrFindingAidVersion version) {
+        String hql = "SELECT d FROM arr_data d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.descItemSpec dit JOIN FETCH di.descItemSpec dis JOIN FETCH d.dataType dt WHERE ";
+        if (version.getLockChange() == null) {
+            hql += "di.deleteChange IS NULL ";
+        } else {
+            hql += "di.createChange < :lockChange AND (di.deleteChange IS NULL OR di.deleteChange > :lockChange) ";
+        }
+
+        hql += "AND di.descItemType IN (:descItemTypes) AND d.dataId IN (:dataIds)";
+
+
+        Query query = entityManager.createQuery(hql);
+
+        if (version.getLockChange() != null) {
+            query.setParameter("lockChange", version.getLockChange());
+        }
+
+        query.setParameter("descItemTypes", descItemTypes);
+
+        List<ArrData> result = new LinkedList<>();
+        ObjectListIterator<Integer> nodeIdsIterator = new ObjectListIterator<Integer>(dataIds);
+        while (nodeIdsIterator.hasNext()) {
+            query.setParameter("dataIds", nodeIdsIterator.next());
 
             result.addAll(query.getResultList());
         }

@@ -32,29 +32,44 @@ import com.google.common.eventbus.Subscribe;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.EventBusListener;
+import cz.tacr.elza.config.ConfigView;
+import cz.tacr.elza.config.ConfigView.ViewTitles;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.DescItemRepositoryCustom;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.repository.CalendarTypeRepository;
+import cz.tacr.elza.repository.DataRecordRefRepository;
+import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.LevelRepositoryCustom;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.eventnotification.EventChangeMessage;
 import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
 import cz.tacr.elza.service.eventnotification.events.AbstractEventVersion;
 import cz.tacr.elza.service.eventnotification.events.EventAddNode;
 import cz.tacr.elza.service.eventnotification.events.EventDeleteNode;
-import cz.tacr.elza.service.eventnotification.events.EventIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventNodeMove;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.utils.ObjectListIterator;
 
 
 /**
@@ -76,7 +91,10 @@ public class LevelTreeCacheService {
     private FindingAidVersionRepository findingAidVersionRepository;
 
     @Autowired
-    private DescItemRepository descItemRepository;
+    private DataRepository dataRepository;
+
+    @Autowired
+    private DataRecordRefRepository dataRecordRefRepository;
 
     @Autowired
     private RuleService ruleService;
@@ -86,6 +104,15 @@ public class LevelTreeCacheService {
 
     @Autowired
     private ClientFactoryVO clientFactoryVO;
+
+    @Autowired
+    private ConfigView configView;
+
+    @Autowired
+    private NodeRepository nodeRepository;
+
+    @Autowired
+    private CalendarTypeRepository calendarTypeRepository;
 
     @Value("${elza.treenode.title}")
     private String titleDescItemTypeCode = null;
@@ -477,34 +504,192 @@ public class LevelTreeCacheService {
         Assert.notNull(nodesMap);
         Assert.notNull(version);
 
-        //node id -> title info
-        Map<Integer, DescItemRepositoryCustom.DescItemTitleInfo> nodeTitlesMap = new HashMap<>();
+        List<ArrNode> nodes = new ArrayList<>(nodesMap.size());
+        Set<Integer> nodeIds = nodesMap.keySet();
+        ObjectListIterator iterator = new ObjectListIterator(nodeIds);
+        while (iterator.hasNext()) {
+            List<Integer> nodeIdsSublist = iterator.next();
 
-        if (StringUtils.isBlank(titleDescItemTypeCode)) {
-            logger.warn("Není nastaven typ atributu, jehož hodnota bude použita pro popisek uzlu."
-                    + " Nastavte kód v konfiguraci pro hodnotu 'elza.treenode.title'");
-        } else {
+            nodes.addAll(nodeRepository.findAll(nodeIdsSublist));
+        }
+        Map<Integer, ArrNode> nodeMap = new HashMap<>(nodes.size());
+        for (ArrNode node : nodes) {
+            nodeMap.put(node.getNodeId(), node);
+        }
 
-            RulDescItemType titleDescItemType = descItemTypeRepository.findOneByCode(titleDescItemTypeCode);
-            if (titleDescItemType == null) {
-                logger.warn("Nepodařilo se nalézt typ atributu s kódem " + titleDescItemTypeCode + ". Změňte kód v"
-                        + " konfiguraci pro hodnotu 'elza.treenode.title'");
+        Map<Integer, TreeNodeClient> result = new LinkedHashMap<Integer, TreeNodeClient>(nodesMap.size());
+        for (TreeNode treeNode : nodesMap.values()) {
+            result.put(treeNode.getId(), new TreeNodeClient(treeNode.getId(), treeNode.getDepth(),
+                    null, !treeNode.getChilds().isEmpty(), treeNode.getReferenceMark(), nodeMap.get(treeNode.getId()).getVersion()));
+        }
+
+        if (result.isEmpty()) {
+            return new ArrayList<>(0);
+        }
+
+        ViewTitles viewTitles = configView.getViewTitles(version.getRuleSet().getCode(), version.getFindingAid().getFindingAidId());
+        List<String> descItemTypeCodes = new LinkedList<>();
+        if (viewTitles == null) {
+            if (StringUtils.isBlank(titleDescItemTypeCode)) {
+                logger.warn("Není nastaven typ atributu, jehož hodnota bude použita pro popisek uzlu."
+                        + " Nastavte kód v konfiguraci pro hodnotu 'elza.treenode.title'");
+                viewTitles = new ViewTitles(null, null, null, null);
             } else {
-                nodeTitlesMap = descItemRepository
-                        .findDescItemTitleInfoByNodeId(nodesMap.keySet(), titleDescItemType, version.getLockChange());
+                descItemTypeCodes.add(titleDescItemTypeCode);
+            }
+        } else {
+            if (viewTitles.getAccordionLeft() != null) {
+                descItemTypeCodes.addAll(viewTitles.getAccordionLeft());
+            }
+            if (viewTitles.getAccordionRight() != null) {
+                descItemTypeCodes.addAll(viewTitles.getAccordionRight());
+            }
+            if (viewTitles.getTreeItem() != null) {
+                descItemTypeCodes.addAll(viewTitles.getTreeItem());
+            }
+            if (viewTitles.getIcon() != null) {
+                descItemTypeCodes.add(viewTitles.getIcon());
             }
         }
 
+        if (!descItemTypeCodes.isEmpty()) {
+            Set<RulDescItemType> descItemTypes = descItemTypeRepository.findByCode(descItemTypeCodes);
+            if (descItemTypes.size() != descItemTypeCodes.size()) {
+                logger.warn("Nepodařilo se nalézt všechny typy atributů s kódy " + StringUtils.join(descItemTypeCodes, ", ") + ". Změňte kódy v"
+                        + " konfiguraci.");
+            }
+            List<ArrData> dataList = dataRepository.findDescItemsByNodeIds(nodesMap.keySet(), descItemTypes, version);
+            Set<Integer> partyRefDataIds = new HashSet<>();
+            Set<Integer> recordRefDataIds = new HashSet<>();
+            Set<Integer> packetRefDataIds = new HashSet<>();
+            Set<Integer> enumDataIds = new HashSet<>();
 
-        List<TreeNodeClient> result = new ArrayList<>(nodesMap.size());
-        for (TreeNode treeNode : nodesMap.values()) {
-            DescItemRepositoryCustom.DescItemTitleInfo title = nodeTitlesMap.get(treeNode.getId());
-            result.add(new TreeNodeClient(treeNode.getId(), treeNode.getDepth(),
-                    title == null || title.getValue() == null ? defaultNodeTitle : title.getValue(),
-                    !treeNode.getChilds().isEmpty(), treeNode.getReferenceMark(), title.getNodeVersion()));
+            for (ArrData data : dataList) {
+                String value = null;
+                String code = data.getDescItem().getDescItemType().getCode();
+                Integer nodeId = data.getDescItem().getNode().getNodeId();
+                if (data.getDataType().getCode().equals("ENUM")) {
+                    enumDataIds.add(data.getDataId());
+                } else if (data.getDataType().getCode().equals("PARTY_REF")) {
+                    partyRefDataIds.add(data.getDataId());
+                } else if (data.getDataType().getCode().equals("RECORD_REF")) {
+                    recordRefDataIds.add(data.getDataId());
+                } else if (data.getDataType().getCode().equals("PACKET_REF")) {
+                    packetRefDataIds.add(data.getDataId());
+                } else if (data.getDataType().getCode().equals("UNITDATE")) {
+                    ArrDataUnitdate unitDate = (ArrDataUnitdate) data;
+
+                    ParUnitdate parUnitdate = new ParUnitdate();
+                    parUnitdate.setCalendarType(calendarTypeRepository.findOne(unitDate.getCalendarTypeId()));
+                    parUnitdate.setFormat(unitDate.getFormat());
+                    parUnitdate.setValueFrom(unitDate.getValueFrom());
+                    parUnitdate.setValueFromEstimated(unitDate.getValueFromEstimated());
+                    parUnitdate.setValueTo(unitDate.getValueTo());
+                    parUnitdate.setValueToEstimated(unitDate.getValueToEstimated());
+
+                    value = UnitDateConvertor.convertToString(parUnitdate);
+                } else if (data.getDataType().getCode().equals("STRING")) {
+                    ArrDataString stringtData = (ArrDataString) data;
+                    value = stringtData.getValue();
+                } else if (data.getDataType().getCode().equals("TEXT") || data.getDataType().getCode().equals("FORMATTED_TEXT")) {
+                    ArrDataText textData = (ArrDataText) data;
+                    value = textData.getValue();
+                } else if (data.getDataType().getCode().equals("UNITID")) {
+                    ArrDataUnitid unitId = (ArrDataUnitid) data;
+                    value = unitId.getValue();
+                } else if (data.getDataType().getCode().equals("COORDINATES")) {
+                    ArrDataCoordinates coordinates = (ArrDataCoordinates) data;
+                    value = coordinates.getValue();
+                } else if (data.getDataType().getCode().equals("INT")) {
+                    ArrDataInteger intData = (ArrDataInteger) data;
+                    value = intData.getValue().toString();
+                } else if (data.getDataType().getCode().equals("DECIMAL")) {
+                    ArrDataDecimal decimalData = (ArrDataDecimal) data;
+                    value = decimalData.getValue().toPlainString();
+                }
+
+                if (value != null) {
+                    TreeNodeClient treeNodeClient = result.get(nodeId);
+                    if (viewTitles.getAccordionLeft() != null && viewTitles.getAccordionLeft().contains(code)) {
+                        if (treeNodeClient.getAccordionLeft() == null) {
+                            treeNodeClient.setAccordionLeft(value);
+                        } else {
+                            treeNodeClient.setAccordionLeft(treeNodeClient.getAccordionLeft() + " " + value);
+                        }
+                    }
+                    if (viewTitles.getAccordionRight() != null && viewTitles.getAccordionRight().contains(code)) {
+                        if (treeNodeClient.getAccordionRight() == null) {
+                            treeNodeClient.setAccordionRight(value);
+                        } else {
+                            treeNodeClient.setAccordionRight(treeNodeClient.getAccordionRight() + " " + value);
+                        }
+                    }
+                    if (viewTitles.getTreeItem() != null && viewTitles.getTreeItem().contains(code)) {
+                        if (treeNodeClient.getName() == null) {
+                            treeNodeClient.setName(value);
+                        } else {
+                            treeNodeClient.setName(treeNodeClient.getName() + " " + value);
+                        }
+                    }
+                    if (viewTitles.getIcon() != null && viewTitles.getIcon().contains(code)) {
+                        if (treeNodeClient.getIcon() == null) {
+                            treeNodeClient.setIcon(value);
+                        } else {
+                            treeNodeClient.setIcon(treeNodeClient.getIcon() + " " + value);
+                        }
+                    }
+                }
+            }
+
+            List<ArrData> enumData = dataRepository.findByDataIdsAndVersionFetchSpecification(enumDataIds, descItemTypes, version);
+            for (ArrData data : enumData) {
+                String value = data.getDescItem().getDescItemSpec().getName();
+                String code = data.getDescItem().getDescItemType().getCode();
+                Integer nodeId = data.getDescItem().getNode().getNodeId();
+
+                if (value != null) {
+                    TreeNodeClient treeNodeClient = result.get(nodeId);
+                    if (viewTitles.getAccordionLeft() != null && viewTitles.getAccordionLeft().contains(code)) {
+                        if (treeNodeClient.getAccordionLeft() == null) {
+                            treeNodeClient.setAccordionLeft(value);
+                        } else {
+                            treeNodeClient.setAccordionLeft(treeNodeClient.getAccordionLeft() + " " + value);
+                        }
+                    }
+                    if (viewTitles.getAccordionRight() != null && viewTitles.getAccordionRight().contains(code)) {
+                        if (treeNodeClient.getAccordionRight() == null) {
+                            treeNodeClient.setAccordionRight(value);
+                        } else {
+                            treeNodeClient.setAccordionRight(treeNodeClient.getAccordionRight() + " " + value);
+                        }
+                    }
+                    if (viewTitles.getTreeItem() != null && viewTitles.getTreeItem().contains(code)) {
+                        if (treeNodeClient.getName() == null) {
+                            treeNodeClient.setName(value);
+                        } else {
+                            treeNodeClient.setName(treeNodeClient.getName() + " " + value);
+                        }
+                    }
+                    if (viewTitles.getIcon() != null && viewTitles.getIcon().contains(code)) {
+                        if (treeNodeClient.getIcon() == null) {
+                            treeNodeClient.setIcon(value);
+                        } else {
+                            treeNodeClient.setIcon(treeNodeClient.getIcon() + " " + value);
+                        }
+                    }
+                }
+            }
         }
 
-        return result;
+        for (TreeNodeClient treeNodeClient : result.values()) {
+            if (treeNodeClient.getName() == null) {
+                treeNodeClient.setName(defaultNodeTitle);
+            }
+            if (treeNodeClient.getAccordionLeft() == null) {
+                treeNodeClient.setAccordionLeft(defaultNodeTitle);
+            }
+        }
+        return new ArrayList<>(result.values());
     }
 
 
@@ -672,35 +857,228 @@ public class LevelTreeCacheService {
         Assert.notNull(treeNodeMap);
         Assert.notNull(version);
 
-        //node id -> title info
-        Map<Integer, DescItemRepositoryCustom.DescItemTitleInfo> nodeTitlesMap = new HashMap<>();
+        List<ArrNode> nodes = new ArrayList<>(treeNodeMap.size());
+        Set<Integer> nodeIds = treeNodeMap.keySet();
+        ObjectListIterator iterator = new ObjectListIterator(nodeIds);
+        while (iterator.hasNext()) {
+            List<Integer> nodeIdsSublist = iterator.next();
 
-        if (StringUtils.isBlank(titleDescItemTypeCode)) {
-            logger.warn("Není nastaven typ atributu, jehož hodnota bude použita pro popisek uzlu."
-                    + " Nastavte kód v konfiguraci pro hodnotu 'elza.treenode.title'");
-        } else {
+            nodes.addAll(nodeRepository.findAll(nodeIdsSublist));
+        }
+        Map<Integer, ArrNode> nodeMap = new HashMap<>(nodes.size());
+        for (ArrNode node : nodes) {
+            nodeMap.put(node.getNodeId(), node);
+        }
 
-            RulDescItemType titleDescItemType = descItemTypeRepository.findOneByCode(titleDescItemTypeCode);
-            if (titleDescItemType == null) {
-                logger.warn("Nepodařilo se nalézt typ atributu s kódem " + titleDescItemTypeCode + ". Změňte kód v"
-                        + " konfiguraci pro hodnotu 'elza.treenode.title'");
+        Map<Integer, TreeNodeClient> result = new LinkedHashMap<Integer, TreeNodeClient>(treeNodeMap.size());
+        for (TreeNode treeNode : treeNodeMap.values()) {
+            result.put(treeNode.getId(), new TreeNodeClient(treeNode.getId(), treeNode.getDepth(),
+                    null, !treeNode.getChilds().isEmpty(), treeNode.getReferenceMark(), nodeMap.get(treeNode.getId()).getVersion()));
+        }
+
+        if (result.isEmpty()) {
+            return result;
+        }
+
+        ViewTitles viewTitles = configView.getViewTitles(version.getRuleSet().getCode(), version.getFindingAid().getFindingAidId());
+        List<String> descItemTypeCodes = new LinkedList<>();
+        if (viewTitles == null) {
+            if (StringUtils.isBlank(titleDescItemTypeCode)) {
+                logger.warn("Není nastaven typ atributu, jehož hodnota bude použita pro popisek uzlu."
+                        + " Nastavte kód v konfiguraci pro hodnotu 'elza.treenode.title'");
+                viewTitles = new ViewTitles(null, null, null, null);
             } else {
-                nodeTitlesMap = descItemRepository
-                        .findDescItemTitleInfoByNodeId(treeNodeMap.keySet(), titleDescItemType, version.getLockChange());
+                descItemTypeCodes.add(titleDescItemTypeCode);
+            }
+        } else {
+            if (viewTitles.getAccordionLeft() != null) {
+                descItemTypeCodes.addAll(viewTitles.getAccordionLeft());
+            }
+            if (viewTitles.getAccordionRight() != null) {
+                descItemTypeCodes.addAll(viewTitles.getAccordionRight());
+            }
+            if (viewTitles.getTreeItem() != null) {
+                descItemTypeCodes.addAll(viewTitles.getTreeItem());
+            }
+            if (viewTitles.getIcon() != null) {
+                descItemTypeCodes.add(viewTitles.getIcon());
             }
         }
 
+        if (!descItemTypeCodes.isEmpty()) {
+            Set<RulDescItemType> descItemTypes = descItemTypeRepository.findByCode(descItemTypeCodes);
+            if (descItemTypes.size() != descItemTypeCodes.size()) {
+                logger.warn("Nepodařilo se nalézt všechny typy atributů s kódy " + StringUtils.join(descItemTypeCodes, ", ") + ". Změňte kódy v"
+                        + " konfiguraci.");
+            }
+            List<ArrData> dataList = dataRepository.findDescItemsByNodeIds(treeNodeMap.keySet(), descItemTypes, version);
+            Set<Integer> partyRefDataIds = new HashSet<>();
+            Set<Integer> recordRefDataIds = new HashSet<>();
+            Set<Integer> packetRefDataIds = new HashSet<>();
+            Set<Integer> enumDataIds = new HashSet<>();
 
-        Map<Integer, TreeNodeClient> result = new LinkedHashMap<>(treeNodeMap.size());
-        for (TreeNode treeNode : treeNodeMap.values()) {
-            DescItemRepositoryCustom.DescItemTitleInfo title = nodeTitlesMap.get(treeNode.getId());
-            result.put(treeNode.getId(), new TreeNodeClient(treeNode.getId(), treeNode.getDepth(),
-                    title == null || title.getValue() == null ? defaultNodeTitle : title.getValue(),
-                    !treeNode.getChilds().isEmpty(), treeNode.getReferenceMark(), title.getNodeVersion()));
+            for (ArrData data : dataList) {
+                String value = null;
+                String code = data.getDescItem().getDescItemType().getCode();
+                Integer nodeId = data.getDescItem().getNode().getNodeId();
+                if (data.getDataType().getCode().equals("ENUM")) {
+                    enumDataIds.add(data.getDataId());
+                } else if (data.getDataType().getCode().equals("PARTY_REF")) {
+                    partyRefDataIds.add(data.getDataId());
+                } else if (data.getDataType().getCode().equals("RECORD_REF")) {
+                    recordRefDataIds.add(data.getDataId());
+                } else if (data.getDataType().getCode().equals("PACKET_REF")) {
+                    packetRefDataIds.add(data.getDataId());
+                } else if (data.getDataType().getCode().equals("UNITDATE")) {
+                    ArrDataUnitdate unitDate = (ArrDataUnitdate) data;
+
+                    ParUnitdate parUnitdate = new ParUnitdate();
+                    parUnitdate.setCalendarType(calendarTypeRepository.findOne(unitDate.getCalendarTypeId()));
+                    parUnitdate.setFormat(unitDate.getFormat());
+                    parUnitdate.setValueFrom(unitDate.getValueFrom());
+                    parUnitdate.setValueFromEstimated(unitDate.getValueFromEstimated());
+                    parUnitdate.setValueTo(unitDate.getValueTo());
+                    parUnitdate.setValueToEstimated(unitDate.getValueToEstimated());
+
+                    value = UnitDateConvertor.convertToString(parUnitdate);
+                } else if (data.getDataType().getCode().equals("STRING")) {
+                    ArrDataString stringtData = (ArrDataString) data;
+                    value = stringtData.getValue();
+                } else if (data.getDataType().getCode().equals("TEXT") || data.getDataType().getCode().equals("FORMATTED_TEXT")) {
+                    ArrDataText textData = (ArrDataText) data;
+                    value = textData.getValue();
+                } else if (data.getDataType().getCode().equals("UNITID")) {
+                    ArrDataUnitid unitId = (ArrDataUnitid) data;
+                    value = unitId.getValue();
+                } else if (data.getDataType().getCode().equals("COORDINATES")) {
+                    ArrDataCoordinates coordinates = (ArrDataCoordinates) data;
+                    value = coordinates.getValue();
+                } else if (data.getDataType().getCode().equals("INT")) {
+                    ArrDataInteger intData = (ArrDataInteger) data;
+                    value = intData.getValue().toString();
+                } else if (data.getDataType().getCode().equals("DECIMAL")) {
+                    ArrDataDecimal decimalData = (ArrDataDecimal) data;
+                    value = decimalData.getValue().toPlainString();
+                }
+
+                if (value != null) {
+                    TreeNodeClient treeNodeClient = result.get(nodeId);
+                    if (viewTitles.getAccordionLeft() != null && viewTitles.getAccordionLeft().contains(code)) {
+                        if (treeNodeClient.getAccordionLeft() == null) {
+                            treeNodeClient.setAccordionLeft(value);
+                        } else {
+                            treeNodeClient.setAccordionLeft(treeNodeClient.getAccordionLeft() + " " + value);
+                        }
+                    }
+                    if (viewTitles.getAccordionRight() != null && viewTitles.getAccordionRight().contains(code)) {
+                        if (treeNodeClient.getAccordionRight() == null) {
+                            treeNodeClient.setAccordionRight(value);
+                        } else {
+                            treeNodeClient.setAccordionRight(treeNodeClient.getAccordionRight() + " " + value);
+                        }
+                    }
+                    if (viewTitles.getTreeItem() != null && viewTitles.getTreeItem().contains(code)) {
+                        if (treeNodeClient.getName() == null) {
+                            treeNodeClient.setName(value);
+                        } else {
+                            treeNodeClient.setName(treeNodeClient.getName() + " " + value);
+                        }
+                    }
+                    if (viewTitles.getIcon() != null && viewTitles.getIcon().contains(code)) {
+                        if (treeNodeClient.getIcon() == null) {
+                            treeNodeClient.setIcon(value);
+                        } else {
+                            treeNodeClient.setIcon(treeNodeClient.getIcon() + " " + value);
+                        }
+                    }
+                }
+            }
+
+            List<ArrData> enumData = dataRepository.findByDataIdsAndVersionFetchSpecification(enumDataIds, descItemTypes, version);
+            for (ArrData data : enumData) {
+                String value = data.getDescItem().getDescItemSpec().getName();
+                String code = data.getDescItem().getDescItemType().getCode();
+                Integer nodeId = data.getDescItem().getNode().getNodeId();
+
+                if (value != null) {
+                    TreeNodeClient treeNodeClient = result.get(nodeId);
+                    if (viewTitles.getAccordionLeft() != null && viewTitles.getAccordionLeft().contains(code)) {
+                        if (treeNodeClient.getAccordionLeft() == null) {
+                            treeNodeClient.setAccordionLeft(value);
+                        } else {
+                            treeNodeClient.setAccordionLeft(treeNodeClient.getAccordionLeft() + " " + value);
+                        }
+                    }
+                    if (viewTitles.getAccordionRight() != null && viewTitles.getAccordionRight().contains(code)) {
+                        if (treeNodeClient.getAccordionRight() == null) {
+                            treeNodeClient.setAccordionRight(value);
+                        } else {
+                            treeNodeClient.setAccordionRight(treeNodeClient.getAccordionRight() + " " + value);
+                        }
+                    }
+                    if (viewTitles.getTreeItem() != null && viewTitles.getTreeItem().contains(code)) {
+                        if (treeNodeClient.getName() == null) {
+                            treeNodeClient.setName(value);
+                        } else {
+                            treeNodeClient.setName(treeNodeClient.getName() + " " + value);
+                        }
+                    }
+                    if (viewTitles.getIcon() != null && viewTitles.getIcon().contains(code)) {
+                        if (treeNodeClient.getIcon() == null) {
+                            treeNodeClient.setIcon(value);
+                        } else {
+                            treeNodeClient.setIcon(treeNodeClient.getIcon() + " " + value);
+                        }
+                    }
+                }
+            }
+        }
+
+        for (TreeNodeClient treeNodeClient : result.values()) {
+            if (treeNodeClient.getName() == null) {
+                treeNodeClient.setName(defaultNodeTitle);
+            }
+            if (treeNodeClient.getAccordionLeft() == null) {
+                treeNodeClient.setAccordionLeft(defaultNodeTitle);
+            }
         }
 
         return result;
     }
+//
+//    private Map<Integer, TreeNodeClient> createNodesWithTitles(Map<Integer, TreeNode> treeNodeMap, ArrFindingAidVersion version) {
+//        Assert.notNull(treeNodeMap);
+//        Assert.notNull(version);
+//
+//        //node id -> title info
+//        Map<Integer, DescItemRepositoryCustom.DescItemTitleInfo> nodeTitlesMap = new HashMap<>();
+//
+//        if (StringUtils.isBlank(titleDescItemTypeCode)) {
+//            logger.warn("Není nastaven typ atributu, jehož hodnota bude použita pro popisek uzlu."
+//                    + " Nastavte kód v konfiguraci pro hodnotu 'elza.treenode.title'");
+//        } else {
+//
+//            RulDescItemType titleDescItemType = descItemTypeRepository.findOneByCode(titleDescItemTypeCode);
+//            if (titleDescItemType == null) {
+//                logger.warn("Nepodařilo se nalézt typ atributu s kódem " + titleDescItemTypeCode + ". Změňte kód v"
+//                        + " konfiguraci pro hodnotu 'elza.treenode.title'");
+//            } else {
+//                nodeTitlesMap = descItemRepository
+//                        .findDescItemTitleInfoByNodeId(treeNodeMap.keySet(), titleDescItemType, version.getLockChange());
+//            }
+//        }
+//
+//
+//        Map<Integer, TreeNodeClient> result = new LinkedHashMap<>(treeNodeMap.size());
+//        for (TreeNode treeNode : treeNodeMap.values()) {
+//            DescItemRepositoryCustom.DescItemTitleInfo title = nodeTitlesMap.get(treeNode.getId());
+//            result.put(treeNode.getId(), new TreeNodeClient(treeNode.getId(), treeNode.getDepth(),
+//                    title == null || title.getValue() == null ? defaultNodeTitle : title.getValue(),
+//                            !treeNode.getChilds().isEmpty(), treeNode.getReferenceMark(), title.getNodeVersion()));
+//        }
+//
+//        return result;
+//    }
 
 
 

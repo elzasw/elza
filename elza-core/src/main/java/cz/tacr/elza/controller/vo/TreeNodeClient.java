@@ -23,6 +23,13 @@ public class TreeNodeClient {
      */
     private String name;
 
+    private String accordionLeft;
+
+    private String accordionRight;
+
+    /** Ikonka. */
+    private String icon;
+
     /**
      * True - uzel má další potomky, false - uzel nemá další potomky.
      */
@@ -115,5 +122,29 @@ public class TreeNodeClient {
 
     public void setNodeConformity(final NodeConformityVO nodeConformity) {
         this.nodeConformity = nodeConformity;
+    }
+
+    public String getAccordionLeft() {
+        return accordionLeft;
+    }
+
+    public void setAccordionLeft(String accordionLeft) {
+        this.accordionLeft = accordionLeft;
+    }
+
+    public String getAccordionRight() {
+        return accordionRight;
+    }
+
+    public void setAccordionRight(String accordionRight) {
+        this.accordionRight = accordionRight;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
     }
 }

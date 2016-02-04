@@ -26,10 +26,10 @@ elza:
 #        tree-item:
 #          - ZP2015_TITLE
 #          - ZP2015_UNIT_DATE
-#        accordeon-left:
+#        accordion-left:
 #          - ZP2015_TITLE
 #          - ZP2015_UNIT_DATE
-#        accordeon-right:
+#        accordion-right:
 #          - ZP2015_FOLDER_TYPE
 #          - ZP2015_STORAGE_ID
 

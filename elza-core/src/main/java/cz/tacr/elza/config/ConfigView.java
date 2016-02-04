@@ -1,13 +1,11 @@
 package cz.tacr.elza.config;
 
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -22,6 +20,14 @@ import org.springframework.util.Assert;
 @Component
 @ConfigurationProperties(prefix = "elza")
 public class ConfigView {
+
+    public static final String FA_PREFIX = "fa-";
+
+    public static final String DEFAULT = "default";
+    public static final String TREE_ITEM = "tree-item";
+    public static final String ACCORDION_LEFT = "accordion-left";
+    public static final String ACCORDION_RIGHT = "accordion-right";
+    public static final String ICON = "ZP2015_LEVEL_TYPE";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -87,20 +93,20 @@ public class ConfigView {
             return null;
         }
 
-        Map<String, List<String>> viewByFa = viewByCode.get("fa-" + findingAidId);
+        Map<String, List<String>> viewByFa = viewByCode.get(FA_PREFIX + findingAidId);
 
         if (viewByFa == null) {
-            viewByFa = viewByCode.get("default");
+            viewByFa = viewByCode.get(DEFAULT);
             if (viewByFa == null) {
                 logger.warn("Nejsou definována výchozí pravidla pro zobrazení popisků v UI s kódem " + code);
                 return null;
             }
         }
 
-        return new ViewTitles(viewByFa.get("tree-item"),
-                viewByFa.get("accordion-left"),
-                viewByFa.get("accordion-right"),
-                "ZP2015_LEVEL_TYPE"); // TODO: kde definovat?
+        return new ViewTitles(viewByFa.get(TREE_ITEM),
+                viewByFa.get(ACCORDION_LEFT),
+                viewByFa.get(ACCORDION_RIGHT),
+                ICON); // TODO: kde definovat?
     }
 
     public Map<String, Map<String, Map<String, List<String>>>> getFindingAidView() {

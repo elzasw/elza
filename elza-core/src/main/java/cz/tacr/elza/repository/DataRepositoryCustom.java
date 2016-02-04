@@ -17,4 +17,8 @@ public interface DataRepositoryCustom {
     List<ArrData> findDescItemsByNodeIds(Set<Integer> nodeIds,
                                          Set<RulDescItemType> descItemTypes,
                                          ArrFindingAidVersion version);
+
+    List<ArrData> findByDataIdsAndVersionFetchSpecification(Set<Integer> nodeIds,
+            Set<RulDescItemType> descItemTypes,
+            ArrFindingAidVersion version);
 }

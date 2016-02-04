@@ -3,7 +3,6 @@ package cz.tacr.elza.repository;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -52,9 +51,11 @@ public interface DescItemTypeRepository extends ElzaJpaRepository<RulDescItemTyp
 
     RulDescItemType findOneByCode(String code);
 
-
     @Override
     default String getClassName() {
         return RulDescItemType.class.getSimpleName();
     }
+
+    @Query(value = "SELECT t FROM rul_desc_item_type t  WHERE t.code in (?1)")
+    Set<RulDescItemType> findByCode(List<String> descItemTypeCodes);
 }
