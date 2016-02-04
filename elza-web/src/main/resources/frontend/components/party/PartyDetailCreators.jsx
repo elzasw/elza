@@ -3,9 +3,10 @@
  */
 
 import React from 'react';
+import {WebApi} from 'actions'
 import {connect} from 'react-redux'
 import {Input, Button} from 'react-bootstrap';
-import {PartyCreatorForm, AbstractReactComponent, i18n, Icon} from 'components';
+import {PartyCreatorForm, AbstractReactComponent, i18n, Icon, Autocomplete} from 'components';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {AppActions} from 'stores';
 import {deleteCreator, updateParty} from 'actions/party/party'
@@ -19,13 +20,23 @@ import {refPartyListFetchIfNeeded} from 'actions/refTables/partyList'
 var PartyDetailCreators = class PartyDetailCreators extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.dispatch(refPartyListFetchIfNeeded());         // načtení osob pro autory osoby
         this.bindMethods(
             'handleAddCreator',
             'handleDeleteCreator', 
             'addCreator',
             'deleteCreator',
+            'handleSearchChange',
+                'creatorChange'
         );
+        this.state = {partyList: []};
+    }
+
+    componentDidMount(){
+        this.dispatch(refPartyListFetchIfNeeded());         // načtení osob pro autory osoby
+    }
+
+    componentWillReceiveProps(nextProps){
+        this.dispatch(refPartyListFetchIfNeeded());         // načtení osob pro autory osoby
     }
 
    /**
@@ -50,7 +61,7 @@ var PartyDetailCreators = class PartyDetailCreators extends AbstractReactCompone
         var party = this.props.partyRegion.selectedPartyData;                   // aktuální osoba
         var creators = []                                                       // nový seznam autorů
         for(var i = 0; i<party.creators.length; i++){                           // projdeme původní autory
-            if(party.creators[i].creatorsId != creatorId){                      // a pokud se nejedna o mazaného autora
+            if(party.creators[i].partyId != creatorId){                      // a pokud se nejedna o mazaného autora
                 creators[creators.length] = party.creators[i];                  // přidáme ho do seznamu autorů, co budou zachovány
             }
         }
@@ -67,7 +78,10 @@ var PartyDetailCreators = class PartyDetailCreators extends AbstractReactCompone
     addCreator(data) {
         var party = this.props.partyRegion.selectedPartyData;                   // aktuálně upravovaná osoba
         party.creators[party.creators.length] = {                               // nového autora vložíme na konec seznamu autorů
-            partyId: data.partyId,
+            partyId: data.creatorId,
+            record:{
+                record: data.creatorName
+            },
             '@type': '.ParPartyVO'
         }
         this.dispatch(updateParty(party));                                      // aurtor se uloží a osoba znovu načte     
@@ -81,10 +95,14 @@ var PartyDetailCreators = class PartyDetailCreators extends AbstractReactCompone
     handleAddCreator(){
         var party = this.props.partyRegion.selectedPartyData;                       // načtení aktualní osoby ze store
         var data = {                                                                // výchozí data formuláře
-            partyId: 481,                                                           // identifikátor typu osoby, jejíž jménu upravujeme
+            partyId: null,                                                           // identifikátor typu osoby, jejíž jménu upravujeme
         };
-        this.addCreator(data);                                                      // uložení dat
-        //this.dispatch(modalDialogShow(this, i18n('party.detail.creator.new') , <PartyCreatorForm initData={data} onSave={this.addCreator} />));    // otevře se formulář nového autora   
+        this.dispatch(modalDialogShow(this, i18n('party.detail.creator.new') ,
+                <PartyCreatorForm initData={data}
+                                  partyId={party.partyId}
+                                  onSave={this.addCreator}
+                                  renderParty={this.renderParty}
+                        />));    // otevře se formulář nového autora
     }
 
    /**
@@ -123,8 +141,66 @@ var PartyDetailCreators = class PartyDetailCreators extends AbstractReactCompone
                 party.creators[i].creatorId = data.creatorId;                       // identifikátor autora
             }
         }
-        this.dispatch(updateParty(party));                                          // uložení změn a znovu načtení dat osoby              
+        this.dispatch(updateParty(party));                                          // uložení změn a znovu načtení dat osoby
     }
+
+    handleSearchChange(partyId, text) {
+
+        text = text == "" ? null : text;
+
+        WebApi.findPartyForParty(partyId, text)
+                .then(json => {
+                    this.setState({
+                        partyList: json.map(party => {
+                            return {
+                                id: party.partyId,
+                                name: party.record.record,
+                                type: party.partyType.name,
+                                from: party.from,
+                                to: party.to,
+                                characteristics: party.record.characteristics
+                            }
+                        })
+                    })
+                })
+    }
+
+    renderParty(item, isHighlighted, isSelected) {
+        var cls = 'item';
+        if (isHighlighted) {
+            cls += ' focus'
+        }
+        if (isSelected) {
+            cls += ' active'
+        }
+
+        var interval;
+        if (item.from || item.to) {
+            interval = item.from == null ? "" : "TODO" + "-" + item.from == null ? "" : "TODO"
+        }
+
+        return (
+                <div className={cls} key={item.id} >
+                    <div className="name" title={item.name}>{item.name}</div>
+                    <div className="type">{item.type}</div>
+                    <div className="interval">{interval}</div>
+                    <div  className="characteristics" title={item.characteristics}>{item.characteristics}</div>
+                </div>
+        )
+    }
+
+
+    creatorChange(oldId, valueObj){
+        var party = this.props.partyRegion.selectedPartyData;
+        var creators = []
+        for(var i = 0; i<party.creators.length; i++){
+            if(party.creators[i].partyId == oldId){
+                party.creators[i].partyId = valueObj.id;
+            }
+        }
+        this.dispatch(updateParty(party));
+    }
+
 
    /**
      * RENDER
@@ -133,18 +209,34 @@ var PartyDetailCreators = class PartyDetailCreators extends AbstractReactCompone
      */ 
     render() {
         var party = this.props.partyRegion.selectedPartyData;
+
         return  <div className="party-creators">
                     <table>
                         <tbody>
-                            {party.creators.map(i=> {return <tr className="creator">
+                            {party.creators.map(i=> {
+                                var selectName = i.record ? i.record.record : "";
+                                var value =  {id: i.partyId, name: selectName};
+
+
+                                return <tr className="creator">
                                 <th className="creator column">{i.name}</th> 
                                 <td>
-                                    <Input type="select" name="creatorId" value={i.reatorId} onChange={this.updateValue} >
-                                        {this.props.refTables.partyList.items.map(i=> {return <option value={i.id} key={i.id}>{i.record.record}</option>})}
-                                    </Input>
+                                    <Autocomplete
+                                            customFilter
+                                            className='autocomplete-party'
+                                            value={value}
+                                            items={this.state.partyList}
+                                            getItemId={(item) => item ? item.id : null}
+                                            getItemName={(item) => item ? item.name : ''}
+                                            onSearchChange={text => {this.handleSearchChange(party.partyId,text) }}
+                                            onChange={(id,valObj) =>{this.creatorChange(i.partyId, valObj)}}
+                                            renderItem={this.renderParty}
+                                             />
+
+
                                 </td>
                                 <td className="buttons">
-                                    <Button classCreator="column" onClick={this.handleDeleteCreator.bind(this, i.creatorId)}><Icon glyph="fa-trash"/></Button>
+                                    <Button classCreator="column" onClick={this.handleDeleteCreator.bind(this, i.partyId)}><Icon glyph="fa-trash"/></Button>
                                 </td>
                             </tr>})}
                         </tbody>

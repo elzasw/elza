@@ -6,7 +6,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/actionTypes';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n} from 'components';
+import {WebApi} from 'actions'
+import {AbstractReactComponent, i18n, Autocomplete} from 'components';
 import {Modal, Button, Input, Glyphicon} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
@@ -23,14 +24,17 @@ var PartyCreatorForm = class PartyCreatorForm extends AbstractReactComponent {
         this.dispatch(refPartyListFetchIfNeeded());         // načtení osob pro autory osoby
         this.state = {                                      // ve state jsou uložena a průběžně udržová data formuláře
             data : this.props.initData,                     // předvyplněná data formuláře
-            errors: []                                      // sezn chyb k vypsání uživateli
+            errors: [],                                      // sezn chyb k vypsání uživateli
+            partyList: []
         };
         this.bindMethods(                                   // pripojení potřebných metod - aby měly k dispozici tento objekt (formulář)
             'updateValue',                                  // funkce pro změnu nějaké hodnoty identifikátoru
             'validate',                                     // funkce pro kontrolu zadaných dat formuláře
             'handleClose',                                  // funkce pro zavření okna dialogu
-            'handleSubmit'                                  // funkce pro odeslání formuláře
+            'handleSubmit',                                  // funkce pro odeslání formuláře
+            'handleSearchChange'
         );
+
     }
 
     /**
@@ -39,13 +43,12 @@ var PartyCreatorForm = class PartyCreatorForm extends AbstractReactComponent {
      * aktualizace nějaké hodnoty ve formuláři
      * @params event - událost která změnu vyvolala
      */
-    updateValue(event){
-        var value = event.target.value;                                                     // hodnota změněného pole formuláře
-        var variable = event.target.name;                                                   // nazeb měněné hodnoty
-        var data = this.state.data;                                                         // puvodni data formuláře
-        switch(variable){
-            case "creatorId" : data.creatorId = event.target.value; break;                  // identifikátor autora osoby
-        }
+    updateValue(id, valueObj){
+        var value = id;                                               // hodnota změněného pole formuláře
+        var data = this.state.data;
+        data.creatorId = value;
+        data.creatorName = valueObj.name;
+
         this.setState({
             data : data                                                                     // uložení změn do state
         });
@@ -90,8 +93,29 @@ var PartyCreatorForm = class PartyCreatorForm extends AbstractReactComponent {
                 errors : errors                     // seznam chyb se uloží do state => dojde s přerenderování, při kterém budou chyby vypsany
             });
         }else{                                      // formulář je vyplněn dobře
-            this.props.onSave(this.state.data);     // vyplněná data se pošlou do funkce definované nadřazenou komponentou v proměnné onSave 
+            this.props.onSave(this.state.data);     // vyplněná data se pošlou do funkce definované nadřazenou komponentou v proměnné onSave
         }
+    }
+
+    handleSearchChange(text) {
+
+        text = text == "" ? null : text;
+
+        WebApi.findPartyForParty(this.props.partyId, text)
+                .then(json => {
+                    this.setState({
+                        partyList: json.map(party => {
+                            return {
+                                id: party.partyId,
+                                name: party.record.record,
+                                type: party.partyType.name,
+                                from: party.from,
+                                to: party.to,
+                                characteristics: party.record.characteristics
+                            }
+                        })
+                    })
+                })
     }
 
     /**
@@ -100,6 +124,7 @@ var PartyCreatorForm = class PartyCreatorForm extends AbstractReactComponent {
      * Vykreslení formuláře
      */
     render() {
+
         return (
             <div>
                 <Modal.Body>
@@ -107,12 +132,19 @@ var PartyCreatorForm = class PartyCreatorForm extends AbstractReactComponent {
                         {this.state.errors.map(i=> {return <li>{i}</li>})}
                     </ul>
                     <form>
-                        
-                        <Input type="select" label={i18n('party.creator.creator')} name="creatorId" value={this.state.data.creatorId} onChange={this.updateValue} >
-                            <option value="0" key="0"></option> 
-                            {this.props.refTables.partyList.items.map(i=> {return <option value={i.id} key={i.id}>{i.record.record}</option>})}
-                        </Input>   
-                        
+
+                        <Autocomplete
+                                label={i18n('party.creator.creator')}
+                                customFilter
+                                className='autocomplete-party'
+                                items={this.state.partyList}
+                                getItemId={(item) => item ? item.id : null}
+                                getItemName={(item) => item ? item.name : ''}
+                                onSearchChange={this.handleSearchChange}
+                                onChange={this.updateValue}
+                                renderItem={this.props.renderParty}
+                                 />
+
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

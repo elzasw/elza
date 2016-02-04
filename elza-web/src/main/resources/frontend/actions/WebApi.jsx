@@ -77,6 +77,17 @@ class WebApi{
         });
     }
 
+    findPartyForParty(partyId, search = null){
+        return AjaxUtils.ajaxGet('/api/partyManagerV2/findPartyForParty', {
+            search: search,
+            from: 0,
+            count : 200,
+            partyId: partyId
+        }).then(json=>{
+            return json.recordList;
+        });
+    }
+
 
     deleteParty(partyId) {
         return AjaxUtils.ajaxDelete('/api/partyManagerV2/deleteParty', {partyId: partyId})

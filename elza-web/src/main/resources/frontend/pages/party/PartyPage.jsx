@@ -30,7 +30,6 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
         this.state = {};                                // id gregoriánského kalendáře - TODO: potřeba ho dovypočíst
-        this.dispatch(refPartyTypesFetchIfNeeded());
 
         this.bindMethods(                               // pripojení funkcím "this"
             'buildRibbon',                              // sestavení menu
@@ -41,6 +40,14 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
             'deleteParty',                              // smazání osoby
             'addRelation',                              // vytvoření relace
         );
+    }
+
+    componentDidMount(){
+        this.dispatch(refPartyTypesFetchIfNeeded());         // načtení osob pro autory osoby
+    }
+
+    componentWillReceiveProps(nextProps){
+        this.dispatch(refPartyTypesFetchIfNeeded());         // načtení osob pro autory osoby
     }
 
 

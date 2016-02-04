@@ -227,7 +227,7 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
      */ 
     render() {
         var party = this.props.partyRegion.selectedPartyData;
-       console.log("render xxx");
+
         return  <div className="partyNames">
                     <table>
                         <tbody>

@@ -45,7 +45,7 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
                 }else{
                     partyList[i].record.description = '';                                                       // ulozim popisek k objektu                                                                           // popisek nezadan, nastavim prazdny
                 }
-                console.log(partyList[i].record.description);
+
             }
             
             var partyList = partyList.map((item) => {                                                           // přidání všech nazelených osob
