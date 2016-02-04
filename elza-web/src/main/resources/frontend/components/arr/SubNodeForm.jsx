@@ -550,8 +550,23 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             descItemTypes.push(descItemTypesMap[key]);
         });
 
+        function typeId(type) {
+            switch (type) {
+                case "REQUIRED":
+                    return 0;
+                case "RECOMMENDED":
+                    return 1;
+                case "POSSIBLE":
+                    return 2;
+                case "IMPOSSIBLE":
+                    return 99;
+                default:
+                    return 3;
+            }
+        }
+
         // Seřazení podle position
-        descItemTypes.sort((a, b) => a.position - b.position);
+        descItemTypes.sort((a, b) => typeId(a.type) - typeId(b.type));
 
         // Modální dialog
         var form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmit={(data) => {

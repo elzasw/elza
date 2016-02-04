@@ -11,6 +11,8 @@ import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField} from 'components/form/FormUtils'
 
+require ('./AddDescItemTypeForm.less')
+
 const validate = (values, props) => {
     const errors = {};
 
@@ -33,16 +35,38 @@ var AddDescItemTypeForm = class AddDescItemTypeForm extends AbstractReactCompone
     componentWillReceiveProps(nextProps) {
     }
 
+    renderItem(item, isHighlighted, isSelected) {
+        var cls = 'item';
+
+        cls += ' type-' + item.type.toLowerCase();
+
+        if (isHighlighted) {
+            cls += ' focus'
+        }
+        if (isSelected) {
+            cls += ' active'
+        }
+
+        return (
+                <div className={cls} key={item.id} >
+                    <div className="name" title={item.name}>{item.name}</div>
+                </div>
+        )
+    }
+
     render() {
         const {fields: {descItemTypeId}, handleSubmit, onClose} = this.props;
 
         var ac = (
-            <Autocomplete
-            label={i18n('subNodeForm.descItemType')}
-            {...descItemTypeId}
-            {...decorateFormField(descItemTypeId)}
-            items={this.props.descItemTypes}
-            />
+                <div className="autocomplete-desc-item-type">
+                    <Autocomplete
+                    label={i18n('subNodeForm.descItemType')}
+                    {...descItemTypeId}
+                    {...decorateFormField(descItemTypeId)}
+                    items={this.props.descItemTypes}
+                    renderItem={this.renderItem}
+                    />
+                </div>
         )
 
         return (

@@ -6,37 +6,42 @@
 
         @party-item-padding: 5px;
 
-        .autocomplete-menu-container {
+        .item {
+            display: table-row;
 
-            .autocomplete-menu {
-
-                .item {
-
-                    .name {
-                        padding: @party-item-padding;
-                        display: table-cell;
-                    }
-
-                    .type {
-                        padding: @party-item-padding;
-                        display: table-cell;;
-                    }
-
-                    .interval {
-                        padding: @party-item-padding;
-                        display: table-cell;
-                    }
-
-                    .characteristics {
-                        padding: @party-item-padding;
-                        max-width: 300px;
-                        text-overflow: ellipsis;
-                        display: table-cell;
-                        overflow: hidden;
-                    }
-                }
+            .name {
+                padding: @party-item-padding;
+                display: table-cell;
             }
 
+            .type {
+                padding: @party-item-padding;
+                display: table-cell;;
+            }
+
+            .interval {
+                padding: @party-item-padding;
+                display: table-cell;
+            }
+
+            .characteristics {
+                padding: @party-item-padding;
+                max-width: 300px;
+                text-overflow: ellipsis;
+                display: table-cell;
+                overflow: hidden;
+            }
+        }
+
+        .autocomplete-menu-footer {
+
+            .create-party {
+                position: fixed;
+                padding: 5px;
+                .create-party-label {
+                    margin-left: 3px;
+                }
+            }
         }
 
     }

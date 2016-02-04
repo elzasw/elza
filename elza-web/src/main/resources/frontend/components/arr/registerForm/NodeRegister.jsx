@@ -10,6 +10,8 @@ import {decorateValue} from './../nodeForm/DescItemUtils'
 
 import {MenuItem, Button} from 'react-bootstrap';
 
+require ('./NodeRegister.less')
+
 var NodeRegister = class NodeRegister extends AbstractReactComponent {
     constructor(props) {
         super(props);
