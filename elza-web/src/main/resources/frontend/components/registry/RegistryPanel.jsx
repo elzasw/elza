@@ -178,37 +178,40 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
 
             var detailRegistry = (
                 <div className="registry-title">
-                    <h2>
+                    <h1 className='registry'>
                         {this.props.registryData.item.record} <Button className="registry-record-edit" onClick={this.editRecord.bind(this, this.props.registry.registryParentId)}><Icon glyph='fa-pencil'/></Button>
-                    </h2>
-                    <label>{i18n('registry.detail.charakteristika')}</label>
-                    <div>{this.props.registryData.item.characteristics}</div>
+                    </h1>
+                    <div className='line charakteristik'>
+                        <label>{i18n('registry.detail.charakteristika')}</label>
+                        <div>{this.props.registryData.item.characteristics}</div>
+                    </div>
+                    <div className='line hiearch'>
+                        <label>{i18n('registry.detail.typ.rejstriku')}</label>
+                        <div>{hiearchie}</div>
+                    </div>
 
-                    <label>{i18n('registry.detail.typ.rejstriku')}</label>
-                    <div>{hiearchie}</div>
+                    <div className='line variant-name'>
+                        <label>{i18n('registry.detail.variant.name')}</label>
+                        { (this.props.registryData.item) && this.props.registryData.item.variantRecords && this.props.registryData.item.variantRecords.map(item => {
+                                return (
 
+                                    <RegistryLabel
+                                        key={item.variantRecordId}
+                                        type='variant'
+                                        value={item.record}
+                                        item={item}
+                                        onBlur={this.handleBlurVariant.bind(this,item)}
+                                        onEnter={this.handleOnEnterUpdate.bind(this,item)}
+                                        onClickDelete={this.handleDeleteVariant.bind(this, item)}
+                                        />
 
-                    <label>{i18n('registry.detail.variant.name')}</label>
+                                )
+                            })
+                        }
 
-                    { (this.props.registryData.item) && this.props.registryData.item.variantRecords && this.props.registryData.item.variantRecords.map(item => {
-                            return (
-
-                                <RegistryLabel
-                                    key={item.variantRecordId}
-                                    type='variant'
-                                    value={item.record}
-                                    item={item}
-                                    onBlur={this.handleBlurVariant.bind(this,item)}
-                                    onEnter={this.handleOnEnterUpdate.bind(this,item)}
-                                    onClickDelete={this.handleDeleteVariant.bind(this, item)}
-                                    />
-
-                            )
-                        })
-                    }
-
-                    {addVariant}
-                    <div>
+                        {addVariant}
+                    </div>
+                    <div className='line note'>
                         <label>{i18n('registry.detail.poznamka')}</label>
                         <Input type='textarea' value={this.state.note} onChange={this.handleChangeNote} onBlur={this.handlePoznamkaBlur.bind(this)} />
                     </div>
@@ -217,7 +220,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         }
 
         return (
-            <div>
+            <div className='registry'>
                 {(this.props.selectedId) && detailRegistry || <Loading/>}
             </div>
         )

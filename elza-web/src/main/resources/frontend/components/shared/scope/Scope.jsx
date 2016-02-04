@@ -23,11 +23,14 @@ require ('./Scope.less');
 var Scope = class Scope extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.dispatch(requestScopesIfNeeded(this.props.versionId));
     }
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(requestScopesIfNeeded(nextProps.versionId));
+    }
+
+    componentDidMount(){
+        this.dispatch(requestScopesIfNeeded(this.props.versionId));
     }
 
     render() {
@@ -51,7 +54,7 @@ var Scope = class Scope extends AbstractReactComponent {
 }
 
 Scope.propTypes = {
-    value: React.PropTypes.number,
+    value: React.PropTypes.string,
 
 }
 

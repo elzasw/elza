@@ -59,6 +59,17 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
         }
     }
 
+    componentDidMount(){
+
+        if (this.props.value) {
+            this.setState({"value": this.props.value});
+            if (this.props.onChange){
+                this.props.onChange(this.props.value);
+            }
+        }
+    }
+
+
     handleToggleNode(item, e) { 
         e.preventDefault();
         var opened = [];                                                        // novy seznam rozbalenych uzlu
