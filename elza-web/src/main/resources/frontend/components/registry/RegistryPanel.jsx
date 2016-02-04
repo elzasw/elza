@@ -13,7 +13,7 @@ import {Icon, AbstractReactComponent, RegistryLabel, Loading, DropDownTree, Edit
 import {i18n} from 'components';
 import {WebApi} from 'actions'
 import {getRegistryIfNeeded, fetchRegistryIfNeeded, fetchRegistry} from 'actions/registry/registryList'
-import {registryChangeDetail, registryData} from 'actions/registry/registryData'
+import {registryChangeDetail, registryData, updateRegistryVariantRecord} from 'actions/registry/registryData'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
 import {routerNavigate} from 'actions/router'
 import {registryUpdated} from 'actions/registry/registryData'
@@ -141,8 +141,8 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
             record: element.target.value,
             version: item.version
         }
-        WebApi.editRegistryVariant(data).then(json => {
-        });
+
+        this.dispatch(updateRegistryVariantRecord(data));
     }
     handlePoznamkaBlur(event, element) {
         var data = Object.assign({}, this.props.registryData.item)

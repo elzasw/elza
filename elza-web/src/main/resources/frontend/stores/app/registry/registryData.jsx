@@ -52,6 +52,10 @@ export default function registryData(state = initialState, action = {}) {
                 requireReload: true,
                 fetched: false
             })
+        case types.REGISTRY_VARIANT_RECORD_RECIVED:
+            console.log("obdrzel jsem data",action);
+            console.warn('TODO - provést merge');
+            return state
         default:
             return state
     }

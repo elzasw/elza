@@ -80,3 +80,19 @@ export function registryClearSearch(){
         type: types.REGISTRY_CLEAR_SEARCH,
     }
 }
+
+
+export function updateRegistryVariantRecord(data){
+    return (dispatch) => {
+        return WebApi.editRegistryVariant(data).then(json => {
+            dispatch(reciveRegistryVariantRecord(json));
+        });
+    }
+}
+
+export function reciveRegistryVariantRecord(json){
+    return {
+        item: json,
+        type: types.REGISTRY_VARIANT_RECORD_RECIVED
+    }
+}
