@@ -97,6 +97,10 @@ function createDescItemFromDb(descItem) {
     }
 }
 
+function prevDescItemHasSamePrevValue(prevDescItem, newDescItem) {
+    return prevDescItem.prevValue === newDescItem.value && prevDescItem.prevDescItemSpecId === newDescItem.descItemSpecId
+}
+
 function addUid(descItem, index) {
     if (typeof descItem.descItemObjectId !== 'undefined') {
         descItem._uid = descItem.descItemObjectId;
@@ -143,13 +147,30 @@ function mergeDescItems(resultDescItemType, prevType, newType, descItemTypeInfos
             // Chceme ji pokud, má nějaké hodnoty nebo je vícehodnotová - ještě ale uživatel žádnou hodnotu nepřidal, nebo pokud má být vidět - forceVisibility
             return resultDescItemType.descItems.length > 0 || resultDescItemType.repeatable || forceVisibility;
         } else {    // je v db a my ji také máme, musíme provést merge
-            // Vezmeme jako primární nově příchoz hodnoty a do nich přidáme ty, které aktualní klient má přidané, ale nemá je ještě uložené např. kvůli validaci atp.
+            // Vezmeme jako primární nově příchozí hodnoty a do nich přidáme ty, které aktualní klient má přidané, ale nemá je ještě uložené např. kvůli validaci atp.
+            // Pokud ale má klient ty samé hodnoty (prev value je stejné jako nově příchozí hodnota), jako přijdou ze serveru a současně je upravil a nejsou uložené, necháme hodnoty v našem klientovi
+            
+            // Mapa existujících hodnot na klientovi
+            var prevDescItemMap = {}
+            prevType.descItems.forEach(descItem => {
+                if (typeof descItem.id !== 'undefined') { // hodnota již dříve přijatá ze serveru
+                    prevDescItemMap[descItem.descItemObjectId] = descItem;
+                }
+            })
 
-            // Nakopírování nově přijatých hodnot
+            // Nakopírování nově přijatých hodnot, případně ponechání stejných (na základe descItemObjectId a prev value == value ze serveru, které již uživatel upravil a nejsou odeslané)
             newType.descItems.forEach(descItem => {
-                var item = createDescItemFromDb(descItem);
-                addUid(item, null);
-                resultDescItemType.descItems.push(item)
+                var prevDescItem = prevDescItemMap[descItem.descItemObjectId];
+
+                if (prevDescItem && prevDescItemHasSamePrevValue(prevDescItem, descItem) && prevDescItem.touched) {   // původní hodnota přijatá ze serveru má stejné hodnoty jako jsou nyní v nově přijatých datech na serveru a uživatel nám aktuální data upravil
+                    var item = prevDescItem;
+                    addUid(item, null);
+                    resultDescItemType.descItems.push(item)
+                } else {
+                    var item = createDescItemFromDb(descItem);
+                    addUid(item, null);
+                    resultDescItemType.descItems.push(item)
+                }
             })
 
             // Doplnění o přidané a neuložené v aktuálním klientovi, pouze pokud se jedná o vícehodnotový atribut - nedoplňujeme poud přišla ze serveru hodnota

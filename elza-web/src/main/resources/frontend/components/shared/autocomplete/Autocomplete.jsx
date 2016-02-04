@@ -108,9 +108,6 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
 
         this.state = {
             ...this.getStateFromProps({}, props, {inputStrValue: ''}),
-            _shouldItemRender: shouldItemRender,
-            _value: props.value,
-            _inputStrValue: props.getItemName(props.value),
             isOpen: false,
             highlightedIndex: null,
             hasFocus: false
@@ -148,6 +145,7 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
         var inputStrValue;
         var prevId = props.getItemId ? props.getItemId(props.value) : nextProps.getItemId(props.value)
         var newId = nextProps.getItemId(nextProps.value)
+_debugStates && console.log("getStateFromProps", "prevId", prevId, "newId", newId, "state", state);
         if (prevId != newId) {
             inputStrValue = nextProps.getItemName(nextProps.value)
             if (typeof inputStrValue === 'undefined') {
@@ -157,11 +155,15 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
             inputStrValue = state.inputStrValue;
         }
 
-        return {
+        var result = {
             shouldItemRender: shouldItemRender,
             value: nextProps.value,
             inputStrValue: inputStrValue,
         }
+
+_debugStates && console.log("getStateFromProps", result);
+
+        return result;
     }
 
     handleDocumentClick(e) {
@@ -409,10 +411,8 @@ _debugStates && console.log('...handleInputBlur', 'state.hasFocus', this.state.h
 
         if (!this._ignoreBlur) {
             this.setState({hasFocus: false})
-            if (this.state.isOpen) {
-                this.closeMenu();
-            }
-            this.props.onBlur && this.props.onBlur();
+            this.closeMenu(true);
+            //this.props.onBlur && this.props.onBlur();
         } else {
             this._ignoreBlur = false;
         }
@@ -460,17 +460,25 @@ return true;
             })
     }
 
-    closeMenu() {
+    closeMenu(callBlurAfterSetState=false) {
         if (!this.state.isOpen) {
+            if (callBlurAfterSetState) {
+                this.props.onBlur && this.props.onBlur();
+            }
             return;
         }
 
-        this.setState({
+        var addState = {
             isOpen: false,
             highlightedIndex: null,
             inputStrValue: this.props.getItemName(this.state.value)
-        }, () => {
+        }
+_debugStates && console.log("#### closeMenu", "prev state", this.state, "props", this.props, "state change", addState);
+        this.setState(addState, () => {
                 //ReactDOM.findDOMNode(this.refs.input).select()
+                if (callBlurAfterSetState) {
+                    this.props.onBlur && this.props.onBlur();
+                }
             })
     }
 
@@ -487,7 +495,7 @@ return true;
         }
 
         var glyph = this.state.isOpen ? 'fa-angle-up' : 'fa-angle-down';
-_debugStates && console.log(this.props);
+_debugStates && console.log("RENDER", "props", this.props, "state", this.state);
 
         var bootInfo = getBootstrapInputComponentInfo(this.props);
         var cls = bootInfo.cls;
