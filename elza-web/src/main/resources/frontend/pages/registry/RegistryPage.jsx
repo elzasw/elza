@@ -118,12 +118,12 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 <Button key='registryRemove' onClick={this.handleRemoveRegistryDialog.bind(this)}><Icon glyph="fa-trash" /><div><span className="btnText">{i18n('registry.removeRegistry')}</span></div></Button>
             );
 
-            if (!this.props.registry.recordForMove){
+            if (!this.props.registry.recordForMove && this.props.registry.registryData && !this.props.registry.registryData.item.partyId){
                 itemActions.push(
                     <Button key='registryMove' onClick={this.handleStartMoveRegistry.bind(this)}><Glyphicon glyph="share-alt" /><div><span className="btnText">{i18n('registry.moveRegistry')}</span></div></Button>
                 );
             }
-            if (this.props.registry.recordForMove){
+            if (this.props.registry.recordForMove && this.props.registry.registryData && !this.props.registry.registryData.item.partyId){
                 itemActions.push(
                     <Button key='registryMoveApply' onClick={this.handleSaveMoveRegistry.bind(this)}><Icon glyph="fa-check-circle" /><div><span className="btnText">{i18n('registry.applyMove')}</span></div></Button>
                 );
@@ -205,7 +205,6 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 var iconName = 'fa-folder';
                 var clsItem = 'registry-list-icon-record';
 
-                console.log(item);
                 if (item.hierarchical === false) {
                     iconName = 'fa-file-o';
                     clsItem = 'registry-list-icon-list';
