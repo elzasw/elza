@@ -401,7 +401,7 @@ public class ArrMoveLevelService {
      * @param deleteNode       node ke smazání
      * @param deleteNodeParent rodič nodu ke smazání
      */
-    public void deleteLevel(final ArrFindingAidVersion version,
+    public ArrLevel deleteLevel(final ArrFindingAidVersion version,
                             final ArrNode deleteNode,
                             final ArrNode deleteNodeParent) {
         Assert.notNull(version);
@@ -426,11 +426,13 @@ public class ArrMoveLevelService {
         ArrChange change = arrangementService.createChange();
         shiftNodes(nodesToShift(deleteLevel), change, deleteLevel.getPosition());
 
-        arrangementService.deleteLevelCascade(deleteLevel, change);
+        ArrLevel level = arrangementService.deleteLevelCascade(deleteLevel, change);
 
         eventNotificationService.publishEvent(new EventDeleteNode(EventType.DELETE_LEVEL,
                 version.getFindingAidVersionId(),
                 deleteNode.getNodeId(),deleteNodeParent.getNodeId()));
+
+        return level;
     }
 
     /**

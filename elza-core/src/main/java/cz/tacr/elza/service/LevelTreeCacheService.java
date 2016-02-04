@@ -513,11 +513,10 @@ public class LevelTreeCacheService {
      */
     synchronized private Map<Integer, TreeNode> getVersionTreeCache(final ArrFindingAidVersion version) {
         Map<Integer, TreeNode> versionTreeMap = versionCache.get(version.getFindingAidVersionId());
-//        if (versionTreeMap == null) {
+        if (versionTreeMap == null) {
             versionTreeMap = createVersionTreeCache(version);
             versionCache.put(version.getFindingAidVersionId(), versionTreeMap);
-//        }
-         //TODO kubovy zapnout, až bude na klientu aktualizace nodů
+        }
         return versionTreeMap;
     }
 

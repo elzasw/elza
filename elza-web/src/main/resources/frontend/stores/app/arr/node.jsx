@@ -336,6 +336,7 @@ export function node(state = nodeInitialState, action) {
 
                                 return {
                                     ...state,
+                                    version: action.parentNode.version,
                                     allChildNodes: allChildNodes,
                                     childNodes: [...allChildNodes],
                                     filterText: '',
@@ -349,6 +350,7 @@ export function node(state = nodeInitialState, action) {
 
                                 return {
                                     ...state,
+                                    version: action.parentNode.version,
                                     allChildNodes: allChildNodes,
                                     childNodes: [...allChildNodes],
                                     filterText: '',
@@ -356,19 +358,26 @@ export function node(state = nodeInitialState, action) {
                                 };
                         }
                     }
-                    return state;
+                    return {
+                        ...state,
+                        version: action.parentNode.version,
+                    };
                 case "DELETE":
                     var nodeIndex = indexById(state.childNodes, action.node.id);
                     if (nodeIndex != null) {
                         return {
                             ...state,
+                            version: action.parentNode.version,
                             childNodes: [
                                 ...state.childNodes.slice(0, nodeIndex - 1),
                                 ...state.childNodes.slice(nodeIndex + 1)
                             ]
                         };
                     }
-                    return state;
+                    return {
+                        ...state,
+                        version: action.parentNode.version,
+                    };
                 default:
                     return state;
             }

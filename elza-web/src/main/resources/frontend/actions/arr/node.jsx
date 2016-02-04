@@ -118,7 +118,7 @@ export function addNode(indexNode, parentNode, versionId, direction, descItemCop
             version: indexNode.version
         };
         return WebApi.addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes, scenarioName).then((json) => {
-            dispatch(faNodeChange(versionId, {newNode: json, indexNode: indexNode, parentNode: parentNode, direction: direction, action: "ADD"}));
+            dispatch(faNodeChange(versionId, {newNode: json.node, indexNode: indexNode, parentNode: json.parentNode, direction: direction, action: "ADD"}));
             dispatch(faSelectSubNodeInt(json.id,parentNode));
         });
     }
@@ -137,7 +137,7 @@ export function deleteNode(node, parentNode, versionId) {
             version: node.version
         };
         return WebApi.deleteNode(node, parentNode, versionId).then((json) => {
-            dispatch(faNodeChange(versionId, {node: node, parentNode: parentNode, action: "DELETE"}));
+            dispatch(faNodeChange(versionId, {node: json.node, parentNode: json.parentNode, action: "DELETE"}));
         });
     }
 }

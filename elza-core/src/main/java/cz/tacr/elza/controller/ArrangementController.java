@@ -571,7 +571,7 @@ public class ArrangementController {
      */
     @Transactional
     @RequestMapping(value = "/levels", method = RequestMethod.PUT)
-    public ArrNodeVO addLevel(@RequestBody final AddLevelParam addLevelParam) {
+    public NodeWithParent addLevel(@RequestBody final AddLevelParam addLevelParam) {
         Assert.notNull(addLevelParam);
         Assert.notNull(addLevelParam.getVersionId());
         Assert.notNull(addLevelParam.getDirection());
@@ -593,7 +593,8 @@ public class ArrangementController {
                 descItemCopyTypes);
 
 
-        return factoryVo.createArrNode(newLevel.getNode());
+        return new NodeWithParent(factoryVo.createArrNode(newLevel.getNode()),
+                factoryVo.createArrNode(newLevel.getNodeParent()));
     }
 
     /**
@@ -602,7 +603,7 @@ public class ArrangementController {
      */
     @Transactional
     @RequestMapping(value = "/levels", method = RequestMethod.DELETE)
-    public void deleteLevel(@RequestBody final NodeParam nodeParam){
+    public NodeWithParent deleteLevel(@RequestBody final NodeParam nodeParam){
         Assert.notNull(nodeParam);
         Assert.notNull(nodeParam.getVersionId());
         Assert.notNull(nodeParam.getStaticNode());
@@ -613,7 +614,10 @@ public class ArrangementController {
 
         ArrFindingAidVersion version = findingAidVersionRepository.findOne(nodeParam.getVersionId());
 
-        moveLevelService.deleteLevel(version, deleteNode, deleteParent);
+        ArrLevel deleteLevel = moveLevelService.deleteLevel(version, deleteNode, deleteParent);
+
+        return new NodeWithParent(factoryVo.createArrNode(deleteLevel.getNode()),
+                factoryVo.createArrNode(deleteLevel.getNodeParent()));
     }
 
 
@@ -1294,6 +1298,43 @@ public class ArrangementController {
 
         public void setDirection(DirectionLevel direction) {
             this.direction = direction;
+        }
+    }
+
+    /**
+     * Jednotka popisu - node + node parent
+     */
+    public static class NodeWithParent {
+
+        /**
+         * Jednotka popisu.
+         */
+        private ArrNodeVO node;
+
+        /**
+         * Rodič jednotky popisu.
+         */
+        private ArrNodeVO parentNode;
+
+        public ArrNodeVO getNode() {
+            return node;
+        }
+
+        public void setNode(final ArrNodeVO node) {
+            this.node = node;
+        }
+
+        public ArrNodeVO getParentNode() {
+            return parentNode;
+        }
+
+        public void setParentNode(final ArrNodeVO parentNode) {
+            this.parentNode = parentNode;
+        }
+
+        public NodeWithParent(final ArrNodeVO node, final ArrNodeVO parentNode) {
+            this.node = node;
+            this.parentNode = parentNode;
         }
     }
 }
