@@ -17,7 +17,7 @@ function getDescItemTypeGroupsInfo(data, rulDataTypes) {
     var descItemTypeInfos = [];
     var descItemTypeGroupsMap = {};
     data.descItemTypeGroups.forEach((descItemGroup, descItemGroupIndex) => {
-        descItemTypeGroupsMap[descItemGroup.id] = descItemGroup;
+        descItemTypeGroupsMap[descItemGroup.code] = descItemGroup;
         descItemGroup.position = descItemGroupIndex;
         descItemGroup.descItemTypes.forEach(descItemType => {
             var rulDataType = rulDataTypes.items[indexById(rulDataTypes.items, descItemType.dataTypeId)];
