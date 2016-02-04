@@ -462,6 +462,7 @@ public class ConfigMapperConfiguration {
 
                         regRecordVO.setRegisterTypeId(regRecord.getRegisterType().getRegisterTypeId());
                         regRecordVO.setAddRecord(regRecord.getRegisterType().getAddRecord());
+                        regRecordVO.setHierarchical(regRecord.getRegisterType().getHierarchical());
                         regRecordVO.setScopeId(regRecord.getScope().getScopeId());
                     }
 
