@@ -631,11 +631,10 @@ public class LevelTreeCacheService {
                             treeNodeClient.setName(treeNodeClient.getName() + " " + value);
                         }
                     }
-                    if (viewTitles.getIcon() != null && viewTitles.getIcon().contains(code)) {
-                        if (treeNodeClient.getIcon() == null) {
-                            treeNodeClient.setIcon(value);
-                        } else {
-                            treeNodeClient.setIcon(treeNodeClient.getIcon() + " " + value);
+                    if (viewTitles.getIcon() != null && viewTitles.getIcon().equals(code)) {
+                        if (data.getDescItem().getDescItemSpec() != null) {
+                            String iconType = data.getDescItem().getDescItemSpec().getCode();
+                            treeNodeClient.setIcon(iconType.substring(iconType.lastIndexOf("_") + 1));
                         }
                     }
                 }
@@ -670,11 +669,10 @@ public class LevelTreeCacheService {
                             treeNodeClient.setName(treeNodeClient.getName() + " " + value);
                         }
                     }
-                    if (viewTitles.getIcon() != null && viewTitles.getIcon().contains(code)) {
-                        if (treeNodeClient.getIcon() == null) {
-                            treeNodeClient.setIcon(value);
-                        } else {
-                            treeNodeClient.setIcon(treeNodeClient.getIcon() + " " + value);
+                    if (viewTitles.getIcon() != null && viewTitles.getIcon().equals(code)) {
+                        if (data.getDescItem().getDescItemSpec() != null) {
+                            String iconType = data.getDescItem().getDescItemSpec().getCode();
+                            treeNodeClient.setIcon(iconType.substring(iconType.lastIndexOf("_") + 1));
                         }
                     }
                 }
@@ -984,11 +982,12 @@ public class LevelTreeCacheService {
                             treeNodeClient.setName(treeNodeClient.getName() + " " + value);
                         }
                     }
-                    if (viewTitles.getIcon() != null && viewTitles.getIcon().contains(code)) {
+                    if (viewTitles.getIcon() != null && viewTitles.getIcon().equals(code)) {
                         if (treeNodeClient.getIcon() == null) {
-                            treeNodeClient.setIcon(value);
-                        } else {
-                            treeNodeClient.setIcon(treeNodeClient.getIcon() + " " + value);
+                            if (data.getDescItem().getDescItemSpec() != null) {
+                                String iconType = data.getDescItem().getDescItemSpec().getCode();
+                                treeNodeClient.setIcon(iconType.substring(iconType.lastIndexOf("_") + 1));
+                            }
                         }
                     }
                 }
@@ -1023,11 +1022,10 @@ public class LevelTreeCacheService {
                             treeNodeClient.setName(treeNodeClient.getName() + " " + value);
                         }
                     }
-                    if (viewTitles.getIcon() != null && viewTitles.getIcon().contains(code)) {
-                        if (treeNodeClient.getIcon() == null) {
-                            treeNodeClient.setIcon(value);
-                        } else {
-                            treeNodeClient.setIcon(treeNodeClient.getIcon() + " " + value);
+                    if (viewTitles.getIcon() != null && viewTitles.getIcon().equals(code)) {
+                        if (data.getDescItem().getDescItemSpec() != null) {
+                            String iconType = data.getDescItem().getDescItemSpec().getCode();
+                            treeNodeClient.setIcon(iconType.substring(iconType.lastIndexOf("_") + 1));
                         }
                     }
                 }

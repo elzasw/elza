@@ -132,9 +132,17 @@ export function createReferenceMarkString(node) {
  * @param type kódu zobrazení
  */
 export function getGlyph(type) {
-    // TODO slapa: dopsat typy podle serveru
-
     switch (type) {
+        case "ROOT":
+            return "fa-sitemap"
+        case "SERIES":
+            return "fa-server"
+        case "FOLDER":
+            return "fa-folder-o"
+        case "ITEM":
+            return "fa-building"
+        case "PART":
+            return "fa-building-o"
         default:
             return "fa-exclamation-triangle"
     }
