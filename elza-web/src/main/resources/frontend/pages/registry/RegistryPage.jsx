@@ -120,7 +120,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
             if (!this.props.registry.recordForMove && this.props.registry.registryData && !this.props.registry.registryData.item.partyId){
                 itemActions.push(
-                    <Button key='registryMove' onClick={this.handleStartMoveRegistry.bind(this)}><Glyphicon glyph="share-alt" /><div><span className="btnText">{i18n('registry.moveRegistry')}</span></div></Button>
+                    <Button key='registryMove' onClick={this.handleStartMoveRegistry.bind(this)}><Icon glyph="fa-share" /><div><span className="btnText">{i18n('registry.moveRegistry')}</span></div></Button>
                 );
             }
             if (this.props.registry.recordForMove && this.props.registry.registryData && !this.props.registry.registryData.item.partyId){
