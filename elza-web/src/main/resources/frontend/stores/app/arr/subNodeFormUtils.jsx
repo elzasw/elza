@@ -302,6 +302,10 @@ export function createDescItem(descItemTypeInfo, addedByUser) {
         result.descItemSpecId = '';
     }
 
+    if (descItemTypeInfo.rulDataType.code === "UNITDATE") {
+        result.calendarTypeId = 1;
+    }
+
     return result;
 }
 
