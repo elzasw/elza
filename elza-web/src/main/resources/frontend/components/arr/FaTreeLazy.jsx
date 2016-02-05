@@ -7,7 +7,7 @@ require ('./FaTreeLazy.less');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {VirtualList, AbstractReactComponent, i18n, Loading, Icon} from 'components';
+import {VirtualList, AbstractReactComponent, i18n, Loading, Icon, Search} from 'components';
 import {Nav, Input, NavItem, Button, DropdownButton} from 'react-bootstrap';
 var classNames = require('classnames');
 import {ResizeStore} from 'stores';
@@ -110,12 +110,19 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
         const {searchedIds, searchedParents, filterCurrentIndex} = this.props;
 
         var searchedInfo;
+        var buttons = []
         if (searchedIds.length > 0 && filterCurrentIndex !== -1) {
             searchedInfo = (
                 <div className='fa-tree-lazy-search-info'>
-                    ({filterCurrentIndex + 1}-{searchedIds.length})
+                    ({filterCurrentIndex + 1} z {searchedIds.length})
                 </div>
             )
+
+            var prevButtonEnabled = filterCurrentIndex > 0;
+            var nextButtonEnabled = filterCurrentIndex < searchedIds.length - 1;
+
+            buttons.push(<Button disabled={!nextButtonEnabled} className="next" onClick={this.props.onFulltextNextItem}><Icon glyph='fa-chevron-down'/></Button>)
+            buttons.push(<Button disabled={!prevButtonEnabled} className="prev" onClick={this.props.onFulltextPrevItem}><Icon glyph='fa-chevron-up'/></Button>)
         }
 
         var index;
@@ -126,11 +133,18 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
         return (
             <div className='fa-tree-lazy-main-container'>
                 <div className='fa-traa-header-container'>
-                    <Input type='search' value={this.props.filterText} onChange={e => this.props.onFulltextChange(e.target.value)} />
+                    {true && <Search
+                        placeholder={i18n('search.input.search')}
+                        filterText={this.props.filterText}
+                        onChange={e => this.props.onFulltextChange(e.target.value)}
+                        onClear={e => {this.props.onFulltextChange(''); this.props.onFulltextSearch()}}
+                        onSearch={this.props.onFulltextSearch}
+                    />}
+
+                    {false && <Input type='search' value={this.props.filterText} onChange={e => this.props.onFulltextChange(e.target.value)} />}
                     {searchedInfo}
                     <Button className="search" onClick={this.props.onFulltextSearch}><Icon glyph='fa-search'/></Button>
-                    <Button className="prev" onClick={this.props.onFulltextPrevItem}><Icon glyph='fa-chevron-up'/></Button>
-                    <Button className="next" onClick={this.props.onFulltextNextItem}><Icon glyph='fa-chevron-down'/></Button>
+                    {buttons}
                 </div>
                 <div className='fa-tree-lazy-container' ref="treeContainer">
                     <Button className="tree-collapse" onClick={this.props.onCollapse}><Icon glyph='fa-compress'/>Sbalit vše</Button>

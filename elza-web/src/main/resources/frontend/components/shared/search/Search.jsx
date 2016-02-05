@@ -33,7 +33,7 @@ var Search = class Search extends React.Component {
     }
     componentWillReceiveProps(nexProps){
         this.state = {                                                  // inicializace stavu komponenty
-            filterText: this.props.filterText,                          // hledaný text
+            filterText: nexProps.filterText,                          // hledaný text
         }
     }
 
@@ -45,7 +45,9 @@ var Search = class Search extends React.Component {
         this.state = {
             filterText: null,
         }
-        this.props.onClear();
+        if (this.props) {
+            this.props.onClear();
+        }
     }
 
     handleKeyUp(e){
@@ -59,7 +61,9 @@ var Search = class Search extends React.Component {
         this.setState({
             filterText: e.target.value                                  // uložení zadaného řezezce ve stavu komponenty
         });
-        
+        if (this.props.onChange) {
+            this.props.onChange(e);
+        }
     }
 
     render() {                          // metoda pro renderovani obsahu komponenty
