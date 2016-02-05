@@ -118,11 +118,13 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
                 </div>
             )
 
-            var prevButtonEnabled = filterCurrentIndex > 0;
-            var nextButtonEnabled = filterCurrentIndex < searchedIds.length - 1;
+            if (searchedIds.length > 1) {
+                var prevButtonEnabled = filterCurrentIndex > 0;
+                var nextButtonEnabled = filterCurrentIndex < searchedIds.length - 1;
 
-            buttons.push(<Button disabled={!nextButtonEnabled} className="next" onClick={this.props.onFulltextNextItem}><Icon glyph='fa-chevron-down'/></Button>)
-            buttons.push(<Button disabled={!prevButtonEnabled} className="prev" onClick={this.props.onFulltextPrevItem}><Icon glyph='fa-chevron-up'/></Button>)
+                buttons.push(<Button disabled={!nextButtonEnabled} className="next" onClick={this.props.onFulltextNextItem}><Icon glyph='fa-chevron-down'/></Button>)
+                buttons.push(<Button disabled={!prevButtonEnabled} className="prev" onClick={this.props.onFulltextPrevItem}><Icon glyph='fa-chevron-up'/></Button>)
+            }
         }
 
         var index;
