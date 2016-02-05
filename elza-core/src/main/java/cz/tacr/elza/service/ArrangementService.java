@@ -59,6 +59,7 @@ import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.VersionConformityRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.eventnotification.events.EventVersion;
 
 
 /**
@@ -367,6 +368,9 @@ public class ArrangementService {
 
         ArrFindingAidVersion newVersion = createVersion(change, findingAid, arrangementType, ruleSet, version.getRootLevel());
         ruleService.conformityInfoAll(newVersion);
+
+        eventNotificationService.publishEvent(
+                new EventVersion(EventType.APPROVE_VERSION, version.getFindingAidVersionId()));
 
         return newVersion;
     }

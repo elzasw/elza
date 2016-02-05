@@ -64,7 +64,7 @@ import cz.tacr.elza.repository.LevelRepositoryCustom;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.eventnotification.EventChangeMessage;
 import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
-import cz.tacr.elza.service.eventnotification.events.AbstractEventVersion;
+import cz.tacr.elza.service.eventnotification.events.EventVersion;
 import cz.tacr.elza.service.eventnotification.events.EventAddNode;
 import cz.tacr.elza.service.eventnotification.events.EventDeleteNode;
 import cz.tacr.elza.service.eventnotification.events.EventNodeMove;
@@ -724,8 +724,8 @@ public class LevelTreeCacheService {
         for (AbstractEventSimple event : events) {
             logger.info("Zpracování události "+event.getEventType());
             //projdeme všechny změny, které jsou změny ve stromu uzlů verze a smažeme cache verzí
-            if (AbstractEventVersion.class.isAssignableFrom(event.getClass())) {
-                Integer changedVersionId = ((AbstractEventVersion) event).getVersionId();
+            if (EventVersion.class.isAssignableFrom(event.getClass())) {
+                Integer changedVersionId = ((EventVersion) event).getVersionId();
                 ArrFindingAidVersion version = findingAidVersionRepository.findOne(changedVersionId);
 
                 //TODO nemazat celou cache, ale provádět co nejvíc změn přímo na cache

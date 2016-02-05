@@ -6,7 +6,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 export function getFaFromFaAndVersion(fa, version) {
-    var fa = Object.assign({}, fa, {faId: fa.id, versionId: version.id, id: version.id, activeVersion: version});
+    var faVersionClosed = version.lockDate != null;
+    var fa = Object.assign({}, fa, {faId: fa.id, versionId: version.id, id: version.id, activeVersion: version, closed: faVersionClosed});
     return fa;
 }
 

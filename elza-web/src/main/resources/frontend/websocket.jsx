@@ -6,7 +6,7 @@ import {buklActionStateChange} from 'actions/arr/bulkActions';
 import {store} from 'stores/app/AppStore';
 
 import {changeConformityInfo, changeIndexingFinished, changePackage, changePackets,
-        changeDescItem, changeDeleteLevel, changeAddLevel} from 'actions/global/change';
+        changeDescItem, changeDeleteLevel, changeAddLevel, changeApproveVersion} from 'actions/global/change';
 
 
 var SockJS = require('sockjs-client');
@@ -117,12 +117,20 @@ function processEvents(values) {
                 addLevelUnderChange(value);
                 break;
 
+            case 'APPROVE_VERSION':
+                approveVersionChange(value);
+                break;
+
             default:
                 console.warn("Nedefinovaný typ eventu: " + value.eventType, value);
                 break;
         }
 
     });
+}
+
+function approveVersionChange(value) {
+    store.dispatch(changeApproveVersion(value.versionId));
 }
 
 function addLevelAfterChange(value) {

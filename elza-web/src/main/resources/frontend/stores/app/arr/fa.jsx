@@ -10,6 +10,7 @@ export function faInitState(faWithVersion) {
     var result = {
         ...faWithVersion,
         id: faWithVersion.versionId,
+        closed: faWithVersion.closed,
         faId: faWithVersion.faId,
         versionId: faWithVersion.versionId,
         name: faWithVersion.name,
@@ -176,6 +177,18 @@ export function fa(state, action) {
         case types.FA_VERSION_VALIDATION_RECEIVED:
             var result = {...state, versionValidation: versionValidation(state.versionValidation, action)};
             return consolidateState(state, result);
+
+        case types.FA_FA_APPROVE_VERSION:
+
+            if (state.closed == false) {
+                return {
+                    ...state,
+                    closed: true,
+                }
+            }
+
+            return state;
+
         default:
             return state;
     }

@@ -263,13 +263,16 @@ return true;
      * @return {Object} view
      */
     renderLabel() {
-        const {descItemCopyFromPrevEnabled, copy, locked, descItemType, descItemTypeInfo, conformityInfo} = this.props;
+        const {descItemCopyFromPrevEnabled, copy, locked, descItemType, descItemTypeInfo, conformityInfo, closed} = this.props;
 
         var actions = [];
+
         // Sestavení akcí
-        actions.push(<NoFocusButton title={i18n('subNodeForm.descItemType.copy')} key="copy" onClick={this.handleDescItemTypeCopy}><Icon className={copy ? 'copy' : 'nocopy'} glyph="fa-files-o" /></NoFocusButton>);
-        actions.push(<NoFocusButton disabled={!descItemCopyFromPrevEnabled} title={i18n('subNodeForm.descItemType.copyFromPrev')} key="book" onClick={this.handleDescItemTypeCopyFromPrev}><Icon glyph="fa-book" /></NoFocusButton>);
-        actions.push(<NoFocusButton title={i18n('subNodeForm.descItemType.lock')} key="lock" onClick={this.handleDescItemTypeLock}><Icon className={locked ? 'locked' : 'unlocked'}  glyph="fa-lock" /></NoFocusButton>);
+        if (!closed) {
+            actions.push(<NoFocusButton title={i18n('subNodeForm.descItemType.copy')} key="copy" onClick={this.handleDescItemTypeCopy}><Icon className={copy ? 'copy' : 'nocopy'} glyph="fa-files-o" /></NoFocusButton>);
+            actions.push(<NoFocusButton disabled={!descItemCopyFromPrevEnabled} title={i18n('subNodeForm.descItemType.copyFromPrev')} key="book" onClick={this.handleDescItemTypeCopyFromPrev}><Icon glyph="fa-book" /></NoFocusButton>);
+            actions.push(<NoFocusButton title={i18n('subNodeForm.descItemType.lock')} key="lock" onClick={this.handleDescItemTypeLock}><Icon className={locked ? 'locked' : 'unlocked'}  glyph="fa-lock" /></NoFocusButton>);
+        }
 
         // Zprávy o chybějících položkách
         var missings = conformityInfo.missings[descItemType.id];
@@ -295,7 +298,7 @@ return true;
                 hasDescItemsForDelete = true;
             }
         }
-        if (hasDescItemsForDelete) {
+        if (hasDescItemsForDelete && !closed) {
             actions.push(<NoFocusButton key="delete" onClick={this.props.onDescItemTypeRemove} title={i18n('subNodeForm.deleteDescItemType')}><Icon glyph="fa-trash" /></NoFocusButton>);
         }
 
@@ -341,19 +344,19 @@ return true;
     }
 
     render() {
-        const {onDescItemRemove, onDescItemAdd, descItemType, descItemTypeInfo, locked, conformityInfo} = this.props;
+        const {onDescItemRemove, onDescItemAdd, descItemType, descItemTypeInfo, locked, conformityInfo, closed} = this.props;
 
         var label = this.renderLabel();
 
         var addAction;
-        if (descItemTypeInfo.repeatable && !locked) {
+        if (descItemTypeInfo.repeatable && !(locked || closed)) {
             addAction = <div className='desc-item-type-actions'><NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.addDescItem')}><Icon glyph="fa-plus" /></NoFocusButton></div>
         }
 
         var descItems = descItemType.descItems.map((descItem, descItemIndex) => {
             var actions = new Array;
 
-            if (descItemTypeInfo.repeatable) {
+            if (descItemTypeInfo.repeatable && !locked && !closed) {
                 actions.push(<NoFocusButton key="delete" onClick={onDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-times" /></NoFocusButton>);
             }
 
@@ -366,7 +369,7 @@ return true;
                 </OverlayTrigger>);
             }
 
-            return this.renderDescItem(descItemType, descItem, descItemIndex, actions, locked)
+            return this.renderDescItem(descItemType, descItem, descItemIndex, actions, locked || closed)
         })
 
         var cls = classNames({
@@ -410,6 +413,7 @@ DescItemType.propTypes = {
     packetTypes: React.PropTypes.object.isRequired,
     packets: React.PropTypes.array.isRequired,
     locked: React.PropTypes.bool.isRequired,
+    closed: React.PropTypes.bool.isRequired,
     copy: React.PropTypes.bool.isRequired,
     conformityInfo: React.PropTypes.object.isRequired
 }

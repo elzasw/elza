@@ -65,3 +65,11 @@ export function changeAddLevel(versionId, nodeId, parentNodeId) {
         parentNodeId
     }
 }
+
+export function changeApproveVersion(versionId) {
+
+    return {
+        type: types.CHANGE_APPROVE_VERSION,
+        versionId
+    }
+}

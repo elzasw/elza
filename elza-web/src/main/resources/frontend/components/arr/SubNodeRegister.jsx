@@ -7,7 +7,7 @@ import {connect} from 'react-redux'
 
 import {faSubNodeRegisterValueDelete, faSubNodeRegisterValueAdd,
         faSubNodeRegisterValueFocus, faSubNodeRegisterValueBlur, faSubNodeRegisterValueChange} from 'actions/arr/subNodeRegister'
-
+import {registrySelect, registryAdd} from 'actions/registry/registryList'
 import NodeRegister from './registerForm/NodeRegister'
 import {routerNavigate} from 'actions/router'
 
@@ -26,17 +26,10 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
     /**
      * Vytvoření nového hesla.
      *
-     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
-     * @param descItemTypeIndex {Integer} index atributu v seznamu
-     * @param descItemIndex {Integer} index honodty atributu v seznamu
+     * @param index {Integer} index hodnoty seznamu
      */
     handleCreateRecord(index) {
-        // TODO: slapa - čeká se na dodělání REJSTŘÍKŮ
-        console.warn("TODO: slapa - čeká se na dodělání REJSTŘÍKŮ - handleCreateRecord");
-
-        // TODO: slapa - předělat => volat metodu na vyvoření jednotně
-        /*this.dispatch(modalDialogShow(this, i18n('registry.addRegistry'),
-         <AddRegistryForm create onSubmit={this.handleCreateRecordSubmit.bind(this, valueLocation)}/>));*/
+        this.dispatch(registryAdd(null, this.handleCreatedRecord.bind(this, index)));
     }
 
     /**
@@ -45,11 +38,16 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
      * @param valueLocation pozice hodnoty atributu
      * @param form {Object} data z formuláře
      */
-    handleCreateRecordSubmit(index, data) {
+    handleCreatedRecord(index, data) {
         const {versionId, selectedSubNodeId, nodeKey} = this.props;
 
-        // TODO: slapa - čeká se na dodělání REJSTŘÍKŮ
-        console.warn("TODO: slapa - čeká se na dodělání REJSTŘÍKŮ - handleCreateRecordSubmit");
+        // TODO: sjednoceni od Pavla - ELZA-591
+        this.dispatch(faSubNodeRegisterValueFocus(versionId, selectedSubNodeId, nodeKey, index));
+        this.dispatch(faSubNodeRegisterValueChange(versionId, selectedSubNodeId, nodeKey, index, data.recordId));
+        this.dispatch(faSubNodeRegisterValueBlur(versionId, selectedSubNodeId, nodeKey, index));
+
+        this.dispatch(registrySelect(data.recordId));
+        this.dispatch(routerNavigate('registry'));
     }
 
     handleAddClick() {
@@ -61,9 +59,7 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
     }
 
     handleDetail(index, recordId) {
-        // TODO: slapa - čeká se na dodělání REJSTŘÍKŮ
-        //this.dispatch(recordSelect(recordId));
-        console.warn("TODO: slapa - čeká se na dodělání REJSTŘÍKŮ - handleDetail");
+        this.dispatch(registrySelect(recordId));
         this.dispatch(routerNavigate('registry'));
     }
 
@@ -80,21 +76,23 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
     }
 
     renderLink(link, index) {
-
+        const {closed} = this.props;
         return (
                 <div className="link" key={"link-" + index}>
                     <NodeRegister onFocus={this.handleFocus.bind(this, index)}
                                   onBlur={this.handleBlur.bind(this, index)}
                                   onDetail={this.handleDetail.bind(this, index)}
                                   onChange={this.handleChange.bind(this, index)}
+                                  closed={closed}
                                   onCreateRecord={this.handleCreateRecord.bind(this, index)}
-                                  item={link} /><NoFocusButton key="delete" onClick={this.handleRemove.bind(this, index)} ><Icon glyph="fa-times" /></NoFocusButton>
+                                  item={link} />
+                    {!closed && <NoFocusButton key="delete" onClick={this.handleRemove.bind(this, index)} ><Icon glyph="fa-times" /></NoFocusButton>}
                 </div>
         );
     }
 
     renderForm() {
-        const {register} = this.props;
+        const {register, closed} = this.props;
 
         var links = [];
         register.formData.nodeRegisters.forEach((link, index) => links.push(this.renderLink(link, index)));
@@ -102,7 +100,7 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
         return (
                 <div className="register-form">
                     <div className='links'>{links}</div>
-                    <div className='action'><NoFocusButton onClick={this.handleAddClick}><Icon glyph="fa-plus" /></NoFocusButton></div>
+                    {!closed && <div className='action'><NoFocusButton onClick={this.handleAddClick}><Icon glyph="fa-plus" /></NoFocusButton></div>}
                 </div>
         );
 
@@ -133,6 +131,7 @@ SubNodeRegister.propTypes = {
     register: React.PropTypes.object.isRequired,
     selectedSubNodeId: React.PropTypes.number.isRequired,
     nodeKey: React.PropTypes.number.isRequired,
+    closed: React.PropTypes.bool.isRequired,
     nodeId: React.PropTypes.oneOfType(React.PropTypes.number, React.PropTypes.string),
 }
 

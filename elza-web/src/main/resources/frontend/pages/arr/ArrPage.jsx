@@ -156,7 +156,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                 <div><span className="btnText">{i18n('ribbon.action.arr.fa.import')}</span></div>
             </Button>
         );
-        if (activeInfo.activeFa) {
+        if (activeInfo.activeFa && !activeInfo.activeFa.closed) {
             itemActions.push(
                 <Button key="approve-version" onClick={this.handleApproveFaVersion}><Icon glyph="fa-calendar-check-o"/>
                     <div><span className="btnText">{i18n('ribbon.action.arr.fa.approveVersion')}</span></div>
@@ -239,6 +239,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                     <NodeTabs
                         versionId={activeFa.versionId}
                         fa={activeFa}
+                        closed={activeFa.closed}
                         nodes={activeFa.nodes.nodes}
                         activeIndex={activeFa.nodes.activeIndex}
                         rulDataTypes={rulDataTypes}

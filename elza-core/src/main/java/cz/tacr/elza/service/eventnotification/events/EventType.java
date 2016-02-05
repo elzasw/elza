@@ -11,6 +11,8 @@ public enum EventType {
     FINDING_AID_CREATE(EventId.class),
     FINDING_AID_DELETE(EventId.class),
 
+    APPROVE_VERSION(EventVersion.class),
+
     NODE_DELETE(EventIdInVersion.class),
 
     ADD_LEVEL_AFTER(EventAddNode.class),

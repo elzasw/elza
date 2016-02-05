@@ -71,7 +71,8 @@ export function approveFa(versionId, ruleSetId, arrangementTypeId) {
             .then((json) => {
                 Toastr.Actions.success({
                     title: i18n("arr.fa.title.approved"),
-                });                
+                });
+                dispatch(approveFaResult(json.versionId))
                 dispatch(modalDialogHide())
                 dispatch(faFileTreeFetch())
             });
@@ -111,5 +112,12 @@ export function showRegisterJp(show) {
     return {
         type: types.SHOW_REGISTER_JP,
         showRegisterJp: show
+    }
+}
+
+export function approveFaResult(versionId) {
+    return {
+        type: types.FA_FA_APPROVE_VERSION,
+        versionId: versionId
     }
 }

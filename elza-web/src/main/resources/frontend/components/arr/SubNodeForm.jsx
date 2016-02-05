@@ -450,7 +450,8 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @return {Object} view
      */
     renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex) {
-        const {descItemCopyFromPrevEnabled, rulDataTypes, calendarTypes, nodeSettings, nodeId, packetTypes, packets, conformityInfo} = this.props;
+        const {descItemCopyFromPrevEnabled, rulDataTypes, calendarTypes, closed,
+                nodeSettings, nodeId, packetTypes, packets, conformityInfo} = this.props;
 
         var rulDataType = rulDataTypes.items[indexById(rulDataTypes.items, descItemType.dataTypeId)];
         var descItemTypeInfo = this.getDescItemTypeInfo(descItemType);
@@ -511,6 +512,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 onDescItemTypeCopy={this.handleDescItemTypeCopy.bind(this, descItemType.id)}
                 onDescItemTypeCopyFromPrev={this.handleDescItemTypeCopyFromPrev.bind(this, descItemGroupIndex, descItemTypeIndex, descItemType.id)}
                 locked={locked}
+                closed={closed}
                 copy={copy}
                 conformityInfo={conformityInfo}
                 descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
@@ -615,9 +617,9 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 
     render() {
-        const {calendarTypes, formData} = this.props;
+        const {formData, closed} = this.props;
 
-        var formActions = this.renderFormActions();
+        var formActions = closed ? null : this.renderFormActions();
         var descItemGroups = formData.descItemGroups.map((group, groupIndex) => (
             this.renderDescItemGroup(group, groupIndex)
         ));
@@ -654,6 +656,7 @@ SubNodeForm.propTypes = {
     packetTypes: React.PropTypes.object.isRequired,
     packets: React.PropTypes.array.isRequired,
     formData: React.PropTypes.object.isRequired,
+    closed: React.PropTypes.bool.isRequired,
     conformityInfo: React.PropTypes.object.isRequired,
     descItemCopyFromPrevEnabled: React.PropTypes.bool.isRequired,
 }

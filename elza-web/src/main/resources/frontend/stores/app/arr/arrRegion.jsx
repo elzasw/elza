@@ -6,6 +6,7 @@ import {fa, faInitState} from './fa'
 import faTree from './faTree'
 import nodeSetting from './nodeSetting'
 import {consolidateState} from 'components/Utils'
+import {Toastr, i18n} from 'components';
 
 const initialState = {
     activeIndex: null,
@@ -152,6 +153,7 @@ export default function arrRegion(state = initialState, action) {
         case types.CHANGE_ADD_LEVEL:
         case types.FA_VERSION_VALIDATION_LOAD:
         case types.FA_VERSION_VALIDATION_RECEIVED:
+        case types.FA_FA_APPROVE_VERSION:
             var index = indexById(state.fas, action.versionId, "versionId")
             return processFa(state, action, index);
         case types.FA_FAS_RECEIVE:
@@ -305,7 +307,26 @@ export default function arrRegion(state = initialState, action) {
                     fa(state.fas[index], action),
                     ...state.fas.slice(index + 1)
                 ]
-            }            
+            }
+
+        case types.CHANGE_APPROVE_VERSION:
+
+            var fas = state.fas;
+            var update = false;
+
+            fas.forEach(fa => {if (fa.id == action.versionId) {
+                if (fa.closed == false) {
+                    update = true;
+                    fa.closed = true;
+                }
+            }});
+
+            if (update) {
+                return {...state}
+            }
+
+            return state
+
         default:
             return state
     }

@@ -89,7 +89,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             return true;
         }
         var eqProps = ['versionId', 'fa', 'node', 'calendarTypes',
-            'packetTypes', 'packets', 'rulDataTypes', 'findingAidId', 'showRegisterJp']
+            'packetTypes', 'packets', 'rulDataTypes', 'findingAidId', 'showRegisterJp', 'closed']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -374,7 +374,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     render() {
-        const {calendarTypes, versionId, rulDataTypes, node, packetTypes, packets, findingAidId, showRegisterJp} = this.props;
+        const {calendarTypes, versionId, rulDataTypes, node, packetTypes, packets, findingAidId, showRegisterJp, fa, closed} = this.props;
 
         if (!node.nodeInfoFetched) {
             return <Loading value={i18n('global.data.loading.node')}/>
@@ -391,13 +391,13 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         var actions = (
             <div key='actions' className='actions'>
                 {
-                    node.nodeInfoFetched && !isFaRootId(node.id) &&
+                    node.nodeInfoFetched && !isFaRootId(node.id) && !closed &&
                     <AddNodeDropdown key="end"
                                      title="Přidat JP na konec"
                                      glyph="fa-plus-circle"
                                      action={this.handleAddNodeAtEnd}
                                      node={this.props.node}
-                                     version={this.props.fa.versionId}
+                                     version={fa.versionId}
                                      direction="CHILD"
                     />
                 }
@@ -452,6 +452,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 findingAidId={findingAidId}
                 selectedSubNode={node.subNodeForm.data.node}
                 descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
+                closed={closed}
             />
         } else {
             form = <Loading value={i18n('global.data.loading.form')}/>
@@ -465,7 +466,8 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                         versionId={versionId}
                         selectedSubNodeId={node.selectedSubNodeId}
                         nodeKey={node.nodeKey}
-                        register={node.subNodeRegister} />
+                        register={node.subNodeRegister}
+                        closed={closed}/>
         }
 
         var accordionInfo = <div>
@@ -551,6 +553,7 @@ NodePanel.propTypes = {
     rulDataTypes: React.PropTypes.object.isRequired,
     findingAidId: React.PropTypes.number,
     showRegisterJp: React.PropTypes.bool.isRequired,
+    closed: React.PropTypes.bool.isRequired,
 }
 
 module.exports = connect(mapStateToProps)(NodePanel);

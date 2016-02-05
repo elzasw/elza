@@ -1,6 +1,5 @@
 package cz.tacr.elza.service.eventnotification.events;
 
-import cz.tacr.elza.service.ArrMoveLevelService;
 import cz.tacr.elza.service.eventnotification.events.vo.NodeInfo;
 
 
@@ -9,7 +8,7 @@ import cz.tacr.elza.service.eventnotification.events.vo.NodeInfo;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 25.01.2016
  */
-public class EventAddNode extends AbstractEventVersion<EventAddNode> {
+public class EventAddNode extends EventVersion<EventAddNode> {
 
     /**
      * Uzel, ke kterému přidáváme nový (před, za, pod)
