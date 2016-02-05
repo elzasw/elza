@@ -118,13 +118,33 @@
 
                 .accordion-header-left {
                     float: left;
-                    width: 70%;
+                    width: 60%;
                     margin: 4px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
                 }
 
                 .accordion-header-right {
                     float: right;
                     margin: 4px;
+                    width: calc(~"40% - 20px");
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    &>span, &>div {
+                        display: inline-block;
+                    }
+                    .title {
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        width: calc(~"100% - 20px");
+                        color: grey;
+                        font-size: 0.9em;
+                        font-weight: normal;
+                        line-height: 1.8em;
+                    }
                 }
             }
             

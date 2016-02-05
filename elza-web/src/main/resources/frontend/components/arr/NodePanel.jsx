@@ -336,10 +336,10 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                     <div key={item.id} ref={'accheader-' + item.id} className='accordion-item opened'>
                         <div className='accordion-header' onClick={this.handleCloseItem.bind(this, item)}>
                             <div title={accordionLeft} className='accordion-header-left' key='accordion-header-left'>
-                                {referenceMark} <span title={accordionLeft}>{accordionLeft}</span>
+                                {referenceMark} <span className="title" title={accordionLeft}>{accordionLeft}</span>
                             </div>
                             <div title={accordionRight} className='accordion-header-right' key='accordion-header-right'>
-                                <span title={accordionRight}>{accordionRight}</span> {state}
+                                <span className="title" title={accordionRight}>{accordionRight}</span> {state}
                             </div>
                         </div>
                         <div key="body" className='accordion-body'>
@@ -353,10 +353,10 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                     <div key={item.id} ref={'accheader-' + item.id} className='accordion-item closed'>
                         <div className='accordion-header' onClick={this.handleOpenItem.bind(this, item)}>
                             <div title={accordionLeft} className='accordion-header-left' key='accordion-header-left'>
-                                {referenceMark} <span title={accordionLeft}>{accordionLeft}</span>
+                                {referenceMark} <span className="title" title={accordionLeft}>{accordionLeft}</span>
                             </div>
                             <div title={accordionRight} className='accordion-header-right' key='accordion-header-right'>
-                                <span title={accordionRight}>{accordionRight}</span> {state}
+                                <span className="title" title={accordionRight}>{accordionRight}</span> {state}
                             </div>
                         </div>
                     </div>
