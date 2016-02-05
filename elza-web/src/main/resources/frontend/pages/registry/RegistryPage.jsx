@@ -113,10 +113,14 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
         var itemActions = [];
         if (this.props.registry.selectedId) {
-
-            itemActions.push(
-                <Button key='registryRemove' onClick={this.handleRemoveRegistryDialog.bind(this)}><Icon glyph="fa-trash" /><div><span className="btnText">{i18n('registry.removeRegistry')}</span></div></Button>
-            );
+            if (this.props.registry.registryData && !this.props.registry.registryData.item.childs) {
+                itemActions.push(
+                    <Button key='registryRemove' onClick={this.handleRemoveRegistryDialog.bind(this)}><Icon
+                        glyph="fa-trash"/>
+                        <div><span className="btnText">{i18n('registry.removeRegistry')}</span></div>
+                    </Button>
+                );
+            }
 
             if (!this.props.registry.recordForMove && this.props.registry.registryData && !this.props.registry.registryData.item.partyId){
                 itemActions.push(

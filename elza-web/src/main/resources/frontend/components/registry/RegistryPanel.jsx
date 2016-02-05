@@ -16,7 +16,7 @@ import {getRegistryIfNeeded, fetchRegistryIfNeeded, fetchRegistry} from 'actions
 import {registryChangeDetail, registryData, updateRegistryVariantRecord} from 'actions/registry/registryData'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
 import {routerNavigate} from 'actions/router'
-import {registryUpdated} from 'actions/registry/registryData'
+import {registryRecordUpdate, registryVariantAddRecordRow, registryAddVariant, registryVariantDelete, registryVariantInternalDelete, registryRecordNoteUpdate  } from 'actions/registry/registryData'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 
 
@@ -24,7 +24,6 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     constructor(props) {
         super(props);
         this.bindMethods('editRecord', 'handleDeleteVariant', 'handleCallAddRegistryVariant', 'handleBlurVariant', 'handleClickAddVariant', 'handleOnEnterAdd', 'handleBlurVariant', 'handlePoznamkaBlur', 'handleChangeNote');
-
         this.state = {}
     }
 
@@ -38,6 +37,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         }
 
         this.dispatch(fetchRegistryIfNeeded());
+        this.dispatch(getRegistryIfNeeded(nextProps.selectedId));
         this.setState({
             note: notes
         });
@@ -50,7 +50,6 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         }
         this.dispatch(refRecordTypesFetchIfNeeded());
         this.state = {
-            addVariant: 0,
             note: ''
         }
     }
@@ -66,40 +65,38 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         var data = Object.assign({}, this.props.registryData.item)
         data.record = value.nameMain;
         data.characteristics = value.characteristics;
-        WebApi.updateRegistry(data).then(json => {
-            this.dispatch(registryUpdated());
-            this.dispatch(fetchRegistry(this.props.registry.filterText));
-            this.dispatch(modalDialogHide())
-        });
+        data.scopeId = value.scopeId;
+        data.registerTypeId = value.registerTypeId;
+        console.log(value);
+        this.dispatch(registryRecordUpdate(data));
+        this.dispatch(modalDialogHide());
     }
 
     handleDeleteVariant(item){
         if(confirm(i18n('registry.removeRegistryQuestion'))) {
-            WebApi.deleteVariantRecord(item.variantRecordId).then(json => {
-                this.dispatch(registryUpdated());
-                this.dispatch(fetchRegistry(this.props.registry.filterText));
-            });
+            if (item.variantRecordId) {
+                this.dispatch(registryVariantDelete(item.variantRecordId))
+            }
+            else if (item.variantRecordInternalId){
+                this.dispatch(registryVariantInternalDelete(item.variantRecordInternalId))
+            }
         }
     }
 
     handleClickAddVariant(){
-        this.setState({"addVariant": 1});
-        //this.dispatch(modalDialogShow(this, i18n('registry.addRegistryVariant') , <AddRegistryVariantForm create onSubmit={this.handleCallAddRegistryVariant.bind(this)} />));
+        this.dispatch(registryVariantAddRecordRow());
     }
 
-    handleOnEnterAdd(e){
-        this.handleCallAddRegistryVariant(e);
+    handleOnEnterAdd(item, e){
+        this.handleCallAddRegistryVariant(item, e);
     }
 
-    handleCallAddRegistryVariant(element){
+    handleCallAddRegistryVariant(item, element){
         if (!element.target.value){
             return false;
         }
         var data = {record: element.target.value, regRecordId: this.props.registryData.item.recordId};
-        WebApi.addRegistryVariant(data).then(json => {
-            this.dispatch(registryUpdated());
-            this.setState({"addVariant": 0});
-        });
+        this.dispatch(registryAddVariant(data, item.variantRecordInternalId));
     }
     editRecord(parentId, event){
         var registryParentTypesId = this.props.registry.registryTypesId;
@@ -141,15 +138,14 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
             regRecordId: this.props.registryData.item.recordId,
             record: element.target.value,
             version: item.version
-        }
+        };
 
         this.dispatch(updateRegistryVariantRecord(data));
     }
     handlePoznamkaBlur(event, element) {
-        var data = Object.assign({}, this.props.registryData.item)
+        var data = Object.assign({}, this.props.registryData.item);
         data.note = event.target.value;
-        WebApi.updateRegistry(data).then(json => {
-        });
+        this.dispatch(registryRecordNoteUpdate(data));
     }
 
     handleGoToPartyPerson(partyId){
@@ -168,16 +164,6 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
 
             var addVariant = <Button disabled={disableEdit} className="registry-variant-add" onClick={this.handleClickAddVariant} ><Icon glyph='fa-plus' /></Button>
 
-            if (this.state.addVariant){
-                addVariant = <div><RegistryLabel
-                    key='addVariant'
-                    type='variant'
-                    value=''
-                    disabled={disableEdit}
-                    onBlur={this.handleCallAddRegistryVariant.bind(this)}
-                    onEnter={this.handleOnEnterAdd.bind(this)}
-                    />{addVariant}</div>
-            }
             var typesToRoot = this.props.registryData.item.typesToRoot.slice();
             var parents = this.props.registryData.item.parents.slice();
             var hiearchie =  typesToRoot.reverse().join(' > ');
@@ -213,17 +199,32 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
                     <div className='line variant-name'>
                         <label>{i18n('registry.detail.variant.name')}</label>
                         { (this.props.registryData.item) && this.props.registryData.item.variantRecords && this.props.registryData.item.variantRecords.map(item => {
+                                var variantKey;
+                                var blurField = this.handleBlurVariant.bind(this,item);
+                                var enterKey = this.handleOnEnterUpdate.bind(this,item);
+                                var clickDelete = this.handleDeleteVariant.bind(this, item);
+
+
+                                if(item.variantRecordInternalId) {
+                                    variantKey = 'internalId'+item.variantRecordInternalId;
+                                    blurField = this.handleCallAddRegistryVariant.bind(this, item);
+                                    enterKey = this.handleOnEnterAdd.bind(this, item);
+                                }
+                                else if (item.variantRecordId){
+                                    variantKey = item.variantRecordId;
+                                }
+
                                 return (
 
                                     <RegistryLabel
-                                        key={item.variantRecordId}
+                                        key={variantKey}
                                         type='variant'
                                         value={item.record}
                                         item={item}
                                         disabled={disableEdit}
-                                        onBlur={this.handleBlurVariant.bind(this,item)}
-                                        onEnter={this.handleOnEnterUpdate.bind(this,item)}
-                                        onClickDelete={this.handleDeleteVariant.bind(this, item)}
+                                        onBlur={blurField}
+                                        onEnter={enterKey}
+                                        onClickDelete={clickDelete}
                                         />
 
                                 )

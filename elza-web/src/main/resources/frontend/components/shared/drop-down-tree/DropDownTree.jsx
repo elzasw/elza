@@ -238,7 +238,7 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
 DropDownTree.propTypes = {
     nullValue: React.PropTypes.object,
     items: React.PropTypes.array.isRequired,
-    value: React.PropTypes.number,
+    value: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.string]),
 
 }
 

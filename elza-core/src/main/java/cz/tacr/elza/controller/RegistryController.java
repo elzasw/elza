@@ -335,13 +335,7 @@ public class RegistryController {
 
         RegRecord recordDO = factoryDO.createRegRecord(record);
         RegRecord newRecordDO = registryService.saveRecord(recordDO, false);
-
-        ParParty recordParty = partyService.findParPartyByRecord(newRecordDO);
-        RegRecordVO result = factoryVo
-                .createRegRecord(newRecordDO, recordParty == null ? null : recordParty.getPartyId(), false,
-                        null);
-        result.setVariantRecords(factoryVo.createRegVariantRecords(variantRecordRepository.findByRegRecordId(record.getRecordId())));
-        return result;
+        return getRecord(record.getRecordId());
     }
 
 

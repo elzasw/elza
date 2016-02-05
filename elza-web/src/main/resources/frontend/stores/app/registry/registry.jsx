@@ -46,7 +46,7 @@ export default function registry(state = initialState, action = {}) {
 
                 var _info
                 if (registryData && registryData.item.recordId === selectedId) {
-                    _info = {name: registryData.item.record, desc: registryData.item.characteristics}
+                    _info = {name: registryData.item.record, desc: registryData.item.characteristics, childs:registryData.item.childs}
                 } else {
                     _info = null
                 }
