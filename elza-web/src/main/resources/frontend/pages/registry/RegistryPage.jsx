@@ -19,7 +19,7 @@ import {PageLayout} from 'pages';
 import {Nav, Glyphicon, NavItem} from 'react-bootstrap';
 import {registryData, registrySearchData, registryClearSearch, registryChangeParent, registryRemoveRegistry, registryStartMove, registryStopMove, registryCancelMove, registryUnsetParents} from 'actions/registry/registryData'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {fetchRegistryIfNeeded, registrySetTypesId, fetchRegistry} from 'actions/registry/registryList'
+import {fetchRegistryIfNeeded, registrySetTypesId, fetchRegistry, registryAdd} from 'actions/registry/registryList'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
 
 var RegistryPage = class RegistryPage extends AbstractReactComponent {
@@ -39,32 +39,13 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         this.dispatch(refRecordTypesFetchIfNeeded());
     }
 
-    handleAddRegistry( parentId, event) {
-        var registryParentTypesId = this.props.registry.registryTypesId;
-        if (this.props.registry.registryData){
-            registryParentTypesId = this.props.registry.registryData.item.registerTypeId;
-        }
-        this.dispatch(
-           modalDialogShow(this,
-               i18n('registry.addRegistry'),
-               <AddRegistryForm
-                   create
-                   onSubmit={this.handleCallAddRegistry.bind(this, parentId)}
-                   parentRecordId = {parentId}
-                   parentRegisterTypeId = {registryParentTypesId}
-                   />
-           )
-       );
+    handleAddRegistry(parentId) {
+        this.dispatch(registryAdd(parentId, this.handleCallAddRegistry));
     }
 
-    handleCallAddRegistry(parentId, data ) {
-
-        WebApi.insertRegistry( data.nameMain, data.characteristics, data.registerTypeId, parentId, data.scopeId ).then(json => {
-            this.dispatch(modalDialogHide());
-            this.dispatch(fetchRegistry(this.props.registry.filterText, this.props.registry.registryParentId, this.props.registry.registryTypesId));
-            this.dispatch(registryData({selectedId: json.recordId}));
-        });
-
+    handleCallAddRegistry(data) {
+        this.dispatch(fetchRegistry(this.props.registry.filterText, this.props.registry.registryParentId, this.props.registry.registryTypesId));
+        this.dispatch(registryData({selectedId: data.recordId}));
     }
 
     handleRemoveRegistryDialog(){

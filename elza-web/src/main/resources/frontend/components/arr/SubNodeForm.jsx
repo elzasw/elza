@@ -24,7 +24,8 @@ import {addNode,deleteNode} from '../../actions/arr/node'
 import {createPacket} from 'actions/arr/packets'
 import faSelectSubNode from 'actions/arr/nodes'
 import {isFaRootId} from './ArrUtils.jsx'
-import {insertPartyArr, partyDetailFetchIfNeeded} from 'actions/party/party'
+import {partySelect, partyAdd} from 'actions/party/party'
+import {registrySelect, registryAdd} from 'actions/registry/registryList'
 import {routerNavigate} from 'actions/router'
 import {setInputFocus} from 'components/Utils'
 //import {} from './AddNodeDropdown.jsx'
@@ -38,7 +39,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             'getDescItemTypeInfo', 'handleDescItemAdd', 'handleDescItemRemove', 'handleDescItemTypeLock',
             'handleDescItemTypeUnlockAll', 'handleDescItemTypeCopy', 'handleAddNodeBefore', 'handleAddNodeAfter',
             'handleCreatePacket', 'handleCreatePacketSubmit', 'handleAddChildNode', 'handleCreateParty',
-            'handleCreatePartySubmit', 'handleCreateRecord', 'handleCreateRecordSubmit', 'handleDeleteNode',
+            'handleCreatedParty', 'handleCreateRecord', 'handleCreatedRecord', 'handleDeleteNode',
             'handleDescItemTypeCopyFromPrev'
         );
 
@@ -271,13 +272,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             descItemTypeIndex,
             descItemIndex
         }
-
-        // TODO: slapa - čeká se na dodělání REJSTŘÍKŮ
-        console.warn("TODO: slapa - čeká se na dodělání REJSTŘÍKŮ - handleCreateRecord");
-
-        // TODO: slapa - předělat => volat metodu na vyvoření jednotně
-        /*this.dispatch(modalDialogShow(this, i18n('registry.addRegistry'),
-                <AddRegistryForm create onSubmit={this.handleCreateRecordSubmit.bind(this, valueLocation)}/>));*/
+        this.dispatch(registryAdd(null, this.handleCreatedRecord.bind(this, valueLocation)));
     }
 
     /**
@@ -286,11 +281,16 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param valueLocation pozice hodnoty atributu
      * @param form {Object} data z formuláře
      */
-    handleCreateRecordSubmit(valueLocation, data) {
+    handleCreatedRecord(valueLocation, data) {
         const {versionId, selectedSubNodeId, nodeKey} = this.props;
 
-        // TODO: slapa - čeká se na dodělání REJSTŘÍKŮ
-        console.warn("TODO: slapa - čeká se na dodělání REJSTŘÍKŮ - handleCreateRecordSubmit");
+        // TODO: sjednoceni od Pavla - ELZA-591
+        this.dispatch(faSubNodeFormValueFocus(versionId, selectedSubNodeId, nodeKey, valueLocation));
+        this.dispatch(faSubNodeFormValueChange(versionId, selectedSubNodeId, nodeKey, valueLocation, data));
+        this.dispatch(faSubNodeFormValueBlur(versionId, selectedSubNodeId, nodeKey, valueLocation));
+
+        this.dispatch(registrySelect(data.recordId));
+        this.dispatch(routerNavigate('registry'));
     }
 
     /**
@@ -302,15 +302,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param recordId {Integer} identifikátor rejstříku
      */
     handleDetailRecord(descItemGroupIndex, descItemTypeIndex, descItemIndex, recordId) {
-        var valueLocation = {
-            descItemGroupIndex,
-            descItemTypeIndex,
-            descItemIndex
-        }
-
-        // TODO: slapa - čeká se na dodělání REJSTŘÍKŮ
-        //this.dispatch(recordSelect(recordId));
-        console.warn("TODO: slapa - čeká se na dodělání REJSTŘÍKŮ - handleDetailRecord");
+        this.dispatch(registrySelect(recordId));
         this.dispatch(routerNavigate('registry'));
     }
 
@@ -328,9 +320,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             descItemTypeIndex,
             descItemIndex
         }
-
-        // TODO: slapa - čeká se na dodělání OSOB
-        console.warn("TODO: slapa - čeká se na dodělání OSOB - handleCreateParty");
+        this.dispatch(partyAdd(partyTypeId, this.handleCreatedParty.bind(this, valueLocation)));
     }
 
     /**
@@ -339,9 +329,16 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param valueLocation pozice hodnoty atributu
      * @param form {Object} data z formuláře
      */
-    handleCreatePartySubmit(valueLocation, data) {
-        // TODO: slapa - čeká se na dodělání OSOB
-        console.warn("TODO: slapa - čeká se na dodělání OSOB - handleCreatePartySubmit");
+    handleCreatedParty(valueLocation, data) {
+        const {versionId, selectedSubNodeId, nodeKey} = this.props;
+
+        // TODO: sjednoceni od Pavla - ELZA-591
+        this.dispatch(faSubNodeFormValueFocus(versionId, selectedSubNodeId, nodeKey, valueLocation));
+        this.dispatch(faSubNodeFormValueChange(versionId, selectedSubNodeId, nodeKey, valueLocation, data));
+        this.dispatch(faSubNodeFormValueBlur(versionId, selectedSubNodeId, nodeKey, valueLocation));
+
+        this.dispatch(partySelect(data.partyId));
+        this.dispatch(routerNavigate('party'));
     }
 
     /**
@@ -353,15 +350,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param partyId {Integer} identifikátor osoby
      */
     handleDetailParty(descItemGroupIndex, descItemTypeIndex, descItemIndex, partyId) {
-        var valueLocation = {
-            descItemGroupIndex,
-            descItemTypeIndex,
-            descItemIndex
-        }
-
-        // TODO: slapa - čeká se na dodělání OSOB
-        //this.dispatch(partySelect(partyId));
-        console.warn("TODO: slapa - čeká se na dodělání OSOB - handleDetailParty");
+        this.dispatch(partySelect(partyId));
         this.dispatch(routerNavigate('party'));
     }
 

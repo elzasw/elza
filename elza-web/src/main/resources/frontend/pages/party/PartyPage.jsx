@@ -18,8 +18,8 @@ import {WebApi} from 'actions'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
-import {partyDetailFetchIfNeeded} from 'actions/party/party'
-import {insertParty, insertRelation, deleteParty} from 'actions/party/party'
+import {partyDetailFetch, findPartyFetch} from 'actions/party/party'
+import {partyAdd, insertParty, insertRelation, deleteParty} from 'actions/party/party'
 
 /**
  * PARTY PAGE
@@ -57,48 +57,8 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
      * Uložení nové osoby
      */ 
     addParty(data) {
-        var partyType = '';                                     // typ osoby - je potreba uvest i jako specialni klivcove slovo 
-        switch(data.partyTypeId){
-            case 1: partyType = '.ParPersonVO'; break;          // typ osoby osoba
-            case 2: partyType = '.ParDynastyVO'; break;         // typ osoby rod
-            case 3: partyType = '.ParPartyGroupVO'; break;      // typ osoby korporace
-            case 4: partyType = '.ParEventVO'; break;           // typ osoby docasna korporace - udalost
-        }
-        var party = {                                           // objekt osoby
-            '@type': partyType,                                 // typ osoby - speciální klíčové slovo
-            partyType: {                                        // typ osoby
-                partyTypeId: data.partyTypeId                   // identikátor typu osoby
-            },
-            genealogy: data.mainPart,                           // název rodu pro soby typu rod
-            scope: data.scopeId,                                          // cosi, co tu musí být
-            record: {                                           // záznam patřící k ossobě
-                registerTypeId: data.recordTypeId,              // identifikátor typu záznamu 
-                scopeId:1                                       // identifikátor tridy rejstriku 
-            },
-            from: data.from,                                    // datace od
-            to: data.to,                                        // datace do
-            partyNames : [{                                     // jména osoby
-                nameFormType: {                                 // typ formy jména
-                    nameFormTypeId: data.nameFormTypeId         // identifikátor typu jména osoby
-                },
-                displayName: data.mainPart,                     
-                mainPart: data.mainPart,                        // hlavní část jména
-                otherPart: data.otherPart,                      // vedlejší část jména
-                degreeBefore: data.degreeBefore,                // titul před jménem
-                degreeAfter: data.degreeAfter,                  // titul za jménem
-                prefferedName: true,                            // hlavní jmno osoby
-                from: data.from,                                // datace od
-                to: data.to,                                    // datace do
-                partyNameComplements: data.complements          // doplnky jména    
-            }]
-        }
-        if(party.from.textDate == "" || party.from.textDate == null || party.from.textDate == undefined){  
-            party.from = null;                                  // pokud není zadaný textová část data, celý fatum se ruší
-        }
-        if(party.to.textDate == "" || party.to.textDate == null || party.to.textDate == undefined){  
-            party.to = null;                                    // pokud není zadaný textová část data, celý fatum se ruší
-        }
-        this.dispatch(insertParty(party));                      // uložení nové osoby
+        this.dispatch(partyDetailFetch(data.partyId));
+        this.dispatch(findPartyFetch(this.props.partyRegion.filterText));
     }
 
     /**
@@ -108,25 +68,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
      * @param partyTypeId - identifikátor typu osoby (osoba, rod, korporace, ..)
      */ 
     handleAddParty(partyTypeId) {
-        var data = {                        // data předávaná do formuláře osoby
-            partyTypeId: partyTypeId,       // identifikátor typu osoby (osoba, rod, událost, ..)
-            from: {
-                textDate: "",    
-                calendarTypeId: this.props.partyRegion.gregorianCalendarId         
-            },
-            to: {
-                textDate: "",    
-                calendarTypeId: this.props.partyRegion.gregorianCalendarId           
-            },
-            complements: []
-        }
-        var label = i18n('party.addParty');
-        switch(partyTypeId){                                        // podle typu osoby bude různý nadpis
-            case 2: label = i18n('party.addPartyDynasty'); break;   // rod
-            case 4: label = i18n('party.addPartyGroup'); break;     // korporace
-            case 2: label = i18n('party.addPartyEvent'); break;     // událost
-        }
-        this.dispatch(modalDialogShow(this, label , <AddPartyForm initData={data} onSave={this.addParty} />));
+        this.dispatch(partyAdd(partyTypeId, this.addParty));
     }
 
     /**

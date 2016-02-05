@@ -2,9 +2,13 @@
  * Web api pro komunikaci se serverem.
  */
 
+import React from 'react';
+import ReactDOM from 'react-dom';
 import {WebApi} from 'actions'
 
 import * as types from 'actions/constants/actionTypes';
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
+import {i18n, AddRegistryForm} from 'components';
 
 export function fetchRegistryIfNeeded(search = '', registryParent = null, registerTypeIds = null) {
     return (dispatch, getState) => {
@@ -109,4 +113,40 @@ export function receiveRegistryRecordTypes(json, partyTypeId){
         type: types.REGISTRY_RECIVE_REGISTRY_RECORD_TYPES,
         receivedAt: Date.now()
     }
+}
+
+export function registryAdd(parentId, callback) {
+    return (dispatch, getState) => {
+        var state = getState();
+        var registryParentTypesId = state.arrRegion.registryTypesId;
+        if (state.arrRegion.registryData) {
+            registryParentTypesId = state.arrRegion.registryData.item.registerTypeId;
+        }
+        dispatch(modalDialogShow(this, i18n('registry.addRegistry'),
+                        <AddRegistryForm
+                                create
+                                onSubmit={registryAddSubmit.bind(null, parentId, callback, dispatch)}
+                                parentRecordId={parentId}
+                                parentRegisterTypeId={registryParentTypesId}
+                                />
+                )
+        )
+
+    }
+}
+
+function registryAddSubmit(parentId, callback, dispatch, data) {
+    WebApi.insertRegistry( data.nameMain, data.characteristics, data.registerTypeId, parentId, data.scopeId ).then(json => {
+        dispatch(modalDialogHide());
+        callback && callback(json);
+    });
+}
+
+export function registrySelect(recordId) {
+    return {
+        recordId: recordId,
+        type: types.REGISTRY_SELECT,
+        receivedAt: Date.now()
+    }
+
 }
