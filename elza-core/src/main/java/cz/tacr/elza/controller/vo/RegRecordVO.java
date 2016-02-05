@@ -87,6 +87,8 @@ public class RegRecordVO {
 
     private boolean hierarchical;
 
+    private boolean hasChildren;
+
     public Integer getRecordId() {
         return recordId;
     }
@@ -205,6 +207,14 @@ public class RegRecordVO {
 
     public void setHierarchical(final boolean hierarchical) {
         this.hierarchical = hierarchical;
+    }
+
+    public boolean isHasChildren() {
+        return hasChildren;
+    }
+
+    public void setHasChildren(final boolean hasChildren) {
+        this.hasChildren = hasChildren;
     }
 
     public List<String> getParents() {

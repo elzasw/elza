@@ -151,9 +151,10 @@ public class RegistryController {
                 .createRegRecords(foundRecords, recordIdPartyIdMap, true, parentRecord);
 
         Map<Integer, RegRecordVO> parentRecordVOMap = new HashMap<>();
+        Map<RegRecord, List<RegRecord>> parentChildrenMap = registryService.findChildren(foundRecords);
+
         for (RegRecordVO regRecordVO : foundRecordVOList) {
             parentRecordVOMap.put(regRecordVO.getRecordId(), regRecordVO);
-
         }
 
         if (registerTypeId != null) {
@@ -162,6 +163,13 @@ public class RegistryController {
                 factoryVo.fillRegisterTypeNamesToParents(recordVO, registerTypeId);
             }
         }
+
+        // děti
+        foundRecords.forEach(record -> {
+            List<RegRecord> children = parentChildrenMap.get(record);
+            parentRecordVOMap.get(record.getRecordId()).setHasChildren(children == null ? false : !children.isEmpty());
+        });
+
 
 //        for (RegRecord record : parentChildrenMap.keySet()) {
 //            List<RegRecord> children = parentChildrenMap.get(record);
