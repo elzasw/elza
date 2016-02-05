@@ -152,7 +152,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
                                     <Input type="select" name="fromCalendar" value={party.from == null || party.from.calendarTypeId == null ? 0 : party.from.calendarTypeId} onChange={this.updateValue} >
                                         {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
                                     </Input>
-                                    <Input type="text"  name="fromText" value={party.from == null || party.from.textDate == null ? '' : party.from.textDate} onChange={this.changeValue} onBlue={this.updateValue} />
+                                    <Input type="text"  name="fromText" value={party.from == null || party.from.textDate == null ? '' : party.from.textDate} onChange={this.changeValue} onBlur={this.updateValue} />
                                 </div>
                             </div>
                             <div>
