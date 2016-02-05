@@ -1,6 +1,6 @@
 import {WebApi} from 'actions';
 import * as types from 'actions/constants/actionTypes';
-import {faSelectSubNodeInt,faSelectSubNode} from 'actions/arr/nodes';
+import {faSelectSubNodeInt, faSelectSubNode} from 'actions/arr/nodes';
 import {indexById} from 'stores/app/utils.jsx'
 import {isFaRootId} from 'components/arr/ArrUtils'
 
@@ -84,6 +84,9 @@ export function faNodeSubNodeFulltextSearch(filterText) {
             WebApi.findInFaTree(activeFa.versionId, activeNode.id, filterText, 'ONE_LEVEL')
                 .then(json => {
                     dispatch(faNodeSubNodeFulltextResult(activeFa.versionId, activeNode.id, activeNode.nodeKey, json));
+                    if (json.length > 0) {
+                        dispatch(faSelectSubNode(json[0].nodeId, json[0].parent, false, null, true));
+                    }
                 })
         } else {
             dispatch(faNodeSubNodeFulltextResult(activeFa.versionId, activeNode.id, activeNode.nodeKey, []));
