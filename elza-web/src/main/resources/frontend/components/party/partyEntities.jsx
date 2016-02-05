@@ -192,13 +192,13 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
                 date += i.from != undefined && i.to != undefined  ? " - " + this.formatDateToText(i.to) : this.formatDateToText(i.to);
 
                 return <div className="relation-entity">
-                            <div className="block-row"><Icon glyph={icon}/> <strong>{i.complementType.name}</strong></div>
+                            <div className="block-row title"><Icon glyph={icon}/> <strong>{i.complementType.name}</strong></div>
 
                             <div className="block-row">{relationEntities}</div>
 
                             {date ? <div className="block-row">{date}</div> : ""}
 
-                            <div className="block-row">
+                            <div className="block-row actions">
                                    <Button className="column" onClick={this.handleUpdateRelation.bind(this, i.relationId)}><Icon glyph="fa-edit"/></Button>
                                    <Button className="column" onClick={this.handleDeleteRelation.bind(this, i.relationId)}><Icon glyph="fa-trash"/></Button>
                             </div>

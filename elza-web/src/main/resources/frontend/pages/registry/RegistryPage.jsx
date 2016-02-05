@@ -305,12 +305,6 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             </div>
         )
 
-        var rightPanel = (
-            <div>
-
-            </div>
-        )
-
         return (
             <PageLayout
                 splitter={splitter}
@@ -318,7 +312,6 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 ribbon={this.buildRibbon()}
                 leftPanel={leftPanel}
                 centerPanel={centerPanel}
-                rightPanel={rightPanel}
 
             />
         )

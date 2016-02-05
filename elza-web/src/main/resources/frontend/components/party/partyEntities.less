@@ -8,10 +8,21 @@
 
         .block-row{
             padding: 5px 0;
+            width: 100%;
+            &.title {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .btn {
+                border: none;
+            }
         }
     }
 
     .relation-entity:not(:first-child){
         margin-top: 10px;
     }
+
 }
