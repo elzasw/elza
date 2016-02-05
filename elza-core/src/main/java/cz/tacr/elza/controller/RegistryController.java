@@ -383,10 +383,9 @@ public class RegistryController {
         Assert.notNull(variantRecord.getVariantRecordId(), "Očekáváno ID pro update.");
         RegVariantRecord variantRecordTest = variantRecordRepository.findOne(variantRecord.getVariantRecordId());
         Assert.notNull(variantRecordTest, "Nebyl nalezen záznam pro update s id " + variantRecord.getVariantRecordId());
-
         RegVariantRecord variantRecordDO = factoryDO.createRegVariantRecord(variantRecord);
-
         RegVariantRecord updatedVarRec = registryService.saveVariantRecord(variantRecordDO);
+        regRecordRepository.flush();
         return factoryVo.createRegVariantRecord(updatedVarRec);
     }
 

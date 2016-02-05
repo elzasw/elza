@@ -53,9 +53,22 @@ export default function registryData(state = initialState, action = {}) {
                 fetched: false
             })
         case types.REGISTRY_VARIANT_RECORD_RECIVED:
+            console.warn('UPravuji store');
+            console.log("muj store",state);
+            var record = Object.assign({}, state.item);
+            console.log(record);
+            record.variantRecords.map((variant, key) => {
+                if (variant.variantRecordId == action.item.variantRecordId && action.item.version>variant.version){
+                    record.variantRecords[key] = action.item;
+                }
+            });
+
             console.log("obdrzel jsem data",action);
             console.warn('TODO - provést merge');
-            return state
+            console.log('upraveny record', record);
+            return Object.assign({}, state, {
+                item: record
+            });
         default:
             return state
     }
