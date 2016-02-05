@@ -280,11 +280,11 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         var leftPanel = (
             <div className="registry-list">
                 <div>
+                    {dropDownForSearch}
                     <Search
                         onSearch={this.handleSearch.bind(this)}
                         onClear={this.handleSearchClear.bind(this)}
                         placeholder={i18n('search.input.search')}
-                        beforeInput={dropDownForSearch}
                         filterText={this.props.registry.filterText}
                     />
                 </div>
