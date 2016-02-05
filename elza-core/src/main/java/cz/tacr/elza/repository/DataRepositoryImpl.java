@@ -89,6 +89,6 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
             result.addAll(query.getResultList());
         }
 
-        return query.getResultList();
+        return result;
     }
 }
