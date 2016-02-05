@@ -1,6 +1,6 @@
 import {WebApi} from 'actions';
 import * as types from 'actions/constants/actionTypes';
-import {faSelectSubNodeInt, faSelectSubNode} from 'actions/arr/nodes';
+import {faSelectSubNode} from 'actions/arr/nodes';
 import {indexById} from 'stores/app/utils.jsx'
 import {isFaRootId} from 'components/arr/ArrUtils'
 
@@ -122,7 +122,7 @@ export function addNode(indexNode, parentNode, versionId, direction, descItemCop
         };
         return WebApi.addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes, scenarioName).then((json) => {
             dispatch(faNodeChange(versionId, {newNode: json.node, indexNode: indexNode, parentNode: json.parentNode, direction: direction, action: "ADD"}));
-            dispatch(faSelectSubNodeInt(json.id,parentNode));
+            dispatch(faSelectSubNode(json.id, parentNode));
         });
     }
 }

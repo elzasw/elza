@@ -10,7 +10,7 @@ import {Button, Input, Table} from 'react-bootstrap';
 import {dateTimeToString} from 'components/Utils'
 import {indexById} from 'stores/app/utils.jsx'
 import {WebApi} from 'actions'
-import {bulkActionsRun, bulkActionsLoadData} from 'actions/arr/bulkActions'
+import {bulkActionsRun, bulkActionsLoadData, bulkActionsValidateVersion} from 'actions/arr/bulkActions'
 
 var BulkActionsTable = class BulkActionsTable extends AbstractReactComponent {
     constructor(props) {
@@ -27,11 +27,15 @@ var BulkActionsTable = class BulkActionsTable extends AbstractReactComponent {
     }
 
     requestData(isDirty, isFetching, versionId, mandatory, silent) {
-        isDirty && !isFetching && this.dispatch(bulkActionsLoadData(versionId, mandatory, silent))
+        (isDirty || this.props.store.mandatory !== mandatory) && !isFetching &&
+        (this.props.versionValidate ?
+                this.dispatch(bulkActionsValidateVersion(versionId, silent)) :
+                this.dispatch(bulkActionsLoadData(versionId, mandatory, silent))
+        )
     }
 
     handleRun(code, name) {
-        window.confirm('Spustit akci "' + name + '"?') && this.dispatch(bulkActionsRun(this.props.versionId, code));
+        window.confirm(i18n('arr.fa.bulkActions.runAction', name)) && this.dispatch(bulkActionsRun(this.props.versionId, code));
     }
 
     render() {
@@ -44,21 +48,21 @@ var BulkActionsTable = class BulkActionsTable extends AbstractReactComponent {
                 let indexExist = (index != null);
                 switch (indexExist ? this.props.store.states[index].state : null) {
                     case "RUNNING":
-                        state = <td><Icon glyph="fa-play-circle-o"/> Běží</td>;
+                        state = <td><Icon glyph="fa-play-circle-o"/> {i18n('arr.fa.bulkActions.running')}</td>;
                         break;
                     case "WAITING":
                     case "PLANNED":
-                        state = <td><Icon glyph="fa-pause-circle-o"/> Ve frontě</td>;
+                        state = <td><Icon glyph="fa-pause-circle-o"/> {i18n('arr.fa.bulkActions.planned')}</td>;
                         break;
                     case "ERROR":
-                        state = <td><Icon glyph="fa-exclamation-triangle"/> Chyba</td>;
+                        state = <td><Icon glyph="fa-exclamation-triangle"/> {i18n('arr.fa.bulkActions.err')}</td>;
                         break;
                     case null:
                         lastRun = 'Nikdy';
                     case "FINISH":
                     default:
                         canRun = true;
-                        state = <td><Icon glyph="fa-times"/> Neběží</td>;
+                        state = <td><Icon glyph="fa-times"/> {i18n('arr.fa.bulkActions.noActions')}</td>;
                         break;
                 }
                 if (indexExist && this.props.store.states[index].runChange) {
@@ -68,20 +72,23 @@ var BulkActionsTable = class BulkActionsTable extends AbstractReactComponent {
                     {state}
                     <td title={item.description}>{item.name}</td>
                     <td>{lastRun}</td>
-                    <td>{canRun && <Button onClick={() => (this.handleRun(item.code, item.name))}>Spustit</Button>}</td>
+                    <td>{canRun && <Button
+                        onClick={() => (this.handleRun(item.code, item.name))}>{i18n('arr.fa.bulkActions.run')}</Button>}</td>
                 </tr>
             });
         } else {
-            table = false;
+            table = <tr key="nothing">
+                <td className="text-center" colSpan="4">{i18n('arr.fa.bulkActions.noActions')}</td>
+            </tr>;
         }
         return (
             <Table striped bordered condensed>
                 <thead>
                 <tr>
-                    <th>Stav</th>
-                    <th>Název akce</th>
-                    <th>Poslední spuštění</th>
-                    <th>Nástroje</th>
+                    <th>{i18n('arr.fa.bulkActions.state')}</th>
+                    <th>{i18n('arr.fa.bulkActions.name')}</th>
+                    <th>{i18n('arr.fa.bulkActions.runChange')}</th>
+                    <th>{i18n('arr.fa.bulkActions.tools')}</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -99,7 +106,8 @@ var BulkActionsTable = class BulkActionsTable extends AbstractReactComponent {
 
 
 BulkActionsTable.propTypes = {
-    mandatory: React.PropTypes.bool.isRequired
+    mandatory: React.PropTypes.bool.isRequired,
+    versionValidate: React.PropTypes.bool.isRequired
 };
 
 module.exports = connect((state) => ({

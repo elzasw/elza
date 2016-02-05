@@ -266,6 +266,14 @@ class WebApi{
                 return json;
             });
     }
+
+    versionValidate(versionId) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/validateVersion/' + versionId, null)
+    }
+
+    versionValidateCount(versionId) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/validateVersionCount/' + versionId, null)
+    }
     
     insertRegistry(nameMain, characteristics, registerTypeId, parentId, scopeId) {
         var data = {

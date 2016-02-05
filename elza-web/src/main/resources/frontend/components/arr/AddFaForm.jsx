@@ -6,7 +6,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/actionTypes';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n} from 'components';
+import {AbstractReactComponent, i18n, BulkActionsTable, Icon} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet'
 import {indexById} from 'stores/app/utils.jsx'
@@ -35,7 +35,7 @@ var AddFaForm = class AddFaForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        //this.bindMethods('');
+        this.bindMethods('isBulkActionRunning');
 
         this.state = {};
     }
@@ -48,6 +48,27 @@ var AddFaForm = class AddFaForm extends AbstractReactComponent {
         if (this.props.initData) {
             this.props.load(this.props.initData);
         }
+    }
+
+    isBulkActionRunning() {
+        this.props.bulkActions.states.forEach((item) => {
+            if (item.state === 'RUNNING') {
+                return true;
+            }
+        });
+        return false;
+    }
+
+    isMandatoryBulkActionsDone() {
+        if (this.props.bulkActions.actions.length !== this.props.bulkActions.states.length) {
+            return false;
+        }
+        this.props.bulkActions.states.forEach((item) => {
+            if (typeof item.runChange !== 'object') {
+                return false;
+            }
+        });
+        return true;
     }
 
     render() {
@@ -65,6 +86,22 @@ var AddFaForm = class AddFaForm extends AbstractReactComponent {
         return (
             <div>
                 <Modal.Body>
+                    {this.props.isApproveDialog && <div>
+                        <BulkActionsTable mandatory={true} versionValidate={true}/>
+                        <div>
+                            {
+                                this.props.versionValidation.isFetching ?
+                                    <span><Icon
+                                        glyph="fa-refresh"/> {i18n('arr.fa.versionValidation.running')}</span> : (
+                                    this.props.versionValidation.errors.length > 0 ?
+                                        <span><Icon glyph="fa-check"/> {i18n('arr.fa.versionValidation.ok')}</span> :
+                                        <span><Icon
+                                            glyph="fa-exclamation-triangle"/> {i18n('arr.fa.versionValidation.err')}</span>
+                                )
+
+                            }
+                        </div>
+                    </div>}
                     <form onSubmit={handleSubmit}>
                         {this.props.create && <Input type="text" label={i18n('arr.fa.name')} {...name} {...decorateFormField(name)} />}
                         <Input type="select" label={i18n('arr.fa.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
@@ -78,12 +115,29 @@ var AddFaForm = class AddFaForm extends AbstractReactComponent {
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={handleSubmit}>{i18n('global.action.create')}</Button>
+                    {this.props.create && <Button onClick={handleSubmit}>{i18n('global.action.create')}</Button>}
+                    {this.props.isApproveDialog && <span>
+                        {
+                            this.isBulkActionRunning() ?
+                                <span
+                                    className="text-danger">{i18n('arr.fa.approveVersion.runningBulkAction')}</span> : (
+                                this.isMandatoryBulkActionsDone() ?
+                                    <Button onClick={handleSubmit}>{i18n('arr.fa.approveVersion.approve')}</Button> :
+                                    <Button bsStyle="danger"
+                                            onClick={handleSubmit}>{i18n('arr.fa.approveVersion.approveForce')}</Button>
+                            )
+
+                        }
+                    </span>}
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
         )
     }
+}
+
+AddFaForm.propTypes = {
+    isApproveDialog: React.PropTypes.bool.isRequired
 }
 
 module.exports = reduxForm({
@@ -92,7 +146,9 @@ module.exports = reduxForm({
     validate
 },state => ({
     initialValues: state.form.addFaForm.initialValues,
-    refTables: state.refTables
+        refTables: state.refTables,
+        bulkActions: state.arrRegion.activeIndex !== null ? state.arrRegion.fas[state.arrRegion.activeIndex].bulkActions : undefined,
+        versionValidation: state.arrRegion.activeIndex !== null ? state.arrRegion.fas[state.arrRegion.activeIndex].versionValidation : undefined,
 }),
 {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addFaForm', data})}
 )(AddFaForm)

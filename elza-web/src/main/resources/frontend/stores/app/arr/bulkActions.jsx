@@ -5,13 +5,14 @@ const bulkActionsInitState = {
     isDirty: true,
     isFetching: false,
     actions: [],
-    states: []
+    states: [],
+    mandatory: false
 };
 
 export default function bulkActions(state = bulkActionsInitState, action) {
     switch (action.type) {
         case types.BULK_ACTIONS_DATA_LOADING:
-            return {...state, isFetching: true};
+            return {...state, isFetching: true, mandatory: action.mandatory};
         case types.BULK_ACTIONS_DATA_LOADED:
             return {...state, isFetching: false};
         case types.BULK_ACTIONS_RECEIVED_DATA:
@@ -20,7 +21,17 @@ export default function bulkActions(state = bulkActionsInitState, action) {
                 actions: action.data.actions,
                 states: action.data.states !== undefined ? action.data.states : [],
                 isFetching: false,
-                isDirty: false
+                isDirty: false,
+                mandatory: action.mandatory
+            };
+        case types.BULK_ACTIONS_VERSION_VALIDATE_RECEIVED_DATA:
+            return {
+                ...state,
+                actions: action.data.actions !== undefined ? action.data.actions : [],
+                states: action.data.states !== undefined ? action.data.states : [],
+                isFetching: false,
+                isDirty: false,
+                mandatory: action.mandatory
             };
         case types.BULK_ACTIONS_RECEIVED_ACTIONS:
             return {...state, actions: action.data};
@@ -28,7 +39,7 @@ export default function bulkActions(state = bulkActionsInitState, action) {
             return {...state, states: action.data};
         case types.BULK_ACTIONS_RECEIVED_STATE:
             var index = indexById(state.states, action.code, 'code');
-            if (index == null || state.states[index].isDirty === undefined) {
+            if (index !== null && state.states[index].isDirty === undefined) {
                 return state;
             }
             return {

@@ -150,6 +150,8 @@ export default function arrRegion(state = initialState, action) {
         case types.BULK_ACTIONS_STATE_CHANGE:
         case types.CHANGE_DELETE_LEVEL:
         case types.CHANGE_ADD_LEVEL:
+        case types.FA_VERSION_VALIDATION_LOAD:
+        case types.FA_VERSION_VALIDATION_RECEIVED:
             var index = indexById(state.fas, action.versionId, "versionId")
             return processFa(state, action, index);
         case types.FA_FAS_RECEIVE:
@@ -191,6 +193,7 @@ export default function arrRegion(state = initialState, action) {
         case types.BULK_ACTIONS_DATA_LOADING:
         case types.BULK_ACTIONS_DATA_LOADED:
         case types.BULK_ACTIONS_RECEIVED_DATA:
+        case types.BULK_ACTIONS_VERSION_VALIDATE_RECEIVED_DATA:
         case types.BULK_ACTIONS_RECEIVED_ACTIONS:
         case types.BULK_ACTIONS_RECEIVED_STATES:
         case types.BULK_ACTIONS_RECEIVED_STATE:

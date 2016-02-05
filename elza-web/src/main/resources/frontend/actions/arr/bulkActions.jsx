@@ -5,7 +5,7 @@ import {barrier} from 'components/Utils';
 export function bulkActionsLoadData(versionId, mandatory = false, silent = false) {
     return (dispatch) => {
         if (!silent) {
-            dispatch(bulkActionsDataLoading());
+            dispatch(bulkActionsDataLoading(mandatory));
         }
         barrier(
             WebApi.getBulkActions(versionId, mandatory),
@@ -21,8 +21,19 @@ export function bulkActionsLoadData(versionId, mandatory = false, silent = false
                 dispatch(bulkActionsDataReceived({
                     actions: json.actions,
                     states: json.states
-                }));
+                }, mandatory));
             });
+    }
+}
+
+export function bulkActionsValidateVersion(versionId, silent = false) {
+    return (dispatch) => {
+        if (!silent) {
+            dispatch(bulkActionsDataLoading(true));
+        }
+        WebApi.bulkActionValidate(versionId).then((result) => {
+            dispatch(bulkActionsVersionValidateDataReceived(result))
+        });
     }
 }
 
@@ -35,9 +46,17 @@ export function bulkActionsRun(versionId, code) {
     }
 }
 
-export function bulkActionsDataReceived(data) {
+export function bulkActionsDataReceived(data, mandatory) {
     return {
         type: types.BULK_ACTIONS_RECEIVED_DATA,
+        data,
+        mandatory
+    }
+}
+
+export function bulkActionsVersionValidateDataReceived(data) {
+    return {
+        type: types.BULK_ACTIONS_VERSION_VALIDATE_RECEIVED_DATA,
         data
     }
 }
@@ -50,9 +69,10 @@ export function bulkActionsStateReceived(data, code) {
     }
 }
 
-export function bulkActionsDataLoading() {
+export function bulkActionsDataLoading(mandatory) {
     return {
-        type: types.BULK_ACTIONS_DATA_LOADING
+        type: types.BULK_ACTIONS_DATA_LOADING,
+        mandatory
     }
 }
 

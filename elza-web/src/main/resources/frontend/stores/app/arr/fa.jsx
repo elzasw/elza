@@ -3,6 +3,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import faTree from './faTree'
 import nodes from './nodes'
 import bulkActions from './bulkActions'
+import versionValidation from './versionValidation'
 import {consolidateState} from 'components/Utils'
 
 export function faInitState(faWithVersion) {
@@ -18,7 +19,8 @@ export function faInitState(faWithVersion) {
         faTreeMovementsLeft: faTree(undefined, {type: ''}),
         faTreeMovementsRight: faTree(undefined, {type: ''}),
         nodes: nodes(undefined, {type: ''}),
-        bulkActions: bulkActions(undefined, {type: ''})
+        bulkActions: bulkActions(undefined, {type: ''}),
+        versionValidation: versionValidation(undefined, {type: ''})
     }
 
     result.faTreeMovementsLeft = {...result.faTreeMovementsLeft};
@@ -53,7 +55,8 @@ export function fa(state, action) {
                 faTreeMovementsLeft: faTree(state.faTreeMovementsLeft, action),
                 faTreeMovementsRight: faTree(state.faTreeMovementsRight, action),
                 nodes: nodes(state.nodes, action),
-                bulkActions: bulkActions(undefined, {type: ''})
+                bulkActions: bulkActions(undefined, {type: ''}),
+                versionValidation: versionValidation(undefined, {type: ''})
             }
         case types.STORE_SAVE:
             const {id, faId, versionId, name} = state;
@@ -151,17 +154,27 @@ export function fa(state, action) {
             }
             return consolidateState(state, result);
         case types.CHANGE_CONFORMITY_INFO:
-            var result = {...state, faTree: faTree(state.faTree, action), nodes: nodes(state.nodes, action)}
+            var result = {
+                ...state,
+                faTree: faTree(state.faTree, action),
+                nodes: nodes(state.nodes, action),
+                versionValidation: versionValidation(state.versionValidation, action)
+            }
             return consolidateState(state, result);
         case types.BULK_ACTIONS_DATA_LOADING:
         case types.BULK_ACTIONS_DATA_LOADED:
         case types.BULK_ACTIONS_RECEIVED_DATA:
+        case types.BULK_ACTIONS_VERSION_VALIDATE_RECEIVED_DATA:
         case types.BULK_ACTIONS_RECEIVED_ACTIONS:
         case types.BULK_ACTIONS_RECEIVED_STATES:
         case types.BULK_ACTIONS_RECEIVED_STATE:
         case types.BULK_ACTIONS_STATE_CHANGE:
         case types.BULK_ACTIONS_STATE_IS_DIRTY:
             var result = {...state, bulkActions: bulkActions(state.bulkActions, action)}
+            return consolidateState(state, result);
+        case types.FA_VERSION_VALIDATION_LOAD:
+        case types.FA_VERSION_VALIDATION_RECEIVED:
+            var result = {...state, versionValidation: versionValidation(state.versionValidation, action)};
             return consolidateState(state, result);
         default:
             return state;

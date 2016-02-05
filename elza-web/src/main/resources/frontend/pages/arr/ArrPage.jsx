@@ -2,7 +2,7 @@
  * Stránka archivních pomůcek.
  */
 
-require ('./ArrPage.less');
+require('./ArrPage.less');
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -11,13 +11,14 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Icon, Ribbon, i18n} from 'components';
-import {FaExtendedView, AddFaForm, BulkActionsDialog, RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FaFileTree, AbstractReactComponent, ModalDialog, NodeTabs, FaTreeTabs} from 'components';
+import {FaExtendedView, AddFaForm, BulkActionsDialog, VersionValidationDialog, RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FaFileTree, AbstractReactComponent, ModalDialog, NodeTabs, FaTreeTabs} from 'components';
 import {ButtonGroup, Button, DropdownButton, MenuItem} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
 import {WebApi} from 'actions'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {approveFa, showRegisterJp} from 'actions/arr/fa'
+import {versionValidate} from 'actions/arr/versionValidation'
 import {packetsFetchIfNeeded} from 'actions/arr/packets'
 import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes'
 
@@ -26,7 +27,8 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         super(props);
 
         this.bindMethods('getActiveInfo', 'buildRibbon', 'handleRegisterJp',
-            'handleApproveFaVersion', 'handleCallApproveFaVersion', 'getActiveFindingAidId', 'handleBulkActionsDialog');
+            'handleApproveFaVersion', 'handleCallApproveFaVersion', 'getActiveFindingAidId', 'handleBulkActionsDialog',
+            'handleValidationDialog');
 
         this.state = {faFileTreeOpened: false};
     }
@@ -45,6 +47,15 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         if (findingAidId !== null) {
             this.dispatch(packetsFetchIfNeeded(findingAidId));
         }
+        var activeFa = this.getActiveInfo(nextProps.arrRegion).activeFa;
+        if (activeFa) {
+            var validation = activeFa.versionValidation;
+            this.requestValidationData(validation.isDirty, validation.isFetching, activeFa.versionId);
+        }
+    }
+
+    requestValidationData(isDirty, isFetching, versionId) {
+        isDirty && !isFetching && this.dispatch(versionValidate(versionId, false))
     }
 
     getActiveFindingAidId() {
@@ -76,15 +87,17 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             ruleSetId: activeInfo.activeFa.activeVersion.arrangementType.ruleSetId,
             rulArrTypeId: activeInfo.activeFa.activeVersion.arrangementType.id
         }
-        this.dispatch(modalDialogShow(this, i18n('arr.fa.title.approveVersion'), <AddFaForm initData={data} onSubmit={this.handleCallApproveFaVersion} />));
+        this.dispatch(modalDialogShow(this, i18n('arr.fa.title.approveVersion'), <AddFaForm isApproveDialog={true}
+                                                                                            initData={data}
+                                                                                            onSubmit={this.handleCallApproveFaVersion}/>));
     }
 
     /**
      * Načtení informačního objektu o aktuálním zobrazení sekce archvní pomůcky.
      * @return {Object} informace o aktuálním zobrazení sekce archvní pomůcky
      */
-    getActiveInfo() {
-        var arrRegion = this.props.arrRegion
+    getActiveInfo(from = this.props.arrRegion) {
+        var arrRegion = from;
         var activeFa = null;
         var activeNode = null;
         var activeSubNode = null;
@@ -124,6 +137,10 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         );
     }
 
+    handleValidationDialog() {
+        this.dispatch(modalDialogShow(this, i18n('arr.fa.title.versionValidation'), <VersionValidationDialog />));
+    }
+
     /**
      * Sestavení Ribbonu.
      * @return {Object} view
@@ -135,7 +152,9 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         var itemActions = [];
         altActions.push(
-            <Button key="fa-import"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('ribbon.action.arr.fa.import')}</span></div></Button>
+            <Button key="fa-import"><Icon glyph='fa-download'/>
+                <div><span className="btnText">{i18n('ribbon.action.arr.fa.import')}</span></div>
+            </Button>
         );
         if (activeInfo.activeFa) {
             itemActions.push(
@@ -144,6 +163,14 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                 </Button>,
                 <Button key="bulkActions" onClick={this.handleBulkActionsDialog}><Icon glyph="fa-cogs"/>
                     <div><span className="btnText">{i18n('ribbon.action.arr.fa.bulkActions')}</span></div>
+                </Button>,
+                <Button key="validation" onClick={this.handleValidationDialog}>
+                    <Icon className={activeInfo.activeFa.versionValidation.isFetching ? "fa-spin" : ""} glyph={
+                    activeInfo.activeFa.versionValidation.isFetching ? "fa-refresh" : (
+                        activeInfo.activeFa.versionValidation.count > 0 ? "fa-exclamation-triangle" : "fa-check"
+                    )
+                }/>
+                    <div><span className="btnText">{i18n('ribbon.action.arr.fa.validation')}</span></div>
                 </Button>
             )
         }
@@ -151,12 +178,12 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         var show = this.props.arrRegion.showRegisterJp;
 
         itemActions.push(
-                <Button active={show} onClick={this.handleRegisterJp.bind(this, !show)} key="toggle-record-jp">
-                    <Icon glyph="fa-th-list" />
-                    <div>
-                        <span className="btnText">{i18n('ribbon.action.arr.show-register-jp')}</span>
-                    </div>
-                </Button>
+            <Button active={show} onClick={this.handleRegisterJp.bind(this, !show)} key="toggle-record-jp">
+                <Icon glyph="fa-th-list"/>
+                <div>
+                    <span className="btnText">{i18n('ribbon.action.arr.show-register-jp')}</span>
+                </div>
+            </Button>
         )
 
         var altSection;
@@ -170,7 +197,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         }
 
         return (
-            <Ribbon arr altSection={altSection} itemSection={itemSection} />
+            <Ribbon arr altSection={altSection} itemSection={itemSection}/>
         )
     }
 
@@ -227,12 +254,14 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         var rightPanel = (
             <div className="fa-right-container">
-                
+
             </div>
         )
 
         var appContentExt = (
-            <ToggleContent className="fa-file-toggle-container" alwaysRender opened={this.state.faFileTreeOpened} onShowHide={(opened)=>this.setState({faFileTreeOpened: opened})} closedIcon="fa-chevron-right" openedIcon="fa-chevron-left">
+            <ToggleContent className="fa-file-toggle-container" alwaysRender opened={this.state.faFileTreeOpened}
+                           onShowHide={(opened)=>this.setState({faFileTreeOpened: opened})}
+                           closedIcon="fa-chevron-right" openedIcon="fa-chevron-left">
                 <FaFileTree {...faFileTree} onSelect={()=>this.setState({faFileTreeOpened: false})}/>
             </ToggleContent>
         )
