@@ -85,7 +85,7 @@ function createImplicitDescItem(descItemType, descItemTypeInfos) {
     return descItem;
 }
 
-function createDescItemFromDb(descItem) {
+export function createDescItemFromDb(descItem) {
     return {
         ...descItem,
         prevDescItemSpecId: descItem.descItemSpecId,

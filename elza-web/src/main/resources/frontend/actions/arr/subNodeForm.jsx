@@ -54,7 +54,10 @@ export function faSubNodeFormValueChange(versionId, nodeId, nodeKey, valueLocati
 export function faSubNodeFormValuesCopyFromPrev(versionId, nodeId, nodeVersionId, descItemTypeId, nodeKey, valueLocation) {
     return (dispatch, getState) => {
         dispatch(faSubNodeFormDescItemTypeDeleteInStore(versionId, nodeId, nodeKey, valueLocation, true));
-        WebApi.copyOlderSiblingAttribute(versionId, nodeId, nodeVersionId, descItemTypeId);
+        WebApi.copyOlderSiblingAttribute(versionId, nodeId, nodeVersionId, descItemTypeId)
+            .then(json => {
+                dispatch(faSubNodeFormDescItemTypeDeleteResponse(versionId, nodeId, nodeKey, valueLocation, json));
+            })
     }
 }
 
@@ -216,6 +219,17 @@ export function faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueL
         valueLocation,
         operationType,
         descItemResult: descItemResult
+    }
+}
+
+export function faSubNodeFormDescItemTypeDeleteResponse(versionId, nodeId, nodeKey, valueLocation, copySiblingResult) {
+    return {
+        type: types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE_RESPONSE,
+        versionId,
+        nodeId,
+        nodeKey,
+        valueLocation,
+        copySiblingResult
     }
 }
 

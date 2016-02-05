@@ -2,7 +2,7 @@ import * as types from 'actions/constants/actionTypes';
 import {i18n} from 'components'
 import {indexById} from 'stores/app/utils.jsx'
 import {faSubNodeFormValueValidate} from 'actions/arr/subNodeForm'
-import {getDescItemType, updateFormData, createDescItem} from './subNodeFormUtils'
+import {createDescItemFromDb, getDescItemType, updateFormData, createDescItem} from './subNodeFormUtils'
 
 function getLoc(state, valueLocation) {
     var descItemGroup = state.formData.descItemGroups[valueLocation.descItemGroupIndex];
@@ -192,6 +192,24 @@ export default function subNodeForm(state = initialState, action) {
             return {...state};
         case types.CHANGE_DESC_ITEM:
             return {...state, dirty: true}
+        case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE_RESPONSE:
+            var loc = getLoc(state, action.valueLocation);
+
+            state.data.node = action.copySiblingResult.node;
+
+            var currentDescItemMap = {}
+            loc.descItemType.descItems.forEach(descItem => {currentDescItemMap[descItem.descItemObjectId] = descItem})
+            loc.descItemType.descItems = action.copySiblingResult.type.descItems.map(descItem => {
+                var newDescItem = createDescItemFromDb(descItem)
+                var currDescItem = currentDescItemMap[descItem.descItemObjectId]
+                if (currDescItem && currDescItem.hasFocus) {
+                    newDescItem.hasFocus = true;
+                }
+                return newDescItem;
+            })
+
+            state.formData = {...state.formData};
+            return {...state};
         case types.FA_SUB_NODE_FORM_VALUE_RESPONSE:
             var loc = getLoc(state, action.valueLocation);
 
