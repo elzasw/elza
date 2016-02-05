@@ -1289,10 +1289,11 @@ public class LevelTreeCacheService {
     private void initReferenceMarkLower(final LinkedList<TreeNode> childs, final TreeNode firstReposition) {
 
         boolean initReference = false;
+        int position = firstReposition.getPosition();
         for (TreeNode child : childs) {
             initReference = initReference || child.equals(firstReposition);
             if (initReference) {
-                initReferenceMarkAndDepth(child, firstReposition.getPosition());
+                initReferenceMarkAndDepth(child, position++);
             }
         }
     }
