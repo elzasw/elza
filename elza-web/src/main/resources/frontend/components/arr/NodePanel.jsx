@@ -5,7 +5,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Icon, AbstractReactComponent, i18n, Loading, SubNodeForm, Accordion, SubNodeRegister, AddNodeDropdown} from 'components';
+import {Icon, AbstractReactComponent, i18n, Loading, SubNodeForm, Accordion, SubNodeRegister, AddNodeDropdown, Search} from 'components';
 import {Button, Tooltip, OverlayTrigger, Input} from 'react-bootstrap';
 import {faSubNodeFormFetchIfNeeded} from 'actions/arr/subNodeForm'
 import {faSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister'
@@ -68,9 +68,9 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         }
     }
 
-    handleChangeFilterText(e) {
+    handleChangeFilterText(value) {
         this.setState({
-            filterText: e.target.value
+            filterText: value
         })
     }
 
@@ -404,10 +404,20 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 <div className='btn btn-default' disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(faSubNodesPrevPage())}><Icon glyph="fa-backward" />{i18n('arr.fa.subNodes.prevPage')}</div>
                 <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize >= node.childNodes.length} onClick={()=>this.dispatch(faSubNodesNextPage())}><Icon glyph="fa-forward" />{i18n('arr.fa.subNodes.nextPage')}</div>
 
+                <Search
+                    className='search-input'
+                    placeholder={i18n('search.input.search')}
+                    filterText={this.props.filterText}
+                    value={this.state.filterText}
+                    onChange={(e) => this.handleChangeFilterText(e.target.value)}
+                    onClear={() => {this.handleChangeFilterText(''); this.dispatch(faNodeSubNodeFulltextSearch(this.state.filterText))}}
+                    onSearch={() => {this.dispatch(faNodeSubNodeFulltextSearch(this.state.filterText))}}
+                />
+                {false &&
                 <div className="search-input">
                     <Input type="text" onChange={this.handleChangeFilterText} value={this.state.filterText}/>
                     <Button onClick={() => {this.dispatch(faNodeSubNodeFulltextSearch(this.state.filterText))}}><Icon glyph='fa-search'/></Button>
-                </div>
+                </div>}
             </div>
         )
 
