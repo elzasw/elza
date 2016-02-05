@@ -82,12 +82,15 @@ var Search = class Search extends React.Component {
         var searchLabel = i18n('search.action.search');
 
         var actions = []
-        if (this.props.actionAddons) {
-            actions = [...actions, this.props.actionAddons]
-        }
+
         actions.push(<Button className='search-button' onClick={this.handleSearch}><Icon glyph='fa-search'/></Button>)
+
         if (this.state.filterText) {
             actions.push(<Button className='clear-search-button' onClick={this.handleClear}><Icon glyph='fa-close'/></Button>)
+        }
+
+        if (this.props.actionAddons) {
+            actions = [...actions, this.props.actionAddons]
         }
 
         return (

@@ -116,7 +116,6 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
                     ({filterCurrentIndex + 1} z {searchedIds.length})
                 </div>
             )
-            actionAddons.push(searchedInfo)
 
             if (searchedIds.length > 1) {
                 var prevButtonEnabled = filterCurrentIndex > 0;
@@ -125,6 +124,7 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
                 actionAddons.push(<Button disabled={!nextButtonEnabled} className="next" onClick={this.props.onFulltextNextItem}><Icon glyph='fa-chevron-down'/></Button>)
                 actionAddons.push(<Button disabled={!prevButtonEnabled} className="prev" onClick={this.props.onFulltextPrevItem}><Icon glyph='fa-chevron-up'/></Button>)
             }
+            actionAddons.push(searchedInfo)
         }
 
         var index;
