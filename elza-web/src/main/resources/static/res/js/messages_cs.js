@@ -66,7 +66,7 @@ var messages = {
     "arr.fa.bulkActions.err": "Chyba",
     "arr.fa.bulkActions.finish": "Neběží",
     "arr.fa.bulkActions.runAction": "Spustit akci \"{0}\"?",
-    "arr.fa.bulkActions.run": "Nejsou žádné hromadné akce",
+    "arr.fa.bulkActions.run": "Spustit",
     "arr.fa.bulkActions.running": "Běží",
     "arr.fa.bulkActions.planned": "Ve frontě",
     "arr.fa.bulkActions.state": "Stav",
