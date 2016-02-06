@@ -64,7 +64,7 @@ var messages = {
 
     "arr.fa.bulkActions.noActions": "Nejsou žádné hromadné akce",
     "arr.fa.bulkActions.err": "Chyba",
-    "arr.fa.bulkActions.finish": "Neběží",
+    "arr.fa.bulkActions.idle": "Neběží",
     "arr.fa.bulkActions.runAction": "Spustit akci \"{0}\"?",
     "arr.fa.bulkActions.run": "Spustit",
     "arr.fa.bulkActions.running": "Běží",
@@ -77,7 +77,7 @@ var messages = {
     "arr.fa.versionValidation.running": "Validace právě probíhá",
     "arr.fa.versionValidation.ok": "Nejsou známé žádné chyby validace",
     "arr.fa.versionValidation.err": "Jsou nalezeny chyby validace",
-    "arr.fa.versionValidation.count": "Zobrazeno {0} z celkových {1}.",
+    "arr.fa.versionValidation.count": "Jsou nalezeny chyby validace (celkem {0})",
 
     "arr.fa.name": "Název",
     "arr.fa.ruleSet": "Pravidla tvorby",

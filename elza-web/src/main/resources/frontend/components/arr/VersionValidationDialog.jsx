@@ -52,7 +52,7 @@ var VersionValidationDialog = class VersionValidationDialog extends AbstractReac
                                     this.props.store.errors.length > 0 ?
                                         <span><Icon glyph="fa-check"/> {i18n('arr.fa.versionValidation.ok')}</span> :
                                         <span><Icon
-                                            glyph="fa-exclamation-triangle"/> {i18n('arr.fa.versionValidation.err')}</span>
+                                            glyph="fa-exclamation-triangle"/> {i18n('arr.fa.versionValidation.count', this.props.store.count)}</span>
                                 )
 
                             }
@@ -64,9 +64,6 @@ var VersionValidationDialog = class VersionValidationDialog extends AbstractReac
                                     onClick={() => (this.handleSelectNode(item.id, item.parentId))}>JP-{item.id}</a>: {item.description}
                                 </div>
                             ))}
-                            <div>
-                                {i18n('arr.fa.versionValidation.count', this.props.store.errors.length, this.props.store.count)}
-                            </div>
                         </div>
                         }
                     </div>

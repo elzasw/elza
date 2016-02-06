@@ -28,12 +28,26 @@ export function bulkActionsLoadData(versionId, mandatory = false, silent = false
 
 export function bulkActionsValidateVersion(versionId, silent = false) {
     return (dispatch) => {
+
         if (!silent) {
             dispatch(bulkActionsDataLoading(true));
         }
-        WebApi.bulkActionValidate(versionId).then((result) => {
-            dispatch(bulkActionsVersionValidateDataReceived(result))
-        });
+        barrier(
+            WebApi.bulkActionValidate(versionId),
+            WebApi.getBulkActionsState(versionId)
+        )
+            .then(data => {
+                return {
+                    actions: data[0].data,
+                    states: data[1].data
+                }
+            })
+            .then(json => {
+                dispatch(bulkActionsVersionValidateDataReceived({
+                    actions: json.actions,
+                    states: json.states
+                }, true));
+            });
     }
 }
 
@@ -54,10 +68,11 @@ export function bulkActionsDataReceived(data, mandatory) {
     }
 }
 
-export function bulkActionsVersionValidateDataReceived(data) {
+export function bulkActionsVersionValidateDataReceived(data, mandatory) {
     return {
         type: types.BULK_ACTIONS_VERSION_VALIDATE_RECEIVED_DATA,
-        data
+        data,
+        mandatory
     }
 }
 

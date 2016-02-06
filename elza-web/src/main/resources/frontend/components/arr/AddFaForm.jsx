@@ -86,22 +86,26 @@ var AddFaForm = class AddFaForm extends AbstractReactComponent {
         return (
             <div>
                 <Modal.Body>
-                    {this.props.isApproveDialog && <div>
-                        <BulkActionsTable mandatory={true} versionValidate={true}/>
+                    {
+                        this.props.isApproveDialog &&
                         <div>
-                            {
-                                this.props.versionValidation.isFetching ?
-                                    <span><Icon
-                                        glyph="fa-refresh"/> {i18n('arr.fa.versionValidation.running')}</span> : (
-                                    this.props.versionValidation.errors.length > 0 ?
-                                        <span><Icon glyph="fa-check"/> {i18n('arr.fa.versionValidation.ok')}</span> :
+                            <BulkActionsTable mandatory={true} versionValidate={true}/>
+                            <div>
+                                {
+                                    this.props.versionValidation.isFetching ?
                                         <span><Icon
-                                            glyph="fa-exclamation-triangle"/> {i18n('arr.fa.versionValidation.err')}</span>
-                                )
+                                            glyph="fa-refresh"/> {i18n('arr.fa.versionValidation.running')}</span> : (
+                                        this.props.versionValidation.count > 0 ?
+                                            <span><Icon
+                                                glyph="fa-exclamation-triangle"/> {i18n('arr.fa.versionValidation.count', this.props.versionValidation.count)}</span> :
+                                            <span><Icon glyph="fa-check"/> {i18n('arr.fa.versionValidation.ok')}</span>
 
-                            }
+                                    )
+
+                                }
+                            </div>
                         </div>
-                    </div>}
+                    }
                     <form onSubmit={handleSubmit}>
                         {this.props.create && <Input type="text" label={i18n('arr.fa.name')} {...name} {...decorateFormField(name)} />}
                         <Input type="select" label={i18n('arr.fa.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
