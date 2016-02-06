@@ -6,7 +6,7 @@ import {WebApi} from 'actions'
 import {indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
 import {barrier} from 'components/Utils'
 import {isFaRootId} from 'components/arr/ArrUtils'
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 
 function getNode(state, versionId, nodeKey) {
     var r = findByNodeKeyInGlobalState(state, versionId, nodeKey);

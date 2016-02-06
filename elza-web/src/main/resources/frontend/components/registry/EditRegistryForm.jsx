@@ -5,7 +5,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, Scope, DropDownTree} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';

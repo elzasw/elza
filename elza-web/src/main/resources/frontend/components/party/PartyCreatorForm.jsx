@@ -4,7 +4,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import {reduxForm} from 'redux-form';
 import {WebApi} from 'actions'
 import {AbstractReactComponent, i18n, Autocomplete} from 'components';

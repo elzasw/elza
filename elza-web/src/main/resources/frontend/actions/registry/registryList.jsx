@@ -6,7 +6,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {WebApi} from 'actions'
 
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {i18n, AddRegistryForm} from 'components';
 

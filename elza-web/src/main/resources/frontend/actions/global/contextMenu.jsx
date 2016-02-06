@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 
 export function contextMenuShow(component, menu, position={x:0,y:0}) {
     return {

@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 
 export default function addFaForm(state, action) {
     switch (action.type) {

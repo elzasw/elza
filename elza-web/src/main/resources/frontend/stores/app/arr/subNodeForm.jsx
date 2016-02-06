@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import {i18n} from 'components'
 import {indexById} from 'stores/app/utils.jsx'
 import {faSubNodeFormValueValidate} from 'actions/arr/subNodeForm'

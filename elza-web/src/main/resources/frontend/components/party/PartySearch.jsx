@@ -2,7 +2,7 @@
  * Komponenta hledání osob
  */
 
-require ('./partySearch.less');
+require('./PartySearch.less');
 
 import React from 'react';
 import {connect} from 'react-redux'

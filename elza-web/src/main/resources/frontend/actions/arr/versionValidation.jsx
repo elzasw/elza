@@ -1,5 +1,5 @@
 import {WebApi} from 'actions';
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import {barrier} from 'components/Utils';
 
 export function versionValidate(versionId, loadErrors = false) {

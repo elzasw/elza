@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import {indexById} from 'stores/app/utils.jsx'
 import {i18n} from 'components'
 import {consolidateState} from 'components/Utils'

@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
 import subNodeForm from './subNodeForm'
 import subNodeRegister from './subNodeRegister'

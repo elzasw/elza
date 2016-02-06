@@ -1,5 +1,5 @@
 import {WebApi} from 'actions';
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import {faSelectSubNode} from 'actions/arr/nodes';
 import {indexById} from 'stores/app/utils.jsx'
 import {isFaRootId} from 'components/arr/ArrUtils'

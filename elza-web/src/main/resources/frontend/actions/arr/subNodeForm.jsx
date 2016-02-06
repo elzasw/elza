@@ -1,7 +1,7 @@
 import {WebApi} from 'actions'
 import {indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
 
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 
 export function faSubNodeFormValueAdd(versionId, nodeId, nodeKey, valueLocation) {
     return {

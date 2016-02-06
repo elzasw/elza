@@ -4,7 +4,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, Autocomplete, i18n} from 'components';
 import {Modal, Button, Input, Glyphicon} from 'react-bootstrap';

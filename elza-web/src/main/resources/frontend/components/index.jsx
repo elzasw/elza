@@ -24,7 +24,7 @@ exports.WebSocket = require('./shared/web-socket/WebSocket');
 exports.ModalDialogWrapper = require('./shared/dialog/ModalDialogWrapper');
 exports.Autocomplete = require('./shared/autocomplete/Autocomplete');
 exports.Splitter = require('./shared/splitter/Splitter');
-exports.Scope = require('./shared/Scope/Scope');
+exports.Scope = require('./shared/scope/Scope');
 
 exports.FormUtils = require('./form/FormUtils');
 

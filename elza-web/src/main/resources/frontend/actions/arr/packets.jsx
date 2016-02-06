@@ -1,6 +1,6 @@
 import {WebApi} from 'actions'
 
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import {modalDialogHide} from 'actions/global/modalDialog'
 import {faSubNodeFormValueChange, faSubNodeFormValueBlur} from 'actions/arr/subNodeForm'
 

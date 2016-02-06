@@ -1,9 +1,9 @@
 /**
  * 
  * Store pro seznamy rejstříků
- * 
- **/ 
-import * as types from 'actions/constants/actionTypes';
+ *
+ **/
+import * as types from 'actions/constants/ActionTypes';
 import registryData from './registryData';
 
 const initialState = {

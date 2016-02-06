@@ -7,7 +7,7 @@ require ('./FaExtendedView.less');
 import React from 'react';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Tabs, Icon, FaTreeMain, FaTreeMovementsLeft, FaTreeMovementsRight} from 'components';
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import {Button} from 'react-bootstrap';
 import {faExtendedView} from 'actions/arr/fa'
 import {moveNodesUnder, moveNodesBefore, moveNodesAfter} from 'actions/arr/nodes'

@@ -5,7 +5,7 @@
 import React from 'react';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Tabs, FaTreeLazy} from 'components';
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import {AppActions} from 'stores';
 import {MenuItem} from 'react-bootstrap';
 import {faTreeFulltextChange, faTreeFulltextSearch, faTreeFocusNode, faTreeFetchIfNeeded, faTreeNodeExpand, faTreeFulltextNextItem, faTreeFulltextPrevItem, faTreeNodeCollapse, faTreeCollapse} from 'actions/arr/faTree'

@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 
 import ruleSet from './ruleSet'
 import partyNameFormTypes from './partyNameFormTypes'

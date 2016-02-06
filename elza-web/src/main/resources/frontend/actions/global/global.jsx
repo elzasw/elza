@@ -1,6 +1,6 @@
 import {Utils} from 'components'
 
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 
 var ObjectInfo = class ObjectInfo {
     constructor() {

@@ -4,7 +4,7 @@
  * @author Martin Šlapa
  * @since 22.12.2015
  */
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import packages from './packages'
 import fulltext from './fulltext'
 

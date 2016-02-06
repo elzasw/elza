@@ -2,7 +2,7 @@
  * Entity pro vybranou osobu
  */
 
-require ('./partyEntities.less');
+require('./PartyEntities.less');
 
 import React from 'react';
 import {connect} from 'react-redux'
