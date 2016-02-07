@@ -2,6 +2,7 @@ package cz.tacr.elza.controller;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -361,7 +362,7 @@ public class ArrangementController {
      */
     @RequestMapping(value = "/nodeParents", method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<TreeNodeClient> getNodeParents(@RequestParam(value = "nodeId") final Integer nodeId,
+    public Collection<TreeNodeClient> getNodeParents(@RequestParam(value = "nodeId") final Integer nodeId,
                                                @RequestParam(value = "versionId") final Integer versionId) {
         Assert.notNull(nodeId);
         Assert.notNull(versionId);

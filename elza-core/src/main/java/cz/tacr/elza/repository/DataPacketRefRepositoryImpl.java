@@ -9,7 +9,6 @@ import javax.persistence.Query;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.RulDescItemType;
@@ -40,7 +39,7 @@ public class DataPacketRefRepositoryImpl implements DataPacketRefRepositoryCusto
 
         query.setParameter("descItemTypes", descItemTypes);
 
-        List<ArrData> result = new LinkedList<>();
+        List<ArrDataPacketRef> result = new LinkedList<>();
         ObjectListIterator<Integer> nodeIdsIterator = new ObjectListIterator<Integer>(dataIds);
         while (nodeIdsIterator.hasNext()) {
             query.setParameter("dataIds", nodeIdsIterator.next());
@@ -48,6 +47,6 @@ public class DataPacketRefRepositoryImpl implements DataPacketRefRepositoryCusto
             result.addAll(query.getResultList());
         }
 
-        return query.getResultList();
+        return result;
     }
 }

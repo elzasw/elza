@@ -1,12 +1,12 @@
 package cz.tacr.elza.controller;
 
 import static com.jayway.restassured.RestAssured.given;
-import static com.jayway.restassured.RestAssured.rootPath;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -2328,7 +2328,7 @@ public class ArrangementManagerTest extends AbstractRestTest {
                 .getFaTree(version.getFindingAidVersionId(), null, expandedIds, null);
 
         //První uzel v seznamu musí být root.
-        Assert.assertEquals(result.getNodes().get(0).getId(), version.getRootLevel().getNode().getNodeId());
+        Assert.assertEquals(result.getNodes().iterator().next().getId(), version.getRootLevel().getNode().getNodeId());
 
 
 
@@ -2347,7 +2347,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         Assert.assertEquals(resultMap.get(child12.getNode().getNodeId()).getName(), "Title child12");
 
         //test parentů
-        List<TreeNodeClient> parents = levelTreeCacheService.getNodeParents(child1234.getNode().getNodeId(), version.getFindingAidVersionId());
+        Collection<TreeNodeClient> parentsCollection = levelTreeCacheService.getNodeParents(child1234.getNode().getNodeId(), version.getFindingAidVersionId());
+        List<TreeNodeClient> parents = new ArrayList<TreeNodeClient>(parentsCollection);
         Assert.assertTrue(parents.size() == 4);
         Assert.assertTrue(parents.get(0).getId().equals(child123.getNode().getNodeId()));
         Assert.assertTrue(parents.get(1).getId().equals(child12.getNode().getNodeId()));
