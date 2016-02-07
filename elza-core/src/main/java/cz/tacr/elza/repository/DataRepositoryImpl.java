@@ -63,7 +63,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
     @Override
     public List<ArrData> findByDataIdsAndVersionFetchSpecification(Set<Integer> dataIds, final Set<RulDescItemType> descItemTypes, ArrFindingAidVersion version) {
-        String hql = "SELECT d FROM arr_data d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.descItemSpec dit JOIN FETCH di.descItemSpec dis JOIN FETCH d.dataType dt WHERE ";
+        String hql = "SELECT d FROM arr_data d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.descItemType dit JOIN FETCH di.descItemSpec dis JOIN FETCH d.dataType dt WHERE ";
         if (version.getLockChange() == null) {
             hql += "di.deleteChange IS NULL ";
         } else {

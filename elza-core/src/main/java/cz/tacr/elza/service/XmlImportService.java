@@ -285,7 +285,7 @@ public class XmlImportService {
         checkData(xmlImport, usedRecords, usedParties, usedPackets, importAllRecords, importAllParties);
 
         // rejstříky - párovat podle ext id a ext systému
-        Map<String, Integer> xmlIdIntIdRecordMap;
+        Map<String, RegRecord> xmlIdIntIdRecordMap;
         try {
             RegScope regScope = findRecordScope(config);
             xmlIdIntIdRecordMap = importRecords(xmlImport.getRecords(), usedRecords, stopOnError, regScope);
@@ -297,7 +297,7 @@ public class XmlImportService {
         }
 
         // osoby - zakládat nové
-        Map<String, Integer> xmlIdIntIdPartyMap;
+        Map<String, ParParty> xmlIdIntIdPartyMap;
         try {
             xmlIdIntIdPartyMap = importParties(xmlImport.getParties(), usedParties, stopOnError, xmlIdIntIdRecordMap);
         } catch (NonFatalXmlImportException e) {
@@ -326,7 +326,7 @@ public class XmlImportService {
                 // založit fa
                 ArrChange change = arrangementService.createChange();
                 findingAid = createFindingAid(xmlImport.getFindingAid(), change, config);
-                Map<String, Integer> xmlIdIntIdPacketMap;
+                Map<String, ArrPacket> xmlIdIntIdPacketMap;
                 try {
                     xmlIdIntIdPacketMap = importPackets(xmlImport.getPackets(), usedPackets, findingAid, stopOnError);
                 } catch (NonFatalXmlImportException e) {
@@ -362,8 +362,8 @@ public class XmlImportService {
         return regScope;
     }
 
-    private void importFindingAid(FindingAid findingAid, ArrChange change, ArrNode rootNode, Map<String, Integer> xmlIdIntIdRecordMap,
-            Map<String, Integer> xmlIdIntIdPartyMap, Map<String, Integer> xmlIdIntIdPacketMap, XmlImportConfig config) throws LevelImportException, InvalidDataException {
+    private void importFindingAid(FindingAid findingAid, ArrChange change, ArrNode rootNode, Map<String, RegRecord> xmlIdIntIdRecordMap,
+            Map<String, ParParty> xmlIdIntIdPartyMap, Map<String, ArrPacket> xmlIdIntIdPacketMap, XmlImportConfig config) throws LevelImportException, InvalidDataException {
         Level rootLevel = findingAid.getRootLevel();
         int position = 1;
 
@@ -375,7 +375,7 @@ public class XmlImportService {
     }
 
     private void importLevel(Level level, int position, ArrNode parent, XmlImportConfig config, ArrChange change,
-            Map<String, Integer> xmlIdIntIdRecordMap, Map<String, Integer> xmlIdIntIdPartyMap, Map<String, Integer> xmlIdIntIdPacketMap)
+            Map<String, RegRecord> xmlIdIntIdRecordMap, Map<String, ParParty> xmlIdIntIdPartyMap, Map<String, ArrPacket> xmlIdIntIdPacketMap)
             throws LevelImportException, InvalidDataException {
         ArrNode arrNode = arrangementService.createNode(XmlImportUtils.trimStringValue(level.getUuid(), StringLength.LENGTH_36,
                 config.isStopOnError()));
@@ -406,7 +406,7 @@ public class XmlImportService {
     }
 
     private void importDescItems(ArrNode node, Level level, ArrChange change, XmlImportConfig config,
-            Map<String, Integer> xmlIdIntIdRecordMap, Map<String, Integer> xmlIdIntIdPartyMap, Map<String, Integer> xmlIdIntIdPacketMap,
+            Map<String, RegRecord> xmlIdIntIdRecordMap, Map<String, ParParty> xmlIdIntIdPartyMap, Map<String, ArrPacket> xmlIdIntIdPacketMap,
             boolean stopOnError) throws LevelImportException, InvalidDataException {
         List<AbstractDescItem> descItems = level.getDescItems();
         if (descItems != null) {
@@ -471,7 +471,7 @@ public class XmlImportService {
                     arrData.setDescItem(arrDescItem);
 
                     String storageNumber = descItemPacketRef.getPacket().getStorageNumber();
-                    arrData.setPacketId(xmlIdIntIdPacketMap.get(storageNumber));
+                    arrData.setPacket(xmlIdIntIdPacketMap.get(storageNumber));
 
                     dataRepository.save(arrData);
                 } else if (descItem instanceof DescItemPartyRef) {
@@ -483,7 +483,7 @@ public class XmlImportService {
                     arrData.setDescItem(arrDescItem);
 
                     String partyId = descItemPartyRef.getParty().getPartyId();
-                    arrData.setPartyId(xmlIdIntIdPartyMap.get(partyId));
+                    arrData.setParty(xmlIdIntIdPartyMap.get(partyId));
 
                     dataRepository.save(arrData);
                 } else if (descItem instanceof DescItemRecordRef) {
@@ -495,7 +495,7 @@ public class XmlImportService {
                     arrData.setDescItem(arrDescItem);
 
                     String recordId = descItemRecordRef.getRecord().getRecordId();
-                    arrData.setRecordId(xmlIdIntIdRecordMap.get(recordId));
+                    arrData.setRecord(xmlIdIntIdRecordMap.get(recordId));
 
                     dataRepository.save(arrData);
                 } else if (descItem instanceof DescItemString) {
@@ -692,9 +692,9 @@ public class XmlImportService {
         }
     }
 
-    private Map<String, Integer> importPackets(List<Packet> packets, Set<String> usedPackets, ArrFindingAid findingAid,
+    private Map<String, ArrPacket> importPackets(List<Packet> packets, Set<String> usedPackets, ArrFindingAid findingAid,
             boolean stopOnError) throws InvalidDataException {
-        Map<String, Integer> xmlIdIntIdPacketMap = new HashMap<>();
+        Map<String, ArrPacket> xmlIdIntIdPacketMap = new HashMap<>();
         if (CollectionUtils.isEmpty(packets)) {
             return xmlIdIntIdPacketMap;
         }
@@ -703,7 +703,7 @@ public class XmlImportService {
             if (usedPackets.contains(packet.getStorageNumber())) {
                 try {
                     ArrPacket arrPacket = importPacket(packet, findingAid, stopOnError);
-                    xmlIdIntIdPacketMap.put(packet.getStorageNumber(), arrPacket.getPacketId());
+                    xmlIdIntIdPacketMap.put(packet.getStorageNumber(), arrPacket);
                 } catch (NonFatalXmlImportException e) {
                     if (stopOnError) {
                         throw e;
@@ -730,9 +730,9 @@ public class XmlImportService {
         return packetRepository.save(arrPacket);
     }
 
-    private Map<String, Integer> importParties(List<AbstractParty> parties, Set<String> usedParties, boolean stopOnError,
-            Map<String, Integer> xmlIdIntIdRecordMap) throws NonFatalXmlImportException {
-        Map<String, Integer> xmlIdIntIdPartyMap = new HashMap<>();
+    private Map<String, ParParty> importParties(List<AbstractParty> parties, Set<String> usedParties, boolean stopOnError,
+            Map<String, RegRecord> xmlIdIntIdRecordMap) throws NonFatalXmlImportException {
+        Map<String, ParParty> xmlIdIntIdPartyMap = new HashMap<>();
         if (CollectionUtils.isEmpty(parties)) {
             return xmlIdIntIdPartyMap;
         }
@@ -741,7 +741,7 @@ public class XmlImportService {
             if (usedParties.contains(party.getPartyId())) {
                 try {
                     ParParty parParty = importParty(party, stopOnError, xmlIdIntIdRecordMap);
-                    xmlIdIntIdPartyMap.put(party.getPartyId(), parParty.getPartyId());
+                    xmlIdIntIdPartyMap.put(party.getPartyId(), parParty);
                 } catch (NonFatalXmlImportException e) {
                     if (stopOnError) {
                         throw e;
@@ -766,31 +766,21 @@ public class XmlImportService {
         return xmlIdIntIdPartyMap;
     }
 
-    private void importCreators(AbstractParty party, Map<String, Integer> xmlIdIntIdPartyMap) throws PartyImportException {
+    private void importCreators(AbstractParty party, Map<String, ParParty> xmlIdIntIdPartyMap) throws PartyImportException {
         List<AbstractParty> creators = party.getCreators();
         if (CollectionUtils.isEmpty(creators)) {
             return;
         }
 
-        Integer partyInternalId = xmlIdIntIdPartyMap.get(party.getPartyId());
-        if (partyInternalId == null) {
-            throw new PartyImportException("Nebyla nalezena osoba s externím identifikátorem " + party.getPartyId());
-        }
-
-        ParParty parParty = partyRepository.findOne(partyInternalId);
+        ParParty parParty = xmlIdIntIdPartyMap.get(party.getPartyId());
         if (parParty == null) {
-            throw new PartyImportException("Nebyla nalezena osoba s interním identifikátorem " + partyInternalId);
+            throw new PartyImportException("Nebyla nalezena osoba podle externího identifikátoru " + party.getPartyId());
         }
 
         for (AbstractParty creator : creators) {
-            Integer creatorInternalId = xmlIdIntIdPartyMap.get(creator.getPartyId());
-            if (creatorInternalId == null) {
-                throw new PartyImportException("Nebyl nalezen autor osoby s externím identifikátorem " + creator.getPartyId());
-            }
-
-            ParParty parPartyCreator = partyRepository.findOne(creatorInternalId);
+            ParParty parPartyCreator = xmlIdIntIdPartyMap.get(creator.getPartyId());
             if (parPartyCreator == null) {
-                throw new PartyImportException("Nebyl nalezen autor osoby s interním identifikátorem " + creatorInternalId);
+                throw new PartyImportException("Nebyl nalezen autor osoby podle externího identifikátoru " + creator.getPartyId());
             }
 
             ParCreator parCreator = new ParCreator();
@@ -801,7 +791,7 @@ public class XmlImportService {
         }
     }
 
-    private ParParty importParty(AbstractParty party, boolean stopOnError, Map<String, Integer> xmlIdIntIdRecordMap)
+    private ParParty importParty(AbstractParty party, boolean stopOnError, Map<String, RegRecord> xmlIdIntIdRecordMap)
         throws NonFatalXmlImportException {
         ParParty parParty;
         boolean isPartyGroup = false;
@@ -838,7 +828,7 @@ public class XmlImportService {
         return partyRepository.save(parParty);
     }
 
-    private void importEvents(List<Relation> events, ParParty parParty, boolean stopOnError, Map<String, Integer> xmlIdIntIdRecordMap)
+    private void importEvents(List<Relation> events, ParParty parParty, boolean stopOnError, Map<String, RegRecord> xmlIdIntIdRecordMap)
         throws NonFatalXmlImportException {
         if (events != null) {
             for (Relation relation : events) {
@@ -853,7 +843,7 @@ public class XmlImportService {
         }
     }
 
-    private ParRelation importRelation(ParParty parParty, Relation relation, Map<String, Integer> xmlIdIntIdRecordMap,
+    private ParRelation importRelation(ParParty parParty, Relation relation, Map<String, RegRecord> xmlIdIntIdRecordMap,
             boolean stopOnError)
         throws PartyImportException, InvalidDataException {
         ParRelation parRelation = createRelation(parParty, relation, stopOnError);
@@ -876,14 +866,13 @@ public class XmlImportService {
         return parRelation;
     }
 
-    private ParRelationEntity createRoleType(Map<String, Integer> xmlIdIntIdRecordMap, ParRelation parRelation, RoleType roleType)
+    private ParRelationEntity createRoleType(Map<String, RegRecord> xmlIdIntIdRecordMap, ParRelation parRelation, RoleType roleType)
             throws PartyImportException {
         ParRelationEntity parRelationEntity = new ParRelationEntity();
         Record record = roleType.getRecord();
-        Integer internalRecordId = xmlIdIntIdRecordMap.get(record.getExternalId());
-        RegRecord regRecord = recordRepository.findOne(internalRecordId);
+        RegRecord regRecord = xmlIdIntIdRecordMap.get(record.getExternalId());
         if (regRecord ==  null) {
-            throw new PartyImportException("Nebyl nalezen rejstřík s interním id " + internalRecordId);
+            throw new PartyImportException("Nebyl nalezen rejstřík podle externího id " + record.getExternalId());
         }
         parRelationEntity.setRecord(regRecord);
 
@@ -1001,7 +990,7 @@ public class XmlImportService {
         partyRepository.save(parParty);
     }
 
-    private ParPerson createPerson(Person person, Map<String, Integer> xmlIdIntIdRecordMap) throws NonFatalXmlImportException {
+    private ParPerson createPerson(Person person, Map<String, RegRecord> xmlIdIntIdRecordMap) throws NonFatalXmlImportException {
         Assert.notNull(person);
 
         ParPerson parPerson = new ParPerson();
@@ -1010,7 +999,7 @@ public class XmlImportService {
         return parPerson;
     }
 
-    private ParPartyGroup createPartyGroup(PartyGroup partyGroup, Map<String, Integer> xmlIdIntIdRecordMap, boolean stopOnError) throws NonFatalXmlImportException {
+    private ParPartyGroup createPartyGroup(PartyGroup partyGroup, Map<String, RegRecord> xmlIdIntIdRecordMap, boolean stopOnError) throws NonFatalXmlImportException {
         Assert.notNull(partyGroup);
 
         ParPartyGroup parPartyGroup = new ParPartyGroup();
@@ -1024,7 +1013,7 @@ public class XmlImportService {
         return parPartyGroup;
     }
 
-    private ParEvent createEvent(Event event, Map<String, Integer> xmlIdIntIdRecordMap) throws NonFatalXmlImportException {
+    private ParEvent createEvent(Event event, Map<String, RegRecord> xmlIdIntIdRecordMap) throws NonFatalXmlImportException {
         Assert.notNull(event);
 
         ParEvent parEvent = new ParEvent();
@@ -1033,7 +1022,7 @@ public class XmlImportService {
         return parEvent;
     }
 
-    private ParDynasty createDynasty(Dynasty dynasty, Map<String, Integer> xmlIdIntIdRecordMap) throws NonFatalXmlImportException {
+    private ParDynasty createDynasty(Dynasty dynasty, Map<String, RegRecord> xmlIdIntIdRecordMap) throws NonFatalXmlImportException {
         Assert.notNull(dynasty);
 
         ParDynasty parDynasty = new ParDynasty();
@@ -1044,7 +1033,7 @@ public class XmlImportService {
         return parDynasty;
     }
 
-    private void fillCommonAttributes(ParParty parParty, AbstractParty party, Map<String, Integer> xmlIdIntIdRecordMap)
+    private void fillCommonAttributes(ParParty parParty, AbstractParty party, Map<String, RegRecord> xmlIdIntIdRecordMap)
         throws PartyImportException, InvalidDataException {
         String partyTypeCode = party.getPartyTypeCode();
         ParPartyType partyType = partyTypeRepository.findPartyTypeByCode(partyTypeCode);
@@ -1055,11 +1044,10 @@ public class XmlImportService {
 
 
         String recordId = party.getRecord().getRecordId();
-        Integer internalRecordId = xmlIdIntIdRecordMap.get(recordId);
-        if (internalRecordId == null) {
+        RegRecord regRecord = xmlIdIntIdRecordMap.get(recordId);
+        if (regRecord == null) {
             throw new IllegalStateException("Rejsříkové heslo s identifikátorem " + recordId + " nebylo nalezeno.");
         }
-        RegRecord regRecord = recordRepository.findOne(internalRecordId);
         parParty.setRecord(regRecord);
 
         String characteristics = party.getCharacteristics();
@@ -1146,9 +1134,9 @@ public class XmlImportService {
      *
      * @return mapa externí id rejstříku -> interní id rejstříku
      */
-    private Map<String, Integer> importRecords(List<Record> records, Set<String> usedRecords, boolean stopOnError,
+    private Map<String, RegRecord> importRecords(List<Record> records, Set<String> usedRecords, boolean stopOnError,
             RegScope regScope) throws NonFatalXmlImportException {
-        Map<String, Integer> xmlIdIntIdRecordMap = new HashMap<>();
+        Map<String, RegRecord> xmlIdIntIdRecordMap = new HashMap<>();
         if (CollectionUtils.isEmpty(records)) {
             return xmlIdIntIdRecordMap;
         }
@@ -1169,7 +1157,7 @@ public class XmlImportService {
     }
 
     private void importRecord(Record record, RegRecord parent, boolean stopOnError, Set<String> usedRecords,
-            Map<String, Integer> xmlIdIntIdRecordMap, RegScope regScope) throws RecordImportException, InvalidDataException {
+            Map<String, RegRecord> xmlIdIntIdRecordMap, RegScope regScope) throws RecordImportException, InvalidDataException {
         String externalId = record.getExternalId();
         String externalSourceCode = record.getExternalSourceCode();
         RegRecord regRecord;
@@ -1197,7 +1185,7 @@ public class XmlImportService {
 
         updateRecord(record, regRecord, parent, stopOnError);
         regRecord = recordRepository.save(regRecord);
-        xmlIdIntIdRecordMap.put(record.getRecordId(), regRecord.getRecordId());
+        xmlIdIntIdRecordMap.put(record.getRecordId(), regRecord);
         syncVariantRecords(record, regRecord, isNew, stopOnError);
 
         if (record.getRecords() != null) {

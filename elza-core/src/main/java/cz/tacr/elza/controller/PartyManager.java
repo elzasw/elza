@@ -1,20 +1,49 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.domain.vo.ParPartyWithCount;
-import cz.tacr.elza.repository.*;
-import cz.tacr.elza.service.PartyService;
-import cz.tacr.elza.service.RegistryService;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.List;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyGroup;
+import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParPartyTypeExt;
+import cz.tacr.elza.domain.ParUnitdate;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.vo.ParPartyWithCount;
+import cz.tacr.elza.repository.DataPartyRefRepository;
+import cz.tacr.elza.repository.DataRecordRefRepository;
+import cz.tacr.elza.repository.NodeRegisterRepository;
+import cz.tacr.elza.repository.PartyCreatorRepository;
+import cz.tacr.elza.repository.PartyDynastyRepository;
+import cz.tacr.elza.repository.PartyEventRepository;
+import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
+import cz.tacr.elza.repository.PartyGroupRepository;
+import cz.tacr.elza.repository.PartyNameComplementRepository;
+import cz.tacr.elza.repository.PartyNameRepository;
+import cz.tacr.elza.repository.PartyPersonRepository;
+import cz.tacr.elza.repository.PartyRelationRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.PartyTypeRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.UnitdateRepository;
+import cz.tacr.elza.service.PartyService;
+import cz.tacr.elza.service.RegistryService;
 
 
 /**
@@ -88,7 +117,7 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
         Integer recordId = source.getRecord().getRecordId();
         Integer partyTypeId = source.getPartyType().getPartyTypeId();
         ParPartyName preferredName = source.getPreferredName();
-        
+
         Assert.notNull(partyTypeId, "Není vyplněné partyTypeId");
         Assert.notNull(recordId, "Není vyplněné recordId");
 
@@ -255,12 +284,12 @@ public class PartyManager implements cz.tacr.elza.api.controller.PartyManager<Pa
      */
     private void checkPartyUsage(final ParParty party) {
         // vazby ( arr_node_register, ArrDataRecordRef, ArrDataPartyRef),
-        Long pocet = dataPartyRefRepository.getCountByParty(party.getPartyId());
+        Long pocet = dataPartyRefRepository.getCountByParty(party);
         if (pocet > 0) {
             throw new IllegalStateException("Nalezeno použití party v tabulce ArrDataPartyRef.");
         }
 
-        List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByRecordId(party.getRecord().getRecordId());
+        List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByRecord(party.getRecord());
         if (CollectionUtils.isNotEmpty(dataRecordRefList)) {
             throw new IllegalStateException("Nalezeno použití hesla v tabulce ArrDataRecordRef.");
         }

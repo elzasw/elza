@@ -11,6 +11,6 @@ import cz.tacr.elza.domain.ArrDataPacketRef;
  * @since 1.9.2015
  */
 @Repository
-public interface DataPacketRefRepository extends JpaRepository<ArrDataPacketRef, Integer> {
+public interface DataPacketRefRepository extends JpaRepository<ArrDataPacketRef, Integer>, DataPacketRefRepositoryCustom {
 
 }

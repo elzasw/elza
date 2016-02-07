@@ -15,7 +15,6 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.hibernate.proxy.HibernateProxy;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -773,12 +772,12 @@ public class PartyService {
      */
     private void checkPartyUsage(final ParParty party) {
         // vazby ( arr_node_register, ArrDataRecordRef, ArrDataPartyRef),
-        Long pocet = dataPartyRefRepository.getCountByParty(party.getPartyId());
+        Long pocet = dataPartyRefRepository.getCountByParty(party);
         if (pocet > 0) {
             throw new IllegalStateException("Nalezeno použití party v tabulce ArrDataPartyRef.");
         }
 
-        List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByRecordId(party.getRecord().getRecordId());
+        List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByRecord(party.getRecord());
         if (CollectionUtils.isNotEmpty(dataRecordRefList)) {
             throw new IllegalStateException("Nalezeno použití hesla v tabulce ArrDataRecordRef.");
         }

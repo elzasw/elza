@@ -2,9 +2,13 @@ package cz.tacr.elza.domain;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.hibernate.search.annotations.Indexed;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -19,10 +23,12 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 @Entity(name = "arr_data_party_ref")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrDataPartyRef extends ArrData implements cz.tacr.elza.api.ArrDataPartyRef {
+public class ArrDataPartyRef extends ArrData implements cz.tacr.elza.api.ArrDataPartyRef<ParParty> {
 
-    @Column(nullable = false)
-    private Integer partyId;
+    @RestResource(exported = false)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ParParty.class)
+    @JoinColumn(name = "partyId", nullable = false)
+    private ParParty party;
 
     @Column(nullable = true)
     private Integer position;
@@ -38,18 +44,17 @@ public class ArrDataPartyRef extends ArrData implements cz.tacr.elza.api.ArrData
     }
 
     @Override
-    public Integer getPartyId() {
-        return partyId;
+    public ParParty getParty() {
+        return party;
     }
 
     @Override
-    public void setPartyId(Integer partyId) {
-        this.partyId = partyId;
+    public void setParty(ParParty party) {
+        this.party = party;
     }
 
     @Override
     public String getFulltextValue() {
-//        return (party != null && party.getRecord() != null) ? party.getRecord().getRecord() : null;
-        return null;
+        return (party != null && party.getRecord() != null) ? party.getRecord().getRecord() : null;
     }
 }

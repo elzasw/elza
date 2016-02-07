@@ -10,25 +10,19 @@ import javax.persistence.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataPacketRef;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.utils.ObjectListIterator;
 
-/**
- *
- *
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
- * @since 4. 2. 2016
- */
-public class DataRecordRefRepositoryImpl implements DataRecordRefRepositoryCustom {
+public class DataPacketRefRepositoryImpl implements DataPacketRefRepositoryCustom {
 
     @Autowired
     private EntityManager entityManager;
 
     @Override
-    public List<ArrDataRecordRef> findByDataIdsAndVersionFetchRecord(Set<Integer> dataIds, final Set<RulDescItemType> descItemTypes, ArrFindingAidVersion version) {
-        String hql = "SELECT d FROM arr_data_record_ref d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.descItemType dit JOIN FETCH d.record r WHERE ";
+    public List<ArrDataPacketRef> findByDataIdsAndVersionFetchPacket(Set<Integer> dataIds, final Set<RulDescItemType> descItemTypes, ArrFindingAidVersion version) {
+        String hql = "SELECT d FROM arr_data_packet_ref d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.descItemType dit JOIN FETCH d.packet p JOIN FETCH p.packetType pt  WHERE ";
         if (version.getLockChange() == null) {
             hql += "di.deleteChange IS NULL ";
         } else {

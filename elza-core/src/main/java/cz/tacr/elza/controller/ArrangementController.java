@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
@@ -49,8 +48,6 @@ import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
-import cz.tacr.elza.domain.ArrNodeConformityError;
-import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
 import cz.tacr.elza.domain.RulArrangementType;
@@ -674,7 +671,7 @@ public class ArrangementController {
         Set<Integer> nodeIds = arrangementService.findNodeIdsByFulltext(version, input.getNodeId(),
                 input.getSearchValue(), input.getDepth());
 
-        return levelTreeCacheService.findParentsForNodes(nodeIds, version);
+        return arrangementService.createTreeNodeFulltextList(nodeIds, version);
     }
 
     @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}",
@@ -755,39 +752,7 @@ public class ArrangementController {
 
         List<ArrNodeConformity> validationErrors = arrangementService.findConformityErrors(findingAidVersion);
 
-        Map<Integer, String> validations = new LinkedHashMap<Integer, String>();
-        for (ArrNodeConformity conformity : validationErrors) {
-            String description = validations.get(conformity.getNode().getNodeId());
-
-            if (description == null) {
-                description = "";
-            }
-
-            List<String> descriptions = new LinkedList<String>();
-            for (ArrNodeConformityError error : conformity.getErrorConformity()) {
-                descriptions.add(error.getDescription());
-            }
-
-            for (ArrNodeConformityMissing missing : conformity.getMissingConformity()) {
-                descriptions.add(missing.getDescription());
-            }
-
-            description += description + StringUtils.join(descriptions, " ");
-
-            validations.put(conformity.getNode().getNodeId(), description);
-        }
-
-        List<VersionValidationItem> versionValidationItems = new ArrayList<>(validations.size());
-        for (Integer nodeId : validations.keySet()) {
-            String description = validations.get(nodeId);
-            VersionValidationItem versionValidationItem = new VersionValidationItem();
-            versionValidationItem.setDescription(description);
-            versionValidationItem.setNodeId(nodeId);
-
-            versionValidationItems.add(versionValidationItem);
-        }
-
-        return versionValidationItems;
+        return arrangementService.createVersionValidationItems(validationErrors, findingAidVersion);
     }
 
     /**
@@ -815,6 +780,8 @@ public class ArrangementController {
 
         private String description;
 
+        private TreeNodeClient parent;
+
         public int getNodeId() {
             return nodeId;
         }
@@ -823,12 +790,20 @@ public class ArrangementController {
             this.nodeId = nodeId;
         }
 
-        public String getDesciption() {
+        public String getDescription() {
             return description;
         }
 
         public void setDescription(String description) {
             this.description = description;
+        }
+
+        public TreeNodeClient getParent() {
+            return parent;
+        }
+
+        public void setParent(TreeNodeClient parent) {
+            this.parent = parent;
         }
     }
 

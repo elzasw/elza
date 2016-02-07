@@ -9,7 +9,7 @@ import java.io.Serializable;
  * @author Martin Šlapa
  * @since 1.9.2015
  */
-public interface ArrDataPartyRef extends Serializable{
+public interface ArrDataPartyRef<P extends ParParty> extends Serializable{
 
 
     Integer getPosition();
@@ -18,8 +18,8 @@ public interface ArrDataPartyRef extends Serializable{
     void setPosition(final Integer position);
 
 
-    Integer getPartyId();
+    P getParty();
 
 
-    void setPartyId(final Integer partyId);
+    void setParty(final P party);
 }

@@ -2,9 +2,9 @@ package cz.tacr.elza.api;
 
 import java.io.Serializable;
 
-public interface ArrDataPacketRef extends Serializable {
+public interface ArrDataPacketRef<P extends ArrPacket> extends Serializable {
 
-    Integer getPacketId();
+    P getPacket();
 
-    void setPacketId(Integer packetId);
+    void setPacket(P packet);
 }

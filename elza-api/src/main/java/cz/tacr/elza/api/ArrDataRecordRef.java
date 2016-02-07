@@ -9,11 +9,11 @@ import java.io.Serializable;
  * @author Martin Šlapa
  * @since 1.9.2015
  */
-public interface ArrDataRecordRef extends Serializable{
+public interface ArrDataRecordRef<R extends RegRecord> extends Serializable{
 
 
-    Integer getRecordId();
+    R getRecord();
 
 
-    void setRecordId(final Integer recordIdId);
+    void setRecord(final R recordId);
 }

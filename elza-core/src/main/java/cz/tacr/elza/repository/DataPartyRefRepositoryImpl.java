@@ -10,25 +10,19 @@ import javax.persistence.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataPartyRef;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.utils.ObjectListIterator;
 
-/**
- *
- *
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
- * @since 4. 2. 2016
- */
-public class DataRecordRefRepositoryImpl implements DataRecordRefRepositoryCustom {
+public class DataPartyRefRepositoryImpl implements DataPartyRefRepositoryCustom {
 
     @Autowired
     private EntityManager entityManager;
 
     @Override
-    public List<ArrDataRecordRef> findByDataIdsAndVersionFetchRecord(Set<Integer> dataIds, final Set<RulDescItemType> descItemTypes, ArrFindingAidVersion version) {
-        String hql = "SELECT d FROM arr_data_record_ref d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.descItemType dit JOIN FETCH d.record r WHERE ";
+    public List<ArrDataPartyRef> findByDataIdsAndVersionFetchPartyRecord(Set<Integer> dataIds, final Set<RulDescItemType> descItemTypes, ArrFindingAidVersion version) {
+        String hql = "SELECT d FROM arr_data_party_ref d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.descItemType dit JOIN FETCH d.party party JOIN FETCH party.record r WHERE ";
         if (version.getLockChange() == null) {
             hql += "di.deleteChange IS NULL ";
         } else {

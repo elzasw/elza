@@ -13,13 +13,13 @@ import cz.tacr.elza.domain.ParParty;
  * @since 1.9.2015
  */
 @Repository
-public interface DataPartyRefRepository extends JpaRepository<ArrDataPartyRef, Integer> {
+public interface DataPartyRefRepository extends JpaRepository<ArrDataPartyRef, Integer>, DataPartyRefRepositoryCustom {
 
     /**
      * Najde počet záznamů podle par party.
      * @param party
      * @return
      */
-    @Query("SELECT count(*) FROM arr_data_party_ref i WHERE i.partyId = ?1")
-    Long getCountByParty(Integer partyId);
+    @Query("SELECT count(*) FROM arr_data_party_ref i WHERE i.party = ?1")
+    Long getCountByParty(ParParty party);
 }

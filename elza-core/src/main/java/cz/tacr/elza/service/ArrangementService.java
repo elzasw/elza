@@ -4,8 +4,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -26,8 +28,11 @@ import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.controller.ArrangementController.Depth;
+import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
+import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
 import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleManager;
+import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAid;
@@ -35,6 +40,8 @@ import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeConformityError;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDescItemType;
@@ -721,7 +728,7 @@ public class ArrangementService {
     }
 
     public List<ArrNodeConformity> findConformityErrors(ArrFindingAidVersion findingAidVersion) {
-        List<ArrNodeConformity> conformity = nodeConformityInfoRepository.findFirst20ByStateOrderByNodeConformityIdAsc(State.ERR);
+        List<ArrNodeConformity> conformity = nodeConformityInfoRepository.findFirst20ByFaVersionAndStateOrderByNodeConformityIdAsc(findingAidVersion, State.ERR);
 
         if (conformity.isEmpty()) {
             return new ArrayList<>();
@@ -729,4 +736,72 @@ public class ArrangementService {
 
         return nodeConformityInfoRepository.fetchErrorAndMissingConformity(conformity, findingAidVersion, State.ERR);
     }
+
+
+    /**
+     * Najde rodiče pro předané id nodů. Vrátí seznam objektů ve kterém je id nodu a jeho rodič.
+     *
+     * @param nodeIds id nodů
+     * @param version verze AP
+     *
+     * @return seznam id nodů a jejich rodičů
+     */
+    public List<TreeNodeFulltext> createTreeNodeFulltextList(Set<Integer> nodeIds, ArrFindingAidVersion version) {
+        Assert.notNull(nodeIds);
+        Assert.notNull(version);
+
+        Map<Integer, TreeNodeClient> parentIdTreeNodeClientMap = levelTreeCacheService.findParentsWithTitles(nodeIds, version);
+
+        List<TreeNodeFulltext> result =  new ArrayList<>(nodeIds.size());
+        for (Integer nodeId : nodeIds) {
+            TreeNodeFulltext treeNodeFulltext = new TreeNodeFulltext();
+
+            treeNodeFulltext.setNodeId(nodeId);
+            treeNodeFulltext.setParent(parentIdTreeNodeClientMap.get(nodeId));
+
+            result.add(treeNodeFulltext);
+        }
+
+        return result;
+    }
+
+    public List<VersionValidationItem> createVersionValidationItems(List<ArrNodeConformity> validationErrors, ArrFindingAidVersion version) {
+        Map<Integer, String> validations = new LinkedHashMap<Integer, String>();
+        for (ArrNodeConformity conformity : validationErrors) {
+            String description = validations.get(conformity.getNode().getNodeId());
+
+            if (description == null) {
+                description = "";
+            }
+
+            List<String> descriptions = new LinkedList<String>();
+            for (ArrNodeConformityError error : conformity.getErrorConformity()) {
+                descriptions.add(error.getDescription());
+            }
+
+            for (ArrNodeConformityMissing missing : conformity.getMissingConformity()) {
+                descriptions.add(missing.getDescription());
+            }
+
+            description += description + StringUtils.join(descriptions, " ");
+
+            validations.put(conformity.getNode().getNodeId(), description);
+        }
+
+        Map<Integer, TreeNodeClient> parentIdTreeNodeClientMap = levelTreeCacheService.findParentsWithTitles(validations.keySet(), version);
+
+        List<VersionValidationItem> versionValidationItems = new ArrayList<>(validations.size());
+        for (Integer nodeId : validations.keySet()) {
+            VersionValidationItem versionValidationItem = new VersionValidationItem();
+
+            versionValidationItem.setDescription(validations.get(nodeId));
+            versionValidationItem.setNodeId(nodeId);
+            versionValidationItem.setParent(parentIdTreeNodeClientMap.get(nodeId));
+
+            versionValidationItems.add(versionValidationItem);
+        }
+
+        return versionValidationItems;
+    }
+
 }

@@ -35,7 +35,6 @@ import cz.tacr.elza.EventBusListener;
 import cz.tacr.elza.config.ConfigView;
 import cz.tacr.elza.config.ConfigView.ViewTitles;
 import cz.tacr.elza.controller.ArrangementController.Depth;
-import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNode;
@@ -44,6 +43,9 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataDecimal;
 import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataPacketRef;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
@@ -55,6 +57,8 @@ import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.repository.CalendarTypeRepository;
+import cz.tacr.elza.repository.DataPacketRefRepository;
+import cz.tacr.elza.repository.DataPartyRefRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
@@ -95,6 +99,12 @@ public class LevelTreeCacheService {
 
     @Autowired
     private DataRecordRefRepository dataRecordRefRepository;
+
+    @Autowired
+    private DataPartyRefRepository dataPartyRefRepository;
+
+    @Autowired
+    private DataPacketRefRepository dataPacketRefRepository;
 
     @Autowired
     private RuleService ruleService;
@@ -559,9 +569,9 @@ public class LevelTreeCacheService {
                         + " konfiguraci.");
             }
             List<ArrData> dataList = dataRepository.findDescItemsByNodeIds(nodesMap.keySet(), descItemTypes, version);
-            Set<Integer> partyRefDataIds = new HashSet<>();
-            Set<Integer> recordRefDataIds = new HashSet<>();
-            Set<Integer> packetRefDataIds = new HashSet<>();
+            Set<Integer> partyDataIds = new HashSet<>();
+            Set<Integer> recordDataIds = new HashSet<>();
+            Set<Integer> packetDataIds = new HashSet<>();
             Set<Integer> enumDataIds = new HashSet<>();
 
             for (ArrData data : dataList) {
@@ -571,11 +581,11 @@ public class LevelTreeCacheService {
                 if (data.getDataType().getCode().equals("ENUM")) {
                     enumDataIds.add(data.getDataId());
                 } else if (data.getDataType().getCode().equals("PARTY_REF")) {
-                    partyRefDataIds.add(data.getDataId());
+                    partyDataIds.add(data.getDataId());
                 } else if (data.getDataType().getCode().equals("RECORD_REF")) {
-                    recordRefDataIds.add(data.getDataId());
+                    recordDataIds.add(data.getDataId());
                 } else if (data.getDataType().getCode().equals("PACKET_REF")) {
-                    packetRefDataIds.add(data.getDataId());
+                    packetDataIds.add(data.getDataId());
                 } else if (data.getDataType().getCode().equals("UNITDATE")) {
                     ArrDataUnitdate unitDate = (ArrDataUnitdate) data;
 
@@ -608,73 +618,51 @@ public class LevelTreeCacheService {
                     value = decimalData.getValue().toPlainString();
                 }
 
-                if (value != null) {
-                    TreeNodeClient treeNodeClient = result.get(nodeId);
-                    if (viewTitles.getAccordionLeft() != null && viewTitles.getAccordionLeft().contains(code)) {
-                        if (treeNodeClient.getAccordionLeft() == null) {
-                            treeNodeClient.setAccordionLeft(value);
-                        } else {
-                            treeNodeClient.setAccordionLeft(treeNodeClient.getAccordionLeft() + " " + value);
-                        }
-                    }
-                    if (viewTitles.getAccordionRight() != null && viewTitles.getAccordionRight().contains(code)) {
-                        if (treeNodeClient.getAccordionRight() == null) {
-                            treeNodeClient.setAccordionRight(value);
-                        } else {
-                            treeNodeClient.setAccordionRight(treeNodeClient.getAccordionRight() + " " + value);
-                        }
-                    }
-                    if (viewTitles.getTreeItem() != null && viewTitles.getTreeItem().contains(code)) {
-                        if (treeNodeClient.getName() == null) {
-                            treeNodeClient.setName(value);
-                        } else {
-                            treeNodeClient.setName(treeNodeClient.getName() + " " + value);
-                        }
-                    }
-                    if (viewTitles.getIcon() != null && viewTitles.getIcon().equals(code)) {
-                        if (data.getDescItem().getDescItemSpec() != null) {
-                            String iconType = data.getDescItem().getDescItemSpec().getCode();
-                            treeNodeClient.setIcon(iconType.substring(iconType.lastIndexOf("_") + 1));
-                        }
-                    }
+                fillValue(result, viewTitles, value, code, nodeId, data);
+            }
+
+            if (!enumDataIds.isEmpty()) {
+                List<ArrData> enumData = dataRepository.findByDataIdsAndVersionFetchSpecification(enumDataIds, descItemTypes, version);
+                for (ArrData data : enumData) {
+                    String value = data.getDescItem().getDescItemSpec().getName();
+                    String code = data.getDescItem().getDescItemType().getCode();
+                    Integer nodeId = data.getDescItem().getNode().getNodeId();
+
+                    fillValue(result, viewTitles, value, code, nodeId, data);
                 }
             }
 
-            List<ArrData> enumData = dataRepository.findByDataIdsAndVersionFetchSpecification(enumDataIds, descItemTypes, version);
-            for (ArrData data : enumData) {
-                String value = data.getDescItem().getDescItemSpec().getName();
-                String code = data.getDescItem().getDescItemType().getCode();
-                Integer nodeId = data.getDescItem().getNode().getNodeId();
+            if (!recordDataIds.isEmpty()) {
+                List<ArrDataRecordRef> recordData = dataRecordRefRepository.findByDataIdsAndVersionFetchRecord(recordDataIds, descItemTypes, version);
+                for (ArrDataRecordRef data : recordData) {
+                    String value = data.getRecord().getRecord();
+                    String code = data.getDescItem().getDescItemType().getCode();
+                    Integer nodeId = data.getDescItem().getNode().getNodeId();
 
-                if (value != null) {
-                    TreeNodeClient treeNodeClient = result.get(nodeId);
-                    if (viewTitles.getAccordionLeft() != null && viewTitles.getAccordionLeft().contains(code)) {
-                        if (treeNodeClient.getAccordionLeft() == null) {
-                            treeNodeClient.setAccordionLeft(value);
-                        } else {
-                            treeNodeClient.setAccordionLeft(treeNodeClient.getAccordionLeft() + " " + value);
-                        }
-                    }
-                    if (viewTitles.getAccordionRight() != null && viewTitles.getAccordionRight().contains(code)) {
-                        if (treeNodeClient.getAccordionRight() == null) {
-                            treeNodeClient.setAccordionRight(value);
-                        } else {
-                            treeNodeClient.setAccordionRight(treeNodeClient.getAccordionRight() + " " + value);
-                        }
-                    }
-                    if (viewTitles.getTreeItem() != null && viewTitles.getTreeItem().contains(code)) {
-                        if (treeNodeClient.getName() == null) {
-                            treeNodeClient.setName(value);
-                        } else {
-                            treeNodeClient.setName(treeNodeClient.getName() + " " + value);
-                        }
-                    }
-                    if (viewTitles.getIcon() != null && viewTitles.getIcon().equals(code)) {
-                        if (data.getDescItem().getDescItemSpec() != null) {
-                            String iconType = data.getDescItem().getDescItemSpec().getCode();
-                            treeNodeClient.setIcon(iconType.substring(iconType.lastIndexOf("_") + 1));
-                        }
-                    }
+                    fillValue(result, viewTitles, value, code, nodeId, data);
+                }
+            }
+
+            if (!partyDataIds.isEmpty()) {
+                List<ArrDataPartyRef> partyData = dataPartyRefRepository.findByDataIdsAndVersionFetchPartyRecord(partyDataIds, descItemTypes, version);
+                for (ArrDataPartyRef data : partyData) {
+                    String value = data.getParty().getRecord().getRecord();
+                    String code = data.getDescItem().getDescItemType().getCode();
+                    Integer nodeId = data.getDescItem().getNode().getNodeId();
+
+                    fillValue(result, viewTitles, value, code, nodeId, data);
+                }
+            }
+
+            if (!packetDataIds.isEmpty()) {
+                List<ArrDataPacketRef> packetData = dataPacketRefRepository.findByDataIdsAndVersionFetchPacket(packetDataIds, descItemTypes, version);
+                for (ArrDataPacketRef data : packetData) {
+                    String packetTypeName = data.getPacket().getPacketType().getName();
+                    String value = data.getPacket().getStorageNumber() + " [" + packetTypeName + "]";
+                    String code = data.getDescItem().getDescItemType().getCode();
+                    Integer nodeId = data.getDescItem().getNode().getNodeId();
+
+                    fillValue(result, viewTitles, value, code, nodeId, data);
                 }
             }
         }
@@ -689,6 +677,42 @@ public class LevelTreeCacheService {
         }
         return new ArrayList<>(result.values());
     }
+
+    private void fillValue(Map<Integer, TreeNodeClient> result, ViewTitles viewTitles, String value, String code,
+            Integer nodeId, ArrData data) {
+                if (value != null) {
+                    TreeNodeClient treeNodeClient = result.get(nodeId);
+                    if (viewTitles.getAccordionLeft() != null && viewTitles.getAccordionLeft().contains(code)) {
+                        if (treeNodeClient.getAccordionLeft() == null) {
+                            treeNodeClient.setAccordionLeft(value);
+                        } else {
+                            treeNodeClient.setAccordionLeft(treeNodeClient.getAccordionLeft() + " " + value);
+                        }
+                    }
+                    if (viewTitles.getAccordionRight() != null && viewTitles.getAccordionRight().contains(code)) {
+                        if (treeNodeClient.getAccordionRight() == null) {
+                            treeNodeClient.setAccordionRight(value);
+                        } else {
+                            treeNodeClient.setAccordionRight(treeNodeClient.getAccordionRight() + " " + value);
+                        }
+                    }
+                    if (viewTitles.getTreeItem() != null && viewTitles.getTreeItem().contains(code)) {
+                        if (treeNodeClient.getName() == null) {
+                            treeNodeClient.setName(value);
+                        } else {
+                            treeNodeClient.setName(treeNodeClient.getName() + " " + value);
+                        }
+                    }
+                    if (viewTitles.getIcon() != null && viewTitles.getIcon().equals(code)) {
+                        if (treeNodeClient.getIcon() == null) {
+                            if (data.getDescItem().getDescItemSpec() != null) {
+                                String iconType = data.getDescItem().getDescItemSpec().getCode();
+                                treeNodeClient.setIcon(iconType.substring(iconType.lastIndexOf("_") + 1));
+                            }
+                        }
+                    }
+                }
+            }
 
 
     /**
@@ -807,30 +831,25 @@ public class LevelTreeCacheService {
     }
 
     /**
-     * Najde rodiče pro předané id nodů. Vrátí seznam objektů ve kterém je id nodu a jeho rodič.
+     * Najde rodiče pro předaná id nodů. Vrátí mapu objektů ve kterém je id nodu a jeho rodič.
      *
      * @param nodeIds id nodů
      * @param version verze AP
      *
-     * @return seznam id nodů a jejich rodičů
+     * @return mapu id nodů a jejich rodičů
      */
-    public List<TreeNodeFulltext> findParentsForNodes(Set<Integer> nodeIds, ArrFindingAidVersion version) {
+    public Map<Integer, TreeNodeClient> findParentsWithTitles(Set<Integer> nodeIds, ArrFindingAidVersion version) {
         Assert.notNull(nodeIds);
         Assert.notNull(version);
 
         Map<Integer, TreeNode> versionTreeCache = getVersionTreeCache(version);
         Map<Integer, TreeNode> nodeIdParentMap = new HashMap<>(nodeIds.size());
         Map<Integer, TreeNode> parentIdParentMap = new HashMap<>(nodeIds.size());
-        List<TreeNodeFulltext> result =  new ArrayList<>(nodeIds.size());
 
         for (Integer nodeId : nodeIds) {
             TreeNode treeNode = versionTreeCache.get(nodeId);
             TreeNode parent = treeNode.getParent();
-            if (parent == null) {
-                TreeNodeFulltext treeNodeFulltext = new TreeNodeFulltext();
-                treeNodeFulltext.setNodeId(nodeId);
-                result.add(treeNodeFulltext);
-            } else {
+            if (parent != null) {
                 parentIdParentMap.put(parent.getId(), parent);
                 nodeIdParentMap.put(nodeId, parent);
             }
@@ -838,14 +857,12 @@ public class LevelTreeCacheService {
 
         Map<Integer, TreeNodeClient> parentIdTreeNodeClientMap = createNodesWithTitles(parentIdParentMap, version);
 
+        Map<Integer, TreeNodeClient> result = new HashMap<>(nodeIds.size());
         for (Integer nodeId : nodeIdParentMap.keySet()) {
             Integer parentId = nodeIdParentMap.get(nodeId).getId();
             TreeNodeClient parentTreeNodeClient = parentIdTreeNodeClientMap.get(parentId);
 
-            TreeNodeFulltext treeNodeFulltext = new TreeNodeFulltext();
-            treeNodeFulltext.setNodeId(nodeId);
-            treeNodeFulltext.setParent(parentTreeNodeClient);
-            result.add(treeNodeFulltext);
+            result.put(nodeId, parentTreeNodeClient);
         }
 
         return result;
@@ -959,38 +976,7 @@ public class LevelTreeCacheService {
                     value = decimalData.getValue().toPlainString();
                 }
 
-                if (value != null) {
-                    TreeNodeClient treeNodeClient = result.get(nodeId);
-                    if (viewTitles.getAccordionLeft() != null && viewTitles.getAccordionLeft().contains(code)) {
-                        if (treeNodeClient.getAccordionLeft() == null) {
-                            treeNodeClient.setAccordionLeft(value);
-                        } else {
-                            treeNodeClient.setAccordionLeft(treeNodeClient.getAccordionLeft() + " " + value);
-                        }
-                    }
-                    if (viewTitles.getAccordionRight() != null && viewTitles.getAccordionRight().contains(code)) {
-                        if (treeNodeClient.getAccordionRight() == null) {
-                            treeNodeClient.setAccordionRight(value);
-                        } else {
-                            treeNodeClient.setAccordionRight(treeNodeClient.getAccordionRight() + " " + value);
-                        }
-                    }
-                    if (viewTitles.getTreeItem() != null && viewTitles.getTreeItem().contains(code)) {
-                        if (treeNodeClient.getName() == null) {
-                            treeNodeClient.setName(value);
-                        } else {
-                            treeNodeClient.setName(treeNodeClient.getName() + " " + value);
-                        }
-                    }
-                    if (viewTitles.getIcon() != null && viewTitles.getIcon().equals(code)) {
-                        if (treeNodeClient.getIcon() == null) {
-                            if (data.getDescItem().getDescItemSpec() != null) {
-                                String iconType = data.getDescItem().getDescItemSpec().getCode();
-                                treeNodeClient.setIcon(iconType.substring(iconType.lastIndexOf("_") + 1));
-                            }
-                        }
-                    }
-                }
+                fillValue(result, viewTitles, value, code, nodeId, data);
             }
 
             List<ArrData> enumData = dataRepository.findByDataIdsAndVersionFetchSpecification(enumDataIds, descItemTypes, version);
@@ -999,36 +985,7 @@ public class LevelTreeCacheService {
                 String code = data.getDescItem().getDescItemType().getCode();
                 Integer nodeId = data.getDescItem().getNode().getNodeId();
 
-                if (value != null) {
-                    TreeNodeClient treeNodeClient = result.get(nodeId);
-                    if (viewTitles.getAccordionLeft() != null && viewTitles.getAccordionLeft().contains(code)) {
-                        if (treeNodeClient.getAccordionLeft() == null) {
-                            treeNodeClient.setAccordionLeft(value);
-                        } else {
-                            treeNodeClient.setAccordionLeft(treeNodeClient.getAccordionLeft() + " " + value);
-                        }
-                    }
-                    if (viewTitles.getAccordionRight() != null && viewTitles.getAccordionRight().contains(code)) {
-                        if (treeNodeClient.getAccordionRight() == null) {
-                            treeNodeClient.setAccordionRight(value);
-                        } else {
-                            treeNodeClient.setAccordionRight(treeNodeClient.getAccordionRight() + " " + value);
-                        }
-                    }
-                    if (viewTitles.getTreeItem() != null && viewTitles.getTreeItem().contains(code)) {
-                        if (treeNodeClient.getName() == null) {
-                            treeNodeClient.setName(value);
-                        } else {
-                            treeNodeClient.setName(treeNodeClient.getName() + " " + value);
-                        }
-                    }
-                    if (viewTitles.getIcon() != null && viewTitles.getIcon().equals(code)) {
-                        if (data.getDescItem().getDescItemSpec() != null) {
-                            String iconType = data.getDescItem().getDescItemSpec().getCode();
-                            treeNodeClient.setIcon(iconType.substring(iconType.lastIndexOf("_") + 1));
-                        }
-                    }
-                }
+                fillValue(result, viewTitles, value, code, nodeId, data);
             }
         }
 

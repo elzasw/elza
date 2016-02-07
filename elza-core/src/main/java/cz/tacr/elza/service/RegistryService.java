@@ -190,7 +190,7 @@ public class RegistryService {
             throw new IllegalStateException("Existuje vazba z osoby, nelze smazat.");
         }
 
-        List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByRecordId(record.getRecordId());
+        List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByRecord(record);
         if (CollectionUtils.isNotEmpty(dataRecordRefList)) {
             throw new IllegalStateException("Nalezeno použití hesla v tabulce ArrDataRecordRef.");
         }
