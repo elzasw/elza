@@ -380,7 +380,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             return <Loading value={i18n('global.data.loading.node')}/>
         }
 
-        var parents = this.renderParents(this.getParentNodes());
+        var parents = this.renderParents(this.getParentNodes().reverse());
         var children;
         if (node.subNodeInfo.fetched || node.selectedSubNodeId == null) {
             children = this.renderChildren(this.getChildNodes());
