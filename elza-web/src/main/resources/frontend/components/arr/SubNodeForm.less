@@ -28,18 +28,23 @@
     font-weight: normal;
     background: @node-form-bg;
 
-    .node-form-actions {
+    .node-form-actions-container {
+        width: 100%;
         background: @node-form-actions-bg;
         height: 1.8em;
-        width: 100%;
-        overflow: hidden;
+        position: relative;
 
-        .node-form-standard-actions;
-        .btn {
-            margin-right: 8px;
-            &.dropdown-toggle {
-                padding: 0 3px 0 3px;
-                margin-left: -8px;
+        .node-form-actions {
+            position: absolute;
+            width: 200em;
+
+            .node-form-standard-actions;
+            .btn {
+                margin-right: 8px;
+                &.dropdown-toggle {
+                    padding: 0 3px 0 3px;
+                    margin-left: -8px;
+                }
             }
         }
     }

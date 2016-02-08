@@ -574,46 +574,48 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     renderFormActions() {
         let notRoot = !isFaRootId(this.props.nodeId);
         return (
-            <div className='node-form-actions'>
-                <NoFocusButton onClick={this.handleAddDescItemType}><Icon
-                    glyph="fa-plus"/>{i18n('subNodeForm.descItemTypeAdd')}</NoFocusButton>
-                <NoFocusButton onClick={this.handleDescItemTypeUnlockAll}><Icon
-                    glyph="fa-lock"/>{i18n('subNodeForm.descItemTypeUnlockAll')}</NoFocusButton>
-                {
-                    notRoot &&
-                    <AddNodeDropdown key="before"
-                                     title={i18n('subNodeForm.addNodeBefore')}
+            <div className='node-form-actions-container'>
+                <div className='node-form-actions'>
+                    <NoFocusButton onClick={this.handleAddDescItemType}><Icon
+                        glyph="fa-plus"/>{i18n('subNodeForm.descItemTypeAdd')}</NoFocusButton>
+                    <NoFocusButton onClick={this.handleDescItemTypeUnlockAll}><Icon
+                        glyph="fa-lock"/>{i18n('subNodeForm.descItemTypeUnlockAll')}</NoFocusButton>
+                    {
+                        notRoot &&
+                        <AddNodeDropdown key="before"
+                                         title={i18n('subNodeForm.addNodeBefore')}
+                                         glyph="fa-plus"
+                                         action={this.handleAddNodeBefore}
+                                         node={this.props.selectedSubNode}
+                                         version={this.props.versionId}
+                                         direction="BEFORE"
+                        />
+                    }
+                    {
+                        notRoot &&
+                        <AddNodeDropdown key="after"
+                                         title={i18n('subNodeForm.addNodeAfter')}
+                                         glyph="fa-plus"
+                                         action={this.handleAddNodeAfter}
+                                         node={this.props.selectedSubNode}
+                                         version={this.props.versionId}
+                                         direction="AFTER"
+                        />
+                    }
+                    <AddNodeDropdown key="child"
+                                     title={i18n('subNodeForm.addSubNode')}
                                      glyph="fa-plus"
-                                     action={this.handleAddNodeBefore}
+                                     action={this.handleAddChildNode}
                                      node={this.props.selectedSubNode}
                                      version={this.props.versionId}
-                                     direction="BEFORE"
+                                     direction="CHILD"
                     />
-                }
-                {
-                    notRoot &&
-                    <AddNodeDropdown key="after"
-                                     title={i18n('subNodeForm.addNodeAfter')}
-                                     glyph="fa-plus"
-                                     action={this.handleAddNodeAfter}
-                                     node={this.props.selectedSubNode}
-                                     version={this.props.versionId}
-                                     direction="AFTER"
-                    />
-                }
-                <AddNodeDropdown key="child"
-                                 title={i18n('subNodeForm.addSubNode')}
-                                 glyph="fa-plus"
-                                 action={this.handleAddChildNode}
-                                 node={this.props.selectedSubNode}
-                                 version={this.props.versionId}
-                                 direction="CHILD"
-                />
-                {
-                    notRoot &&
-                    <NoFocusButton onClick={this.handleDeleteNode}><Icon
-                        glyph="fa-trash"/>{i18n('subNodeForm.deleteNode')}</NoFocusButton>
-                }
+                    {
+                        notRoot &&
+                        <NoFocusButton onClick={this.handleDeleteNode}><Icon
+                            glyph="fa-trash"/>{i18n('subNodeForm.deleteNode')}</NoFocusButton>
+                    }
+                </div>
             </div>
         )
     }

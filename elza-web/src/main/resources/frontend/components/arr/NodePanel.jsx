@@ -395,35 +395,37 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         }
         var siblings = this.getSiblingNodes().map(s => <span key={s.id}> {s.id}</span>);
         var actions = (
-            <div key='actions' className='actions'>
-                {
-                    node.nodeInfoFetched && !isFaRootId(node.id) && !closed &&
-                    <AddNodeDropdown key="end"
-                                     title={i18n('nodePanel.addSubNode')}
-                                     glyph="fa-plus-circle"
-                                     action={this.handleAddNodeAtEnd}
-                                     node={this.props.node}
-                                     version={fa.versionId}
-                                     direction="CHILD"
-                    />
-                }
-                <div className='btn btn-default' disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(faSubNodesPrevPage())}><Icon glyph="fa-backward" />{i18n('arr.fa.subNodes.prevPage')}</div>
-                <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize >= node.childNodes.length} onClick={()=>this.dispatch(faSubNodesNextPage())}><Icon glyph="fa-forward" />{i18n('arr.fa.subNodes.nextPage')}</div>
+            <div className='actions-container'>
+                <div key='actions' className='actions'>
+                    {
+                        node.nodeInfoFetched && !isFaRootId(node.id) && !closed &&
+                        <AddNodeDropdown key="end"
+                                         title={i18n('nodePanel.addSubNode')}
+                                         glyph="fa-plus-circle"
+                                         action={this.handleAddNodeAtEnd}
+                                         node={this.props.node}
+                                         version={fa.versionId}
+                                         direction="CHILD"
+                        />
+                    }
+                    <div className='btn btn-default' disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(faSubNodesPrevPage())}><Icon glyph="fa-backward" />{i18n('arr.fa.subNodes.prevPage')}</div>
+                    <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize >= node.childNodes.length} onClick={()=>this.dispatch(faSubNodesNextPage())}><Icon glyph="fa-forward" />{i18n('arr.fa.subNodes.nextPage')}</div>
 
-                <Search
-                    className='search-input'
-                    placeholder={i18n('search.input.search')}
-                    filterText={this.props.filterText}
-                    value={this.state.filterText}
-                    onChange={(e) => this.handleChangeFilterText(e.target.value)}
-                    onClear={() => {this.handleChangeFilterText(''); this.dispatch(faNodeSubNodeFulltextSearch(this.state.filterText))}}
-                    onSearch={() => {this.dispatch(faNodeSubNodeFulltextSearch(this.state.filterText))}}
-                />
-                {false &&
-                <div className="search-input">
-                    <Input type="text" onChange={this.handleChangeFilterText} value={this.state.filterText}/>
-                    <Button onClick={() => {this.dispatch(faNodeSubNodeFulltextSearch(this.state.filterText))}}><Icon glyph='fa-search'/></Button>
-                </div>}
+                    <Search
+                        className='search-input'
+                        placeholder={i18n('search.input.search')}
+                        filterText={this.props.filterText}
+                        value={this.state.filterText}
+                        onChange={(e) => this.handleChangeFilterText(e.target.value)}
+                        onClear={() => {this.handleChangeFilterText(''); this.dispatch(faNodeSubNodeFulltextSearch(this.state.filterText))}}
+                        onSearch={() => {this.dispatch(faNodeSubNodeFulltextSearch(this.state.filterText))}}
+                    />
+                    {false &&
+                    <div className="search-input">
+                        <Input type="text" onChange={this.handleChangeFilterText} value={this.state.filterText}/>
+                        <Button onClick={() => {this.dispatch(faNodeSubNodeFulltextSearch(this.state.filterText))}}><Icon glyph='fa-search'/></Button>
+                    </div>}
+                </div>
             </div>
         )
 

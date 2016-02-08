@@ -18,48 +18,63 @@
         font-size: 0.7em;
     }
 
-    > .actions {
+    .actions-container {
+        width: 100%;
         background: @node-panel-actions-bg;
-        height: 2.5em;;
-        line-height: 2.5em;
-        .btn {
-            background: transparent;
-            height: 2em;
-            font-size: 0.9em;
-            border: none;
-            padding: 2px;
-            margin: 0;
-            margin-right: 8px;
-            &.dropdown-toggle {
-                padding: 0 3px 0 3px;
-                margin-left: -8px;
-            }
-            .icon  {
-                color: @node-form-actions-color;
-                height: 1.35em;
-                line-height: 1.35em;
-                width: 1.35em;
-            }
-        }
-        .btn:hover {
-            background-color: @node-form-actions-hover;
-        }
-        .form-group {
-            display: inline-block;
-            height: 1.8em;
+        max-height: 1.8em;
+        min-height: 1.8em;
+        line-height: 1.8em;
+        position: relative;
+        .actions {
+            position: absolute;
+            width: 200em;
+            max-height: 1.8em;
+            min-height: 1.8em;
             line-height: 1.8em;
-        }
-        .form-control {
-            width: 165px;
-            display: inline-block;
-        }
-        .search-input {
-            display: inline-block;
-            position: relative;
-            height: 1.8em;
-            line-height: 1.8em;
+
+            .dropdown.btn-group {
+                vertical-align: top;
+            }
             .btn {
+                background: transparent;
+                height: 2em;
+                font-size: 0.9em;
+                border: none;
+                padding: 2px;
                 margin: 0;
+                margin-right: 8px;
+                vertical-align: top;
+                &.dropdown-toggle {
+                    padding: 0 3px 0 3px;
+                    margin-left: -8px;
+                }
+                .icon  {
+                    color: @node-form-actions-color;
+                    height: 1.35em;
+                    line-height: 1.35em;
+                    width: 1.35em;
+                }
+            }
+            .btn:hover {
+                background-color: @node-form-actions-hover;
+            }
+            .form-group {
+                display: inline-block;
+                height: 1.8em;
+                line-height: 1.8em;
+            }
+            .form-control {
+                width: 165px;
+                display: inline-block;
+            }
+            .search-input {
+                display: inline-block;
+                position: relative;
+                height: 1.8em;
+                line-height: 1.8em;
+                .btn {
+                    margin: 0;
+                }
             }
         }
     }
@@ -109,7 +124,7 @@
                     .accordion-header-left {
                         display: table-cell;
                         width: 60%;
-                        margin: 4px;
+                        padding: 5px;
                         overflow: hidden;
                         text-overflow: ellipsis;
                         white-space: nowrap;
@@ -118,7 +133,7 @@
 
                     .accordion-header-right {
                         display: table-cell;
-                        margin: 4px;
+                        padding: 5px;
                         width: calc(~"40% - 20px");
                         overflow: hidden;
                         text-overflow: ellipsis;
