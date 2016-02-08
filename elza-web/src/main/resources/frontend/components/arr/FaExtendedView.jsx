@@ -145,9 +145,9 @@ var FaExtendedView = class FaExtendedView extends AbstractReactComponent {
             var moveBeforeAfter = active && this.checkMoveBeforeAfter();
             tabContent.push(
                 <div key={2} className='tree-actions-container'>
-                    <Button onClick={this.handleMoveUnder} disabled={!moveUnder}>Přesunout do</Button>
-                    <Button onClick={this.handleMoveBefore} disabled={!moveBeforeAfter}>Přesunout před</Button>
-                    <Button onClick={this.handleMoveAfter} disabled={!moveBeforeAfter}>Přesunout za</Button>
+                    <Button onClick={this.handleMoveUnder} disabled={!moveUnder}>Přesunout do<Icon glyph="fa-arrow-circle-o-right"/></Button>
+                    <Button onClick={this.handleMoveBefore} disabled={!moveBeforeAfter}>Přesunout před<Icon glyph="fa-arrow-circle-o-right"/></Button>
+                    <Button onClick={this.handleMoveAfter} disabled={!moveBeforeAfter}>Přesunout za<Icon glyph="fa-arrow-circle-o-right"/></Button>
                 </div>
             )
             tabContent.push(
