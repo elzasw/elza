@@ -118,10 +118,7 @@ export function receiveRegistryRecordTypes(json, partyTypeId){
 export function registryAdd(parentId, callback) {
     return (dispatch, getState) => {
         var state = getState();
-        var registryParentTypesId = state.arrRegion.registryTypesId;
-        if (state.arrRegion.registryData) {
-            registryParentTypesId = state.arrRegion.registryData.item.registerTypeId;
-        }
+        var registryParentTypesId = null;
 
         if (state.registry.registryData) {
             registryParentTypesId = state.registry.registryData.item.registerTypeId;

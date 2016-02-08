@@ -11,7 +11,7 @@ var messages = {
     "global.action.add": "Přidat",
     "global.action.cancel": "Storno",
     "global.action.close": "Zavřít",
-    "global.action.store": "Uložit",
+    "global.action.store": "Ok",
     "global.action.show.more": "Zobrazit více",
     "search.input.search": "Vyhledat...",
 
