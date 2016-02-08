@@ -51,7 +51,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             if (this.refs.nodeForm) {
                 var el = ReactDOM.findDOMNode(this.refs.nodeForm);
                 if (el) {
-                    setInputFocus(el, false);
+                    //setInputFocus(el, false);
                 }
             }
         })
