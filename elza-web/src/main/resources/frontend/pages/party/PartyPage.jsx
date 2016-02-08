@@ -18,7 +18,7 @@ import {WebApi} from 'actions'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
-import {partyDetailFetch, findPartyFetch} from 'actions/party/party'
+import {partyDetailFetch, findPartyFetch, findPartyFetchIfNeeded} from 'actions/party/party'
 import {partyAdd, insertParty, insertRelation, deleteParty} from 'actions/party/party'
 
 /**
@@ -38,7 +38,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
             'handleAddRelation',                        // kliknutí na tlačítko přidat ossobě vztah
             'addParty',                                 // vytvoření osoby
             'deleteParty',                              // smazání osoby
-            'addRelation',                              // vytvoření relace
+            'addRelation'                              // vytvoření relace
         );
     }
 
@@ -48,6 +48,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps){
         this.dispatch(refPartyTypesFetchIfNeeded());         // načtení osob pro autory osoby
+        this.dispatch(findPartyFetchIfNeeded(nextProps.filterText));
     }
 
 
@@ -151,7 +152,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
      */ 
     deleteParty() {
         var partyId = this.props.partyRegion.selectedPartyData.partyId;                         // bude smazána aktuální osoba, uložená v partyRegionu
-        this.dispatch(deleteParty(partyId, this.props.partyRegion.filterText));                 // smazání osoby, znovunačtení osoby i hledaných osob
+        return deleteParty(partyId, this.props.partyRegion.filterText);                 // smazání osoby, znovunačtení osoby i hledaných osob
     }    
 
     /**
@@ -214,7 +215,6 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         var centerPanel = (
             <PartyDetail 
                 refTables={this.props.refTables} 
-                partyRegion={this.props.partyRegion} 
             />
         )
 

@@ -62,6 +62,9 @@ import cz.tacr.elza.repository.RelationRoleTypeRepository;
 import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.repository.UnitdateRepository;
 import cz.tacr.elza.repository.VariantRecordRepository;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 
 
 /**
@@ -139,6 +142,9 @@ public class PartyService {
 
     @Autowired
     private GroovyScriptService groovyScriptService;
+
+    @Autowired
+    private EventNotificationService eventNotificationService;
 
     /**
      * Najde osobu podle rejstříkového hesla.
@@ -267,7 +273,10 @@ public class PartyService {
         ParParty result = partyRepository.save(saveParty);
         entityManager.flush();
 
-       return result;
+        EventType eventType = newParty.getPartyId() == null ? EventType.PARTY_CREATE : EventType.PARTY_UPDATE;
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(eventType, result.getPartyId()));
+
+        return result;
 
     }
 

@@ -12,7 +12,7 @@ import {AppActions} from 'stores';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 import {updateParty} from 'actions/party/party'
-import {findPartyFetchIfNeeded} from 'actions/party/party'
+import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded} from 'actions/party/party'
 
 /**
  * PARTY DETAIL
@@ -22,18 +22,29 @@ import {findPartyFetchIfNeeded} from 'actions/party/party'
 var PartyDetail = class PartyDetail extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
-        this.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
+
         this.bindMethods(                               // pripojením funkcím "this"
             'updateValue',                              // aktualizace nějaké hodnoty
             'changeValue'                               // změna nějakéh políčka ve formuláři
+
         );
         this.state={
-            party: this.props.partyRegion.selectedPartyData,
             dynastyId: 2,
             groupId: 3,
         };
     }
+
+    componentDidMount() {
+        this.dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
+        this.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
+    }
+
+    componentWillReceiveProps(nextProps) {
+        console.log("NextProps: ",nextProps);
+        this.dispatch(partyDetailFetchIfNeeded(nextProps.partyRegion.selectedPartyID));
+//console.log("@@@@@-SubNodeForm-@@@@@", props);
+    }
+
 
     /**
      * CHANGE VALUE
@@ -125,14 +136,15 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
      * Vykreslení detailu osoby
      */ 
     render() {
-        if(this.state.party){
-            var party = this.state.party;
-        }else{
-            var party = this.props.partyRegion.selectedPartyData;
+        if(this.props.partyRegion.isFetchingDetail){
+            return <div>{i18n('party.detail.finding')}</div>
         }
-        if(!party){
-            return <div>Nenalezeno</div>
+
+        var party = this.props.partyRegion.selectedPartyData;
+        if(party == undefined){
+            return <div>{i18n('party.detail.noSelection')}</div>
         }
+
         return <div className={"partyDetail"}>
                     <h1>{party.record.record}</h1>
                     <div className="line">
@@ -201,4 +213,12 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
     }
 }
 
-module.exports = connect()(PartyDetail);
+function mapStateToProps(state) {
+    const {partyRegion} = state
+    return {
+        partyRegion: partyRegion
+    }
+}
+
+
+module.exports = connect(mapStateToProps)(PartyDetail);

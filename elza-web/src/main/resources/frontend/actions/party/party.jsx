@@ -68,8 +68,8 @@ export function deleteParty(partyId, filterText) {
         return WebApi.deleteParty(partyId)
             .then((json) => {
                 dispatch(modalDialogHide());                // zavření aktualně otevřeného dialogu
+                dispatch(clearPartyDetail());
                 dispatch(findPartyFetch(filterText));       // znovu načtení leveho panelu s vyfiltrovanými osobami (aby zmizela ta smazaná)
-                dispatch(clearPartyDetail())
             });
     }
 }
@@ -84,10 +84,10 @@ export function deleteParty(partyId, filterText) {
 export function findPartyFetchIfNeeded(filterText) {
     return (dispatch, getState) => {
         var state = getState();
-        console.log(state.partyRegion);
-        if (state.partyRegion.filterText !== filterText) {
+
+        if (!state.partyRegion.isFetchingSearch && (state.partyRegion.dirty || state.partyRegion.filterText !== filterText)) {
             return dispatch(findPartyFetch(filterText));
-        } else if (!state.partyRegion.fetchedSearch && !state.partyRegion.isFetchingSearh) {
+        } else if (!state.partyRegion.fetchedSearch && !state.partyRegion.isFetchingSearch) {
             return dispatch(findPartyFetch(filterText));
         }
     }
@@ -154,8 +154,12 @@ export function findPartyRequest(filterText) {
  */
 export function partyDetailFetchIfNeeded(selectedPartyID) {
     return (dispatch, getState) => {
+        if(selectedPartyID == undefined){
+            return;
+        }
+
         var state = getState();
-        if (state.partyRegion.selectedPartyID !== selectedPartyID) {
+        if (!state.partyRegion.isFetchingDetail && (state.partyRegion.dirty || state.partyRegion.selectedPartyID !== selectedPartyID)) {
             return dispatch(partyDetailFetch(selectedPartyID));
         } else if (!state.partyRegion.fetchedDetail && !state.partyRegion.isFetchingDetail) {
             return dispatch(partyDetailFetch(selectedPartyID));

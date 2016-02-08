@@ -66,6 +66,13 @@ export function changeAddLevel(versionId, nodeId, parentNodeId) {
     }
 }
 
+export function changeParty(partyId){
+    return {
+        type: types.PARTY_UPDATED,
+        partyId: partyId
+    }
+}
+
 export function changeApproveVersion(versionId) {
 
     return {

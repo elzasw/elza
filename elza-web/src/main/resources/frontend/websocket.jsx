@@ -6,7 +6,7 @@ import {buklActionStateChange} from 'actions/arr/bulkActions';
 import {store} from 'stores/app/AppStore';
 
 import {changeConformityInfo, changeIndexingFinished, changePackage, changePackets,
-        changeDescItem, changeDeleteLevel, changeAddLevel, changeApproveVersion} from 'actions/global/change';
+        changeDescItem, changeDeleteLevel, changeAddLevel, changeApproveVersion, changeParty} from 'actions/global/change';
 
 
 var SockJS = require('sockjs-client');
@@ -89,6 +89,10 @@ function processEvents(values) {
                 packageEvent();
                 break;
 
+            case 'PARTY_CREATE':
+            case 'PARTY_UPDATE':
+                partyUpdate(value);
+                break;
             case 'DESC_ITEM_CHANGE':
                 descItemChange(value);
                 break;
@@ -188,6 +192,10 @@ function deleteLevelChange(value) {
  */
 function bulkActionStateChange(value) {
     store.dispatch(buklActionStateChange(value));
+}
+
+function partyUpdate(value){
+    store.dispatch(changeParty(value.ids[0]));
 }
 
 /**

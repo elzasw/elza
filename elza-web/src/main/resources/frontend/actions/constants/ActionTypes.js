@@ -103,7 +103,7 @@ export const PARTY_DETAIL_REQUEST = 'PARTY_DETAIL_REQUEST'          // pořadave
 export const PARTY_DETAIL_RECEIVE = 'PARTY_DETAIL_RECIVE'           // dokončení požadavku na hledání osoby
 export const PARTY_DETAIL_CLEAR = 'PARTY_DETAIL_CLEAR'              // zrusi zobrazeni detailu osoby
 
-export const PARTY_UPDATED = 'REGISTRY_UPDATED'                     // provedena aktualizace osoby
+export const PARTY_UPDATED = 'PARTY_UPDATED'                     // provedena aktualizace osoby
 export const PARTY_SELECT = 'PARTY_SELECT'
 
 /**

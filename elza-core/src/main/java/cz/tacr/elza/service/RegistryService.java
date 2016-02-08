@@ -281,7 +281,7 @@ public class RegistryService {
             checkRecordUsage(record);
         }
 
-        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.PARTY_CREATE, record.getRecordId()));
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_CREATE, record.getRecordId()));
 
         variantRecordRepository.delete(variantRecordRepository.findByRegRecordId(record.getRecordId()));
         regRecordRepository.delete(record);

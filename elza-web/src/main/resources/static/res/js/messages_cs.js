@@ -161,6 +161,8 @@ var messages = {
     "party.detail.genealogy": "Genealogie",
     "party.detail.creator.new": "Nový autor",
     "party.detail.creator.delete": "Opravdu chcete smazat tohoto autora?",
+    "party.detail.finding": "Vyhledávám osobu",
+    "party.detail.noSelection": "Není vybrána osoba",
     "party.creator.errors.undefinedCreator" : "Nebyl vybrán autor",
     "party.creator.creator" : "Autor osoby",
     "party.detail.identifiers": "Identifikátory korporace",

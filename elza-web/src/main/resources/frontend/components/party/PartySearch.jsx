@@ -18,9 +18,8 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
         super(props);
         this.handleSearch = this.handleSearch.bind(this);               // funkce pro akci spoustící vyhledávání
         this.handlePartyDetail = this.handlePartyDetail.bind(this);     // funkce vyberu osoby zobrazeni detailu
-        this.dispatch(findPartyFetchIfNeeded(this.props.filterText));
     }
-    
+
     handleSearch(filterText){
         this.dispatch(findPartyFetchIfNeeded(filterText));
     }
