@@ -31,7 +31,7 @@ public class ConfigView {
     public static final String TREE_ITEM = "tree-item";
     public static final String ACCORDION_LEFT = "accordion-left";
     public static final String ACCORDION_RIGHT = "accordion-right";
-    public static final String ICON = "ZP2015_LEVEL_TYPE";
+    public static final String ICON = "icon";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -96,10 +96,19 @@ public class ConfigView {
             accordionLeft = viewByFa.get(ACCORDION_LEFT);
         }
 
+        String iconCode = null;
+        List<String> iconList = viewByFa.get(ICON);
+        if (!CollectionUtils.isEmpty(iconList)) {
+            iconCode = iconList.iterator().next();
+            if (iconList.size() > 1) {
+                logger.warn("Pro ikonu lze nastavit jen jeden kód, bude použit tento: " + iconCode);
+            }
+        }
+
         return new ViewTitles(treeNode,
                 accordionLeft,
                 viewByFa.get(ACCORDION_RIGHT),
-                ICON); // TODO: kde definovat?
+                iconCode);
     }
 
     private ViewTitles createDefaultViewTitles() {
