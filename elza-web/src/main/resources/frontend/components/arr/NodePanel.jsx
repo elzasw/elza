@@ -334,12 +334,15 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             if (node.selectedSubNodeId == item.id) {
                 rows.push(
                     <div key={item.id} ref={'accheader-' + item.id} className='accordion-item opened'>
-                        <div className='accordion-header' onClick={this.handleCloseItem.bind(this, item)}>
-                            <div title={accordionLeft} className='accordion-header-left' key='accordion-header-left'>
-                                {referenceMark} <span className="title" title={accordionLeft}>{accordionLeft}</span>
-                            </div>
-                            <div title={accordionRight} className='accordion-header-right' key='accordion-header-right'>
-                                <span className="title" title={accordionRight}>{accordionRight}</span> {state}
+                        <div className='accordion-header-container' onClick={this.handleCloseItem.bind(this, item)}>
+                            <div className='accordion-header'>
+                                <div title={accordionLeft} className='accordion-header-left' key='accordion-header-left'>
+                                    {referenceMark} <span className="title" title={accordionLeft}>{accordionLeft}</span>
+                                </div>
+                                <div title={accordionRight} className='accordion-header-right' key='accordion-header-right'>
+                                    <span className="title" title={accordionRight}>{accordionRight}</span>
+                                </div>
+                                {state}
                             </div>
                         </div>
                         <div key="body" className='accordion-body'>
@@ -351,12 +354,15 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             } else {
                 rows.push(
                     <div key={item.id} ref={'accheader-' + item.id} className='accordion-item closed'>
-                        <div className='accordion-header' onClick={this.handleOpenItem.bind(this, item)}>
-                            <div title={accordionLeft} className='accordion-header-left' key='accordion-header-left'>
-                                {referenceMark} <span className="title" title={accordionLeft}>{accordionLeft}</span>
-                            </div>
-                            <div title={accordionRight} className='accordion-header-right' key='accordion-header-right'>
-                                <span className="title" title={accordionRight}>{accordionRight}</span> {state}
+                        <div className='accordion-header-container' onClick={this.handleOpenItem.bind(this, item)}>
+                            <div className='accordion-header'>
+                                <div title={accordionLeft} className='accordion-header-left' key='accordion-header-left'>
+                                    {referenceMark} <span className="title" title={accordionLeft}>{accordionLeft}</span>
+                                </div>
+                                <div title={accordionRight} className='accordion-header-right' key='accordion-header-right'>
+                                    <span className="title" title={accordionRight}>{accordionRight}</span>
+                                </div>
+                                {state}
                             </div>
                         </div>
                     </div>
