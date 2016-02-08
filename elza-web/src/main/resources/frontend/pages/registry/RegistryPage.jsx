@@ -226,14 +226,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 }
             })
         }
-        var navRows = (
-            <div className="registry-nav">
-                <div key='registrysList'>
 
-                    {listOfRecord}
-                </div>
-            </div>
-        )
 
         var navParents = '';
         if (this.props.registry.parents){
@@ -247,9 +240,9 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             navParents = (
                 <div className="record-parent-info">
                     <div className='record-selected-name'>
-                        <div><Icon glyph="fa-folder-open" /></div>
-                        <div>{nazevRodice}</div>
-                        <div onClick={this.handleUnsetParents}><Icon glyph="fa-mail-reply" /></div>
+                        <div className="icon"><Icon glyph="fa-folder-open" /></div>
+                        <div className="title">{nazevRodice}</div>
+                        <div className="back" onClick={this.handleUnsetParents}><Icon glyph="fa-times" /></div>
                     </div>
                     <div className='record-selected-breadcrumbs'>{cestaRodice.join(' | ')}</div>
                 </div>
@@ -280,7 +273,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 </div>
                 <div className="registry-list-results">
                     {(this.props.registry.isFetching || !this.props.registry.fetched) && <Loading/>}
-                    {(!this.props.registry.isFetching && this.props.registry.fetched) && navRows}
+                    {(!this.props.registry.isFetching && this.props.registry.fetched) && listOfRecord}
                 </div>
             </div>
         )
