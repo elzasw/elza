@@ -4,20 +4,33 @@
 
 .fa-extended-view-container {
     .extended-view-toggle {
-        float: right;
+        position: absolute;
+        right: 3px;
+        top: 2px;
+        border: none;
     }
     .movements {
         display: flex;
         width: 100%;
+        border-left: none;
         .tree-left-container, .tree-right-container {
             width: calc(~"50% - "@movementsActionsSize-half);
             height: 100%;
-            background: white;
-            border: 1px solid #cacaca;
         }
         .tree-actions-container {
             width: @movementsActionsSize;
             text-align: center;
+            .btn {
+                width: 10em;
+                height: 2em;
+                display: block;
+                margin: 0 auto;
+                position: relative;
+                margin-bottom: 10px;
+                span:first-child {
+                    padding-right: 5px;
+                }
+            }
         }
         .tree-left-container {
         }

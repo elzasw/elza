@@ -199,7 +199,7 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
                             {date ? <div className="block-row">{date}</div> : ""}
 
                             <div className="block-row actions">
-                                   <Button className="column" onClick={this.handleUpdateRelation.bind(this, i.relationId)}><Icon glyph="fa-edit"/></Button>
+                                   <Button className="column" onClick={this.handleUpdateRelation.bind(this, i.relationId)}><Icon glyph="fa-pencil"/></Button>
                                    <Button className="column" onClick={this.handleDeleteRelation.bind(this, i.relationId)}><Icon glyph="fa-trash"/></Button>
                             </div>
                        </div>

@@ -281,13 +281,12 @@ export default function subNodeForm(state = initialState, action) {
             // Přidání prvku do skupiny a seřazení prvků podle position
             var descItemType = {...addItemType, descItems: []};
             descItemGroup.descItemTypes.push(descItemType);
-            // Pokud je ale atribut jednohodnotový, musíme ponechat prázdnou hodnotu
-            if (!descItemType.repeatable) {
-                var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, addItemType.id)];
-                var descItem = createDescItem(descItemTypeInfo, true);
-                descItem.position = 1;
-                descItemType.descItems.push(descItem);
-            }
+            // Musíme ponechat prázdnou hodnotu
+            var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, addItemType.id)];
+            var descItem = createDescItem(descItemTypeInfo, true);
+            descItem.position = 1;
+            descItemType.descItems.push(descItem);
+
             descItemGroup.descItemTypes.sort((a, b) => a.viewOrder - b.viewOrder);
 
             state.formData = {...state.formData};
@@ -303,13 +302,11 @@ export default function subNodeForm(state = initialState, action) {
                     // Hodnoty odebereme
                     loc.descItemType.descItems = [];
 
-                    // Pokud je ale atribut jednohodnotový, musíme ponechat prázdnou hodnotu
-                    if (!loc.descItemType.repeatable) {
-                        var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, loc.descItemType.id)];
-                        var descItem = createDescItem(descItemTypeInfo, true);
-                        descItem.position = 1;
-                        loc.descItemType.descItems.push(descItem);
-                    }
+                    // Musíme ponechat prázdnou hodnotu
+                    var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, loc.descItemType.id)];
+                    var descItem = createDescItem(descItemTypeInfo, true);
+                    descItem.position = 1;
+                    loc.descItemType.descItems.push(descItem);
                 } else { // kompletně odebereme
                     loc.descItemGroup.descItemTypes = [
                         ...loc.descItemGroup.descItemTypes.slice(0, action.valueLocation.descItemTypeIndex),
