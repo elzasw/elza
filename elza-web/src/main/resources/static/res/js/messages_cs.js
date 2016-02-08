@@ -137,6 +137,8 @@ var messages = {
     'registry.placePath': "Cesta k umístění: ",
     'registry.list.norecord': "Zadanému filtru neodpovídají žádná data",
     'registry.detail.variant.name': "Variantní rejstříková hesla",
+    'registry.danger.disallowed.action.title': "Nepovolená akce",
+    'registry.danger.disallowed.action.can.not.move.into.myself': "Nelze přesunout sama sebe do sebe",
 
     
     "party.detail.characteristics": "Charakteristika",

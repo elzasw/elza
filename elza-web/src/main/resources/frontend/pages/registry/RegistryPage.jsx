@@ -11,7 +11,7 @@ var classNames = require('classnames');
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Loading} from 'components';
+import {AbstractReactComponent, i18n, Loading, Toastr} from 'components';
 import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, Search, RegistryPanel, DropDownTree, AddRegistryForm} from 'components';
 import {WebApi} from 'actions'
 import {MenuItem, DropdownButton, ButtonGroup, Button} from 'react-bootstrap';
@@ -141,6 +141,10 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     handleDoubleClick(item, event) {
+        if (this.props.registry.recordForMove && this.props.registry.recordForMove.selectedId === item.recordId) {
+            this.dispatch(Toastr.Actions.warning({title: i18n('registry.danger.disallowed.action.title'), message: i18n('registry.danger.disallowed.action.can.not.move.into.myself')}));
+            return false;
+        }
         var rodice = item.parents.slice();
         rodice.push(item.record);
         var registry = Object.assign({}, registry,{registryParentId: item.recordId, parents: rodice, filterText: ''});
