@@ -22,6 +22,15 @@ var es6promise = require('es6-promise');
 // Web socket
 var websocket = require('./websocket');
 
+function xx() {
+    setTimeout(fc, 1000)
+}
+function fc() {
+    console.log(document.activeElement)
+    xx()
+}
+//setTimeout(fc, 1000)
+
 // Aplikace
 var Router = require('./router');
 Router.start();

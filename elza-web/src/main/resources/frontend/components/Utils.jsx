@@ -250,6 +250,47 @@ function StringMap() {
     };
 }
 
+var _browser
+// Inicializace typu prohlížeče
+{
+    // Opera 8.0+
+    var opera = (!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
+        // Firefox 1.0+
+    var firefox = typeof InstallTrigger !== 'undefined';
+        // At least Safari 3+: "[object HTMLElementConstructor]"
+    var safari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
+        // Internet Explorer 6-11
+    var ie = /*@cc_on!@*/false || !!document.documentMode;
+        // Edge 20+
+    var edge = !ie && !!window.StyleMedia;
+        // Chrome 1+
+    var chrome = !!window.chrome && !!window.chrome.webstore;
+        // Blink engine detection
+    var blink = (chrome || opera) && !!window.CSS;    
+
+    _browser = {
+        opera,
+        firefox,
+        safari,
+        ie,
+        edge,
+        chrome,
+        blink,
+    }
+}
+function browser() {
+    return _browser;
+}
+
+function getKeyModifier() {
+    var browser = _browser;
+    if (browser.ie || browser.edge) {
+        return 'ctrl+shift+';
+    } else {
+        return 'ctrl+alt+';
+    }
+}
+
 function init() {
     Array.prototype.each = function(callback){
         if (!callback) return false;
@@ -381,6 +422,8 @@ module.exports = {
     stateEquals: stateEquals,
     propsEquals: propsEquals,
     setInputFocus: setInputFocus,
+    browser: browser,
+    getKeyModifier: getKeyModifier,
     init: function() {
         init();
     }

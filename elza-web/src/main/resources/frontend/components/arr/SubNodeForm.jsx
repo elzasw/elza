@@ -29,6 +29,7 @@ import {registrySelect, registryAdd} from 'actions/registry/registryList'
 import {routerNavigate} from 'actions/router'
 import {setInputFocus} from 'components/Utils'
 //import {} from './AddNodeDropdown.jsx'
+var Shortcuts = require('react-shortcuts/component')
 
 var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     constructor(props) {
@@ -59,6 +60,10 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps) {
 //console.log("@@@@@-SubNodeForm-@@@@@", props);
+    }
+
+    handleShortcuts(action) {
+        console.log("Sub node form XXXXXXXX", action);
     }
 
     /**
@@ -629,12 +634,14 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         ));
 
         return (
+            <Shortcuts name='Tree' handler={this.handleShortcuts}>
             <div className='node-form'>
                 {formActions}
                 <div ref='nodeForm' className='desc-item-groups'>
                     {descItemGroups}
                 </div>
             </div>
+            </Shortcuts>
         )
     }
 }

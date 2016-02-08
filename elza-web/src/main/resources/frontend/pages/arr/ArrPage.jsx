@@ -23,10 +23,15 @@ import {packetsFetchIfNeeded} from 'actions/arr/packets'
 import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes'
 var ShortcutsManager = require('react-shortcuts')
 var Shortcuts = require('react-shortcuts/component')
+import {Utils} from 'components'
+
+var keyModifier = Utils.getKeyModifier()
 
 var keymap = {
     Main: {
-        Home: 'ctrl+shift+h'
+        approveFaVersion: keyModifier + 'z',
+        bulkActions: keyModifier + 'h',
+        registerJp: keyModifier + 'j',
     },
     Tree: {
         Expand: 'ctrl+shift+x'
@@ -40,7 +45,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         this.bindMethods('getActiveInfo', 'buildRibbon', 'handleRegisterJp',
             'handleApproveFaVersion', 'handleCallApproveFaVersion', 'getActiveFindingAidId', 'handleBulkActionsDialog',
-            'handleValidationDialog');
+            'handleValidationDialog', 'handleShortcuts');
 
         this.state = {faFileTreeOpened: false};
     }
@@ -71,7 +76,18 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     handleShortcuts(action) {
-        console.log("ARR PAGE XXXXXXXX", action);
+        console.log("#handleShortcuts", '[' + action + ']', this);
+        switch (action) {
+            case 'approveFaVersion':
+                this.handleApproveFaVersion()
+                break
+            case 'bulkActions':
+                this.handleBulkActionsDialog()
+                break
+            case 'registerJp':
+                this.handleRegisterJp()
+                break
+        }
     }
 
     getChildContext() {
@@ -142,11 +158,9 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
     /**
      * Zobrazení / skrytí záznamů u JP o rejstřících.
-     *
-     * @param show zobrazit/skrýt
      */
-    handleRegisterJp(show) {
-        this.dispatch(showRegisterJp(show));
+    handleRegisterJp() {
+        this.dispatch(showRegisterJp(!this.props.arrRegion.showRegisterJp));
     }
 
 
@@ -198,7 +212,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         var show = this.props.arrRegion.showRegisterJp;
 
         itemActions.push(
-            <Button active={show} onClick={this.handleRegisterJp.bind(this, !show)} key="toggle-record-jp">
+            <Button active={show} onClick={this.handleRegisterJp} key="toggle-record-jp">
                 <Icon glyph="fa-th-list"/>
                 <div>
                     <span className="btnText">{i18n('ribbon.action.arr.show-register-jp')}</span>
@@ -289,15 +303,15 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         return (
             <Shortcuts name='Main' handler={this.handleShortcuts}>
-            <PageLayout
-                splitter={splitter}
-                className='fa-page'
-                ribbon={this.buildRibbon()}
-                leftPanel={leftPanel}
-                centerPanel={centerPanel}
-                rightPanel={rightPanel}
-                appContentExt={appContentExt}
-            />
+                <PageLayout
+                    splitter={splitter}
+                    className='fa-page'
+                    ribbon={this.buildRibbon()}
+                    leftPanel={leftPanel}
+                    centerPanel={centerPanel}
+                    rightPanel={rightPanel}
+                    appContentExt={appContentExt}
+                />
             </Shortcuts>
         )
     }

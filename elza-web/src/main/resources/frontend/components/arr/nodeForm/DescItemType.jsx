@@ -19,6 +19,7 @@ import DescItemPacketRef from './DescItemPacketRef'
 import DescItemPartyRef from './DescItemPartyRef'
 import DescItemRecordRef from './DescItemRecordRef'
 import {propsEquals} from 'components/Utils'
+var Shortcuts = require('react-shortcuts/component')
 
 require ('./AbstractDescItem.less')
 
@@ -39,6 +40,10 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
 return true;
         var eqProps = ['descItemTypeInfo', 'descItemType', 'rulDataType', 'calendarTypes', 'packetTypes', 'packets', 'locked', 'copy']
         return !propsEquals(this.props, nextProps, eqProps);
+    }
+
+    handleShortcuts(action) {
+        console.log("DescItemType XXXXXXXX", action);
     }
 
     /**
@@ -379,6 +384,7 @@ return true;
         });
 
         return (
+            <Shortcuts name='Tree' handler={this.handleShortcuts}>
             <div className={cls}>
                 {label}
                 <div className='desc-item-type-desc-items'>
@@ -386,6 +392,7 @@ return true;
                 </div>
                 {addAction}
             </div>
+            </Shortcuts>
         )
     }
 }
