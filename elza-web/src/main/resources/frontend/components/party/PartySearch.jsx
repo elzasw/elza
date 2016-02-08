@@ -70,7 +70,7 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
             var partyList = <li className="noResult">{label}</li>
         }
         return  <div className="party-list">
-                    <Search onSearch={this.handleSearch} filterText={this.props.filterText} onClear={this.handleClearSearch}/>
+                    <Search placeholder={i18n('search.input.search')} onSearch={this.handleSearch} filterText={this.props.filterText} onClear={this.handleClearSearch}/>
                     <ul className="partySearch">
                         {partyList}
                     </ul>

@@ -19,6 +19,21 @@ export function refPartyTypesFetchIfNeeded() {
 }
 
 /**
+ * Projde seznam typů osob a najde typ s daným id.
+ * @param partyTypeId id typu
+ * @param partyTypes seznam typů osob
+ * @returns typ osoby
+ */
+export function getPartyTypeById(partyTypeId, partyTypes){
+    var index;
+    for(index = 0; index < partyTypes.length; ++index){
+        if(partyTypes[index].partyTypeId === partyTypeId){
+            return partyTypes[index];
+        }
+    }
+}
+
+/**
  * Nové načtení dat.
  */
 export function refPartyTypesFetch() {

@@ -243,7 +243,7 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
                                 <td className={cls}>{i.displayName}</td>
                                     <td className="buttons">
                                         <Button className="column" onClick={this.handleUpdateName.bind(this, i.partyNameId)}><Icon glyph="fa-pencil"/></Button>
-                                        <Button className="column" onClick={this.handleDeleteName.bind(this, i.partyNameId)}><Icon glyph="fa-trash"/></Button>
+                                        {i.prefferedName ? "" : <Button className="column" onClick={this.handleDeleteName.bind(this, i.partyNameId)}><Icon glyph="fa-trash"/></Button>}
                                         {prefferedBtn}
                                     </td>
                                 <td className="description">{(i.preferred ? i18n('party.detail.name.preferred') : "" )}</td>

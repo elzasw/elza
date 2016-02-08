@@ -10,6 +10,8 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {faSubNodeFormValueChangeParty, faSubNodeFormValueBlur} from 'actions/arr/subNodeForm'
 import {routerNavigate} from 'actions/router'
 import {i18n, AddPartyForm} from 'components';
+import {getPartyTypeById} from 'actions/refTables/partyTypes';
+
 
 
 /**
@@ -267,6 +269,7 @@ export function deleteRelation(relationId, partyId) {
 export function partyAdd(partyTypeId, callback) {
     return (dispatch, getState) => {
         var state = getState();
+        var partyTypeCode = getPartyTypeById(partyTypeId, state.refTables.partyTypes.items).code;
 
         var data = {                        // data předávaná do formuláře osoby
             partyTypeId: partyTypeId,       // identifikátor typu osoby (osoba, rod, událost, ..)
@@ -280,11 +283,13 @@ export function partyAdd(partyTypeId, callback) {
             },
             complements: []
         }
-        var label = i18n('party.addParty');
-        switch(partyTypeId){                                        // podle typu osoby bude různý nadpis
-            case 2: label = i18n('party.addPartyDynasty'); break;   // rod
-            case 4: label = i18n('party.addPartyGroup'); break;     // korporace
-            case 2: label = i18n('party.addPartyEvent'); break;     // událost
+        var label;
+        switch(partyTypeCode){                                        // podle typu osoby bude různý nadpis
+            case "PERSON": label = i18n('party.addParty'); break;   // rod
+            case "DYNASTY": label = i18n('party.addPartyDynasty'); break;     // korporace
+            case "GROUP_PARTY": label = i18n('party.addPartyGroup'); break;     // událost
+            case "EVENT": label = i18n('party.addPartyEvent'); break;     // událost
+            default: label = i18n('party.addParty');
         }
 
         dispatch(modalDialogShow(this, label, <AddPartyForm initData={data} onSave={partyAddSubmit.bind(null, callback, dispatch)} />));
