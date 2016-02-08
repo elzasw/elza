@@ -9,8 +9,9 @@ import {AbstractReactComponent, i18n, Loading, Icon} from 'components';
 import {Button, Input, Table, Modal} from 'react-bootstrap';
 import {dateTimeToString} from 'components/Utils'
 import {indexById} from 'stores/app/utils.jsx'
-import {faSelectSubNodeInt} from 'actions/arr/nodes';
+import {faSelectSubNode} from 'actions/arr/nodes';
 import {versionValidate} from 'actions/arr/versionValidation';
+import {createFaRoot} from 'components/arr/ArrUtils';
 
 var VersionValidationDialog = class VersionValidationDialog extends AbstractReactComponent {
     constructor(props) {
@@ -19,11 +20,11 @@ var VersionValidationDialog = class VersionValidationDialog extends AbstractReac
     }
 
     componentDidMount() {
-        this.requestData(this.props.store.isDirty, this.props.store.isFetching, this.props.versionId)
+        this.requestData(this.props.store.count > this.props.store.errors.length || this.props.store.isDirty, this.props.store.isFetching, this.props.versionId)
     }
 
     componentWillReceiveProps(nextProps) {
-        this.requestData(nextProps.store.isDirty, nextProps.store.isFetching, nextProps.versionId);
+        this.requestData(nextProps.store.count > nextProps.store.errors.length || nextProps.store.isDirty, nextProps.store.isFetching, nextProps.versionId);
     }
 
     requestData(isDirty, isFetching, versionId) {
@@ -31,11 +32,8 @@ var VersionValidationDialog = class VersionValidationDialog extends AbstractReac
     }
 
     handleSelectNode(id, parent) {
-        if (parent) {
-            this.dispatch(faSelectSubNode(id, parent));
-        } else {
-            this.dispatch(id, createVirtualRoot(id)); /// TODO FA ROOT
-        }
+        this.dispatch(faSelectSubNode(id, parent ? parent : createFaRoot(this.props.fa)));
+        this.props.onClose();
     }
 
     render() {
@@ -44,27 +42,28 @@ var VersionValidationDialog = class VersionValidationDialog extends AbstractReac
             <div>
                 <Modal.Body>
                     <div>
-                        <div>
-                            {
-                                this.props.store.isFetching ?
-                                    <span><Icon
-                                        glyph="fa-refresh"/> {i18n('arr.fa.versionValidation.running')}</span> : (
-                                    this.props.store.errors.length > 0 ?
-                                        <span><Icon glyph="fa-check"/> {i18n('arr.fa.versionValidation.ok')}</span> :
-                                        <span><Icon
-                                            glyph="fa-exclamation-triangle"/> {i18n('arr.fa.versionValidation.count', this.props.store.count)}</span>
-                                )
-
-                            }
-                        </div>
                         {!this.props.store.isFetching &&
                         <div>
                             {this.props.store.errors.length > 0 && this.props.store.errors.map((item) => (
                                 <div><a
-                                    onClick={() => (this.handleSelectNode(item.id, item.parentId))}>JP-{item.id}</a>: {item.description}
+                                    onClick={() => (this.handleSelectNode(item.nodeId, item.parent))}>JP-{item.nodeId}</a>: {item.description}
                                 </div>
                             ))}
                         </div>
+                        }
+                    </div>
+                    <div>
+                        {
+                            this.props.store.isFetching ?
+                                <span><Icon
+                                    glyph="fa-refresh"/> {i18n('arr.fa.versionValidation.running')}</span> : (
+                                this.props.store.errors.length > 0 ?
+                                    <span><Icon
+                                        glyph="fa-exclamation-triangle"/> {i18n('arr.fa.versionValidation.count', this.props.store.count)}</span> :
+                                    <span><Icon glyph="fa-check"/> {i18n('arr.fa.versionValidation.ok')}</span>
+
+                            )
+
                         }
                     </div>
                 </Modal.Body>
@@ -81,7 +80,8 @@ VersionValidationDialog.propTypes = {};
 
 module.exports = connect((state) => ({
     store: state.arrRegion.fas[state.arrRegion.activeIndex].versionValidation,
-    versionId: state.arrRegion.fas[state.arrRegion.activeIndex].versionId
+    versionId: state.arrRegion.fas[state.arrRegion.activeIndex].versionId,
+    fa: state.arrRegion.fas[state.arrRegion.activeIndex]
 }))(VersionValidationDialog);
 
 
