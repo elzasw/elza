@@ -20,11 +20,11 @@ var VersionValidationDialog = class VersionValidationDialog extends AbstractReac
     }
 
     componentDidMount() {
-        this.requestData(this.props.store.count > this.props.store.errors.length || this.props.store.isDirty, this.props.store.isFetching, this.props.versionId)
+        this.requestData((this.props.store.count > 0 && this.props.store.errors.length === 0) || this.props.store.isErrorListDirty, this.props.store.isFetching, this.props.versionId)
     }
 
     componentWillReceiveProps(nextProps) {
-        this.requestData((nextProps.store.count > 0 && nextProps.store.errors.length === 0) || nextProps.store.isDirty, nextProps.store.isFetching, nextProps.versionId);
+        this.requestData((nextProps.store.count > 0 && nextProps.store.errors.length === 0) || nextProps.store.isErrorListDirty, nextProps.store.isFetching, nextProps.versionId);
     }
 
     requestData(isDirty, isFetching, versionId) {

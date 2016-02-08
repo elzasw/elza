@@ -1,6 +1,7 @@
 import * as types from 'actions/constants/ActionTypes';
 
 const initialState = {
+    isErrorListDirty: true,
     isFetching: false,
     isDirty: true,
     errors: [],
@@ -24,7 +25,8 @@ export default function versionValidation(state = initialState, action) {
                 ...state,
                 ...action.data,
                 isFetching: false,
-                isDirty: false
+                isDirty: false,
+                isErrorListDirty: action.isErrorListDirty
             };
         default:
             return state
