@@ -66,6 +66,8 @@ class WebApi{
     }
    
     findParty(search = null){
+        search = search ? encodeURI(search) : search;
+
         return AjaxUtils.ajaxGet('/api/partyManagerV2/findParty', {
             search: search,
             from: 0,
@@ -78,6 +80,8 @@ class WebApi{
     }
 
     findPartyForParty(partyId, search = null){
+        search = search ? encodeURI(search) : search;
+
         return AjaxUtils.ajaxGet('/api/partyManagerV2/findPartyForParty', {
             search: search,
             from: 0,

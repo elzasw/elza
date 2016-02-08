@@ -136,14 +136,17 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
      * Vykreslení detailu osoby
      */ 
     render() {
-        if(this.props.partyRegion.isFetchingDetail){
+
+        var party = this.props.partyRegion.selectedPartyData;
+
+        if(this.props.partyRegion.isFetchingDetail && party == undefined){
             return <div>{i18n('party.detail.finding')}</div>
         }
 
-        var party = this.props.partyRegion.selectedPartyData;
         if(party == undefined){
             return <div>{i18n('party.detail.noSelection')}</div>
         }
+
 
         return <div className={"partyDetail"}>
                     <h1>{party.record.record}</h1>
