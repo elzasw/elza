@@ -69,6 +69,7 @@ var Search = class Search extends React.Component {
     }
 
     render() {                          // metoda pro renderovani obsahu komponenty
+
         var cls = "search-container";   // třída komponenty                 
         if (this.props.className) {
             cls += " " + this.props.className;

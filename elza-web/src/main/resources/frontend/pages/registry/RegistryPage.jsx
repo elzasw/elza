@@ -265,7 +265,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 <div>
                     {dropDownForSearch}
                     <Search
-                        onSearch={this.handleSearch.bind(this)}
+                        onSearch={this.handleSearch}
                         onClear={this.handleSearchClear.bind(this)}
                         placeholder={i18n('search.input.search')}
                         filterText={this.props.registry.filterText}
