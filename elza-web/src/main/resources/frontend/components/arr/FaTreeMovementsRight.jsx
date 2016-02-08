@@ -76,7 +76,7 @@ var FaTreeMovementsRight = class FaTreeMovementsRight extends AbstractReactCompo
      * @param e {Object} event
      */
     handleNodeClick(node, e) {
-        this.dispatch(faTreeSelectNode(types.FA_TREE_AREA_MOVEMENTS_RIGHT, node.id, e.ctrlKey, e.shiftKey));
+        this.dispatch(faTreeSelectNode(types.FA_TREE_AREA_MOVEMENTS_RIGHT, node.id, false, false));
     }
 
     /**

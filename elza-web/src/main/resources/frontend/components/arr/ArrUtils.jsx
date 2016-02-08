@@ -31,6 +31,63 @@ export function getNodeParent(nodes, nodeId) {
     return result;
 }
 
+export function getNodeFirstChild(nodes, nodeId) {
+    var result = null;
+
+    var index = indexById(nodes, nodeId);
+    if (index != null) {
+        var depth = nodes[index].depth;
+        index++;
+        if (index < nodes.length && nodes[index].depth == depth + 1) {
+            return nodes[index]
+        }
+    }
+
+    return null;
+}
+
+export function getNodePrevSibling(nodes, nodeId) {
+    var index = indexById(nodes, nodeId);
+    if (index === null) {
+        return null;
+    }
+    var node = nodes[index];
+    index--;
+    while (index >= 0) {
+        if (nodes[index].depth === node.depth) {
+            break;
+        }
+        index--;
+    }
+
+    if (index >= 0) {
+        return nodes[index]
+    } else {
+        return null
+    }
+}
+
+export function getNodeNextSibling(nodes, nodeId) {
+    var index = indexById(nodes, nodeId);
+    if (index === null) {
+        return null;
+    }
+    var node = nodes[index];
+    index++;
+    while (index < nodes.length) {
+        if (nodes[index].depth === node.depth) {
+            break;
+        }
+        index++;
+    }
+
+    if (index < nodes.length) {
+        return nodes[index]
+    } else {
+        return null
+    }
+}
+
 export function getNodeParents(nodes, nodeId) {
     var result = [];
 

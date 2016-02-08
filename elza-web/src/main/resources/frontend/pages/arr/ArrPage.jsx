@@ -21,6 +21,18 @@ import {approveFa, showRegisterJp} from 'actions/arr/fa'
 import {versionValidate} from 'actions/arr/versionValidation'
 import {packetsFetchIfNeeded} from 'actions/arr/packets'
 import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes'
+var ShortcutsManager = require('react-shortcuts')
+var Shortcuts = require('react-shortcuts/component')
+
+var keymap = {
+    Main: {
+        Home: 'ctrl+shift+h'
+    },
+    Tree: {
+        Expand: 'ctrl+shift+x'
+    }
+}
+var shortcutManager = new ShortcutsManager(keymap)
 
 var ArrPage = class ArrPage extends AbstractReactComponent {
     constructor(props) {
@@ -56,6 +68,14 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
     requestValidationData(isDirty, isFetching, versionId) {
         isDirty && !isFetching && this.dispatch(versionValidate(versionId, false))
+    }
+
+    handleShortcuts(action) {
+        console.log("ARR PAGE XXXXXXXX", action);
+    }
+
+    getChildContext() {
+        return { shortcuts: shortcutManager };
     }
 
     getActiveFindingAidId() {
@@ -268,6 +288,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         )
 
         return (
+            <Shortcuts name='Main' handler={this.handleShortcuts}>
             <PageLayout
                 splitter={splitter}
                 className='fa-page'
@@ -277,6 +298,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                 rightPanel={rightPanel}
                 appContentExt={appContentExt}
             />
+            </Shortcuts>
         )
     }
 }
@@ -300,6 +322,10 @@ ArrPage.propTypes = {
     rulDataTypes: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
     packetTypes: React.PropTypes.object.isRequired,
+}
+
+ArrPage.childContextTypes = {
+    shortcuts: React.PropTypes.object.isRequired
 }
 
 module.exports = connect(mapStateToProps)(ArrPage);
