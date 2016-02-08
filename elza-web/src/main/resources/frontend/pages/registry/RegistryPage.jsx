@@ -240,6 +240,10 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             var nazevRodice = this.props.registry.parents[this.props.registry.parents.length-1];
             var cestaRodice = this.props.registry.parents.slice();
             cestaRodice.pop();
+            cestaRodice.push('Rodic 1.1');
+            cestaRodice.push('Rodic 1');
+            cestaRodice.push('Typ 1.1');
+            cestaRodice.push('Typ 1');
             navParents = (
                 <div className="record-parent-info">
                     <div className='record-selected-name'>
