@@ -239,6 +239,7 @@ public class RegistryService {
         RegRecord parentRecord = null;
         if(record.getParentRecord() != null && record.getParentRecord().getRecordId() != null){
             parentRecord = regRecordRepository.findOne(record.getParentRecord().getRecordId());
+            checkRecordCycle(record, parentRecord);
             record.setParentRecord(parentRecord);
         }
 
@@ -270,6 +271,23 @@ public class RegistryService {
 
         List<RegRecord> childs = regRecordRepository.findByParentRecord(record);
         childs.forEach(child -> hierarchicalUpdateRegisterType(child, type));
+    }
+
+    /**
+     * Test, že nevkládáme rejstříkové heslo pod svého potomka.
+     *
+     * @param record    heslo
+     * @param newParent nový rodič
+     */
+    private void checkRecordCycle(final RegRecord record, final RegRecord newParent) {
+        RegRecord parent = newParent;
+        while (parent != null) {
+            if (parent.equals(record)) {
+                throw new IllegalArgumentException("Nelze vložit pod potomka.");
+            }
+
+            parent = parent.getParentRecord();
+        }
     }
 
     /**
