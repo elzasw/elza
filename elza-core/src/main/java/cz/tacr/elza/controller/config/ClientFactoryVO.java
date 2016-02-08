@@ -350,10 +350,10 @@ public class ClientFactoryVO {
         result.setPartyId(partyId);
 
         if (fillParents) {
-            List<String> parents = new LinkedList<>();
+            List<RegRecordVO.RecordParent> parents = new LinkedList<>();
             RegRecord parentRecord = regRecord.getParentRecord();
-            while (parentRecord != null && !parentRecord.equals(fillToParent)) {
-                parents.add(parentRecord.getRecord());
+            while (parentRecord != null ) {
+                parents.add(new RegRecordVO.RecordParent(parentRecord.getRecordId(), parentRecord.getRecord()));
                 parentRecord = parentRecord.getParentRecord();
             }
             result.setParents(parents);
@@ -369,23 +369,19 @@ public class ClientFactoryVO {
      */
     public void fillRegisterTypeNamesToParents(final RegRecordVO record, @Nullable final Integer parentTypeId) {
 
-        List<String> parentTypeNames = new ArrayList<>();
+        List<RegRecordVO.RecordParent> parentTypeNames = new ArrayList<>();
 
         RegRegisterType recordType = registerTypeRepository.findOne(record.getRegisterTypeId());
-        parentTypeNames.add(recordType.getName());
+        parentTypeNames.add(new RegRecordVO.RecordParent(recordType.getRegisterTypeId(),recordType.getName()));
+        record.setTypesToRoot(parentTypeNames);
 
-
-        if (recordType.getRegisterTypeId().equals(parentTypeId)) {
-            return;
-        }
 
         RegRegisterType parentType = recordType.getParentRegisterType();
-        while (parentType != null && !parentType.getRegisterTypeId().equals(parentTypeId)) {
-            parentTypeNames.add(parentType.getName());
+        while (parentType != null) {
+            parentTypeNames.add(new RegRecordVO.RecordParent(parentType.getRegisterTypeId(), parentType.getName()));
             parentType = parentType.getParentRegisterType();
         }
 
-        record.setTypesToRoot(parentTypeNames);
     }
 
     /**

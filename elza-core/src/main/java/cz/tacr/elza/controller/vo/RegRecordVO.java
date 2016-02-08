@@ -73,12 +73,12 @@ public class RegRecordVO {
     private List<RegVariantRecordVO> variantRecords;
 
     /** Cesta od toho rejstříku až ke kořeni. První záznam je přímý nadřízený, poslední je kořen. */
-    private List<String> parents;
+    private List<RecordParent> parents;
 
     /**
      * Názvy typů rejstříku od typu až po kořenový typ.
      */
-    private List<String> typesToRoot;
+    private List<RecordParent> typesToRoot;
 
     /**
      * Lze přidat podřízený záznam.
@@ -217,19 +217,48 @@ public class RegRecordVO {
         this.hasChildren = hasChildren;
     }
 
-    public List<String> getParents() {
+    public List<RecordParent> getParents() {
         return parents;
     }
 
-    public void setParents(List<String> parents) {
+    public void setParents(List<RecordParent> parents) {
         this.parents = parents;
     }
 
-    public List<String> getTypesToRoot() {
+    public List<RecordParent> getTypesToRoot() {
         return typesToRoot;
     }
 
-    public void setTypesToRoot(final List<String> typesToRoot) {
+    public void setTypesToRoot(final List<RecordParent> typesToRoot) {
         this.typesToRoot = typesToRoot;
+    }
+
+    public static class RecordParent{
+        private Integer id;
+        private String name;
+
+        public RecordParent() {
+        }
+
+        public RecordParent(final Integer id, final String name) {
+            this.id = id;
+            this.name = name;
+        }
+
+        public Integer getId() {
+            return id;
+        }
+
+        public void setId(final Integer id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(final String name) {
+            this.name = name;
+        }
     }
 }
