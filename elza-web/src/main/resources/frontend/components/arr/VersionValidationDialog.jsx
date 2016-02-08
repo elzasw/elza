@@ -24,7 +24,7 @@ var VersionValidationDialog = class VersionValidationDialog extends AbstractReac
     }
 
     componentWillReceiveProps(nextProps) {
-        this.requestData(nextProps.store.count > nextProps.store.errors.length || nextProps.store.isDirty, nextProps.store.isFetching, nextProps.versionId);
+        this.requestData((nextProps.store.count > 0 && nextProps.store.errors.length === 0) || nextProps.store.isDirty, nextProps.store.isFetching, nextProps.versionId);
     }
 
     requestData(isDirty, isFetching, versionId) {
