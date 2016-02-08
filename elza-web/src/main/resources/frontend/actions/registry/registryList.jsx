@@ -21,8 +21,7 @@ export function fetchRegistryIfNeeded(search = '', registryParent = null, regist
 
 export function fetchRegistry(search, registryParent = null, registerTypeIds = null) {
     return dispatch => {
-        dispatch(requestRegistry())
-
+        dispatch(requestRegistry());
         return WebApi.findRegistry(search, registryParent, registerTypeIds)
                 .then(json => dispatch(receiveRegistry(json)));
     }

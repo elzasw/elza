@@ -17,7 +17,7 @@ import {WebApi} from 'actions'
 import {MenuItem, DropdownButton, ButtonGroup, Button} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {Nav, Glyphicon, NavItem} from 'react-bootstrap';
-import {registryData, registrySearchData, registryClearSearch, registryChangeParent, registryRemoveRegistry, registryStartMove, registryStopMove, registryCancelMove, registryUnsetParents} from 'actions/registry/registryData'
+import {registryData, registrySearchData, registryClearSearch, registryChangeParent, registryRemoveRegistry, registryStartMove, registryCancelMove, registryUnsetParents, registryRecordUpdate, registryRecordMove} from 'actions/registry/registryData'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {fetchRegistryIfNeeded, registrySetTypesId, fetchRegistry, registryAdd} from 'actions/registry/registryList'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
@@ -70,9 +70,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     handleSaveMoveRegistry(){
         var data = Object.assign({}, this.props.registry.recordForMove);
         data['parentRecordId'] = this.props.registry.selectedId;
-        WebApi.updateRegistry(data).then(json => {
-            this.dispatch(registryStopMove());
-        });
+        this.dispatch(registryRecordMove(data));
     }
     handleCancelMoveRegistry(){
         var registry = Object.assign({}, registry);

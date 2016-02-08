@@ -47,17 +47,31 @@ export function registryStartMove() {
     }
 }
 
-export function registryStopMove(registry) {
+export function registryStopMove() {
     return {
-        type: types.REGISTRY_MOVE_REGISTRY_FINISH,
-        registry
+        type: types.REGISTRY_MOVE_REGISTRY_FINISH
     }
 }
 
-export function registryRecordUpdate(data){
+export function registryReloadNavigation(){
+    return {
+        type: types.REGISTRY_RELOAD_NAVIGATION
+    }
+}
+
+export function registryRecordMove(data){
+    return (dispatch) => {
+        dispatch(registryRecordUpdate(data, registryStopMove));
+    }
+}
+
+export function registryRecordUpdate(data, callback = null){
     return (dispatch) => {
         WebApi.updateRegistry(data).then(json => {
             dispatch(registryUpdated(json));
+            if (callback !== null) {
+                dispatch(callback());
+            }
         });
     }
 }
