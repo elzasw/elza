@@ -109,10 +109,10 @@ var messages = {
     "subNodeForm.descItemType.lock": "Nastavení zamknutí úprav hodnot PP",
     "subNodeForm.descItemType.copyFromPrev": "Kopírovat hodnoty PP z předchozí JP",
 
-    "subNodeForm.addNodeAfter": "Přidat JP za",
-    "subNodeForm.addNodeBefore": "Přidat JP před",
-    "subNodeForm.addSubNode": "Přidat podřízený JP",
-    "subNodeForm.deleteNode": "Zrušit JP",
+    "subNodeForm.addNodeAfter": "JP za",
+    "subNodeForm.addNodeBefore": "JP před",
+    "subNodeForm.addSubNode": "JP pod",
+    "subNodeForm.deleteNode": "Smazat JP",
 
     "subNodeForm.descItemTypeAdd": "Přidat prvek",
     "subNodeForm.descItemTypeUnlockAll": "Odemknout vše",
