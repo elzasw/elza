@@ -54,8 +54,6 @@ function validate(descItem, descItemTypeInfo, valueServerError) {
             break;
         case 'ENUM':
             break;
-        case 'FORMATTED_TEXT':
-            break;
         case 'UNITDATE':
             if (typeof descItem.calendarTypeId == 'undefined' || descItem.calendarTypeId == "") {
                 error.calendarType = i18n('subNodeForm.validate.calendarType.required');
@@ -66,9 +64,12 @@ function validate(descItem, descItemTypeInfo, valueServerError) {
             break;
         case 'UNITID':
             break;
+        case 'FORMATTED_TEXT':
         case 'TEXT':
-            break;
         case 'STRING':
+            if (!descItem.value || descItem.value.length === 0) {
+                error.value = i18n('subNodeForm.validate.value.notEmpty');
+            }
             break;
         case 'INT':
             if (descItem.value.length === 0) {
