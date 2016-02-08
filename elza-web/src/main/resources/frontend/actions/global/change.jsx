@@ -80,3 +80,11 @@ export function changeApproveVersion(versionId) {
         versionId
     }
 }
+
+export function changeMoveLevel(versionId) {
+
+    return {
+        type: types.CHANGE_MOVE_LEVEL,
+        versionId
+    }
+}

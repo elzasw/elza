@@ -151,6 +151,7 @@ export default function arrRegion(state = initialState, action) {
         case types.BULK_ACTIONS_STATE_CHANGE:
         case types.CHANGE_DELETE_LEVEL:
         case types.CHANGE_ADD_LEVEL:
+        case types.CHANGE_MOVE_LEVEL:
         case types.FA_VERSION_VALIDATION_LOAD:
         case types.FA_VERSION_VALIDATION_RECEIVED:
         case types.FA_FA_APPROVE_VERSION:

@@ -118,7 +118,6 @@ export function fa(state, action) {
         case types.FA_NODE_CHANGE:
         case types.FA_NODES_RECEIVE:
         case types.FA_NODES_REQUEST:
-        case types.CHANGE_DESC_ITEM:
         case types.FA_NODE_INFO_REQUEST:
         case types.FA_NODE_INFO_RECEIVE:
         case types.FA_SUB_NODE_FORM_REQUEST:
@@ -147,13 +146,24 @@ export function fa(state, action) {
         case types.FA_SUB_NODE_INFO_REQUEST:
         case types.FA_SUB_NODE_INFO_RECEIVE:
         case types.FA_FA_SUBNODES_FULLTEXT_RESULT:
-        case types.CHANGE_DELETE_LEVEL:
-        case types.CHANGE_ADD_LEVEL:
             var result = {...state,
                 nodes: nodes(state.nodes, action),
                 faTree: faTree(state.faTree, action),
             }
             return consolidateState(state, result);
+
+        case types.CHANGE_DESC_ITEM:
+        case types.CHANGE_ADD_LEVEL:
+        case types.CHANGE_DELETE_LEVEL:
+        case types.CHANGE_MOVE_LEVEL:
+            var result = {...state,
+                nodes: nodes(state.nodes, action),
+                faTree: faTree(state.faTree, action),
+                faTreeMovementsLeft: faTree(state.faTreeMovementsLeft, action),
+                faTreeMovementsRight: faTree(state.faTreeMovementsRight, action),
+            }
+            return consolidateState(state, result);
+
         case types.CHANGE_CONFORMITY_INFO:
             var result = {
                 ...state,

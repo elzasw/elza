@@ -374,6 +374,10 @@ export default function faTree(state = initialState, action) {
 
                 return result;
             }
+
+        case types.CHANGE_MOVE_LEVEL:
+            return Object.assign({}, state, { ensureItemVisible: false, dirty: true });
+
         case types.CHANGE_CONFORMITY_INFO:
             var index = indexById(state.nodes, action.nodeId);
 

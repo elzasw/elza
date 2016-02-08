@@ -6,7 +6,8 @@ import {buklActionStateChange} from 'actions/arr/bulkActions';
 import {store} from 'stores/app/AppStore';
 
 import {changeConformityInfo, changeIndexingFinished, changePackage, changePackets,
-        changeDescItem, changeDeleteLevel, changeAddLevel, changeApproveVersion, changeParty} from 'actions/global/change';
+        changeDescItem, changeDeleteLevel, changeAddLevel, changeApproveVersion, changeParty,
+        changeMoveLevel} from 'actions/global/change';
 
 
 var SockJS = require('sockjs-client');
@@ -125,6 +126,18 @@ function processEvents(values) {
                 approveVersionChange(value);
                 break;
 
+            case 'MOVE_LEVEL_AFTER':
+                moveLevelAfterChange(value);
+                break;
+
+            case 'MOVE_LEVEL_BEFORE':
+                moveLevelBeforeChange(value);
+                break;
+
+            case 'MOVE_LEVEL_UNDER':
+                moveLevelUnderChange(value);
+                break;
+
             default:
                 console.warn("Nedefinovaný typ eventu: " + value.eventType, value);
                 break;
@@ -149,6 +162,17 @@ function addLevelUnderChange(value) {
     store.dispatch(changeAddLevel(value.versionId, value.node.nodeId, value.staticNode.nodeId));
 }
 
+function moveLevelAfterChange(value) {
+    store.dispatch(changeMoveLevel(value.versionId));
+}
+
+function moveLevelBeforeChange(value) {
+    store.dispatch(changeMoveLevel(value.versionId));
+}
+
+function moveLevelUnderChange(value) {
+    store.dispatch(changeMoveLevel(value.versionId));
+}
 /**
  * Validace uzlu.
  *
