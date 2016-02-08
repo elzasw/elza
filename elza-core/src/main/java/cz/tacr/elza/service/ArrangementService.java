@@ -752,8 +752,10 @@ public class ArrangementService {
 
         Map<Integer, TreeNodeClient> parentIdTreeNodeClientMap = levelTreeCacheService.findParentsWithTitles(nodeIds, version);
 
-        List<TreeNodeFulltext> result =  new ArrayList<>(nodeIds.size());
-        for (Integer nodeId : nodeIds) {
+        List<Integer> sortedNodeIds = levelTreeCacheService.sortNodesByTreePosition(nodeIds, version);
+
+        List<TreeNodeFulltext> result =  new ArrayList<>(sortedNodeIds.size());
+        for (Integer nodeId : sortedNodeIds) {
             TreeNodeFulltext treeNodeFulltext = new TreeNodeFulltext();
 
             treeNodeFulltext.setNodeId(nodeId);

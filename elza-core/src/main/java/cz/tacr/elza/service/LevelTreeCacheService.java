@@ -1194,6 +1194,34 @@ public class LevelTreeCacheService {
             this.iconValue = iconValue;
         }
     }
+
+    public List<Integer> sortNodesByTreePosition(Set<Integer> nodeIds, ArrFindingAidVersion version) {
+        List<TreeNodeClient> nodes = getNodesByIds(nodeIds, version.getFindingAidVersionId());
+
+        nodes.sort((node1, node2) -> {
+            Integer[] referenceMark1 = node1.getReferenceMark();
+            Integer[] referenceMark2 = node2.getReferenceMark();
+
+            Integer l1 = referenceMark1.length;
+            Integer l2 = referenceMark2.length;
+            int i = 0;
+            while (i < l1 && i < l2) {
+                Integer position1 = referenceMark1[i];
+                Integer position2 = referenceMark2[i];
+
+                int comparisonResult = position1.compareTo(position2);
+                if (comparisonResult == 0) {
+                    i++;
+                } else {
+                    return comparisonResult;
+                }
+            }
+
+            return l1.compareTo(l2);
+        });
+
+        return nodes.stream().map(TreeNodeClient::getId).collect(Collectors.toList());
+    }
 }
 
 
