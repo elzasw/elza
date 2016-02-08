@@ -122,7 +122,7 @@ export function addNode(indexNode, parentNode, versionId, direction, descItemCop
         };
         return WebApi.addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes, scenarioName).then((json) => {
             dispatch(faNodeChange(versionId, {newNode: json.node, indexNode: indexNode, parentNode: json.parentNode, direction: direction, action: "ADD"}));
-            dispatch(faSelectSubNode(json.id, parentNode));
+            dispatch(faSelectSubNode(json.node.id, parentNode));
         });
     }
 }

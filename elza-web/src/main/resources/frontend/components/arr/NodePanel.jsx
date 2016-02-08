@@ -399,7 +399,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 {
                     node.nodeInfoFetched && !isFaRootId(node.id) && !closed &&
                     <AddNodeDropdown key="end"
-                                     title="Přidat JP na konec"
+                                     title={i18n('nodePanel.addSubNode')}
                                      glyph="fa-plus-circle"
                                      action={this.handleAddNodeAtEnd}
                                      node={this.props.node}

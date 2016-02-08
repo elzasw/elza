@@ -575,13 +575,14 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         let notRoot = !isFaRootId(this.props.nodeId);
         return (
             <div className='node-form-actions'>
-                <NoFocusButton onClick={this.handleAddDescItemType}><Icon glyph="fa-plus"/>Přidat prvek</NoFocusButton>
-                <NoFocusButton onClick={this.handleDescItemTypeUnlockAll}><Icon glyph="fa-lock"/>Odemknout
-                    vše</NoFocusButton>
+                <NoFocusButton onClick={this.handleAddDescItemType}><Icon
+                    glyph="fa-plus"/>{i18n('subNodeForm.descItemTypeAdd')}</NoFocusButton>
+                <NoFocusButton onClick={this.handleDescItemTypeUnlockAll}><Icon
+                    glyph="fa-lock"/>{i18n('subNodeForm.descItemTypeUnlockAll')}</NoFocusButton>
                 {
                     notRoot &&
                     <AddNodeDropdown key="before"
-                                     title="Přidat JP před"
+                                     title={i18n('subNodeForm.addNodeBefore')}
                                      glyph="fa-plus"
                                      action={this.handleAddNodeBefore}
                                      node={this.props.selectedSubNode}
@@ -592,7 +593,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 {
                     notRoot &&
                     <AddNodeDropdown key="after"
-                                     title="Přidat JP za"
+                                     title={i18n('subNodeForm.addNodeAfter')}
                                      glyph="fa-plus"
                                      action={this.handleAddNodeAfter}
                                      node={this.props.selectedSubNode}
@@ -601,7 +602,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                     />
                 }
                 <AddNodeDropdown key="child"
-                                 title="Přidat podřízený JP"
+                                 title={i18n('subNodeForm.addSubNode')}
                                  glyph="fa-plus"
                                  action={this.handleAddChildNode}
                                  node={this.props.selectedSubNode}
@@ -610,7 +611,8 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 />
                 {
                     notRoot &&
-                    <NoFocusButton onClick={this.handleDeleteNode}><Icon glyph="fa-trash"/>Zrušit JP</NoFocusButton>
+                    <NoFocusButton onClick={this.handleDeleteNode}><Icon
+                        glyph="fa-trash"/>{i18n('subNodeForm.deleteNode')}</NoFocusButton>
                 }
             </div>
         )
