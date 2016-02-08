@@ -32,8 +32,10 @@ var Search = class Search extends React.Component {
         }
     }
     componentWillReceiveProps(nexProps){
-        this.state = {                                                  // inicializace stavu komponenty
-            filterText: nexProps.filterText || nexProps.value,                          // hledaný text
+        if (this.props.filterText !== nexProps.filterText || this.props.value !== nexProps.value) {
+            this.state = {                                                  // inicializace stavu komponenty
+                filterText: nexProps.filterText || nexProps.value,                          // hledaný text
+            }
         }
     }
 
