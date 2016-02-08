@@ -14,6 +14,7 @@
 
     .record-parent-info {
         border: 1px solid @fa-file-tree-border;
+        background-color: @tree-node-label-active-bg;
         border-bottom: none;
         padding: 2px 5px;
 
@@ -25,6 +26,7 @@
             }
             .back {
                 padding: 1px 4px;
+                margin-right: -3px;
             }
             .back:hover {
                 background-color: @node-form-actions-hover;
@@ -37,6 +39,11 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
+        }
+
+        .record-selected-breadcrumbs {
+            font-size: 0.8em;
+            color: @color-link  ;
         }
     }
     .registry-list-results {
