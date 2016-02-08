@@ -706,7 +706,9 @@ public class LevelTreeCacheService {
             Set<RulDescItemType> descItemTypes = descItemTypeRepository.findByCode(descItemTypeCodes);
             if (descItemTypes.size() != descItemTypeCodes.size()) {
                 List<String> foundCodes = descItemTypes.stream().map(RulDescItemType::getCode).collect(Collectors.toList());
-                Collection<String> missingCodes = CollectionUtils.disjunction(descItemTypeCodes, foundCodes);
+                Collection<String> missingCodes = new HashSet<>(descItemTypeCodes);
+                missingCodes.removeAll(foundCodes);
+
                 logger.warn("Nepodařilo se nalézt typy atributů s kódy " + StringUtils.join(missingCodes, ", ") + ". Změňte kódy v"
                         + " konfiguraci.");
             }
