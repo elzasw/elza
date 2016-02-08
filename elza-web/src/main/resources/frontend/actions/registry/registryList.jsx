@@ -122,6 +122,13 @@ export function registryAdd(parentId, callback) {
         if (state.arrRegion.registryData) {
             registryParentTypesId = state.arrRegion.registryData.item.registerTypeId;
         }
+
+        if (state.registry.registryData) {
+            registryParentTypesId = state.registry.registryData.item.registerTypeId;
+        } else if(state.registryData.item.registerTypeId) {
+            registryParentTypesId = state.registryData.item.registerTypeId;
+        }
+
         dispatch(modalDialogShow(this, i18n('registry.addRegistry'),
                         <AddRegistryForm
                                 create
