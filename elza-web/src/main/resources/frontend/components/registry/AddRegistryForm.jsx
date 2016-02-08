@@ -7,6 +7,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/ActionTypes';
 import {reduxForm} from 'redux-form';
+import {generateValidation} from 'redux-form-validation';
+
 import {AbstractReactComponent, i18n, DropDownTree, Scope} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
@@ -72,7 +74,7 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
             <div key={this.props.key}>
                 <Modal.Body>
                     <form onSubmit={handleSubmit}>
-                        <Scope versionId={null} label={i18n('registry.scope.class')}  {...scopeId} {...decorateFormField(scopeId)}/>
+                        <Scope versionId={null} label={i18n('registry.scope.class')}  {...scopeId} {...decorateFormField(scopeId)} onBlur={false}/>
                         <DropDownTree
                             label={i18n('registry.add.typ.rejstriku')}
                             items = {itemsForDropDownTree}
@@ -80,9 +82,10 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
                             {...registerTypeId}
                             {...decorateFormField(registerTypeId)}
                             disabled={disabled}
+                            onBlur={false}
                             />
-                        <Input type="text" label={i18n('registry.name')} {...nameMain} {...decorateFormField(nameMain)} />
-                        <Input type="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)} />
+                        <Input type="text" label={i18n('registry.name')} {...nameMain} {...decorateFormField(nameMain)} onBlur={false}/>
+                        <Input type="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)} onBlur={false} />
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

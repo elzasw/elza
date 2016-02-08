@@ -70,7 +70,7 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
             <div>
                 <Modal.Body>
                     <form onSubmit={handleSubmit}>
-                        <Scope versionId={null} label={i18n('registry.scope.class')}  {...scopeId} {...decorateFormField(scopeId)}/>
+                        <Scope versionId={null} label={i18n('registry.scope.class')}  {...scopeId} {...decorateFormField(scopeId)} onBlur={false}/>
                         <DropDownTree
                             label={i18n('registry.add.typ.rejstriku')}
                             items = {itemsForDropDownTree}
@@ -78,9 +78,10 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
                             {...registerTypeId}
                             {...decorateFormField(registerTypeId)}
                             disabled={disabled}
+                            onBlur={false}
                             />
-                        <Input type="text" label={i18n('registry.name')} {...nameMain} {...decorateFormField(nameMain)} />
-                        <Input type="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)} />
+                        <Input type="text" label={i18n('registry.name')} {...nameMain} {...decorateFormField(nameMain)} onBlur={false}/>
+                        <Input type="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)} onBlur={false}/>
 
                     </form>
                 </Modal.Body>
