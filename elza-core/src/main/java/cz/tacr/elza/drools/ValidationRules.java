@@ -11,10 +11,10 @@ import org.kie.api.runtime.StatelessKieSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.RulArrangementType;
+import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.DataValidationResults;
 import cz.tacr.elza.drools.model.ActiveLevel;
@@ -45,6 +45,9 @@ public class ValidationRules extends Rules {
 
 	@Autowired
 	private DescItemRepository descItemRepository;
+
+	@Autowired
+	private RulesExecutor rulesExecutor;
 
 	/**
 	 * Spustí validaci atributů.
@@ -81,12 +84,12 @@ public class ValidationRules extends Rules {
 				.findByRuleSetAndRuleTypeOrderByPriorityAsc(version.getRuleSet(), RulRule.RuleType.CONFORMITY_INFO);
 
 		for (RulRule rulPackageRule : rulPackageRules) {
-			path = Paths.get(RulesExecutor.ROOT_PATH + File.separator + rulPackageRule.getFilename());
+			path = Paths.get(rulesExecutor.getRootPath() + File.separator + rulPackageRule.getFilename());
 			StatelessKieSession session = createNewStatelessKieSession(path);
 			session.setGlobal("results", validationResults);
 			execute(session, facts);
 		}
-		
+
 		List<DataValidationResult> results = validationResults.getResults();
 
 		finalizeValidationResults(results);

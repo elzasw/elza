@@ -15,7 +15,6 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.model.Level;
-import cz.tacr.elza.drools.model.NewLevel;
 import cz.tacr.elza.drools.model.NewLevelApproach;
 import cz.tacr.elza.drools.model.NewLevelApproaches;
 import cz.tacr.elza.drools.service.ScriptModelFactory;
@@ -28,9 +27,11 @@ import cz.tacr.elza.drools.service.ScriptModelFactory;
 @Component
 public class ScenarioOfNewLevelRules extends Rules {
 
-
     @Autowired
     private ScriptModelFactory scriptModelFactory;
+
+    @Autowired
+    private RulesExecutor rulesExecutor;
 
     public synchronized List<ScenarioOfNewLevel> execute(final ArrLevel level,
                                                          final DirectionLevel directionLevel,
@@ -38,15 +39,15 @@ public class ScenarioOfNewLevelRules extends Rules {
             throws Exception {
 
         NewLevelApproaches newLevelApproaches = new NewLevelApproaches();
-        
+
         List<Level> levels = scriptModelFactory.createFactsForNewLevel(level, directionLevel, version);
-        
+
         Path path;
         List<RulRule> rulPackageRules = packageRulesRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
                 version.getRuleSet(), RulRule.RuleType.NEW_LEVEL);
 
         for (RulRule rulPackageRule : rulPackageRules) {
-            path = Paths.get(RulesExecutor.ROOT_PATH + File.separator + rulPackageRule.getFilename());
+            path = Paths.get(rulesExecutor.getRootPath() + File.separator + rulPackageRule.getFilename());
 
             StatelessKieSession session = createNewStatelessKieSession(path);
             session.setGlobal("results", newLevelApproaches);

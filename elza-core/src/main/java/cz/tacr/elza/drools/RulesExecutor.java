@@ -10,10 +10,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import liquibase.util.file.FilenameUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.api.vo.NodeTypeOperation;
@@ -24,7 +27,6 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
-import liquibase.util.file.FilenameUtils;
 
 
 /**
@@ -53,9 +55,9 @@ public class RulesExecutor implements InitializingBean {
 
     /**
      * Cesta adresáře pro konfiguraci pravidel
-     * TODO: napojit na spring konfiguraci
      */
-    public static String ROOT_PATH = "rules";
+    @Value("${elza.rulesDir}")
+    private String rootPath;
 
     /**
      * Přípona souborů pravidel
@@ -173,12 +175,16 @@ public class RulesExecutor implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        File dir = new File(ROOT_PATH);
+        File dir = new File(rootPath);
 
         if (!dir.exists()) {
             dir.mkdirs();
         }
 
         //copyDefaultFromResources(dir);
+    }
+
+    public String getRootPath() {
+        return rootPath;
     }
 }

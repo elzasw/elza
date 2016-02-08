@@ -12,10 +12,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import liquibase.util.file.FilenameUtils;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.bulkaction.yaml.YamlProperties;
-import liquibase.util.file.FilenameUtils;
 
 
 /**
@@ -29,9 +31,9 @@ public class BulkActionConfigManager {
 
     /**
      * Cesta adresáře pro konfiguraci hromadných akcí.
-     * TODO: napojit na spring konfiguraci
      */
-    private String path = "./bulkactions";
+    @Value("${elza.bulkactions.bulkactionsDir}")
+    private String path;
 
     /**
      * Podporovaný formát souborů pro konfiguraci - použité pro ukládání nových a vyhledání v adresáři.
