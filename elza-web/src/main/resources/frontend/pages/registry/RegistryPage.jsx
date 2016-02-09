@@ -11,21 +11,23 @@ var classNames = require('classnames');
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Loading, Toastr} from 'components';
-import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, Search, RegistryPanel, DropDownTree, AddRegistryForm, ImportRegistryForm} from 'components';
+import {AbstractReactComponent, i18n, Loading, Toastr, Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, Search, RegistryPanel, DropDownTree, AddRegistryForm, ImportForm} from 'components';
 import {WebApi} from 'actions'
 import {MenuItem, DropdownButton, ButtonGroup, Button} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {Nav, Glyphicon, NavItem} from 'react-bootstrap';
 import {registryData, registrySearchData, registryClearSearch, registryChangeParent, registryRemoveRegistry, registryStartMove, registryCancelMove, registryUnsetParents, registryRecordUpdate, registryRecordMove} from 'actions/registry/registryData'
-import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
+import {modalDialogShow} from 'actions/global/modalDialog'
 import {fetchRegistryIfNeeded, registrySetTypesId, fetchRegistry, registryAdd} from 'actions/registry/registryList'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
 
 var RegistryPage = class RegistryPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.bindMethods('buildRibbon', 'handleSelect', 'handleSearch', 'handleSearchClear', 'handleDoubleClick', 'handleClickNavigation', 'handleAddRegistry', 'handleCallAddRegistry', 'handleRemoveRegistryDialog', 'handleRemoveRegistry', 'handleStartMoveRegistry', 'handleSaveMoveRegistry', 'handleCancelMoveRegistry', 'handleCloseTypesRegistry', 'handleUnsetParents');
+        this.bindMethods('buildRibbon', 'handleSelect', 'handleSearch', 'handleSearchClear', 'handleDoubleClick',
+            'handleClickNavigation', 'handleAddRegistry', 'handleCallAddRegistry', 'handleRemoveRegistryDialog',
+            'handleRemoveRegistry', 'handleStartMoveRegistry', 'handleSaveMoveRegistry', 'handleCancelMoveRegistry',
+            'handleCloseTypesRegistry', 'handleUnsetParents', 'handleRegistryImport');
 
     }
 
@@ -73,29 +75,22 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         data['parentRecordId'] = this.props.registry.selectedId;
         this.dispatch(registryRecordMove(data));
     }
-    
+
     handleCancelMoveRegistry(){
         var registry = Object.assign({}, registry);
         this.dispatch(registryCancelMove(registry));
     }
-    
+
+
     handleRegistryImport() {
        this.dispatch(
            modalDialogShow(this,
-               i18n('registry.importRegistry'),
-               <ImportRegistryForm onSubmit={this.handleCallImportRegistry.bind(this)} />
+               i18n('import.title.registry'),
+               <ImportForm record/>
            )
        );
     }
 
-    handleCallImportRegistry(values) {
-        var data = Object.assign({}, values);
-        console.log('import rejstriku', data);
-        WebApi.importRegistry(data.transformationName, data.registryScopeId, data.stopOnError, data.xmlFile ).then(json => {
-            this.dispatch(modalDialogHide());
-        });    
-    }
-    
     buildRibbon() {
 
 
@@ -106,7 +101,9 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
 
         altActions.push(
-            <Button key='registryImport' onClick={this.handleRegistryImport.bind(this)}><Icon glyph='fa-download' /><div><span className="btnText">{i18n('ribbon.action.registry.import')}</span></div></Button>
+            <Button key='registryImport' onClick={this.handleRegistryImport}><Icon glyph='fa-download'/>
+                <div><span className="btnText">{i18n('ribbon.action.registry.import')}</span></div>
+            </Button>
         );
 
         var itemActions = [];

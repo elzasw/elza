@@ -150,11 +150,6 @@ var messages = {
     'registry.detail.variant.name': "Variantní rejstříková hesla",
     'registry.danger.disallowed.action.title': "Nepovolená akce",
     'registry.danger.disallowed.action.can.not.move.into.myself': "Nelze přesunout sama sebe do sebe",
-
-    "registry.importRegistry": "Import rejstříkových hesel",
-    "registry.import.transformationName": "Šablona transformace",
-    "registry.import.registryScope": "Třída rejstříku",
-    "registry.import.stopOnError": "Zastavit při chybě",
     
     "party.detail.characteristics": "Charakteristika",
     "party.detail.type": "Typ",
@@ -258,6 +253,14 @@ var messages = {
     "admin.fulltext.action.reindex": "Reindexovat",
 	"admin.fulltext.message.reindexing": "Probíhá reindexace...",
     "admin.fulltext.message.success": "Reindexace fulltextu dokončena",
+
+    "import.title.registry": "Import rejstříkových hesel",
+
+    "import.transformationName": "Šablona transformace",
+    "import.registryScope": "Třída rejstříku",
+    "import.stopOnError": "Zastavit při chybě",
+    "import.file": "Soubor",
+    "import.running": "Import probíhá",
 
     "____": ""
 };
