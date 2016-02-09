@@ -365,9 +365,8 @@ public class ClientFactoryVO {
     /**
      * Pro heslo vytvoří seznam typů až po kořen typů nebo po typ v seznamu.
      *  @param record        heslo
-     * @param parentTypeId null nebo id typu, po který se mají načítat rodiče
      */
-    public void fillRegisterTypeNamesToParents(final RegRecordVO record, @Nullable final Integer parentTypeId) {
+    public void fillRegisterTypeNamesToParents(final RegRecordVO record) {
 
         List<RegRecordVO.RecordParent> parentTypeNames = new ArrayList<>();
 

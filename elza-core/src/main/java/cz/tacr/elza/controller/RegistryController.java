@@ -155,14 +155,10 @@ public class RegistryController {
 
         for (RegRecordVO regRecordVO : foundRecordVOList) {
             parentRecordVOMap.put(regRecordVO.getRecordId(), regRecordVO);
+            factoryVo.fillRegisterTypeNamesToParents(regRecordVO);
         }
 
-        if (registerTypeId != null) {
 
-            for (RegRecordVO recordVO : foundRecordVOList) {
-                factoryVo.fillRegisterTypeNamesToParents(recordVO, registerTypeId);
-            }
-        }
 
         // děti
         foundRecords.forEach(record -> {
@@ -258,7 +254,7 @@ public class RegistryController {
 
         Integer partyId = recordIdPartyIdMap.get(recordId);
         RegRecordVO result = factoryVo.createRegRecord(record, partyId, true, null);
-        factoryVo.fillRegisterTypeNamesToParents(result, null);
+        factoryVo.fillRegisterTypeNamesToParents(result);
         result.setChilds(factoryVo.createRegRecords(childs, recordIdPartyIdMap, false, null));
 
         result.setVariantRecords(factoryVo.createRegVariantRecords(variantRecordRepository.findByRegRecordId(recordId)));
