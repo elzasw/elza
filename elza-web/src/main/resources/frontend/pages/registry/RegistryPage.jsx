@@ -19,7 +19,7 @@ import {PageLayout} from 'pages';
 import {Nav, Glyphicon, NavItem} from 'react-bootstrap';
 import {registryData, registrySearchData, registryClearSearch, registryChangeParent, registryRemoveRegistry, registryStartMove, registryCancelMove, registryUnsetParents, registryRecordUpdate, registryRecordMove} from 'actions/registry/registryData'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {fetchRegistryIfNeeded, registrySetTypesId, fetchRegistry, registryAdd} from 'actions/registry/registryList'
+import {fetchRegistryIfNeeded, registrySetTypesId, fetchRegistry, registryAdd, registryClickNavigation} from 'actions/registry/registryList'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
 
 var RegistryPage = class RegistryPage extends AbstractReactComponent {
@@ -163,16 +163,15 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             return false;
         }
         var rodice = item.parents.slice();
-        rodice.push(item.record);
-        var registry = Object.assign({}, registry,{registryParentId: item.recordId, parents: rodice, filterText: ''});
+        rodice.push({id: item.recordId, name:item.record});
+        var registry = Object.assign({}, registry,{registryParentId: item.recordId, parents: rodice, typesToRoot: item.typesToRoot, filterText: ''});
         this.dispatch(registryChangeParent(registry));
         this.dispatch(registryClearSearch());
 
     }
 
-    handleClickNavigation(item, event) {
-        var registry = Object.assign({}, registry,{registryParentId: item.id});
-        this.dispatch(registryChangeParent(registry));
+    handleClickNavigation(recordIdForOpen, event) {
+        this.dispatch(registryClickNavigation(recordIdForOpen));
     }
 
     handleSearch(search, event) {
@@ -193,8 +192,14 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         this.dispatch(registrySetTypesId(null));
     }
 
-    handleUnsetParents(){
-        this.dispatch(registryUnsetParents(null));
+    handleUnsetParents(parent, event){
+        if (!parent) {
+            this.dispatch(registryUnsetParents(null));
+        }
+        else{
+            console.log('chci se vreatit na', parent);
+            this.dispatch(this.handleClickNavigation(parent, event));
+        }
     }
     render() {
         const {splitter} = this.props;
@@ -220,17 +225,24 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
                 // výsledky z vyhledávání
                 if ( this.props.registry.filterText!==null ) {
-                    var path = item.parents.join(' | ');
-                    if (path && item.typesToRoot)
-                        path += ' | ';
-                    if (item.typesToRoot)
-                        path += item.typesToRoot.join(' | ');
+                    var path = [];
+                    if (item.parents) {
+                        item.parents.map((val) => {
+                            path.push(val.name);
+                        });
+                    }
+
+                    if (item.typesToRoot) {
+                        item.typesToRoot.map((val) => {
+                            path.push(val.name);
+                        });
+                    }
 
                     return (
                         <div key={item.recordId} title={path} className={cls} onDoubleClick={doubleClick} onClick={this.handleSelect.bind(this, item)}>
                             <div><Icon glyph={iconName} /></div>
                             <div className={clsItem}>{item.record}</div>
-                            <div className="path" >{path}</div>
+                            <div className="path" >{path.join(' | ')}</div>
                         </div>
                     )
                 }
@@ -248,22 +260,35 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
 
         var navParents = '';
-        if (this.props.registry.parents){
-            var nazevRodice = this.props.registry.parents[this.props.registry.parents.length-1];
-            var cestaRodice = this.props.registry.parents.slice();
-            cestaRodice.pop();
-            cestaRodice.push('Rodic 1.1');
-            cestaRodice.push('Rodic 1');
-            cestaRodice.push('Typ 1.1');
-            cestaRodice.push('Typ 1');
+
+        if (this.props.registry.parents && this.props.registry.parents.length){
+            var nazevRodice = this.props.registry.parents[this.props.registry.parents.length-1].name;
+            var cestaRodice = [];
+            var tmpParents = this.props.registry.parents.slice();
+
+            tmpParents.pop();
+            tmpParents.map(val => {
+                cestaRodice.push(<span className='clickAwaiblePath' key={val.id} onClick={this.handleClickNavigation.bind(this,val.id)}>{val.name}</span>);
+            });
+
+            if (this.props.registry.typesToRoot) {
+                this.props.registry.typesToRoot.map(val => {
+                    cestaRodice.push(<span className='clickAwaiblePath' key={val.id} onClick={this.hlandleRegistryTypesSelect.bind(this,val.id)} >{val.name}</span>);
+                });
+            }
+
+            var parentId = null;
+            console.log(this.props.registry.parents);
+            if (this.props.registry.parents.length > 1)
+                parentId = this.props.registry.parents[0].id;
             navParents = (
                 <div className="record-parent-info">
                     <div className='record-selected-name'>
                         <div className="icon"><Icon glyph="fa-folder-open" /></div>
                         <div className="title">{nazevRodice}</div>
-                        <div className="back" onClick={this.handleUnsetParents}><Icon glyph="fa-times" /></div>
+                        <div className="back" onClick={this.handleUnsetParents.bind(this,parentId)}><Icon glyph="fa-times" /></div>
                     </div>
-                    <div className='record-selected-breadcrumbs'>{cestaRodice.join(' | ')}</div>
+                    <div className='record-selected-breadcrumbs'>{cestaRodice.map((val, key)=>{if (key) {return  <span> | {val}</span>} else {return val;}})}</div>
                 </div>
             )
         }

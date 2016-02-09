@@ -9,6 +9,7 @@ import {WebApi} from 'actions'
 import * as types from 'actions/constants/ActionTypes';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {i18n, AddRegistryForm} from 'components';
+import {registryChangeParent} from 'actions/registry/registryData'
 
 export function fetchRegistryIfNeeded(search = '', registryParent = null, registerTypeIds = null) {
     return (dispatch, getState) => {
@@ -156,4 +157,15 @@ export function registrySelect(recordId) {
         receivedAt: Date.now()
     }
 
+}
+
+export function registryClickNavigation(recordId){
+    return (dispatch) => {
+        return WebApi.getRegistry(recordId).then(json => {
+            json.parents.push({id:recordId, name: json.record});
+            var registry = Object.assign({}, registry,{registryParentId: recordId, parents: json.parents, typesToRoot: json.typesToRoot, filterText: ''});
+            console.log('menim na', registry, json);
+            dispatch(registryChangeParent(registry));
+        });
+    }
 }

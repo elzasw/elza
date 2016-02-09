@@ -16,7 +16,8 @@ const initialState = {
     registryData: undefined,
     registryParentId: null,
     registryTypesId: null,
-    parents: '',
+    parents: [],
+    typesToRoot: [],
     records: [],
     countRecords: 0,
 }
@@ -42,7 +43,7 @@ export default function registry(state = initialState, action = {}) {
             }
         case types.STORE_SAVE:
             {
-                const {registryData, isFetching, fetched, selectedId, filterText, registryParentId, registryTypesId, parents} = state;
+                const {registryData, isFetching, fetched, selectedId, filterText, registryParentId, registryTypesId, parents, typesToRoot} = state;
 
                 var _info
                 if (registryData && registryData.item.recordId === selectedId) {
@@ -55,6 +56,7 @@ export default function registry(state = initialState, action = {}) {
                     selectedId,
                     filterText,
                     parents,
+                    typesToRoot,
                     registryParentId,
                     registryTypesId,
                     _info
@@ -83,6 +85,7 @@ export default function registry(state = initialState, action = {}) {
             return Object.assign({}, state, {
                 registryParentId: action.registry.registryParentId,
                 parents: action.registry.parents,
+                typesToRoot: action.registry.typesToRoot,
                 filterText: action.registry.filterText,
                 fetched: false
             })
@@ -120,7 +123,8 @@ export default function registry(state = initialState, action = {}) {
         case types.REGISTRY_UNSET_PARENT:
             return Object.assign({}, state, {
                 registryParentId: null,
-                parents: '',
+                parents: [],
+                typesToRoot: [],
                 fetched: false
             })
         case types.REGISTRY_CLEAR_SEARCH:

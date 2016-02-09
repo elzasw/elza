@@ -166,14 +166,15 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
 
             var typesToRoot = this.props.registryData.item.typesToRoot.slice();
             var parents = this.props.registryData.item.parents.slice();
-            var hiearchie =  typesToRoot.reverse().join(' > ');
-            if (hiearchie && parents.length > 0) {
-                hiearchie +=' > '+parents.reverse().join(' > ');
-            }
-            else if (!hiearchie && parents.length > 0 ){
-                hiearchie = parents.reverse().join(' > ');
-            }
+            var hiearchie =[];
+            typesToRoot.reverse().map((val) => {
+                hiearchie.push(val.name);
+            });
 
+
+            parents.reverse().map((val) => {
+                hiearchie.push(val.name);
+            });
 
 
             var detailRegistry = (
@@ -193,7 +194,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
                     </div>
                     <div className='line hiearch'>
                         <label>{i18n('registry.detail.typ.rejstriku')}</label>
-                        <div>{hiearchie}</div>
+                        <div>{hiearchie.join(' > ')}</div>
                     </div>
 
                     <div className='line variant-name'>
