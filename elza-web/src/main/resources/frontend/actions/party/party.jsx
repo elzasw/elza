@@ -273,6 +273,7 @@ export function partyAdd(partyTypeId, callback) {
 
         var data = {                        // data předávaná do formuláře osoby
             partyTypeId: partyTypeId,       // identifikátor typu osoby (osoba, rod, událost, ..)
+            partyTypeCode: partyTypeCode,
             from: {
                 textDate: "",
                 calendarTypeId: state.partyRegion.gregorianCalendarId

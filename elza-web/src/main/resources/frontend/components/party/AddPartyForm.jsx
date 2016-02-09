@@ -31,7 +31,6 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
         this.state = {                                      // ve state jsou uložena a průběžně udržová data formuláře
             data : this.props.initData,                     // předvyplněná data formuláře
             errors: [],                                     // seznam chyb k vypsání uživateli
-            personId: 1,                                    // identifikátor osoby
             preselect: null,
             preselectInit: true
         };
@@ -263,8 +262,6 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
      * Vykreslení formuláře
      */
     render() {
-        console.log("xxxxxxxxxxxxxx_render")
-
         var complementsTypes = [];                                                                              // seznam aktuálních typů doplňků možných pro daný typ osoby
         for(var i=0; i<this.props.refTables.partyTypes.items.length; i++){                                      // projdu všechny typy osob co jsou
             if(this.props.refTables.partyTypes.items[i].partyTypeId == this.props.initData.partyTypeId){        // a z té která odpovídá typu této osoby
@@ -295,7 +292,7 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
                         </Input>
 
                         <hr/>
-                        {this.state.data.partyTypeId == this.state.personId ?  <div className="line">
+                        {this.state.data.partyTypeCode == "PERSON" ?  <div className="line">
                             <Input type="text" label={i18n('party.degreeBefore')} name="degreeBefore" value={this.state.data.degreeBefore} onChange={this.updateValue} />
                             <Input type="text" label={i18n('party.degreeAfter')} name="degreeAfter" value={this.state.data.degreeAfter} onChange={this.updateValue} />
                         </div> : ""}

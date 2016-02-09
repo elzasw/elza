@@ -114,6 +114,7 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
         var party = this.props.partyRegion.selectedPartyData;                       // načtení aktualní osoby ze store
         var data = {                                                                // výchozí data formuláře
             partyTypeId: party.partyType.partyTypeId,                               // identifikátor typu osoby, jejíž jménu upravujeme
+            partyTypeCode: party.partyType.code,
             validFrom: {
                 textDate: "",    
                 calendarTypeId: this.props.partyRegion.gregorianCalendarId            
@@ -154,6 +155,7 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
         var data = {                                                                // data, která udou poslána formuláři
             partyNameId: name.partyNameId,                                          // identifikátor upravovaného jména
             partyTypeId: party.partyType.partyTypeId,                               // identifikátor typu osoby, jejíž jménu upravujeme
+            partyTypeCode: party.partyType.code,
             nameFormTypeId : name.nameFormType.nameFormTypeId,                      // identifikátor typu jména
             mainPart: name.mainPart,                                                // hlavní část jména
             otherPart: name.otherPart,                                              // doplňková část jména

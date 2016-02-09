@@ -212,10 +212,13 @@ var PartyNameForm = class PartyNameForm extends AbstractReactComponent {
                             <option value="0" key="0"></option> 
                             {this.props.refTables.partyNameFormTypes.items.map(i=> {return <option value={i.nameFormTypeId} key={i.nameFormTypeId}>{i.name}</option>})}
                         </Input>
-                        <div className="line">
+
+                        {this.state.data.partyTypeCode == "PERSON" ?
+                         <div className="line">
                             <Input type="text" label={i18n('party.degreeBefore')} name="degreeBefore" value={this.state.data.degreeBefore} onChange={this.updateValue} />
                             <Input type="text" label={i18n('party.degreeAfter')} name="degreeAfter" value={this.state.data.degreeAfter} onChange={this.updateValue} />
-                        </div>
+                        </div> : "" }
+
                         <Input type="text" label={i18n('party.nameMain')} name="mainPart" value={this.state.data.mainPart} onChange={this.updateValue} />
                         <Input type="text" label={i18n('party.nameOther')} name="otherPart" value={this.state.data.otherPart} onChange={this.updateValue} />
                         <div className="line datation">
