@@ -45,7 +45,8 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
     handleCallAddRegistry(data) {
         this.dispatch(fetchRegistry(this.props.registry.filterText, this.props.registry.registryParentId, this.props.registry.registryTypesId));
-        this.dispatch(registryData({selectedId: data.recordId}));
+        data['selectedId'] = data.recordId;
+        this.dispatch(registryData(data));
     }
 
     handleRemoveRegistryDialog(){
