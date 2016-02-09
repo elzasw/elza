@@ -183,6 +183,11 @@ return true;
     }
 
     handleDragStart(e) {
+        // Pokud je AP uzavřené, nelze dělat DND
+        if (this.props.closed) {
+            return this.cancelDragging(e)
+        }
+
         // Pokud nekliknul na dragger, nelze přesouvat
         var drgs = e.target.getElementsByClassName('dragger')
         if (drgs.length !== 1) {
