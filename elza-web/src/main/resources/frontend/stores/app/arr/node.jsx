@@ -145,6 +145,7 @@ export function node(state = nodeInitialState, action) {
         case types.FA_SUB_NODE_FORM_REQUEST:
         case types.FA_SUB_NODE_FORM_RECEIVE:
         case types.FA_SUB_NODE_FORM_VALUE_CHANGE:
+        case types.FA_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
         case types.FA_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
         case types.FA_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
         case types.FA_SUB_NODE_FORM_VALUE_CHANGE_RECORD:

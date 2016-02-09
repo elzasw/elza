@@ -117,6 +117,28 @@ export default function subNodeForm(state = initialState, action) {
 
             state.formData = {...state.formData};
             return {...state};
+        case types.FA_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
+            var loc = getLoc(state, action.valueLocation);
+
+            var descItems = loc.descItemType.descItems;
+
+            // Odebrání přesouvané
+            descItems = [
+                ...descItems.slice(0, action.valueLocation.descItemIndex),
+                ...descItems.slice(action.valueLocation.descItemIndex + 1)
+            ]
+
+            // Přidání přesouvané na správné místo
+            descItems = [
+                ...descItems.slice(0, action.index),
+                loc.descItem,
+                ...descItems.slice(action.index)
+            ]
+
+            loc.descItemType.descItems = descItems
+
+            state.formData = {...state.formData};
+            return {...state};
         case types.FA_SUB_NODE_FORM_VALUE_CHANGE:
         case types.FA_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
         case types.FA_SUB_NODE_FORM_VALUE_CHANGE_RECORD:

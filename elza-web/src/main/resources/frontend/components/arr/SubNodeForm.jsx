@@ -12,7 +12,7 @@ import {connect} from 'react-redux'
 import {indexById} from 'stores/app/utils.jsx'
 import {faSubNodeFormDescItemTypeAdd, faSubNodeFormValueChange, faSubNodeFormDescItemTypeDelete,
         faSubNodeFormValueChangeSpec,faSubNodeFormValueBlur, faSubNodeFormValueFocus, faSubNodeFormValueAdd,
-        faSubNodeFormValueDelete, faSubNodeFormValuesCopyFromPrev} from 'actions/arr/subNodeForm'
+        faSubNodeFormValueDelete, faSubNodeFormValuesCopyFromPrev, faSubNodeFormValueChangePosition} from 'actions/arr/subNodeForm'
 var classNames = require('classnames');
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import DescItemString from './nodeForm/DescItemString'
@@ -35,7 +35,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderDescItemGroup', 'handleAddDescItemType', 'renderDescItemType', 'handleChange',
+        this.bindMethods('renderDescItemGroup', 'handleAddDescItemType', 'renderDescItemType', 'handleChange', 'handleChangePosition',
             'handleChangeSpec', 'handleDescItemTypeRemove', 'handleBlur', 'handleFocus', 'renderFormActions',
             'getDescItemTypeInfo', 'handleDescItemAdd', 'handleDescItemRemove', 'handleDescItemTypeLock',
             'handleDescItemTypeUnlockAll', 'handleDescItemTypeCopy', 'handleAddNodeBefore', 'handleAddNodeAfter',
@@ -409,6 +409,23 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 
     /**
+     * Změna pozice hodnoty atributu.
+     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
+     * @param descItemTypeIndex {Integer} index atributu v seznamu
+     * @param descItemIndex {Integer} index honodty atributu v seznamu
+     * @param newDescItemIndex {Integer} nová pozice - nový index atributu
+     */
+    handleChangePosition(descItemGroupIndex, descItemTypeIndex, descItemIndex, newDescItemIndex) {
+        var valueLocation = {
+            descItemGroupIndex,
+            descItemTypeIndex,
+            descItemIndex
+        }
+
+        this.dispatch(faSubNodeFormValueChangePosition(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation, newDescItemIndex));
+    }
+
+    /**
      * Změna specifikace u hodnoty atributu.
      * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
      * @param descItemTypeIndex {Integer} index atributu v seznamu
@@ -509,6 +526,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 onDescItemAdd={this.handleDescItemAdd.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDescItemRemove={this.handleDescItemRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onChange={this.handleChange.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onChangePosition={this.handleChangePosition.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onChangeSpec={this.handleChangeSpec.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onBlur={this.handleBlur.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onFocus={this.handleFocus.bind(this, descItemGroupIndex, descItemTypeIndex)}

@@ -51,6 +51,32 @@ export function faSubNodeFormValueChange(versionId, nodeId, nodeKey, valueLocati
     }
 }
 
+export function faSubNodeFormValueChangePosition(versionId, nodeId, nodeKey, valueLocation, index) {
+    return (dispatch, getState) => {
+        var state = getState();
+        var subNodeForm = getSubNodeForm(state, versionId, nodeKey);
+        var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
+
+        if (!loc.descItem.error.hasError) {
+            dispatch({
+                type: types.FA_SUB_NODE_FORM_VALUE_CHANGE_POSITION,
+                versionId,
+                nodeId,
+                nodeKey,
+                valueLocation,
+                index,
+            })
+
+            var descItem = {...loc.descItem, position: index + 1}
+
+            faSubNodeFormUpdateDescItem(versionId, subNodeForm.data.node.version, descItem)
+                .then(json => {
+                    dispatch(faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueLocation, json, 'UPDATE'));
+                })
+        }
+    }
+}
+
 export function faSubNodeFormValuesCopyFromPrev(versionId, nodeId, nodeVersionId, descItemTypeId, nodeKey, valueLocation) {
     return (dispatch, getState) => {
         dispatch(faSubNodeFormDescItemTypeDeleteInStore(versionId, nodeId, nodeKey, valueLocation, true));

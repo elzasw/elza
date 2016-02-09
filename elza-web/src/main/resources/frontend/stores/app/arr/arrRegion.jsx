@@ -129,6 +129,7 @@ export default function arrRegion(state = initialState, action) {
         case types.FA_SUB_NODE_REGISTER_VALUE_FOCUS:
         case types.FA_SUB_NODE_REGISTER_VALUE_BLUR:
         case types.FA_SUB_NODE_FORM_VALUE_CHANGE:
+        case types.FA_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
         case types.FA_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
         case types.FA_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
         case types.FA_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
