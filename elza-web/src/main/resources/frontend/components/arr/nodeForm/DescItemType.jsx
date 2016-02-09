@@ -360,7 +360,6 @@ return true;
             case 'RECORD_REF':
                 parts.push(<DescItemRecordRef key={key}
                     {...descItemProps}
-                    data-id={descItemIndex} draggable={draggable}
                     onDetail={this.handleDetailRecord.bind(this, descItemIndex)}
                     onCreateRecord={this.handleCreateRecord.bind(this, descItemIndex)}
                     />)
