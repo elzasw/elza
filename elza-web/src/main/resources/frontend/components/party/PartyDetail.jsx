@@ -144,7 +144,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
         }
 
         if(party == undefined){
-            return <div>{i18n('party.detail.noSelection')}</div>
+            return <div className="partyDetail">{i18n('party.detail.noSelection')}</div>
         }
 
 
