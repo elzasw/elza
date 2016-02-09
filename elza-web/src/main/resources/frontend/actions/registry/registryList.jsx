@@ -118,24 +118,11 @@ export function receiveRegistryRecordTypes(json, partyTypeId){
 export function registryAdd(parentId, callback) {
     return (dispatch, getState) => {
         var state = getState();
-        var registryParentTypesId = null;
-
-        if (state.registry.registryData) {
-            registryParentTypesId = state.registry.registryData.item.registerTypeId;
-        }
-        else if(state.registry.registryTypesId){
-            registryParentTypesId = state.registry.registryTypesId;
-        }
-        else if(state.registryData.item.registerTypeId) {
-            registryParentTypesId = state.registryData.item.registerTypeId;
-        }
-
         dispatch(modalDialogShow(this, i18n('registry.addRegistry'),
                         <AddRegistryForm
                                 create
                                 onSubmit={registryAddSubmit.bind(null, parentId, callback, dispatch)}
                                 parentRecordId={parentId}
-                                parentRegisterTypeId={registryParentTypesId}
                                 />
                 )
         )

@@ -278,7 +278,6 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             }
 
             var parentId = null;
-            console.log(this.props.registry.parents);
             if (this.props.registry.parents.length > 1)
                 parentId = this.props.registry.parents[0].id;
             navParents = (

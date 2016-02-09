@@ -52,31 +52,36 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+
         var label = this.getItemLabel(nextProps.value, nextProps.items);
-        if (true) {
-            if (nextProps.preselect) {
-                if (this.props.value == undefined) {
-                    var preselect = this.getFirstPossibleRecordType(nextProps.items);
-                    if (preselect.found) {
-                        label = this.getItemLabel(preselect.found.id, nextProps.items);
-                        this.setState({
-                            label: label,
-                            value: preselect.found.id
-                        });
-                    }
-
-                    if (this.props.onChange) {
-                        this.props.onChange(preselect.found.id, preselect.found);
-                    }
+        if (nextProps.preselect) {
+            if (this.props.value == undefined) {
+                var preselect = this.getFirstPossibleRecordType(nextProps.items);
+                if (preselect.found) {
+                    label = this.getItemLabel(preselect.found.id, nextProps.items);
+                    this.setState({
+                        label: label,
+                        value: preselect.found.id
+                    });
                 }
-            } else {
 
-                this.setState({
-                    label: (label != '' ? label : nextProps.label),          // pokus je vybrany nejaká položka, vypíše se její název, jinak se vypíše defaultní popisek
-                    value: nextProps.value                // id vybrane položky
-                })
+                if (nextProps.onChange) {
+                    nextProps.onChange(preselect.found.id, preselect.found);
+                }
             }
+        } else {
+
+            this.setState({
+                label: (label != '' ? label : nextProps.label),          // pokus je vybrany nejaká položka, vypíše se její název, jinak se vypíše defaultní popisek
+                value: nextProps.value                // id vybrane položky
+            })
+
+            if (nextProps.onChange && this.props.value !== nextProps.value){
+                nextProps.onChange(nextProps.value);
+            }
+
         }
+
     }
 
     componentDidMount(){

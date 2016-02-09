@@ -12,7 +12,7 @@ import {AbstractReactComponent, i18n, DropDownTree, Scope} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField} from 'components/form/FormUtils'
-import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryList'
+import {getRegistryRecordTypesIfNeeded, getRegistry} from 'actions/registry/registryList'
 
 
 const validate = (values, props) => {
@@ -39,7 +39,7 @@ const validate = (values, props) => {
 var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.state = {};
+        this.state = {parentRegisterTypeId: null};
     }
 
     componentWillReceiveProps(nextProps) {
@@ -51,8 +51,17 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
             this.props.load(this.props.initData);
         }
         this.dispatch(getRegistryRecordTypesIfNeeded());
-    }
 
+        if (this.props.registryData.item.registerTypeId && this.props.registryData.item.recordId === this.props.parentRecordId){
+            this.setState({parentRegisterTypeId: this.props.registryData.item.registerTypeId});
+        }
+        else if (!this.state.parentRegisterTypeId && this.props.parentRecordId){
+            this.dispatch(getRegistry(this.props.parentRecordId)).then(json => {
+                this.setState({parentRegisterTypeId: json.item.registerTypeId});
+            });
+        }
+
+    }
     render() {
         const {fields: { nameMain, characteristics, registerTypeId, scopeId}, handleSubmit, onClose} = this.props;
         var itemsForDropDownTree = [];
@@ -60,14 +69,13 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
             itemsForDropDownTree = this.props.registryRecordTypes.item;
         }
         var disabled = false;
-        if (this.props.parentRegisterTypeId){
-            registerTypeId.value=this.props.parentRegisterTypeId;
+        if (this.state.parentRegisterTypeId){
+            registerTypeId.value=this.state.parentRegisterTypeId;
         }
+
         if (this.props.parentRecordId){
             disabled = true;
         }
-
-
 
         return (
             <div key={this.props.key}>
@@ -104,11 +112,13 @@ module.exports = reduxForm({
         initialValues: state.form.addRegistryForm.initialValues,
         refTables: state.refTables,
         registry: state.registry,
+        registryData: state.registryData,
         registryRecordTypes: state.registryRecordTypes
 
 }),
 {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addRegistryForm', data})}
 )(AddRegistryForm)
+
 
 
 
