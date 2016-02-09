@@ -75,7 +75,7 @@ var NodeRegister = class NodeRegister extends AbstractReactComponent {
     }
 
     render() {
-        const {item} = this.props;
+        const {item, closed} = this.props;
         var footer = this.renderFooter();
         var value = item.record ? {id: item.record.recordId, name: item.record.record} : null;
 
@@ -88,7 +88,7 @@ var NodeRegister = class NodeRegister extends AbstractReactComponent {
         return (
                 <div className='link-value'>
                     <Autocomplete
-                            {...decorateValue(this, item.hasFocus, item.error.value, false)}
+                            {...decorateValue(this, item.hasFocus, item.error.value, closed)}
                             customFilter
                             className='autocomplete-record'
                             footer={footer}

@@ -32,6 +32,8 @@ elza:
 #        accordion-right:
 #          - ZP2015_FOLDER_TYPE
 #          - ZP2015_STORAGE_ID
+#        icon: # pouze jedna položka
+#          - ZP2015_LEVEL_TYPE
 
 #  type-groups:
 #    GROUP1:

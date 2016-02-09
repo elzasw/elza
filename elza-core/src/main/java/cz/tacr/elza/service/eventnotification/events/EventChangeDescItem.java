@@ -6,7 +6,7 @@ package cz.tacr.elza.service.eventnotification.events;
  * @author Martin Šlapa
  * @since 2.2.2016
  */
-public class EventChangeDescItem extends AbstractEventVersion<EventChangeDescItem> {
+public class EventChangeDescItem extends EventVersion<EventChangeDescItem> {
 
     /**
      * Object id hodnoty atributu.

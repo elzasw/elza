@@ -2,6 +2,14 @@ elza:
   treenode:
     title: ${elza.conf.treenode.title}
     defaultTitle: ${elza.conf.treenode.default.title} 
+  workingDir: ./work
+  xmlImport:
+    transformationDir: ${elza.workingDir}/transformations/
+  bulkactions:
+    bulkactionsDir: ${elza.workingDir}/bulkactions
+  rulesDir: ${elza.workingDir}/rules
+  groovy:
+    groovyDir: ${elza.workingDir}/groovy
 spring:
   application:
      name: elza
@@ -23,6 +31,6 @@ spring:
               search:
                   lucene_version: LUCENE_CURRENT
                   default:
-                      indexBase: ./lucene/indexes/
+                      indexBase: ${elza.workingDir}/lucene/indexes/
                       directory_provider: filesystem
                       

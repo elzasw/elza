@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 
 import {Toastr, i18n} from 'components';
 
@@ -63,5 +63,28 @@ export function changeAddLevel(versionId, nodeId, parentNodeId) {
         versionId,
         nodeId,
         parentNodeId
+    }
+}
+
+export function changeParty(partyId){
+    return {
+        type: types.PARTY_UPDATED,
+        partyId: partyId
+    }
+}
+
+export function changeApproveVersion(versionId) {
+
+    return {
+        type: types.CHANGE_APPROVE_VERSION,
+        versionId
+    }
+}
+
+export function changeMoveLevel(versionId) {
+
+    return {
+        type: types.CHANGE_MOVE_LEVEL,
+        versionId
     }
 }

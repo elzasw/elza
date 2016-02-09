@@ -9,15 +9,51 @@ import { AppStore, ResizeStore } from 'stores';
 import {AbstractReactComponent, ContextMenu, Toastr, ModalDialog, WebSocket} from 'components';
 import {storeSave, storeRestoreFromStorage} from 'actions/store/store';
 var AppRouter = require ('./AppRouter')
+var ShortcutsManager = require('react-shortcuts')
+var Shortcuts = require('react-shortcuts/component')
+var keyModifier = Utils.getKeyModifier()
+import {Utils} from 'components'
+import {routerNavigate} from 'actions/router'
 
 require('./Layout.less');
-//var Ukazky = require('./../components/Ukazky.jsx');
+
+var keymap = {
+    Main: {
+        home: keyModifier + 'd',
+        arr: keyModifier + 'a',
+        registry: keyModifier + 'r',
+        party: keyModifier + 'o',
+    },
+}
+var shortcutManager = new ShortcutsManager(keymap)
 
 var Layout = class Layout extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('scheduleStoreSave');
+        this.bindMethods('scheduleStoreSave', 'handleShortcuts');
+    }
+
+    getChildContext() {
+        return { shortcuts: shortcutManager };
+    }
+
+    handleShortcuts(action) {
+        console.log("#handleShortcuts", '[' + action + ']', this);
+        switch (action) {
+            case 'home':
+                this.dispatch(routerNavigate('/'))
+                break
+            case 'arr':
+                this.dispatch(routerNavigate('/arr'))
+                break
+            case 'party':
+                this.dispatch(routerNavigate('/party'))
+                break
+            case 'registry':
+                this.dispatch(routerNavigate('/registry'))
+                break
+        }
     }
 
     scheduleStoreSave() {
@@ -34,16 +70,18 @@ var Layout = class Layout extends AbstractReactComponent {
 
     render() {
         return (
-            <div className='root-container'>
-                {this.props.children}
-                <div style={{overflow:'hidden'}}>
-                    <Toastr.Toastr />
+            <Shortcuts name='Main' handler={this.handleShortcuts}>
+                <div className='root-container'>
+                    {this.props.children}
+                    <div style={{overflow:'hidden'}}>
+                        <Toastr.Toastr />
+                    </div>
+                    <ContextMenu {...this.props.contextMenu}/>
+                    <ModalDialog {...this.props.modalDialog}/>
+                    <WebSocket />
+                    <AppRouter/>
                 </div>
-                <ContextMenu {...this.props.contextMenu}/>
-                <ModalDialog {...this.props.modalDialog}/>
-                <WebSocket />
-                <AppRouter/>
-            </div>
+            </Shortcuts>
         )
     }
 }
@@ -54,6 +92,10 @@ function mapStateToProps(state) {
         contextMenu,
         modalDialog
     }
+}
+
+Layout.childContextTypes = {
+    shortcuts: React.PropTypes.object.isRequired
 }
 
 module.exports = connect(mapStateToProps)(Layout);

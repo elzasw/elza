@@ -5,7 +5,7 @@
  * @since 22.1.2016
  */
 import {WebApi} from 'actions'
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
  
  /**
  * Získání stavu indexování ze serveru.

@@ -5,7 +5,7 @@
 import React from 'react';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Tabs, FaTreeLazy} from 'components';
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import {AppActions} from 'stores';
 import {MenuItem} from 'react-bootstrap';
 import {selectFaTab, closeFaTab} from 'actions/arr/fa'
@@ -76,7 +76,7 @@ var FaTreeMovementsRight = class FaTreeMovementsRight extends AbstractReactCompo
      * @param e {Object} event
      */
     handleNodeClick(node, e) {
-        this.dispatch(faTreeSelectNode(types.FA_TREE_AREA_MOVEMENTS_RIGHT, node.id, e.ctrlKey, e.shiftKey));
+        this.dispatch(faTreeSelectNode(types.FA_TREE_AREA_MOVEMENTS_RIGHT, node.id, false, false));
     }
 
     /**

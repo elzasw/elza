@@ -6,7 +6,7 @@
  */
 import {WebApi} from 'actions'
 import {i18n, Toastr, LongText} from 'components';
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 
 /**
  * Získání seznamu importovaných balíčků ze serveru.

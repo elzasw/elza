@@ -7,7 +7,7 @@ require ('./FaExtendedView.less');
 import React from 'react';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Tabs, Icon, FaTreeMain, FaTreeMovementsLeft, FaTreeMovementsRight} from 'components';
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import {Button} from 'react-bootstrap';
 import {faExtendedView} from 'actions/arr/fa'
 import {moveNodesUnder, moveNodesBefore, moveNodesAfter} from 'actions/arr/nodes'
@@ -145,9 +145,9 @@ var FaExtendedView = class FaExtendedView extends AbstractReactComponent {
             var moveBeforeAfter = active && this.checkMoveBeforeAfter();
             tabContent.push(
                 <div key={2} className='tree-actions-container'>
-                    <Button onClick={this.handleMoveUnder} disabled={!moveUnder}>Přesunout do</Button>
-                    <Button onClick={this.handleMoveBefore} disabled={!moveBeforeAfter}>Přesunout před</Button>
-                    <Button onClick={this.handleMoveAfter} disabled={!moveBeforeAfter}>Přesunout za</Button>
+                    <Button onClick={this.handleMoveUnder} disabled={!moveUnder}>Přesunout do<Icon glyph="fa-arrow-circle-o-right"/></Button>
+                    <Button onClick={this.handleMoveBefore} disabled={!moveBeforeAfter}>Přesunout před<Icon glyph="fa-arrow-circle-o-right"/></Button>
+                    <Button onClick={this.handleMoveAfter} disabled={!moveBeforeAfter}>Přesunout za<Icon glyph="fa-arrow-circle-o-right"/></Button>
                 </div>
             )
             tabContent.push(

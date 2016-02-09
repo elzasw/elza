@@ -6,7 +6,8 @@ import {buklActionStateChange} from 'actions/arr/bulkActions';
 import {store} from 'stores/app/AppStore';
 
 import {changeConformityInfo, changeIndexingFinished, changePackage, changePackets,
-        changeDescItem, changeDeleteLevel, changeAddLevel} from 'actions/global/change';
+        changeDescItem, changeDeleteLevel, changeAddLevel, changeApproveVersion, changeParty,
+        changeMoveLevel} from 'actions/global/change';
 
 
 var SockJS = require('sockjs-client');
@@ -89,6 +90,10 @@ function processEvents(values) {
                 packageEvent();
                 break;
 
+            case 'PARTY_CREATE':
+            case 'PARTY_UPDATE':
+                partyUpdate(value);
+                break;
             case 'DESC_ITEM_CHANGE':
                 descItemChange(value);
                 break;
@@ -117,12 +122,32 @@ function processEvents(values) {
                 addLevelUnderChange(value);
                 break;
 
+            case 'APPROVE_VERSION':
+                approveVersionChange(value);
+                break;
+
+            case 'MOVE_LEVEL_AFTER':
+                moveLevelAfterChange(value);
+                break;
+
+            case 'MOVE_LEVEL_BEFORE':
+                moveLevelBeforeChange(value);
+                break;
+
+            case 'MOVE_LEVEL_UNDER':
+                moveLevelUnderChange(value);
+                break;
+
             default:
                 console.warn("Nedefinovaný typ eventu: " + value.eventType, value);
                 break;
         }
 
     });
+}
+
+function approveVersionChange(value) {
+    store.dispatch(changeApproveVersion(value.versionId));
 }
 
 function addLevelAfterChange(value) {
@@ -137,6 +162,17 @@ function addLevelUnderChange(value) {
     store.dispatch(changeAddLevel(value.versionId, value.node.nodeId, value.staticNode.nodeId));
 }
 
+function moveLevelAfterChange(value) {
+    store.dispatch(changeMoveLevel(value.versionId));
+}
+
+function moveLevelBeforeChange(value) {
+    store.dispatch(changeMoveLevel(value.versionId));
+}
+
+function moveLevelUnderChange(value) {
+    store.dispatch(changeMoveLevel(value.versionId));
+}
 /**
  * Validace uzlu.
  *
@@ -180,6 +216,10 @@ function deleteLevelChange(value) {
  */
 function bulkActionStateChange(value) {
     store.dispatch(buklActionStateChange(value));
+}
+
+function partyUpdate(value){
+    store.dispatch(changeParty(value.ids[0]));
 }
 
 /**

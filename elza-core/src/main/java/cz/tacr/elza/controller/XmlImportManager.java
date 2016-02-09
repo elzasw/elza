@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.api.vo.XmlImportConfig;
 import cz.tacr.elza.service.XmlImportService;
-import cz.tacr.elza.service.exception.XmlImportException;
 
 
 /**
@@ -27,10 +26,10 @@ public class XmlImportManager implements cz.tacr.elza.api.controller.XmlImportMa
     public void importData(XmlImportConfig config) {
         Assert.notNull(config);
 
-        try {
-            xmlImportService.importData(config);
-        } catch (XmlImportException e) {
-            throw new IllegalStateException(e);
-        }
+//        try {
+//            xmlImportService.importData(config);
+//        } catch (XmlImportException e) {
+//            throw new IllegalStateException(e);
+//        }
     }
 }

@@ -2,11 +2,16 @@
  * Web api pro komunikaci se serverem.
  */
 
+import React from 'react';
+import ReactDOM from 'react-dom';
 import {WebApi} from 'actions'
-import * as types from 'actions/constants/actionTypes'
-import {modalDialogHide} from 'actions/global/modalDialog'
+import * as types from 'actions/constants/ActionTypes'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {faSubNodeFormValueChangeParty, faSubNodeFormValueBlur} from 'actions/arr/subNodeForm'
 import {routerNavigate} from 'actions/router'
+import {i18n, AddPartyForm} from 'components';
+import {getPartyTypeById} from 'actions/refTables/partyTypes';
+
 
 
 /**
@@ -32,31 +37,8 @@ export function insertParty(partyType, filterText, partyTypeId, nameFormTypeId, 
                 dispatch(modalDialogHide());                // zavření aktualně otevřeného dialogu
                 dispatch(partyDetailFetch(json.partyId));   // otevření detailu aktuálně vložené osoby
                 dispatch(findPartyFetch(filterText));       // znovu načtení leveho panelu s vyfiltrovanými osobami (aby se tam pridala nová)
-                
-            });
-    }
-}
 
-/**
- * Vytvoření osoby z pořádání.
- *
- * @param partyType - typ osoby (ParPersonEditVO, ParDynastyEditVO, ...)
- * @param valueLocation
- * @param versionId
- * @param selectedSubNodeId
- * @param nodeKey
- * @returns {Function}
- */
-export function insertPartyArr(partyType, valueLocation, versionId, selectedSubNodeId, nodeKey) {
-    return dispatch => {
-        return WebApi.insertParty(partyType)
-                .then((json) => {
-                    dispatch(faSubNodeFormValueChangeParty(versionId, selectedSubNodeId, nodeKey, valueLocation, json));
-                    dispatch(faSubNodeFormValueBlur(versionId, selectedSubNodeId, nodeKey, valueLocation));
-                    dispatch(modalDialogHide());
-                    dispatch(partyDetailFetch(json.partyId));
-                    dispatch(routerNavigate('party'));
-                });
+            });
     }
 }
 
@@ -88,8 +70,8 @@ export function deleteParty(partyId, filterText) {
         return WebApi.deleteParty(partyId)
             .then((json) => {
                 dispatch(modalDialogHide());                // zavření aktualně otevřeného dialogu
+                dispatch(clearPartyDetail());
                 dispatch(findPartyFetch(filterText));       // znovu načtení leveho panelu s vyfiltrovanými osobami (aby zmizela ta smazaná)
-                dispatch(clearPartyDetail())
             });
     }
 }
@@ -104,10 +86,10 @@ export function deleteParty(partyId, filterText) {
 export function findPartyFetchIfNeeded(filterText) {
     return (dispatch, getState) => {
         var state = getState();
-        console.log(state.partyRegion);
-        if (state.partyRegion.filterText !== filterText) {
+
+        if (!state.partyRegion.isFetchingSearch && (state.partyRegion.dirty || state.partyRegion.filterText !== filterText)) {
             return dispatch(findPartyFetch(filterText));
-        } else if (!state.partyRegion.fetchedSearch && !state.partyRegion.isFetchingSearh) {
+        } else if (!state.partyRegion.fetchedSearch && !state.partyRegion.isFetchingSearch) {
             return dispatch(findPartyFetch(filterText));
         }
     }
@@ -174,8 +156,12 @@ export function findPartyRequest(filterText) {
  */
 export function partyDetailFetchIfNeeded(selectedPartyID) {
     return (dispatch, getState) => {
+        if(selectedPartyID == undefined){
+            return;
+        }
+
         var state = getState();
-        if (state.partyRegion.selectedPartyID !== selectedPartyID) {
+        if (!state.partyRegion.isFetchingDetail && (state.partyRegion.dirty || state.partyRegion.selectedPartyID !== selectedPartyID)) {
             return dispatch(partyDetailFetch(selectedPartyID));
         } else if (!state.partyRegion.fetchedDetail && !state.partyRegion.isFetchingDetail) {
             return dispatch(partyDetailFetch(selectedPartyID));
@@ -276,5 +262,95 @@ export function deleteRelation(relationId, partyId) {
             .then((json) => {
                 dispatch(partyDetailFetch(partyId));        // přenačtení detailu osoby
             });
+    }
+}
+
+
+export function partyAdd(partyTypeId, callback) {
+    return (dispatch, getState) => {
+        var state = getState();
+        var partyTypeCode = getPartyTypeById(partyTypeId, state.refTables.partyTypes.items).code;
+
+        var data = {                        // data předávaná do formuláře osoby
+            partyTypeId: partyTypeId,       // identifikátor typu osoby (osoba, rod, událost, ..)
+            partyTypeCode: partyTypeCode,
+            from: {
+                textDate: "",
+                calendarTypeId: state.partyRegion.gregorianCalendarId
+            },
+            to: {
+                textDate: "",
+                calendarTypeId: state.partyRegion.gregorianCalendarId
+            },
+            complements: []
+        }
+        var label;
+        switch(partyTypeCode){                                        // podle typu osoby bude různý nadpis
+            case "PERSON": label = i18n('party.addParty'); break;   // rod
+            case "DYNASTY": label = i18n('party.addPartyDynasty'); break;     // korporace
+            case "GROUP_PARTY": label = i18n('party.addPartyGroup'); break;     // událost
+            case "EVENT": label = i18n('party.addPartyEvent'); break;     // událost
+            default: label = i18n('party.addParty');
+        }
+
+        dispatch(modalDialogShow(this, label, <AddPartyForm initData={data} onSave={partyAddSubmit.bind(null, callback, dispatch)} />));
+    }
+}
+
+function partyAddSubmit(callback, dispatch, data) {
+
+    var partyType = '';                                     // typ osoby - je potreba uvest i jako specialni klivcove slovo
+    switch(data.partyTypeId){
+        case 1: partyType = '.ParPersonVO'; break;          // typ osoby osoba
+        case 2: partyType = '.ParDynastyVO'; break;         // typ osoby rod
+        case 3: partyType = '.ParPartyGroupVO'; break;      // typ osoby korporace
+        case 4: partyType = '.ParEventVO'; break;           // typ osoby docasna korporace - udalost
+    }
+    var party = {                                           // objekt osoby
+        '@type': partyType,                                 // typ osoby - speciální klíčové slovo
+        partyType: {                                        // typ osoby
+            partyTypeId: data.partyTypeId                   // identikátor typu osoby
+        },
+        genealogy: data.mainPart,                           // název rodu pro soby typu rod
+        scope: data.scopeId,                                          // cosi, co tu musí být
+        record: {                                           // záznam patřící k ossobě
+            registerTypeId: data.recordTypeId,              // identifikátor typu záznamu
+            scopeId:1                                       // identifikátor tridy rejstriku
+        },
+        from: data.from,                                    // datace od
+        to: data.to,                                        // datace do
+        partyNames : [{                                     // jména osoby
+            nameFormType: {                                 // typ formy jména
+                nameFormTypeId: data.nameFormTypeId         // identifikátor typu jména osoby
+            },
+            displayName: data.mainPart,
+            mainPart: data.mainPart,                        // hlavní část jména
+            otherPart: data.otherPart,                      // vedlejší část jména
+            degreeBefore: data.degreeBefore,                // titul před jménem
+            degreeAfter: data.degreeAfter,                  // titul za jménem
+            prefferedName: true,                            // hlavní jmno osoby
+            from: data.from,                                // datace od
+            to: data.to,                                    // datace do
+            partyNameComplements: data.complements          // doplnky jména
+        }]
+    }
+    if(party.from.textDate == "" || party.from.textDate == null || party.from.textDate == undefined){
+        party.from = null;                                  // pokud není zadaný textová část data, celý fatum se ruší
+    }
+    if(party.to.textDate == "" || party.to.textDate == null || party.to.textDate == undefined){
+        party.to = null;                                    // pokud není zadaný textová část data, celý fatum se ruší
+    }
+
+    WebApi.insertParty(party).then((json) => {
+        dispatch(modalDialogHide());
+        callback && callback(json);
+    });
+}
+
+export function partySelect(partyId) {
+    return {
+        partyId: partyId,
+        type: types.PARTY_SELECT,
+        receivedAt: Date.now()
     }
 }

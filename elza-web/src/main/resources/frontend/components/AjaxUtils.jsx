@@ -239,12 +239,15 @@ function updateQueryStringParameter(uri, key, value) {
     if (value == null || value == undefined) {
         return uri;
     }
+
+    var upValue = encodeURIComponent(value)
+
     var re = new RegExp("([?&])" + key + "=.*?(&|$)", "i");
     var separator = uri.indexOf('?') !== -1 ? "&" : "?";
     if (uri.match(re)) {
-        return uri.replace(re, '$1' + key + "=" + value + '$2');
+        return uri.replace(re, '$1' + key + "=" + upValue + '$2');
     } else {
-        return uri + separator + key + "=" + value;
+        return uri + separator + key + "=" + upValue;
     }
 }
 

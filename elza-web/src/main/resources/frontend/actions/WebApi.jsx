@@ -66,6 +66,8 @@ class WebApi{
     }
    
     findParty(search = null){
+        search = search ? encodeURI(search) : search;
+
         return AjaxUtils.ajaxGet('/api/partyManagerV2/findParty', {
             search: search,
             from: 0,
@@ -78,6 +80,8 @@ class WebApi{
     }
 
     findPartyForParty(partyId, search = null){
+        search = search ? encodeURI(search) : search;
+
         return AjaxUtils.ajaxGet('/api/partyManagerV2/findPartyForParty', {
             search: search,
             from: 0,
@@ -265,6 +269,14 @@ class WebApi{
             .then(json=>{
                 return json;
             });
+    }
+
+    versionValidate(versionId) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/validateVersion/' + versionId, null)
+    }
+
+    versionValidateCount(versionId) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/validateVersionCount/' + versionId, null)
     }
     
     insertRegistry(nameMain, characteristics, registerTypeId, parentId, scopeId) {
@@ -580,6 +592,24 @@ class WebApi{
             .then(json=>{
                 return json;
             });
+    }    
+    
+    getDefaultScopes() {
+        return AjaxUtils.ajaxGet('/api/registryManagerV2/defaultScopes')
+            .then(json=>{
+                return json
+            });
+    }    
+    
+    getTransformations() {
+        return AjaxUtils.ajaxGet('/api/xmlImportManagerV2/transformations')
+            .then(json=>{
+                return json
+            });
+    }    
+    
+    xmlImport(data) {
+        return AjaxUtils.ajaxPost('/api/xmlImportManagerV2/import', data);
     }    
 }
 

@@ -151,9 +151,10 @@ public class RegistryController {
                 .createRegRecords(foundRecords, recordIdPartyIdMap, true, parentRecord);
 
         Map<Integer, RegRecordVO> parentRecordVOMap = new HashMap<>();
+        Map<RegRecord, List<RegRecord>> parentChildrenMap = registryService.findChildren(foundRecords);
+
         for (RegRecordVO regRecordVO : foundRecordVOList) {
             parentRecordVOMap.put(regRecordVO.getRecordId(), regRecordVO);
-
         }
 
         if (registerTypeId != null) {
@@ -162,6 +163,13 @@ public class RegistryController {
                 factoryVo.fillRegisterTypeNamesToParents(recordVO, registerTypeId);
             }
         }
+
+        // děti
+        foundRecords.forEach(record -> {
+            List<RegRecord> children = parentChildrenMap.get(record);
+            parentRecordVOMap.get(record.getRecordId()).setHasChildren(children == null ? false : !children.isEmpty());
+        });
+
 
 //        for (RegRecord record : parentChildrenMap.keySet()) {
 //            List<RegRecord> children = parentChildrenMap.get(record);
@@ -327,10 +335,7 @@ public class RegistryController {
 
         RegRecord recordDO = factoryDO.createRegRecord(record);
         RegRecord newRecordDO = registryService.saveRecord(recordDO, false);
-
-        ParParty recordParty = partyService.findParPartyByRecord(newRecordDO);
-        return factoryVo.createRegRecord(newRecordDO, recordParty == null ? null : recordParty.getPartyId(), false,
-                null);
+        return getRecord(record.getRecordId());
     }
 
 
@@ -383,10 +388,9 @@ public class RegistryController {
         Assert.notNull(variantRecord.getVariantRecordId(), "Očekáváno ID pro update.");
         RegVariantRecord variantRecordTest = variantRecordRepository.findOne(variantRecord.getVariantRecordId());
         Assert.notNull(variantRecordTest, "Nebyl nalezen záznam pro update s id " + variantRecord.getVariantRecordId());
-
         RegVariantRecord variantRecordDO = factoryDO.createRegVariantRecord(variantRecord);
-
         RegVariantRecord updatedVarRec = registryService.saveVariantRecord(variantRecordDO);
+        regRecordRepository.flush();
         return factoryVo.createRegVariantRecord(updatedVarRec);
     }
 
@@ -493,5 +497,12 @@ public class RegistryController {
         registryService.deleteScope(scope);
     }
 
-
+    /**
+     * Vrací výchozí třídy rejstříků z databáze.
+     */
+    @RequestMapping(value = "/defaultScopes", method = RequestMethod.GET)
+    public List<RegScopeVO> getDefaultScopes(){
+        List<RegScope> scopes = registryService.findDefaultScopes();
+        return factoryVo.createScopes(scopes);
+    }
 }

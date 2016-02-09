@@ -29,11 +29,14 @@
     border: 1px solid @fa-file-tree-border;
     border-top: none;
     height: 100%;
+    display: flex;
+    flex-direction: column;
 
     .partySearch {
         background: @fa-file-tree-bg-list;
         border: 1px solid @fa-file-tree-border;
-        height: calc(~'100% - 30px');
+        flex-grow: 1;
+        margin: 0;
         overflow-y: auto;
         overflow-x: hidden;
     }

@@ -28,12 +28,14 @@ var Search = class Search extends React.Component {
         this.handleKeyUp = this.handleKeyUp.bind(this);                 // funckce pro odchycení stisknutí klávesy enter a odeslání search
 
         this.state = {                                                  // inicializace stavu komponenty
-            filterText: this.props.filterText,                          // hledaný text
+            filterText: this.props.filterText || this.props.value,                          // hledaný text
         }
     }
     componentWillReceiveProps(nexProps){
-        this.state = {                                                  // inicializace stavu komponenty
-            filterText: this.props.filterText,                          // hledaný text
+        if (this.props.filterText !== nexProps.filterText || this.props.value !== nexProps.value) {
+            this.state = {                                                  // inicializace stavu komponenty
+                filterText: nexProps.filterText || nexProps.value,                          // hledaný text
+            }
         }
     }
 
@@ -45,7 +47,9 @@ var Search = class Search extends React.Component {
         this.state = {
             filterText: null,
         }
-        this.props.onClear();
+        if (this.props) {
+            this.props.onClear();
+        }
     }
 
     handleKeyUp(e){
@@ -59,16 +63,19 @@ var Search = class Search extends React.Component {
         this.setState({
             filterText: e.target.value                                  // uložení zadaného řezezce ve stavu komponenty
         });
-        
+        if (this.props.onChange) {
+            this.props.onChange(e);
+        }
     }
 
     render() {                          // metoda pro renderovani obsahu komponenty
+
         var cls = "search-container";   // třída komponenty                 
         if (this.props.className) {
             cls += " " + this.props.className;
         }
-        var afterInput = '';
-        var beforeInput = '';
+        var afterInput
+        var beforeInput
         if (this.props.afterInput) {
             afterInput = <div className='search-input-after'>{this.props.afterInput} </div>
         }
@@ -76,9 +83,19 @@ var Search = class Search extends React.Component {
             beforeInput = <div className='search-input-before'>{this.props.beforeInput} </div>
         }
         var searchLabel = i18n('search.action.search');
-        var clearButton = '';
-        if(this.state.filterText)
-            clearButton = <div className='clear-search-button'><Button onClick={this.handleClear}><Icon glyph='fa-close'/></Button></div>;
+
+        var actions = []
+
+        actions.push(<Button className='search-button' onClick={this.handleSearch}><Icon glyph='fa-search'/></Button>)
+
+        if (this.state.filterText) {
+            actions.push(<Button className='clear-search-button' onClick={this.handleClear}><Icon glyph='fa-close'/></Button>)
+        }
+
+        if (this.props.actionAddons) {
+            actions = [...actions, this.props.actionAddons]
+        }
+
         return (
             <div className={cls}>
                 {beforeInput}
@@ -92,9 +109,9 @@ var Search = class Search extends React.Component {
                         onChange={this.handleChange}
                         onKeyUp={this.handleKeyUp}
                     />
-                    <div className='search-button'><Button onClick={this.handleSearch}><Icon glyph='fa-search'/></Button></div>
-                    {clearButton}
-
+                </div>
+                <div className='search-actions'>
+                    {actions}
                 </div>
                 {afterInput}
             </div>

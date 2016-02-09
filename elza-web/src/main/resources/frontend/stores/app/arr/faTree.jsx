@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import {indexById} from 'stores/app/utils.jsx'
 import {i18n} from 'components'
 import {consolidateState} from 'components/Utils'
@@ -374,6 +374,10 @@ export default function faTree(state = initialState, action) {
 
                 return result;
             }
+
+        case types.CHANGE_MOVE_LEVEL:
+            return Object.assign({}, state, { ensureItemVisible: false, dirty: true });
+
         case types.CHANGE_CONFORMITY_INFO:
             var index = indexById(state.nodes, action.nodeId);
 

@@ -5,7 +5,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Icon, AbstractReactComponent, i18n, Loading, SubNodeForm, Accordion, SubNodeRegister, AddNodeDropdown} from 'components';
+import {Icon, AbstractReactComponent, i18n, Loading, SubNodeForm, Accordion, SubNodeRegister, AddNodeDropdown, Search} from 'components';
 import {Button, Tooltip, OverlayTrigger, Input} from 'react-bootstrap';
 import {faSubNodeFormFetchIfNeeded} from 'actions/arr/subNodeForm'
 import {faSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister'
@@ -68,9 +68,9 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         }
     }
 
-    handleChangeFilterText(e) {
+    handleChangeFilterText(value) {
         this.setState({
-            filterText: e.target.value
+            filterText: value
         })
     }
 
@@ -89,7 +89,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             return true;
         }
         var eqProps = ['versionId', 'fa', 'node', 'calendarTypes',
-            'packetTypes', 'packets', 'rulDataTypes', 'findingAidId', 'showRegisterJp']
+            'packetTypes', 'packets', 'rulDataTypes', 'findingAidId', 'showRegisterJp', 'closed']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -334,12 +334,15 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             if (node.selectedSubNodeId == item.id) {
                 rows.push(
                     <div key={item.id} ref={'accheader-' + item.id} className='accordion-item opened'>
-                        <div className='accordion-header' onClick={this.handleCloseItem.bind(this, item)}>
-                            <div title={accordionLeft} className='accordion-header-left' key='accordion-header-left'>
-                                {referenceMark} <span title={accordionLeft}>{accordionLeft}</span>
-                            </div>
-                            <div title={accordionRight} className='accordion-header-right' key='accordion-header-right'>
-                                <span title={accordionRight}>{accordionRight}</span> {state}
+                        <div className='accordion-header-container' onClick={this.handleCloseItem.bind(this, item)}>
+                            <div className='accordion-header'>
+                                <div title={accordionLeft} className='accordion-header-left' key='accordion-header-left'>
+                                    {referenceMark} <span className="title" title={accordionLeft}>{accordionLeft}</span>
+                                </div>
+                                <div title={accordionRight} className='accordion-header-right' key='accordion-header-right'>
+                                    <span className="title" title={accordionRight}>{accordionRight}</span>
+                                </div>
+                                {state}
                             </div>
                         </div>
                         <div key="body" className='accordion-body'>
@@ -351,12 +354,15 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             } else {
                 rows.push(
                     <div key={item.id} ref={'accheader-' + item.id} className='accordion-item closed'>
-                        <div className='accordion-header' onClick={this.handleOpenItem.bind(this, item)}>
-                            <div title={accordionLeft} className='accordion-header-left' key='accordion-header-left'>
-                                {referenceMark} <span title={accordionLeft}>{accordionLeft}</span>
-                            </div>
-                            <div title={accordionRight} className='accordion-header-right' key='accordion-header-right'>
-                                <span title={accordionRight}>{accordionRight}</span> {state}
+                        <div className='accordion-header-container' onClick={this.handleOpenItem.bind(this, item)}>
+                            <div className='accordion-header'>
+                                <div title={accordionLeft} className='accordion-header-left' key='accordion-header-left'>
+                                    {referenceMark} <span className="title" title={accordionLeft}>{accordionLeft}</span>
+                                </div>
+                                <div title={accordionRight} className='accordion-header-right' key='accordion-header-right'>
+                                    <span className="title" title={accordionRight}>{accordionRight}</span>
+                                </div>
+                                {state}
                             </div>
                         </div>
                     </div>
@@ -374,13 +380,13 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     render() {
-        const {calendarTypes, versionId, rulDataTypes, node, packetTypes, packets, findingAidId, showRegisterJp} = this.props;
+        const {calendarTypes, versionId, rulDataTypes, node, packetTypes, packets, findingAidId, showRegisterJp, fa, closed} = this.props;
 
         if (!node.nodeInfoFetched) {
             return <Loading value={i18n('global.data.loading.node')}/>
         }
 
-        var parents = this.renderParents(this.getParentNodes());
+        var parents = this.renderParents(this.getParentNodes().reverse());
         var children;
         if (node.subNodeInfo.fetched || node.selectedSubNodeId == null) {
             children = this.renderChildren(this.getChildNodes());
@@ -389,24 +395,36 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         }
         var siblings = this.getSiblingNodes().map(s => <span key={s.id}> {s.id}</span>);
         var actions = (
-            <div key='actions' className='actions'>
-                {
-                    node.nodeInfoFetched && !isFaRootId(node.id) &&
-                    <AddNodeDropdown key="end"
-                                     title="Přidat JP na konec"
-                                     glyph="fa-plus-circle"
-                                     action={this.handleAddNodeAtEnd}
-                                     node={this.props.node}
-                                     version={this.props.fa.versionId}
-                                     direction="CHILD"
-                    />
-                }
-                <div className='btn btn-default' disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(faSubNodesPrevPage())}><Icon glyph="fa-backward" />{i18n('arr.fa.subNodes.prevPage')}</div>
-                <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize >= node.childNodes.length} onClick={()=>this.dispatch(faSubNodesNextPage())}><Icon glyph="fa-forward" />{i18n('arr.fa.subNodes.nextPage')}</div>
+            <div className='actions-container'>
+                <div key='actions' className='actions'>
+                    {
+                        node.nodeInfoFetched && !isFaRootId(node.id) && !closed &&
+                        <AddNodeDropdown key="end"
+                                         title={i18n('nodePanel.addSubNode')}
+                                         glyph="fa-plus-circle"
+                                         action={this.handleAddNodeAtEnd}
+                                         node={this.props.node}
+                                         version={fa.versionId}
+                                         direction="CHILD"
+                        />
+                    }
+                    <div className='btn btn-default' disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(faSubNodesPrevPage())}><Icon glyph="fa-backward" />{i18n('arr.fa.subNodes.prevPage')}</div>
+                    <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize >= node.childNodes.length} onClick={()=>this.dispatch(faSubNodesNextPage())}><Icon glyph="fa-forward" />{i18n('arr.fa.subNodes.nextPage')}</div>
 
-                <div className="search-input">
-                    <Input type="text" onChange={this.handleChangeFilterText} value={this.state.filterText}/>
-                    <Button onClick={() => {this.dispatch(faNodeSubNodeFulltextSearch(this.state.filterText))}}><Icon glyph='fa-search'/></Button>
+                    <Search
+                        className='search-input'
+                        placeholder={i18n('search.input.search')}
+                        filterText={this.props.filterText}
+                        value={this.state.filterText}
+                        onChange={(e) => this.handleChangeFilterText(e.target.value)}
+                        onClear={() => {this.handleChangeFilterText(''); this.dispatch(faNodeSubNodeFulltextSearch(this.state.filterText))}}
+                        onSearch={() => {this.dispatch(faNodeSubNodeFulltextSearch(this.state.filterText))}}
+                    />
+                    {false &&
+                    <div className="search-input">
+                        <Input type="text" onChange={this.handleChangeFilterText} value={this.state.filterText}/>
+                        <Button onClick={() => {this.dispatch(faNodeSubNodeFulltextSearch(this.state.filterText))}}><Icon glyph='fa-search'/></Button>
+                    </div>}
                 </div>
             </div>
         )
@@ -442,6 +460,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 findingAidId={findingAidId}
                 selectedSubNode={node.subNodeForm.data.node}
                 descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
+                closed={closed}
             />
         } else {
             form = <Loading value={i18n('global.data.loading.form')}/>
@@ -455,7 +474,8 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                         versionId={versionId}
                         selectedSubNodeId={node.selectedSubNodeId}
                         nodeKey={node.nodeKey}
-                        register={node.subNodeRegister} />
+                        register={node.subNodeRegister}
+                        closed={closed}/>
         }
 
         var accordionInfo = <div>
@@ -541,6 +561,7 @@ NodePanel.propTypes = {
     rulDataTypes: React.PropTypes.object.isRequired,
     findingAidId: React.PropTypes.number,
     showRegisterJp: React.PropTypes.bool.isRequired,
+    closed: React.PropTypes.bool.isRequired,
 }
 
 module.exports = connect(mapStateToProps)(NodePanel);

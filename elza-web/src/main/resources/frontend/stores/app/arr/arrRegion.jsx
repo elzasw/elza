@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
 
 import nodes from './nodes'
@@ -6,6 +6,7 @@ import {fa, faInitState} from './fa'
 import faTree from './faTree'
 import nodeSetting from './nodeSetting'
 import {consolidateState} from 'components/Utils'
+import {Toastr, i18n} from 'components';
 
 const initialState = {
     activeIndex: null,
@@ -139,6 +140,7 @@ export default function arrRegion(state = initialState, action) {
         case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
         case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
         case types.FA_SUB_NODE_FORM_VALUE_RESPONSE:
+        case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE_RESPONSE:
         case types.FA_SUB_NODE_INFO_REQUEST:
         case types.FA_SUB_NODE_INFO_RECEIVE:
         case types.FA_FA_SUBNODES_FULLTEXT_RESULT:
@@ -149,6 +151,10 @@ export default function arrRegion(state = initialState, action) {
         case types.BULK_ACTIONS_STATE_CHANGE:
         case types.CHANGE_DELETE_LEVEL:
         case types.CHANGE_ADD_LEVEL:
+        case types.CHANGE_MOVE_LEVEL:
+        case types.FA_VERSION_VALIDATION_LOAD:
+        case types.FA_VERSION_VALIDATION_RECEIVED:
+        case types.FA_FA_APPROVE_VERSION:
             var index = indexById(state.fas, action.versionId, "versionId")
             return processFa(state, action, index);
         case types.FA_FAS_RECEIVE:
@@ -190,6 +196,7 @@ export default function arrRegion(state = initialState, action) {
         case types.BULK_ACTIONS_DATA_LOADING:
         case types.BULK_ACTIONS_DATA_LOADED:
         case types.BULK_ACTIONS_RECEIVED_DATA:
+        case types.BULK_ACTIONS_VERSION_VALIDATE_RECEIVED_DATA:
         case types.BULK_ACTIONS_RECEIVED_ACTIONS:
         case types.BULK_ACTIONS_RECEIVED_STATES:
         case types.BULK_ACTIONS_RECEIVED_STATE:
@@ -301,7 +308,26 @@ export default function arrRegion(state = initialState, action) {
                     fa(state.fas[index], action),
                     ...state.fas.slice(index + 1)
                 ]
-            }            
+            }
+
+        case types.CHANGE_APPROVE_VERSION:
+
+            var fas = state.fas;
+            var update = false;
+
+            fas.forEach(fa => {if (fa.id == action.versionId) {
+                if (fa.closed == false) {
+                    update = true;
+                    fa.closed = true;
+                }
+            }});
+
+            if (update) {
+                return {...state}
+            }
+
+            return state
+
         default:
             return state
     }

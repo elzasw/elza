@@ -85,7 +85,7 @@ function createImplicitDescItem(descItemType, descItemTypeInfos) {
     return descItem;
 }
 
-function createDescItemFromDb(descItem) {
+export function createDescItemFromDb(descItem) {
     return {
         ...descItem,
         prevDescItemSpecId: descItem.descItemSpecId,
@@ -115,12 +115,8 @@ function mergeDescItems(resultDescItemType, prevType, newType, descItemTypeInfos
     if (!prevType) {    // ještě ji na formuláři nemáme
         if (!newType) { // není ani v DB, přidáme ji pouze pokud je nastaveno forceVisibility
             if (forceVisibility) {  // přidáme ji pouze pokud je nastaveno forceVisibility
-                if (resultDescItemType.repeatable) {    // u opakovatelného nepřidávíme implicitně prázdnou hodnotu, nemá to smysl
-                    // Nic není třeba dělat
-                } else {
-                    // Přidáme jednu hodnotu - jedná se o jednohodnotový atribut
-                    resultDescItemType.descItems.push(createImplicitDescItem(resultDescItemType, descItemTypeInfos));
-                }
+                // Přidáme jednu hodnotu - chceme i u opakovatelného
+                resultDescItemType.descItems.push(createImplicitDescItem(resultDescItemType, descItemTypeInfos));
                 return true;
             } else {
                 return false;
@@ -139,13 +135,13 @@ function mergeDescItems(resultDescItemType, prevType, newType, descItemTypeInfos
                 }
             })
 
-            if (forceVisibility && !resultDescItemType.repeatable && resultDescItemType.descItems.length === 0) { // má být vidět, je jednohodnotový ale nemáme žádnou hodnotu, přidáme implcitiní prázdnou
-                // Přidáme jednu hodnotu - jedná se o jednohodnotový atribut
+            if (forceVisibility && resultDescItemType.descItems.length === 0) { // má být vidět, ale nemáme žádnou hodnotu, přidáme implcitiní prázdnou
+                // Přidáme jednu hodnotu - chceme i u opakovatelného
                 resultDescItemType.descItems.push(createImplicitDescItem(resultDescItemType, descItemTypeInfos));
             }
 
-            // Chceme ji pokud, má nějaké hodnoty nebo je vícehodnotová - ještě ale uživatel žádnou hodnotu nepřidal, nebo pokud má být vidět - forceVisibility
-            return resultDescItemType.descItems.length > 0 || resultDescItemType.repeatable || forceVisibility;
+            // Chceme ji pokud má nějaké hodnoty nebo pokud má být vidět - forceVisibility
+            return resultDescItemType.descItems.length > 0 || forceVisibility;
         } else {    // je v db a my ji také máme, musíme provést merge
             // Vezmeme jako primární nově příchozí hodnoty a do nich přidáme ty, které aktualní klient má přidané, ale nemá je ještě uložené např. kvůli validaci atp.
             // Pokud ale má klient ty samé hodnoty (prev value je stejné jako nově příchozí hodnota), jako přijdou ze serveru a současně je upravil a nejsou uložené, necháme hodnoty v našem klientovi
@@ -173,8 +169,8 @@ function mergeDescItems(resultDescItemType, prevType, newType, descItemTypeInfos
                 }
             })
 
-            // Doplnění o přidané a neuložené v aktuálním klientovi, pouze pokud se jedná o vícehodnotový atribut - nedoplňujeme poud přišla ze serveru hodnota
-            if (resultDescItemType.repeatable || (!resultDescItemType.repeatable && resultDescItemType.descItems.length == 0)) {
+            // Doplnění o přidané a neuložené v aktuálním klientovi
+            if (resultDescItemType.descItems.length == 0) {
                 var prevDescItem = null;
                 prevType.descItems.forEach((descItem, index) => {
                     addUid(descItem, index);
@@ -300,6 +296,10 @@ export function createDescItem(descItemTypeInfo, addedByUser) {
 
     if (descItemTypeInfo.useSpecification) {
         result.descItemSpecId = '';
+    }
+
+    if (descItemTypeInfo.rulDataType.code === "UNITDATE") {
+        result.calendarTypeId = 1;
     }
 
     return result;

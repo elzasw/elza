@@ -1,10 +1,13 @@
 package cz.tacr.elza.domain;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.hibernate.search.annotations.Indexed;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -20,24 +23,25 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 @Entity(name = "arr_data_packet_ref")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class ArrDataPacketRef extends ArrData implements cz.tacr.elza.api.ArrDataPacketRef {
+public class ArrDataPacketRef extends ArrData implements cz.tacr.elza.api.ArrDataPacketRef<ArrPacket> {
 
-    @Column(nullable = false)
-    private Integer packetId;
+    @RestResource(exported = false)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrPacket.class)
+    @JoinColumn(name = "packetId", nullable = false)
+    private ArrPacket packet;
 
     @Override
-    public Integer getPacketId() {
-        return packetId;
+    public ArrPacket getPacket() {
+        return packet;
     }
 
     @Override
-    public void setPacketId(Integer packetId) {
-        this.packetId = packetId;
+    public void setPacket(ArrPacket packet) {
+        this.packet = packet;
     }
 
     @Override
     public String getFulltextValue() {
-//        return (packet != null ) ? packet.getStorageNumber() : null;
-        return null;
+        return (packet != null ) ? packet.getStorageNumber() : null;
     }
 }

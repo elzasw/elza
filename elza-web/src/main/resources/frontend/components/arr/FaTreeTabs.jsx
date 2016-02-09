@@ -7,7 +7,7 @@ require ('./FaTreeTabs.less');
 import React from 'react';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Tabs, FaTreeLazy, FaTreeMain, Icon} from 'components';
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import {AppActions} from 'stores';
 import {Button} from 'react-bootstrap';
 import {MenuItem} from 'react-bootstrap';

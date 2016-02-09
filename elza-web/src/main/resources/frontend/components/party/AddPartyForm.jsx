@@ -4,7 +4,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import {reduxForm} from 'redux-form';
 import {DropDownTree, AbstractReactComponent, i18n, Scope, Icon} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
@@ -14,6 +14,7 @@ import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryList'
+import {requestScopesIfNeeded} from 'actions/scopes/scopesData'
 
 /**
  * ADD PARTY FORM
@@ -30,7 +31,8 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
         this.state = {                                      // ve state jsou uložena a průběžně udržová data formuláře
             data : this.props.initData,                     // předvyplněná data formuláře
             errors: [],                                     // seznam chyb k vypsání uživateli
-            personId: 1,                                    // identifikátor osoby
+            preselect: null,
+            preselectInit: true
         };
         this.bindMethods(                                   // pripojení potřebných metod - aby měly k dispozici tento objekt (formulář)
             'addComplement',                                // funkce pro přidání nového doplňku jména
@@ -42,16 +44,44 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
             'validate',                                     // funkce pro kontrolu zadaných dat formuláře
             'selectRecordType',                             // výběr typu záznamu
             'dropDownTreeUpdateValue'                       // výběr typu záznamu dropdowntree
+
         );
     }
 
     componentWillReceiveProps(nextProps) {
-
         this.dispatch(getRegistryRecordTypesIfNeeded(this.props.initData.partyTypeId));
+        this.dispatch(requestScopesIfNeeded(null));
+
+
+        var formTypeId = this.state.data.nameFormTypeId;
+        if(!formTypeId && nextProps.refTables.partyNameFormTypes.fetched){
+            formTypeId = nextProps.refTables.partyNameFormTypes.items[0].nameFormTypeId;
+        }
+
+        var scopeId = this.state.data.scopeId;
+        if(!scopeId && nextProps.refTables.scopesData.scopes && nextProps.refTables.scopesData.scopes.length > 0){
+            var scopesData = [];
+            nextProps.refTables.scopesData.scopes.map(scope => {
+                    if (scope.versionId === null) {
+                        scopesData = scope.scopes.data;
+                    }
+                }
+            );
+            scopeId = scopesData[0].id;
+        }
+
+
+        var data = this.state.data;
+        data.nameFormTypeId = formTypeId;
+        data.scopeId = scopeId;
+        this.setState({
+            data : data                                                                     // uložení změn do state
+        });
     }
 
     componentDidMount() {
         this.dispatch(getRegistryRecordTypesIfNeeded(this.props.initData.partyTypeId));
+        this.dispatch(requestScopesIfNeeded(null));
     }
 
     
@@ -73,10 +103,6 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
             case "otherPart" : data.otherPart = event.target.value; break;                  // změna vedlejší části jména
             case "degreeBefore" : data.degreeBefore = event.target.value; break;            // změna titulu před jménem
             case "degreeAfter" : data.degreeAfter = event.target.value; break;              // změna titulu za jménem
-            case "fromText" : data.from.textDate = event.target.value; break;               // změna data od
-            case "toText" : data.to.textDate = event.target.value; break;                   // změna data do
-            case "fromCalendar" : data.from.calendarTypeId = event.target.value; break;     // změna typu kalendáře od
-            case "toCalendar" : data.to.calendarTypeId = event.target.value; break;         // změna typu kalendáře do
             case "scopeId" : data.scopeId = event.target.value; break;                      // změna scope
 
         }
@@ -236,7 +262,6 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
      * Vykreslení formuláře
      */
     render() {
-
         var complementsTypes = [];                                                                              // seznam aktuálních typů doplňků možných pro daný typ osoby
         for(var i=0; i<this.props.refTables.partyTypes.items.length; i++){                                      // projdu všechny typy osob co jsou
             if(this.props.refTables.partyTypes.items[i].partyTypeId == this.props.initData.partyTypeId){        // a z té která odpovídá typu této osoby
@@ -247,6 +272,7 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
         if (this.props.registryRecordTypes && this.props.registryRecordTypes.fetched){
             polozky = this.props.registryRecordTypes.item;
         }
+
         return (
             <div>
                 <Modal.Body>
@@ -255,47 +281,24 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
                     </ul>
                     <form>
                         <div className="line">
-                            <DropDownTree label={i18n('party.recordType')} addRegistryRecord={true} items = {polozky}  name="recordTypeId" onChange={this.dropDownTreeUpdateValue}/>
-
-
-                            <Scope versionId={null} name="scopeId" label={i18n('party.recordScope')} onChange={this.updateValue}/>
+                            <DropDownTree label={i18n('party.recordType')} addRegistryRecord={true} items = {polozky}  name="recordTypeId" onChange={this.dropDownTreeUpdateValue}
+                                          preselect/>
+                            <Scope versionId={null} name="scopeId" label={i18n('party.recordScope')} onChange={this.updateValue} value={this.state.data.scopeId}/>
                         </div>
-                        <Input type="select" label={i18n('party.nameFormType')} name="nameFormTypeId" value={this.state.data.nameFormTypeId} onChange={this.updateValue} >
+
+                        <Input type="select" label={i18n('party.nameFormType')} name="nameFormTypeId" onChange={this.updateValue} value={this.state.data.nameFormTypeId} >
                             <option value="0" key="0"></option> 
-                            {this.props.refTables.partyNameFormTypes.items.map(i=> {return <option value={i.nameFormTypeId} key={i.nameFormTypeId}>{i.name}</option>})}
+                            {this.props.refTables.partyNameFormTypes.items.map((i, index)=> {return <option value={i.nameFormTypeId} key={i.nameFormTypeId}>{i.name}</option>})}
                         </Input>
 
                         <hr/>
-                        {this.state.data.partyTypeId == this.state.personId ?  <div className="line">
+                        {this.state.data.partyTypeCode == "PERSON" ?  <div className="line">
                             <Input type="text" label={i18n('party.degreeBefore')} name="degreeBefore" value={this.state.data.degreeBefore} onChange={this.updateValue} />
                             <Input type="text" label={i18n('party.degreeAfter')} name="degreeAfter" value={this.state.data.degreeAfter} onChange={this.updateValue} />
                         </div> : ""}
                         
                         <Input type="text" label={i18n('party.nameMain')} name="mainPart" value={this.state.data.mainPart} onChange={this.updateValue} />
                         <Input type="text" label={i18n('party.nameOther')} name="otherPart" value={this.state.data.otherPart} onChange={this.updateValue} />
-                        <hr/>
-                        <div className="line datation">
-                            <div className="date line">
-                                <div>
-                                    <label>{i18n('party.nameValidFrom')}</label>
-                                    <div className="line">
-                                        <Input type="select" name="fromCalendar" value={this.state.data.from.calendarTypeId} onChange={this.updateValue} >
-                                            {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
-                                        </Input>
-                                        <Input type="text"  name="fromText" value={this.state.data.from.textDate} onChange={this.updateValue} />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label>{i18n('party.nameValidTo')}</label>
-                                    <div className="line">
-                                        <Input type="select" name="toCalendar" value={this.state.data.to.calendarTypeId} onChange={this.updateValue} >
-                                            {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
-                                        </Input>
-                                        <Input type="text" name="toText" value={this.state.data.to.textDate} onChange={this.updateValue} />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                         <hr/>
                         <h5>{i18n('party.nameComplements')}</h5>
                         <div>
@@ -321,6 +324,7 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
         )
     }
 }
+
 
 module.exports = reduxForm({
     form: 'AddPartyForm',

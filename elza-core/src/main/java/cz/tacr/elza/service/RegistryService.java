@@ -190,7 +190,7 @@ public class RegistryService {
             throw new IllegalStateException("Existuje vazba z osoby, nelze smazat.");
         }
 
-        List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByRecordId(record.getRecordId());
+        List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByRecord(record);
         if (CollectionUtils.isNotEmpty(dataRecordRefList)) {
             throw new IllegalStateException("Nalezeno použití hesla v tabulce ArrDataRecordRef.");
         }
@@ -239,6 +239,7 @@ public class RegistryService {
         RegRecord parentRecord = null;
         if(record.getParentRecord() != null && record.getParentRecord().getRecordId() != null){
             parentRecord = regRecordRepository.findOne(record.getParentRecord().getRecordId());
+            checkRecordCycle(record, parentRecord);
             record.setParentRecord(parentRecord);
         }
 
@@ -273,6 +274,23 @@ public class RegistryService {
     }
 
     /**
+     * Test, že nevkládáme rejstříkové heslo pod svého potomka.
+     *
+     * @param record    heslo
+     * @param newParent nový rodič
+     */
+    private void checkRecordCycle(final RegRecord record, final RegRecord newParent) {
+        RegRecord parent = newParent;
+        while (parent != null) {
+            if (parent.equals(record)) {
+                throw new IllegalArgumentException("Nelze vložit pod potomka.");
+            }
+
+            parent = parent.getParentRecord();
+        }
+    }
+
+    /**
      * Smaže rej. heslo a jeho variantní hesla. Předpokládá, že již proběhlo ověření, že je možné ho smazat (vazby atd...).
      * @param record heslo
      */
@@ -281,7 +299,7 @@ public class RegistryService {
             checkRecordUsage(record);
         }
 
-        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.PARTY_CREATE, record.getRecordId()));
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.RECORD_CREATE, record.getRecordId()));
 
         variantRecordRepository.delete(variantRecordRepository.findByRegRecordId(record.getRecordId()));
         regRecordRepository.delete(record);
@@ -684,5 +702,17 @@ public class RegistryService {
             List<RegScope> foundCodes = scopeRepository.findByCodes(scopeCodes);
             defaultScopeIds = foundCodes.stream().map(s -> s.getScopeId()).collect(Collectors.toSet());
         }
+    }
+
+
+    public List<RegScope> findDefaultScopes() {
+        List<RegScope> defaultScopes;
+        if (CollectionUtils.isEmpty(scopeCodes)) {
+            defaultScopes = Collections.EMPTY_LIST;
+        } else {
+            defaultScopes = scopeRepository.findByCodes(scopeCodes);
+        }
+
+        return defaultScopes;
     }
 }

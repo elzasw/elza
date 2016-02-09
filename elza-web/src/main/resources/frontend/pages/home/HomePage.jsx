@@ -122,7 +122,8 @@ setTimeout(()=>this.setState({options: options2}), 4000);
     }
 
     handleAddFa() {
-        this.dispatch(modalDialogShow(this, i18n('arr.fa.title.add'), <AddFaForm create onSubmit={this.handleCallAddFa} />));
+        this.dispatch(modalDialogShow(this, i18n('arr.fa.title.add'), <AddFaForm isApproveDialog={false} create
+                                                                                 onSubmit={this.handleCallAddFa}/>));
     }
 
     handleCallAddFa(data) {

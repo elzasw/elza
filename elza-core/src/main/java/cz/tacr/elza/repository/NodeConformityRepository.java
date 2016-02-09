@@ -63,5 +63,5 @@ public interface NodeConformityRepository extends JpaRepository<ArrNodeConformit
             + "WHERE c in (?1) and c.faVersion = ?2 and c.state = ?3 order by c.nodeConformityId asc")
     List<ArrNodeConformity> fetchErrorAndMissingConformity(List<ArrNodeConformity> nodeConformity, ArrFindingAidVersion findingAidVersion, State state);
 
-    List<ArrNodeConformity> findFirst20ByStateOrderByNodeConformityIdAsc(State state);
+    List<ArrNodeConformity> findFirst20ByFaVersionAndStateOrderByNodeConformityIdAsc(ArrFindingAidVersion version, State state);
 }

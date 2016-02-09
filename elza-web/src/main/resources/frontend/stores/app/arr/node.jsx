@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
 import subNodeForm from './subNodeForm'
 import subNodeRegister from './subNodeRegister'
@@ -156,6 +156,7 @@ export function node(state = nodeInitialState, action) {
         case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
         case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
         case types.FA_SUB_NODE_FORM_VALUE_RESPONSE:
+        case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE_RESPONSE:
         case types.CHANGE_DESC_ITEM:
             var result = {
                 ...state, 

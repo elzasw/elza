@@ -30,7 +30,6 @@ var Scope = class Scope extends AbstractReactComponent {
     }
 
     componentDidMount(){
-        this.dispatch(requestScopesIfNeeded(this.props.versionId));
     }
 
     render() {
@@ -54,7 +53,7 @@ var Scope = class Scope extends AbstractReactComponent {
 }
 
 Scope.propTypes = {
-    value: React.PropTypes.string,
+    value: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.string]),
 
 }
 

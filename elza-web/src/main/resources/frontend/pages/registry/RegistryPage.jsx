@@ -11,15 +11,15 @@ var classNames = require('classnames');
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Loading} from 'components';
-import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, Search, RegistryPanel, DropDownTree, AddRegistryForm} from 'components';
+import {AbstractReactComponent, i18n, Loading, Toastr} from 'components';
+import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, Search, RegistryPanel, DropDownTree, AddRegistryForm, ImportRegistryForm} from 'components';
 import {WebApi} from 'actions'
 import {MenuItem, DropdownButton, ButtonGroup, Button} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {Nav, Glyphicon, NavItem} from 'react-bootstrap';
-import {registryData, registrySearchData, registryClearSearch, registryChangeParent, registryRemoveRegistry, registryStartMove, registryStopMove, registryCancelMove, registryUnsetParents} from 'actions/registry/registryData'
+import {registryData, registrySearchData, registryClearSearch, registryChangeParent, registryRemoveRegistry, registryStartMove, registryCancelMove, registryUnsetParents, registryRecordUpdate, registryRecordMove} from 'actions/registry/registryData'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {fetchRegistryIfNeeded, registrySetTypesId, fetchRegistry} from 'actions/registry/registryList'
+import {fetchRegistryIfNeeded, registrySetTypesId, fetchRegistry, registryAdd} from 'actions/registry/registryList'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
 
 var RegistryPage = class RegistryPage extends AbstractReactComponent {
@@ -39,32 +39,13 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         this.dispatch(refRecordTypesFetchIfNeeded());
     }
 
-    handleAddRegistry( parentId, event) {
-        var registryParentTypesId = this.props.registry.registryTypesId;
-        if (this.props.registry.registryData){
-            registryParentTypesId = this.props.registry.registryData.item.registerTypeId;
-        }
-        this.dispatch(
-           modalDialogShow(this,
-               i18n('registry.addRegistry'),
-               <AddRegistryForm
-                   create
-                   onSubmit={this.handleCallAddRegistry.bind(this, parentId)}
-                   parentRecordId = {parentId}
-                   parentRegisterTypeId = {registryParentTypesId}
-                   />
-           )
-       );
+    handleAddRegistry(parentId) {
+        this.dispatch(registryAdd(parentId, this.handleCallAddRegistry));
     }
 
-    handleCallAddRegistry(parentId, data ) {
-
-        WebApi.insertRegistry( data.nameMain, data.characteristics, data.registerTypeId, parentId, data.scopeId ).then(json => {
-            this.dispatch(modalDialogHide());
-            this.dispatch(fetchRegistry(this.props.registry.filterText, this.props.registry.registryParentId, this.props.registry.registryTypesId));
-            this.dispatch(registryData({selectedId: json.recordId}));
-        });
-
+    handleCallAddRegistry(data) {
+        this.dispatch(fetchRegistry(this.props.registry.filterText, this.props.registry.registryParentId, this.props.registry.registryTypesId));
+        this.dispatch(registryData({selectedId: data.recordId}));
     }
 
     handleRemoveRegistryDialog(){
@@ -89,15 +70,31 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     handleSaveMoveRegistry(){
         var data = Object.assign({}, this.props.registry.recordForMove);
         data['parentRecordId'] = this.props.registry.selectedId;
-        WebApi.updateRegistry(data).then(json => {
-            this.dispatch(registryStopMove());
-        });
+        this.dispatch(registryRecordMove(data));
     }
+    
     handleCancelMoveRegistry(){
         var registry = Object.assign({}, registry);
         this.dispatch(registryCancelMove(registry));
     }
+    
+    handleRegistryImport() {
+       this.dispatch(
+           modalDialogShow(this,
+               i18n('registry.importRegistry'),
+               <ImportRegistryForm onSubmit={this.handleCallImportRegistry.bind(this)} />
+           )
+       );
+    }
 
+    handleCallImportRegistry(values) {
+        var data = Object.assign({}, values);
+        console.log('import rejstriku', data);
+        WebApi.importRegistry(data.transformationName, data.registryScopeId, data.stopOnError, data.xmlFile ).then(json => {
+            this.dispatch(modalDialogHide());
+        });    
+    }
+    
     buildRibbon() {
 
 
@@ -108,19 +105,23 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
 
         altActions.push(
-            <Button key='registryImport'><Icon glyph='fa-download' /><div><span className="btnText">{i18n('ribbon.action.registry.import')}</span></div></Button>
+            <Button key='registryImport' onClick={this.handleRegistryImport.bind(this)}><Icon glyph='fa-download' /><div><span className="btnText">{i18n('ribbon.action.registry.import')}</span></div></Button>
         );
 
         var itemActions = [];
         if (this.props.registry.selectedId) {
-
-            itemActions.push(
-                <Button key='registryRemove' onClick={this.handleRemoveRegistryDialog.bind(this)}><Icon glyph="fa-trash" /><div><span className="btnText">{i18n('registry.removeRegistry')}</span></div></Button>
-            );
+            if (this.props.registry.registryData && !this.props.registry.registryData.item.childs) {
+                itemActions.push(
+                    <Button key='registryRemove' onClick={this.handleRemoveRegistryDialog.bind(this)}><Icon
+                        glyph="fa-trash"/>
+                        <div><span className="btnText">{i18n('registry.removeRegistry')}</span></div>
+                    </Button>
+                );
+            }
 
             if (!this.props.registry.recordForMove && this.props.registry.registryData && !this.props.registry.registryData.item.partyId){
                 itemActions.push(
-                    <Button key='registryMove' onClick={this.handleStartMoveRegistry.bind(this)}><Glyphicon glyph="share-alt" /><div><span className="btnText">{i18n('registry.moveRegistry')}</span></div></Button>
+                    <Button key='registryMove' onClick={this.handleStartMoveRegistry.bind(this)}><Icon glyph="fa-share" /><div><span className="btnText">{i18n('registry.moveRegistry')}</span></div></Button>
                 );
             }
             if (this.props.registry.recordForMove && this.props.registry.registryData && !this.props.registry.registryData.item.partyId){
@@ -156,6 +157,10 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     handleDoubleClick(item, event) {
+        if (this.props.registry.recordForMove && this.props.registry.recordForMove.selectedId === item.recordId) {
+            this.dispatch(Toastr.Actions.warning({title: i18n('registry.danger.disallowed.action.title'), message: i18n('registry.danger.disallowed.action.can.not.move.into.myself')}));
+            return false;
+        }
         var rodice = item.parents.slice();
         rodice.push(item.record);
         var registry = Object.assign({}, registry,{registryParentId: item.recordId, parents: rodice, filterText: ''});
@@ -239,26 +244,23 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 }
             })
         }
-        var navRows = (
-            <div className="registry-nav">
-                <div key='registrysList'>
 
-                    {listOfRecord}
-                </div>
-            </div>
-        )
 
         var navParents = '';
         if (this.props.registry.parents){
             var nazevRodice = this.props.registry.parents[this.props.registry.parents.length-1];
             var cestaRodice = this.props.registry.parents.slice();
             cestaRodice.pop();
+            cestaRodice.push('Rodic 1.1');
+            cestaRodice.push('Rodic 1');
+            cestaRodice.push('Typ 1.1');
+            cestaRodice.push('Typ 1');
             navParents = (
                 <div className="record-parent-info">
                     <div className='record-selected-name'>
-                        <div><Icon glyph="fa-folder-open" /></div>
-                        <div>{nazevRodice}</div>
-                        <div onClick={this.handleUnsetParents}><Icon glyph="fa-mail-reply" /></div>
+                        <div className="icon"><Icon glyph="fa-folder-open" /></div>
+                        <div className="title">{nazevRodice}</div>
+                        <div className="back" onClick={this.handleUnsetParents}><Icon glyph="fa-times" /></div>
                     </div>
                     <div className='record-selected-breadcrumbs'>{cestaRodice.join(' | ')}</div>
                 </div>
@@ -276,11 +278,11 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         var leftPanel = (
             <div className="registry-list">
                 <div>
+                    {dropDownForSearch}
                     <Search
-                        onSearch={this.handleSearch.bind(this)}
+                        onSearch={this.handleSearch}
                         onClear={this.handleSearchClear.bind(this)}
                         placeholder={i18n('search.input.search')}
-                        beforeInput={dropDownForSearch}
                         filterText={this.props.registry.filterText}
                     />
                 </div>
@@ -289,7 +291,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 </div>
                 <div className="registry-list-results">
                     {(this.props.registry.isFetching || !this.props.registry.fetched) && <Loading/>}
-                    {(!this.props.registry.isFetching && this.props.registry.fetched) && navRows}
+                    {(!this.props.registry.isFetching && this.props.registry.fetched) && listOfRecord}
                 </div>
             </div>
         )
@@ -301,12 +303,6 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             </div>
         )
 
-        var rightPanel = (
-            <div>
-
-            </div>
-        )
-
         return (
             <PageLayout
                 splitter={splitter}
@@ -314,7 +310,6 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 ribbon={this.buildRibbon()}
                 leftPanel={leftPanel}
                 centerPanel={centerPanel}
-                rightPanel={rightPanel}
 
             />
         )

@@ -7,9 +7,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import ma.glasnost.orika.CustomMapper;
+import ma.glasnost.orika.MapperFacade;
+import ma.glasnost.orika.MappingContext;
+import ma.glasnost.orika.impl.DefaultMapperFactory;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -47,9 +51,6 @@ import cz.tacr.elza.domain.ArrDescItemString;
 import cz.tacr.elza.domain.ArrDescItemText;
 import cz.tacr.elza.domain.ArrDescItemUnitdate;
 import cz.tacr.elza.domain.ArrDescItemUnitid;
-import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataCoordinatesRepository;
@@ -68,10 +69,6 @@ import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.PacketRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
-import ma.glasnost.orika.CustomMapper;
-import ma.glasnost.orika.MapperFacade;
-import ma.glasnost.orika.MappingContext;
-import ma.glasnost.orika.impl.DefaultMapperFactory;
 
 
 /**
@@ -300,15 +297,14 @@ public class DescItemFactory implements InitializingBean {
                                         MappingContext context) {
                         arrDataPartyRef.setDataType(arrDescItemPartyRef.getDescItemType().getDataType());
                         arrDataPartyRef.setDescItem(arrDescItemPartyRef);
-                        arrDataPartyRef.setPartyId(arrDescItemPartyRef.getParty().getPartyId());
+                        arrDataPartyRef.setParty(arrDescItemPartyRef.getParty());
                     }
 
                     @Override
                     public void mapBtoA(ArrDataPartyRef arrDataPartyRef,
                                         ArrDescItemPartyRef arrDescItemPartyRef,
                                         MappingContext context) {
-                        ParParty party = partyRepository.findOne(arrDataPartyRef.getPartyId());
-                        arrDescItemPartyRef.setParty(party);
+                        arrDescItemPartyRef.setParty(arrDataPartyRef.getParty());
                     }
 
                 }).register();
@@ -321,7 +317,7 @@ public class DescItemFactory implements InitializingBean {
                                         MappingContext context) {
                         arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
                         arrDataPartyRefNew.setDescItem(arrDataPartyRef.getDescItem());
-                        arrDataPartyRefNew.setPartyId(arrDataPartyRef.getPartyId());
+                        arrDataPartyRefNew.setParty(arrDataPartyRef.getParty());
                     }
                 }).register();
     }
@@ -339,15 +335,14 @@ public class DescItemFactory implements InitializingBean {
                                         MappingContext context) {
                         arrDataPartyRef.setDataType(arrDescItemPartyRef.getDescItemType().getDataType());
                         arrDataPartyRef.setDescItem(arrDescItemPartyRef);
-                        arrDataPartyRef.setPacketId(arrDescItemPartyRef.getPacket().getPacketId());
+                        arrDataPartyRef.setPacket(arrDescItemPartyRef.getPacket());
                     }
 
                     @Override
                     public void mapBtoA(ArrDataPacketRef arrDataPartyRef,
                                         ArrDescItemPacketRef arrDescItemPartyRef,
                                         MappingContext context) {
-                        ArrPacket party = packetRepository.findOne(arrDataPartyRef.getPacketId());
-                        arrDescItemPartyRef.setPacket(party);
+                        arrDescItemPartyRef.setPacket(arrDataPartyRef.getPacket());
                     }
 
                 }).register();
@@ -360,7 +355,7 @@ public class DescItemFactory implements InitializingBean {
                                         MappingContext context) {
                         arrDataPartyRefNew.setDataType(arrDataPartyRef.getDataType());
                         arrDataPartyRefNew.setDescItem(arrDataPartyRef.getDescItem());
-                        arrDataPartyRefNew.setPacketId(arrDataPartyRef.getPacketId());
+                        arrDataPartyRefNew.setPacket(arrDataPartyRef.getPacket());
                     }
                 }).register();
     }
@@ -378,15 +373,14 @@ public class DescItemFactory implements InitializingBean {
                                         MappingContext context) {
                         arrDataRecordRef.setDataType(arrDescItemRecordRef.getDescItemType().getDataType());
                         arrDataRecordRef.setDescItem(arrDescItemRecordRef);
-                        arrDataRecordRef.setRecordId(arrDescItemRecordRef.getRecord().getRecordId());
+                        arrDataRecordRef.setRecord(arrDescItemRecordRef.getRecord());
                     }
 
                     @Override
                     public void mapBtoA(ArrDataRecordRef arrDataRecordRef,
                                         ArrDescItemRecordRef arrDescItemRecordRef,
                                         MappingContext context) {
-                        RegRecord record = regRecordRepository.findOne(arrDataRecordRef.getRecordId());
-                        arrDescItemRecordRef.setRecord(record);
+                        arrDescItemRecordRef.setRecord(arrDataRecordRef.getRecord());
                     }
 
                 }).register();
@@ -399,7 +393,7 @@ public class DescItemFactory implements InitializingBean {
                                         MappingContext context) {
                         arrDataRecordRefNew.setDataType(arrDataRecordRef.getDataType());
                         arrDataRecordRefNew.setDescItem(arrDataRecordRef.getDescItem());
-                        arrDataRecordRefNew.setRecordId(arrDataRecordRef.getRecordId());
+                        arrDataRecordRefNew.setRecord(arrDataRecordRef.getRecord());
                     }
                 }).register();
     }

@@ -1,8 +1,8 @@
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import {i18n} from 'components'
 import {indexById} from 'stores/app/utils.jsx'
 import {faSubNodeFormValueValidate} from 'actions/arr/subNodeForm'
-import {getDescItemType, updateFormData, createDescItem} from './subNodeFormUtils'
+import {createDescItemFromDb, getDescItemType, updateFormData, createDescItem} from './subNodeFormUtils'
 
 function getLoc(state, valueLocation) {
     var descItemGroup = state.formData.descItemGroups[valueLocation.descItemGroupIndex];
@@ -54,8 +54,6 @@ function validate(descItem, descItemTypeInfo, valueServerError) {
             break;
         case 'ENUM':
             break;
-        case 'FORMATTED_TEXT':
-            break;
         case 'UNITDATE':
             if (typeof descItem.calendarTypeId == 'undefined' || descItem.calendarTypeId == "") {
                 error.calendarType = i18n('subNodeForm.validate.calendarType.required');
@@ -66,9 +64,12 @@ function validate(descItem, descItemTypeInfo, valueServerError) {
             break;
         case 'UNITID':
             break;
+        case 'FORMATTED_TEXT':
         case 'TEXT':
-            break;
         case 'STRING':
+            if (!descItem.value || descItem.value.length === 0) {
+                error.value = i18n('subNodeForm.validate.value.notEmpty');
+            }
             break;
         case 'INT':
             if (descItem.value.length === 0) {
@@ -192,6 +193,24 @@ export default function subNodeForm(state = initialState, action) {
             return {...state};
         case types.CHANGE_DESC_ITEM:
             return {...state, dirty: true}
+        case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE_RESPONSE:
+            var loc = getLoc(state, action.valueLocation);
+
+            state.data.node = action.copySiblingResult.node;
+
+            var currentDescItemMap = {}
+            loc.descItemType.descItems.forEach(descItem => {currentDescItemMap[descItem.descItemObjectId] = descItem})
+            loc.descItemType.descItems = action.copySiblingResult.type.descItems.map(descItem => {
+                var newDescItem = createDescItemFromDb(descItem)
+                var currDescItem = currentDescItemMap[descItem.descItemObjectId]
+                if (currDescItem && currDescItem.hasFocus) {
+                    newDescItem.hasFocus = true;
+                }
+                return newDescItem;
+            })
+
+            state.formData = {...state.formData};
+            return {...state};
         case types.FA_SUB_NODE_FORM_VALUE_RESPONSE:
             var loc = getLoc(state, action.valueLocation);
 
@@ -263,13 +282,12 @@ export default function subNodeForm(state = initialState, action) {
             // Přidání prvku do skupiny a seřazení prvků podle position
             var descItemType = {...addItemType, descItems: []};
             descItemGroup.descItemTypes.push(descItemType);
-            // Pokud je ale atribut jednohodnotový, musíme ponechat prázdnou hodnotu
-            if (!descItemType.repeatable) {
-                var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, addItemType.id)];
-                var descItem = createDescItem(descItemTypeInfo, true);
-                descItem.position = 1;
-                descItemType.descItems.push(descItem);
-            }
+            // Musíme ponechat prázdnou hodnotu
+            var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, addItemType.id)];
+            var descItem = createDescItem(descItemTypeInfo, true);
+            descItem.position = 1;
+            descItemType.descItems.push(descItem);
+
             descItemGroup.descItemTypes.sort((a, b) => a.viewOrder - b.viewOrder);
 
             state.formData = {...state.formData};
@@ -285,13 +303,11 @@ export default function subNodeForm(state = initialState, action) {
                     // Hodnoty odebereme
                     loc.descItemType.descItems = [];
 
-                    // Pokud je ale atribut jednohodnotový, musíme ponechat prázdnou hodnotu
-                    if (!loc.descItemType.repeatable) {
-                        var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, loc.descItemType.id)];
-                        var descItem = createDescItem(descItemTypeInfo, true);
-                        descItem.position = 1;
-                        loc.descItemType.descItems.push(descItem);
-                    }
+                    // Musíme ponechat prázdnou hodnotu
+                    var descItemTypeInfo = state.descItemTypeInfos[indexById(state.descItemTypeInfos, loc.descItemType.id)];
+                    var descItem = createDescItem(descItemTypeInfo, true);
+                    descItem.position = 1;
+                    loc.descItemType.descItems.push(descItem);
                 } else { // kompletně odebereme
                     loc.descItemGroup.descItemTypes = [
                         ...loc.descItemGroup.descItemTypes.slice(0, action.valueLocation.descItemTypeIndex),

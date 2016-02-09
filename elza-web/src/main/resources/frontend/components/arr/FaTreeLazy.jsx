@@ -7,23 +7,84 @@ require ('./FaTreeLazy.less');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {VirtualList, AbstractReactComponent, i18n, Loading, Icon} from 'components';
+import {VirtualList, AbstractReactComponent, i18n, Loading, Icon, Search} from 'components';
 import {Nav, Input, NavItem, Button, DropdownButton} from 'react-bootstrap';
 var classNames = require('classnames');
 import {ResizeStore} from 'stores';
 import {propsEquals} from 'components/Utils'
 import {indexById} from 'stores/app/utils.jsx'
-import {createReferenceMark, getGlyph} from 'components/arr/ArrUtils'
+import {createReferenceMark, getGlyph, getNodePrevSibling, getNodeNextSibling, getNodeParent, getNodeFirstChild} from 'components/arr/ArrUtils'
+var Shortcuts = require('react-shortcuts/component')
+
+var keyDownHandlers = {
+    ArrowUp: function(e) {
+        const {nodes, selectedId, multipleSelection, onNodeClick} = this.props
+
+        if (!multipleSelection && selectedId !== null) {
+            var index = indexById(nodes, selectedId)
+            if (index !== null && index > 0) {
+                onNodeClick(nodes[index - 1])
+            }
+        }
+    },
+    ArrowDown: function(e) {
+        const {nodes, selectedId, multipleSelection, onNodeClick} = this.props
+
+        if (!multipleSelection && selectedId !== null) {
+            var index = indexById(nodes, selectedId)
+            if (index !== null && index < nodes.length) {
+                onNodeClick(nodes[index + 1])
+            }
+        }
+    },
+    ArrowLeft: function(e) {
+        const {nodes, selectedId, multipleSelection, expandedIds, onOpenCloseNode, onNodeClick} = this.props
+        if (!multipleSelection && selectedId !== null) {
+            var index = indexById(nodes, selectedId)
+            if (index !== null) {
+                var node = nodes[index]
+                if (node.hasChildren && expandedIds[node.id]) { // je rozbalen, zabalíme ho
+                    onOpenCloseNode(node, false)
+                } else {    // jdeme na parenta
+                    var parent = getNodeParent(nodes, selectedId)
+                    parent && onNodeClick(parent)
+                }
+            }
+        }
+    },
+    ArrowRight: function(e) {
+        const {nodes, selectedId, multipleSelection, expandedIds, onOpenCloseNode, onNodeClick} = this.props
+        if (!multipleSelection && selectedId !== null) {
+            var index = indexById(nodes, selectedId)
+            if (index !== null) {
+                var node = nodes[index]
+                if (node.hasChildren) { 
+                    if (!expandedIds[node.id]) {    // je zabalen, rozbalíme ho
+                        onOpenCloseNode(node, true)
+                    } else {    // jdeme na prvního potomka
+                        var firstChild = getNodeFirstChild(nodes, selectedId);
+                        firstChild && onNodeClick(firstChild)
+                    }
+                } else {    // nemá potomky, nic neděláme
+                }
+            }
+        }
+    }
+}
 
 var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
         this.bindMethods(
-            'renderNode'
+            'renderNode', 'handleKeyDown'
         );
 
         this.state = {};
+    }
+
+    handleShortcuts(action) {
+        console.log("TREE LAZY XXXXXXXX", action);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -46,6 +107,12 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
 
     componentWillUnmount() {
         this.unsubscribe();
+    }
+
+    handleKeyDown(e) {
+        if (keyDownHandlers[e.key]) {
+            keyDownHandlers[e.key].call(this, event)
+        }
     }
 
     /**
@@ -109,13 +176,22 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     render() {
         const {searchedIds, searchedParents, filterCurrentIndex} = this.props;
 
-        var searchedInfo;
+        var actionAddons = []
         if (searchedIds.length > 0 && filterCurrentIndex !== -1) {
-            searchedInfo = (
+            var searchedInfo = (
                 <div className='fa-tree-lazy-search-info'>
-                    ({filterCurrentIndex + 1}-{searchedIds.length})
+                    ({filterCurrentIndex + 1} z {searchedIds.length})
                 </div>
             )
+
+            if (searchedIds.length > 1) {
+                var prevButtonEnabled = filterCurrentIndex > 0;
+                var nextButtonEnabled = filterCurrentIndex < searchedIds.length - 1;
+
+                actionAddons.push(<Button disabled={!nextButtonEnabled} className="next" onClick={this.props.onFulltextNextItem}><Icon glyph='fa-chevron-down'/></Button>)
+                actionAddons.push(<Button disabled={!prevButtonEnabled} className="prev" onClick={this.props.onFulltextPrevItem}><Icon glyph='fa-chevron-up'/></Button>)
+            }
+            actionAddons.push(searchedInfo)
         }
 
         var index;
@@ -124,15 +200,20 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
         }
 
         return (
+
             <div className='fa-tree-lazy-main-container'>
                 <div className='fa-traa-header-container'>
-                    <Input type='search' value={this.props.filterText} onChange={e => this.props.onFulltextChange(e.target.value)} />
-                    {searchedInfo}
-                    <Button className="search" onClick={this.props.onFulltextSearch}><Icon glyph='fa-search'/></Button>
-                    <Button className="prev" onClick={this.props.onFulltextPrevItem}><Icon glyph='fa-chevron-up'/></Button>
-                    <Button className="next" onClick={this.props.onFulltextNextItem}><Icon glyph='fa-chevron-down'/></Button>
+                    <Search
+                        placeholder={i18n('search.input.search')}
+                        filterText={this.props.filterText}
+                        onChange={e => this.props.onFulltextChange(e.target.value)}
+                        onClear={e => {this.props.onFulltextChange(''); this.props.onFulltextSearch()}}
+                        onSearch={this.props.onFulltextSearch}
+                        actionAddons={actionAddons}
+                    />
                 </div>
-                <div className='fa-tree-lazy-container' ref="treeContainer">
+                <Shortcuts name='Tree' handler={this.handleShortcuts}>
+                <div className='fa-tree-lazy-container' ref="treeContainer" onKeyDown={this.handleKeyDown} tabIndex={-11}>
                     <Button className="tree-collapse" onClick={this.props.onCollapse}><Icon glyph='fa-compress'/>Sbalit vše</Button>
                     {this.state.treeContainer && <VirtualList
                         tagName='div'
@@ -143,6 +224,7 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
                         itemHeight={this.props.rowHeight}
                     />}
                 </div>
+                </Shortcuts>
             </div>
         )
 

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.utils.ObjectListIterator;
 
 /**
@@ -25,7 +26,7 @@ public class DataRecordRefRepositoryImpl implements DataRecordRefRepositoryCusto
     private EntityManager entityManager;
 
     @Override
-    public List<ArrDataRecordRef> fetchRecords(Set<Integer> recordRefDataIds, final ArrFindingAidVersion version) {
+    public List<ArrDataRecordRef> findByDataIdsAndVersionFetchRecord(Set<Integer> dataIds, final Set<RulDescItemType> descItemTypes, ArrFindingAidVersion version) {
         String hql = "SELECT d FROM arr_data_record_ref d JOIN FETCH d.descItem di JOIN FETCH di.node n JOIN FETCH di.descItemType dit JOIN FETCH d.record r WHERE ";
         if (version.getLockChange() == null) {
             hql += "di.deleteChange IS NULL ";
@@ -33,7 +34,7 @@ public class DataRecordRefRepositoryImpl implements DataRecordRefRepositoryCusto
             hql += "di.createChange < :lockChange AND (di.deleteChange IS NULL OR di.deleteChange > :lockChange) ";
         }
 
-        hql += "AND d.dataId IN (:dataIds)";
+        hql += "AND di.descItemType IN (:descItemTypes) AND d.dataId IN (:dataIds)";
 
 
         Query query = entityManager.createQuery(hql);
@@ -42,14 +43,16 @@ public class DataRecordRefRepositoryImpl implements DataRecordRefRepositoryCusto
             query.setParameter("lockChange", version.getLockChange());
         }
 
+        query.setParameter("descItemTypes", descItemTypes);
+
         List<ArrDataRecordRef> result = new LinkedList<>();
-        ObjectListIterator<Integer> recordRefDataIdsIterator = new ObjectListIterator<Integer>(recordRefDataIds);
-        while (recordRefDataIdsIterator.hasNext()) {
-            query.setParameter("dataIds", recordRefDataIdsIterator.next());
+        ObjectListIterator<Integer> nodeIdsIterator = new ObjectListIterator<Integer>(dataIds);
+        while (nodeIdsIterator.hasNext()) {
+            query.setParameter("dataIds", nodeIdsIterator.next());
 
             result.addAll(query.getResultList());
         }
 
-        return query.getResultList();
+        return result;
     }
 }

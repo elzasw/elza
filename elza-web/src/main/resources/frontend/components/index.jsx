@@ -24,7 +24,7 @@ exports.WebSocket = require('./shared/web-socket/WebSocket');
 exports.ModalDialogWrapper = require('./shared/dialog/ModalDialogWrapper');
 exports.Autocomplete = require('./shared/autocomplete/Autocomplete');
 exports.Splitter = require('./shared/splitter/Splitter');
-exports.Scope = require('./shared/Scope/Scope');
+exports.Scope = require('./shared/scope/Scope');
 
 exports.FormUtils = require('./form/FormUtils');
 
@@ -36,6 +36,7 @@ exports.AddRegistryForm = require('./registry/AddRegistryForm');
 exports.EditRegistryForm = require('./registry/EditRegistryForm');
 exports.AddRegistryVariantForm = require('./registry/AddRegistryVariantForm');
 exports.RegistryLabel = require('./registry/RegistryLabel');
+exports.ImportRegistryForm = require('./registry/ImportRegistryForm');
 
 exports.FaFileTree = require('./arr/FaFileTree');
 exports.NodePanel = require('./arr/NodePanel');
@@ -49,6 +50,7 @@ exports.AddFaForm = require('./arr/AddFaForm');
 exports.AddPacketForm = require('./arr/AddPacketForm');
 exports.BulkActionsDialog = require('./arr/BulkActionsDialog');
 exports.BulkActionsTable = require('./arr/BulkActionsTable');
+exports.VersionValidationDialog = require('./arr/VersionValidationDialog');
 exports.FaExtendedView = require('./arr/FaExtendedView');
 exports.FaTreeMain = require('./arr/FaTreeMain');
 exports.FaTreeMovementsLeft = require('./arr/FaTreeMovementsLeft');

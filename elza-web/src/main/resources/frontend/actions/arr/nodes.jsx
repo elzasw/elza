@@ -5,7 +5,7 @@
 import {WebApi} from 'actions'
 import {indexById} from 'stores/app/utils.jsx'
 import {faExtendedView} from './fa'
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 
 /**
  * Změna vybrané záložky JP.

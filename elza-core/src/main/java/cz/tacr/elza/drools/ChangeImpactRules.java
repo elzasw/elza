@@ -14,13 +14,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
 import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.drools.model.DescItemChange;
 import cz.tacr.elza.drools.model.DescItem;
+import cz.tacr.elza.drools.model.DescItemChange;
 import cz.tacr.elza.drools.service.ScriptModelFactory;
 
 
@@ -36,6 +36,9 @@ public class ChangeImpactRules extends Rules {
 
     @Autowired
     private ScriptModelFactory factory;
+
+    @Autowired
+    private RulesExecutor rulesExecutor;
 
 
     /**
@@ -64,7 +67,7 @@ public class ChangeImpactRules extends Rules {
                 rulRuleSet, RulRule.RuleType.CONFORMITY_IMPACT);
 
         for (RulRule rulPackageRule : rulPackageRules) {
-            path = Paths.get(RulesExecutor.ROOT_PATH + File.separator + rulPackageRule.getFilename());
+            path = Paths.get(rulesExecutor.getRootPath() + File.separator + rulPackageRule.getFilename());
 
             StatelessKieSession session = createNewStatelessKieSession(path);
 

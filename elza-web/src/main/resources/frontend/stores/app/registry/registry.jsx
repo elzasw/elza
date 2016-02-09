@@ -1,9 +1,9 @@
 /**
  * 
  * Store pro seznamy rejstříků
- * 
- **/ 
-import * as types from 'actions/constants/actionTypes';
+ *
+ **/
+import * as types from 'actions/constants/ActionTypes';
 import registryData from './registryData';
 
 const initialState = {
@@ -46,7 +46,7 @@ export default function registry(state = initialState, action = {}) {
 
                 var _info
                 if (registryData && registryData.item.recordId === selectedId) {
-                    _info = {name: registryData.item.record, desc: registryData.item.characteristics}
+                    _info = {name: registryData.item.record, desc: registryData.item.characteristics, childs:registryData.item.childs, registerTypeId: registryData.item.registerTypeId}
                 } else {
                     _info = null
                 }

@@ -10,6 +10,8 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import liquibase.util.file.FilenameUtils;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +28,6 @@ import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.repository.ComplementTypeRepository;
-import liquibase.util.file.FilenameUtils;
 
 
 /**
@@ -52,7 +53,9 @@ public class GroovyScriptService {
     private Resource createRecordResource;
 
     private static final String CREATE_RECORD_FILE = "createRecord.groovy";
-    private static final String GROOVY_SCRIPT_DIR = "groovy";
+
+    @Value("${elza.groovy.groovyDir}")
+    private String groovyScriptDir;
 
     @Autowired
     private ScriptEvaluator groovyScriptEvaluator;
@@ -84,12 +87,12 @@ public class GroovyScriptService {
 
     @PostConstruct
     private void initScripts() {
-        File dirRules = new File(GROOVY_SCRIPT_DIR);
+        File dirRules = new File(groovyScriptDir);
         if (!dirRules.exists()) {
             dirRules.mkdir();
         }
 
-        File createRecordFile = new File(FilenameUtils.concat(GROOVY_SCRIPT_DIR, CREATE_RECORD_FILE));
+        File createRecordFile = new File(FilenameUtils.concat(groovyScriptDir, CREATE_RECORD_FILE));
         if (!createRecordFile.exists()) {
             try {
                 Files.copy(createRecordDefaultResource.getInputStream(), createRecordFile.toPath(),

@@ -2,7 +2,7 @@
  * Komponenta hledání osob
  */
 
-require ('./partySearch.less');
+require('./PartySearch.less');
 
 import React from 'react';
 import {connect} from 'react-redux'
@@ -18,11 +18,15 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
         super(props);
         this.handleSearch = this.handleSearch.bind(this);               // funkce pro akci spoustící vyhledávání
         this.handlePartyDetail = this.handlePartyDetail.bind(this);     // funkce vyberu osoby zobrazeni detailu
-        this.dispatch(findPartyFetchIfNeeded(this.props.filterText));
+        this.handleClearSearch = this.handleClearSearch.bind(this);
     }
-    
+
     handleSearch(filterText){
         this.dispatch(findPartyFetchIfNeeded(filterText));
+    }
+
+    handleClearSearch(){
+        this.dispatch(findPartyFetchIfNeeded(null));
     }
 
     handlePartyDetail(item, e){
@@ -66,7 +70,7 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
             var partyList = <li className="noResult">{label}</li>
         }
         return  <div className="party-list">
-                    <Search onSearch={this.handleSearch} filterText={this.props.filterText}/>
+                    <Search placeholder={i18n('search.input.search')} onSearch={this.handleSearch} filterText={this.props.filterText} onClear={this.handleClearSearch}/>
                     <ul className="partySearch">
                         {partyList}
                     </ul>

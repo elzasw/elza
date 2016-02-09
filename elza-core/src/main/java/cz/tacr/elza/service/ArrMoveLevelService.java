@@ -390,7 +390,7 @@ public class ArrMoveLevelService {
 
         entityManager.flush(); //aktualizace verzí v nodech
         eventNotificationService.publishEvent(
-                EventFactory.createMoveEvent(EventType.MOVE_LEVEL_BEFORE, staticLevel, transportLevels, version));
+                EventFactory.createMoveEvent(EventType.MOVE_LEVEL_UNDER, staticLevel, transportLevels, version));
     }
 
 

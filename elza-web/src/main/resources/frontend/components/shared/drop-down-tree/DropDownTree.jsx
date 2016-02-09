@@ -36,12 +36,13 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
         this.getItemLabel = this.getItemLabel.bind(this);               // funkce zjisteni popisku (nazvu) vybrané položky
 
         this.handleItemSelect = this.handleItemSelect.bind(this);       // funkce po kliknutí pro výběr
+        this.getFirstPossibleRecordType = this.getFirstPossibleRecordType.bind(this);
 
         var opened = (props.opened ? props.opened : []);
         this.props.items.map((item, i) => {
             opened = opened.concat(this.getOpenedDefault(item));
         });
-        var label = this.getItemLabel(this.props.value);
+        var label = this.getItemLabel(this.props.value, this.props.items);
         this.state = {                                                  // inicializace stavu komponenty
             opened: opened,                                           // seznam rozbalenych uzlu
             label: (label != '' ? label : this.props.label),          // pokus je vybrany nejaká položka, vypíše se její název, jinak se vypíše defaultní popisek
@@ -51,11 +52,31 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps) {
         var opened = (nextProps.opened ? nextProps.opened : []);
-        var label = this.getItemLabel(nextProps.value);
-        this.state = {                                                  // inicializace stavu komponenty
-            opened: opened,                                           // seznam rozbalenych uzlu
-            label: (label != '' ? label : nextProps.label),          // pokus je vybrany nejaká položka, vypíše se její název, jinak se vypíše defaultní popisek
-            value : nextProps.value                // id vybrane položky
+        var label = this.getItemLabel(nextProps.value, nextProps.items);
+
+        if(nextProps.preselect){
+            if(this.props.value == undefined){
+                var preselect = this.getFirstPossibleRecordType(nextProps.items);
+                if(preselect.found){
+                    label = this.getItemLabel(preselect.found.id, nextProps.items);
+                    this.state = {
+                        opened: preselect.opened,
+                        label: label,
+                        value: preselect.found.id
+                    }
+                }
+
+                if (this.props.onChange){
+                    this.props.onChange(preselect.found.id, preselect.found);
+                }
+            }
+        }else{
+
+            this.state ={                                                  // inicializace stavu komponenty
+                opened: opened,                                           // seznam rozbalenych uzlu
+                label: (label != '' ? label : nextProps.label),          // pokus je vybrany nejaká položka, vypíše se její název, jinak se vypíše defaultní popisek
+                value : nextProps.value                // id vybrane položky
+            }
         }
     }
 
@@ -109,6 +130,53 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
             }
         }
 
+    }
+
+    /**
+     * Projde celou hierarchii a najde první typ, pod který lze vložit novou osobu.
+     * @param recordTypes typy rejstříků
+     * @returns {*}
+     */
+    getFirstPossibleRecordType(recordTypes) {
+        var opened = [];
+        if (!recordTypes) {
+            return {
+                found: null,
+                opened: null
+            }
+        }
+
+        var loop = (type, opened) => {
+            if (type.addRecord) {
+                return type;
+            }
+
+            if (type.children && type.children.length > 0) {
+                for (var key in type.children) {
+                    var found = loop(type.children[key], opened);
+                    if (found) {
+                        opened.push(type.children[key].id);
+                        return found;
+                    }
+                }
+            }
+            return null;
+        }
+
+        var found = null;
+        for (var key in recordTypes) {
+            var found = loop(recordTypes[key], opened);
+
+            if (found) {
+                opened.push(recordTypes[key].id);
+                break;
+            }
+        }
+
+        return {
+            found: found,
+            opened: opened
+        }
     }
 
     // metoda pro renderovani obsahu komponenty
@@ -201,11 +269,11 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
     }
 
     //vrati popisek vybrane polozky
-    getItemLabel(value){
+    getItemLabel(value, items){
         if (this.props.nullValue && this.props.nullValue.id == value) {
             return this.props.nullValue.name;
         }
-        return this.getItemLabelInt(value, this.props.items);
+        return this.getItemLabelInt(value, items);
     }
 
     //vrati popisek vybrane polozky
@@ -238,7 +306,7 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
 DropDownTree.propTypes = {
     nullValue: React.PropTypes.object,
     items: React.PropTypes.array.isRequired,
-    value: React.PropTypes.number,
+    value: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.string]),
 
 }
 

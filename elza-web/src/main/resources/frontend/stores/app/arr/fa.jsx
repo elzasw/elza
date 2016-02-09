@@ -1,14 +1,16 @@
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import {indexById} from 'stores/app/utils.jsx'
 import faTree from './faTree'
 import nodes from './nodes'
 import bulkActions from './bulkActions'
+import versionValidation from './versionValidation'
 import {consolidateState} from 'components/Utils'
 
 export function faInitState(faWithVersion) {
     var result = {
         ...faWithVersion,
         id: faWithVersion.versionId,
+        closed: faWithVersion.closed,
         faId: faWithVersion.faId,
         versionId: faWithVersion.versionId,
         name: faWithVersion.name,
@@ -18,7 +20,8 @@ export function faInitState(faWithVersion) {
         faTreeMovementsLeft: faTree(undefined, {type: ''}),
         faTreeMovementsRight: faTree(undefined, {type: ''}),
         nodes: nodes(undefined, {type: ''}),
-        bulkActions: bulkActions(undefined, {type: ''})
+        bulkActions: bulkActions(undefined, {type: ''}),
+        versionValidation: versionValidation(undefined, {type: ''})
     }
 
     result.faTreeMovementsLeft = {...result.faTreeMovementsLeft};
@@ -53,7 +56,8 @@ export function fa(state, action) {
                 faTreeMovementsLeft: faTree(state.faTreeMovementsLeft, action),
                 faTreeMovementsRight: faTree(state.faTreeMovementsRight, action),
                 nodes: nodes(state.nodes, action),
-                bulkActions: bulkActions(undefined, {type: ''})
+                bulkActions: bulkActions(undefined, {type: ''}),
+                versionValidation: versionValidation(undefined, {type: ''})
             }
         case types.STORE_SAVE:
             const {id, faId, versionId, name} = state;
@@ -114,7 +118,6 @@ export function fa(state, action) {
         case types.FA_NODE_CHANGE:
         case types.FA_NODES_RECEIVE:
         case types.FA_NODES_REQUEST:
-        case types.CHANGE_DESC_ITEM:
         case types.FA_NODE_INFO_REQUEST:
         case types.FA_NODE_INFO_RECEIVE:
         case types.FA_SUB_NODE_FORM_REQUEST:
@@ -139,22 +142,40 @@ export function fa(state, action) {
         case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
         case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
         case types.FA_SUB_NODE_FORM_VALUE_RESPONSE:
+        case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE_RESPONSE:
         case types.FA_SUB_NODE_INFO_REQUEST:
         case types.FA_SUB_NODE_INFO_RECEIVE:
         case types.FA_FA_SUBNODES_FULLTEXT_RESULT:
-        case types.CHANGE_DELETE_LEVEL:
-        case types.CHANGE_ADD_LEVEL:
             var result = {...state,
                 nodes: nodes(state.nodes, action),
                 faTree: faTree(state.faTree, action),
             }
             return consolidateState(state, result);
+
+        case types.CHANGE_DESC_ITEM:
+        case types.CHANGE_ADD_LEVEL:
+        case types.CHANGE_DELETE_LEVEL:
+        case types.CHANGE_MOVE_LEVEL:
+            var result = {...state,
+                nodes: nodes(state.nodes, action),
+                faTree: faTree(state.faTree, action),
+                faTreeMovementsLeft: faTree(state.faTreeMovementsLeft, action),
+                faTreeMovementsRight: faTree(state.faTreeMovementsRight, action),
+            }
+            return consolidateState(state, result);
+
         case types.CHANGE_CONFORMITY_INFO:
-            var result = {...state, faTree: faTree(state.faTree, action), nodes: nodes(state.nodes, action)}
+            var result = {
+                ...state,
+                faTree: faTree(state.faTree, action),
+                nodes: nodes(state.nodes, action),
+                versionValidation: versionValidation(state.versionValidation, action)
+            }
             return consolidateState(state, result);
         case types.BULK_ACTIONS_DATA_LOADING:
         case types.BULK_ACTIONS_DATA_LOADED:
         case types.BULK_ACTIONS_RECEIVED_DATA:
+        case types.BULK_ACTIONS_VERSION_VALIDATE_RECEIVED_DATA:
         case types.BULK_ACTIONS_RECEIVED_ACTIONS:
         case types.BULK_ACTIONS_RECEIVED_STATES:
         case types.BULK_ACTIONS_RECEIVED_STATE:
@@ -162,6 +183,22 @@ export function fa(state, action) {
         case types.BULK_ACTIONS_STATE_IS_DIRTY:
             var result = {...state, bulkActions: bulkActions(state.bulkActions, action)}
             return consolidateState(state, result);
+        case types.FA_VERSION_VALIDATION_LOAD:
+        case types.FA_VERSION_VALIDATION_RECEIVED:
+            var result = {...state, versionValidation: versionValidation(state.versionValidation, action)};
+            return consolidateState(state, result);
+
+        case types.FA_FA_APPROVE_VERSION:
+
+            if (state.closed == false) {
+                return {
+                    ...state,
+                    closed: true,
+                }
+            }
+
+            return state;
+
         default:
             return state;
     }

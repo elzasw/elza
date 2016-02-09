@@ -1,6 +1,8 @@
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 
 const initialState = {
+    dirty: false,
+    dirtySearch: false,
     isFetchingSearch: false,
     fetchedSearch: false,
     isFetchingDetail: false,
@@ -54,6 +56,7 @@ export default function partyRegion(state = initialState, action) {
             })
         case types.PARTY_FIND_PARTY_RECEIVE:
             return Object.assign({}, state, {
+                dirtySearch: false,
                 isFetchingSearch: false,
                 fetchedSearch: true,
                 items: action.items,
@@ -65,6 +68,7 @@ export default function partyRegion(state = initialState, action) {
             })
         case types.PARTY_DETAIL_RECEIVE:
             return Object.assign({}, state, {
+                dirty: false,
                 isFetchingDetail: false,
                 fetchedDetail: true,
                 selectedPartyData: action.selectedPartyData,
@@ -75,6 +79,18 @@ export default function partyRegion(state = initialState, action) {
                 selectedPartyData: null,
                 selectedPartyID: null,
             })
+        case types.PARTY_UPDATED:
+            var isDirty = action.partyId === state.selectedPartyID;
+            console.log("partyUpdate", isDirty, state);
+
+            if (isDirty) {
+                return Object.assign({}, state, {
+                    dirty: isDirty
+                })
+            }
+
+            return state;
+
         default:
             return state
     }

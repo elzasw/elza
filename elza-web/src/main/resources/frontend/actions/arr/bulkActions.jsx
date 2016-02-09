@@ -1,11 +1,11 @@
 import {WebApi} from 'actions';
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import {barrier} from 'components/Utils';
 
 export function bulkActionsLoadData(versionId, mandatory = false, silent = false) {
     return (dispatch) => {
         if (!silent) {
-            dispatch(bulkActionsDataLoading());
+            dispatch(bulkActionsDataLoading(mandatory));
         }
         barrier(
             WebApi.getBulkActions(versionId, mandatory),
@@ -21,7 +21,32 @@ export function bulkActionsLoadData(versionId, mandatory = false, silent = false
                 dispatch(bulkActionsDataReceived({
                     actions: json.actions,
                     states: json.states
-                }));
+                }, mandatory));
+            });
+    }
+}
+
+export function bulkActionsValidateVersion(versionId, silent = false) {
+    return (dispatch) => {
+
+        if (!silent) {
+            dispatch(bulkActionsDataLoading(true));
+        }
+        barrier(
+            WebApi.bulkActionValidate(versionId),
+            WebApi.getBulkActionsState(versionId)
+        )
+            .then(data => {
+                return {
+                    actions: data[0].data,
+                    states: data[1].data
+                }
+            })
+            .then(json => {
+                dispatch(bulkActionsVersionValidateDataReceived({
+                    actions: json.actions,
+                    states: json.states
+                }, true));
             });
     }
 }
@@ -35,10 +60,19 @@ export function bulkActionsRun(versionId, code) {
     }
 }
 
-export function bulkActionsDataReceived(data) {
+export function bulkActionsDataReceived(data, mandatory) {
     return {
         type: types.BULK_ACTIONS_RECEIVED_DATA,
-        data
+        data,
+        mandatory
+    }
+}
+
+export function bulkActionsVersionValidateDataReceived(data, mandatory) {
+    return {
+        type: types.BULK_ACTIONS_VERSION_VALIDATE_RECEIVED_DATA,
+        data,
+        mandatory
     }
 }
 
@@ -50,9 +84,10 @@ export function bulkActionsStateReceived(data, code) {
     }
 }
 
-export function bulkActionsDataLoading() {
+export function bulkActionsDataLoading(mandatory) {
     return {
-        type: types.BULK_ACTIONS_DATA_LOADING
+        type: types.BULK_ACTIONS_DATA_LOADING,
+        mandatory
     }
 }
 

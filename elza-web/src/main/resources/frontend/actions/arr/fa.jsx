@@ -4,7 +4,7 @@
 
 import {WebApi} from 'actions'
 import {Toastr, i18n} from 'components';
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import {modalDialogHide} from 'actions/global/modalDialog'
 import {faFileTreeFetch} from 'actions/arr/faFileTree'
 import {nodesRequest, nodesReceive} from 'actions/arr/node'
@@ -71,7 +71,8 @@ export function approveFa(versionId, ruleSetId, arrangementTypeId) {
             .then((json) => {
                 Toastr.Actions.success({
                     title: i18n("arr.fa.title.approved"),
-                });                
+                });
+                dispatch(approveFaResult(json.versionId))
                 dispatch(modalDialogHide())
                 dispatch(faFileTreeFetch())
             });
@@ -111,5 +112,12 @@ export function showRegisterJp(show) {
     return {
         type: types.SHOW_REGISTER_JP,
         showRegisterJp: show
+    }
+}
+
+export function approveFaResult(versionId) {
+    return {
+        type: types.FA_FA_APPROVE_VERSION,
+        versionId: versionId
     }
 }

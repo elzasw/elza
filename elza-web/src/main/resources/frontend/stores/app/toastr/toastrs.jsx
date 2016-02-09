@@ -3,7 +3,7 @@
  * Store pro toast notifikace
  * 
  */
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 import toastr from './toastr';
 
 const initialState = {

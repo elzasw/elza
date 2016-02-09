@@ -6,7 +6,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 export function getFaFromFaAndVersion(fa, version) {
-    var fa = Object.assign({}, fa, {faId: fa.id, versionId: version.id, id: version.id, activeVersion: version});
+    var faVersionClosed = version.lockDate != null;
+    var fa = Object.assign({}, fa, {faId: fa.id, versionId: version.id, id: version.id, activeVersion: version, closed: faVersionClosed});
     return fa;
 }
 
@@ -28,6 +29,63 @@ export function getNodeParent(nodes, nodeId) {
     }
 
     return result;
+}
+
+export function getNodeFirstChild(nodes, nodeId) {
+    var result = null;
+
+    var index = indexById(nodes, nodeId);
+    if (index != null) {
+        var depth = nodes[index].depth;
+        index++;
+        if (index < nodes.length && nodes[index].depth == depth + 1) {
+            return nodes[index]
+        }
+    }
+
+    return null;
+}
+
+export function getNodePrevSibling(nodes, nodeId) {
+    var index = indexById(nodes, nodeId);
+    if (index === null) {
+        return null;
+    }
+    var node = nodes[index];
+    index--;
+    while (index >= 0) {
+        if (nodes[index].depth === node.depth) {
+            break;
+        }
+        index--;
+    }
+
+    if (index >= 0) {
+        return nodes[index]
+    } else {
+        return null
+    }
+}
+
+export function getNodeNextSibling(nodes, nodeId) {
+    var index = indexById(nodes, nodeId);
+    if (index === null) {
+        return null;
+    }
+    var node = nodes[index];
+    index++;
+    while (index < nodes.length) {
+        if (nodes[index].depth === node.depth) {
+            break;
+        }
+        index++;
+    }
+
+    if (index < nodes.length) {
+        return nodes[index]
+    } else {
+        return null
+    }
 }
 
 export function getNodeParents(nodes, nodeId) {
@@ -132,9 +190,17 @@ export function createReferenceMarkString(node) {
  * @param type kódu zobrazení
  */
 export function getGlyph(type) {
-    // TODO slapa: dopsat typy podle serveru
-
     switch (type) {
+        case "ROOT":
+            return "fa-sitemap"
+        case "SERIES":
+            return "fa-server"
+        case "FOLDER":
+            return "fa-folder-o"
+        case "ITEM":
+            return "fa-building"
+        case "PART":
+            return "fa-building-o"
         default:
             return "fa-exclamation-triangle"
     }

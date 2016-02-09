@@ -337,8 +337,12 @@ _debugStates && console.log("@CLICK:", inside);
         if (itemValueDoesMatch) {
             var node = ReactDOM.findDOMNode(this.refs.input)
             var setSelection = () => {
-                node.value = itemValue
-                node.setSelectionRange(this.state.inputStrValue.length, itemValue.length)
+                if (node.createTextRange) {
+                    // TODO: IE a Edge špatně vybírá text
+                } else {
+                    node.value = itemValue
+                    node.setSelectionRange(this.state.inputStrValue.length, itemValue.length)
+                }
             }
             if (highlightedIndex === null) {
                 this.setState({ highlightedIndex: 0 }, setSelection)

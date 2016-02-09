@@ -57,5 +57,5 @@ public interface DescItemTypeRepository extends ElzaJpaRepository<RulDescItemTyp
     }
 
     @Query(value = "SELECT t FROM rul_desc_item_type t  WHERE t.code in (?1)")
-    Set<RulDescItemType> findByCode(List<String> descItemTypeCodes);
+    Set<RulDescItemType> findByCode(Set<String> descItemTypeCodes);
 }

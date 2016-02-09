@@ -4,7 +4,7 @@
 
 import {WebApi} from 'actions'
 
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 
 /**
  * Vyžádání dat - aby byla ve store k dispozici.
@@ -14,6 +14,21 @@ export function refPartyTypesFetchIfNeeded() {
         var state = getState();
         if ((!state.refTables.partyTypes.fetched || state.refTables.partyTypes.dirty) && !state.refTables.partyTypes.isFetching) {
             return dispatch(refPartyTypesFetch());
+        }
+    }
+}
+
+/**
+ * Projde seznam typů osob a najde typ s daným id.
+ * @param partyTypeId id typu
+ * @param partyTypes seznam typů osob
+ * @returns typ osoby
+ */
+export function getPartyTypeById(partyTypeId, partyTypes){
+    var index;
+    for(index = 0; index < partyTypes.length; ++index){
+        if(partyTypes[index].partyTypeId === partyTypeId){
+            return partyTypes[index];
         }
     }
 }

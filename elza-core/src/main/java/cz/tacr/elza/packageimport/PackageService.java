@@ -42,8 +42,8 @@ import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemSpecRegister;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.RulRule;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.packageimport.xml.ArrangementType;
@@ -64,17 +64,17 @@ import cz.tacr.elza.packageimport.xml.PacketType;
 import cz.tacr.elza.packageimport.xml.PacketTypes;
 import cz.tacr.elza.packageimport.xml.RuleSet;
 import cz.tacr.elza.packageimport.xml.RuleSets;
+import cz.tacr.elza.repository.ActionRepository;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemConstraintRepository;
 import cz.tacr.elza.repository.DescItemSpecRegisterRepository;
 import cz.tacr.elza.repository.DescItemSpecRepository;
 import cz.tacr.elza.repository.DescItemTypeRepository;
-import cz.tacr.elza.repository.ActionRepository;
 import cz.tacr.elza.repository.PackageRepository;
-import cz.tacr.elza.repository.RuleRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.RuleRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.ActionEvent;
@@ -190,6 +190,9 @@ public class PackageService {
     @Autowired
     private EventNotificationService eventNotificationService;
 
+    @Autowired
+    private RulesExecutor rulesExecutor;
+
     /**
      * Provede import balíčku.
      *
@@ -197,7 +200,7 @@ public class PackageService {
      */
     public void importPackage(final File file) {
         File dirActions = new File(bulkActionConfigManager.getPath());
-        File dirRules = new File(RulesExecutor.ROOT_PATH);
+        File dirRules = new File(rulesExecutor.getRootPath());
 
         ZipFile zipFile = null;
         List<RulAction> rulPackageActions = null;
@@ -1186,7 +1189,7 @@ public class PackageService {
         arrangementTypeRepository.deleteByRulPackage(rulPackage);
 
         File dirActions = new File(bulkActionConfigManager.getPath());
-        File dirRules = new File(RulesExecutor.ROOT_PATH);
+        File dirRules = new File(rulesExecutor.getRootPath());
 
 
         try {
@@ -1404,7 +1407,7 @@ public class PackageService {
             convertPackageRule(rulPackageRule, packageRule);
             packageRuleList.add(packageRule);
 
-            addToZipFile(ZIP_DIR_RULES + "/" + rulPackageRule.getFilename(), new File(RulesExecutor.ROOT_PATH
+            addToZipFile(ZIP_DIR_RULES + "/" + rulPackageRule.getFilename(), new File(rulesExecutor.getRootPath()
                     + File.separator + rulPackageRule.getFilename()), zos);
 
         }

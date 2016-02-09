@@ -1,21 +1,19 @@
 package cz.tacr.elza.controller.config;
 
-import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.bulkaction.BulkActionConfig;
-import cz.tacr.elza.bulkaction.BulkActionState;
-import cz.tacr.elza.config.ConfigRules;
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemGroupVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTypeGroupVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
-import cz.tacr.elza.repository.*;
-import ma.glasnost.orika.MapperFacade;
-import ma.glasnost.orika.MapperFactory;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +21,80 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
-import java.time.ZoneId;
-import java.util.*;
-import java.util.function.Function;
+import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.bulkaction.BulkActionConfig;
+import cz.tacr.elza.bulkaction.BulkActionState;
+import cz.tacr.elza.config.ConfigRules;
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrFindingAidVO;
+import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
+import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
+import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.BulkActionStateVO;
+import cz.tacr.elza.controller.vo.BulkActionVO;
+import cz.tacr.elza.controller.vo.NodeConformityVO;
+import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyNameVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParRelationEntityVO;
+import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.RegRecordSimple;
+import cz.tacr.elza.controller.vo.RegRecordVO;
+import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RegScopeVO;
+import cz.tacr.elza.controller.vo.RegVariantRecordVO;
+import cz.tacr.elza.controller.vo.RulArrangementTypeVO;
+import cz.tacr.elza.controller.vo.RulDataTypeVO;
+import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
+import cz.tacr.elza.controller.vo.RulPacketTypeVO;
+import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemGroupVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTypeGroupVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
+import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.ArrNodeRegister;
+import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ParParty;
+import cz.tacr.elza.domain.ParPartyName;
+import cz.tacr.elza.domain.ParPartyNameComplement;
+import cz.tacr.elza.domain.ParPartyNameFormType;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParRelation;
+import cz.tacr.elza.domain.ParRelationEntity;
+import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.RegVariantRecord;
+import cz.tacr.elza.domain.RulArrangementType;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulDescItemSpec;
+import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulDescItemTypeExt;
+import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
+import cz.tacr.elza.repository.DescItemConstraintRepository;
+import cz.tacr.elza.repository.DescItemSpecRepository;
+import cz.tacr.elza.repository.FindingAidVersionRepository;
+import cz.tacr.elza.repository.PartyGroupIdentifierRepository;
+import cz.tacr.elza.repository.PartyNameComplementRepository;
+import cz.tacr.elza.repository.PartyNameRepository;
+import cz.tacr.elza.repository.PartyRepository;
+import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.RelationEntityRepository;
+import cz.tacr.elza.repository.RelationRepository;
+import cz.tacr.elza.repository.UnitdateRepository;
+import ma.glasnost.orika.MapperFacade;
+import ma.glasnost.orika.MapperFactory;
 
 
 /**
@@ -98,8 +166,16 @@ public class ClientFactoryVO {
                         createParPartyNameDetail(n)
         ));
 
-        result.getPartyNames().sort((a,b)->
-            a.isPrefferedName() ? -1 : a.getPartyNameId().compareTo(b.getPartyNameId())
+        result.getPartyNames().sort((a, b) -> {
+                    if (a.isPrefferedName()) {
+                        return Integer.MIN_VALUE;
+                    }
+                    if (b.isPrefferedName()) {
+                        return Integer.MAX_VALUE;
+                    }
+
+                    return a.getPartyNameId().compareTo(b.getPartyNameId());
+                }
         );
 
 
@@ -274,10 +350,10 @@ public class ClientFactoryVO {
         result.setPartyId(partyId);
 
         if (fillParents) {
-            List<String> parents = new LinkedList<>();
+            List<RegRecordVO.RecordParent> parents = new LinkedList<>();
             RegRecord parentRecord = regRecord.getParentRecord();
-            while (parentRecord != null && !parentRecord.equals(fillToParent)) {
-                parents.add(parentRecord.getRecord());
+            while (parentRecord != null ) {
+                parents.add(new RegRecordVO.RecordParent(parentRecord.getRecordId(), parentRecord.getRecord()));
                 parentRecord = parentRecord.getParentRecord();
             }
             result.setParents(parents);
@@ -293,23 +369,19 @@ public class ClientFactoryVO {
      */
     public void fillRegisterTypeNamesToParents(final RegRecordVO record, @Nullable final Integer parentTypeId) {
 
-        List<String> parentTypeNames = new ArrayList<>();
+        List<RegRecordVO.RecordParent> parentTypeNames = new ArrayList<>();
 
         RegRegisterType recordType = registerTypeRepository.findOne(record.getRegisterTypeId());
-        parentTypeNames.add(recordType.getName());
+        parentTypeNames.add(new RegRecordVO.RecordParent(recordType.getRegisterTypeId(),recordType.getName()));
+        record.setTypesToRoot(parentTypeNames);
 
-
-        if (recordType.getRegisterTypeId().equals(parentTypeId)) {
-            return;
-        }
 
         RegRegisterType parentType = recordType.getParentRegisterType();
-        while (parentType != null && !parentType.getRegisterTypeId().equals(parentTypeId)) {
-            parentTypeNames.add(parentType.getName());
+        while (parentType != null) {
+            parentTypeNames.add(new RegRecordVO.RecordParent(parentType.getRegisterTypeId(), parentType.getName()));
             parentType = parentType.getParentRegisterType();
         }
 
-        record.setTypesToRoot(parentTypeNames);
     }
 
     /**

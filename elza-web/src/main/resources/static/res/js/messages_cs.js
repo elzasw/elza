@@ -11,8 +11,9 @@ var messages = {
     "global.action.add": "Přidat",
     "global.action.cancel": "Storno",
     "global.action.close": "Zavřít",
-    "global.action.store": "Uložit",
+    "global.action.store": "Ok",
     "global.action.show.more": "Zobrazit více",
+    "global.action.import": "Importovat",
     "search.input.search": "Vyhledat...",
 
     "global.validation.required": "Pole je povinné",
@@ -25,6 +26,7 @@ var messages = {
     "ribbon.action.arr.fa.add": "Vytvořit AP",
     "ribbon.action.arr.fa.approveVersion": "Uzavřít verzi AP",
     "ribbon.action.arr.fa.bulkActions": "Hromadné akce",
+    "ribbon.action.arr.fa.validation": "Validace AP",
     "ribbon.action.arr.show-register-jp": "Rejstříky k JP",
     "ribbon.action.registry": "Rejstříky",
     "ribbon.action.party": "Osoby",
@@ -55,6 +57,29 @@ var messages = {
     "arr.fa.title.add": "Vytvoření nové AP",
     "arr.fa.title.approveVersion": "Uzavření verze AP",
     "arr.fa.title.bulkActions": "Hromadné akce",
+    "arr.fa.title.versionValidation": "Validace verze AP",
+
+    "arr.fa.approveVersion.runningBulkAction": "AP nelze uzavřít, protože běží hromadná akce",
+    "arr.fa.approveVersion.approve": "Uzavřít verzi AP",
+    "arr.fa.approveVersion.approveForce": "Uzavřít verzi AP i bez spuštění akcí",
+
+    "arr.fa.bulkActions.noActions": "Nejsou žádné hromadné akce",
+    "arr.fa.bulkActions.err": "Chyba",
+    "arr.fa.bulkActions.idle": "Neběží",
+    "arr.fa.bulkActions.runAction": "Spustit akci \"{0}\"?",
+    "arr.fa.bulkActions.run": "Spustit",
+    "arr.fa.bulkActions.running": "Běží",
+    "arr.fa.bulkActions.planned": "Ve frontě",
+    "arr.fa.bulkActions.state": "Stav",
+    "arr.fa.bulkActions.name": "Název akce",
+    "arr.fa.bulkActions.tools": "Nástroje",
+    "arr.fa.bulkActions.runChange": "Poslední spuštění",
+
+    "arr.fa.versionValidation.running": "Validace právě probíhá",
+    "arr.fa.versionValidation.ok": "Nejsou známé žádné chyby validace",
+    "arr.fa.versionValidation.err": "Jsou nalezeny chyby validace",
+    "arr.fa.versionValidation.count": "Jsou nalezeny chyby validace (celkem {0})",
+
     "arr.fa.name": "Název",
     "arr.fa.ruleSet": "Pravidla tvorby",
     "arr.fa.arrType": "Typ výstupu",
@@ -85,6 +110,16 @@ var messages = {
     "subNodeForm.descItemType.lock": "Nastavení zamknutí úprav hodnot PP",
     "subNodeForm.descItemType.copyFromPrev": "Kopírovat hodnoty PP z předchozí JP",
 
+    "subNodeForm.addNodeAfter": "JP za",
+    "subNodeForm.addNodeBefore": "JP před",
+    "subNodeForm.addSubNode": "JP pod",
+    "subNodeForm.deleteNode": "Smazat JP",
+
+    "subNodeForm.descItemTypeAdd": "Přidat prvek",
+    "subNodeForm.descItemTypeUnlockAll": "Odemknout vše",
+
+    "nodePanel.addSubNode": "Přidat JP na konec",
+
     "subNodeRegister.title": "Rejstříková hesla",
     "subNodeRegister.title.add": "Přidání hesla",
 
@@ -113,7 +148,13 @@ var messages = {
     'registry.placePath': "Cesta k umístění: ",
     'registry.list.norecord': "Zadanému filtru neodpovídají žádná data",
     'registry.detail.variant.name': "Variantní rejstříková hesla",
+    'registry.danger.disallowed.action.title': "Nepovolená akce",
+    'registry.danger.disallowed.action.can.not.move.into.myself': "Nelze přesunout sama sebe do sebe",
 
+    "registry.importRegistry": "Import rejstříkových hesel",
+    "registry.import.transformationName": "Šablona transformace",
+    "registry.import.registryScope": "Třída rejstříku",
+    "registry.import.stopOnError": "Zastavit při chybě",
     
     "party.detail.characteristics": "Charakteristika",
     "party.detail.type": "Typ",
@@ -135,6 +176,8 @@ var messages = {
     "party.detail.genealogy": "Genealogie",
     "party.detail.creator.new": "Nový autor",
     "party.detail.creator.delete": "Opravdu chcete smazat tohoto autora?",
+    "party.detail.finding": "Vyhledávám osobu",
+    "party.detail.noSelection": "Není vybrána osoba",
     "party.creator.errors.undefinedCreator" : "Nebyl vybrán autor",
     "party.creator.creator" : "Autor osoby",
     "party.detail.identifiers": "Identifikátory korporace",

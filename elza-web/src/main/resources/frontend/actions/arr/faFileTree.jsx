@@ -3,7 +3,7 @@
  */
 
 import {WebApi} from 'actions'
-import * as types from 'actions/constants/actionTypes';
+import * as types from 'actions/constants/ActionTypes';
 
 /**
  * Vyžádání dat - aby byla ve store k dispozici.

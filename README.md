@@ -24,21 +24,7 @@ Ve složce /target/apidocs se nachází Javadoc dokumentace, otevřete index.htm
 Pro sestavení dokumentace včetně UML diagramů modelu použijte profil jdocuml (je potřeba mít nainstalován Graphviz a v PATH spustitelný dot).
 
 
-### Sestavení a spuštění embed (UI pro testovací účely - Vaadin)
-
-Přepnutí do elza UI před spuštěním
-```
-cd elza-ui
-```
-
-```
-mvn -Pexec,skiptest install
-```
-
-Po sestavení dojde ke spuštění embedded aplikačního serveru Tomcat.
-Uživatelské rozhranní najdete na adrese http://localhost:8080/ui.
-
-### Sestavení a spuštění embed (UI - React), určeno pro vývoj
+### Sestavení a spuštění embed (finální UI - React), určeno pro vývoj
 
 1. Nastavení připojení k DB
 V projektu elza-web je nutné v adresáři config založit soubor elza.yaml s připojením k databázi.
@@ -63,7 +49,23 @@ mvn exec:exec -Pfrontend-dev
 ```
 
 Po sestavení dojde ke spuštění embedded aplikačního serveru Tomcat.
-Uživatelské rozhranní najdete na adrese http://localhost:8080.
+Uživatelské rozhraní najdete na adrese http://localhost:8080 - není možné přistupovat z jiného počítače (sestavte a zprovozněte war v Tomcat).
+
+
+### Sestavení a spuštění embed (UI pro testovací účely - Vaadin)
+
+Přepnutí do elza UI před spuštěním
+```
+cd elza-ui
+```
+
+```
+mvn -Pexec,skiptest install
+```
+
+Po sestavení dojde ke spuštění embedded aplikačního serveru Tomcat.
+Uživatelské rozhranní najdete na adrese http://localhost:8080/ui.
+
 
 ### Sestavení a spuštění war v Tomcat
 ```

@@ -12,7 +12,7 @@ import {AppActions} from 'stores';
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 import {updateParty} from 'actions/party/party'
-import {findPartyFetchIfNeeded} from 'actions/party/party'
+import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded} from 'actions/party/party'
 
 /**
  * PARTY DETAIL
@@ -22,18 +22,29 @@ import {findPartyFetchIfNeeded} from 'actions/party/party'
 var PartyDetail = class PartyDetail extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
-        this.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
+
         this.bindMethods(                               // pripojením funkcím "this"
             'updateValue',                              // aktualizace nějaké hodnoty
             'changeValue'                               // změna nějakéh políčka ve formuláři
+
         );
         this.state={
-            party: this.props.partyRegion.selectedPartyData,
             dynastyId: 2,
             groupId: 3,
         };
     }
+
+    componentDidMount() {
+        this.dispatch(refPartyTypesFetchIfNeeded());    // nacteni typu osob (osoba, rod, událost, ...)
+        this.dispatch(calendarTypesFetchIfNeeded());    // načtení typů kalendářů (gregoriánský, juliánský, ...)
+    }
+
+    componentWillReceiveProps(nextProps) {
+        console.log("NextProps: ",nextProps);
+        this.dispatch(partyDetailFetchIfNeeded(nextProps.partyRegion.selectedPartyID));
+//console.log("@@@@@-SubNodeForm-@@@@@", props);
+    }
+
 
     /**
      * CHANGE VALUE
@@ -125,14 +136,18 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
      * Vykreslení detailu osoby
      */ 
     render() {
-        if(this.state.party){
-            var party = this.state.party;
-        }else{
-            var party = this.props.partyRegion.selectedPartyData;
+
+        var party = this.props.partyRegion.selectedPartyData;
+
+        if(this.props.partyRegion.isFetchingDetail && party == undefined){
+            return <div>{i18n('party.detail.finding')}</div>
         }
-        if(!party){
-            return <div>Nenalezeno</div>
+
+        if(party == undefined){
+            return <div>{i18n('party.detail.noSelection')}</div>
         }
+
+
         return <div className={"partyDetail"}>
                     <h1>{party.record.record}</h1>
                     <div className="line">
@@ -152,7 +167,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
                                     <Input type="select" name="fromCalendar" value={party.from == null || party.from.calendarTypeId == null ? 0 : party.from.calendarTypeId} onChange={this.updateValue} >
                                         {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
                                     </Input>
-                                    <Input type="text"  name="fromText" value={party.from == null || party.from.textDate == null ? '' : party.from.textDate} onChange={this.changeValue} onBlue={this.updateValue} />
+                                    <Input type="text"  name="fromText" value={party.from == null || party.from.textDate == null ? '' : party.from.textDate} onChange={this.changeValue} onBlur={this.updateValue} />
                                 </div>
                             </div>
                             <div>
@@ -179,11 +194,11 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
 
 
                     {party.partyType.partyTypeId == this.state.dynastyId ? <div className="line">
-                        <Input type="text" label={i18n('party.detail.genealogy')} name="genealogy" value={party.genealogy != undefined ? party.genealogy : ''} onChange={this.changeValue} onBlur={this.updateValue}/> </div>:  null}
+                        <Input type="textarea" label={i18n('party.detail.genealogy')} name="genealogy" value={party.genealogy != undefined ? party.genealogy : ''} onChange={this.changeValue} onBlur={this.updateValue}/> </div>:  null}
 
-                    <div className="line"><Input type="text" label={i18n('party.detail.note')} name="note" value={party.record.note != undefined ? party.record.note : ''} onChange={this.changeValue} onBlur={this.updateValue}/></div>
-                    <div className="line"><Input type="text" label={i18n('party.detail.history')} name="history" value={party.history != undefined ? party.history : ''} onChange={this.changeValue} onBlur={this.updateValue}/></div>
-                    <div className="line"><Input type="text" label={i18n('party.detail.sources')} name="sourceInformation" value={party.sourceInformation == null ? '' : party.sourceInformation} onChange={this.changeValue} onBlur={this.updateValue}/></div>
+                    <div className="line"><Input type="textarea" label={i18n('party.detail.note')} name="note" value={party.record.note != undefined ? party.record.note : ''} onChange={this.changeValue} onBlur={this.updateValue}/></div>
+                    <div className="line"><Input type="textarea" label={i18n('party.detail.history')} name="history" value={party.history != undefined ? party.history : ''} onChange={this.changeValue} onBlur={this.updateValue}/></div>
+                    <div className="line"><Input type="textarea" label={i18n('party.detail.sources')} name="sourceInformation" value={party.sourceInformation == null ? '' : party.sourceInformation} onChange={this.changeValue} onBlur={this.updateValue}/></div>
 
                     {party.partyType.partyTypeId == this.state.groupId ? <div className="line group-panel">
                         <Input type="text" label={i18n('party.detail.groupOrganization')} name="organization" value={party.organization != undefined ? party.organization : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
@@ -201,4 +216,12 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
     }
 }
 
-module.exports = connect()(PartyDetail);
+function mapStateToProps(state) {
+    const {partyRegion} = state
+    return {
+        partyRegion: partyRegion
+    }
+}
+
+
+module.exports = connect(mapStateToProps)(PartyDetail);
