@@ -37,7 +37,8 @@ export function faSubNodeFormValueValidateResult(versionId, nodeId, nodeKey, val
     }
 }
 
-export function faSubNodeFormValueChange(versionId, nodeId, nodeKey, valueLocation, value) {
+// forceStore - true, pokud se mají data rovnou odeslat na server - není nutné focus do komponenty a následné blur 
+export function faSubNodeFormValueChange(versionId, nodeId, nodeKey, valueLocation, value, forceStore) {
     return (dispatch, getState) => {
         dispatch({
             type: types.FA_SUB_NODE_FORM_VALUE_CHANGE,
@@ -48,6 +49,10 @@ export function faSubNodeFormValueChange(versionId, nodeId, nodeKey, valueLocati
             value,
             dispatch
         })
+
+        if (forceStore) {
+            formValueStore(dispatch, getState, versionId, nodeId, nodeKey, valueLocation)
+        }
     }
 }
 

@@ -289,10 +289,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     handleCreatedRecord(valueLocation, data) {
         const {versionId, selectedSubNodeId, nodeKey} = this.props;
 
-        // TODO: sjednoceni od Pavla - ELZA-591
-        this.dispatch(faSubNodeFormValueFocus(versionId, selectedSubNodeId, nodeKey, valueLocation));
-        this.dispatch(faSubNodeFormValueChange(versionId, selectedSubNodeId, nodeKey, valueLocation, data));
-        this.dispatch(faSubNodeFormValueBlur(versionId, selectedSubNodeId, nodeKey, valueLocation));
+        this.dispatch(faSubNodeFormValueChange(versionId, selectedSubNodeId, nodeKey, valueLocation, data, true));
 
         this.dispatch(registrySelect(data.recordId));
         this.dispatch(routerNavigate('registry'));
@@ -337,10 +334,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     handleCreatedParty(valueLocation, data) {
         const {versionId, selectedSubNodeId, nodeKey} = this.props;
 
-        // TODO: sjednoceni od Pavla - ELZA-591
-        this.dispatch(faSubNodeFormValueFocus(versionId, selectedSubNodeId, nodeKey, valueLocation));
-        this.dispatch(faSubNodeFormValueChange(versionId, selectedSubNodeId, nodeKey, valueLocation, data));
-        this.dispatch(faSubNodeFormValueBlur(versionId, selectedSubNodeId, nodeKey, valueLocation));
+        this.dispatch(faSubNodeFormValueChange(versionId, selectedSubNodeId, nodeKey, valueLocation, data, true));
 
         this.dispatch(partySelect(data.partyId));
         this.dispatch(routerNavigate('party'));
@@ -405,7 +399,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             descItemIndex
         }
 
-        this.dispatch(faSubNodeFormValueChange(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation, value));
+        this.dispatch(faSubNodeFormValueChange(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation, value, false));
     }
 
     /**
