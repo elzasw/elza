@@ -6,6 +6,9 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import ma.glasnost.orika.MapperFacade;
+import ma.glasnost.orika.MapperFactory;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -21,6 +24,7 @@ import cz.tacr.elza.controller.vo.ParRelationVO;
 import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.RegVariantRecordVO;
+import cz.tacr.elza.controller.vo.XmlImportConfigVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -44,8 +48,7 @@ import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.PacketTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
-import ma.glasnost.orika.MapperFacade;
-import ma.glasnost.orika.MapperFactory;
+import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
 
 
 /**
@@ -282,5 +285,13 @@ public class ClientFactoryDO {
         }
 
         return nodeRegister;
+    }
+
+    public XmlImportConfig createXmlImportConfig(final XmlImportConfigVO configVO) {
+        Assert.notNull(configVO);
+
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+
+        return mapper.map(configVO, XmlImportConfig.class);
     }
 }

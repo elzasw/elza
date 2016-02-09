@@ -318,8 +318,7 @@ public class XmlImportService {
         checkData(xmlImport, usedRecords, usedParties, usedPackets, importAllRecords, importAllParties, importFindingAid);
 
         // rejstříky - párovat podle ext id a ext systému
-        RegScope regScope = findRecordScope(config);
-        Map<String, RegRecord> xmlIdIntIdRecordMap = importRecords(xmlImport, usedRecords, stopOnError, regScope);
+        Map<String, RegRecord> xmlIdIntIdRecordMap = importRecords(xmlImport, usedRecords, stopOnError, config.getRegScope());
 
         // osoby - zakládat nové
         Map<String, ParParty> xmlIdIntIdPartyMap = importParties(xmlImport, usedParties, stopOnError, xmlIdIntIdRecordMap);
@@ -335,7 +334,7 @@ public class XmlImportService {
 
             // založit fa
             ArrChange change = arrangementService.createChange();
-            ArrFindingAid findingAid = createFindingAid(xmlImport.getFindingAid(), change, config, regScope, stopOnError);
+            ArrFindingAid findingAid = createFindingAid(xmlImport.getFindingAid(), change, config, stopOnError);
 
             // importovat
             ArrFindingAidVersion findingAidVersion = arrangementService.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
@@ -399,18 +398,6 @@ public class XmlImportService {
             xmlIdIntIdRecordMap = new HashMap<>();
         }
         return xmlIdIntIdRecordMap;
-    }
-
-    private RegScope findRecordScope(XmlImportConfig config) throws RecordImportException {
-        Integer recordScopeId = config.getRecordScopeId();
-        if (recordScopeId == null) {
-            throw new RecordImportException("Není nastaveno id třídy rejstříků.");
-        }
-        RegScope regScope = scopeRepository.findOne(recordScopeId);
-        if (regScope == null) {
-            throw new RecordImportException("Nebyla nalezena třída rejstřídu s id " + recordScopeId);
-        }
-        return regScope;
     }
 
     private void importFindingAid(FindingAid findingAid, ArrChange change, ArrNode rootNode, Map<String, RegRecord> xmlIdIntIdRecordMap,
@@ -645,7 +632,7 @@ public class XmlImportService {
         return arrDescItem;
     }
 
-    private ArrFindingAid createFindingAid(FindingAid findingAid, ArrChange change, XmlImportConfig config, RegScope regScope, boolean stopOnError) throws FatalXmlImportException, InvalidDataException {
+    private ArrFindingAid createFindingAid(FindingAid findingAid, ArrChange change, XmlImportConfig config, boolean stopOnError) throws FatalXmlImportException, InvalidDataException {
         RulArrangementType arrangementType;
         RulRuleSet ruleSet;
         if (StringUtils.isBlank(config.getTransformationName())) {
@@ -666,7 +653,7 @@ public class XmlImportService {
 
         String uuid = XmlImportUtils.trimStringValue(findingAid.getRootLevel().getUuid(), StringLength.LENGTH_36, stopOnError);
         ArrFindingAid arrFindingAid = arrangementService.createFindingAid(findingAid.getName(), ruleSet, arrangementType, change, uuid);
-        arrangementService.addScopeToFindingAid(arrFindingAid, regScope);
+        arrangementService.addScopeToFindingAid(arrFindingAid, config.getRegScope());
 
         return arrFindingAid;
     }
@@ -1346,7 +1333,7 @@ public class XmlImportService {
     private XmlImport readData(XmlImportConfig config) {
         Assert.notNull(config);
         Assert.notNull(config.getXmlFile());
-        Assert.notNull(config.getRecordScopeId());
+        Assert.notNull(config.getRegScope());
 
         MultipartFile xmlFile = config.getXmlFile();
         String transformationName = config.getTransformationName();

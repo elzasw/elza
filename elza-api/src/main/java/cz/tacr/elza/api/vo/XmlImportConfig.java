@@ -8,6 +8,7 @@ import java.io.File;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 21. 12. 2015
  */
+@Deprecated
 public class XmlImportConfig {
 
     private boolean stopOnError;

@@ -1,17 +1,10 @@
-package cz.tacr.elza.xmlimport.v1.utils;
+package cz.tacr.elza.controller.vo;
 
 import org.springframework.web.multipart.MultipartFile;
 
 import cz.tacr.elza.api.vo.XmlImportType;
-import cz.tacr.elza.domain.RegScope;
 
-/**
- *
- *
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
- * @since 21. 12. 2015
- */
-public class XmlImportConfig {
+public class XmlImportConfigVO {
 
     private boolean stopOnError;
 
@@ -25,7 +18,7 @@ public class XmlImportConfig {
 
     private Integer arrangementTypeId;
 
-    private RegScope regScope;
+    private RegScopeVO regScope;
 
     public boolean isStopOnError() {
         return stopOnError;
@@ -43,11 +36,19 @@ public class XmlImportConfig {
         this.xmlFile = xmlFile;
     }
 
-    public XmlImportType getXmlImportType() {
+    public String getTransformationName() {
+        return transformationName;
+    }
+
+    public void setTransformationName(String transformationName) {
+        this.transformationName = transformationName;
+    }
+
+    public XmlImportType getImportDataFormat() {
         return importDataFormat;
     }
 
-    public void setXmlImportType(XmlImportType importDataFormat) {
+    public void setImportDataFormat(XmlImportType importDataFormat) {
         this.importDataFormat = importDataFormat;
     }
 
@@ -67,19 +68,12 @@ public class XmlImportConfig {
         this.arrangementTypeId = arrangementTypeId;
     }
 
-    public RegScope getRegScope() {
+    public RegScopeVO getRegScope() {
         return regScope;
     }
 
-    public void setRegScope(RegScope regScope) {
+    public void setRegScope(RegScopeVO regScope) {
         this.regScope = regScope;
     }
 
-    public String getTransformationName() {
-        return transformationName;
-    }
-
-    public void setTransformationName(String transformationName) {
-        this.transformationName = transformationName;
-    }
 }
