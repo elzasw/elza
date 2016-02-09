@@ -42,7 +42,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
-import cz.tacr.elza.api.vo.ImportDataFormat;
+import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDataCoordinates;
@@ -289,25 +289,92 @@ public class XmlImportService {
         Set<String> usedParties = new HashSet<>();
         Set<String> usedPackets = new HashSet<>();
         boolean stopOnError = config.isStopOnError();
-        boolean importFindingAid = xmlImport.getFindingAid() != null;
-        boolean importParties = xmlImport.getParties() != null;
-        boolean importAllRecords = !importFindingAid && !importParties;
-        boolean importAllParties = !importFindingAid;
-        checkData(xmlImport, usedRecords, usedParties, usedPackets, importAllRecords, importAllParties);
+
+        boolean importFindingAid;
+        boolean importAllRecords;
+        boolean importAllParties;
+
+        XmlImportType xmlImportType = config.getXmlImportType();
+        switch (xmlImportType) {
+            case FINDING_AID:
+                importFindingAid = true;
+                importAllRecords = false;
+                importAllParties = false;
+                break;
+            case PARTY:
+                importFindingAid = false;
+                importAllRecords = false;
+                importAllParties = true;
+                break;
+            case RECORD:
+                importFindingAid = false;
+                importAllRecords = true;
+                importAllParties = false;
+                break;
+            default:
+                throw new FatalXmlImportException("Neznánmý typ importu: " + xmlImportType);
+        }
+
+        checkData(xmlImport, usedRecords, usedParties, usedPackets, importAllRecords, importAllParties, importFindingAid);
 
         // rejstříky - párovat podle ext id a ext systému
-        Map<String, RegRecord> xmlIdIntIdRecordMap;
+        RegScope regScope = findRecordScope(config);
+        Map<String, RegRecord> xmlIdIntIdRecordMap = importRecords(xmlImport, usedRecords, stopOnError, regScope);
+
+        // osoby - zakládat nové
+        Map<String, ParParty> xmlIdIntIdPartyMap = importParties(xmlImport, usedParties, stopOnError, xmlIdIntIdRecordMap);
+
+
+        // párování - podle uuid root uzlu pokud existuje
+        // smazat fa
+        if  (importFindingAid) {
+            Level rootLevel = xmlImport.getFindingAid().getRootLevel();
+
+            // najít fa, smazat
+            deleteFindingAidIfExists(rootLevel);
+
+            // založit fa
+            ArrChange change = arrangementService.createChange();
+            ArrFindingAid findingAid = createFindingAid(xmlImport.getFindingAid(), change, config, regScope, stopOnError);
+
+            // importovat
+            ArrFindingAidVersion findingAidVersion = arrangementService.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
+            ArrNode rootNode = findingAidVersion.getRootLevel().getNode();
+
+            Map<String, ArrPacket> xmlIdIntIdPacketMap = importPackets(xmlImport, usedPackets, stopOnError, findingAid);
+            importFindingAid(xmlImport.getFindingAid(), change, rootNode, xmlIdIntIdRecordMap, xmlIdIntIdPartyMap, xmlIdIntIdPacketMap,
+                    config);
+        }
+    }
+
+    private String deleteFindingAidIfExists(Level rootLevel) {
+        ArrFindingAid findingAid;
+        String rootUuid = rootLevel.getUuid();
+        if (StringUtils.isNotBlank(rootUuid)) {
+            findingAid = findingAidRepository.findFindingAidByRootNodeUUID(rootUuid);
+            if (findingAid != null) {
+                arrangementService.deleteFindingAid(findingAid.getFindingAidId());
+            }
+        }
+        return rootUuid;
+    }
+
+    private Map<String, ArrPacket> importPackets(XmlImport xmlImport, Set<String> usedPackets, boolean stopOnError,
+            ArrFindingAid findingAid) throws NonFatalXmlImportException {
+        Map<String, ArrPacket> xmlIdIntIdPacketMap;
         try {
-            RegScope regScope = findRecordScope(config);
-            xmlIdIntIdRecordMap = importRecords(xmlImport.getRecords(), usedRecords, stopOnError, regScope);
+            xmlIdIntIdPacketMap = importPackets(xmlImport.getPackets(), usedPackets, findingAid, stopOnError);
         } catch (NonFatalXmlImportException e) {
             if (stopOnError) {
                 throw e;
             }
-            xmlIdIntIdRecordMap = new HashMap<>();
+            xmlIdIntIdPacketMap = new HashMap<>();
         }
+        return xmlIdIntIdPacketMap;
+    }
 
-        // osoby - zakládat nové
+    private Map<String, ParParty> importParties(XmlImport xmlImport, Set<String> usedParties, boolean stopOnError,
+            Map<String, RegRecord> xmlIdIntIdRecordMap) throws NonFatalXmlImportException {
         Map<String, ParParty> xmlIdIntIdPartyMap;
         try {
             xmlIdIntIdPartyMap = importParties(xmlImport.getParties(), usedParties, stopOnError, xmlIdIntIdRecordMap);
@@ -317,48 +384,21 @@ public class XmlImportService {
             }
             xmlIdIntIdPartyMap = new HashMap<>();
         }
+        return xmlIdIntIdPartyMap;
+    }
 
-
-        // párování - podle uuid root uzlu pokud existuje
-        // smazat fa
-        if  (importFindingAid) {
-            Level rootLevel = xmlImport.getFindingAid().getRootLevel();
-            if (rootLevel != null) {
-                // najít fa, smazat
-                ArrFindingAid findingAid;
-                String rootUuid = rootLevel.getUuid();
-                if (StringUtils.isNotBlank(rootUuid)) {
-                    findingAid = findingAidRepository.findFindingAidByRootNodeUUID(rootUuid);
-                    if (findingAid != null) {
-                        arrangementService.deleteFindingAid(findingAid.getFindingAidId());
-                    }
-                }
-
-                // založit fa
-                ArrChange change = arrangementService.createChange();
-                findingAid = createFindingAid(xmlImport.getFindingAid(), change, config);
-                Map<String, ArrPacket> xmlIdIntIdPacketMap;
-                try {
-                    xmlIdIntIdPacketMap = importPackets(xmlImport.getPackets(), usedPackets, findingAid, stopOnError);
-                } catch (NonFatalXmlImportException e) {
-                    if (stopOnError) {
-                        throw e;
-                    }
-                    xmlIdIntIdPacketMap = new HashMap<>();
-                }
-
-                // importovat
-                ArrFindingAidVersion findingAidVersion = arrangementService.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
-                ArrNode rootNode = findingAidVersion.getRootLevel().getNode();
-                if (StringUtils.isNotBlank(rootUuid)) {
-                    rootNode.setUuid(XmlImportUtils.trimStringValue(rootUuid, StringLength.LENGTH_36, stopOnError));
-                    nodeRepository.save(rootNode);
-                }
-
-                importFindingAid(xmlImport.getFindingAid(), change, rootNode, xmlIdIntIdRecordMap, xmlIdIntIdPartyMap, xmlIdIntIdPacketMap,
-                        config);
+    private Map<String, RegRecord> importRecords(XmlImport xmlImport, Set<String> usedRecords, boolean stopOnError,
+            RegScope regScope) throws NonFatalXmlImportException {
+        Map<String, RegRecord> xmlIdIntIdRecordMap;
+        try {
+            xmlIdIntIdRecordMap = importRecords(xmlImport.getRecords(), usedRecords, stopOnError, regScope);
+        } catch (NonFatalXmlImportException e) {
+            if (stopOnError) {
+                throw e;
             }
+            xmlIdIntIdRecordMap = new HashMap<>();
         }
+        return xmlIdIntIdRecordMap;
     }
 
     private RegScope findRecordScope(XmlImportConfig config) throws RecordImportException {
@@ -605,12 +645,10 @@ public class XmlImportService {
         return arrDescItem;
     }
 
-    private ArrFindingAid createFindingAid(FindingAid findingAid, ArrChange change, XmlImportConfig config) throws FatalXmlImportException {
-        ImportDataFormat importDataFormat = config.getImportDataFormat();
-
+    private ArrFindingAid createFindingAid(FindingAid findingAid, ArrChange change, XmlImportConfig config, RegScope regScope, boolean stopOnError) throws FatalXmlImportException, InvalidDataException {
         RulArrangementType arrangementType;
         RulRuleSet ruleSet;
-        if (importDataFormat == ImportDataFormat.ELZA) {
+        if (StringUtils.isBlank(config.getTransformationName())) {
             String arrangementTypeCode = findingAid.getArrangementTypeCode();
             arrangementType = arrangementTypeRepository.findByCode(arrangementTypeCode);
             if (arrangementType == null) {
@@ -621,17 +659,31 @@ public class XmlImportService {
             if (ruleSet == null) {
                 throw new FatalXmlImportException("Nebyla nalezena pravidla s kódem " + ruleSetCode);
             }
-        } else { // jen pro SUZAP, INTERPI by se sem nemělo dostat
+        } else {
             arrangementType = arrangementTypeRepository.findOne(config.getArrangementTypeId());
             ruleSet = ruleSetRepository.findOne(config.getRuleSetId());
         }
 
-        return arrangementService.createFindingAid(findingAid.getName(), ruleSet, arrangementType, change);
+        String uuid = XmlImportUtils.trimStringValue(findingAid.getRootLevel().getUuid(), StringLength.LENGTH_36, stopOnError);
+        ArrFindingAid arrFindingAid = arrangementService.createFindingAid(findingAid.getName(), ruleSet, arrangementType, change, uuid);
+        arrangementService.addScopeToFindingAid(arrFindingAid, regScope);
+
+        return arrFindingAid;
     }
 
-    private void checkData(XmlImport xmlImport, Set<String> usedRecords, Set<String> usedParties, Set<String> usedPackets, boolean importAllRecords, boolean importAllParties) {
+    private void checkData(XmlImport xmlImport, Set<String> usedRecords, Set<String> usedParties, Set<String> usedPackets,
+            boolean importAllRecords, boolean importAllParties, boolean importFindingAid) throws FatalXmlImportException {
         FindingAid findingAid = xmlImport.getFindingAid();
         List<AbstractParty> parties = xmlImport.getParties();
+
+        if (importFindingAid) {
+            if (findingAid == null) {
+                throw new FatalXmlImportException("V datech chybí archivní pomůcka.");
+            }
+
+            Level rootLevel = findingAid.getRootLevel();
+            checkLevel(rootLevel, usedRecords, usedParties, usedPackets);
+        }
 
         if (importAllParties) {
             if (parties != null) {
@@ -640,12 +692,9 @@ public class XmlImportService {
                     usedParties.add(party.getPartyId());
                 });
             }
-        } else {
-            Level rootLevel = findingAid.getRootLevel();
-            checkLevel(rootLevel, usedRecords, usedParties, usedPackets);
         }
 
-        if (importAllRecords || !usedRecords.isEmpty()) {
+        if (importAllRecords || !usedRecords.isEmpty()) { // přidání všech rejstříků nebo doplnění parentů k rejstříkům použitým ve stromu a u osob
             List<Record> records = xmlImport.getRecords();
             if (records != null) {
                 records.forEach(r -> addUsedRecord(r, importAllRecords, usedRecords));
@@ -1296,32 +1345,22 @@ public class XmlImportService {
 
     private XmlImport readData(XmlImportConfig config) {
         Assert.notNull(config);
-        Assert.notNull(config.getImportDataFormat());
         Assert.notNull(config.getXmlFile());
         Assert.notNull(config.getRecordScopeId());
 
-        ImportDataFormat importDataFormat = config.getImportDataFormat();
-        File xmlFile = config.getXmlFile();
+        MultipartFile xmlFile = config.getXmlFile();
+        String transformationName = config.getTransformationName();
 
         InputStream is;
-        switch (importDataFormat) {
-            case ELZA:
-                try {
-                    is = new FileInputStream(xmlFile);
-                } catch (IOException e) {
-                    throw new IllegalStateException("Chyba při otevírání vstupního souboru.", e);
-                }
-                break;
-            case INTERPI:
-            case SUZAP:
-                File transformationFile = config.getTransformationFile();
-                if (transformationFile == null) {
-                    transformationFile = getTransformationFileByName(config.getTransformationName());
-                }
-                is = transformXml(xmlFile, config.getTransformationFile());
-                break;
-            default:
-                throw new IllegalStateException("Nepodporovaný typ dat " + importDataFormat);
+        if (StringUtils.isBlank(transformationName)) {
+            try {
+                is = xmlFile.getInputStream();
+            } catch (IOException e) {
+                throw new IllegalStateException("Chyba při otevírání vstupního souboru.", e);
+            }
+        } else {
+            File transformationFile = getTransformationFileByName(config.getTransformationName());
+            is = transformXml(xmlFile, transformationFile);
         }
 
         try {
@@ -1342,7 +1381,7 @@ public class XmlImportService {
         return transformationFile;
     }
 
-    private InputStream transformXml(File xmlFile, File transformationFile)
+    private InputStream transformXml(MultipartFile xmlFile, File transformationFile)
         throws TransformerFactoryConfigurationError {
         Assert.notNull(xmlFile);
 
@@ -1454,6 +1493,12 @@ public class XmlImportService {
      */
     public List<String> getTransformationNames() {
         File transformDir = new File(transformationsDirectory);
+
+        if (!transformDir.exists()) {
+            transformDir.mkdirs();
+            return Collections.EMPTY_LIST;
+        }
+
         if (!transformDir.isDirectory()) {
             throw new IllegalStateException("Cesta " + transformDir.getAbsolutePath() + " není adresář.");
         }

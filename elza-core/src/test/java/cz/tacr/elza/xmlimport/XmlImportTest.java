@@ -28,7 +28,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import cz.tacr.elza.ElzaCore;
-import cz.tacr.elza.api.vo.ImportDataFormat;
+import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.service.XmlImportService;
@@ -97,9 +97,8 @@ public class XmlImportTest implements ApplicationContextAware {
     public void importNativeData() throws XmlImportException {
         XmlImportConfig config = new XmlImportConfig();
         config.setStopOnError(false);
-        config.setUpdateRecords(true);
-        config.setImportDataFormat(ImportDataFormat.ELZA);
-        config.setXmlFile(new File("d:\\xml-export1.xml"));
+        config.setXmlImportType(XmlImportType.FINDING_AID);
+//        config.setXmlFile(new File("d:\\xml-export1.xml"));
 
         xmlImportService.importData(config);
     }

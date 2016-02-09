@@ -35,6 +35,7 @@ import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFaRegisterScope;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
 import cz.tacr.elza.domain.ArrLevel;
@@ -43,6 +44,7 @@ import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrNodeConformityError;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrVersionConformity;
+import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDescItemType;
 import cz.tacr.elza.domain.RulRuleSet;
@@ -54,6 +56,7 @@ import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.FaRegisterScopeRepository;
 import cz.tacr.elza.repository.FindingAidRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
@@ -153,6 +156,8 @@ public class ArrangementService {
     @Autowired
     private ArrangementManager arrangementManager;
 
+    @Autowired
+    protected FaRegisterScopeRepository faRegisterScopeRepository;
 
     public ArrFindingAid findFindingAidByRootNodeUUID(String uuid) {
         Assert.notNull(uuid);
@@ -161,7 +166,7 @@ public class ArrangementService {
     }
 
     public ArrFindingAid createFindingAid(String name, RulRuleSet ruleSet, RulArrangementType arrangementType,
-                                          ArrChange change) {
+                                          ArrChange change, String uuid) {
         ArrFindingAid findingAid = new ArrFindingAid();
         findingAid.setCreateDate(LocalDateTime.now());
         findingAid.setName(name);
@@ -173,7 +178,7 @@ public class ArrangementService {
 
         //        Assert.isTrue(ruleSet.equals(arrangementType.getRuleSet()));
 
-        ArrLevel rootNode = createLevel(change, null);
+        ArrLevel rootNode = createLevel(change, null, uuid);
         createVersion(change, findingAid, arrangementType, ruleSet, rootNode);
 
         return findingAid;
@@ -193,7 +198,7 @@ public class ArrangementService {
                                                       RulArrangementType arrangementType) {
         ArrChange change = createChange();
 
-        ArrFindingAid findingAid = createFindingAid(name, ruleSet, arrangementType, change);
+        ArrFindingAid findingAid = createFindingAid(name, ruleSet, arrangementType, change, null);
 
         ArrFindingAidVersion version = findingAidVersionRepository
                 .findByFindingAidIdAndLockChangeIsNull(findingAid.getFindingAidId());
@@ -238,12 +243,12 @@ public class ArrangementService {
         return findingAidVersionRepository.save(version);
     }
 
-    public ArrLevel createLevel(final ArrChange createChange, final ArrNode parentNode) {
+    public ArrLevel createLevel(final ArrChange createChange, final ArrNode parentNode, final String uuid) {
         ArrLevel level = new ArrLevel();
         level.setPosition(1);
         level.setCreateChange(createChange);
         level.setNodeParent(parentNode);
-        level.setNode(createNode());
+        level.setNode(createNode(uuid));
         return levelRepository.save(level);
     }
 
@@ -804,6 +809,23 @@ public class ArrangementService {
         }
 
         return versionValidationItems;
+    }
+
+    public ArrFaRegisterScope addScopeToFindingAid(ArrFindingAid findingAid, RegScope scope) {
+        Assert.notNull(findingAid);
+        Assert.notNull(scope);
+
+        ArrFaRegisterScope faRegisterScope = faRegisterScopeRepository.findByFindingAidAndScope(findingAid, scope);
+        if (faRegisterScope != null) {
+            logger.info("Vazbe mezi archivní pomůckou " + findingAid + " a třídou rejstříku " + scope + " již existuje.");
+            return faRegisterScope;
+        }
+
+        faRegisterScope = new ArrFaRegisterScope();
+        faRegisterScope.setFindingAid(findingAid);
+        faRegisterScope.setScope(scope);
+
+        return faRegisterScopeRepository.save(faRegisterScope);
     }
 
 }

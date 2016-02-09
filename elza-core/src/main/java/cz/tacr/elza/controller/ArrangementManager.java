@@ -46,14 +46,14 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDescItemPartyRef;
 import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrNodeConformity;
-import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrLevelExt;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.ArrNodeRegister;
 import cz.tacr.elza.domain.ArrPacket;
+import cz.tacr.elza.domain.ArrVersionConformity;
 import cz.tacr.elza.domain.RulArrangementType;
 import cz.tacr.elza.domain.RulDescItemSpec;
 import cz.tacr.elza.domain.RulDescItemType;
@@ -223,7 +223,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
 
         ArrChange change = arrangementService.createChange();
 
-        ArrLevel rootNode = arrangementService.createLevel(change, null);
+        ArrLevel rootNode = arrangementService.createLevel(change, null, (String) null);
         ArrFindingAidVersion version = arrangementService
                 .createVersion(change, findingAid, arrangementType, ruleSet, rootNode);
 
@@ -374,7 +374,7 @@ public class ArrangementManager implements cz.tacr.elza.api.controller.Arrangeme
         ArrFindingAidVersion ver = findingAidVersionRepository.findOne(version.getFindingAidVersionId());
         ArrFindingAid findingAid = ver.getFindingAid();
         Integer findingAidId = findingAid.getFindingAidId();
-        
+
         if (!findingAidRepository.exists(findingAidId)) {
             throw new ConcurrentUpdateException("Archivní pomůcka s identifikátorem " + findingAidId + " již neexistuje.");
         }

@@ -18,7 +18,7 @@ public class XmlImportConfig {
 
     private File transformationFile;
 
-    private ImportDataFormat importDataFormat;
+    private XmlImportType importDataFormat;
 
     private Integer ruleSetId;
 
@@ -58,11 +58,11 @@ public class XmlImportConfig {
         this.transformationFile = transformationFile;
     }
 
-    public ImportDataFormat getImportDataFormat() {
+    public XmlImportType getImportDataFormat() {
         return importDataFormat;
     }
 
-    public void setImportDataFormat(ImportDataFormat importDataFormat) {
+    public void setImportDataFormat(XmlImportType importDataFormat) {
         this.importDataFormat = importDataFormat;
     }
 

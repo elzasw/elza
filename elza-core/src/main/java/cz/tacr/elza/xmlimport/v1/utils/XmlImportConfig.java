@@ -1,10 +1,8 @@
 package cz.tacr.elza.xmlimport.v1.utils;
 
-import java.io.File;
-
 import org.springframework.web.multipart.MultipartFile;
 
-import cz.tacr.elza.api.vo.ImportDataFormat;
+import cz.tacr.elza.api.vo.XmlImportType;
 
 /**
  *
@@ -16,17 +14,11 @@ public class XmlImportConfig {
 
     private boolean stopOnError;
 
-    private boolean updateRecords;
-
-    private MultipartFile xmlMultipartFile;
-
-    private File xmlFile;
-
-    private File transformationFile;
+    private MultipartFile xmlFile;
 
     private String transformationName;
 
-    private ImportDataFormat importDataFormat;
+    private XmlImportType importDataFormat;
 
     private Integer ruleSetId;
 
@@ -42,35 +34,19 @@ public class XmlImportConfig {
         this.stopOnError = stopOnError;
     }
 
-    public boolean isUpdateRecords() {
-        return updateRecords;
-    }
-
-    public void setUpdateRecords(boolean updateRecords) {
-        this.updateRecords = updateRecords;
-    }
-
-    public File getXmlFile() {
+    public MultipartFile getXmlFile() {
         return xmlFile;
     }
 
-    public void setXmlFile(File xmlFile) {
+    public void setXmlFile(MultipartFile xmlFile) {
         this.xmlFile = xmlFile;
     }
 
-    public File getTransformationFile() {
-        return transformationFile;
-    }
-
-    public void setTransformationFile(File transformationFile) {
-        this.transformationFile = transformationFile;
-    }
-
-    public ImportDataFormat getImportDataFormat() {
+    public XmlImportType getXmlImportType() {
         return importDataFormat;
     }
 
-    public void setImportDataFormat(ImportDataFormat importDataFormat) {
+    public void setXmlImportType(XmlImportType importDataFormat) {
         this.importDataFormat = importDataFormat;
     }
 
@@ -104,13 +80,5 @@ public class XmlImportConfig {
 
     public void setTransformationName(String transformationName) {
         this.transformationName = transformationName;
-    }
-
-    public MultipartFile getXmlMultipartFile() {
-        return xmlMultipartFile;
-    }
-
-    public void setXmlMultipartFile(MultipartFile xmlMultipartFile) {
-        this.xmlMultipartFile = xmlMultipartFile;
     }
 }

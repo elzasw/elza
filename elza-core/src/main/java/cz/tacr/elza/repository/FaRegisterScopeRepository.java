@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrFaRegisterScope;
+import cz.tacr.elza.domain.ArrFindingAid;
 import cz.tacr.elza.domain.RegScope;
 
 
@@ -25,4 +26,6 @@ public interface FaRegisterScopeRepository extends JpaRepository<ArrFaRegisterSc
      * @return seznam napojení
      */
     List<ArrFaRegisterScope> findByScope(RegScope scope);
+
+    ArrFaRegisterScope findByFindingAidAndScope(ArrFindingAid findingAid, RegScope scope);
 }
