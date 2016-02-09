@@ -30,7 +30,6 @@ import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
-import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.domain.ArrChange;
@@ -151,10 +150,6 @@ public class ArrangementService {
 
     @Autowired
     private DescItemFactory descItemFactory;
-
-    //TODO smazat závislost až bude DescItemService
-    @Autowired
-    private ArrangementManager arrangementManager;
 
     @Autowired
     protected FaRegisterScopeRepository faRegisterScopeRepository;

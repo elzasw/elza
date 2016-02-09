@@ -8,7 +8,6 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionState;
-import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFindingAidVersion;
@@ -16,6 +15,7 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.FindingAidVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.service.DescriptionItemService;
 
 
 /**
@@ -33,10 +33,10 @@ public abstract class BulkAction {
     private ChangeRepository changeRepository;
 
     @Autowired
-    private ArrangementManager arrangementManager;
+    private LevelRepository levelRepository;
 
     @Autowired
-    private LevelRepository levelRepository;
+    private DescriptionItemService descriptionItemService;
 
     /**
      * Abstrakní metoda pro spuštění hromadné akce.
@@ -76,9 +76,9 @@ public abstract class BulkAction {
                                        final ArrFindingAidVersion version,
                                        final ArrChange change) {
         if (descItem.getDescItemObjectId() == null) {
-            return arrangementManager.createDescriptionItem(descItem, version, change, true);
+            return descriptionItemService.createDescriptionItem(descItem, descItem.getNode(), version, change);
         } else {
-            return arrangementManager.updateDescriptionItem(descItem, version, true, change);
+            return descriptionItemService.updateDescriptionItem(descItem, version, change, true);
         }
     }
 
@@ -93,7 +93,7 @@ public abstract class BulkAction {
     protected ArrDescItem deleteDescItem(final ArrDescItem descItem,
                                          final ArrFindingAidVersion version,
                                          final ArrChange change) {
-        return arrangementManager.deleteDescriptionItem(descItem, version, change);
+        return descriptionItemService.deleteDescriptionItem(descItem, version, change, true);
     }
 
 
