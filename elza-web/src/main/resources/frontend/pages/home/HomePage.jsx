@@ -281,7 +281,7 @@ setTimeout(()=>this.setState({options: options2}), 4000);
 var items = getStates();
 
         var centerPanel = (
-            <div className='splitter-test'>
+            <div className='splitter-home'>
                 {false && <div>
                     <Button onClick={() => this.dispatch(storeSave())}>STORE</Button>
                     <Button onClick={() => this.dispatch(storeLoad())}>LOAD</Button></div>}
