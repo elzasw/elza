@@ -183,8 +183,15 @@ return true;
     }
 
     handleDragStart(e) {
+        // Pokud nekliknul na dragger, nelze přesouvat
         var drgs = e.target.getElementsByClassName('dragger')
         if (drgs.length !== 1) {
+            return this.cancelDragging(e)
+        }
+
+        // Nelze přesouvat neuložené položky
+        var index = e.currentTarget.dataset.id
+        if (typeof this.props.descItemType.descItems[index].id === 'undefined') {
             return this.cancelDragging(e)
         }
 

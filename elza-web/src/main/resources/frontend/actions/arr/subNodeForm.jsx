@@ -57,7 +57,7 @@ export function faSubNodeFormValueChangePosition(versionId, nodeId, nodeKey, val
         var subNodeForm = getSubNodeForm(state, versionId, nodeKey);
         var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
-        if (!loc.descItem.error.hasError) {
+        if (!loc.descItem.error.hasError && typeof loc.descItem.id !== 'undefined') {
             dispatch({
                 type: types.FA_SUB_NODE_FORM_VALUE_CHANGE_POSITION,
                 versionId,
