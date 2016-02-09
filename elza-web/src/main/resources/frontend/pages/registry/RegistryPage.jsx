@@ -12,7 +12,7 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Loading, Toastr} from 'components';
-import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, Search, RegistryPanel, DropDownTree, AddRegistryForm} from 'components';
+import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, Search, RegistryPanel, DropDownTree, AddRegistryForm, ImportRegistryForm} from 'components';
 import {WebApi} from 'actions'
 import {MenuItem, DropdownButton, ButtonGroup, Button} from 'react-bootstrap';
 import {PageLayout} from 'pages';
@@ -72,11 +72,29 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         data['parentRecordId'] = this.props.registry.selectedId;
         this.dispatch(registryRecordMove(data));
     }
+    
     handleCancelMoveRegistry(){
         var registry = Object.assign({}, registry);
         this.dispatch(registryCancelMove(registry));
     }
+    
+    handleRegistryImport() {
+       this.dispatch(
+           modalDialogShow(this,
+               i18n('registry.importRegistry'),
+               <ImportRegistryForm onSubmit={this.handleCallImportRegistry.bind(this)} />
+           )
+       );
+    }
 
+    handleCallImportRegistry(values) {
+        var data = Object.assign({}, values);
+        console.log('import rejstriku', data);
+        WebApi.importRegistry(data.transformationName, data.registryScopeId, data.stopOnError, data.xmlFile ).then(json => {
+            this.dispatch(modalDialogHide());
+        });    
+    }
+    
     buildRibbon() {
 
 
@@ -87,7 +105,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
 
         altActions.push(
-            <Button key='registryImport'><Icon glyph='fa-download' /><div><span className="btnText">{i18n('ribbon.action.registry.import')}</span></div></Button>
+            <Button key='registryImport' onClick={this.handleRegistryImport.bind(this)}><Icon glyph='fa-download' /><div><span className="btnText">{i18n('ribbon.action.registry.import')}</span></div></Button>
         );
 
         var itemActions = [];

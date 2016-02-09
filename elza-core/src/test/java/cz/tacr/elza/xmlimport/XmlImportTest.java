@@ -1,13 +1,18 @@
 package cz.tacr.elza.xmlimport;
 
-import cz.tacr.elza.ElzaCore;
-import cz.tacr.elza.api.vo.ImportDataFormat;
-import cz.tacr.elza.api.vo.XmlImportConfig;
-import cz.tacr.elza.controller.RuleManager;
-import cz.tacr.elza.repository.PackageRepository;
-import cz.tacr.elza.service.XmlImportService;
-import cz.tacr.elza.service.exception.XmlImportException;
-import cz.tacr.elza.xmlimport.v1.vo.XmlImport;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.MarshalException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,13 +27,14 @@ import org.springframework.util.Assert;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import javax.xml.XMLConstants;
-import javax.xml.bind.*;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
+import cz.tacr.elza.ElzaCore;
+import cz.tacr.elza.api.vo.ImportDataFormat;
+import cz.tacr.elza.controller.RuleManager;
+import cz.tacr.elza.repository.PackageRepository;
+import cz.tacr.elza.service.XmlImportService;
+import cz.tacr.elza.service.exception.XmlImportException;
+import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
+import cz.tacr.elza.xmlimport.v1.vo.XmlImport;
 
 /**
  * Testy na xml import.

@@ -497,5 +497,12 @@ public class RegistryController {
         registryService.deleteScope(scope);
     }
 
-
+    /**
+     * Vrací výchozí třídy rejstříků z databáze.
+     */
+    @RequestMapping(value = "/defaultScopes", method = RequestMethod.GET)
+    public List<RegScopeVO> getDefaultScopes(){
+        List<RegScope> scopes = registryService.findDefaultScopes();
+        return factoryVo.createScopes(scopes);
+    }
 }

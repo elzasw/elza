@@ -703,4 +703,16 @@ public class RegistryService {
             defaultScopeIds = foundCodes.stream().map(s -> s.getScopeId()).collect(Collectors.toSet());
         }
     }
+
+
+    public List<RegScope> findDefaultScopes() {
+        List<RegScope> defaultScopes;
+        if (CollectionUtils.isEmpty(scopeCodes)) {
+            defaultScopes = Collections.EMPTY_LIST;
+        } else {
+            defaultScopes = scopeRepository.findByCodes(scopeCodes);
+        }
+
+        return defaultScopes;
+    }
 }

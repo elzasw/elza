@@ -593,6 +593,24 @@ class WebApi{
                 return json;
             });
     }    
+    
+    getDefaultScopes() {
+        return AjaxUtils.ajaxGet('/api/registryManagerV2/defaultScopes')
+            .then(json=>{
+                return json
+            });
+    }    
+    
+    getTransformations() {
+        return AjaxUtils.ajaxGet('/api/xmlImportManagerV2/transformations')
+            .then(json=>{
+                return json
+            });
+    }    
+    
+    xmlImport(data) {
+        return AjaxUtils.ajaxPost('/api/xmlImportManagerV2/import', data);
+    }    
 }
 
 function findNodeById(node, nodeId) {

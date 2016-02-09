@@ -4,14 +4,16 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -28,16 +30,19 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.stream.StreamSource;
 
+import liquibase.util.file.FilenameUtils;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.web.multipart.MultipartFile;
 
 import cz.tacr.elza.api.vo.ImportDataFormat;
-import cz.tacr.elza.api.vo.XmlImportConfig;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDataCoordinates;
@@ -123,6 +128,7 @@ import cz.tacr.elza.service.exception.NonFatalXmlImportException;
 import cz.tacr.elza.service.exception.PartyImportException;
 import cz.tacr.elza.service.exception.RecordImportException;
 import cz.tacr.elza.service.exception.XmlImportException;
+import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
 import cz.tacr.elza.xmlimport.v1.utils.XmlImportUtils;
 import cz.tacr.elza.xmlimport.v1.vo.XmlImport;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.AbstractDescItem;
@@ -163,6 +169,8 @@ import cz.tacr.elza.xmlimport.v1.vo.record.VariantRecord;
  */
 @Service
 public class XmlImportService {
+
+    private static final String XSLT_EXTENSION = ".xslt";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -258,6 +266,9 @@ public class XmlImportService {
 
     @Autowired
     private PartyCreatorRepository partyCreatorRepository;
+
+    @Value("${elza.xmlImport.transformationDir}")
+    private String transformationsDirectory;
 
     /**
      * Naimportuje data.
@@ -1287,6 +1298,7 @@ public class XmlImportService {
         Assert.notNull(config);
         Assert.notNull(config.getImportDataFormat());
         Assert.notNull(config.getXmlFile());
+        Assert.notNull(config.getRecordScopeId());
 
         ImportDataFormat importDataFormat = config.getImportDataFormat();
         File xmlFile = config.getXmlFile();
@@ -1296,12 +1308,16 @@ public class XmlImportService {
             case ELZA:
                 try {
                     is = new FileInputStream(xmlFile);
-                } catch (FileNotFoundException e) {
+                } catch (IOException e) {
                     throw new IllegalStateException("Chyba při otevírání vstupního souboru.", e);
                 }
                 break;
             case INTERPI:
             case SUZAP:
+                File transformationFile = config.getTransformationFile();
+                if (transformationFile == null) {
+                    transformationFile = getTransformationFileByName(config.getTransformationName());
+                }
                 is = transformXml(xmlFile, config.getTransformationFile());
                 break;
             default:
@@ -1319,6 +1335,11 @@ public class XmlImportService {
                 logger.error("Chyba při zavírání souboru " + is, ex);
             }
         }
+    }
+
+    private File getTransformationFileByName(String transformationName) {
+        File transformationFile = new File(transformationsDirectory + File.separator + transformationName + XSLT_EXTENSION);
+        return transformationFile;
     }
 
     private InputStream transformXml(File xmlFile, File transformationFile)
@@ -1377,14 +1398,25 @@ public class XmlImportService {
         return getStreamSource(transformationFile);
     }
 
-    private StreamSource getStreamSource(File sourceFile) {
-        Assert.notNull(sourceFile);
+    private StreamSource getStreamSource(File xmlFile) {
+        Assert.notNull(xmlFile);
 
         try {
-            logger.info("Otevírání souboru " + sourceFile);
-            return new StreamSource(new FileInputStream(sourceFile));
+            logger.info("Otevírání souboru " + xmlFile);
+            return new StreamSource(new FileInputStream(xmlFile));
         } catch (IOException ex) {
-            throw new IllegalStateException("Chyba při otevírání souboru " + sourceFile, ex);
+            throw new IllegalStateException("Chyba při otevírání souboru " + xmlFile, ex);
+        }
+    }
+
+    private StreamSource getStreamSource(MultipartFile xmlFile) {
+        Assert.notNull(xmlFile);
+
+        try {
+            logger.info("Otevírání souboru " + xmlFile);
+            return new StreamSource(xmlFile.getInputStream());
+        } catch (IOException ex) {
+            throw new IllegalStateException("Chyba při otevírání souboru " + xmlFile, ex);
         }
     }
 
@@ -1413,5 +1445,33 @@ public class XmlImportService {
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
         return unmarshaller;
+    }
+
+    /**
+     * Vrátí názvy šablon.
+     *
+     * @return názvy šablon
+     */
+    public List<String> getTransformationNames() {
+        File transformDir = new File(transformationsDirectory);
+        if (!transformDir.isDirectory()) {
+            throw new IllegalStateException("Cesta " + transformDir.getAbsolutePath() + " není adresář.");
+        }
+
+        File[] listFiles = transformDir.listFiles((dir, name) -> name.endsWith(XSLT_EXTENSION));
+        if (listFiles == null) {
+            throw new IllegalStateException("Chyba při načítání souborů z adresáře " + transformDir.getAbsolutePath());
+        }
+        List<String> transformationNames = new ArrayList<>(listFiles.length);
+        for (File file : listFiles) {
+            String transformationName = FilenameUtils.getBaseName(file.getName());
+            transformationNames.add(transformationName.toLowerCase(Locale.getDefault()));
+        }
+
+        Collator collator = Collator.getInstance(Locale.getDefault());
+        collator.setStrength(Collator.PRIMARY);
+        Collections.sort(transformationNames, collator);
+
+        return transformationNames;
     }
 }

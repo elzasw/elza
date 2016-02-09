@@ -31,7 +31,7 @@ public class FindingAid {
 
     /** Kód typu výstupu. */
     @XmlAttribute(name = "arr-type-code")
-    private String ArrangementTypeCode;
+    private String arrangementTypeCode;
 
     /** Kód pravidel. */
     @XmlAttribute(name = "rule-set-code")
@@ -54,11 +54,11 @@ public class FindingAid {
     }
 
     public String getArrangementTypeCode() {
-        return ArrangementTypeCode;
+        return arrangementTypeCode;
     }
 
     public void setArrangementTypeCode(String arrangementTypeCode) {
-        ArrangementTypeCode = arrangementTypeCode;
+        arrangementTypeCode = arrangementTypeCode;
     }
 
     public String getRuleSetCode() {

@@ -13,6 +13,7 @@ var messages = {
     "global.action.close": "Zavřít",
     "global.action.store": "Ok",
     "global.action.show.more": "Zobrazit více",
+    "global.action.import": "Importovat",
     "search.input.search": "Vyhledat...",
 
     "global.validation.required": "Pole je povinné",
@@ -150,6 +151,10 @@ var messages = {
     'registry.danger.disallowed.action.title': "Nepovolená akce",
     'registry.danger.disallowed.action.can.not.move.into.myself': "Nelze přesunout sama sebe do sebe",
 
+    "registry.importRegistry": "Import rejstříkových hesel",
+    "registry.import.transformationName": "Šablona transformace",
+    "registry.import.registryScope": "Třída rejstříku",
+    "registry.import.stopOnError": "Zastavit při chybě",
     
     "party.detail.characteristics": "Charakteristika",
     "party.detail.type": "Typ",
