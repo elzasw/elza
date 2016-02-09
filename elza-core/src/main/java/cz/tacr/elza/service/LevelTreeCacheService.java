@@ -508,10 +508,10 @@ public class LevelTreeCacheService {
      */
     synchronized private Map<Integer, TreeNode> getVersionTreeCache(final ArrFindingAidVersion version) {
         Map<Integer, TreeNode> versionTreeMap = versionCache.get(version.getFindingAidVersionId());
-        //if (versionTreeMap == null) {
+        if (versionTreeMap == null) {
             versionTreeMap = createVersionTreeCache(version);
             versionCache.put(version.getFindingAidVersionId(), versionTreeMap);
-        //}
+        }
         return versionTreeMap;
     }
 
@@ -1064,14 +1064,13 @@ public class LevelTreeCacheService {
                 transportNode.getParent().getChilds().remove(transportNode);
                 transportNodes.add(transportNode);
             }
-            TreeNode transportParent = transportNodes.get(0);
+            TreeNode transportParent = transportNodes.get(0).getParent();
             repositionList(transportParent.getChilds());
 
-            boolean siblingMove = false;
-            if (!transportParent.equals(staticParent) && !transportParent.getChilds().isEmpty()) {
+            boolean siblingMove = transportParent.equals(staticParent);
+            if (!siblingMove && !transportParent.getChilds().isEmpty()) {
                 //při přesunu přečíslujeme všechny node, které jsou pod rodičem, jehož děti přesouváme
                 initReferenceMarkLower(transportParent.getChilds(), transportParent.getChilds().getFirst());
-                siblingMove = true;
             }
 
 
