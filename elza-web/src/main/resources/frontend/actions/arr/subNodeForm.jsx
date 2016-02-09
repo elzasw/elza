@@ -116,13 +116,69 @@ export function faSubNodeFormValueChangeRecord(versionId, nodeId, nodeKey, value
 }
 
 export function faSubNodeFormValueChangeSpec(versionId, nodeId, nodeKey, valueLocation, value) {
-    return {
-        type: types.FA_SUB_NODE_FORM_VALUE_CHANGE_SPEC,
-        versionId,
-        nodeId,
-        nodeKey,
-        valueLocation,
-        value,
+    return (dispatch, getState) => {
+        // Dispatch zmněny specifikace
+        dispatch({
+            type: types.FA_SUB_NODE_FORM_VALUE_CHANGE_SPEC,
+            versionId,
+            nodeId,
+            nodeKey,
+            valueLocation,
+            value,
+        })
+
+        // Vynucení uložení na server, pokud je validní jako celek
+        var state = getState();
+        var subNodeForm = getSubNodeForm(state, versionId, nodeKey);
+        var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
+
+        formValueStore(dispatch, getState, versionId, nodeId, nodeKey, valueLocation)
+    }
+}
+
+function valuesEquals(v1, v2) {
+    if (v1 === v2) {
+        return true;
+    }
+
+    var v1empty = typeof v1 === 'undefined' || v1 === null || v1.length === 0
+    var v2empty = typeof v2 === 'undefined' || v2 === null || v2.length === 0
+
+    if (v1empty && v2empty) {
+        return true
+    }
+
+    return false
+}
+
+function formValueStore(dispatch, getState, versionId, nodeId, nodeKey, valueLocation) {
+    var state = getState();
+    var subNodeForm = getSubNodeForm(state, versionId, nodeKey);
+    var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
+
+    if (!loc.descItem.error.hasError && loc.descItem.touched) {
+        if (typeof loc.descItem.id !== 'undefined') {
+            // Jen pokud se hodnota nebo specifikace změnila
+            var needUpdate = false;
+            if (loc.descItemType.useSpecification && !valuesEquals(loc.descItem.descItemSpecId, loc.descItem.prevDescItemSpecId)) {
+                needUpdate = true;
+            }
+            if (!valuesEquals(loc.descItem.value, loc.descItem.prevValue)) {
+                needUpdate = true;
+            }
+
+            if (needUpdate) {
+                faSubNodeFormUpdateDescItem(versionId, subNodeForm.data.node.version, loc.descItem)
+                    .then(json => {
+                        dispatch(faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueLocation, json, 'UPDATE'));
+                    })
+            }
+        } else {
+            faSubNodeFormCreateDescItem(versionId, nodeId, subNodeForm.data.node.version, loc.descItemType.id, loc.descItem)
+                .then(json => {
+                    dispatch(faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueLocation, json, 'CREATE'));
+                })
+        }
     }
 }
 
@@ -137,34 +193,7 @@ export function faSubNodeFormValueBlur(versionId, nodeId, nodeKey, valueLocation
             receivedAt: Date.now()
         });
 
-        var state = getState();
-        var subNodeForm = getSubNodeForm(state, versionId, nodeKey);
-        var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
-
-        if (!loc.descItem.error.hasError && loc.descItem.touched) {
-            if (typeof loc.descItem.id !== 'undefined') {
-                // Jen pokud se hodnota nebo specifikace změnila
-                var needUpdate = false;
-                if (loc.descItemType.useSpecification && loc.descItem.descItemSpecId != loc.descItem.prevDescItemSpecId) {
-                    needUpdate = true;
-                }
-                if (loc.descItem.value != loc.descItem.prevValue) {
-                    needUpdate = true;
-                }
-
-                if (needUpdate) {
-                    faSubNodeFormUpdateDescItem(versionId, subNodeForm.data.node.version, loc.descItem)
-                        .then(json => {
-                            dispatch(faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueLocation, json, 'UPDATE'));
-                        })
-                }
-            } else {
-                faSubNodeFormCreateDescItem(versionId, nodeId, subNodeForm.data.node.version, loc.descItemType.id, loc.descItem)
-                    .then(json => {
-                        dispatch(faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueLocation, json, 'CREATE'));
-                    })
-            }
-        }
+        formValueStore(dispatch, getState, versionId, nodeId, nodeKey, valueLocation)
     }
 }
 

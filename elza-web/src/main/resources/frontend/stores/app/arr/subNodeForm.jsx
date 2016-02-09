@@ -223,7 +223,7 @@ export default function subNodeForm(state = initialState, action) {
             var currentDescItemMap = {}
             loc.descItemType.descItems.forEach(descItem => {currentDescItemMap[descItem.descItemObjectId] = descItem})
             loc.descItemType.descItems = action.copySiblingResult.type.descItems.map(descItem => {
-                var newDescItem = createDescItemFromDb(descItem)
+                var newDescItem = createDescItemFromDb(loc.descItemType, descItem)
                 var currDescItem = currentDescItemMap[descItem.descItemObjectId]
                 if (currDescItem && currDescItem.hasFocus) {
                     newDescItem.hasFocus = true;

@@ -51,12 +51,13 @@ return true;
 
     /**
      * Renderování specifikace atributu.
+     * @param key {Object} key pro hodnotu
      * @param descItem {Object} objekt hodnoty atributu
      * @param descItemIndex {Integer} index hodnoty atributu v seznamu
      * @param locked {Boolean}
      * @return {Object} view
      */
-    renderDescItemSpec(descItem, descItemIndex, locked) {
+    renderDescItemSpec(key, descItem, descItemIndex, locked) {
         const {descItemTypeInfo} = this.props;
 
         var options = descItemTypeInfo.descItemSpecs.map(itemSpec => (
@@ -77,8 +78,6 @@ return true;
             onFocus: this.handleFocus.bind(this, descItemIndex),
             disabled: locked
         }
-
-        var key = descItem.id != null ? 'spec_' + descItem.id : '_spec_' + descItemIndex;
 
         return (
             <select
@@ -157,7 +156,7 @@ return true;
      * @param e {Object} event od prvku
      */
     handleChangeSpec(descItemIndex, e) {
-        this.props.onChangeSpec(descItemIndex, e.target.value);
+        this.props.onChangeSpec(descItemIndex, Number(e.target.value));
     }
 
     /**
@@ -330,9 +329,11 @@ return true;
 
         var parts = [];
 
+        var key = descItem.formKey;
+
         if (descItemTypeInfo.useSpecification) {
             parts.push(
-                this.renderDescItemSpec(descItem, descItemIndex, locked)
+                this.renderDescItemSpec('spec_' + key, descItem, descItemIndex, locked)
             );
         }
 
@@ -351,26 +352,24 @@ return true;
             onDragEnd: this.handleDragEnd,
         }
 
-        var key = descItem.id != null ? 'value_' + descItem.id : '_value_' + descItemIndex;
-
-        //parts.push(<div>{rulDataType.code}-{descItem.id}-{descItemType.type}</div>);
+        var itemComponentKey = 'value_' + key;
         switch (rulDataType.code) {
             case 'PARTY_REF':
-                parts.push(<DescItemPartyRef key={descItemType.id}
+                parts.push(<DescItemPartyRef key={itemComponentKey}
                     {...descItemProps}
                     onDetail={this.handleDetailParty.bind(this, descItemIndex)}
                     onCreateParty={this.handleCreateParty.bind(this, descItemIndex)}
                     />)
                 break;
             case 'RECORD_REF':
-                parts.push(<DescItemRecordRef key={key}
+                parts.push(<DescItemRecordRef key={itemComponentKey}
                     {...descItemProps}
                     onDetail={this.handleDetailRecord.bind(this, descItemIndex)}
                     onCreateRecord={this.handleCreateRecord.bind(this, descItemIndex)}
                     />)
                 break;
             case 'PACKET_REF':
-                parts.push(<DescItemPacketRef key={key}
+                parts.push(<DescItemPacketRef key={itemComponentKey}
                     {...descItemProps}
                     onCreatePacket={this.handleCreatePacket.bind(this, descItemIndex)}
                     packets={packets}
@@ -378,52 +377,50 @@ return true;
                     />)
                 break;
             case 'UNITDATE':
-                parts.push(<DescItemUnitdate key={key}
+                parts.push(<DescItemUnitdate key={itemComponentKey}
                     {...descItemProps}
                     calendarTypes={calendarTypes}
                     />)
                 break;
             case 'UNITID':
-                parts.push(<DescItemUnitid key={key}
+                parts.push(<DescItemUnitid key={itemComponentKey}
                     {...descItemProps} 
                     />)
                 break;
             case 'STRING':
-                parts.push(<DescItemString key={key}
+                parts.push(<DescItemString key={itemComponentKey}
                     {...descItemProps}
                     />)
                 break;
             case 'FORMATTED_TEXT':
             case 'TEXT':
-                parts.push(<DescItemText key={key}
+                parts.push(<DescItemText key={itemComponentKey}
                     {...descItemProps}
                     />)
                 break;
             case 'DECIMAL':
-                parts.push(<DescItemDecimal key={key}
+                parts.push(<DescItemDecimal key={itemComponentKey}
                     {...descItemProps}
                     />)
                 break;
             case 'INT':
-                parts.push(<DescItemInt key={key}
+                parts.push(<DescItemInt key={itemComponentKey}
                     {...descItemProps}
                     />)
                 break;
             case 'COORDINATES':
-                parts.push(<DescItemCoordinates key={key}
+                parts.push(<DescItemCoordinates key={itemComponentKey}
                     {...descItemProps}
                     />)
                 break;
             case 'ENUM':
                 break;
             default:
-                parts.push(<div key={key}>-unsupported type {rulDataType.code}-</div>)
+                parts.push(<div key={itemComponentKey}>-unsupported type {rulDataType.code}-</div>)
         }
 
-        var key = descItem.descItemObjectId ? descItem.descItemObjectId + '-' + descItem.position : descItem.position;
-
         return (
-            <div key={descItemType.code + "-" + key} className={cls} {...dragProps}>
+            <div key={key} className={cls} {...dragProps}>
                 {descItemType.repeatable && <div className='dragger'>&nbsp;</div>}
                 <div key="container" className='desc-item-value-container'>
                     {parts}
