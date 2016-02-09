@@ -54,28 +54,31 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
         var opened = (nextProps.opened ? nextProps.opened : []);
         var label = this.getItemLabel(nextProps.value, nextProps.items);
 
-        if(nextProps.preselect){
-            if(this.props.value == undefined){
-                var preselect = this.getFirstPossibleRecordType(nextProps.items);
-                if(preselect.found){
-                    label = this.getItemLabel(preselect.found.id, nextProps.items);
-                    this.state = {
-                        opened: preselect.opened,
-                        label: label,
-                        value: preselect.found.id
+
+        if (nextProps.value !== this.props.value) {
+            if (nextProps.preselect) {
+                if (this.props.value == undefined) {
+                    var preselect = this.getFirstPossibleRecordType(nextProps.items);
+                    if (preselect.found) {
+                        label = this.getItemLabel(preselect.found.id, nextProps.items);
+                        this.state = {
+                            opened: preselect.opened,
+                            label: label,
+                            value: preselect.found.id
+                        }
+                    }
+
+                    if (this.props.onChange) {
+                        this.props.onChange(preselect.found.id, preselect.found);
                     }
                 }
+            } else {
 
-                if (this.props.onChange){
-                    this.props.onChange(preselect.found.id, preselect.found);
+                this.state = {                                                  // inicializace stavu komponenty
+                    opened: opened,                                           // seznam rozbalenych uzlu
+                    label: (label != '' ? label : nextProps.label),          // pokus je vybrany nejaká položka, vypíše se její název, jinak se vypíše defaultní popisek
+                    value: nextProps.value                // id vybrane položky
                 }
-            }
-        }else{
-
-            this.state ={                                                  // inicializace stavu komponenty
-                opened: opened,                                           // seznam rozbalenych uzlu
-                label: (label != '' ? label : nextProps.label),          // pokus je vybrany nejaká položka, vypíše se její název, jinak se vypíše defaultní popisek
-                value : nextProps.value                // id vybrane položky
             }
         }
     }

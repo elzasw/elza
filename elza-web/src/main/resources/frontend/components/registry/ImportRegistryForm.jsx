@@ -11,7 +11,6 @@ import {AbstractReactComponent, i18n} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx';
 import {decorateFormField} from 'components/form/FormUtils';
-import {loadDefaultScopesIfNeeded} from 'actions/scopes/defaultScopesData';
 import {WebApi} from 'actions'
 
 const validate = (values, props) => {
@@ -41,10 +40,6 @@ var ImportRegistryForm = class ImportRegistryForm extends AbstractReactComponent
     }
 
     componentWillReceiveProps(nextProps) {
-    }
-
-    componentDidMount() {
-        this.dispatch(loadDefaultScopesIfNeeded());
     }
 
     handleUpload() {
