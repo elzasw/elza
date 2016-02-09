@@ -304,6 +304,13 @@ class WebApi{
             });
     }
 
+    getAllScopes() {
+        return AjaxUtils.ajaxGet('/api/registryManagerV2/scopes')
+            .then(json=> {
+                return json
+            });
+    }
+
     removeRegistry(registryId) {
         var data = {
             recordId: registryId

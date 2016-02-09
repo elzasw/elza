@@ -28,7 +28,7 @@ import modalDialog from './global/modalDialog';
 import webSocket from './global/webSocket';
 import splitter from './global/splitter';
 import adminRegion from './admin/adminRegion';
-import addFaForm from './arr/form/addFaForm';
+import faForm from './arr/form/faForm';
 import addPacketForm from './arr/form/addPacketForm';
 import stateRegion from './state/stateRegion';
 import router from './router';
@@ -60,7 +60,7 @@ let reducer = combineReducers({
     stateRegion,
     router,
     form: formReducer.plugin({
-        addFaForm: addFaForm,
+        faForm: faForm,
         addPacketForm: addPacketForm,
         addPartyForm: addPartyForm,
         partyNameForm: partyNameForm,

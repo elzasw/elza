@@ -1,76 +1,28 @@
 package cz.tacr.elza.controller;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
-import cz.tacr.elza.controller.vo.ArrFindingAidVO;
-import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrPacketVO;
-import cz.tacr.elza.controller.vo.RulPacketTypeVO;
-import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTypeGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFindingAid;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformity;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.RulArrangementType;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulDescItemTypeExt;
-import cz.tacr.elza.domain.RulPacketType;
-import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
-import cz.tacr.elza.repository.ArrangementTypeRepository;
-import cz.tacr.elza.repository.CalendarTypeRepository;
-import cz.tacr.elza.repository.DescItemTypeRepository;
-import cz.tacr.elza.repository.FindingAidVersionRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.RuleSetRepository;
-import cz.tacr.elza.service.ArrMoveLevelService;
-import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.DescriptionItemService;
-import cz.tacr.elza.service.LevelTreeCacheService;
-import cz.tacr.elza.service.PacketService;
-import cz.tacr.elza.service.RegistryService;
-import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.repository.*;
+import cz.tacr.elza.service.*;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+import java.util.*;
 
 
 /**
@@ -466,6 +418,22 @@ public class ArrangementController {
 
         return factoryVo.createArrFindingAidVO(newFindingAid, true);
     }
+
+    /*
+     * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.
+     *
+     * @param name              název archivní pomůcky
+     * @param arrangementTypeId id typu výstupu
+     * @param ruleSetId         id pravidel podle kterých se vytváří popis
+     * @return nová archivní pomůcka
+     */
+    /*@Transactional
+    @RequestMapping(value = "/updateFindingAid", method = RequestMethod.POST,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ArrFindingAidVO createFindingAid(@RequestBody ArrFindingAidVO arrFindingAidVO) {
+        Assert.notNull(arrFindingAidVO);
+
+    }*/
 
 
     /**
