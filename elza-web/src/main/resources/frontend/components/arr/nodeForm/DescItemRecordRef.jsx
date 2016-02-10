@@ -67,7 +67,7 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
     renderFooter() {
         return (
                 <div className="create-record">
-                    <Button onClick={this.handleCreateRecord}>{i18n('registry.addNewRegistry')}</Button>
+                    <Button onClick={this.handleCreateRecord}><Icon glyph='fa-plus'/>{i18n('registry.addNewRegistry')}</Button>
                 </div>
         )
     }
