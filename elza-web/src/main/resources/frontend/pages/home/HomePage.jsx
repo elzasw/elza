@@ -383,7 +383,7 @@ var items = getStates();
         renderItem={this.renderRecord}
     />
     </div>}
-<List data={colors} />
+{false && <List data={colors} />}
 
 {false && <Combobox defaultValue={'1'}
               options={this.state.options}
