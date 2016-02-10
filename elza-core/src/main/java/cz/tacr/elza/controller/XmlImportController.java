@@ -13,8 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import java.util.List;
@@ -26,7 +29,6 @@ import java.util.List;
  * @since 1. 2. 2016
  */
 @Controller
-@RequestMapping("/api/xmlImportManagerV2")
 public class XmlImportController {
 
     @Autowired
@@ -38,7 +40,16 @@ public class XmlImportController {
     @Autowired
     private ScopeRepository scopeRepository;
 
-    @RequestMapping(value = "/import", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RequestMapping(value = "/api/xmlImportManagerV2/import", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public void importData(
+            @RequestParam(required = false, value = "importDataFormat") final String data,
+            @RequestParam(required = false, value = "xmlFile") final MultipartFile xmlFile){
+
+        System.out.println("Xxx");
+
+    }
+
+//    @RequestMapping(value = "/import", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void importData(MultipartHttpServletRequest request) { /// Mělo by být VO
         XmlImportConfigVO configVO = new XmlImportConfigVO();
         configVO.setXmlFile(request.getFile("xmlFile"));

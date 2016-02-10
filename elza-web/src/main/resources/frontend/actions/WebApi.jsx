@@ -613,7 +613,7 @@ class WebApi{
         //return AjaxUtils.ajaxCallRaw('/api/xmlImportManagerV2/import', {}, "POST", data, 'multipart/form-data')
         // TODO změnit na raw
         $.ajax({
-            url: 'http://localhost:8080/api/xmlImportManagerV2/import',
+            url: '/api/xmlImportManagerV2/import',
             data: data,
             //dataType: 'fom',
             processData: false,
