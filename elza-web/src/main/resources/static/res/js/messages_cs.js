@@ -56,6 +56,9 @@ var messages = {
     "accordion.title.left.name.undefined": "<JP-Accordion left ID={0}>",
     "accordion.title.right.name.undefined": "<JP-Accordion right ID={0}>",
 
+    "arr.panel.title": "Jsou zobrazeny pouze položky pro archivní pomůcku {0}",
+    "arr.panel.reset": "Zrušit omezení",
+
     "arr.fa.title.add": "Vytvoření nové AP",
     "arr.fa.title.update": "Úprava AP",
     "arr.fa.title.approve": "Uzavření verze AP",

@@ -7,10 +7,10 @@ require('./PartySearch.less');
 import React from 'react';
 import {connect} from 'react-redux'
 import {Button} from 'react-bootstrap';
-import {AbstractReactComponent, Search, i18n} from 'components';
+import {AbstractReactComponent, Search, i18n, ArrPanel} from 'components';
 import {AppActions} from 'stores';
 
-import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded} from 'actions/party/party.jsx'
+import {findPartyFetchIfNeeded, partyDetailFetchIfNeeded, partyArrReset} from 'actions/party/party.jsx'
 
 
 var PartySearch = class PartySearch extends AbstractReactComponent {
@@ -22,18 +22,26 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
     }
 
     handleSearch(filterText){
-        this.dispatch(findPartyFetchIfNeeded(filterText));
+        const {partyRegion} = this.props;
+        this.dispatch(findPartyFetchIfNeeded(filterText, partyRegion.panel.versionId));
     }
 
     handleClearSearch(){
-        this.dispatch(findPartyFetchIfNeeded(null));
+        const {partyRegion} = this.props;
+        this.dispatch(findPartyFetchIfNeeded(null, partyRegion.panel.versionId));
     }
 
     handlePartyDetail(item, e){
         this.dispatch(partyDetailFetchIfNeeded(item.partyId));
     }
 
+    handleArrReset() {
+        this.dispatch(partyArrReset());
+    }
+
     render() {
+        const {partyRegion} = this.props;
+
         var partyList = this.props.items;
         if(partyList && partyList.length>0){
             var description = '';
@@ -69,8 +77,18 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
             var label = i18n('search.action.noResult'); ;
             var partyList = <li className="noResult">{label}</li>
         }
+
+        var arrPanel = null;
+
+        if (partyRegion.panel.versionId != null) {
+            arrPanel = <ArrPanel onReset={this.handleArrReset} name={partyRegion.panel.name} />
+        }
+
         return  <div className="party-list">
-                    <Search placeholder={i18n('search.input.search')} onSearch={this.handleSearch} filterText={this.props.filterText} onClear={this.handleClearSearch}/>
+                    <div>
+                        {arrPanel}
+                        <Search placeholder={i18n('search.input.search')} onSearch={this.handleSearch} filterText={this.props.filterText} onClear={this.handleClearSearch}/>
+                    </div>
                     <ul className="partySearch">
                         {partyList}
                     </ul>
@@ -78,4 +96,11 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
     }
 }
 
-module.exports = connect()(PartySearch);
+function mapStateToProps(state) {
+    const {partyRegion} = state
+    return {
+        partyRegion
+    }
+}
+
+module.exports = connect(mapStateToProps)(PartySearch);

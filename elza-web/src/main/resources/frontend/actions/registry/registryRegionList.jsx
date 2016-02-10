@@ -11,19 +11,19 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {i18n, AddRegistryForm} from 'components';
 import {registryChangeParent} from 'actions/registry/registryRegionData'
 
-export function fetchRegistryIfNeeded(search = '', registryParent = null, registerTypeIds = null) {
+export function fetchRegistryIfNeeded(search = '', registryParent = null, registerTypeIds = null, versionId = null) {
     return (dispatch, getState) => {
         var state = getState();
         if ((state.registryRegion.dirty && !state.registryRegion.isFetching) || (!state.registryRegion.fetched && !state.registryRegion.isFetching)) {
-            return dispatch(fetchRegistry(search, registryParent, registerTypeIds));
+            return dispatch(fetchRegistry(search, registryParent, registerTypeIds, versionId));
         }
     }
 }
 
-export function fetchRegistry(search, registryParent = null, registerTypeIds = null) {
+export function fetchRegistry(search, registryParent = null, registerTypeIds = null, versionId = null) {
     return dispatch => {
         dispatch(requestRegistry());
-        return WebApi.findRegistry(search, registryParent, registerTypeIds)
+        return WebApi.findRegistry(search, registryParent, registerTypeIds, versionId)
                 .then(json => dispatch(receiveRegistry(json)));
     }
 }
@@ -138,11 +138,18 @@ function registryAddSubmit(parentId, callback, dispatch, data) {
     });
 }
 
-export function registrySelect(recordId) {
+export function registrySelect(recordId, fa = null) {
     return {
         recordId: recordId,
-        type: types.REGISTRY_SELECT,
-        receivedAt: Date.now()
+        fa: fa,
+        type: types.REGISTRY_SELECT
+    }
+
+}
+
+export function registryArrReset() {
+    return {
+        type: types.REGISTRY_ARR_RESET
     }
 
 }

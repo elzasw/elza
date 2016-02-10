@@ -1,5 +1,8 @@
 import * as types from 'actions/constants/ActionTypes';
 
+import {panel} from './../arr/panel.jsx'
+import {consolidateState} from 'components/Utils'
+
 const initialState = {
     dirty: false,
     dirtySearch: false,
@@ -10,6 +13,7 @@ const initialState = {
     selectedId: null,
     filterText: "",
     items: [],
+    panel: panel(),
     selectedPartyID : null,
     selectedPartyData: null,
     partyTypes: [],
@@ -90,6 +94,13 @@ export default function partyRegion(state = initialState, action) {
             }
 
             return state;
+
+        case types.PARTY_SELECT:
+        case types.PARTY_ARR_RESET:
+            var result = {...state};
+            result.panel = panel(result.panel, action);
+            result.dirty = true;
+            return consolidateState(state, result);
 
         default:
             return state

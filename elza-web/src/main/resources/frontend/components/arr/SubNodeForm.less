@@ -1,7 +1,7 @@
 @import "~variables.less";
 
 @valueActionWidth: 22px;
-@descItemDraggerSize: 8px;
+@descItemDraggerSize: 0.6em;
 
 .node-form-standard-actions {
     .btn {
@@ -121,8 +121,29 @@
                     // Dragger
                     .dragger {
                         width: @descItemDraggerSize;
-                        height: 100%;
-                        background: #a0a0a0;        
+                        height: 1.8em;
+                        background-color: @dragger-bg;
+                        padding-top: 2px;
+                        position: relative;
+                        cursor: pointer;
+                        &:hover {
+                            background-color: @dragger-bg-hover;
+                            .icon {
+                                display: block;
+                            }
+                        }
+                        .icon{
+                            position: absolute;
+                            font-size: 0.8em;
+                            display: none;
+                            &.up {
+                                top: 2px;
+
+                            }
+                            &.down {
+                                top: 10px;
+                            }
+                        }
                     }
 
                     .placeholder {
@@ -188,7 +209,14 @@
                                 .desc-item-value {
                                     width: 100%;
                                     .error {
-                                        background: @node-form-value-error-bg;
+                                        &input, input, &textarea, textarea, &select, select {
+                                            background: @node-form-value-error-bg;
+                                        }
+                                    }
+                                    input, textarea, select {
+                                        &.error {
+                                            background: @node-form-value-error-bg;
+                                        }
                                     }
                                 }
                             }

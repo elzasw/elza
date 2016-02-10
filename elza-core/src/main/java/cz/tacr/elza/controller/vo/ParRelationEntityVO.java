@@ -22,8 +22,6 @@ public class ParRelationEntityVO {
      */
     private ParRelationRoleTypeVO roleType;
 
-    private String source;
-
     public Integer getRelationEntityId() {
         return relationEntityId;
     }
@@ -54,13 +52,5 @@ public class ParRelationEntityVO {
 
     public void setRoleType(final ParRelationRoleTypeVO roleType) {
         this.roleType = roleType;
-    }
-
-    public String getSource() {
-        return source;
-    }
-
-    public void setSource(final String source) {
-        this.source = source;
     }
 }

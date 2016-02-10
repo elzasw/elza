@@ -90,13 +90,14 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
             <div key={this.props.key}>
                 <Modal.Body>
                     <form onSubmit={handleSubmit}>
-                        <Scope versionId={null} label={i18n('registry.scope.class')}  {...scopeId} {...decorateFormField(scopeId)}/>
+                        <Scope versionId={this.props.versionId} label={i18n('registry.scope.class')}  {...scopeId} {...decorateFormField(scopeId)}/>
                         <DropDownTree
                             label={i18n('registry.add.typ.rejstriku')}
                             items = {itemsForDropDownTree}
                             addRegistryRecord={true}
                             {...registerTypeId}
                             {...decorateFormField(registerTypeId)}
+
                             disabled={disabled}
                             />
                         <Input type="text" label={i18n('registry.name')} {...nameMain} {...decorateFormField(nameMain)}/>

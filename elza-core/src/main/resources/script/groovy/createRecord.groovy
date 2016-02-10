@@ -1,4 +1,5 @@
 import cz.tacr.elza.domain.*
+import cz.tacr.elza.domain.convertor.UnitDateConvertor
 import org.apache.commons.collections4.CollectionUtils
 import org.apache.commons.lang.StringUtils
 import org.springframework.util.Assert
@@ -40,8 +41,8 @@ RegRecord createRecord(ParParty party) {
     record.setNote(party.getRecord().getNote());
     record.setRegisterType(party.getRecord().getRegisterType());
     record.setScope(party.getRecord().getScope());
-    record.setRecord(generateStringRecord(preferedName, party.getPartyType()));
-    record.setCharacteristics(party.getCharacteristics());
+    record.setRecord(generatePartyNameString(preferedName, party.getPartyType()));
+    record.setCharacteristics(generateCharacteristics(party));
 
     List<RegVariantRecord> variantRecords = new ArrayList<>(otherNames.size());
     otherNames.each {
@@ -55,14 +56,13 @@ RegRecord createRecord(ParParty party) {
 
 
 /**
- * Podle jména osoby provede vygenerování textu rejstříkového hesla.
+ * Podle jména osoby provede vygenerování textu jména.
  * @param partyName jméno osoby
  * @param partyType typ osoby
  * @return text rejstříkového hesla
  */
-String generateStringRecord(final ParPartyName partyName, final ParPartyType partyType) {
+String generatePartyNameString(final ParPartyName partyName, final ParPartyType partyType) {
     Assert.notNull(partyName);
-    Map<Integer, ParComplementType> complementTypeMap = COMPLEMENT_TYPE_MAP;
 
     List<ParPartyNameComplement> sortedComplements =
             sortNameComplements(partyName.getPartyNameComplements(), partyType);
@@ -84,6 +84,8 @@ String generateStringRecord(final ParPartyName partyName, final ParPartyType par
 
     return recordName;
 }
+
+
 
 /**
  * Provede seřazení doplňků jmen podle typu.
@@ -128,9 +130,75 @@ List<ParPartyNameComplement> sortNameComplements(@Nullable final List<ParPartyNa
  */
 RegVariantRecord createVariantRecord(final ParPartyName partyName, final ParPartyType partyType) {
     RegVariantRecord variantRecord = new RegVariantRecord();
-    variantRecord.setRecord(generateStringRecord(partyName, partyType));
+    variantRecord.setRecord(generatePartyNameString(partyName, partyType));
     return variantRecord;
 }
+
+
+/**
+ * Generování charakteristiky hesla.
+ * <br/>
+ * [[počátek existence]-[konec existence] ][hierarchická struktura preferovaných jmen nadřazených rejstříkových hesel] [charakteristika]
+ * <ul>
+ * <li> počátek existence = pokud je vyplněná par_party.from_unitdate, tak par_party.from_unitdate, jinak najít libovolný první vztah třídy vznik (par_relation_type.class_type == "B"), který má vyplněnou from_unitdate a použít tuto</li>
+ * <li>konec existence = pokud je vyplněná par_party.to_unitdate, tak par_party.to_unitdate, jinak najít libovolný první vztah třídy zánik (par_relation_type.class_type == "E"), který má vyplněnou to_unitdate a použít tuto</li>
+ * </ul>
+ * @param party osoba hesla
+ * @return charakteristika hesla
+ */
+String generateCharacteristics(ParParty party) {
+
+    //počátek existence
+    ParUnitdate fromDate = null;
+    if(party.getFrom() == null){
+        if(party.getRelations() != null){
+            final ParRelationType.ClassType VZNIK = ParRelationType.ClassType.VZNIK;
+            for (ParRelation relation : party.getRelations()) {
+                if (relation.getComplementType().getClassType().equals(VZNIK.getClassType())
+                        && relation.getFrom() != null) {
+                    fromDate = relation.getFrom();
+                    break;
+                }
+            }
+        }
+    }else{
+        fromDate = party.getFrom();
+    }
+
+    //konec existence
+    ParUnitdate toDate = null;
+    if(party.getTo() == null){
+        if (party.getRelations() != null) {
+            final ParRelationType.ClassType ZANIK = ParRelationType.ClassType.ZANIK;
+            for (ParRelation relation : party.getRelations()) {
+                if (relation.getComplementType().getClassType().equals(ZANIK.getClassType())
+                        && relation.getTo() != null) {
+                    toDate = relation.getTo();
+                    break;
+                }
+            }
+        }
+    }else{
+        toDate = party.getTo();
+    }
+
+    String fromString = fromDate == null ? "" : UnitDateConvertor.convertParUnitDateToString(fromDate);
+    String toString = toDate == null ? "" : UnitDateConvertor.convertParUnitDateToString(toDate);
+
+    StringBuilder builder = new StringBuilder();
+
+    builder.append(fromString);
+    builder.append(fromDate != null && toDate != null ? " - " : "");
+    builder.append(toString);
+    builder.append(" ");
+    builder.append(generatePartyNameString(party.getPreferredName(), party.getPartyType()));
+    builder.append(" ");
+    builder.append(party.getCharacteristics());
+
+    return builder.toString();
+}
+
+
 
 
 /**

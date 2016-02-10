@@ -42,9 +42,9 @@ public class ParRelation extends AbstractVersionableEntity implements cz.tacr.el
     private static final Map<String, Integer> classTypeOrderMap = new HashMap<>();
 
     static {
-        classTypeOrderMap.put("B", 1);
-        classTypeOrderMap.put("E", 2);
-        classTypeOrderMap.put("R", 3);
+        classTypeOrderMap.put(ParRelationType.ClassType.VZNIK.getClassType(), 1);
+        classTypeOrderMap.put(ParRelationType.ClassType.VZNIK.getClassType(), 2);
+        classTypeOrderMap.put(ParRelationType.ClassType.VZNIK.getClassType(), 3);
     }
 
 
@@ -75,6 +75,9 @@ public class ParRelation extends AbstractVersionableEntity implements cz.tacr.el
 
     @Column(length = StringLength.LENGTH_1000)
     private String note;
+
+    @Column
+    private String source;
 
 
     @Override
@@ -145,6 +148,16 @@ public class ParRelation extends AbstractVersionableEntity implements cz.tacr.el
     @Override
     public void setNote(final String note) {
         this.note = note;
+    }
+
+    @Override
+    public String getSource() {
+        return source;
+    }
+
+    @Override
+    public void setSource(final String source) {
+        this.source = source;
     }
 
     @Override

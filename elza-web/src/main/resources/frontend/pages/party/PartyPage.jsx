@@ -48,7 +48,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps){
         this.dispatch(refPartyTypesFetchIfNeeded());         // načtení osob pro autory osoby
-        this.dispatch(findPartyFetchIfNeeded(nextProps.partyRegion.filterText));
+        this.dispatch(findPartyFetchIfNeeded(nextProps.partyRegion.filterText, nextProps.partyRegion.panel.versionId));
     }
 
 
@@ -69,7 +69,8 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
      * @param partyTypeId - identifikátor typu osoby (osoba, rod, korporace, ..)
      */ 
     handleAddParty(partyTypeId) {
-        this.dispatch(partyAdd(partyTypeId, null, this.addParty));
+        const {partyRegion} = this.props;
+        this.dispatch(partyAdd(partyTypeId, partyRegion.panel.versionId, this.addParty));
     }
 
     /**
@@ -94,6 +95,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
             from: data.from,                                                        // datace od
             to: data.to,                                                            // datace do
             relationEntities: entities,                                             // entity ve vztahu
+            source: data.source,
             complementType:{relationTypeId:data.relationTypeId}                     // typ vztahu
         };   
         if(relation.from.textDate == "" || relation.from.textDate == null || relation.from.textDate == undefined){  
@@ -116,6 +118,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
             partyId: this.props.partyRegion.selectedPartyID,
             note: "",
             dateNote:"",
+            source: "",
             classType: classType,
             from: {
                 textDate: "",    

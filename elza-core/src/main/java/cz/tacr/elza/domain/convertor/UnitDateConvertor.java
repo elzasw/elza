@@ -9,9 +9,11 @@ import java.time.format.ResolverStyle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
+
 import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrDescItemUnitdate;
+import cz.tacr.elza.domain.ParUnitdate;
 
 
 /**
@@ -109,6 +111,25 @@ public class UnitDateConvertor {
         }
 
         return unitdate;
+    }
+
+    /**
+     * Převede {@link ParUnitdate} na string.
+     * @param unitdate datum
+     * @return string
+     */
+    public static String convertParUnitDateToString(final ParUnitdate unitdate) {
+        String textDate;
+        if (StringUtils.isEmpty(unitdate.getTextDate())) {
+            try {
+                textDate = UnitDateConvertor.convertToString(unitdate);
+            } catch (Exception e) {
+                textDate = unitdate.getTextDate();
+            }
+        } else {
+            textDate = unitdate.getTextDate();
+        }
+        return textDate;
     }
 
     /**

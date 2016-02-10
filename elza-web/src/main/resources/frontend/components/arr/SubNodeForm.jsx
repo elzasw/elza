@@ -288,11 +288,11 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param form {Object} data z formuláře
      */
     handleCreatedRecord(valueLocation, data) {
-        const {versionId, selectedSubNodeId, nodeKey} = this.props;
+        const {versionId, selectedSubNodeId, nodeKey, fa} = this.props;
 
         this.dispatch(faSubNodeFormValueChange(versionId, selectedSubNodeId, nodeKey, valueLocation, data, true));
 
-        this.dispatch(registrySelect(data.recordId));
+        this.dispatch(registrySelect(data.recordId, fa));
         this.dispatch(routerNavigate('registry'));
     }
 
@@ -305,7 +305,8 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param recordId {Integer} identifikátor rejstříku
      */
     handleDetailRecord(descItemGroupIndex, descItemTypeIndex, descItemIndex, recordId) {
-        this.dispatch(registrySelect(recordId));
+        const {versionId, fa} = this.props;
+        this.dispatch(registrySelect(recordId, fa));
         this.dispatch(routerNavigate('registry'));
     }
 
@@ -334,11 +335,11 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param form {Object} data z formuláře
      */
     handleCreatedParty(valueLocation, data) {
-        const {versionId, selectedSubNodeId, nodeKey} = this.props;
+        const {versionId, selectedSubNodeId, nodeKey, fa} = this.props;
 
         this.dispatch(faSubNodeFormValueChange(versionId, selectedSubNodeId, nodeKey, valueLocation, data, true));
 
-        this.dispatch(partySelect(data.partyId));
+        this.dispatch(partySelect(data.partyId, fa));
         this.dispatch(routerNavigate('party'));
     }
 
@@ -351,7 +352,8 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param partyId {Integer} identifikátor osoby
      */
     handleDetailParty(descItemGroupIndex, descItemTypeIndex, descItemIndex, partyId) {
-        this.dispatch(partySelect(partyId));
+        const {fa} = this.props;
+        this.dispatch(partySelect(partyId, fa));
         this.dispatch(routerNavigate('party'));
     }
 
@@ -664,8 +666,14 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
 
 function mapStateToProps(state) {
     const {arrRegion} = state
+    var fa = null;
+    if (arrRegion.activeIndex != null) {
+        fa = arrRegion.fas[arrRegion.activeIndex];
+    }
+
     return {
-        nodeSettings: arrRegion.nodeSettings
+        nodeSettings: arrRegion.nodeSettings,
+        fa: fa
     }
 }
 

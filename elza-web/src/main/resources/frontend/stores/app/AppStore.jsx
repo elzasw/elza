@@ -41,7 +41,7 @@ import relationForm from './party/form/relationForm';
 
 import addRegistryForm from './registry/form/addRegistryForm';
 import editRegistryForm from './registry/form/editRegistryForm';
-import addRegistryVariantForm from './registry/form/addRegistryVariantForm';
+
 
 let reducer = combineReducers({
     arrRegion,
@@ -69,7 +69,6 @@ let reducer = combineReducers({
         relationForm: relationForm,
         addRegistryForm: addRegistryForm,
         editRegistryForm: editRegistryForm,
-        addRegistryVariantForm: addRegistryVariantForm
     })
 });
 

@@ -2,6 +2,8 @@
  * Komponenta pro zobrazení stavu verze
  */
 
+require('./VersionValidationState.less');
+
 import React from 'react';
 import {AbstractReactComponent, i18n, Icon} from 'components';
 
@@ -11,14 +13,19 @@ var VersionValidationState = class VersionValidationState extends AbstractReactC
     }
 
     render() {
+        var msg = null;
+
         if (this.props.isFetching) {
-            return <span><Icon glyph="fa-refresh"/> {i18n('arr.fa.versionValidation.running')}</span>;
+            msg = <span><Icon glyph="fa-refresh"/>{i18n('arr.fa.versionValidation.running')}</span>
         } else if (this.props.errExist) {
-            return <span><Icon
-                glyph="fa-exclamation-triangle"/> {i18n('arr.fa.versionValidation.count', this.props.count)}</span>;
+            msg = <span><Icon glyph="fa-exclamation-triangle"/>{i18n('arr.fa.versionValidation.count', this.props.count)}</span>
         } else {
-            return <span><Icon glyph="fa-check"/> {i18n('arr.fa.versionValidation.ok')}</span>;
+            msg = <span><Icon glyph="fa-check"/>{i18n('arr.fa.versionValidation.ok')}</span>
         }
+
+        return (
+            <div className="version-state">{msg}</div>
+        )
     }
 };
 

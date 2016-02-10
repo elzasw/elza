@@ -48,8 +48,6 @@ public class ParRelationEntity implements cz.tacr.elza.api.ParRelationEntity<Par
     @JoinColumn(name = "roleTypeId", nullable = false)
     private ParRelationRoleType roleType;
 
-    @Column()
-    private String source;
 
     @Override
     public Integer getRelationEntityId() {
@@ -91,15 +89,7 @@ public class ParRelationEntity implements cz.tacr.elza.api.ParRelationEntity<Par
         this.roleType = roleType;
     }
 
-    @Override
-    public String getSource() {
-        return source;
-    }
 
-    @Override
-    public void setSource(final String source) {
-        this.source = source;
-    }
 
     @Override
     public boolean equals(final Object obj) {

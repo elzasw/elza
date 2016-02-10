@@ -83,14 +83,14 @@ export function deleteParty(partyId, filterText) {
  * Volání webového rozhraní pro získání hledaný osob (pokud již není načten)
  * @param string filteredText - hledaná fráze/text/jméno
  */
-export function findPartyFetchIfNeeded(filterText) {
+export function findPartyFetchIfNeeded(filterText, versionId = null) {
     return (dispatch, getState) => {
         var state = getState();
 
         if (!state.partyRegion.isFetchingSearch && (state.partyRegion.dirty || state.partyRegion.filterText !== filterText)) {
-            return dispatch(findPartyFetch(filterText));
+            return dispatch(findPartyFetch(filterText, versionId));
         } else if (!state.partyRegion.fetchedSearch && !state.partyRegion.isFetchingSearch) {
-            return dispatch(findPartyFetch(filterText));
+            return dispatch(findPartyFetch(filterText, versionId));
         }
     }
 }
@@ -101,10 +101,10 @@ export function findPartyFetchIfNeeded(filterText) {
  * Volání webového rozhraní pro získání seznamu osob na základě hledané fráze
  * @param string filteredText - hledaná fráze/text/jméno
  */
-export function findPartyFetch(filterText) {
+export function findPartyFetch(filterText, versionId = null) {
     return dispatch => {
         dispatch(findPartyRequest(filterText))
-        return WebApi.findParty(filterText)
+        return WebApi.findParty(filterText, versionId)
             .then(json => dispatch(findPartyReceive(filterText, json)));
     }
 }
@@ -347,10 +347,17 @@ function partyAddSubmit(callback, dispatch, data) {
     });
 }
 
-export function partySelect(partyId) {
+export function partySelect(partyId, fa = null) {
     return {
         partyId: partyId,
-        type: types.PARTY_SELECT,
-        receivedAt: Date.now()
+        fa: fa,
+        type: types.PARTY_SELECT
     }
+}
+
+export function partyArrReset() {
+    return {
+        type: types.PARTY_ARR_RESET
+    }
+
 }
