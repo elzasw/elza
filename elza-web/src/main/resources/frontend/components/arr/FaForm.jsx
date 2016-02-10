@@ -6,7 +6,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/ActionTypes';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, BulkActionsTable, Icon, Autocomplete} from 'components';
+import {AbstractReactComponent, i18n, BulkActionsTable, Icon, Autocomplete, VersionValidationState} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet'
 import {indexById} from 'stores/app/utils.jsx'
@@ -102,6 +102,17 @@ var FaForm = class FaForm extends AbstractReactComponent {
 
     render() {
         const {fields: {name, ruleSetId, rulArrTypeId, regScopes}, handleSubmit, onClose} = this.props;
+        var approveButton;
+        if (this.props.approve) {
+            if (this.isBulkActionRunning()) {
+                approveButton = <span className="text-danger">{i18n('arr.fa.approveVersion.runningBulkAction')}</span>;
+            } else if (this.isMandatoryBulkActionsDone()) {
+                approveButton = <Button onClick={handleSubmit}>{i18n('arr.fa.approveVersion.approve')}</Button>
+            } else {
+                approveButton = <Button bsStyle="danger"
+                                        onClick={handleSubmit}>{i18n('arr.fa.approveVersion.approveForce')}</Button>
+            }
+        }
         var ruleSets = this.props.refTables.ruleSet.items;
         var currRuleSetId = this.props.values.ruleSetId;
         var currRuleSet = [];
@@ -120,20 +131,9 @@ var FaForm = class FaForm extends AbstractReactComponent {
                         this.props.approve &&
                         <div>
                             <BulkActionsTable mandatory={true} versionValidate={true}/>
-                            <div>
-                                {
-                                    this.props.versionValidation.isFetching ?
-                                        <span><Icon
-                                            glyph="fa-refresh"/> {i18n('arr.fa.versionValidation.running')}</span> : (
-                                        this.props.versionValidation.count > 0 ?
-                                            <span><Icon
-                                                glyph="fa-exclamation-triangle"/> {i18n('arr.fa.versionValidation.count', this.props.versionValidation.count)}</span> :
-                                            <span><Icon glyph="fa-check"/> {i18n('arr.fa.versionValidation.ok')}</span>
-
-                                    )
-
-                                }
-                            </div>
+                            <VersionValidationState count={this.props.versionValidation.count}
+                                                    errExist={this.props.versionValidation.count > 0}
+                                                    isFetching={this.props.versionValidation.isFetching}/>
                         </div>
                     }
                     <form onSubmit={handleSubmit}>
@@ -185,19 +185,7 @@ var FaForm = class FaForm extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     {this.props.create && <Button onClick={handleSubmit}>{i18n('global.action.create')}</Button>}
-                    {this.props.approve && <span>
-                        {
-                            this.isBulkActionRunning() ?
-                                <span
-                                    className="text-danger">{i18n('arr.fa.approveVersion.runningBulkAction')}</span> : (
-                                this.isMandatoryBulkActionsDone() ?
-                                    <Button onClick={handleSubmit}>{i18n('arr.fa.approveVersion.approve')}</Button> :
-                                    <Button bsStyle="danger"
-                                            onClick={handleSubmit}>{i18n('arr.fa.approveVersion.approveForce')}</Button>
-                            )
-
-                        }
-                    </span>}
+                    {this.props.approve && approveButton}
                     {this.props.update && <Button onClick={handleSubmit}>{i18n('global.action.update')}</Button>}
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>

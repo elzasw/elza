@@ -26,7 +26,7 @@ var messages = {
     "ribbon.action.arr": "Archivní pomůcky",
     "ribbon.action.arr.fa.add": "Vytvořit AP",
     "ribbon.action.arr.fa.update": "Upravit AP",
-    "ribbon.action.arr.fa.approveVersion": "Uzavřít verzi AP",
+    "ribbon.action.arr.fa.approve": "Uzavřít verzi AP",
     "ribbon.action.arr.fa.bulkActions": "Hromadné akce",
     "ribbon.action.arr.fa.validation": "Validace AP",
     "ribbon.action.arr.show-register-jp": "Rejstříky k JP",

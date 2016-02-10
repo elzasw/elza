@@ -51,6 +51,7 @@ exports.AddPacketForm = require('./arr/AddPacketForm');
 exports.BulkActionsDialog = require('./arr/BulkActionsDialog');
 exports.BulkActionsTable = require('./arr/BulkActionsTable');
 exports.VersionValidationDialog = require('./arr/VersionValidationDialog');
+exports.VersionValidationState = require('./arr/VersionValidationState');
 exports.FaExtendedView = require('./arr/FaExtendedView');
 exports.FaTreeMain = require('./arr/FaTreeMain');
 exports.FaTreeMovementsLeft = require('./arr/FaTreeMovementsLeft');

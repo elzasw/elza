@@ -124,9 +124,16 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             ruleSetId: activeInfo.activeFa.activeVersion.arrangementType.ruleSetId,
             rulArrTypeId: activeInfo.activeFa.activeVersion.arrangementType.id
         }
-        this.dispatch(modalDialogShow(this, i18n('arr.fa.title.approveVersion'), <FaForm approve
-                                                                                         initData={data}
-                                                                                         onSubmit={this.handleCallApproveFaVersion}/>));
+        this.dispatch(
+            modalDialogShow(
+                this,
+                i18n('arr.fa.title.approve'),
+                <FaForm
+                    approve
+                    initData={data}
+                    onSubmit={this.handleCallApproveFaVersion}/>
+            )
+        );
     }
 
     /**
