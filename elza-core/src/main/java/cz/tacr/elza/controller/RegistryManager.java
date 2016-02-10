@@ -199,7 +199,7 @@ public class RegistryManager implements cz.tacr.elza.api.controller.RegistryMana
 
         Set<Integer> registerTypeIdList = null;
         if (registerTypeIds != null) {
-            registerTypeIdList = registerTypeRepository.findSubtreeIds(registerTypeIds[0]);
+            registerTypeIdList = registerTypeRepository.findSubtreeIds(new HashSet<Integer>(Arrays.asList(registerTypeIds)));
         }
 
         List<RegRecord> regRecords = registryService.findRegRecordByTextAndType(search, registerTypeIdList, from, count,null, null);

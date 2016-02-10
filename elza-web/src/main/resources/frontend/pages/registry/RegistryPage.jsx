@@ -70,7 +70,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
     handleSaveMoveRegistry(){
         var data = Object.assign({}, this.props.registry.recordForMove);
-        data['parentRecordId'] = this.props.registry.selectedId;
+        data['parentRecordId'] = this.props.registry.registryParentId;
         this.dispatch(registryRecordMove(data));
     }
     
@@ -315,8 +315,8 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                     {navParents}
                 </div>
                 <div className="registry-list-results">
-                    {(this.props.registry.isFetching || !this.props.registry.fetched) && <Loading/>}
-                    {(!this.props.registry.isFetching && this.props.registry.fetched) && listOfRecord}
+                    {(!this.props.registry.fetched) && <Loading/>}
+                    {(this.props.registry.fetched) && listOfRecord}
                 </div>
             </div>
         )

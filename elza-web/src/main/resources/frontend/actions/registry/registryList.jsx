@@ -14,7 +14,7 @@ import {registryChangeParent} from 'actions/registry/registryData'
 export function fetchRegistryIfNeeded(search = '', registryParent = null, registerTypeIds = null) {
     return (dispatch, getState) => {
         var state = getState();
-        if (!state.registry.fetched && !state.registry.isFetching) {
+        if ((state.registry.dirty && !state.registry.isFetching) || (!state.registry.fetched && !state.registry.isFetching)) {
             return dispatch(fetchRegistry(search, registryParent, registerTypeIds));
         }
     }
@@ -152,7 +152,6 @@ export function registryClickNavigation(recordId){
         return WebApi.getRegistry(recordId).then(json => {
             json.parents.push({id:recordId, name: json.record});
             var registry = Object.assign({}, registry,{registryParentId: recordId, parents: json.parents, typesToRoot: json.typesToRoot, filterText: ''});
-            console.log('menim na', registry, json);
             dispatch(registryChangeParent(registry));
         });
     }

@@ -118,7 +118,10 @@ public class RegistryController {
 
         Set<Integer> registerTypeIdTree = Collections.EMPTY_SET;
         if (registerTypeId != null) {
-            registerTypeIdTree = registerTypeRepository.findSubtreeIds(registerTypeId);
+            Set<Integer> registerTypeIds = new HashSet<>();
+            registerTypeIds.add(registerTypeId);
+
+            registerTypeIdTree = registerTypeRepository.findSubtreeIds(registerTypeIds);
         }
 
         ArrFindingAid findingAid;
@@ -213,6 +216,7 @@ public class RegistryController {
 
         Set<Integer> registerTypeIds = registerTypeRepository.findByRelationRoleType(relationRoleType)
                 .stream().map(t -> t.getRegisterTypeId()).collect(Collectors.toSet());
+        registerTypeIds = registerTypeRepository.findSubtreeIds(registerTypeIds);
 
         Set<Integer> scopeIds = new HashSet<>();
         scopeIds.add(party.getRecord().getScope().getScopeId());

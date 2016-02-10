@@ -75,14 +75,14 @@ public class RegScope implements cz.tacr.elza.api.RegScope {
             return true;
         }
 
-        if (o == null || getClass() != o.getClass()) {
+        if (o == null) {
             return false;
         }
 
         RegScope regScope = (RegScope) o;
 
         return new EqualsBuilder()
-                .append(scopeId, regScope.scopeId)
+                .append(scopeId, regScope.getScopeId())
                 .isEquals();
     }
 
