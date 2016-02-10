@@ -16,6 +16,7 @@ import {getRegistryIfNeeded, fetchRegistryIfNeeded, fetchRegistry} from 'actions
 import {registryChangeDetail, registryData, updateRegistryVariantRecord} from 'actions/registry/registryData'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
 import {routerNavigate} from 'actions/router'
+import {partySelect} from 'actions/party/party'
 import {registryRecordUpdate, registryVariantAddRecordRow, registryAddVariant, registryVariantDelete, registryVariantInternalDelete, registryRecordNoteUpdate  } from 'actions/registry/registryData'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 
@@ -149,7 +150,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     }
 
     handleGoToPartyPerson(partyId){
-// TODO Stepina - dodělat zobrazení konkrétního detailu osoby
+        this.dispatch(partySelect(partyId));
         this.dispatch(routerNavigate('party'));
     }
 
