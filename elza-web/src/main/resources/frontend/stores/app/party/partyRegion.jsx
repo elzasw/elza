@@ -96,10 +96,22 @@ export default function partyRegion(state = initialState, action) {
             return state;
 
         case types.PARTY_SELECT:
+            var result = {...state};
+            result.panel = panel(result.panel, action);
+            result.selectedPartyID = action.partyId;
+            result.dirty = true;
+            result.dirtySearch = true;
+            result.filterText = "";
+            return consolidateState(state, result);
+
         case types.PARTY_ARR_RESET:
             var result = {...state};
             result.panel = panel(result.panel, action);
-            result.dirty = true;
+            result.selectedPartyID = null;
+            result.selectedPartyData = null;
+            result.fetchedSearch = false;
+            result.fetchedDetail = false;
+            result.filterText = "";
             return consolidateState(state, result);
 
         default:

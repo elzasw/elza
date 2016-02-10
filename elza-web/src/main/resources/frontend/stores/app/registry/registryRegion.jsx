@@ -144,10 +144,19 @@ export default function registryRegion(state = initialState, action = {}) {
             })
 
         case types.REGISTRY_SELECT:
-        case types.REGISTRY_ARR_RESET:
             var result = {...state};
             result.panel = panel(result.panel, action);
             result.dirty = true;
+            result.filterText = null;
+            result.selectedId = action.recordId;
+            return consolidateState(state, result);
+
+        case types.REGISTRY_ARR_RESET:
+            var result = {...state};
+            result.panel = panel(result.panel, action);
+            result.fetched = false;
+            result.filterText = null;
+            result.selectedId = null;
             return consolidateState(state, result);
 
         default:
