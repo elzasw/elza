@@ -785,6 +785,9 @@ public class LevelTreeCacheService {
                 codes.add(viewTitles.getIcon());
                 treeNodeClient.setIcon(createTitle(codes, descItemCodeToValueMap, false, true));
             }
+        } else {
+            treeNodeClient.setAccordionLeft(defaultNodeTitle);
+            treeNodeClient.setName(defaultNodeTitle);
         }
     }
 
