@@ -7,7 +7,7 @@ import recordTypes from './recordTypes'
 import rulDataTypes from './rulDataTypes';
 import calendarTypes from './calendarTypes';
 import packetTypes from './packetTypes';
-import registryList from './registryList';
+import registryRegionList from './registryRegionList';
 import partyList from './partyList';
 import scopesData from './scopesData';
 
@@ -19,7 +19,7 @@ const initialState = {
     rulDataTypes: rulDataTypes(undefined, {type:''}),
     calendarTypes: calendarTypes(undefined, {type:''}),
     packetTypes: packetTypes(undefined, {type:''}),
-    registryList: registryList(undefined, {type:''}),
+    registryRegionList: registryRegionList(undefined, {type:''}),
     partyList: partyList(undefined, {type:''}),
     scopesData: scopesData(undefined, {type:''})
 }

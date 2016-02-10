@@ -12,7 +12,7 @@ import {Modal, Button, Input, Glyphicon} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
-import {refRegistryListFetchIfNeeded} from 'actions/refTables/registryList'
+import {refRegistryListFetchIfNeeded} from 'actions/refTables/registryRegionList'
 import {modalDialogHide} from 'actions/global/modalDialog'
 import {Combobox} from 'react-input-enhancements'
 

@@ -97,6 +97,7 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
                             addRegistryRecord={true}
                             {...registerTypeId}
                             {...decorateFormField(registerTypeId)}
+
                             disabled={disabled}
                             />
                         <Input type="text" label={i18n('registry.name')} {...nameMain} {...decorateFormField(nameMain)}/>
