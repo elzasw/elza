@@ -578,12 +578,13 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
 
         // Seřazení podle position
         descItemTypes.sort((a, b) => typeId(a.type) - typeId(b.type));
-
-        // Modální dialog
-        var form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmit={(data) => {
+        var submit = (data) => {
+            console.log(data);
             this.dispatch(modalDialogHide());
             this.dispatch(faSubNodeFormDescItemTypeAdd(versionId, selectedSubNodeId, nodeKey, data.descItemTypeId));
-        }}/>
+        };
+        // Modální dialog
+        var form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmit={submit} onSubmit2={submit}/>;
         this.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form));
     }
 
