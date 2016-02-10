@@ -28,6 +28,8 @@ var keyDownHandlers = {
         if (event.altKey) {
             this.setState({
                 isOpen: true,
+            }, () => {
+                this.props.onSearchChange(this.state.inputStrValue)
             })
         } else {
             var { highlightedIndex } = this.state
@@ -507,6 +509,7 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
         }
 
         this.setState({isOpen: true}, () => {
+            this.props.onSearchChange(this.state.inputStrValue)
             ReactDOM.findDOMNode(this.refs.input).select()
         })
     }
