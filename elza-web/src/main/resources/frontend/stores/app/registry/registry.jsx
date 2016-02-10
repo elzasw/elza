@@ -7,6 +7,7 @@ import * as types from 'actions/constants/ActionTypes';
 import registryData from './registryData';
 
 const initialState = {
+    dirty: false,
     isFetching: false,
     fetched: false,
     selectedId: null,
@@ -33,6 +34,7 @@ export default function registry(state = initialState, action = {}) {
                 ...state,
                 isFetching: false,
                 fetched: false,
+                dirty: true,
                 recordForMove: null,
                 isReloadingRegistry: false,
                 registryData: undefined,
@@ -93,6 +95,7 @@ export default function registry(state = initialState, action = {}) {
             return Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,
+                dirty: false,
                 records: action.records,
                 countRecords: action.countRecords,
                 lastUpdated: action.receivedAt
@@ -114,7 +117,7 @@ export default function registry(state = initialState, action = {}) {
         case types.REGISTRY_MOVE_REGISTRY_FINISH:
             return Object.assign({}, state, {
                 recordForMove: null,
-                fetched: false
+                dirty: true
             })
         case types.REGISTRY_MOVE_REGISTRY_CANCEL:
             return Object.assign({}, state, {
@@ -131,6 +134,10 @@ export default function registry(state = initialState, action = {}) {
             return Object.assign({}, state, {
                 filterText: null,
                 fetched: false
+            })
+        case types.CHANGE_REGISTRY_UPDATE:
+            return Object.assign({}, state, {
+                dirty: true
             })
         default:
             return state

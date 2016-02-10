@@ -37,7 +37,6 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
             notes = nextProps.registryData.item.note;
         }
 
-        this.dispatch(fetchRegistryIfNeeded(nextProps.registry.filterText, nextProps.registry.registryParentId, nextProps.registry.registryTypesId));
         this.dispatch(getRegistryIfNeeded(nextProps.selectedId));
         this.setState({
             note: notes

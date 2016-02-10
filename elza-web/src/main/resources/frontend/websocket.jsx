@@ -7,7 +7,7 @@ import {store} from 'stores/app/AppStore';
 
 import {changeConformityInfo, changeIndexingFinished, changePackage, changePackets,
         changeDescItem, changeDeleteLevel, changeAddLevel, changeApproveVersion, changeParty,
-        changeMoveLevel} from 'actions/global/change';
+        changeMoveLevel, changeRegistryRecord} from 'actions/global/change';
 
 
 var SockJS = require('sockjs-client');
@@ -138,6 +138,10 @@ function processEvents(values) {
                 moveLevelUnderChange(value);
                 break;
 
+            case 'RECORD_UPDATE':
+                registryChange(value);
+                break;
+
             default:
                 console.warn("Nedefinovaný typ eventu: " + value.eventType, value);
                 break;
@@ -172,6 +176,10 @@ function moveLevelBeforeChange(value) {
 
 function moveLevelUnderChange(value) {
     store.dispatch(changeMoveLevel(value.versionId));
+}
+
+function registryChange(value) {
+    store.dispatch(changeRegistryRecord(value.ids));
 }
 /**
  * Validace uzlu.
