@@ -5,7 +5,7 @@ import {WebApi} from 'actions'
 
 import * as types from 'actions/constants/ActionTypes';
 
-export function registryData(registry) {
+export function registryRegionData(registry) {
     return {
         type: types.REGISTRY_SELECT_REGISTRY,
         registry
@@ -109,7 +109,7 @@ export function updateRegistryVariantRecord(data){
     return (dispatch, getState) => {
         var state = getState();
         var aktualizovat = false;
-        state.registryData.item.variantRecords.map(variant => {
+        state.registryRegionData.item.variantRecords.map(variant => {
             if (variant.variantRecordId == data.variantRecordId && variant.record !== data.record){
                 aktualizovat = true;
             }

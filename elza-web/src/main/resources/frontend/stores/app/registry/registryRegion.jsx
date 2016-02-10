@@ -4,7 +4,7 @@
  *
  **/
 import * as types from 'actions/constants/ActionTypes';
-import registryData from './registryData';
+import registryRegionData from './registryRegionData';
 
 const initialState = {
     dirty: false,
@@ -14,7 +14,7 @@ const initialState = {
     recordForMove: null,
     isReloadingRegistry: false,
     filterText: null,
-    registryData: undefined,
+    registryRegionData: undefined,
     registryParentId: null,
     registryTypesId: null,
     parents: [],
@@ -23,7 +23,7 @@ const initialState = {
     countRecords: 0,
 }
 
-export default function registry(state = initialState, action = {}) {
+export default function registryRegion(state = initialState, action = {}) {
     switch (action.type) {
         case types.STORE_LOAD:
             if (!action.registryRegion) {
@@ -37,7 +37,7 @@ export default function registry(state = initialState, action = {}) {
                 dirty: true,
                 recordForMove: null,
                 isReloadingRegistry: false,
-                registryData: undefined,
+                registryRegionData: undefined,
                 partyTypes: [],
                 records: [],
                 countRecords: 0,
@@ -45,11 +45,11 @@ export default function registry(state = initialState, action = {}) {
             }
         case types.STORE_SAVE:
             {
-                const {registryData, isFetching, fetched, selectedId, filterText, registryParentId, registryTypesId, parents, typesToRoot} = state;
+                const {registryRegionData, isFetching, fetched, selectedId, filterText, registryParentId, registryTypesId, parents, typesToRoot} = state;
 
                 var _info
-                if (registryData && registryData.item.recordId === selectedId) {
-                    _info = {name: registryData.item.record, desc: registryData.item.characteristics, childs:registryData.item.childs, registerTypeId: registryData.item.registerTypeId}
+                if (registryRegionData && registryRegionData.item.recordId === selectedId) {
+                    _info = {name: registryRegionData.item.record, desc: registryRegionData.item.characteristics, childs:registryRegionData.item.childs, registerTypeId: registryRegionData.item.registerTypeId}
                 } else {
                     _info = null
                 }
@@ -67,7 +67,7 @@ export default function registry(state = initialState, action = {}) {
         case types.REGISTRY_SELECT_REGISTRY:
             return Object.assign({}, state, {
                 selectedId: action.registry.selectedId,
-                registryData: registryData(state.registryData, action)
+                registryRegionData: registryRegionData(state.registryRegionData, action)
             })
         case types.REGISTRY_REQUEST_REGISTRY_LIST:
             return Object.assign({}, state, {
@@ -112,7 +112,7 @@ export default function registry(state = initialState, action = {}) {
             })
         case types.REGISTRY_MOVE_REGISTRY_START:
             return Object.assign({}, state, {
-                recordForMove: state.registryData.item
+                recordForMove: state.registryRegionData.item
             })
         case types.REGISTRY_MOVE_REGISTRY_FINISH:
             return Object.assign({}, state, {

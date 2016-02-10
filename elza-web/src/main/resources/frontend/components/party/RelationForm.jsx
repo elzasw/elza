@@ -281,10 +281,10 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
         }
         // zaznamy pro autocomplate
         var records = [];
-        for(var i = 0; i<this.props.refTables.registryList.items.recordList.length; i++){
+        for(var i = 0; i<this.props.refTables.registryRegionList.items.recordList.length; i++){
             records[records.length] = {
-                id: this.props.refTables.registryList.items.recordList[i].recordId,
-                name: this.props.refTables.registryList.items.recordList[i].record,
+                id: this.props.refTables.registryRegionList.items.recordList[i].recordId,
+                name: this.props.refTables.registryRegionList.items.recordList[i].record,
             }
         }
 

@@ -18,9 +18,9 @@ const _logCollapsed = true;
 import arrRegion from './arr/arrRegion';
 import refTables from './refTables/refTables';
 import faFileTree from './arr/faFileTree';
-import registry from './registry/registry';
-import registryData from './registry/registryData';
-import registryRecordTypes from './registry/registryRecordTypes';
+import registryRegion from './registry/registryRegion';
+import registryRegionData from './registry/registryRegionData';
+import registryRegionRecordTypes from './registry/registryRegionRecordTypes';
 import toastrs from './toastr/toastrs';
 import partyRegion from './party/partyRegion';
 import contextMenu from './global/contextMenu';
@@ -47,9 +47,9 @@ let reducer = combineReducers({
     arrRegion,
     refTables,
     faFileTree,
-    registry,
-    registryData,
-    registryRecordTypes,
+    registryRegion,
+    registryRegionData,
+    registryRegionRecordTypes,
     toastrs,
     partyRegion,
     contextMenu,
@@ -136,7 +136,7 @@ var save = function(store) {
 
     var result = {
         partyRegion: partyRegion(store.partyRegion, action),
-        registryRegion: registry(store.registry, action),
+        registryRegion: registryRegion(store.registryRegion, action),
         arrRegion: arrRegion(store.arrRegion, action),
         splitter: splitter(store.splitter, action),
     }

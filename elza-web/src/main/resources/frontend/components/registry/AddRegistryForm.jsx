@@ -12,7 +12,7 @@ import {AbstractReactComponent, i18n, DropDownTree, Scope} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField} from 'components/form/FormUtils'
-import {getRegistryRecordTypesIfNeeded, getRegistry} from 'actions/registry/registryList'
+import {getRegistryRecordTypesIfNeeded, getRegistry} from 'actions/registry/registryRegionList'
 import {WebApi} from 'actions'
 
 const validate = (values, props) => {
@@ -74,8 +74,8 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
     render() {
         const {fields: { nameMain, characteristics, registerTypeId, scopeId}, handleSubmit, onClose} = this.props;
         var itemsForDropDownTree = [];
-        if (this.props.registryRecordTypes.item) {
-            itemsForDropDownTree = this.props.registryRecordTypes.item;
+        if (this.props.registryRegionRecordTypes.item) {
+            itemsForDropDownTree = this.props.registryRegionRecordTypes.item;
         }
         var disabled = false;
         if (this.state.parentRegisterTypeId){
@@ -119,9 +119,9 @@ module.exports = reduxForm({
 },state => ({
         initialValues: state.form.addRegistryForm.initialValues,
         refTables: state.refTables,
-        registry: state.registry,
-        registryData: state.registryData,
-        registryRecordTypes: state.registryRecordTypes
+        registryRegion: state.registryRegion,
+        registryRegionData: state.registryRegionData,
+        registryRegionRecordTypes: state.registryRegionRecordTypes
 
 }),
 {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addRegistryForm', data})}

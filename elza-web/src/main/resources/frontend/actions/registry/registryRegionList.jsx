@@ -9,12 +9,12 @@ import {WebApi} from 'actions'
 import * as types from 'actions/constants/ActionTypes';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {i18n, AddRegistryForm} from 'components';
-import {registryChangeParent} from 'actions/registry/registryData'
+import {registryChangeParent} from 'actions/registry/registryRegionData'
 
 export function fetchRegistryIfNeeded(search = '', registryParent = null, registerTypeIds = null) {
     return (dispatch, getState) => {
         var state = getState();
-        if ((state.registry.dirty && !state.registry.isFetching) || (!state.registry.fetched && !state.registry.isFetching)) {
+        if ((state.registryRegion.dirty && !state.registryRegion.isFetching) || (!state.registryRegion.fetched && !state.registryRegion.isFetching)) {
             return dispatch(fetchRegistry(search, registryParent, registerTypeIds));
         }
     }
@@ -53,7 +53,7 @@ export function registrySetTypesId(registryTypesId) {
 export function getRegistryIfNeeded(registryId) {
     return (dispatch, getState) => {
         var state = getState();
-        if (!state.registryData.fetched && !state.registryData.isFetching && (registryId !==state.registryData.selectedId || state.registryData.requireReload === true)) {
+        if (!state.registryRegionData.fetched && !state.registryRegionData.isFetching && (registryId !==state.registryRegionData.selectedId || state.registryRegionData.requireReload === true)) {
             return dispatch(getRegistry(registryId));
         }
     }
@@ -86,7 +86,7 @@ export function receiveRegistryGetRegistry(registryId, json) {
 export function getRegistryRecordTypesIfNeeded(partyTypeId = null){
     return (dispatch, getState) => {
         var state = getState();
-        if ((!state.registryRecordTypes.fetched && !state.registryRecordTypes.isFetching) || state.registryRecordTypes.partyTypeId !== partyTypeId) {
+        if ((!state.registryRegionRecordTypes.fetched && !state.registryRegionRecordTypes.isFetching) || state.registryRegionRecordTypes.partyTypeId !== partyTypeId) {
             return dispatch(getRegistryRecordTypes(partyTypeId));
         }
     }

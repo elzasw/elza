@@ -36,7 +36,7 @@ export default function refTables(state = initialState, action) {
         case types.REF_REGISTRY_LIST_RECEIVE:
             return {
                 ...state,
-                registryList: registryList(state.registryList, action),
+                registryRegionList: registryRegionList(state.registryRegionList, action),
             }
         case types.CHANGE_PACKAGE:
         case types.REF_RULE_SET_REQUEST:

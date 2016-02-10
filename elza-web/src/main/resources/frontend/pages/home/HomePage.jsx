@@ -375,7 +375,7 @@ var items = getStates();
         footer=<div><Button onClick={()=>{alert('klik')}}>xxx</Button></div>
         header=<div><div className='c1'>id</div><div className='c2'>jmeno</div></div>
         value={null}
-        items={this.state.registryList}
+        items={this.state.registryRegionList}
         getItemId={(item) => item ? item.id : null}
         getItemName={(item) => item ? item.name : ''}
         onSearchChange={this.handleFindParty}

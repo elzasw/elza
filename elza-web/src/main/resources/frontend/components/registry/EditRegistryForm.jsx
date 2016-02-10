@@ -11,7 +11,7 @@ import {AbstractReactComponent, i18n, Scope, DropDownTree} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField} from 'components/form/FormUtils'
-import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryList'
+import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRegionList'
 
 const validate = (values, props) => {
     const errors = {};
@@ -62,8 +62,8 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
         }
 
         var itemsForDropDownTree = [];
-        if (this.props.registryRecordTypes.item) {
-            itemsForDropDownTree = this.props.registryRecordTypes.item;
+        if (this.props.registryRegionRecordTypes.item) {
+            itemsForDropDownTree = this.props.registryRegionRecordTypes.item;
         }
 
         return (
@@ -101,7 +101,7 @@ module.exports = reduxForm({
     },state => ({
         initialValues: state.form.editRegistryForm.initialValues,
         refTables: state.refTables,
-        registryRecordTypes: state.registryRecordTypes
+        registryRegionRecordTypes: state.registryRegionRecordTypes
     }),
     {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'editRegistryForm', data})}
 )(EditRegistryForm)

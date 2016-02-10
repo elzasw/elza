@@ -14,7 +14,7 @@ const initialState = {
     LastUpdated: null
 }
 
-export default function registryRecordTypes(state = initialState, action = {}) {
+export default function registryRegionRecordTypes(state = initialState, action = {}) {
 
     switch (action.type) {
         case types.REGISTRY_RECIVE_REGISTRY_RECORD_TYPES:

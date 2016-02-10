@@ -13,7 +13,7 @@ import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFor
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryList'
+import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRegionList'
 import {requestScopesIfNeeded} from 'actions/scopes/scopesData'
 
 /**
@@ -269,8 +269,8 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
             }
         }
         var polozky = [];
-        if (this.props.registryRecordTypes && this.props.registryRecordTypes.fetched){
-            polozky = this.props.registryRecordTypes.item;
+        if (this.props.registryRegionRecordTypes && this.props.registryRegionRecordTypes.fetched){
+            polozky = this.props.registryRegionRecordTypes.item;
         }
 
         return (
@@ -333,7 +333,7 @@ module.exports = reduxForm({
 },state => ({
     initialValues: state.form.addPartyForm.initialValues,
     refTables: state.refTables,
-        registryRecordTypes: state.registryRecordTypes
+        registryRegionRecordTypes: state.registryRegionRecordTypes
 }),
 {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addPartyForm', data})}
 )(AddPartyForm)

@@ -18,7 +18,7 @@ const initialState = {
     variantRecordInternalId: 1
 }
 
-export default function registryData(state = initialState, action = {}) {
+export default function registryRegionData(state = initialState, action = {}) {
     switch (action.type) {
         case types.REGISTRY_SELECT_REGISTRY:
             if (state.selectedId === action.registry.selectedId){

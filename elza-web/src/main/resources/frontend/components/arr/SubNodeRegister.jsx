@@ -7,7 +7,7 @@ import {connect} from 'react-redux'
 
 import {faSubNodeRegisterValueDelete, faSubNodeRegisterValueAdd,
         faSubNodeRegisterValueFocus, faSubNodeRegisterValueBlur, faSubNodeRegisterValueChange} from 'actions/arr/subNodeRegister'
-import {registrySelect, registryAdd} from 'actions/registry/registryList'
+import {registrySelect, registryAdd} from 'actions/registry/registryRegionList'
 import NodeRegister from './registerForm/NodeRegister'
 import {routerNavigate} from 'actions/router'
 
