@@ -305,6 +305,13 @@ class WebApi{
             });
     }
 
+    getAllScopes() {
+        return AjaxUtils.ajaxGet('/api/registryManagerV2/scopes')
+            .then(json=> {
+                return json
+            });
+    }
+
     removeRegistry(registryId) {
         var data = {
             recordId: registryId
@@ -550,6 +557,10 @@ class WebApi{
             .then(json=>{
                 return json;
             });
+    }
+
+    updateFindingAid(data) {
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/updateFindingAid', null, data)
     }
 
     approveVersion(versionId, ruleSetId, arrangementTypeId) {

@@ -1,54 +1,22 @@
 package cz.tacr.elza.controller.config;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
-import cz.tacr.elza.controller.vo.ArrPacketVO;
-import cz.tacr.elza.controller.vo.ParPartyNameVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParRelationEntityVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RegScopeVO;
-import cz.tacr.elza.controller.vo.RegVariantRecordVO;
-import cz.tacr.elza.controller.vo.XmlImportConfigVO;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFindingAid;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ArrPacket;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.domain.RulDescItemSpec;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulPacketType;
-import cz.tacr.elza.repository.DescItemSpecRepository;
-import cz.tacr.elza.repository.DescItemTypeRepository;
-import cz.tacr.elza.repository.FindingAidRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.PacketTypeRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -273,6 +241,39 @@ public class ClientFactoryDO {
         Assert.notNull(scopeVO);
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(scopeVO, RegScope.class);
+    }
+
+
+    /**
+     * Vytvoří seznam rejstříků
+     *
+     * @param scopeVOs seznam VO rejstříků
+     * @return seznam DO
+     */
+    public List<RegScope> createScopeList(@Nullable final Collection<RegScopeVO> scopeVOs) {
+        if (scopeVOs == null) {
+            return null;
+        }
+
+        List<RegScope> result = new ArrayList<>(scopeVOs.size());
+
+        for (RegScopeVO scopeVO : scopeVOs) {
+            result.add(createScope(scopeVO));
+        }
+
+        return result;
+    }
+
+    /**
+     * Vytvoří DO archivní pomůcky
+     *
+     * @param findingAidVO VO archivní pomůcka
+     * @return DO
+     */
+    public ArrFindingAid createArrFindingAid(ArrFindingAidVO findingAidVO) {
+        Assert.notNull(findingAidVO);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        return mapper.map(findingAidVO, ArrFindingAid.class);
     }
 
     public ArrNodeRegister createRegisterLink(final ArrNodeRegisterVO nodeRegisterVO) {

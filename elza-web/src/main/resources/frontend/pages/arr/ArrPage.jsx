@@ -11,7 +11,7 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Icon, Ribbon, i18n} from 'components';
-import {FaExtendedView, AddFaForm, BulkActionsDialog, VersionValidationDialog, RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FaFileTree, AbstractReactComponent, ModalDialog, NodeTabs, FaTreeTabs} from 'components';
+import {FaExtendedView, FaForm, BulkActionsDialog, VersionValidationDialog, RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FaFileTree, AbstractReactComponent, ModalDialog, NodeTabs, FaTreeTabs} from 'components';
 import {ButtonGroup, Button, DropdownButton, MenuItem} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
@@ -24,6 +24,7 @@ import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes'
 var ShortcutsManager = require('react-shortcuts')
 var Shortcuts = require('react-shortcuts/component')
 import {Utils} from 'components'
+import {barrier} from 'components/Utils';
 
 var keyModifier = Utils.getKeyModifier()
 
@@ -45,7 +46,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         this.bindMethods('getActiveInfo', 'buildRibbon', 'handleRegisterJp',
             'handleApproveFaVersion', 'handleCallApproveFaVersion', 'getActiveFindingAidId', 'handleBulkActionsDialog',
-            'handleValidationDialog', 'handleShortcuts');
+            'handleValidationDialog', 'handleEditFaVersion', 'handleCallEditFaVersion', 'handleShortcuts');
 
         this.state = {faFileTreeOpened: false};
     }
@@ -123,9 +124,9 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             ruleSetId: activeInfo.activeFa.activeVersion.arrangementType.ruleSetId,
             rulArrTypeId: activeInfo.activeFa.activeVersion.arrangementType.id
         }
-        this.dispatch(modalDialogShow(this, i18n('arr.fa.title.approveVersion'), <AddFaForm isApproveDialog={true}
-                                                                                            initData={data}
-                                                                                            onSubmit={this.handleCallApproveFaVersion}/>));
+        this.dispatch(modalDialogShow(this, i18n('arr.fa.title.approveVersion'), <FaForm approve
+                                                                                         initData={data}
+                                                                                         onSubmit={this.handleCallApproveFaVersion}/>));
     }
 
     /**
@@ -175,6 +176,37 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         this.dispatch(modalDialogShow(this, i18n('arr.fa.title.versionValidation'), <VersionValidationDialog />));
     }
 
+    handleEditFaVersion() {
+        var activeInfo = this.getActiveInfo();
+        var that = this;
+        barrier(
+            WebApi.getScopes(activeInfo.activeFa.versionId),
+            WebApi.getAllScopes()
+        )
+            .then(data => {
+                return {
+                    scopes: data[0].data,
+                    scopeList: data[1].data
+                }
+            })
+            .then(json => {
+                var data = {
+                    name: activeInfo.activeFa.name,
+                    regScopes: json.scopes
+                };
+                that.dispatch(modalDialogShow(that, i18n('arr.fa.title.update'),
+                    <FaForm update initData={data} scopeList={json.scopeList}
+                            onSubmit={that.handleCallEditFaVersion}/>));
+            });
+    }
+
+    handleCallEditFaVersion(data) {
+        data.id = this.getActiveInfo().activeFa.faId;
+        WebApi.updateFindingAid(data).then((json) => {
+            this.dispatch(modalDialogHide());
+        })
+    }
+
     /**
      * Sestavení Ribbonu.
      * @return {Object} view
@@ -192,10 +224,13 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         );
         if (activeInfo.activeFa && !activeInfo.activeFa.closed) {
             itemActions.push(
-                <Button key="approve-version" onClick={this.handleApproveFaVersion}><Icon glyph="fa-calendar-check-o"/>
-                    <div><span className="btnText">{i18n('ribbon.action.arr.fa.approveVersion')}</span></div>
+                <Button key="edit-version" onClick={this.handleEditFaVersion}><Icon glyph="fa-pencil"/>
+                    <div><span className="btnText">{i18n('ribbon.action.arr.fa.update')}</span></div>
                 </Button>,
-                <Button key="bulkActions" onClick={this.handleBulkActionsDialog}><Icon glyph="fa-cogs"/>
+                <Button key="approve-version" onClick={this.handleApproveFaVersion}><Icon glyph="fa-calendar-check-o"/>
+                    <div><span className="btnText">{i18n('ribbon.action.arr.fa.approve')}</span></div>
+                </Button>,
+                <Button key="bulk-actions" onClick={this.handleBulkActionsDialog}><Icon glyph="fa-cogs"/>
                     <div><span className="btnText">{i18n('ribbon.action.arr.fa.bulkActions')}</span></div>
                 </Button>,
                 <Button key="validation" onClick={this.handleValidationDialog}>

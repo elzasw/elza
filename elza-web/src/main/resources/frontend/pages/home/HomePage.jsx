@@ -10,7 +10,7 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Icon, i18n} from 'components';
-import {Splitter, Autocomplete, AddFaForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components';
+import {Splitter, Autocomplete, FaForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components';
 import {ModalDialog, NodeTabs, FaTreeTabs} from 'components';
 import {ButtonGroup, Button, Panel} from 'react-bootstrap';
 import {PageLayout} from 'pages';
@@ -191,8 +191,8 @@ setTimeout(()=>this.setState({options: options2}), 4000);
     }
 
     handleAddFa() {
-        this.dispatch(modalDialogShow(this, i18n('arr.fa.title.add'), <AddFaForm isApproveDialog={false} create
-                                                                                 onSubmit={this.handleCallAddFa}/>));
+        this.dispatch(modalDialogShow(this, i18n('arr.fa.title.add'), <FaForm create
+                                                                              onSubmit={this.handleCallAddFa}/>));
     }
 
     handleCallAddFa(data) {

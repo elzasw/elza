@@ -8,6 +8,7 @@ var messages = {
 
     "global.error.ajax": "Při komunikaci nastala chyba",
     "global.action.create": "Vytvořit",
+    "global.action.update": "Upravit",
     "global.action.add": "Přidat",
     "global.action.cancel": "Storno",
     "global.action.close": "Zavřít",
@@ -24,6 +25,7 @@ var messages = {
     "ribbon.action.home": "Domů",
     "ribbon.action.arr": "Archivní pomůcky",
     "ribbon.action.arr.fa.add": "Vytvořit AP",
+    "ribbon.action.arr.fa.update": "Upravit AP",
     "ribbon.action.arr.fa.approveVersion": "Uzavřít verzi AP",
     "ribbon.action.arr.fa.bulkActions": "Hromadné akce",
     "ribbon.action.arr.fa.validation": "Validace AP",
@@ -55,7 +57,8 @@ var messages = {
     "accordion.title.right.name.undefined": "<JP-Accordion right ID={0}>",
 
     "arr.fa.title.add": "Vytvoření nové AP",
-    "arr.fa.title.approveVersion": "Uzavření verze AP",
+    "arr.fa.title.update": "Úprava AP",
+    "arr.fa.title.approve": "Uzavření verze AP",
     "arr.fa.title.bulkActions": "Hromadné akce",
     "arr.fa.title.versionValidation": "Validace verze AP",
 
@@ -82,6 +85,7 @@ var messages = {
 
     "arr.fa.name": "Název",
     "arr.fa.ruleSet": "Pravidla tvorby",
+    "arr.fa.regScope": "Třídy rejstříku",
     "arr.fa.arrType": "Typ výstupu",
     "arr.fa.currentVersion": "Aktuální verze",
     

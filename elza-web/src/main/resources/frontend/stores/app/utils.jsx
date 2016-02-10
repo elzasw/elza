@@ -28,7 +28,7 @@ function indexById(arr, id, attrName = null) {
     if (arr == null) {
         return null;
     }
-
+    // TODO lze optimalizovat
     if (attrName !== null) {
         for (var a=0; a<arr.length; a++) {
             if (arr[a][attrName] == id) {
