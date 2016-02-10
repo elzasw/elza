@@ -423,7 +423,7 @@ return true;
 
         return (
             <div key={key} className={cls} {...dragProps}>
-                {descItemType.repeatable && <div className='dragger'>&nbsp;</div>}
+                {descItemType.repeatable && <div className='dragger'><Icon className="up" glyph="fa-angle-up"/><Icon className="down" glyph="fa-angle-down"/>&nbsp;</div>}
                 <div key="container" className='desc-item-value-container'>
                     {parts}
                 </div>
