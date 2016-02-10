@@ -87,7 +87,7 @@ export function findPartyFetchIfNeeded(filterText, versionId = null) {
     return (dispatch, getState) => {
         var state = getState();
 
-        if (!state.partyRegion.isFetchingSearch && (state.partyRegion.dirty || state.partyRegion.filterText !== filterText)) {
+        if (!state.partyRegion.isFetchingSearch && (state.partyRegion.dirtySearch || state.partyRegion.filterText !== filterText)) {
             return dispatch(findPartyFetch(filterText, versionId));
         } else if (!state.partyRegion.fetchedSearch && !state.partyRegion.isFetchingSearch) {
             return dispatch(findPartyFetch(filterText, versionId));
