@@ -6,7 +6,7 @@ import ReactDOM from 'react-dom';
 import {WebApi} from 'actions'
 import {Icon, i18n, AbstractReactComponent, NoFocusButton, Autocomplete} from 'components';
 import {connect} from 'react-redux'
-import {decorateValue} from './DescItemUtils'
+import {decorateAutocompleteValue} from './DescItemUtils'
 
 import {MenuItem, DropdownButton, Button} from 'react-bootstrap';
 
@@ -99,14 +99,13 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
         return (
             <div className='desc-item-value desc-item-value-parts'>
                 <Autocomplete
-                        {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
+                        {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-party'])}
                         customFilter
-                        className='autocomplete-party'
                         footer={footer}
                         value={value}
                         items={this.state.partyList}
                         getItemId={(item) => item ? item.partyId : null}
-                        getItemName={(item) => item ? item.record.record : ''}
+                        getItemName={(item) => item && item.record ? item.record.record : ''}
                         onSearchChange={this.handleSearchChange}
                         onChange={this.handleChange}
                         renderItem={this.renderParty}

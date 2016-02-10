@@ -208,7 +208,14 @@
                                 .desc-item-value {
                                     width: 100%;
                                     .error {
-                                        background: @node-form-value-error-bg;
+                                        &input, input, &textarea, textarea, &select, select {
+                                            background: @node-form-value-error-bg;
+                                        }
+                                    }
+                                    input, textarea, select {
+                                        &.error {
+                                            background: @node-form-value-error-bg;
+                                        }
                                     }
                                 }
                             }

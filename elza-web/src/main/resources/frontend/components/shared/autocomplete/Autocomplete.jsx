@@ -85,11 +85,16 @@ var keyDownHandlers = {
 
         } else {
             if (this.state.highlightedIndex == null) {
+                event.stopPropagation();
+                event.preventDefault();
                 // hit enter after focus but before typing anything so no autocomplete attempt yet
                 this.setState({
-                    isOpen: false
+                    isOpen: false,
+                    inputStrValue: '',
+                    value: null,
                 }, () => {
                     ReactDOM.findDOMNode(this.refs.input).select()
+                    this.props.onChange(null, {id: null, name: ''})
                 })
             } else {
                 event.stopPropagation();
@@ -290,7 +295,7 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
 
         if (this.state.isOpen && this._performAutoCompleteOnUpdate) {
             this._performAutoCompleteOnUpdate = false
-            this.maybeAutoCompleteText()
+            //this.maybeAutoCompleteText()
         }
 
         this.maybeScrollItemIntoView()
@@ -507,6 +512,30 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
     }
 
     closeMenu(callBlurAfterSetState = false) {
+        if (!this.state.isOpen && this.state.highlightedIndex === null && this.state.inputStrValue === this.props.getItemName(this.state.value)) {
+            // Není třeba nastavovat state
+            if (callBlurAfterSetState) {
+                this.props.onBlur && this.props.onBlur();
+            }
+            return;
+        }
+
+        var addState = {
+            isOpen: false,
+            highlightedIndex: null,
+            inputStrValue: this.props.getItemName(this.state.value)
+        }
+        _debugStates && console.log("#### closeMenu", "prev state", this.state, "props", this.props, "state change", addState);
+        this.setState(addState, () => {
+            //ReactDOM.findDOMNode(this.refs.input).select()
+            if (callBlurAfterSetState) {
+                this.props.onBlur && this.props.onBlur();
+            }
+        })
+
+return
+
+
         if (!this.state.isOpen) {
             if (callBlurAfterSetState) {
                 this.props.onBlur && this.props.onBlur();
@@ -555,6 +584,7 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
                             <input
                                 className='form-control'
                                 type='text'
+                                title={this.props.title}
                                 {...this.props.inputProps}
                                 label={this.props.label}
                                 disabled={this.props.disabled}

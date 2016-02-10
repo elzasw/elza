@@ -96,7 +96,7 @@ function validate(descItem, descItemTypeInfo, valueServerError) {
         }
     }
 
-    error.hasError = error.spec || error.value || error.calendarType;
+    error.hasError = (error.spec || error.value || error.calendarType) ? true : false;
 
     return error;
 }
