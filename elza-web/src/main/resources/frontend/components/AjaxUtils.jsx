@@ -40,7 +40,7 @@ function requestCounter(method, url, data) {
  * @param {Object} data - Odesílaná data
  * @returns {Promise} - Výsledek volání
  */
-function ajaxCallRaw(url, params, method, data) {
+function ajaxCallRaw(url, params, method, data, contentType = false) {
 
     url = updateQueryStringParameters(url, params);
 
@@ -55,7 +55,7 @@ function ajaxCallRaw(url, params, method, data) {
             url: serverContextPath + url,
             type: method,
             processData: false,
-            contentType: false,
+            contentType: contentType,
             data: data,
             success: function (data,    // data ze serveru
                                status,  // status - 'success'

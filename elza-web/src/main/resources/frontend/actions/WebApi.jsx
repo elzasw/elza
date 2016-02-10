@@ -610,7 +610,7 @@ class WebApi{
     
     xmlImport(data) {
         //return AjaxUtils.ajaxPost('/api/xmlImportManagerV2/import', {}, data);
-        return AjaxUtils.ajaxCallRaw('/api/xmlImportManagerV2/import', {}, "POST", data)
+        return AjaxUtils.ajaxCallRaw('/api/xmlImportManagerV2/import', {}, "POST", data, 'multipart/form-data')
     }    
 }
 

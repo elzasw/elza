@@ -1,8 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
-import org.springframework.web.multipart.MultipartFile;
-
 import cz.tacr.elza.api.vo.XmlImportType;
+import org.springframework.web.multipart.MultipartFile;
 
 public class XmlImportConfigVO {
 
@@ -19,6 +18,9 @@ public class XmlImportConfigVO {
     private Integer arrangementTypeId;
 
     private RegScopeVO regScope;
+
+    public XmlImportConfigVO() {
+    }
 
     public boolean isStopOnError() {
         return stopOnError;
