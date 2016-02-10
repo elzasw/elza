@@ -154,11 +154,10 @@ public class ArrangementService {
     @Autowired
     protected FaRegisterScopeRepository faRegisterScopeRepository;
 
-    public ArrFindingAid findFindingAidByRootNodeUUID(String uuid) {
-        Assert.notNull(uuid);
+    @Autowired
+    private RegistryService registryService;
 
-        return findingAidRepository.findFindingAidByRootNodeUUID(uuid);
-    }
+
 
     public ArrFindingAid createFindingAid(String name, RulRuleSet ruleSet, RulArrangementType arrangementType,
                                           ArrChange change, String uuid) {
@@ -194,6 +193,11 @@ public class ArrangementService {
         ArrChange change = createChange();
 
         ArrFindingAid findingAid = createFindingAid(name, ruleSet, arrangementType, change, null);
+
+        List<RegScope> defaultScopes = registryService.findDefaultScopes();
+        if (!defaultScopes.isEmpty()) {
+            addScopeToFindingAid(findingAid, defaultScopes.get(0));
+        }
 
         ArrFindingAidVersion version = findingAidVersionRepository
                 .findByFindingAidIdAndLockChangeIsNull(findingAid.getFindingAidId());
