@@ -1,6 +1,8 @@
 package cz.tacr.elza.controller;
 
+import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
+import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.XmlImportConfigVO;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.repository.ScopeRepository;
@@ -8,10 +10,12 @@ import cz.tacr.elza.service.XmlImportService;
 import cz.tacr.elza.service.exception.XmlImportException;
 import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import java.util.List;
 
@@ -34,14 +38,21 @@ public class XmlImportController {
     @Autowired
     private ScopeRepository scopeRepository;
 
-    @RequestMapping(value = "/import", method = RequestMethod.POST)
-    public void importData(XmlImportConfigVO configVO) {
-        /*XmlImportConfigVO configVO = new XmlImportConfigVO();
-        configVO.setRegScope(regScopeVO);
-        configVO.setXmlFile(xmlFile);
-        configVO.setImportDataFormat(importDataFormat);
-        configVO.setStopOnError(stopOnError);
-        configVO.setTransformationName(transformationName);*/
+    @RequestMapping(value = "/import", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public void importData(MultipartHttpServletRequest request) { /// Mělo by být VO
+        XmlImportConfigVO configVO = new XmlImportConfigVO();
+        configVO.setXmlFile(request.getFile("xmlFile"));
+        configVO.setRegScope(((RegScopeVO) request.getAttribute("regScope")));
+        configVO.setImportDataFormat(XmlImportType.valueOf(request.getParameter("importDataFormat")));
+        if (request.getAttribute("stopOnError") != null) {
+            configVO.setStopOnError((Boolean) request.getAttribute("stopOnError"));
+        } else {
+            configVO.setStopOnError(false);
+        }
+        if (request.getAttribute("transformationName") != null) {
+            configVO.setTransformationName(request.getParameter("transformationName"));
+        }
+
         Assert.notNull(configVO);
 
         XmlImportConfig config = factoryDO.createXmlImportConfig(configVO);
