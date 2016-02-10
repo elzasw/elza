@@ -249,6 +249,19 @@ class WebApi{
         });
     }
 
+    findRecordForRelation(search = null, roleTypeId = null, partyId = null){
+        return AjaxUtils.ajaxGet('/api/registryManagerV2/findRecordForRelation',{
+            search: search,
+            from: 0,
+            count: 200,
+            roleTypeId: roleTypeId,
+            partyId: partyId
+        }).then(json=>{
+            return json;
+        })
+
+    }
+
     getBulkActions(versionId, mandatory = false) {
         return AjaxUtils.ajaxGet('/api/bulkActionManagerV2/' + versionId + '/' + mandatory, null);
     }

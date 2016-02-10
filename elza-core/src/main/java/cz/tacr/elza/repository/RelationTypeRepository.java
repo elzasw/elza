@@ -1,7 +1,11 @@
 package cz.tacr.elza.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.ParRelationType;
 
 
@@ -16,4 +20,13 @@ public interface RelationTypeRepository extends JpaRepository<ParRelationType, I
     ParRelationType findByCodeAndClassType(String relationTypeCode, String classTypeCode);
 
     ParRelationType findByCodeAndClassTypeIsNull(String relationTypeCode);
+
+    /**
+     * Najde typy vztahů podle typu role vztahu.
+     *
+     * @param relationRoleType typ role vztahu
+     * @return seznam navázaných typů vztahu
+     */
+    @Query("SELECT rr.relationType FROM par_relation_type_role_type rr WHERE rr.roleType = ?1")
+    List<ParRelationType> findByRelationRoleType(ParRelationRoleType relationRoleType);
 }

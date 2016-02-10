@@ -83,7 +83,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         for(var i = 0; i<data.entities.length; i++){                                // projdeme data entit z formuláře
             entities[entities.length] = {                                           // a přidáme je do seznamu nových entit
                 source: data.entities[i].sources,                                   // poznámka ke vztahu o zdrojích dat
-                record: {recordId: data.entities[i].recordId},                      // rejstříková položka
+                record: {recordId: data.entities[i].record.id},
                 roleType: {roleTypeId: data.entities[i].roleTypeId}                 // typ vztahu osoby a rejstříkové položky
             }
         }  
@@ -110,12 +110,13 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
      * *********************************************
      * Kliknutí na volnu přidání nového vztahu
      */     
-    handleAddRelation(){
+    handleAddRelation(classType){
         var data = {                    
             partyTypeId: this.props.partyRegion.selectedPartyData.partyType.partyTypeId,
             partyId: this.props.partyRegion.selectedPartyID,
             note: "",
             dateNote:"",
+            classType: classType,
             from: {
                 textDate: "",    
                 calendarTypeId: this.props.partyRegion.gregorianCalendarId            
@@ -125,7 +126,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
                 calendarTypeId: this.props.partyRegion.gregorianCalendarId            
             },
             entities: [{
-                recordId: null,
+                record: null,
                 roleTypeId : null,
                 sources: '',
             }]
@@ -175,7 +176,14 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         var itemActions = [];
         if (isSelected) {
             itemActions.push(
-                <Button onClick={this.handleAddRelation}><Icon glyph="fa-link" /><div><span className="btnText">{i18n('party.relation.add')}</span></div></Button>
+                <DropdownButton title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('party.relation.add')}</span></div></span>}>
+                    {["B","E","R"].map(i =>{
+                        var name = i18n('party.relation.classType.'+i).toUpperCase();
+                        return <MenuItem key={"classType"+i} onClick={this.handleAddRelation.bind(this,i)}>{name}</MenuItem>
+                    })}
+                </DropdownButton>
+
+                //<Button onClick={this.handleAddRelation}><Icon glyph="fa-link" /><div><span className="btnText">{i18n('party.relation.add')}</span></div></Button>
             );
             itemActions.push(
                 <Button onClick={this.handleDeleteParty}><Icon glyph="fa-trash" /><div><span className="btnText">{i18n('party.delete.button')}</span></div></Button>
