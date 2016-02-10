@@ -13,7 +13,7 @@ import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField} from 'components/form/FormUtils'
 import {getRegistryRecordTypesIfNeeded, getRegistry} from 'actions/registry/registryList'
-
+import {WebApi} from 'actions'
 
 const validate = (values, props) => {
     const errors = {};
@@ -39,11 +39,18 @@ const validate = (values, props) => {
 var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.state = {parentRegisterTypeId: null};
+
+        this.state = {
+            parentRegisterTypeId: null,
+            fetched: this.props.parentRecordId === null
+        };
+        this.prepareState(this.props);
     }
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(getRegistryRecordTypesIfNeeded());
+        this.prepareState(nextProps);
+
     }
 
     componentDidMount() {
@@ -51,17 +58,19 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
             this.props.load(this.props.initData);
         }
         this.dispatch(getRegistryRecordTypesIfNeeded());
+    }
 
-        if (this.props.registryData.item && this.props.registryData.item.registerTypeId && this.props.registryData.item.recordId === this.props.parentRecordId){
-            this.setState({parentRegisterTypeId: this.props.registryData.item.registerTypeId});
-        }
-        else if (!this.state.parentRegisterTypeId && this.props.parentRecordId){
-            this.dispatch(getRegistry(this.props.parentRecordId)).then(json => {
-                this.setState({parentRegisterTypeId: json.item.registerTypeId});
+    prepareState(props){
+        if (props.parentRecordId !== null){
+            this.setState({fetched: false});
+            WebApi.getRegistry(props.parentRecordId).then(json => {
+                this.setState({parentRegisterTypeId: json.registerTypeId, fetched: true});
             });
         }
-
     }
+
+
+
     render() {
         const {fields: { nameMain, characteristics, registerTypeId, scopeId}, handleSubmit, onClose} = this.props;
         var itemsForDropDownTree = [];
@@ -73,7 +82,7 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
             registerTypeId.value=this.state.parentRegisterTypeId;
         }
 
-        if (this.props.parentRecordId){
+        if (this.props.parentRecordId || this.state.fetched === false){
             disabled = true;
         }
 
@@ -81,7 +90,7 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
             <div key={this.props.key}>
                 <Modal.Body>
                     <form onSubmit={handleSubmit}>
-                        <Scope versionId={null} label={i18n('registry.scope.class')}  {...scopeId} {...decorateFormField(scopeId)} onBlur={false}/>
+                        <Scope versionId={null} label={i18n('registry.scope.class')}  {...scopeId} {...decorateFormField(scopeId)}/>
                         <DropDownTree
                             label={i18n('registry.add.typ.rejstriku')}
                             items = {itemsForDropDownTree}
@@ -89,10 +98,9 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
                             {...registerTypeId}
                             {...decorateFormField(registerTypeId)}
                             disabled={disabled}
-                            onBlur={false}
                             />
-                        <Input type="text" label={i18n('registry.name')} {...nameMain} {...decorateFormField(nameMain)} onBlur={false}/>
-                        <Input type="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)} onBlur={false} />
+                        <Input type="text" label={i18n('registry.name')} {...nameMain} {...decorateFormField(nameMain)}/>
+                        <Input type="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)} />
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
