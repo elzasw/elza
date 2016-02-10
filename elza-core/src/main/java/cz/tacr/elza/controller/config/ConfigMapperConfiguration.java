@@ -357,15 +357,17 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(BulkActionState.class, BulkActionStateVO.class).field("bulkActionCode", "code").byDefault().register();
         mapperFactory.classMap(ParComplementType.class, ParComplementTypeVO.class).byDefault().register();
         mapperFactory.classMap(ParDynasty.class, ParDynastyVO.class).byDefault().register();
-        mapperFactory.classMap(ParParty.class, ParPartyVO.class).exclude("prefferedName").exclude("partyNames").exclude(
-                "partyCreators")
+        mapperFactory.classMap(ParParty.class, ParPartyVO.class)
+                .exclude("prefferedName")
+                .exclude("partyNames")
+                .exclude("partyCreators")
+                .exclude("relations")
                 .customize(new CustomMapper<ParParty, ParPartyVO>() {
 
                     @Override
                     public void mapBtoA(final ParPartyVO parPartyVO,
                                         final ParParty party,
                                         final MappingContext context) {
-
 
 
                         if (CollectionUtils.isNotEmpty(parPartyVO.getCreators())) {
@@ -519,16 +521,7 @@ public class ConfigMapperConfiguration {
                                                 final MappingContext context) {
                                 unitdateVO.setCalendarTypeId(parUnitdate.getCalendarType().getCalendarTypeId());
                                 unitdateVO.setUnitdateId(parUnitdate.getUnitdateId());
-                                String textDate;
-                                if (parUnitdate.getTextDate() == null) {
-                                    try {
-                                        textDate = UnitDateConvertor.convertToString(parUnitdate);
-                                    } catch (Exception e) {
-                                        textDate = parUnitdate.getTextDate();
-                                    }
-                                } else {
-                                    textDate = parUnitdate.getTextDate();
-                                }
+                                String textDate = UnitDateConvertor.convertParUnitDateToString(parUnitdate);
                                 unitdateVO.setTextDate(textDate);
                             }
 

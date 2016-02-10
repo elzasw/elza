@@ -79,6 +79,9 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
     @OneToMany(mappedBy = "party", fetch = FetchType.LAZY)
     private List<ParCreator> partyCreators;
 
+    @OneToMany(mappedBy = "party", fetch = FetchType.LAZY)
+    private List<ParRelation> relations;
+
     @Column()
     private String history;
 
@@ -186,6 +189,14 @@ public class ParParty extends AbstractVersionableEntity implements cz.tacr.elza.
 
     public void setPartyCreators(final List<ParCreator> partyCreators) {
         this.partyCreators = partyCreators;
+    }
+
+    public List<ParRelation> getRelations() {
+        return relations;
+    }
+
+    public void setRelations(final List<ParRelation> relations) {
+        this.relations = relations;
     }
 
     @Override

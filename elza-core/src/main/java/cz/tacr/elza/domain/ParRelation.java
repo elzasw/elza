@@ -42,9 +42,9 @@ public class ParRelation extends AbstractVersionableEntity implements cz.tacr.el
     private static final Map<String, Integer> classTypeOrderMap = new HashMap<>();
 
     static {
-        classTypeOrderMap.put("B", 1);
-        classTypeOrderMap.put("E", 2);
-        classTypeOrderMap.put("R", 3);
+        classTypeOrderMap.put(ParRelationType.ClassType.VZNIK.getClassType(), 1);
+        classTypeOrderMap.put(ParRelationType.ClassType.VZNIK.getClassType(), 2);
+        classTypeOrderMap.put(ParRelationType.ClassType.VZNIK.getClassType(), 3);
     }
 
 

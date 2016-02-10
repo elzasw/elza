@@ -299,6 +299,10 @@ public class PartyService {
         Assert.notNull(party.getRecord().getScope(), "Není nastavena třída rejstříkového hesla");
         Assert.notNull(party.getRecord().getScope().getScopeId(), "Není nastaveno id třídy rejstříkového hesla");
 
+        if (party.getRelations() != null) {
+            party.getRelations().sort(new ParRelation.ParRelationComparator());
+        }
+
         //vytvoření rejstříkového hesla v groovy
         RegRecord recordFromGroovy = groovyScriptService.getRecordFromGroovy(party);
         List<RegVariantRecord> variantRecords = new ArrayList<>(recordFromGroovy.getVariantRecordList());
@@ -321,6 +325,7 @@ public class PartyService {
             registryService.saveVariantRecord(variantRecord);
         }
     }
+
 
 
     /**
@@ -666,6 +671,9 @@ public class PartyService {
             unitdateRepository.delete(unitdate);
         }
 
+        entityManager.flush(); //aktualizace seznamu vztahů v osobě
+        synchRecord(party);
+
         return result;
     }
 
@@ -708,6 +716,7 @@ public class PartyService {
 
     public void deleteRelation(final ParRelation relation) {
 
+        ParParty party = relation.getParty();
 
         ParUnitdate from = relation.getFrom();
         ParUnitdate to = relation.getTo();
@@ -720,6 +729,9 @@ public class PartyService {
         relationRepository.delete(relation);
 
         deleteUnitDates(from, to);
+        entityManager.flush();      //aktualizace seznamu vztahů
+
+        synchRecord(party);
     }
 
 

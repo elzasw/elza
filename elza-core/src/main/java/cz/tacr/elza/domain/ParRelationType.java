@@ -8,6 +8,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
@@ -19,6 +21,22 @@ import javax.persistence.Id;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ParRelationType implements cz.tacr.elza.api.ParRelationType {
+
+    public enum ClassType{
+        VZNIK("B"),
+        ZANIK("E"),
+        VZTAH("R");
+
+        private String classType;
+
+        ClassType(final String classType) {
+            this.classType = classType;
+        }
+
+        public String getClassType() {
+            return classType;
+        }
+    }
 
     @Id
     @GeneratedValue
