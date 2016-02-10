@@ -1,12 +1,12 @@
 package cz.tacr.elza.repository;
 
-import java.util.List;
-
+import cz.tacr.elza.domain.ArrFaRegisterScope;
+import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.RegScope;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ArrFaRegisterScope;
-import cz.tacr.elza.domain.RegScope;
+import java.util.List;
 
 
 /**
@@ -25,4 +25,12 @@ public interface FaRegisterScopeRepository extends JpaRepository<ArrFaRegisterSc
      * @return seznam napojení
      */
     List<ArrFaRegisterScope> findByScope(RegScope scope);
+
+    /**
+     * Najde spojení na FA podle třídy.
+     *
+     * @param findingAid třída
+     * @return seznam napojení
+     */
+    List<ArrFaRegisterScope> findByFindingAid(ArrFindingAid findingAid);
 }

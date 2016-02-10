@@ -419,21 +419,25 @@ public class ArrangementController {
         return factoryVo.createArrFindingAidVO(newFindingAid, true);
     }
 
-    /*
-     * Vytvoří novou archivní pomůcku se zadaným názvem. Jako datum založení vyplní aktuální datum a čas.
+    /**
+     * Úprava archivní pomůcky
      *
-     * @param name              název archivní pomůcky
-     * @param arrangementTypeId id typu výstupu
-     * @param ruleSetId         id pravidel podle kterých se vytváří popis
-     * @return nová archivní pomůcka
+     * @param arrFindingAidVO Archivní pomůcka k úpravě
+     * @return
      */
-    /*@Transactional
-    @RequestMapping(value = "/updateFindingAid", method = RequestMethod.POST,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    @RequestMapping(value = "/updateFindingAid", method = RequestMethod.POST)
     public ArrFindingAidVO createFindingAid(@RequestBody ArrFindingAidVO arrFindingAidVO) {
         Assert.notNull(arrFindingAidVO);
-
-    }*/
+        return factoryVo.createArrFindingAidVO(
+                arrangementService.updateFindingAid(
+                        factoryDO.createArrFindingAid(arrFindingAidVO),
+                        factoryDO.createScopeList(arrFindingAidVO.getRegScopes()
+                        )
+                ),
+                false
+        );
+    }
 
 
     /**

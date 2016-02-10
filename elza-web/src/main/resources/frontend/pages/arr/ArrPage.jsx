@@ -190,10 +190,9 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                 }
             })
             .then(json => {
-                console.log(json);
                 var data = {
                     name: activeInfo.activeFa.name,
-                    regScope: json.scopes
+                    regScopes: json.scopes
                 };
                 that.dispatch(modalDialogShow(that, i18n('arr.fa.title.update'),
                     <FaForm update initData={data} scopeList={json.scopeList}
@@ -201,8 +200,11 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             });
     }
 
-    handleCallEditFaVersion() {
-
+    handleCallEditFaVersion(data) {
+        data.id = this.getActiveInfo().activeFa.faId;
+        WebApi.updateFindingAid(data).then((json) => {
+            this.dispatch(modalDialogHide());
+        })
     }
 
     /**

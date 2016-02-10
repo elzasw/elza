@@ -101,7 +101,7 @@ var FaForm = class FaForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {name, ruleSetId, rulArrTypeId, regScope}, handleSubmit, onClose} = this.props;
+        const {fields: {name, ruleSetId, rulArrTypeId, regScopes}, handleSubmit, onClose} = this.props;
         var ruleSets = this.props.refTables.ruleSet.items;
         var currRuleSetId = this.props.values.ruleSetId;
         var currRuleSet = [];
@@ -137,23 +137,23 @@ var FaForm = class FaForm extends AbstractReactComponent {
                         </div>
                     }
                     <form onSubmit={handleSubmit}>
-                        {this.props.create || this.props.update &&
+                        {(this.props.create || this.props.update) &&
                         <Input type="text" label={i18n('arr.fa.name')} {...name} {...decorateFormField(name)} />}
-                        {this.props.create || this.props.approve && <Input type="select"
-                                                                           label={i18n('arr.fa.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
+                        {(this.props.create || this.props.approve) && <Input type="select"
+                                                                             label={i18n('arr.fa.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
                             <option key='-ruleSetId'/>
                             {ruleSets.map(i=> {
                                 return <option value={i.id}>{i.name}</option>
                             })}
                         </Input>}
-                        {this.props.create || this.props.approve && <Input type="select" disabled={ruleSetId.invalid}
-                                                                           label={i18n('arr.fa.arrType')} {...rulArrTypeId} {...decorateFormField(rulArrTypeId)}>
+                        {(this.props.create || this.props.approve) && <Input type="select" disabled={ruleSetId.invalid}
+                                                                             label={i18n('arr.fa.arrType')} {...rulArrTypeId} {...decorateFormField(rulArrTypeId)}>
                             <option key='-rulArrTypeId'/>
                             {ruleSetOptions}
                         </Input>}
                         {this.props.update && <Autocomplete
                             tags
-                            label={i18n('')}// / Třída rejstříku
+                            label={i18n('arr.fa.regScope')}// / Třída rejstříku
                             items={this.props.scopeList}
                             getItemId={(item) => item ? item.id : null}
                             getItemName={(item) => item ? item.name : ''}
@@ -162,21 +162,21 @@ var FaForm = class FaForm extends AbstractReactComponent {
                                     if (value.name.trim() == '') {
                                         return;
                                     }
-                                    let index = this.findIndexInFields(this.props.fields.regScope, value.name, 'name');
+                                    let index = this.findIndexInFields(this.props.fields.regScopes, value.name, 'name');
                                     if (index == null) {
-                                        this.props.fields.regScope.addField(value);
+                                        this.props.fields.regScopes.addField(value);
                                     } else {
-                                        this.props.fields.regScope.removeField(index);
+                                        this.props.fields.regScopes.removeField(index);
                                     }
                                 }
                             }
                             value={this.state.autocompleteValue}
                         />}
                         {this.props.update && <div>
-                            {regScope.map((scope, scopeIndex) => (
+                            {regScopes.map((scope, scopeIndex) => (
                                 <div key={scopeIndex}>
                                     {scope.name.value} <Button className="btn btn-default"
-                                                               onClick={() => {regScope.removeField(scopeIndex)}}>
+                                                               onClick={() => {regScopes.removeField(scopeIndex)}}>
                                     <Icon glyph="fa-times"/>
                                 </Button>
                                 </div>))}
@@ -215,7 +215,7 @@ FaForm.propTypes = {
 
 module.exports = reduxForm({
         form: 'faForm',
-        fields: ['name', 'ruleSetId', 'rulArrTypeId', 'regScope[].id', 'regScope[].name'],
+        fields: ['name', 'ruleSetId', 'rulArrTypeId', 'regScopes[].id', 'regScopes[].name'],
         validate
     }, state => ({
         initialValues: state.form.faForm.initialValues,

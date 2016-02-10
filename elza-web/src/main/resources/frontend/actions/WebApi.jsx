@@ -558,6 +558,10 @@ class WebApi{
             });
     }
 
+    updateFindingAid(data) {
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/updateFindingAid', null, data)
+    }
+
     approveVersion(versionId, ruleSetId, arrangementTypeId) {
         return AjaxUtils.ajaxPut('/api/arrangementManagerV2/approveVersion', {arrangementTypeId: arrangementTypeId, ruleSetId: ruleSetId, versionId: versionId})
             .then(json=>{
