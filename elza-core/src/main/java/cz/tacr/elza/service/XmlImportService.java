@@ -895,7 +895,7 @@ public class XmlImportService {
         throws PartyImportException, InvalidDataException {
         ParRelation parRelation = createRelation(parParty, relation, stopOnError);
         relationRepository.save(parRelation);
-
+        //TODO kubovy source
         List<RoleType> roleTypes = relation.getRoleTypes();
         if (roleTypes != null) {
             for (RoleType roleType : roleTypes) {
@@ -932,7 +932,8 @@ public class XmlImportService {
         }
         parRelationEntity.setRoleType(parRelationRoleType);
 
-        parRelationEntity.setSource(roleType.getSource());
+        //TODO kubovy
+//        parRelationEntity.setSource(roleType.getSource());
 
         return parRelationEntity;
     }

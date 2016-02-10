@@ -60,7 +60,6 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
         data.entities[data.entities.length]={               // pridání nové prázdné entity na konec seznamu entit
             record: null,
             roleTypeId: null,
-            sources: '',
         }
         this.setState({
             data : data                                     // uložení výsledku do state
@@ -110,6 +109,7 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
             }
             case "note" : data.note = event.target.value; break;                        // změna poznámky
             case "dateNote" : data.dateNote = event.target.value; break;                // změna poznámky k času
+            case "source" : data.source = event.target.value; break;
             case "fromText" : data.from.textDate = event.target.value; break;           // změna data od
             case "toText" : data.to.textDate = event.target.value; break;               // změna data do
             case "fromCalendar" : data.from.calendarTypeId = event.target.value; break; // změna typu kalendáře od
@@ -138,7 +138,6 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
                         data.entities[entity.index].record = null;
                         break;
                     }
-                    case "sources" : data.entities[entity.index].sources = event.target.value; break;
                 }
             }
         }
@@ -291,7 +290,7 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
         var typeUnselected = this.state.data.relationTypeId == undefined;
 
         return (
-            <div>
+            <div className="relations-edit">
                 <Modal.Body>
                     <form>
                         <ul className="errors">
@@ -326,45 +325,55 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
                                 </div>
                             </div>
                         </div>
-                        <Input type="textarea" label={i18n('party.relation.dateNote')}  name="dateNote" value={this.state.data.dateNote} onChange={this.updateValue} />
+                        <Input type="text" label={i18n('party.relation.dateNote')}  name="dateNote" value={this.state.data.dateNote} onChange={this.updateValue} />
+                        <Input type="text" label={i18n('party.relation.note')} name="note" value={this.state.data.note} onChange={this.updateValue} />
+                        <Input type="textarea" label={i18n('party.relation.sources')} name="source" value={this.state.data.source} onChange={this.updateValue} />
                         <hr/>
-                        <Input type="textarea" label={i18n('party.relation.note')} name="note" value={this.state.data.note} onChange={this.updateValue} />
-                        <hr/>
-                        <h5>{i18n('party.relation.entities')}</h5>
-                        <div>
+                        <label>{i18n('party.relation.entities')}</label>
+
+                        <div className="block entity relations">
+                        <table className="relation-entities">
+                            <thead>
+                            <tr>
+                            <th>{i18n('party.relation.roleType')}</th>
+                            <th>{i18n('party.relation.record')}</th>
+                            <th></th>
+                            </tr>
+                            </thead>
+                                <tbody>
                             {this.state.data.entities.map((j,index)=> {
                                 var roleTypeUnselected = j.roleTypeId == undefined || j.roleTypeId == 0;
-
-                                return <div className="block entity relations">
-
-                                    <div className="flex">
-                                        <div className="flex-grow-1">
-                                        <Input type="select" disabled={typeUnselected} label={i18n('party.relation.roleType')} value={j.roleTypeId} onChange={this.updateEntityValue.bind(this, {index:index, variable: 'role'})}>
+                                return <tr key={index}>
+                                            <td className="type-col">
+                                        <Input type="select" disabled={typeUnselected} value={j.roleTypeId} onChange={this.updateEntityValue.bind(this, {index:index, variable: 'role'})}>
                                             <option value={0} key={0}></option>
                                             {roleTypes ? roleTypes.map(i=> {return <option value={i.roleTypeId} key={i.roleTypeId}>{i.name}</option>}) : null}
                                         </Input>
-                                        </div>
-                                    <Autocomplete
-                                            disabled={roleTypeUnselected}
-                                            customFilter
-                                            label={i18n('party.relation.record')}
-                                            className='autocomplete-record flex-grow-1'
-                                            value={j.record}
-                                            items={this.state.recordList}
-                                            getItemId={(item) => item ? item.id : null}
-                                            getItemName={(item) => item ? item.record : ''}
-                                            onSearchChange={text => {this.handleSearchChange(j.roleTypeId, text) }}
-                                            onChange={(id,valObj) =>{this.updateEntityValue({index:index, variable: 'record'}, valObj)}}
-                                            renderItem={this.renderRecord}
-                                             />
+                                            </td>
+                                            <td>
+                                             <Autocomplete
+                                                disabled={roleTypeUnselected}
+                                                customFilter
+                                                className='autocomplete-record flex-grow-1'
+                                                value={j.record}
+                                                items={this.state.recordList}
+                                                getItemId={(item) => item ? item.id : null}
+                                                getItemName={(item) => item ? item.record : ''}
+                                                onSearchChange={text => {this.handleSearchChange(j.roleTypeId, text) }}
+                                                onChange={(id,valObj) =>{this.updateEntityValue({index:index, variable: 'record'}, valObj)}}
+                                                renderItem={this.renderRecord}
+                                                 />
+                                            </td>
+                                            <td className="icon-col">
+                                                <Button onClick={this.removeEntity.bind(this, index)}><Glyphicon glyph="trash" /></Button>
+                                            </td>
+                                         </tr>
+                            })}
+                                </tbody>
 
-                                    </div>
-                                <Input type="textarea" label={i18n('party.relation.sources')} value={j.sources} onChange={this.updateEntityValue.bind(this, {index:index, variable: 'sources'})}/>
-                                    <Button onClick={this.removeEntity.bind(this, index)}><Glyphicon glyph="trash" /></Button>
-                            </div>})}
-                        </div>   
-                        <hr/>
+                        </table>
                         <Button onClick={this.addEntity}><Glyphicon glyph="plus" /></Button>
+                            </div>
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

@@ -650,6 +650,7 @@ public class PartyService {
             }
 
             relation.setTo(saveUnitDate(relationSource.getTo()));
+            relation.setSource(relationSource.getSource());
         }
 
 
@@ -765,8 +766,6 @@ public class PartyService {
                 Assert.notNull(saveEntity,
                         "Nebyla nalezena entita vztahu s id " + newRelationEntity.getRelationEntityId());
                 toRemoveEntities.remove(saveEntity);
-
-                saveEntity.setSource(newRelationEntity.getSource());
             }
 
 

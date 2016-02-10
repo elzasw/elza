@@ -57,7 +57,8 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
         relation.dateNote = data.dateNote;                                          // poznámka k dataci
         relation.note = data.note;                                                  // poznámka ke vztahu
         relation.from = data.from;                                                  // datace vztahu od
-        relation.to = data.to;                                                      // datace vztahu do
+        relation.to = data.to;
+        relation.source = data.source;
         relation.relationEntities = entities;                                       // seznamm entit ve vztahu
         relation.complementType.relationTypeId = data.relationTypeId;               // typ vztahu
         if(
@@ -116,6 +117,7 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
             relationTypeId: relation.complementType.relationTypeId,                 // typ vztahu
             note : relation.note,                                                   // poznnámka ke vttahu
             dateNote: relation.dateNote,                                            // poznámka k dataci vztahu
+            source: relation.source,
             from: {                                                                 // datace od
                 textDate: (relation.from != null ? relation.from.textDate : ""),    
                 calendarTypeId: (relation.from != null ? relation.from.calendarTypeId : this.props.partyRegion.gregorianCalendarId )

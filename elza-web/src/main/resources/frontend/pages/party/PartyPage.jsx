@@ -94,6 +94,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
             from: data.from,                                                        // datace od
             to: data.to,                                                            // datace do
             relationEntities: entities,                                             // entity ve vztahu
+            source: data.source,
             complementType:{relationTypeId:data.relationTypeId}                     // typ vztahu
         };   
         if(relation.from.textDate == "" || relation.from.textDate == null || relation.from.textDate == undefined){  
@@ -116,6 +117,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
             partyId: this.props.partyRegion.selectedPartyID,
             note: "",
             dateNote:"",
+            source: "",
             classType: classType,
             from: {
                 textDate: "",    

@@ -76,6 +76,9 @@ public class ParRelation extends AbstractVersionableEntity implements cz.tacr.el
     @Column(length = StringLength.LENGTH_1000)
     private String note;
 
+    @Column
+    private String source;
+
 
     @Override
     public Integer getRelationId() {
@@ -145,6 +148,16 @@ public class ParRelation extends AbstractVersionableEntity implements cz.tacr.el
     @Override
     public void setNote(final String note) {
         this.note = note;
+    }
+
+    @Override
+    public String getSource() {
+        return source;
+    }
+
+    @Override
+    public void setSource(final String source) {
+        this.source = source;
     }
 
     @Override
