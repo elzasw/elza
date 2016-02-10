@@ -2,6 +2,8 @@
  * Formulář přidání nebo uzavření AP.
  */
 
+require ('./FaForm.less');
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/ActionTypes';
@@ -172,11 +174,10 @@ var FaForm = class FaForm extends AbstractReactComponent {
                             }
                             value={this.state.autocompleteValue}
                         />}
-                        {this.props.update && <div>
+                        {this.props.update && <div className="selected-data-container">
                             {regScopes.map((scope, scopeIndex) => (
-                                <div key={scopeIndex}>
-                                    {scope.name.value} <Button className="btn btn-default"
-                                                               onClick={() => {regScopes.removeField(scopeIndex)}}>
+                                <div className="selected-data" key={scopeIndex}>
+                                    {scope.name.value}<Button onClick={() => {regScopes.removeField(scopeIndex)}}>
                                     <Icon glyph="fa-times"/>
                                 </Button>
                                 </div>))}
