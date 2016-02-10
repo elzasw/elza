@@ -48,6 +48,7 @@ exports.SubNodeRegister = require('./arr/SubNodeRegister');
 exports.AddNodeDropdown = require('./arr/AddNodeDropdown');
 exports.FaForm = require('./arr/FaForm');
 exports.AddPacketForm = require('./arr/AddPacketForm');
+exports.ArrPanel = require('./arr/ArrPanel');
 exports.BulkActionsDialog = require('./arr/BulkActionsDialog');
 exports.BulkActionsTable = require('./arr/BulkActionsTable');
 exports.VersionValidationDialog = require('./arr/VersionValidationDialog');

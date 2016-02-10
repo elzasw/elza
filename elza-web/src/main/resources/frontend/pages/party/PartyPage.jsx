@@ -48,7 +48,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps){
         this.dispatch(refPartyTypesFetchIfNeeded());         // načtení osob pro autory osoby
-        this.dispatch(findPartyFetchIfNeeded(nextProps.partyRegion.filterText));
+        this.dispatch(findPartyFetchIfNeeded(nextProps.partyRegion.filterText, nextProps.partyRegion.panel.versionId));
     }
 
 
@@ -69,7 +69,8 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
      * @param partyTypeId - identifikátor typu osoby (osoba, rod, korporace, ..)
      */ 
     handleAddParty(partyTypeId) {
-        this.dispatch(partyAdd(partyTypeId, null, this.addParty));
+        const {partyRegion} = this.props;
+        this.dispatch(partyAdd(partyTypeId, partyRegion.panel.versionId, this.addParty));
     }
 
     /**

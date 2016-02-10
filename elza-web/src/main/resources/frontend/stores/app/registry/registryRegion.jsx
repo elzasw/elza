@@ -5,6 +5,8 @@
  **/
 import * as types from 'actions/constants/ActionTypes';
 import registryRegionData from './registryRegionData';
+import {panel} from './../arr/panel.jsx'
+import {consolidateState} from 'components/Utils'
 
 const initialState = {
     dirty: false,
@@ -15,6 +17,7 @@ const initialState = {
     isReloadingRegistry: false,
     filterText: null,
     registryRegionData: undefined,
+    panel: panel(),
     registryParentId: null,
     registryTypesId: null,
     parents: [],
@@ -139,6 +142,14 @@ export default function registryRegion(state = initialState, action = {}) {
             return Object.assign({}, state, {
                 dirty: true
             })
+
+        case types.REGISTRY_SELECT:
+        case types.REGISTRY_ARR_RESET:
+            var result = {...state};
+            result.panel = panel(result.panel, action);
+            result.dirty = true;
+            return consolidateState(state, result);
+
         default:
             return state
     }

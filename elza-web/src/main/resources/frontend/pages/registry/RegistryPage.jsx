@@ -12,39 +12,53 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Loading, Toastr} from 'components';
-import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, Search, RegistryPanel, DropDownTree, AddRegistryForm, ImportRegistryForm} from 'components';
+import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, ArrPanel,
+        Search, RegistryPanel, DropDownTree, AddRegistryForm, ImportRegistryForm} from 'components';
 import {WebApi} from 'actions'
 import {MenuItem, DropdownButton, ButtonGroup, Button} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {Nav, Glyphicon, NavItem} from 'react-bootstrap';
 import {registryRegionData, registrySearchData, registryClearSearch, registryChangeParent, registryRemoveRegistry, registryStartMove, registryCancelMove, registryUnsetParents, registryRecordUpdate, registryRecordMove} from 'actions/registry/registryRegionData'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {fetchRegistryIfNeeded, registrySetTypesId, fetchRegistry, registryAdd, registryClickNavigation} from 'actions/registry/registryRegionList'
+import {fetchRegistryIfNeeded, registrySetTypesId, fetchRegistry, registryAdd, registryClickNavigation, registryArrReset} from 'actions/registry/registryRegionList'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
 
 var RegistryPage = class RegistryPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.bindMethods('buildRibbon', 'handleSelect', 'handleSearch', 'handleSearchClear', 'handleDoubleClick', 'handleClickNavigation', 'handleAddRegistry', 'handleCallAddRegistry', 'handleRemoveRegistryDialog', 'handleRemoveRegistry', 'handleStartMoveRegistry', 'handleSaveMoveRegistry', 'handleCancelMoveRegistry', 'handleCloseTypesRegistry', 'handleUnsetParents');
+        this.bindMethods('buildRibbon', 'handleSelect', 'handleSearch', 'handleSearchClear', 'handleDoubleClick',
+                'handleClickNavigation', 'handleAddRegistry', 'handleCallAddRegistry',
+                'handleRemoveRegistryDialog', 'handleRemoveRegistry', 'handleStartMoveRegistry',
+                'handleSaveMoveRegistry', 'handleCancelMoveRegistry', 'handleCloseTypesRegistry',
+                'handleUnsetParents', 'handleArrReset');
 
     }
 
     componentWillReceiveProps(nextProps) {
-        this.dispatch(fetchRegistryIfNeeded(nextProps.registryRegion.filterText, nextProps.registryRegion.registryParentId, nextProps.registryRegion.registryTypesId));
+        this.dispatch(fetchRegistryIfNeeded(nextProps.registryRegion.filterText,
+                nextProps.registryRegion.registryParentId,
+                nextProps.registryRegion.registryTypesId,
+                nextProps.registryRegion.panel.versionId));
         this.dispatch(refRecordTypesFetchIfNeeded());
     }
 
     componentDidMount(){
-        this.dispatch(fetchRegistryIfNeeded(this.props.registryRegion.filterText, this.props.registryRegion.registryParentId, this.props.registryRegion.registryTypesId));
+        this.dispatch(fetchRegistryIfNeeded(this.props.registryRegion.filterText,
+                this.props.registryRegion.registryParentId,
+                this.props.registryRegion.registryTypesId,
+                this.props.registryRegion.panel.versionId));
         this.dispatch(refRecordTypesFetchIfNeeded());
     }
 
     handleAddRegistry(parentId) {
-        this.dispatch(registryAdd(parentId, null, this.handleCallAddRegistry));
+        this.dispatch(registryAdd(parentId, this.props.registryRegion.panel.versionId, this.handleCallAddRegistry));
     }
 
     handleCallAddRegistry(data) {
-        this.dispatch(fetchRegistry(this.props.registryRegion.filterText, this.props.registryRegion.registryParentId, this.props.registryRegion.registryTypesId));
+        this.dispatch(fetchRegistry(this.props.registryRegion.filterText,
+                this.props.registryRegion.registryParentId,
+                this.props.registryRegion.registryTypesId,
+                this.props.registryRegion.panel.versionId));
         data['selectedId'] = data.recordId;
         this.dispatch(registryRegionData(data));
     }
@@ -201,8 +215,13 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             this.dispatch(this.handleClickNavigation(parent, event));
         }
     }
+
+    handleArrReset() {
+        this.dispatch(registryArrReset());
+    }
+
     render() {
-        const {splitter} = this.props;
+        const {splitter, registryRegion} = this.props;
 
         var listOfRecord = <div className='search-norecord'>{i18n('registry.list.norecord')}</div>;
         if (this.props.registryRegion.records.length) {
@@ -300,9 +319,16 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             onChange={this.hlandleRegistryTypesSelect.bind(this)}
             />
 
+        var arrPanel = null;
+
+        if (registryRegion.panel.versionId != null) {
+            arrPanel = <ArrPanel onReset={this.handleArrReset} name={registryRegion.panel.name} />
+        }
+
         var leftPanel = (
             <div className="registry-list">
                 <div>
+                    {arrPanel}
                     {dropDownForSearch}
                     <Search
                         onSearch={this.handleSearch}
