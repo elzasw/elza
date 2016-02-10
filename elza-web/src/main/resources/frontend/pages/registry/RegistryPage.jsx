@@ -40,7 +40,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     handleAddRegistry(parentId) {
-        this.dispatch(registryAdd(parentId, this.handleCallAddRegistry));
+        this.dispatch(registryAdd(parentId, null, this.handleCallAddRegistry));
     }
 
     handleCallAddRegistry(data) {

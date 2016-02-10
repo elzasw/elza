@@ -69,7 +69,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
      * @param partyTypeId - identifikátor typu osoby (osoba, rod, korporace, ..)
      */ 
     handleAddParty(partyTypeId) {
-        this.dispatch(partyAdd(partyTypeId, this.addParty));
+        this.dispatch(partyAdd(partyTypeId, null, this.addParty));
     }
 
     /**

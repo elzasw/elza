@@ -29,7 +29,8 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
      * @param index {Integer} index hodnoty seznamu
      */
     handleCreateRecord(index) {
-        this.dispatch(registryAdd(null, this.handleCreatedRecord.bind(this, index)));
+        const {versionId} = this.props;
+        this.dispatch(registryAdd(null, versionId, this.handleCreatedRecord.bind(this, index)));
     }
 
     /**
@@ -76,7 +77,7 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
     }
 
     renderLink(link, index) {
-        const {closed} = this.props;
+        const {closed, versionId} = this.props;
         return (
                 <div className="link" key={"link-" + index}>
                     <NodeRegister onFocus={this.handleFocus.bind(this, index)}
@@ -85,7 +86,8 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
                                   onChange={this.handleChange.bind(this, index)}
                                   closed={closed}
                                   onCreateRecord={this.handleCreateRecord.bind(this, index)}
-                                  item={link} />
+                                  item={link}
+                                  versionId={versionId} />
                     {!closed && <NoFocusButton key="delete" onClick={this.handleRemove.bind(this, index)} ><Icon glyph="fa-times" /></NoFocusButton>}
                 </div>
         );

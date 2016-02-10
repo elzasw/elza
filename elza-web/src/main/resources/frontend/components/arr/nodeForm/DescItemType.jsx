@@ -317,7 +317,7 @@ return true;
      * @return {Object} view
      */
     renderDescItem(descItemType, descItem, descItemIndex, actions, locked) {
-        const {descItemTypeInfo, rulDataType, calendarTypes, packets, packetTypes} = this.props;
+        const {descItemTypeInfo, rulDataType, calendarTypes, packets, packetTypes, versionId} = this.props;
 
         var cls = 'desc-item-type-desc-item-container';
         if (actions.length > 0) {
@@ -359,6 +359,7 @@ return true;
                     {...descItemProps}
                     onDetail={this.handleDetailParty.bind(this, descItemIndex)}
                     onCreateParty={this.handleCreateParty.bind(this, descItemIndex)}
+                    versionId={versionId}
                     />)
                 break;
             case 'RECORD_REF':
@@ -366,6 +367,7 @@ return true;
                     {...descItemProps}
                     onDetail={this.handleDetailRecord.bind(this, descItemIndex)}
                     onCreateRecord={this.handleCreateRecord.bind(this, descItemIndex)}
+                    versionId={versionId}
                     />)
                 break;
             case 'PACKET_REF':
@@ -590,7 +592,8 @@ DescItemType.propTypes = {
     locked: React.PropTypes.bool.isRequired,
     closed: React.PropTypes.bool.isRequired,
     copy: React.PropTypes.bool.isRequired,
-    conformityInfo: React.PropTypes.object.isRequired
+    conformityInfo: React.PropTypes.object.isRequired,
+    versionId: React.PropTypes.number.isRequired
 }
 
 module.exports = connect()(DescItemType);

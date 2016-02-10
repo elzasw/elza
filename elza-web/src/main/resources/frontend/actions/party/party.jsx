@@ -266,7 +266,7 @@ export function deleteRelation(relationId, partyId) {
 }
 
 
-export function partyAdd(partyTypeId, callback) {
+export function partyAdd(partyTypeId, versionId, callback) {
     return (dispatch, getState) => {
         var state = getState();
         var partyTypeCode = getPartyTypeById(partyTypeId, state.refTables.partyTypes.items).code;
@@ -293,7 +293,7 @@ export function partyAdd(partyTypeId, callback) {
             default: label = i18n('party.addParty');
         }
 
-        dispatch(modalDialogShow(this, label, <AddPartyForm initData={data} onSave={partyAddSubmit.bind(null, callback, dispatch)} />));
+        dispatch(modalDialogShow(this, label, <AddPartyForm initData={data} versionId={versionId} onSave={partyAddSubmit.bind(null, callback, dispatch)} />));
     }
 }
 
@@ -315,7 +315,7 @@ function partyAddSubmit(callback, dispatch, data) {
         scope: data.scopeId,                                          // cosi, co tu musí být
         record: {                                           // záznam patřící k ossobě
             registerTypeId: data.recordTypeId,              // identifikátor typu záznamu
-            scopeId:1                                       // identifikátor tridy rejstriku
+            scopeId: data.scopeId                           // identifikátor tridy rejstriku
         },
         from: data.from,                                    // datace od
         to: data.to,                                        // datace do

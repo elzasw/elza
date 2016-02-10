@@ -32,7 +32,7 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
 
         text = text == "" ? null : text;
 
-        WebApi.findParty(text)
+        WebApi.findParty(text, this.props.versionId)
                 .then(json => {
                     this.setState({
                         partyList: json.map(party => {

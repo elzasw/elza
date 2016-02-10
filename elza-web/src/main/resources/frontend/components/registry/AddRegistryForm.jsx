@@ -52,7 +52,7 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
         }
         this.dispatch(getRegistryRecordTypesIfNeeded());
 
-        if (this.props.registryData.item.registerTypeId && this.props.registryData.item.recordId === this.props.parentRecordId){
+        if (this.props.registryData.item && this.props.registryData.item.registerTypeId && this.props.registryData.item.recordId === this.props.parentRecordId){
             this.setState({parentRegisterTypeId: this.props.registryData.item.registerTypeId});
         }
         else if (!this.state.parentRegisterTypeId && this.props.parentRecordId){

@@ -29,7 +29,7 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
 
         text = text == "" ? null : text;
 
-        WebApi.findRegistry(text)
+        WebApi.findRegistry(text, null, null, this.props.versionId)
                 .then(json => {
                     this.setState({
                         recordList: json.recordList.map(record => {

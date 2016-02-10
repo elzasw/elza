@@ -65,7 +65,7 @@ class WebApi{
             });
     }
    
-    findParty(search = null){
+    findParty(search = null, versionId = null){
         search = search ? encodeURI(search) : search;
 
         return AjaxUtils.ajaxGet('/api/partyManagerV2/findParty', {
@@ -73,7 +73,7 @@ class WebApi{
             from: 0,
             count : 200,
             partyTypeId: null,
-            originator: false
+            versionId: versionId
         }).then(json=>{
             return json.recordList;
         });
@@ -236,13 +236,14 @@ class WebApi{
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/getFindingAids');
     }
 
-    findRegistry(search = null, registryParent = null, registerTypeId = null){
+    findRegistry(search = null, registryParent = null, registerTypeId = null, versionId = null){
         return AjaxUtils.ajaxGet('/api/registryManagerV2/findRecord', {
             search: search,
             from: 0,
             count: 200,
             parentRecordId: registryParent,
-            registerTypeId: registerTypeId
+            registerTypeId: registerTypeId,
+            versionId: versionId
         }).then(json=>{
             return json;
         });

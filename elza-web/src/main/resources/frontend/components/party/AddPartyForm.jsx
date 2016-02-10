@@ -283,7 +283,7 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
                         <div className="line">
                             <DropDownTree label={i18n('party.recordType')} addRegistryRecord={true} items = {polozky}  name="recordTypeId" onChange={this.dropDownTreeUpdateValue}
                                           preselect/>
-                            <Scope versionId={null} name="scopeId" label={i18n('party.recordScope')} onChange={this.updateValue} value={this.state.data.scopeId}/>
+                            <Scope versionId={this.props.versionId} name="scopeId" label={i18n('party.recordScope')} onChange={this.updateValue} value={this.state.data.scopeId}/>
                         </div>
 
                         <Input type="select" label={i18n('party.nameFormType')} name="nameFormTypeId" onChange={this.updateValue} value={this.state.data.nameFormTypeId} >

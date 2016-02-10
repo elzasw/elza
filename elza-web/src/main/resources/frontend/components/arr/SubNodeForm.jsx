@@ -272,12 +272,13 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param descItemIndex {Integer} index honodty atributu v seznamu
      */
     handleCreateRecord(descItemGroupIndex, descItemTypeIndex, descItemIndex) {
+        const {versionId} = this.props;
         var valueLocation = {
             descItemGroupIndex,
             descItemTypeIndex,
             descItemIndex
         }
-        this.dispatch(registryAdd(null, this.handleCreatedRecord.bind(this, valueLocation)));
+        this.dispatch(registryAdd(null, versionId, this.handleCreatedRecord.bind(this, valueLocation)));
     }
 
     /**
@@ -317,12 +318,13 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param partyTypeId {Integer} identifikátor typu osoby
      */
     handleCreateParty(descItemGroupIndex, descItemTypeIndex, descItemIndex, partyTypeId) {
+        const {versionId} = this.props;
         var valueLocation = {
             descItemGroupIndex,
             descItemTypeIndex,
             descItemIndex
         }
-        this.dispatch(partyAdd(partyTypeId, this.handleCreatedParty.bind(this, valueLocation)));
+        this.dispatch(partyAdd(partyTypeId, versionId, this.handleCreatedParty.bind(this, valueLocation)));
     }
 
     /**
@@ -467,7 +469,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      */
     renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex) {
         const {descItemCopyFromPrevEnabled, rulDataTypes, calendarTypes, closed,
-                nodeSettings, nodeId, packetTypes, packets, conformityInfo} = this.props;
+                nodeSettings, nodeId, packetTypes, packets, conformityInfo, versionId} = this.props;
 
         var rulDataType = rulDataTypes.items[indexById(rulDataTypes.items, descItemType.dataTypeId)];
         var descItemTypeInfo = this.getDescItemTypeInfo(descItemType);
@@ -533,6 +535,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 copy={copy}
                 conformityInfo={conformityInfo}
                 descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
+                versionId={versionId}
             />
         )
     }
