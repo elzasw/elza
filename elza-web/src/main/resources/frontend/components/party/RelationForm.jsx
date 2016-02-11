@@ -309,7 +309,7 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
                                     <div className="line">
                                         <Input type="select" name="fromCalendar" value={this.state.data.from.calendarTypeId} onChange={this.updateValue} >
                                             <option value={0} key={0}></option>
-                                            {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
+                                            {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>})}
                                         </Input>
                                         <Input type="text"  name="fromText" value={this.state.data.from.textDate} onChange={this.updateValue} />
                                     </div>
@@ -318,7 +318,7 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
                                     <label>{i18n('party.relation.to')}</label>
                                     <div className="line">
                                         <Input type="select" name="toCalendar" value={this.state.data.to.calendarTypeId} onChange={this.updateValue} >
-                                            {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
+                                            {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>})}
                                         </Input>
                                         <Input type="text" name="toText" value={this.state.data.to.textDate} onChange={this.updateValue} />
                                     </div>
