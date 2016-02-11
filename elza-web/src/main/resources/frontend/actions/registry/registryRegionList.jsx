@@ -139,12 +139,18 @@ function registryAddSubmit(parentId, callback, dispatch, data) {
 }
 
 export function registrySelect(recordId, fa = null) {
+    return (dispatch) => {
+        dispatch(registryClickNavigation(recordId));
+        dispatch(registrySelectDo(recordId, fa));
+    }
+}
+
+export function registrySelectDo(recordId, fa = null){
     return {
         recordId: recordId,
         fa: fa,
         type: types.REGISTRY_SELECT
     }
-
 }
 
 export function registryArrReset() {
