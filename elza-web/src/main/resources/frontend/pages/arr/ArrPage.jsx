@@ -18,11 +18,12 @@ import {AppStore} from 'stores'
 import {WebApi} from 'actions'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {approveFa, showRegisterJp} from 'actions/arr/fa'
+import {scopesDirty} from 'actions/refTables/scopesData'
 import {versionValidate} from 'actions/arr/versionValidation'
 import {packetsFetchIfNeeded} from 'actions/arr/packets'
 import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes'
-var ShortcutsManager = require('react-shortcuts')
-var Shortcuts = require('react-shortcuts/component')
+var ShortcutsManager = require('react-shortcuts');
+var Shortcuts = require('react-shortcuts/component');
 import {Utils} from 'components'
 import {barrier} from 'components/Utils';
 
@@ -208,8 +209,11 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     handleCallEditFaVersion(data) {
-        data.id = this.getActiveInfo().activeFa.faId;
+        let activeFa = this.getActiveInfo().activeFa;
+        data.id = activeFa.faId;
+        this.dispatch(scopesDirty(activeFa.versionId));
         WebApi.updateFindingAid(data).then((json) => {
+            this.dispatch(modalDialogHide());
             this.dispatch(modalDialogHide());
         })
     }

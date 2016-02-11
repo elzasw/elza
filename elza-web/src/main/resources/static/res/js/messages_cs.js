@@ -67,7 +67,9 @@ var messages = {
 
     "arr.fa.approveVersion.runningBulkAction": "AP nelze uzavřít, protože běží hromadná akce",
     "arr.fa.approveVersion.approve": "Uzavřít verzi AP",
-    "arr.fa.approveVersion.approveForce": "Uzavřít verzi AP i bez spuštění akcí",
+    "arr.fa.approveVersion.approveForce": "Uzavřít verzi AP i přes zjištěné problémy",
+    "arr.fa.approveVersion.bulkActionsOk": "Není potřeba provést žádnou hromadnou akci",
+    "arr.fa.approveVersion.bulkActionsNeedRun": "Je potřeba spustit následující hromadné akce",
 
     "arr.fa.bulkActions.noActions": "Nejsou žádné hromadné akce",
     "arr.fa.bulkActions.err": "Chyba",

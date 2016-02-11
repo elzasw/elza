@@ -73,6 +73,11 @@ export default function bulkActions(state = bulkActionsInitState, action) {
                 isDirty: true,
                 isFetching: false
             };
+        case types.CHANGE_CONFORMITY_INFO:
+            return {
+                ...state,
+                isDirty: true,
+            };
         default:
             return state;
     }
