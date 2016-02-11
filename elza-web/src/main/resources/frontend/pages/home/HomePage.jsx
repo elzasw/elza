@@ -19,7 +19,7 @@ import {createFa} from 'actions/arr/fa'
 import {storeLoadData, storeSave, storeLoad} from 'actions/store/store'
 import {Combobox} from 'react-input-enhancements'
 import {WebApi} from 'actions'
-
+import {dateToString} from 'components/Utils'
 
 var placeholder = document.createElement("div");
 placeholder.className = "placeholder";
@@ -293,7 +293,7 @@ setTimeout(()=>this.setState({options: options2}), 4000);
             items.push(this.renderHistoryItem(i18n('home.action.arr'), desc, 'ARR_REGION', stateRegion.arrRegion));
         }
         stateRegion.arrRegionFront.forEach(x => {
-            var name = x.name;
+            var name = x.name + (x.lockDate ? ' ' + dateToString(new Date(x.lockDate)) : '');
             var desc = this.getFaDesc(x)
             items.push(this.renderHistoryItem(name, desc, 'ARR_REGION_FA', x));
         })
