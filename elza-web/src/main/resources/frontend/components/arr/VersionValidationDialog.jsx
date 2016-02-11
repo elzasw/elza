@@ -5,10 +5,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Loading, Icon} from 'components';
-import {Button, Input, Table, Modal} from 'react-bootstrap';
-import {dateTimeToString} from 'components/Utils'
-import {indexById} from 'stores/app/utils.jsx'
+import {AbstractReactComponent, i18n, Icon, VersionValidationState} from 'components';
+import {Button, Modal} from 'react-bootstrap';
 import {faSelectSubNode} from 'actions/arr/nodes';
 import {versionValidate} from 'actions/arr/versionValidation';
 import {createFaRoot} from 'components/arr/ArrUtils';
@@ -41,31 +39,15 @@ var VersionValidationDialog = class VersionValidationDialog extends AbstractReac
         return (
             <div>
                 <Modal.Body>
-                    <div>
-                        {!this.props.store.isFetching &&
+                    {!this.props.store.isFetching && this.props.store.errors.length > 0 && this.props.store.errors.map((item) => (
                         <div>
-                            {this.props.store.errors.length > 0 && this.props.store.errors.map((item) => (
-                                <div><a
-                                    onClick={() => (this.handleSelectNode(item.nodeId, item.parent))}>JP-{item.nodeId}</a>: {item.description}
-                                </div>
-                            ))}
+                            <a onClick={() => (this.handleSelectNode(item.nodeId, item.parent))}>JP-{item.nodeId}</a>: {item.description}
                         </div>
-                        }
-                    </div>
-                    <div>
-                        {
-                            this.props.store.isFetching ?
-                                <span><Icon
-                                    glyph="fa-refresh"/> {i18n('arr.fa.versionValidation.running')}</span> : (
-                                this.props.store.errors.length > 0 ?
-                                    <span><Icon
-                                        glyph="fa-exclamation-triangle"/> {i18n('arr.fa.versionValidation.count', this.props.store.count)}</span> :
-                                    <span><Icon glyph="fa-check"/> {i18n('arr.fa.versionValidation.ok')}</span>
-
-                            )
-
-                        }
-                    </div>
+                    ))}
+                    <VersionValidationState
+                        count={this.props.store.count}
+                        errExist={this.props.store.errors.length > 0}
+                        isFetching={this.props.store.isFetching}/>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.close')}</Button>

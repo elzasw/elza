@@ -10,7 +10,7 @@ const initialState = {
     }
 }
 
-export default function registryList(state = initialState, action) {
+export default function registryRegionList(state = initialState, action) {
     switch (action.type) {
         case types.REF_REGISTRY_LIST_REQUEST:
             return Object.assign({}, state, {

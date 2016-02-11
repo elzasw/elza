@@ -30,6 +30,8 @@ public class ParRelationVO {
 
     private String displayName;
 
+    private String source;
+
 
     private List<ParRelationEntityVO> relationEntities;
 
@@ -104,6 +106,14 @@ public class ParRelationVO {
 
     public void setDisplayName(final String displayName) {
         this.displayName = displayName;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(final String source) {
+        this.source = source;
     }
 
     public List<ParRelationEntityVO> getRelationEntities() {

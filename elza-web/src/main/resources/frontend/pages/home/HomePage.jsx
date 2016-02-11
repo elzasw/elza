@@ -10,7 +10,7 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Icon, i18n} from 'components';
-import {Splitter, Autocomplete, AddFaForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components';
+import {Splitter, Autocomplete, FaForm, Ribbon, RibbonGroup, ToggleContent, FindindAidFileTree, AbstractReactComponent} from 'components';
 import {ModalDialog, NodeTabs, FaTreeTabs} from 'components';
 import {ButtonGroup, Button, Panel} from 'react-bootstrap';
 import {PageLayout} from 'pages';
@@ -19,6 +19,75 @@ import {createFa} from 'actions/arr/fa'
 import {storeLoadData, storeSave, storeLoad} from 'actions/store/store'
 import {Combobox} from 'react-input-enhancements'
 import {WebApi} from 'actions'
+
+
+var placeholder = document.createElement("div");
+placeholder.className = "placeholder";
+
+var List = React.createClass({
+  getInitialState: function() {
+    return {data: this.props.data};
+  },
+  dragStart: function(e) {
+    this.dragged = e.currentTarget;
+    e.dataTransfer.effectAllowed = 'move';
+    
+    // Firefox requires dataTransfer data to be set
+    e.dataTransfer.setData("text/html", e.currentTarget);
+  },
+  dragEnd: function(e) {
+
+    this.dragged.style.display = "block";
+    this.dragged.parentNode.removeChild(placeholder);
+
+    // Update data
+    var data = this.state.data;
+    var from = Number(this.dragged.dataset.id);
+    var to = Number(this.over.dataset.id);
+console.log(from, to);
+    if(from < to) to--;
+    if(this.nodePlacement == "after") to++;
+    data.splice(to, 0, data.splice(from, 1)[0]);
+    this.setState({data: data});
+  },
+  dragOver: function(e) {
+    e.preventDefault();
+    this.dragged.style.display = "none";
+    if(e.target.className == "placeholder") return;
+    this.over = e.target;
+    // Inside the dragOver method
+    var relY = e.clientY - this.over.offsetTop;
+    var height = this.over.offsetHeight / 2;
+    var parent = e.target.parentNode;
+    
+    if(relY > height) {
+      this.nodePlacement = "after";
+      parent.insertBefore(placeholder, e.target.nextElementSibling);
+    }
+    else if(relY < height) {
+      this.nodePlacement = "before"
+      parent.insertBefore(placeholder, e.target);
+    }
+  },
+  render: function() {
+    var listItems = this.state.data.map((function(item, i) {
+      return (
+        <div data-id={i}
+            key={i}
+            draggable="true"
+            onDragEnd={this.dragEnd}
+            onDragStart={this.dragStart}>
+          {item}
+        </div>
+      );
+    }).bind(this));
+
+    return <div onDragOver={this.dragOver}>{listItems}</div>
+  }
+});
+
+var colors = ["Red","Green","Blue","Yellow","Black","White","Orange"];
+
 
 let styles = {
   item: {
@@ -122,8 +191,8 @@ setTimeout(()=>this.setState({options: options2}), 4000);
     }
 
     handleAddFa() {
-        this.dispatch(modalDialogShow(this, i18n('arr.fa.title.add'), <AddFaForm isApproveDialog={false} create
-                                                                                 onSubmit={this.handleCallAddFa}/>));
+        this.dispatch(modalDialogShow(this, i18n('arr.fa.title.add'), <FaForm create
+                                                                              onSubmit={this.handleCallAddFa}/>));
     }
 
     handleCallAddFa(data) {
@@ -281,7 +350,7 @@ setTimeout(()=>this.setState({options: options2}), 4000);
 var items = getStates();
 
         var centerPanel = (
-            <div className='splitter-test'>
+            <div className='splitter-home'>
                 {false && <div>
                     <Button onClick={() => this.dispatch(storeSave())}>STORE</Button>
                     <Button onClick={() => this.dispatch(storeLoad())}>LOAD</Button></div>}
@@ -306,7 +375,7 @@ var items = getStates();
         footer=<div><Button onClick={()=>{alert('klik')}}>xxx</Button></div>
         header=<div><div className='c1'>id</div><div className='c2'>jmeno</div></div>
         value={null}
-        items={this.state.registryList}
+        items={this.state.registryRegionList}
         getItemId={(item) => item ? item.id : null}
         getItemName={(item) => item ? item.name : ''}
         onSearchChange={this.handleFindParty}
@@ -314,7 +383,7 @@ var items = getStates();
         renderItem={this.renderRecord}
     />
     </div>}
-
+{false && <List data={colors} />}
 
 {false && <Combobox defaultValue={'1'}
               options={this.state.options}

@@ -31,7 +31,7 @@ var NodeRegister = class NodeRegister extends AbstractReactComponent {
 
         text = text == "" ? null : text;
 
-        WebApi.findRegistry(text)
+        WebApi.findRegistry(text, null, null, this.props.versionId)
                 .then(json => {
                     this.setState({
                         recordList: json.recordList.map(record => {
@@ -69,7 +69,7 @@ var NodeRegister = class NodeRegister extends AbstractReactComponent {
     renderFooter() {
         return (
                 <div className="create-record">
-                    <Button onClick={this.handleCreateRecord}>{i18n('registry.addNewRegistry')}</Button>
+                    <Button onClick={this.handleCreateRecord}><Icon glyph='fa-plus'/>{i18n('registry.addNewRegistry')}</Button>
                 </div>
         )
     }

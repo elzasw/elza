@@ -12,7 +12,7 @@ import {connect} from 'react-redux'
 import {indexById} from 'stores/app/utils.jsx'
 import {faSubNodeFormDescItemTypeAdd, faSubNodeFormValueChange, faSubNodeFormDescItemTypeDelete,
         faSubNodeFormValueChangeSpec,faSubNodeFormValueBlur, faSubNodeFormValueFocus, faSubNodeFormValueAdd,
-        faSubNodeFormValueDelete, faSubNodeFormValuesCopyFromPrev} from 'actions/arr/subNodeForm'
+        faSubNodeFormValueDelete, faSubNodeFormValuesCopyFromPrev, faSubNodeFormValueChangePosition} from 'actions/arr/subNodeForm'
 var classNames = require('classnames');
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import DescItemString from './nodeForm/DescItemString'
@@ -25,7 +25,7 @@ import {createPacket} from 'actions/arr/packets'
 import faSelectSubNode from 'actions/arr/nodes'
 import {isFaRootId} from './ArrUtils.jsx'
 import {partySelect, partyAdd} from 'actions/party/party'
-import {registrySelect, registryAdd} from 'actions/registry/registryList'
+import {registrySelect, registryAdd} from 'actions/registry/registryRegionList'
 import {routerNavigate} from 'actions/router'
 import {setInputFocus} from 'components/Utils'
 //import {} from './AddNodeDropdown.jsx'
@@ -35,7 +35,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderDescItemGroup', 'handleAddDescItemType', 'renderDescItemType', 'handleChange',
+        this.bindMethods('renderDescItemGroup', 'handleAddDescItemType', 'renderDescItemType', 'handleChange', 'handleChangePosition',
             'handleChangeSpec', 'handleDescItemTypeRemove', 'handleBlur', 'handleFocus', 'renderFormActions',
             'getDescItemTypeInfo', 'handleDescItemAdd', 'handleDescItemRemove', 'handleDescItemTypeLock',
             'handleDescItemTypeUnlockAll', 'handleDescItemTypeCopy', 'handleAddNodeBefore', 'handleAddNodeAfter',
@@ -272,12 +272,13 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param descItemIndex {Integer} index honodty atributu v seznamu
      */
     handleCreateRecord(descItemGroupIndex, descItemTypeIndex, descItemIndex) {
+        const {versionId} = this.props;
         var valueLocation = {
             descItemGroupIndex,
             descItemTypeIndex,
             descItemIndex
         }
-        this.dispatch(registryAdd(null, this.handleCreatedRecord.bind(this, valueLocation)));
+        this.dispatch(registryAdd(null, versionId, this.handleCreatedRecord.bind(this, valueLocation)));
     }
 
     /**
@@ -287,14 +288,11 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param form {Object} data z formuláře
      */
     handleCreatedRecord(valueLocation, data) {
-        const {versionId, selectedSubNodeId, nodeKey} = this.props;
+        const {versionId, selectedSubNodeId, nodeKey, fa} = this.props;
 
-        // TODO: sjednoceni od Pavla - ELZA-591
-        this.dispatch(faSubNodeFormValueFocus(versionId, selectedSubNodeId, nodeKey, valueLocation));
-        this.dispatch(faSubNodeFormValueChange(versionId, selectedSubNodeId, nodeKey, valueLocation, data));
-        this.dispatch(faSubNodeFormValueBlur(versionId, selectedSubNodeId, nodeKey, valueLocation));
+        this.dispatch(faSubNodeFormValueChange(versionId, selectedSubNodeId, nodeKey, valueLocation, data, true));
 
-        this.dispatch(registrySelect(data.recordId));
+        this.dispatch(registrySelect(data.recordId, fa));
         this.dispatch(routerNavigate('registry'));
     }
 
@@ -307,7 +305,8 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param recordId {Integer} identifikátor rejstříku
      */
     handleDetailRecord(descItemGroupIndex, descItemTypeIndex, descItemIndex, recordId) {
-        this.dispatch(registrySelect(recordId));
+        const {versionId, fa} = this.props;
+        this.dispatch(registrySelect(recordId, fa));
         this.dispatch(routerNavigate('registry'));
     }
 
@@ -320,12 +319,13 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param partyTypeId {Integer} identifikátor typu osoby
      */
     handleCreateParty(descItemGroupIndex, descItemTypeIndex, descItemIndex, partyTypeId) {
+        const {versionId} = this.props;
         var valueLocation = {
             descItemGroupIndex,
             descItemTypeIndex,
             descItemIndex
         }
-        this.dispatch(partyAdd(partyTypeId, this.handleCreatedParty.bind(this, valueLocation)));
+        this.dispatch(partyAdd(partyTypeId, versionId, this.handleCreatedParty.bind(this, valueLocation)));
     }
 
     /**
@@ -335,14 +335,11 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param form {Object} data z formuláře
      */
     handleCreatedParty(valueLocation, data) {
-        const {versionId, selectedSubNodeId, nodeKey} = this.props;
+        const {versionId, selectedSubNodeId, nodeKey, fa} = this.props;
 
-        // TODO: sjednoceni od Pavla - ELZA-591
-        this.dispatch(faSubNodeFormValueFocus(versionId, selectedSubNodeId, nodeKey, valueLocation));
-        this.dispatch(faSubNodeFormValueChange(versionId, selectedSubNodeId, nodeKey, valueLocation, data));
-        this.dispatch(faSubNodeFormValueBlur(versionId, selectedSubNodeId, nodeKey, valueLocation));
+        this.dispatch(faSubNodeFormValueChange(versionId, selectedSubNodeId, nodeKey, valueLocation, data, true));
 
-        this.dispatch(partySelect(data.partyId));
+        this.dispatch(partySelect(data.partyId, fa));
         this.dispatch(routerNavigate('party'));
     }
 
@@ -355,7 +352,8 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param partyId {Integer} identifikátor osoby
      */
     handleDetailParty(descItemGroupIndex, descItemTypeIndex, descItemIndex, partyId) {
-        this.dispatch(partySelect(partyId));
+        const {fa} = this.props;
+        this.dispatch(partySelect(partyId, fa));
         this.dispatch(routerNavigate('party'));
     }
 
@@ -405,7 +403,24 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             descItemIndex
         }
 
-        this.dispatch(faSubNodeFormValueChange(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation, value));
+        this.dispatch(faSubNodeFormValueChange(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation, value, false));
+    }
+
+    /**
+     * Změna pozice hodnoty atributu.
+     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
+     * @param descItemTypeIndex {Integer} index atributu v seznamu
+     * @param descItemIndex {Integer} index honodty atributu v seznamu
+     * @param newDescItemIndex {Integer} nová pozice - nový index atributu
+     */
+    handleChangePosition(descItemGroupIndex, descItemTypeIndex, descItemIndex, newDescItemIndex) {
+        var valueLocation = {
+            descItemGroupIndex,
+            descItemTypeIndex,
+            descItemIndex
+        }
+
+        this.dispatch(faSubNodeFormValueChangePosition(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation, newDescItemIndex));
     }
 
     /**
@@ -456,7 +471,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      */
     renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex) {
         const {descItemCopyFromPrevEnabled, rulDataTypes, calendarTypes, closed,
-                nodeSettings, nodeId, packetTypes, packets, conformityInfo} = this.props;
+                nodeSettings, nodeId, packetTypes, packets, conformityInfo, versionId} = this.props;
 
         var rulDataType = rulDataTypes.items[indexById(rulDataTypes.items, descItemType.dataTypeId)];
         var descItemTypeInfo = this.getDescItemTypeInfo(descItemType);
@@ -509,6 +524,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 onDescItemAdd={this.handleDescItemAdd.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onDescItemRemove={this.handleDescItemRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onChange={this.handleChange.bind(this, descItemGroupIndex, descItemTypeIndex)}
+                onChangePosition={this.handleChangePosition.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onChangeSpec={this.handleChangeSpec.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onBlur={this.handleBlur.bind(this, descItemGroupIndex, descItemTypeIndex)}
                 onFocus={this.handleFocus.bind(this, descItemGroupIndex, descItemTypeIndex)}
@@ -521,6 +537,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 copy={copy}
                 conformityInfo={conformityInfo}
                 descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
+                versionId={versionId}
             />
         )
     }
@@ -563,12 +580,13 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
 
         // Seřazení podle position
         descItemTypes.sort((a, b) => typeId(a.type) - typeId(b.type));
-
-        // Modální dialog
-        var form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmit={(data) => {
+        var submit = (data) => {
+            console.log(data);
             this.dispatch(modalDialogHide());
             this.dispatch(faSubNodeFormDescItemTypeAdd(versionId, selectedSubNodeId, nodeKey, data.descItemTypeId));
-        }}/>
+        };
+        // Modální dialog
+        var form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmit={submit} onSubmit2={submit}/>;
         this.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form));
     }
 
@@ -648,8 +666,14 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
 
 function mapStateToProps(state) {
     const {arrRegion} = state
+    var fa = null;
+    if (arrRegion.activeIndex != null) {
+        fa = arrRegion.fas[arrRegion.activeIndex];
+    }
+
     return {
-        nodeSettings: arrRegion.nodeSettings
+        nodeSettings: arrRegion.nodeSettings,
+        fa: fa
     }
 }
 

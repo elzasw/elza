@@ -8,6 +8,7 @@ import * as types from 'actions/constants/ActionTypes';
 import {indexById} from 'stores/app/utils.jsx'
 
 const initialState = {
+    dirty: false,
     isFetching: false,
     fetched: false,
     selectedId: null,
@@ -17,7 +18,7 @@ const initialState = {
     variantRecordInternalId: 1
 }
 
-export default function registryData(state = initialState, action = {}) {
+export default function registryRegionData(state = initialState, action = {}) {
     switch (action.type) {
         case types.REGISTRY_SELECT_REGISTRY:
             if (state.selectedId === action.registry.selectedId){
@@ -44,6 +45,7 @@ export default function registryData(state = initialState, action = {}) {
             return Object.assign({}, state, {
                 selectedId: action.selectedId,
                 item: action.item,
+                dirty: false,
                 isFetching: false,
                 fetched: true,
                 requireReload: false,
@@ -108,6 +110,10 @@ export default function registryData(state = initialState, action = {}) {
         case types.REGISTRY_RECORD_NOTE_UPDATED:
             return Object.assign({}, state, {
                 item: action.json
+            });
+        case types.CHANGE_REGISTRY_UPDATE:
+            return Object.assign({}, state, {
+                dirty: true
             });
         default:
             return state;

@@ -381,7 +381,6 @@ public class PartyManagerTest extends AbstractRestTest {
 
         relationEntityVO.setRecord(recordVO);
         relationEntityVO.setRoleType(relationRoleTypeVO);
-        relationEntityVO.setSource("Source1");
 
         relationVO.setRelationEntities(Arrays.asList(relationEntityVO));
 
@@ -395,7 +394,6 @@ public class PartyManagerTest extends AbstractRestTest {
 
         List<ParRelationEntity> relationEntities = relationEntityRepository.findByRelation(relation);
         Assert.assertTrue(relationEntities.size() == 1);
-        Assert.assertTrue(relationEntities.get(0).getSource().equals(relationEntityVO.getSource()));
 
         //UPDATE RELATION
         relationVO.setRelationId(relationResult.getRelationId());

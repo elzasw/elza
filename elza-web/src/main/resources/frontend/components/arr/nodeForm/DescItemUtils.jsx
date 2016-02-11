@@ -3,9 +3,8 @@ var classNames = require('classnames');
 /**
  * Tool třída pro desc item.
  */
-export function decorateValue(component, active, error, locked, additionalClassNames = []) {
+export function _decorateValue(component, active, error, locked, additionalClassNames = []) {
     var clsObj = {
-        'form-control': true,
         value: true,
         error: error,
         active: active,
@@ -21,4 +20,14 @@ export function decorateValue(component, active, error, locked, additionalClassN
         onFocus: () => component.props.onFocus(),
         onBlur: () => component.props.onBlur()
     }
+}
+/**
+ * Tool třída pro desc item.
+ */
+export function decorateValue(component, active, error, locked, additionalClassNames = []) {
+    return _decorateValue(component, active, error, locked, [...additionalClassNames, 'form-control'])
+}
+// nechceme form-control
+export function decorateAutocompleteValue(component, active, error, locked, additionalClassNames = []) {
+    return _decorateValue(component, active, error, locked, [...additionalClassNames])
 }

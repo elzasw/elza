@@ -8,6 +8,7 @@ var messages = {
 
     "global.error.ajax": "Při komunikaci nastala chyba",
     "global.action.create": "Vytvořit",
+    "global.action.update": "Upravit",
     "global.action.add": "Přidat",
     "global.action.cancel": "Storno",
     "global.action.close": "Zavřít",
@@ -24,7 +25,8 @@ var messages = {
     "ribbon.action.home": "Domů",
     "ribbon.action.arr": "Archivní pomůcky",
     "ribbon.action.arr.fa.add": "Vytvořit AP",
-    "ribbon.action.arr.fa.approveVersion": "Uzavřít verzi AP",
+    "ribbon.action.arr.fa.update": "Upravit AP",
+    "ribbon.action.arr.fa.approve": "Uzavřít verzi AP",
     "ribbon.action.arr.fa.bulkActions": "Hromadné akce",
     "ribbon.action.arr.fa.validation": "Validace AP",
     "ribbon.action.arr.show-register-jp": "Rejstříky k JP",
@@ -54,8 +56,12 @@ var messages = {
     "accordion.title.left.name.undefined": "<JP-Accordion left ID={0}>",
     "accordion.title.right.name.undefined": "<JP-Accordion right ID={0}>",
 
+    "arr.panel.title": "Jsou zobrazeny pouze položky pro archivní pomůcku {0}",
+    "arr.panel.reset": "Zrušit omezení",
+
     "arr.fa.title.add": "Vytvoření nové AP",
-    "arr.fa.title.approveVersion": "Uzavření verze AP",
+    "arr.fa.title.update": "Úprava AP",
+    "arr.fa.title.approve": "Uzavření verze AP",
     "arr.fa.title.bulkActions": "Hromadné akce",
     "arr.fa.title.versionValidation": "Validace verze AP",
 
@@ -82,6 +88,7 @@ var messages = {
 
     "arr.fa.name": "Název",
     "arr.fa.ruleSet": "Pravidla tvorby",
+    "arr.fa.regScope": "Třídy rejstříku",
     "arr.fa.arrType": "Typ výstupu",
     "arr.fa.currentVersion": "Aktuální verze",
     
@@ -233,6 +240,9 @@ var messages = {
     "party.relation.entity" : "Entita",
     "party.relation.roleType" : "Typ role",
     "party.relation.add" : "Nový vztah",
+    "party.relation.classType.B": "Vznik",
+    "party.relation.classType.E": "Zánik",
+    "party.relation.classType.R": "Vztah",
     "party.detail.complement.delete" : "Opravdu chcete smazat doplněk jména?",
     "party.relation.errors.undefinedRelationType" : "Nezadaný typ vztahu",
     "party.relation.errors.undefinedCalendarType" : "Typ kalendáře musí být zadaný",

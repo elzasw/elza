@@ -1,16 +1,16 @@
 package cz.tacr.elza.api.vo;
 
 /**
- * Výčet formátů dat.
+ * Výčet typů importu.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 26. 11. 2015
  */
-public enum ImportDataFormat {
+public enum XmlImportType {
 
-    SUZAP,
+    PARTY,
 
-    INTERPI,
+    RECORD,
 
-    ELZA;
+    FINDING_AID;
 }

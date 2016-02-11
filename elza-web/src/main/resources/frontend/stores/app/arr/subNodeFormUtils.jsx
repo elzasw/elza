@@ -85,8 +85,8 @@ function createImplicitDescItem(descItemType, descItemTypeInfos) {
     return descItem;
 }
 
-export function createDescItemFromDb(descItem) {
-    return {
+export function createDescItemFromDb(descItemType, descItem) {
+    var result = {
         ...descItem,
         prevDescItemSpecId: descItem.descItemSpecId,
         prevValue: descItem.value,
@@ -95,6 +95,10 @@ export function createDescItemFromDb(descItem) {
         visited: false,
         error: {hasError:false}
     }
+
+    initFormKey(descItemType, result)
+
+    return result
 }
 
 function prevDescItemHasSamePrevValue(prevDescItem, newDescItem) {
@@ -107,6 +111,19 @@ function addUid(descItem, index) {
     } else {
         descItem._uid = "_i" + index;
     }
+}
+
+var _formKeys = {}
+function initFormKey(descItemType, descItem) {
+    if (descItem.formKey) {
+        return
+    }
+
+    if (!_formKeys[descItemType.id]) {
+        _formKeys[descItemType.id] = 1
+    }
+    descItem.formKey = 'fk_' + _formKeys[descItemType.id]
+    _formKeys[descItemType.id] = _formKeys[descItemType.id] + 1
 }
 
 function mergeDescItems(resultDescItemType, prevType, newType, descItemTypeInfos) {
@@ -123,7 +140,7 @@ function mergeDescItems(resultDescItemType, prevType, newType, descItemTypeInfos
             }
         } else {    // je v db a není předchozí, dáme ji do formuláře bez merge
             newType.descItems.forEach(descItem => {
-                resultDescItemType.descItems.push(createDescItemFromDb(descItem))
+                resultDescItemType.descItems.push(createDescItemFromDb(resultDescItemType, descItem))
             })
             return true;
         }
@@ -161,10 +178,16 @@ function mergeDescItems(resultDescItemType, prevType, newType, descItemTypeInfos
                 if (prevDescItem && prevDescItemHasSamePrevValue(prevDescItem, descItem) && prevDescItem.touched) {   // původní hodnota přijatá ze serveru má stejné hodnoty jako jsou nyní v nově přijatých datech na serveru a uživatel nám aktuální data upravil
                     var item = prevDescItem;
                     addUid(item, null);
+                    item.formKey = prevDescItem.formKey
                     resultDescItemType.descItems.push(item)
                 } else {
-                    var item = createDescItemFromDb(descItem);
+                    var item = createDescItemFromDb(resultDescItemType, descItem);
                     addUid(item, null);
+                    if (prevDescItem) {
+                        item.formKey = prevDescItem.formKey
+                    } else {
+                        initFormKey(resultDescItemType, item)
+                    }
                     resultDescItemType.descItems.push(item)
                 }
             })
@@ -175,7 +198,7 @@ function mergeDescItems(resultDescItemType, prevType, newType, descItemTypeInfos
                 prevType.descItems.forEach((descItem, index) => {
                     addUid(descItem, index);
 
-                    if (typeof descItem.id === 'undefined') { // mnou přidaná ještě neuložená, musíme jí přidat a správné místo
+                    if (typeof descItem.id === 'undefined') { // mnou přidaná ještě neuložená, musíme jí přidat na správné místo
                         if (prevDescItem) { // má předchozí, zkusíme ji v novém rozložní dat na stejné místo, pokud to půjde
                             var index = indexById(resultDescItemType.descItems, prevDescItem._uid, '_uid')
                             if (index !== null) {   // našli jsme položku, za kterou ji můžeme přidat
@@ -289,10 +312,12 @@ export function createDescItem(descItemTypeInfo, addedByUser) {
         hasFocus: false,
         touched: false,
         visited: false,
-        value: '',
+        value: null,
         error: {hasError:false},
         addedByUser
     };
+
+    initFormKey(descItemTypeInfo, result)
 
     if (descItemTypeInfo.useSpecification) {
         result.descItemSpecId = '';

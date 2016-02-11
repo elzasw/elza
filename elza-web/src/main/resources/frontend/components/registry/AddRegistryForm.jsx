@@ -12,8 +12,8 @@ import {AbstractReactComponent, i18n, DropDownTree, Scope} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField} from 'components/form/FormUtils'
-import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryList'
-
+import {getRegistryRecordTypesIfNeeded, getRegistry} from 'actions/registry/registryRegionList'
+import {WebApi} from 'actions'
 
 const validate = (values, props) => {
     const errors = {};
@@ -39,11 +39,18 @@ const validate = (values, props) => {
 var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.state = {};
+
+        this.state = {
+            parentRegisterTypeId: null,
+            fetched: this.props.parentRecordId === null
+        };
+        this.prepareState(this.props);
     }
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(getRegistryRecordTypesIfNeeded());
+        this.prepareState(nextProps);
+
     }
 
     componentDidMount() {
@@ -53,38 +60,48 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
         this.dispatch(getRegistryRecordTypesIfNeeded());
     }
 
+    prepareState(props){
+        if (props.parentRecordId !== null){
+            this.setState({fetched: false});
+            WebApi.getRegistry(props.parentRecordId).then(json => {
+                this.setState({parentRegisterTypeId: json.registerTypeId, fetched: true});
+            });
+        }
+    }
+
+
+
     render() {
         const {fields: { nameMain, characteristics, registerTypeId, scopeId}, handleSubmit, onClose} = this.props;
         var itemsForDropDownTree = [];
-        if (this.props.registryRecordTypes.item) {
-            itemsForDropDownTree = this.props.registryRecordTypes.item;
+        if (this.props.registryRegionRecordTypes.item) {
+            itemsForDropDownTree = this.props.registryRegionRecordTypes.item;
         }
         var disabled = false;
-        if (this.props.parentRegisterTypeId){
-            registerTypeId.value=this.props.parentRegisterTypeId;
+        if (this.state.parentRegisterTypeId){
+            registerTypeId.value=this.state.parentRegisterTypeId;
         }
-        if (this.props.parentRecordId){
+
+        if (this.props.parentRecordId || this.state.fetched === false){
             disabled = true;
         }
-
-
 
         return (
             <div key={this.props.key}>
                 <Modal.Body>
                     <form onSubmit={handleSubmit}>
-                        <Scope versionId={null} label={i18n('registry.scope.class')}  {...scopeId} {...decorateFormField(scopeId)} onBlur={false}/>
+                        <Scope versionId={this.props.versionId} label={i18n('registry.scope.class')}  {...scopeId} {...decorateFormField(scopeId)}/>
                         <DropDownTree
                             label={i18n('registry.add.typ.rejstriku')}
                             items = {itemsForDropDownTree}
                             addRegistryRecord={true}
                             {...registerTypeId}
                             {...decorateFormField(registerTypeId)}
+
                             disabled={disabled}
-                            onBlur={false}
                             />
-                        <Input type="text" label={i18n('registry.name')} {...nameMain} {...decorateFormField(nameMain)} onBlur={false}/>
-                        <Input type="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)} onBlur={false} />
+                        <Input type="text" label={i18n('registry.name')} {...nameMain} {...decorateFormField(nameMain)}/>
+                        <Input type="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)} />
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
@@ -103,12 +120,14 @@ module.exports = reduxForm({
 },state => ({
         initialValues: state.form.addRegistryForm.initialValues,
         refTables: state.refTables,
-        registry: state.registry,
-        registryRecordTypes: state.registryRecordTypes
+        registryRegion: state.registryRegion,
+        registryRegionData: state.registryRegionData,
+        registryRegionRecordTypes: state.registryRegionRecordTypes
 
 }),
 {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addRegistryForm', data})}
 )(AddRegistryForm)
+
 
 
 

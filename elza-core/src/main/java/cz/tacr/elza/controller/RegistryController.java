@@ -118,7 +118,10 @@ public class RegistryController {
 
         Set<Integer> registerTypeIdTree = Collections.EMPTY_SET;
         if (registerTypeId != null) {
-            registerTypeIdTree = registerTypeRepository.findSubtreeIds(registerTypeId);
+            Set<Integer> registerTypeIds = new HashSet<>();
+            registerTypeIds.add(registerTypeId);
+
+            registerTypeIdTree = registerTypeRepository.findSubtreeIds(registerTypeIds);
         }
 
         ArrFindingAid findingAid;
@@ -155,14 +158,10 @@ public class RegistryController {
 
         for (RegRecordVO regRecordVO : foundRecordVOList) {
             parentRecordVOMap.put(regRecordVO.getRecordId(), regRecordVO);
+            factoryVo.fillRegisterTypeNamesToParents(regRecordVO);
         }
 
-        if (registerTypeId != null) {
 
-            for (RegRecordVO recordVO : foundRecordVOList) {
-                factoryVo.fillRegisterTypeNamesToParents(recordVO, registerTypeId);
-            }
-        }
 
         // děti
         foundRecords.forEach(record -> {
@@ -217,6 +216,7 @@ public class RegistryController {
 
         Set<Integer> registerTypeIds = registerTypeRepository.findByRelationRoleType(relationRoleType)
                 .stream().map(t -> t.getRegisterTypeId()).collect(Collectors.toSet());
+        registerTypeIds = registerTypeRepository.findSubtreeIds(registerTypeIds);
 
         Set<Integer> scopeIds = new HashSet<>();
         scopeIds.add(party.getRecord().getScope().getScopeId());
@@ -258,7 +258,7 @@ public class RegistryController {
 
         Integer partyId = recordIdPartyIdMap.get(recordId);
         RegRecordVO result = factoryVo.createRegRecord(record, partyId, true, null);
-        factoryVo.fillRegisterTypeNamesToParents(result, null);
+        factoryVo.fillRegisterTypeNamesToParents(result);
         result.setChilds(factoryVo.createRegRecords(childs, recordIdPartyIdMap, false, null));
 
         result.setVariantRecords(factoryVo.createRegVariantRecords(variantRecordRepository.findByRegRecordId(recordId)));

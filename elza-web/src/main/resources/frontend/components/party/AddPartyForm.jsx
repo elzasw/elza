@@ -13,7 +13,7 @@ import {refPartyNameFormTypesFetchIfNeeded} from 'actions/refTables/partyNameFor
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryList'
+import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRegionList'
 import {requestScopesIfNeeded} from 'actions/scopes/scopesData'
 
 /**
@@ -269,8 +269,8 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
             }
         }
         var polozky = [];
-        if (this.props.registryRecordTypes && this.props.registryRecordTypes.fetched){
-            polozky = this.props.registryRecordTypes.item;
+        if (this.props.registryRegionRecordTypes && this.props.registryRegionRecordTypes.fetched){
+            polozky = this.props.registryRegionRecordTypes.item;
         }
 
         return (
@@ -283,7 +283,7 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
                         <div className="line">
                             <DropDownTree label={i18n('party.recordType')} addRegistryRecord={true} items = {polozky}  name="recordTypeId" onChange={this.dropDownTreeUpdateValue}
                                           preselect/>
-                            <Scope versionId={null} name="scopeId" label={i18n('party.recordScope')} onChange={this.updateValue} value={this.state.data.scopeId}/>
+                            <Scope versionId={this.props.versionId} name="scopeId" label={i18n('party.recordScope')} onChange={this.updateValue} value={this.state.data.scopeId}/>
                         </div>
 
                         <Input type="select" label={i18n('party.nameFormType')} name="nameFormTypeId" onChange={this.updateValue} value={this.state.data.nameFormTypeId} >
@@ -300,8 +300,8 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
                         <Input type="text" label={i18n('party.nameMain')} name="mainPart" value={this.state.data.mainPart} onChange={this.updateValue} />
                         <Input type="text" label={i18n('party.nameOther')} name="otherPart" value={this.state.data.otherPart} onChange={this.updateValue} />
                         <hr/>
-                        <h5>{i18n('party.nameComplements')}</h5>
-                        <div>
+                        <div className="line">
+                            <label>{i18n('party.nameComplements')}</label>
                             {this.state.data.complements.map((j,index)=> {return <div className="block complement">
                                 <div className="line">
                                     <Input type="text" value={j.complement} onChange={this.updateComplementValue.bind(this, {index:index, variable: 'complement'})}/>
@@ -312,8 +312,9 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
                                     <Button onClick={this.removeComplement.bind(this, index)}><Icon glyph="fa-trash"/></Button>
                                 </div>
                             </div>})}
+                            <Button onClick={this.addComplement}><Icon glyph="fa-plus"/></Button>
                         </div>   
-                        <Button onClick={this.addComplement}><Icon glyph="fa-plus"/></Button>
+
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
@@ -332,7 +333,7 @@ module.exports = reduxForm({
 },state => ({
     initialValues: state.form.addPartyForm.initialValues,
     refTables: state.refTables,
-        registryRecordTypes: state.registryRecordTypes
+        registryRegionRecordTypes: state.registryRegionRecordTypes
 }),
 {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'addPartyForm', data})}
 )(AddPartyForm)

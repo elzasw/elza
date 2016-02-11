@@ -44,27 +44,28 @@ var BulkActionsTable = class BulkActionsTable extends AbstractReactComponent {
         if (this.props.store.actions.length !== 0 && this.props.store.states !== false) {
             var key = 0;
             table = this.props.store.actions.map((item) => {
-                var index = indexById(this.props.store.states, item.code, 'code'), state, canRun = false, lastRun = "-";
+                var index = indexById(this.props.store.states, item.code, 'code'), state, innerState, canRun = false, lastRun = "-";
                 let indexExist = (index != null);
                 switch (indexExist ? this.props.store.states[index].state : null) {
                     case "RUNNING":
-                        state = <td><Icon glyph="fa-play-circle-o"/> {i18n('arr.fa.bulkActions.running')}</td>;
+                        innerState = <div><Icon glyph="fa-play-circle-o"/>{i18n('arr.fa.bulkActions.running')}</div>;
                         break;
                     case "WAITING":
                     case "PLANNED":
-                        state = <td><Icon glyph="fa-pause-circle-o"/> {i18n('arr.fa.bulkActions.planned')}</td>;
+                        innerState = <div><Icon glyph="fa-pause-circle-o"/>{i18n('arr.fa.bulkActions.planned')}</div>;
                         break;
                     case "ERROR":
-                        state = <td><Icon glyph="fa-exclamation-triangle"/> {i18n('arr.fa.bulkActions.err')}</td>;
+                        innerState = <div><Icon glyph="fa-exclamation-triangle"/>{i18n('arr.fa.bulkActions.err')}</div>;
                         break;
                     case null:
                         lastRun = 'Nikdy';
                     case "FINISH":
                     default:
                         canRun = true;
-                        state = <td><Icon glyph="fa-times"/> {i18n('arr.fa.bulkActions.idle')}</td>;
+                        innerState = <div><Icon glyph="fa-times"/>{i18n('arr.fa.bulkActions.idle')}</div>;
                         break;
                 }
+                state = <td className="no-wrap">{innerState}</td>
                 if (indexExist && this.props.store.states[index].runChange) {
                     lastRun = dateTimeToString(new Date(this.props.store.states[index].runChange.changeDate));
                 }
@@ -81,7 +82,7 @@ var BulkActionsTable = class BulkActionsTable extends AbstractReactComponent {
         }
         return (
             table === null ? <div>{i18n('arr.fa.bulkActions.noActions')}</div> :
-            <Table striped bordered condensed>
+            <Table striped bordered condensed >
                 <thead>
                 <tr>
                     <th>{i18n('arr.fa.bulkActions.state')}</th>

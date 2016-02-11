@@ -6,7 +6,7 @@ import ReactDOM from 'react-dom';
 import {WebApi} from 'actions'
 import {Icon, i18n, AbstractReactComponent, NoFocusButton, Autocomplete} from 'components';
 import {connect} from 'react-redux'
-import {decorateValue} from './DescItemUtils'
+import {decorateAutocompleteValue} from './DescItemUtils'
 
 import {MenuItem, Button} from 'react-bootstrap';
 
@@ -29,7 +29,7 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
 
         text = text == "" ? null : text;
 
-        WebApi.findRegistry(text)
+        WebApi.findRegistry(text, null, null, this.props.versionId)
                 .then(json => {
                     this.setState({
                         recordList: json.recordList.map(record => {
@@ -67,7 +67,7 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
     renderFooter() {
         return (
                 <div className="create-record">
-                    <Button onClick={this.handleCreateRecord}>{i18n('registry.addNewRegistry')}</Button>
+                    <Button onClick={this.handleCreateRecord}><Icon glyph='fa-plus'/>{i18n('registry.addNewRegistry')}</Button>
                 </div>
         )
     }
@@ -86,9 +86,8 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
         return (
                 <div className='desc-item-value desc-item-value-parts'>
                     <Autocomplete
-                            {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
+                            {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-record'])}
                             customFilter
-                            className='autocomplete-record'
                             footer={footer}
                             value={value}
                             items={this.state.recordList}

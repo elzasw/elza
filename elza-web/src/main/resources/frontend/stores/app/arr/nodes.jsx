@@ -74,6 +74,7 @@ export default function nodes(state = nodesInitialState, action) {
         case types.FA_SUB_NODE_FORM_REQUEST:
         case types.FA_SUB_NODE_FORM_RECEIVE:
         case types.FA_SUB_NODE_FORM_VALUE_CHANGE:
+        case types.FA_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
         case types.FA_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
         case types.FA_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
         case types.FA_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
@@ -218,21 +219,35 @@ export default function nodes(state = nodesInitialState, action) {
 
             return state;
         case types.FA_NODE_CHANGE:
-            var newState = Object.assign({}, state);
-            for (var i = 0; i < newState.nodes.length; i++) {
-                if(newState.nodes[i].id == action.parentNode.id) {
-                    newState.nodes[i] = node(newState.nodes[i], action);
+
+            var changed = false;
+            var nodes = [...state.nodes];
+
+            for (var i = 0; i < nodes.length; i++) {
+                if(nodes[i].id == action.parentNode.id) {
+                    nodes[i] = node(nodes[i], action);
+                    changed = true;
                 }
             }
-            return newState;
+            if (changed) {
+                return {...state, nodes}
+            }
+            return state;
         case types.CHANGE_ADD_LEVEL:
-            var newState = Object.assign({}, state);
-            for (var i = 0; i < newState.nodes.length; i++) {
-                if(newState.nodes[i].id == action.parentNodeId) {
-                    newState.nodes[i] = node(newState.nodes[i], action);
+
+            var changed = false;
+            var nodes = [...state.nodes];
+
+            for (var i = 0; i < nodes.length; i++) {
+                if(nodes[i].id == action.parentNodeId) {
+                    nodes[i] = node(nodes[i], action);
+                    changed = true;
                 }
             }
-            return newState;
+            if (changed) {
+                return {...state, nodes}
+            }
+            return state;
         default:
             return state
     }

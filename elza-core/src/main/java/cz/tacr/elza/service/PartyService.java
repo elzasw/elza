@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
@@ -40,6 +41,8 @@ import cz.tacr.elza.domain.ParRelationRoleType;
 import cz.tacr.elza.domain.ParRelationType;
 import cz.tacr.elza.domain.ParUnitdate;
 import cz.tacr.elza.domain.RegRecord;
+import cz.tacr.elza.domain.RegRegisterType;
+import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.domain.RegVariantRecord;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ComplementTypeRepository;
@@ -56,6 +59,7 @@ import cz.tacr.elza.repository.PartyRelationRepository;
 import cz.tacr.elza.repository.PartyRepository;
 import cz.tacr.elza.repository.PartyTypeRepository;
 import cz.tacr.elza.repository.RegRecordRepository;
+import cz.tacr.elza.repository.RegisterTypeRepository;
 import cz.tacr.elza.repository.RelationEntityRepository;
 import cz.tacr.elza.repository.RelationRepository;
 import cz.tacr.elza.repository.RelationRoleTypeRepository;
@@ -145,6 +149,9 @@ public class PartyService {
 
     @Autowired
     private EventNotificationService eventNotificationService;
+
+    @Autowired
+    private RegisterTypeRepository registerTypeRepository;
 
     /**
      * Najde osobu podle rejstříkového hesla.
@@ -292,6 +299,10 @@ public class PartyService {
         Assert.notNull(party.getRecord().getScope(), "Není nastavena třída rejstříkového hesla");
         Assert.notNull(party.getRecord().getScope().getScopeId(), "Není nastaveno id třídy rejstříkového hesla");
 
+        if (party.getRelations() != null) {
+            party.getRelations().sort(new ParRelation.ParRelationComparator());
+        }
+
         //vytvoření rejstříkového hesla v groovy
         RegRecord recordFromGroovy = groovyScriptService.getRecordFromGroovy(party);
         List<RegVariantRecord> variantRecords = new ArrayList<>(recordFromGroovy.getVariantRecordList());
@@ -314,6 +325,7 @@ public class PartyService {
             registryService.saveVariantRecord(variantRecord);
         }
     }
+
 
 
     /**
@@ -638,6 +650,7 @@ public class PartyService {
             }
 
             relation.setTo(saveUnitDate(relationSource.getTo()));
+            relation.setSource(relationSource.getSource());
         }
 
 
@@ -658,6 +671,9 @@ public class PartyService {
         for (ParUnitdate unitdate : unitdateRemove) {
             unitdateRepository.delete(unitdate);
         }
+
+        entityManager.flush(); //aktualizace seznamu vztahů v osobě
+        synchRecord(party);
 
         return result;
     }
@@ -701,6 +717,7 @@ public class PartyService {
 
     public void deleteRelation(final ParRelation relation) {
 
+        ParParty party = relation.getParty();
 
         ParUnitdate from = relation.getFrom();
         ParUnitdate to = relation.getTo();
@@ -713,6 +730,9 @@ public class PartyService {
         relationRepository.delete(relation);
 
         deleteUnitDates(from, to);
+        entityManager.flush();      //aktualizace seznamu vztahů
+
+        synchRecord(party);
     }
 
 
@@ -746,8 +766,6 @@ public class PartyService {
                 Assert.notNull(saveEntity,
                         "Nebyla nalezena entita vztahu s id " + newRelationEntity.getRelationEntityId());
                 toRemoveEntities.remove(saveEntity);
-
-                saveEntity.setSource(newRelationEntity.getSource());
             }
 
 
@@ -763,6 +781,7 @@ public class PartyService {
             saveEntity.setRecord(record);
 
             saveEntity.setRelation(relation);
+            checkRelationEntitySave(saveEntity);
 
             result.add(relationEntityRepository.save(saveEntity));
         }
@@ -774,6 +793,46 @@ public class PartyService {
         return result;
     }
 
+
+    /**
+     * Zvaliduje možnost vytvoření navázené entity vztahu k osobě.
+     *
+     * @param relationEntity navázaná entita
+     */
+    private void checkRelationEntitySave(final ParRelationEntity relationEntity) {
+        Assert.notNull(relationEntity);
+        Assert.notNull(relationEntity.getRoleType());
+        Assert.notNull(relationEntity.getRelation());
+        Assert.notNull(relationEntity.getRecord());
+
+        //typ role entity odpovídající typu vztahu dle par_relation_type_role_type
+        ParRelationRoleType roleType = relationEntity.getRoleType();
+        List<ParRelationType> possibleRelationTypes = relationTypeRepository.findByRelationRoleType(roleType);
+        if (!possibleRelationTypes.contains(relationEntity.getRelation().getComplementType())) {
+            throw new IllegalArgumentException(
+                    "Typ role entity " + roleType.getName() + " nespadá do typu vztahu " + relationEntity.getRelation()
+                            .getComplementType().getName());
+        }
+
+
+        //navázaná entita stejné scope jako osoba sama
+        RegScope entityScope = relationEntity.getRecord().getScope();
+        if (!relationEntity.getRelation().getParty().getRecord().getScope().equals(entityScope)) {
+            throw new IllegalArgumentException(
+                    "Navázaná entita musí mít stejnou třídu rejstříkového hesla jako osoba, ke které entitu navazujeme.");
+        }
+
+        //navázaná entita povoleného typu rejstříku dle par_registry_role (mělo by to ideálně i dědit)
+        RegRegisterType entityRegisterType = relationEntity.getRecord().getRegisterType();
+        Set<Integer> registerTypeIds = registerTypeRepository.findByRelationRoleType(roleType)
+                .stream().map(t -> t.getRegisterTypeId()).collect(Collectors.toSet());
+        registerTypeIds = registerTypeRepository.findSubtreeIds(registerTypeIds);
+        if (!registerTypeIds.contains(entityRegisterType.getRegisterTypeId())) {
+            throw new IllegalArgumentException(
+                    "Navázaná entita musí mít typ rejstříku nebo podtyp, který je navázaný na roli entity.");
+        }
+
+    }
 
     /**
      * Prověří existenci vazeb na osobu. Pokud existují, vyhodí příslušnou výjimku, nelze mazat.

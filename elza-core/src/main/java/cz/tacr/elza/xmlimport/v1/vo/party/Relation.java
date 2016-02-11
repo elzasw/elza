@@ -49,6 +49,12 @@ public class Relation {
     @XmlElement(name = "note")
     private String note;
 
+    /**
+     * Zdrojová informace.
+     */
+    @XmlElement(name = "source")
+    private String source;
+
     /** Typy rolí. */
     @XmlElement(name = "role-type")
     @XmlElementWrapper(name = "role-type-list")
@@ -100,6 +106,14 @@ public class Relation {
 
     public void setNote(String note) {
         this.note = note;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(final String source) {
+        this.source = source;
     }
 
     public List<RoleType> getRoleTypes() {

@@ -88,3 +88,10 @@ export function changeMoveLevel(versionId) {
         versionId
     }
 }
+
+export function changeRegistryRecord(changedIds){
+    return {
+        type: types.CHANGE_REGISTRY_UPDATE,
+        changedIds
+    }
+}

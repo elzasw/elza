@@ -615,6 +615,44 @@ public class DescriptionItemService {
     }
 
     /**
+     * Upravení hodnoty atributu.
+     *  - se spuštěním validace uzlu
+     *
+     * @param descItem              hodnota atributu (změny)
+     * @param findingAidVersion     verze archivní pomůcky
+     * @param change                změna
+     * @param createNewVersion      vytvořit novou verzi?
+     * @return  upravená výsledná hodnota atributu
+     */
+    public ArrDescItem updateDescriptionItem(final ArrDescItem descItem,
+                                             final ArrFindingAidVersion findingAidVersion,
+                                             final ArrChange change,
+                                             final boolean createNewVersion) {
+        Assert.notNull(descItem);
+        Assert.notNull(descItem.getPosition());
+        Assert.notNull(descItem.getDescItemObjectId());
+        Assert.notNull(findingAidVersion);
+        Assert.notNull(change);
+
+        List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItem.getDescItemObjectId());
+
+        if (descItems.size() > 1) {
+            throw new IllegalStateException("Hodnota musí být právě jedna");
+        } else if (descItems.size() == 0) {
+            throw new IllegalStateException("Hodnota neexistuje, pravděpodobně byla již smazána");
+        }
+        ArrDescItem descItemDB = descItems.get(0);
+
+        ArrDescItem descItemUpdated = updateDescriptionItemWithData(descItem, descItemDB, findingAidVersion, change, createNewVersion);
+
+        // validace uzlu
+        ruleService.conformityInfo(findingAidVersion.getFindingAidVersionId(), Arrays.asList(descItemUpdated.getNode().getNodeId()),
+                NodeTypeOperation.SAVE_DESC_ITEM, null, Arrays.asList(descItemUpdated), null);
+
+        return descItemUpdated;
+    }
+
+    /**
      * Upravení hodnoty atributu s daty.
      *
      * @param descItem          hodnota atributu (změny)

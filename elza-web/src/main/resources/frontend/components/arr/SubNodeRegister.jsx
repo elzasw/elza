@@ -7,7 +7,7 @@ import {connect} from 'react-redux'
 
 import {faSubNodeRegisterValueDelete, faSubNodeRegisterValueAdd,
         faSubNodeRegisterValueFocus, faSubNodeRegisterValueBlur, faSubNodeRegisterValueChange} from 'actions/arr/subNodeRegister'
-import {registrySelect, registryAdd} from 'actions/registry/registryList'
+import {registrySelect, registryAdd} from 'actions/registry/registryRegionList'
 import NodeRegister from './registerForm/NodeRegister'
 import {routerNavigate} from 'actions/router'
 
@@ -29,7 +29,8 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
      * @param index {Integer} index hodnoty seznamu
      */
     handleCreateRecord(index) {
-        this.dispatch(registryAdd(null, this.handleCreatedRecord.bind(this, index)));
+        const {versionId} = this.props;
+        this.dispatch(registryAdd(null, versionId, this.handleCreatedRecord.bind(this, index)));
     }
 
     /**
@@ -39,14 +40,14 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
      * @param form {Object} data z formuláře
      */
     handleCreatedRecord(index, data) {
-        const {versionId, selectedSubNodeId, nodeKey} = this.props;
+        const {versionId, selectedSubNodeId, nodeKey, fa} = this.props;
 
         // TODO: sjednoceni od Pavla - ELZA-591
         this.dispatch(faSubNodeRegisterValueFocus(versionId, selectedSubNodeId, nodeKey, index));
         this.dispatch(faSubNodeRegisterValueChange(versionId, selectedSubNodeId, nodeKey, index, data.recordId));
         this.dispatch(faSubNodeRegisterValueBlur(versionId, selectedSubNodeId, nodeKey, index));
 
-        this.dispatch(registrySelect(data.recordId));
+        this.dispatch(registrySelect(data.recordId, fa));
         this.dispatch(routerNavigate('registry'));
     }
 
@@ -59,7 +60,8 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
     }
 
     handleDetail(index, recordId) {
-        this.dispatch(registrySelect(recordId));
+        const {fa} = this.props;
+        this.dispatch(registrySelect(recordId, fa));
         this.dispatch(routerNavigate('registry'));
     }
 
@@ -76,7 +78,7 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
     }
 
     renderLink(link, index) {
-        const {closed} = this.props;
+        const {closed, versionId} = this.props;
         return (
                 <div className="link" key={"link-" + index}>
                     <NodeRegister onFocus={this.handleFocus.bind(this, index)}
@@ -85,7 +87,8 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
                                   onChange={this.handleChange.bind(this, index)}
                                   closed={closed}
                                   onCreateRecord={this.handleCreateRecord.bind(this, index)}
-                                  item={link} />
+                                  item={link}
+                                  versionId={versionId} />
                     {!closed && <NoFocusButton key="delete" onClick={this.handleRemove.bind(this, index)} ><Icon glyph="fa-times" /></NoFocusButton>}
                 </div>
         );
@@ -127,6 +130,18 @@ var SubNodeRegister = class SubNodeRegister extends AbstractReactComponent {
     }
 }
 
+function mapStateToProps(state) {
+    const {arrRegion} = state
+    var fa = null;
+    if (arrRegion.activeIndex != null) {
+        fa = arrRegion.fas[arrRegion.activeIndex];
+    }
+
+    return {
+        fa: fa
+    }
+}
+
 SubNodeRegister.propTypes = {
     register: React.PropTypes.object.isRequired,
     selectedSubNodeId: React.PropTypes.number.isRequired,
@@ -135,4 +150,4 @@ SubNodeRegister.propTypes = {
     nodeId: React.PropTypes.oneOfType(React.PropTypes.number, React.PropTypes.string),
 }
 
-module.exports = connect()(SubNodeRegister);
+module.exports = connect(mapStateToProps)(SubNodeRegister);

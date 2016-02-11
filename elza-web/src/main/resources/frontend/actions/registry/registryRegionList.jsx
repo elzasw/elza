@@ -9,20 +9,21 @@ import {WebApi} from 'actions'
 import * as types from 'actions/constants/ActionTypes';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {i18n, AddRegistryForm} from 'components';
+import {registryChangeParent} from 'actions/registry/registryRegionData'
 
-export function fetchRegistryIfNeeded(search = '', registryParent = null, registerTypeIds = null) {
+export function fetchRegistryIfNeeded(search = '', registryParent = null, registerTypeIds = null, versionId = null) {
     return (dispatch, getState) => {
         var state = getState();
-        if (!state.registry.fetched && !state.registry.isFetching) {
-            return dispatch(fetchRegistry(search, registryParent, registerTypeIds));
+        if ((state.registryRegion.dirty && !state.registryRegion.isFetching) || (!state.registryRegion.fetched && !state.registryRegion.isFetching)) {
+            return dispatch(fetchRegistry(search, registryParent, registerTypeIds, versionId));
         }
     }
 }
 
-export function fetchRegistry(search, registryParent = null, registerTypeIds = null) {
+export function fetchRegistry(search, registryParent = null, registerTypeIds = null, versionId = null) {
     return dispatch => {
         dispatch(requestRegistry());
-        return WebApi.findRegistry(search, registryParent, registerTypeIds)
+        return WebApi.findRegistry(search, registryParent, registerTypeIds, versionId)
                 .then(json => dispatch(receiveRegistry(json)));
     }
 }
@@ -52,7 +53,7 @@ export function registrySetTypesId(registryTypesId) {
 export function getRegistryIfNeeded(registryId) {
     return (dispatch, getState) => {
         var state = getState();
-        if (!state.registryData.fetched && !state.registryData.isFetching && (registryId !==state.registryData.selectedId || state.registryData.requireReload === true)) {
+        if (!state.registryRegionData.fetched && !state.registryRegionData.isFetching && (registryId !==state.registryRegionData.selectedId || state.registryRegionData.requireReload === true)) {
             return dispatch(getRegistry(registryId));
         }
     }
@@ -85,7 +86,7 @@ export function receiveRegistryGetRegistry(registryId, json) {
 export function getRegistryRecordTypesIfNeeded(partyTypeId = null){
     return (dispatch, getState) => {
         var state = getState();
-        if ((!state.registryRecordTypes.fetched && !state.registryRecordTypes.isFetching) || state.registryRecordTypes.partyTypeId !== partyTypeId) {
+        if ((!state.registryRegionRecordTypes.fetched && !state.registryRegionRecordTypes.isFetching) || state.registryRegionRecordTypes.partyTypeId !== partyTypeId) {
             return dispatch(getRegistryRecordTypes(partyTypeId));
         }
     }
@@ -114,23 +115,15 @@ export function receiveRegistryRecordTypes(json, partyTypeId){
     }
 }
 
-export function registryAdd(parentId, callback) {
+export function registryAdd(parentId, versionId, callback) {
     return (dispatch, getState) => {
         var state = getState();
-        var registryParentTypesId = null;
-
-        if (state.registry.registryData) {
-            registryParentTypesId = state.registry.registryData.item.registerTypeId;
-        } else if(state.registryData.item.registerTypeId) {
-            registryParentTypesId = state.registryData.item.registerTypeId;
-        }
-
         dispatch(modalDialogShow(this, i18n('registry.addRegistry'),
                         <AddRegistryForm
                                 create
+                                versionId={versionId}
                                 onSubmit={registryAddSubmit.bind(null, parentId, callback, dispatch)}
                                 parentRecordId={parentId}
-                                parentRegisterTypeId={registryParentTypesId}
                                 />
                 )
         )
@@ -145,11 +138,28 @@ function registryAddSubmit(parentId, callback, dispatch, data) {
     });
 }
 
-export function registrySelect(recordId) {
+export function registrySelect(recordId, fa = null) {
     return {
         recordId: recordId,
-        type: types.REGISTRY_SELECT,
-        receivedAt: Date.now()
+        fa: fa,
+        type: types.REGISTRY_SELECT
     }
 
+}
+
+export function registryArrReset() {
+    return {
+        type: types.REGISTRY_ARR_RESET
+    }
+
+}
+
+export function registryClickNavigation(recordId){
+    return (dispatch) => {
+        return WebApi.getRegistry(recordId).then(json => {
+            json.parents.push({id:recordId, name: json.record});
+            var registry = Object.assign({}, registry,{registryParentId: recordId, parents: json.parents, typesToRoot: json.typesToRoot, filterText: ''});
+            dispatch(registryChangeParent(registry));
+        });
+    }
 }

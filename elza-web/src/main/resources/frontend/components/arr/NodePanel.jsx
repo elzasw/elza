@@ -334,7 +334,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             if (node.selectedSubNodeId == item.id) {
                 rows.push(
                     <div key={item.id} ref={'accheader-' + item.id} className='accordion-item opened'>
-                        <div className='accordion-header-container' onClick={this.handleCloseItem.bind(this, item)}>
+                        <div key='header' className='accordion-header-container' onClick={this.handleCloseItem.bind(this, item)}>
                             <div className='accordion-header'>
                                 <div title={accordionLeft} className='accordion-header-left' key='accordion-header-left'>
                                     {referenceMark} <span className="title" title={accordionLeft}>{accordionLeft}</span>
@@ -354,7 +354,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             } else {
                 rows.push(
                     <div key={item.id} ref={'accheader-' + item.id} className='accordion-item closed'>
-                        <div className='accordion-header-container' onClick={this.handleOpenItem.bind(this, item)}>
+                        <div key='header' className='accordion-header-container' onClick={this.handleOpenItem.bind(this, item)}>
                             <div className='accordion-header'>
                                 <div title={accordionLeft} className='accordion-header-left' key='accordion-header-left'>
                                     {referenceMark} <span className="title" title={accordionLeft}>{accordionLeft}</span>
@@ -445,6 +445,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             // Formulář editace JP
             var conformityInfo = this.transformConformityInfo(node);
             form = <SubNodeForm
+                key={'sub-node-form-' + node.selectedSubNodeId}
                 nodeId={node.id}
                 versionId={versionId}
                 selectedSubNodeId={node.selectedSubNodeId}
@@ -483,7 +484,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         </div>
 
         return (
-            <div className='node-panel-container'>
+            <div key={'node-panel-' + node.selectedSubNodeId} className='node-panel-container'>
                 {false && accordionInfo}
                 {actions}
                 {parents}

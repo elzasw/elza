@@ -91,6 +91,10 @@ export default function faTree(state = initialState, action) {
             return state;
 
         case types.FA_NODE_CHANGE:
+            var index = indexById(state.nodes, action.parentNode.id);
+            if (index != null) {
+                state.nodes[index].version = action.parentNode.version;
+            }
             return {...state, dirty: true}
         case types.STORE_SAVE:
             const {selectedId, selectedIds, focusId, expandedIds, searchedIds, filterText, filterCurrentIndex, multipleSelection, multipleSelectionOneLevel} = state;

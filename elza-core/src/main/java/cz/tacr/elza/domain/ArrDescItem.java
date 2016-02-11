@@ -19,6 +19,8 @@ import org.springframework.data.rest.core.annotation.RestResource;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import cz.tacr.elza.search.DescItemIndexingInterceptor;
+
 
 /**
  * Atribut archivního popisu evidovaný k jednotce archivního popisu. Odkaz na uzel stromu AP je
@@ -27,7 +29,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 20.8.2015
  */
-@Indexed
+@Indexed(interceptor = DescItemIndexingInterceptor.class)
 @Entity(name = "arr_desc_item")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})

@@ -48,39 +48,40 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
             label: (label != '' ? label : this.props.label),          // pokus je vybrany nejaká položka, vypíše se její název, jinak se vypíše defaultní popisek
             value : this.props.value                // id vybrane položky
         }
+
     }
 
     componentWillReceiveProps(nextProps) {
-        var opened = (nextProps.opened ? nextProps.opened : []);
+
         var label = this.getItemLabel(nextProps.value, nextProps.items);
-
-
-        if (nextProps.value !== this.props.value) {
-            if (nextProps.preselect) {
-                if (this.props.value == undefined) {
-                    var preselect = this.getFirstPossibleRecordType(nextProps.items);
-                    if (preselect.found) {
-                        label = this.getItemLabel(preselect.found.id, nextProps.items);
-                        this.state = {
-                            opened: preselect.opened,
-                            label: label,
-                            value: preselect.found.id
-                        }
-                    }
-
-                    if (this.props.onChange) {
-                        this.props.onChange(preselect.found.id, preselect.found);
-                    }
+        if (nextProps.preselect) {
+            if (this.props.value == undefined) {
+                var preselect = this.getFirstPossibleRecordType(nextProps.items);
+                if (preselect.found) {
+                    label = this.getItemLabel(preselect.found.id, nextProps.items);
+                    this.setState({
+                        label: label,
+                        value: preselect.found.id
+                    });
                 }
-            } else {
 
-                this.state = {                                                  // inicializace stavu komponenty
-                    opened: opened,                                           // seznam rozbalenych uzlu
-                    label: (label != '' ? label : nextProps.label),          // pokus je vybrany nejaká položka, vypíše se její název, jinak se vypíše defaultní popisek
-                    value: nextProps.value                // id vybrane položky
+                if (nextProps.onChange) {
+                    nextProps.onChange(preselect.found.id, preselect.found);
                 }
             }
+        } else {
+
+            this.setState({
+                label: (label != '' ? label : nextProps.label),          // pokus je vybrany nejaká položka, vypíše se její název, jinak se vypíše defaultní popisek
+                value: nextProps.value                // id vybrane položky
+            })
+
+            if (nextProps.onChange && this.props.value !== nextProps.value){
+                nextProps.onChange(nextProps.value);
+            }
+
         }
+
     }
 
     componentDidMount(){

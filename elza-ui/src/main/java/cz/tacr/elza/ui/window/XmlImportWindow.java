@@ -4,10 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.List;
 
 import com.vaadin.data.Validator;
-import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Upload;
 
@@ -16,8 +14,8 @@ import cz.req.ax.AxComboBox;
 import cz.req.ax.AxContainer;
 import cz.req.ax.AxForm;
 import cz.req.ax.AxWindow;
-import cz.tacr.elza.api.vo.ImportDataFormat;
 import cz.tacr.elza.api.vo.XmlImportConfig;
+import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.controller.XmlImportManager;
 import cz.tacr.elza.domain.RulArrangementType;
@@ -98,7 +96,7 @@ public class XmlImportWindow extends AxWindow implements Upload.FailedListener, 
         form.addStyleName("form");
 
         AxForm.AxField importDataFormat = form
-                .addCombo("Typ importu", "importDataFormat", ImportDataFormat.class).required();
+                .addCombo("Typ importu", "importDataFormat", XmlImportType.class).required();
 
         //zastavit při chybě
         form.addField("Zastavit při chybě", "stopOnError").required();
@@ -154,53 +152,53 @@ public class XmlImportWindow extends AxWindow implements Upload.FailedListener, 
         lblTransformUpload.setVisible(false);
 
 
-        importDataFormat.field().addValueChangeListener((event) -> {
-            ImportDataFormat value = (ImportDataFormat) importDataFormat.field().getValue();
-            config.setImportDataFormat(value);
+//        importDataFormat.field().addValueChangeListener((event) -> {
+//            XmlImportType value = (XmlImportType) importDataFormat.field().getValue();
+//            config.setImportDataFormat(value);
+//
+//            ruleSetCombo.visible(false);
+//            ruleSetCombo.field().setRequired(false);
+//            arrangementTypeCombo.visible(false);
+//            arrangementTypeCombo.field().setRequired(false);
+//            transformUpload.setVisible(false);
+//
+//            if (value != null) {
+//                switch (value) {
+//                    case ELZA:
+//                        break;
+//                    case SUZAP:
+//                        ruleSetCombo.visible(true);
+//                        ruleSetCombo.field().setRequired(true);
+//                        arrangementTypeCombo.visible(true);
+//                        arrangementTypeCombo.field().setRequired(true);
+//                        transformUpload.setVisible(true);
+//                        break;
+//                    case INTERPI:
+//
+//                        break;
+//                }
+//            }
+//        });
 
-            ruleSetCombo.visible(false);
-            ruleSetCombo.field().setRequired(false);
-            arrangementTypeCombo.visible(false);
-            arrangementTypeCombo.field().setRequired(false);
-            transformUpload.setVisible(false);
-
-            if (value != null) {
-                switch (value) {
-                    case ELZA:
-                        break;
-                    case SUZAP:
-                        ruleSetCombo.visible(true);
-                        ruleSetCombo.field().setRequired(true);
-                        arrangementTypeCombo.visible(true);
-                        arrangementTypeCombo.field().setRequired(true);
-                        transformUpload.setVisible(true);
-                        break;
-                    case INTERPI:
-
-                        break;
-                }
-            }
-        });
-
-        importDataFormat.field().setValue(ImportDataFormat.ELZA);
+//        importDataFormat.field().setValue(XmlImportType.ELZA);
 
         form.validator(new AxForm.AxFormValidator<XmlImportConfig>() {
             @Override
             public void validate(final AxForm<XmlImportConfig> axForm) throws Validator.InvalidValueException {
 
-                if(config.getImportDataFormat().equals(ImportDataFormat.INTERPI)){
-                    throw new Validator.InvalidValueException("Není zatím implementováno");
-                }
+//                if(config.getImportDataFormat().equals(XmlImportType.INTERPI)){
+//                    throw new Validator.InvalidValueException("Není zatím implementováno");
+//                }
 
                 if(config.getXmlFile() == null){
                     throw new Validator.InvalidValueException("Není vybrán soubor.");
                 }
 
-                if(config.getImportDataFormat().equals(ImportDataFormat.SUZAP)){
-                    if(config.getTransformationFile() == null){
-                        throw new Validator.InvalidValueException("Není vybrán transformační soubor.");
-                    }
-                }
+//                if(config.getImportDataFormat().equals(XmlImportType.SUZAP)){
+//                    if(config.getTransformationFile() == null){
+//                        throw new Validator.InvalidValueException("Není vybrán transformační soubor.");
+//                    }
+//                }
             }
         });
 

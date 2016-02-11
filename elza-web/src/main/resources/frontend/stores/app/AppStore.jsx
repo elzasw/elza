@@ -18,9 +18,9 @@ const _logCollapsed = true;
 import arrRegion from './arr/arrRegion';
 import refTables from './refTables/refTables';
 import faFileTree from './arr/faFileTree';
-import registry from './registry/registry';
-import registryData from './registry/registryData';
-import registryRecordTypes from './registry/registryRecordTypes';
+import registryRegion from './registry/registryRegion';
+import registryRegionData from './registry/registryRegionData';
+import registryRegionRecordTypes from './registry/registryRegionRecordTypes';
 import toastrs from './toastr/toastrs';
 import partyRegion from './party/partyRegion';
 import contextMenu from './global/contextMenu';
@@ -28,7 +28,7 @@ import modalDialog from './global/modalDialog';
 import webSocket from './global/webSocket';
 import splitter from './global/splitter';
 import adminRegion from './admin/adminRegion';
-import addFaForm from './arr/form/addFaForm';
+import faForm from './arr/form/faForm';
 import addPacketForm from './arr/form/addPacketForm';
 import stateRegion from './state/stateRegion';
 import router from './router';
@@ -41,15 +41,15 @@ import relationForm from './party/form/relationForm';
 
 import addRegistryForm from './registry/form/addRegistryForm';
 import editRegistryForm from './registry/form/editRegistryForm';
-import addRegistryVariantForm from './registry/form/addRegistryVariantForm';
+
 
 let reducer = combineReducers({
     arrRegion,
     refTables,
     faFileTree,
-    registry,
-    registryData,
-    registryRecordTypes,
+    registryRegion,
+    registryRegionData,
+    registryRegionRecordTypes,
     toastrs,
     partyRegion,
     contextMenu,
@@ -60,7 +60,7 @@ let reducer = combineReducers({
     stateRegion,
     router,
     form: formReducer.plugin({
-        addFaForm: addFaForm,
+        faForm: faForm,
         addPacketForm: addPacketForm,
         addPartyForm: addPartyForm,
         partyNameForm: partyNameForm,
@@ -69,7 +69,6 @@ let reducer = combineReducers({
         relationForm: relationForm,
         addRegistryForm: addRegistryForm,
         editRegistryForm: editRegistryForm,
-        addRegistryVariantForm: addRegistryVariantForm
     })
 });
 
@@ -136,7 +135,7 @@ var save = function(store) {
 
     var result = {
         partyRegion: partyRegion(store.partyRegion, action),
-        registryRegion: registry(store.registry, action),
+        registryRegion: registryRegion(store.registryRegion, action),
         arrRegion: arrRegion(store.arrRegion, action),
         splitter: splitter(store.splitter, action),
     }

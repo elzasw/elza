@@ -1,9 +1,9 @@
 import * as types from 'actions/constants/ActionTypes';
 
-export default function addFaForm(state, action) {
+export default function faForm(state, action) {
     switch (action.type) {
         case types.GLOBAL_INIT_FORM_DATA:
-            if (action.form == 'addFaForm') {
+            if (action.form == 'faForm') {
                 return {
                     ...state,
                     initialValues: action.data
@@ -23,7 +23,7 @@ export default function addFaForm(state, action) {
                         return state;
                     }
                 default:
-                  return state;
+                    return state;
             }
         default:
             return state;

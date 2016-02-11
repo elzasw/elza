@@ -23,6 +23,9 @@ var Shortcuts = require('react-shortcuts/component')
 
 require ('./AbstractDescItem.less')
 
+var placeholder = document.createElement("div");
+placeholder.className = "placeholder";
+
 var DescItemType = class DescItemType extends AbstractReactComponent {
     constructor(props) {
         super(props);
@@ -30,7 +33,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         this.bindMethods('renderDescItemSpec', 'renderDescItem', 'renderLabel',
                 'handleChange', 'handleChangeSpec', 'handleCreatePacket', 'handleCreateParty', 'handleCreateRecord',
                 'handleBlur', 'handleFocus', 'handleDescItemTypeLock', 'handleDescItemTypeCopy', 'handleDetailParty',
-                'handleDetailRecord', 'handleDescItemTypeCopyFromPrev');
+                'handleDetailRecord', 'handleDescItemTypeCopyFromPrev', 'handleDragStart', 'handleDragEnd', 'handleDragOver', 'handleDragLeave');
     }
 
     componentWillReceiveProps(nextProps) {
@@ -48,12 +51,13 @@ return true;
 
     /**
      * Renderování specifikace atributu.
+     * @param key {Object} key pro hodnotu
      * @param descItem {Object} objekt hodnoty atributu
      * @param descItemIndex {Integer} index hodnoty atributu v seznamu
      * @param locked {Boolean}
      * @return {Object} view
      */
-    renderDescItemSpec(descItem, descItemIndex, locked) {
+    renderDescItemSpec(key, descItem, descItemIndex, locked) {
         const {descItemTypeInfo} = this.props;
 
         var options = descItemTypeInfo.descItemSpecs.map(itemSpec => (
@@ -74,8 +78,6 @@ return true;
             onFocus: this.handleFocus.bind(this, descItemIndex),
             disabled: locked
         }
-
-        var key = descItem.id != null ? 'spec_' + descItem.id : '_spec_' + descItemIndex;
 
         return (
             <select
@@ -154,7 +156,7 @@ return true;
      * @param e {Object} event od prvku
      */
     handleChangeSpec(descItemIndex, e) {
-        this.props.onChangeSpec(descItemIndex, e.target.value);
+        this.props.onChangeSpec(descItemIndex, Number(e.target.value));
     }
 
     /**
@@ -173,6 +175,138 @@ return true;
         this.props.onFocus(descItemIndex);
     }
 
+    cancelDragging(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        return false;
+    }
+
+    handleDragStart(e) {
+        // Pokud je AP uzavřené, nelze dělat DND
+        if (this.props.closed) {
+            return this.cancelDragging(e)
+        }
+
+        // Pokud nekliknul na dragger, nelze přesouvat
+        var drgs = e.target.getElementsByClassName('dragger')
+        if (drgs.length !== 1) {
+            return this.cancelDragging(e)
+        }
+
+        // Nelze přesouvat neuložené položky
+        var index = e.currentTarget.dataset.id
+        if (typeof this.props.descItemType.descItems[index].id === 'undefined') {
+            return this.cancelDragging(e)
+        }
+
+        var draggerRect = drgs[0].getBoundingClientRect();
+        var clickOnDragger = (e.clientX >= draggerRect.left && e.clientX <= draggerRect.right
+            && e.clientY >= draggerRect.top && e.clientY <= draggerRect.bottom)
+        if (!clickOnDragger) {
+            return this.cancelDragging(e)
+        }
+
+        this.dragged = e.currentTarget;
+        this.prevDraggedStyleDisplay = this.dragged.style.display
+        e.dataTransfer.effectAllowed = 'move';
+
+        // Firefox requires dataTransfer data to be set
+        e.dataTransfer.setData("text/html", e.currentTarget);
+    }
+
+    handleDragEnd(e) {
+        //this.dragged.style.display = "block";
+        this.dragged.style.display = this.prevDraggedStyleDisplay
+        placeholder.parentNode === this.dragged.parentNode && this.dragged.parentNode.removeChild(placeholder)
+
+        if (!this.over || !this.dragged) {
+            return
+        }
+
+        // Update data
+        var from = Number(this.dragged.dataset.id);
+        var to = Number(this.over.dataset.id);
+        if(from < to) to--;
+        if(this.nodePlacement == "after") to++;
+        //console.log(from, to);
+        if (from !== to) {
+            this.props.onChangePosition(from, to);
+        }
+    }
+
+    hasClass(elem, klass) {
+         return (" " + elem.className + " ").indexOf(" " + klass + " ") > -1;
+    }
+
+    isUnderContainer(el, container) {
+        while (el !== null) {
+            if (el === container) {
+                return true;
+            }
+            el = el.parentNode;
+        }
+        return false
+    }
+
+    handleDragLeave(e) {
+        e.preventDefault();
+        this.over = null;
+        this.dragged && placeholder.parentNode === this.dragged.parentNode && this.dragged.parentNode.removeChild(placeholder)
+        return
+    }
+
+    handleDragOver(e) {
+        e.preventDefault();
+
+        if (!this.dragged) {
+            e.dataTransfer.dropEffect = "none";
+            return
+        }
+
+        this.dragged.style.display = "none";
+
+        var dragOverContainer = ReactDOM.findDOMNode(this.refs.dragOverContainer);
+        if (!this.isUnderContainer(e.target, dragOverContainer)) {
+            e.dataTransfer.dropEffect = "none";
+            this.over = null;
+            placeholder.parentNode === this.dragged.parentNode && this.dragged.parentNode.removeChild(placeholder)
+            return
+        }
+
+        if (e.target.className == "placeholder") return;
+
+        var realTarget = e.target;
+        var found = false;
+        while (realTarget !== null) {
+            if (typeof realTarget.dataset.id !== 'undefined') {
+                found = true;
+                break
+            }
+            realTarget = realTarget.parentNode
+        }
+
+        if (!found) {
+            return
+        }
+
+        this.over = realTarget;
+
+        // Inside the dragOver method
+        var parent = realTarget.parentNode;
+        var overRect = this.over.getBoundingClientRect();
+        var height2 = (overRect.bottom - overRect.top) / 2;
+
+        if (e.clientY < overRect.top + height2) {
+            this.nodePlacement = "before"
+            parent.insertBefore(placeholder, realTarget);
+        } else if (e.clientY >= overRect.top + height2) {
+            this.nodePlacement = "after";
+            parent.insertBefore(placeholder, realTarget.nextElementSibling);
+        } else {
+
+        }
+    }
+
     /**
      * Renderování hodnoty atributu.
      * @param descItemType {Object} atribut
@@ -183,18 +317,23 @@ return true;
      * @return {Object} view
      */
     renderDescItem(descItemType, descItem, descItemIndex, actions, locked) {
-        const {descItemTypeInfo, rulDataType, calendarTypes, packets, packetTypes} = this.props;
+        const {descItemTypeInfo, rulDataType, calendarTypes, packets, packetTypes, versionId} = this.props;
 
         var cls = 'desc-item-type-desc-item-container';
         if (actions.length > 0) {
             cls += ' with-action';
         }
+        if (descItemType.repeatable) {
+            cls += ' draggable-desc-items';
+        }
 
         var parts = [];
 
+        var key = descItem.formKey;
+
         if (descItemTypeInfo.useSpecification) {
             parts.push(
-                this.renderDescItemSpec(descItem, descItemIndex, locked)
+                this.renderDescItemSpec('spec_' + key, descItem, descItemIndex, locked)
             );
         }
 
@@ -203,58 +342,88 @@ return true;
             onChange: this.handleChange.bind(this, descItemIndex),
             onBlur: this.handleBlur.bind(this, descItemIndex),
             onFocus: this.handleFocus.bind(this, descItemIndex),
-            locked: locked
+            locked: locked,
         }
 
-        var key = descItem.id != null ? 'value_' + descItem.id : '_value_' + descItemIndex;
+        var dragProps = {
+            'data-id': descItemIndex,
+            draggable: descItemType.repeatable,
+            onDragStart: this.handleDragStart,
+            onDragEnd: this.handleDragEnd,
+        }
 
-        //parts.push(<div>{rulDataType.code}-{descItem.id}-{descItemType.type}</div>);
+        var itemComponentKey = 'value_' + key;
         switch (rulDataType.code) {
             case 'PARTY_REF':
-                parts.push(<DescItemPartyRef key={descItemType.id}  {...descItemProps}
-                                             onDetail={this.handleDetailParty.bind(this, descItemIndex)}
-                                             onCreateParty={this.handleCreateParty.bind(this, descItemIndex)} />)
+                parts.push(<DescItemPartyRef key={itemComponentKey}
+                    {...descItemProps}
+                    onDetail={this.handleDetailParty.bind(this, descItemIndex)}
+                    onCreateParty={this.handleCreateParty.bind(this, descItemIndex)}
+                    versionId={versionId}
+                    />)
                 break;
             case 'RECORD_REF':
-                parts.push(<DescItemRecordRef key={key} {...descItemProps}
-                                              onDetail={this.handleDetailRecord.bind(this, descItemIndex)}
-                                              onCreateRecord={this.handleCreateRecord.bind(this, descItemIndex)} />)
+                parts.push(<DescItemRecordRef key={itemComponentKey}
+                    {...descItemProps}
+                    onDetail={this.handleDetailRecord.bind(this, descItemIndex)}
+                    onCreateRecord={this.handleCreateRecord.bind(this, descItemIndex)}
+                    versionId={versionId}
+                    />)
                 break;
             case 'PACKET_REF':
-                parts.push(<DescItemPacketRef key={key} {...descItemProps} onCreatePacket={this.handleCreatePacket.bind(this, descItemIndex)} packets={packets} packetTypes={packetTypes} />)
+                parts.push(<DescItemPacketRef key={itemComponentKey}
+                    {...descItemProps}
+                    onCreatePacket={this.handleCreatePacket.bind(this, descItemIndex)}
+                    packets={packets}
+                    packetTypes={packetTypes}
+                    />)
                 break;
             case 'UNITDATE':
-                parts.push(<DescItemUnitdate key={key} {...descItemProps} calendarTypes={calendarTypes} />)
+                parts.push(<DescItemUnitdate key={itemComponentKey}
+                    {...descItemProps}
+                    calendarTypes={calendarTypes}
+                    />)
                 break;
             case 'UNITID':
-                parts.push(<DescItemUnitid key={key} {...descItemProps} />)
+                parts.push(<DescItemUnitid key={itemComponentKey}
+                    {...descItemProps} 
+                    />)
                 break;
             case 'STRING':
-                parts.push(<DescItemString key={key} {...descItemProps} />)
+                parts.push(<DescItemString key={itemComponentKey}
+                    {...descItemProps}
+                    />)
                 break;
             case 'FORMATTED_TEXT':
             case 'TEXT':
-                parts.push(<DescItemText key={key} {...descItemProps} />)
+                parts.push(<DescItemText key={itemComponentKey}
+                    {...descItemProps}
+                    />)
                 break;
             case 'DECIMAL':
-                parts.push(<DescItemDecimal key={key} {...descItemProps} />)
+                parts.push(<DescItemDecimal key={itemComponentKey}
+                    {...descItemProps}
+                    />)
                 break;
             case 'INT':
-                parts.push(<DescItemInt key={key} {...descItemProps} />)
+                parts.push(<DescItemInt key={itemComponentKey}
+                    {...descItemProps}
+                    />)
                 break;
             case 'COORDINATES':
-                parts.push(<DescItemCoordinates key={key} {...descItemProps} />)
+                parts.push(<DescItemCoordinates key={itemComponentKey}
+                    {...descItemProps}
+                    />)
                 break;
             case 'ENUM':
                 break;
             default:
-                parts.push(<div key={key}>-unsupported type {rulDataType.code}-</div>)
+                parts.push(<div key={itemComponentKey}>-unsupported type {rulDataType.code}-</div>)
         }
 
-        var key = descItem.descItemObjectId ? descItem.descItemObjectId + '-' + descItem.position : descItem.position;
-
         return (
-            <div key={descItemType.code + "-" + key} className={cls}>
+            <div key={key} className={cls} {...dragProps}>
+                {descItemType.repeatable && <div className='dragger'><Icon className="up" glyph="fa-angle-up"/><Icon className="down" glyph="fa-angle-down"/>&nbsp;</div>}
                 <div key="container" className='desc-item-value-container'>
                     {parts}
                 </div>
@@ -385,13 +554,13 @@ return true;
 
         return (
             <Shortcuts name='Tree' handler={this.handleShortcuts}>
-            <div className={cls}>
-                {label}
-                <div className='desc-item-type-desc-items'>
-                    {descItems}
+                <div className={cls}>
+                    {label}
+                    <div ref='dragOverContainer' className='desc-item-type-desc-items' onDragOver={this.handleDragOver} onDragLeave={this.handleDragLeave}>
+                        {descItems}
+                    </div>
+                    {addAction}
                 </div>
-                {addAction}
-            </div>
             </Shortcuts>
         )
     }
@@ -400,6 +569,7 @@ return true;
 DescItemType.propTypes = {
     onChange: React.PropTypes.func.isRequired,
     onChangeSpec: React.PropTypes.func.isRequired,
+    onChangePosition: React.PropTypes.func.isRequired,
     onBlur: React.PropTypes.func.isRequired,
     onFocus: React.PropTypes.func.isRequired,
     onCreatePacket: React.PropTypes.func.isRequired,
@@ -422,7 +592,8 @@ DescItemType.propTypes = {
     locked: React.PropTypes.bool.isRequired,
     closed: React.PropTypes.bool.isRequired,
     copy: React.PropTypes.bool.isRequired,
-    conformityInfo: React.PropTypes.object.isRequired
+    conformityInfo: React.PropTypes.object.isRequired,
+    versionId: React.PropTypes.number.isRequired
 }
 
 module.exports = connect()(DescItemType);

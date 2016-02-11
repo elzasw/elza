@@ -36,11 +36,23 @@ textarea.form-control {
 .nav-tabs {
   li {
       a {
-          border-top: none !important;
+          border-bottom: none !important;
+          &:hover{
+              border: 1px solid #ddd;
+          }
       }
   }
 }
 
 input::-ms-clear {
     display: none;
+}
+
+.flex{
+    display: flex;
+
+    .flex-grow-1{
+        width: 100%;
+        flex-grow: 1;
+    }
 }

@@ -96,7 +96,7 @@ function validate(descItem, descItemTypeInfo, valueServerError) {
         }
     }
 
-    error.hasError = error.spec || error.value || error.calendarType;
+    error.hasError = (error.spec || error.value || error.calendarType) ? true : false;
 
     return error;
 }
@@ -114,6 +114,28 @@ export default function subNodeForm(state = initialState, action) {
                 valueServerError = action.result.message;
             }
             loc.descItem.error = validate(loc.descItem, descItemTypeInfo, valueServerError);
+
+            state.formData = {...state.formData};
+            return {...state};
+        case types.FA_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
+            var loc = getLoc(state, action.valueLocation);
+
+            var descItems = loc.descItemType.descItems;
+
+            // Odebrání přesouvané
+            descItems = [
+                ...descItems.slice(0, action.valueLocation.descItemIndex),
+                ...descItems.slice(action.valueLocation.descItemIndex + 1)
+            ]
+
+            // Přidání přesouvané na správné místo
+            descItems = [
+                ...descItems.slice(0, action.index),
+                loc.descItem,
+                ...descItems.slice(action.index)
+            ]
+
+            loc.descItemType.descItems = descItems
 
             state.formData = {...state.formData};
             return {...state};
@@ -201,7 +223,7 @@ export default function subNodeForm(state = initialState, action) {
             var currentDescItemMap = {}
             loc.descItemType.descItems.forEach(descItem => {currentDescItemMap[descItem.descItemObjectId] = descItem})
             loc.descItemType.descItems = action.copySiblingResult.type.descItems.map(descItem => {
-                var newDescItem = createDescItemFromDb(descItem)
+                var newDescItem = createDescItemFromDb(loc.descItemType, descItem)
                 var currDescItem = currentDescItemMap[descItem.descItemObjectId]
                 if (currDescItem && currDescItem.hasFocus) {
                     newDescItem.hasFocus = true;

@@ -49,7 +49,7 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
         for(var i = 0; i<data.entities.length; i++){                                // projdeme data entit z formuláře
             entities[entities.length] = {                                           // a přidáme je do seznamu nových entit
                 source: data.entities[i].sources,                                   // poznámka ke vztahu o zdrojích dat
-                record: {recordId: data.entities[i].recordId},                      // rejstříková položka
+                record: {recordId: data.entities[i].record.id},                                    // rejstříková položka
                 roleType: {roleTypeId: data.entities[i].roleTypeId},                // typ vztahu osoby a rejstříkové položky
                 relationEntityId: data.entities[i].relationEntityId                 // identifikátor entity vztahu
             }
@@ -57,7 +57,8 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
         relation.dateNote = data.dateNote;                                          // poznámka k dataci
         relation.note = data.note;                                                  // poznámka ke vztahu
         relation.from = data.from;                                                  // datace vztahu od
-        relation.to = data.to;                                                      // datace vztahu do
+        relation.to = data.to;
+        relation.source = data.source;
         relation.relationEntities = entities;                                       // seznamm entit ve vztahu
         relation.complementType.relationTypeId = data.relationTypeId;               // typ vztahu
         if(
@@ -97,19 +98,26 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
         if(relation.relationEntities){                                              // pokud má vztah nějakké entity
             for(var i = 0; i<relation.relationEntities.length; i++){                // tak se projdou
                 entities[entities.length]={                                         // a přidají so seznamu vztahů
-                    recordId: relation.relationEntities[i].record.recordId,         // identifikátor rejstříkového hesla
+                    record: {
+                        id: relation.relationEntities[i].record.recordId,
+                        record: relation.relationEntities[i].record.record,
+                        characteristics: relation.relationEntities[i].record.characteristics
+                    },
                     roleTypeId : relation.relationEntities[i].roleType.roleTypeId,  // typ role entity ve vztahu
                     sources: relation.relationEntities[i].source,                   // poznámka ke zdrojům dat
                     relationEntityId: relation.relationEntities[i].relationEntityId // identifikátor entity vztahu
                 };
             };
         }
-        var data = {                                                                // data, která odešleme formuláři pro editace
+        var data = {
+            partyId: party.partyId,                                                 // data, která odešleme formuláři pro editace
             partyTypeId: party.partyType.partyTypeId,                               // typ osoby - podle typu osoby budou pak na výběr specifické typy vztahů
             relationId: relation.relationId,                                        // identifikátor vztahu
+            classType: relation.complementType.classType,
             relationTypeId: relation.complementType.relationTypeId,                 // typ vztahu
             note : relation.note,                                                   // poznnámka ke vttahu
             dateNote: relation.dateNote,                                            // poznámka k dataci vztahu
+            source: relation.source,
             from: {                                                                 // datace od
                 textDate: (relation.from != null ? relation.from.textDate : ""),    
                 calendarTypeId: (relation.from != null ? relation.from.calendarTypeId : this.props.partyRegion.gregorianCalendarId )

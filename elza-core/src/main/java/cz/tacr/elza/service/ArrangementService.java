@@ -1,26 +1,6 @@
 package cz.tacr.elza.service;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestParam;
-
+import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.ArrNodeConformity.State;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
@@ -30,43 +10,31 @@ import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
-import cz.tacr.elza.controller.ArrangementManager;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFindingAid;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformity;
-import cz.tacr.elza.domain.ArrNodeConformityError;
-import cz.tacr.elza.domain.ArrNodeConformityMissing;
-import cz.tacr.elza.domain.ArrVersionConformity;
-import cz.tacr.elza.domain.RulArrangementType;
-import cz.tacr.elza.domain.RulDescItemType;
-import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.drools.RulesExecutor;
-import cz.tacr.elza.repository.BulkActionRunRepository;
-import cz.tacr.elza.repository.ChangeRepository;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.FindingAidRepository;
-import cz.tacr.elza.repository.FindingAidVersionRepository;
-import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityMissingRepository;
-import cz.tacr.elza.repository.NodeConformityRepository;
-import cz.tacr.elza.repository.NodeRegisterRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.PacketRepository;
-import cz.tacr.elza.repository.VersionConformityRepository;
+import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.eventnotification.events.EventVersion;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.text.Normalizer;
+import java.time.LocalDateTime;
+import java.util.*;
 
 
 /**
@@ -149,19 +117,23 @@ public class ArrangementService {
     @Autowired
     private DescItemFactory descItemFactory;
 
+    @Autowired
+    private FaRegisterScopeRepository faRegisterRepository;
+
+    @Autowired
+    private ScopeRepository scopeRepository;
+
     //TODO smazat závislost až bude DescItemService
     @Autowired
-    private ArrangementManager arrangementManager;
+    protected FaRegisterScopeRepository faRegisterScopeRepository;
+
+    @Autowired
+    private RegistryService registryService;
 
 
-    public ArrFindingAid findFindingAidByRootNodeUUID(String uuid) {
-        Assert.notNull(uuid);
-
-        return findingAidRepository.findFindingAidByRootNodeUUID(uuid);
-    }
 
     public ArrFindingAid createFindingAid(String name, RulRuleSet ruleSet, RulArrangementType arrangementType,
-                                          ArrChange change) {
+                                          ArrChange change, String uuid) {
         ArrFindingAid findingAid = new ArrFindingAid();
         findingAid.setCreateDate(LocalDateTime.now());
         findingAid.setName(name);
@@ -173,10 +145,68 @@ public class ArrangementService {
 
         //        Assert.isTrue(ruleSet.equals(arrangementType.getRuleSet()));
 
-        ArrLevel rootNode = createLevel(change, null);
+        ArrLevel rootNode = createLevel(change, null, uuid);
         createVersion(change, findingAid, arrangementType, ruleSet, rootNode);
 
         return findingAid;
+    }
+
+    /**
+     * @param findingAid
+     * @param scopes
+     * @return Upravená archivní pomůcka
+     */
+    @Transactional
+    public ArrFindingAid updateFindingAid(final ArrFindingAid findingAid, final List<RegScope> scopes) {
+        Assert.notNull(findingAid);
+        ArrFindingAid originalFindingAid = findingAidRepository.findOne(findingAid.getFindingAidId());
+        Assert.notNull(originalFindingAid);
+        originalFindingAid.setName(findingAid.getName());
+
+        findingAidRepository.save(originalFindingAid);
+
+        for (RegScope scope : scopes) {
+            if (scope.getScopeId() == null) {
+                scope.setCode(StringUtils.upperCase(Normalizer.normalize(StringUtils.replace(StringUtils.substring(scope.getName(), 0, 50).trim(), " ", "_"), Normalizer.Form.NFD)));
+                scopeRepository.save(scope);
+            }
+        }
+
+        synchRegScopes(originalFindingAid, scopes);
+
+        eventNotificationService
+                .publishEvent(EventFactory.createIdEvent(EventType.FINDING_AID_UPDATE, originalFindingAid.getFindingAidId()));
+
+        return originalFindingAid;
+    }
+
+    /**
+     * Pokud se jedná o typ osoby group, dojde k synchronizaci identifikátorů osoby. CRUD.
+     */
+    private void synchRegScopes(final ArrFindingAid findingAid,
+                                final Collection<RegScope> newRegScopes) {
+        Assert.notNull(findingAid);
+
+        Map<Integer, ArrFaRegisterScope> dbIdentifiersMap = Collections.EMPTY_MAP; /// Redundantní initializer
+        dbIdentifiersMap = ElzaTools.createEntityMap(faRegisterRepository.findByFindingAid(findingAid), i -> i.getScope().getScopeId());
+        Set<ArrFaRegisterScope> removeScopes = new HashSet<>(dbIdentifiersMap.values());
+
+
+        for (RegScope newScope : newRegScopes) {
+            ArrFaRegisterScope oldScope = dbIdentifiersMap.get(newScope.getScopeId());
+
+            if (oldScope == null) {
+                oldScope = new ArrFaRegisterScope();
+                oldScope.setFindingAid(findingAid);
+                oldScope.setScope(newScope);
+            } else {
+                removeScopes.remove(oldScope);
+            }
+
+            faRegisterRepository.save(oldScope);
+        }
+
+        faRegisterRepository.delete(removeScopes);
     }
 
     /**
@@ -193,7 +223,12 @@ public class ArrangementService {
                                                       RulArrangementType arrangementType) {
         ArrChange change = createChange();
 
-        ArrFindingAid findingAid = createFindingAid(name, ruleSet, arrangementType, change);
+        ArrFindingAid findingAid = createFindingAid(name, ruleSet, arrangementType, change, null);
+
+        List<RegScope> defaultScopes = registryService.findDefaultScopes();
+        if (!defaultScopes.isEmpty()) {
+            addScopeToFindingAid(findingAid, defaultScopes.get(0));
+        }
 
         ArrFindingAidVersion version = findingAidVersionRepository
                 .findByFindingAidIdAndLockChangeIsNull(findingAid.getFindingAidId());
@@ -238,12 +273,12 @@ public class ArrangementService {
         return findingAidVersionRepository.save(version);
     }
 
-    public ArrLevel createLevel(final ArrChange createChange, final ArrNode parentNode) {
+    public ArrLevel createLevel(final ArrChange createChange, final ArrNode parentNode, final String uuid) {
         ArrLevel level = new ArrLevel();
         level.setPosition(1);
         level.setCreateChange(createChange);
         level.setNodeParent(parentNode);
-        level.setNode(createNode());
+        level.setNode(createNode(uuid));
         return levelRepository.save(level);
     }
 
@@ -804,6 +839,23 @@ public class ArrangementService {
         }
 
         return versionValidationItems;
+    }
+
+    public ArrFaRegisterScope addScopeToFindingAid(ArrFindingAid findingAid, RegScope scope) {
+        Assert.notNull(findingAid);
+        Assert.notNull(scope);
+
+        ArrFaRegisterScope faRegisterScope = faRegisterScopeRepository.findByFindingAidAndScope(findingAid, scope);
+        if (faRegisterScope != null) {
+            logger.info("Vazbe mezi archivní pomůckou " + findingAid + " a třídou rejstříku " + scope + " již existuje.");
+            return faRegisterScope;
+        }
+
+        faRegisterScope = new ArrFaRegisterScope();
+        faRegisterScope.setFindingAid(findingAid);
+        faRegisterScope.setScope(scope);
+
+        return faRegisterScopeRepository.save(faRegisterScope);
     }
 
 }

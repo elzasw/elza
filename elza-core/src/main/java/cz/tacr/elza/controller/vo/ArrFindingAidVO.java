@@ -1,13 +1,12 @@
 package cz.tacr.elza.controller.vo;
 
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
+
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * VO pro archivní pomůcku.
@@ -24,6 +23,8 @@ public class ArrFindingAidVO {
     private Date createDate;
 
     private List<ArrFindingAidVersionVO> versions = new LinkedList<>();
+
+    private List<RegScopeVO> regScopes;
 
     public Integer getId() {
         return id;
@@ -55,6 +56,14 @@ public class ArrFindingAidVO {
 
     public void setVersions(List<ArrFindingAidVersionVO> versions) {
         this.versions = versions;
+    }
+
+    public List<RegScopeVO> getRegScopes() {
+        return regScopes;
+    }
+
+    public void setRegScopes(List<RegScopeVO> regScopes) {
+        this.regScopes = regScopes;
     }
 
     @Override

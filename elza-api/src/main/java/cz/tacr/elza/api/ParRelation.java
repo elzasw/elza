@@ -41,4 +41,8 @@ public interface ParRelation<PP extends ParParty, PRT extends ParRelationType, P
     String getNote();
 
     void setNote(String note);
+
+    String getSource();
+
+    void setSource(String source);
 }

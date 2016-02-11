@@ -12,8 +12,8 @@ public interface RegisterTypeRepositoryCustom {
     /**
      * Najde všechny potomky až k listům pro daný typ. Id typu je součástí výsledné množiny.
      *
-     * @param registerTypeId typ, pro který hledáme potomky
+     * @param registerTypeIds typ, pro který hledáme potomky
      * @return množina id potomků
      */
-    Set<Integer> findSubtreeIds(Integer registerTypeId);
+    Set<Integer> findSubtreeIds(Set<Integer> registerTypeIds);
 }

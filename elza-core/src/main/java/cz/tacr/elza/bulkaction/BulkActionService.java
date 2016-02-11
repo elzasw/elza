@@ -1,17 +1,14 @@
 package cz.tacr.elza.bulkaction;
 
 
-import cz.tacr.elza.api.vo.BulkActionState.State;
-import cz.tacr.elza.bulkaction.factory.BulkActionFactory;
-import cz.tacr.elza.bulkaction.generator.*;
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.repository.BulkActionRunRepository;
-import cz.tacr.elza.repository.FindingAidVersionRepository;
-import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventType;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
+import javax.transaction.Transactional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -22,10 +19,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import cz.tacr.elza.api.vo.BulkActionState.State;
+import cz.tacr.elza.bulkaction.factory.BulkActionFactory;
+import cz.tacr.elza.bulkaction.generator.BulkAction;
+import cz.tacr.elza.bulkaction.generator.CleanDescriptionItemBulkAction;
+import cz.tacr.elza.bulkaction.generator.FindingAidValidationBulkAction;
+import cz.tacr.elza.bulkaction.generator.SerialNumberBulkAction;
+import cz.tacr.elza.bulkaction.generator.UnitIdBulkAction;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.repository.BulkActionRunRepository;
+import cz.tacr.elza.repository.FindingAidVersionRepository;
+import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 
 
 /**
@@ -54,6 +64,9 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
 
     @Autowired
     private BulkActionRunRepository faBulkActionRepository;
+
+    @Autowired
+    private RuleService ruleService;
 
     /**
      * Seznam registrovaných typů hromadných akcí.
@@ -295,7 +308,9 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
         logger.info("Hromadná akce naplánována ke spuštění: " + bulkActionWorker);
         ListenableFuture future = taskExecutor.submitListenable(bulkActionWorker);
         future.addCallback(this);
-        this.eventNotificationService.forcePublish(EventFactory.createStringInVersionEvent(EventType.BULK_ACTION_STATE_CHANGE, bulkActionWorker.getVersionId(), bulkActionWorker.getBulkActionConfig().getCode()));
+        this.eventNotificationService.forcePublish(EventFactory
+                .createStringInVersionEvent(EventType.BULK_ACTION_STATE_CHANGE, bulkActionWorker.getVersionId(),
+                        bulkActionWorker.getBulkActionConfig().getCode()));
     }
 
     /**
@@ -494,5 +509,20 @@ public class BulkActionService implements InitializingBean, ListenableFutureCall
                 worker.terminate();
             }
         }
+    }
+
+
+    /**
+     * Zvaliduje uzel v nové transakci.
+     *
+     * @param faLevelId   id uzlu
+     * @param faVersionId id verze
+     * @param strategies  strategie
+     * @return výsledek validace
+     */
+    @Transactional(value = Transactional.TxType.REQUIRES_NEW)
+    public ArrNodeConformityExt setConformityInfoInNewTransaction(final Integer faLevelId, final Integer faVersionId,
+                                                                  final Set<String> strategies) {
+        return ruleService.setConformityInfo(faLevelId, faVersionId, strategies);
     }
 }

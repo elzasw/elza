@@ -243,8 +243,8 @@ var PartyNameForm = class PartyNameForm extends AbstractReactComponent {
                                 </div>
                             </div>
                         </div>
-                        <h5>{i18n('party.nameComplements')}</h5>
-                        <div>
+                        <div className="line">
+                            <label>{i18n('party.nameComplements')}</label>
                             {this.state.data.complements.map((j,index)=> {return <div className="block complement">
                                 <div className="line">
                                     <Input type="text" value={j.complement} onChange={this.updateComplementValue.bind(this, {index:index, variable: 'complement'})}/>
@@ -255,8 +255,8 @@ var PartyNameForm = class PartyNameForm extends AbstractReactComponent {
                                     <Button onClick={this.removeComplement.bind(this, index)}><Icon glyph="fa-trash"/></Button>
                                 </div>
                             </div>})}
+                            <Button onClick={this.addComplement}><Icon glyph="fa-plus"/></Button>
                         </div>   
-                        <Button onClick={this.addComplement}><Icon glyph="fa-plus"/></Button>
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

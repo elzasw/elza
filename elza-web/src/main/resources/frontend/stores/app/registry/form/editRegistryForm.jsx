@@ -11,20 +11,6 @@ export default function editRegistryForm(state, action) {
             } else {
                 return state;
             }
-        case "redux-form/CHANGE":
-            switch (action.field) {
-                case "registrySetId":
-                    if (action.value == '') {
-                        return {
-                            ...state,
-                            registryTypeId: {...state.registryTypeId, value: ''}
-                        }
-                    } else {
-                        return state;
-                    }
-                default:
-                  return state;
-            }
         default:
             return state;
     }
