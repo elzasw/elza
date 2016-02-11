@@ -88,6 +88,11 @@ import cz.tacr.elza.utils.ObjectListIterator;
 @EventBusListener
 public class LevelTreeCacheService {
 
+    /**
+     * Maximální počet verzí stromů ukládaných současně v paměti.
+     */
+    private static final int MAX_CACHE_SIZE = 3;
+
     final Log logger = LogFactory.getLog(this.getClass());
 
     @Autowired
@@ -131,9 +136,10 @@ public class LevelTreeCacheService {
 
 
     /**
-     * Cache stromu pro danou verzi. (id verze -> nodeid uzlu -> uzel)
+     * Cache stromu pro danou verzi. (id verze -> nodeid uzlu -> uzel).
+     * Maximální počet záznamů v cache {@link #MAX_CACHE_SIZE}.
      */
-    private Map<Integer, Map<Integer, TreeNode>> versionCache = new HashMap<>();
+    private CapacityMap<Integer, Map<Integer, TreeNode>> versionCache = new CapacityMap<Integer, Map<Integer, TreeNode>>();
 
 
     /**
@@ -508,10 +514,17 @@ public class LevelTreeCacheService {
      */
     synchronized private Map<Integer, TreeNode> getVersionTreeCache(final ArrFindingAidVersion version) {
         Map<Integer, TreeNode> versionTreeMap = versionCache.get(version.getFindingAidVersionId());
+
         if (versionTreeMap == null) {
             versionTreeMap = createVersionTreeCache(version);
-            versionCache.put(version.getFindingAidVersionId(), versionTreeMap);
         }
+
+        //při každém přístupu vyjmeme verzi a vložíme na začátek,
+        //aby při překročení kapacity byla vyhozena z mapy vždy ta nejstarší (viz inicializace mapy - CapacityMap)
+        versionCache.remove(version.getFindingAidVersionId());
+        versionCache.put(version.getFindingAidVersionId(), versionTreeMap);
+
+
         return versionTreeMap;
     }
 
@@ -536,10 +549,6 @@ public class LevelTreeCacheService {
             if (EventVersion.class.isAssignableFrom(event.getClass())) {
                 Integer changedVersionId = ((EventVersion) event).getVersionId();
                 ArrFindingAidVersion version = findingAidVersionRepository.findOne(changedVersionId);
-
-                //TODO nemazat celou cache, ale provádět co nejvíc změn přímo na cache
-                //TODO aktualizovat referenční označení
-//                clearVersionCache(changedVersionId);
 
                 switch (event.getEventType()) {
                     case NODE_DELETE:
@@ -1224,6 +1233,23 @@ public class LevelTreeCacheService {
 
         return nodes.stream().map(TreeNodeClient::getId).collect(Collectors.toList());
     }
+
+
+    /**
+     * Kapacitní mapa. Při překročení kapacity odstraní z mapy nejstarší záznam (první vložený).
+     */
+    private class CapacityMap<K, V> extends LinkedHashMap<K, V> {
+
+        @Override
+        protected boolean removeEldestEntry(final Map.Entry eldest) {
+            if (size() > MAX_CACHE_SIZE) {
+                logger.info("Překročena kapacita cache. Bude odpojena cache verze s id " + eldest.getKey());
+                return true;
+            }
+            return false;
+        }
+    }
+
 }
 
 
