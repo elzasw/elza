@@ -27,50 +27,33 @@ var Scope = class Scope extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        /*let index = indexById(this.props.refTables.scopesData.scopes, this.props.versionId, 'versionId');
-         if (index !== null) {
-         this.props.refTables.scopesData.scopes[index].isFetching
-         }*/
         this.dispatch(requestScopesIfNeeded(nextProps.versionId));
     }
 
-    componentDidMount(){
-    }
-
     render() {
-        /*
-        this.props.refTables.scopesData.scopes.map(scope => {
-                if (scope.versionId === this.props.versionId) {
-                    data = scope.scopes.data;
-                }
-            }
-         );*/
         var data = [];
-        let index = indexById(this.props.refTables.scopesData.scopes, this.props.versionId, 'versionId');
-        if (index !== null && this.props.refTables.scopesData.scopes[index].data) {
-            data = this.props.refTables.scopesData.scopes[index].data;
+        let index = indexById(this.props.store.scopes, this.props.versionId, 'versionId');
+        if (index !== null && this.props.store.scopes[index].scopes) {
+            data = this.props.store.scopes[index].scopes;
         }
-
         var {refTables, ...other} = this.props;
 
         return (
             <Input type='select' options={data} {...other}>
-                <option ></option>
+                <option />
                 {data.map((i)=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
             </Input>
         );
     }
-}
+};
 
 Scope.propTypes = {
-    value: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.string]),
-
-}
+    value: React.PropTypes.oneOfType([React.PropTypes.number, React.PropTypes.string])
+};
 
 function mapStateToProps(state) {
-    const {refTables} = state
     return {
-        refTables
+        store: state.refTables.scopesData
     }
 }
 

@@ -37,7 +37,6 @@ export default function scopesData(state = initialState, action = {}) {
             return state;
         case types.REF_SCOPES_TYPES_FETCHING:
             var index = indexById(state.scopes, action.versionId, 'versionId');
-            console.log('indexFet', index);
             if (index !== null) {
                 return {
                     ...state,
@@ -64,7 +63,6 @@ export default function scopesData(state = initialState, action = {}) {
             };
         case types.REF_SCOPES_TYPES_RECEIVE:
             var index = indexById(state.scopes, action.versionId, 'versionId');
-            console.log('indexREc', index);
             let scopeToAdd = {
                 versionId: action.versionId,
                 scopes: action.data,
