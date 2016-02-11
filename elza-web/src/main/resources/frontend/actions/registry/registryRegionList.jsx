@@ -9,7 +9,7 @@ import {WebApi} from 'actions'
 import * as types from 'actions/constants/ActionTypes';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {i18n, AddRegistryForm} from 'components';
-import {registryChangeParent, registryRegionData} from 'actions/registry/registryRegionData'
+import {registryChangeParent, registryRegionData, registryUnsetParents} from 'actions/registry/registryRegionData'
 
 export function fetchRegistryIfNeeded(search = '', registryParent = null, registerTypeIds = null, versionId = null) {
     return (dispatch, getState) => {
@@ -142,6 +142,8 @@ export function registrySelect(recordId, fa = null) {
     return (dispatch) => {
         // pokud chceme otevřít složku
         //dispatch(registryClickNavigation(recordId));
+        // zrusim vsechny zanoreni v rejstriku
+        dispatch(registryUnsetParents(null));
         var registry = Object.assign({}, registry,{selectedId: recordId});
         dispatch(registryRegionData(registry));
         dispatch(registrySelectDo(recordId, fa));
