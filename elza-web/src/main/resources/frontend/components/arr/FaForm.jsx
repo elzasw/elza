@@ -55,12 +55,13 @@ var FaForm = class FaForm extends AbstractReactComponent {
      * @returns {boolean}
      */
     isBulkActionRunning() {
+        var result = false;
         this.props.bulkActions.states.forEach((item) => {
             if (item.state === 'RUNNING') {
-                return true;
+                result = true;
             }
         });
-        return false;
+        return result;
     }
 
 
@@ -70,17 +71,24 @@ var FaForm = class FaForm extends AbstractReactComponent {
      * @returns {boolean}
      */
     isMandatoryBulkActionsDone() {
-        if (this.props.bulkActions.actions.length !== this.props.bulkActions.states.length) {
+        /*if (this.props.bulkActions.actions.length != this.props.bulkActions.states.length) {
             return false;
         }
         this.props.bulkActions.states.forEach((item) => {
             if (typeof item.runChange !== 'object') {
                 return false;
             }
-        });
-        return true;
+         });*/
+        return this.props.bulkActions.actions.length == 0;
     }
 
+    /**
+     * Vyhledávání v redux form fields - prohledává index.value
+     * @param arr prohledávaný objekt
+     * @param id hodnota
+     * @param attrName index ve kterém se hledá
+     * @returns {*}
+     */
     findIndexInFields(arr, id, attrName = 'id') {
         if (arr == null) {
             return null;
@@ -105,13 +113,13 @@ var FaForm = class FaForm extends AbstractReactComponent {
     render() {
         const {fields: {name, ruleSetId, rulArrTypeId, regScopes}, handleSubmit, onClose} = this.props;
 
-        var submitForm = submitReduxForm.bind(this, validate)
+        var submitForm = submitReduxForm.bind(this, validate);
 
         var approveButton;
         if (this.props.approve) {
             if (this.isBulkActionRunning()) {
                 approveButton = <span className="text-danger">{i18n('arr.fa.approveVersion.runningBulkAction')}</span>;
-            } else if (this.isMandatoryBulkActionsDone()) {
+            } else if (this.isMandatoryBulkActionsDone() && this.props.versionValidation.count < 1) {
                 approveButton = <Button onClick={handleSubmit(submitForm)}>{i18n('arr.fa.approveVersion.approve')}</Button>
             } else {
                 approveButton = <Button bsStyle="danger"
@@ -125,17 +133,28 @@ var FaForm = class FaForm extends AbstractReactComponent {
         if (!ruleSetId.invalid) {
             currRuleSet = ruleSets[indexById(ruleSets, currRuleSetId)];
             if (currRuleSet) {
-                ruleSetOptions = currRuleSet.arrangementTypes.map(i=> <option key={i.id}
-                                                                              value={i.id}>{i.name}</option>);
+                ruleSetOptions = currRuleSet.arrangementTypes.map(
+                    i=> <option key={i.id} value={i.id}>{i.name}</option>
+                );
             }
         }
+        let bulkActionsTextOk = <span className="bulk-action-state success">
+            <Icon glyph="fa-check"/>{i18n('arr.fa.approveVersion.bulkActionsOk')}
+        </span>;
+        let bulkActionsTextErr = <span className="bulk-action-state err">
+            <Icon glyph="fa-exclamation-triangle"/>{i18n('arr.fa.approveVersion.bulkActionsNeedRun')}
+        </span>;
         return (
             <div>
                 <Modal.Body>
                     {
                         this.props.approve &&
                         <div>
-                            <BulkActionsTable mandatory={true} versionValidate={true}/>
+                            {this.props.bulkActions.actions.length > 0 && bulkActionsTextErr}
+                            <BulkActionsTable
+                                mandatory={true}
+                                versionValidate={true}
+                                okText={bulkActionsTextOk}/>
                             <VersionValidationState count={this.props.versionValidation.count}
                                                     errExist={this.props.versionValidation.count > 0}
                                                     isFetching={this.props.versionValidation.isFetching}/>
@@ -144,21 +163,21 @@ var FaForm = class FaForm extends AbstractReactComponent {
                     <form onSubmit={handleSubmit(submitForm)}>
                         {(this.props.create || this.props.update) &&
                         <Input type="text" label={i18n('arr.fa.name')} {...name} {...decorateFormField(name)} />}
-                        {(this.props.create || this.props.approve) && <Input type="select"
-                                                                             label={i18n('arr.fa.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
+                        {(this.props.create || this.props.approve) &&
+                        <Input type="select" label={i18n('arr.fa.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
                             <option key='-ruleSetId'/>
                             {ruleSets.map(i=> {
                                 return <option value={i.id}>{i.name}</option>
                             })}
                         </Input>}
-                        {(this.props.create || this.props.approve) && <Input type="select" disabled={ruleSetId.invalid}
-                                                                             label={i18n('arr.fa.arrType')} {...rulArrTypeId} {...decorateFormField(rulArrTypeId)}>
+                        {(this.props.create || this.props.approve) &&
+                        <Input type="select" disabled={ruleSetId.invalid} label={i18n('arr.fa.arrType')} {...rulArrTypeId} {...decorateFormField(rulArrTypeId)}>
                             <option key='-rulArrTypeId'/>
                             {ruleSetOptions}
                         </Input>}
                         {this.props.update && <Autocomplete
                             tags
-                            label={i18n('arr.fa.regScope')}// / Třída rejstříku
+                            label={i18n('arr.fa.regScope')}
                             items={this.props.scopeList}
                             getItemId={(item) => item ? item.id : null}
                             getItemName={(item) => item ? item.name : ''}

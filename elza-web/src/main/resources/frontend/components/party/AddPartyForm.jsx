@@ -14,7 +14,7 @@ import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRegionList'
-import {requestScopesIfNeeded} from 'actions/scopes/scopesData'
+import {requestScopesIfNeeded} from 'actions/refTables/scopesData'
 
 /**
  * ADD PARTY FORM

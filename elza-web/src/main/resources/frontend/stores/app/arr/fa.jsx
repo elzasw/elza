@@ -92,6 +92,11 @@ export function fa(state, action) {
             } else {
                 return state
             }
+        case types.CHANGE_FA:
+            return {
+                ...state,
+                dirty: true,
+            }
         case types.FA_FA_TREE_REQUEST:
         case types.FA_FA_TREE_RECEIVE:
         case types.FA_FA_TREE_FULLTEXT_RESULT:
@@ -171,7 +176,8 @@ export function fa(state, action) {
                 ...state,
                 faTree: faTree(state.faTree, action),
                 nodes: nodes(state.nodes, action),
-                versionValidation: versionValidation(state.versionValidation, action)
+                versionValidation: versionValidation(state.versionValidation, action),
+                bulkActions: bulkActions(state.bulkActions, action)
             }
             return consolidateState(state, result);
         case types.BULK_ACTIONS_DATA_LOADING:

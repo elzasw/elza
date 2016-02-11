@@ -88,9 +88,9 @@ var AddDescItemTypeForm = class AddDescItemTypeForm extends AbstractReactCompone
                         <div>
                             {this.props.descItemTypes.map(i=> {
                                 if (i.type == "POSSIBLE") {
-                                    return <Button bsStyle="link" key={i.id} onClick={() => {
+                                    return <a className="btn btn-link" key={i.id} onClick={() => {
                                         this.props.onSubmit2({descItemTypeId:i.id});
-                                   }}>{i.name}</Button>
+                                   }}>{i.name}</a>
                                 }
                             })}
                         </div>

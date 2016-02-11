@@ -15,19 +15,19 @@ import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRegionLis
 
 const validate = (values, props) => {
     const errors = {};
-    if (props.create && !values.nameMain) {
+    if (!values.nameMain) {
         errors.nameMain = i18n('global.validation.required');
     }
 
-    if (props.create && !values.characteristics) {
+    if (!values.characteristics) {
         errors.characteristics = i18n('global.validation.required');
     }
 
-    if (props.create && !values.scopeId) {
+    if (!values.scopeId) {
         errors.scopeId = i18n('global.validation.required');
     }
 
-    if (props.create && !values.registerTypeId) {
+    if (!values.registerTypeId) {
         errors.registerTypeId = i18n('global.validation.required');
     }
     return errors;
@@ -73,7 +73,7 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
             <div>
                 <Modal.Body>
                     <form onSubmit={handleSubmit(submitForm)}>
-                        <Scope versionId={null} label={i18n('registry.scope.class')}  {...scopeId} {...decorateFormField(scopeId)} onBlur={false}/>
+                        <Scope disabled={disabled} versionId={null} label={i18n('registry.scope.class')}  {...scopeId} {...decorateFormField(scopeId)} onBlur={false}/>
                         <DropDownTree
                             label={i18n('registry.add.typ.rejstriku')}
                             items = {itemsForDropDownTree}
@@ -81,10 +81,10 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
                             {...registerTypeId}
                             {...decorateFormField(registerTypeId)}
                             disabled={disabled}
-                            onBlur={false}
+
                             />
-                        <Input type="text" label={i18n('registry.name')} {...nameMain} {...decorateFormField(nameMain)} onBlur={false}/>
-                        <Input type="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)} onBlur={false}/>
+                        <Input type="text" label={i18n('registry.name')} {...nameMain} {...decorateFormField(nameMain)}/>
+                        <Input type="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)}/>
 
                     </form>
                 </Modal.Body>

@@ -7,7 +7,7 @@ import {WebApi} from 'actions'
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/ActionTypes';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, Autocomplete, i18n} from 'components';
+import {AbstractReactComponent, Autocomplete, i18n, Icon} from 'components';
 import {Modal, Button, Input, Glyphicon} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
@@ -365,14 +365,14 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
                                                  />
                                             </td>
                                             <td className="icon-col">
-                                                <Button onClick={this.removeEntity.bind(this, index)}><Glyphicon glyph="trash" /></Button>
+                                                <Button onClick={this.removeEntity.bind(this, index)}><Icon glyph="fa-trash" /></Button>
                                             </td>
                                          </tr>
                             })}
                                 </tbody>
 
                         </table>
-                        <Button onClick={this.addEntity}><Glyphicon glyph="plus" /></Button>
+                        <Button className="relation-add" onClick={this.addEntity}><Icon glyph="fa-plus" /></Button>
                             </div>
                     </form>
                 </Modal.Body>

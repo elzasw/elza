@@ -7,7 +7,7 @@ import {store} from 'stores/app/AppStore';
 
 import {changeConformityInfo, changeIndexingFinished, changePackage, changePackets,
         changeDescItem, changeDeleteLevel, changeAddLevel, changeApproveVersion, changeParty,
-        changeMoveLevel, changeRegistryRecord} from 'actions/global/change';
+    changeMoveLevel, changeRegistryRecord, changeFa} from 'actions/global/change';
 
 
 var SockJS = require('sockjs-client');
@@ -142,6 +142,9 @@ function processEvents(values) {
                 registryChange(value);
                 break;
 
+            case 'FINDING_AID_UPDATE':
+                faChange(value);
+                break;
             default:
                 console.warn("Nedefinovaný typ eventu: " + value.eventType, value);
                 break;
@@ -180,6 +183,9 @@ function moveLevelUnderChange(value) {
 
 function registryChange(value) {
     store.dispatch(changeRegistryRecord(value.ids));
+}
+function faChange(value) {
+    store.dispatch(changeFa(value.ids[0]));
 }
 /**
  * Validace uzlu.

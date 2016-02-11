@@ -95,3 +95,9 @@ export function changeRegistryRecord(changedIds){
         changedIds
     }
 }
+export function changeFa(versionId) {
+    return {
+        type: types.CHANGE_FA,
+        versionId
+    }
+}

@@ -168,13 +168,22 @@
                             .node-form-standard-actions;
 
                             .btn {
+                                padding: 0;
+                                height: 16px;
+                                line-height: 0;
 
+                                .icon {
+                                    height: 16px;
+                                    width: 16px;
+                                    line-height: 16px;
+                                }
                                 .unlocked, .nocopy {
                                     color: @node-form-actions-active-color;
                                 }
 
                                 .locked, .copy {
                                     color: @node-form-actions-color;
+                                    background-color:@node-form-actions-hover;
                                 }
                             }
                         }

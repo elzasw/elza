@@ -59,11 +59,10 @@ var BulkActionsTable = class BulkActionsTable extends AbstractReactComponent {
                         break;
                     case null:
                         lastRun = 'Nikdy';
-                    case "FINISH":
+                    //case "FINISH":
                     default:
                         canRun = true;
                         innerState = <div><Icon glyph="fa-times"/>{i18n('arr.fa.bulkActions.idle')}</div>;
-                        break;
                 }
                 state = <td className="no-wrap">{innerState}</td>
                 if (indexExist && this.props.store.states[index].runChange) {
@@ -80,8 +79,11 @@ var BulkActionsTable = class BulkActionsTable extends AbstractReactComponent {
         } else {
             table = null;
         }
+
+        let okText = this.props.okText ? this.props.okText : <div>i18n('arr.fa.bulkActions.noActions')</div>;
+
         return (
-            table === null ? <div>{i18n('arr.fa.bulkActions.noActions')}</div> :
+            table === null ? okText :
             <Table striped bordered condensed >
                 <thead>
                 <tr>

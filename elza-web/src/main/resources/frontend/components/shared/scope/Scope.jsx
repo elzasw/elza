@@ -11,7 +11,7 @@ import {Button, Input} from 'react-bootstrap';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n} from 'components';
 import ReactDOM from 'react-dom'
-import {requestScopesIfNeeded} from 'actions/scopes/scopesData'
+import {requestScopesIfNeeded} from 'actions/refTables/scopesData'
 require ('./Scope.less');
 
 

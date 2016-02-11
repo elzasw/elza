@@ -66,8 +66,6 @@ class WebApi{
     }
    
     findParty(search = null, versionId = null){
-        search = search ? encodeURI(search) : search;
-
         return AjaxUtils.ajaxGet('/api/partyManagerV2/findParty', {
             search: search,
             from: 0,
@@ -80,8 +78,6 @@ class WebApi{
     }
 
     findPartyForParty(partyId, search = null){
-        search = search ? encodeURI(search) : search;
-
         return AjaxUtils.ajaxGet('/api/partyManagerV2/findPartyForParty', {
             search: search,
             from: 0,
@@ -189,7 +185,7 @@ class WebApi{
         return AjaxUtils.ajaxPut('/api/arrangementManagerV2/descItems/' + versionId + "/" + nodeVersionId + "/update/true", null,  descItem);
     }
     
-    deleteDescItem(versionId, nodeVersionId, descItem) {
+    fdeleteDescItem(versionId, nodeVersionId, descItem) {
         return AjaxUtils.ajaxPost('/api/arrangementManagerV2/descItems/' + versionId + "/" + nodeVersionId + "/delete", null,  descItem);
     }
 
