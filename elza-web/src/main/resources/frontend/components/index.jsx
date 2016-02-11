@@ -27,6 +27,7 @@ exports.Splitter = require('./shared/splitter/Splitter');
 exports.Scope = require('./shared/scope/Scope');
 
 exports.FormUtils = require('./form/FormUtils');
+exports.ImportForm = require('./form/ImportForm');
 
 
 exports.Ribbon = require('./page/Ribbon');
@@ -35,7 +36,6 @@ exports.RegistryPanel = require('./registry/RegistryPanel');
 exports.AddRegistryForm = require('./registry/AddRegistryForm');
 exports.EditRegistryForm = require('./registry/EditRegistryForm');
 exports.RegistryLabel = require('./registry/RegistryLabel');
-exports.ImportRegistryForm = require('./registry/ImportRegistryForm');
 
 exports.FaFileTree = require('./arr/FaFileTree');
 exports.NodePanel = require('./arr/NodePanel');

@@ -9,7 +9,7 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap'; 
 import {Link, IndexLink} from 'react-router';
-import {Icon, AbstractReactComponent, Ribbon, RibbonGroup, PartySearch, PartyDetail, PartyEntities, i18n} from 'components';
+import {Icon, AbstractReactComponent, Ribbon, RibbonGroup, PartySearch, PartyDetail, PartyEntities, i18n, ImportForm} from 'components';
 import {RelationForm, AddPartyForm} from 'components';
 import {ButtonGroup, MenuItem, DropdownButton, Button, Glyphicon} from 'react-bootstrap';
 import {PageLayout} from 'pages';
@@ -38,7 +38,8 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
             'handleAddRelation',                        // kliknutí na tlačítko přidat ossobě vztah
             'addParty',                                 // vytvoření osoby
             'deleteParty',                              // smazání osoby
-            'addRelation'                              // vytvoření relace
+            'addRelation',                              // vytvoření relace
+            'handleImport'                              // Import dialog
         );
     }
 
@@ -138,6 +139,16 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         this.dispatch(modalDialogShow(this, this.props.partyRegion.selectedPartyData.record.record , <RelationForm initData={data} refTables={this.props.refTables} onSave={this.addRelation} />));
     }
 
+
+    handleImport() {
+        this.dispatch(
+            modalDialogShow(this,
+                i18n('import.title.party'),
+                <ImportForm party/>
+            )
+        );
+    }
+
     /**
      * HANDLE DELETE PARTY
      * *********************************************
@@ -175,7 +186,9 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
         );
 
         altActions.push(
-            <Button><Icon glyph='fa-download' /><div><span className="btnText">{i18n('ribbon.action.party.import')}</span></div></Button>
+            <Button onClick={this.handleImport}><Icon glyph='fa-download'/>
+                <div><span className="btnText">{i18n('ribbon.action.party.import')}</span></div>
+            </Button>
         );
         var itemActions = [];
         if (isSelected) {

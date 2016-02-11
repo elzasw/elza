@@ -24,22 +24,14 @@ function findByNodeKeyInGlobalState(globalState, versionId, nodeKey) {
 }
 exports.findByNodeKeyInGlobalState = findByNodeKeyInGlobalState
 
-function indexById(arr, id, attrName = null) {
+function indexById(arr, id, attrName = 'id') {
     if (arr == null) {
         return null;
     }
-    // TODO lze optimalizovat
-    if (attrName !== null) {
-        for (var a=0; a<arr.length; a++) {
-            if (arr[a][attrName] == id) {
-                return a;
-            }
-        }
-    } else {
-        for (var a=0; a<arr.length; a++) {
-            if (arr[a].id == id) {
-                return a;
-            }
+
+    for (var a = 0; a < arr.length; a++) {
+        if (arr[a][attrName] == id) {
+            return a;
         }
     }
     return null;

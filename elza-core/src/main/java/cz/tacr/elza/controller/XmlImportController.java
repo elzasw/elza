@@ -1,20 +1,23 @@
 package cz.tacr.elza.controller;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
-import cz.tacr.elza.controller.config.ClientFactoryDO;
-import cz.tacr.elza.controller.vo.XmlImportConfigVO;
+import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.XmlImportService;
 import cz.tacr.elza.service.exception.XmlImportException;
 import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.text.Normalizer;
+import java.util.List;
 
 /**
  *
@@ -23,26 +26,37 @@ import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
  * @since 1. 2. 2016
  */
 @RestController
-@RequestMapping("/api/xmlImportManagerV2")
 public class XmlImportController {
 
     @Autowired
     private XmlImportService xmlImportService;
 
     @Autowired
-    private ClientFactoryDO factoryDO;
-
-    @Autowired
     private ScopeRepository scopeRepository;
 
-    @RequestMapping(value = "/import", method = RequestMethod.POST)
-    public void importData(XmlImportConfigVO configVO) {
-        Assert.notNull(configVO);
+    @RequestMapping(value = "/api/xmlImportManagerV2/import", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public void importData(
+            @RequestParam(required = false, value = "transformationName") final String transformationName,
+            @RequestParam(required = false, value = "stopOnError") final Boolean stopOnError,
+            @RequestParam(required = false, value = "importDataFormat") final XmlImportType type,
+            @RequestParam(required = false, value = "scopeName") final String scopeName,
+            @RequestParam(required = false, value = "scopeId") final Integer scopeId,
+            @RequestParam(required = true, value = "xmlFile") final MultipartFile xmlFile) {
+        XmlImportConfig config = new XmlImportConfig();
+        config.setXmlFile(xmlFile);
 
-        XmlImportConfig config = factoryDO.createXmlImportConfig(configVO);
-        RegScope regScope = factoryDO.createScope(configVO.getRegScope());
-        if (regScope.getScopeId() == null) {
+        config.setXmlImportType(type);
+        config.setTransformationName(transformationName);
+        config.setStopOnError(stopOnError == null ? false : stopOnError);
+        RegScope regScope;
+        if (scopeId == null) {
+            regScope = new RegScope();
+            Assert.notNull(scopeName);
+            regScope.setName(scopeName);
+            regScope.setCode(StringUtils.upperCase(Normalizer.normalize(StringUtils.replace(StringUtils.substring(scopeName, 0, 50).trim(), " ", "_"), Normalizer.Form.NFD)));
             scopeRepository.save(regScope);
+        } else {
+            regScope = scopeRepository.findOne(scopeId);
         }
         config.setRegScope(regScope);
 
@@ -53,7 +67,7 @@ public class XmlImportController {
         }
     }
 
-    @RequestMapping(value = "/transformations", method = RequestMethod.GET)
+    @RequestMapping(value = "/api/xmlImportManagerV2/transformations", method = RequestMethod.GET)
     public List<String> getTransformations() {
         return xmlImportService.getTransformationNames();
     }

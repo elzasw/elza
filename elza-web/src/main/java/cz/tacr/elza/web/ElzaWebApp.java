@@ -1,7 +1,6 @@
 package cz.tacr.elza.web;
 
 import cz.tacr.elza.ElzaCore;
-import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -13,8 +12,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.web.multipart.MultipartResolver;
+import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
+
+import java.util.Locale;
 
 /**
  * @author by Pavel Stánek, pavel.stanek@marbes.cz.
@@ -36,6 +39,11 @@ public class ElzaWebApp {
         ElzaCore.configure();
         System.setProperty("spring.config.location", "classpath:/elza-ui.yaml");
         SpringApplication.run(ElzaWebApp.class, args);
+    }
+
+    @Bean
+    public MultipartResolver multipartResolver() {
+        return new StandardServletMultipartResolver();
     }
 
     /**
