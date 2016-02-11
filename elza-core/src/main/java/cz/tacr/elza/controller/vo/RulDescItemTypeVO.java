@@ -71,11 +71,13 @@ public class RulDescItemTypeVO {
     private Boolean faOnly;
 
     /**
+     * TODO: smazat po uprave formulare
      * typ důležitosti
      */
     private RulDescItemType.Type type;
 
     /**
+     * TODO: smazat po uprave formulare
      * opakovatelnost
      */
     private Boolean repeatable;

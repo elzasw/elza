@@ -46,11 +46,13 @@ public class RulDescItemSpecVO {
     private Integer viewOrder;
 
     /**
+     * TODO: smazat po uprave formulare
      * typ důležitosti
      */
     private RulDescItemSpec.Type type;
 
     /**
+     * TODO: smazat po uprave formulare
      * opakovatelnost
      */
     private Boolean repeatable;

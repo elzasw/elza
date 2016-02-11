@@ -10,6 +10,7 @@ import packetTypes from './packetTypes';
 import registryRegionList from './registryRegionList';
 import partyList from './partyList';
 import scopesData from './scopesData';
+import descItemTypes from './descItemTypes';
 
 const initialState = {
     ruleSet: ruleSet(undefined, {type:''}),
@@ -21,7 +22,8 @@ const initialState = {
     packetTypes: packetTypes(undefined, {type:''}),
     registryRegionList: registryRegionList(undefined, {type:''}),
     partyList: partyList(undefined, {type:''}),
-    scopesData: scopesData(undefined, {type:''})
+    scopesData: scopesData(undefined, {type:''}),
+    descItemTypes: descItemTypes()
 }
 
 export default function refTables(state = initialState, action) {
@@ -38,7 +40,6 @@ export default function refTables(state = initialState, action) {
                 ...state,
                 registryRegionList: registryRegionList(state.registryRegionList, action),
             }
-        case types.CHANGE_PACKAGE:
         case types.REF_RULE_SET_REQUEST:
         case types.REF_RULE_SET_RECEIVE:
             return {
@@ -75,7 +76,6 @@ export default function refTables(state = initialState, action) {
                 ...state,
                 calendarTypes: calendarTypes(state.calendarTypes, action),
             }
-        case types.CHANGE_PACKAGE:
         case types.REF_PACKET_TYPES_REQUEST:
         case types.REF_PACKET_TYPES_RECEIVE:
             return {
@@ -87,6 +87,21 @@ export default function refTables(state = initialState, action) {
             return {
                 ...state,
                 scopesData: scopesData(state.scopesData, action),
+            }
+
+        case types.REF_DESC_ITEM_TYPES_REQUEST:
+        case types.REF_DESC_ITEM_TYPES_RECEIVE:
+            return {
+                ...state,
+                descItemTypes: descItemTypes(state.descItemTypes, action),
+            }
+
+        case types.CHANGE_PACKAGE:
+            return {
+                ...state,
+                packetTypes: packetTypes(state.packetTypes, action),
+                ruleSet: ruleSet(state.ruleSet, action),
+                descItemTypes: descItemTypes(state.descItemTypes, action),
             }
         default:
             return state

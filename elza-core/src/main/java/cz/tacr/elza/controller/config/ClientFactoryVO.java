@@ -371,7 +371,7 @@ public class ClientFactoryVO {
         List<RegRecordVO.RecordParent> parentTypeNames = new ArrayList<>();
 
         RegRegisterType recordType = registerTypeRepository.findOne(record.getRegisterTypeId());
-        parentTypeNames.add(new RegRecordVO.RecordParent(recordType.getRegisterTypeId(),recordType.getName()));
+        parentTypeNames.add(new RegRecordVO.RecordParent(recordType.getRegisterTypeId(), recordType.getName()));
         record.setTypesToRoot(parentTypeNames);
 
 
@@ -892,6 +892,16 @@ public class ClientFactoryVO {
         RulDescItemTypeExtVO descItemTypeVO = mapper.map(descItemType, RulDescItemTypeExtVO.class);
         descItemTypeVO.setDataTypeId(descItemType.getDataType().getDataTypeId());
         return descItemTypeVO;
+    }
+
+    /**
+     * Vytvoření seznamu typů hodnot se specifikacemi.
+     *
+     * @param descItemTypes DO typů hodnot
+     * @return VO typů hodnot
+     */
+    public List<RulDescItemTypeExtVO> createDescItemTypeExtList(final List<RulDescItemTypeExt> descItemTypes) {
+        return createList(descItemTypes, RulDescItemTypeExtVO.class, this::createDescItemTypeExt);
     }
 
     /**

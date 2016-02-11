@@ -688,6 +688,7 @@ SubNodeForm.propTypes = {
     nodeSettings: React.PropTypes.object.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
+    descItemTypes: React.PropTypes.object.isRequired,
     packetTypes: React.PropTypes.object.isRequired,
     packets: React.PropTypes.array.isRequired,
     formData: React.PropTypes.object.isRequired,

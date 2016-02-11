@@ -495,6 +495,17 @@ public class RuleService {
                 version.getLockChange());
 
         Assert.notNull(strategies);
+        List<RulDescItemTypeExt> rulDescItemTypeExtList = getAllDescriptionItemTypes();
+
+        return rulesExecutor.executeDescItemTypesRules(level, rulDescItemTypeExtList, version, strategies);
+    }
+
+    /**
+     * Získání všech hodnot typů atributů se specifikacemi.
+     *
+     * @return typy hodnot atributů
+     */
+    public List<RulDescItemTypeExt> getAllDescriptionItemTypes() {
         List<RulDescItemType> itemTypeList = descItemTypeRepository.findAll();
 
         List<RulDescItemTypeExt> rulDescItemTypeExtList = createExt(itemTypeList);
@@ -530,8 +541,7 @@ public class RuleService {
                 }
             }
         }
-
-        return rulesExecutor.executeDescItemTypesRules(level, rulDescItemTypeExtList, version, strategies);
+        return rulDescItemTypeExtList;
     }
 
     /**

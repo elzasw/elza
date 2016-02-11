@@ -20,6 +20,7 @@ import {createFaRoot, isFaRootId} from './ArrUtils.jsx'
 import {propsEquals} from 'components/Utils'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils'
+import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
 const scrollIntoView = require('dom-scroll-into-view')
 
 require ('./NodePanel.less');
@@ -88,7 +89,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         if (this.state !== nextState) {
             return true;
         }
-        var eqProps = ['versionId', 'fa', 'node', 'calendarTypes',
+        var eqProps = ['versionId', 'fa', 'node', 'calendarTypes', 'descItemTypes',
             'packetTypes', 'packets', 'rulDataTypes', 'findingAidId', 'showRegisterJp', 'closed']
         return !propsEquals(this.props, nextProps, eqProps);
     }
@@ -101,6 +102,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
      */
     requestData(versionId, node, showRegisterJp) {
         if (node.selectedSubNodeId != null) {
+            this.dispatch(descItemTypesFetchIfNeeded());
             this.dispatch(faSubNodeFormFetchIfNeeded(versionId, node.selectedSubNodeId, node.nodeKey));
             this.dispatch(faSubNodeInfoFetchIfNeeded(versionId, node.selectedSubNodeId, node.nodeKey));
             this.dispatch(refRulDataTypesFetchIfNeeded());
@@ -380,7 +382,9 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     render() {
-        const {calendarTypes, versionId, rulDataTypes, node, packetTypes, packets, findingAidId, showRegisterJp, fa, closed} = this.props;
+        const {calendarTypes, versionId, rulDataTypes, node,
+                packetTypes, packets, findingAidId,
+                showRegisterJp, fa, closed, descItemTypes} = this.props;
 
         if (!node.nodeInfoFetched) {
             return <Loading value={i18n('global.data.loading.node')}/>
@@ -430,7 +434,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         )
 
         var form;
-        if (node.subNodeForm.fetched && calendarTypes.fetched) {
+        if (node.subNodeForm.fetched && calendarTypes.fetched && descItemTypes.fetched) {
             // Zjisštění, zda pro daný node existuje v accordion předchozí záznam (který ale není vyfiltrovaný), ze kterého je možné přebírat hodnoty atirbutu pro akci okamžité kopírování
             var descItemCopyFromPrevEnabled = false
             var i1 = indexById(node.childNodes, node.selectedSubNodeId)
@@ -455,6 +459,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 rulDataTypes={rulDataTypes}
                 calendarTypes={calendarTypes}
                 packetTypes={packetTypes}
+                descItemTypes={descItemTypes}
                 conformityInfo={conformityInfo}
                 packets={packets}
                 parentNode={node}
@@ -556,6 +561,7 @@ NodePanel.propTypes = {
     fa: React.PropTypes.object.isRequired,
     node: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
+    descItemTypes: React.PropTypes.object.isRequired,
     nodeSettings: React.PropTypes.object.isRequired,
     packetTypes: React.PropTypes.object.isRequired,
     packets: React.PropTypes.array.isRequired,
