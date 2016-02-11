@@ -130,10 +130,6 @@ public class RegistryService {
 
         Set<Integer> scopeIdsForRecord = getScopeIdsByFindingAid(findingAid);
 
-        if (StringUtils.isBlank(searchRecord) && parentRecordId == null) {
-            return regRecordRepository.findRootRecords(registerTypeIds, firstResult, maxResults, scopeIdsForRecord);
-        }
-
         RegRecord parentRecord = null;
         if (parentRecordId != null) {
             parentRecord = regRecordRepository.getOne(parentRecordId);
@@ -160,10 +156,6 @@ public class RegistryService {
             @Nullable final Collection<Integer> registerTypeIds, final Integer parentRecordId, @Nullable final ArrFindingAid findingAid) {
 
         Set<Integer> scopeIdsForRecord = getScopeIdsByFindingAid(findingAid);
-
-        if (StringUtils.isBlank(searchRecord) && parentRecordId == null) {
-            return regRecordRepository.findRootRecordsByTypeCount(registerTypeIds, scopeIdsForRecord);
-        }
 
         RegRecord parentRecord = null;
         if (parentRecordId != null) {
