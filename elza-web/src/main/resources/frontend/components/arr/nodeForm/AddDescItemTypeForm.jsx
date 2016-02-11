@@ -68,12 +68,13 @@ var AddDescItemTypeForm = class AddDescItemTypeForm extends AbstractReactCompone
         var ac = (
             <div className="autocomplete-desc-item-type">
                 <Autocomplete
-                label={i18n('subNodeForm.descItemType')}
+                    label={i18n('subNodeForm.descItemType')}
                 {...descItemTypeId}
                 {...decorateFormField(descItemTypeId)}
-                value={descItemTypeValue}
-                items={this.props.descItemTypes}
-                renderItem={this.renderItem}
+                    value={descItemTypeValue}
+                    items={this.props.descItemTypes}
+                    renderItem={this.renderItem}
+                    onBlurValidation={false}
                 />
             </div>
         )
