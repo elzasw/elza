@@ -82,6 +82,8 @@ export default function refTables(state = initialState, action) {
                 ...state,
                 packetTypes: packetTypes(state.packetTypes, action),
             }
+        case types.REF_SCOPES_TYPES_DIRTY:
+        case types.REF_SCOPES_TYPES_FETCHING:
         case types.REF_SCOPES_TYPES_REQUEST:
         case types.REF_SCOPES_TYPES_RECEIVE:
             return {

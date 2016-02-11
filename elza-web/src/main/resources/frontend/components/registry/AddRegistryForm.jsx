@@ -96,7 +96,7 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
             var scopesData = [];
             this.props.refTables.scopesData.scopes.map(scope => {
                 if (scope.versionId === null) {
-                    scopesData = scope.scopes.data;
+                    scopesData = scope.data ? scope.data : [];
                 }
             });
             if (scopesData.length) {

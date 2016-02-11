@@ -27,15 +27,15 @@ export function scopesDirty(versionId) {
 
 export function requestScopesIfNeeded(versionId = null) {
     return (dispatch, getState) => {
-        var state = getState();
+        var state = getState().refTables.scopesData;
 
         let index = indexById(state.scopes, versionId, 'versionId');
-
-        if (index != null) {
+        if (index !== null) {
             if (state.scopes[index].isDirty && !state.scopes[index].isFetching) {
                 return dispatch(requestScopes(versionId));
             }
         } else {
+            console.log('unknown');
             dispatch(scopesFetching(versionId));
             return dispatch(requestScopes(versionId));
         }

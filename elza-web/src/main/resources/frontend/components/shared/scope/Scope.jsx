@@ -13,6 +13,7 @@ import {AbstractReactComponent, i18n} from 'components';
 import ReactDOM from 'react-dom'
 import {requestScopesIfNeeded} from 'actions/refTables/scopesData'
 require ('./Scope.less');
+import {indexById} from 'stores/app/utils';
 
 
 /**
@@ -26,6 +27,10 @@ var Scope = class Scope extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
+        /*let index = indexById(this.props.refTables.scopesData.scopes, this.props.versionId, 'versionId');
+         if (index !== null) {
+         this.props.refTables.scopesData.scopes[index].isFetching
+         }*/
         this.dispatch(requestScopesIfNeeded(nextProps.versionId));
     }
 
@@ -33,13 +38,18 @@ var Scope = class Scope extends AbstractReactComponent {
     }
 
     render() {
-        var data = [];
+        /*
         this.props.refTables.scopesData.scopes.map(scope => {
                 if (scope.versionId === this.props.versionId) {
                     data = scope.scopes.data;
                 }
             }
-        );
+         );*/
+        var data = [];
+        let index = indexById(this.props.refTables.scopesData.scopes, this.props.versionId, 'versionId');
+        if (index !== null && this.props.refTables.scopesData.scopes[index].data) {
+            data = this.props.refTables.scopesData.scopes[index].data;
+        }
 
         var {refTables, ...other} = this.props;
 
