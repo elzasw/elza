@@ -44,6 +44,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
 
     componentDidMount(){
         this.dispatch(refPartyTypesFetchIfNeeded());         // načtení osob pro autory osoby
+        this.dispatch(findPartyFetchIfNeeded(this.props.partyRegion.filterText, this.props.partyRegion.panel.versionId));
     }
 
     componentWillReceiveProps(nextProps){
@@ -219,7 +220,8 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
             <PartySearch 
                 items={this.props.partyRegion.items} 
                 selectedPartyID={this.props.partyRegion.selectedPartyID}
-                filterText={this.props.partyRegion.filterText} 
+                filterText={this.props.partyRegion.filterText}
+                panel={this.props.partyRegion.panel}
             />
         )
         
