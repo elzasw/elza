@@ -17,19 +17,20 @@ import {WebApi} from 'actions'
 
 const validate = (values, props) => {
     const errors = {};
-    if (props.create && !values.nameMain) {
+    console.log('Moje props', props);
+    if (!values.nameMain) {
         errors.nameMain = i18n('global.validation.required');
     }
 
-    if (props.create && !values.characteristics) {
+    if (!values.characteristics) {
         errors.characteristics = i18n('global.validation.required');
     }
 
-    if (props.create && !values.scopeId) {
+    if (!values.scopeId) {
         errors.scopeId = i18n('global.validation.required');
     }
 
-    if (props.create && !values.registerTypeId) {
+    if (!values.registerTypeId) {
         errors.registerTypeId = i18n('global.validation.required');
     }
 
