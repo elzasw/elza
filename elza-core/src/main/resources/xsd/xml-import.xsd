@@ -154,6 +154,8 @@
       </xs:element>
       <xs:element minOccurs="0" name="history" type="xs:string"/>
       <xs:element minOccurs="0" name="source-informations" type="xs:string"/>
+      <xs:element minOccurs="0" name="from-date" type="tns:complex-date"/>
+      <xs:element minOccurs="0" name="to-date" type="tns:complex-date"/>
       <xs:element minOccurs="0" name="creator-name-list">
         <xs:complexType>
           <xs:sequence>
@@ -165,13 +167,6 @@
         <xs:complexType>
           <xs:sequence>
             <xs:element maxOccurs="unbounded" minOccurs="0" name="relation" type="tns:relation"/>
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
-      <xs:element minOccurs="0" name="party-time-range-list">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element maxOccurs="unbounded" minOccurs="0" name="party-time-range" type="tns:party-time-range"/>
           </xs:sequence>
         </xs:complexType>
       </xs:element>
@@ -271,7 +266,7 @@
     <xs:sequence>
       <xs:element name="complement" type="xs:string"/>
     </xs:sequence>
-    <xs:attribute name="party-name-complement-type-name" type="xs:string" use="required"/>
+    <xs:attribute name="party-name-complement-type-code" type="xs:string" use="required"/>
   </xs:complexType>
 
   <xs:complexType name="relation">
@@ -280,6 +275,7 @@
       <xs:element minOccurs="0" name="to-date" type="tns:complex-date"/>
       <xs:element minOccurs="0" name="date-note" type="xs:string"/>
       <xs:element minOccurs="0" name="note" type="xs:string"/>
+      <xs:element minOccurs="0" name="source" type="xs:string"/>
       <xs:element minOccurs="0" name="role-type-list">
         <xs:complexType>
           <xs:sequence>
@@ -289,7 +285,7 @@
       </xs:element>
     </xs:sequence>
     <xs:attribute name="class-type-code" type="xs:string"/>
-    <xs:attribute name="relation-type-code" type="xs:string"/>
+    <xs:attribute name="relation-type-code" type="xs:string" use="required"/>
   </xs:complexType>
 
   <xs:complexType name="role-type">
@@ -298,13 +294,6 @@
     </xs:sequence>
     <xs:attribute name="role-type-code" type="xs:string"/>
     <xs:attribute name="record-id" type="xs:IDREF" use="required"/>
-  </xs:complexType>
-
-  <xs:complexType name="party-time-range">
-    <xs:sequence>
-      <xs:element name="from-date" type="tns:complex-date"/>
-      <xs:element minOccurs="0" name="to-date" type="tns:complex-date"/>
-    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="person">
