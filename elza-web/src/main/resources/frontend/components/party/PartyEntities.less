@@ -26,28 +26,40 @@
     }
 }
 
-
 .relations-edit{
 
-    table.relation-entities{
-        width: 100%;
-
-        td {
-            padding-top: 5px;
-            padding-right: 5px;
+    .layout {
+        &.type {
+            width: 40%;
+            margin-right: 5px;
         }
-
-        td.type-col{
-            width: 150px;
+        &.record {
+            width: 60%;
         }
-
-        td.icon-col{
-            width: 20px;
-            .btn {
-            }
+        &.icon {
+            width: 23px;
+            margin-left: 4px;
         }
     }
-    .relation-add {
-        margin-top: 4px;
+
+    .relation-entities{
+        width: 100%;
+        .title {
+            display: flex;
+            label {
+                flex-grow: 1;
+                .layout;
+            }
+        }
+        .relation-row {
+            display: flex;
+            width: 100%;
+            margin-bottom: 5px;
+            height: 1.8em;
+            div {
+                flex-grow: 1;
+                .layout;
+            }
+        }
     }
 }

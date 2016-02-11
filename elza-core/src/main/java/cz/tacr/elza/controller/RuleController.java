@@ -12,14 +12,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
-import cz.tacr.elza.controller.vo.RulPacketTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulPacketType;
+import cz.tacr.elza.domain.RulDescItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
-import cz.tacr.elza.repository.PacketTypeRepository;
+import cz.tacr.elza.service.RuleService;
 
 
 /**
@@ -41,6 +41,9 @@ public class RuleController {
     @Autowired
     private DataTypeRepository dataTypeRepository;
 
+    @Autowired
+    private RuleService ruleService;
+
     @RequestMapping(value = "/getRuleSets", method = RequestMethod.GET)
     public List<RulRuleSetVO> getRuleSets() {
         Map<Integer, RulRuleSetVO> ruleSets = new LinkedHashMap<>();
@@ -58,6 +61,12 @@ public class RuleController {
     public List<RulDataTypeVO> getDataTypes() {
         List<RulDataType> dataTypes = dataTypeRepository.findAll();
         return factoryVo.createDataTypeList(dataTypes);
+    }
+
+    @RequestMapping(value = "/descItemTypes", method = RequestMethod.GET)
+    public List<RulDescItemTypeExtVO> getDescItemTypes() {
+        List<RulDescItemTypeExt> descItemTypes = ruleService.getAllDescriptionItemTypes();
+        return factoryVo.createDescItemTypeExtList(descItemTypes);
     }
 
 }

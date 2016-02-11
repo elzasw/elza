@@ -2,12 +2,17 @@ package cz.tacr.elza.domain;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.hibernate.search.annotations.Indexed;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 
 
@@ -21,8 +26,10 @@ import cz.tacr.elza.search.IndexArrDataWhenHasDescItemInterceptor;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataUnitdate extends ArrData implements cz.tacr.elza.api.ArrDataUnitdate<ArrCalendarType> {
 
-    @Column(nullable = false)
-    private Integer calendarTypeId;
+    @RestResource(exported = false)
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrCalendarType.class)
+    @JoinColumn(name = "calendarTypeId", nullable = false)
+    private ArrCalendarType calendarType;
 
     @Column(length = 19, nullable = true)
     private String valueFrom;
@@ -80,14 +87,15 @@ public class ArrDataUnitdate extends ArrData implements cz.tacr.elza.api.ArrData
     }
 
     @Override
-    public Integer getCalendarTypeId() {
-        return this.calendarTypeId;
+    public ArrCalendarType getCalendarType() {
+        return calendarType;
     }
 
     @Override
-    public void setCalendarTypeId(final Integer calendarTypeId) {
-        this.calendarTypeId = calendarTypeId;
+    public void setCalendarType(ArrCalendarType calendarType) {
+        this.calendarType = calendarType;
     }
+
 
     @Override
     public String getFormat() {
@@ -101,8 +109,7 @@ public class ArrDataUnitdate extends ArrData implements cz.tacr.elza.api.ArrData
 
     @Override
     public String getFulltextValue() {
-//        String ret = calendarType == null ? "?" : calendarType.getName() + " ";
-        String ret = "";
+        String ret = calendarType == null ? "?" : calendarType.getName() + " ";
 
         String from = valueFromEstimated == true ? valueFrom + "*" : valueFrom;
         String to = valueToEstimated == true ? valueTo + "*" : valueTo;
@@ -117,6 +124,13 @@ public class ArrDataUnitdate extends ArrData implements cz.tacr.elza.api.ArrData
             ret += " ?";
         }
 
-        return ret;
+        String unitdateString = UnitDateConvertor.convertToString(this);
+
+        return ret + " " + unitdateString;
+    }
+
+    @Override
+    public void formatAppend(final String format) {
+        this.format += format;
     }
 }

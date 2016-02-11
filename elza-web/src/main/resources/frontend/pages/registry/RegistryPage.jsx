@@ -319,7 +319,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                     <div className='record-selected-name'>
                         <div className="icon"><Icon glyph="fa-folder-open" /></div>
                         <div className="title"  title={nazevRodice}>{nazevRodice}</div>
-                        <div className="back" onClick={this.handleUnsetParents.bind(this,parentId)}><Icon glyph="fa-reply" /></div>
+                        <div className="back" onClick={this.handleUnsetParents.bind(this,null)}><Icon glyph="fa-close" /></div>
                     </div>
                     <div className='record-selected-breadcrumbs'>{cestaRodice.map((val, key)=>{if (key) {return  <span className='parentPath' key={key}><span className='parentPath'>&nbsp;|&nbsp;</span>{val}</span>} else {return <span key={key} className='parentPath'>{val}</span>;}})}</div>
                 </div>

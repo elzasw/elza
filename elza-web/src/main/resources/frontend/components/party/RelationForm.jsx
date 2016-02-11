@@ -332,48 +332,46 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
                         <label>{i18n('party.relation.entities')}</label>
 
                         <div className="block entity relations">
-                        <table className="relation-entities">
-                            <thead>
-                            <tr>
-                            <th>{i18n('party.relation.roleType')}</th>
-                            <th>{i18n('party.relation.record')}</th>
-                            <th></th>
-                            </tr>
-                            </thead>
-                                <tbody>
-                            {this.state.data.entities.map((j,index)=> {
-                                var roleTypeUnselected = j.roleTypeId == undefined || j.roleTypeId == 0;
-                                return <tr key={index}>
-                                            <td className="type-col">
-                                        <Input type="select" disabled={typeUnselected} value={j.roleTypeId} onChange={this.updateEntityValue.bind(this, {index:index, variable: 'role'})}>
-                                            <option value={0} key={0}></option>
-                                            {roleTypes ? roleTypes.map(i=> {return <option value={i.roleTypeId} key={i.roleTypeId}>{i.name}</option>}) : null}
-                                        </Input>
-                                            </td>
-                                            <td>
-                                             <Autocomplete
-                                                disabled={roleTypeUnselected}
-                                                customFilter
-                                                className='autocomplete-record flex-grow-1'
-                                                value={j.record}
-                                                items={this.state.recordList}
-                                                getItemId={(item) => item ? item.id : null}
-                                                getItemName={(item) => item ? item.record : ''}
-                                                onSearchChange={text => {this.handleSearchChange(j.roleTypeId, text) }}
-                                                onChange={(id,valObj) =>{this.updateEntityValue({index:index, variable: 'record'}, valObj)}}
-                                                renderItem={this.renderRecord}
-                                                 />
-                                            </td>
-                                            <td className="icon-col">
-                                                <Button onClick={this.removeEntity.bind(this, index)}><Icon glyph="fa-trash" /></Button>
-                                            </td>
-                                         </tr>
-                            })}
-                                </tbody>
+                            <div className="relation-entities">
+                                <div className="title">
+                                    <label className="type">{i18n('party.relation.roleType')}</label>
+                                    <label className="record">{i18n('party.relation.record')}</label>
+                                    <label className="icon"></label>
+                                </div>
+                                <div>
+                                    {this.state.data.entities.map((j,index)=> {
+                                        var roleTypeUnselected = j.roleTypeId == undefined || j.roleTypeId == 0;
+                                        return <div className="relation-row" key={index}>
+                                                    <div className="type">
+                                                <Input type="select" disabled={typeUnselected} value={j.roleTypeId} onChange={this.updateEntityValue.bind(this, {index:index, variable: 'role'})}>
+                                                    <option value={0} key={0}></option>
+                                                    {roleTypes ? roleTypes.map(i=> {return <option value={i.roleTypeId} key={i.roleTypeId}>{i.name}</option>}) : null}
+                                                </Input>
+                                                    </div>
+                                                    <div className="record">
+                                                     <Autocomplete
+                                                        disabled={roleTypeUnselected}
+                                                        customFilter
+                                                        className='autocomplete-record flex-grow-1'
+                                                        value={j.record}
+                                                        items={this.state.recordList}
+                                                        getItemId={(item) => item ? item.id : null}
+                                                        getItemName={(item) => item ? item.record : ''}
+                                                        onSearchChange={text => {this.handleSearchChange(j.roleTypeId, text) }}
+                                                        onChange={(id,valObj) =>{this.updateEntityValue({index:index, variable: 'record'}, valObj)}}
+                                                        renderItem={this.renderRecord}
+                                                         />
+                                                    </div>
+                                                    <div className="icon">
+                                                        <Button onClick={this.removeEntity.bind(this, index)}><Icon glyph="fa-trash" /></Button>
+                                                    </div>
+                                                 </div>
+                                    })}
+                                </div>
 
-                        </table>
-                        <Button className="relation-add" onClick={this.addEntity}><Icon glyph="fa-plus" /></Button>
                             </div>
+                        <Button className="relation-add" onClick={this.addEntity}><Icon glyph="fa-plus" /></Button>
+                        </div>
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

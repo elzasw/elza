@@ -832,7 +832,7 @@ public class LevelTreeCacheService {
                 ArrDataUnitdate unitDate = (ArrDataUnitdate) data;
 
                 ParUnitdate parUnitdate = new ParUnitdate();
-                parUnitdate.setCalendarType(calendarTypeRepository.findOne(unitDate.getCalendarTypeId()));
+                parUnitdate.setCalendarType(unitDate.getCalendarType());
                 parUnitdate.setFormat(unitDate.getFormat());
                 parUnitdate.setValueFrom(unitDate.getValueFrom());
                 parUnitdate.setValueFromEstimated(unitDate.getValueFromEstimated());

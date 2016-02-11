@@ -23,8 +23,8 @@ export default function faFileTree(state = initialState, action) {
                         versions: item.versions.map(ver => {
                             return {
                                 ...ver,
-                                createDate: new Date(ver.createDate),
-                                lockDate: ver.lockDate ? new Date(ver.lockDate) : null,
+                                createDate: ver.createDate,
+                                lockDate: ver.lockDate,
                             }
                         })
                     }

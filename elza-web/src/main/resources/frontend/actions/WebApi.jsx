@@ -425,6 +425,10 @@ class WebApi{
             });
     }
 
+    getDescItemTypes() {
+        return AjaxUtils.ajaxGet('/api/ruleSetManagerV2/descItemTypes')
+    }
+
     getCalendarTypes(versionId, nodeId) {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/calendarTypes')
                 .then(json=>{

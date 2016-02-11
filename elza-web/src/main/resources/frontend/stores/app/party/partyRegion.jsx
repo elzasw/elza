@@ -114,6 +114,24 @@ export default function partyRegion(state = initialState, action) {
             result.filterText = "";
             return consolidateState(state, result);
 
+            case types.CHANGE_REGISTRY_UPDATE:
+                if(state.items){
+                    var recordIds = {};
+                    for(var i = 0; i < action.changedIds.length;i++){
+                        recordIds[action.changedIds[i]] = 1;
+                    }
+                    //projdeme všechny zobrazené osoby a pokud je zobreno aktualizovane heslo,musíme přenačíst seznam
+                    for(var i = 0; i < state.items.length;i++){
+                        if(recordIds[state.items[i].record.recordId] === 1){
+                            return Object.assign({}, state, {
+                                dirtySearch: true
+                            });
+                        }
+                    }
+                }
+            return state;
+
+
         default:
             return state
     }

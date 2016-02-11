@@ -30,14 +30,14 @@ var NodeTabs = class NodeTabs extends AbstractReactComponent {
         if (this.state !== nextState) {
             return true;
         }
-        var eqProps = ['versionId', 'fa', 'nodes', 'activeIndex', 'findingAidId',
+        var eqProps = ['versionId', 'fa', 'nodes', 'activeIndex', 'findingAidId', 'descItemTypes',
             'rulDataTypes', 'calendarTypes', 'packetTypes', 'packets', 'showRegisterJp', 'closed']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
     render() {
         const {fa, nodes, activeIndex, versionId, rulDataTypes, showRegisterJp,
-                calendarTypes, packetTypes, packets, findingAidId, closed} = this.props;
+                calendarTypes, descItemTypes, packetTypes, packets, findingAidId, closed} = this.props;
 
         if (nodes.length == 0) {
             return <div></div>
@@ -71,6 +71,7 @@ var NodeTabs = class NodeTabs extends AbstractReactComponent {
                                               node={activeNode}
                                               rulDataTypes={rulDataTypes}
                                               calendarTypes={calendarTypes}
+                                              descItemTypes={descItemTypes}
                                               packetTypes={packetTypes}
                                               showRegisterJp={showRegisterJp}
                                               packets={packets} />}
@@ -88,6 +89,7 @@ NodeTabs.propTypes = {
     findingAidId: React.PropTypes.number,
     rulDataTypes: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
+    descItemTypes: React.PropTypes.object.isRequired,
     packetTypes: React.PropTypes.object.isRequired,
     packets: React.PropTypes.array.isRequired,
     showRegisterJp: React.PropTypes.bool.isRequired,

@@ -81,7 +81,7 @@ var FaFileTree = class FaFileTree extends AbstractReactComponent {
                 rows.push(
                     <NavItem className='version' key={item.id + '_' + ver.id} onClick={this.handleSelect.bind(this, item, ver)}>
                         <Icon glyph={glyph}/>
-                        {ver.lockDate ? dateToString(ver.lockDate) : i18n('arr.fa.currentVersion')}
+                        {ver.lockDate ? dateToString(new Date(ver.lockDate)) : i18n('arr.fa.currentVersion')}
                     </NavItem>
                 )
             });

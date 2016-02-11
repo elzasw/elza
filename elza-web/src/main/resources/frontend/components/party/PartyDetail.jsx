@@ -40,9 +40,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        console.log("NextProps: ",nextProps);
         this.dispatch(partyDetailFetchIfNeeded(nextProps.partyRegion.selectedPartyID));
-//console.log("@@@@@-SubNodeForm-@@@@@", props);
     }
 
 

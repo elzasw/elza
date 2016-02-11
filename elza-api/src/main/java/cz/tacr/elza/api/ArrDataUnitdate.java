@@ -9,67 +9,62 @@ import java.io.Serializable;
  * @author Martin Šlapa
  * @since 1.9.2015
  */
-public interface ArrDataUnitdate<CT extends ArrCalendarType> extends Serializable {
+public interface ArrDataUnitdate<CT extends ArrCalendarType> extends Serializable, IUnitdate<CT> {
 
     /**
      * @return vrací datum "od" v iso formátu
      */
+    @Override
     String getValueFrom();
 
 
     /**
      * @param valueFrom datum "od" v iso formátu
      */
+    @Override
     void setValueFrom(String valueFrom);
 
 
     /**
      * @return je datum "od" přibližný?
      */
+    @Override
     Boolean getValueFromEstimated();
 
 
     /**
      * @param valueFromEstimated je datum "od" přibližný?
      */
+    @Override
     void setValueFromEstimated(Boolean valueFromEstimated);
 
 
     /**
      * @return vrací datum "do" v iso formátu
      */
+    @Override
     String getValueTo();
 
 
     /**
      * @param valueTo datum "do" v iso formátu
      */
+    @Override
     void setValueTo(String valueTo);
 
 
     /**
      * @return je datum "do přibližný?
      */
+    @Override
     Boolean getValueToEstimated();
 
 
     /**
      * @param valueToEstimated je datum "do přibližný?
      */
+    @Override
     void setValueToEstimated(Boolean valueToEstimated);
-
-
-    /**
-     * @return identifikátor typu kalendáře
-     */
-    Integer getCalendarTypeId();
-
-
-    /**
-     * @param calendarTypeId identifikátor typu kalendáře
-     */
-    void setCalendarTypeId(Integer calendarTypeId);
-
 
     /**
      * Možnosti hodnot formátu:
@@ -86,12 +81,14 @@ public interface ArrDataUnitdate<CT extends ArrCalendarType> extends Serializabl
      *
      * @return formát, jakým způsobem se má zobrazovat výstup
      */
+    @Override
     String getFormat();
 
 
     /**
      * @param format formát, jakým způsobem se má zobrazovat výstup
      */
+    @Override
     void setFormat(String format);
 
 }

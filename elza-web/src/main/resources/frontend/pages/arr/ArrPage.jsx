@@ -282,7 +282,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     render() {
-        const {splitter, arrRegion, faFileTree, rulDataTypes, calendarTypes, packetTypes} = this.props;
+        const {splitter, arrRegion, faFileTree, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
 
         var showRegisterJp = arrRegion.showRegisterJp;
 
@@ -324,6 +324,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                         activeIndex={activeFa.nodes.activeIndex}
                         rulDataTypes={rulDataTypes}
                         calendarTypes={calendarTypes}
+                        descItemTypes={descItemTypes}
                         packetTypes={packetTypes}
                         packets={packets}
                         findingAidId={findingAidId}
@@ -371,6 +372,7 @@ function mapStateToProps(state) {
         faFileTree,
         rulDataTypes: refTables.rulDataTypes,
         calendarTypes: refTables.calendarTypes,
+        descItemTypes: refTables.descItemTypes,
         packetTypes: refTables.packetTypes,
     }
 }
@@ -381,6 +383,7 @@ ArrPage.propTypes = {
     faFileTree: React.PropTypes.object.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
+    descItemTypes: React.PropTypes.object.isRequired,
     packetTypes: React.PropTypes.object.isRequired,
 }
 

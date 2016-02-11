@@ -25,7 +25,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.api.controller.ArrangementManager;
-import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataDecimal;
@@ -500,7 +499,7 @@ public class DescItemFactory implements InitializingBean {
                         if (arrDescItemUnitdate.getCalendarType() == null) {
                             throw new IllegalArgumentException("Nebyl zvolen kalendar");
                         }
-                        arrDataUnitdate.setCalendarTypeId(arrDescItemUnitdate.getCalendarType().getCalendarTypeId());
+                        arrDataUnitdate.setCalendarType(arrDescItemUnitdate.getCalendarType());
 
                         try {
                             String value = arrDescItemUnitdate.getValueFrom();
@@ -546,9 +545,7 @@ public class DescItemFactory implements InitializingBean {
                     public void mapBtoA(ArrDataUnitdate arrDataUnitdate,
                                         ArrDescItemUnitdate arrDescItemUnitdate,
                                         MappingContext context) {
-                        ArrCalendarType calendarType = calendarTypeRepository
-                                .findOne(arrDataUnitdate.getCalendarTypeId());
-                        arrDescItemUnitdate.setCalendarType(calendarType);
+                        arrDescItemUnitdate.setCalendarType(arrDataUnitdate.getCalendarType());
                         arrDescItemUnitdate.setValueFrom(arrDataUnitdate.getValueFrom());
                         arrDescItemUnitdate.setValueFromEstimated(arrDataUnitdate.getValueFromEstimated());
                         arrDescItemUnitdate.setValueTo(arrDataUnitdate.getValueTo());
@@ -565,7 +562,7 @@ public class DescItemFactory implements InitializingBean {
                                         MappingContext context) {
                         arrDataUnitdateNew.setDataType(arrDataUnitdate.getDataType());
                         arrDataUnitdateNew.setDescItem(arrDataUnitdate.getDescItem());
-                        arrDataUnitdateNew.setCalendarTypeId(arrDataUnitdate.getCalendarTypeId());
+                        arrDataUnitdateNew.setCalendarType(arrDataUnitdate.getCalendarType());
                         arrDataUnitdateNew.setValueFrom(arrDataUnitdate.getValueFrom());
                         arrDataUnitdateNew.setValueFromEstimated(arrDataUnitdate.getValueFromEstimated());
                         arrDataUnitdateNew.setValueTo(arrDataUnitdate.getValueTo());

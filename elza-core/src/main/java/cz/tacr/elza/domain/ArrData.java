@@ -12,8 +12,8 @@ import javax.persistence.Table;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.lucene.analysis.core.KeywordTokenizerFactory;
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
-import org.apache.lucene.analysis.standard.StandardTokenizerFactory;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.AnalyzerDef;
 import org.hibernate.search.annotations.Field;
@@ -30,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @since 20.8.2015
  */
 @AnalyzerDef(name = "customanalyzer",
-tokenizer = @TokenizerDef(factory = StandardTokenizerFactory.class),
+tokenizer = @TokenizerDef(factory = KeywordTokenizerFactory.class),
 filters = {
   @TokenFilterDef(factory = LowerCaseFilterFactory.class),
 })
