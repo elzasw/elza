@@ -57,9 +57,7 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
         var submitForm = submitReduxForm.bind(this, validate)
 
         var disabled = false;
-        if (this.props.parentRegisterTypeId){
-            registerTypeId.value=this.props.parentRegisterTypeId;
-        }
+
         if (this.props.parentRecordId){
             disabled = true;
         }
