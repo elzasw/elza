@@ -15,6 +15,7 @@ import org.apache.lucene.search.Query;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
+import org.hibernate.search.query.dsl.BooleanJunction;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -91,15 +92,21 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
             return Collections.EMPTY_LIST;
         }
 
-        searchValue = "*" + text + "*";
-
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
 
         QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory().buildQueryBuilder()
                 .forEntity(ArrData.class).get();
 
-        Query query = queryBuilder.keyword().wildcard().onField("fulltextValue").matching(searchValue).createQuery();
+        // rozdělení zadaného výrazu podle mezer a hledání výsledků pomocí OR tak že každý obsahuje alespoň jednu část zadaného výrazu
+        String[] tokens = StringUtils.split(text.toLowerCase(), ' ');
+        BooleanJunction<BooleanJunction> mainBoolQuery = queryBuilder.bool();
+        for (String token : tokens) {
+            searchValue = "*" + token + "*";
+            Query createQuery = queryBuilder.keyword().wildcard().onField("fulltextValue").matching(searchValue).createQuery();
+            mainBoolQuery.should(createQuery);
+        }
 
+        Query query = mainBoolQuery.createQuery();
         FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(query, ArrData.class);
         jpaQuery.setProjection("descItemId");
 

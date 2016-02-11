@@ -566,7 +566,7 @@ public class XmlImportService {
 
                     String calendarTypeCode = descItemUnitDate.getCalendarTypeCode();
                     ArrCalendarType calendarType = calendarTypeRepository.findByCode(calendarTypeCode);
-                    arrData.setCalendarTypeId(calendarType.getCalendarTypeId());
+                    arrData.setCalendarType(calendarType);
                     arrData.setFormat(descItemUnitDate.getFormat());
 
                     arrData.setValueFrom(XmlImportUtils.dateToString(descItemUnitDate.getValueFrom()));
