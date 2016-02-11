@@ -42,9 +42,10 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
 
         this.state = {
             parentRegisterTypeId: null,
+            scopeId: null,
             fetched: this.props.parentRecordId === null
         };
-        this.prepareState(this.props);
+
     }
 
     componentWillReceiveProps(nextProps) {
@@ -58,13 +59,14 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
             this.props.load(this.props.initData);
         }
         this.dispatch(getRegistryRecordTypesIfNeeded());
+        this.prepareState(this.props);
     }
 
     prepareState(props){
         if (props.parentRecordId !== null){
             this.setState({fetched: false});
             WebApi.getRegistry(props.parentRecordId).then(json => {
-                this.setState({parentRegisterTypeId: json.registerTypeId, fetched: true});
+                this.setState({parentRegisterTypeId: json.registerTypeId, scopeId: json.scopeId, fetched: true});
             });
         }
     }
@@ -81,17 +83,32 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
         var disabled = false;
         if (this.state.parentRegisterTypeId){
             registerTypeId.value=this.state.parentRegisterTypeId;
+            scopeId.value=this.state.scopeId;
         }
 
         if (this.props.parentRecordId || this.state.fetched === false){
             disabled = true;
         }
 
+        if (disabled===false && (scopeId.value === undefined || scopeId.value===null)){
+
+            var scopesData = [];
+            this.props.refTables.scopesData.scopes.map(scope => {
+                if (scope.versionId === null) {
+                    scopesData = scope.scopes.data;
+                }
+            });
+            if (scopesData.length) {
+
+                scopeId.value = scopesData[0].id;
+            }
+        }
+
         return (
             <div key={this.props.key}>
                 <Modal.Body>
                     <form onSubmit={handleSubmit(submitForm)}>
-                        <Scope versionId={this.props.versionId} label={i18n('registry.scope.class')}  {...scopeId} {...decorateFormField(scopeId)}/>
+                        <Scope disabled={disabled} versionId={this.props.versionId} label={i18n('registry.scope.class')}  {...scopeId} {...decorateFormField(scopeId)}/>
                         <DropDownTree
                             label={i18n('registry.add.typ.rejstriku')}
                             items = {itemsForDropDownTree}
