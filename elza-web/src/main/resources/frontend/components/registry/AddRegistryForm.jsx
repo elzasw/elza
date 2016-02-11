@@ -40,36 +40,44 @@ const validate = (values, props) => {
 var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
-
         this.state = {
-            parentRegisterTypeId: null,
-            scopeId: null,
-            fetched: this.props.parentRecordId === null
+            disabled: false
         };
-
     }
 
-    componentWillReceiveProps(nextProps) {
+    componentWillReceiveProps(nextProps){
         this.dispatch(getRegistryRecordTypesIfNeeded());
-        this.prepareState(nextProps);
-
     }
 
     componentDidMount() {
-        if (this.props.initData) {
+        /*if (this.props.initData) {
             this.props.load(this.props.initData);
-        }
+        }/**/
         this.dispatch(getRegistryRecordTypesIfNeeded());
-        this.prepareState(this.props);
+        this.prepareState();
     }
 
-    prepareState(props){
-        if (props.parentRecordId !== null){
-            this.setState({fetched: false});
+    prepareState(props = this.props){
+        if (props.parentRecordId !== null) {
+            this.setState({disabled: true});
+
             WebApi.getRegistry(props.parentRecordId).then(json => {
-                this.setState({parentRegisterTypeId: json.registerTypeId, scopeId: json.scopeId, fetched: true});
+                //this.setState({parentRegisterTypeId: json.registerTypeId, scopeId: json.scopeId, fetched: true});
+                this.props.load({registerTypeId: json.registerTypeId, scopeId: json.scopeId});
             });
+        } else {
+            this.setState({disabled: false});
+            var scopesData = [];
+            props.refTables.scopesData.scopes.map(scope => {
+                if (scope.versionId === null) {
+                    scopesData = scope.scopes.data;
+                }
+            });
+            if (scopesData.length) {
+                this.props.load({scopeId: scopesData[0].id});
+            }
         }
+
     }
 
     render() {
@@ -81,35 +89,12 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
         if (this.props.registryRegionRecordTypes.item) {
             itemsForDropDownTree = this.props.registryRegionRecordTypes.item;
         }
-        var disabled = false;
-        if (this.state.parentRegisterTypeId){
-            registerTypeId.value=this.state.parentRegisterTypeId;
-            scopeId.value=this.state.scopeId;
-        }
-
-        if (this.props.parentRecordId || this.state.fetched === false){
-            disabled = true;
-        }
-
-        if (disabled===false && (scopeId.value === undefined || scopeId.value===null)){
-
-            var scopesData = [];
-            this.props.refTables.scopesData.scopes.map(scope => {
-                if (scope.versionId === null) {
-                    scopesData = scope.scopes.data;
-                }
-            });
-            if (scopesData.length) {
-
-                scopeId.value = scopesData[0].id;
-            }
-        }
 
         return (
             <div key={this.props.key}>
                 <Modal.Body>
                     <form onSubmit={handleSubmit(submitForm)}>
-                        <Scope disabled={disabled} versionId={this.props.versionId} label={i18n('registry.scope.class')}  {...scopeId} {...decorateFormField(scopeId)}/>
+                        <Scope disabled={this.state.disabled} versionId={this.props.versionId} label={i18n('registry.scope.class')}  {...scopeId} {...decorateFormField(scopeId)}/>
                         <DropDownTree
                             label={i18n('registry.add.typ.rejstriku')}
                             items = {itemsForDropDownTree}
@@ -117,7 +102,7 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
                             {...registerTypeId}
                             {...decorateFormField(registerTypeId)}
 
-                            disabled={disabled}
+                            disabled={this.state.disabled}
                             />
                         <Input type="text" label={i18n('registry.name')} {...nameMain} {...decorateFormField(nameMain)}/>
                         <Input type="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)} />
