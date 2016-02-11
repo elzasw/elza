@@ -56,7 +56,8 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
         });
         var data = Object.assign({}, values, {
             xmlFile: values.xmlFile[0],
-            importDataFormat: this.props.fa ? "FINDING_AID" : this.props.record ? "RECORD" : "PARTY"
+            importDataFormat: this.props.fa ? "FINDING_AID" : this.props.record ? "RECORD" : "PARTY",
+            stopOnError: values.stopOnError ? values.stopOnError : false,
         });
         var formData = new FormData();
 
@@ -91,7 +92,7 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
                                             {...recordScope} {...decorateFormField(recordScope)}
                                             label={i18n('import.registryScope')}// / Třída rejstříku
                                             items={this.state.defaultScopes}
-                                            getItemId={(item) => item ? item.id : null}
+                                            getItemId={(item) => item ? item : null}
                                             getItemName={(item) => item ? item.name : ''}
                                         />
                                     </div>

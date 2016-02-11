@@ -1,10 +1,8 @@
 package cz.tacr.elza;
 
-import java.util.Map;
-import java.util.concurrent.Executor;
-
-import javax.annotation.PostConstruct;
-
+import com.google.common.eventbus.EventBus;
+import cz.tacr.elza.service.IClientDataChangesService;
+import cz.tacr.elza.service.websocket.ClientDataChangesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +20,12 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scripting.ScriptEvaluator;
 import org.springframework.scripting.groovy.GroovyScriptEvaluator;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.multipart.MultipartResolver;
+import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
-import com.google.common.eventbus.EventBus;
-
-import cz.tacr.elza.service.IClientDataChangesService;
-import cz.tacr.elza.service.websocket.ClientDataChangesService;
+import javax.annotation.PostConstruct;
+import java.util.Map;
+import java.util.concurrent.Executor;
 
 
 /**
@@ -65,6 +64,11 @@ public class ElzaCore {
         return new EventBus((exception, context) -> {
             logger.error("Subscriber exception " + context.getSubscriberMethod(), exception);
         });
+    }
+
+    @Bean
+    public MultipartResolver multipartResolver() {
+        return new StandardServletMultipartResolver();
     }
 
 

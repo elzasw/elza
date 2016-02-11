@@ -610,9 +610,9 @@ class WebApi{
     
     xmlImport(data) {
         //return AjaxUtils.ajaxPost('/api/xmlImportManagerV2/import', {}, data);
-        //return AjaxUtils.ajaxCallRaw('/api/xmlImportManagerV2/import', {}, "POST", data, 'multipart/form-data')
+        return AjaxUtils.ajaxCallRaw('/api/xmlImportManagerV2/import', {}, "POST", data);
         // TODO změnit na raw
-        $.ajax({
+        /*$.ajax({
             url: '/api/xmlImportManagerV2/import',
             data: data,
             //dataType: 'fom',
@@ -621,7 +621,7 @@ class WebApi{
             type: 'POST',
             success: function (data) {
             }
-        });
+         });*/
     }    
 }
 
