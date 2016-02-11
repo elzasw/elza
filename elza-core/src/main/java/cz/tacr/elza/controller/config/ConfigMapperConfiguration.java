@@ -7,6 +7,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import cz.tacr.elza.controller.vo.nodes.DescItemSpecLiteVO;
+import cz.tacr.elza.controller.vo.nodes.DescItemTypeDescItemsLiteVO;
+import cz.tacr.elza.controller.vo.nodes.DescItemTypeLiteVO;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
@@ -168,6 +171,8 @@ public class ConfigMapperConfiguration {
         initSimpleVO(mapperFactory);
 
         mapperFactory.getConverterFactory().registerConverter(new LocalDateTimeConverter());
+        mapperFactory.getConverterFactory().registerConverter(new DescItemTypeEnumConverter());
+        mapperFactory.getConverterFactory().registerConverter(new DescItemSpecEnumConverter());
 
         return mapperFactory;
     }
@@ -470,7 +475,7 @@ public class ConfigMapperConfiguration {
                     public void mapBtoA(final ParRelationVO relationVO,
                                         final ParRelation parRelation,
                                         final MappingContext context) {
-                        if(relationVO.getPartyId() != null){
+                        if (relationVO.getPartyId() != null) {
                             ParParty party = new ParParty();
                             party.setPartyId(relationVO.getPartyId());
                             parRelation.setParty(party);
@@ -573,13 +578,13 @@ public class ConfigMapperConfiguration {
                             regRecord.setParentRecord(parent);
                         }
 
-                        if(regRecordVO.getRegisterTypeId() != null){
+                        if (regRecordVO.getRegisterTypeId() != null) {
                             RegRegisterType regRegisterType = new RegRegisterType();
                             regRegisterType.setRegisterTypeId(regRecordVO.getRegisterTypeId());
                             regRecord.setRegisterType(regRegisterType);
                         }
 
-                        if(regRecordVO.getScopeId() != null){
+                        if (regRecordVO.getScopeId() != null) {
                             RegScope scope = new RegScope();
                             scope.setScopeId(regRecordVO.getScopeId());
                             regRecord.setScope(scope);
@@ -602,7 +607,7 @@ public class ConfigMapperConfiguration {
                             regRegisterTypeVO.setParentRegisterTypeId(parentType.getRegisterTypeId());
                         }
 
-                        if(regRegisterType.getPartyType() != null){
+                        if (regRegisterType.getPartyType() != null) {
                             regRegisterTypeVO.setPartyTypeId(regRegisterType.getPartyType().getPartyTypeId());
                         }
                     }
@@ -647,13 +652,41 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(RulDescItemType.class, RulDescItemTypeDescItemsVO.class).byDefault().field(
                 "descItemTypeId",
                 "id").register();
+        mapperFactory.classMap(RulDescItemType.class, DescItemTypeDescItemsLiteVO.class).byDefault()
+                .field("descItemTypeId", "id")
+                .register();
         mapperFactory.classMap(RulDescItemTypeExt.class, RulDescItemTypeExtVO.class).byDefault()
                 .field("descItemTypeId", "id")
                 .field("rulDescItemSpecList", "descItemSpecs")
                 .register();
+        mapperFactory.classMap(RulDescItemTypeExt.class, DescItemTypeLiteVO.class).byDefault()
+                .field("descItemTypeId", "id")
+                .field("rulDescItemSpecList", "specs")
+                .customize(new CustomMapper<RulDescItemTypeExt, DescItemTypeLiteVO>() {
+                    @Override
+                    public void mapAtoB(final RulDescItemTypeExt rulDescItemTypeExt,
+                                        final DescItemTypeLiteVO descItemTypeLiteVO,
+                                        final MappingContext context) {
+                        super.mapAtoB(rulDescItemTypeExt, descItemTypeLiteVO, context);
+                        descItemTypeLiteVO.setRep(rulDescItemTypeExt.getRepeatable() ? 1 : 0);
+                    }
+                })
+                .register();
         mapperFactory.classMap(RulDescItemSpec.class, RulDescItemSpecVO.class).byDefault().field("descItemSpecId", "id").register();
         mapperFactory.classMap(RulDescItemSpecExt.class, RulDescItemSpecExtVO.class).byDefault().field("descItemSpecId",
                 "id").register();
+        mapperFactory.classMap(RulDescItemSpecExt.class, DescItemSpecLiteVO.class).byDefault()
+                .field("descItemSpecId", "id")
+                .customize(new CustomMapper<RulDescItemSpecExt, DescItemSpecLiteVO>() {
+                    @Override
+                    public void mapAtoB(final RulDescItemSpecExt rulDescItemSpecExt,
+                                        final DescItemSpecLiteVO descItemSpecLiteVO,
+                                        final MappingContext context) {
+                        super.mapAtoB(rulDescItemSpecExt, descItemSpecLiteVO, context);
+                        descItemSpecLiteVO.setRep(rulDescItemSpecExt.getRepeatable() ? 1 : 0);
+                    }
+                })
+                .register();
 
         mapperFactory.classMap(RulPacketType.class, RulPacketTypeVO.class).byDefault().field("packetTypeId", "id").register();
 
@@ -706,6 +739,84 @@ public class ConfigMapperConfiguration {
         public LocalDateTime convertFrom(final Date date, final Type<LocalDateTime> type) {
             return LocalDateTime.from(LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()));
         }
+    }
+
+    public class DescItemTypeEnumConverter extends BidirectionalConverter<RulDescItemType.Type, Integer> {
+
+
+        @Override
+        public Integer convertTo(final RulDescItemType.Type type,
+                                                 final Type<Integer> type2) {
+            switch (type) {
+                case REQUIRED:
+                    return 3;
+                case RECOMMENDED:
+                    return 2;
+                case POSSIBLE:
+                    return 1;
+                case IMPOSSIBLE:
+                    return 0;
+                default:
+                    throw new IllegalStateException("Type convert not defined: " + type);
+            }
+        }
+
+        @Override
+        public RulDescItemType.Type convertFrom(final Integer type,
+                                                final Type<RulDescItemType.Type> type2) {
+            switch (type) {
+                case 3:
+                    return RulDescItemType.Type.REQUIRED;
+                case 2:
+                    return RulDescItemType.Type.RECOMMENDED;
+                case 1:
+                    return RulDescItemType.Type.POSSIBLE;
+                case 0:
+                    return RulDescItemType.Type.IMPOSSIBLE;
+                default:
+                    throw new IllegalStateException("Type convert not defined: " + type);
+            }
+        }
+
+    }
+
+    public class DescItemSpecEnumConverter extends BidirectionalConverter<RulDescItemSpec.Type, Integer> {
+
+
+        @Override
+        public Integer convertTo(final RulDescItemSpec.Type type,
+                                                 final Type<Integer> type2) {
+            switch (type) {
+                case REQUIRED:
+                    return 3;
+                case RECOMMENDED:
+                    return 2;
+                case POSSIBLE:
+                    return 1;
+                case IMPOSSIBLE:
+                    return 0;
+                default:
+                    throw new IllegalStateException("Type convert not defined: " + type);
+            }
+        }
+
+        @Override
+        public RulDescItemSpec.Type convertFrom(final Integer type,
+                                                final Type<RulDescItemSpec.Type> type2) {
+            switch (type) {
+                case 3:
+                    return RulDescItemSpec.Type.REQUIRED;
+                case 2:
+                    return RulDescItemSpec.Type.RECOMMENDED;
+                case 1:
+                    return RulDescItemSpec.Type.POSSIBLE;
+                case 0:
+                    return RulDescItemSpec.Type.IMPOSSIBLE;
+                default:
+                    throw new IllegalStateException("Type convert not defined: " + type);
+            }
+        }
+
     }
 
 }

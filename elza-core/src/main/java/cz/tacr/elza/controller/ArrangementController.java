@@ -9,6 +9,8 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTypeGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.DescItemGroupVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.DescItemTypeGroupVO;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
@@ -354,7 +356,7 @@ public class ArrangementController {
         return factoryVo.createFindingAidVersion(nextVersion);
     }
 
-
+    @Deprecated
     @RequestMapping(value = "/nodes/{nodeId}/{versionId}/form", method = RequestMethod.GET)
     public NodeFormDataVO getNodeFormData(@PathVariable(value = "nodeId") Integer nodeId,
                                           @PathVariable(value = "versionId") Integer versionId) {
@@ -379,6 +381,32 @@ public class ArrangementController {
         List<ArrDescItemGroupVO> descItemGroupsVO = factoryVo.createDescItemGroups(descItems);
         List<ArrDescItemTypeGroupVO> descItemTypeGroupsVO = factoryVo.createDescItemTypeGroups(descItemTypes);
         return new NodeFormDataVO(nodeVO, descItemGroupsVO, descItemTypeGroupsVO);
+    }
+
+    @RequestMapping(value = "/nodes/{nodeId}/{versionId}/formNew", method = RequestMethod.GET)
+    public NodeFormDataNewVO getNodeFormDataNew(@PathVariable(value = "nodeId") Integer nodeId,
+                                          @PathVariable(value = "versionId") Integer versionId) {
+        Assert.notNull(versionId, "Identifikátor verze musí být vyplněn");
+        Assert.notNull(nodeId, "Identifikátor uzlu musí být vyplněn");
+
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+        ArrNode node = nodeRepository.findOne(nodeId);
+
+        Assert.notNull(version, "Verze AP neexistuje");
+        Assert.notNull(node, "Uzel neexistuje");
+
+        List<ArrDescItem> descItems = arrangementService.getDescItems(version, node);
+        List<RulDescItemTypeExt> descItemTypes;
+        try {
+            descItemTypes = ruleService.getDescriptionItemTypes(versionId, nodeId);
+        } catch (Exception e) {
+            descItemTypes = new ArrayList<>();
+        }
+
+        ArrNodeVO nodeVO = factoryVo.createArrNode(node);
+        List<DescItemGroupVO> descItemGroupsVO = factoryVo.createDescItemGroupsNew(descItems);
+        List<DescItemTypeGroupVO> descItemTypeGroupsVO = factoryVo.createDescItemTypeGroupsNew(descItemTypes);
+        return new NodeFormDataNewVO(nodeVO, descItemGroupsVO, descItemTypeGroupsVO);
     }
 
     @RequestMapping(value = "/calendarTypes", method = RequestMethod.GET)
@@ -820,6 +848,7 @@ public class ArrangementController {
     /**
      * Výstupní objekt pro získaná data pro formulář detailu uzlu.
      */
+    @Deprecated
     public static class NodeFormDataVO {
 
         /**
@@ -871,6 +900,63 @@ public class ArrangementController {
 
         public void setDescItemTypeGroups(final List<ArrDescItemTypeGroupVO> descItemTypeGroups) {
             this.descItemTypeGroups = descItemTypeGroups;
+        }
+    }
+
+    /**
+     * Výstupní objekt pro získaná data pro formulář detailu uzlu.
+     */
+    public static class NodeFormDataNewVO {
+
+        /**
+         * Uzel
+         */
+        private ArrNodeVO node;
+
+        /**
+         * Seznam skupin
+         */
+        private List<DescItemGroupVO> groups;
+
+        /**
+         * Seznam skupin typů hodnot archivní pomůcky
+         */
+        private List<DescItemTypeGroupVO> typeGroups;
+
+        public NodeFormDataNewVO() {
+
+        }
+
+        public NodeFormDataNewVO(final ArrNodeVO node,
+                              final List<DescItemGroupVO> groups,
+                              final List<DescItemTypeGroupVO> typeGroups) {
+            this.node = node;
+            this.groups = groups;
+            this.typeGroups = typeGroups;
+        }
+
+        public ArrNodeVO getNode() {
+            return node;
+        }
+
+        public void setNode(final ArrNodeVO node) {
+            this.node = node;
+        }
+
+        public List<DescItemGroupVO> getGroups() {
+            return groups;
+        }
+
+        public void setGroups(final List<DescItemGroupVO> groups) {
+            this.groups = groups;
+        }
+
+        public List<DescItemTypeGroupVO> getTypeGroups() {
+            return typeGroups;
+        }
+
+        public void setTypeGroups(final List<DescItemTypeGroupVO> typeGroups) {
+            this.typeGroups = typeGroups;
         }
     }
 

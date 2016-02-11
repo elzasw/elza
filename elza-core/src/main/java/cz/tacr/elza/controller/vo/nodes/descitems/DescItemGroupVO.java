@@ -5,17 +5,16 @@ import java.util.List;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.DescItemTypeDescItemsLiteVO;
 
 
 /**
- * Skupina zapouzdrující typy hodnot atributů pro UI.
+ * Skupina zapouzdrující hodnoty atributů pro UI.
  *
  * @author Martin Šlapa
- * @since 8.1.2016
+ * @since 11.2.2016
  */
-@Deprecated
-public class ArrDescItemTypeGroupVO {
+public class DescItemGroupVO {
 
     /**
      * kód skupiny
@@ -23,21 +22,15 @@ public class ArrDescItemTypeGroupVO {
     private String code;
 
     /**
-     * název skupiny
-     */
-    private String name;
-
-    /**
      * seznam typů ve skupině
      */
-    private List<RulDescItemTypeExtVO> descItemTypes;
+    private List<DescItemTypeDescItemsLiteVO> types;
 
-    public ArrDescItemTypeGroupVO() {
+    public DescItemGroupVO() {
     }
 
-    public ArrDescItemTypeGroupVO(final String code, final String name) {
+    public DescItemGroupVO(final String code) {
         this.code = code;
-        this.name = name;
     }
 
     public String getCode() {
@@ -48,20 +41,12 @@ public class ArrDescItemTypeGroupVO {
         this.code = code;
     }
 
-    public String getName() {
-        return name;
+    public List<DescItemTypeDescItemsLiteVO> getTypes() {
+        return types;
     }
 
-    public void setName(final String name) {
-        this.name = name;
-    }
-
-    public List<RulDescItemTypeExtVO> getDescItemTypes() {
-        return descItemTypes;
-    }
-
-    public void setDescItemTypes(final List<RulDescItemTypeExtVO> descItemTypes) {
-        this.descItemTypes = descItemTypes;
+    public void setTypes(final List<DescItemTypeDescItemsLiteVO> types) {
+        this.types = types;
     }
 
     @Override
@@ -74,11 +59,10 @@ public class ArrDescItemTypeGroupVO {
             return false;
         }
 
-        ArrDescItemTypeGroupVO that = (ArrDescItemTypeGroupVO) o;
+        DescItemGroupVO that = (DescItemGroupVO) o;
 
         return new EqualsBuilder()
                 .append(code, that.code)
-                .append(name, that.name)
                 .isEquals();
     }
 
@@ -86,7 +70,6 @@ public class ArrDescItemTypeGroupVO {
     public int hashCode() {
         return new HashCodeBuilder(17, 37)
                 .append(code)
-                .append(name)
                 .toHashCode();
     }
 }

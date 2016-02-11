@@ -390,6 +390,10 @@ class WebApi{
             });
     }
 
+    getFaNodeFormNew(versionId, nodeId) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + nodeId + '/' + versionId + '/formNew')
+    }
+
     getFaNodeRegister(versionId, nodeId) {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/registerLinks/' + nodeId + '/' + versionId + '/form')
                 .then(json=>{

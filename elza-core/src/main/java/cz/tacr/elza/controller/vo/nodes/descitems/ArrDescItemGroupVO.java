@@ -14,6 +14,7 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
  * @author Martin Šlapa
  * @since 8.1.2016
  */
+@Deprecated
 public class ArrDescItemGroupVO {
 
     /**

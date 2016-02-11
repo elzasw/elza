@@ -5,17 +5,16 @@ import java.util.List;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.DescItemTypeLiteVO;
 
 
 /**
  * Skupina zapouzdrující typy hodnot atributů pro UI.
  *
  * @author Martin Šlapa
- * @since 8.1.2016
+ * @since 11.2.2016
  */
-@Deprecated
-public class ArrDescItemTypeGroupVO {
+public class DescItemTypeGroupVO {
 
     /**
      * kód skupiny
@@ -30,12 +29,12 @@ public class ArrDescItemTypeGroupVO {
     /**
      * seznam typů ve skupině
      */
-    private List<RulDescItemTypeExtVO> descItemTypes;
+    private List<DescItemTypeLiteVO> types;
 
-    public ArrDescItemTypeGroupVO() {
+    public DescItemTypeGroupVO() {
     }
 
-    public ArrDescItemTypeGroupVO(final String code, final String name) {
+    public DescItemTypeGroupVO(final String code, final String name) {
         this.code = code;
         this.name = name;
     }
@@ -56,12 +55,12 @@ public class ArrDescItemTypeGroupVO {
         this.name = name;
     }
 
-    public List<RulDescItemTypeExtVO> getDescItemTypes() {
-        return descItemTypes;
+    public List<DescItemTypeLiteVO> getTypes() {
+        return types;
     }
 
-    public void setDescItemTypes(final List<RulDescItemTypeExtVO> descItemTypes) {
-        this.descItemTypes = descItemTypes;
+    public void setTypes(final List<DescItemTypeLiteVO> types) {
+        this.types = types;
     }
 
     @Override
@@ -74,7 +73,7 @@ public class ArrDescItemTypeGroupVO {
             return false;
         }
 
-        ArrDescItemTypeGroupVO that = (ArrDescItemTypeGroupVO) o;
+        DescItemTypeGroupVO that = (DescItemTypeGroupVO) o;
 
         return new EqualsBuilder()
                 .append(code, that.code)

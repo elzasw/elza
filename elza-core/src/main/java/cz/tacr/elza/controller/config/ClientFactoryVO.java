@@ -49,11 +49,15 @@ import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
 import cz.tacr.elza.controller.vo.RulPacketTypeVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.DescItemTypeDescItemsLiteVO;
+import cz.tacr.elza.controller.vo.nodes.DescItemTypeLiteVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTypeGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.DescItemGroupVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.DescItemTypeGroupVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -712,6 +716,19 @@ public class ClientFactoryVO {
     }
 
     /**
+     * Vytvoření typu hodnoty atributu.
+     *
+     * @param descItemType typ hodnoty atributu
+     * @return VO typ hodnoty atributu
+     */
+    public DescItemTypeDescItemsLiteVO createDescItemTypeLiteVO(final RulDescItemType descItemType) {
+        Assert.notNull(descItemType);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        DescItemTypeDescItemsLiteVO descItemTypeVO = mapper.map(descItemType, DescItemTypeDescItemsLiteVO.class);
+        return descItemTypeVO;
+    }
+
+    /**
      * Vytvoření hodnoty atributu.
      *
      * @param descItem hodnota atributu
@@ -746,6 +763,7 @@ public class ClientFactoryVO {
      * @param descItems seznam hodnot atributů
      * @return VO skupin zabalených atributů
      */
+    @Deprecated
     public List<ArrDescItemGroupVO> createDescItemGroups(final List<ArrDescItem> descItems) {
         Map<String, ArrDescItemGroupVO> descItemGroupVOMap = new HashMap<>();
         Map<RulDescItemType, List<ArrDescItemVO>> descItemByType = new HashMap<>();
@@ -826,6 +844,95 @@ public class ClientFactoryVO {
     }
 
     /**
+     * Vytvoření skupin, které zaobalují hodnoty atributů (typy, specifikace, apod.)
+     *
+     * @param descItems seznam hodnot atributů
+     * @return VO skupin zabalených atributů
+     */
+    public List<DescItemGroupVO> createDescItemGroupsNew(final List<ArrDescItem> descItems) {
+        Map<String, DescItemGroupVO> descItemGroupVOMap = new HashMap<>();
+        Map<RulDescItemType, List<ArrDescItemVO>> descItemByType = new HashMap<>();
+        List<DescItemTypeDescItemsLiteVO> descItemTypeVOList = new ArrayList<>();
+
+        // vytvoření VO hodnot atributů
+        for (ArrDescItem descItem : descItems) {
+            List<ArrDescItemVO> descItemList = descItemByType.get(descItem.getDescItemType());
+
+            if (descItemList == null) {
+                descItemList = new ArrayList<>();
+                descItemByType.put(descItem.getDescItemType(), descItemList);
+            }
+
+            descItemList.add(createDescItem(descItem));
+        }
+
+        // zjištění použitých typů atributů a jejich převod do VO
+        for (RulDescItemType descItemType : descItemByType.keySet()) {
+            DescItemTypeDescItemsLiteVO descItemTypeVO = createDescItemTypeLiteVO(descItemType);
+            descItemTypeVOList.add(descItemTypeVO);
+            descItemTypeVO.setDescItems(descItemByType.get(descItemType));
+        }
+
+        Map<Integer, String> codeToId = new HashMap<>();
+
+        descItemByType.keySet().forEach(type -> codeToId.put(type.getDescItemTypeId(), type.getCode()));
+
+        // rozřazení do skupin podle konfigurace
+        for (DescItemTypeDescItemsLiteVO descItemTypeVO : descItemTypeVOList) {
+            ConfigRules.Group group = elzaRules.getGroupByType(codeToId.get(descItemTypeVO.getId()));
+            DescItemGroupVO descItemGroupVO = descItemGroupVOMap.get(group.getCode());
+
+            if (descItemGroupVO == null) {
+                descItemGroupVO = new DescItemGroupVO(group.getCode());
+                descItemGroupVOMap.put(group.getCode(), descItemGroupVO);
+            }
+
+            List<DescItemTypeDescItemsLiteVO> descItemTypeList = descItemGroupVO.getTypes();
+            if (descItemTypeList == null) {
+                descItemTypeList = new ArrayList<>();
+                descItemGroupVO.setTypes(descItemTypeList);
+            }
+
+            descItemTypeList.add(descItemTypeVO);
+        }
+
+        ArrayList<DescItemGroupVO> descItemGroupVOList = new ArrayList<>(descItemGroupVOMap.values());
+
+        List<String> typeGroupCodes = elzaRules.getTypeGroupCodes();
+
+        // seřazení skupin
+        Collections.sort(descItemGroupVOList, (left, right) -> Integer
+                .compare(typeGroupCodes.indexOf(left.getCode()), typeGroupCodes.indexOf(right.getCode())));
+
+        // seřazení položek ve skupinách
+        for (DescItemGroupVO descItemGroupVO : descItemGroupVOList) {
+            List<String> typeInfos = elzaRules.getTypeCodesByGroupCode(descItemGroupVO.getCode());
+            if (typeInfos.isEmpty()) {
+
+                // seřazení typů atributů podle viewOrder
+                Collections.sort(descItemGroupVO.getTypes(), (left, right) -> Integer
+                        .compare(left.getViewOrder(), right.getViewOrder()));
+            } else {
+
+                // seřazení typů atributů podle konfigurace
+                Collections.sort(descItemGroupVO.getTypes(), (left, right) -> Integer
+                        .compare(typeInfos.indexOf(codeToId.get(left.getId())), typeInfos.indexOf(codeToId.get(right.getId()))));
+            }
+
+            descItemGroupVO.getTypes().forEach(descItemType -> {
+                if (CollectionUtils.isNotEmpty(descItemType.getDescItems())) {
+
+                    // seřazení hodnot atributů podle position
+                    Collections.sort(descItemType.getDescItems(), (left, right) -> Integer
+                            .compare(left.getPosition(), right.getPosition()));
+                }
+            });
+        }
+
+        return descItemGroupVOList;
+    }
+
+    /**
      * Vytvoření seznamu datových typů, které jsou k dispozici.
      *
      * @param dataTypes datové typy
@@ -851,6 +958,7 @@ public class ClientFactoryVO {
      * @param descItemTypes seznam typů hodnot atributů
      * @return seznam skupin s typy hodnot atributů
      */
+    @Deprecated
     public List<ArrDescItemTypeGroupVO> createDescItemTypeGroups(final List<RulDescItemTypeExt> descItemTypes) {
 
         List<RulDescItemTypeExtVO> descItemTypeExtList = createList(descItemTypes, RulDescItemTypeExtVO.class,
@@ -878,6 +986,52 @@ public class ClientFactoryVO {
         }
 
         return new ArrayList<>(descItemTypeGroupVOMap.values());
+    }
+
+    /**
+     * Vytvoření seznamu rozšířených typů hodnot atributů se specifikacemi ve skupinách.
+     *
+     * @param descItemTypes seznam typů hodnot atributů
+     * @return seznam skupin s typy hodnot atributů
+     */
+    public List<DescItemTypeGroupVO> createDescItemTypeGroupsNew(final List<RulDescItemTypeExt> descItemTypes) {
+
+        List<DescItemTypeLiteVO> descItemTypeExtList = createList(descItemTypes, DescItemTypeLiteVO.class,
+                this::createDescItemTypeLite);
+
+        Map<Integer, String> codeToId = new HashMap<>();
+
+        descItemTypes.forEach(type -> codeToId.put(type.getDescItemTypeId(), type.getCode()));
+
+        Map<String, DescItemTypeGroupVO> descItemTypeGroupVOMap = new HashMap<>();
+
+        for (DescItemTypeLiteVO descItemTypeVO : descItemTypeExtList) {
+            ConfigRules.Group group = elzaRules.getGroupByType(codeToId.get(descItemTypeVO.getId()));
+            DescItemTypeGroupVO descItemTypeGroupVO = descItemTypeGroupVOMap.get(group.getCode());
+
+            if (descItemTypeGroupVO == null) {
+                descItemTypeGroupVO = new DescItemTypeGroupVO(group.getCode(), group.getName());
+                descItemTypeGroupVOMap.put(group.getCode(), descItemTypeGroupVO);
+            }
+
+            List<DescItemTypeLiteVO> descItemTypeList = descItemTypeGroupVO.getTypes();
+            if (descItemTypeList == null) {
+                descItemTypeList = new ArrayList<>();
+                descItemTypeGroupVO.setTypes(descItemTypeList);
+            }
+
+            descItemTypeVO.setWidth(elzaRules.getTypeWidthByCode(codeToId.get(descItemTypeVO.getId())));
+            descItemTypeList.add(descItemTypeVO);
+        }
+
+        return new ArrayList<>(descItemTypeGroupVOMap.values());
+    }
+
+    private DescItemTypeLiteVO createDescItemTypeLite(final RulDescItemTypeExt descItemTypeExt) {
+        Assert.notNull(descItemTypeExt);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        DescItemTypeLiteVO descItemTypeVO = mapper.map(descItemTypeExt, DescItemTypeLiteVO.class);
+        return descItemTypeVO;
     }
 
     /**
