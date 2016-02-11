@@ -1,7 +1,6 @@
 package cz.tacr.elza.controller;
 
 import cz.tacr.elza.api.vo.XmlImportType;
-import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.domain.RegScope;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.XmlImportService;
@@ -31,9 +30,6 @@ public class XmlImportController {
 
     @Autowired
     private XmlImportService xmlImportService;
-
-    @Autowired
-    private ClientFactoryDO factoryDO;
 
     @Autowired
     private ScopeRepository scopeRepository;

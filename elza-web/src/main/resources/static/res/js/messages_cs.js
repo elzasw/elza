@@ -255,6 +255,8 @@ var messages = {
     "admin.fulltext.message.success": "Reindexace fulltextu dokončena",
 
     "import.title.registry": "Import rejstříkových hesel",
+    "import.title.fa": "Import archivní pomůcky",
+    "import.title.party": "Import osob",
 
     "import.transformationName": "Šablona transformace",
     "import.registryScope": "Třída rejstříku",

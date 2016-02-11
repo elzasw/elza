@@ -16,7 +16,7 @@ import {modalDialogHide} from 'actions/global/modalDialog';
 
 const validate = (values, props) => {
     const errors = {};
-    if (!values.recordScope) {
+    if ((props.record || props.party) && !values.recordScope) {
         errors.recordScope = i18n('global.validation.required');
     }
     if (values.xmlFile === null) {
@@ -82,7 +82,7 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
                         <Modal.Body>
                             <form onSubmit={handleSubmit(this.handleSubmit)}>
                                 {
-                                    this.props.party || this.props.record && <div>
+                                    (this.props.party || this.props.record) && <div>
                                         <Input type="select"
                                                label={i18n('import.transformationName')} {...transformationName} {...decorateFormField(transformationName)}>
                                             <option key='blankName'/>
@@ -102,10 +102,11 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
                                 {
                                     this.props.fa && <div>
                                         <Autocomplete
+                                            {...recordScope} {...decorateFormField(recordScope)}
                                             tags // TODO migrate autocomplete
-                                            label={i18n('import.registryScope')}// / Třída rejstříku
+                                            label={i18n('import.registryScope')}
                                             items={this.state.defaultScopes}
-                                            getItemId={(item) => item ? item.id : null}
+                                            getItemId={(item) => item ? item : null}
                                             getItemName={(item) => item ? item.name : ''}
                                         />
                                     </div>

@@ -11,7 +11,7 @@ import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Icon, Ribbon, i18n} from 'components';
-import {FaExtendedView, AddFaForm, BulkActionsDialog, VersionValidationDialog, RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FaFileTree, AbstractReactComponent, ModalDialog, NodeTabs, FaTreeTabs} from 'components';
+import {FaExtendedView, AddFaForm, BulkActionsDialog, VersionValidationDialog, RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FaFileTree, AbstractReactComponent, ModalDialog, NodeTabs, FaTreeTabs, ImportForm} from 'components';
 import {ButtonGroup, Button, DropdownButton, MenuItem} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
@@ -45,7 +45,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         this.bindMethods('getActiveInfo', 'buildRibbon', 'handleRegisterJp',
             'handleApproveFaVersion', 'handleCallApproveFaVersion', 'getActiveFindingAidId', 'handleBulkActionsDialog',
-            'handleValidationDialog', 'handleShortcuts');
+            'handleValidationDialog', 'handleShortcuts', 'handleImport');
 
         this.state = {faFileTreeOpened: false};
     }
@@ -175,6 +175,15 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         this.dispatch(modalDialogShow(this, i18n('arr.fa.title.versionValidation'), <VersionValidationDialog />));
     }
 
+    handleImport() {
+        this.dispatch(
+            modalDialogShow(this,
+                i18n('import.title.fa'),
+                <ImportForm fa/>
+            )
+        );
+    }
+
     /**
      * Sestavení Ribbonu.
      * @return {Object} view
@@ -186,7 +195,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         var itemActions = [];
         altActions.push(
-            <Button key="fa-import"><Icon glyph='fa-download'/>
+            <Button key="fa-import" onClick={this.handleImport}><Icon glyph='fa-download'/>
                 <div><span className="btnText">{i18n('ribbon.action.arr.fa.import')}</span></div>
             </Button>
         );
