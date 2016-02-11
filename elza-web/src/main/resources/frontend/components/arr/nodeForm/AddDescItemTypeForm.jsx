@@ -82,7 +82,6 @@ var AddDescItemTypeForm = class AddDescItemTypeForm extends AbstractReactCompone
             <div>
                 <Modal.Body>
                     <form onSubmit={handleSubmit}>
-                        {true && ac}
                         <div>
                             {this.props.descItemTypes.map(i=> {
                                 if (i.type == "POSSIBLE") {
@@ -92,6 +91,7 @@ var AddDescItemTypeForm = class AddDescItemTypeForm extends AbstractReactCompone
                                 }
                             })}
                         </div>
+                        {true && ac}
                         {false && <Input type="select" label={i18n('subNodeForm.descItemType')} {...descItemTypeId} {...decorateFormField(descItemTypeId)}>
                             <option></option>
                             {this.props.descItemTypes.map(i=> <option value={i.id}>{i.name}</option>)}
