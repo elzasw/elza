@@ -197,6 +197,8 @@ var PartyDetailNames = class PartyDetailNames extends AbstractReactComponent {
             if(names[i].partyNameId == data.partyNameId){                               // to je ono            
                 party.partyNames[i].mainPart = data.mainPart;                           // hlavní část jména
                 party.partyNames[i].otherPart = data.otherPart;                         // vedlejší část jména
+                party.partyNames[i].degreeBefore = data.degreeBefore;
+                party.partyNames[i].degreeAfter = data.degreeAfter;
                 party.partyNames[i].validFrom = data.validFrom;                         // datace jména od
                 party.partyNames[i].validTo = data.validTo;                             // datace jména do
                 party.partyNames[i].partyNameComplements = complements;                 // seznamm entit ve vztahu
