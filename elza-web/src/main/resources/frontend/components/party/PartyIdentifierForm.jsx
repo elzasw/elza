@@ -126,7 +126,7 @@ var PartyIdentifierForm = class PartyIdentifierForm extends AbstractReactCompone
                                     <label>{i18n('party.identifier.from')}</label>
                                     <div className="line">
                                         <Input type="select" name="fromCalendar" value={this.state.data.from.calendarTypeId} onChange={this.updateValue} >
-                                            {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
+                                            {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>})}
                                         </Input>
                                         <Input type="text"  name="fromText" value={this.state.data.from.textDate} onChange={this.updateValue} />
                                     </div>
@@ -135,7 +135,7 @@ var PartyIdentifierForm = class PartyIdentifierForm extends AbstractReactCompone
                                     <label>{i18n('party.identifier.to')}</label>
                                     <div className="line">
                                         <Input type="select" name="toCalendar" value={this.state.data.to.calendarTypeId} onChange={this.updateValue} >
-                                            {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
+                                            {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>})}
                                         </Input>
                                         <Input type="text" name="toText" value={this.state.data.to.textDate} onChange={this.updateValue} />
                                     </div>

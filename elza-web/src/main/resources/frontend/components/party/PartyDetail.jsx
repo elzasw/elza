@@ -165,7 +165,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
                                 <label>{i18n('party.nameValidFrom')}</label>
                                 <div className="date">
                                     <Input type="select" name="fromCalendar" value={party.from == null || party.from.calendarTypeId == null ? 0 : party.from.calendarTypeId} onChange={this.updateValue} >
-                                        {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
+                                        {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>})}
                                     </Input>
                                     <Input type="text"  name="fromText" value={party.from == null || party.from.textDate == null ? '' : party.from.textDate} onChange={this.changeValue} onBlur={this.updateValue} />
                                 </div>
@@ -174,7 +174,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
                                 <label>{i18n('party.nameValidTo')}</label>
                                 <div className="date">
                                     <Input type="select" name="toCalendar" value={party.to == null || party.to.calendarTypeId == null ? 0 : party.to.calendarTypeId} onChange={this.updateValue} >
-                                        {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name}</option>})}
+                                        {this.props.refTables.calendarTypes.items.map(i=> {return <option value={i.id} key={i.id}>{i.name.charAt(0)}</option>})}
                                     </Input>
                                     <Input type="text" name="toText" value={party.to == null || party.to.textDate == null ? '' : party.to.textDate} onChange={this.changeValue} onBlur={this.updateValue} />
                                 </div>

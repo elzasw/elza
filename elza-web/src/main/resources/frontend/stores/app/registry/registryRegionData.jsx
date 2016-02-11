@@ -82,8 +82,10 @@ export default function registryRegionData(state = initialState, action = {}) {
             var record = Object.assign({}, state.item);
             record.variantRecords.map((variant, key) => {
                 if (variant.variantRecordInternalId == action.variantRecordInternalId && !variant.variantRecordId ){
+                    record.variantRecords[key]['variantRecordInternalId'] = null,
                     record.variantRecords[key]['variantRecordId'] = action.json.variantRecordId;
                     record.variantRecords[key]['version'] = action.json.version;
+                    record.variantRecords[key]['record'] = action.json.record;
                 }
             });
             return Object.assign({}, state, {
