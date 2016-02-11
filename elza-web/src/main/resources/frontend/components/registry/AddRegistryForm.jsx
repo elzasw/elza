@@ -58,11 +58,10 @@ var AddRegistryForm = class AddRegistryForm extends AbstractReactComponent {
     }
 
     prepareState(props = this.props){
+
         if (props.parentRecordId !== null) {
             this.setState({disabled: true});
-
             WebApi.getRegistry(props.parentRecordId).then(json => {
-                //this.setState({parentRegisterTypeId: json.registerTypeId, scopeId: json.scopeId, fetched: true});
                 this.props.load({registerTypeId: json.registerTypeId, scopeId: json.scopeId});
             });
         } else {
