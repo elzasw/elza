@@ -227,14 +227,16 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
                 var parentsShown = [];
                 var parentsTypeShown = [];
-                this.props.registryRegion.parents.map((val) => {
-                    parentsShown.push(val.id);
-                });
-
-                this.props.registryRegion.typesToRoot.map((val) => {
-                    parentsTypeShown.push(val.id);
-                });
-
+                if (this.props.registryRegion.parents) {
+                    this.props.registryRegion.parents.map((val) => {
+                        parentsShown.push(val.id);
+                    });
+                }
+                if (this.props.registryRegion.typesToRoot) {
+                    this.props.registryRegion.typesToRoot.map((val) => {
+                        parentsTypeShown.push(val.id);
+                    });
+                }
                 var cls = classNames({
                     active: this.props.registryRegion.selectedId === item.recordId,
                     'search-result-row': 'search-result-row'
