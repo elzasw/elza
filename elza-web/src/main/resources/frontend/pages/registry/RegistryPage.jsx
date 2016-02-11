@@ -254,7 +254,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
 
                 // výsledky z vyhledávání
-                if ( this.props.registryRegion.filterText ) {
+                if ( this.props.registryRegion.filterText || !this.props.registryRegion.registryParentId ) {
                     var path = [];
                     if (item.parents) {
                         item.parents.map((val) => {
