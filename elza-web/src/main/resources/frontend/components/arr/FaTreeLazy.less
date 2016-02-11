@@ -13,12 +13,18 @@
         border: 1px solid #DDDDDD;
         position: relative;
         padding-top: 20px;
+        width: 100%;
+
+        div {
+            width: 100%;
+            display: block;
+        }
 
         .level {
-            display: inline-block;
             height: 16px;
             line-height: 16px;
-            width: 14px;
+            max-width: 14px;
+            min-width: 14px;
             color: @tree-node-reference-mark;
             font-size: 0.8em;
             text-align: center;
@@ -28,35 +34,33 @@
         }
 
         .separator {
-            font-size: 0.5em;
+            max-height: 0.5em;
+            margin-top: 0.5em;
             line-height: 16px;
-            width: 1px;
+            min-width: 1px;
+            max-width: 1px;
             border-left: 1px solid @tree-node-separator-border;
         }
 
         .exp-col {
-            display: inline-block;
-            height: 16px;
+            flex-grow: 1;
             line-height: 16px;
-            width: 16px;
+            min-width: 16px;
+            max-width: 16px;
             text-align: center;
             vertical-align: middle;
             cursor: pointer;
         }
 
         .node-label {
-            display: inline-block;
+            flex-grow: 1;
             height: 16px;
             line-height: 16px;
             vertical-align: middle;
             cursor: pointer;
-            &:hover {
-                background: @tree-node-label-active-bg;
-            }         
         }
 
         .node-icon {
-            display: inline-block;
             height: 16px;
             line-height: 16px;
             vertical-align: middle;
@@ -64,10 +68,14 @@
         }
 
         .node {
-            display: block;
+            display: flex;
             height: @rowHeight;
             white-space: nowrap;
             font-size: 0.9em;
+            width: 100%;
+            &:hover {
+                background: @tree-node-label-active-bg;
+            }
         }
 
         .level.small {
