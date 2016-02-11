@@ -10,7 +10,7 @@ import {AbstractReactComponent, i18n} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {packetsFetchIfNeeded} from 'actions/arr/packets'
 import {indexById} from 'stores/app/utils.jsx'
-import {decorateFormField} from 'components/form/FormUtils'
+import {decorateFormField, submitReduxForm} from 'components/form/FormUtils'
 
 /**
  * Validace formuláře.
@@ -42,10 +42,12 @@ var AddPacketForm = class AddPacketForm extends AbstractReactComponent {
     render() {
         const {fields: {packetTypeId, storageNumber, invalidPacket}, handleSubmit, onClose, packetTypes} = this.props;
 
+        var submitForm = submitReduxForm.bind(this, validate)
+
         return (
             <div>
                 <Modal.Body>
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit(submitForm)}>
                         <Input type="select" label={i18n('arr.packet.packetType')} {...packetTypeId} {...decorateFormField(packetTypeId)}>
                             <option key='-packetTypeId'></option>
                             {packetTypes.items.map(i=> {return <option key={i.id} value={i.id}>{i.name}</option>})}
@@ -55,7 +57,7 @@ var AddPacketForm = class AddPacketForm extends AbstractReactComponent {
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={handleSubmit}>{i18n('global.action.create')}</Button>
+                    <Button onClick={handleSubmit(submitForm)}>{i18n('global.action.create')}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
@@ -66,7 +68,6 @@ var AddPacketForm = class AddPacketForm extends AbstractReactComponent {
 module.exports = reduxForm({
     form: 'addPacketForm',
     fields: ['packetTypeId', 'storageNumber', 'invalidPacket'],
-    validate
 },state => ({
     initialValues: state.form.addPacketForm.initialValues,
     packetTypes: state.refTables.packetTypes

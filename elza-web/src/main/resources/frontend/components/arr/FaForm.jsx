@@ -12,7 +12,7 @@ import {AbstractReactComponent, i18n, BulkActionsTable, Icon, Autocomplete, Vers
 import {Modal, Button, Input} from 'react-bootstrap';
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet'
 import {indexById} from 'stores/app/utils.jsx'
-import {decorateFormField} from 'components/form/FormUtils'
+import {decorateFormField, submitReduxForm} from 'components/form/FormUtils'
 
 /**
  * Validace formuláře.
@@ -104,15 +104,18 @@ var FaForm = class FaForm extends AbstractReactComponent {
 
     render() {
         const {fields: {name, ruleSetId, rulArrTypeId, regScopes}, handleSubmit, onClose} = this.props;
+
+        var submitForm = submitReduxForm.bind(this, validate)
+
         var approveButton;
         if (this.props.approve) {
             if (this.isBulkActionRunning()) {
                 approveButton = <span className="text-danger">{i18n('arr.fa.approveVersion.runningBulkAction')}</span>;
             } else if (this.isMandatoryBulkActionsDone()) {
-                approveButton = <Button onClick={handleSubmit}>{i18n('arr.fa.approveVersion.approve')}</Button>
+                approveButton = <Button onClick={handleSubmit(submitForm)}>{i18n('arr.fa.approveVersion.approve')}</Button>
             } else {
                 approveButton = <Button bsStyle="danger"
-                                        onClick={handleSubmit}>{i18n('arr.fa.approveVersion.approveForce')}</Button>
+                                        onClick={handleSubmit(submitForm)}>{i18n('arr.fa.approveVersion.approveForce')}</Button>
             }
         }
         var ruleSets = this.props.refTables.ruleSet.items;
@@ -138,7 +141,7 @@ var FaForm = class FaForm extends AbstractReactComponent {
                                                     isFetching={this.props.versionValidation.isFetching}/>
                         </div>
                     }
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit(submitForm)}>
                         {(this.props.create || this.props.update) &&
                         <Input type="text" label={i18n('arr.fa.name')} {...name} {...decorateFormField(name)} />}
                         {(this.props.create || this.props.approve) && <Input type="select"
@@ -185,9 +188,9 @@ var FaForm = class FaForm extends AbstractReactComponent {
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
-                    {this.props.create && <Button onClick={handleSubmit}>{i18n('global.action.create')}</Button>}
+                    {this.props.create && <Button onClick={handleSubmit(submitForm)}>{i18n('global.action.create')}</Button>}
                     {this.props.approve && approveButton}
-                    {this.props.update && <Button onClick={handleSubmit}>{i18n('global.action.update')}</Button>}
+                    {this.props.update && <Button onClick={handleSubmit(submitForm)}>{i18n('global.action.update')}</Button>}
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
@@ -205,7 +208,6 @@ FaForm.propTypes = {
 module.exports = reduxForm({
         form: 'faForm',
         fields: ['name', 'ruleSetId', 'rulArrTypeId', 'regScopes[].id', 'regScopes[].name'],
-        validate
     }, state => ({
         initialValues: state.form.faForm.initialValues,
         refTables: state.refTables,

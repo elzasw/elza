@@ -244,7 +244,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             invalidPacket: false
         };
 
-        this.dispatch(modalDialogShow(this, i18n('arr.packet.title.add'), <AddPacketForm initData={initData} create findingAidId={findingAidId} onSubmit={this.handleCreatePacketSubmit.bind(this, valueLocation)} />));
+        this.dispatch(modalDialogShow(this, i18n('arr.packet.title.add'), <AddPacketForm initData={initData} create findingAidId={findingAidId} onSubmitForm={this.handleCreatePacketSubmit.bind(this, valueLocation)} />));
     }
 
     /**
@@ -586,7 +586,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             this.dispatch(faSubNodeFormDescItemTypeAdd(versionId, selectedSubNodeId, nodeKey, data.descItemTypeId));
         };
         // Modální dialog
-        var form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmit={submit} onSubmit2={submit}/>;
+        var form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>;
         this.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form));
     }
 

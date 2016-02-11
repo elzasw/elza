@@ -119,7 +119,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
                     parentRecordId = {parentId}
                     parentRegisterTypeId = {registryParentTypesId}
                     create
-                    onSubmit={this.handleCallEditRegistry.bind(this)}
+                    onSubmitForm={this.handleCallEditRegistry.bind(this)}
                 />
             )
         );

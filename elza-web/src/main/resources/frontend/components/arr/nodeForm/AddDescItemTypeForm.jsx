@@ -9,7 +9,7 @@ import {reduxForm} from 'redux-form';
 import {Autocomplete, AbstractReactComponent, i18n} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
-import {decorateFormField} from 'components/form/FormUtils'
+import {decorateFormField, submitReduxForm} from 'components/form/FormUtils'
 
 require ('./AddDescItemTypeForm.less')
 
@@ -57,6 +57,8 @@ var AddDescItemTypeForm = class AddDescItemTypeForm extends AbstractReactCompone
     render() {
         const {fields: {descItemTypeId}, handleSubmit, onClose} = this.props;
 
+        var submitForm = submitReduxForm.bind(this, validate)
+
         var descItemTypeValue;
         if (typeof descItemTypeId.value !== 'undefined') {
             var index = indexById(this.props.descItemTypes, descItemTypeId.value);
@@ -82,7 +84,7 @@ var AddDescItemTypeForm = class AddDescItemTypeForm extends AbstractReactCompone
         return (
             <div>
                 <Modal.Body>
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit(submitForm)}>
                         <div>
                             {this.props.descItemTypes.map(i=> {
                                 if (i.type == "POSSIBLE") {
@@ -100,7 +102,7 @@ var AddDescItemTypeForm = class AddDescItemTypeForm extends AbstractReactCompone
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={handleSubmit}>{i18n('global.action.add')}</Button>
+                    <Button onClick={handleSubmit(submitForm)}>{i18n('global.action.add')}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
@@ -111,7 +113,6 @@ var AddDescItemTypeForm = class AddDescItemTypeForm extends AbstractReactCompone
 module.exports = reduxForm({
     form: 'addDescItemTypeForm',
     fields: ['descItemTypeId'],
-    validate
 },state => ({}),
 {}
 )(AddDescItemTypeForm)

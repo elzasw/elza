@@ -10,7 +10,7 @@ import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n, Scope, DropDownTree} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
-import {decorateFormField} from 'components/form/FormUtils'
+import {decorateFormField, submitReduxForm} from 'components/form/FormUtils'
 import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRegionList'
 
 const validate = (values, props) => {
@@ -53,6 +53,9 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
 
     render() {
         const {fields: { nameMain, characteristics, registerTypeId, scopeId}, handleSubmit, onClose} = this.props;
+
+        var submitForm = submitReduxForm.bind(this, validate)
+
         var disabled = false;
         if (this.props.parentRegisterTypeId){
             registerTypeId.value=this.props.parentRegisterTypeId;
@@ -69,7 +72,7 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
         return (
             <div>
                 <Modal.Body>
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit(submitForm)}>
                         <Scope versionId={null} label={i18n('registry.scope.class')}  {...scopeId} {...decorateFormField(scopeId)} onBlur={false}/>
                         <DropDownTree
                             label={i18n('registry.add.typ.rejstriku')}
@@ -86,7 +89,7 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={handleSubmit}>{i18n('global.action.store')}</Button>
+                    <Button onClick={handleSubmit(submitForm)}>{i18n('global.action.store')}</Button>
                     <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                 </Modal.Footer>
             </div>
@@ -97,7 +100,6 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
 module.exports = reduxForm({
         form: 'editRegistryForm',
         fields: ['nameMain', 'characteristics', 'registerTypeId', 'scopeId'],
-        validate
     },state => ({
         initialValues: state.form.editRegistryForm.initialValues,
         refTables: state.refTables,

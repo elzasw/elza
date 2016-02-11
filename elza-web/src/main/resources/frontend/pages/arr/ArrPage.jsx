@@ -131,7 +131,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                 <FaForm
                     approve
                     initData={data}
-                    onSubmit={this.handleCallApproveFaVersion}/>
+                    onSubmitForm={this.handleCallApproveFaVersion}/>
             )
         );
     }
@@ -203,7 +203,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                 };
                 that.dispatch(modalDialogShow(that, i18n('arr.fa.title.update'),
                     <FaForm update initData={data} scopeList={json.scopeList}
-                            onSubmit={that.handleCallEditFaVersion}/>));
+                            onSubmitForm={that.handleCallEditFaVersion}/>));
             });
     }
 

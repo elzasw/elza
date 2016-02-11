@@ -17,6 +17,18 @@ export function decorateFormField(field) {
     }
 }
 
+export function submitReduxForm(validate, values, dispatch) {
+    return new Promise((resolve, reject) => {
+        var errors = validate(values, this.props)
+        if (Object.keys(errors).length > 0) {
+            reject(errors)
+        } else {
+            this.props.onSubmitForm(values)
+            resolve()
+        }
+    })
+}
+
 export function getBootstrapInputComponentInfo(props) {
     var cls = 'form-group';
     var feedbackIcon = '';

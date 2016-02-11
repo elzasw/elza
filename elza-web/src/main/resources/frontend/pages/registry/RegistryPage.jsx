@@ -97,7 +97,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
        this.dispatch(
            modalDialogShow(this,
                i18n('registry.importRegistry'),
-               <ImportRegistryForm onSubmit={this.handleCallImportRegistry.bind(this)} />
+               <ImportRegistryForm onSubmitForm={this.handleCallImportRegistry.bind(this)} />
            )
        );
     }

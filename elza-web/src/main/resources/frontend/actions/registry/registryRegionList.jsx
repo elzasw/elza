@@ -122,7 +122,7 @@ export function registryAdd(parentId, versionId, callback) {
                         <AddRegistryForm
                                 create
                                 versionId={versionId}
-                                onSubmit={registryAddSubmit.bind(null, parentId, callback, dispatch)}
+                                onSubmitForm={registryAddSubmit.bind(null, parentId, callback, dispatch)}
                                 parentRecordId={parentId}
                                 />
                 )

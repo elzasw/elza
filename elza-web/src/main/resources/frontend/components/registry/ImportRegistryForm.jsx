@@ -10,7 +10,7 @@ import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, i18n} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx';
-import {decorateFormField} from 'components/form/FormUtils';
+import {decorateFormField, submitReduxForm} from 'components/form/FormUtils';
 import {WebApi} from 'actions'
 
 const validate = (values, props) => {
@@ -64,10 +64,12 @@ var ImportRegistryForm = class ImportRegistryForm extends AbstractReactComponent
     render() {
         const {fields: {transformationName, recordScopeId, stopOnError, xmlFile}, handleSubmit, onClose} = this.props;
 
+        var submitForm = submitReduxForm.bind(this, validate)
+
         return (
             <div key={this.props.key}>
                 <Modal.Body>
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit(submitForm)}>
                         <Input type="select" label={i18n('registry.import.transformationName')} {...transformationName} {...decorateFormField(transformationName)}>
                             <option key=''></option>
                             {this.state.transformationNames.map(i=> {return <option value={i}>{i}</option>})}
@@ -94,7 +96,6 @@ var ImportRegistryForm = class ImportRegistryForm extends AbstractReactComponent
 module.exports = reduxForm({
     form: 'importRegistryForm',
     fields: ['transformationName', 'recordScopeId', 'stopOnError', 'xmlFile'],
-    validate
 },state => ({
     initialValues: state.form.addFaForm.initialValues,
     defaultScopes: state.defaultScopes,
