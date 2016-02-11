@@ -92,7 +92,7 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
                                         </Input>
                                         <Autocomplete
                                             {...recordScope} {...decorateFormField(recordScope)}
-                                            label={i18n('import.registryScope')}// / Třída rejstříku
+                                            label={i18n('import.registryScope')}
                                             items={this.state.defaultScopes}
                                             getItemId={(item) => item ? item : null}
                                             getItemName={(item) => item ? item.name : ''}
@@ -146,6 +146,5 @@ module.exports = reduxForm({
     fields: ['transformationName', 'recordScope', 'stopOnError', 'xmlFile'],
     validate
 }, state => ({
-    initialValues: state.form.addFaForm.initialValues,
     defaultScopes: state.defaultScopes
 }))(ImportForm);
