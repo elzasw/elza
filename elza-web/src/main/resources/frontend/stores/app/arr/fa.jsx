@@ -60,12 +60,13 @@ export function fa(state, action) {
                 versionValidation: versionValidation(undefined, {type: ''})
             }
         case types.STORE_SAVE:
-            const {id, faId, versionId, name} = state;
+            const {id, faId, versionId, name, lockDate} = state;
             return {
                 id,
                 faId,
                 versionId,
                 name,
+                lockDate,
                 faTree: faTree(state.faTree, action),
                 faTreeMovementsLeft: faTree(state.faTreeMovementsLeft, action),
                 faTreeMovementsRight: faTree(state.faTreeMovementsRight, action),
@@ -86,7 +87,7 @@ export function fa(state, action) {
                     ...state,
                     dirty: false,
                     isFetching: false,
-                    ...action.faMap[state.versionId]
+                    ...action.faMap[state.versionId],
                 }
             } else {
                 return state

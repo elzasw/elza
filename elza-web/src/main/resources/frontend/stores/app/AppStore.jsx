@@ -76,7 +76,7 @@ let reducer = combineReducers({
 const loggerMiddleware = createLogger({
     collapsed: _logCollapsed,
     duration: _logActionDuration,
-    predicate: (getState, action) => action.type !== types.STORE_STATE_DATA
+    predicate: (getState, action) => (action.type !== types.STORE_STATE_DATA && action.type !== types.GLOBAL_SPLITTER_RESIZE)
 })
 
 

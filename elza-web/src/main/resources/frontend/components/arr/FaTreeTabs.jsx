@@ -16,7 +16,7 @@ import {faTreeFocusNode, faTreeFetchIfNeeded, faTreeNodeExpand, faTreeNodeCollap
 import {faSelectSubNode} from 'actions/arr/nodes'
 import {createFaRoot, getParentNode} from './ArrUtils.jsx'
 import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu'
-import {propsEquals} from 'components/Utils'
+import {propsEquals, dateToString} from 'components/Utils'
 
 var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
     constructor(props) {
@@ -122,7 +122,8 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
             return {
                 id: fa.id,
                 key: fa.id,
-                title: fa.name
+                title: fa.name,
+                desc: fa.lockDate ? dateToString(new Date(fa.lockDate)) : ''
             }
         });
 
