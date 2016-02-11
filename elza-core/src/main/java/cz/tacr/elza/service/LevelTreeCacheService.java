@@ -91,7 +91,7 @@ public class LevelTreeCacheService {
     /**
      * Maximální počet verzí stromů ukládaných současně v paměti.
      */
-    private static final int MAX_CACHE_SIZE = 3;
+    private static final int MAX_CACHE_SIZE = 30;
 
     final Log logger = LogFactory.getLog(this.getClass());
 
