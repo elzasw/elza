@@ -9,7 +9,7 @@ import {WebApi} from 'actions'
 import * as types from 'actions/constants/ActionTypes';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {i18n, AddRegistryForm} from 'components';
-import {registryChangeParent} from 'actions/registry/registryRegionData'
+import {registryChangeParent, registryRegionData} from 'actions/registry/registryRegionData'
 
 export function fetchRegistryIfNeeded(search = '', registryParent = null, registerTypeIds = null, versionId = null) {
     return (dispatch, getState) => {
@@ -140,7 +140,10 @@ function registryAddSubmit(parentId, callback, dispatch, data) {
 
 export function registrySelect(recordId, fa = null) {
     return (dispatch) => {
-        dispatch(registryClickNavigation(recordId));
+        // pokud chceme otevřít složku
+        //dispatch(registryClickNavigation(recordId));
+        var registry = Object.assign({}, registry,{selectedId: recordId});
+        dispatch(registryRegionData(registry));
         dispatch(registrySelectDo(recordId, fa));
     }
 }
