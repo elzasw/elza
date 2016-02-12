@@ -516,7 +516,6 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 
         var cls = classNames({
             'node-panel-container': true,
-            developer: developer.enabled,
         })
 
         return (
@@ -530,9 +529,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                     </div>
                     {children}
                 </div>
-                <div className='right'>
-                    {developer.enabled && this.renderDeveloperPanel()}
-                </div>
+                {developer.enabled && this.renderDeveloperPanel()}
             </div>
         );
     }
