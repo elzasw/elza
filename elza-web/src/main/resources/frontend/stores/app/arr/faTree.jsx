@@ -383,10 +383,18 @@ export default function faTree(state = initialState, action) {
             return Object.assign({}, state, { ensureItemVisible: false, dirty: true });
 
         case types.CHANGE_CONFORMITY_INFO:
-            var index = indexById(state.nodes, action.nodeId);
 
-            // pouze, pokud ho mám načtený
-            if (index != null) {
+            var isDirty = false;
+            var nodeId;
+            for(var i = 0; i < state.nodes.length; i++) {
+                nodeId = state.nodes[i].id;
+                if (action.nodeIds.indexOf(nodeId) > 0) {
+                    isDirty = true;
+                    break;
+                }
+            }
+            // pouze, pokud mám některý načtený
+            if (isDirty) {
                 return Object.assign({}, state, { ensureItemVisible: false, dirty: true });
             }
 

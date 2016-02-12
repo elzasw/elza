@@ -30,6 +30,13 @@ public class EventFactory {
         return new EventId(eventType, ids);
     }
 
+    public static EventIdsInVersion createIdsInVersionEvent(final EventType eventType,
+                                                            final ArrFindingAidVersion version,
+                                                            final Integer... entityIds) {
+        Assert.notNull(version);
+        return new EventIdsInVersion(eventType, version.getFindingAidVersionId(), entityIds);
+    }
+
     public static EventIdInVersion createIdInVersionEvent(final EventType eventType,
                                                           final ArrFindingAidVersion version,
                                                           final Integer entityId) {

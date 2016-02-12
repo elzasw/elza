@@ -74,12 +74,17 @@ public class UpdateConformityInfoWorker implements Runnable {
 
         ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
 
+        Set<Integer> nodeIdsToFlush = new HashSet<>();
+
         try {
             while (true) {
                 ArrNode node = null;
                 synchronized (getLock()) {
                     if (nodesToUpdate.isEmpty()) {
                         running = false;
+                        eventNotificationService.publishEvent(
+                                EventFactory.createIdsInVersionEvent(EventType.CONFORMITY_INFO, version,
+                                        nodeIdsToFlush.toArray(new Integer[nodeIdsToFlush.size()])));
                         break;
                     } else {
                         node = getNode();
@@ -91,10 +96,7 @@ public class UpdateConformityInfoWorker implements Runnable {
                         version.getLockChange());
                 try {
                     updateConformityInfoService.updateConformityInfo(node.getNodeId(), level.getLevelId(), versionId);
-
-                    eventNotificationService.publishEvent(
-                            EventFactory.createIdInVersionEvent(EventType.CONFORMITY_INFO, version, node.getNodeId()));
-
+                    nodeIdsToFlush.add(node.getNodeId());
                 } catch (LockVersionChangeException e) {
                     logger.info(
                             "Node " + node.getNodeId() + " nema aktualizovany stav. Behem validace ke zmene uzlu.");

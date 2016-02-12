@@ -193,7 +193,7 @@ function faChange(value) {
  * @param value {object} informace o provedené validace uzlu
  */
 function conformityInfo(value) {
-    store.dispatch(changeConformityInfo(value.versionId, value.entityId));
+    store.dispatch(changeConformityInfo(value.versionId, value.entityIds));
 }
 
 /**

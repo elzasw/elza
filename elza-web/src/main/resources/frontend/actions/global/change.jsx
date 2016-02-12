@@ -2,11 +2,11 @@ import * as types from 'actions/constants/ActionTypes';
 
 import {Toastr, i18n} from 'components';
 
-export function changeConformityInfo(findingAidVersionId, nodeId) {
+export function changeConformityInfo(findingAidVersionId, nodeIds) {
     return {
         type: types.CHANGE_CONFORMITY_INFO,
         findingAidVersionId: findingAidVersionId,
-        nodeId: nodeId
+        nodeIds: nodeIds
     }
 }
 
