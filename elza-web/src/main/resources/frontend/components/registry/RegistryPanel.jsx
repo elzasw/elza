@@ -175,12 +175,11 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
                 hiearchie.push(val.name);
             });
 
-
             var detailRegistry = (
                 <div className="registry-title">
                     <h1 className='registry'>
                         {this.props.registryRegionData.item.record}
-                        <Button disabled={disableEdit} className="registry-record-edit" onClick={this.editRecord.bind(this, this.props.registryRegion.registryParentId)}>
+                        <Button disabled={disableEdit} className="registry-record-edit" onClick={this.editRecord.bind(this, this.props.registryRegionData.item.parentRecordId)}>
                             <Icon glyph='fa-pencil'/>
                         </Button>
                         {this.props.registryRegionData.item.partyId && <Button className="registry-record-party" onClick={this.handleGoToPartyPerson.bind(this, this.props.registryRegionData.item.partyId)}>
