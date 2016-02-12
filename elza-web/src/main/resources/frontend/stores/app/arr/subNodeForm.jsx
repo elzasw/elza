@@ -366,6 +366,17 @@ export default function subNodeForm(state = initialState, action) {
             updateFormData(result, action.data, action.rulDataTypes);
 
             return result;
+        case types.CHANGE_FA_RECORD:
+            return {
+                ...state,
+                data: {
+                    ...state.data,
+                    node: {
+                        ...state.data.node,
+                        version: action.version
+                    }
+                }
+            }
         default:
             return state
     }

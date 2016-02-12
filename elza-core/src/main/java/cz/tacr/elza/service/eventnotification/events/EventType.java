@@ -35,6 +35,7 @@ public enum EventType {
     COPY_OLDER_SIBLING_ATTRIBUTE(EventIdInVersion.class),
 
     DESC_ITEM_CHANGE(EventChangeDescItem.class),
+    FINDING_AID_RECORD_CHANGE(EventNodeIdVersionInVersion.class),
 
     INDEXING_FINISHED(ActionEvent.class),
 

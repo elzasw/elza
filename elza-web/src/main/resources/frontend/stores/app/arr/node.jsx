@@ -158,11 +158,18 @@ export function node(state = nodeInitialState, action) {
         case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
         case types.FA_SUB_NODE_FORM_VALUE_RESPONSE:
         case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE_RESPONSE:
-        case types.CHANGE_DESC_ITEM:
             var result = {
                 ...state, 
                 subNodeForm: subNodeForm(state.subNodeForm, action),
             };
+            return consolidateState(state, result);
+        case types.CHANGE_DESC_ITEM:
+        case types.CHANGE_FA_RECORD:
+            var result = {
+                ...state,
+                subNodeForm: subNodeForm(state.subNodeForm, action),
+                subNodeRegister: subNodeRegister(state.subNodeRegister, action)
+            }
             return consolidateState(state, result);
         case types.FA_FA_SUBNODES_NEXT:
             if ((state.viewStartIndex + state.pageSize/2) < state.allChildNodes.length) {

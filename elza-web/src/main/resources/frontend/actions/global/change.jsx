@@ -36,13 +36,14 @@ export function changePackets(findingAidId) {
     }
 }
 
-export function changeDescItem(versionId, nodeId, descItemObjectId) {
+export function changeDescItem(versionId, nodeId, descItemObjectId, version) {
 
     return {
         type: types.CHANGE_DESC_ITEM,
         versionId,
         nodeId,
         descItemObjectId,
+        version
     }
 }
 
@@ -95,9 +96,19 @@ export function changeRegistryRecord(changedIds){
         changedIds
     }
 }
+
 export function changeFa(versionId) {
     return {
         type: types.CHANGE_FA,
         versionId
+    }
+}
+
+export function changeFaRecord(versionId, nodeId, version) {
+    return {
+        type: types.CHANGE_FA_RECORD,
+        versionId,
+        nodeId,
+        version
     }
 }

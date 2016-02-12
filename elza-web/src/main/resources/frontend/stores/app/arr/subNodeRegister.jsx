@@ -133,7 +133,24 @@ export default function subNodeRegister(state = initialState, action) {
             state.formData.nodeRegisters.push(formItem);
 
             return {...state};
-
+        case types.CHANGE_DESC_ITEM:
+            return {
+                ...state,
+                data: {
+                    ...state.data,
+                    node: {
+                        ...state.data.node,
+                        version: action.version
+                    }
+                },
+                formData: {
+                    ...state.formData,
+                    node: {
+                        ...state.formData.node,
+                        version: action.version
+                    }
+                }
+            }
         default:
             return state
     }

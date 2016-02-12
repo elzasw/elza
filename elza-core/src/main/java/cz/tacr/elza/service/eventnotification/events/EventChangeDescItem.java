@@ -17,12 +17,17 @@ public class EventChangeDescItem extends EventVersion<EventChangeDescItem> {
      * Idetifikator uzlu.
      */
     private Integer nodeId;
+    /**
+     * verze uzlu.
+     */
+    private Integer version;
 
     public EventChangeDescItem(final EventType eventType, final Integer versionId, final Integer descItemObjectId,
-                               final Integer nodeId) {
+                               final Integer nodeId, final Integer version) {
         super(eventType, versionId);
         this.descItemObjectId = descItemObjectId;
         this.nodeId = nodeId;
+        this.version = version;
     }
 
     public Integer getDescItemObjectId() {
@@ -39,5 +44,13 @@ public class EventChangeDescItem extends EventVersion<EventChangeDescItem> {
 
     public void setNodeId(final Integer nodeId) {
         this.nodeId = nodeId;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
     }
 }

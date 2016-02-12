@@ -461,7 +461,7 @@ public class DescriptionItemService {
     private void publishChangeDescItem(final ArrFindingAidVersion version, final ArrDescItem descItem) {
         notificationService.publishEvent(
                 new EventChangeDescItem(EventType.DESC_ITEM_CHANGE, version.getFindingAidVersionId(),
-                        descItem.getDescItemObjectId(), descItem.getNode().getNodeId()));
+                        descItem.getDescItemObjectId(), descItem.getNode().getNodeId(), descItem.getNode().getVersion()));
     }
 
     /**

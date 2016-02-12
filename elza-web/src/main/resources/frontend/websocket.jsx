@@ -7,7 +7,7 @@ import {store} from 'stores/app/AppStore';
 
 import {changeConformityInfo, changeIndexingFinished, changePackage, changePackets,
         changeDescItem, changeDeleteLevel, changeAddLevel, changeApproveVersion, changeParty,
-    changeMoveLevel, changeRegistryRecord, changeFa} from 'actions/global/change';
+    changeMoveLevel, changeRegistryRecord, changeFa, changeFaRecord} from 'actions/global/change';
 
 
 var SockJS = require('sockjs-client');
@@ -145,6 +145,9 @@ function processEvents(values) {
             case 'FINDING_AID_UPDATE':
                 faChange(value);
                 break;
+            case 'FINDING_AID_RECORD_CHANGE':
+                faRecordChange(value);
+                break;
             default:
                 console.warn("Nedefinovaný typ eventu: " + value.eventType, value);
                 break;
@@ -184,8 +187,13 @@ function moveLevelUnderChange(value) {
 function registryChange(value) {
     store.dispatch(changeRegistryRecord(value.ids));
 }
+
 function faChange(value) {
     store.dispatch(changeFa(value.ids[0]));
+}
+
+function faRecordChange(value) {
+    store.dispatch(changeFaRecord(value.versionId, value.nodeId, value.version));
 }
 /**
  * Validace uzlu.
@@ -218,7 +226,7 @@ function packetsChangeEvent(value) {
 }
 
 function descItemChange(value) {
-    store.dispatch(changeDescItem(value.versionId, value.nodeId, value.descItemObjectId));
+    store.dispatch(changeDescItem(value.versionId, value.nodeId, value.descItemObjectId, value.version));
 }
 
 function deleteLevelChange(value) {

@@ -157,7 +157,8 @@ export default function arrRegion(state = initialState, action) {
         case types.FA_VERSION_VALIDATION_RECEIVED:
         case types.FA_FA_APPROVE_VERSION:
         case types.CHANGE_FA:
-            var index = indexById(state.fas, action.versionId, "versionId")
+        case types.CHANGE_FA_RECORD:
+            var index = indexById(state.fas, action.versionId, "versionId");
             return processFa(state, action, index);
         case types.FA_FAS_RECEIVE:
             var changed = false;

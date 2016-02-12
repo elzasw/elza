@@ -159,6 +159,7 @@ export function fa(state, action) {
             }
             return consolidateState(state, result);
 
+        case types.CHANGE_FA_RECORD:
         case types.CHANGE_DESC_ITEM:
         case types.CHANGE_ADD_LEVEL:
         case types.CHANGE_DELETE_LEVEL:

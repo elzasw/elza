@@ -252,6 +252,15 @@ export default function nodes(state = nodesInitialState, action) {
                 return {...state, nodes}
             }
             return state;
+        case types.CHANGE_FA_RECORD:
+            var index = indexById(state.nodes, action.nodeId, 'selectedSubNodeId');
+
+            if (index !== null) {
+                var nodes = [...state.nodes];
+                nodes[index] = node(nodes[index], action);
+                return {...state, nodes};
+            }
+            return state;
         default:
             return state
     }
