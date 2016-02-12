@@ -540,9 +540,13 @@ public class ArrangementController {
      * @param param vstupní parametry
      * @return List scénářů
      */
-    @RequestMapping(value = "/getDescriptionItemTypesForNewLevel", method = RequestMethod.POST)
-    public List<ScenarioOfNewLevelVO> getDescriptionItemTypesForNewLevel(@RequestBody final DescriptionItemParam param) {
-        return factoryVo.createScenarioOfNewLevelList(descriptionItemService.getDescriptionItemTypesForNewLevel(param.getNode().getId(), param.getDirection(), param.getVersionId()));
+    @RequestMapping(value = "/scenarios", method = RequestMethod.POST)
+    public List<ScenarioOfNewLevelVO> getDescriptionItemTypesForNewLevel(
+            @RequestParam(required = false, value = "withGroups") final Boolean withGroups,
+            @RequestBody final DescriptionItemParam param) {
+        return factoryVo.createScenarioOfNewLevelList(descriptionItemService
+                .getDescriptionItemTypesForNewLevel(param.getNode().getId(), param.getDirection(),
+                        param.getVersionId()), withGroups);
     }
 
 

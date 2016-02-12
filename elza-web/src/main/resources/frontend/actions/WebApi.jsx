@@ -212,8 +212,8 @@ class WebApi{
         });
     }
 
-    getNodeAddScenarios(node, versionId, direction) {
-        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/getDescriptionItemTypesForNewLevel', null, {
+    getNodeAddScenarios(node, versionId, direction, withGroups = false) {
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/scenarios', {withGroups: withGroups}, {
             versionId,
             direction,
             node

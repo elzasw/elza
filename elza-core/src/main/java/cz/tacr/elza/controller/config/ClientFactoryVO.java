@@ -15,6 +15,7 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -916,7 +917,8 @@ public class ClientFactoryVO {
 
                 // seřazení typů atributů podle konfigurace
                 Collections.sort(descItemGroupVO.getTypes(), (left, right) -> Integer
-                        .compare(typeInfos.indexOf(codeToId.get(left.getId())), typeInfos.indexOf(codeToId.get(right.getId()))));
+                        .compare(typeInfos.indexOf(codeToId.get(left.getId())), typeInfos.indexOf(codeToId.get(
+                                right.getId()))));
             }
 
             descItemGroupVO.getTypes().forEach(descItemType -> {
@@ -1214,9 +1216,31 @@ public class ClientFactoryVO {
      * Vytvoří list scénářů nového levelu
      *
      * @param scenarioOfNewLevels list scénářů nového levelu DO
+     * @param withGroups          zda-li se má ke scénářům přidat i seznam hodnot atributů k založení
      * @return list scénářů nového levelu VO
      */
-    public List<ScenarioOfNewLevelVO> createScenarioOfNewLevelList(final List<ScenarioOfNewLevel> scenarioOfNewLevels) {
-        return createList(scenarioOfNewLevels, ScenarioOfNewLevelVO.class, null);
+    public List<ScenarioOfNewLevelVO> createScenarioOfNewLevelList(final List<ScenarioOfNewLevel> scenarioOfNewLevels,
+                                                                   final Boolean withGroups) {
+        List<ScenarioOfNewLevelVO> scenarios = new ArrayList<>(scenarioOfNewLevels.size());
+        scenarioOfNewLevels.forEach(scenario -> scenarios.add(createScenarioOfNewLevel(scenario, withGroups)));
+        return scenarios;
+    }
+
+    /**
+     * Vytvoří scénář nového levelu.
+     *
+     * @param scenarioOfNewLevel scénář nového levelu DO
+     * @param withGroups         zda-li se má ke scénářům přidat i seznam hodnot atributů k založení
+     * @return scénář nového levelu VO
+     */
+    public ScenarioOfNewLevelVO createScenarioOfNewLevel(final ScenarioOfNewLevel scenarioOfNewLevel,
+                                                         final Boolean withGroups) {
+        Assert.notNull(scenarioOfNewLevel);
+        MapperFacade mapper = mapperFactory.getMapperFacade();
+        ScenarioOfNewLevelVO scenarioVO = mapper.map(scenarioOfNewLevel, ScenarioOfNewLevelVO.class);
+        if (BooleanUtils.isTrue(withGroups)) {
+            scenarioVO.setGroups(createDescItemGroupsNew(scenarioOfNewLevel.getDescItems()));
+        }
+        return scenarioVO;
     }
 }
