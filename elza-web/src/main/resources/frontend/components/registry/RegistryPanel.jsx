@@ -65,7 +65,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         var data = Object.assign({}, this.props.registryRegionData.item)
         data.record = value.nameMain;
         data.characteristics = value.characteristics;
-        data.scopeId = value.scopeId;
+        data.scopeId = this.props.registryRegionData.item.scopeId;
         data.registerTypeId = value.registerTypeId;
         console.log(value);
         this.dispatch(registryRecordUpdate(data));
@@ -113,7 +113,6 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
                     initData={{
                             nameMain: this.props.registryRegionData.item.record,
                             characteristics: this.props.registryRegionData.item.characteristics,
-                            scopeId: this.props.registryRegionData.item.scopeId,
                             registerTypeId: this.props.registryRegionData.item.registerTypeId
                         }}
                     parentRecordId = {parentId}

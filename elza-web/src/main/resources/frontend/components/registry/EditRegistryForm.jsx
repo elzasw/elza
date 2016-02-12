@@ -7,7 +7,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/ActionTypes';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n, Scope, DropDownTree} from 'components';
+import {AbstractReactComponent, i18n, DropDownTree} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils'
@@ -23,9 +23,6 @@ const validate = (values, props) => {
         errors.characteristics = i18n('global.validation.required');
     }
 
-    if (!values.scopeId) {
-        errors.scopeId = i18n('global.validation.required');
-    }
 
     if (!values.registerTypeId) {
         errors.registerTypeId = i18n('global.validation.required');
@@ -52,7 +49,7 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
 
 
     render() {
-        const {fields: { nameMain, characteristics, registerTypeId, scopeId}, handleSubmit, onClose} = this.props;
+        const {fields: { nameMain, characteristics, registerTypeId}, handleSubmit, onClose} = this.props;
 
         var submitForm = submitReduxForm.bind(this, validate)
 
@@ -71,7 +68,6 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
             <div>
                 <Modal.Body>
                     <form onSubmit={handleSubmit(submitForm)}>
-                        <Scope disabled={disabled} versionId={null} label={i18n('registry.scope.class')}  {...scopeId} {...decorateFormField(scopeId)} onBlur={false}/>
                         <DropDownTree
                             label={i18n('registry.add.typ.rejstriku')}
                             items = {itemsForDropDownTree}
@@ -79,7 +75,6 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
                             {...registerTypeId}
                             {...decorateFormField(registerTypeId)}
                             disabled={disabled}
-
                             />
                         <Input type="text" label={i18n('registry.name')} {...nameMain} {...decorateFormField(nameMain)}/>
                         <Input type="textarea" label={i18n('registry.characteristics')} {...characteristics} {...decorateFormField(characteristics)}/>
@@ -97,7 +92,7 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
 
 module.exports = reduxForm({
         form: 'editRegistryForm',
-        fields: ['nameMain', 'characteristics', 'registerTypeId', 'scopeId'],
+        fields: ['nameMain', 'characteristics', 'registerTypeId'],
     },state => ({
         initialValues: state.form.editRegistryForm.initialValues,
         refTables: state.refTables,

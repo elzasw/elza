@@ -48,11 +48,9 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
             label: (label != '' ? label : this.props.label),          // pokus je vybrany nejaká položka, vypíše se její název, jinak se vypíše defaultní popisek
             value : this.props.value                // id vybrane položky
         }
-
     }
 
     componentWillReceiveProps(nextProps) {
-
         var label = this.getItemLabel(nextProps.value, nextProps.items);
         if (nextProps.preselect) {
             if (this.props.value == undefined) {
