@@ -51,6 +51,10 @@ export default function registryRegionData(state = initialState, action = {}) {
                 requireReload: false,
                 LastUpdated: action.receivedAt
             });
+        case types.CHANGE_REGISTRY_UPDATE:
+            return Object.assign({}, state, {
+                dirty: true
+            });
         case types.REGISTRY_RECORD_UPDATED:
             return Object.assign({}, state, {
                 item: action.json

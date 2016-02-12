@@ -59,7 +59,7 @@ export function registrySetTypesId(registryTypesId) {
 export function getRegistryIfNeeded(registryId) {
     return (dispatch, getState) => {
         var state = getState();
-        if (!state.registryRegionData.fetched && !state.registryRegionData.isFetching && (registryId !==state.registryRegionData.selectedId || state.registryRegionData.requireReload === true)) {
+        if ((!state.registryRegionData.isFetching && state.registryRegionData.dirty) || !state.registryRegionData.fetched && !state.registryRegionData.isFetching && (registryId !==state.registryRegionData.selectedId || state.registryRegionData.requireReload === true)) {
             return dispatch(getRegistry(registryId));
         }
     }
