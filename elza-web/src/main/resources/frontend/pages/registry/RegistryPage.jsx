@@ -120,7 +120,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     buildRibbon() {
-
+        const {registryRegion} = this.props;
 
         var altActions = [];
         altActions.push(
@@ -135,8 +135,8 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         );
 
         var itemActions = [];
-        if (this.props.registryRegion.selectedId) {
-            if (this.props.registryRegion.registryRegionData && !this.props.registryRegion.registryRegionData.item.childs) {
+        if (registryRegion.selectedId) {
+            if (registryRegion.registryRegionData && !registryRegion.registryRegionData.item.childs  && registryRegion.selectedId != registryRegion.registryParentId) {
                 itemActions.push(
                     <Button key='registryRemove' onClick={this.handleRemoveRegistryDialog.bind(this)}><Icon
                         glyph="fa-trash"/>
@@ -145,12 +145,12 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 );
             }
 
-            if (!this.props.registryRegion.recordForMove && this.props.registryRegion.registryRegionData && !this.props.registryRegion.registryRegionData.item.partyId){
+            if (!registryRegion.recordForMove && registryRegion.registryRegionData && !registryRegion.registryRegionData.item.partyId && registryRegion.registryRegionData.item.hierarchical && registryRegion.selectedId != registryRegion.registryParentId){
                 itemActions.push(
                     <Button key='registryMove' onClick={this.handleStartMoveRegistry.bind(this)}><Icon glyph="fa-share" /><div><span className="btnText">{i18n('registry.moveRegistry')}</span></div></Button>
                 );
             }
-            if (this.props.registryRegion.recordForMove && this.props.registryRegion.registryRegionData && !this.props.registryRegion.registryRegionData.item.partyId){
+            if (registryRegion.recordForMove && registryRegion.registryRegionData && !registryRegion.registryRegionData.item.partyId){
                 itemActions.push(
                     <Button key='registryMoveApply' onClick={this.handleSaveMoveRegistry.bind(this)}><Icon glyph="fa-check-circle" /><div><span className="btnText">{i18n('registry.applyMove')}</span></div></Button>
                 );
