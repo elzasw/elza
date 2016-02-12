@@ -18,9 +18,25 @@ import {WebApi} from 'actions'
 import {MenuItem, DropdownButton, ButtonGroup, Button} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {Nav, Glyphicon, NavItem} from 'react-bootstrap';
-import {registryRegionData, registrySearchData, registryClearSearch, registryChangeParent, registryRemoveRegistry, registryStartMove, registryCancelMove, registryUnsetParents, registryRecordUpdate, registryRecordMove} from 'actions/registry/registryRegionData'
+import {registryRegionData,
+        registrySearchData,
+        registryClearSearch,
+        registryChangeParent,
+        registryRemoveRegistry,
+        registryStartMove,
+        registryCancelMove,
+        registryUnsetParents,
+        registryRecordUpdate,
+        registryRecordMove
+} from 'actions/registry/registryRegionData'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-import {fetchRegistryIfNeeded, registrySetTypesId, fetchRegistry, registryAdd, registryClickNavigation, registryArrReset} from 'actions/registry/registryRegionList'
+import {fetchRegistryIfNeeded,
+        registrySetTypesId,
+        fetchRegistry,
+        registryAdd,
+        registryClickNavigation,
+        registryArrReset
+} from 'actions/registry/registryRegionList'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
 
 var RegistryPage = class RegistryPage extends AbstractReactComponent {
@@ -30,7 +46,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 'handleClickNavigation', 'handleAddRegistry', 'handleCallAddRegistry',
                 'handleRemoveRegistryDialog', 'handleRemoveRegistry', 'handleStartMoveRegistry',
                 'handleSaveMoveRegistry', 'handleCancelMoveRegistry',
-                'handleUnsetParents', 'handleArrReset', 'handleRegistryImport');
+                'handleUnsetParents', 'handleArrReset', 'handleRegistryImport', 'handleRegistryTypesSelectNavigation');
 
     }
 
@@ -195,6 +211,11 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     hlandleRegistryTypesSelect(selectedId, event) {
+            this.dispatch(registrySetTypesId(selectedId));
+    }
+
+    handleRegistryTypesSelectNavigation(selectedId){
+        this.dispatch(registryUnsetParents(null));
         this.dispatch(registrySetTypesId(selectedId));
     }
 
@@ -295,7 +316,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
             if (registryRegion.typesToRoot) {
                 registryRegion.typesToRoot.map(val => {
-                    cestaRodice.push(<span className='clickAwaiblePath parentPath' key={'regType'+val.id} title={val.name} onClick={this.hlandleRegistryTypesSelect.bind(this,val.id)} >{val.name}</span>);
+                    cestaRodice.push(<span className='clickAwaiblePath parentPath' key={'regType'+val.id} title={val.name} onClick={this.handleRegistryTypesSelectNavigation.bind(this,val.id)} >{val.name}</span>);
                 });
             }
 
@@ -311,13 +332,13 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                  }
              });
 
-            navParents =    <div key='XYZ' className="record-parent-info">
-                                <div key='XYZ1' className='record-selected-name'>
-                                    <div key='XYZ2' className="icon"><Icon glyph="fa-folder-open" /></div>
-                                    <div key='XYZ3' className="title"  title={nazevRodice}>{nazevRodice}</div>
-                                    <div key='XYZ4' className="back" onClick={this.handleUnsetParents}><Icon glyph="fa-close" /></div>
+            navParents =    <div className="record-parent-info">
+                                <div className='record-selected-name'>
+                                    <div className="icon"><Icon glyph="fa-folder-open" /></div>
+                                    <div className="title"  title={nazevRodice}>{nazevRodice}</div>
+                                    <div className="back" onClick={this.handleUnsetParents}><Icon glyph="fa-close" /></div>
                                 </div>
-                                <div key='XYZ5' className='record-selected-breadcrumbs'>{breadcrumbs}</div>
+                                <div className='record-selected-breadcrumbs'>{breadcrumbs}</div>
                             </div>
 
         }
@@ -328,6 +349,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             items={this.props.refTables.recordTypes.items}
             value={registryRegion.registryTypesId}
             onChange={this.hlandleRegistryTypesSelect.bind(this)}
+            disabled={registryRegion.registryParentId !== null}
             />
 
         var arrPanel = null;

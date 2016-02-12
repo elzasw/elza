@@ -55,6 +55,7 @@ export function registrySetTypesId(registryTypesId) {
     }
 }
 
+
 export function getRegistryIfNeeded(registryId) {
     return (dispatch, getState) => {
         var state = getState();
