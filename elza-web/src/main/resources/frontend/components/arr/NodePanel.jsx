@@ -521,14 +521,18 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 
         return (
             <div key={'node-panel-' + node.selectedSubNodeId} className={cls}>
-                {false && accordionInfo}
-                {actions}
-                {parents}
-                <div key='content' className='content' ref='content'>
-                    {this.renderAccordion(form, record)}
+                <div className='main'>
+                    {false && accordionInfo}
+                    {actions}
+                    {parents}
+                    <div key='content' className='content' ref='content'>
+                        {this.renderAccordion(form, record)}
+                    </div>
+                    {children}
                 </div>
-                {children}
-                {developer.enabled && this.renderDeveloperPanel()}
+                <div className='right'>
+                    {developer.enabled && this.renderDeveloperPanel()}
+                </div>
             </div>
         );
     }
