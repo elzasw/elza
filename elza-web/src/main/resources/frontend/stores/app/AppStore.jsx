@@ -27,6 +27,7 @@ import contextMenu from './global/contextMenu';
 import modalDialog from './global/modalDialog';
 import webSocket from './global/webSocket';
 import splitter from './global/splitter';
+import focus from './global/focus';
 import adminRegion from './admin/adminRegion';
 import faForm from './arr/form/faForm';
 import addPacketForm from './arr/form/addPacketForm';
@@ -56,6 +57,7 @@ let reducer = combineReducers({
     modalDialog,
     webSocket,
     splitter,
+    focus,
     adminRegion,
     stateRegion,
     router,
