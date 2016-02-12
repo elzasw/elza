@@ -1,52 +1,23 @@
 package cz.tacr.elza.service;
 
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
-
+import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrFindingAid;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeRegister;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.RegExternalSource;
-import cz.tacr.elza.domain.RegRecord;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.domain.RegScope;
-import cz.tacr.elza.domain.RegVariantRecord;
-import cz.tacr.elza.repository.DataRecordRefRepository;
-import cz.tacr.elza.repository.ExternalSourceRepository;
-import cz.tacr.elza.repository.FaRegisterScopeRepository;
-import cz.tacr.elza.repository.FindingAidVersionRepository;
-import cz.tacr.elza.repository.NodeRegisterRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.VariantRecordRepository;
-import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.events.EventType;
+import javax.annotation.Nullable;
+import javax.annotation.PostConstruct;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -587,6 +558,7 @@ public class RegistryService {
 
         nodeRegister.setNode(node);
         nodeRegister.setCreateChange(change);
+        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FINDING_AID_RECORD_CHANGE, versionId, nodeRegister.getNode().getNodeId(), nodeRegister.getNode().getVersion()));
         return nodeRegisterRepository.save(nodeRegister);
     }
 
@@ -626,6 +598,7 @@ public class RegistryService {
         nodeRegister.setNode(node);
         nodeRegister.setRecord(nodeRegister.getRecord());
         nodeRegister.setCreateChange(change);
+        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FINDING_AID_RECORD_CHANGE, versionId, nodeRegister.getNode().getNodeId(), nodeRegister.getNode().getVersion()));
         return nodeRegisterRepository.save(nodeRegister);
     }
 
@@ -657,7 +630,7 @@ public class RegistryService {
         nodeRegisterDB.setDeleteChange(change);
 
         arrangementService.saveLastChangeFaVersion(change, versionId);
-
+        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FINDING_AID_RECORD_CHANGE, versionId, nodeRegister.getNode().getNodeId(), nodeRegister.getNode().getVersion()));
         return nodeRegisterRepository.save(nodeRegisterDB);
     }
 

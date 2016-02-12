@@ -6,20 +6,12 @@ import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemGroupVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTypeGroupVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.DescItemGroupVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.DescItemTypeGroupVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.*;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.*;
-import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventIdInVersion;
-import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
-import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -88,9 +80,6 @@ public class ArrangementController {
 
     @Autowired
     private DescItemFactory descItemFactory;
-
-    @Autowired
-    private EventNotificationService eventNotificationService;
 
     @RequestMapping(value = "/packets/types",
             method = RequestMethod.GET,
@@ -717,7 +706,6 @@ public class ArrangementController {
                                                        final @RequestBody ArrNodeRegisterVO nodeRegisterVO) {
         ArrNodeRegister nodeRegister = factoryDO.createRegisterLink(nodeRegisterVO);
         nodeRegister = registryService.createRegisterLink(versionId, nodeId, nodeRegister);
-        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FINDING_AID_RECORD_CHANGE, versionId, nodeRegister.getNode().getNodeId(), nodeRegister.getNode().getVersion()));
         return factoryVo.createRegisterLink(nodeRegister);
     }
 
@@ -731,7 +719,6 @@ public class ArrangementController {
                                                  final @RequestBody ArrNodeRegisterVO nodeRegisterVO) {
         ArrNodeRegister nodeRegister = factoryDO.createRegisterLink(nodeRegisterVO);
         nodeRegister = registryService.updateRegisterLink(versionId, nodeId, nodeRegister);
-        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FINDING_AID_RECORD_CHANGE, versionId, nodeRegister.getNode().getNodeId(), nodeRegister.getNode().getVersion()));
         return factoryVo.createRegisterLink(nodeRegister);
     }
 
@@ -745,7 +732,6 @@ public class ArrangementController {
                                                  final @RequestBody ArrNodeRegisterVO nodeRegisterVO) {
         ArrNodeRegister nodeRegister = factoryDO.createRegisterLink(nodeRegisterVO);
         nodeRegister = registryService.deleteRegisterLink(versionId, nodeId, nodeRegister);
-        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FINDING_AID_RECORD_CHANGE, versionId, nodeRegister.getNode().getNodeId(), nodeRegister.getNode().getVersion()));
         return factoryVo.createRegisterLink(nodeRegister);
     }
 
