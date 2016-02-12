@@ -26,18 +26,21 @@ var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
 import {Utils} from 'components'
 import {barrier} from 'components/Utils';
+import {setFocus} from 'actions/global/focus'
 
 var keyModifier = Utils.getKeyModifier()
 
 var keymap = {
-    Main: {
+    Arr: {
         approveFaVersion: keyModifier + 'z',
         bulkActions: keyModifier + 'h',
         registerJp: keyModifier + 'j',
+        area0: keyModifier + '0',
+        area1: keyModifier + '1',
+        area2: keyModifier + '2',
+        area3: keyModifier + '3',
     },
-    Tree: {
-        Expand: 'ctrl+shift+x'
-    }
+    Tree: {}
 }
 var shortcutManager = new ShortcutsManager(keymap)
 
@@ -88,6 +91,18 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                 break
             case 'registerJp':
                 this.handleRegisterJp()
+                break
+            case 'area0':
+                this.dispatch(setFocus('arr', 0))
+                break
+            case 'area1':
+                this.dispatch(setFocus('arr', 1))
+                break
+            case 'area2':
+                this.dispatch(setFocus('arr', 2))
+                break
+            case 'area3':
+                this.dispatch(setFocus('arr', 3))
                 break
         }
     }
@@ -291,7 +306,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     render() {
-        const {splitter, arrRegion, faFileTree, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
+        const {focus, splitter, arrRegion, faFileTree, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
 
         var showRegisterJp = arrRegion.showRegisterJp;
 
@@ -304,6 +319,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                 <FaTreeTabs
                     fas={fas}
                     activeFa={activeFa}
+                    focus={focus}
                 />
             )
         }
@@ -358,7 +374,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         )
 
         return (
-            <Shortcuts name='Main' handler={this.handleShortcuts}>
+            <Shortcuts name='Arr' handler={this.handleShortcuts}>
                 <PageLayout
                     splitter={splitter}
                     className='fa-page'
@@ -374,11 +390,12 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {splitter, arrRegion, faFileTree, refTables, form} = state
+    const {splitter, arrRegion, faFileTree, refTables, form, focus} = state
     return {
         splitter,
         arrRegion,
         faFileTree,
+        focus,
         rulDataTypes: refTables.rulDataTypes,
         calendarTypes: refTables.calendarTypes,
         descItemTypes: refTables.descItemTypes,
@@ -394,6 +411,7 @@ ArrPage.propTypes = {
     calendarTypes: React.PropTypes.object.isRequired,
     descItemTypes: React.PropTypes.object.isRequired,
     packetTypes: React.PropTypes.object.isRequired,
+    focus: React.PropTypes.object.isRequired,
 }
 
 ArrPage.childContextTypes = {

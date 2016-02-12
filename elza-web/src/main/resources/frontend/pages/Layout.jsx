@@ -14,6 +14,7 @@ var Shortcuts = require('react-shortcuts/component')
 var keyModifier = Utils.getKeyModifier()
 import {Utils} from 'components'
 import {routerNavigate} from 'actions/router'
+import {setFocus} from 'actions/global/focus'
 
 require('./Layout.less');
 
@@ -24,6 +25,7 @@ var keymap = {
         registry: keyModifier + 'r',
         party: keyModifier + 'o',
     },
+    Tree: {}
 }
 var shortcutManager = new ShortcutsManager(keymap)
 
@@ -46,6 +48,7 @@ var Layout = class Layout extends AbstractReactComponent {
                 break
             case 'arr':
                 this.dispatch(routerNavigate('/arr'))
+                this.dispatch(setFocus('arr', 1, 'tree'))
                 break
             case 'party':
                 this.dispatch(routerNavigate('/party'))

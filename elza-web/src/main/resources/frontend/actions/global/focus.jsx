@@ -9,6 +9,22 @@ export function focusWasSet() {
     _setFocus = false
 }
 
+export function isFocusFor(focusState, region, area = null, component = null, item = null) {
+    if (region && focusState.region !== region) {
+        return false;
+    }
+    if (area && focusState.area !== area) {
+        return false;
+    }
+    if (component && focusState.component !== component) {
+        return false;
+    }
+    if (item && focusState.item !== item) {
+        return false;
+    }
+    return true;
+}
+
 /**
  * Test, zda se může focus nastavit.
  */

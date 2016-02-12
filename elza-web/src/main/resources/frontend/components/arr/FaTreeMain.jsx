@@ -37,7 +37,7 @@ var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
         if (this.state !== nextState) {
             return true;
         }
-        var eqProps = ['ensureItemVisible', 'dirty', 'expandedIds', 'fa', 'fetched', 'searchedIds', 'nodes', 'selectedId', 'selectedIds', 'fetchingIncludeIds', 'filterCurrentIndex', 'filterText', 'focusId', 'isFetching']
+        var eqProps = ['focus', 'ensureItemVisible', 'dirty', 'expandedIds', 'fa', 'fetched', 'searchedIds', 'nodes', 'selectedId', 'selectedIds', 'fetchingIncludeIds', 'filterCurrentIndex', 'filterText', 'focusId', 'isFetching']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -133,6 +133,7 @@ var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
                 onFulltextPrevItem={this.handleFulltextPrevItem}
                 onFulltextNextItem={this.handleFulltextNextItem}
                 onCollapse={this.handleCollapse}
+                focus={this.props.focus}
             />
         )
     }

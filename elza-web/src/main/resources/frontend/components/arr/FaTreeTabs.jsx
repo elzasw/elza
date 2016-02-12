@@ -5,6 +5,7 @@
 require ('./FaTreeTabs.less');
 
 import React from 'react';
+import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Tabs, FaTreeLazy, FaTreeMain, Icon} from 'components';
 import * as types from 'actions/constants/ActionTypes';
@@ -48,7 +49,7 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
         if (this.state !== nextState) {
             return true;
         }
-        var eqProps = ['fas', 'activeFa']
+        var eqProps = ['fas', 'activeFa', 'focus']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -112,7 +113,7 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
     }
 
     render() {
-        const {fas, activeFa} = this.props;
+        const {fas, activeFa, focus} = this.props;
 
         if (fas.length == 0) {
             return <div></div>
@@ -140,6 +141,8 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
                         fa = {activeFa}
                         versionId={activeFa.versionId}
                         {...activeFa.faTree}
+                        ref='tree'
+                        focus={focus}
                     />
                     {false && <FaTreeLazy 
                         fa={activeFa}
@@ -158,6 +161,7 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
 FaTreeTabs.propTypes = {
     fas: React.PropTypes.array.isRequired,
     activeFa: React.PropTypes.object,
+    focus: React.PropTypes.object.isRequired,
 }
 
 module.exports = connect()(FaTreeTabs);

@@ -15,6 +15,7 @@ import {propsEquals} from 'components/Utils'
 import {indexById} from 'stores/app/utils.jsx'
 import {createReferenceMark, getGlyph, getNodePrevSibling, getNodeNextSibling, getNodeParent, getNodeFirstChild} from 'components/arr/ArrUtils'
 var Shortcuts = require('react-shortcuts/component')
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
 
 var keyDownHandlers = {
     ArrowUp: function(e) {
@@ -77,17 +78,14 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
         super(props);
 
         this.bindMethods(
-            'renderNode', 'handleKeyDown'
+            'renderNode', 'handleKeyDown', 'trySetFocus'
         );
 
         this.state = {};
     }
 
-    handleShortcuts(action) {
-        console.log("TREE LAZY XXXXXXXX", action);
-    }
-
     componentWillReceiveProps(nextProps) {
+        this.trySetFocus(nextProps)
     }
 
     componentDidMount() {
@@ -95,18 +93,32 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
             this.setState({});
         });
         this.setState({treeContainer: ReactDOM.findDOMNode(this.refs.treeContainer)});
+        this.trySetFocus(this.props)
     }
 
     shouldComponentUpdate(nextProps, nextState) {
         if (this.state !== nextState) {
             return true;
         }
-        var eqProps = ['ensureItemVisible', 'filterText', 'expandedIds', 'selectedId', 'selectedIds', 'nodes', 'focusId', 'isFetching', 'fetched', 'searchedIds', 'searchedParents', 'filterCurrentIndex']
+        var eqProps = ['focus', 'ensureItemVisible', 'filterText', 'expandedIds', 'selectedId', 'selectedIds', 'nodes', 'focusId', 'isFetching', 'fetched', 'searchedIds', 'searchedParents', 'filterCurrentIndex']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
     componentWillUnmount() {
         this.unsubscribe();
+    }
+
+    trySetFocus(props) {
+        var {focus} = props
+
+        if (canSetFocus()) {
+            if (isFocusFor(focus, 'arr', 1, 'tree') || isFocusFor(focus, 'arr', 1)) {
+                this.setState({}, () => {
+                   ReactDOM.findDOMNode(this.refs.treeContainer).focus()
+                   focusWasSet()
+                })
+            }
+        }
     }
 
     handleKeyDown(e) {
@@ -212,7 +224,6 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
                         actionAddons={actionAddons}
                     />
                 </div>
-                <Shortcuts name='Tree' handler={this.handleShortcuts}>
                 <div className='fa-tree-lazy-container' ref="treeContainer" onKeyDown={this.handleKeyDown} tabIndex={-11}>
                     <Button className="tree-collapse" onClick={this.props.onCollapse}><Icon glyph='fa-compress'/>Sbalit vše</Button>
                     {this.state.treeContainer && <VirtualList
@@ -224,7 +235,6 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
                         itemHeight={this.props.rowHeight}
                     />}
                 </div>
-                </Shortcuts>
             </div>
         )
 
@@ -263,6 +273,7 @@ FaTreeLazy.propTypes = {
     onNodeClick: React.PropTypes.func,
     onOpenCloseNode: React.PropTypes.func,
     onContextMenu: React.PropTypes.func,
+    focus: React.PropTypes.object,
 }
 
 module.exports = connect()(FaTreeLazy);
