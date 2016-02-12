@@ -90,11 +90,15 @@ export default function registryRegion(state = initialState, action = {}) {
             return Object.assign({}, state, {
                 registryParentId: action.registry.registryParentId,
                 parents: action.registry.parents,
+                registryTypesId: action.registry.registryTypesId,
                 typesToRoot: action.registry.typesToRoot,
                 filterText: action.registry.filterText,
                 fetched: false
             })
         case types.REGISTRY_RECEIVE_REGISTRY_LIST:
+            if (state.filterText !== action.search || state.registryParentId !== action.registryParentId){
+                return state;
+            }
             return Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,

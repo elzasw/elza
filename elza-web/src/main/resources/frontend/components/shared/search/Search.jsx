@@ -86,10 +86,10 @@ var Search = class Search extends React.Component {
 
         var actions = []
 
-        actions.push(<Button className='search-button' onClick={this.handleSearch}><Icon glyph='fa-search'/></Button>)
+        actions.push(<Button key='handleSearch' className='search-button' onClick={this.handleSearch}><Icon glyph='fa-search'/></Button>)
 
         if (this.state.filterText) {
-            actions.push(<Button className='clear-search-button' onClick={this.handleClear}><Icon glyph='fa-close'/></Button>)
+            actions.push(<Button key='handleClear' className='clear-search-button' onClick={this.handleClear}><Icon glyph='fa-close'/></Button>)
         }
 
         if (this.props.actionAddons) {
@@ -108,7 +108,7 @@ var Search = class Search extends React.Component {
                         placeholder={this.props.placeholder}
                         onChange={this.handleChange}
                         onKeyUp={this.handleKeyUp}
-                    />
+                        />
                 </div>
                 <div className='search-actions'>
                     {actions}

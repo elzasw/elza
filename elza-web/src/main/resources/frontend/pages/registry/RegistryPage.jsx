@@ -29,7 +29,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         this.bindMethods('buildRibbon', 'handleSelect', 'handleSearch', 'handleSearchClear', 'handleDoubleClick',
                 'handleClickNavigation', 'handleAddRegistry', 'handleCallAddRegistry',
                 'handleRemoveRegistryDialog', 'handleRemoveRegistry', 'handleStartMoveRegistry',
-                'handleSaveMoveRegistry', 'handleCancelMoveRegistry', 'handleCloseTypesRegistry',
+                'handleSaveMoveRegistry', 'handleCancelMoveRegistry',
                 'handleUnsetParents', 'handleArrReset', 'handleRegistryImport');
 
     }
@@ -172,11 +172,11 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
             return false;
         }
         var rodice = item.parents.slice();
-        rodice.push({id: item.recordId, name:item.record});
-        var registry = Object.assign({}, registry,{registryParentId: item.recordId, parents: rodice, typesToRoot: item.typesToRoot, filterText: ''});
-        this.dispatch(registryChangeParent(registry));
-        this.dispatch(registryClearSearch());
 
+        rodice.push({id: item.recordId, name:item.record});
+        var registry = Object.assign({}, registry,{registryParentId: item.recordId, parents: rodice, typesToRoot: item.typesToRoot, filterText: '', registryTypesId: item.registerTypeId});
+        this.dispatch(registryClearSearch());
+        this.dispatch(registryChangeParent(registry));
     }
 
     handleClickNavigation(recordIdForOpen, event) {
@@ -189,6 +189,8 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     handleSearchClear(){
+        this.dispatch(registrySetTypesId(null));
+        this.dispatch(registryUnsetParents(null));
         this.dispatch(registryClearSearch());
     }
 
@@ -196,17 +198,9 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         this.dispatch(registrySetTypesId(selectedId));
     }
 
-    handleCloseTypesRegistry() {
+    handleUnsetParents(){
+        this.dispatch(registryUnsetParents(null));
         this.dispatch(registrySetTypesId(null));
-    }
-
-    handleUnsetParents(parent, event){
-        if (!parent) {
-            this.dispatch(registryUnsetParents(null));
-        }
-        else{
-            this.dispatch(this.handleClickNavigation(parent, event));
-        }
     }
 
     handleArrReset() {
@@ -217,23 +211,23 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         const {splitter, registryRegion} = this.props;
 
         var listOfRecord = <div className='search-norecord'>{i18n('registry.list.norecord')}</div>;
-        if (this.props.registryRegion.records.length) {
-            listOfRecord = this.props.registryRegion.records.map(item=>{
+        if (registryRegion.records.length) {
+            listOfRecord = registryRegion.records.map(item=>{
 
                 var parentsShown = [];
                 var parentsTypeShown = [];
-                if (this.props.registryRegion.parents) {
-                    this.props.registryRegion.parents.map((val) => {
+                if (registryRegion.parents) {
+                    registryRegion.parents.map((val) => {
                         parentsShown.push(val.id);
                     });
                 }
-                if (this.props.registryRegion.typesToRoot) {
-                    this.props.registryRegion.typesToRoot.map((val) => {
+                if (registryRegion.typesToRoot) {
+                    registryRegion.typesToRoot.map((val) => {
                         parentsTypeShown.push(val.id);
                     });
                 }
                 var cls = classNames({
-                    active: this.props.registryRegion.selectedId === item.recordId,
+                    active: registryRegion.selectedId === item.recordId,
                     'search-result-row': 'search-result-row'
                 });
 
@@ -249,7 +243,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
 
                 // výsledky z vyhledávání
-                if ( !this.props.registryRegion.registryParentId ) {
+                if ( !registryRegion.registryParentId ) {
                     var path = [];
                     if (item.parents) {
                         item.parents.map((val) => {
@@ -261,7 +255,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
                     if (item.typesToRoot) {
                         item.typesToRoot.map((val) => {
-                            if(this.props.registryRegion.registryTypesId!==val.id) {
+                            if(registryRegion.registryTypesId!==val.id) {
                                 path.push(val.name);
                             }
                         });
@@ -288,44 +282,51 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         }
 
 
-        var navParents = '';
+        var navParents = null;
 
-        if (this.props.registryRegion.parents && this.props.registryRegion.parents.length){
-            var nazevRodice = this.props.registryRegion.parents[this.props.registryRegion.parents.length-1].name;
+        if (registryRegion.registryTypesId!==null && registryRegion.parents && registryRegion.parents.length) {
+            var nazevRodice = registryRegion.parents[registryRegion.parents.length-1].name;
             var cestaRodice = [];
-            var tmpParents = this.props.registryRegion.parents.slice();
-
+            var tmpParents = registryRegion.parents.slice();
             tmpParents.pop();
             tmpParents.map(val => {
                 cestaRodice.push(<span className='clickAwaiblePath parentPath' key={'parent'+val.id}  title={val.name} onClick={this.handleClickNavigation.bind(this,val.id)}>{val.name}</span>);
             });
 
-            if (this.props.registryRegion.typesToRoot) {
-                this.props.registryRegion.typesToRoot.map(val => {
+            if (registryRegion.typesToRoot) {
+                registryRegion.typesToRoot.map(val => {
                     cestaRodice.push(<span className='clickAwaiblePath parentPath' key={'regType'+val.id} title={val.name} onClick={this.hlandleRegistryTypesSelect.bind(this,val.id)} >{val.name}</span>);
                 });
             }
 
             var parentId = null;
-            if (this.props.registryRegion.parents.length > 1)
-                parentId = this.props.registryRegion.parents[0].id;
-            navParents = (
-                <div className="record-parent-info">
-                    <div className='record-selected-name'>
-                        <div className="icon"><Icon glyph="fa-folder-open" /></div>
-                        <div className="title"  title={nazevRodice}>{nazevRodice}</div>
-                        <div className="back" onClick={this.handleUnsetParents.bind(this,null)}><Icon glyph="fa-close" /></div>
-                    </div>
-                    <div className='record-selected-breadcrumbs'>{cestaRodice.map((val, key)=>{if (key) {return  <span className='parentPath' key={key}><span className='parentPath'>&nbsp;|&nbsp;</span>{val}</span>} else {return <span key={key} className='parentPath'>{val}</span>;}})}</div>
-                </div>
-            )
+            if (registryRegion.parents.length > 1)
+                parentId = registryRegion.parents[0].id;
+            var breadcrumbs = [];
+             cestaRodice.map((val, key) => {
+                 if (key) {
+                     breadcrumbs.push(<span className='parentPath' key={key}><span className='parentPath'>&nbsp;|&nbsp;</span>{val}</span>);
+                 } else {
+                     breadcrumbs.push(<span key={key} className='parentPath'>{val}</span>);
+                 }
+             });
+
+            navParents =    <div key='XYZ' className="record-parent-info">
+                                <div key='XYZ1' className='record-selected-name'>
+                                    <div key='XYZ2' className="icon"><Icon glyph="fa-folder-open" /></div>
+                                    <div key='XYZ3' className="title"  title={nazevRodice}>{nazevRodice}</div>
+                                    <div key='XYZ4' className="back" onClick={this.handleUnsetParents}><Icon glyph="fa-close" /></div>
+                                </div>
+                                <div key='XYZ5' className='record-selected-breadcrumbs'>{breadcrumbs}</div>
+                            </div>
+
         }
 
         var dropDownForSearch = <DropDownTree
             nullValue={{id: null, name: i18n('registry.all')}}
             key='search'
             items={this.props.refTables.recordTypes.items}
-            value={this.props.registryRegion.registryTypesId}
+            value={registryRegion.registryTypesId}
             onChange={this.hlandleRegistryTypesSelect.bind(this)}
             />
 
@@ -344,22 +345,22 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                         onSearch={this.handleSearch}
                         onClear={this.handleSearchClear.bind(this)}
                         placeholder={i18n('search.input.search')}
-                        filterText={this.props.registryRegion.filterText}
-                    />
+                        filterText={registryRegion.filterText}
+                        />
                 </div>
-                <div>
+                <div key='breadcrumbs'>
                     {navParents}
                 </div>
                 <div className="registry-list-results">
-                    {(!this.props.registryRegion.fetched) && <Loading/>}
-                    {(this.props.registryRegion.fetched) && listOfRecord}
+                    {(!registryRegion.fetched) && <Loading/>}
+                    {(registryRegion.fetched) && listOfRecord}
                 </div>
             </div>
         )
 
         var centerPanel = (
             <div className='registry-page'>
-                <RegistryPanel selectedId = {this.props.registryRegion.selectedId}/>
+                <RegistryPanel selectedId = {registryRegion.selectedId}/>
 
             </div>
         )

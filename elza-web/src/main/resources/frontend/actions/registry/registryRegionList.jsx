@@ -14,24 +14,29 @@ import {registryChangeParent, registryRegionData, registryUnsetParents} from 'ac
 export function fetchRegistryIfNeeded(search = '', registryParent = null, registerTypeIds = null, versionId = null) {
     return (dispatch, getState) => {
         var state = getState();
+
         if ((state.registryRegion.dirty && !state.registryRegion.isFetching) || (!state.registryRegion.fetched && !state.registryRegion.isFetching)) {
             return dispatch(fetchRegistry(search, registryParent, registerTypeIds, versionId));
         }
     }
 }
 
-export function fetchRegistry(search, registryParent = null, registerTypeIds = null, versionId = null) {
+export function fetchRegistry(search, registryParentId = null, registerTypesId = null, versionId = null) {
     return dispatch => {
         dispatch(requestRegistry());
-        return WebApi.findRegistry(search, registryParent, registerTypeIds, versionId)
-                .then(json => dispatch(receiveRegistry(json)));
+        return WebApi.findRegistry(search, registryParentId, registerTypesId, versionId)
+                .then(json => {
+                    dispatch(receiveRegistry(search, registryParentId, json));
+                });
     }
 }
 
-export function receiveRegistry(json) {
+export function receiveRegistry(search, registryParentId, json) {
     return {
         type: types.REGISTRY_RECEIVE_REGISTRY_LIST,
         records: json.recordList,
+        search: search,
+        registryParentId: registryParentId,
         countRecords: json.count,
         receivedAt: Date.now()
     }
@@ -166,10 +171,12 @@ export function registryArrReset() {
 }
 
 export function registryClickNavigation(recordId){
-    return (dispatch) => {
+    return (dispatch, getState) => {
+        var state = getState();
         return WebApi.getRegistry(recordId).then(json => {
             json.parents.push({id:recordId, name: json.record});
-            var registry = Object.assign({}, registry,{registryParentId: recordId, parents: json.parents, typesToRoot: json.typesToRoot, filterText: ''});
+
+            var registry = Object.assign({}, registry,{registryParentId: recordId, parents: json.parents, typesToRoot: json.typesToRoot, filterText: '', registryTypesId: state.registryRegion.registryTypesId});
             dispatch(registryChangeParent(registry));
         });
     }
