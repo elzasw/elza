@@ -165,6 +165,8 @@ export const GLOBAL_SPLITTER_RESIZE = 'GLOBAL_SPLITTER_RESIZE'
 
 export const SET_FOCUS = 'SET_FOCUS'
 
+export const DEVELOPER_SET = 'DEVELOPER_SET'
+
 /**
  * Ukládání a načítání store.
  */

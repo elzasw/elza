@@ -1,0 +1,17 @@
+import * as types from 'actions/constants/ActionTypes';
+
+const initialState = {
+    enabled: true,
+}
+
+export default function developer(state = initialState, action) {
+    switch (action.type) {
+        case types.DEVELOPER_SET:
+            return {
+                ...state,
+                enabled: action.enabled,
+            }
+        default:
+            return state
+    }
+}

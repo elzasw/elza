@@ -27,6 +27,7 @@ import contextMenu from './global/contextMenu';
 import modalDialog from './global/modalDialog';
 import webSocket from './global/webSocket';
 import splitter from './global/splitter';
+import developer from './global/developer';
 import focus from './global/focus';
 import adminRegion from './admin/adminRegion';
 import faForm from './arr/form/faForm';
@@ -52,6 +53,7 @@ let reducer = combineReducers({
     registryRegionData,
     registryRegionRecordTypes,
     toastrs,
+    developer,
     partyRegion,
     contextMenu,
     modalDialog,

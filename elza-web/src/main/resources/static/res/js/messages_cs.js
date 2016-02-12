@@ -33,6 +33,7 @@ var messages = {
     "ribbon.action.registry": "Rejstříky",
     "ribbon.action.party": "Osoby",
     "ribbon.action.admin": "Administrace",
+    "ribbon.action.admin.developer": "Developer mode",
     "ribbon.action.admin.packages": "Správa balíčků",
     "ribbon.action.admin.fulltext": "Fulltext",
     "ribbon.action.party.import" : "Import osob",

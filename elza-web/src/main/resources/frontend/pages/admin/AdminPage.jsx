@@ -12,21 +12,38 @@ require ('./AdminPage.less');
 
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {i18n} from 'components';
-import {Ribbon, ModalDialog, NodeTabs, PartySearch} from 'components';
+import {RibbonGroup, i18n, Icon, Ribbon, ModalDialog, NodeTabs, PartySearch, AbstractReactComponent} from 'components';
 import {ButtonGroup, Button} from 'react-bootstrap';
 import {PageLayout} from 'pages';
+import {developerSet} from 'actions/global/developer'
 
-var AdminPage = class AdminPage extends React.Component {
+var AdminPage = class AdminPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.buildRibbon = this.buildRibbon.bind(this);
+        this.bindMethods('handleDeveloperMode', 'buildRibbon')
+    }
+
+    handleDeveloperMode() {
+        this.dispatch(developerSet(!this.props.developer.enabled));
     }
 
     buildRibbon() {
+        var altActions = [];
+
+        altActions.push(
+            <Button active={this.props.developer.enabled} key="edit-version" onClick={this.handleDeveloperMode}><Icon glyph="fa-cogs"/>
+                <div><span className="btnText">{i18n('ribbon.action.admin.developer')}</span></div>
+            </Button>,
+        )
+
+        var altSection;
+        if (altActions.length > 0) {
+            altSection = <RibbonGroup key="alt" className="large">{altActions}</RibbonGroup>
+        }
+
         return (
-            <Ribbon admin {...this.props} />
+            <Ribbon admin altSection={altSection} {...this.props} />
         )
     }
 
@@ -51,10 +68,11 @@ var AdminPage = class AdminPage extends React.Component {
 }
 
 function mapStateToProps(state) {
-    const {splitter} = state
+    const {splitter, developer} = state
     
     return {
-        splitter
+        splitter,
+        developer,
     }
 }
 

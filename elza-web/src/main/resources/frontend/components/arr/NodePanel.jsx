@@ -22,6 +22,7 @@ import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
 const scrollIntoView = require('dom-scroll-into-view')
+var classNames = require('classnames');
 
 require ('./NodePanel.less');
 
@@ -34,7 +35,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick',
             'getParentNodes', 'getChildNodes', 'getSiblingNodes',
             'renderAccordion', 'renderState', 'transformConformityInfo', 'handleAddNodeAtEnd',
-            'handleChangeFilterText'
+            'handleChangeFilterText', 'renderDeveloperPanel'
             );
 
         this.state = {
@@ -381,8 +382,33 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         return rows;
     }
 
+    renderDeveloperPanel() {
+        const {node, descItemTypes} = this.props;
+
+        var rows
+        if (false && node.subNodeForm.fetched && descItemTypes.fetched) {
+            node.subNodeForm.descItemTypeInfos.forEach(type => {
+                rows.push(
+                    <li>
+                        <h1>{type.shortcut}<small>{type.code}</small></h1>
+                        <div className='name'>{type.name}</div>
+                        <div className='desc'>{type.description}</div>
+                    </li>
+                )
+            })
+        }
+
+        return (
+            <div className='developer-panel'>
+                <ul>
+                    {rows}
+                </ul>
+            </div>
+        )
+    }
+
     render() {
-        const {calendarTypes, versionId, rulDataTypes, node,
+        const {developer, calendarTypes, versionId, rulDataTypes, node,
                 packetTypes, packets, findingAidId,
                 showRegisterJp, fa, closed, descItemTypes} = this.props;
 
@@ -488,8 +514,13 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             {node.viewStartIndex}-{node.viewStartIndex + node.pageSize} [{node.childNodes.length}]
         </div>
 
+        var cls = classNames({
+            'node-panel-container': true,
+            developer: developer.enabled,
+        })
+
         return (
-            <div key={'node-panel-' + node.selectedSubNodeId} className='node-panel-container'>
+            <div key={'node-panel-' + node.selectedSubNodeId} className={cls}>
                 {false && accordionInfo}
                 {actions}
                 {parents}
@@ -497,6 +528,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                     {this.renderAccordion(form, record)}
                 </div>
                 {children}
+                {developer.enabled && this.renderDeveloperPanel()}
             </div>
         );
     }
@@ -550,9 +582,10 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {arrRegion} = state
+    const {arrRegion, developer} = state
     return {
-        nodeSettings: arrRegion.nodeSettings
+        nodeSettings: arrRegion.nodeSettings,
+        developer,
     }
 }
 

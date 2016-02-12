@@ -6,13 +6,23 @@
 @node-panel-content-height: 70%;
 @node-panel-children-height: 15%;
 
+@developer-panel-width: 250px;
+
 .node-panel-container {
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
-    width: 100%;
     height: 100%;
 
+    width: 100%;
+    &.developer {
+        width: calc(~"100% - "@developer-panel-width);
+    }
+    .developer-panel {
+        width: @developer-panel-width;
+        background: red;
+    }
+    
     .reference-mark {
         color: @tree-node-reference-mark;
         font-size: 0.7em;
