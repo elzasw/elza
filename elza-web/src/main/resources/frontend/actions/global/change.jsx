@@ -36,14 +36,12 @@ export function changePackets(findingAidId) {
     }
 }
 
-export function changeDescItem(versionId, nodeId, descItemObjectId, version) {
+export function changeNodes(versionId, nodeIds) {
 
     return {
-        type: types.CHANGE_DESC_ITEM,
+        type: types.CHANGE_NODES,
         versionId,
-        nodeId,
-        descItemObjectId,
-        version
+        nodeIds
     }
 }
 

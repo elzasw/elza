@@ -213,7 +213,7 @@ export default function subNodeForm(state = initialState, action) {
             
             state.formData = {...state.formData};
             return {...state};
-        case types.CHANGE_DESC_ITEM:
+        case types.CHANGE_NODES:
             return {...state, dirty: true}
         case types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE_RESPONSE:
             var loc = getLoc(state, action.valueLocation);

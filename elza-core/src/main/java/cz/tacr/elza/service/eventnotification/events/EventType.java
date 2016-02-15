@@ -34,6 +34,8 @@ public enum EventType {
 
     COPY_OLDER_SIBLING_ATTRIBUTE(EventIdInVersion.class),
 
+    NODES_CHANGE(EventIdsInVersion.class),
+
     DESC_ITEM_CHANGE(EventChangeDescItem.class),
     FINDING_AID_RECORD_CHANGE(EventNodeIdVersionInVersion.class),
 
@@ -43,7 +45,7 @@ public enum EventType {
 
     PACKETS_CHANGE(EventId.class),
 
-    CONFORMITY_INFO(EventIdInVersion.class),
+    CONFORMITY_INFO(EventIdsInVersion.class),
 
     BULK_ACTION_STATE_CHANGE(EventStringInVersion.class);
 

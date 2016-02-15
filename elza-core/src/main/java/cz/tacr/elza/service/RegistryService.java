@@ -630,7 +630,7 @@ public class RegistryService {
         nodeRegisterDB.setDeleteChange(change);
 
         arrangementService.saveLastChangeFaVersion(change, versionId);
-        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FINDING_AID_RECORD_CHANGE, versionId, nodeRegister.getNode().getNodeId(), nodeRegister.getNode().getVersion()));
+        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FINDING_AID_RECORD_CHANGE, versionId, node.getNodeId(), node.getVersion()));
         return nodeRegisterRepository.save(nodeRegisterDB);
     }
 

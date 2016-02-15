@@ -4,6 +4,11 @@ import com.google.common.eventbus.EventBus;
 import cz.tacr.elza.service.IClientDataChangesService;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
+import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
+import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
+import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.eventnotification.events.EventVersion;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -112,7 +117,60 @@ public class EventNotificationService implements IEventNotificationService {
          * @param event událost
          */
         public void registerEvent(final AbstractEventSimple event) {
-            uncommittedEvents.add(event);
+            switch (event.getEventType()) {
+
+                case DESC_ITEM_CHANGE:
+                    transformToNodesEvent((EventVersion) event);
+                    break;
+
+                default:
+                    uncommittedEvents.add(event);
+                    break;
+            }
+        }
+
+        /**
+         * Metoda grupuje požadované události.
+         *
+         * @param event událost
+         */
+        private void transformToNodesEvent(final EventVersion event) {
+            EventIdsInVersion nodesEvent = null;
+            for (AbstractEventSimple eventSimple : uncommittedEvents) {
+                if (eventSimple.getEventType().equals(EventType.NODES_CHANGE)) {
+                    nodesEvent = (EventIdsInVersion) eventSimple;
+                    break;
+                }
+            }
+
+            // pokud ještě neexistuje
+            if (nodesEvent == null) {
+                nodesEvent = new EventIdsInVersion(EventType.NODES_CHANGE, event.getVersionId(), null);
+                uncommittedEvents.add(nodesEvent);
+            }
+
+            Integer nodeId;
+            switch (event.getEventType()) {
+                case DESC_ITEM_CHANGE:
+                    nodeId = ((EventChangeDescItem) event).getNodeId();
+                    Integer[] nodeIds = nodesEvent.getEntityIds();
+                    nodeIds = nodeIds == null ? new Integer[0] : nodeIds;
+                    nodesEvent.setEntityIds(append(nodeIds, nodeId));
+                    break;
+            }
+        }
+
+        /**
+         * Přidání hodnoty do pole.
+         * @param arr   pole
+         * @param element přidávaná hodnota
+         * @return nové pole
+         */
+        private <T> T[] append(T[] arr, T element) {
+            final int N = arr.length;
+            arr = Arrays.copyOf(arr, N + 1);
+            arr[N] = element;
+            return arr;
         }
 
         public void registerRollBackEvent(final AbstractEventSimple event) {

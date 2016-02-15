@@ -148,7 +148,7 @@ export default function arrRegion(state = initialState, action) {
         case types.FA_NODE_CHANGE:
         case types.FA_NODES_RECEIVE:
         case types.FA_NODES_REQUEST:
-        case types.CHANGE_DESC_ITEM:
+        case types.CHANGE_NODES:
         case types.BULK_ACTIONS_STATE_CHANGE:
         case types.CHANGE_DELETE_LEVEL:
         case types.CHANGE_ADD_LEVEL:

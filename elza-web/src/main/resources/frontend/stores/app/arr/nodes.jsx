@@ -44,7 +44,7 @@ export default function nodes(state = nodesInitialState, action) {
             }
         case types.FA_NODES_RECEIVE:
         case types.FA_NODES_REQUEST:
-        case types.CHANGE_DESC_ITEM:
+        case types.CHANGE_NODES:
             var changed = false;
             var newNodes = state.nodes.map(nodeObj => {
                 var newNode = node(nodeObj, action);

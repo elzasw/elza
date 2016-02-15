@@ -6,7 +6,7 @@ import {buklActionStateChange} from 'actions/arr/bulkActions';
 import {store} from 'stores/app/AppStore';
 
 import {changeConformityInfo, changeIndexingFinished, changePackage, changePackets,
-        changeDescItem, changeDeleteLevel, changeAddLevel, changeApproveVersion, changeParty,
+        changeNodes, changeDeleteLevel, changeAddLevel, changeApproveVersion, changeParty,
     changeMoveLevel, changeRegistryRecord, changeFa, changeFaRecord} from 'actions/global/change';
 
 
@@ -94,8 +94,8 @@ function processEvents(values) {
             case 'PARTY_UPDATE':
                 partyUpdate(value);
                 break;
-            case 'DESC_ITEM_CHANGE':
-                descItemChange(value);
+            case 'NODES_CHANGE':
+                nodesChange(value);
                 break;
 
             case 'PACKETS_CHANGE':
@@ -225,8 +225,8 @@ function packetsChangeEvent(value) {
     store.dispatch(changePackets(value.ids[0]));
 }
 
-function descItemChange(value) {
-    store.dispatch(changeDescItem(value.versionId, value.nodeId, value.descItemObjectId, value.version));
+function nodesChange(value) {
+    store.dispatch(changeNodes(value.versionId, value.entityIds));
 }
 
 function deleteLevelChange(value) {

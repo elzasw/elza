@@ -163,7 +163,7 @@ export function node(state = nodeInitialState, action) {
                 subNodeForm: subNodeForm(state.subNodeForm, action),
             };
             return consolidateState(state, result);
-        case types.CHANGE_DESC_ITEM:
+        case types.CHANGE_NODES:
         case types.CHANGE_FA_RECORD:
             var result = {
                 ...state,
