@@ -118,7 +118,11 @@ public class PartyController {
     @Autowired
     private FindingAidVersionRepository findingAidVersionRepository;
 
-
+    /**
+     * Načte osobu podle id.
+     * @param partyId id osoby
+     * @return data osoby
+     */
     @RequestMapping(value = "/getParty", method = RequestMethod.GET)
     public ParPartyVO getParty(@RequestParam("partyId") final Integer partyId) {
         Assert.notNull(partyId);
@@ -300,6 +304,11 @@ public class PartyController {
     }
 
 
+    /**
+     * Uložení nové osoby
+     * @param partyVO data osoby
+     * @return uložený objekt osoby
+     */
     @RequestMapping(value = "/insertParty", method = RequestMethod.POST)
     @Transactional
     public ParPartyVO insertParty(@RequestBody final ParPartyVO partyVO) {
@@ -320,6 +329,12 @@ public class PartyController {
         return factoryVo.createParPartyDetail(savedParty);
     }
 
+    /**
+     * Aktualizace osoby.
+     * @param partyId id osoby
+     * @param partyVO data osoby
+     * @return aktualizovaný objekt osoby
+     */
     @RequestMapping(value = "/updateParty/{partyId}", method = RequestMethod.PUT)
     @Transactional
     public ParPartyVO updateParty(

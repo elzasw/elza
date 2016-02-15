@@ -34,7 +34,7 @@ import cz.tacr.elza.domain.RulDescItemType;
 
 
 /**
- * Testy pro {@link BulkActionManager}.
+ * Testy pro hromadné akce.
  */
 public class BulkActionManagerTest extends AbstractRestTest {
 

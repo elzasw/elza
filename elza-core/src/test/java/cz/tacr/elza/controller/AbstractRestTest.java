@@ -83,6 +83,7 @@ import cz.tacr.elza.domain.vo.ArrLevelWithExtraNode;
 import cz.tacr.elza.domain.vo.ArrNodeHistoryPack;
 import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithDescItems;
 import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithLevelPack;
+import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.ArrangementTypeRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
@@ -344,8 +345,6 @@ public abstract class AbstractRestTest {
     private int port;
 
     @Autowired
-    private ArrangementManager arrangementManager;
-    @Autowired
     private ArrangementTypeRepository arrangementTypeRepository;
     @Autowired
     private RuleSetRepository ruleSetRepository;
@@ -415,8 +414,6 @@ public abstract class AbstractRestTest {
     @Autowired
     protected PackageRepository packageRepository;
 
-    @Autowired
-    protected RuleManager ruleManager;
 
     @Autowired
     protected ArrangementService arrangementService;
@@ -481,6 +478,9 @@ public abstract class AbstractRestTest {
     @Autowired
     protected FaRegisterScopeRepository faRegisterScopeRepository;
 
+    @Autowired
+    protected PackageService packageService;
+
 
     @Before
     public void setUp() {
@@ -497,7 +497,7 @@ public abstract class AbstractRestTest {
             File file = new File(url.getPath());
 
 
-            ruleManager.importPackage(file);
+            packageService.importPackage(file);
         }
 
 

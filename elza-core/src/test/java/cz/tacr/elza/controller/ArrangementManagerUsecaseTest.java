@@ -37,7 +37,7 @@ import cz.tacr.elza.domain.vo.ArrNodeRegisterPack;
 import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithDescItem;
 
 /**
- * Kompletní test {@link ArrangementManager}.
+ * Kompletní test.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 9. 9. 2015

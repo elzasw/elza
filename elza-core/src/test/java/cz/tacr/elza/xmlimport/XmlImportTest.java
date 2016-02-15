@@ -29,7 +29,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import cz.tacr.elza.ElzaCore;
 import cz.tacr.elza.api.vo.XmlImportType;
-import cz.tacr.elza.controller.RuleManager;
+import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.service.XmlImportService;
 import cz.tacr.elza.service.exception.XmlImportException;
@@ -56,7 +56,8 @@ public class XmlImportTest implements ApplicationContextAware {
     protected PackageRepository packageRepository;
 
     @Autowired
-    protected RuleManager ruleManager;
+    protected PackageService packageService;
+
 
     private static final int RECORD_COUNT = 10;
 
@@ -87,7 +88,7 @@ public class XmlImportTest implements ApplicationContextAware {
             File file = new File(url.getPath());
 
 
-            ruleManager.importPackage(file);
+            packageService.importPackage(file);
         }
     }
 

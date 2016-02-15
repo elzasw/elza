@@ -35,7 +35,6 @@ import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
-import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -96,9 +95,6 @@ public class ArrangementService {
 
     @Autowired
     private BulkActionService bulkActionService;
-
-    @Autowired
-    private RuleManager ruleManager;
 
     @Autowired
     private RuleService ruleService;

@@ -18,7 +18,7 @@ import java.util.List;
 import static com.jayway.restassured.RestAssured.given;
 
 /**
- * Testy pro {@link PartyManager}.
+ * Testy pro osoby.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 31. 7. 2015

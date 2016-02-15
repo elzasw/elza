@@ -55,14 +55,7 @@ public class ValidationVOService {
     private PartyRepository partyRepository;
     @Autowired
     private RelationTypeRepository relationTypeRepository;
-    @Autowired
-    private CalendarTypeRepository calendarTypeRepository;
-    @Autowired
-    private RelationEntityRepository relationEntityRepository;
-    @Autowired
-    private RegRecordRepository recordRepository;
-    @Autowired
-    private RelationRoleTypeRepository relationRoleTypeRepository;
+
 
     public void checkParty(final ParPartyVO partyVO) {
         ParPartyType partyType;
@@ -164,32 +157,6 @@ public class ValidationVOService {
         Assert.notNull(unitdateVO.getCalendarTypeId(), "Není nastaveno id typu kalendáře datace.");
     }
 
-    public void checkRelationEntity(final ParRelationEntityVO relationEntityVO, final boolean checkRelation) {
-
-        Integer relationEntityId = relationEntityVO.getRelationEntityId();
-        if (relationEntityId != null) {
-            ParRelationEntity relationEntity = relationEntityRepository.findOne(relationEntityId);
-            Assert.notNull(relationEntity, "Nebyla nalezena vazba vztahu na entitu s id " + relationEntityId);
-        }
-
-        Assert.notNull(relationEntityVO.getRecord());
-        Assert.notNull(relationEntityVO.getRecord().getRecordId());
-        RegRecord record = recordRepository.findOne(relationEntityVO.getRecord().getRecordId());
-        Assert.notNull(record, "Nebyl nalezeno rejstříkové heslo s id " + relationEntityVO.getRecord().getRecordId());
-
-        Assert.notNull(relationEntityVO.getRoleType());
-        Assert.notNull(relationEntityVO.getRoleType().getRoleTypeId());
-        ParRelationRoleType roleType = relationRoleTypeRepository
-                .findOne(relationEntityVO.getRoleType().getRoleTypeId());
-        Assert.notNull(roleType,
-                "Nebyl nalezen typ relace entity s id " + relationEntityVO.getRoleType().getRoleTypeId());
-
-        if (checkRelation) {
-            Assert.notNull(relationEntityVO.getRelationId());
-            ParRelation relation = relationRepository.findOne(relationEntityVO.getRelationId());
-            Assert.notNull(relation, "Nebyla nalezena vazba s id " + relationEntityVO.getRelationId());
-        }
-    }
 
 
     private void checkPreferredNameExist(final List<ParPartyNameVO> partyNameEditVOs) {

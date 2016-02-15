@@ -592,25 +592,25 @@ class WebApi{
     }
 
     getPackages() {
-        return AjaxUtils.ajaxGet('/api/ruleSetManager/getPackages')
+        return AjaxUtils.ajaxGet('/api/ruleSetManagerV2/getPackages')
             .then(json=>{
                 return json;
             });
     }
 
     deletePackage(code) {
-        return AjaxUtils.ajaxGet('/api/ruleSetManager/deletePackage/' + code)
+        return AjaxUtils.ajaxGet('/api/ruleSetManagerV2/deletePackage/' + code)
                 .then(json=>{
                     return json;
                 });
     }
 
     getPackageExportUrl(code) {
-        return '/api/ruleSetManager/exportPackage/' + code;
+        return '/api/ruleSetManagerV2/exportPackage/' + code;
     }
 
     importPackage(data) {
-        return AjaxUtils.ajaxCallRaw('/api/ruleSetManager/importPackage', {}, "POST", data)
+        return AjaxUtils.ajaxCallRaw('/api/ruleSetManagerV2/importPackage', {}, "POST", data)
                 .then(json=>{
                     return json;
                 });

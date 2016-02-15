@@ -502,6 +502,10 @@ public class ArrangementController {
         return new NodeFormsDataVO(forms);
     }
 
+    /**
+     * Načte číselník typů kalendářů.
+     * @return typy kalendářů
+     */
     @RequestMapping(value = "/calendarTypes", method = RequestMethod.GET)
     public List<ArrCalendarTypeVO> getCalendarTypes() {
         List<ArrCalendarType> calendarTypes = calendarTypeRepository.findAll();

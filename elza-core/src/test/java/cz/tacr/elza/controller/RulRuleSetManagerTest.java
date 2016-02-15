@@ -43,7 +43,7 @@ import cz.tacr.elza.validation.ArrDescItemsPostValidator;
 
 
 /**
- * Testy pro {@link RuleManager}.
+ * Testy pro pravidla.
  *
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 31. 7. 2015
@@ -52,8 +52,6 @@ public class RulRuleSetManagerTest extends AbstractRestTest {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    @Autowired
-    private RuleManager ruleManager;
 
     @Autowired
     private FindingAidVersionRepository findingAidVersionRepository;

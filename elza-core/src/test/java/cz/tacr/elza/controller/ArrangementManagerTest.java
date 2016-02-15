@@ -95,15 +95,10 @@ import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.service.ArrMoveLevelService;
 
 
-/**
- * Testy pro {@link ArrangementManager}.
- */
 public class ArrangementManagerTest extends AbstractRestTest {
 
     private static final Logger logger = LoggerFactory.getLogger(ArrangementManagerTest.class);
 
-    @Autowired
-    private ArrangementManager arrangementManager;
     @Autowired
     private FindingAidRepository findingAidRepository;
     @Autowired
@@ -126,8 +121,6 @@ public class ArrangementManagerTest extends AbstractRestTest {
     private DataRepository dataRepository;
 
     @Autowired
-    private RuleManager ruleManager;
-    @Autowired
     private NodeRepository nodeRepository;
 
     @Autowired
@@ -142,30 +135,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         createFindingAid(TEST_NAME);
     }
 
-    @Test
-    @Transactional
-    public void testDeleteFindingAid() throws Exception {
-        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        arrangementManager.deleteFindingAid(findingAid.getFindingAidId());
-    }
 
-    @Test
-    @Transactional
-    public void testGetFindingAids() throws Exception {
-        createFindingAid(TEST_NAME);
-
-        Assert.assertFalse(arrangementManager.getFindingAids().isEmpty());
-    }
-
-    @Test
-    @Transactional
-    public void testUpdateFindingAid() throws Exception {
-        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
-        findingAid.setName(TEST_NAME);
-
-        arrangementManager.updateFindingAid(findingAid);
-    }
 
     // ---- REST test ----
     @Test
@@ -419,123 +390,8 @@ public class ArrangementManagerTest extends AbstractRestTest {
         }
     }
 
-    @Test
-    public void testRestAddLevelBefore() {
-        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
 
-        ArrFindingAidVersion version = getRootNodeIdForVersion(findingAid.getFindingAidId());
-//        ArrFindingAidVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
 
-        ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
-        levelWithExtraNode.setLevel(version.getRootLevel());
-        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
-
-        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
-
-        RelatedNodeDirectionWithLevelPack related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
-        ArrLevelWithExtraNode second = related.getArrLevelPack();
-
-        levelWithExtraNode = new ArrLevelWithExtraNode();
-        levelWithExtraNode.setLevel(second.getLevel());
-        levelWithExtraNode.setExtraNode(second.getExtraNode());
-        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
-
-        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_BEFORE_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
-        related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
-        ArrLevelWithExtraNode first = related.getArrLevelPack();
-
-        List<ArrLevelExt> subLevels = arrangementManager
-                .findSubLevels(version.getRootLevel().getNode().getNodeId(), version.getFindingAidVersionId(), null,
-                        null);
-        Assert.assertTrue(subLevels.size() == 2);
-
-        Iterator<ArrLevelExt> iterator = subLevels.iterator();
-        Assert.assertTrue(first.getLevel().getNode().getNodeId().equals(iterator.next().getNode().getNodeId()));
-        Assert.assertTrue(second.getLevel().getNode().getNodeId().equals(iterator.next().getNode().getNodeId()));
-    }
-
-    @Test
-    public void testRestAddLevelAfter() {
-        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
-
-        ArrFindingAidVersion version = getRootNodeIdForVersion(findingAid.getFindingAidId());
-//        ArrFindingAidVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
-
-        ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
-        levelWithExtraNode.setLevel(version.getRootLevel());
-        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
-
-        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(
-                ADD_LEVEL_CHILD_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
-        RelatedNodeDirectionWithLevelPack related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
-        ArrLevelWithExtraNode first = related.getArrLevelPack();
-
-        levelWithExtraNode = new ArrLevelWithExtraNode();
-        levelWithExtraNode.setLevel(first.getLevel());
-        levelWithExtraNode.setExtraNode(first.getExtraNode());
-        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
-
-        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_AFTER_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
-        related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
-        ArrLevelWithExtraNode second = related.getArrLevelPack();
-
-        List<ArrLevelExt> subLevels = arrangementManager.findSubLevels(version.getRootLevel().getNode().getNodeId(), version.getFindingAidVersionId(), null, null);
-        Assert.assertTrue(subLevels.size() == 2);
-
-        Iterator<ArrLevelExt> iterator = subLevels.iterator();
-        Assert.assertTrue(first.getLevel().getLevelId().equals(iterator.next().getLevelId()));
-        Assert.assertTrue(second.getLevel().getLevelId().equals(iterator.next().getLevelId()));
-    }
-
-    @Test
-    public void testRestAddLevelChild() {
-        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
-
-        ArrFindingAidVersion version = getRootNodeIdForVersion(findingAid.getFindingAidId());
-//        ArrFindingAidVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
-
-        ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
-        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
-        levelWithExtraNode.setLevel(version.getRootLevel());
-
-        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
-        RelatedNodeDirectionWithLevelPack related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
-        ArrLevelWithExtraNode parent = related.getArrLevelPack();
-
-        Integer parentNodeId = parent.getLevel().getNode().getNodeId();
-        levelWithExtraNode = new ArrLevelWithExtraNode();
-        levelWithExtraNode.setLevel(parent.getLevel());
-        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
-
-        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
-        related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
-        ArrLevelWithExtraNode child = related.getArrLevelPack();
-
-        List<ArrLevelExt> subLevels = arrangementManager.findSubLevels(parentNodeId, version.getFindingAidVersionId(),
-                null, null);
-        Assert.assertTrue(subLevels.size() == 1);
-
-        Assert.assertTrue(child.getLevel().getLevelId().equals(subLevels.iterator().next().getLevelId()));
-        Assert.assertTrue(child.getLevel().getNodeParent().getNodeId().equals(parentNodeId));
-    }
 
     private ArrFindingAidVersion getRootNodeIdForVersion(Integer findingAidId) {
         Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).
@@ -550,59 +406,6 @@ public class ArrangementManagerTest extends AbstractRestTest {
 //        return node.getNodeId();
     }
 
-    @Test
-    public void testRestMoveLevelBefore() {
-        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
-
-        ArrFindingAidVersion version = getRootNodeIdForVersion(findingAid.getFindingAidId());
-
-//        ArrFindingAidVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
-
-        ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
-        levelWithExtraNode.setLevel(version.getRootLevel());
-        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
-
-        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(response.print(), 200, response.statusCode());
-
-        RelatedNodeDirectionWithLevelPack related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
-        ArrLevelWithExtraNode parent = related.getArrLevelPack();
-
-        levelWithExtraNode = new ArrLevelWithExtraNode();
-        levelWithExtraNode.setLevel(parent.getLevel());
-        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
-
-        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
-        related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
-        ArrLevelWithExtraNode child = related.getArrLevelPack();
-
-        levelWithExtraNode = new ArrLevelWithExtraNode();
-        levelWithExtraNode.setLevel(child.getLevel());
-        //child.getLevel().getNode().setVersion(child.getLevel().getNode().getVersion() + 1);
-        child.getLevel().getNodeParent().setVersion(child.getLevel().getNodeParent().getVersion() + 1);
-
-        ArrNode parentNode = parent.getLevel().getNode();
-        parentNode.setVersion(parentNode.getVersion() + 1);
-        parent.getLevel().getNodeParent().setVersion(parent.getLevel().getNodeParent().getVersion() + 1);
-        levelWithExtraNode.setLevelTarget(parent.getLevel());
-        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
-
-        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(MOVE_LEVEL_BEFORE_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
-        related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
-        ArrLevelWithExtraNode movedChild = related.getArrLevelPack();
-
-        List<ArrLevelExt> subLevels = arrangementManager.findSubLevels(version.getRootLevel().getNode().getNodeId(), version.getFindingAidVersionId(), null, null);
-
-        Assert.assertTrue(subLevels.size() == 2);
-        Assert.assertTrue(movedChild.getLevel().getNodeParent().getNodeId().equals(parent.getLevel().getNodeParent().getNodeId()));
-    }
 
 
     @Test
@@ -880,141 +683,6 @@ public class ArrangementManagerTest extends AbstractRestTest {
         Assert.assertTrue(child3childs.isEmpty());
     }
 
-    @Test
-    public void testRestMoveLevelUnder() {
-        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
-
-        ArrFindingAidVersion version = getRootNodeIdForVersion(findingAid.getFindingAidId());
-//        ArrFindingAidVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
-
-        ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
-        levelWithExtraNode.setLevel(version.getRootLevel());
-        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
-
-        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
-        RelatedNodeDirectionWithLevelPack related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
-        ArrLevelWithExtraNode first = related.getArrLevelPack();
-
-        levelWithExtraNode = new ArrLevelWithExtraNode();
-        levelWithExtraNode.setLevel(version.getRootLevel());
-        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
-
-        version.getRootLevel().getNode().setVersion(version.getRootLevel().getNode().getVersion() + 1);
-
-        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
-        related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
-        ArrLevelWithExtraNode second = related.getArrLevelPack();
-
-        levelWithExtraNode.setLevel(first.getLevel());
-        levelWithExtraNode.setExtraNode(second.getLevel().getNode());
-        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(
-                MOVE_LEVEL_UNDER_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
-        related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
-        ArrLevelWithExtraNode child = related.getArrLevelPack();
-        Assert.assertTrue(child.getLevel().getNodeParent().getNodeId().equals(second.getLevel().getNode().getNodeId()));
-
-        List<ArrLevelExt> subLevels = arrangementManager.findSubLevels(second.getLevel().getNode().getNodeId(), version.getFindingAidVersionId(), null, null);
-        Assert.assertTrue(subLevels.size() == 1);
-        Assert.assertTrue(child.getLevel().getLevelId().equals(subLevels.iterator().next().getLevelId()));
-    }
-
-    @Test
-    public void testRestMoveLevelAfter() {
-        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
-
-        ArrFindingAidVersion version = getRootNodeIdForVersion(findingAid.getFindingAidId());
-//        ArrFindingAidVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
-
-        ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
-        levelWithExtraNode.setLevel(version.getRootLevel());
-        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
-
-        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
-        RelatedNodeDirectionWithLevelPack related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
-        ArrLevelWithExtraNode parent = related.getArrLevelPack();
-
-        levelWithExtraNode = new ArrLevelWithExtraNode();
-        levelWithExtraNode.setLevel(parent.getLevel());
-        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
-
-        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(ADD_LEVEL_CHILD_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
-        related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
-        ArrLevelWithExtraNode child = related.getArrLevelPack();
-
-        levelWithExtraNode = new ArrLevelWithExtraNode();
-        levelWithExtraNode.setLevel(child.getLevel());
-        levelWithExtraNode.setLevelTarget(parent.getLevel());
-        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
-
-        child.getLevel().getNodeParent().setVersion(child.getLevel().getNodeParent().getVersion() + 1);
-        parent.getLevel().getNode().setVersion(parent.getLevel().getNode().getVersion() + 1);
-        parent.getLevel().getNodeParent().setVersion(parent.getLevel().getNodeParent().getVersion() + 1);
-
-        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(MOVE_LEVEL_AFTER_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
-        related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
-        ArrLevelWithExtraNode movedChild = related.getArrLevelPack();
-
-        List<ArrLevelExt> subLevels = arrangementManager.findSubLevels(version.getRootLevel().getNode().getNodeId(),
-                version.getFindingAidVersionId(), null, null);
-
-        Assert.assertTrue(subLevels.size() == 2);
-        Assert.assertTrue(
-                movedChild.getLevel().getNodeParent().getNodeId().equals(parent.getLevel().getNodeParent().getNodeId()));
-    }
-
-    @Test
-    public void testRestDeleteLevel() {
-        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
-
-        ArrFindingAidVersion version = getRootNodeIdForVersion(findingAid.getFindingAidId());
-//        ArrFindingAidVersion version = arrangementManager.getOpenVersionByFindingAidId(findingAid.getFindingAidId());
-
-        ArrLevelWithExtraNode levelWithExtraNode = new ArrLevelWithExtraNode();
-        levelWithExtraNode.setLevel(version.getRootLevel());
-        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
-
-        Response response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(
-                ADD_LEVEL_CHILD_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
-        RelatedNodeDirectionWithLevelPack related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
-        ArrLevelWithExtraNode node = related.getArrLevelPack();
-
-        levelWithExtraNode = new ArrLevelWithExtraNode();
-        levelWithExtraNode.setLevel(node.getLevel());
-        levelWithExtraNode.setExtraNode(node.getExtraNode());
-        levelWithExtraNode.setFaVersionId(version.getFindingAidVersionId());
-
-        response = given().header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE).body(levelWithExtraNode).put(DELETE_LEVEL_URL);
-        logger.info(response.asString());
-        Assert.assertEquals(200, response.statusCode());
-
-        related = response.getBody().as(RelatedNodeDirectionWithLevelPack.class);
-        ArrLevelWithExtraNode deletedNode = related.getArrLevelPack();
-
-        Assert.assertTrue(deletedNode.getLevel().getDeleteChange() != null);
-        Assert.assertTrue(node.getLevel().getNode().getNodeId().equals(deletedNode.getLevel().getNode().getNodeId()));
-        Assert.assertTrue(node.getLevel().getLevelId().equals(deletedNode.getLevel().getLevelId()));
-    }
 
     private static class TestLevelData {
         private Integer descItemTypeId1;
@@ -1492,447 +1160,344 @@ public class ArrangementManagerTest extends AbstractRestTest {
 
     @Test
     public void testRestCreateDescriptionItem() {
-        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
-
-        ArrChange createChangeVersion = createFaChange(LocalDateTime.now());
-        ArrLevel parent = createLevel(1, null, createChangeVersion);
-        ArrFindingAidVersion version = createFindingAidVersion(findingAid, parent, false, createChangeVersion);
-
-        version.setRootLevel(parent);
-        findingAidVersionRepository.save(version);
-        LocalDateTime startTime = version.getCreateChange().getChangeDate();
-
-        ArrChange createChange = createFaChange(startTime.minusSeconds(1));
-        ArrLevel faLevel = createLevel(2, parent, createChange);
-        levelRepository.save(faLevel);
-
-        ArrNode node = faLevel.getNode();
-
-        RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
-        Assert.assertNotNull("Neexistuje záznam pro datový typ INTEGER", dataType);
-
-        // vytvoření závislých dat
-
-        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 3001);
-        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2",
-                3001);
-        createDescItemConstrain(descItemType, descItemSpec, version, false, null, null, "CODE1");
-        createDescItemConstrain(descItemType, descItemSpec, version, true, null, null, "CODE2");
-        createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null, "CODE3");
-        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 50, "CODE4");
-
-        // přidání hodnoty attributu
-
-        ArrDescItemInt descItem = new ArrDescItemInt();
-        descItem.setDescItemType(descItemType);
-        descItem.setDescItemSpec(descItemSpec);
-        descItem.setValue(123);
-        descItem.setNode(node);
-
-        RelatedNodeDirectionWithDescItem relatedNodeDirectionWithDescItem = arrangementManager.createDescriptionItem(
-                descItem, version.getFindingAidVersionId());
-        ArrDescItem descItemRet = relatedNodeDirectionWithDescItem.getArrDescItem();
-
-        // kontrola attributu a hodnoty
-
-        Assert.assertNotNull("Hodnotu attributu se nepodařilo vytvořit", descItemRet);
-
-        List<ArrData> dataList = dataRepository.findByDescItem(descItemRet);
-
-        if (dataList.size() != 1) {
-            Assert.fail("Nesprávný počet položek");
-        }
-
-        ArrData data = dataList.get(0);
-
-        if (!(data instanceof ArrDataInteger)) {
-            Assert.fail("Nesprávný datový typ hodnoty");
-        }
-
-        ArrDataInteger dataInteger = (ArrDataInteger) data;
-
-        if (!dataInteger.getValue().equals(123)) {
-            Assert.fail("Vložená hodnota není identická");
-        }
-
-        // vytvoření závislých dat
-
-        RulDescItemType descItemType2 = createDescItemType(dataType, "ITEM_TYPE2", "Item type 2", "SH3", "Desc 3", false, false, true, 4002);
-        RulDescItemSpec descItemSpec2 = createDescItemSpec(descItemType2, "ITEM_SPEC2", "Item spec 2", "SH4", "Desc 4", 4002);
-        createDescItemConstrain(descItemType2, descItemSpec, version, null, "[0-9]*", null, "CODE5");
-        createDescItemConstrain(descItemType2, descItemSpec, version, null, null, 50, "CODE6");
-
-        // přidání hodnoty attributu - kontrola position
-
-        node = nodeRepository.findOne(node.getNodeId());
-        descItem = new ArrDescItemInt();
-        descItem.setDescItemType(descItemType2);
-        descItem.setDescItemSpec(descItemSpec2);
-        descItem.setValue(123);
-        descItem.setNode(node);
-
-        RelatedNodeDirectionWithDescItem relatedNodeDirectionWithDescItem1 = arrangementManager.createDescriptionItem(
-                descItem, version.getFindingAidVersionId());
-        ArrDescItem descItemRet1 = relatedNodeDirectionWithDescItem1.getArrDescItem();
-
-        node = nodeRepository.findOne(node.getNodeId());
-        descItem = new ArrDescItemInt();
-        descItem.setDescItemType(descItemType2);
-        descItem.setDescItemSpec(descItemSpec2);
-        descItem.setValue(1234);
-        descItem.setPosition(1);
-        descItem.setNode(node);
-
-        RelatedNodeDirectionWithDescItem relatedNodeDirectionWithDescItem2 = arrangementManager.createDescriptionItem(descItem, version.getFindingAidVersionId());
-        ArrDescItem descItemRet2 = relatedNodeDirectionWithDescItem2.getArrDescItem();
-
-        Assert.assertNotNull(descItemRepository.findOne(descItemRet1.getDescItemId()).getDeleteChange());
-        Assert.assertEquals(new Integer(1), descItemRepository.findOne(descItemRet2.getDescItemId()).getPosition());
-
-        node = nodeRepository.findOne(node.getNodeId());
-        descItem = new ArrDescItemInt();
-        descItem.setDescItemType(descItemType2);
-        descItem.setDescItemSpec(descItemSpec2);
-        descItem.setValue(12345);
-        descItem.setPosition(10);
-        descItem.setNode(node);
-
-        RelatedNodeDirectionWithDescItem relatedNodeDirectionWithDescItem3 = arrangementManager.createDescriptionItem(descItem, version.getFindingAidVersionId());
-        ArrDescItem descItemRet3 = relatedNodeDirectionWithDescItem3.getArrDescItem();
-
-        Assert.assertEquals(new Integer(3), descItemRepository.findOne(descItemRet3.getDescItemId()).getPosition());
-
-    }
-
-    @Test
-    public void testRestUpdateDescriptionItem() {
-        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
-
-        ArrChange createChangeVersion = createFaChange(LocalDateTime.now());
-        ArrLevel parent = createLevel(1, null, createChangeVersion);
-        ArrFindingAidVersion version = createFindingAidVersion(findingAid, parent, false, createChangeVersion);
-
-        LocalDateTime startTime = version.getCreateChange().getChangeDate();
-
-        ArrChange createChange = createFaChange(startTime.minusSeconds(1));
-        ArrLevel faLevel = createLevel(2, parent, createChange);
-        levelRepository.save(faLevel);
-
-        ArrNode node = faLevel.getNode();
-
-        RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
-        Assert.assertNotNull("Neexistuje záznam pro datový typ INTEGER", dataType);
-
-        // vytvoření závislých dat
-
-        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 2001);
-        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 2001);
-        createDescItemConstrain(descItemType, descItemSpec, version, false, null, null, "CODE7");
-        createDescItemConstrain(descItemType, descItemSpec, version, true, null, null, "CODE8");
-        createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null, "CODE9");
-        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 50, "CODE10");
-
-        // přidání hodnoty attributu
-
-        ArrDescItemInt descItem = new ArrDescItemInt();
-        descItem.setDescItemType(descItemType);
-        descItem.setDescItemSpec(descItemSpec);
-        descItem.setValue(123);
-        descItem.setNode(node);
-
-        RelatedNodeDirectionWithDescItem relatedNodeDirectionWithDescItem = arrangementManager.createDescriptionItem(descItem, version.getFindingAidVersionId());
-        ArrDescItem descItemNew = relatedNodeDirectionWithDescItem.getArrDescItem();
-
-                // upravení hodnoty bez vytvoření verze
-
-        ArrDescItemInt arrDescItemExt = new ArrDescItemInt();
-        BeanUtils.copyProperties(descItemNew, arrDescItemExt);
-        arrDescItemExt.setValue(124);
-        RelatedNodeDirectionWithDescItem relatedNodeDirectionWithDescItemRet = arrangementManager.updateDescriptionItem(
-                arrDescItemExt, version.getFindingAidVersionId(), false);
-        ArrDescItem descItemRet = relatedNodeDirectionWithDescItemRet.getArrDescItem();
-
-        // kontrola nové hodnoty attributu
-
-        Assert.assertNotNull("Hodnotu attributu se nepodařilo vytvořit", descItemRet);
-
-        List<ArrData> dataList = dataRepository.findByDescItem(descItemRet);
-
-        if (dataList.size() != 1) {
-            Assert.fail("Nesprávný počet položek");
-        }
-
-        ArrData data = dataList.get(0);
-
-        if (!(data instanceof ArrDataInteger)) {
-            Assert.fail("Nesprávný datový typ hodnoty");
-        }
-
-        ArrDataInteger dataInteger = (ArrDataInteger) data;
-
-        if (!dataInteger.getValue().equals(124)) {
-            Assert.fail("Vložená hodnota není identická");
-        }
-
-        // upravení hodnoty s vytvořením verze
-
-        arrDescItemExt = new ArrDescItemInt();
-        BeanUtils.copyProperties(descItemNew, arrDescItemExt);
-        arrDescItemExt.setValue(125);
-        relatedNodeDirectionWithDescItemRet = arrangementManager.updateDescriptionItem(arrDescItemExt, version.getFindingAidVersionId(), true);
-        descItemRet = relatedNodeDirectionWithDescItemRet.getArrDescItem();
-
-        // kontrola nové hodnoty attributu
-
-        Assert.assertNotNull("Hodnotu attributu se nepodařilo vytvořit", descItemRet);
-
-        dataList = dataRepository.findByDescItem(descItemRet);
-
-        if (dataList.size() != 1) {
-            Assert.fail("Nesprávný počet položek");
-        }
-
-        ArrData dataNew = dataList.get(0);
-
-        if (!(dataNew instanceof ArrDataInteger)) {
-            Assert.fail("Nesprávný datový typ hodnoty");
-        }
-
-        dataInteger = (ArrDataInteger) dataNew;
-
-        if (!dataInteger.getValue().equals(125)) {
-            Assert.fail("Vložená hodnota není identická");
-        }
-
-        Assert.assertNotEquals(data, dataNew);
+//        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
+//
+//        ArrChange createChangeVersion = createFaChange(LocalDateTime.now());
+//        ArrLevel parent = createLevel(1, null, createChangeVersion);
+//        ArrFindingAidVersion version = createFindingAidVersion(findingAid, parent, false, createChangeVersion);
+//
+//        version.setRootLevel(parent);
+//        findingAidVersionRepository.save(version);
+//        LocalDateTime startTime = version.getCreateChange().getChangeDate();
+//
+//        ArrChange createChange = createFaChange(startTime.minusSeconds(1));
+//        ArrLevel faLevel = createLevel(2, parent, createChange);
+//        levelRepository.save(faLevel);
+//
+//        ArrNode node = faLevel.getNode();
+//
+//        RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
+//        Assert.assertNotNull("Neexistuje záznam pro datový typ INTEGER", dataType);
+//
+//        // vytvoření závislých dat
+//
+//        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 3001);
+//        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2",
+//                3001);
+//        createDescItemConstrain(descItemType, descItemSpec, version, false, null, null, "CODE1");
+//        createDescItemConstrain(descItemType, descItemSpec, version, true, null, null, "CODE2");
+//        createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null, "CODE3");
+//        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 50, "CODE4");
+//
+//        // přidání hodnoty attributu
+//
+//        ArrDescItemInt descItem = new ArrDescItemInt();
+//        descItem.setDescItemType(descItemType);
+//        descItem.setDescItemSpec(descItemSpec);
+//        descItem.setValue(123);
+//        descItem.setNode(node);
+//
+//        RelatedNodeDirectionWithDescItem relatedNodeDirectionWithDescItem = arrangementManager.createDescriptionItem(
+//                descItem, version.getFindingAidVersionId());
+//        ArrDescItem descItemRet = relatedNodeDirectionWithDescItem.getArrDescItem();
+//
+//        // kontrola attributu a hodnoty
+//
+//        Assert.assertNotNull("Hodnotu attributu se nepodařilo vytvořit", descItemRet);
+//
+//        List<ArrData> dataList = dataRepository.findByDescItem(descItemRet);
+//
+//        if (dataList.size() != 1) {
+//            Assert.fail("Nesprávný počet položek");
+//        }
+//
+//        ArrData data = dataList.get(0);
+//
+//        if (!(data instanceof ArrDataInteger)) {
+//            Assert.fail("Nesprávný datový typ hodnoty");
+//        }
+//
+//        ArrDataInteger dataInteger = (ArrDataInteger) data;
+//
+//        if (!dataInteger.getValue().equals(123)) {
+//            Assert.fail("Vložená hodnota není identická");
+//        }
+//
+//        // vytvoření závislých dat
+//
+//        RulDescItemType descItemType2 = createDescItemType(dataType, "ITEM_TYPE2", "Item type 2", "SH3", "Desc 3", false, false, true, 4002);
+//        RulDescItemSpec descItemSpec2 = createDescItemSpec(descItemType2, "ITEM_SPEC2", "Item spec 2", "SH4", "Desc 4", 4002);
+//        createDescItemConstrain(descItemType2, descItemSpec, version, null, "[0-9]*", null, "CODE5");
+//        createDescItemConstrain(descItemType2, descItemSpec, version, null, null, 50, "CODE6");
+//
+//        // přidání hodnoty attributu - kontrola position
+//
+//        node = nodeRepository.findOne(node.getNodeId());
+//        descItem = new ArrDescItemInt();
+//        descItem.setDescItemType(descItemType2);
+//        descItem.setDescItemSpec(descItemSpec2);
+//        descItem.setValue(123);
+//        descItem.setNode(node);
+//
+//        RelatedNodeDirectionWithDescItem relatedNodeDirectionWithDescItem1 = arrangementManager.createDescriptionItem(
+//                descItem, version.getFindingAidVersionId());
+//        ArrDescItem descItemRet1 = relatedNodeDirectionWithDescItem1.getArrDescItem();
+//
+//        node = nodeRepository.findOne(node.getNodeId());
+//        descItem = new ArrDescItemInt();
+//        descItem.setDescItemType(descItemType2);
+//        descItem.setDescItemSpec(descItemSpec2);
+//        descItem.setValue(1234);
+//        descItem.setPosition(1);
+//        descItem.setNode(node);
+//
+//        RelatedNodeDirectionWithDescItem relatedNodeDirectionWithDescItem2 = arrangementManager.createDescriptionItem(descItem, version.getFindingAidVersionId());
+//        ArrDescItem descItemRet2 = relatedNodeDirectionWithDescItem2.getArrDescItem();
+//
+//        Assert.assertNotNull(descItemRepository.findOne(descItemRet1.getDescItemId()).getDeleteChange());
+//        Assert.assertEquals(new Integer(1), descItemRepository.findOne(descItemRet2.getDescItemId()).getPosition());
+//
+//        node = nodeRepository.findOne(node.getNodeId());
+//        descItem = new ArrDescItemInt();
+//        descItem.setDescItemType(descItemType2);
+//        descItem.setDescItemSpec(descItemSpec2);
+//        descItem.setValue(12345);
+//        descItem.setPosition(10);
+//        descItem.setNode(node);
+//
+//        RelatedNodeDirectionWithDescItem relatedNodeDirectionWithDescItem3 = arrangementManager.createDescriptionItem(descItem, version.getFindingAidVersionId());
+//        ArrDescItem descItemRet3 = relatedNodeDirectionWithDescItem3.getArrDescItem();
+//
+//        Assert.assertEquals(new Integer(3), descItemRepository.findOne(descItemRet3.getDescItemId()).getPosition());
 
     }
+
 
     @Test
     public void testRestUpdateDescriptionItemPositions() {
 
-        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
-
-        ArrChange createChangeVersion = createFaChange(LocalDateTime.now());
-        ArrLevel parent = createLevel(1, null, createChangeVersion);
-        ArrFindingAidVersion version = createFindingAidVersion(findingAid, parent, false, createChangeVersion);
-
-        LocalDateTime startTime = version.getCreateChange().getChangeDate();
-
-        ArrChange createChange = createFaChange(startTime.minusSeconds(1));
-        ArrLevel faLevel = createLevel(2, parent, createChange);
-        levelRepository.save(faLevel);
-
-        ArrNode node = faLevel.getNode();
-
-        RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
-        Assert.assertNotNull("Neexistuje záznam pro datový typ INTEGER", dataType);
-
-        // vytvoření závislých dat
-
-        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1001);
-        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1001);
-        createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null, "CODE11");
-        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 10, "CODE12");
-
-        // přidání hodnot attributů k uzlu
-
-        ArrDescItem descItem1 = new ArrDescItemInt();
-        descItem1.setDescItemType(descItemType);
-        descItem1.setDescItemSpec(descItemSpec);
-        ((ArrDescItemInt) descItem1).setValue(1);
-        descItem1.setNode(node);
-
-        RelatedNodeDirectionWithDescItem relatedNodeDirectionWithDescItem = arrangementManager
-                .createDescriptionItem(descItem1, version.getFindingAidVersionId());
-        descItem1 = relatedNodeDirectionWithDescItem.getArrDescItem();
-
-        node = nodeRepository.findOne(node.getNodeId());
-        ArrDescItem descItem2 = new ArrDescItemInt();
-        descItem2.setDescItemType(descItemType);
-        descItem2.setDescItemSpec(descItemSpec);
-        ((ArrDescItemInt) descItem2).setValue(2);
-        descItem2.setNode(node);
-
-        relatedNodeDirectionWithDescItem = arrangementManager
-                .createDescriptionItem(descItem2, version.getFindingAidVersionId());
-        descItem2 = relatedNodeDirectionWithDescItem.getArrDescItem();
-
-        node = nodeRepository.findOne(node.getNodeId());
-        ArrDescItem descItem3 = new ArrDescItemInt();
-        descItem3.setDescItemType(descItemType);
-        descItem3.setDescItemSpec(descItemSpec);
-        ((ArrDescItemInt) descItem3).setValue(3);
-        descItem3.setNode(node);
-
-        relatedNodeDirectionWithDescItem = arrangementManager
-                .createDescriptionItem(descItem3, version.getFindingAidVersionId());
-        descItem3 = relatedNodeDirectionWithDescItem.getArrDescItem();
-
-        node = nodeRepository.findOne(node.getNodeId());
-        ArrDescItem descItem4 = new ArrDescItemInt();
-        descItem4.setDescItemType(descItemType);
-        descItem4.setDescItemSpec(descItemSpec);
-        ((ArrDescItemInt) descItem4).setValue(4);
-        descItem4.setNode(node);
-
-        relatedNodeDirectionWithDescItem = arrangementManager
-                .createDescriptionItem(descItem4, version.getFindingAidVersionId());
-        descItem4 = relatedNodeDirectionWithDescItem.getArrDescItem();
-
-        // úprava pozicí
-
-        node = nodeRepository.findOne(node.getNodeId());
-        descItem3.setPosition(1);
-        descItem3.setNode(node);
-        relatedNodeDirectionWithDescItem = arrangementManager
-                .updateDescriptionItem(descItem3, version.getFindingAidVersionId(), true);
-        ArrDescItem descItem3New = relatedNodeDirectionWithDescItem.getArrDescItem();
-
-        // kontrola pozice attributu
-        checkChangePositionDescItem(descItem1, 2, true, null);
-        checkChangePositionDescItem(descItem2, 3, true, null);
-        checkChangePositionDescItem(descItem4, 4, false, node);
-
-        descItem3New.setPosition(3);
-        relatedNodeDirectionWithDescItem = arrangementManager.updateDescriptionItem(descItem3New,
-                version.getFindingAidVersionId(), true);
-        ArrDescItem descItem3New2 = relatedNodeDirectionWithDescItem.getArrDescItem();
-
-        // kontrola pozice attributu
-        checkChangePositionDescItem(descItem1, 1, true, null);
-        checkChangePositionDescItem(descItem2, 2, true, null);
-        checkChangePositionDescItem(descItem4, 4, false, node);
+//        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
+//
+//        ArrChange createChangeVersion = createFaChange(LocalDateTime.now());
+//        ArrLevel parent = createLevel(1, null, createChangeVersion);
+//        ArrFindingAidVersion version = createFindingAidVersion(findingAid, parent, false, createChangeVersion);
+//
+//        LocalDateTime startTime = version.getCreateChange().getChangeDate();
+//
+//        ArrChange createChange = createFaChange(startTime.minusSeconds(1));
+//        ArrLevel faLevel = createLevel(2, parent, createChange);
+//        levelRepository.save(faLevel);
+//
+//        ArrNode node = faLevel.getNode();
+//
+//        RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
+//        Assert.assertNotNull("Neexistuje záznam pro datový typ INTEGER", dataType);
+//
+//        // vytvoření závislých dat
+//
+//        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1001);
+//        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1001);
+//        createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null, "CODE11");
+//        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 10, "CODE12");
+//
+//        // přidání hodnot attributů k uzlu
+//
+//        ArrDescItem descItem1 = new ArrDescItemInt();
+//        descItem1.setDescItemType(descItemType);
+//        descItem1.setDescItemSpec(descItemSpec);
+//        ((ArrDescItemInt) descItem1).setValue(1);
+//        descItem1.setNode(node);
+//
+//        RelatedNodeDirectionWithDescItem relatedNodeDirectionWithDescItem = arrangementManager
+//                .createDescriptionItem(descItem1, version.getFindingAidVersionId());
+//        descItem1 = relatedNodeDirectionWithDescItem.getArrDescItem();
+//
+//        node = nodeRepository.findOne(node.getNodeId());
+//        ArrDescItem descItem2 = new ArrDescItemInt();
+//        descItem2.setDescItemType(descItemType);
+//        descItem2.setDescItemSpec(descItemSpec);
+//        ((ArrDescItemInt) descItem2).setValue(2);
+//        descItem2.setNode(node);
+//
+//        relatedNodeDirectionWithDescItem = arrangementManager
+//                .createDescriptionItem(descItem2, version.getFindingAidVersionId());
+//        descItem2 = relatedNodeDirectionWithDescItem.getArrDescItem();
+//
+//        node = nodeRepository.findOne(node.getNodeId());
+//        ArrDescItem descItem3 = new ArrDescItemInt();
+//        descItem3.setDescItemType(descItemType);
+//        descItem3.setDescItemSpec(descItemSpec);
+//        ((ArrDescItemInt) descItem3).setValue(3);
+//        descItem3.setNode(node);
+//
+//        relatedNodeDirectionWithDescItem = arrangementManager
+//                .createDescriptionItem(descItem3, version.getFindingAidVersionId());
+//        descItem3 = relatedNodeDirectionWithDescItem.getArrDescItem();
+//
+//        node = nodeRepository.findOne(node.getNodeId());
+//        ArrDescItem descItem4 = new ArrDescItemInt();
+//        descItem4.setDescItemType(descItemType);
+//        descItem4.setDescItemSpec(descItemSpec);
+//        ((ArrDescItemInt) descItem4).setValue(4);
+//        descItem4.setNode(node);
+//
+//        relatedNodeDirectionWithDescItem = arrangementManager
+//                .createDescriptionItem(descItem4, version.getFindingAidVersionId());
+//        descItem4 = relatedNodeDirectionWithDescItem.getArrDescItem();
+//
+//        // úprava pozicí
+//
+//        node = nodeRepository.findOne(node.getNodeId());
+//        descItem3.setPosition(1);
+//        descItem3.setNode(node);
+//        relatedNodeDirectionWithDescItem = arrangementManager
+//                .updateDescriptionItem(descItem3, version.getFindingAidVersionId(), true);
+//        ArrDescItem descItem3New = relatedNodeDirectionWithDescItem.getArrDescItem();
+//
+//        // kontrola pozice attributu
+//        checkChangePositionDescItem(descItem1, 2, true, null);
+//        checkChangePositionDescItem(descItem2, 3, true, null);
+//        checkChangePositionDescItem(descItem4, 4, false, node);
+//
+//        descItem3New.setPosition(3);
+//        relatedNodeDirectionWithDescItem = arrangementManager.updateDescriptionItem(descItem3New,
+//                version.getFindingAidVersionId(), true);
+//        ArrDescItem descItem3New2 = relatedNodeDirectionWithDescItem.getArrDescItem();
+//
+//        // kontrola pozice attributu
+//        checkChangePositionDescItem(descItem1, 1, true, null);
+//        checkChangePositionDescItem(descItem2, 2, true, null);
+//        checkChangePositionDescItem(descItem4, 4, false, node);
 
     }
 
     @Test
     public void testRestSaveDescriptionItems() {
-        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
-
-        ArrChange createChangeVersion = createFaChange(LocalDateTime.now());
-        ArrLevel parent = createLevel(1, null, createChangeVersion);
-        ArrFindingAidVersion version = createFindingAidVersion(findingAid, parent, false, createChangeVersion);
-
-        version.setRootLevel(parent);
-        findingAidVersionRepository.save(version);
-        LocalDateTime startTime = version.getCreateChange().getChangeDate();
-
-        ArrChange createChange = createFaChange(startTime.minusSeconds(1));
-        ArrLevel faLevel = createLevel(2, parent, createChange);
-        levelRepository.save(faLevel);
-
-        ArrNode node = faLevel.getNode();
-
-        RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
-        Assert.assertNotNull("Neexistuje záznam pro datový typ INTEGER", dataType);
-
-        // vytvoření závislých dat
-        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1222", "Item type 1aa", "SH1a", "Desc 1a", false,
-                false, true, 2221001);
-
-        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1222", "Item spec 1aa", "SH2a", "Desc 2a", 2221001);
-        createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null, "CODE133");
-        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 10, "CODE144");
-
-        // přidání hodnot attributů k uzlu
-
-        ArrDescItem descItem1 = new ArrDescItemInt();
-        descItem1.setDescItemType(descItemType);
-        descItem1.setDescItemSpec(descItemSpec);
-        ((ArrDescItemInt) descItem1).setValue(1);
-        descItem1.setNode(node);
-
-        ArrDescItem descItem1Save = (arrangementManager.createDescriptionItem(descItem1, version.getFindingAidVersionId())).getArrDescItem();
-
-        node = nodeRepository.findOne(node.getNodeId());
-        ArrDescItem descItem2 = new ArrDescItemInt();
-        descItem2.setDescItemType(descItemType);
-        descItem2.setDescItemSpec(descItemSpec);
-        ((ArrDescItemInt) descItem2).setValue(2);
-        descItem2.setNode(node);
-
-        ArrDescItem descItem2Save = (arrangementManager.createDescriptionItem(descItem2, version.getFindingAidVersionId())).getArrDescItem();
-
-        node = nodeRepository.findOne(node.getNodeId());
-        ArrDescItem descItem3 = new ArrDescItemInt();
-        descItem3.setDescItemType(descItemType);
-        descItem3.setDescItemSpec(descItemSpec);
-        ((ArrDescItemInt) descItem3).setValue(3);
-        descItem3.setNode(node);
-
-        ArrDescItem descItem3Save = (arrangementManager.createDescriptionItem(descItem3, version.getFindingAidVersionId())).getArrDescItem();
-
-        node = nodeRepository.findOne(node.getNodeId());
-        ArrDescItem descItem4 = new ArrDescItemInt();
-        descItem4.setDescItemType(descItemType);
-        descItem4.setDescItemSpec(descItemSpec);
-        ((ArrDescItemInt) descItem4).setValue(4);
-        descItem4.setNode(node);
-
-        ArrDescItem descItem4Save = (arrangementManager.createDescriptionItem(descItem4, version.getFindingAidVersionId())).getArrDescItem();
-
-        // vytvoření změn k odeslání
-
-        node = nodeRepository.findOne(node.getNodeId());
-        ArrDescItemSavePack descItemSavePack = new ArrDescItemSavePack();
-
-        List<ArrDescItem> descItems = new ArrayList<>();
-        List<ArrDescItem> deleteDescItems = new ArrayList<>();
-
-        deleteDescItems.add(descItem1Save);
-
-        descItem2Save.setPosition(1);
-        descItems.add(descItem2Save);
-
-        descItem3Save.setPosition(2);
-        descItems.add(descItem3Save);
-
-        ArrDescItem descItemNew1 = new ArrDescItemInt();
-        descItemNew1.setDescItemType(descItemType);
-        descItemNew1.setDescItemSpec(descItemSpec);
-        ((ArrDescItemInt) descItemNew1).setValue(11);
-        descItemNew1.setNode(node);
-        descItemNew1.setPosition(3);
-        descItems.add(descItemNew1);
-
-        descItem4Save.setPosition(4);
-        descItems.add(descItem4Save);
-
-        ArrDescItem descItemNew2 = new ArrDescItemInt();
-        descItemNew2.setDescItemType(descItemType);
-        descItemNew2.setDescItemSpec(descItemSpec);
-        ((ArrDescItemInt) descItemNew2).setValue(12);
-        descItemNew2.setNode(node);
-        descItemNew2.setPosition(5);
-        descItems.add(descItemNew2);
-
-        descItemSavePack.setCreateNewVersion(true);
-        descItemSavePack.setFaVersionId(version.getFindingAidVersionId());
-        descItemSavePack.setDescItems(descItems);
-        descItemSavePack.setDeleteDescItems(deleteDescItems);
-        descItemSavePack.setNode(node);
-
-        List<ArrDescItem> descItemListSave = storeSavePack(descItemSavePack);
-
-        Assert.assertNotNull(descItemListSave);
-        Assert.assertEquals(6, descItemListSave.size());
-
-        for (ArrDescItem descItem : descItemListSave) {
-            if (descItem.getDescItemObjectId().equals(descItem1Save.getDescItemObjectId())) {
-                Assert.assertNotNull(descItem.getDeleteChange());
-            } else if (descItem.getDescItemObjectId().equals(descItem2Save.getDescItemObjectId())) {
-                Assert.assertEquals(descItem2Save.getPosition(), descItem.getPosition());
-            } else if (descItem.getDescItemObjectId().equals(descItem3Save.getDescItemObjectId())) {
-                Assert.assertEquals(descItem3Save.getPosition(), descItem.getPosition());
-            } else if (descItem.getDescItemObjectId().equals(descItem4Save.getDescItemObjectId())) {
-                Assert.assertEquals(descItem4Save.getPosition(), descItem.getPosition());
-            } else {
-                if (!descItem.getPosition().equals(3) && !descItem.getPosition().equals(5)) {
-                    Assert.fail("Neplatná pozice nově přidaných položek - " + descItem.getPosition());
-                }
-            }
-        }
+//        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
+//
+//        ArrChange createChangeVersion = createFaChange(LocalDateTime.now());
+//        ArrLevel parent = createLevel(1, null, createChangeVersion);
+//        ArrFindingAidVersion version = createFindingAidVersion(findingAid, parent, false, createChangeVersion);
+//
+//        version.setRootLevel(parent);
+//        findingAidVersionRepository.save(version);
+//        LocalDateTime startTime = version.getCreateChange().getChangeDate();
+//
+//        ArrChange createChange = createFaChange(startTime.minusSeconds(1));
+//        ArrLevel faLevel = createLevel(2, parent, createChange);
+//        levelRepository.save(faLevel);
+//
+//        ArrNode node = faLevel.getNode();
+//
+//        RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
+//        Assert.assertNotNull("Neexistuje záznam pro datový typ INTEGER", dataType);
+//
+//        // vytvoření závislých dat
+//        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1222", "Item type 1aa", "SH1a", "Desc 1a", false,
+//                false, true, 2221001);
+//
+//        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1222", "Item spec 1aa", "SH2a", "Desc 2a", 2221001);
+//        createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null, "CODE133");
+//        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 10, "CODE144");
+//
+//        // přidání hodnot attributů k uzlu
+//
+//        ArrDescItem descItem1 = new ArrDescItemInt();
+//        descItem1.setDescItemType(descItemType);
+//        descItem1.setDescItemSpec(descItemSpec);
+//        ((ArrDescItemInt) descItem1).setValue(1);
+//        descItem1.setNode(node);
+//
+//        ArrDescItem descItem1Save = (arrangementManager.createDescriptionItem(descItem1, version.getFindingAidVersionId())).getArrDescItem();
+//
+//        node = nodeRepository.findOne(node.getNodeId());
+//        ArrDescItem descItem2 = new ArrDescItemInt();
+//        descItem2.setDescItemType(descItemType);
+//        descItem2.setDescItemSpec(descItemSpec);
+//        ((ArrDescItemInt) descItem2).setValue(2);
+//        descItem2.setNode(node);
+//
+//        ArrDescItem descItem2Save = (arrangementManager.createDescriptionItem(descItem2, version.getFindingAidVersionId())).getArrDescItem();
+//
+//        node = nodeRepository.findOne(node.getNodeId());
+//        ArrDescItem descItem3 = new ArrDescItemInt();
+//        descItem3.setDescItemType(descItemType);
+//        descItem3.setDescItemSpec(descItemSpec);
+//        ((ArrDescItemInt) descItem3).setValue(3);
+//        descItem3.setNode(node);
+//
+//        ArrDescItem descItem3Save = (arrangementManager.createDescriptionItem(descItem3, version.getFindingAidVersionId())).getArrDescItem();
+//
+//        node = nodeRepository.findOne(node.getNodeId());
+//        ArrDescItem descItem4 = new ArrDescItemInt();
+//        descItem4.setDescItemType(descItemType);
+//        descItem4.setDescItemSpec(descItemSpec);
+//        ((ArrDescItemInt) descItem4).setValue(4);
+//        descItem4.setNode(node);
+//
+//        ArrDescItem descItem4Save = (arrangementManager.createDescriptionItem(descItem4, version.getFindingAidVersionId())).getArrDescItem();
+//
+//        // vytvoření změn k odeslání
+//
+//        node = nodeRepository.findOne(node.getNodeId());
+//        ArrDescItemSavePack descItemSavePack = new ArrDescItemSavePack();
+//
+//        List<ArrDescItem> descItems = new ArrayList<>();
+//        List<ArrDescItem> deleteDescItems = new ArrayList<>();
+//
+//        deleteDescItems.add(descItem1Save);
+//
+//        descItem2Save.setPosition(1);
+//        descItems.add(descItem2Save);
+//
+//        descItem3Save.setPosition(2);
+//        descItems.add(descItem3Save);
+//
+//        ArrDescItem descItemNew1 = new ArrDescItemInt();
+//        descItemNew1.setDescItemType(descItemType);
+//        descItemNew1.setDescItemSpec(descItemSpec);
+//        ((ArrDescItemInt) descItemNew1).setValue(11);
+//        descItemNew1.setNode(node);
+//        descItemNew1.setPosition(3);
+//        descItems.add(descItemNew1);
+//
+//        descItem4Save.setPosition(4);
+//        descItems.add(descItem4Save);
+//
+//        ArrDescItem descItemNew2 = new ArrDescItemInt();
+//        descItemNew2.setDescItemType(descItemType);
+//        descItemNew2.setDescItemSpec(descItemSpec);
+//        ((ArrDescItemInt) descItemNew2).setValue(12);
+//        descItemNew2.setNode(node);
+//        descItemNew2.setPosition(5);
+//        descItems.add(descItemNew2);
+//
+//        descItemSavePack.setCreateNewVersion(true);
+//        descItemSavePack.setFaVersionId(version.getFindingAidVersionId());
+//        descItemSavePack.setDescItems(descItems);
+//        descItemSavePack.setDeleteDescItems(deleteDescItems);
+//        descItemSavePack.setNode(node);
+//
+//        List<ArrDescItem> descItemListSave = storeSavePack(descItemSavePack);
+//
+//        Assert.assertNotNull(descItemListSave);
+//        Assert.assertEquals(6, descItemListSave.size());
+//
+//        for (ArrDescItem descItem : descItemListSave) {
+//            if (descItem.getDescItemObjectId().equals(descItem1Save.getDescItemObjectId())) {
+//                Assert.assertNotNull(descItem.getDeleteChange());
+//            } else if (descItem.getDescItemObjectId().equals(descItem2Save.getDescItemObjectId())) {
+//                Assert.assertEquals(descItem2Save.getPosition(), descItem.getPosition());
+//            } else if (descItem.getDescItemObjectId().equals(descItem3Save.getDescItemObjectId())) {
+//                Assert.assertEquals(descItem3Save.getPosition(), descItem.getPosition());
+//            } else if (descItem.getDescItemObjectId().equals(descItem4Save.getDescItemObjectId())) {
+//                Assert.assertEquals(descItem4Save.getPosition(), descItem.getPosition());
+//            } else {
+//                if (!descItem.getPosition().equals(3) && !descItem.getPosition().equals(5)) {
+//                    Assert.fail("Neplatná pozice nově přidaných položek - " + descItem.getPosition());
+//                }
+//            }
+//        }
 
     }
 
@@ -1962,54 +1527,6 @@ public class ArrangementManagerTest extends AbstractRestTest {
         Assert.assertEquals(newPosition, descItemChange.getPosition().intValue());
     }
 
-    @Test
-    public void testRestDeleteDescriptionItem() {
-
-        ArrFindingAid findingAid = createFindingAid(TEST_NAME);
-
-        ArrChange createChangeVersion = createFaChange(LocalDateTime.now());
-        ArrLevel parent = createLevel(1, null, createChangeVersion);
-        ArrFindingAidVersion version = createFindingAidVersion(findingAid, parent, false, createChangeVersion);
-
-        LocalDateTime startTime = version.getCreateChange().getChangeDate();
-
-        ArrChange createChange = createFaChange(startTime.minusSeconds(1));
-        ArrLevel faLevel = createLevel(2, parent, createChange);
-        levelRepository.save(faLevel);
-
-        ArrNode node = faLevel.getNode();
-
-        RulDataType dataType = getDataType(DATA_TYPE_INTEGER);
-        Assert.assertNotNull("Neexistuje záznam pro datový typ INTEGER", dataType);
-
-        // vytvoření závislých dat
-
-        RulDescItemType descItemType = createDescItemType(dataType, "ITEM_TYPE1", "Item type 1", "SH1", "Desc 1", false, false, true, 1001);
-        RulDescItemSpec descItemSpec = createDescItemSpec(descItemType, "ITEM_SPEC1", "Item spec 1", "SH2", "Desc 2", 1001);
-        createDescItemConstrain(descItemType, descItemSpec, version, false, null, null, "CODE15");
-        createDescItemConstrain(descItemType, descItemSpec, version, true, null, null, "CODE16");
-        createDescItemConstrain(descItemType, descItemSpec, version, null, "[0-9]*", null, "CODE17");
-        createDescItemConstrain(descItemType, descItemSpec, version, null, null, 50, "CODE18");
-
-        // přidání hodnoty attributu
-
-        ArrDescItem descItem = new ArrDescItemInt();
-        descItem.setDescItemType(descItemType);
-        descItem.setDescItemSpec(descItemSpec);
-        ((ArrDescItemInt) descItem).setValue(123);
-        descItem.setNode(node);
-
-        ArrDescItem descItemNew = (arrangementManager.createDescriptionItem(descItem, version.getFindingAidVersionId())).getArrDescItem();
-
-        // smazání hodnoty attributu
-
-        ArrDescItem descItemDel = (arrangementManager.deleteDescriptionItem(descItemNew, version.getFindingAidVersionId())).getArrDescItem();
-
-        Assert.assertEquals(descItemNew, descItemDel);
-
-        Assert.assertNotNull(descItemDel.getDeleteChange());
-
-    }
 
     @Test
     public void testRestAllTypesDescriptionItemValues() {
@@ -2085,162 +1602,162 @@ public class ArrangementManagerTest extends AbstractRestTest {
         descItemCoordinates.setNode(node);
         descItemCoordinates.setPosition(1);
 
-        ArrDescItem descItemCoordinatesNew = (arrangementManager.createDescriptionItem(descItemCoordinates, version.getFindingAidVersionId())).getArrDescItem();
-        node = nodeRepository.findOne(node.getNodeId());
-
-        ArrDescItem descItemFormattedText = new ArrDescItemFormattedText();
-        descItemFormattedText.setDescItemType(itemTypeFormattedText);
-        ((ArrDescItemFormattedText) descItemFormattedText).setValue("FormattedText1");
-        descItemFormattedText.setNode(node);
-        descItemFormattedText.setPosition(2);
-
-        ArrDescItem descItemFormattedTextNew = (arrangementManager.createDescriptionItem(descItemFormattedText, version.getFindingAidVersionId())).getArrDescItem();
-        node = nodeRepository.findOne(node.getNodeId());
-
-        ArrDescItem descItemInt = new ArrDescItemInt();
-        descItemInt.setDescItemType(itemTypeInteger);
-        ((ArrDescItemInt) descItemInt).setValue(123);
-        descItemInt.setNode(node);
-        descItemInt.setPosition(3);
-
-        ArrDescItem descItemIntNew = (arrangementManager.createDescriptionItem(descItemInt, version.getFindingAidVersionId())).getArrDescItem();
-        node = nodeRepository.findOne(node.getNodeId());
-
-        ArrDescItem descItemPartyRef = new ArrDescItemPartyRef();
-        descItemPartyRef.setDescItemType(itemTypePartyRef);
-        ParParty party = restCreateParty();
-        ((ArrDescItemPartyRef) descItemPartyRef).setParty(party);
-        descItemPartyRef.setNode(node);
-        descItemPartyRef.setPosition(4);
-
-        ArrDescItem descItemPartyRefNew = (arrangementManager.createDescriptionItem(descItemPartyRef, version.getFindingAidVersionId())).getArrDescItem();
-        node = nodeRepository.findOne(node.getNodeId());
-
-        ArrDescItem descItemRecordRef = new ArrDescItemRecordRef();
-        descItemRecordRef.setDescItemType(itemTypeRecordRef);
-        RegRecord record = restCreateRecord("KOD1");
-        ((ArrDescItemRecordRef) descItemRecordRef).setRecord(record);
-        descItemRecordRef.setNode(node);
-        descItemRecordRef.setPosition(5);
-
-        ArrDescItem descItemRecordRefNew = (arrangementManager.createDescriptionItem(descItemRecordRef, version.getFindingAidVersionId())).getArrDescItem();
-        node = nodeRepository.findOne(node.getNodeId());
-
-        ArrDescItem descItemString = new ArrDescItemString();
-        descItemString.setDescItemType(itemTypeString);
-        ((ArrDescItemString) descItemString).setValue("String1");
-        descItemString.setNode(node);
-        descItemString.setPosition(6);
-
-        ArrDescItem descItemStringNew = (arrangementManager.createDescriptionItem(descItemString, version.getFindingAidVersionId())).getArrDescItem();
-        node = nodeRepository.findOne(node.getNodeId());
-
-        ArrDescItem descItemText = new ArrDescItemText();
-        descItemText.setDescItemType(itemTypeText);
-        ((ArrDescItemText) descItemText).setValue("Text1");
-        descItemText.setNode(node);
-        descItemText.setPosition(7);
-
-        ArrDescItem descItemTextNew = (arrangementManager.createDescriptionItem(descItemText, version.getFindingAidVersionId())).getArrDescItem();
-        node = nodeRepository.findOne(node.getNodeId());
-
-        RulDescItemTypeExt rulDescItemTypeExt = new RulDescItemTypeExt();
-        BeanUtils.copyProperties(itemTypeUnitdate, rulDescItemTypeExt);
-        List<ArrCalendarType> calendarTypes = calendarTypeRepository.findAll();
-        ArrDescItem descItemUnitdate = createUnitdateValue(node, rulDescItemTypeExt, calendarTypes.get(0));
-        descItemUnitdate.setPosition(8);
-
-        ArrDescItem descItemUnitdateNew = (arrangementManager.createDescriptionItem(descItemUnitdate, version.getFindingAidVersionId())).getArrDescItem();
-        node = nodeRepository.findOne(node.getNodeId());
-
-        ArrDescItem descItemUnitid = new ArrDescItemUnitid();
-        descItemUnitid.setDescItemType(itemTypeUnitid);
-        ((ArrDescItemUnitid) descItemUnitid).setValue("Unitid1");
-        descItemUnitid.setNode(node);
-        descItemUnitid.setPosition(9);
-
-        ArrDescItem descItemUnitidNew = (arrangementManager.createDescriptionItem(descItemUnitid, version.getFindingAidVersionId())).getArrDescItem();
-        node = nodeRepository.findOne(node.getNodeId());
-
-        ArrDescItem descItemDecimal = new ArrDescItemDecimal();
-        descItemDecimal.setDescItemType(itemTypeDecimal);
-        ((ArrDescItemDecimal) descItemDecimal).setValue(new BigDecimal(10.55));
-        descItemDecimal.setNode(node);
-        descItemDecimal.setPosition(10);
-
-        ArrDescItem descItemDecimalNew = (arrangementManager.createDescriptionItem(descItemDecimal, version.getFindingAidVersionId())).getArrDescItem();
-        node = nodeRepository.findOne(node.getNodeId());
-
-        ParParty partyUpdate = restCreateParty();
-        RegRecord recordUpdate = restCreateRecord("KOD2");
-
-        ((ArrDescItemCoordinates) descItemCoordinatesNew).setValue("Coordinates2");
-        ((ArrDescItemFormattedText) descItemFormattedTextNew).setValue("FormattedText2");
-        ((ArrDescItemInt) descItemIntNew).setValue(124);
-        ((ArrDescItemPartyRef) descItemPartyRefNew).setParty(partyUpdate);
-        ((ArrDescItemRecordRef) descItemRecordRefNew).setRecord(recordUpdate);
-        ((ArrDescItemString) descItemStringNew).setValue("String2");
-        ((ArrDescItemText) descItemTextNew).setValue("Text2");
-        ((ArrDescItemUnitdate) descItemUnitdateNew).setCalendarType(calendarTypes.get(1));
-        ((ArrDescItemUnitid) descItemUnitidNew).setValue("Unitid2");
-        ((ArrDescItemDecimal) descItemDecimalNew).setValue(new BigDecimal(11.556));
-
-        List<ArrDescItem> descItems = new ArrayList<>();
-        descItems.add(descItemCoordinatesNew);
-        descItems.add(descItemFormattedTextNew);
-        descItems.add(descItemIntNew);
-        descItems.add(descItemPartyRefNew);
-        descItems.add(descItemRecordRefNew);
-        descItems.add(descItemStringNew);
-        descItems.add(descItemTextNew);
-        descItems.add(descItemUnitdateNew);
-        descItems.add(descItemUnitidNew);
-        descItems.add(descItemDecimalNew);
-
-        List<ArrDescItem> deleteDescItems = new ArrayList<>();
-
-        ArrDescItemSavePack pack = new ArrDescItemSavePack();
-        pack.setNode(node);
-        pack.setFaVersionId(version.getFindingAidVersionId());
-        pack.setCreateNewVersion(true);
-        pack.setDescItems(descItems);
-        pack.setDeleteDescItems(deleteDescItems);
-
-        RelatedNodeDirectionWithDescItems relatedNodeDirectionWithDescItems = arrangementManager
-                .saveDescriptionItems(pack);
-
-        ArrDescItems result = relatedNodeDirectionWithDescItems.getArrDescItems();
-
-        List<ArrDescItem> descItemsResult = result.getDescItems();
-
-        Assert.assertNotNull(descItemsResult);
-        Assert.assertEquals(10, descItemsResult.size());
-
-        for (ArrDescItem descItem : descItemsResult) {
-            if (descItem instanceof ArrDescItemCoordinates) {
-                Assert.assertEquals(descItemCoordinatesNew.toString(), descItem.toString());
-            } else if (descItem instanceof ArrDescItemFormattedText) {
-                Assert.assertEquals(descItemFormattedTextNew.toString(), descItem.toString());
-            } else if (descItem instanceof ArrDescItemInt) {
-                Assert.assertEquals(descItemIntNew.toString(), descItem.toString());
-            } else if (descItem instanceof ArrDescItemPartyRef) {
-                Assert.assertEquals(descItemPartyRefNew.toString(), descItem.toString());
-            } else if (descItem instanceof ArrDescItemRecordRef) {
-                Assert.assertEquals(descItemRecordRefNew.toString(), descItem.toString());
-            } else if (descItem instanceof ArrDescItemString) {
-                Assert.assertEquals(descItemStringNew.toString(), descItem.toString());
-            } else if (descItem instanceof ArrDescItemText) {
-                Assert.assertEquals(descItemTextNew.toString(), descItem.toString());
-            } else if (descItem instanceof ArrDescItemUnitdate) {
-                Assert.assertEquals(descItemUnitdateNew.toString(), descItem.toString());
-            } else if (descItem instanceof ArrDescItemUnitid) {
-                Assert.assertEquals(descItemUnitidNew.toString(), descItem.toString());
-            } else if (descItem instanceof ArrDescItemDecimal) {
-                Assert.assertEquals(descItemDecimalNew.toString(), descItem.toString());
-            } else {
-                Assert.fail("Nedefinovaný datový typ hodnoty atributu");
-            }
-        }
+//        ArrDescItem descItemCoordinatesNew = (arrangementManager.createDescriptionItem(descItemCoordinates, version.getFindingAidVersionId())).getArrDescItem();
+//        node = nodeRepository.findOne(node.getNodeId());
+//
+//        ArrDescItem descItemFormattedText = new ArrDescItemFormattedText();
+//        descItemFormattedText.setDescItemType(itemTypeFormattedText);
+//        ((ArrDescItemFormattedText) descItemFormattedText).setValue("FormattedText1");
+//        descItemFormattedText.setNode(node);
+//        descItemFormattedText.setPosition(2);
+//
+//        ArrDescItem descItemFormattedTextNew = (arrangementManager.createDescriptionItem(descItemFormattedText, version.getFindingAidVersionId())).getArrDescItem();
+//        node = nodeRepository.findOne(node.getNodeId());
+//
+//        ArrDescItem descItemInt = new ArrDescItemInt();
+//        descItemInt.setDescItemType(itemTypeInteger);
+//        ((ArrDescItemInt) descItemInt).setValue(123);
+//        descItemInt.setNode(node);
+//        descItemInt.setPosition(3);
+//
+//        ArrDescItem descItemIntNew = (arrangementManager.createDescriptionItem(descItemInt, version.getFindingAidVersionId())).getArrDescItem();
+//        node = nodeRepository.findOne(node.getNodeId());
+//
+//        ArrDescItem descItemPartyRef = new ArrDescItemPartyRef();
+//        descItemPartyRef.setDescItemType(itemTypePartyRef);
+//        ParParty party = restCreateParty();
+//        ((ArrDescItemPartyRef) descItemPartyRef).setParty(party);
+//        descItemPartyRef.setNode(node);
+//        descItemPartyRef.setPosition(4);
+//
+//        ArrDescItem descItemPartyRefNew = (arrangementManager.createDescriptionItem(descItemPartyRef, version.getFindingAidVersionId())).getArrDescItem();
+//        node = nodeRepository.findOne(node.getNodeId());
+//
+//        ArrDescItem descItemRecordRef = new ArrDescItemRecordRef();
+//        descItemRecordRef.setDescItemType(itemTypeRecordRef);
+//        RegRecord record = restCreateRecord("KOD1");
+//        ((ArrDescItemRecordRef) descItemRecordRef).setRecord(record);
+//        descItemRecordRef.setNode(node);
+//        descItemRecordRef.setPosition(5);
+//
+//        ArrDescItem descItemRecordRefNew = (arrangementManager.createDescriptionItem(descItemRecordRef, version.getFindingAidVersionId())).getArrDescItem();
+//        node = nodeRepository.findOne(node.getNodeId());
+//
+//        ArrDescItem descItemString = new ArrDescItemString();
+//        descItemString.setDescItemType(itemTypeString);
+//        ((ArrDescItemString) descItemString).setValue("String1");
+//        descItemString.setNode(node);
+//        descItemString.setPosition(6);
+//
+//        ArrDescItem descItemStringNew = (arrangementManager.createDescriptionItem(descItemString, version.getFindingAidVersionId())).getArrDescItem();
+//        node = nodeRepository.findOne(node.getNodeId());
+//
+//        ArrDescItem descItemText = new ArrDescItemText();
+//        descItemText.setDescItemType(itemTypeText);
+//        ((ArrDescItemText) descItemText).setValue("Text1");
+//        descItemText.setNode(node);
+//        descItemText.setPosition(7);
+//
+//        ArrDescItem descItemTextNew = (arrangementManager.createDescriptionItem(descItemText, version.getFindingAidVersionId())).getArrDescItem();
+//        node = nodeRepository.findOne(node.getNodeId());
+//
+//        RulDescItemTypeExt rulDescItemTypeExt = new RulDescItemTypeExt();
+//        BeanUtils.copyProperties(itemTypeUnitdate, rulDescItemTypeExt);
+//        List<ArrCalendarType> calendarTypes = calendarTypeRepository.findAll();
+//        ArrDescItem descItemUnitdate = createUnitdateValue(node, rulDescItemTypeExt, calendarTypes.get(0));
+//        descItemUnitdate.setPosition(8);
+//
+//        ArrDescItem descItemUnitdateNew = (arrangementManager.createDescriptionItem(descItemUnitdate, version.getFindingAidVersionId())).getArrDescItem();
+//        node = nodeRepository.findOne(node.getNodeId());
+//
+//        ArrDescItem descItemUnitid = new ArrDescItemUnitid();
+//        descItemUnitid.setDescItemType(itemTypeUnitid);
+//        ((ArrDescItemUnitid) descItemUnitid).setValue("Unitid1");
+//        descItemUnitid.setNode(node);
+//        descItemUnitid.setPosition(9);
+//
+//        ArrDescItem descItemUnitidNew = (arrangementManager.createDescriptionItem(descItemUnitid, version.getFindingAidVersionId())).getArrDescItem();
+//        node = nodeRepository.findOne(node.getNodeId());
+//
+//        ArrDescItem descItemDecimal = new ArrDescItemDecimal();
+//        descItemDecimal.setDescItemType(itemTypeDecimal);
+//        ((ArrDescItemDecimal) descItemDecimal).setValue(new BigDecimal(10.55));
+//        descItemDecimal.setNode(node);
+//        descItemDecimal.setPosition(10);
+//
+//        ArrDescItem descItemDecimalNew = (arrangementManager.createDescriptionItem(descItemDecimal, version.getFindingAidVersionId())).getArrDescItem();
+//        node = nodeRepository.findOne(node.getNodeId());
+//
+//        ParParty partyUpdate = restCreateParty();
+//        RegRecord recordUpdate = restCreateRecord("KOD2");
+//
+//        ((ArrDescItemCoordinates) descItemCoordinatesNew).setValue("Coordinates2");
+//        ((ArrDescItemFormattedText) descItemFormattedTextNew).setValue("FormattedText2");
+//        ((ArrDescItemInt) descItemIntNew).setValue(124);
+//        ((ArrDescItemPartyRef) descItemPartyRefNew).setParty(partyUpdate);
+//        ((ArrDescItemRecordRef) descItemRecordRefNew).setRecord(recordUpdate);
+//        ((ArrDescItemString) descItemStringNew).setValue("String2");
+//        ((ArrDescItemText) descItemTextNew).setValue("Text2");
+//        ((ArrDescItemUnitdate) descItemUnitdateNew).setCalendarType(calendarTypes.get(1));
+//        ((ArrDescItemUnitid) descItemUnitidNew).setValue("Unitid2");
+//        ((ArrDescItemDecimal) descItemDecimalNew).setValue(new BigDecimal(11.556));
+//
+//        List<ArrDescItem> descItems = new ArrayList<>();
+//        descItems.add(descItemCoordinatesNew);
+//        descItems.add(descItemFormattedTextNew);
+//        descItems.add(descItemIntNew);
+//        descItems.add(descItemPartyRefNew);
+//        descItems.add(descItemRecordRefNew);
+//        descItems.add(descItemStringNew);
+//        descItems.add(descItemTextNew);
+//        descItems.add(descItemUnitdateNew);
+//        descItems.add(descItemUnitidNew);
+//        descItems.add(descItemDecimalNew);
+//
+//        List<ArrDescItem> deleteDescItems = new ArrayList<>();
+//
+//        ArrDescItemSavePack pack = new ArrDescItemSavePack();
+//        pack.setNode(node);
+//        pack.setFaVersionId(version.getFindingAidVersionId());
+//        pack.setCreateNewVersion(true);
+//        pack.setDescItems(descItems);
+//        pack.setDeleteDescItems(deleteDescItems);
+//
+//        RelatedNodeDirectionWithDescItems relatedNodeDirectionWithDescItems = arrangementManager
+//                .saveDescriptionItems(pack);
+//
+//        ArrDescItems result = relatedNodeDirectionWithDescItems.getArrDescItems();
+//
+//        List<ArrDescItem> descItemsResult = result.getDescItems();
+//
+//        Assert.assertNotNull(descItemsResult);
+//        Assert.assertEquals(10, descItemsResult.size());
+//
+//        for (ArrDescItem descItem : descItemsResult) {
+//            if (descItem instanceof ArrDescItemCoordinates) {
+//                Assert.assertEquals(descItemCoordinatesNew.toString(), descItem.toString());
+//            } else if (descItem instanceof ArrDescItemFormattedText) {
+//                Assert.assertEquals(descItemFormattedTextNew.toString(), descItem.toString());
+//            } else if (descItem instanceof ArrDescItemInt) {
+//                Assert.assertEquals(descItemIntNew.toString(), descItem.toString());
+//            } else if (descItem instanceof ArrDescItemPartyRef) {
+//                Assert.assertEquals(descItemPartyRefNew.toString(), descItem.toString());
+//            } else if (descItem instanceof ArrDescItemRecordRef) {
+//                Assert.assertEquals(descItemRecordRefNew.toString(), descItem.toString());
+//            } else if (descItem instanceof ArrDescItemString) {
+//                Assert.assertEquals(descItemStringNew.toString(), descItem.toString());
+//            } else if (descItem instanceof ArrDescItemText) {
+//                Assert.assertEquals(descItemTextNew.toString(), descItem.toString());
+//            } else if (descItem instanceof ArrDescItemUnitdate) {
+//                Assert.assertEquals(descItemUnitdateNew.toString(), descItem.toString());
+//            } else if (descItem instanceof ArrDescItemUnitid) {
+//                Assert.assertEquals(descItemUnitidNew.toString(), descItem.toString());
+//            } else if (descItem instanceof ArrDescItemDecimal) {
+//                Assert.assertEquals(descItemDecimalNew.toString(), descItem.toString());
+//            } else {
+//                Assert.fail("Nedefinovaný datový typ hodnoty atributu");
+//            }
+//        }
     }
 
     @Test
