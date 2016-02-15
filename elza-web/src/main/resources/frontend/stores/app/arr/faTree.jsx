@@ -382,13 +382,13 @@ export default function faTree(state = initialState, action) {
         case types.CHANGE_MOVE_LEVEL:
             return Object.assign({}, state, { ensureItemVisible: false, dirty: true });
 
+        case types.CHANGE_NODES:
         case types.CHANGE_CONFORMITY_INFO:
-
             var isDirty = false;
             var nodeId;
             for(var i = 0; i < state.nodes.length; i++) {
                 nodeId = state.nodes[i].id;
-                if (action.nodeIds.indexOf(nodeId) > 0) {
+                if (action.nodeIds.indexOf(nodeId) >= 0) {
                     isDirty = true;
                     break;
                 }
