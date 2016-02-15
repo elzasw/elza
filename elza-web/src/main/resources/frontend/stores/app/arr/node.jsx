@@ -382,7 +382,7 @@ export function node(state = nodeInitialState, action) {
                             ...state,
                             version: action.parentNode.version,
                             childNodes: [
-                                ...state.childNodes.slice(0, nodeIndex - 1),
+                                ...state.childNodes.slice(0, nodeIndex),
                                 ...state.childNodes.slice(nodeIndex + 1)
                             ]
                         };
