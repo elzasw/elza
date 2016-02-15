@@ -82,7 +82,7 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
                         <Modal.Body>
                             <form onSubmit={handleSubmit(this.handleSubmit)}>
                                 {
-                                    (this.props.party || this.props.record) && <div>
+                                    <div>
                                         <Input type="select"
                                                label={i18n('import.transformationName')} {...transformationName} {...decorateFormField(transformationName)}>
                                             <option key='blankName'/>
@@ -90,17 +90,6 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
                                                 return <option key={index+'name'} value={i}>{i}</option>
                                             })}
                                         </Input>
-                                        <Autocomplete
-                                            {...recordScope} {...decorateFormField(recordScope)}
-                                            label={i18n('import.registryScope')}
-                                            items={this.state.defaultScopes}
-                                            getItemId={(item) => item ? item : null}
-                                            getItemName={(item) => item ? item.name : ''}
-                                        />
-                                    </div>
-                                }
-                                {
-                                    this.props.fa && <div>
                                         <Autocomplete
                                             {...recordScope} {...decorateFormField(recordScope)}
                                             tags // TODO migrate autocomplete

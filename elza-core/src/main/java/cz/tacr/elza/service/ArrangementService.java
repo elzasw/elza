@@ -1,5 +1,30 @@
 package cz.tacr.elza.service;
 
+import java.text.Normalizer;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.ArrNodeConformity.State;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
@@ -12,29 +37,44 @@ import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
 import cz.tacr.elza.controller.RuleManager;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFaRegisterScope;
+import cz.tacr.elza.domain.ArrFindingAid;
+import cz.tacr.elza.domain.ArrFindingAidVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeConformityError;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
+import cz.tacr.elza.domain.ArrVersionConformity;
+import cz.tacr.elza.domain.RegScope;
+import cz.tacr.elza.domain.RulArrangementType;
+import cz.tacr.elza.domain.RulDescItemType;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.drools.RulesExecutor;
-import cz.tacr.elza.repository.*;
+import cz.tacr.elza.repository.BulkActionRunRepository;
+import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.FaRegisterScopeRepository;
+import cz.tacr.elza.repository.FindingAidRepository;
+import cz.tacr.elza.repository.FindingAidVersionRepository;
+import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeConformityErrorRepository;
+import cz.tacr.elza.repository.NodeConformityMissingRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
+import cz.tacr.elza.repository.NodeRegisterRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.PacketRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.VersionConformityRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.eventnotification.events.EventVersion;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.RequestParam;
-
-import java.text.Normalizer;
-import java.time.LocalDateTime;
-import java.util.*;
 
 
 /**
@@ -355,6 +395,11 @@ public class ArrangementService {
 
 
         packetRepository.findByFindingAid(version.getFindingAid()).forEach(packet -> packetRepository.delete(packet));
+        ArrFindingAid findingAid = findingAidRepository.findOne(findingAidId);
+        faRegisterRepository.findByFindingAid(findingAid).forEach(
+                faScope -> faRegisterRepository.delete(faScope)
+        );
+
 
         eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.FINDING_AID_DELETE, findingAidId));
         findingAidRepository.delete(findingAidId);

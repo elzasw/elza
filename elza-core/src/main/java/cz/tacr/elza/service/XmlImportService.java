@@ -346,16 +346,16 @@ public class XmlImportService {
         }
     }
 
-    private String deleteFindingAidIfExists(Level rootLevel) {
+    private void deleteFindingAidIfExists(Level rootLevel) {
         ArrFindingAid findingAid;
         String rootUuid = rootLevel.getUuid();
         if (StringUtils.isNotBlank(rootUuid)) {
             findingAid = findingAidRepository.findFindingAidByRootNodeUUID(rootUuid);
             if (findingAid != null) {
                 arrangementService.deleteFindingAid(findingAid.getFindingAidId());
+                findingAidRepository.flush();
             }
         }
-        return rootUuid;
     }
 
     private Map<String, ArrPacket> importPackets(XmlImport xmlImport, Set<String> usedPackets, boolean stopOnError,
