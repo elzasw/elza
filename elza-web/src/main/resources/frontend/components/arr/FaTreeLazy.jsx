@@ -121,9 +121,9 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
         }
     }
 
-    handleKeyDown(e) {
-        if (keyDownHandlers[e.key]) {
-            keyDownHandlers[e.key].call(this, event)
+    handleKeyDown(event) {
+        if (keyDownHandlers[event.key]) {
+            keyDownHandlers[event.key].call(this, event)
         }
     }
 
