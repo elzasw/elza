@@ -30,6 +30,7 @@ const initialState = {
     data: null,
     formData: null,
     infoGroups: null,
+    infoGroupsMap: null,
     infoTypesMap: null,
     refTypesMap: null,
     getLoc: getLoc
@@ -244,6 +245,7 @@ export default function subNodeForm(state = initialState, action) {
                     if (loc.descItemType.useSpecification) {
                         loc.descItem.prevDescItemSpecId = action.descItemResult.descItem.descItemSpecId;
                     }
+                    loc.descItem.touched = false
                     break;
                 case 'CREATE':
                     loc.descItem.descItemObjectId = action.descItemResult.descItem.descItemObjectId;
@@ -287,13 +289,12 @@ export default function subNodeForm(state = initialState, action) {
             var descItemGroup;
             if (grpIndex !== null) {
                 descItemGroup = state.formData.descItemGroups[grpIndex];
-            }
-            if (!descItemGroup) {   // skupina není, je nutné ji nejdříve přidat a následně seřadit skupiny podle pořadí
-                descItemGroup = {...addGroup, descItemTypes: []};
+            } else {   // skupina není, je nutné ji nejdříve přidat a následně seřadit skupiny podle pořadí
+                descItemGroup = {code: addGroup.code, name: addGroup.name, descItemTypes: []};
                 state.formData.descItemGroups.push(descItemGroup);
 
                 // Seřazení
-                state.formData.descItemGroups.sort((a, b) => state.descItemTypeGroupsMap[a.code].position - state.descItemTypeGroupsMap[b.code].position);
+                state.formData.descItemGroups.sort((a, b) => state.infoGroupsMap[a.code].position - state.infoGroupsMap[b.code].position);
             }
 
             // Přidání prvku do skupiny a seřazení prvků podle position

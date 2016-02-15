@@ -4,6 +4,16 @@ import {AbstractReactComponent} from 'components';
 var NoFocusButton = class NoFocusButton extends AbstractReactComponent {
     constructor(props) {
         super(props);
+
+        this.bindMethods('handleClick')
+
+    }
+
+    handleClick() {
+        const {disabled, onClick} = this.props
+        if (!disabled) {
+            onClick()
+        }
     }
 
     render() {
@@ -13,7 +23,7 @@ var NoFocusButton = class NoFocusButton extends AbstractReactComponent {
         }
 
         return (
-            <div title={this.props.title} className={cls} onClick={this.props.onClick}>{this.props.children}</div>
+            <div title={this.props.title} className={cls} onClick={this.handleClick}>{this.props.children}</div>
         )
     }
 }

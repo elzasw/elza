@@ -186,15 +186,24 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     }
 
     render() {
-        const {searchedIds, searchedParents, filterCurrentIndex} = this.props;
+        const {searchedIds, searchedParents, filterCurrentIndex, filterResult} = this.props;
 
         var actionAddons = []
-        if (searchedIds.length > 0 && filterCurrentIndex !== -1) {
-            var searchedInfo = (
-                <div className='fa-tree-lazy-search-info'>
-                    ({filterCurrentIndex + 1} z {searchedIds.length})
-                </div>
-            )
+        if (filterResult) {
+            var searchedInfo
+            if (searchedIds.length > 0) {
+                searchedInfo = (
+                    <div className='fa-tree-lazy-search-info'>
+                        ({filterCurrentIndex + 1} z {searchedIds.length})
+                    </div>
+                )
+            } else {
+                searchedInfo = (
+                    <div className='fa-tree-lazy-search-info'>
+                        ({i18n('search.not.found')})
+                    </div>
+                )
+            }
 
             if (searchedIds.length > 1) {
                 var prevButtonEnabled = filterCurrentIndex > 0;

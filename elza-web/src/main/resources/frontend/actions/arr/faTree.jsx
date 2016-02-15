@@ -120,28 +120,42 @@ export function faTreeFulltextSearch(area, versionId) {
         var faTree = getFaTreeForFa(state, area, versionId);
         if (faTree) {
             if (faTree.filterText.length > 0) {
-                return WebApi.findInFaTree(versionId, null, faTree.filterText, 'SUBTREE')
+                var searchParentNodeId
+                // V případě stromu, který má multi select hledáme v celém stromu
+                // V případě stromu, který má single select hledáme POD vybranou položkou
+                if (faTree.multipleSelection) { // hledáme v celém stromu
+                    searchParentNodeId = null
+                } else {    // hledáme pod vybranou položkou, pokud nějaká je
+                    if (faTree.selectedId !== null) {   // vybraná položka, hledáme pod ní
+                        searchParentNodeId = faTree.selectedId
+                    } else {    // nice není vybráno, hledáme v celém stromě
+                        searchParentNodeId = null
+                    }
+                }
+
+                return WebApi.findInFaTree(versionId, searchParentNodeId, faTree.filterText, 'SUBTREE')
                     .then(json => {
-                        dispatch(faTreeFulltextResult(area, versionId, faTree.filterText, json))
+                        dispatch(faTreeFulltextResult(area, versionId, faTree.filterText, json, false))
                         if (json.length > 0) {
                             var newFaTree = getFaTreeForFa(getState(), area, versionId)
                             changeCurrentIndex(dispatch, area, newFaTree, 0);
                         }
                     });
             } else {
-                dispatch(faTreeFulltextResult(area, versionId, faTree.filterText, []))
+                dispatch(faTreeFulltextResult(area, versionId, faTree.filterText, [], true))
             }
         }
     }
 }
 
-function faTreeFulltextResult(area, versionId, filterText, searchedData) {
+function faTreeFulltextResult(area, versionId, filterText, searchedData, clearFilter) {
     return {
         type: types.FA_FA_TREE_FULLTEXT_RESULT,
         area,
         versionId,
         filterText,
-        searchedData
+        searchedData,
+        clearFilter
     }
 }
 

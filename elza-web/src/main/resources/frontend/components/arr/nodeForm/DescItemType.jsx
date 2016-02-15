@@ -33,7 +33,8 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         this.bindMethods('renderDescItemSpec', 'renderDescItem', 'renderLabel',
                 'handleChange', 'handleChangeSpec', 'handleCreatePacket', 'handleCreateParty', 'handleCreateRecord',
                 'handleBlur', 'handleFocus', 'handleDescItemTypeLock', 'handleDescItemTypeCopy', 'handleDetailParty',
-                'handleDetailRecord', 'handleDescItemTypeCopyFromPrev', 'handleDragStart', 'handleDragEnd', 'handleDragOver', 'handleDragLeave');
+                'handleDetailRecord', 'handleDescItemTypeCopyFromPrev', 'handleDragStart', 'handleDragEnd', 'handleDragOver', 'handleDragLeave',
+                'getShowDeleteDescItemType', 'getShowDeleteDescItem');
     }
 
     componentWillReceiveProps(nextProps) {
@@ -434,6 +435,69 @@ return true;
         )
     }
 
+    getShowDeleteDescItem(descItem) {
+        const {infoType, descItemType, closed, locked} = this.props;
+
+        if (closed || locked) {
+            return false
+        }
+
+        // ##
+        // # Má se zobrazovat ikona mazání z hlediska hodnoty desc item?
+        // ##
+        if (descItem.touched && !descItem.error.hasError) { // změnil pole a je validní, nesmíme smazat
+            return false
+        }
+
+        // ##
+        // # Má se zobrazovat ikona mazání z hlediska typu atributu?
+        // ##
+        if (infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED') {    // můžeme smazat pouze, pokud má nějakou hodnotu, kterou lze smazat
+            if (descItemType.descItems.length === 1) {    // mažeme jen pokud je hodnota v DB
+                if (typeof descItem.id === 'undefined') {
+                    return false
+                }
+            }
+        }
+
+        return true
+    }
+
+    getShowDeleteDescItemType() {
+        const {infoType, descItemType, closed} = this.props;
+
+        if (closed) {
+            return false
+        }
+
+        // ##
+        // # Má se zobrazovat ikona mazání z hlediska hodnot desc item?
+        // ##
+        // Pokud se jedná o atribut, který je vynucený serverem a nemá žádnou hodnotu na serveru, není možné jej smazat
+        // Ikona mazání se objeví pokud:
+        // Má pole, která nezměnil
+        // Má pole, která změnil a nejsou validní
+        for (let descItem of descItemType.descItems) {
+            if (descItem.touched && !descItem.error.hasError) { // změnil pole a je validní, nesmíme smazat
+                return false
+            }
+        }
+
+        // ##
+        // # Má se zobrazovat ikona mazání z hlediska typu atributu?
+        // ##
+        // Pokud nemá žádné hodnoty, můžeme atribut smazat pouze pokud není vynucený serverem - REQUIRED a RECOMMENDED
+        if (infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED') {    // můžeme smazat pouze, pokud má nějakou hodnotu, kterou lze smazat
+            if (descItemType.descItems.length === 1) {    // mažeme jen pokud je hodnota v DB
+                if (typeof descItemType.descItems[0].id === 'undefined') {
+                    return false
+                }
+            }
+        }
+
+        return true
+    }
+
     /**
      * Renderování nadpisu atributu - včetně akcí pro atribut.
      * @return {Object} view
@@ -460,21 +524,7 @@ return true;
             </OverlayTrigger>);
         }
 
-        var hasDescItemsForDelete = false;
-        if (!descItemType.hasFocus) {
-            descItemType.descItems.forEach(descItem => {
-                if (descItem.touched || typeof descItem.id !== 'undefined') {
-                    hasDescItemsForDelete = true;
-                }
-            });
-        }
-        if (!hasDescItemsForDelete) {
-            if (infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED') {
-            } else {
-                hasDescItemsForDelete = true;
-            }
-        }
-        if (hasDescItemsForDelete && !closed) {
+        if (this.getShowDeleteDescItemType()) {
             actions.push(<NoFocusButton key="delete" onClick={this.props.onDescItemTypeRemove} title={i18n('subNodeForm.deleteDescItemType')}><Icon glyph="fa-trash" /></NoFocusButton>);
         }
 
@@ -529,11 +579,14 @@ return true;
             addAction = <div className='desc-item-type-actions'><NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.addDescItem')}><Icon glyph="fa-plus" /></NoFocusButton></div>
         }
 
+        var showDeleteDescItemType = this.getShowDeleteDescItemType()
+
         var descItems = descItemType.descItems.map((descItem, descItemIndex) => {
             var actions = new Array;
 
-            if (infoType.rep && !locked && !closed) {
-                actions.push(<NoFocusButton key="delete" onClick={onDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-times" /></NoFocusButton>);
+            if (infoType.rep) {
+                actions.push(<NoFocusButton disabled={!showDeleteDescItemType} key="delete" onClick={onDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-times" /></NoFocusButton>);
+                //actions.push(<NoFocusButton disabled={!this.getShowDeleteDescItem(descItem)} key="delete" onClick={onDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-times" /></NoFocusButton>);
             }
 
             var errors = conformityInfo.errors[descItem.descItemObjectId];

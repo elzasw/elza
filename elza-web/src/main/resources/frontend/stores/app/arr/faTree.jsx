@@ -12,6 +12,7 @@ const initialState = {
     ensureItemVisible: false,
     searchedParents: {},
     filterText: null,
+    filterResult: false,
     filterCurrentIndex: -1,
     isFetching: false,
     fetched: false,
@@ -103,9 +104,6 @@ export default function faTree(state = initialState, action) {
                 selectedIds,
                 focusId,
                 expandedIds,
-                searchedIds,
-                filterText,
-                filterCurrentIndex,
                 multipleSelection,
                 multipleSelectionOneLevel,
             }     
@@ -116,7 +114,14 @@ export default function faTree(state = initialState, action) {
             }
             return consolidateState(state, result);
         case types.FA_FA_TREE_FULLTEXT_CHANGE:
-            return {...state, filterText: action.filterText}
+            return {
+                ...state,
+                filterResult: false,
+                filterText: action.filterText,
+                filterCurrentIndex: -1,
+                searchedIds: [],
+                searchedParents: []
+            }
         case types.FA_FA_TREE_FULLTEXT_RESULT:
             if (state.filterText == action.filterText) {    // jen pokud výsledek odpovídá aktuálnímu stavu v hledací komponentě
                 var searchedIds = [];
@@ -128,6 +133,7 @@ export default function faTree(state = initialState, action) {
 
                 return {
                     ...state,
+                    filterResult: !action.clearFilter,
                     filterCurrentIndex: -1,
                     ensureItemVisible: false,
                     searchedIds: searchedIds,

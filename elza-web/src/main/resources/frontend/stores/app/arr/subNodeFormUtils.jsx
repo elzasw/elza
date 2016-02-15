@@ -285,9 +285,14 @@ export function updateFormData(state, data, refTypesMap) {
 
         // Info skupiny - ty, které jsou jako celek definované pro konkrétní JP - obsahují všechny atributy včetně např. typu - POSSIBLE atp.
         // Změna číselného typu na řetězec
+        // Přidání do infor skupin position
         state.infoGroups = data.typeGroups
+        state.infoGroupsMap = {}
         state.infoTypesMap = {}                     // mapa id descItemTypeInfo na descItemTypeInfo
-        state.infoGroups.forEach(group => {
+        state.infoGroups.forEach((group, index) => {
+            state.infoGroupsMap[group.code] = group
+            group.position = index
+
             group.types.forEach(type => {
                 type.type = typesNumToStrMap[type.type]
                 state.infoTypesMap[type.id] = type

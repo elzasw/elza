@@ -16,6 +16,7 @@ var messages = {
     "global.action.show.more": "Zobrazit více",
     "global.action.import": "Importovat",
     "search.input.search": "Vyhledat...",
+    "search.not.found": "nenalezeno",
 
     "global.validation.required": "Pole je povinné",
 
