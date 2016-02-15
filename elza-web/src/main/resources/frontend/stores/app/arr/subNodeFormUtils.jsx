@@ -175,31 +175,29 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
             })
 
             // Doplnění o přidané a neuložené v aktuálním klientovi
-            if (resultDescItemType.descItems.length == 0) {
-                var prevDescItem = null;
-                prevType.descItems.forEach((descItem, index) => {
-                    addUid(descItem, index);
+            var prevDescItem = null;
+            prevType.descItems.forEach((descItem, index) => {
+                addUid(descItem, index);
 
-                    if (typeof descItem.id === 'undefined') { // mnou přidaná ještě neuložená, musíme jí přidat na správné místo
-                        if (prevDescItem) { // má předchozí, zkusíme ji v novém rozložní dat na stejné místo, pokud to půjde
-                            var index = indexById(resultDescItemType.descItems, prevDescItem._uid, '_uid')
-                            if (index !== null) {   // našli jsme položku, za kterou ji můžeme přidat
-                                resultDescItemType.descItems = [
-                                    ...resultDescItemType.descItems.slice(0, index + 1),
-                                    descItem,
-                                    ...resultDescItemType.descItems.slice(index + 1)
-                                ]
-                            } else {    // nenašli jsme položku, za kterou ji můžeme přidat, dáme ji na konec
-                                resultDescItemType.descItems.push(descItem);
-                            }
-                        } else {    // nemá předchozí, dáme ji v novém rozložení na konec
+                if (typeof descItem.id === 'undefined') { // mnou přidaná ještě neuložená, musíme jí přidat na správné místo
+                    if (prevDescItem) { // má předchozí, zkusíme ji v novém rozložní dat na stejné místo, pokud to půjde
+                        var index = indexById(resultDescItemType.descItems, prevDescItem._uid, '_uid')
+                        if (index !== null) {   // našli jsme položku, za kterou ji můžeme přidat
+                            resultDescItemType.descItems = [
+                                ...resultDescItemType.descItems.slice(0, index + 1),
+                                descItem,
+                                ...resultDescItemType.descItems.slice(index + 1)
+                            ]
+                        } else {    // nenašli jsme položku, za kterou ji můžeme přidat, dáme ji na konec
                             resultDescItemType.descItems.push(descItem);
                         }
+                    } else {    // nemá předchozí, dáme ji v novém rozložení na konec
+                        resultDescItemType.descItems.push(descItem);
                     }
+                }
 
-                    prevDescItem = descItem;
-                })  
-            }
+                prevDescItem = descItem;
+            })  
 
             return true;
         }

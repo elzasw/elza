@@ -325,7 +325,7 @@ return true;
         if (actions.length > 0) {
             cls += ' with-action';
         }
-        if (infoType.rep) {
+        if (infoType.rep === 1) {
             cls += ' draggable-desc-items';
         }
 
@@ -349,7 +349,7 @@ return true;
 
         var dragProps = {
             'data-id': descItemIndex,
-            draggable: infoType.rep,
+            draggable: infoType.rep === 1,
             onDragStart: this.handleDragStart,
             onDragEnd: this.handleDragEnd,
         }
@@ -575,7 +575,7 @@ return true;
         var label = this.renderLabel();
 
         var addAction;
-        if (infoType.rep && !(locked || closed)) {
+        if (infoType.rep === 1 && !(locked || closed)) {
             addAction = <div className='desc-item-type-actions'><NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.addDescItem')}><Icon glyph="fa-plus" /></NoFocusButton></div>
         }
 
@@ -584,7 +584,7 @@ return true;
         var descItems = descItemType.descItems.map((descItem, descItemIndex) => {
             var actions = new Array;
 
-            if (infoType.rep) {
+            if (infoType.rep === 1) {
                 actions.push(<NoFocusButton disabled={!showDeleteDescItemType} key="delete" onClick={onDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-times" /></NoFocusButton>);
                 //actions.push(<NoFocusButton disabled={!this.getShowDeleteDescItem(descItem)} key="delete" onClick={onDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-times" /></NoFocusButton>);
             }
