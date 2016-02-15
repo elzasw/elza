@@ -193,7 +193,7 @@ String generateCharacteristics(ParParty party) {
     builder.append(" ");
     builder.append(generatePartyNameString(party.getPreferredName(), party.getPartyType()));
     builder.append(" ");
-    builder.append(party.getCharacteristics());
+    builder.append(party.getCharacteristics() == null ? "" : party.getCharacteristics());
 
     return builder.toString();
 }

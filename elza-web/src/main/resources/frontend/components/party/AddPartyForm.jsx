@@ -43,27 +43,36 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
             'handleSubmit',                                 // funkce pro odeslání formuláře
             'validate',                                     // funkce pro kontrolu zadaných dat formuláře
             'selectRecordType',                             // výběr typu záznamu
-            'dropDownTreeUpdateValue'                       // výběr typu záznamu dropdowntree
-
+            'dropDownTreeUpdateValue',                       // výběr typu záznamu dropdowntree
+            'preselectSelects'
         );
     }
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(getRegistryRecordTypesIfNeeded(this.props.initData.partyTypeId));
         this.dispatch(requestScopesIfNeeded(null));
+        this.preselectSelects(nextProps);
+    }
 
+    componentDidMount() {
+        this.dispatch(getRegistryRecordTypesIfNeeded(this.props.initData.partyTypeId));
+        this.dispatch(requestScopesIfNeeded(null));
+        this.preselectSelects(this.props);
+    }
 
+    preselectSelects(nextProps){
         var formTypeId = this.state.data.nameFormTypeId;
         if(!formTypeId && nextProps.refTables.partyNameFormTypes.fetched){
             formTypeId = nextProps.refTables.partyNameFormTypes.items[0].nameFormTypeId;
         }
 
         var scopeId = this.state.data.scopeId;
-        if(!scopeId && nextProps.refTables.scopesData.scopes && nextProps.refTables.scopesData.scopes.length > 0){
+        if(!scopeId && nextProps.refTables.scopesData.scopes && nextProps.refTables.scopesData.scopes.length > 0
+        && !nextProps.refTables.scopesData.scopes[0].isFetching){
             var scopesData = [];
             nextProps.refTables.scopesData.scopes.map(scope => {
                     if (scope.versionId === null) {
-                        scopesData = scope.scopes.data;
+                        scopesData = scope.scopes;
                     }
                 }
             );
@@ -77,11 +86,6 @@ var AddPartyForm = class AddPartyForm extends AbstractReactComponent {
         this.setState({
             data : data                                                                     // uložení změn do state
         });
-    }
-
-    componentDidMount() {
-        this.dispatch(getRegistryRecordTypesIfNeeded(this.props.initData.partyTypeId));
-        this.dispatch(requestScopesIfNeeded(null));
     }
 
     

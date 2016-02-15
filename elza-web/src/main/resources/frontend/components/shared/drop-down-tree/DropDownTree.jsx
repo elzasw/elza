@@ -37,6 +37,7 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
 
         this.handleItemSelect = this.handleItemSelect.bind(this);       // funkce po kliknutí pro výběr
         this.getFirstPossibleRecordType = this.getFirstPossibleRecordType.bind(this);
+        this.preselectValue = this.preselectValue.bind(this);
 
         var opened = (props.opened ? props.opened : []);
         this.props.items.map((item, i) => {
@@ -53,22 +54,8 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
     componentWillReceiveProps(nextProps) {
         var label = this.getItemLabel(nextProps.value, nextProps.items);
         if (nextProps.preselect) {
-            if (this.props.value == undefined) {
-                var preselect = this.getFirstPossibleRecordType(nextProps.items);
-                if (preselect.found) {
-                    label = this.getItemLabel(preselect.found.id, nextProps.items);
-                    this.setState({
-                        label: label,
-                        value: preselect.found.id
-                    });
-                }
-
-                if (nextProps.onChange) {
-                    nextProps.onChange(preselect.found.id, preselect.found);
-                }
-            }
-        } else {
-
+             this.preselectValue(nextProps);
+        }else{
             this.setState({
                 label: (label != '' ? label : nextProps.label),          // pokus je vybrany nejaká položka, vypíše se její název, jinak se vypíše defaultní popisek
                 value: nextProps.value                // id vybrane položky
@@ -88,6 +75,25 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
             this.setState({"value": this.props.value});
             if (this.props.onChange){
                 this.props.onChange(this.props.value);
+            }
+        }else {
+            this.preselectValue(this.props);
+        }
+    }
+
+    preselectValue(nextProps) {
+        if (nextProps.value == undefined) {
+            var preselect = this.getFirstPossibleRecordType(nextProps.items);
+            if (preselect.found) {
+                var label = this.getItemLabel(preselect.found.id, nextProps.items);
+                this.setState({
+                    label: label,
+                    value: preselect.found.id
+                });
+
+                if (nextProps.onChange) {
+                    nextProps.onChange(preselect.found.id, preselect.found);
+                }
             }
         }
     }
