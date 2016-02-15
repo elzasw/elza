@@ -22,6 +22,7 @@ function getLoc(state, valueLocation) {
 
 const initialState = {
     isFetching: false,
+    fetchingId: null,
     fetched: false,
     dirty: false,
     versionId: null,
@@ -347,6 +348,7 @@ export default function subNodeForm(state = initialState, action) {
             return {...state};
         case types.FA_SUB_NODE_FORM_REQUEST:
             return Object.assign({}, state, {
+                fetchingId: action.nodeId,
                 isFetching: true,
             })
         case types.FA_SUB_NODE_FORM_RECEIVE:

@@ -327,7 +327,7 @@ export function faSubNodeFormFetchIfNeeded(versionId, nodeId, nodeKey) {
         var subNodeForm = getSubNodeForm(state, versionId, nodeKey);
 
         if (subNodeForm != null) {
-            if ((!subNodeForm.fetched && !subNodeForm.isFetching) || (subNodeForm.dirty && !subNodeForm.isFetching)) {
+            if ((!subNodeForm.fetched || subNodeForm.dirty) && !subNodeForm.isFetching) {
                 return dispatch(faSubNodeFormFetch(versionId, nodeId, nodeKey));
             }
         }
@@ -340,7 +340,10 @@ export function faSubNodeFormFetch(versionId, nodeId, nodeKey) {
         return WebApi.getFaNodeForm(versionId, nodeId)
             .then(json => {
                 var state = getState()
-                dispatch(faSubNodeFormReceive(versionId, nodeId, nodeKey, json, state.refTables.rulDataTypes, state.refTables.descItemTypes))
+                var subNodeForm = getSubNodeForm(state, versionId, nodeKey);
+                if (subNodeForm.fetchingId == nodeId) {
+                    dispatch(faSubNodeFormReceive(versionId, nodeId, nodeKey, json, state.refTables.rulDataTypes, state.refTables.descItemTypes))
+                }
             })
     }
 }

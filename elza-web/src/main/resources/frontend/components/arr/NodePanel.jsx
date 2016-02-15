@@ -470,7 +470,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                     descItemCopyFromPrevEnabled = true
                 }
             }
-            
+
 
             // Formulář editace JP
             var conformityInfo = this.transformConformityInfo(node);
