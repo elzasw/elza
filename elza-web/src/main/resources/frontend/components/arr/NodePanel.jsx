@@ -5,7 +5,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Tabs, Icon, AbstractReactComponent, i18n, Loading, SubNodeForm, Accordion, SubNodeRegister, AddNodeDropdown, Search} from 'components';
+import {Icon, AbstractReactComponent, i18n, Loading, SubNodeForm, Accordion, SubNodeRegister, AddNodeDropdown, Search} from 'components';
 import {Button, Tooltip, OverlayTrigger, Input} from 'react-bootstrap';
 import {faSubNodeFormFetchIfNeeded} from 'actions/arr/subNodeForm'
 import {faSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister'
@@ -26,8 +26,6 @@ var classNames = require('classnames');
 
 require ('./NodePanel.less');
 
-var _developerSelectedTab = 0
-
 var NodePanel = class NodePanel extends AbstractReactComponent {
     constructor(props) {
         super(props);
@@ -37,7 +35,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick',
             'getParentNodes', 'getChildNodes', 'getSiblingNodes',
             'renderAccordion', 'renderState', 'transformConformityInfo', 'handleAddNodeAtEnd',
-            'handleChangeFilterText', 'renderDeveloperPanel', 'renderDeveloperDescItems'
+            'handleChangeFilterText'
             );
 
         this.state = {
@@ -384,65 +382,6 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         return rows;
     }
 
-    renderDeveloperDescItems() {
-        const {node} = this.props;
-
-        var rows = []
-        if (node.subNodeForm.fetched) {
-            node.subNodeForm.infoGroups.forEach(group => {
-                var types = []
-                group.types.forEach(type => {
-                    var infoType = node.subNodeForm.infoTypesMap[type.id]
-                    var refType = node.subNodeForm.refTypesMap[type.id]
-
-                    var specs;
-                    if (refType.useSpecification) {
-                        specs = refType.descItemSpecs.map(spec => <div>{spec.name} [{spec.code}]</div>)
-                        specs = <div>{specs}</div>
-                    }
-
-                    types.push(
-                        <div className={'desc-item-type ' + infoType.type}>
-                            <h2 title={refType.name}>{refType.shortcut} <small>[{refType.code}]</small></h2>
-                            <div className='desc'>{refType.description}</div>
-                            <div className='attrs'>
-                                <div><label>type:</label>{infoType.type}</div>
-                                <div><label>dataType:</label>{refType.dataType.code}</div>
-                                <div><label>width:</label>{infoType.width}</div>
-                                <div><label>viewOrder:</label>{refType.viewOrder}</div>
-                            </div>
-                            {false && specs}
-                        </div>
-                    )
-                })
-
-                rows.push(
-                    <div>
-                        <h1>{group.code}</h1>
-                        <div>{types}</div>
-                    </div>
-                )
-            })
-        }
-
-        return <div className='desc-items-container'>{rows}</div>
-    }
-
-    renderDeveloperPanel() {
-        return (
-            <div className='developer-panel'>
-                <Tabs.Container>
-                    <Tabs.Tabs items={[{id: 0, title: i18n('developer.title.descItems')}, {id: 1, title: i18n('developer.title.xxx')}]} activeItem={{id: _developerSelectedTab}}
-                        onSelect={(item)=>{_developerSelectedTab = item.id;this.setState({})}}
-                    />
-                    <Tabs.Content>
-                        {_developerSelectedTab === 0 && this.renderDeveloperDescItems()}
-                    </Tabs.Content>
-                </Tabs.Container>
-            </div>
-        )
-    }
-
     render() {
         const {developer, calendarTypes, versionId, rulDataTypes, node,
                 packetTypes, packets, findingAidId,
@@ -486,11 +425,6 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                         onClear={() => {this.handleChangeFilterText(''); this.dispatch(faNodeSubNodeFulltextSearch(this.state.filterText))}}
                         onSearch={() => {this.dispatch(faNodeSubNodeFulltextSearch(this.state.filterText))}}
                     />
-                    {false &&
-                    <div className="search-input">
-                        <Input type="text" onChange={this.handleChangeFilterText} value={this.state.filterText}/>
-                        <Button onClick={() => {this.dispatch(faNodeSubNodeFulltextSearch(this.state.filterText))}}><Icon glyph='fa-search'/></Button>
-                    </div>}
                 </div>
             </div>
         )
@@ -546,10 +480,6 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                         closed={closed}/>
         }
 
-        var accordionInfo = <div>
-            {node.viewStartIndex}-{node.viewStartIndex + node.pageSize} [{node.childNodes.length}]
-        </div>
-
         var cls = classNames({
             'node-panel-container': true,
         })
@@ -557,7 +487,6 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         return (
             <div key={'node-panel-' + node.selectedSubNodeId} className={cls}>
                 <div className='main'>
-                    {false && accordionInfo}
                     {actions}
                     {parents}
                     <div key='content' className='content' ref='content'>
@@ -565,7 +494,6 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                     </div>
                     {children}
                 </div>
-                {developer.enabled && this.renderDeveloperPanel()}
             </div>
         );
     }

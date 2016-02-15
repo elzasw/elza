@@ -51,6 +51,7 @@ export function fa(state, action) {
             return {
                 ...state,
                 isFetching: false,
+                closed: true,   // při načtení vždy chceme closed, u i když není - aby nemohl editovat, než se načte aktuální stav ze serveru
                 dirty: true,
                 faTree: faTree(state.faTree, action),
                 faTreeMovementsLeft: faTree(state.faTreeMovementsLeft, action),

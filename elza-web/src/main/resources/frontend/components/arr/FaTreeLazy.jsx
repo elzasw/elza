@@ -33,7 +33,7 @@ var keyDownHandlers = {
 
         if (!multipleSelection && selectedId !== null) {
             var index = indexById(nodes, selectedId)
-            if (index !== null && index < nodes.length) {
+            if (index !== null && index + 1 < nodes.length) {
                 onNodeClick(nodes[index + 1])
             }
         }

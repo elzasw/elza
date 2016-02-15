@@ -19,6 +19,10 @@ Utils.init();
 var es6promise = require('es6-promise');
 //var es5Shim = require('es5-shim');
 
+// Nastavení neomezeného počtu listenerů pro event emitter - v ELZA je emitter použit pro klávesové zkratky, kde je více listenerů
+var EventEmitter = require('events').EventEmitter;
+EventEmitter.defaultMaxListeners = 0
+
 // Web socket
 var websocket = require('./websocket');
 

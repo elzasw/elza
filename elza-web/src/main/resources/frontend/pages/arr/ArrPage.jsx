@@ -10,7 +10,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import {connect} from 'react-redux'
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {Icon, Ribbon, i18n} from 'components';
+import {Tabs, Icon, Ribbon, i18n} from 'components';
 import {FaExtendedView, FaForm, BulkActionsDialog, VersionValidationDialog, RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FaFileTree, AbstractReactComponent, ModalDialog, NodeTabs, FaTreeTabs, ImportForm} from 'components';
 import {ButtonGroup, Button, DropdownButton, MenuItem} from 'react-bootstrap';
 import {PageLayout} from 'pages';
@@ -27,6 +27,8 @@ var Shortcuts = require('react-shortcuts/component');
 import {Utils} from 'components'
 import {barrier} from 'components/Utils';
 import {setFocus} from 'actions/global/focus'
+
+var _developerSelectedTab = 0
 
 var keyModifier = Utils.getKeyModifier()
 
@@ -50,7 +52,8 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         this.bindMethods('getActiveInfo', 'buildRibbon', 'handleRegisterJp',
             'handleApproveFaVersion', 'handleCallApproveFaVersion', 'getActiveFindingAidId', 'handleBulkActionsDialog',
-            'handleValidationDialog', 'handleEditFaVersion', 'handleCallEditFaVersion', 'handleShortcuts', 'handleImport');
+            'handleValidationDialog', 'handleEditFaVersion', 'handleCallEditFaVersion', 'handleShortcuts', 'handleImport',
+            'renderDeveloperPanel', 'renderDeveloperDescItems');
 
         this.state = {faFileTreeOpened: false};
     }
@@ -305,8 +308,79 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         )
     }
 
+    renderDeveloperDescItems(activeFa, node) {
+        var rows = []
+        if (node.subNodeForm.fetched) {
+            node.subNodeForm.infoGroups.forEach(group => {
+                var types = []
+                group.types.forEach(type => {
+                    var infoType = node.subNodeForm.infoTypesMap[type.id]
+                    var refType = node.subNodeForm.refTypesMap[type.id]
+
+                    var specs;
+                    if (refType.useSpecification) {
+                        specs = refType.descItemSpecs.map(spec => <div key={'spec' + spec.id}>{spec.name} [{spec.code}]</div>)
+                        specs = <div>{specs}</div>
+                    }
+
+                    types.push(
+                        <div key={'type' + refType.id} className={'desc-item-type ' + infoType.type}>
+                            <h2 title={refType.name}>{refType.shortcut} <small>[{refType.code}]</small></h2>
+                            <div key='1' className='desc'>{refType.description}</div>
+                            <div key='2' className='attrs'>
+                                <div key='1'><label>type:</label>{infoType.type}</div>
+                                <div key='2'><label>dataType:</label>{refType.dataType.code}</div>
+                                <div key='3'><label>width:</label>{infoType.width}</div>
+                                <div key='4'><label>viewOrder:</label>{refType.viewOrder}</div>
+                            </div>
+                            {false && specs}
+                        </div>
+                    )
+                })
+
+                rows.push(
+                    <div key={'group' + group.code}>
+                        <h1 key='1'>{group.code}</h1>
+                        <div key='2'>{types}</div>
+                    </div>
+                )
+            })
+        }
+
+        return <div className='desc-items-container'>{rows}</div>
+    }
+
+    renderDeveloperPanel() {
+        const {arrRegion} = this.props;
+        var fas = arrRegion.fas;
+        var activeFa = arrRegion.activeIndex != null ? arrRegion.fas[arrRegion.activeIndex] : null;
+        if (!activeFa) {
+            return
+        }
+
+        var node
+        if (activeFa.nodes && activeFa.nodes.activeIndex !== null) {
+            node = activeFa.nodes.nodes[activeFa.nodes.activeIndex]
+        }
+        if (!node) {
+            return
+        }
+        return (
+            <div className='developer-panel'>
+                <Tabs.Container>
+                    <Tabs.Tabs items={[{id: 0, title: i18n('developer.title.descItems')}, {id: 1, title: i18n('developer.title.xxx')}]} activeItem={{id: _developerSelectedTab}}
+                        onSelect={(item)=>{_developerSelectedTab = item.id;this.setState({})}}
+                    />
+                    <Tabs.Content>
+                        {_developerSelectedTab === 0 && this.renderDeveloperDescItems(activeFa, node)}
+                    </Tabs.Content>
+                </Tabs.Container>
+            </div>
+        )
+    }
+
     render() {
-        const {focus, splitter, arrRegion, faFileTree, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
+        const {developer, focus, splitter, arrRegion, faFileTree, rulDataTypes, calendarTypes, descItemTypes, packetTypes} = this.props;
 
         var showRegisterJp = arrRegion.showRegisterJp;
 
@@ -361,7 +435,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 
         var rightPanel = (
             <div className="fa-right-container">
-
+                {developer.enabled && this.renderDeveloperPanel()}
             </div>
         )
 
@@ -381,7 +455,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                     ribbon={this.buildRibbon()}
                     leftPanel={leftPanel}
                     centerPanel={centerPanel}
-                    _rightPanel={rightPanel}
+                    rightPanel={rightPanel}
                     appContentExt={appContentExt}
                 />
             </Shortcuts>
@@ -390,12 +464,13 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {splitter, arrRegion, faFileTree, refTables, form, focus} = state
+    const {splitter, arrRegion, faFileTree, refTables, form, focus, developer} = state
     return {
         splitter,
         arrRegion,
         faFileTree,
         focus,
+        developer,
         rulDataTypes: refTables.rulDataTypes,
         calendarTypes: refTables.calendarTypes,
         descItemTypes: refTables.descItemTypes,
@@ -407,6 +482,7 @@ ArrPage.propTypes = {
     splitter: React.PropTypes.object.isRequired,
     arrRegion: React.PropTypes.object.isRequired,
     faFileTree: React.PropTypes.object.isRequired,
+    developer: React.PropTypes.object.isRequired,
     rulDataTypes: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,
     descItemTypes: React.PropTypes.object.isRequired,

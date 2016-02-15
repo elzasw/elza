@@ -43,7 +43,7 @@ var DescItemUnitdate = class DescItemUnitdate extends AbstractReactComponent {
     render() {
         const {descItem, locked} = this.props;
 
-        let tooltip = <Tooltip>
+        let tooltip = <Tooltip id='tt'>
                         <b>Formát datace</b><br />
                         Století: 20.st.<br />
                         Rok: 1968<br />
