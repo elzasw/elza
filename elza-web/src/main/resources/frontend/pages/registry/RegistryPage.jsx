@@ -11,9 +11,10 @@ var classNames = require('classnames');
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Loading, Toastr} from 'components';
+import {AbstractReactComponent, i18n, Loading} from 'components';
 import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, ArrPanel,
         Search, RegistryPanel, DropDownTree, AddRegistryForm, ImportForm} from 'components';
+import {addToastrWarning} from 'components/shared/toastr/ToastrActions'
 import {WebApi} from 'actions'
 import {MenuItem, DropdownButton, ButtonGroup, Button} from 'react-bootstrap';
 import {PageLayout} from 'pages';
@@ -184,7 +185,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
     handleDoubleClick(item, event) {
         if (this.props.registryRegion.recordForMove && this.props.registryRegion.recordForMove.selectedId === item.recordId) {
-            this.dispatch(Toastr.Actions.warning({title: i18n('registry.danger.disallowed.action.title'), message: i18n('registry.danger.disallowed.action.can.not.move.into.myself')}));
+            this.dispatch(addToastrWarning(i18n('registry.danger.disallowed.action.title'), i18n('registry.danger.disallowed.action.can.not.move.into.myself')));
             return false;
         }
         var rodice = item.parents.slice();

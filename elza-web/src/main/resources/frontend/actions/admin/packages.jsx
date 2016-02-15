@@ -7,6 +7,7 @@
 import {WebApi} from 'actions'
 import {i18n, Toastr, LongText} from 'components';
 import * as types from 'actions/constants/ActionTypes';
+import {addToastrSuccess} from 'components/shared/toastr/ToastrActions'
 
 /**
  * Získání seznamu importovaných balíčků ze serveru.
@@ -45,10 +46,7 @@ export function deletePackage(code) {
         return WebApi.deletePackage(code)
                 .then(json => dispatch(deletePackageReceive(code)))
                 .then(json => {
-                    Toastr.Actions.success({
-                        title: i18n("admin.packages.message.delete.title"),
-                        message: i18n("admin.packages.message.delete.message", code)
-                    });
+                    addToastrSuccess(i18n("admin.packages.message.delete.title"), i18n("admin.packages.message.delete.message", code));
                 });
     }
 }
@@ -63,10 +61,7 @@ export function importPackage(data) {
         dispatch(importPackageRequest())
         return WebApi.importPackage(data).then(json => dispatch(importPackageReceive()))
             .then(json => {
-                Toastr.Actions.success({
-                    title: i18n("admin.packages.message.import.title"),
-                    message: i18n("admin.packages.message.import.message")
-                });
+                addToastrSuccess(i18n("admin.packages.message.import.title"), i18n("admin.packages.message.import.message"));
         });
     }
 }

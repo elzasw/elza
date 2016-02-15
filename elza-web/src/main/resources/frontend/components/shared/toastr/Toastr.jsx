@@ -9,52 +9,37 @@ require("./Toastr.less")
  *
  *  Volání je pro typ hlášky:
  *  Danger:
- *      Toastr.Actions.danger({title: 'Hlavička', message: 'Zpráva'});
+ *      addToastrDanger('title', 'message,...)
  *  Info:
- *      Toastr.Actions.info({title: 'Hlavička', message: 'Zpráva'});
+ *      addToastrInfo('title', 'message,...)
  *  Success:
- *      Toastr.Actions.success({title: 'Hlavička', message: 'Zpráva'});
+ *      addToastrSuccess('title', 'message,...)
  *  Warning:
- *      Toastr.Actions.warning({title: 'Hlavička', message: 'Zpráva'});
- *  Clear:
- *      Toastr.Actions.clear({title: 'Hlavička', message: 'Zpráva'});
+ *      addToastrWarning('title', 'message,...)
 **/
 
 var React = require('react');
-var assign = require('react/lib/Object.assign');
 
 import {Icon, i18n, AbstractReactComponent} from 'components';
-import {Alert, Button} from 'react-bootstrap';
-//import {connect} from 'react-redux'
-var ToastrStore = require('./ToastrStore');
-var ToastrActions = require('./ToastrActions');
+import {Alert} from 'react-bootstrap';
+import {connect} from 'react-redux'
+import {addToastr,removeToastr} from './ToastrActions'
 
-/* var Toastr = class Toastr extends AbstractReactComponent {*/
-module.exports = class Toastr extends React.Component {
+var Toastr = class Toastr extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.state = assign({}, {toasters: ToastrStore.getInitialData()});
-        this.lastId = 1;
+        this.state = {};
+        this.bindMethods('handleDismiss')
     }
-    componentDidMount() {
-        this.unsubscribe = ToastrStore.listen(this.onToastr.bind(this));
-    }
-    componentWillUnmount() {
-        this.unsubscribe();
-    }
-    onToastr(data) {
-        this.setState(assign({}, {toasters: data}));
-    }
-    handleAlertDismiss(t) {
-        ToastrActions.clear(t.id);
-    }
-// tady pokračovat
-    render() {
 
-        /*var rows = this.props.toastrs.toastrs.map((t) => {*/
-        var rows = this.state.toasters.map((t) => {
+    handleDismiss(index) {
+        this.dispatch(removeToastr(index));
+    }
+
+    render() {
+        var rows = this.props.store.toasts.map((t, index) => {
             var icon = null;
-            switch (t.type) {
+            switch (t.style) {
                 case 'success':
                     icon = <Icon glyph="fa-check" />;
                 break;
@@ -70,13 +55,13 @@ module.exports = class Toastr extends React.Component {
             }
             return (
                 <Alert
-                    bsStyle={t.type}
-                    bsSize="lg"
+                    bsStyle={t.style}
+                    bsSize={t.size ? t.size : "lg"}
                     key={t.key}
                     className={t.visible && "fade"}
                     closeLabel={i18n('global.action.close')}
-                    onDismiss={this.handleAlertDismiss.bind(null,t)}
-                    dismissAfter={t.dismissAfter}
+                    onDismiss={() => (this.handleDismiss(index))}
+                    dismissAfter={t.time}
                 >
                     {icon}
                     <div className="content">
@@ -93,14 +78,12 @@ module.exports = class Toastr extends React.Component {
             </div>
         )
     }
-}
-/*
+};
+
 function mapStateToProps(state) {
-    const {toastrs} = state
     return {
-        toastrs
+        store: state.toastr
     }
 }
 
 module.exports = connect(mapStateToProps)(Toastr);
-*/

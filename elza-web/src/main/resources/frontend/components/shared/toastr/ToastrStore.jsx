@@ -1,101 +1,47 @@
 /**
- * Akce, které zpracují vstup toastu a vrátí zobrazení toast notifikace
- * a na jejich základě se vypíše daný typ toast notifikace
- **/
-var Reflux = require('reflux');
+ * Store pro toastr
+ *
+ * @author Petr Compel
+ * @since 15.2.2015
+ */
+import * as types from 'actions/constants/ActionTypes';
 
-var ToastrActions = require('./ToastrActions');
+/**
+ * Výchozí stav store
+ */
+const initialState = {
+    lastKey: 0,
+    toasts: []
+};
 
-var ToastrStore = Reflux.createStore({
-    listenables: [ToastrActions],
-    id: 1,
-    lastKey: 1,
-    timer: null,
-    toasters : [],
-    getInitialData: function() {
-        return this.toasters;
-    },
-    onClear: function(id) {
-        var fi = null;
-        this.removeOldToasts();
-        this.toasters.forEach((t, i) => {
-            if (t.id === id) {
-                t.visible = false;
-            }
-        });
-
-        this.trigger(this.toasters);
-        var parent = this;
-        if (this.timer!==null)
-            clearTimeout(this.timer);
-        this.timer = setTimeout(function(){ parent.removeOldToasts(); parent.trigger(parent.toasters);},500);
-    },
-    removeOldToasts: function(id){
-        this.toasters.forEach((t, i) => {
-            if (t.visible === false) {
-                this.toasters.splice(i, 1);
-            }
-        });
-    },
-
-    getLastKey: function(){
-        this.lastKey++
-        return this.lastKey;
-    },
-    onDanger: function(data) {
-        var toastr = {
-            id: this.id++,
-            title: data.title,
-            message: data.message,
-            type: 'danger',
-            dismissAfter: null,
-            key: this.getLastKey()
-        };
-        this.add(toastr);
-    },
-    onSuccess: function(data) {
-        var toastr = {
-            id: this.id++,
-            title: data.title,
-            message: data.message,
-            type: 'success',
-            dismissAfter: 2000,
-            key: this.getLastKey()
-        };
-        this.add(toastr);
-    },
-    onWarning: function(data) {
-        var toastr = {
-            id: this.id++,
-            title: data.title,
-            message: data.message,
-            type: 'warning',
-            dismissAfter: null,
-            key: this.getLastKey()
-        };
-        this.add(toastr);
-    },
-    onInfo: function(data) {
-        var toastr = {
-            id: this.id++,
-            title: data.title,
-            message: data.message,
-            type: 'info',
-            dismissAfter: 2000,
-            key: this.getLastKey()
-        };
-        this.add(toastr);
-    },
-    add: function(toastr) {
-        this.removeOldToasts();
-        this.toasters.push(toastr);
-        this.trigger(this.toasters);
-        setTimeout(function(toastr) {
-            toastr.visible = true;
-            this.trigger(this.toasters);
-        }.bind(this), 1, toastr);
-    },
-    
-});
-
-module.exports = ToastrStore;
+export default function toastr(state = initialState, action = {}) {
+    switch (action.type) {
+        case types.TOASTR_ADD:
+            var key = state.toasts.length === 0 ? 0 : state.lastKey;
+            return {
+                lastKey: state.lastKey + 1,
+                toasts: [
+                    ...state.toasts,
+                    {
+                        style: action.style,
+                        title: action.title,
+                        message: action.message,
+                        size: action.size,
+                        time: action.time,
+                        key: key + 1,
+                        visible: true
+                    }
+                ]
+            };
+        case types.TOASTR_REMOVE:
+            return {
+                ...state,
+                toasts: [
+                    ...state.toasts.splice(0, action.index),
+                    ...state.toasts.splice(action.index + 1)
+                ]
+            };
+        default:
+            return state;
+    }
+}

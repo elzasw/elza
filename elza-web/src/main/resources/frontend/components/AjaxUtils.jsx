@@ -13,6 +13,8 @@ var _logResults = false;
 var React = require('react');
 import {i18n, Toastr, LongText} from 'components';
 import {lenToBytesStr, roughSizeOfObject} from 'components/Utils';
+import {store} from '../stores/app/AppStore';
+import {addToastrDanger} from 'components/shared/toastr/ToastrActions'
 
 
 var _callIndex = 0;
@@ -103,12 +105,12 @@ function ajaxCallRaw(url, params, method, data, contentType = false) {
 
                 if (result.error) {
 
-                    var messages = new Array();
+                    var messages = [];
                     if (result.message) {
                         messages.push(<p><LongText text={result.message}/></p>);
                     }
                     messages.push(<small>{result.statusText} [{result.status}]</small>);
-                    Toastr.Actions.danger({title: result.title, message: messages});
+                    store.dispatch(addToastrDanger(result.title, messages));
                 }
 
                 reject(result);
@@ -197,12 +199,12 @@ function ajaxCall(url, params, method, data) {
 
                 if (result.error) {
 
-                    var messages = new Array();
+                    var messages = [];
                     if (result.message) {
                         messages.push(<p><LongText text={result.message}/></p>);
                     }
                     messages.push(<small>{result.statusText} [{result.status}]</small>);
-                    Toastr.Actions.danger({title: result.title, message: messages});
+                    store.dispatch(addToastrDanger(result.title, messages));
                 }
 
                 reject(result);

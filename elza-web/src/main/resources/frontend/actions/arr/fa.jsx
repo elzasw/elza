@@ -7,6 +7,7 @@ import {Toastr, i18n} from 'components';
 import * as types from 'actions/constants/ActionTypes';
 import {modalDialogHide} from 'actions/global/modalDialog'
 import {faFileTreeFetch} from 'actions/arr/faFileTree'
+import {addToastrSuccess} from 'components/shared/toastr/ToastrActions'
 import {nodesRequest, nodesReceive} from 'actions/arr/node'
 import {createFaRoot, getFaFromFaAndVersion} from 'components/arr/ArrUtils'
 
@@ -56,11 +57,9 @@ export function createFa(data) {
     return dispatch => {
         return WebApi.createFindingAid(data.name, data.ruleSetId, data.rulArrTypeId)
             .then((json) => {
-                Toastr.Actions.success({
-                    title: i18n("arr.fa.title.added"),
-                });                
-                dispatch(modalDialogHide())
-                dispatch(faFileTreeFetch())
+                dispatch(addToastrSuccess(i18n("arr.fa.title.added")));
+                dispatch(modalDialogHide());
+                dispatch(faFileTreeFetch());
             });
     }
 }
@@ -69,9 +68,7 @@ export function approveFa(versionId, ruleSetId, arrangementTypeId) {
     return dispatch => {
         return WebApi.approveVersion(versionId, ruleSetId, arrangementTypeId)
             .then((json) => {
-                Toastr.Actions.success({
-                    title: i18n("arr.fa.title.approved"),
-                });
+                dispatch(addToastrSuccess(i18n("arr.fa.title.approved")));
                 dispatch(approveFaResult(json.versionId))
                 dispatch(modalDialogHide())
                 dispatch(faFileTreeFetch())

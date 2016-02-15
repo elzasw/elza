@@ -21,7 +21,7 @@ import faFileTree from './arr/faFileTree';
 import registryRegion from './registry/registryRegion';
 import registryRegionData from './registry/registryRegionData';
 import registryRegionRecordTypes from './registry/registryRegionRecordTypes';
-import toastrs from './toastr/toastrs';
+import toastr from '../../components/shared/toastr/ToastrStore';
 import partyRegion from './party/partyRegion';
 import contextMenu from './global/contextMenu';
 import modalDialog from './global/modalDialog';
@@ -52,7 +52,7 @@ let reducer = combineReducers({
     registryRegion,
     registryRegionData,
     registryRegionRecordTypes,
-    toastrs,
+    toastr,
     developer,
     partyRegion,
     contextMenu,
@@ -86,14 +86,14 @@ const loggerMiddleware = createLogger({
 
 var createStoreWithMiddleware;
 if (_logStoreState) {
-    createStoreWithMiddleware = applyMiddleware(
+    createStoreWithMiddleware = compose(applyMiddleware(
         thunkMiddleware,
         loggerMiddleware
-    )(createStore)
+    ), window.devToolsExtension ? window.devToolsExtension() : f => f)(createStore)
 } else {
-    createStoreWithMiddleware = applyMiddleware(
+    createStoreWithMiddleware = compose(applyMiddleware(
         thunkMiddleware
-    )(createStore)
+    ), window.devToolsExtension ? window.devToolsExtension() : f => f)(createStore)
 }
 
 var initialState = {
@@ -141,7 +141,7 @@ var save = function(store) {
         partyRegion: partyRegion(store.partyRegion, action),
         registryRegion: registryRegion(store.registryRegion, action),
         arrRegion: arrRegion(store.arrRegion, action),
-        splitter: splitter(store.splitter, action),
+        splitter: splitter(store.splitter, action)
     }
 
     return result

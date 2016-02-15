@@ -1,6 +1,7 @@
 import * as types from 'actions/constants/ActionTypes';
 
-import {Toastr, i18n} from 'components';
+import {i18n} from 'components';
+import {addToastrSuccess} from 'components/shared/toastr/ToastrActions'
 
 export function changeConformityInfo(findingAidVersionId, nodeIds) {
     return {
@@ -12,9 +13,7 @@ export function changeConformityInfo(findingAidVersionId, nodeIds) {
 
 export function changeIndexingFinished() {
 
-    Toastr.Actions.success({
-        title: i18n("admin.fulltext.message.success"),
-    });
+    addToastrSuccess(i18n("admin.fulltext.message.success"));
 
     return {
         type: types.CHANGE_INDEXING_FINISHED

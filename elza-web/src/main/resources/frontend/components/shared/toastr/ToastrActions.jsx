@@ -1,17 +1,41 @@
 /**
- *
- * Vytvoření akcí pro toast notifikace.
- * @param object {String title, String message}
- *
-**/
-var Reflux = require('reflux');
+ * akce pro toastry
+ */
 
-var ToastrActions = Reflux.createActions({
-    "danger" : {},
-    "info" : {},
-    "success" : {},
-    "warning" : {},
-    "clear" : {},
-});
 
-module.exports = ToastrActions;
+import * as types from 'actions/constants/ActionTypes';
+
+
+export function addToastr(title, message = null, style = "info", size = "lg", time = null) {
+    return {
+        type: types.TOASTR_ADD,
+        title,
+        message,
+        style,
+        size,
+        time,
+        visible: true
+    }
+}
+export function addToastrDanger(title, message = null, size = "lg") {
+    return addToastr(title, message, "danger", size, null);
+}
+export function addToastrWarning(title, message = null, size = "lg") {
+    return addToastr(title, message, "warning", size, null);
+}
+export function addToastrInfo(title, message = null, size = "lg") {
+    return addToastr(title, message, "info", size, 2000);
+}
+export function addToastrSuccess(title, message = null, size = "lg") {
+    return addToastr(title, message, "success", size, 2000);
+}
+
+export function removeToastr(index) {
+    return {
+        type: types.TOASTR_REMOVE,
+        index
+    }
+}
+
+
+
