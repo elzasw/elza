@@ -24,6 +24,15 @@ function findByNodeKeyInGlobalState(globalState, versionId, nodeKey) {
 }
 exports.findByNodeKeyInGlobalState = findByNodeKeyInGlobalState
 
+function getMapFromList(list, attrName = 'id') {
+    var map = {}
+    list.forEach(x => {
+        map[x[attrName]] = x
+    })
+    return map
+}
+exports.getMapFromList = getMapFromList
+
 function indexById(arr, id, attrName = 'id') {
     if (arr == null) {
         return null;

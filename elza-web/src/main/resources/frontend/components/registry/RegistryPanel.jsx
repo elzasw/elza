@@ -9,7 +9,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {Input, Button} from 'react-bootstrap';
-import {Icon, AbstractReactComponent, RegistryLabel, Loading, DropDownTree, EditRegistryForm} from 'components';
+import {Icon, AbstractReactComponent, RegistryLabel, Loading, EditRegistryForm} from 'components';
 import {i18n} from 'components';
 import {WebApi} from 'actions'
 import {getRegistryIfNeeded, fetchRegistryIfNeeded, fetchRegistry} from 'actions/registry/registryRegionList'

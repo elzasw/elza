@@ -185,7 +185,7 @@ class WebApi{
         return AjaxUtils.ajaxPut('/api/arrangementManagerV2/descItems/' + versionId + "/" + nodeVersionId + "/update/true", null,  descItem);
     }
     
-    fdeleteDescItem(versionId, nodeVersionId, descItem) {
+    deleteDescItem(versionId, nodeVersionId, descItem) {
         return AjaxUtils.ajaxPost('/api/arrangementManagerV2/descItems/' + versionId + "/" + nodeVersionId + "/delete", null,  descItem);
     }
 
@@ -384,7 +384,7 @@ class WebApi{
     }
 
     getFaNodeForm(versionId, nodeId) {
-        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + nodeId + '/' + versionId + '/form')
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + nodeId + '/' + versionId + '/formNew')
             .then(json=>{
                 return json
             });
