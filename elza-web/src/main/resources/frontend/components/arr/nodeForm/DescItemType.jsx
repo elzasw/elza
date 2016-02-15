@@ -41,7 +41,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
 
     shouldComponentUpdate(nextProps, nextState) {
 return true;
-        var eqProps = ['descItemTypeInfo', 'descItemType', 'rulDataType', 'calendarTypes', 'packetTypes', 'packets', 'locked', 'copy']
+        var eqProps = ['descItemType', 'rulDataType', 'calendarTypes', 'packetTypes', 'packets', 'locked', 'copy']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -58,11 +58,12 @@ return true;
      * @return {Object} view
      */
     renderDescItemSpec(key, descItem, descItemIndex, locked) {
-        const {descItemTypeInfo} = this.props;
+        const {infoType, refType} = this.props;
 
-        var options = descItemTypeInfo.descItemSpecs.map(itemSpec => (
-            <option key={itemSpec.id} value={itemSpec.id}>{itemSpec.name}</option>
-        ));
+        var options = infoType.specs.map(spec => {
+            var fullSpec = {...spec, ...refType.descItemSpecsMap[spec.id]}
+            return <option key={fullSpec.id} value={fullSpec.id}>{fullSpec.name}</option>
+        });
 
         var cls = classNames({
             'form-control': true,
@@ -317,13 +318,13 @@ return true;
      * @return {Object} view
      */
     renderDescItem(descItemType, descItem, descItemIndex, actions, locked) {
-        const {descItemTypeInfo, rulDataType, calendarTypes, packets, packetTypes, versionId} = this.props;
+        const {refType, infoType, rulDataType, calendarTypes, packets, packetTypes, versionId} = this.props;
 
         var cls = 'desc-item-type-desc-item-container';
         if (actions.length > 0) {
             cls += ' with-action';
         }
-        if (descItemType.repeatable) {
+        if (infoType.rep) {
             cls += ' draggable-desc-items';
         }
 
@@ -331,7 +332,7 @@ return true;
 
         var key = descItem.formKey;
 
-        if (descItemTypeInfo.useSpecification) {
+        if (refType.useSpecification) {
             parts.push(
                 this.renderDescItemSpec('spec_' + key, descItem, descItemIndex, locked)
             );
@@ -347,7 +348,7 @@ return true;
 
         var dragProps = {
             'data-id': descItemIndex,
-            draggable: descItemType.repeatable,
+            draggable: infoType.rep,
             onDragStart: this.handleDragStart,
             onDragEnd: this.handleDragEnd,
         }
@@ -389,6 +390,7 @@ return true;
                     {...descItemProps} 
                     />)
                 break;
+
             case 'STRING':
                 parts.push(<DescItemString key={itemComponentKey}
                     {...descItemProps}
@@ -423,7 +425,7 @@ return true;
 
         return (
             <div key={key} className={cls} {...dragProps}>
-                {descItemType.repeatable && <div className='dragger'><Icon className="up" glyph="fa-angle-up"/><Icon className="down" glyph="fa-angle-down"/>&nbsp;</div>}
+                {infoType.rep == 1 && <div className='dragger'><Icon className="up" glyph="fa-angle-up"/><Icon className="down" glyph="fa-angle-down"/>&nbsp;</div>}
                 <div key="container" className='desc-item-value-container'>
                     {parts}
                 </div>
@@ -437,7 +439,7 @@ return true;
      * @return {Object} view
      */
     renderLabel() {
-        const {descItemCopyFromPrevEnabled, copy, locked, descItemType, descItemTypeInfo, conformityInfo, closed} = this.props;
+        const {descItemCopyFromPrevEnabled, copy, locked, descItemType, infoType, refType, conformityInfo, closed} = this.props;
 
         var actions = [];
 
@@ -467,7 +469,7 @@ return true;
             });
         }
         if (!hasDescItemsForDelete) {
-            if (descItemTypeInfo.type == 'REQUIRED' || descItemTypeInfo.type == 'RECOMMENDED') {
+            if (infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED') {
             } else {
                 hasDescItemsForDelete = true;
             }
@@ -477,9 +479,9 @@ return true;
         }
 
         var titleText = descItemType.name;
-        if (descItemTypeInfo.description && descItemTypeInfo.description.length > 0) {
-            if (descItemTypeInfo.description != titleText) {
-                titleText = [titleText, descItemTypeInfo.description].join('\n')
+        if (refType.description && refType.description.length > 0) {
+            if (refType.description != titleText) {
+                titleText = [titleText, refType.description].join('\n')
             }
         }
 
@@ -487,7 +489,7 @@ return true;
         return (
             <div className='desc-item-type-label'>
                 <div className='title' title={titleText}>
-                    {descItemTypeInfo.shortcut}
+                    {refType.shortcut}
                 </div>
                 <div className='actions'>
                     {actions}
@@ -518,19 +520,19 @@ return true;
     }
 
     render() {
-        const {onDescItemRemove, onDescItemAdd, descItemType, descItemTypeInfo, locked, conformityInfo, closed} = this.props;
+        const {onDescItemRemove, onDescItemAdd, descItemType, refType, infoType, locked, conformityInfo, closed} = this.props;
 
         var label = this.renderLabel();
 
         var addAction;
-        if (descItemTypeInfo.repeatable && !(locked || closed)) {
+        if (infoType.rep && !(locked || closed)) {
             addAction = <div className='desc-item-type-actions'><NoFocusButton onClick={onDescItemAdd} title={i18n('subNodeForm.addDescItem')}><Icon glyph="fa-plus" /></NoFocusButton></div>
         }
 
         var descItems = descItemType.descItems.map((descItem, descItemIndex) => {
             var actions = new Array;
 
-            if (descItemTypeInfo.repeatable && !locked && !closed) {
+            if (infoType.rep && !locked && !closed) {
                 actions.push(<NoFocusButton key="delete" onClick={onDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-times" /></NoFocusButton>);
             }
 
@@ -549,7 +551,7 @@ return true;
         var cls = classNames({
             'desc-item-type': true,
             active: descItemType.hasFocus,
-            ['el-' + descItemTypeInfo.width]: true
+            ['el-' + infoType.width]: true
         });
 
         return (
@@ -583,7 +585,8 @@ DescItemType.propTypes = {
     onDescItemTypeCopyFromPrev: React.PropTypes.func.isRequired,
     onDescItemRemove: React.PropTypes.func.isRequired,
     onDescItemAdd: React.PropTypes.func.isRequired,
-    descItemTypeInfo: React.PropTypes.object.isRequired,
+    refType: React.PropTypes.object.isRequired,
+    infoType: React.PropTypes.object.isRequired,
     descItemType: React.PropTypes.object.isRequired,
     rulDataType: React.PropTypes.object.isRequired,
     calendarTypes: React.PropTypes.object.isRequired,

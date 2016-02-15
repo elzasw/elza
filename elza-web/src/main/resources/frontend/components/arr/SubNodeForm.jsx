@@ -37,14 +37,12 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
 
         this.bindMethods('renderDescItemGroup', 'handleAddDescItemType', 'renderDescItemType', 'handleChange', 'handleChangePosition',
             'handleChangeSpec', 'handleDescItemTypeRemove', 'handleBlur', 'handleFocus', 'renderFormActions',
-            'getDescItemTypeInfo', 'handleDescItemAdd', 'handleDescItemRemove', 'handleDescItemTypeLock',
+            'handleDescItemAdd', 'handleDescItemRemove', 'handleDescItemTypeLock',
             'handleDescItemTypeUnlockAll', 'handleDescItemTypeCopy', 'handleAddNodeBefore', 'handleAddNodeAfter',
             'handleCreatePacket', 'handleCreatePacketSubmit', 'handleAddChildNode', 'handleCreateParty',
             'handleCreatedParty', 'handleCreateRecord', 'handleCreatedRecord', 'handleDeleteNode',
             'handleDescItemTypeCopyFromPrev'
         );
-
-//console.log("@@@@@-SubNodeForm-@@@@@", props);
     }
 
     componentDidMount() {
@@ -59,11 +57,9 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-//console.log("@@@@@-SubNodeForm-@@@@@", props);
     }
 
     handleShortcuts(action) {
-        console.log("Sub node form XXXXXXXX", action);
     }
 
     /**
@@ -90,15 +86,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         )
     }
 
-    /**
-     * Dohledání předpisu typu atributu pro daný typ.
-     * @param descItemType {Object} typ atributu
-     * @return {Object} předpis typu atributu
-     */
-    getDescItemTypeInfo(descItemType) {
-        return this.props.descItemTypeInfos[indexById(this.props.descItemTypeInfos, descItemType.id)];
-    }
-
+   
     /**
      * Odebrání hodnoty atributu.
      * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
@@ -470,11 +458,12 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @return {Object} view
      */
     renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex) {
-        const {descItemCopyFromPrevEnabled, rulDataTypes, calendarTypes, closed,
+        const {subNodeForm, descItemCopyFromPrevEnabled, rulDataTypes, calendarTypes, closed,
                 nodeSettings, nodeId, packetTypes, packets, conformityInfo, versionId} = this.props;
 
-        var rulDataType = rulDataTypes.items[indexById(rulDataTypes.items, descItemType.dataTypeId)];
-        var descItemTypeInfo = this.getDescItemTypeInfo(descItemType);
+        var refType = subNodeForm.refTypesMap[descItemType.id]
+        var infoType = subNodeForm.infoTypesMap[descItemType.id]
+        var rulDataType = refType.dataType
 
         var locked = false;
         var copy = false;
@@ -504,14 +493,14 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                 if (index >= 0) {
                     copy = true;
                 }
-
             }
         }
 
         return (
             <DescItemType key={descItemType.id}
                 descItemType={descItemType}
-                descItemTypeInfo={descItemTypeInfo}
+                refType={refType}
+                infoType={infoType}
                 rulDataType={rulDataType}
                 calendarTypes={calendarTypes}
                 packetTypes={packetTypes}
@@ -546,21 +535,23 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * Zobrazení dialogu pro přidání atributu.
      */
     handleAddDescItemType() {
-        const {descItemTypeInfos, formData, versionId, selectedSubNodeId, nodeKey} = this.props;
+        const {subNodeForm, versionId, selectedSubNodeId, nodeKey} = this.props;
+
+        const formData = subNodeForm.formData
 
         // Pro přidání chceme jen ty, které zatím ještě nemáme
-        var descItemTypesMap = {};
-        descItemTypeInfos.forEach(descItemType => {
-            descItemTypesMap[descItemType.id] = descItemType;
-        })
+        var infoTypesMap = {...subNodeForm.infoTypesMap};
         formData.descItemGroups.forEach(group => {
             group.descItemTypes.forEach(descItemType => {
-                delete descItemTypesMap[descItemType.id];
+                delete infoTypesMap[descItemType.id];
             })
         })
         var descItemTypes = [];
-        Object.keys(descItemTypesMap).forEach(function (key) {
-            descItemTypes.push(descItemTypesMap[key]);
+        Object.keys(infoTypesMap).forEach(function (key) {
+            descItemTypes.push({
+                ...subNodeForm.refTypesMap[key],
+                ...infoTypesMap[key],
+            });
         });
 
         function typeId(type) {
@@ -644,7 +635,8 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 
     render() {
-        const {formData, closed} = this.props;
+        const {subNodeForm, closed} = this.props;
+        var formData = subNodeForm.formData
 
         var formActions = closed ? null : this.renderFormActions();
         var descItemGroups = formData.descItemGroups.map((group, groupIndex) => (
@@ -678,7 +670,6 @@ function mapStateToProps(state) {
 }
 
 SubNodeForm.propTypes = {
-    descItemTypeInfos: React.PropTypes.array.isRequired,
     versionId: React.PropTypes.number.isRequired,
     parentNode: React.PropTypes.object.isRequired,
     selectedSubNode: React.PropTypes.object.isRequired,
@@ -691,7 +682,7 @@ SubNodeForm.propTypes = {
     descItemTypes: React.PropTypes.object.isRequired,
     packetTypes: React.PropTypes.object.isRequired,
     packets: React.PropTypes.array.isRequired,
-    formData: React.PropTypes.object.isRequired,
+    subNodeForm: React.PropTypes.object.isRequired,
     closed: React.PropTypes.bool.isRequired,
     conformityInfo: React.PropTypes.object.isRequired,
     descItemCopyFromPrevEnabled: React.PropTypes.bool.isRequired,

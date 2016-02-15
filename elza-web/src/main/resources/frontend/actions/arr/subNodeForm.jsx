@@ -1,5 +1,5 @@
 import {WebApi} from 'actions'
-import {indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
+import {getMapFromList, indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
 
 import * as types from 'actions/constants/ActionTypes';
 
@@ -124,7 +124,7 @@ export function faSubNodeFormValueChangeSpec(versionId, nodeId, nodeKey, valueLo
     return (dispatch, getState) => {
         // Dispatch zmněny specifikace
         dispatch({
-            type: types.FA_SUB_NODE_FORM_VALUE_CHANGE_SPEC,
+                type: types.FA_SUB_NODE_FORM_VALUE_CHANGE_SPEC,
             versionId,
             nodeId,
             nodeKey,
@@ -133,10 +133,6 @@ export function faSubNodeFormValueChangeSpec(versionId, nodeId, nodeKey, valueLo
         })
 
         // Vynucení uložení na server, pokud je validní jako celek
-        var state = getState();
-        var subNodeForm = getSubNodeForm(state, versionId, nodeKey);
-        var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
-
         formValueStore(dispatch, getState, versionId, nodeId, nodeKey, valueLocation)
     }
 }
@@ -161,11 +157,13 @@ function formValueStore(dispatch, getState, versionId, nodeId, nodeKey, valueLoc
     var subNodeForm = getSubNodeForm(state, versionId, nodeKey);
     var loc = subNodeForm.getLoc(subNodeForm, valueLocation);
 
+    var refType = subNodeForm.refTypesMap[loc.descItemType.id]
+
     if (!loc.descItem.error.hasError && loc.descItem.touched) {
         if (typeof loc.descItem.id !== 'undefined') {
             // Jen pokud se hodnota nebo specifikace změnila
             var needUpdate = false;
-            if (loc.descItemType.useSpecification && !valuesEquals(loc.descItem.descItemSpecId, loc.descItem.prevDescItemSpecId)) {
+            if (refType.useSpecification && !valuesEquals(loc.descItem.descItemSpecId, loc.descItem.prevDescItemSpecId)) {
                 needUpdate = true;
             }
             if (!valuesEquals(loc.descItem.value, loc.descItem.prevValue)) {
@@ -340,18 +338,31 @@ export function faSubNodeFormFetch(versionId, nodeId, nodeKey) {
     return (dispatch, getState) => {
         dispatch(faSubNodeFormRequest(versionId, nodeId, nodeKey))
         return WebApi.getFaNodeForm(versionId, nodeId)
-            .then(json => dispatch(faSubNodeFormReceive(versionId, nodeId, nodeKey, json, getState().refTables.rulDataTypes)))
-    };
+            .then(json => {
+                var state = getState()
+                dispatch(faSubNodeFormReceive(versionId, nodeId, nodeKey, json, state.refTables.rulDataTypes, state.refTables.descItemTypes))
+            })
+    }
 }
 
-export function faSubNodeFormReceive(versionId, nodeId, nodeKey, json, rulDataTypes) {
+export function faSubNodeFormReceive(versionId, nodeId, nodeKey, json, rulDataTypes, descItemTypes) {
+    // Doplnění descItemTypes o rulDataType
+    var dataTypeMap = getMapFromList(rulDataTypes.items)
+    descItemTypes.items.forEach(type => {
+        type.dataType = dataTypeMap[type.dataTypeId]
+
+        // Doplnění mapy id specifikace na specifikaci
+        type.descItemSpecsMap = getMapFromList(type.descItemSpecs)
+    })
+    var refTypesMap = getMapFromList(descItemTypes.items)
+
     return {
         type: types.FA_SUB_NODE_FORM_RECEIVE,
         versionId,
         nodeId,
         nodeKey,
         data: json,
-        rulDataTypes,
+        refTypesMap,
         receivedAt: Date.now()
     }
 }

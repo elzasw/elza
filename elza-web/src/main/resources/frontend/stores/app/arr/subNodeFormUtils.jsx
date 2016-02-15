@@ -1,41 +1,22 @@
 import {indexById} from 'stores/app/utils.jsx'
 
-function getDescItemTypesMap(data) {
+function getDbItemTypesMap(data) {
     // Mapa id descItemType na descItemType
-    var descItemTypesMap = {};
-    data.descItemGroups.forEach(group => {
-        group.descItemTypes.forEach(descItemType => {
-            descItemTypesMap[descItemType.id] = descItemType;
+    var typesMap = {};
+    data.groups.forEach(group => {
+        group.types.forEach(type => {
+            typesMap[type.id] = type;
         })
     })
-    return descItemTypesMap;
-}
-
-function getDescItemTypeGroupsInfo(data, rulDataTypes) {
-    // Seznam všech atributů - obecně, doplněný o rulDataType
-    // Doplnění position ke skupině
-    var descItemTypeInfos = [];
-    var descItemTypeGroupsMap = {};
-    data.descItemTypeGroups.forEach((descItemGroup, descItemGroupIndex) => {
-        descItemTypeGroupsMap[descItemGroup.code] = descItemGroup;
-        descItemGroup.position = descItemGroupIndex;
-        descItemGroup.descItemTypes.forEach(descItemType => {
-            var rulDataType = rulDataTypes.items[indexById(rulDataTypes.items, descItemType.dataTypeId)];
-
-            var descItemTypeInfo = Object.assign({}, descItemType, { descItemGroup: descItemGroup, rulDataType: rulDataType});
-            descItemTypeInfos.push(descItemTypeInfo);
-        });
-    });
-
-    return {
-        descItemTypeInfos,
-        descItemTypeGroupsMap,
-    }
+    return typesMap;
 }
 
 /**
  * Vytvoření map na základě - descItemGroup - code, descItemType - id a descItem - descItemObjectId.
  * Mapa se vytváří na základě již existujícího formuláře, pokud existuje.
+ * groupMap - mapa group.code na group
+ * typeMap - mapa type.id na type
+ * itemMap - mapa item.descItemObjectId na item
  */
 function createDataMap(formData) {
     var groupMap = {}
@@ -78,9 +59,8 @@ function createDataMap(formData) {
     }
 }
 
-function createImplicitDescItem(descItemType, descItemTypeInfos) {
-    var descItemTypeInfo = descItemTypeInfos[indexById(descItemTypeInfos, descItemType.id)];                        
-    var descItem = createDescItem(descItemTypeInfo, false);
+function createImplicitDescItem(descItemType, refType) {
+    var descItem = createDescItem(descItemType, refType, false);
     descItem.position = 1;
     return descItem;
 }
@@ -126,14 +106,16 @@ function initFormKey(descItemType, descItem) {
     _formKeys[descItemType.id] = _formKeys[descItemType.id] + 1
 }
 
-function mergeDescItems(resultDescItemType, prevType, newType, descItemTypeInfos) {
-    var forceVisibility = resultDescItemType.type == 'REQUIRED' || resultDescItemType.type == 'RECOMMENDED'
+function mergeDescItems(state, resultDescItemType, prevType, newType) {
+    var infoType = state.infoTypesMap[resultDescItemType.id]
+    var refType = state.refTypesMap[resultDescItemType.id]
+    var forceVisibility = infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED'
 
     if (!prevType) {    // ještě ji na formuláři nemáme
         if (!newType) { // není ani v DB, přidáme ji pouze pokud je nastaveno forceVisibility
             if (forceVisibility) {  // přidáme ji pouze pokud je nastaveno forceVisibility
                 // Přidáme jednu hodnotu - chceme i u opakovatelného
-                resultDescItemType.descItems.push(createImplicitDescItem(resultDescItemType, descItemTypeInfos));
+                resultDescItemType.descItems.push(createImplicitDescItem(resultDescItemType, refType));
                 return true;
             } else {
                 return false;
@@ -154,7 +136,7 @@ function mergeDescItems(resultDescItemType, prevType, newType, descItemTypeInfos
 
             if (forceVisibility && resultDescItemType.descItems.length === 0) { // má být vidět, ale nemáme žádnou hodnotu, přidáme implcitiní prázdnou
                 // Přidáme jednu hodnotu - chceme i u opakovatelného
-                resultDescItemType.descItems.push(createImplicitDescItem(resultDescItemType, descItemTypeInfos));
+                resultDescItemType.descItems.push(createImplicitDescItem(resultDescItemType, refType));
             }
 
             // Chceme ji pokud má nějaké hodnoty nebo pokud má být vidět - forceVisibility
@@ -226,36 +208,45 @@ function mergeDescItems(resultDescItemType, prevType, newType, descItemTypeInfos
     return false;
 }
 
-function merge(formData, data, descItemTypesMap, rulDataTypes, descItemTypeInfos) {
-    var dataMap = createDataMap(formData);
+function merge(state) {
+    // Načten data map pro aktuální data, která jsou ve store - co klient zobrazuje (nemusí být, pokud se poprvé zobrazuje formulář)
+    var dataMap = createDataMap(state.formData);
 
-    // Merge descItemTypeGroup
-    // Procházíme předpisy group a type! - nikoli hodnoty z db, ty pouze připojujeme
+    // Mapa db id descItemType na descItemType
+    var dbItemTypesMap = {}
+    state.data.groups.forEach(group => {
+        group.types.forEach(type => {
+            dbItemTypesMap[type.id] = type
+        })
+    })
+
+    // Procházíme všechny skupiny, které mohou být na formuláři - nikoli hodnoty z db, ty pouze připojujeme
+    // Všechny procházíme z toho důvodu, že některé mohou být vynuceny na zobrazení - forceVisible a klient je musí zobrazit
     var descItemGroups = [];
-    data.descItemTypeGroups.forEach(group => {
+    state.infoGroups.forEach(group => {
         var resultGroup = {
             hasFocus: false,
-            ...dataMap.groupMap.find(group.code),
-            ...group,
+            ...dataMap.groupMap.find(group.code),       // připojení skupiny již na klientovi, pokud existuje
+            ...group,                                   // přepsání novými daty ze serveru
             descItemTypes: []
         };
 
         // Merge descItemType
-        group.descItemTypes.forEach(descItemType => {
+        group.types.forEach(descItemType => {
             var resultDescItemType = {
                 hasFocus: false,
-                ...dataMap.typeMap.find(descItemType.id),
-                ...descItemType,
+                ...dataMap.typeMap.find(descItemType.id),   // připojení atributu již na klientovi, pokud existuje
+                ...descItemType,                            // přepsání novými daty ze serveru
                 descItems: []
             }
 
-            // Merge descItem 
+            // Merge descItems
             // - DB verze
             // - původní verze descItem - data, která jsou aktuálně ve store
-            var newDescItemType = descItemTypesMap[descItemType.id];
-            var prevDescItemType = dataMap.typeMap.get(descItemType.id);
+            var prevDescItemType = dataMap.typeMap.get(descItemType.id);    // verze na klientovi, pokud existuje
+            var newDescItemType = dbItemTypesMap[descItemType.id];          // verze z db, pokud existuje
             
-            if (mergeDescItems(resultDescItemType, prevDescItemType, newDescItemType, descItemTypeInfos)) {
+            if (mergeDescItems(state, resultDescItemType, prevDescItemType, newDescItemType)) {
                 resultGroup.descItemTypes.push(resultDescItemType);
             }
         });
@@ -272,42 +263,58 @@ function merge(formData, data, descItemTypesMap, rulDataTypes, descItemTypeInfos
     return formData;
 }
 
-export function updateFormData(state, data, rulDataTypes) {
+var typesNumToStrMap = {}
+typesNumToStrMap[3] = 'REQUIRED'
+typesNumToStrMap[2] = 'RECOMMENDED'
+typesNumToStrMap[1] = 'POSSIBLE'
+typesNumToStrMap[0] = 'IMPOSSIBLE'
+
+// refTypesMap - mapa id info typu na typ, je doplněné o dataType objekt - obecný číselník
+export function updateFormData(state, data, refTypesMap) {
+    // Přechozí a nová verze node
     var currentNodeVersionId = state.data ? state.data.node.version : -1;
     var newNodeVersionId = data.node.version;
-    state.data = data;
-
-    // Mapa id descItemType na descItemType
-    var descItemTypesMap = getDescItemTypesMap(data);
-
-    // Seznam všech atributů - obecně, doplněný o rulDataType
-    var typesInfo = getDescItemTypeGroupsInfo(data, rulDataTypes);
-    var descItemTypeInfos = typesInfo.descItemTypeInfos;
-    state.descItemTypeGroupsMap = typesInfo.descItemTypeGroupsMap;
-    state.descItemTypeInfos = descItemTypeInfos;
 
     // ##
     // # Vytvoření formuláře se všemi povinnými a doporučenými položkami, které jsou doplněné reálnými daty ze serveru
-    // # Případně promístuní merge.
+    // # Případně promítnutí merge.
     // ##
-
-    if (state.data) {
-        //console.log("--- MERGE FORM DATA from", currentNodeVersionId, "to", newNodeVersionId);
-    } else {
-        //console.log("--- INIT FORM DATA to", newNodeVersionId);
-    }
     if (currentNodeVersionId <= newNodeVersionId) { // rovno musí být, protože i když mám danou verzi, nemusím mít nově přidané povinné položky na základě aktuálně upravené mnou
-        //console.log("--- FORM DATA RUN");
-        var newFormData = merge(state.formData, data, descItemTypesMap, rulDataTypes, descItemTypeInfos);
+        // Data přijatá ze serveru
+        state.data = data
+
+        // Info skupiny - ty, které jsou jako celek definované pro konkrétní JP - obsahují všechny atributy včetně např. typu - POSSIBLE atp.
+        // Změna číselného typu na řetězec
+        state.infoGroups = data.typeGroups
+        state.infoTypesMap = {}                     // mapa id descItemTypeInfo na descItemTypeInfo
+        state.infoGroups.forEach(group => {
+            group.types.forEach(type => {
+                type.type = typesNumToStrMap[type.type]
+                state.infoTypesMap[type.id] = type
+
+                type.specs.forEach(spec => {
+                    spec.type = typesNumToStrMap[spec.type]
+                })
+                
+                // Mapa id specifikace na specifikaci
+
+            })
+        })
+
+        // Mapa číselníku decsItemType
+        state.refTypesMap = refTypesMap
+
+        // Mapa id descItemType na descItemType - existujících dat ze serveru
+        var dbItemTypesMap = getDbItemTypesMap(data)
+
+        var newFormData = merge(state);
         state.formData = newFormData;
-    } else {
-        //console.log("--- FORM DATA SKIPPED");
     }
 }
 
-export function createDescItem(descItemTypeInfo, addedByUser) {
+export function createDescItem(descItemType, refType, addedByUser) {
     var result = {
-        '@type': getDescItemType(descItemTypeInfo),
+        '@type': getDescItemType(refType.dataType),
         prevValue: null,
         hasFocus: false,
         touched: false,
@@ -317,21 +324,21 @@ export function createDescItem(descItemTypeInfo, addedByUser) {
         addedByUser
     };
 
-    initFormKey(descItemTypeInfo, result)
+    initFormKey(descItemType, result)
 
-    if (descItemTypeInfo.useSpecification) {
+    if (refType.useSpecification) {
         result.descItemSpecId = '';
     }
 
-    if (descItemTypeInfo.rulDataType.code === "UNITDATE") {
+    if (refType.dataType.code === "UNITDATE") {
         result.calendarTypeId = 1;
     }
 
     return result;
 }
 
-export function getDescItemType(descItemTypeInfo) {
-    switch (descItemTypeInfo.rulDataType.code) {
+export function getDescItemType(dataType) {
+    switch (dataType.code) {
         case 'TEXT':
             return '.ArrDescItemTextVO';
         case 'STRING':
@@ -357,7 +364,7 @@ export function getDescItemType(descItemTypeInfo) {
         case 'UNITID':
             return '.ArrDescItemUnitidVO';
         default:
-            console.error("Unsupported data type", descItemTypeInfo.rulDataType);
+            console.error("Unsupported data type", dataType);
             return null;
     }
 }
