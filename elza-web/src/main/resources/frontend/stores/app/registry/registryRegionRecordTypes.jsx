@@ -9,7 +9,7 @@ import * as types from 'actions/constants/ActionTypes';
 const initialState = {
     isFetching: false,
     fetched: false,
-    partyTypeId: undefined,
+    registryTypeId: undefined,
     item: null,
     LastUpdated: null
 }
@@ -20,7 +20,7 @@ export default function registryRegionRecordTypes(state = initialState, action =
         case types.REGISTRY_RECIVE_REGISTRY_RECORD_TYPES:
             return Object.assign({}, state, {
                 item: action.item,
-                partyTypeId: action.partyTypeId,
+                registryTypeId: action.registryTypeId,
                 isFetching: false,
                 fetched: true,
                 LastUpdated: action.receivedAt
