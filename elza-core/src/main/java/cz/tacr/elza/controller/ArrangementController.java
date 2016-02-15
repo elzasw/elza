@@ -81,6 +81,10 @@ public class ArrangementController {
     @Autowired
     private DescItemFactory descItemFactory;
 
+    /**
+     * Seznam typů obalů.
+     * @return typy obalů
+     */
     @RequestMapping(value = "/packets/types",
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -90,6 +94,12 @@ public class ArrangementController {
         return factoryVo.createPacketTypeList(packetTypes);
     }
 
+    /**
+     * Seznam obalů pro AP.
+     *
+     * @param findingAidId identifikátor AP
+     * @return obaly pro AP
+     */
     @RequestMapping(value = "/packets/{findingAidId}",
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -100,6 +110,13 @@ public class ArrangementController {
         return factoryVo.createPacketList(packets);
     }
 
+    /**
+     * Vložení nového obalu pro AP.
+     *
+     * @param findingAidId  identifikátor AP
+     * @param packetVO      obal
+     * @return obal
+     */
     @Transactional
     @RequestMapping(value = "/packets/{findingAidId}",
             method = RequestMethod.POST,
@@ -114,6 +131,13 @@ public class ArrangementController {
         return factoryVo.createPacket(packetService.insertPacket(packet));
     }
 
+    /**
+     * Smazání obalu.
+     *
+     * @param findingAidId  identifikátor AP
+     * @param packetId      identfikátor obalu pro smazání
+     * @return obal
+     */
     @Transactional
     @RequestMapping(value = "/packets/{findingAidId}/{packetId}",
             method = RequestMethod.DELETE,
@@ -128,6 +152,13 @@ public class ArrangementController {
         return factoryVo.createPacket(packetService.deactivatePacket(packet));
     }
 
+    /**
+     * Upravení obalu.
+     *
+     * @param findingAidId identifikátor AP
+     * @param packetVO     obal
+     * @return obal
+     */
     @Transactional
     @RequestMapping(value = "/packets/{findingAidId}",
             method = RequestMethod.PUT,
@@ -142,6 +173,14 @@ public class ArrangementController {
         return factoryVo.createPacket(packetService.updatePacket(packet));
     }
 
+    /**
+     * Smazání hodnot atributu podle typu.
+     *
+     * @param findingAidVersionId   identfikátor verze AP
+     * @param nodeId                identfikátor JP
+     * @param nodeVersion           verze JP
+     * @param descItemTypeId        identfikátor typu hodnoty atributu
+     */
     @Transactional
     @RequestMapping(value = "/descItems/{findingAidVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}",
             method = RequestMethod.DELETE,
@@ -167,6 +206,13 @@ public class ArrangementController {
         return descItemResult;
     }
 
+    /**
+     * Smazání hodnoty atributu.
+     *
+     * @param descItemVO            hodnota atributu
+     * @param findingAidVersionId   identfikátor verze AP
+     * @param nodeVersion           verze JP
+     */
     @Transactional
     @RequestMapping(value = "/descItems/{findingAidVersionId}/{nodeVersion}/delete",
             method = RequestMethod.POST,
@@ -189,6 +235,14 @@ public class ArrangementController {
         return descItemResult;
     }
 
+    /**
+     * Aktualizace hodnoty atributu.
+     *
+     * @param descItemVO            hodnota atributu
+     * @param findingAidVersionId   identfikátor verze AP
+     * @param nodeVersion           verze JP
+     * @param createNewVersion      vytvořit novou verzi?
+     */
     @Transactional
     @RequestMapping(value = "/descItems/{findingAidVersionId}/{nodeVersion}/update/{createNewVersion}",
             method = RequestMethod.PUT,
@@ -215,6 +269,16 @@ public class ArrangementController {
         return descItemResult;
     }
 
+    /**
+     * Vytvoření hodnoty atributu.
+     *
+     * @param descItemVO            hodnota atributu
+     * @param findingAidVersionId   identfikátor verze AP
+     * @param descItemTypeId        identfikátor typu hodnoty atributu
+     * @param nodeId                identfikátor JP
+     * @param nodeVersion           verze JP
+     * @return hodnota atributu
+     */
     @Transactional
     @RequestMapping(value = "/descItems/{findingAidVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}/create",
             method = RequestMethod.PUT,
@@ -243,6 +307,11 @@ public class ArrangementController {
         return descItemResult;
     }
 
+    /**
+     * Seznam AP.
+     *
+     * @return seznam AP
+     */
     @RequestMapping(value = "/getFindingAids", method = RequestMethod.GET)
     public List<ArrFindingAidVO> getFindingAids() {
         Map<Integer, ArrFindingAidVO> findingAids = new LinkedHashMap<>();
@@ -379,6 +448,13 @@ public class ArrangementController {
         return new NodeFormDataVO(nodeVO, descItemGroupsVO, descItemTypeGroupsVO);
     }
 
+    /**
+     * Získání dat pro formulář.
+     *
+     * @param nodeId    identfikátor JP
+     * @param versionId id verze stromu
+     * @return formulář
+     */
     @RequestMapping(value = "/nodes/{nodeId}/{versionId}/formNew", method = RequestMethod.GET)
     public NodeFormDataNewVO getNodeFormDataNew(@PathVariable(value = "nodeId") Integer nodeId,
                                           @PathVariable(value = "versionId") Integer versionId) {
@@ -403,6 +479,27 @@ public class ArrangementController {
         List<DescItemGroupVO> descItemGroupsVO = factoryVo.createDescItemGroupsNew(descItems);
         List<DescItemTypeGroupVO> descItemTypeGroupsVO = factoryVo.createDescItemTypeGroupsNew(descItemTypes);
         return new NodeFormDataNewVO(nodeVO, descItemGroupsVO, descItemTypeGroupsVO);
+    }
+
+    /**
+     * Získání dat pro formuláře.
+     * @param nodeIds   identfikátory JP
+     * @param versionId id verze stromu
+     * @return formuláře
+     */
+    @RequestMapping(value = "/nodes/{versionId}/forms", method = RequestMethod.GET)
+    public NodeFormsDataVO getNodeFormsData(@RequestParam(value = "nodeIds") Integer[] nodeIds,
+                                            @PathVariable(value = "versionId") Integer versionId) {
+        Assert.notNull(versionId, "Identifikátor verze musí být vyplněn");
+        Assert.notNull(nodeIds, "Identifikátory uzlů musí být vyplněny");
+
+        Map<Integer, NodeFormDataNewVO> forms = new HashMap<>();
+
+        for (int i = 0; i < nodeIds.length; i++) {
+            forms.put(nodeIds[i], getNodeFormDataNew(nodeIds[i], versionId));
+        }
+
+        return new NodeFormsDataVO(forms);
     }
 
     @RequestMapping(value = "/calendarTypes", method = RequestMethod.GET)
@@ -675,6 +772,13 @@ public class ArrangementController {
         return arrangementService.createTreeNodeFulltextList(nodeIds, version);
     }
 
+    /**
+     * Vyhledání vazeb AP - rejstříky.
+     *
+     * @param versionId id verze stromu
+     * @param nodeId    identfikátor JP
+     * @return vazby
+     */
     @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}",
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -685,6 +789,13 @@ public class ArrangementController {
         return factoryVo.createRegisterLinkList(registerLinks);
     }
 
+    /**
+     * Vyhledání vazeb AP - rejstříky pro formulář.
+     *
+     * @param versionId id verze stromu
+     * @param nodeId    identfikátor JP
+     * @return vazby pro formulář
+     */
     @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}/form",
             method = RequestMethod.GET,
             consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -696,6 +807,14 @@ public class ArrangementController {
         return new NodeRegisterDataVO(factoryVo.createArrNode(node), nodeRegistersVO);
     }
 
+    /**
+     * Vytvoření vazby AP - rejstříky
+     *
+     * @param versionId         id verze stromu
+     * @param nodeId            identfikátor JP
+     * @param nodeRegisterVO    vazba
+     * @return vazba
+     */
     @Transactional
     @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}/create",
             method = RequestMethod.PUT,
@@ -709,6 +828,14 @@ public class ArrangementController {
         return factoryVo.createRegisterLink(nodeRegister);
     }
 
+    /**
+     * Upravení vazby AP - rejstříky.
+     *
+     * @param versionId         id verze stromu
+     * @param nodeId            identfikátor JP
+     * @param nodeRegisterVO    vazba
+     * @return vazba
+     */
     @Transactional
     @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}/update",
             method = RequestMethod.POST,
@@ -722,6 +849,14 @@ public class ArrangementController {
         return factoryVo.createRegisterLink(nodeRegister);
     }
 
+    /**
+     * Smazání vazby AP - rejstříky.
+     *
+     * @param versionId         id verze stromu
+     * @param nodeId            identfikátor JP
+     * @param nodeRegisterVO    vazba
+     * @return  vazba
+     */
     @Transactional
     @RequestMapping(value = "/registerLinks/{nodeId}/{versionId}/delete",
             method = RequestMethod.POST,
@@ -900,6 +1035,29 @@ public class ArrangementController {
 
         public void setDescItemTypeGroups(final List<ArrDescItemTypeGroupVO> descItemTypeGroups) {
             this.descItemTypeGroups = descItemTypeGroups;
+        }
+    }
+
+    /**
+     * Výstupní objekt pro získaná data pro formuláře detailu uzlu.
+     */
+    public static class NodeFormsDataVO {
+
+        /**
+         * Formuláře
+         */
+        private Map<Integer, NodeFormDataNewVO> forms;
+
+        public NodeFormsDataVO(final Map<Integer, NodeFormDataNewVO> forms) {
+            this.forms = forms;
+        }
+
+        public Map<Integer, NodeFormDataNewVO> getForms() {
+            return forms;
+        }
+
+        public void setForms(final Map<Integer, NodeFormDataNewVO> forms) {
+            this.forms = forms;
         }
     }
 
