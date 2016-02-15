@@ -14,12 +14,25 @@ var WebSocket = class extends AbstractReactComponent {
 
     render() {
 
+        var loading = this.props.webSocket.loading;
+
+        var content;
+
+        if (loading) {
+            content = <div className="dialog">
+                        <span className="title">{i18n('global.websocket.title.loading')}</span>
+                        <span className="message">{i18n('global.websocket.message.loading')}</span>
+                      </div>
+        } else {
+            content = <div className="dialog">
+                        <span className="title">{i18n('global.websocket.title')}</span>
+                        <span className="message">{i18n('global.websocket.message')}</span>
+                      </div>
+        }
+
         var dialog = !this.props.webSocket.connected ?
                      <div className="disconnect">
-                         <div className="dialog">
-                             <span className="title">{i18n('global.websocket.title')}</span>
-                             <span className="message">{i18n('global.websocket.message')}</span>
-                         </div>
+                         {content}
                      </div>
 
          : "";

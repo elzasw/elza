@@ -14,7 +14,7 @@ var SockJS = require('sockjs-client');
 var Stomp = require('stompjs');
 var socket = new SockJS(serverContextPath + '/config/websock');
 var client = Stomp.over(socket);
-
+var refresh = false;
 /**
  * Připojení websocketů.
  */
@@ -36,6 +36,11 @@ function stompConnect() {
  */
 function stompSuccessCallback(frame) {
     store.dispatch(webSocketConnect());
+    if (!refresh) {
+        refresh = true;
+    } else {
+        location.reload(true);
+    }
     client.subscribe('/topic/api/changes', function(body, headers) {
         var change = JSON.parse(body.body);
         console.info("WebSocket", change);

@@ -22,6 +22,9 @@ var messages = {
     "global.websocket.title": "Odpojení od severu",
     "global.websocket.message": "Vyčkejte na automatické obnovení spojení",
 
+    "global.websocket.title.loading": "Načítání aplikace",
+    "global.websocket.message.loading": "Probíhá načítání aplikace, chvilku strpení",
+
     "ribbon.action.home": "Domů",
     "ribbon.action.arr": "Archivní pomůcky",
     "ribbon.action.arr.fa.add": "Vytvořit AP",
