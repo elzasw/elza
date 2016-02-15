@@ -6,7 +6,7 @@
 @node-panel-content-height: 70%;
 @node-panel-children-height: 15%;
 
-@developer-panel-width: 250px;
+@developer-panel-width: 380px;
 
 .node-panel-container {
     display: flex;
@@ -200,6 +200,56 @@
         overflow-y: auto;
         overflow-x: hidden;
         width: @developer-panel-width;
+        
+        .desc-items-container {
+            h1 {
+                font-size: 10px;
+                font-weight: bold;
+                width: 100%;
+                background: #a0a0a0;
+                padding: 4px 0 4px 0;
+                margin: 12px 0 0 0;
+            }
+            .desc-item-type {
+                padding-bottom: 4px;
+                
+                h2 {
+                    padding: 4px 0 0 0;
+                    font-size: 16px;
+                    font-weight: bold;
+                    margin: 0 0 2px 0;
+                    small {
+                        font-size: 10px;
+                        color: #909090;
+                    }
+                }
+                .desc {
+                    margin-bottom: 2px;
+                }
+                .attrs {
+                    > div {
+                        display: inline-block;
+                        margin-right: 6px;
+                        >label {
+                            font-weight: bold;
+                            margin-right: 2px;
+                        }
+                    }
+                }
+                &.POSSIBLE {
+                    background: #FFEED3;
+                }
+                &.IMPOSSIBLE {
+                    background: #e1e1e1;
+                }
+                &.REQUIRED {
+                    background: #FFD3D3;
+                }
+                &.RECOMMENDED {
+                    background: #E0E6FF;
+                }
+            }
+        }
     }
 }
 

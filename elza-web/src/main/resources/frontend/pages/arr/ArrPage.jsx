@@ -381,7 +381,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                     ribbon={this.buildRibbon()}
                     leftPanel={leftPanel}
                     centerPanel={centerPanel}
-                    rightPanel={rightPanel}
+                    _rightPanel={rightPanel}
                     appContentExt={appContentExt}
                 />
             </Shortcuts>

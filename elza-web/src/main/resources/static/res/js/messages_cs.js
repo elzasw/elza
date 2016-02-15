@@ -57,6 +57,8 @@ var messages = {
     "accordion.title.left.name.undefined": "<JP-Accordion left ID={0}>",
     "accordion.title.right.name.undefined": "<JP-Accordion right ID={0}>",
 
+    "developer.title.descItems": "Prvky popisu",
+    
     "arr.panel.title": "Jsou zobrazeny pouze položky pro archivní pomůcku {0}",
     "arr.panel.reset": "Zrušit omezení",
 
