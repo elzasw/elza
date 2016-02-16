@@ -50,8 +50,7 @@ var Splitter = class Splitter extends AbstractReactComponent {
             this.setState({
                 leftSize: nextProps.leftSize || this.state.leftSize,
                 rightSize: nextProps.rightSize || this.state.rightSize
-            })
-            this.updateChildPanes();
+            }, this.updateChildPanes)
         }
     }
 
