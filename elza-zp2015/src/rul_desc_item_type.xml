@@ -99,7 +99,7 @@
         <view-order>10</view-order>
         <fa-only>true</fa-only>
     </desc-item-type>
-    <desc-item-type code="ZP2015_TITLE" data-type="STRING">
+    <desc-item-type code="ZP2015_TITLE" data-type="TEXT">
         <name>Obsah, regest</name>
         <shortcut>Obsah</shortcut>
         <description>ZP4.2.3 Obsah, regest</description>
