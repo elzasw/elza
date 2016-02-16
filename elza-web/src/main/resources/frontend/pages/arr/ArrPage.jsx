@@ -12,7 +12,7 @@ import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
 import {Tabs, Icon, Ribbon, i18n} from 'components';
 import {FaExtendedView, FaForm, BulkActionsDialog, VersionValidationDialog, RibbonMenu, RibbonGroup, RibbonSplit, ToggleContent, FaFileTree, AbstractReactComponent, ModalDialog, NodeTabs, FaTreeTabs, ImportForm} from 'components';
-import {ButtonGroup, Button, DropdownButton, MenuItem} from 'react-bootstrap';
+import {ButtonGroup, Button, DropdownButton, MenuItem, Collapse} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
 import {WebApi} from 'actions'
@@ -53,9 +53,9 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         this.bindMethods('getActiveInfo', 'buildRibbon', 'handleRegisterJp',
             'handleApproveFaVersion', 'handleCallApproveFaVersion', 'getActiveFindingAidId', 'handleBulkActionsDialog',
             'handleValidationDialog', 'handleEditFaVersion', 'handleCallEditFaVersion', 'handleShortcuts', 'handleImport',
-            'renderDeveloperPanel', 'renderDeveloperDescItems');
+            'renderDeveloperPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs');
 
-        this.state = {faFileTreeOpened: false};
+        this.state = {faFileTreeOpened: false, developerExpandedSpecsId: null};
     }
 
     componentDidMount() {
@@ -308,6 +308,14 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         )
     }
 
+    handleShowHideSpecs(descItemTypeId) {
+        if (this.state.developerExpandedSpecsId === descItemTypeId) {
+            this.setState({developerExpandedSpecsId: null})
+        } else {
+            this.setState({developerExpandedSpecsId: descItemTypeId})
+        }
+    }
+
     renderDeveloperDescItems(activeFa, node) {
         var rows = []
         if (node.subNodeForm.fetched) {
@@ -318,7 +326,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                     var refType = node.subNodeForm.refTypesMap[type.id]
 
                     var specs;
-                    if (refType.useSpecification) {
+                    if (refType.useSpecification && this.state.developerExpandedSpecsId == refType.id) {
                         specs = refType.descItemSpecs.map(spec => <div key={'spec' + spec.id}>{spec.name} [{spec.code}]</div>)
                         specs = <div>{specs}</div>
                     }
@@ -333,7 +341,8 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                                 <div key='3'><label>width:</label>{infoType.width}</div>
                                 <div key='4'><label>viewOrder:</label>{refType.viewOrder}</div>
                             </div>
-                            {false && specs}
+                            {refType.useSpecification && <Button onClick={this.handleShowHideSpecs.bind(this, refType.id)}>specifikace</Button>}
+                            {specs}
                         </div>
                     )
                 })
