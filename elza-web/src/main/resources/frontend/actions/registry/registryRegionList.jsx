@@ -121,10 +121,15 @@ export function receiveRegistryRecordTypes(json, registryTypeId){
     }
 }
 
-export function registryAdd(parentId, versionId, callback) {
+export function registryAdd(parentId, versionId, callback, parentName = '') {
     return (dispatch, getState) => {
         var state = getState();
-        dispatch(modalDialogShow(this, i18n('registry.addRegistry'),
+        var nadpis = i18n('registry.addRegistry');
+        if (parentId && parentName){
+            var shortenParent = parentName.substr(0,40);
+            nadpis = i18n('registry.addRegistry.for')+' '+shortenParent
+        }
+        dispatch(modalDialogShow(this, nadpis,
                         <AddRegistryForm
                                 create
                                 versionId={versionId}

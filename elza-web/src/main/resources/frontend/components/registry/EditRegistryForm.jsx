@@ -64,6 +64,14 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
             itemsForDropDownTree = this.props.registryRegionRecordTypes.item;
         }
 
+        var registerTypesIdValue = null;
+        if (this.props.registryRegionData.item.registerTypeId && !registerTypeId.value){
+            registerTypesIdValue = this.props.registryRegionData.item.registerTypeId;
+        }
+        else{
+            registerTypesIdValue = registerTypeId.value;
+        }
+
         return (
             <div>
                 <Modal.Body>
@@ -74,6 +82,7 @@ var EditRegistryForm = class EditRegistryForm extends AbstractReactComponent {
                             addRegistryRecord={true}
                             {...registerTypeId}
                             {...decorateFormField(registerTypeId)}
+                            value={registerTypesIdValue}
                             disabled={disabled}
                             />
                         <Input type="text" label={i18n('registry.name')} {...nameMain} {...decorateFormField(nameMain)}/>
@@ -96,6 +105,7 @@ module.exports = reduxForm({
     },state => ({
         initialValues: state.form.editRegistryForm.initialValues,
         refTables: state.refTables,
+        registryRegionData: state.registryRegionData,
         registryRegionRecordTypes: state.registryRegionRecordTypes
     }),
     {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'editRegistryForm', data})}

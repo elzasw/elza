@@ -67,7 +67,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         data.characteristics = value.characteristics;
         data.scopeId = this.props.registryRegionData.item.scopeId;
         data.registerTypeId = value.registerTypeId;
-        console.log(value);
+
         this.dispatch(registryRecordUpdate(data));
         this.dispatch(modalDialogHide());
     }

@@ -18,6 +18,7 @@ import {addToastrWarning} from 'components/shared/toastr/ToastrActions'
 import {WebApi} from 'actions'
 import {MenuItem, DropdownButton, ButtonGroup, Button} from 'react-bootstrap';
 import {PageLayout} from 'pages';
+import {indexById} from 'stores/app/utils.jsx'
 import {Nav, Glyphicon, NavItem} from 'react-bootstrap';
 import {registryRegionData,
         registrySearchData,
@@ -68,7 +69,12 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     handleAddRegistry(parentId) {
-        this.dispatch(registryAdd(parentId, this.props.registryRegion.panel.versionId, this.handleCallAddRegistry));
+        var parentName = '';
+
+        if (indexById(this.props.registryRegion.parents, parentId, 'id')!==null) {
+            parentName = this.props.registryRegion.parents[indexById(this.props.registryRegion.parents, parentId, 'id')].name;
+        }
+        this.dispatch(registryAdd(parentId, this.props.registryRegion.panel.versionId, this.handleCallAddRegistry, parentName));
     }
 
     handleCallAddRegistry(data) {
@@ -124,6 +130,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         const {registryRegion} = this.props;
 
         var altActions = [];
+
         altActions.push(
             <Button key='addRegistry' onClick={this.handleAddRegistry.bind(this, this.props.registryRegion.registryParentId)}><Icon glyph="fa-download" /><div><span className="btnText">{i18n('registry.addNewRegistry')}</span></div></Button>
         );

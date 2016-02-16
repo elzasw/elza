@@ -140,6 +140,7 @@ var messages = {
     "subNodeRegister.title.add": "Přidání hesla",
 
     "registry.addRegistry": "Nové rejstříkové heslo",
+    "registry.addRegistry.for": "Nové rejstříkové heslo pod",
     "registry.addNewRegistry": "Nové heslo",
     "registry.addNewRegistryHere": "Přidat heslo sem",
     "registry.name": "Název",
