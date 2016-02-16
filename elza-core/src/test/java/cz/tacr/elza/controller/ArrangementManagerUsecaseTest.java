@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
@@ -42,6 +43,8 @@ import cz.tacr.elza.domain.vo.RelatedNodeDirectionWithDescItem;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 9. 9. 2015
  */
+@Ignore
+@Deprecated
 public class ArrangementManagerUsecaseTest extends AbstractRestTest {
 
     private static final Integer TEST_VALUE_123 = 123;

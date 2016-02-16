@@ -14,6 +14,7 @@ import javax.transaction.Transactional;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -148,6 +149,8 @@ import cz.tacr.elza.service.RuleService;
 @SpringApplicationConfiguration(classes = ElzaCoreTest.class)
 @IntegrationTest("server.port:0") // zvoli volny port, lze spustit i s aktivni Elzou
 @WebAppConfiguration
+@Deprecated
+@Ignore
 public abstract class AbstractRestTest {
 
     private static final RestAssuredConfig UTF8_ENCODER_CONFIG = RestAssuredConfig.newConfig().encoderConfig(

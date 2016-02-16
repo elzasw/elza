@@ -11,6 +11,15 @@ elza:
     title: ZP2015_TITLE
     defaultTitle: <Není nastaven popisek>
 
-  record:
-    scopeCodes:
-      - GLOBAL
+  workingDir: ./work
+
+  xmlImport:
+    transformationDir: ${elza.workingDir}/transformations/
+
+  bulkactions:
+    bulkactionsDir: ${elza.workingDir}/bulkactions
+
+  rulesDir: ${elza.workingDir}/rules
+
+  groovy:
+    groovyDir: ${elza.workingDir}/groovy

@@ -14,6 +14,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.BeansException;
@@ -44,6 +45,8 @@ import cz.tacr.elza.xmlimport.v1.vo.XmlImport;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = ElzaCore.class)
+@Ignore
+@Deprecated
 public class XmlImportTest implements ApplicationContextAware {
 
     @Autowired

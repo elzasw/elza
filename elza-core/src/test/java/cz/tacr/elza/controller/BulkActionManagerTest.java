@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,8 @@ import cz.tacr.elza.domain.RulDescItemType;
 /**
  * Testy pro hromadné akce.
  */
+@Ignore
+@Deprecated
 public class BulkActionManagerTest extends AbstractRestTest {
 
     private static final Logger logger = LoggerFactory.getLogger(BulkActionManagerTest.class);

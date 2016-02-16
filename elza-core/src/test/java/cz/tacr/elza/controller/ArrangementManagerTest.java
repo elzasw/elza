@@ -22,6 +22,7 @@ import javax.transaction.Transactional;
 import org.apache.commons.lang.math.RandomUtils;
 import org.hibernate.Session;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,7 +95,8 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.service.ArrMoveLevelService;
 
-
+@Ignore
+@Deprecated
 public class ArrangementManagerTest extends AbstractRestTest {
 
     private static final Logger logger = LoggerFactory.getLogger(ArrangementManagerTest.class);

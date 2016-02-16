@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,8 @@ import cz.tacr.elza.domain.vo.RegRecordWithCount;
  *
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
+@Ignore
+@Deprecated
 public class PartyRegistryUsecaseTest extends AbstractRestTest {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());

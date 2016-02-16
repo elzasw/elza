@@ -9,6 +9,7 @@ import java.util.stream.IntStream;
 import javax.transaction.Transactional;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,8 @@ import cz.tacr.elza.validation.ArrDescItemsPostValidator;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 31. 7. 2015
  */
+@Ignore
+@Deprecated
 public class RulRuleSetManagerTest extends AbstractRestTest {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());

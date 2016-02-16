@@ -1,7 +1,8 @@
-package cz.tacr.elza.service;
+package cz.tacr.elza.other;
 
 import java.util.Collection;
 
+import cz.tacr.elza.service.IClientDataChangesService;
 import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
 
 

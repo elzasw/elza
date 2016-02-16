@@ -1,13 +1,14 @@
-package cz.tacr.elza.controller;
+package cz.tacr.elza.other;
 
 import java.util.Collection;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import cz.tacr.elza.controller.AbstractRestTest;
 import cz.tacr.elza.controller.vo.ArrFindingAidVO;
-import cz.tacr.elza.service.ClientDataChangesServiceTest;
 import cz.tacr.elza.service.IClientDataChangesService;
 import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
 import cz.tacr.elza.service.eventnotification.events.EventId;
@@ -20,6 +21,8 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 14.01.2016
  */
+@Ignore
+@Deprecated
 public class ClientEventTest extends AbstractRestTest {
 
 
