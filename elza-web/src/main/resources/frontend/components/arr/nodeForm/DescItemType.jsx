@@ -19,6 +19,7 @@ import DescItemPacketRef from './DescItemPacketRef'
 import DescItemPartyRef from './DescItemPartyRef'
 import DescItemRecordRef from './DescItemRecordRef'
 import {propsEquals} from 'components/Utils'
+import {descItemNeedStore} from 'actions/arr/subNodeForm'
 var Shortcuts = require('react-shortcuts/component')
 
 require ('./AbstractDescItem.less')
@@ -436,7 +437,7 @@ return true;
     }
 
     getShowDeleteDescItem(descItem) {
-        const {infoType, descItemType, closed, locked} = this.props;
+        const {refType, infoType, descItemType, closed, locked} = this.props;
 
         if (closed || locked) {
             return false
@@ -445,9 +446,13 @@ return true;
         // ##
         // # Má se zobrazovat ikona mazání z hlediska hodnoty desc item?
         // ##
-        if (descItem.touched && !descItem.error.hasError) { // změnil pole a je validní, nesmíme smazat
+        if (descItemNeedStore(descItem, refType)) {
             return false
         }
+        /*
+        if (descItem.touched && !descItem.error.hasError) { // změnil pole a je validní, nesmíme smazat
+            return false
+        }*/
 
         // ##
         // # Má se zobrazovat ikona mazání z hlediska typu atributu?
@@ -464,7 +469,7 @@ return true;
     }
 
     getShowDeleteDescItemType() {
-        const {infoType, descItemType, closed} = this.props;
+        const {refType, infoType, descItemType, closed} = this.props;
 
         if (closed) {
             return false
@@ -478,9 +483,13 @@ return true;
         // Má pole, která nezměnil
         // Má pole, která změnil a nejsou validní
         for (let descItem of descItemType.descItems) {
-            if (descItem.touched && !descItem.error.hasError) { // změnil pole a je validní, nesmíme smazat
+            if (descItemNeedStore(descItem, refType)) {
                 return false
             }
+
+            /*if (descItem.touched && !descItem.error.hasError) { // změnil pole a je validní, nesmíme smazat
+                return false
+            }*/
         }
 
         // ##

@@ -152,6 +152,29 @@ function valuesEquals(v1, v2) {
     return false
 }
 
+export function descItemNeedStore(descItem, refType) {
+    if (!descItem.error.hasError && descItem.touched) {
+        if (typeof descItem.id !== 'undefined') {
+            // Jen pokud se hodnota nebo specifikace změnila
+            var needUpdate = false;
+            if (refType.useSpecification && !valuesEquals(descItem.descItemSpecId, descItem.prevDescItemSpecId)) {
+                needUpdate = true;
+            }
+            if (!valuesEquals(descItem.value, descItem.prevValue)) {
+                needUpdate = true;
+            }
+            if (!valuesEquals(descItem.calendarTypeId, descItem.prevCalendarTypeId)) {
+                needUpdate = true;
+            }
+
+            return needUpdate
+        } else {
+            return true
+        }
+    }
+    return false
+}
+
 function formValueStore(dispatch, getState, versionId, nodeId, nodeKey, valueLocation) {
     var state = getState();
     var subNodeForm = getSubNodeForm(state, versionId, nodeKey);
@@ -159,6 +182,20 @@ function formValueStore(dispatch, getState, versionId, nodeId, nodeKey, valueLoc
 
     var refType = subNodeForm.refTypesMap[loc.descItemType.id]
 
+    if (descItemNeedStore(loc.descItem, refType)) {
+        if (typeof loc.descItem.id !== 'undefined') {
+            faSubNodeFormUpdateDescItem(versionId, subNodeForm.data.node.version, loc.descItem)
+                .then(json => {
+                    dispatch(faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueLocation, json, 'UPDATE'));
+                })
+        } else {
+            faSubNodeFormCreateDescItem(versionId, nodeId, subNodeForm.data.node.version, loc.descItemType.id, loc.descItem)
+                .then(json => {
+                    dispatch(faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueLocation, json, 'CREATE'));
+                })
+        }
+    }
+/*
     if (!loc.descItem.error.hasError && loc.descItem.touched) {
         if (typeof loc.descItem.id !== 'undefined') {
             // Jen pokud se hodnota nebo specifikace změnila
@@ -184,7 +221,7 @@ function formValueStore(dispatch, getState, versionId, nodeId, nodeKey, valueLoc
                     dispatch(faSubNodeFormDescItemResponse(versionId, nodeId, nodeKey, valueLocation, json, 'CREATE'));
                 })
         }
-    }
+    }*/
 }
 
 export function faSubNodeFormValueBlur(versionId, nodeId, nodeKey, valueLocation) {
