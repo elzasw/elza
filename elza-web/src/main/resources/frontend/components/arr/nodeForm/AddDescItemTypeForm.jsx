@@ -6,7 +6,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import * as types from 'actions/constants/ActionTypes';
 import {reduxForm} from 'redux-form';
-import {Autocomplete, AbstractReactComponent, i18n} from 'components';
+import {Autocomplete, AbstractReactComponent, i18n, Icon} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx'
 import {decorateFormField, submitReduxForm} from 'components/form/FormUtils'
@@ -88,9 +88,9 @@ var AddDescItemTypeForm = class AddDescItemTypeForm extends AbstractReactCompone
                         <div>
                             {this.props.descItemTypes.map(i=> {
                                 if (i.type == "POSSIBLE") {
-                                    return <a className="btn btn-link" key={i.id} onClick={() => {
+                                    return <a className="add-link btn btn-link" key={i.id} onClick={() => {
                                         this.props.onSubmit2({descItemTypeId:i.id});
-                                   }}>{i.name}</a>
+                                   }}><Icon glyph="fa-plus" />{i.name}</a>
                                 }
                             })}
                         </div>
