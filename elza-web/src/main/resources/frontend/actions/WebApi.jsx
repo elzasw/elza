@@ -104,7 +104,7 @@ class WebApi{
     }
 
     validateUnitdate(value) {
-        return AjaxUtils.ajaxGet('/api/validate/unitDate', {value: value});
+        return AjaxUtils.ajaxGet('/api/validate/unitDate', {value: value || ""});
     }
 
     insertParty(party) {

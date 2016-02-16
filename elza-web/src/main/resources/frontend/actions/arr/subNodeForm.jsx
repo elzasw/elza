@@ -169,7 +169,9 @@ function formValueStore(dispatch, getState, versionId, nodeId, nodeKey, valueLoc
             if (!valuesEquals(loc.descItem.value, loc.descItem.prevValue)) {
                 needUpdate = true;
             }
-
+            if (!valuesEquals(loc.descItem.calendarTypeId, loc.descItem.prevCalendarTypeId)) {
+                needUpdate = true;
+            }
             if (needUpdate) {
                 faSubNodeFormUpdateDescItem(versionId, subNodeForm.data.node.version, loc.descItem)
                     .then(json => {
