@@ -273,7 +273,7 @@ public class RegistryController {
      */
     @RequestMapping(value = "/recordTypes", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
     public List<RegRegisterTypeVO> getRecordTypes(){
-          List<RegRegisterType> allTypes = registerTypeRepository.findAll();
+        List<RegRegisterType> allTypes = registerTypeRepository.findAllOrderByNameAsc();
 
           return factoryVo.createRegisterTypesTree(allTypes, false, null);
     }

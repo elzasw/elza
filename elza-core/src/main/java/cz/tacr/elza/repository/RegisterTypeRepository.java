@@ -24,8 +24,17 @@ public interface RegisterTypeRepository extends JpaRepository<RegRegisterType, I
      *
      * @return seznam typů rejstříkových hesel
      */
-    @Query("SELECT r FROM reg_register_type r WHERE r.partyType IS NOT null")
+    @Query("SELECT r FROM reg_register_type r WHERE r.partyType IS NOT null ORDER BY r.name ASC")
     List<RegRegisterType> findTypesForPartyTypes();
+
+
+    /**
+     * Najde všechny typy rejstříků seřazené podle názvu.
+     *
+     * @return všechyn typy rejstříků
+     */
+    @Query("SELECT r FROM reg_register_type r ORDER BY r.name ASC")
+    List<RegRegisterType> findAllOrderByNameAsc();
 
 
     /**
@@ -50,7 +59,7 @@ public interface RegisterTypeRepository extends JpaRepository<RegRegisterType, I
      * @param partyType typ osoby
      * @return seznam typů
      */
-    @Query("SELECT t FROM reg_register_type t WHERE t.partyType = ?1 AND t.addRecord = true ORDER BY t.code ASC")
+    @Query("SELECT t FROM reg_register_type t WHERE t.partyType = ?1 AND t.addRecord = true ORDER BY t.name ASC")
     List<RegRegisterType> findByPartyTypeEnableAdding(ParPartyType partyType);
 
 
@@ -59,7 +68,7 @@ public interface RegisterTypeRepository extends JpaRepository<RegRegisterType, I
      *
      * @return seznam typů
      */
-    @Query("SELECT t FROM reg_register_type t WHERE t.partyType IS NULL AND t.addRecord = true ORDER BY t.code ASC")
+    @Query("SELECT t FROM reg_register_type t WHERE t.partyType IS NULL AND t.addRecord = true ORDER BY t.name ASC")
     List<RegRegisterType> findNullPartyTypeEnableAdding();
 
 
