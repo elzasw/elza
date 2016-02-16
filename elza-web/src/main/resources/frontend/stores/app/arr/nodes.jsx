@@ -141,6 +141,7 @@ export default function nodes(state = nodesInitialState, action) {
             // 2. Výběr subnode
             var index = newState.activeIndex;
             var newNode = node(newState.nodes[index], action);
+            newNode.dirty = true;
             if (newNode !== newState.nodes[index]) {
                 return {
                     ...newState,
