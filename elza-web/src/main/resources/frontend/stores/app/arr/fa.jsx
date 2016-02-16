@@ -154,6 +154,9 @@ export function fa(state, action) {
         case types.FA_SUB_NODE_INFO_REQUEST:
         case types.FA_SUB_NODE_INFO_RECEIVE:
         case types.FA_FA_SUBNODES_FULLTEXT_RESULT:
+        case types.DEVELOPER_SCENARIOS_RECEIVED:
+        case types.DEVELOPER_SCENARIOS_FETCHING:
+        case types.DEVELOPER_SCENARIOS_DIRTY:
             var result = {...state,
                 nodes: nodes(state.nodes, action),
                 faTree: faTree(state.faTree, action),

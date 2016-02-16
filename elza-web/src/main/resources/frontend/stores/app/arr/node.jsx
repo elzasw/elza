@@ -22,8 +22,17 @@ export function nodeInitState(node, prevNodesNode) {
         viewStartIndex: 0,
         pageSize: _pageSize,
         filterText: '',
-        searchedIds: {}
-    }
+        searchedIds: {},
+        developerScenarios: {
+            isFetching: false,
+            isDirty: true,
+            data: {
+                after: [],
+                before: [],
+                child: []
+            }
+        }
+    };
 
     if (prevNodesNode) {
         result.nodeKey = prevNodesNode.nodeKey;
@@ -92,6 +101,15 @@ const nodeInitialState = {
     childNodes: [],
     allChildNodes: [],
     parentNodes: [],
+    developerScenarios: {
+        isFetching: false,
+        isDirty: true,
+        data: {
+            after: [],
+            before: [],
+            child: []
+        }
+    }
 }
     //nodeInfo: nodeInfo(undefined, {type:''}),
 
@@ -113,6 +131,15 @@ export function node(state = nodeInitialState, action) {
                 subNodeRegister: subNodeRegister(undefined, {type:''}),
                 subNodeInfo: subNodeInfo(undefined, {type:''}),
                 nodeKey: _nextNodeKey++,
+                developerScenarios: {
+                    isFetching: false,
+                    isDirty: true,
+                    data: {
+                        after: [],
+                        before: [],
+                        child: []
+                    }
+                }
             }
         case types.STORE_SAVE:
             const {id, name, selectedSubNodeId, viewStartIndex} = state;
@@ -394,6 +421,31 @@ export function node(state = nodeInitialState, action) {
                 default:
                     return state;
             }
+        case types.DEVELOPER_SCENARIOS_RECEIVED:
+            return {
+                ...state,
+                developerScenarios: {
+                    isFetching: false,
+                    isDirty: false,
+                    data: action.data
+                }
+            };
+        case types.DEVELOPER_SCENARIOS_DIRTY:
+            return {
+                ...state,
+                developerScenarios: {
+                    ...state.developerScenarios,
+                    isDirty: true
+                }
+            };
+        case types.DEVELOPER_SCENARIOS_FETCHING:
+            return {
+                ...state,
+                developerScenarios: {
+                    ...state.developerScenarios,
+                    isFetching: true
+                }
+            };
         default:
             return state;
     }

@@ -52,22 +52,6 @@ var AddNodeDropdown = class AddNodeDropdown extends AbstractReactComponent {
                 loading: true
             });
             WebApi.getNodeAddScenarios(this.props.node, this.props.version, this.props.direction).then((result) => {
-                /* /// TODO Delete
-                 if (result.length < 1 || (!isDropdown && (result.length == 0))) {
-                 this.props.action();
-                 this.setState(initState);
-                 } else if (isDropdown || (!isDropdown && result.length > 1)) {
-                 this.setState({
-                 ...this.state,
-                 items: result,
-                 open: true,
-                 loading: false
-                 });
-                 } else {
-                 this.props.action(undefined, result[0].name);
-                 this.setState(initState);
-                 }
-                 */
                 if (isDropdown || result.length > 1) {
                     this.setState({
                         ...this.state,

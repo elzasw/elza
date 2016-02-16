@@ -22,10 +22,12 @@ import {scopesDirty} from 'actions/refTables/scopesData'
 import {versionValidate} from 'actions/arr/versionValidation'
 import {packetsFetchIfNeeded} from 'actions/arr/packets'
 import {packetTypesFetchIfNeeded} from 'actions/refTables/packetTypes'
+import {developerNodeScenariosRequest} from 'actions/global/developer'
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
 import {Utils} from 'components'
 import {barrier} from 'components/Utils';
+import {isFaRootId} from 'components/arr/ArrUtils';
 import {setFocus} from 'actions/global/focus'
 
 var _developerSelectedTab = 0
@@ -76,6 +78,22 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         if (activeFa) {
             var validation = activeFa.versionValidation;
             this.requestValidationData(validation.isDirty, validation.isFetching, activeFa.versionId);
+
+            if (nextProps.developer.enabled) {
+                var node;
+                if (activeFa.nodes && activeFa.nodes.activeIndex !== null) {
+                    node = activeFa.nodes.nodes[activeFa.nodes.activeIndex]
+                }
+                if (!node) {
+                    return
+                }
+                if (node.selectedSubNodeId !== null &&
+                    node.subNodeForm.data !== null && !node.developerScenarios.isFetching &&
+                    node.developerScenarios.isDirty
+                ) {
+                    this.dispatch(developerNodeScenariosRequest({id: node.selectedSubNodeId, version: node.subNodeForm.data.node.version}, activeFa.versionId));
+                }
+            }
         }
     }
 
@@ -359,6 +377,66 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         return <div className='desc-items-container'>{rows}</div>
     }
 
+    renderDeveloperScenarios(activeFa, node) {
+        if (node.developerScenarios.isFetching) {
+            return <Loading />
+        }
+
+        let isRootNode = isFaRootId(node.id);
+
+        var rows = [];
+        for (var key in node.developerScenarios.data) {
+            if (!node.developerScenarios.data.hasOwnProperty(key)
+                || (isRootNode && (key === 'after' || key === 'before'))) {
+                continue;
+            }
+
+            let obj = node.developerScenarios.data[key];
+
+            let types = obj.map(data => (
+                <div className="desc-item-type">
+                    <h2>{data.name}</h2>
+                    {data.groups.map(group => (
+                        group.types.map(type => {
+                            if (node.subNodeForm.infoTypesMap === null || node.subNodeForm.refTypesMap === null) {
+                                return;
+                            }
+                            let infoTypes = node.subNodeForm.infoTypesMap[type.id];
+                            let refTypes = node.subNodeForm.refTypesMap[type.id];
+                            return type.descItems.map(item => {
+                                let infoType = infoTypes.specs[indexById(infoTypes.specs, item.descItemSpecId)];
+                                let refType = refTypes.descItemSpecsMap[item.descItemSpecId];
+                                return <div>
+                                    <h4 title={refTypes.name}>
+                                        {refTypes.shortcut}
+                                        <small>[{refTypes.code}]</small>
+                                    </h4>
+                                    <div>
+                                        <label>value:</label>
+                                        <span title={refType.name}>{refType.shortcut}</span> |
+                                        <small>{infoType.rep}</small>
+                                        |
+                                        <small>[{refType.code}]</small>
+                                    </div>
+                                </div>
+                            })
+                        })
+                    ))}
+                </div>
+
+            ));
+
+            /** key = after, before, child */
+            rows.push(
+                <div>
+                    <h1>{i18n('developer.scenarios.' + key)}</h1>
+                    <div>{types}</div>
+                </div>
+            )
+        }
+        return <div className='desc-items-container'>{rows}</div>
+    }
+
     renderDeveloperPanel() {
         const {arrRegion} = this.props;
         var fas = arrRegion.fas;
@@ -377,11 +455,13 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         return (
             <div className='developer-panel'>
                 <Tabs.Container>
-                    <Tabs.Tabs items={[{id: 0, title: i18n('developer.title.descItems')}, {id: 1, title: i18n('developer.title.xxx')}]} activeItem={{id: _developerSelectedTab}}
-                        onSelect={(item)=>{_developerSelectedTab = item.id;this.setState({})}}
+                    <Tabs.Tabs items={[{id: 0, title: i18n('developer.title.descItems')}, {id: 1, title: i18n('developer.title.scenarios')}]}
+                               activeItem={{id: _developerSelectedTab}}
+                               onSelect={(item)=>{_developerSelectedTab = item.id;this.setState({})}}
                     />
                     <Tabs.Content>
                         {_developerSelectedTab === 0 && this.renderDeveloperDescItems(activeFa, node)}
+                        {_developerSelectedTab === 1 && this.renderDeveloperScenarios(activeFa, node)}
                     </Tabs.Content>
                 </Tabs.Container>
             </div>

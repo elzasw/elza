@@ -643,7 +643,9 @@ class WebApi{
     
     xmlImport(data) {
         return AjaxUtils.ajaxCallRaw('/api/xmlImportManagerV2/import', {}, "POST", data);
-    }    
+    }
+
+
 }
 
 function findNodeById(node, nodeId) {

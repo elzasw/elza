@@ -253,7 +253,11 @@ export default function nodes(state = nodesInitialState, action) {
                 return {...state, nodes}
             }
             return state;
+        case types.DEVELOPER_SCENARIOS_RECEIVED:
+        case types.DEVELOPER_SCENARIOS_FETCHING:
+        case types.DEVELOPER_SCENARIOS_DIRTY:
         case types.CHANGE_FA_RECORD:
+            console.log('dev', action);
             var index = indexById(state.nodes, action.nodeId, 'selectedSubNodeId');
 
             if (index !== null) {

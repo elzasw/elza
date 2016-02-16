@@ -158,6 +158,9 @@ export default function arrRegion(state = initialState, action) {
         case types.FA_FA_APPROVE_VERSION:
         case types.CHANGE_FA:
         case types.CHANGE_FA_RECORD:
+        case types.DEVELOPER_SCENARIOS_RECEIVED:
+        case types.DEVELOPER_SCENARIOS_FETCHING:
+        case types.DEVELOPER_SCENARIOS_DIRTY:
             var index = indexById(state.fas, action.versionId, "versionId");
             return processFa(state, action, index);
         case types.FA_FAS_RECEIVE:

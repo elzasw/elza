@@ -86,14 +86,14 @@ const loggerMiddleware = createLogger({
 
 var createStoreWithMiddleware;
 if (_logStoreState) {
-    createStoreWithMiddleware = compose(applyMiddleware(
+    createStoreWithMiddleware = applyMiddleware(
         thunkMiddleware,
         loggerMiddleware
-    ), window.devToolsExtension ? window.devToolsExtension() : f => f)(createStore)
+    )(createStore)
 } else {
-    createStoreWithMiddleware = compose(applyMiddleware(
+    createStoreWithMiddleware = applyMiddleware(
         thunkMiddleware
-    ), window.devToolsExtension ? window.devToolsExtension() : f => f)(createStore)
+    )(createStore)
 }
 
 var initialState = {

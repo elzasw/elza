@@ -62,7 +62,11 @@ var messages = {
     "accordion.title.right.name.undefined": "<JP-Accordion right ID={0}>",
 
     "developer.title.descItems": "Prvky popisu",
-    
+    "developer.title.scenarios": "Scénáře",
+    "developer.scenarios.after": "Za",
+    "developer.scenarios.before": "Před",
+    "developer.scenarios.child": "Pod",
+
     "arr.panel.title": "Jsou zobrazeny pouze položky pro archivní pomůcku {0}",
     "arr.panel.reset": "Zrušit omezení",
 
