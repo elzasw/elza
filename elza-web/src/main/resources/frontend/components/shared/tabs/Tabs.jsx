@@ -116,7 +116,9 @@ var Tabs = class Tabs extends React.Component {
 
             var closeTitle = i18n('tabs.action.closeTab');                                          // popisek ikony zavírající záložku
             var key = typeof item.key !== 'undefined' ? item.key : item.id;
-            return <NavItem key={key} ref={"tab"+i} eventKey={key}><span>{item.title}</span><small>{item.desc}</small>{closeAction}</NavItem>    // vlastni kod založky
+            return <NavItem key={key} ref={"tab"+i} eventKey={key}><span title={item.title}>{item.title}</span>
+                <small>{item.desc}</small>
+                {closeAction}</NavItem>    // vlastni kod založky
         });
 
 
