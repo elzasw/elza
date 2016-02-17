@@ -481,8 +481,9 @@ return true;
         // Pokud se jedná o atribut, který je vynucený serverem a nemá žádnou hodnotu na serveru, není možné jej smazat
         // Ikona mazání se objeví pokud:
         // Má pole, která nezměnil
-        // Má pole, která změnil a nejsou validní
-        for (let descItem of descItemType.descItems) {
+        // Má pole, která změnil a nejsou validní       
+        for (var a=0; a<descItemType.descItems.length; a++) {
+            let descItem = descItemType.descItems[a]
             if (descItemNeedStore(descItem, refType)) {
                 return false
             }
