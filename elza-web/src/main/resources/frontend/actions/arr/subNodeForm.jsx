@@ -1,8 +1,19 @@
+/**
+ * Akce pro formulář JP.
+ */
+
 import {WebApi} from 'actions'
 import {getMapFromList, indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
 
 import * as types from 'actions/constants/ActionTypes';
 
+/**
+ * Akce přidání nové prázdné hodnoty descItem vícehodnotového atributu descItemType.
+ * {int} versionId verze AP
+ * {int} nodeId id node záložky, které se to týká
+ * {int} nodeKey Klíč záložky
+ * {Object} valueLocation konkrétní umístění nové hodnoty
+ */
 export function faSubNodeFormValueAdd(versionId, nodeId, nodeKey, valueLocation) {
     return {
         type: types.FA_SUB_NODE_FORM_VALUE_ADD,
@@ -13,6 +24,13 @@ export function faSubNodeFormValueAdd(versionId, nodeId, nodeKey, valueLocation)
     }
 }
 
+/**
+ * Akce validace hodnoty na serveru - týká se jen hodnot datace.
+ * {int} versionId verze AP
+ * {int} nodeId id node záložky, které se to týká
+ * {int} nodeKey Klíč záložky
+ * {Object} valueLocation konkrétní umístění hodnoty pro validaci
+ */
 export function faSubNodeFormValueValidate(versionId, nodeId, nodeKey, valueLocation) {
     return (dispatch, getState) => {
         var state = getState();
@@ -26,7 +44,15 @@ export function faSubNodeFormValueValidate(versionId, nodeId, nodeKey, valueLoca
     }
 }
 
-export function faSubNodeFormValueValidateResult(versionId, nodeId, nodeKey, valueLocation, result) {
+/**
+ * Akce propagace výsledku validace hodnoty ze serveru do store.
+ * {int} versionId verze AP
+ * {int} nodeId id node záložky, které se to týká
+ * {int} nodeKey Klíč záložky
+ * {Object} valueLocation konkrétní umístění hodnoty
+ * {Object} result výsledek validace
+ */
+function faSubNodeFormValueValidateResult(versionId, nodeId, nodeKey, valueLocation, result) {
     return {
         type: types.FA_SUB_NODE_FORM_VALUE_VALIDATE_RESULT,
         versionId,
@@ -37,7 +63,15 @@ export function faSubNodeFormValueValidateResult(versionId, nodeId, nodeKey, val
     }
 }
 
-// forceStore - true, pokud se mají data rovnou odeslat na server - není nutné focus do komponenty a následné blur 
+/**
+ * Akce změny hodnotya její promítnutí do store, případné uložení na server, pokud je toto vynuceno parametrem forceStore.
+ * {int} versionId verze AP
+ * {int} nodeId id node záložky, které se to týká
+ * {int} nodeKey Klíč záložky
+ * {Object} valueLocation konkrétní umístění hodnoty
+ * {Object} value nová hodnota
+ * {boolean} forceStore pokud je true, je hodnota i odeslána na server pro uložení
+ */
 export function faSubNodeFormValueChange(versionId, nodeId, nodeKey, valueLocation, value, forceStore) {
     return (dispatch, getState) => {
         dispatch({
@@ -56,6 +90,14 @@ export function faSubNodeFormValueChange(versionId, nodeId, nodeKey, valueLocati
     }
 }
 
+/**
+ * Akce změna pozice hodnoty vícehodnotového atributu - změna pořadí hodnot.
+ * {int} versionId verze AP
+ * {int} nodeId id node záložky, které se to týká
+ * {int} nodeKey Klíč záložky
+ * {Object} valueLocation konkrétní umístění hodnoty
+ * {boolean} index nový index hodnoty v rámci atributu
+ */
 export function faSubNodeFormValueChangePosition(versionId, nodeId, nodeKey, valueLocation, index) {
     return (dispatch, getState) => {
         var state = getState();
@@ -82,6 +124,15 @@ export function faSubNodeFormValueChangePosition(versionId, nodeId, nodeKey, val
     }
 }
 
+/**
+ * Akce kopírování hodnot konkrétního atributu z předcházející JP.
+ * {int} versionId verze AP
+ * {int} nodeId id node záložky, které se to týká
+ * {int} nodeVersionId verze node
+ * {int} descItemTypeId id atribtu
+ * {int} nodeKey klíč záložky
+ * {Object} valueLocation konkrétní umístění
+ */
 export function faSubNodeFormValuesCopyFromPrev(versionId, nodeId, nodeVersionId, descItemTypeId, nodeKey, valueLocation) {
     return (dispatch, getState) => {
         dispatch(faSubNodeFormDescItemTypeDeleteInStore(versionId, nodeId, nodeKey, valueLocation, true));
@@ -92,6 +143,14 @@ export function faSubNodeFormValuesCopyFromPrev(versionId, nodeId, nodeVersionId
     }
 }
 
+/**
+ * Akce změna hodnoty atributu - odkaz na osoby.
+ * {int} versionId verze AP
+ * {int} nodeId id node záložky, které se to týká
+ * {int} nodeKey klíč záložky
+ * {Object} valueLocation konkrétní umístění hodnoty
+ * {Object} value hodnota
+ */
 export function faSubNodeFormValueChangeParty(versionId, nodeId, nodeKey, valueLocation, value) {
     return (dispatch, getState) => {
         dispatch({
@@ -106,6 +165,14 @@ export function faSubNodeFormValueChangeParty(versionId, nodeId, nodeKey, valueL
     }
 }
 
+/**
+ * Akce změna hodnoty atributu - odkaz na rejstřík.
+ * {int} versionId verze AP
+ * {int} nodeId id node záložky, které se to týká
+ * {int} nodeKey klíč záložky
+ * {Object} valueLocation konkrétní umístění hodnoty
+ * {Object} value hodnota
+ */
 export function faSubNodeFormValueChangeRecord(versionId, nodeId, nodeKey, valueLocation, value) {
     return (dispatch, getState) => {
         dispatch({
@@ -120,6 +187,14 @@ export function faSubNodeFormValueChangeRecord(versionId, nodeId, nodeKey, value
     }
 }
 
+/**
+ * Akce změna hodnoty specifikace atributu.
+ * {int} versionId verze AP
+ * {int} nodeId id node záložky, které se to týká
+ * {int} nodeKey klíč záložky
+ * {Object} valueLocation konkrétní umístění hodnoty
+ * {Object} value hodnota
+ */
 export function faSubNodeFormValueChangeSpec(versionId, nodeId, nodeKey, valueLocation, value) {
     return (dispatch, getState) => {
         // Dispatch zmněny specifikace
@@ -137,6 +212,10 @@ export function faSubNodeFormValueChangeSpec(versionId, nodeId, nodeKey, valueLo
     }
 }
 
+/**
+ * Porovnání dvou hodnot. Undefined, null a prázdný řetězec jsou ekvivalentní.
+ * @return {boolean} true, pokud jsou předané parametry stejné
+ */
 function valuesEquals(v1, v2) {
     if (v1 === v2) {
         return true;

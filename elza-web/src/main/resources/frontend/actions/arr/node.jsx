@@ -1,9 +1,17 @@
+/**
+ * Akce pro vybranou záložku NODE pod konkrétní vybranou záložkou AP.
+ */
+
 import {WebApi} from 'actions';
 import * as types from 'actions/constants/ActionTypes';
 import {faSelectSubNode} from 'actions/arr/nodes';
 import {indexById} from 'stores/app/utils.jsx'
 import {isFaRootId} from 'components/arr/ArrUtils'
 
+/**
+ * Fetch dat pro otevřené záložky NODE, pokud je potřeba.
+ * {int} versionId verze AP
+ */
 export function nodesFetchIfNeeded(versionId) {
     return (dispatch, getState) => {
         var state = getState();
@@ -33,6 +41,11 @@ export function nodesFetchIfNeeded(versionId) {
     }
 }
 
+/**
+ * Akce vyžádání dat - informace do store.
+ * {int} versionId verze AP
+ * {Array} nodeIds seznam id node, pro které byla data vyžádána
+ */
 export function nodesRequest(versionId, nodeIds) {
     var nodeMap = {}
     nodeIds.forEach(id => {
@@ -46,6 +59,11 @@ export function nodesRequest(versionId, nodeIds) {
     }
 }
 
+/**
+ * Akce přijetí dat - promítnutí do store.
+ * {int} versionId verze AP
+ * {Array} nodes seznam node
+ */
 export function nodesReceive(versionId, nodes) {
     var nodeMap = {}
     nodes.forEach(node => {
@@ -60,6 +78,13 @@ export function nodesReceive(versionId, nodes) {
     }
 }
 
+/**
+ * Výsledek hledání v seznamu sourozenců - Accordion.
+ * {int} versionId verze AP
+ * {int} nodeId id node dané záložky NODE
+ * {string} nodeKey klíč dané záložky
+ * {Array} nodeIds seznam vyfiltrovaných node
+ */
 export function faNodeSubNodeFulltextResult(versionId, nodeId, nodeKey, nodeIds) {
     return {
         type: types.FA_FA_SUBNODES_FULLTEXT_RESULT,
@@ -70,6 +95,10 @@ export function faNodeSubNodeFulltextResult(versionId, nodeId, nodeKey, nodeIds)
     }
 }
 
+/**
+ * Hledání v seznamu sourozenců - Accordion pro konkrétní zobrazení.
+ * {string} filterText podle jakého řetězce se má vyhledávat
+ */
 export function faNodeSubNodeFulltextSearch(filterText) {
     return (dispatch, getState) => {
         var state = getState();

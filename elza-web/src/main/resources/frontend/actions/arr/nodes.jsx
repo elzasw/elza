@@ -82,6 +82,15 @@ export function faSelectSubNodeInt(subNodeId, subNodeParentNode, openNewTab=fals
     }
 }
 
+/**
+ * Akce vybrání záložky NODE v Accordion v aktuální záložce NODE pod aktuální vybranou záložkou AP. V případě, že neexsituje aktuální záložka NODE
+ * je vytvořena nová na základě parametru subNodeParentNode, který bude reprezentovat záložku.
+ * {int} subNodeId id node, který má být vzbrán v Accordion
+ * {Object} subNodeParentNode nadřazený node k subNodeId
+ * {boolean} openNewTab pokud je true, je vždy vytvářena nová záložka. pokud je false, je nová záložka vytvářena pouze pokud žádná není
+ * {int} newFilterCurrentIndex nový index ve výsledcích hledání ve stromu, pokud daná akce je vyvolána akcí skuku na jinou vyhledanou položku vy výsledcích hledání ve stromu
+ * {boolean} ensureItemVisible true, pokud má být daná položka vidět - má se odscrolovat
+ */
 export function faSelectSubNode(subNodeId, subNodeParentNode, openNewTab=false, newFilterCurrentIndex = null, ensureItemVisible=false) {
     return (dispatch, getState) => {
         dispatch(faExtendedView(false));
@@ -91,42 +100,78 @@ export function faSelectSubNode(subNodeId, subNodeParentNode, openNewTab=false, 
     }
 }
 
+/**
+ * Stránkování v Accordion - další část.
+ */
 export function faSubNodesNext() {
     return {
         type: types.FA_FA_SUBNODES_NEXT,
     }
 }
 
+/**
+ * Stránkování v Accordion - předchozí část.
+ */
 export function faSubNodesPrev() {
     return {
         type: types.FA_FA_SUBNODES_PREV,
     }
 }
 
+/**
+ * Stránkování v Accordion - další stránka.
+ */
 export function faSubNodesNextPage() {
     return {
         type: types.FA_FA_SUBNODES_NEXT_PAGE,
     }
 }
 
+/**
+ * Stránkování v Accordion - předchozí stránka.
+ */
 export function faSubNodesPrevPage() {
     return {
         type: types.FA_FA_SUBNODES_PREV_PAGE,
     }
 }
 
+/**
+ * Akce přesunu uzlů ve stromu.
+ * {int} versionId verze AP
+ * {Array} nodes seznam uzlů pro akci
+ * {Object} nodesParent nadřazený uzel k nodes
+ * {Object} dest cílový uzel, kterého se akce týká
+ * {Object} destParent nadřazený uzel pro dest
+ */
 export function moveNodesUnder(versionId, nodes, nodesParent, dest, destParent) {
     return (dispatch, getState) => {
         WebApi.moveNodesUnder(versionId, nodes, nodesParent, dest, destParent);
     }
 }
 
+/**
+ * Akce přesunu uzlů ve stromu.
+ * {int} versionId verze AP
+ * {Array} nodes seznam uzlů pro akci
+ * {Object} nodesParent nadřazený uzel k nodes
+ * {Object} dest cílový uzel, kterého se akce týká
+ * {Object} destParent nadřazený uzel pro dest
+ */
 export function moveNodesBefore(versionId, nodes, nodesParent, dest, destParent) {
     return (dispatch, getState) => {
         WebApi.moveNodesBefore(versionId, nodes, nodesParent, dest, destParent);
     }
 }
 
+/**
+ * Akce přesunu uzlů ve stromu.
+ * {int} versionId verze AP
+ * {Array} nodes seznam uzlů pro akci
+ * {Object} nodesParent nadřazený uzel k nodes
+ * {Object} dest cílový uzel, kterého se akce týká
+ * {Object} destParent nadřazený uzel pro dest
+ */
 export function moveNodesAfter(versionId, nodes, nodesParent, dest, destParent) {
     return (dispatch, getState) => {
         WebApi.moveNodesAfter(versionId, nodes, nodesParent, dest, destParent);

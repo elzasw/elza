@@ -8,6 +8,12 @@ import {barrier} from 'components/Utils'
 import {isFaRootId} from 'components/arr/ArrUtils'
 import * as types from 'actions/constants/ActionTypes';
 
+/**
+ * Dohledání store node pro předané parametry.
+ * {state} kořenový store
+ * {int} versionId verze AP
+ * {string} nodeKey klíč záložky NODE
+ */
 function getNode(state, versionId, nodeKey) {
     var r = findByNodeKeyInGlobalState(state, versionId, nodeKey);
     if (r != null) {

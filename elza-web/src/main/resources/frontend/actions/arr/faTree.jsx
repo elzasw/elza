@@ -36,6 +36,11 @@ export function _faTreeNodeExpand(area, node, addWaitingNode=false) {
     }
 }
 
+/**
+ * Zabalení uzlu.
+ * @param {String} area oblast stromu
+ * @param {Object} node uzel
+ */
 export function faTreeCollapse(area, node) {
     return {
         type: types.FA_FA_TREE_COLLAPSE,
@@ -44,6 +49,12 @@ export function faTreeCollapse(area, node) {
     }
 }
 
+/**
+ * Hledání ve stromu.
+ * @param {String} area oblast stromu
+ * @param {int} versionId verze AP
+ * @param {string} filterText hledaný text
+ */
 export function faTreeFulltextChange(area, versionId, filterText) {
     return {
         type: types.FA_FA_TREE_FULLTEXT_CHANGE,
@@ -53,6 +64,12 @@ export function faTreeFulltextChange(area, versionId, filterText) {
     }
 }
 
+/**
+ * Dohledání konkrétního stromu.
+ * {Object} state root store
+ * {string} area jaký strom
+ * {int} versionId verze AP
+ */
 function getFaTreeForFa(state, area, versionId) {
     var index = indexById(state.arrRegion.fas, versionId, "versionId");
     if (index != null) {
@@ -65,6 +82,13 @@ function getFaTreeForFa(state, area, versionId) {
     }
 }
 
+/**
+ * Změna aktuálně vybrané položky z možných výsledků hledání.
+ * {func} dispatch dispatch
+ * {string} area jaký strom
+ * {Object} faTree store stromu
+ * {int} newIndex nový vybraný index ve výsledcích hledání
+ */
 function changeCurrentIndex(dispatch, area, faTree, newIndex) {
     if (newIndex != faTree.filterCurrentIndex) {
         var nodeId = faTree.searchedIds[newIndex];
@@ -80,6 +104,11 @@ function changeCurrentIndex(dispatch, area, faTree, newIndex) {
     }
 }
 
+/**
+ * Přesun na další položku vy výsledcích hledání.
+ * {string} area jaký strom
+ * {int} versionId verze AP
+ */
 export function faTreeFulltextNextItem(area, versionId) {
     return (dispatch, getState) => {
         var state = getState();
@@ -92,11 +121,16 @@ export function faTreeFulltextNextItem(area, versionId) {
             } else {
                 newIndex = Math.min(faTree.filterCurrentIndex + 1, faTree.searchedIds.length - 1);
             }
-            changeCurrentIndex(dispatch,area,  faTree, newIndex);
+            changeCurrentIndex(dispatch, area, faTree, newIndex);
         }
     }
 }
 
+/**
+ * Přesun na předchozí položku vy výsledcích hledání.
+ * {string} area jaký strom
+ * {int} versionId verze AP
+ */
 export function faTreeFulltextPrevItem(area, versionId) {
     return (dispatch, getState) => {
         var state = getState();
@@ -114,6 +148,11 @@ export function faTreeFulltextPrevItem(area, versionId) {
     }
 }
 
+/**
+ * Akce fulltextového hledání ve stromu. Text, podle kterého se hledá, je brán ze store konkrétního stromu.
+ * {string} area jaký strom
+ * {int} versionId verze AP
+ */
 export function faTreeFulltextSearch(area, versionId) {
     return (dispatch, getState) => {
         var state = getState();
@@ -148,6 +187,14 @@ export function faTreeFulltextSearch(area, versionId) {
     }
 }
 
+/**
+ * Výsledek hledání ve stromu.
+ * {string} area jaký strom
+ * {int} versionId verze AP
+ * {string} filterText pro jaký hledaný text platí výsledky
+ * {Arraz} searchedData seznam nalezených node
+ * {boolean} clearFilter jedná se o akci, která má pouze vymazat aktuální filtr?
+ */
 function faTreeFulltextResult(area, versionId, filterText, searchedData, clearFilter) {
     return {
         type: types.FA_FA_TREE_FULLTEXT_RESULT,
@@ -206,6 +253,11 @@ export function faTreeNodeCollapse(area, node) {
     }
 }
 
+/**
+ * Získání store konkrétního store stromu na danou FA a oblast stromu.
+ * {Object} fa store fa
+ * {string} area o jaký strom se jedná
+ */
 function getFaTree(fa, area) {
     switch (area) {
         case types.FA_TREE_AREA_MAIN:

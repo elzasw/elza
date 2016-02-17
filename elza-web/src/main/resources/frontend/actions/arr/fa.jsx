@@ -11,6 +11,9 @@ import {addToastrSuccess} from 'components/shared/toastr/ToastrActions'
 import {nodesRequest, nodesReceive} from 'actions/arr/node'
 import {createFaRoot, getFaFromFaAndVersion} from 'components/arr/ArrUtils'
 
+/**
+ * Fetch dat pro otevřené záložky AP, pokud je potřeba - např. název atp.
+ */
 export function fasFetchIfNeeded() {
     return (dispatch, getState) => {
         var state = getState();
@@ -40,6 +43,10 @@ export function fasFetchIfNeeded() {
     }
 }
 
+/**
+ * Akce - přijata nová data o záložkách AP.
+ * @param {Array} fas data
+ */
 export function fasReceive(fas) {
     var faMap = {}
     fas.forEach(fa => {
@@ -53,6 +60,10 @@ export function fasReceive(fas) {
     }
 }
 
+/**
+ * Vytvoření nové AP.
+ * @param {Object} data data fs
+ */
 export function createFa(data) {
     return dispatch => {
         return WebApi.createFindingAid(data.name, data.ruleSetId, data.rulArrTypeId)
@@ -64,6 +75,12 @@ export function createFa(data) {
     }
 }
 
+/**
+ * Uzavření AP, nová aktuální AP bude mít předané ruleSetId a arrangementTypeId.
+ * @param {int} versionId verze AP
+ * @param {int} ruleSetId id pravidla
+ * @param {int} arrangementTypeId id typu výstupu
+ */
 export function approveFa(versionId, ruleSetId, arrangementTypeId) {
     return dispatch => {
         return WebApi.approveVersion(versionId, ruleSetId, arrangementTypeId)
@@ -98,6 +115,10 @@ export function closeFaTab(fa) {
     }
 }
 
+/**
+ * Zapnutí/vypnutí rozšířeného zobrazení stromu AP.
+ * {boolean} enable zapnout nebo vypnout rozšířené zobrazení?
+ */
 export function faExtendedView(enable) {
     return {
         type: types.FA_EXTENDED_VIEW,
@@ -112,6 +133,10 @@ export function showRegisterJp(show) {
     }
 }
 
+/**
+ * Nová verze AP po jeho schálení.
+ * {int} versionId nová verze AP
+ */
 export function approveFaResult(versionId) {
     return {
         type: types.FA_FA_APPROVE_VERSION,
