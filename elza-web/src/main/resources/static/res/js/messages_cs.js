@@ -5,7 +5,7 @@ var messages = {
     "global.data.loading.form": "Načítání formuláře JP",
     "global.data.loading.node": "Načítání seznamu JP",
     "global.data.loading.node.children": "Načítání seznamu potomků JP",
-    
+
     "global.title.yes": "Ano",
     "global.title.no": "Ne",
 
@@ -291,6 +291,10 @@ var messages = {
     "import.stopOnError": "Zastavit při chybě",
     "import.file": "Soubor",
     "import.running": "Import probíhá",
+
+    "validate.validateInt.notInt": "Nejedná se o celé číslo",
+    "validate.validateInt.outOfRange": "Zadané číslo je mimo rozsah celého čísla typu INT",
+    "validate.validateDouble.outOfRange": "Zadané číslo je mimo rozsah desetinného čísla typu Decimal(18,6)",
 
     "____": ""
 };
