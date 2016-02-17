@@ -5,6 +5,9 @@ var messages = {
     "global.data.loading.form": "Načítání formuláře JP",
     "global.data.loading.node": "Načítání seznamu JP",
     "global.data.loading.node.children": "Načítání seznamu potomků JP",
+    
+    "global.title.yes": "Ano",
+    "global.title.no": "Ne",
 
     "global.error.ajax": "Při komunikaci nastala chyba",
     "global.action.create": "Vytvořit",
@@ -63,6 +66,7 @@ var messages = {
 
     "developer.title.descItems": "Prvky popisu",
     "developer.title.scenarios": "Scénáře",
+    "developer.descItems.specs.empty": "Nejsou definovány žádné specifikace",
     "developer.scenarios.after": "Za",
     "developer.scenarios.before": "Před",
     "developer.scenarios.child": "Pod",

@@ -57,7 +57,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
             'handleValidationDialog', 'handleEditFaVersion', 'handleCallEditFaVersion', 'handleShortcuts', 'handleImport',
             'renderDeveloperPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs');
 
-        this.state = {faFileTreeOpened: false, developerExpandedSpecsId: null};
+        this.state = {faFileTreeOpened: false, developerExpandedSpecsIds: {}};
     }
 
     componentDidMount() {
@@ -327,10 +327,12 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
     }
 
     handleShowHideSpecs(descItemTypeId) {
-        if (this.state.developerExpandedSpecsId === descItemTypeId) {
-            this.setState({developerExpandedSpecsId: null})
+        if (this.state.developerExpandedSpecsIds[descItemTypeId]) {
+            delete this.state.developerExpandedSpecsIds[descItemTypeId]
+            this.setState({developerExpandedSpecsIds: this.state.developerExpandedSpecsIds})
         } else {
-            this.setState({developerExpandedSpecsId: descItemTypeId})
+            this.state.developerExpandedSpecsIds[descItemTypeId] = true
+            this.setState({developerExpandedSpecsIds: this.state.developerExpandedSpecsIds})
         }
     }
 
@@ -344,8 +346,24 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                     var refType = node.subNodeForm.refTypesMap[type.id]
 
                     var specs;
-                    if (refType.useSpecification && this.state.developerExpandedSpecsId == refType.id) {
-                        specs = refType.descItemSpecs.map(spec => <div key={'spec' + spec.id}>{spec.name} [{spec.code}]</div>)
+                    if (refType.useSpecification && this.state.developerExpandedSpecsIds[refType.id]) {
+                        if (refType.descItemSpecs.length > 0) {
+                            specs = refType.descItemSpecs.map(spec => {
+                                return (
+                                    <div key={'spec' + spec.id} className={'desc-item-spec ' +  spec.type}>
+                                        <h3 title={spec.name}>{spec.shortcut} <small>[{spec.code}]</small></h3>
+                                        <div key='1' className='desc'>{spec.description}</div>
+                                        <div key='2' className='attrs'>
+                                            <div key='1'><label>type:</label>{spec.type}</div>
+                                            <div key='2'><label>repeatable:</label>{spec.repeatable ? i18n('global.title.yes') : i18n('global.title.no')}</div>
+                                            <div key='3'><label>viewOrder:</label>{spec.viewOrder}</div>
+                                        </div>
+                                    </div>
+                                )
+                            })
+                        } else {
+                            specs = i18n('developer.descItems.specs.empty')
+                        }
                         specs = <div>{specs}</div>
                     }
 
@@ -355,11 +373,14 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                             <div key='1' className='desc'>{refType.description}</div>
                             <div key='2' className='attrs'>
                                 <div key='1'><label>type:</label>{infoType.type}</div>
-                                <div key='2'><label>dataType:</label>{refType.dataType.code}</div>
-                                <div key='3'><label>width:</label>{infoType.width}</div>
-                                <div key='4'><label>viewOrder:</label>{refType.viewOrder}</div>
+                                <div key='2'><label>repeatable:</label>{infoType.rep === 1 ? i18n('global.title.yes') : i18n('global.title.no')}</div>
+                                <div key='3'><label>dataType:</label>{refType.dataType.code}</div>
+                                <div key='4'><label>width:</label>{infoType.width}</div>
+                                <div key='5'><label>viewOrder:</label>{refType.viewOrder}</div>
+                                <div key='6'><label>isValueUnique:</label>{refType.isValueUnique ? i18n('global.title.yes') : i18n('global.title.no')}</div>
+                                <div key='7'><label>canBeOrdered:</label>{refType.canBeOrdered ? i18n('global.title.yes') : i18n('global.title.no')}</div>
                             </div>
-                            {refType.useSpecification && <Button onClick={this.handleShowHideSpecs.bind(this, refType.id)}>specifikace</Button>}
+                            {refType.useSpecification && <Button onClick={this.handleShowHideSpecs.bind(this, refType.id)}>specifikace <Icon glyph={this.state.developerExpandedSpecsIds[refType.id] ? 'fa-angle-up' : 'fa-angle-down'}/></Button>}
                             {specs}
                         </div>
                     )
