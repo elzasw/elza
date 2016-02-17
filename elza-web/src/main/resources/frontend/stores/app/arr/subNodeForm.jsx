@@ -4,6 +4,7 @@ import {indexById} from 'stores/app/utils.jsx'
 import {faSubNodeFormValueValidate} from 'actions/arr/subNodeForm'
 import {createDescItemFromDb, getDescItemType, updateFormData, createDescItem} from './subNodeFormUtils'
 var subNodeFormUtils = require('./subNodeFormUtils.jsx')
+import {validateInt, validateDouble} from 'components/validate'
 
 function getLoc(state, valueLocation) {
     var descItemGroup = state.formData.descItemGroups[valueLocation.descItemGroupIndex];
@@ -81,6 +82,8 @@ function validate(descItem, refType, valueServerError) {
         case 'INT':
             if (descItem.value.length === 0) {
                 error.value = i18n('subNodeForm.validate.value.notEmpty');
+            } else {
+                error.value = validateInt(descItem.value)
             }
             break;
         case 'COORDINATES':
@@ -88,6 +91,8 @@ function validate(descItem, refType, valueServerError) {
         case 'DECIMAL':
             if (descItem.value.length === 0) {
                 error.value = i18n('subNodeForm.validate.value.notEmpty');
+            } else {
+                error.value = validateDouble(descItem.value)
             }
             break;
         default:

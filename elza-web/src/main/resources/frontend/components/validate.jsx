@@ -27,7 +27,7 @@ import {AjaxUtils, i18n} from 'components';
 var MIN_INTEGER = -Math.pow(2, 31);
 var MAX_INTEGER = Math.pow(2, 31) - 1;
 
-var validateInt = function (number) {
+export function validateInt(number) {
     if ((number % 1) !== 0)
         return i18n('validate.validateInt.notInt');
     if (number < MIN_INTEGER || number > MAX_INTEGER)
@@ -39,7 +39,7 @@ var validateInt = function (number) {
  * Validace zda je číslo desetinným číslem kladným i záporným v intervalu desetinného čísla JAVA
  * @param doubleNumber decimal(18,6)
  **/
-var validateDouble = function (doubleNumber) {
+export function validateDouble(doubleNumber) {
     const stringNumber = '' + doubleNumber;
     if (stringNumber.replace(",", "").length > 18 || (stringNumber.indexOf(",") !== -1 && stringNumber.substr(stringNumber.indexOf(",") + 1).length > 6))
         return i18n('validate.validateDouble.outOfRange');
@@ -52,7 +52,7 @@ var validateDouble = function (doubleNumber) {
  * @param callback funkce
  * volání funkce: validateDate('19.st.', function (message){console.log(message); });
  **/
-var validateDate = function (dateNumber, callback = function () {
+export function validateDate(dateNumber, callback = function () {
 }) {
     AjaxUtils.ajaxGet('/api/validate/unitDate', {value: dateNumber})
         .then(json=> {
