@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:hsqldb:mem:scratchdb
   jpa:
-    show-sql: true
+    show-sql: false
     #pametova databaze automaticky zapina hibernate.ddl-auto: create
     hibernate.ddl-auto: none
 

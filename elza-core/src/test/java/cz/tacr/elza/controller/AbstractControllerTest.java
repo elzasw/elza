@@ -2,6 +2,8 @@ package cz.tacr.elza.controller;
 
 import static com.jayway.restassured.RestAssured.given;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
 
 import org.junit.Assert;
@@ -20,6 +22,11 @@ import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 
 import cz.tacr.elza.AbstractTest;
+import cz.tacr.elza.controller.vo.ArrFindingAidVO;
+import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
+import cz.tacr.elza.controller.vo.RulArrangementTypeVO;
+import cz.tacr.elza.controller.vo.RulRuleSetVO;
+
 
 public abstract class AbstractControllerTest extends AbstractTest {
 
@@ -40,14 +47,25 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String RULE_CONTROLLER_URL = "/api/ruleSetManagerV2";
     protected static final String XML_IMPORT_CONTROLLER_URL = "/api/xmlImportManagerV2";
 
+    // ADMIN
     protected static final String REINDEX = ADMIN_CONTROLLER_URL + "/reindex";
     protected static final String REINDEX_STATUS = ADMIN_CONTROLLER_URL + "/reindexStatus";
+
+    // ARRANGEMENT
+    protected static final String CREATE_FINDING_AID = ARRANGEMENT_CONTROLLER_URL + "/findingAids";
+    protected static final String UPDATE_FINDING_AID = ARRANGEMENT_CONTROLLER_URL + "/updateFindingAid";
+    protected static final String FINDING_AIDS = ARRANGEMENT_CONTROLLER_URL + "/getFindingAids";
+    protected static final String APPROVE_VERSION = ARRANGEMENT_CONTROLLER_URL + "/approveVersion";
+
+    // RULE
+    protected static final String RULE_SETS = RULE_CONTROLLER_URL + "/getRuleSets";
 
     @Value("${local.server.port}")
     private int port;
 
     @Before
     public void setUp() {
+        super.setUp();
         RestAssured.port = port;                        // nastavi default port pro REST-assured
         RestAssured.baseURI = RestAssured.DEFAULT_URI;  // nastavi default URI pro REST-assured. Nejcasteni localhost
     }
@@ -56,7 +74,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return httpMethod(params, url, HttpMethod.DELETE, HttpStatus.OK);
     }
 
-    public static Response post(Function<RequestSpecification, RequestSpecification> params, String url, HttpStatus status) {
+    public static Response post(Function<RequestSpecification, RequestSpecification> params,
+                                String url,
+                                HttpStatus status) {
         return httpMethod(params, url, HttpMethod.POST, status);
     }
 
@@ -72,7 +92,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return httpMethod(params, url, HttpMethod.PUT, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public static Response put(Function<RequestSpecification, RequestSpecification> params, String url, HttpStatus status) {
+    public static Response put(Function<RequestSpecification, RequestSpecification> params,
+                               String url,
+                               HttpStatus status) {
         return httpMethod(params, url, HttpMethod.PUT, status);
     }
 
@@ -88,7 +110,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return httpMethod((spec) -> spec, url, HttpMethod.GET, HttpStatus.OK);
     }
 
-    public static Response httpMethod(Function<RequestSpecification, RequestSpecification> params, String url, HttpMethod method, HttpStatus status) {
+    public static Response httpMethod(Function<RequestSpecification, RequestSpecification> params,
+                                      String url,
+                                      HttpMethod method,
+                                      HttpStatus status) {
         Assert.assertNotNull(params);
         Assert.assertNotNull(url);
         Assert.assertNotNull(method);
@@ -129,6 +154,98 @@ public abstract class AbstractControllerTest extends AbstractTest {
         Assert.assertEquals(status.value(), response.statusCode());
 
         return response;
+    }
+
+    /**
+     * Získání seznamu pravidel.
+     *
+     * @return seznam pravidel
+     */
+    protected List<RulRuleSetVO> getRuleSets() {
+        Response response = get(RULE_SETS);
+        return Arrays.asList(response.getBody().as(RulRuleSetVO[].class));
+    }
+
+    /**
+     * Vytvoření archivní pomůcky.
+     *
+     * @param name              název AP
+     * @param arrangementTypeId identifikátor výstupu
+     * @param ruleSetId         identifikátor pravidel
+     * @return ap
+     */
+    protected ArrFindingAidVO createFindingAid(final String name,
+                                               final Integer arrangementTypeId,
+                                               final Integer ruleSetId) {
+        Response response = post(spec -> spec
+                .queryParameter("name", name)
+                .queryParameter("arrangementTypeId", arrangementTypeId)
+                .queryParameter("ruleSetId", ruleSetId), CREATE_FINDING_AID);
+        return response.getBody().as(ArrFindingAidVO.class);
+    }
+
+    /**
+     * Vytvoření výchozí archivní pomůcky.
+     *
+     * @param name název AP
+     * @return ap
+     */
+    protected ArrFindingAidVO createFindingAid(final String name) {
+        List<RulRuleSetVO> ruleSets = getRuleSets();
+        RulRuleSetVO ruleSet = ruleSets.get(0);
+        RulArrangementTypeVO arrangementType = ruleSet.getArrangementTypes().get(0);
+        return createFindingAid(name, arrangementType.getId(), ruleSet.getId());
+    }
+
+    /**
+     * Úprava archivní pomůcky.
+     *
+     * @param findingAid ap k úpravě
+     * @return ap
+     */
+    protected ArrFindingAidVO updateFindingAid(final ArrFindingAidVO findingAid) {
+        Response response = post(spec -> spec.body(findingAid), UPDATE_FINDING_AID);
+        return response.getBody().as(ArrFindingAidVO.class);
+    }
+
+    /**
+     * Uzavření verze archivní pomůcky.
+     *
+     * @param findingAidVersion verze archivní pomůcky
+     * @param arrangementType   typ výstupu
+     * @return nová verze ap
+     */
+    protected ArrFindingAidVersionVO approveVersion(final ArrFindingAidVersionVO findingAidVersion,
+                                                    final RulArrangementTypeVO arrangementType) {
+        return approveVersion(findingAidVersion.getId(), arrangementType.getId(), arrangementType.getRuleSetId());
+    }
+
+    /**
+     * Uzavření verze archivní pomůcky.
+     *
+     * @param versionId         identifikátor verze archivní pomůcky
+     * @param arrangementTypeId identifikátor výstupu
+     * @param ruleSetId         identifikátor pravidel
+     * @return nová verze ap
+     */
+    protected ArrFindingAidVersionVO approveVersion(final Integer versionId,
+                                                    final Integer arrangementTypeId,
+                                                    final Integer ruleSetId) {
+        Response response = put(spec -> spec
+                .queryParameter("versionId", versionId)
+                .queryParameter("arrangementTypeId", arrangementTypeId)
+                .queryParameter("ruleSetId", ruleSetId), APPROVE_VERSION);
+        return response.getBody().as(ArrFindingAidVersionVO.class);
+    }
+
+    /**
+     * Vrátí archivní pomůcky s verzema.
+     *
+     * @return archivní pomůcky
+     */
+    protected List<ArrFindingAidVO> getFindingAids() {
+        Response response = get(FINDING_AIDS);
+        return Arrays.asList(response.getBody().as(ArrFindingAidVO[].class));
     }
 
 }

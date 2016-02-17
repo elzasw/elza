@@ -338,14 +338,11 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
             if (version.getLockChange() == null) {
                 builder.append("FROM arr_level a1 ");
-                builder.append("LEFT JOIN arr_level a2 ON a2.node_id_parent = a1.node_id ");
-                builder.append("LEFT JOIN arr_level a3 ON a3.node_id_parent = a2.node_id ");
-                builder.append("LEFT JOIN arr_level a4 ON a4.node_id_parent = a3.node_id ");
+                builder.append("LEFT JOIN arr_level a2 ON a2.node_id_parent = a1.node_id AND a2.delete_change_id IS NULL ");
+                builder.append("LEFT JOIN arr_level a3 ON a3.node_id_parent = a2.node_id AND a3.delete_change_id IS NULL ");
+                builder.append("LEFT JOIN arr_level a4 ON a4.node_id_parent = a3.node_id AND a4.delete_change_id IS NULL ");
 
                 builder.append("WHERE a1.delete_change_id IS NULL AND ");
-                builder.append("a2.delete_change_id IS NULL AND ");
-                builder.append("a3.delete_change_id IS NULL AND ");
-                builder.append("a4.delete_change_id IS NULL AND ");
             } else {
                 builder.append("FROM arr_level a1 ");
                 builder.append("LEFT JOIN arr_level a2 ON a2.node_id_parent = a1.node_id AND a2.create_change_id < :closeDate AND (a2.delete_change_id IS NULL OR a2.delete_change_id > :closeDate) ");
