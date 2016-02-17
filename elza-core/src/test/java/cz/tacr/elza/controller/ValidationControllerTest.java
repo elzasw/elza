@@ -8,7 +8,8 @@ import org.springframework.util.Assert;
  * Testování metod z ValidationControllerTest.
  *
  * @author Martin Šlapa
- * @since 16.2.2016
+ * @author Petr Compel
+ * @since 17.2.2016
  */
 public class ValidationControllerTest extends AbstractControllerTest {
 
@@ -34,12 +35,22 @@ public class ValidationControllerTest extends AbstractControllerTest {
         });
     }
 
+    /**
+     * Kontrola zda jsou zadané unit date platné
+     *
+     * @param list Stringy unit date
+     */
     private void valid(String[] list) {
         for (String val : list) {
             Assert.isTrue(validateUnitDate(val).isValid());
         }
     }
 
+    /**
+     * Kontrola zda jsou zadané unit date neplatené
+     *
+     * @param list Stringy unit date
+     */
     private void invalid(String[] list) {
         for (String val : list) {
             Assert.isTrue(!validateUnitDate(val).isValid());

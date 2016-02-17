@@ -9,6 +9,8 @@ import com.jayway.restassured.specification.RequestSpecification;
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.service.ArrMoveLevelService;
 import org.junit.Assert;
 import org.junit.Before;
@@ -60,6 +62,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     // RULE
     protected static final String RULE_SETS = RULE_CONTROLLER_URL + "/getRuleSets";
+    protected static final String DATA_TYPES = RULE_CONTROLLER_URL + "/dataTypes";
+    protected static final String DESC_ITEM_TYPES = RULE_CONTROLLER_URL + "//*";
+    protected static final String PACKAGES = RULE_CONTROLLER_URL + "/getPackages";
 
     // Validation
     protected static final String VALIDATE_UNIT_DATE = VALIDATION_CONTROLLER_URL + "/unitDate";
@@ -301,8 +306,43 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return newLevel;
     }
 
+    /**
+     * Validace unitDate
+     *
+     * @param value String unit date
+     * @return výsledek validace
+     */
     protected ValidationResult validateUnitDate(final String value) {
         Response response = get(spec -> spec.queryParameter("value", value), VALIDATE_UNIT_DATE);
         return response.getBody().as(ValidationResult.class);
     }
+
+    /**
+     * Získání rule data types
+     *
+     * @return list rule data types
+     */
+    protected List<RulDataTypeVO> getDataTypes() {
+        return Arrays.asList(get(DATA_TYPES).getBody().as(RulDataTypeVO[].class));
+    }
+
+    /**
+     * Získání rule data types
+     *
+     * @return list rule data types
+     */
+    protected List<RulDescItemTypeExtVO> getDescItemTypes() {
+        return Arrays.asList(get(DESC_ITEM_TYPES).getBody().as(RulDescItemTypeExtVO[].class));
+    }
+
+    /**
+     * Získání rule data types
+     *
+     * @return list rule data types
+     */
+    protected List<RulPackage> getPackages() {
+        return Arrays.asList(get(PACKAGES).getBody().as(RulPackage[].class));
+    }
+
+
 }

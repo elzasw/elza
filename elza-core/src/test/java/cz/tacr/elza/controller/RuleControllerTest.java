@@ -4,14 +4,43 @@ import org.junit.Test;
 
 
 /**
- * @author Martin Šlapa
- * @since 16.2.2016
+ * @author Petr Compel
+ * @since 17.2.2016
  */
 public class RuleControllerTest extends AbstractControllerTest {
 
     @Test
-    public void todoTest() {
-        // TODO
+    public void getDataTypesTest() {
+        getDataTypes();
     }
+
+    /*@Test
+    public void getDescItemTypesTest() {
+        getDescItemTypes();
+    }*/
+
+    @Test
+    public void getPackagesTest() {
+        getPackages();
+    }
+
+    /*public void packageTest() {
+
+    }
+
+    @Test
+    public void importPackageRestTest() {
+        Assert.isInstanceOf(List.class, getPackages());
+    }
+
+    @Test
+    public void exportPackageRestTest() {
+        Assert.isInstanceOf(List.class, getPackages());
+    }
+
+    @Test
+    public void deletePackageTest() {
+        Assert.isInstanceOf(List.class, getPackages());
+    }*/
 
 }
