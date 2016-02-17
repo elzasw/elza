@@ -416,7 +416,7 @@
         <description>ZP5.2.10 Jazyk, písmo</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
-        <use-specification>false</use-specification>
+        <use-specification>true</use-specification>
         <view-order>42</view-order>
         <fa-only>false</fa-only>
     </desc-item-type>
