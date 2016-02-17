@@ -97,12 +97,30 @@ public class UnitDateConvertor {
         try {
             if (isInterval(input)) {
                 parseInterval(input, unitdate);
+
+                LocalDateTime from = LocalDateTime
+                        .parse(unitdate.getValueFrom(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                LocalDateTime to = LocalDateTime
+                        .parse(unitdate.getValueTo(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                if (from.isAfter(to)) {
+                    throw new IllegalArgumentException("Neplatný interval ISO datumů: od > do");
+                }
             } else {
                 Token token = parseToken(input, unitdate);
                 unitdate.setValueFrom(FORMATTER_ISO.format(token.dateFrom));
                 unitdate.setValueFromEstimated(token.opt);
                 unitdate.setValueTo(FORMATTER_ISO.format(token.dateTo));
                 unitdate.setValueToEstimated(token.opt);
+            }
+
+            String valueFrom = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(
+                    LocalDateTime.parse(unitdate.getValueFrom(), DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+
+            String valueTo = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(
+                    LocalDateTime.parse(unitdate.getValueTo(), DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+
+            if (valueFrom.length() != 19 || valueTo.length() != 19) {
+                throw new IllegalArgumentException("Neplatná délka ISO datumů");
             }
 
         } catch (Exception e) {
