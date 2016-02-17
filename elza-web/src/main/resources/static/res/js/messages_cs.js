@@ -165,7 +165,7 @@ var messages = {
     "registry.applyMove": "Přesunout sem",
     "registry.detail.charakteristika": "Charakteristika",
     "registry.detail.poznamka" : "Poznámka",
-    "registry.detail.typ.rejstriku": "Typ rejstříku - hiearchie",
+    "registry.detail.typ.rejstriku": "Typ rejstříku - hierarchie",
     "registry.add.typ.rejstriku": "Rejstřík",
     "registry.editRegistry": "Editace rejstříku",
     "registry.scope.class": "Třída rejstříkového hesla",
