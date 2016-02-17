@@ -75,6 +75,7 @@ export function nodeInitState(node, prevNodesNode) {
         result.selectedSubNodeId = null;
         result.filterText = '';
         result.searchedIds = {};
+        result.subNodeFormCache = subNodeFormCache(undefined, {type:''})
     }
 
     return result;
@@ -175,6 +176,7 @@ export function node(state = nodeInitialState, action) {
                 return state
             }        
         case types.FA_SUB_NODE_FORM_CACHE_RESPONSE:
+        case types.FA_SUB_NODE_FORM_CACHE_REQUEST:
             return {
                 ...state, 
                 subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),

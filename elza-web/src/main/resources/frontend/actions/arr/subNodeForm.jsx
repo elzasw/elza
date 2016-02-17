@@ -385,36 +385,44 @@ function getNodeForm(getState, dispatch, versionId, nodeId, nodeKey) {
     var data = subNodeFormCache.dataCache[nodeId]
     if (!data) {    // není v cache, načteme ji včetně okolí
         // ##
-        // # Data pro cache
+        // # Data pro cache, jen pokud již cache nenačítá
         // ##
-        // Načtení okolí položky
-        var index = indexById(node.childNodes, nodeId)
-        var left = node.childNodes.slice(Math.max(index - CACHE_SIZE2, 0), index)
-        var right = node.childNodes.slice(index, index + CACHE_SIZE2)
+        if (!subNodeFormCache.isFetching) {
+            // Načtení okolí položky
+            var index = indexById(node.childNodes, nodeId)
+            var left = node.childNodes.slice(Math.max(index - CACHE_SIZE2, 0), index)
+            var right = node.childNodes.slice(index, index + CACHE_SIZE2)
 
-        var ids = []
-        left.forEach(n => {
-            if (!subNodeFormCache.dataCache[n.id]) {
-                ids.push(n.id)
-            }
-        })
-        right.forEach(n => {
-            if (!subNodeFormCache.dataCache[n.id]) {
-                ids.push(n.id)
-            }
-        })
-        
-        //console.log(ids, node.childNodes, left, right)
-        WebApi.getFaNodeForms(versionId, ids)
-            .then(json => {
-                dispatch({
-                    type: types.FA_SUB_NODE_FORM_CACHE_RESPONSE,
-                    versionId,
-                    nodeId,
-                    nodeKey,
-                    formsMap: json.forms
-                })
+            var ids = []
+            left.forEach(n => {
+                if (!subNodeFormCache.dataCache[n.id]) {
+                    ids.push(n.id)
+                }
             })
+            right.forEach(n => {
+                if (!subNodeFormCache.dataCache[n.id]) {
+                    ids.push(n.id)
+                }
+            })
+
+            console.log(ids, node.childNodes, left, right)
+            dispatch({
+                type: types.FA_SUB_NODE_FORM_CACHE_REQUEST,
+                versionId,
+                nodeId,
+                nodeKey,
+            })
+            WebApi.getFaNodeForms(versionId, ids)
+                .then(json => {
+                    dispatch({
+                        type: types.FA_SUB_NODE_FORM_CACHE_RESPONSE,
+                        versionId,
+                        nodeId,
+                        nodeKey,
+                        formsMap: json.forms
+                    })
+                })
+        }
 
         // ##
         // # Data požadovaného formuláře

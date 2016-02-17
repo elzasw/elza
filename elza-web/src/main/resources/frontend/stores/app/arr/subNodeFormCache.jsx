@@ -4,7 +4,8 @@ import {node, nodeInitState} from './node.jsx'
 import {consolidateState} from 'components/Utils'
 
 const subNodeFormCacheInitialState = {
-    dataCache: {}
+    dataCache: {},
+    isFetching: false,
 }
 
 export default function subNodeFormCache(state = subNodeFormCacheInitialState, action) {
@@ -26,6 +27,11 @@ export default function subNodeFormCache(state = subNodeFormCacheInitialState, a
             } else {
                 return state
             }
+        case types.FA_SUB_NODE_FORM_CACHE_REQUEST:
+            return {
+                ...state,
+                isFetching: true,
+            }
         case types.FA_SUB_NODE_FORM_CACHE_RESPONSE:
             var dataCache = {...state.dataCache}
 
@@ -35,6 +41,7 @@ export default function subNodeFormCache(state = subNodeFormCacheInitialState, a
 
             return {
                 ...state,
+                isFetching: false,
                 dataCache: dataCache,
             }
         default:
