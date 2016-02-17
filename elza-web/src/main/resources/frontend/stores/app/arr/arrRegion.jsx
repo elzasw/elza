@@ -120,6 +120,7 @@ export default function arrRegion(state = initialState, action) {
         case types.FA_NODE_INFO_RECEIVE:
         case types.FA_SUB_NODE_FORM_REQUEST:
         case types.FA_SUB_NODE_FORM_RECEIVE:
+        case types.FA_SUB_NODE_FORM_CACHE_RESPONSE:
         case types.FA_SUB_NODE_REGISTER_REQUEST:
         case types.FA_SUB_NODE_REGISTER_RECEIVE:
         case types.FA_SUB_NODE_REGISTER_VALUE_RESPONSE:

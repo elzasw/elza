@@ -373,10 +373,65 @@ export function faSubNodeFormFetchIfNeeded(versionId, nodeId, nodeKey) {
     }
 }
 
+const CACHE_SIZE = 20
+const CACHE_SIZE2 = CACHE_SIZE/2
+function getNodeForm(getState, dispatch, versionId, nodeId, nodeKey) {
+    var state = getState()
+    var node = getNode(state, versionId, nodeKey);
+    if (node === null) return   // nemělo by nastat
+
+    const subNodeFormCache = node.subNodeFormCache
+
+    var data = subNodeFormCache.dataCache[nodeId]
+    if (!data) {    // není v cache, načteme ji včetně okolí
+        // ##
+        // # Data pro cache
+        // ##
+        // Načtení okolí položky
+        var index = indexById(node.childNodes, nodeId)
+        var left = node.childNodes.slice(Math.max(index - CACHE_SIZE2, 0), index)
+        var right = node.childNodes.slice(index, index + CACHE_SIZE2)
+
+        var ids = []
+        left.forEach(n => {
+            if (!subNodeFormCache.dataCache[n.id]) {
+                ids.push(n.id)
+            }
+        })
+        right.forEach(n => {
+            if (!subNodeFormCache.dataCache[n.id]) {
+                ids.push(n.id)
+            }
+        })
+        
+        //console.log(ids, node.childNodes, left, right)
+        WebApi.getFaNodeForms(versionId, ids)
+            .then(json => {
+                dispatch({
+                    type: types.FA_SUB_NODE_FORM_CACHE_RESPONSE,
+                    versionId,
+                    nodeId,
+                    nodeKey,
+                    formsMap: json.forms
+                })
+            })
+
+        // ##
+        // # Data požadovaného formuláře
+        // ##
+        return WebApi.getFaNodeForm(versionId, nodeId)
+    } else {    // je v cache, vrátíme ji
+        return new Promise(function (resolve, reject) {
+            resolve(data)
+        })
+    }
+}
+
 export function faSubNodeFormFetch(versionId, nodeId, nodeKey) {
     return (dispatch, getState) => {
         dispatch(faSubNodeFormRequest(versionId, nodeId, nodeKey))
-        return WebApi.getFaNodeForm(versionId, nodeId)
+        //WebApi.getFaNodeForm(versionId, nodeId)
+        getNodeForm(getState, dispatch, versionId, nodeId, nodeKey)
             .then(json => {
                 var state = getState()
                 var subNodeForm = getSubNodeForm(state, versionId, nodeKey);

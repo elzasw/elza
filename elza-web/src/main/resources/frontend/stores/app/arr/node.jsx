@@ -1,6 +1,7 @@
 import * as types from 'actions/constants/ActionTypes';
 import {indexById, selectedAfterClose} from 'stores/app/utils.jsx'
 import subNodeForm from './subNodeForm'
+import subNodeFormCache from './subNodeFormCache'
 import subNodeRegister from './subNodeRegister'
 import subNodeInfo from './subNodeInfo'
 import {consolidateState} from 'components/Utils'
@@ -37,11 +38,13 @@ export function nodeInitState(node, prevNodesNode) {
     if (prevNodesNode) {
         result.nodeKey = prevNodesNode.nodeKey;
         result.subNodeForm = prevNodesNode.subNodeForm;
+        result.subNodeFormCache = prevNodesNode.subNodeFormCache;
         result.subNodeInfo = prevNodesNode.subNodeInfo;
         result.subNodeRegister = prevNodesNode.subNodeRegister;
     } else {
         result.nodeKey = _nextNodeKey++;
         result.subNodeForm = subNodeForm(undefined, {type:''});
+        result.subNodeFormCache = subNodeFormCache(undefined, {type:''});
         result.subNodeInfo = subNodeInfo(undefined, {type:''});
         result.subNodeRegister = subNodeRegister(undefined, {type:''});
     }
@@ -93,6 +96,7 @@ const nodeInitialState = {
     nodeKey: _nextNodeKey++,
     selectedSubNodeId: null,
     subNodeForm: subNodeForm(undefined, {type:''}),
+    subNodeFormCache: subNodeFormCache(undefined, {type:''}),
     subNodeRegister: subNodeRegister(undefined, {type:''}),
     subNodeInfo: subNodeInfo(undefined, {type:''}),
     isNodeInfoFetching: false,
@@ -128,6 +132,7 @@ export function node(state = nodeInitialState, action) {
                 parentNodes: [],
                 pageSize: _pageSize,
                 subNodeForm: subNodeForm(undefined, {type:''}),
+                subNodeFormCache: subNodeFormCache(undefined, {type:''}),
                 subNodeRegister: subNodeRegister(undefined, {type:''}),
                 subNodeInfo: subNodeInfo(undefined, {type:''}),
                 nodeKey: _nextNodeKey++,
@@ -169,6 +174,11 @@ export function node(state = nodeInitialState, action) {
             } else {
                 return state
             }        
+        case types.FA_SUB_NODE_FORM_CACHE_RESPONSE:
+            return {
+                ...state, 
+                subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),
+            }
         case types.FA_SUB_NODE_FORM_REQUEST:
         case types.FA_SUB_NODE_FORM_RECEIVE:
         case types.FA_SUB_NODE_FORM_VALUE_CHANGE:
@@ -195,7 +205,8 @@ export function node(state = nodeInitialState, action) {
             var result = {
                 ...state,
                 subNodeForm: subNodeForm(state.subNodeForm, action),
-                subNodeRegister: subNodeRegister(state.subNodeRegister, action)
+                subNodeRegister: subNodeRegister(state.subNodeRegister, action),
+                subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),
             }
             return consolidateState(state, result);
         case types.FA_FA_SUBNODES_NEXT:
