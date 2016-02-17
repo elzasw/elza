@@ -1,4 +1,4 @@
-/**
+    /**
  * Entity pro vybranou osobu
  */
 
@@ -194,7 +194,7 @@ var PartyEntities = class PartyEntities extends AbstractReactComponent {
                     case "R": icon = "fa-code-fork"; break;
                 }
 
-                var relationEntities = i.relationEntities.map(e =>e.record.record).join(", ");
+                var relationEntities = i.relationEntities ? i.relationEntities.map(e =>e.record.record).join(", ") : null;
 
                 var date = this.formatDateToText(i.from);
                 date += i.from != undefined && i.to != undefined  ? " - " + this.formatDateToText(i.to) : this.formatDateToText(i.to);
