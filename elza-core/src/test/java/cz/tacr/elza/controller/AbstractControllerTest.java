@@ -1,17 +1,11 @@
 package cz.tacr.elza.controller;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.config.EncoderConfig;
-import com.jayway.restassured.config.RestAssuredConfig;
-import com.jayway.restassured.response.Header;
-import com.jayway.restassured.response.Response;
-import com.jayway.restassured.specification.RequestSpecification;
-import cz.tacr.elza.AbstractTest;
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.service.ArrMoveLevelService;
+import static com.jayway.restassured.RestAssured.given;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -20,11 +14,25 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Function;
+import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.config.EncoderConfig;
+import com.jayway.restassured.config.RestAssuredConfig;
+import com.jayway.restassured.response.Header;
+import com.jayway.restassured.response.Response;
+import com.jayway.restassured.specification.RequestSpecification;
 
-import static com.jayway.restassured.RestAssured.given;
+import cz.tacr.elza.AbstractTest;
+import cz.tacr.elza.controller.vo.ArrFindingAidVO;
+import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
+import cz.tacr.elza.controller.vo.RulArrangementTypeVO;
+import cz.tacr.elza.controller.vo.RulDataTypeVO;
+import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.ValidationResult;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.service.ArrMoveLevelService;
 
 
 public abstract class AbstractControllerTest extends AbstractTest {
@@ -59,6 +67,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String DELETE_LEVEL = ARRANGEMENT_CONTROLLER_URL + "/levels";
     protected static final String SCENARIOS = ARRANGEMENT_CONTROLLER_URL + "/scenarios";
     protected static final String FA_TREE = ARRANGEMENT_CONTROLLER_URL + "/faTree";
+    protected static final String MOVE_LEVEL_AFTER = ARRANGEMENT_CONTROLLER_URL + "/moveLevelAfter";
+    protected static final String MOVE_LEVEL_BEFORE = ARRANGEMENT_CONTROLLER_URL + "/moveLevelBefore";
+    protected static final String MOVE_LEVEL_UNDER = ARRANGEMENT_CONTROLLER_URL + "/moveLevelUnder";
 
     // RULE
     protected static final String RULE_SETS = RULE_CONTROLLER_URL + "/getRuleSets";
@@ -304,6 +315,143 @@ public abstract class AbstractControllerTest extends AbstractTest {
         org.springframework.util.Assert.notNull(newLevel.getParentNode());
 
         return newLevel;
+    }
+
+    /**
+     * Přesun uzlu - před.
+     *
+     * @param moveParam parametry přesunu
+     */
+    protected void moveLevelBefore(final ArrangementController.LevelMoveParam moveParam) {
+        put(spec -> spec.body(moveParam), MOVE_LEVEL_BEFORE);
+    }
+
+    /**
+     * Přesun uzlu - před.
+     *
+     * @param findingAidVersion   verze archivní pomůcky
+     * @param staticNode          uzel vůči kterému přesouvám
+     * @param staticNodeParent    rodič uzlu vůči kterému přesouvám
+     * @param transportNodes      přesouvaný uzly
+     * @param transportNodeParent rodič přesouvaných uzlů
+     */
+    protected void moveLevelBefore(final ArrFindingAidVersionVO findingAidVersion,
+                                   final ArrNodeVO staticNode,
+                                   final ArrNodeVO staticNodeParent,
+                                   final List<ArrNodeVO> transportNodes,
+                                   final ArrNodeVO transportNodeParent) {
+        ArrangementController.LevelMoveParam moveParam = createMoveParam(findingAidVersion, staticNode,
+                staticNodeParent, transportNodes, transportNodeParent);
+        moveLevelBefore(moveParam);
+    }
+
+    /**
+     * Přesun uzlu - za.
+     *
+     * @param moveParam parametry přesunu
+     */
+    protected void moveLevelAfter(final ArrangementController.LevelMoveParam moveParam) {
+        put(spec -> spec.body(moveParam), MOVE_LEVEL_AFTER);
+    }
+
+    /**
+     * Přesun uzlu - za.
+     *
+     * @param findingAidVersion   verze archivní pomůcky
+     * @param staticNode          uzel vůči kterému přesouvám
+     * @param staticNodeParent    rodič uzlu vůči kterému přesouvám
+     * @param transportNodes      přesouvaný uzly
+     * @param transportNodeParent rodič přesouvaných uzlů
+     */
+    protected void moveLevelAfter(final ArrFindingAidVersionVO findingAidVersion,
+                                  final ArrNodeVO staticNode,
+                                  final ArrNodeVO staticNodeParent,
+                                  final List<ArrNodeVO> transportNodes,
+                                  final ArrNodeVO transportNodeParent) {
+        ArrangementController.LevelMoveParam moveParam = createMoveParam(findingAidVersion, staticNode,
+                staticNodeParent, transportNodes, transportNodeParent);
+        moveLevelAfter(moveParam);
+    }
+
+    /**
+     * Přesun uzlu - pod.
+     *
+     * @param moveParam parametry přesunu
+     */
+    protected void moveLevelUnder(final ArrangementController.LevelMoveParam moveParam) {
+        put(spec -> spec.body(moveParam), MOVE_LEVEL_UNDER);
+    }
+
+    /**
+     * Přesun uzlu - pod.
+     *
+     * @param findingAidVersion   verze archivní pomůcky
+     * @param staticNode          uzel vůči kterému přesouvám
+     * @param staticNodeParent    rodič uzlu vůči kterému přesouvám
+     * @param transportNodes      přesouvaný uzly
+     * @param transportNodeParent rodič přesouvaných uzlů
+     */
+    protected void moveLevelUnder(final ArrFindingAidVersionVO findingAidVersion,
+                                  final ArrNodeVO staticNode,
+                                  final ArrNodeVO staticNodeParent,
+                                  final List<ArrNodeVO> transportNodes,
+                                  final ArrNodeVO transportNodeParent) {
+        ArrangementController.LevelMoveParam moveParam = createMoveParam(findingAidVersion, staticNode,
+                staticNodeParent, transportNodes, transportNodeParent);
+        moveLevelUnder(moveParam);
+    }
+
+    /**
+     * Vytvoření parametrů pro přesun.
+     *
+     * @param findingAidVersion verze archivní pomůcky
+     * @param staticNode uzel vůči kterému přesouvám
+     * @param staticNodeParent rodič uzlu vůči kterému přesouvám
+     * @param transportNodes přesouvaný uzly
+     * @param transportNodeParent rodič přesouvaných uzlů
+     * @return parametry přesunu
+     */
+    private ArrangementController.LevelMoveParam createMoveParam(final ArrFindingAidVersionVO findingAidVersion,
+                                                                 final ArrNodeVO staticNode,
+                                                                 final ArrNodeVO staticNodeParent,
+                                                                 final List<ArrNodeVO> transportNodes,
+                                                                 final ArrNodeVO transportNodeParent) {
+        ArrangementController.LevelMoveParam moveParam = new ArrangementController.LevelMoveParam();
+        moveParam.setVersionId(findingAidVersion.getId());
+        moveParam.setStaticNode(staticNode);
+        moveParam.setStaticNodeParent(staticNodeParent);
+        moveParam.setTransportNodes(transportNodes);
+        moveParam.setTransportNodeParent(transportNodeParent);
+        return moveParam;
+    }
+
+    /**
+     * Smazání uzlu.
+     *
+     * @param findingAidVersion verze archivní pomůcky
+     * @param staticNode uzel který mažu
+     * @param staticNodeParent rodič uzlu který mažu
+     * @return smazaný uzel s rodičem
+     */
+    protected ArrangementController.NodeWithParent deleteLevel(final ArrFindingAidVersionVO findingAidVersion,
+                                                               final ArrNodeVO staticNode,
+                                                               final ArrNodeVO staticNodeParent) {
+        ArrangementController.NodeParam nodeParam = new ArrangementController.NodeParam();
+        nodeParam.setVersionId(findingAidVersion.getId());
+        nodeParam.setStaticNode(staticNode);
+        nodeParam.setStaticNodeParent(staticNodeParent);
+        return deleteLevel(nodeParam);
+    }
+
+    /**
+     * Smazání uzlu.
+     *
+     * @param nodeParam parametry mazání
+     * @return smazaný uzel s rodičem
+     */
+    protected ArrangementController.NodeWithParent deleteLevel(final ArrangementController.NodeParam nodeParam) {
+        Response response = delete(spec -> spec.body(nodeParam), DELETE_LEVEL);
+        return response.getBody().as(ArrangementController.NodeWithParent.class);
     }
 
     /**

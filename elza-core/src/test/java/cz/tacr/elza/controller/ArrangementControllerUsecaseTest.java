@@ -1,5 +1,8 @@
 package cz.tacr.elza.controller;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -8,8 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.Assert;
-
-import com.google.common.collect.Lists;
 
 import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
@@ -49,10 +50,10 @@ public class ArrangementControllerUsecaseTest extends AbstractControllerTest {
         findingAidVersion = approvedVersion(findingAidVersion);
 
         // vytvoření uzlů
-        List<TreeNodeClient> levels = createLevels(findingAidVersion);
+        List<ArrNodeVO> nodes = createLevels(findingAidVersion);
 
         // přesunutí && smazání uzlů
-        moveAndDeleteLevels(levels, findingAidVersion);
+        moveAndDeleteLevels(nodes, findingAidVersion);
 
         // atributy
         // TODO
@@ -62,14 +63,73 @@ public class ArrangementControllerUsecaseTest extends AbstractControllerTest {
 
     }
 
-    private void moveAndDeleteLevels(final List<TreeNodeClient> levels,
+    /**
+     * Přesunutí a smazání levelů
+     *
+     * @param nodes založené uzly (1. je root)
+     * @param findingAidVersion verze archivní pomůcky
+     */
+    private void moveAndDeleteLevels(final List<ArrNodeVO> nodes,
                                      final ArrFindingAidVersionVO findingAidVersion) {
+        ArrNodeVO rootNode = nodes.get(0);
 
         // přesun druhého uzlu před první
+        moveLevelBefore(findingAidVersion, nodes.get(1), rootNode, Arrays.asList(nodes.get(2)), rootNode);
 
+        ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
+        input.setVersionId(findingAidVersion.getId());
+        input.setNodeId(rootNode.getId());
+        TreeData treeData = getFaTree(input);
+        List<ArrNodeVO> newNodes = convertTreeNodes(treeData.getNodes());
+
+        // kontrola přesunu
+        Assert.isTrue(newNodes.size() == 4);
+        Assert.isTrue(newNodes.get(0).getId().equals(nodes.get(2).getId()));
+        Assert.isTrue(newNodes.get(1).getId().equals(nodes.get(1).getId()));
+        Assert.isTrue(newNodes.get(2).getId().equals(nodes.get(3).getId()));
+        Assert.isTrue(newNodes.get(3).getId().equals(nodes.get(4).getId()));
+
+        rootNode.setVersion(rootNode.getVersion() + 1); // zvýšení verze root
+
+        // přesun druhého uzlu pod první
+        moveLevelUnder(findingAidVersion, newNodes.get(0), rootNode, Arrays.asList(newNodes.get(1)), rootNode);
+
+        input = new ArrangementController.FaTreeParam();
+        input.setVersionId(findingAidVersion.getId());
+        input.setNodeId(newNodes.get(0).getId());
+        treeData = getFaTree(input);
+        List<ArrNodeVO> newNodes2 = convertTreeNodes(treeData.getNodes());
+
+        // kontrola přesunu
+        Assert.isTrue(newNodes2.size() == 1);
+        Assert.isTrue(newNodes2.get(0).getId().equals(newNodes.get(1).getId()));
+
+        rootNode.setVersion(rootNode.getVersion() + 1); // zvýšení verze root
+
+        // smazání druhého uzlu v první úrovni
+        ArrangementController.NodeWithParent nodeWithParent = deleteLevel(findingAidVersion, newNodes.get(2), rootNode);
+
+        Assert.isTrue(nodeWithParent.getNode().getId().equals(newNodes.get(2).getId()));
+        Assert.isTrue(nodeWithParent.getParentNode().getId().equals(rootNode.getId()));
+
+        input = new ArrangementController.FaTreeParam();
+        input.setVersionId(findingAidVersion.getId());
+        input.setNodeId(rootNode.getId());
+        treeData = getFaTree(input);
+        List<ArrNodeVO> newNodes3 = convertTreeNodes(treeData.getNodes());
+
+        Assert.isTrue(newNodes3.size() == 2);
+        Assert.isTrue(newNodes3.get(0).getId().equals(newNodes.get(0).getId()));
+        Assert.isTrue(newNodes3.get(1).getId().equals(newNodes.get(3).getId()));
     }
 
-    private List<TreeNodeClient> createLevels(final ArrFindingAidVersionVO findingAidVersion) {
+    /**
+     * Vytvoření levelů v archivní pomůcce.
+     *
+     * @param findingAidVersion verze archivní pomůcky
+     * @return vytvořené levely
+     */
+    private List<ArrNodeVO> createLevels(final ArrFindingAidVersionVO findingAidVersion) {
 
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
         input.setVersionId(findingAidVersion.getId());
@@ -79,8 +139,7 @@ public class ArrangementControllerUsecaseTest extends AbstractControllerTest {
         Assert.isTrue(treeData.getNodes().size() == 1, "Musí existovat pouze root node");
 
         TreeNodeClient rootTreeNodeClient = treeData.getNodes().iterator().next();
-        ArrNodeVO rootNode = new ArrNodeVO();
-        BeanUtils.copyProperties(rootTreeNodeClient, rootNode);
+        ArrNodeVO rootNode = convertTreeNode(rootTreeNodeClient);
 
         // přidání prvního levelu pod root
         ArrangementController.NodeWithParent newLevel1 = addLevel(ArrMoveLevelService.AddLevelDirection.CHILD,
@@ -142,9 +201,47 @@ public class ArrangementControllerUsecaseTest extends AbstractControllerTest {
         Assert.isTrue(node3.getId().equals(newLevel1.getNode().getId()));
         Assert.isTrue(node4.getId().equals(newLevel2.getNode().getId()));
 
-        return Lists.newArrayList(treeData.getNodes());
+        List<ArrNodeVO> nodes = new ArrayList<>(treeData.getNodes().size() + 1);
+        nodes.add(rootNode);
+        nodes.add(newLevel3.getNode());
+        nodes.add(newLevel4.getNode());
+        nodes.add(newLevel1.getNode());
+        nodes.add(newLevel2.getNode());
+        return nodes;
     }
 
+    /**
+     * Převod TreeNodeClient na ArrNodeVO.
+     *
+     * @param treeNodeClients seznam uzlů stromu
+     * @return  převedený seznam uzlů stromu
+     */
+    private List<ArrNodeVO> convertTreeNodes(final Collection<TreeNodeClient> treeNodeClients) {
+        List<ArrNodeVO> nodes = new ArrayList<>(treeNodeClients.size());
+        for (TreeNodeClient treeNodeClient : treeNodeClients) {
+            nodes.add(convertTreeNode(treeNodeClient));
+        }
+        return nodes;
+    }
+
+    /**
+     * Převod TreeNodeClient na ArrNodeVO.
+     *
+     * @param treeNodeClient uzel stromu
+     * @return převedený uzel stromu
+     */
+    private ArrNodeVO convertTreeNode(final TreeNodeClient treeNodeClient) {
+        ArrNodeVO rootNode = new ArrNodeVO();
+        BeanUtils.copyProperties(treeNodeClient, rootNode);
+        return rootNode;
+    }
+
+    /**
+     * Uzavření verze archivní pomůcky.
+     *
+     * @param findingAidVersion verze archivní pomůcky
+     * @return  nová verze archivní pomůcky
+     */
     private ArrFindingAidVersionVO approvedVersion(final ArrFindingAidVersionVO findingAidVersion) {
         Assert.notNull(findingAidVersion);
         List<RulRuleSetVO> ruleSets = getRuleSets();
@@ -159,6 +256,12 @@ public class ArrangementControllerUsecaseTest extends AbstractControllerTest {
         return newFindingAidVersion;
     }
 
+    /**
+     * Nalezení otevřené verze AP.
+     *
+     * @param findingAid archivní pomůcka
+     * @return otevřená verze AP
+     */
     private ArrFindingAidVersionVO getOpenVersion(final ArrFindingAidVO findingAid) {
         Assert.notNull(findingAid);
 
@@ -177,6 +280,12 @@ public class ArrangementControllerUsecaseTest extends AbstractControllerTest {
         return null;
     }
 
+    /**
+     * Upravení AP.
+     *
+     * @param findingAid archivní pomůcka
+     * @return
+     */
     private ArrFindingAidVO updatedFindingAid(final ArrFindingAidVO findingAid) {
         findingAid.setName(RENAME_AP);
         ArrFindingAidVO updatedFindingAid = updateFindingAid(findingAid);
@@ -184,6 +293,10 @@ public class ArrangementControllerUsecaseTest extends AbstractControllerTest {
         return updatedFindingAid;
     }
 
+    /**
+     * Vytvoření AP.
+     * @return
+     */
     private ArrFindingAidVO createdFindingAid() {
         ArrFindingAidVO findingAid = createFindingAid(NAME_AP);
         Assert.notNull(findingAid);
