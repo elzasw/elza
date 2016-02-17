@@ -7,7 +7,6 @@ import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import { AppStore, ResizeStore } from 'stores';
 import {AbstractReactComponent, ContextMenu, Toastr, ModalDialog, WebSocket} from 'components';
-import {storeSave, storeRestoreFromStorage} from 'actions/store/store';
 var AppRouter = require ('./AppRouter')
 var ShortcutsManager = require('react-shortcuts')
 var Shortcuts = require('react-shortcuts/component')
@@ -33,7 +32,7 @@ var Layout = class Layout extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('scheduleStoreSave', 'handleShortcuts');
+        this.bindMethods('handleShortcuts');
     }
 
     getChildContext() {
@@ -57,18 +56,6 @@ var Layout = class Layout extends AbstractReactComponent {
                 this.dispatch(routerNavigate('/registry'))
                 break
         }
-    }
-
-    scheduleStoreSave() {
-        setTimeout(() => {
-            this.dispatch(storeSave());
-            this.scheduleStoreSave();
-        }, 5000)
-    }
-
-    componentDidMount() {
-        this.dispatch(storeRestoreFromStorage());
-        this.scheduleStoreSave();
     }
 
     render() {

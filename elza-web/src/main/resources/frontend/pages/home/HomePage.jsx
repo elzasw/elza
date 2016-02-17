@@ -109,38 +109,33 @@ var HomePage = class HomePage extends AbstractReactComponent {
     }
 
     renderHistory() {
-        var items = [];
-
         const {stateRegion} = this.props;
 
-        stateRegion.partyRegionFront.forEach(x => {
+        var partyItems = stateRegion.partyRegionFront.map(x => {
             if (x._info) {
                 var name = x._info.name;
                 var desc = x._info.desc
-                items.push(this.renderHistoryItem(name, desc, 'PARTY_REGION', x));
+                return this.renderHistoryItem(name, desc, 'PARTY_REGION', x)
             }
         })
-        stateRegion.registryRegionFront.forEach(x => {
+        var registryItems = stateRegion.registryRegionFront.map(x => {
             if (x._info) {
                 var name = x._info.name;
                 var desc = x._info.desc
-                items.push(this.renderHistoryItem(name, desc, 'REGISTRY_REGION', x));
+                return this.renderHistoryItem(name, desc, 'REGISTRY_REGION', x)
             }
         })
-        if (false && stateRegion.arrRegion) {
-            var descs = stateRegion.arrRegion.fas.map(faobj => faobj.name);
-            var desc = this.arrToString(descs)
-            items.push(this.renderHistoryItem(i18n('home.action.arr'), desc, 'ARR_REGION', stateRegion.arrRegion));
-        }
-        stateRegion.arrRegionFront.forEach(x => {
+        var arrItems = stateRegion.arrRegionFront.map(x => {
             var name = x.name + (x.lockDate ? ' ' + dateToString(new Date(x.lockDate)) : '');
             var desc = this.getFaDesc(x)
-            items.push(this.renderHistoryItem(name, desc, 'ARR_REGION_FA', x));
+            return this.renderHistoryItem(name, desc, 'ARR_REGION_FA', x)
         })
 
         return (
             <div className='history-list-container'>
-                {items}
+                <div>{arrItems}</div>
+                <div>{registryItems}</div>
+                <div>{partyItems}</div>
             </div>
         )
     }

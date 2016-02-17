@@ -10,7 +10,6 @@ const initialState = {
     fetchedSearch: false,
     isFetchingDetail: false,
     fetchedDetail: false,
-    selectedId: null,
     filterText: "",
     items: [],
     panel: panel(),
@@ -39,7 +38,7 @@ export default function partyRegion(state = initialState, action) {
                 ...action.partyRegion
             }
         case types.STORE_SAVE:
-            const {selectedPartyData, selectedId, filterText, selectedPartyID} = state;
+            const {selectedPartyData, filterText, selectedPartyID} = state;
 
             var _info
             if (selectedPartyData && selectedPartyData.partyId === selectedPartyID) {
@@ -50,7 +49,6 @@ export default function partyRegion(state = initialState, action) {
 
             return {
                 _info,
-                selectedId,
                 filterText,
                 selectedPartyID
             }

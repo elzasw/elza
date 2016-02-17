@@ -11,7 +11,7 @@ export function storeRestoreFromStorage() {
                 localStorageData = JSON.parse(localStorageData);
             }
             if (localStorageData) {
-                console.log('Local storage data', localStorageData);
+                //console.log('Local storage data', localStorageData);
                 dispatch(storeStateDataInit(localStorageData));
 
                 var stateRegion = localStorageData.stateRegion;
@@ -20,10 +20,10 @@ export function storeRestoreFromStorage() {
                         dispatch(storeLoadData('ARR_REGION', stateRegion.arrRegion, false));
                     }
                     if (stateRegion.partyRegionFront && stateRegion.partyRegionFront.length > 0) {
-                        dispatch(storeLoadData('PARTY_REGION', stateRegion.partyRegionFront[stateRegion.partyRegionFront.length - 1], false));
+                        dispatch(storeLoadData('PARTY_REGION', stateRegion.partyRegionFront[0], false));
                     }
                     if (stateRegion.registryRegionFront && stateRegion.registryRegionFront.length > 0) {
-                        dispatch(storeLoadData('REGISTRY_REGION', stateRegion.registryRegionFront[stateRegion.registryRegionFront.length - 1], false));
+                        dispatch(storeLoadData('REGISTRY_REGION', stateRegion.registryRegionFront[0], false));
                     }
                 }
             }

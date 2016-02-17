@@ -35,6 +35,20 @@ function fc() {
 }
 //setTimeout(fc, 1000)
 
+// Načtení dat z local storage = vrácení aplikace do předchozího stavu
+import {AppStore} from 'stores';
+import {storeSave, storeRestoreFromStorage} from 'actions/store/store';
+AppStore.store.dispatch(storeRestoreFromStorage());
+
+// Ukládání stavu aplikace
+function scheduleStoreSave() {
+    setTimeout(() => {
+        AppStore.store.dispatch(storeSave());
+        scheduleStoreSave();
+    }, 1000)
+}
+scheduleStoreSave();
+
 // Aplikace
 var Router = require('./router');
 Router.start();

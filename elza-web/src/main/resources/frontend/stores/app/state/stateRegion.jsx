@@ -11,19 +11,29 @@ const initialState = {
 function updateFront(front, item, index) {
     var result;
 
-    if (index !== null) {    // není ve frontě, přidáme ho tam
+    if (index !== null) {  // je ve frontě, dáme ho na začátek  
+        var prevItem = front[index]
+
+        var useItem = {...item}
+
+        if (!useItem._info) {  // nová item nemá info, použijeme info z předchozí - jedná se o případ, kdy např. není ještě detail načten z db
+            useItem._info = prevItem._info
+        }
+
         result = [
+            useItem,
             ...front.slice(0, index),
             ...front.slice(index + 1),
-            item
         ]
-    } else {
-        result = [...front, item]
+    } else {    // není ve frontě, přidáme ho tam, ale na začátek
+        result = [
+            item,
+            ...front,
+        ]
     }
 
-    if (result.length > 20) {   // pokud máme moc dlouhou frontu, zkrátíme ji
-        result = [...front.slice(1, result.length)]
-    }
+    // Pokud máme moc dlouhou frontu, zkrátíme ji
+    result = result.slice(0, 5)
 
     return result;
 }
@@ -51,10 +61,19 @@ export default function stateRegion(state = initialState, action) {
             if (action.arrRegion) {
                 result.arrRegion = action.arrRegion
 
-                action.arrRegion.fas.map(faobj => {
+                // Aktivní index dáme do fronty jako poslední, takže bude umístěn na začátek
+                var activeIndex = action.arrRegion.activeIndex
+                action.arrRegion.fas.forEach((faobj, i) => {
+                    if (i !== activeIndex) {
+                        var index = indexById(result.arrRegionFront, faobj.versionId, 'versionId');
+                        result.arrRegionFront = updateFront(result.arrRegionFront, faobj, index);
+                    }
+                })
+                if (activeIndex !== null) {
+                    var faobj = action.arrRegion.fas[activeIndex]
                     var index = indexById(result.arrRegionFront, faobj.versionId, 'versionId');
                     result.arrRegionFront = updateFront(result.arrRegionFront, faobj, index);
-                })
+                }
             }
 
             return result;
