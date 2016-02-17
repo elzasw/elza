@@ -1,7 +1,7 @@
 import * as types from 'actions/constants/ActionTypes';
 
 const initialState = {
-    enabled: true,
+    enabled: false,
 }
 
 export default function developer(state = initialState, action) {
