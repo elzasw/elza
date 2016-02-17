@@ -33,16 +33,22 @@
         }
         .date {
             margin-right: 15px;
+            display: flex;
             .form-group {
-                display: inline-block;
                 max-width: 250px;
             }
         }
     }
     &.date {
-        .form-group {
+        &>div {
             display: inline-block;
-            max-width: 250px;
+        }
+        .line {
+            display: flex;
+            margin-right: 15px;
+            .form-group {
+                max-width: 250px;
+            }
         }
     }
 }
