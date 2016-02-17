@@ -3,6 +3,7 @@ package cz.tacr.elza.domain.convertor;
 import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ParUnitdate;
+
 import org.apache.commons.lang.StringUtils;
 
 import java.time.LocalDate;
@@ -85,25 +86,33 @@ public class UnitDateConvertor {
 
     /**
      * Provede konverzi textového vstupu a doplní intervaly do objektu.
-     * @param input     textový vstup
-     * @param unitdate  doplňovaný objekt
-     * @return          doplněný objekt
+     *
+     * @param input    textový vstup
+     * @param unitdate doplňovaný objekt
+     * @return doplněný objekt
      */
     public static <T extends IUnitdate<ArrCalendarType>> T convertToUnitDate(final String input, final T unitdate) {
 
         unitdate.setFormat("");
-        // TODO Martin šlapa - dodělat polointerval  + odkomentovat test
+
         try {
             if (isInterval(input)) {
                 parseInterval(input, unitdate);
 
-                LocalDateTime from = LocalDateTime
-                        .parse(unitdate.getValueFrom(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                LocalDateTime to = LocalDateTime
-                        .parse(unitdate.getValueTo(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                if (from.isAfter(to)) {
+                LocalDateTime from = null;
+                if (unitdate.getValueFrom() != null) {
+                    from = LocalDateTime.parse(unitdate.getValueFrom(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                }
+
+                LocalDateTime to = null;
+                if (unitdate.getValueTo() != null) {
+                    to = LocalDateTime.parse(unitdate.getValueTo(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                }
+
+                if (from != null && to != null && from.isAfter(to)) {
                     throw new IllegalArgumentException("Neplatný interval ISO datumů: od > do");
                 }
+
             } else {
                 Token token = parseToken(input, unitdate);
                 unitdate.setValueFrom(FORMATTER_ISO.format(token.dateFrom));
@@ -112,14 +121,20 @@ public class UnitDateConvertor {
                 unitdate.setValueToEstimated(token.opt);
             }
 
-            String valueFrom = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(
-                    LocalDateTime.parse(unitdate.getValueFrom(), DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+            if (unitdate.getValueFrom() != null) {
+                String valueFrom = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(
+                        LocalDateTime.parse(unitdate.getValueFrom(), DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+                if (valueFrom.length() != 19) {
+                    throw new IllegalArgumentException("Neplatná délka ISO datumů");
+                }
+            }
 
-            String valueTo = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(
-                    LocalDateTime.parse(unitdate.getValueTo(), DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-
-            if (valueFrom.length() != 19 || valueTo.length() != 19) {
-                throw new IllegalArgumentException("Neplatná délka ISO datumů");
+            if (unitdate.getValueTo() != null) {
+                String valueTo = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+                        .format(LocalDateTime.parse(unitdate.getValueTo(), DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+                if (valueTo.length() != 19) {
+                    throw new IllegalArgumentException("Neplatná délka ISO datumů");
+                }
             }
 
         } catch (Exception e) {
@@ -132,6 +147,7 @@ public class UnitDateConvertor {
 
     /**
      * Převede {@link ParUnitdate} na string.
+     *
      * @param unitdate datum
      * @return string
      */
@@ -151,8 +167,6 @@ public class UnitDateConvertor {
 
     /**
      * Provede konverzi formátu do textové podoby.
-     * @param unitdate
-     * @return
      */
     public static String convertToString(final IUnitdate unitdate) {
 
@@ -169,9 +183,10 @@ public class UnitDateConvertor {
 
     /**
      * Konverze intervalu.
-     * @param format    vstupní formát
-     * @param unitdate  doplňovaný objekt
-     * @return          výsledný řetězec
+     *
+     * @param format   vstupní formát
+     * @param unitdate doplňovaný objekt
+     * @return výsledný řetězec
      */
     private static String convertInterval(String format, IUnitdate unitdate) {
 
@@ -198,10 +213,11 @@ public class UnitDateConvertor {
 
     /**
      * Přidání odhadu.
-     * @param format    vstupní formát
-     * @param unitdate  doplňovaný objekt
-     * @param first     zda-li se jedná o první datum
-     * @return          výsledný řetězec
+     *
+     * @param format   vstupní formát
+     * @param unitdate doplňovaný objekt
+     * @param first    zda-li se jedná o první datum
+     * @return výsledný řetězec
      */
     private static String addEstimate(String format, IUnitdate unitdate, boolean first) {
         if (first) {
@@ -218,10 +234,11 @@ public class UnitDateConvertor {
 
     /**
      * Konverze tokenu - výrazu.
-     * @param format    vstupní formát
-     * @param unitdate  doplňovaný objekt
-     * @param first     zda-li se jedná o první datum
-     * @return          výsledný řetězec
+     *
+     * @param format   vstupní formát
+     * @param unitdate doplňovaný objekt
+     * @param first    zda-li se jedná o první datum
+     * @return výsledný řetězec
      */
     private static String convertToken(final String format, final IUnitdate unitdate, boolean first) {
 
@@ -258,10 +275,11 @@ public class UnitDateConvertor {
 
     /**
      * Konverze datumu s časem.
-     * @param format    vstupní formát
-     * @param unitdate  doplňovaný objekt
-     * @param first     zda-li se jedná o první datum
-     * @return          výsledný řetězec
+     *
+     * @param format   vstupní formát
+     * @param unitdate doplňovaný objekt
+     * @param first    zda-li se jedná o první datum
+     * @return výsledný řetězec
      */
     private static String convertDateTime(String format, IUnitdate unitdate, boolean first) {
         if (first) {
@@ -280,10 +298,11 @@ public class UnitDateConvertor {
 
     /**
      * Konverze datumu.
-     * @param format    vstupní formát
-     * @param unitdate  doplňovaný objekt
-     * @param first     zda-li se jedná o první datum
-     * @return          výsledný řetězec
+     *
+     * @param format   vstupní formát
+     * @param unitdate doplňovaný objekt
+     * @param first    zda-li se jedná o první datum
+     * @return výsledný řetězec
      */
     private static String convertDate(String format, IUnitdate unitdate, boolean first) {
         if (first) {
@@ -302,10 +321,11 @@ public class UnitDateConvertor {
 
     /**
      * Konverze roku s měsícem.
-     * @param format    vstupní formát
-     * @param unitdate  doplňovaný objekt
-     * @param first     zda-li se jedná o první datum
-     * @return          výsledný řetězec
+     *
+     * @param format   vstupní formát
+     * @param unitdate doplňovaný objekt
+     * @param first    zda-li se jedná o první datum
+     * @return výsledný řetězec
      */
     private static String convertYearMonth(String format, IUnitdate unitdate, boolean first) {
         if (first) {
@@ -324,10 +344,11 @@ public class UnitDateConvertor {
 
     /**
      * Konverze roku.
-     * @param format    vstupní formát
-     * @param unitdate  doplňovaný objekt
-     * @param first     zda-li se jedná o první datum
-     * @return          výsledný řetězec
+     *
+     * @param format   vstupní formát
+     * @param unitdate doplňovaný objekt
+     * @param first    zda-li se jedná o první datum
+     * @return výsledný řetězec
      */
     private static String convertYear(String format, IUnitdate unitdate, boolean first) {
         if (first) {
@@ -346,10 +367,11 @@ public class UnitDateConvertor {
 
     /**
      * Konverze stolení.
-     * @param format    vstupní formát
-     * @param unitdate  doplňovaný objekt
-     * @param first     zda-li se jedná o první datum
-     * @return          výsledný řetězec
+     *
+     * @param format   vstupní formát
+     * @param unitdate doplňovaný objekt
+     * @param first    zda-li se jedná o první datum
+     * @return výsledný řetězec
      */
     private static String convertCentury(final String format, final IUnitdate unitdate, boolean first) {
         if (first) {
@@ -368,8 +390,9 @@ public class UnitDateConvertor {
 
     /**
      * Parsování intervalu.
-     * @param input     textový vstup
-     * @param unitdate  doplňovaný objekt
+     *
+     * @param input    textový vstup
+     * @param unitdate doplňovaný objekt
      */
     private static void parseInterval(final String input, final IUnitdate unitdate) {
 
@@ -402,9 +425,10 @@ public class UnitDateConvertor {
 
     /**
      * Parsování tokenu.
-     * @param tokenString   výraz
-     * @param unitdate      doplňovaný objekt
-     * @return              výsledný token
+     *
+     * @param tokenString výraz
+     * @param unitdate    doplňovaný objekt
+     * @return výsledný token
      */
     private static Token parseToken(final String tokenString, final IUnitdate unitdate) {
         if (tokenString.equals("")) {
@@ -427,9 +451,10 @@ public class UnitDateConvertor {
 
     /**
      * Parsování výrazu.
-     * @param expression    výraz
-     * @param unitdate      doplňovaný objekt
-     * @return              výsledný token
+     *
+     * @param expression výraz
+     * @param unitdate   doplňovaný objekt
+     * @return výsledný token
      */
     private static Token parseExpression(final String expression, final IUnitdate unitdate) {
 
@@ -451,9 +476,10 @@ public class UnitDateConvertor {
 
     /**
      * Parsování roku s měsícem.
-     * @param yearMonthString   rok s měsícem
-     * @param unitdate          doplňovaný objekt
-     * @return                  výsledný token
+     *
+     * @param yearMonthString rok s měsícem
+     * @param unitdate        doplňovaný objekt
+     * @return výsledný token
      */
     private static Token parseYearMonth(String yearMonthString, IUnitdate unitdate) {
         unitdate.formatAppend(YEAR_MONTH);
@@ -474,9 +500,10 @@ public class UnitDateConvertor {
 
     /**
      * Parsování datumu s časem.
-     * @param dateString    datum s časem
-     * @param unitdate      doplňovaný objekt
-     * @return              výsledný token
+     *
+     * @param dateString datum s časem
+     * @param unitdate   doplňovaný objekt
+     * @return výsledný token
      */
     private static Token parseDateTime(final String dateString, final IUnitdate unitdate) {
         unitdate.formatAppend(DATE_TIME);
@@ -495,9 +522,10 @@ public class UnitDateConvertor {
 
     /**
      * Parsování datumu.
-     * @param dateString    datum
-     * @param unitdate      doplňovaný objekt
-     * @return              výsledný token
+     *
+     * @param dateString datum
+     * @param unitdate   doplňovaný objekt
+     * @return výsledný token
      */
     private static Token parseDate(final String dateString, final IUnitdate unitdate) {
         unitdate.formatAppend(DATE);
@@ -518,9 +546,10 @@ public class UnitDateConvertor {
 
     /**
      * Parsování roku.
-     * @param yearString    rok
-     * @param unitdate      doplňovaný objekt
-     * @return              výsledný token
+     *
+     * @param yearString rok
+     * @param unitdate   doplňovaný objekt
+     * @return výsledný token
      */
     private static Token parseYear(final String yearString, final IUnitdate unitdate) {
         unitdate.formatAppend(YEAR);
@@ -537,9 +566,10 @@ public class UnitDateConvertor {
 
     /**
      * Parsování stolení.
+     *
      * @param centuryString stolení
      * @param unitdate      doplňovaný objekt
-     * @return              výsledný token
+     * @return výsledný token
      */
     private static Token parseCentury(final String centuryString, final IUnitdate unitdate) {
         unitdate.formatAppend(CENTURY);
@@ -568,9 +598,10 @@ public class UnitDateConvertor {
 
     /**
      * Testování, zda-li odpovídá řetězec formátu
+     *
      * @param formatter formát
      * @param s         řetězec
-     * @return          true - lze parsovat
+     * @return true - lze parsovat
      */
     private static boolean tryParseDate(DateTimeFormatter formatter, String s) {
         try {
@@ -584,8 +615,9 @@ public class UnitDateConvertor {
 
     /**
      * Detekce, zda-li se jedná o interval
+     *
      * @param input vstupní řetězec
-     * @return  true - jedná se o interval
+     * @return true - jedná se o interval
      */
     private static boolean isInterval(String input) {
         return input.contains(INTERVAL_DELIMITER);

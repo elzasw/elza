@@ -5,6 +5,8 @@ import org.springframework.util.Assert;
 
 
 /**
+ * Testování metod z ValidationControllerTest.
+ *
  * @author Martin Šlapa
  * @since 16.2.2016
  */
@@ -20,11 +22,13 @@ public class ValidationControllerTest extends AbstractControllerTest {
                 "21.8.1968 8:00",
                 "1968",
                 "21.8.1968 0:00-27.6.1989",
-                ///"21.8.1968-", TODO Odkomentovat šlapa po opravě polointervalu
+                "21.8.1968-",
+                "-21.8.1968",
                 "(16.8.1977)",
         });
 
         this.invalid(new String[]{
+                "19680",
                 "..",
                 "..dwklfhewiofle",
         });
