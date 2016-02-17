@@ -26,6 +26,9 @@ import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
 import cz.tacr.elza.controller.vo.RulArrangementTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.service.ArrMoveLevelService;
 
 
 public abstract class AbstractControllerTest extends AbstractTest {
@@ -56,6 +59,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String UPDATE_FINDING_AID = ARRANGEMENT_CONTROLLER_URL + "/updateFindingAid";
     protected static final String FINDING_AIDS = ARRANGEMENT_CONTROLLER_URL + "/getFindingAids";
     protected static final String APPROVE_VERSION = ARRANGEMENT_CONTROLLER_URL + "/approveVersion";
+    protected static final String ADD_LEVEL = ARRANGEMENT_CONTROLLER_URL + "/levels";
+    protected static final String DELETE_LEVEL = ARRANGEMENT_CONTROLLER_URL + "/levels";
+    protected static final String SCENARIOS = ARRANGEMENT_CONTROLLER_URL + "/scenarios";
+    protected static final String FA_TREE = ARRANGEMENT_CONTROLLER_URL + "/faTree";
 
     // RULE
     protected static final String RULE_SETS = RULE_CONTROLLER_URL + "/getRuleSets";
@@ -246,6 +253,55 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected List<ArrFindingAidVO> getFindingAids() {
         Response response = get(FINDING_AIDS);
         return Arrays.asList(response.getBody().as(ArrFindingAidVO[].class));
+    }
+
+    /**
+     * Přidání nového uzlu.
+     *
+     * @param addLevelParam parametry pro vytvoření nového uzlu
+     * @return nový uzel
+     */
+    protected ArrangementController.NodeWithParent addLevel(final ArrangementController.AddLevelParam addLevelParam) {
+        Response response = put(spec -> spec.body(addLevelParam), ADD_LEVEL);
+        return response.getBody().as(ArrangementController.NodeWithParent.class);
+    }
+
+    /**
+     * Provede načtení stromu uzlů. Uzly mohou být rozbaleny.
+     *
+     * @param input vstupní data pro načtení
+     * @return data stromu
+     */
+    protected TreeData getFaTree(final ArrangementController.FaTreeParam input) {
+        Response response = post(spec -> spec.body(input), FA_TREE);
+        return response.getBody().as(TreeData.class);
+    }
+
+    /**
+     * Přidání nového uzlu.
+     *
+     * @param direction         směr přidání
+     * @param findingAidVersion verze archivní pomůcky
+     * @param staticNode        uzel vůči kterému přidávám
+     * @param parentStaticNode  rodič uzlu vůči kterému přidávám
+     * @return vytvořený uzel
+     */
+    protected ArrangementController.NodeWithParent addLevel(final ArrMoveLevelService.AddLevelDirection direction,
+                                                            final ArrFindingAidVersionVO findingAidVersion,
+                                                            final ArrNodeVO staticNode,
+                                                            final ArrNodeVO parentStaticNode) {
+        ArrangementController.AddLevelParam addLevelParam = new ArrangementController.AddLevelParam();
+        addLevelParam.setVersionId(findingAidVersion.getId());
+        addLevelParam.setDirection(direction);
+        addLevelParam.setStaticNode(staticNode);
+        addLevelParam.setStaticNodeParent(parentStaticNode);
+
+        ArrangementController.NodeWithParent newLevel = addLevel(addLevelParam);
+
+        org.springframework.util.Assert.notNull(newLevel.getNode());
+        org.springframework.util.Assert.notNull(newLevel.getParentNode());
+
+        return newLevel;
     }
 
 }

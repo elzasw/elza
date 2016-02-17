@@ -1533,6 +1533,9 @@ public class ArrangementController {
             this.parentNode = parentNode;
         }
 
+        public NodeWithParent() {
+        }
+
         public NodeWithParent(final ArrNodeVO node, final ArrNodeVO parentNode) {
             this.node = node;
             this.parentNode = parentNode;
