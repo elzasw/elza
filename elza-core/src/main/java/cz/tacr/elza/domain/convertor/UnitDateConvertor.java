@@ -1,5 +1,10 @@
 package cz.tacr.elza.domain.convertor;
 
+import cz.tacr.elza.api.IUnitdate;
+import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ParUnitdate;
+import org.apache.commons.lang.StringUtils;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -8,12 +13,6 @@ import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.commons.lang.StringUtils;
-
-import cz.tacr.elza.api.IUnitdate;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ParUnitdate;
 
 
 /**
@@ -93,7 +92,7 @@ public class UnitDateConvertor {
     public static <T extends IUnitdate<ArrCalendarType>> T convertToUnitDate(final String input, final T unitdate) {
 
         unitdate.setFormat("");
-
+        // TODO Martin šlapa - dodělat polointerval  + odkomentovat test
         try {
             if (isInterval(input)) {
                 parseInterval(input, unitdate);

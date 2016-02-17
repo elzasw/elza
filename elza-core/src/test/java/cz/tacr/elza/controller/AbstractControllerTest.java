@@ -1,11 +1,15 @@
 package cz.tacr.elza.controller;
 
-import static com.jayway.restassured.RestAssured.given;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Function;
-
+import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.config.EncoderConfig;
+import com.jayway.restassured.config.RestAssuredConfig;
+import com.jayway.restassured.response.Header;
+import com.jayway.restassured.response.Response;
+import com.jayway.restassured.specification.RequestSpecification;
+import cz.tacr.elza.AbstractTest;
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.service.ArrMoveLevelService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -14,21 +18,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.config.EncoderConfig;
-import com.jayway.restassured.config.RestAssuredConfig;
-import com.jayway.restassured.response.Header;
-import com.jayway.restassured.response.Response;
-import com.jayway.restassured.specification.RequestSpecification;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
 
-import cz.tacr.elza.AbstractTest;
-import cz.tacr.elza.controller.vo.ArrFindingAidVO;
-import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
-import cz.tacr.elza.controller.vo.RulArrangementTypeVO;
-import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.service.ArrMoveLevelService;
+import static com.jayway.restassured.RestAssured.given;
 
 
 public abstract class AbstractControllerTest extends AbstractTest {
@@ -66,6 +60,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     // RULE
     protected static final String RULE_SETS = RULE_CONTROLLER_URL + "/getRuleSets";
+
+    // Validation
+    protected static final String VALIDATE_UNIT_DATE = VALIDATION_CONTROLLER_URL + "/unitDate";
 
     @Value("${local.server.port}")
     private int port;
@@ -304,4 +301,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return newLevel;
     }
 
+    protected ValidationResult validateUnitDate(final String value) {
+        Response response = get(spec -> spec.queryParameter("value", value), VALIDATE_UNIT_DATE);
+        return response.getBody().as(ValidationResult.class);
+    }
 }
