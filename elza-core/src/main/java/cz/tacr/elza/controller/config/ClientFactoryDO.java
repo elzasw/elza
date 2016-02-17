@@ -253,7 +253,7 @@ public class ClientFactoryDO {
      */
     public List<RegScope> createScopeList(@Nullable final Collection<RegScopeVO> scopeVOs) {
         if (scopeVOs == null) {
-            return null;
+            return new ArrayList<>();
         }
 
         List<RegScope> result = new ArrayList<>(scopeVOs.size());

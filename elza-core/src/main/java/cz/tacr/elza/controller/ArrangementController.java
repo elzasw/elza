@@ -552,7 +552,7 @@ public class ArrangementController {
      */
     @Transactional
     @RequestMapping(value = "/updateFindingAid", method = RequestMethod.POST)
-    public ArrFindingAidVO createFindingAid(@RequestBody ArrFindingAidVO arrFindingAidVO) {
+    public ArrFindingAidVO updateFindingAid(@RequestBody ArrFindingAidVO arrFindingAidVO) {
         Assert.notNull(arrFindingAidVO);
         return factoryVo.createArrFindingAidVO(
                 arrangementService.updateFindingAid(
