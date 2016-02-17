@@ -9,10 +9,8 @@ export default function developer(state = initialState, action) {
         case types.DEVELOPER_SET:
             return {
                 ...state,
-                enabled: action.enabled,
+                enabled: action.enabled
             }
-        case types.DEVELOPER_SCENARIOS_RECEIVED:
-
         default:
             return state
     }

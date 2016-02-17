@@ -11,7 +11,7 @@ export function developerSet(enabled) {
 
 export function developerNodeScenariosRequest(node, versionId) {
     return (dispatch) => {
-        dispatch(developerNodeScenariosFetching(node.id, versionId));
+        dispatch(developerNodeScenariosFetching(node.id, node.key, versionId));
         barrier(
             WebApi.getNodeAddScenarios(node, versionId, "AFTER", true),
             WebApi.getNodeAddScenarios(node, versionId, "BEFORE", true),
@@ -25,31 +25,34 @@ export function developerNodeScenariosRequest(node, versionId) {
                 }
             })
             .then(json => {
-                dispatch(developerNodeScenariosReceived(json, versionId, node.id));
+                dispatch(developerNodeScenariosReceived(json, node.id, node.key, versionId));
             })
     }
 }
 
-export function developerNodeScenariosReceived(data, versionId, nodeId) {
+export function developerNodeScenariosReceived(data, nodeId, nodeKey, versionId) {
     return {
         type: types.DEVELOPER_SCENARIOS_RECEIVED,
         data,
         nodeId,
+        nodeKey,
         versionId
     }
 }
 
-export function developerNodeScenariosFetching(nodeId, versionId) {
+export function developerNodeScenariosFetching(nodeId, nodeKey, versionId) {
     return {
         type: types.DEVELOPER_SCENARIOS_FETCHING,
         nodeId,
+        nodeKey,
         versionId
     }
 }
-export function developerNodeScenariosDirty(nodeId, versionId) {
+export function developerNodeScenariosDirty(nodeId, nodeKey, versionId) {
     return {
         type: types.DEVELOPER_SCENARIOS_DIRTY,
         nodeId,
+        nodeKey,
         versionId
     }
 }

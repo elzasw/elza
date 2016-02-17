@@ -84,11 +84,10 @@ export function faSelectSubNodeInt(subNodeId, subNodeParentNode, openNewTab=fals
 
 export function faSelectSubNode(subNodeId, subNodeParentNode, openNewTab=false, newFilterCurrentIndex = null, ensureItemVisible=false) {
     return (dispatch, getState) => {
-        console.log('select', subNodeParentNode)
-        let state = getState();
         dispatch(faExtendedView(false));
         dispatch(faSelectSubNodeInt(subNodeId, subNodeParentNode, openNewTab, newFilterCurrentIndex, ensureItemVisible));
-        dispatch(developerNodeScenariosDirty(subNodeId, state.arrRegion.fas[state.arrRegion.activeIndex].versionId));
+        let state = getState();
+        dispatch(developerNodeScenariosDirty(subNodeId, subNodeParentNode.nodeKey, state.arrRegion.fas[state.arrRegion.activeIndex].versionId));
     }
 }
 

@@ -90,6 +90,9 @@ export default function nodes(state = nodesInitialState, action) {
         case types.FA_SUB_NODE_INFO_REQUEST:
         case types.FA_SUB_NODE_INFO_RECEIVE:
         case types.FA_FA_SUBNODES_FULLTEXT_RESULT:
+        case types.DEVELOPER_SCENARIOS_RECEIVED:
+        case types.DEVELOPER_SCENARIOS_FETCHING:
+        case types.DEVELOPER_SCENARIOS_DIRTY:
             var r = findByNodeKeyInNodes(state, action.versionId, action.nodeKey);
             if (r) {
                 var index = r.nodeIndex;
@@ -253,13 +256,8 @@ export default function nodes(state = nodesInitialState, action) {
                 return {...state, nodes}
             }
             return state;
-        case types.DEVELOPER_SCENARIOS_RECEIVED:
-        case types.DEVELOPER_SCENARIOS_FETCHING:
-        case types.DEVELOPER_SCENARIOS_DIRTY:
         case types.CHANGE_FA_RECORD:
-            console.log('dev', action);
             var index = indexById(state.nodes, action.nodeId, 'selectedSubNodeId');
-
             if (index !== null) {
                 var nodes = [...state.nodes];
                 nodes[index] = node(nodes[index], action);
