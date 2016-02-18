@@ -189,10 +189,7 @@ String generateCharacteristics(ParParty party) {
 
     builder.append(fromString);
     builder.append(fromDate != null && toDate != null ? " - " : "");
-    builder.append(toString);
-    builder.append(" ");
-    builder.append(generatePartyNameString(party.getPreferredName(), party.getPartyType()));
-    builder.append(" ");
+    builder.append(toString + " ");
     builder.append(party.getCharacteristics() == null ? "" : party.getCharacteristics());
 
     return builder.toString();

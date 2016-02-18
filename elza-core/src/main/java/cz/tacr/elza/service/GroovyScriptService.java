@@ -10,8 +10,6 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
-import liquibase.util.file.FilenameUtils;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +26,7 @@ import cz.tacr.elza.domain.ParComplementType;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.RegRecord;
 import cz.tacr.elza.repository.ComplementTypeRepository;
+import liquibase.util.file.FilenameUtils;
 
 
 /**
@@ -93,14 +92,21 @@ public class GroovyScriptService {
         }
 
         File createRecordFile = new File(FilenameUtils.concat(groovyScriptDir, CREATE_RECORD_FILE));
-        if (!createRecordFile.exists()) {
-            try {
+
+        try {
+            if (!createRecordFile.exists() || createRecordFile.lastModified() < createRecordDefaultResource
+                    .lastModified()) {
                 Files.copy(createRecordDefaultResource.getInputStream(), createRecordFile.toPath(),
                         StandardCopyOption.REPLACE_EXISTING);
+
+                File copiedFile = new File(createRecordFile.getAbsolutePath());
+                copiedFile.setLastModified(createRecordDefaultResource.lastModified());
+
+
                 logger.info("Vytvoření souboru " + createRecordFile.getAbsolutePath());
-            } catch (IOException e) {
-                throw new IllegalStateException("Nepodařilo se vytvořit soubor " + createRecordFile.getAbsolutePath());
             }
+        } catch (IOException e) {
+            throw new IllegalStateException("Nepodařilo se vytvořit soubor " + createRecordFile.getAbsolutePath());
         }
 
         createRecordResource = new PathResource(createRecordFile.toPath());
