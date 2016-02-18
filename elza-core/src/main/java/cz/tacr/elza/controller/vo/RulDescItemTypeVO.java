@@ -12,7 +12,6 @@ import cz.tacr.elza.domain.RulDescItemType;
  * @author Martin Šlapa
  * @since 13.1.2016
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@type")
 public class RulDescItemTypeVO {
 
     /**
