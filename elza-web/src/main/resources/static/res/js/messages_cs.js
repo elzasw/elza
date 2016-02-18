@@ -8,6 +8,8 @@ var messages = {
 
     "global.title.yes": "Ano",
     "global.title.no": "Ne",
+    
+    "global.title.processAction": "Opravdu chcete provést vybranou akci?",
 
     "global.error.ajax": "Při komunikaci nastala chyba",
     "global.action.create": "Vytvořit",
@@ -43,6 +45,8 @@ var messages = {
     "ribbon.action.admin.developer": "Developer mode",
     "ribbon.action.admin.packages": "Správa balíčků",
     "ribbon.action.admin.fulltext": "Fulltext",
+    "ribbon.action.admin.resetLocalStorage": "Smazat lokální cache",
+    "ribbon.action.admin.resetLocalStorage.title": "Smaže historii posledně otevřených položek a uvede zobrazení aplikace do výchozího stavu",
     "ribbon.action.party.import" : "Import osob",
     "ribbon.action.arr.fa.import" : "Import pomůcky",
     "ribbon.action.registry.import" : "Import Hesel",

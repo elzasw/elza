@@ -2,6 +2,18 @@ import * as types from 'actions/constants/ActionTypes';
 import {save} from 'stores/app/AppStore'
 import {routerNavigate} from 'actions/router'
 
+// Globální proměnná pro možnost vypnutí ukládání stavu do local storage
+var _storeSaveEnabled = true
+
+export function resetLocalStorage() {
+    // Uložení do local storage
+    if(typeof(Storage) !== "undefined") {
+        _storeSaveEnabled = false
+        localStorage.removeItem('ELZA-STORE-STATE');
+        location.reload();
+    }
+}
+
 export function storeRestoreFromStorage() {
     return (dispatch, getState) => {
         // Načtení z local storage
@@ -33,25 +45,27 @@ export function storeRestoreFromStorage() {
 
 export function storeSave() {
     return (dispatch, getState) => {
-        var store = getState();
+        if (_storeSaveEnabled) {
+            var store = getState();
 
-        // Načtení dat pro uložení
-        var data = save(store);
-        //console.log('@@@@storeSave', data);
+            // Načtení dat pro uložení
+            var data = save(store);
+            //console.log('@@@@storeSave', data);
 
-        // Uložení dat do store - pro zobrazování home stránky a pro uložení dalších inicializačních dat, např. splitter atp.
-        dispatch(storeStateData(data))
+            // Uložení dat do store - pro zobrazování home stránky a pro uložení dalších inicializačních dat, např. splitter atp.
+            dispatch(storeStateData(data))
 
-        // Uložení do local storage
-        if(typeof(Storage) !== "undefined") {
-            var storeNew = getState();
+            // Uložení do local storage
+            if(typeof(Storage) !== "undefined") {
+                var storeNew = getState();
 
-            var localStorageData = {
-                stateRegion: storeNew.stateRegion,
-                splitter: storeNew.splitter,
+                var localStorageData = {
+                    stateRegion: storeNew.stateRegion,
+                    splitter: storeNew.splitter,
+                }
+
+                _storeSaveEnabled && localStorage.setItem('ELZA-STORE-STATE', JSON.stringify(localStorageData));
             }
-
-            localStorage.setItem('ELZA-STORE-STATE', JSON.stringify(localStorageData));
         }
     }
 }

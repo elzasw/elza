@@ -12,28 +12,39 @@ require ('./AdminPage.less');
 
 import {LinkContainer, IndexLinkContainer} from 'react-router-bootstrap';
 import {Link, IndexLink} from 'react-router';
-import {RibbonGroup, i18n, Icon, Ribbon, ModalDialog, NodeTabs, PartySearch, AbstractReactComponent} from 'components';
+import {RibbonGroup, RibbonSplit, i18n, Icon, Ribbon, ModalDialog, NodeTabs, PartySearch, AbstractReactComponent} from 'components';
 import {ButtonGroup, Button} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {developerSet} from 'actions/global/developer'
+import {resetLocalStorage} from 'actions/store/store'
 
 var AdminPage = class AdminPage extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleDeveloperMode', 'buildRibbon')
+        this.bindMethods('handleDeveloperMode', 'buildRibbon', 'handleResetLocalStorage')
     }
 
     handleDeveloperMode() {
         this.dispatch(developerSet(!this.props.developer.enabled));
     }
 
+    handleResetLocalStorage() {
+        if (confirm(i18n('global.title.processAction'))) {
+            resetLocalStorage();
+        }
+    }
+
     buildRibbon() {
         var altActions = [];
 
         altActions.push(
-            <Button active={this.props.developer.enabled} key="edit-version" onClick={this.handleDeveloperMode}><Icon glyph="fa-cogs"/>
+            <Button active={this.props.developer.enabled} key="developerMode" onClick={this.handleDeveloperMode}><Icon glyph="fa-cogs"/>
                 <div><span className="btnText">{i18n('ribbon.action.admin.developer')}</span></div>
+            </Button>,
+            <RibbonSplit />,
+            <Button key="resetLocalStorage" onClick={this.handleResetLocalStorage} title={i18n('ribbon.action.admin.resetLocalStorage.title')}><Icon glyph="fa-refresh"/>
+                <div><span className="btnText">{i18n('ribbon.action.admin.resetLocalStorage')}</span></div>
             </Button>,
         )
 
