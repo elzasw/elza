@@ -60,7 +60,6 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
                 label: (label != '' ? label : nextProps.label),          // pokus je vybrany nejaká položka, vypíše se její název, jinak se vypíše defaultní popisek
                 value: nextProps.value                // id vybrane položky
             })
-
             if (nextProps.onChange && this.props.value !== nextProps.value){
                 nextProps.onChange(nextProps.value);
             }
@@ -146,6 +145,12 @@ var DropDownTree = class DropDownTree extends AbstractReactComponent {
      * @returns {*}
      */
     getFirstPossibleRecordType(recordTypes) {
+        if (this.props.nullValue) {
+            return {
+                found: null,
+                opened: null
+            }
+        }
         var opened = [];
         if (!recordTypes) {
             return {
