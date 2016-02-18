@@ -249,11 +249,11 @@ var PartyNameForm = class PartyNameForm extends AbstractReactComponent {
                             <label>{i18n('party.nameComplements')}</label>
                             {this.state.data.complements.map((j,index)=> {return <div className="block complement">
                                 <div className="line">
-                                    <Input type="text" value={j.complement} onChange={this.updateComplementValue.bind(this, {index:index, variable: 'complement'})}/>
                                     <Input type="select" value={j.complementTypeId} onChange={this.updateComplementValue.bind(this, {index:index, variable: 'complementTypeId'})}>
-                                        <option value={0} key={0}></option> 
+                                        <option value={0} key={0}></option>
                                         {complementsTypes ? complementsTypes.map(i=> {return <option value={i.complementTypeId} key={i.complementTypeId}>{i.name}</option>}) : null}
-                                    </Input> 
+                                    </Input>
+                                    <Input type="text" value={j.complement} onChange={this.updateComplementValue.bind(this, {index:index, variable: 'complement'})}/>
                                     <Button onClick={this.removeComplement.bind(this, index)}><Icon glyph="fa-trash"/></Button>
                                 </div>
                             </div>})}
