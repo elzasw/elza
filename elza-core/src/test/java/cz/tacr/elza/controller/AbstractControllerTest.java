@@ -2,10 +2,12 @@ package cz.tacr.elza.controller;
 
 import static com.jayway.restassured.RestAssured.given;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -24,13 +26,32 @@ import com.jayway.restassured.specification.RequestSpecification;
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
+import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.RegRecordVO;
 import cz.tacr.elza.controller.vo.RulArrangementTypeVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
+import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
+import cz.tacr.elza.controller.vo.RulDescItemTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.ValidationResult;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemCoordinatesVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemDecimalVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemEnumVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemFormattedTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemIntVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemPacketVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemPartyRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemRecordRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemStringVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemUnitdateVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemUnitidVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.service.ArrMoveLevelService;
 
@@ -70,11 +91,17 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String MOVE_LEVEL_AFTER = ARRANGEMENT_CONTROLLER_URL + "/moveLevelAfter";
     protected static final String MOVE_LEVEL_BEFORE = ARRANGEMENT_CONTROLLER_URL + "/moveLevelBefore";
     protected static final String MOVE_LEVEL_UNDER = ARRANGEMENT_CONTROLLER_URL + "/moveLevelUnder";
+    protected static final String CREATE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL
+            + "/descItems/{findingAidVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}/create";
+    protected static final String UPDATE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL
+            + "/descItems/{findingAidVersionId}/{nodeVersion}/update/{createNewVersion}";
+    protected static final String DELETE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL
+            + "/descItems/{findingAidVersionId}/{nodeVersion}/delete";
 
     // RULE
     protected static final String RULE_SETS = RULE_CONTROLLER_URL + "/getRuleSets";
     protected static final String DATA_TYPES = RULE_CONTROLLER_URL + "/dataTypes";
-    protected static final String DESC_ITEM_TYPES = RULE_CONTROLLER_URL + "//*";
+    protected static final String DESC_ITEM_TYPES = RULE_CONTROLLER_URL + "/descItemTypes";
     protected static final String PACKAGES = RULE_CONTROLLER_URL + "/getPackages";
 
     // Validation
@@ -82,6 +109,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     @Value("${local.server.port}")
     private int port;
+
+    private List<RulDataTypeVO> dataTypes = null;
+    private List<RulDescItemTypeExtVO> descItemTypes = null;
 
     @Before
     public void setUp() {
@@ -404,10 +434,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Vytvoření parametrů pro přesun.
      *
-     * @param findingAidVersion verze archivní pomůcky
-     * @param staticNode uzel vůči kterému přesouvám
-     * @param staticNodeParent rodič uzlu vůči kterému přesouvám
-     * @param transportNodes přesouvaný uzly
+     * @param findingAidVersion   verze archivní pomůcky
+     * @param staticNode          uzel vůči kterému přesouvám
+     * @param staticNodeParent    rodič uzlu vůči kterému přesouvám
+     * @param transportNodes      přesouvaný uzly
      * @param transportNodeParent rodič přesouvaných uzlů
      * @return parametry přesunu
      */
@@ -429,8 +459,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Smazání uzlu.
      *
      * @param findingAidVersion verze archivní pomůcky
-     * @param staticNode uzel který mažu
-     * @param staticNodeParent rodič uzlu který mažu
+     * @param staticNode        uzel který mažu
+     * @param staticNodeParent  rodič uzlu který mažu
      * @return smazaný uzel s rodičem
      */
     protected ArrangementController.NodeWithParent deleteLevel(final ArrFindingAidVersionVO findingAidVersion,
@@ -488,9 +518,314 @@ public abstract class AbstractControllerTest extends AbstractTest {
      *
      * @return list rule data types
      */
+    protected List<RulDescItemTypeExtVO> getDescItemTypesCached() {
+        if (descItemTypes == null) {
+            descItemTypes = getDescItemTypes();
+        }
+        return descItemTypes;
+    }
+
+    /**
+     * Získání rule data types
+     *
+     * @return list rule data types
+     */
+    protected List<RulDataTypeVO> getDataTypesCached() {
+        if (dataTypes == null) {
+            dataTypes = getDataTypes();
+        }
+        return dataTypes;
+    }
+
+    /**
+     * Získání rule data types
+     *
+     * @return list rule data types
+     */
     protected List<RulPackage> getPackages() {
         return Arrays.asList(get(PACKAGES).getBody().as(RulPackage[].class));
     }
 
+    /**
+     * Vytvoření hodnoty atributu.
+     *
+     * @param descItem          hodnota atributu
+     * @param findingAidVersion verze archivní pomůcky
+     * @param node              uzel
+     * @param descItemType      typ atributu
+     * @return vytvořená hodnota atributu
+     */
+    protected ArrangementController.DescItemResult createDescItem(final ArrDescItemVO descItem,
+                                                                  final ArrFindingAidVersionVO findingAidVersion,
+                                                                  final ArrNodeVO node,
+                                                                  final RulDescItemTypeVO descItemType) {
+        return createDescItem(descItem, findingAidVersion.getId(), descItemType.getId(), node.getId(),
+                node.getVersion());
+    }
+
+    /**
+     * Vytvoření hodnoty atributu.
+     *
+     * @param descItem            hodnota atributu
+     * @param findingAidVersionId identifikátor verze AP
+     * @param descItemTypeId      identifikátor typu hodnoty atributu
+     * @param nodeId              identfikátor uzlu
+     * @param nodeVersion         verze uzlu
+     * @return vytvořená hodnota atributu
+     */
+    protected ArrangementController.DescItemResult createDescItem(final ArrDescItemVO descItem,
+                                                                  final Integer findingAidVersionId,
+                                                                  final Integer descItemTypeId,
+                                                                  final Integer nodeId,
+                                                                  final Integer nodeVersion) {
+        Response response = put(spec -> spec
+                .body(descItem)
+                .pathParameter("findingAidVersionId", findingAidVersionId)
+                .pathParameter("descItemTypeId", descItemTypeId)
+                .pathParameter("nodeId", nodeId)
+                .pathParameter("nodeVersion", nodeVersion), CREATE_DESC_ITEM);
+        return response.getBody().as(ArrangementController.DescItemResult.class);
+    }
+
+    /**
+     * Upravení hodnoty atributu.
+     *
+     * @param descItem          hodnota atributu
+     * @param findingAidVersion verze archivní pomůcky
+     * @param node              uzel
+     * @param createNewVersion  vytvořit novou verzi?
+     * @return upravená hodnota atributu
+     */
+    protected ArrangementController.DescItemResult updateDescItem(final ArrDescItemVO descItem,
+                                                                  final ArrFindingAidVersionVO findingAidVersion,
+                                                                  final ArrNodeVO node,
+                                                                  final Boolean createNewVersion) {
+        return updateDescItem(descItem, findingAidVersion.getId(), node.getVersion(), createNewVersion);
+    }
+
+    /**
+     * Upravení hodnoty atributu.
+     *
+     * @param descItem            hodnota atributu
+     * @param findingAidVersionId identifikátor verze AP
+     * @param nodeVersion         verze uzlu
+     * @param createNewVersion    vytvořit novou verzi?
+     * @return upravená hodnota atributu
+     */
+    protected ArrangementController.DescItemResult updateDescItem(final ArrDescItemVO descItem,
+                                                                  final Integer findingAidVersionId,
+                                                                  final Integer nodeVersion,
+                                                                  final Boolean createNewVersion) {
+        Response response = put(spec -> spec
+                .body(descItem)
+                .pathParameter("findingAidVersionId", findingAidVersionId)
+                .pathParameter("nodeVersion", nodeVersion)
+                .pathParameter("createNewVersion", createNewVersion), UPDATE_DESC_ITEM);
+        return response.getBody().as(ArrangementController.DescItemResult.class);
+    }
+
+    /**
+     * Smazání hodnoty atributu.
+     *
+     * @param descItem          hodnota atributu
+     * @param findingAidVersion verze archivní pomůcky
+     * @param node              uzel
+     * @return smazaná hodnota atributu
+     */
+    protected ArrangementController.DescItemResult deleteDescItem(final ArrDescItemVO descItem,
+                                                                  final ArrFindingAidVersionVO findingAidVersion,
+                                                                  final ArrNodeVO node) {
+        return deleteDescItem(descItem, findingAidVersion.getId(), node.getVersion());
+    }
+
+    /**
+     * Smazání hodnoty atributu.
+     *
+     * @param descItem            hodnota atributu
+     * @param findingAidVersionId identifikátor verze AP
+     * @param nodeVersion         verze uzlu
+     * @return smazaná hodnota atributu
+     */
+    protected ArrangementController.DescItemResult deleteDescItem(final ArrDescItemVO descItem,
+                                                                  final Integer findingAidVersionId,
+                                                                  final Integer nodeVersion) {
+        Response response = post(spec -> spec
+                .body(descItem)
+                .pathParameter("findingAidVersionId", findingAidVersionId)
+                .pathParameter("nodeVersion", nodeVersion), DELETE_DESC_ITEM);
+        return response.getBody().as(ArrangementController.DescItemResult.class);
+    }
+
+
+    /**
+     * Vytvoření objektu pro hodnotu atributu.
+     *
+     * @param typeCode         kód typu atributu
+     * @param specCode         kód specifikace atributu
+     * @param value            hodnota
+     * @param position         pozice
+     * @param descItemObjectId identifikátor hodnoty atributu
+     * @return vytvořený object hodnoty atributu
+     */
+    protected ArrDescItemVO buildDescItem(final String typeCode,
+                                          final String specCode,
+                                          final Object value,
+                                          final Integer position,
+                                          final Integer descItemObjectId) {
+        org.springframework.util.Assert.notNull(typeCode, "Musí být vyplněn kód typu atributu");
+
+        RulDescItemTypeExtVO type = findDescItemTypeByCode(typeCode);
+        org.springframework.util.Assert.notNull(type, "Typ atributu neexistuje -> CODE: " + typeCode);
+
+        RulDescItemSpecVO spec = null;
+
+        if (specCode != null) {
+            spec = findDescItemSpecByCode(specCode, type);
+            org.springframework.util.Assert.notNull(spec, "Specifikace atributu neexistuje -> CODE: " + specCode);
+        }
+
+        RulDataTypeVO dataType = findDataType(type.getDataTypeId());
+
+        ArrDescItemVO descItem;
+
+        switch (dataType.getCode()) {
+
+            case "INT": {
+                descItem = new ArrDescItemIntVO();
+                ((ArrDescItemIntVO) descItem).setValue((Integer) value);
+                break;
+            }
+
+            case "STRING": {
+                descItem = new ArrDescItemStringVO();
+                ((ArrDescItemStringVO) descItem).setValue((String) value);
+                break;
+            }
+
+            case "TEXT": {
+                descItem = new ArrDescItemTextVO();
+                ((ArrDescItemTextVO) descItem).setValue((String) value);
+                break;
+            }
+
+            case "UNITDATE": {
+                descItem = new ArrDescItemUnitdateVO();
+                ((ArrDescItemUnitdateVO) descItem).setValue((String) value);
+                break;
+            }
+
+            case "UNITID": {
+                descItem = new ArrDescItemUnitidVO();
+                ((ArrDescItemUnitidVO) descItem).setValue((String) value);
+                break;
+            }
+
+            case "FORMATTED_TEXT": {
+                descItem = new ArrDescItemFormattedTextVO();
+                ((ArrDescItemFormattedTextVO) descItem).setValue((String) value);
+                break;
+            }
+
+            case "COORDINATES": {
+                descItem = new ArrDescItemCoordinatesVO();
+                ((ArrDescItemCoordinatesVO) descItem).setValue((String) value);
+                break;
+            }
+
+            case "PARTY_REF": {
+                descItem = new ArrDescItemPartyRefVO();
+                ((ArrDescItemPartyRefVO) descItem).setValue(((ParPartyVO) value).getPartyId());
+                break;
+            }
+
+            case "RECORD_REF": {
+                descItem = new ArrDescItemRecordRefVO();
+                ((ArrDescItemRecordRefVO) descItem).setValue(((RegRecordVO) value).getRecordId());
+                break;
+            }
+
+            case "DECIMAL": {
+                descItem = new ArrDescItemDecimalVO();
+                ((ArrDescItemDecimalVO) descItem).setValue((BigDecimal) value);
+                break;
+            }
+
+            case "PACKET_REF": {
+                descItem = new ArrDescItemPacketVO();
+                ((ArrDescItemPacketVO) descItem).setValue(((ArrPacketVO) value).getId());
+                break;
+            }
+
+            case "ENUM": {
+                descItem = new ArrDescItemEnumVO();
+                if (BooleanUtils.isNotTrue(type.getUseSpecification())) {
+                    throw new IllegalStateException(
+                            "Specifikace u typu musí být povinná pro ENUM -> CODE: " + type.getCode());
+                }
+                break;
+            }
+
+            default:
+                throw new IllegalStateException("Neimplementovaný datový typ atributu -> CODE: " + dataType.getCode());
+
+        }
+
+        if (spec != null) {
+            descItem.setDescItemSpecId(spec.getId());
+        }
+
+        descItem.setPosition(position);
+        descItem.setDescItemObjectId(descItemObjectId);
+
+        return descItem;
+    }
+
+    /**
+     * Vyhledání datového typu atributu.
+     *
+     * @param dataTypeId    identifikátor datového typu atributu
+     * @return datový typ atributu
+     */
+    protected RulDataTypeVO findDataType(final Integer dataTypeId) {
+        List<RulDataTypeVO> dataTypes = getDataTypesCached();
+
+        for (RulDataTypeVO dataType : dataTypes) {
+            if (dataType.getId().equals(dataTypeId)) {
+                return dataType;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Vyhledání specifikace atributu podle kódu.
+     *
+     * @param code  kód specifikace
+     * @param type  typ atributu
+     * @return specifikace atributu
+     */
+    protected RulDescItemSpecExtVO findDescItemSpecByCode(final String code, final RulDescItemTypeExtVO type) {
+        for (RulDescItemSpecExtVO descItemSpec : type.getDescItemSpecs()) {
+            if (descItemSpec.getCode().equals(code)) {
+                return descItemSpec;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Vyhledání typu atributu podle kódu
+     * @param code kód typu
+     * @return typ atributu
+     */
+    protected RulDescItemTypeExtVO findDescItemTypeByCode(final String code) {
+        for (RulDescItemTypeExtVO descItemType : getDescItemTypesCached()) {
+            if (descItemType.getCode().equals(code)) {
+                return descItemType;
+            }
+        }
+        return null;
+    }
 
 }

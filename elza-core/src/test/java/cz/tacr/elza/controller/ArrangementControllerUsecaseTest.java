@@ -19,6 +19,9 @@ import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.service.ArrMoveLevelService;
 
 
@@ -56,17 +59,57 @@ public class ArrangementControllerUsecaseTest extends AbstractControllerTest {
         moveAndDeleteLevels(nodes, findingAidVersion);
 
         // atributy
-        // TODO
+        attributeValues(findingAidVersion);
 
-        // vazba na rejstříky
-        // TODO
+    }
+
+    /**
+     * Operace s atributy.
+     *
+     * @param findingAidVersion verze archivní pomůcky
+     */
+    private void attributeValues(final ArrFindingAidVersionVO findingAidVersion) {
+        ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
+        input.setVersionId(findingAidVersion.getId());
+        TreeData treeData = getFaTree(input);
+
+        List<ArrNodeVO> nodes = convertTreeNodes(treeData.getNodes());
+        ArrNodeVO rootNode = nodes.get(0);
+
+        // vytvoření hodnoty
+        RulDescItemTypeExtVO type = findDescItemTypeByCode("ZP2015_TITLE");
+        ArrDescItemVO descItem = buildDescItem(type.getCode(), null, "value", null, null);
+        ArrangementController.DescItemResult descItemResult = createDescItem(descItem, findingAidVersion, rootNode,
+                type);
+        rootNode = descItemResult.getNode();
+        ArrDescItemVO descItemCreated = descItemResult.getDescItem();
+
+        Assert.notNull(((ArrDescItemTextVO) descItem).getValue()
+                .equals(((ArrDescItemTextVO) descItemCreated).getValue()));
+        Assert.notNull(descItemCreated.getPosition());
+        Assert.notNull(descItemCreated.getDescItemObjectId());
+
+        // aktualizace hodnoty
+        ((ArrDescItemTextVO) descItemCreated).setValue("update value");
+        descItemResult = updateDescItem(descItemCreated, findingAidVersion, rootNode, true);
+        rootNode = descItemResult.getNode();
+        ArrDescItemVO descItemUpdated = descItemResult.getDescItem();
+
+        Assert.isTrue(descItemUpdated.getDescItemObjectId().equals(descItemCreated.getDescItemObjectId()));
+        Assert.isTrue(descItemUpdated.getPosition().equals(descItemCreated.getPosition()));
+        Assert.isTrue(!descItemUpdated.getId().equals(descItemCreated.getId()));
+        Assert.isTrue(((ArrDescItemTextVO) descItemUpdated).getValue()
+                .equals(((ArrDescItemTextVO) descItemCreated).getValue()));
+
+        // odstranění hodnoty
+        deleteDescItem(descItemUpdated, findingAidVersion, rootNode);
 
     }
 
     /**
      * Přesunutí a smazání levelů
      *
-     * @param nodes založené uzly (1. je root)
+     * @param nodes             založené uzly (1. je root)
      * @param findingAidVersion verze archivní pomůcky
      */
     private void moveAndDeleteLevels(final List<ArrNodeVO> nodes,
@@ -214,7 +257,7 @@ public class ArrangementControllerUsecaseTest extends AbstractControllerTest {
      * Převod TreeNodeClient na ArrNodeVO.
      *
      * @param treeNodeClients seznam uzlů stromu
-     * @return  převedený seznam uzlů stromu
+     * @return převedený seznam uzlů stromu
      */
     private List<ArrNodeVO> convertTreeNodes(final Collection<TreeNodeClient> treeNodeClients) {
         List<ArrNodeVO> nodes = new ArrayList<>(treeNodeClients.size());
@@ -240,7 +283,7 @@ public class ArrangementControllerUsecaseTest extends AbstractControllerTest {
      * Uzavření verze archivní pomůcky.
      *
      * @param findingAidVersion verze archivní pomůcky
-     * @return  nová verze archivní pomůcky
+     * @return nová verze archivní pomůcky
      */
     private ArrFindingAidVersionVO approvedVersion(final ArrFindingAidVersionVO findingAidVersion) {
         Assert.notNull(findingAidVersion);
@@ -284,7 +327,6 @@ public class ArrangementControllerUsecaseTest extends AbstractControllerTest {
      * Upravení AP.
      *
      * @param findingAid archivní pomůcka
-     * @return
      */
     private ArrFindingAidVO updatedFindingAid(final ArrFindingAidVO findingAid) {
         findingAid.setName(RENAME_AP);
@@ -295,7 +337,6 @@ public class ArrangementControllerUsecaseTest extends AbstractControllerTest {
 
     /**
      * Vytvoření AP.
-     * @return
      */
     private ArrFindingAidVO createdFindingAid() {
         ArrFindingAidVO findingAid = createFindingAid(NAME_AP);
