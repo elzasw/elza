@@ -139,6 +139,7 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
                 <Tabs.Content>
                     <FaTreeMain
                         fa = {activeFa}
+                        cutLongLabels={true}
                         versionId={activeFa.versionId}
                         {...activeFa.faTree}
                         ref='tree'

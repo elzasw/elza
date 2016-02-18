@@ -120,11 +120,12 @@ var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
     }
 
     render() {
-        const {fa} = this.props;
+        const {fa, cutLongLabels} = this.props;
 
         return (
             <FaTreeLazy 
                 {...this.props}
+                cutLongLabels={cutLongLabels}
                 onOpenCloseNode={(node, expand) => {expand ? this.dispatch(faTreeNodeExpand(types.FA_TREE_AREA_MAIN, node)) : this.dispatch(faTreeNodeCollapse(types.FA_TREE_AREA_MAIN, node))}}
                 onContextMenu={this.handleContextMenu}
                 onNodeClick={this.handleNodeClick}

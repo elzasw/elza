@@ -97,6 +97,7 @@ var FaTreeMovementsLeft = class FaTreeMovementsLeft extends AbstractReactCompone
         return (
             <FaTreeLazy 
                 {...this.props}
+                cutLongLabels={true}
                 onOpenCloseNode={(node, expand) => {expand ? this.dispatch(faTreeNodeExpand(types.FA_TREE_AREA_MOVEMENTS_LEFT, node)) : this.dispatch(faTreeNodeCollapse(types.FA_TREE_AREA_MOVEMENTS_LEFT, node))}}
                 onContextMenu={this.handleContextMenu}
                 onNodeClick={this.handleNodeClick}

@@ -122,6 +122,7 @@ var FaExtendedView = class FaExtendedView extends AbstractReactComponent {
             tabContent.push(
                 <FaTreeMain
                     fa={fa}
+                    cutLongLabels={false}
                     versionId={fa.versionId}
                     {...fa.faTree}
                 />

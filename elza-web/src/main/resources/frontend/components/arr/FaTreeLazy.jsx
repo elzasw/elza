@@ -17,6 +17,9 @@ import {createReferenceMark, getGlyph, getNodePrevSibling, getNodeNextSibling, g
 var Shortcuts = require('react-shortcuts/component')
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
 
+// Na kolik znaků se má název položky stromu oříznout, jen pokud je nastaven vstupní atribut, že se má název ořezávat
+const TREE_NAME_MAX_CHARS = 60
+
 var keyDownHandlers = {
     ArrowUp: function(e) {
         const {nodes, selectedId, multipleSelection, onNodeClick} = this.props
@@ -161,12 +164,18 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
         var levels = createReferenceMark(node);
 
         var name = node.name ? node.name : i18n('faTree.node.name.undefined', node.id);
+        var title = name
+        if (this.props.cutLongLabels) {
+            if (name.length > TREE_NAME_MAX_CHARS) {
+                name = name.substring(0, TREE_NAME_MAX_CHARS - 3) + '...'
+            }
+        }
 
         var icon = <Icon className="node-icon" glyph={getGlyph(node.icon)} />
 
         var label = (
             <span
-                title={name}
+                title={title}
                 className='node-label'
                 onClick={onNodeClick.bind(this, node)}
                 onContextMenu={onContextMenu.bind(this, node)}
@@ -268,6 +277,7 @@ FaTreeLazy.defaultProps = {
 
 FaTreeLazy.propTypes = {
     expandedIds: React.PropTypes.object.isRequired,
+    cutLongLabels: React.PropTypes.bool.isRequired,
     selectedId: React.PropTypes.number,
     selectedIds: React.PropTypes.object,
     filterText: React.PropTypes.string,
