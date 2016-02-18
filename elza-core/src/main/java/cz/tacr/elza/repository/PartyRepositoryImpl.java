@@ -18,6 +18,7 @@ import javax.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.jpa.criteria.OrderImpl;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.domain.ParParty;
@@ -48,15 +49,19 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<ParParty> query = builder.createQuery(ParParty.class);
-        Root<ParParty> record = query.from(ParParty.class);
+        Root<ParParty> party = query.from(ParParty.class);
 
-        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, partyTypeId, record, builder, scopeIds);
+        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, partyTypeId, party, builder, scopeIds);
 
-        query.select(record).distinct(true);
+        query.select(party);
         if (condition != null) {
-            Order order = builder.asc(record.get(ParParty.ABSTRACT_PARTY_ID));
+            Order order = builder.asc(party.get(ParParty.ABSTRACT_PARTY_ID));
             query.where(condition).orderBy(order);
         }
+
+        Join<Object, Object> partyName = party.join(ParParty.PARTY_PREFERRED_NAME, JoinType.LEFT);
+        query.orderBy(new OrderImpl(partyName.get("mainPart")), new OrderImpl(partyName.get("otherPart")));
+
 
         return entityManager.createQuery(query)
                 .setFirstResult(firstResult)
@@ -74,11 +79,11 @@ public class PartyRepositoryImpl implements PartyRepositoryCustom {
 
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Long> query = builder.createQuery(Long.class);
-        Root<ParParty> record = query.from(ParParty.class);
+        Root<ParParty> party = query.from(ParParty.class);
 
-        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, partyTypeId, record, builder, scopeIds);
+        Predicate condition = preparefindRegRecordByTextAndType(searchRecord, partyTypeId, party, builder, scopeIds);
 
-        query.select(builder.countDistinct(record));
+        query.select(builder.countDistinct(party));
         if (condition != null) {
             query.where(condition);
         }
