@@ -857,7 +857,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param id id třídy.
      */
     protected Response deleteScope(final int id) {
-        return delete(spec -> spec, DELETE_SCOPE + id);
+        return delete(spec -> spec.queryParam("scopeId", id), DELETE_SCOPE);
     }
 
     /**
