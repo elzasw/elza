@@ -55,17 +55,11 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
             cls += ' active'
         }
 
-        var interval;
-        if (item.from || item.to) {
-            interval = item.from == null ? "" : "TODO" + "-" + item.from == null ? "" : "TODO"
-        }
-
         return (
                 <div className={cls} key={item.partyId} >
                     <div className="name" title={item.record.record}>{item.record.record}</div>
                     <div className="type">{item.partyType.name}</div>
-                    <div className="interval">{interval}</div>
-                    <div  className="characteristics" title={item.record.characteristics}>{item.record.characteristics}</div>
+                    <div className="characteristics" title={item.record.characteristics}>{item.record.characteristics}</div>
                 </div>
         )
     }
