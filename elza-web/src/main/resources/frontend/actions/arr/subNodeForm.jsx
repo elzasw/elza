@@ -449,40 +449,42 @@ function getNodeForm(getState, dispatch, versionId, nodeId, nodeKey) {
         // # Data pro cache, jen pokud již cache nenačítá
         // ##
         if (!subNodeFormCache.isFetching) {
-            // Načtení okolí položky
-            var index = indexById(node.childNodes, nodeId)
-            var left = node.childNodes.slice(Math.max(index - CACHE_SIZE2, 0), index)
-            var right = node.childNodes.slice(index, index + CACHE_SIZE2)
+            if (node.isNodeInfoFetching || !node.nodeInfoFetched || node.nodeInfoDirty) {   // nemáme platné okolí (okolní NODE) pro daný NODE, raději je načteme ze serveru; nemáme vlastně okolní NODE pro získání seznamu ID pro načtení formulářů pro cache
+                //console.log('### READ_CACHE', 'around')
 
-            var ids = []
-            left.forEach(n => {
-                if (!subNodeFormCache.dataCache[n.id]) {
-                    ids.push(n.id)
-                }
-            })
-            right.forEach(n => {
-                if (!subNodeFormCache.dataCache[n.id]) {
-                    ids.push(n.id)
-                }
-            })
-
-            console.log(ids, node.childNodes, left, right)
-            dispatch({
-                type: types.FA_SUB_NODE_FORM_CACHE_REQUEST,
-                versionId,
-                nodeId,
-                nodeKey,
-            })
-            WebApi.getFaNodeForms(versionId, ids)
-                .then(json => {
-                    dispatch({
-                        type: types.FA_SUB_NODE_FORM_CACHE_RESPONSE,
-                        versionId,
-                        nodeId,
-                        nodeKey,
-                        formsMap: json.forms
+                dispatch(faSubNodeFormCacheRequest(versionId, nodeId, nodeKey))
+                WebApi.getFaNodeFormsWithAround(versionId, nodeId, CACHE_SIZE2)
+                    .then(json => {
+                        dispatch(faSubNodeFormCacheResponse(versionId, nodeId, nodeKey, json.forms))
                     })
+            } else {    // pro získání id okolí můžeme použít store
+                // Načtení okolí položky
+                var index = indexById(node.childNodes, nodeId)
+                var left = node.childNodes.slice(Math.max(index - CACHE_SIZE2, 0), index)
+                var right = node.childNodes.slice(index, index + CACHE_SIZE2)
+
+                var idsForFetch = []
+                left.forEach(n => {
+                    if (!subNodeFormCache.dataCache[n.id]) {
+                        idsForFetch.push(n.id)
+                    }
                 })
+                right.forEach(n => {
+                    if (!subNodeFormCache.dataCache[n.id]) {
+                        idsForFetch.push(n.id)
+                    }
+                })
+
+                //console.log('### READ_CACHE', idsForFetch, node.childNodes, left, right)
+
+                if (idsForFetch.length > 0) {   // máme něco pro načtení
+                    dispatch(faSubNodeFormCacheRequest(versionId, nodeId, nodeKey))
+                    WebApi.getFaNodeForms(versionId, idsForFetch)
+                        .then(json => {
+                            dispatch(faSubNodeFormCacheResponse(versionId, nodeId, nodeKey, json.forms))
+                        })
+                }
+            }
         }
 
         // ##
@@ -490,9 +492,28 @@ function getNodeForm(getState, dispatch, versionId, nodeId, nodeKey) {
         // ##
         return WebApi.getFaNodeForm(versionId, nodeId)
     } else {    // je v cache, vrátíme ji
+        //console.log('### USE_CACHE')
         return new Promise(function (resolve, reject) {
             resolve(data)
         })
+    }
+}
+
+function faSubNodeFormCacheRequest(versionId, nodeId, nodeKey) {
+    return {
+        type: types.FA_SUB_NODE_FORM_CACHE_REQUEST,
+        versionId,
+        nodeId,
+        nodeKey,
+    }
+}
+function faSubNodeFormCacheResponse(versionId, nodeId, nodeKey, formsMap) {
+    return {
+        type: types.FA_SUB_NODE_FORM_CACHE_RESPONSE,
+        versionId,
+        nodeId,
+        nodeKey,
+        formsMap
     }
 }
 
