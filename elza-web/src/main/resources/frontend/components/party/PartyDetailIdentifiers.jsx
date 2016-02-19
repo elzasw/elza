@@ -4,8 +4,8 @@
 
 import React from 'react';
 import {connect} from 'react-redux'
-import {Button, Glyphicon} from 'react-bootstrap';
-import {PartyIdentifierForm, AbstractReactComponent, i18n} from 'components';
+import {Button} from 'react-bootstrap';
+import {PartyIdentifierForm, AbstractReactComponent, i18n, Icon} from 'components';
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {AppActions} from 'stores';
 import {deleteIdentifier, updateParty} from 'actions/party/party'
@@ -163,13 +163,13 @@ var PartyDetailIdentifiers = class PartyDetailIdentifiers extends AbstractReactC
                             {party.partyGroupIdentifiers.map(i=> {return <tr className="identifier">
                                 <th className="identifier column">{i.identifier}</th> 
                                 <td className="buttons">
-                                    <Button classIdentifier="column" onClick={this.handleUpdateIdentifier.bind(this, i.partyGroupIdentifierId)}><Glyphicon glyph="edit" /></Button>
-                                    <Button classIdentifier="column" onClick={this.handleDeleteIdentifier.bind(this, i.partyGroupIdentifierId)}><Glyphicon glyph="trash" /></Button>
+                                    <Button classIdentifier="column" onClick={this.handleUpdateIdentifier.bind(this, i.partyGroupIdentifierId)}><Icon glyph="fa-pencil" /></Button>
+                                    <Button classIdentifier="column" onClick={this.handleDeleteIdentifier.bind(this, i.partyGroupIdentifierId)}><Icon glyph="fa-trash" /></Button>
                                 </td>
                             </tr>})}
                         </tbody>
                     </table>
-                    <Button className="column" onClick={this.handleAddIdentifier}><Glyphicon glyph="plus" /> { i18n('party.detail.identifier.new')}</Button>
+                    <Button className="column" onClick={this.handleAddIdentifier}><Icon glyph="fa-plus" /> { i18n('party.detail.identifier.new')}</Button>
                 </div>
     }
 }
