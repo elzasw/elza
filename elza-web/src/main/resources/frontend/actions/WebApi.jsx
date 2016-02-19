@@ -398,6 +398,10 @@ class WebApi{
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + versionId + '/forms', {nodeIds: nodeIds})
     }
 
+    getFaNodeFormsWithAround(versionId, nodeId, around) {
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + versionId + '/' + nodeId + '/' + around + '/forms')
+    }
+
     getFaNodeFormNew(versionId, nodeId) {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + nodeId + '/' + versionId + '/formNew')
     }
