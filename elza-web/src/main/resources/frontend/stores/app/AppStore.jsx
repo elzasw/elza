@@ -144,6 +144,10 @@ var save = function(store) {
         splitter: splitter(store.splitter, action)
     }
 
+    var rrd = registryRegionData(store.registryRegionData, action)
+    result.registryRegion._info = rrd._info
+    result.registryRegion.selectedId = rrd.selectedId
+
     return result
 }
 

@@ -35,10 +35,10 @@ export default function registryRegionData(state = initialState, action = {}) {
             }
         case types.STORE_SAVE:
             {
-                const {selectedId, item} = state;
+                const {selectedId, item, isFetching} = state;
 
                 var _info
-                if (item) {
+                if (item && !isFetching) {
                     _info = {name: item.record, desc: item.characteristics}
                 } else {
                     _info = null
@@ -51,7 +51,11 @@ export default function registryRegionData(state = initialState, action = {}) {
             }
         case types.REGISTRY_SELECT_REGISTRY:
             if (state.selectedId === action.registry.selectedId){
-                return state;
+                return {
+                    ...state,
+                    isFetching: false,
+                    fetched: false,
+                }
             }
             else{
                 return Object.assign({}, state, {

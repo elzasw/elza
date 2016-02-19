@@ -55,11 +55,11 @@ export default function registryRegion(state = initialState, action = {}) {
                 //registryRegionData: registryRegionData(action.registryRegion.registryRegionData, action)
         case types.STORE_SAVE:
             {
-                const {selectedId, filterText, registryRegionData} = state;
+                const {selectedId, filterText} = state;
 
                 var _info
-                if (registryRegionData && registryRegionData.item) {
-                    _info = {name: registryRegionData.item.record, desc: registryRegionData.item.characteristics}
+                if (state.registryRegionData && state.registryRegionData.item && state.registryRegionData.selectedId === selectedId) {
+                    _info = {name: state.registryRegionData.item.record, desc: state.registryRegionData.item.characteristics}
                 } else {
                     _info = null
                 }
