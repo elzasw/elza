@@ -20,37 +20,59 @@ elza:
 #zobrazování popisků
 #
 #  finding-aid-view:
-#    ZP2015:
-#      default:
-#        tree-item:
-#          - ZP2015_TITLE
-#          - ZP2015_UNIT_DATE
-#        accordion-left:
-#          - ZP2015_TITLE
-#          - ZP2015_UNIT_DATE
-#        accordion-right:
-#          - ZP2015_FOLDER_TYPE
-#          - ZP2015_STORAGE_ID
-#        icon: # pouze jedna položka
-#          - ZP2015_LEVEL_TYPE
+#      ZP2015:
+#        default:
+#          tree-item:
+#            - ZP2015_TITLE
+#            - ZP2015_UNIT_DATE
+#          accordion-left:
+#            - ZP2015_TITLE
+#            - ZP2015_UNIT_DATE
+#          accordion-right:
+#            - ZP2015_FOLDER_TYPE
+#            - ZP2015_STORAGE_ID
+#          hierarchy:
+#            ZP2015_LEVEL_TYPE:
+#              ZP2015_LEVEL_ROOT:
+#                icon: fa-sitemap
+#                separator-first: '||'
+#                separator-other: '|'
+#              ZP2015_LEVEL_SERIES:
+#                icon: fa-server
+#                separator-first: '||'
+#                separator-other: '|'
+#              ZP2015_LEVEL_FOLDER:
+#                icon: fa-folder-o
+#                separator-first: '||'
+#                separator-other: '|'
+#              ZP2015_LEVEL_ITEM:
+#                icon: fa-building
+#                separator-first: '||'
+#                separator-other: '|'
+#              ZP2015_LEVEL_PART:
+#                icon: fa-building-o
+#                separator-first: '||'
+#                separator-other: '|'
 
 #  type-groups:
-#    GROUP1:
-#      name: Testovací skupina 1
-#      types:
-#        - code: ZP2015_NOTE
-#          width: 0
-#        - code: ZP2015_LEVEL_TYPE
-#          width: 1
-#        - code: ZP2015_UNIT_ID
-#          width: 2
-#        - code: ZP2015_ORIGINATOR
-#          width: 0
-#    GROUP2:
-#      name: Testovací skupina 2
-#      types:
-#        - code: ZP2015_SIZE
-#          width: 1
+#      ZP2015:
+#        default:
+#          GROUP1:
+#            types:
+#              - code: ZP2015_NOTE
+#                width: 0
+#              - code: ZP2015_LEVEL_TYPE
+#                width: 1
+#              - code: ZP2015_UNIT_ID
+#                width: 2
+#              - code: ZP2015_ORIGINATOR
+#                width: 0
+#          GROUP2:
+#            types:
+#              - code: ZP2015_SIZE
+#                width: 1
+#              - code: ZP2015_OTHER_ID
+#                width: 3
 
 spring:
   app:
