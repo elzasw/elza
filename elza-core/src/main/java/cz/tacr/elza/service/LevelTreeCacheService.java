@@ -216,7 +216,7 @@ public class LevelTreeCacheService {
 
         TreeData treeData = new TreeData(createNodesWithTitles(nodesMap, version).values(), expandedIdsExtended);
 
-        addConformityInfo(treeData, version);
+        addConformityInfo(treeData.getNodes(), version);
 
         return treeData;
     }
@@ -248,18 +248,18 @@ public class LevelTreeCacheService {
     /**
      * Přidá informace o stavu uzlů.
      *
-     * @param treeData  data stromu pro otevřené uzly
+     * @param nodes     uzly pro vyplnění conformity info
      * @param version   verze stromu
      */
-    private void addConformityInfo(final TreeData treeData, final ArrFindingAidVersion version) {
+    private void addConformityInfo(final Collection<TreeNodeClient> nodes, final ArrFindingAidVersion version) {
 
-        ArrayList<Integer> nodeIds = treeData.getNodes().stream().map(TreeNodeClient::getId)
+        ArrayList<Integer> nodeIds = nodes.stream().map(TreeNodeClient::getId)
                 .collect(Collectors.toCollection(ArrayList::new));
 
         Map<Integer, ArrNodeConformityExt> conformityInfoForNodes = ruleService
                 .getNodeConformityInfoForNodes(nodeIds, version);
 
-        for (TreeNodeClient treeNode: treeData.getNodes()) {
+        for (TreeNodeClient treeNode: nodes) {
             ArrNodeConformityExt nodeConformity = conformityInfoForNodes.get(treeNode.getId());
             if (nodeConformity != null) {
                 treeNode.setNodeConformity(clientFactoryVO.createNodeConformity(nodeConformity));
@@ -665,7 +665,7 @@ public class LevelTreeCacheService {
     /**
      * Provede načtení popisků uzlů pro uzly, které budou odeslány do klienta a vytvoří výsledné odesílané objekty.
      *
-     * @param nodesMap seřazená mapa uzlů tak jak budou odeslány (nodeid -> uzel)
+     * @param treeNodeMap seřazená mapa uzlů tak jak budou odeslány (nodeid -> uzel)
      * @param version  verze stromu
      * @return seznam rozbalených uzlů s potomky seřazen
      */
@@ -1181,6 +1181,32 @@ public class LevelTreeCacheService {
         newNode.setParent(parentNode);
         newNode.setDepth(parentNode.getDepth() + 1);
         return newNode;
+    }
+
+    /**
+     * Získání informací o uzlech.
+     *
+     * @param versionId id verze stromu
+     * @param nodeIds   seznam id uzlů
+     * @return informace
+     */
+    public Collection<TreeNodeClient> getFaTreeNodes(final Integer versionId, final List<Integer> nodeIds) {
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+        Map<Integer, TreeNode> treeMap = getVersionTreeCache(version);
+        LinkedHashMap<Integer, TreeNode> nodesMap = new LinkedHashMap<>();
+
+        for (Integer nodeId : nodeIds) {
+            TreeNode treeNode = treeMap.get(nodeId);
+            if (treeNode != null) {
+                nodesMap.put(nodeId, treeNode);
+            } else {
+                logger.warn("Uzel s identifikátorem " + nodeId + " neexistuje ve verzi " + versionId);
+            }
+        }
+
+        Collection<TreeNodeClient> nodes = createNodesWithTitles(nodesMap, version).values();
+        addConformityInfo(nodes, version);
+        return nodes;
     }
 
     public class TitleValue {

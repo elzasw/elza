@@ -529,38 +529,13 @@ class WebApi{
                 return json
             });
     }
-    getFaTree1(versionId, nodeId, expandedIds={}, includeIds=[]) {
-        expandedIds = {...expandedIds};
 
-        var srcNodes;
-        if (nodeId == null || typeof nodeId == 'undefined') {
-            srcNodes = [_faRootNode];
-        } else {
-            srcNodes = findNodeById(_faRootNode, nodeId).children;
-        }
-
-        var expandedIdsExtension = [];
-        var expandedIdsExtOut = [];
-        includeIds.forEach(id => {
-            var node = findNodeById(_faRootNode, id).parent;
-            while (node != null) {
-                if (expandedIds[node.id]) { // je rozbalená, nic neděláme
-                } else {
-                    expandedIds[node.id] = true;
-                    expandedIdsExtOut.push(node.id);
-                }
-                node = node.parent;
-            }
-        });
-
-        var out = [];
-        generateFlatTree(srcNodes, expandedIds, out);
+    getFaTreeNodes(versionId, nodeIds) {
         var data = {
-            nodes: out,
-            expandedIdsExtension: expandedIdsExtOut,
-        }
-
-        return this.getData(data, 1);
+            versionId,
+            nodeIds
+        };
+        return AjaxUtils.ajaxPost('/api/arrangementManagerV2/faTree/nodes', null, data);
     }
 
     getPartyNameFormTypes() {

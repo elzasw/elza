@@ -373,6 +373,22 @@ public class ArrangementController {
     }
 
     /**
+     * Provede načtení požadovaných uzlů ze stromu.
+     *
+     * @param input vstupní data pro načtení
+     * @return data stromu
+     */
+    @RequestMapping(value = "/faTree/nodes", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public Collection<TreeNodeClient> getFaTreeNodes(final @RequestBody FaTreeNodesParam input) {
+        Assert.notNull(input);
+        Assert.notNull(input.getVersionId());
+        Assert.notNull(input.getNodeIds());
+
+        return levelTreeCacheService.getFaTreeNodes(input.getVersionId(), input.getNodeIds());
+    }
+
+    /**
      * Načte seznam rodičů daného uzlu. Seřazeno od prvního rodiče po kořen stromu.
      *
      * @param nodeId    nodeid uzlu
@@ -1208,6 +1224,38 @@ public class ArrangementController {
 
         public void setIncludeIds(final Set<Integer> includeIds) {
             this.includeIds = includeIds;
+        }
+    }
+
+    /**
+     * Vstupní parametry pro metodu /faTree/nodes {@link #getFaTreeNodes(FaTreeNodesParam)}.
+     */
+    public static class FaTreeNodesParam {
+
+        /**
+         * Id verze.
+         */
+        private Integer versionId;
+
+        /**
+         * Seznam požadovaných uzlů.
+         */
+        private List<Integer> nodeIds;
+
+        public Integer getVersionId() {
+            return versionId;
+        }
+
+        public void setVersionId(final Integer versionId) {
+            this.versionId = versionId;
+        }
+
+        public List<Integer> getNodeIds() {
+            return nodeIds;
+        }
+
+        public void setNodeIds(final List<Integer> nodeIds) {
+            this.nodeIds = nodeIds;
         }
     }
 
