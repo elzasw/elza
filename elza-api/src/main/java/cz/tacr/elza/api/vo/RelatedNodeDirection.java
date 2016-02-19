@@ -28,9 +28,13 @@ public enum RelatedNodeDirection {
      */
     DESCENDANTS,
     /**
-     * Všechny sourozence.
+     * Sourozence - před a za.
      */
     SIBLINGS,
+    /**
+     * Všechny sourozence.
+     */
+    ALL_SIBLINGS,
     /**
      * Všechny uzly ve verzi.
      */

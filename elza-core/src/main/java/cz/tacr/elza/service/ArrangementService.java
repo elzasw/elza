@@ -29,6 +29,7 @@ import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.ArrNodeConformity.State;
 import cz.tacr.elza.api.exception.ConcurrentUpdateException;
 import cz.tacr.elza.api.vo.NodeTypeOperation;
+import cz.tacr.elza.api.vo.RelatedNodeDirection;
 import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.BulkActionService;
@@ -897,6 +898,38 @@ public class ArrangementService {
         faRegisterScope.setScope(scope);
 
         return faRegisterScopeRepository.save(faRegisterScope);
+    }
+
+    /**
+     * Vyhledání sousedních uzlů kolem určitého uzlu.
+     *
+     * @param version   verze AP
+     * @param node      uzel
+     * @param around    velikost okolí
+     * @return  okolní uzly (včetně původního)
+     */
+    public List<ArrNode> findSiblingsAroundOfNode(final ArrFindingAidVersion version, final ArrNode node, final Integer around) {
+        List<ArrNode> siblings = nodeRepository.findNodesByDirection(node, version, RelatedNodeDirection.ALL_SIBLINGS);
+
+        if (around <= 0) {
+            throw new IllegalStateException("Velikost okolí musí být minimálně 1");
+        }
+
+        //požadujeme pouze nejbližšího sourozence před a za objektem
+        int nodeIndex = siblings.indexOf(node);
+        List<ArrNode> result = new ArrayList<>();
+
+        int min = nodeIndex - around;
+        int max = nodeIndex + around;
+
+        min = min < 0 ? 0 : min;
+        max = max > siblings.size() - 1 ? siblings.size() - 1 : max;
+
+        for(int i = min; i <= max; i++) {
+            result.add(siblings.get(i));
+        }
+
+        return result;
     }
 
 }

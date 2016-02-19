@@ -503,6 +503,39 @@ public class ArrangementController {
     }
 
     /**
+     * Získání dat formuláře pro JP a jeho okolí.
+     *
+     * @param nodeId    identfikátory JP
+     * @param versionId id verze stromu
+     * @param around    velikost okolí - počet před a za uvedeným uzlem
+     * @return formuláře
+     */
+    @RequestMapping(value = "/nodes/{versionId}/{nodeId}/{around}/forms", method = RequestMethod.GET)
+    public NodeFormsDataVO getNodeWithAroundFormsData(@PathVariable(value = "versionId") final Integer versionId,
+                                                      @PathVariable(value = "nodeId") final Integer nodeId,
+                                                      @PathVariable(value = "around") final Integer around) {
+        Assert.notNull(versionId, "Identifikátor verze musí být vyplněn");
+        Assert.notNull(nodeId, "Identifikátor uzlu musí být vyplněn");
+        Assert.notNull(around, "Velikost okolí musí být vyplněno");
+
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
+        ArrNode node = nodeRepository.findOne(nodeId);
+
+        Assert.notNull(version, "Verze AP neexistuje");
+        Assert.notNull(node, "Uzel neexistuje");
+
+        List<ArrNode> nodes = arrangementService.findSiblingsAroundOfNode(version, node, around);
+
+        Map<Integer, NodeFormDataNewVO> forms = new HashMap<>();
+
+        for (ArrNode arrNode : nodes) {
+            forms.put(arrNode.getNodeId(), getNodeFormDataNew(arrNode.getNodeId(), versionId));
+        }
+
+        return new NodeFormsDataVO(forms);
+    }
+
+    /**
      * Načte číselník typů kalendářů.
      * @return typy kalendářů
      */

@@ -260,7 +260,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
                 return levelRepository.findByParentNode(level.getNode(), version.getLockChange());
             case DESCENDANTS:
                 return levelRepository.findAllChildrenByNode(level.getNode(), version.getLockChange());
-            case SIBLINGS:
+            case SIBLINGS: {
                 ArrayList<ArrLevel> siblings = new ArrayList<>(levelRepository
                         .findByParentNode(level.getNodeParent(), version.getLockChange()));
 
@@ -275,6 +275,12 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
                 }
 
                 return result;
+            }
+            case ALL_SIBLINGS: {
+                ArrayList<ArrLevel> siblings = new ArrayList<>(levelRepository
+                        .findByParentNode(level.getNodeParent(), version.getLockChange()));
+                return siblings;
+            }
             case ALL:
                 return levelRepository.findAllChildrenByNode(version.getRootLevel().getNode(), version.getLockChange());
             default:
