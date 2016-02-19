@@ -2,6 +2,9 @@ package cz.tacr.elza.controller;
 
 import org.junit.Test;
 
+import java.io.File;
+import java.net.URL;
+
 
 /**
  * @author Petr Compel
@@ -24,23 +27,22 @@ public class RuleControllerTest extends AbstractControllerTest {
         getPackages();
     }
 
-    /*public void packageTest() {
+    @Test
+    public void deleteImportExportPackageTest() {
 
     }
 
-    @Test
+    public void packageTest() {
+
+    }
+
     public void importPackageRestTest() {
-        Assert.isInstanceOf(List.class, getPackages());
+        URL url = Thread.currentThread().getContextClassLoader().getResource(PACKAGE_FILE);
+        File file = new File(url.getPath());
     }
 
-    @Test
-    public void exportPackageRestTest() {
-        Assert.isInstanceOf(List.class, getPackages());
-    }
-
-    @Test
     public void deletePackageTest() {
-        Assert.isInstanceOf(List.class, getPackages());
-    }*/
+
+    }
 
 }

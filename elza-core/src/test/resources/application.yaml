@@ -23,3 +23,7 @@ elza:
 
   groovy:
     groovyDir: ${elza.workingDir}/groovy
+
+  record:
+    scopeCodes:
+      - GLOBAL

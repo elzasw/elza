@@ -1,12 +1,19 @@
 package cz.tacr.elza.controller;
 
-import static com.jayway.restassured.RestAssured.given;
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Function;
-
+import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.config.EncoderConfig;
+import com.jayway.restassured.config.RestAssuredConfig;
+import com.jayway.restassured.response.Header;
+import com.jayway.restassured.response.Response;
+import com.jayway.restassured.specification.RequestSpecification;
+import cz.tacr.elza.AbstractTest;
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.*;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.service.ArrMoveLevelService;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -16,44 +23,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.config.EncoderConfig;
-import com.jayway.restassured.config.RestAssuredConfig;
-import com.jayway.restassured.response.Header;
-import com.jayway.restassured.response.Response;
-import com.jayway.restassured.specification.RequestSpecification;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.function.Function;
 
-import cz.tacr.elza.AbstractTest;
-import cz.tacr.elza.controller.vo.ArrFindingAidVO;
-import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
-import cz.tacr.elza.controller.vo.ArrPacketVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.RegRecordVO;
-import cz.tacr.elza.controller.vo.RulArrangementTypeVO;
-import cz.tacr.elza.controller.vo.RulDataTypeVO;
-import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
-import cz.tacr.elza.controller.vo.RulDescItemTypeVO;
-import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.ValidationResult;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemCoordinatesVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemDecimalVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemEnumVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemFormattedTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemIntVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemPacketVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemPartyRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemRecordRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemStringVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemUnitdateVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemUnitidVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
-import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.service.ArrMoveLevelService;
+import static com.jayway.restassured.RestAssured.given;
 
 
 public abstract class AbstractControllerTest extends AbstractTest {
@@ -97,6 +74,25 @@ public abstract class AbstractControllerTest extends AbstractTest {
             + "/descItems/{findingAidVersionId}/{nodeVersion}/update/{createNewVersion}";
     protected static final String DELETE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL
             + "/descItems/{findingAidVersionId}/{nodeVersion}/delete";
+
+    // REGISTRY
+    protected static final String DEFAULT_SCOPES = REGISTRY_CONTROLLER_URL + "/defaultScopes";
+    protected static final String CREATE_SCOPE = REGISTRY_CONTROLLER_URL + "/scopes";
+    protected static final String UPDATE_SCOPE = REGISTRY_CONTROLLER_URL + "/scopes/";
+    protected static final String DELETE_SCOPE = REGISTRY_CONTROLLER_URL + "/scopes/";
+    protected static final String FA_SCOPES = REGISTRY_CONTROLLER_URL + "/faScopes";
+    protected static final String ALL_SCOPES = REGISTRY_CONTROLLER_URL + "/scopes";
+    protected static final String RECORD_TYPES = REGISTRY_CONTROLLER_URL + "/recordTypes";
+
+    protected static final String FIND_RECORD = REGISTRY_CONTROLLER_URL + "/findRecord";
+    protected static final String GET_RECORD = REGISTRY_CONTROLLER_URL + "/getRecord";
+    protected static final String CREATE_RECORD = REGISTRY_CONTROLLER_URL + "/createRecord";
+    protected static final String UPDATE_RECORD = REGISTRY_CONTROLLER_URL + "/updateRecord";
+    protected static final String DELETE_RECORD = REGISTRY_CONTROLLER_URL + "/deleteRecord";
+
+    protected static final String CREATE_VARIANT_RECORD = REGISTRY_CONTROLLER_URL + "/createVariantRecord";
+    protected static final String UPDATE_VARIANT_RECORD = REGISTRY_CONTROLLER_URL + "/updateVariantRecord";
+    protected static final String DELETE_VARIANT_RECORD = REGISTRY_CONTROLLER_URL + "/deleteVariantRecord";
 
     // RULE
     protected static final String RULE_SETS = RULE_CONTROLLER_URL + "/getRuleSets";
@@ -496,18 +492,18 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
-     * Získání rule data types
+     * Získání listu RulDataTypeVO
      *
-     * @return list rule data types
+     * @return list RulDataTypeVO
      */
     protected List<RulDataTypeVO> getDataTypes() {
         return Arrays.asList(get(DATA_TYPES).getBody().as(RulDataTypeVO[].class));
     }
 
     /**
-     * Získání rule data types
+     * Získání listu RulDescItemTypeExtVO
      *
-     * @return list rule data types
+     * @return list RulDescItemTypeExtVO
      */
     protected List<RulDescItemTypeExtVO> getDescItemTypes() {
         return Arrays.asList(get(DESC_ITEM_TYPES).getBody().as(RulDescItemTypeExtVO[].class));
@@ -538,9 +534,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
-     * Získání rule data types
+     * Získání listu RulPackage
      *
-     * @return list rule data types
+     * @return list RulPackage
      */
     protected List<RulPackage> getPackages() {
         return Arrays.asList(get(PACKAGES).getBody().as(RulPackage[].class));
@@ -828,4 +824,136 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return null;
     }
 
+    /**
+     * Vrací výchozí třídy rejstříků z databáze.
+     */
+    protected List<RegScopeVO> getDefaultScopes() {
+        return Arrays.asList(get(DEFAULT_SCOPES).getBody().as(RegScopeVO[].class));
+    }
+
+    /**
+     * Vložení nové třídy.
+     *
+     * @param scope objekt třídy
+     * @return nový objekt třídy
+     */
+    protected RegScopeVO createScope(RegScopeVO scope) {
+        return post(spec -> spec.body(scope), CREATE_SCOPE).getBody().as(RegScopeVO.class);
+    }
+
+    /**
+     * Aktualizace třídy.
+     *
+     * @param scope objekt třídy
+     * @return aktualizovaný objekt třídy
+     */
+    protected RegScopeVO updateScope(RegScopeVO scope) {
+        return put(spec -> spec.body(scope), UPDATE_SCOPE + scope.getId()).getBody().as(RegScopeVO.class);
+    }
+
+    /**
+     * Smazání třídy. Třída nesmí být napojena na rejstříkové heslo.
+     *
+     * @param id id třídy.
+     */
+    protected Response deleteScope(final int id) {
+        return delete(spec -> spec, DELETE_SCOPE + id);
+    }
+
+    /**
+     * Pokud je nastavená verze, vrací třídy napojené na verzi, jinak vrací třídy nastavené v konfiguraci elzy (YAML).
+     *
+     * @param versionId id verze nebo null
+     * @return seznam tříd
+     */
+    protected Response getScopeIdsByVersion(@Nullable final Integer versionId) {
+        return versionId == null ? get(FA_SCOPES) : get(spec -> spec.queryParameter("versionId", versionId), FA_SCOPES);
+    }
+
+    /**
+     * Vrací všechny třídy rejstříků z databáze.
+     */
+    protected List<RegScopeVO> getAllScopes() {
+        return Arrays.asList(get(ALL_SCOPES).getBody().as(RegScopeVO[].class));
+    }
+
+    /**
+     * Vrátí seznam typů rejstříku (typů hesel).
+     *
+     * @return seznam typů rejstříku (typů hesel)
+     */
+    protected List<RegRegisterTypeVO> getRecordTypes() {
+        return Arrays.asList(get(RECORD_TYPES).getBody().as(RegRegisterTypeVO[].class));
+    }
+
+
+    /**
+     * Vrátí jedno heslo (s variantními hesly) dle id.
+     *
+     * @param recordId id požadovaného hesla
+     */
+    protected RegRecordVO getRecord(final int recordId) {
+        return get(spec -> spec.queryParameter("recordId", recordId), GET_RECORD).getBody().as(RegRecordVO.class);
+    }
+
+    /**
+     * Vytvoření rejstříkového hesla.
+     *
+     * @param record VO rejstříkové heslo
+     */
+    protected RegRecordVO createRecord(final RegRecordVO record) {
+        return put(spec -> spec.body(record), CREATE_RECORD).getBody().as(RegRecordVO.class);
+    }
+
+    /**
+     * Aktualizace rejstříkového hesla.
+     *
+     * @param record VO rejstříkové heslo
+     */
+    protected RegRecordVO updateRecord(final RegRecordVO record) {
+        return put(spec -> spec.body(record), UPDATE_RECORD).getBody().as(RegRecordVO.class);
+    }
+
+    /**
+     * Smazání rejstříkového hesla.
+     *
+     * @param recordId id rejstříkového hesla
+     */
+    protected Response deleteRecord(final Integer recordId) {
+        return delete(spec -> spec.queryParam("recordId", recordId), DELETE_RECORD);
+    }
+
+    protected List<RegRecordVO> findRecord(final String search,
+                                           final Integer from, final Integer count,
+                                           final Integer registerTypeId,
+                                           final Integer parentRecordId,
+                                           final Integer versionId) {
+        HashMap<String, Object> params = new HashMap<>();
+
+        if (search != null) {
+            params.put("search", search);
+        }
+        if (versionId != null) {
+            params.put("versionId", versionId);
+        }
+        if (parentRecordId != null) {
+            params.put("parentRecordId", parentRecordId);
+        }
+        if (registerTypeId != null) {
+            params.put("registerTypeId", registerTypeId);
+        }
+        params.put("from", from != null ? from : 0);
+        params.put("count", count != null ? count : 20);
+
+        return get(spec -> spec.queryParameters(params), FIND_RECORD).getBody().as(RegRecordWithCount.class).getRecordList();
+    }
+
+
+    protected RegVariantRecordVO createVariantRecord(RegVariantRecordVO recordVO) {
+        return put(spec -> spec.body(recordVO), CREATE_VARIANT_RECORD).getBody().as(RegVariantRecordVO.class);
+    }
+
+    protected Response deleteVariantRecord(int id) {
+        return delete(spec -> spec.queryParam("variantRecordId", id), DELETE_VARIANT_RECORD);
+    }
 }

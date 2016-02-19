@@ -50,3 +50,4 @@ elza-web/config/elza.yaml
 /elza-web/lucene
 /elza-web/groovy
 /elza-web/work/
+/elza-core/work/
