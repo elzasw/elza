@@ -437,33 +437,6 @@ public class ArrangementController {
         return factoryVo.createFindingAidVersion(nextVersion);
     }
 
-    @Deprecated
-    @RequestMapping(value = "/nodes/{nodeId}/{versionId}/form", method = RequestMethod.GET)
-    public NodeFormDataVO getNodeFormData(@PathVariable(value = "nodeId") Integer nodeId,
-                                          @PathVariable(value = "versionId") Integer versionId) {
-        Assert.notNull(versionId, "Identifikátor verze musí být vyplněn");
-        Assert.notNull(nodeId, "Identifikátor uzlu musí být vyplněn");
-
-        ArrFindingAidVersion version = findingAidVersionRepository.findOne(versionId);
-        ArrNode node = nodeRepository.findOne(nodeId);
-
-        Assert.notNull(version, "Verze AP neexistuje");
-        Assert.notNull(node, "Uzel neexistuje");
-
-        List<ArrDescItem> descItems = arrangementService.getDescItems(version, node);
-        List<RulDescItemTypeExt> descItemTypes;
-        try {
-            descItemTypes = ruleService.getDescriptionItemTypes(versionId, nodeId);
-        } catch (Exception e) {
-            descItemTypes = new ArrayList<>();
-        }
-
-        ArrNodeVO nodeVO = factoryVo.createArrNode(node);
-        List<ArrDescItemGroupVO> descItemGroupsVO = factoryVo.createDescItemGroups(descItems);
-        List<ArrDescItemTypeGroupVO> descItemTypeGroupsVO = factoryVo.createDescItemTypeGroups(descItemTypes);
-        return new NodeFormDataVO(nodeVO, descItemGroupsVO, descItemTypeGroupsVO);
-    }
-
     /**
      * Získání dat pro formulář.
      *
@@ -491,9 +464,13 @@ public class ArrangementController {
             descItemTypes = new ArrayList<>();
         }
 
+        Integer findingAidId = version.getFindingAid().getFindingAidId();
+        String ruleCode = version.getRuleSet().getCode();
+
         ArrNodeVO nodeVO = factoryVo.createArrNode(node);
-        List<DescItemGroupVO> descItemGroupsVO = factoryVo.createDescItemGroupsNew(descItems);
-        List<DescItemTypeGroupVO> descItemTypeGroupsVO = factoryVo.createDescItemTypeGroupsNew(descItemTypes);
+        List<DescItemGroupVO> descItemGroupsVO = factoryVo.createDescItemGroupsNew(ruleCode, findingAidId, descItems);
+        List<DescItemTypeGroupVO> descItemTypeGroupsVO = factoryVo
+                .createDescItemTypeGroupsNew(ruleCode, findingAidId, descItemTypes);
         return new NodeFormDataNewVO(nodeVO, descItemGroupsVO, descItemTypeGroupsVO);
     }
 
@@ -690,9 +667,16 @@ public class ArrangementController {
     public List<ScenarioOfNewLevelVO> getDescriptionItemTypesForNewLevel(
             @RequestParam(required = false, value = "withGroups") final Boolean withGroups,
             @RequestBody final DescriptionItemParam param) {
+
+        ArrFindingAidVersion version = findingAidVersionRepository.findOne(param.getVersionId());
+        Assert.notNull(version, "Neplatná verze AP");
+
+        Integer findingAidId = version.getFindingAid().getFindingAidId();
+        String ruleCode = version.getRuleSet().getCode();
+
         return factoryVo.createScenarioOfNewLevelList(descriptionItemService
                 .getDescriptionItemTypesForNewLevel(param.getNode().getId(), param.getDirection(),
-                        param.getVersionId()), withGroups);
+                        param.getVersionId()), withGroups, ruleCode, findingAidId);
     }
 
 
