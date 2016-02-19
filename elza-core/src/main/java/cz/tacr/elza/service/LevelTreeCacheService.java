@@ -741,8 +741,11 @@ public class LevelTreeCacheService {
         if (!CollectionUtils.isEmpty(viewTitles.getTreeItem())) {
             descItemTypeCodes.addAll(viewTitles.getTreeItem());
         }
-        if (StringUtils.isNotBlank(viewTitles.getIcon())) {
-            descItemTypeCodes.add(viewTitles.getIcon());
+        if (viewTitles.getHierarchy() != null) {
+            Set<String> keySet = viewTitles.getHierarchy().keySet();
+            if (keySet.size() > 0) {
+                descItemTypeCodes.add(keySet.iterator().next());
+            }
         }
 
         return descItemTypeCodes;
@@ -789,10 +792,20 @@ public class LevelTreeCacheService {
             treeNodeClient.setAccordionRight(createTitle(viewTitles.getAccordionRight(), descItemCodeToValueMap, false, false));
             treeNodeClient.setName(createTitle(viewTitles.getTreeItem(), descItemCodeToValueMap, true, false));
 
-            if (viewTitles.getIcon() != null) {
-                List<String> codes = new ArrayList<String>(1);
-                codes.add(viewTitles.getIcon());
-                treeNodeClient.setIcon(createTitle(codes, descItemCodeToValueMap, false, true));
+            if (viewTitles.getHierarchy() != null) {
+                Set<String> keySet = viewTitles.getHierarchy().keySet();
+                if (keySet.size() > 0) {
+                    List<String> codes = new ArrayList<String>(1);
+                    codes.add(keySet.iterator().next());
+                    String iconCode = createTitle(codes, descItemCodeToValueMap, false, true);
+                    Collection<Map<String, ConfigView.ConfigViewTitlesHierarchy>> hierarchyList = viewTitles
+                            .getHierarchy().values();
+                    Map<String, ConfigView.ConfigViewTitlesHierarchy> hierarchyType = hierarchyList.iterator().next();
+                    ConfigView.ConfigViewTitlesHierarchy hierarchySpec = hierarchyType.get(iconCode);
+                    if (hierarchySpec != null) {
+                        treeNodeClient.setIcon(hierarchySpec.getIcon());
+                    }
+                }
             }
         } else {
             treeNodeClient.setAccordionLeft(defaultNodeTitle);
@@ -946,8 +959,7 @@ public class LevelTreeCacheService {
 
     private String getIconValue(ArrData data) {
         if (data.getDescItem().getDescItemSpec() != null) {
-            String iconType = data.getDescItem().getDescItemSpec().getCode();
-            return iconType.substring(iconType.lastIndexOf("_") + 1);
+            return data.getDescItem().getDescItemSpec().getCode();
         }
         return null;
     }

@@ -26,24 +26,14 @@ import org.springframework.util.Assert;
 public class ConfigView {
 
     public static final String FA_PREFIX = "fa-";
-
     public static final String DEFAULT = "default";
-    public static final String TREE_ITEM = "tree-item";
-    public static final String ACCORDION_LEFT = "accordion-left";
-    public static final String ACCORDION_RIGHT = "accordion-right";
-    public static final String ICON = "icon";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
      * Nastavení zobrazení v UI.
-     *
-     * Kód pravidel / AP / TYP / seznam kódů
      */
-    private Map<String, Map<String, Map<String, List<String>>>> findingAidView;
-
-    @Value("${elza.treenode.title}")
-    private String titleDescItemTypeCode = null;
+    private Map<String, Map<String, ViewTitles>> findingAidView;
 
     public ViewTitles getViewTitles(final String code, final Integer findingAidId) {
         Assert.notNull(code);
@@ -51,86 +41,68 @@ public class ConfigView {
 
         if (findingAidView == null) {
             logger.warn("Nejsou definována pravidla pro zobrazení popisků v UI");
-            return createDefaultViewTitles();
+            return new ViewTitles();
         }
 
-        Map<String, Map<String, List<String>>> viewByCode = findingAidView.get(code);
+        Map<String, ViewTitles> viewByCode = findingAidView.get(code);
 
         if (viewByCode == null) {
             logger.warn("Nejsou definována pravidla pro zobrazení popisků v UI s kódem " + code);
-            return null;
+            return new ViewTitles();
         }
 
-        Map<String, List<String>> viewByFa = viewByCode.get(FA_PREFIX + findingAidId);
+        ViewTitles viewByFa = viewByCode.get(FA_PREFIX + findingAidId);
 
         if (viewByFa == null) {
             viewByFa = viewByCode.get(DEFAULT);
             if (viewByFa == null) {
                 logger.warn("Nejsou definována výchozí pravidla pro zobrazení popisků v UI s kódem " + code);
-                return null;
+                return new ViewTitles();
             }
         }
 
-        List<String> defaultTitleCode = null;
-        if (CollectionUtils.isEmpty(viewByFa.get(TREE_ITEM)) || CollectionUtils.isEmpty(viewByFa.get(ACCORDION_LEFT))) {
-            if (StringUtils.isBlank(titleDescItemTypeCode)) {
-                logger.warn("Není nastaven typ atributu, jehož hodnota bude použita pro popisek uzlu."
-                        + " Nastavte kód v konfiguraci pro hodnotu 'elza.treenode.title'");
-            } else {
-                defaultTitleCode = new ArrayList<String>(1);
-                defaultTitleCode.add(titleDescItemTypeCode);
-            }
-        }
-
-        List<String> treeNode = null;
-        if (CollectionUtils.isEmpty(viewByFa.get(TREE_ITEM))) {
-            treeNode = defaultTitleCode;
-        } else {
-            treeNode = viewByFa.get(TREE_ITEM);
-        }
-
-        List<String> accordionLeft = null;
-        if (CollectionUtils.isEmpty(viewByFa.get(ACCORDION_LEFT))) {
-            accordionLeft = defaultTitleCode;
-        } else {
-            accordionLeft = viewByFa.get(ACCORDION_LEFT);
-        }
-
-        String iconCode = null;
-        List<String> iconList = viewByFa.get(ICON);
-        if (!CollectionUtils.isEmpty(iconList)) {
-            iconCode = iconList.iterator().next();
-            if (iconList.size() > 1) {
-                logger.warn("Pro ikonu lze nastavit jen jeden kód, bude použit tento: " + iconCode);
-            }
-        }
-
-        return new ViewTitles(treeNode,
-                accordionLeft,
-                viewByFa.get(ACCORDION_RIGHT),
-                iconCode);
+        return viewByFa;
     }
 
-    private ViewTitles createDefaultViewTitles() {
-        if (StringUtils.isBlank(titleDescItemTypeCode)) {
-            logger.warn("Není nastaven typ atributu, jehož hodnota bude použita pro popisek uzlu."
-                    + " Nastavte kód v konfiguraci pro hodnotu 'elza.treenode.title'");
-
-            return new ViewTitles(null, null, null, null);
-        }
-
-        List<String> defaultTitleCode = new ArrayList<String>(1);
-        defaultTitleCode.add(titleDescItemTypeCode);
-
-        return new ViewTitles(defaultTitleCode, defaultTitleCode, null, null);
-    }
-
-    public Map<String, Map<String, Map<String, List<String>>>> getFindingAidView() {
+    public Map<String, Map<String, ViewTitles>> getFindingAidView() {
         return findingAidView;
     }
 
-    public void setFindingAidView(final Map<String, Map<String, Map<String, List<String>>>> findingAidView) {
+    public void setFindingAidView(final Map<String, Map<String, ViewTitles>> findingAidView) {
         this.findingAidView = findingAidView;
+    }
+
+    public static class ConfigViewTitlesHierarchy {
+
+        private String icon;
+
+        private String separatorFirst;
+
+        private String separatorOther;
+
+        public String getIcon() {
+            return icon;
+        }
+
+        public void setIcon(final String icon) {
+            this.icon = icon;
+        }
+
+        public String getSeparatorFirst() {
+            return separatorFirst;
+        }
+
+        public void setSeparatorFirst(final String separatorFirst) {
+            this.separatorFirst = separatorFirst;
+        }
+
+        public String getSeparatorOther() {
+            return separatorOther;
+        }
+
+        public void setSeparatorOther(final String separatorOther) {
+            this.separatorOther = separatorOther;
+        }
     }
 
     public static class ViewTitles {
@@ -141,32 +113,38 @@ public class ConfigView {
 
         private List<String> accordionRight;
 
-        private String icon;
-
-        public ViewTitles(final List<String> treeItem,
-                          final List<String> accordionLeft,
-                          final List<String> accordionRight,
-                          final String icon) {
-            this.treeItem = treeItem;
-            this.accordionLeft = accordionLeft;
-            this.accordionRight = accordionRight;
-            this.icon = icon;
-        }
+        private Map<String, Map<String, ConfigViewTitlesHierarchy>> hierarchy;
 
         public List<String> getTreeItem() {
             return treeItem;
+        }
+
+        public void setTreeItem(final List<String> treeItem) {
+            this.treeItem = treeItem;
         }
 
         public List<String> getAccordionLeft() {
             return accordionLeft;
         }
 
+        public void setAccordionLeft(final List<String> accordionLeft) {
+            this.accordionLeft = accordionLeft;
+        }
+
         public List<String> getAccordionRight() {
             return accordionRight;
         }
 
-        public String getIcon() {
-            return icon;
+        public void setAccordionRight(final List<String> accordionRight) {
+            this.accordionRight = accordionRight;
+        }
+
+        public Map<String, Map<String, ConfigViewTitlesHierarchy>> getHierarchy() {
+            return hierarchy;
+        }
+
+        public void setHierarchy(final Map<String, Map<String, ConfigViewTitlesHierarchy>> hierarchy) {
+            this.hierarchy = hierarchy;
         }
     }
 }

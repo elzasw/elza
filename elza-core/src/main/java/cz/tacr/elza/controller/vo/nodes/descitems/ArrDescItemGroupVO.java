@@ -35,9 +35,8 @@ public class ArrDescItemGroupVO {
     public ArrDescItemGroupVO() {
     }
 
-    public ArrDescItemGroupVO(final String code, final String name) {
+    public ArrDescItemGroupVO(final String code) {
         this.code = code;
-        this.name = name;
     }
 
     public String getCode() {

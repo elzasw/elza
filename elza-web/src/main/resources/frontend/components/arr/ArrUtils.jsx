@@ -185,23 +185,14 @@ export function createReferenceMarkString(node) {
 }
 
 /**
- * Nastavuje typ ikony podle kódu zobrazení.
+ * Pokud je ikona null, je použita výchozí.
  *
- * @param type kódu zobrazení
+ * @param type ikona zobrazení
  */
 export function getGlyph(type) {
-    switch (type) {
-        case "ROOT":
-            return "fa-sitemap"
-        case "SERIES":
-            return "fa-server"
-        case "FOLDER":
-            return "fa-folder-o"
-        case "ITEM":
-            return "fa-building"
-        case "PART":
-            return "fa-building-o"
-        default:
-            return "fa-exclamation-triangle"
+    if (type == null) {
+        return "fa-exclamation-triangle"
+    } else {
+        return type;
     }
 }

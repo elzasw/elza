@@ -34,9 +34,8 @@ public class DescItemTypeGroupVO {
     public DescItemTypeGroupVO() {
     }
 
-    public DescItemTypeGroupVO(final String code, final String name) {
+    public DescItemTypeGroupVO(final String code) {
         this.code = code;
-        this.name = name;
     }
 
     public String getCode() {

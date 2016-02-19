@@ -33,12 +33,15 @@ import cz.tacr.elza.repository.FindingAidVersionRepository;
 @ConfigurationProperties(prefix = "elza")
 public class ConfigRules {
 
+    public static final String FA_PREFIX = "fa-";
+    public static final String DEFAULT = "default";
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private FindingAidVersionRepository findingAidVersionRepository;
 
-    private Group defaultGroup = new Group("DEFAULT", "Bez zařazení");
+    private Group defaultGroup = new Group("DEFAULT");
 
     /**
      * Seznam strategii podle pravidel.
@@ -46,7 +49,7 @@ public class ConfigRules {
     private Map<String, Map<String, List<String>>> rules;
 
     @Valid
-    private Map<String, TypesGroupConf> typeGroups;
+    private Map<String, Map<String, Map<String, TypesGroupConf>>> typeGroups;
 
     public Map<String, Map<String, List<String>>> getRules() {
         return rules;
@@ -56,32 +59,59 @@ public class ConfigRules {
         this.rules = rules;
     }
 
-    public Map<String, TypesGroupConf> getTypeGroups() {
+    public Map<String, Map<String, Map<String, TypesGroupConf>>> getTypeGroups() {
         return typeGroups;
     }
 
-    public void setTypeGroups(final Map<String, TypesGroupConf> typeGroups) {
+    public void setTypeGroups(final Map<String, Map<String, Map<String, TypesGroupConf>>> typeGroups) {
         this.typeGroups = typeGroups;
     }
 
-    public List<String> getTypeGroupCodes() {
+    public List<String> getTypeGroupCodes(final String code, final Integer findingAidId) {
         List<String> list = new ArrayList<>();
-        if (typeGroups != null) {
-            list.addAll(typeGroups.keySet());
-        }
         list.add(defaultGroup.getCode());
+
+        if (typeGroups == null) {
+            return list;
+        }
+
+        Map<String, Map<String, TypesGroupConf>> findingsAidGroups = typeGroups.get(code);
+        if (findingsAidGroups == null) {
+            return list;
+        }
+
+        Map<String, TypesGroupConf> groups = findingsAidGroups.get(FA_PREFIX + findingAidId);
+
+        if (groups == null) {
+            groups = findingsAidGroups.get(DEFAULT);
+
+            if (groups == null) {
+                return list;
+            }
+        }
+
+        list.addAll(groups.keySet());
         return list;
     }
 
-    public Group getGroupByType(final String typeCode) {
+    public Group getGroupByType(final String code, final Integer findingAidId, final String typeCode) {
 
         if (typeGroups != null) {
-            for (Map.Entry<String, TypesGroupConf> entry : typeGroups.entrySet()) {
-                List<TypeInfo> typeInfos = entry.getValue().getTypes();
-                if (typeInfos != null) {
-                    for (TypeInfo typeInfo : typeInfos) {
-                        if (typeInfo.getCode().equals(typeCode)) {
-                            return new Group(entry.getKey(), entry.getValue().getName());
+            Map<String, Map<String, TypesGroupConf>> findingsAidGroups = typeGroups.get(code);
+            if (findingsAidGroups != null) {
+                Map<String, TypesGroupConf> groups = findingsAidGroups.get(FA_PREFIX + findingAidId);
+                if (groups == null) {
+                    groups = findingsAidGroups.get(DEFAULT);
+                }
+                if (groups != null) {
+                    for (Map.Entry<String, TypesGroupConf> entry : groups.entrySet()) {
+                        List<TypeInfo> typeInfos = entry.getValue().getTypes();
+                        if (typeInfos != null) {
+                            for (TypeInfo typeInfo : typeInfos) {
+                                if (typeInfo.getCode().equals(typeCode)) {
+                                    return new Group(entry.getKey());
+                                }
+                            }
                         }
                     }
                 }
@@ -91,23 +121,49 @@ public class ConfigRules {
         return defaultGroup;
     }
 
-    public List<String> getTypeCodesByGroupCode(final String groupCode) {
+    public List<String> getTypeCodesByGroupCode(final String code, final Integer findingAidId, final String groupCode) {
         if (typeGroups == null) {
             return new ArrayList<>();
         }
-        TypesGroupConf typesGroupConf = typeGroups.get(groupCode);
-        if (typesGroupConf == null) {
-            return new ArrayList<>();
+
+        if (typeGroups != null) {
+            Map<String, Map<String, TypesGroupConf>> findingsAidGroups = typeGroups.get(code);
+            if (findingsAidGroups != null) {
+                Map<String, TypesGroupConf> groups = findingsAidGroups.get(FA_PREFIX + findingAidId);
+                if (groups == null) {
+                    groups = findingsAidGroups.get(DEFAULT);
+                }
+                if (groups != null) {
+                    TypesGroupConf typesGroupConf = groups.get(groupCode);
+                    if (typesGroupConf == null) {
+                        return new ArrayList<>();
+                    }
+                    return typesGroupConf.getTypes().stream().map(s -> s.getCode()).collect(Collectors.toList());
+                }
+            }
         }
-        return typesGroupConf.getTypes().stream().map(s -> s.getCode()).collect(Collectors.toList());
+
+        return new ArrayList<>();
     }
 
-    public Integer getTypeWidthByCode(final String code) {
+    public Integer getTypeWidthByCode(final String code, final Integer findingAidId, final String typeCode) {
         if (typeGroups != null) {
-            for (TypesGroupConf typesGroupConf : typeGroups.values()) {
-                for (TypeInfo typeInfo : typesGroupConf.getTypes()) {
-                    if (typeInfo.getCode().equals(code)) {
-                        return typeInfo.getWidth();
+            Map<String, Map<String, TypesGroupConf>> findingsAidGroups = typeGroups.get(code);
+            if (findingsAidGroups != null) {
+
+                Map<String, TypesGroupConf> groups = findingsAidGroups.get(FA_PREFIX + findingAidId);
+
+                if (groups == null) {
+                    groups = findingsAidGroups.get(DEFAULT);
+                }
+
+                if (groups != null) {
+                    for (TypesGroupConf groupConf : groups.values()) {
+                        for (TypeInfo typeInfo : groupConf.getTypes()) {
+                            if (typeInfo.getCode().equals(typeCode)) {
+                                return typeInfo.getWidth();
+                            }
+                        }
                     }
                 }
             }
@@ -158,11 +214,8 @@ public class ConfigRules {
 
         private String code;
 
-        private String name;
-
-        public Group(final String code, final String name) {
+        public Group(final String code) {
             this.code = code;
-            this.name = name;
         }
 
         public String getCode() {
@@ -172,29 +225,10 @@ public class ConfigRules {
         public void setCode(final String code) {
             this.code = code;
         }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(final String name) {
-            this.name = name;
-        }
     }
 
     public static class TypesGroupConf {
-
-        private String name;
-
         private List<TypeInfo> types;
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(final String name) {
-            this.name = name;
-        }
 
         public List<TypeInfo> getTypes() {
             return types;
