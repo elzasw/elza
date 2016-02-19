@@ -80,7 +80,7 @@ function validate(descItem, refType, valueServerError) {
             }
             break;
         case 'INT':
-            if (descItem.value.length === 0) {
+            if (!descItem.value || descItem.value.length === 0) {
                 error.value = i18n('subNodeForm.validate.value.notEmpty');
             } else {
                 error.value = validateInt(descItem.value)
@@ -89,7 +89,7 @@ function validate(descItem, refType, valueServerError) {
         case 'COORDINATES':
             break;
         case 'DECIMAL':
-            if (descItem.value.length === 0) {
+            if (!descItem.value || descItem.value.length === 0) {
                 error.value = i18n('subNodeForm.validate.value.notEmpty');
             } else {
                 error.value = validateDouble(descItem.value)

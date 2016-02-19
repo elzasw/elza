@@ -200,7 +200,7 @@ export function faSubNodeFormValueChangeSpec(versionId, nodeId, nodeKey, valueLo
     return (dispatch, getState) => {
         // Dispatch zmněny specifikace
         dispatch({
-                type: types.FA_SUB_NODE_FORM_VALUE_CHANGE_SPEC,
+            type: types.FA_SUB_NODE_FORM_VALUE_CHANGE_SPEC,
             versionId,
             nodeId,
             nodeKey,
