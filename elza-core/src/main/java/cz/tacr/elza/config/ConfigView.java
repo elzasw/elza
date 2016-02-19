@@ -42,16 +42,13 @@ public class ConfigView {
      */
     private Map<String, Map<String, Map<String, List<String>>>> findingAidView;
 
-    @Value("${elza.treenode.title}")
-    private String titleDescItemTypeCode = null;
-
     public ViewTitles getViewTitles(final String code, final Integer findingAidId) {
         Assert.notNull(code);
         Assert.notNull(findingAidId);
 
         if (findingAidView == null) {
             logger.warn("Nejsou definována pravidla pro zobrazení popisků v UI");
-            return createDefaultViewTitles();
+            return new ViewTitles(null, null, null, null);
         }
 
         Map<String, Map<String, List<String>>> viewByCode = findingAidView.get(code);
@@ -71,28 +68,13 @@ public class ConfigView {
             }
         }
 
-        List<String> defaultTitleCode = null;
-        if (CollectionUtils.isEmpty(viewByFa.get(TREE_ITEM)) || CollectionUtils.isEmpty(viewByFa.get(ACCORDION_LEFT))) {
-            if (StringUtils.isBlank(titleDescItemTypeCode)) {
-                logger.warn("Není nastaven typ atributu, jehož hodnota bude použita pro popisek uzlu."
-                        + " Nastavte kód v konfiguraci pro hodnotu 'elza.treenode.title'");
-            } else {
-                defaultTitleCode = new ArrayList<String>(1);
-                defaultTitleCode.add(titleDescItemTypeCode);
-            }
-        }
-
         List<String> treeNode = null;
-        if (CollectionUtils.isEmpty(viewByFa.get(TREE_ITEM))) {
-            treeNode = defaultTitleCode;
-        } else {
+        if (!CollectionUtils.isEmpty(viewByFa.get(TREE_ITEM))) {
             treeNode = viewByFa.get(TREE_ITEM);
         }
 
         List<String> accordionLeft = null;
-        if (CollectionUtils.isEmpty(viewByFa.get(ACCORDION_LEFT))) {
-            accordionLeft = defaultTitleCode;
-        } else {
+        if (!CollectionUtils.isEmpty(viewByFa.get(ACCORDION_LEFT))) {
             accordionLeft = viewByFa.get(ACCORDION_LEFT);
         }
 
@@ -109,20 +91,6 @@ public class ConfigView {
                 accordionLeft,
                 viewByFa.get(ACCORDION_RIGHT),
                 iconCode);
-    }
-
-    private ViewTitles createDefaultViewTitles() {
-        if (StringUtils.isBlank(titleDescItemTypeCode)) {
-            logger.warn("Není nastaven typ atributu, jehož hodnota bude použita pro popisek uzlu."
-                    + " Nastavte kód v konfiguraci pro hodnotu 'elza.treenode.title'");
-
-            return new ViewTitles(null, null, null, null);
-        }
-
-        List<String> defaultTitleCode = new ArrayList<String>(1);
-        defaultTitleCode.add(titleDescItemTypeCode);
-
-        return new ViewTitles(defaultTitleCode, defaultTitleCode, null, null);
     }
 
     public Map<String, Map<String, Map<String, List<String>>>> getFindingAidView() {
