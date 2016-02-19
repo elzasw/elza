@@ -20,6 +20,35 @@ const initialState = {
 
 export default function registryRegionData(state = initialState, action = {}) {
     switch (action.type) {
+        case types.STORE_LOAD:
+            if (!action.registryRegion) {
+                return state;
+            }
+
+            return {
+                ...state,
+                fetched: false,
+                isFetching: false,
+                item: null,
+                dirty: false,
+                selectedId: action.registryRegion.selectedId,
+            }
+        case types.STORE_SAVE:
+            {
+                const {selectedId, item} = state;
+
+                var _info
+                if (item) {
+                    _info = {name: item.record, desc: item.characteristics}
+                } else {
+                    _info = null
+                }
+
+                return {
+                    selectedId,
+                    _info
+                }
+            }
         case types.REGISTRY_SELECT_REGISTRY:
             if (state.selectedId === action.registry.selectedId){
                 return state;
@@ -33,6 +62,7 @@ export default function registryRegionData(state = initialState, action = {}) {
             }
         case types.REGISTRY_REQUEST_REGISTRY_DETAIL:
             return Object.assign({}, state, {
+                selectedId: action.registryId,
                 isFetching: true,
                 fetched: false
             });

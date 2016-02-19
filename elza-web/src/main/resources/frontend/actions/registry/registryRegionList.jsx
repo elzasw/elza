@@ -59,24 +59,34 @@ export function registrySetTypesId(registryTypesId) {
 export function getRegistryIfNeeded(registryId) {
     return (dispatch, getState) => {
         var state = getState();
-        if ((!state.registryRegionData.isFetching && state.registryRegionData.dirty) || !state.registryRegionData.fetched && !state.registryRegionData.isFetching && (registryId !==state.registryRegionData.selectedId || state.registryRegionData.requireReload === true)) {
-            return dispatch(getRegistry(registryId));
-        }
+        
+        var needFetch = 
+            (!state.registryRegionData.isFetching && (state.registryRegionData.dirty || state.registryRegionData.requireReload))
+            || (!state.registryRegionData.isFetching && !state.registryRegionData.fetched)
+            || (!state.registryRegionData.isFetching && !state.registryRegionData.fetched)
+            || (registryId !== state.registryRegionData.selectedId)
+
+        if (needFetch) {
+            dispatch(getRegistry(registryId));
+        }        
     }
 }
 
 export function getRegistry(registryId) {
 
     return dispatch => {
-        dispatch(requestRegistryGetRegistry())
-        return WebApi.getRegistry(registryId)
-                .then(json => dispatch(receiveRegistryGetRegistry(registryId, json)));
+        dispatch(requestRegistryGetRegistry(registryId))
+        if (registryId !== null) {
+            return WebApi.getRegistry(registryId)
+                    .then(json => dispatch(receiveRegistryGetRegistry(registryId, json)));
+        }
     }
 }
 
-export function requestRegistryGetRegistry() {
+export function requestRegistryGetRegistry(registryId) {
     return {
-        type: types.REGISTRY_REQUEST_REGISTRY_DETAIL
+        type: types.REGISTRY_REQUEST_REGISTRY_DETAIL,
+        registryId
     }
 }
 

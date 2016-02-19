@@ -410,7 +410,27 @@ function dateTimeToString(date) {
     return f(dd) + "." + f(mm) + "." + yyyy + " " + f(hh) + ":" + f(ii);
 }
 
+/**
+ * Porovnání dvou hodnot. Undefined, null a prázdný řetězec jsou ekvivalentní.
+ * @return {boolean} true, pokud jsou předané parametry stejné
+ */
+function valuesEquals(v1, v2) {
+    if (v1 === v2) {
+        return true;
+    }
+
+    var v1empty = typeof v1 === 'undefined' || v1 === null || v1.length === 0
+    var v2empty = typeof v2 === 'undefined' || v2 === null || v2.length === 0
+
+    if (v1empty && v2empty) {
+        return true
+    }
+
+    return false
+}
+
 module.exports = {
+    valuesEquals: valuesEquals,
     dateToString: dateToString,
     dateTimeToString: dateTimeToString,
     StringSet: StringSet,

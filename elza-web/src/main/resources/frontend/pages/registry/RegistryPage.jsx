@@ -95,8 +95,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
     handleRemoveRegistry() {
         WebApi.removeRegistry( this.props.registryRegion.selectedId ).then(json => {
-            var registry = Object.assign({}, registry);
-            this.dispatch(registryRemoveRegistry(registry));
+            this.dispatch(registryRemoveRegistry({}));
         });
     }
 
@@ -144,27 +143,29 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
         var itemActions = [];
         if (registryRegion.selectedId) {
-            if (registryRegion.registryRegionData && !registryRegion.registryRegionData.item.childs  && registryRegion.selectedId != registryRegion.registryParentId) {
-                itemActions.push(
-                    <Button key='registryRemove' onClick={this.handleRemoveRegistryDialog.bind(this)}><Icon
-                        glyph="fa-trash"/>
-                        <div><span className="btnText">{i18n('registry.removeRegistry')}</span></div>
-                    </Button>
-                );
-            }
+            if (registryRegion.registryRegionData.item) {
+                if (registryRegion.registryRegionData && !registryRegion.registryRegionData.item.childs  && registryRegion.selectedId != registryRegion.registryParentId) {
+                    itemActions.push(
+                        <Button key='registryRemove' onClick={this.handleRemoveRegistryDialog.bind(this)}><Icon
+                            glyph="fa-trash"/>
+                            <div><span className="btnText">{i18n('registry.removeRegistry')}</span></div>
+                        </Button>
+                    );
+                }
 
-            if (!registryRegion.recordForMove && registryRegion.registryRegionData && !registryRegion.registryRegionData.item.partyId && registryRegion.registryRegionData.item.hierarchical && registryRegion.selectedId != registryRegion.registryParentId){
-                itemActions.push(
-                    <Button key='registryMove' onClick={this.handleStartMoveRegistry.bind(this)}><Icon glyph="fa-share" /><div><span className="btnText">{i18n('registry.moveRegistry')}</span></div></Button>
-                );
-            }
-            if (registryRegion.recordForMove && registryRegion.registryRegionData && !registryRegion.registryRegionData.item.partyId){
-                itemActions.push(
-                    <Button key='registryMoveApply' onClick={this.handleSaveMoveRegistry.bind(this)}><Icon glyph="fa-check-circle" /><div><span className="btnText">{i18n('registry.applyMove')}</span></div></Button>
-                );
-                itemActions.push(
-                    <Button key='registryMoveCancel' onClick={this.handleCancelMoveRegistry.bind(this)}><Icon glyph="fa-times" /><div><span className="btnText">{i18n('registry.cancelMove')}</span></div></Button>
-                );
+                if (!registryRegion.recordForMove && registryRegion.registryRegionData && !registryRegion.registryRegionData.item.partyId && registryRegion.registryRegionData.item.hierarchical && registryRegion.selectedId != registryRegion.registryParentId){
+                    itemActions.push(
+                        <Button key='registryMove' onClick={this.handleStartMoveRegistry.bind(this)}><Icon glyph="fa-share" /><div><span className="btnText">{i18n('registry.moveRegistry')}</span></div></Button>
+                    );
+                }
+                if (registryRegion.recordForMove && registryRegion.registryRegionData && !registryRegion.registryRegionData.item.partyId){
+                    itemActions.push(
+                        <Button key='registryMoveApply' onClick={this.handleSaveMoveRegistry.bind(this)}><Icon glyph="fa-check-circle" /><div><span className="btnText">{i18n('registry.applyMove')}</span></div></Button>
+                    );
+                    itemActions.push(
+                        <Button key='registryMoveCancel' onClick={this.handleCancelMoveRegistry.bind(this)}><Icon glyph="fa-times" /><div><span className="btnText">{i18n('registry.cancelMove')}</span></div></Button>
+                    );
+                }
             }
         }
 

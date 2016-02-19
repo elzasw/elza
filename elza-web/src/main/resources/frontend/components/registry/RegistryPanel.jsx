@@ -45,7 +45,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     }
 
     componentDidMount(){
-        if (this.props.selectedId === null) {
+        if (this.props.selectedId !== null) {
             this.dispatch(getRegistryIfNeeded(this.props.selectedId));
         }
         this.dispatch(refRecordTypesFetchIfNeeded());
@@ -240,11 +240,18 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
             )
         }
 
-        return (
-            <div className='registry'>
-                {(this.props.selectedId) && detailRegistry || <Loading/>}
-            </div>
-        )
+        if (this.props.selectedId !== null) {
+            return (
+                <div className='registry'>
+                    {detailRegistry || <Loading/>}
+                </div>
+            )
+        } else {
+            return (
+                <div className='registry'>
+                </div>
+            )
+        }
     }
 }
 

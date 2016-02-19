@@ -7,6 +7,7 @@ import * as types from 'actions/constants/ActionTypes';
 import registryRegionData from './registryRegionData';
 import {panel} from './../arr/panel.jsx'
 import {consolidateState} from 'components/Utils'
+import {valuesEquals} from 'components/Utils.jsx'
 
 const initialState = {
     dirty: false,
@@ -40,19 +41,25 @@ export default function registryRegion(state = initialState, action = {}) {
                 dirty: true,
                 recordForMove: null,
                 isReloadingRegistry: false,
-                registryRegionData: undefined,
+                registryRegionData: registryRegionData({selectedId: action.registryRegion.selectedId}, action),
+                panel: panel(),
+                registryParentId: null,
+                registryTypesId: null,
                 partyTypes: [],
+                parents: [],
+                typesToRoot: [],
                 records: [],
                 countRecords: 0,
-                ...action.registryRegion
+                ...action.registryRegion,
             }
+                //registryRegionData: registryRegionData(action.registryRegion.registryRegionData, action)
         case types.STORE_SAVE:
             {
-                const {registryRegionData, isFetching, fetched, selectedId, filterText, registryParentId, registryTypesId, parents, typesToRoot} = state;
+                const {selectedId, filterText, registryRegionData} = state;
 
                 var _info
-                if (registryRegionData && registryRegionData.item.recordId === selectedId) {
-                    _info = {name: registryRegionData.item.record, desc: registryRegionData.item.characteristics, childs:registryRegionData.item.childs, registerTypeId: registryRegionData.item.registerTypeId}
+                if (registryRegionData && registryRegionData.item) {
+                    _info = {name: registryRegionData.item.record, desc: registryRegionData.item.characteristics}
                 } else {
                     _info = null
                 }
@@ -60,11 +67,7 @@ export default function registryRegion(state = initialState, action = {}) {
                 return {
                     selectedId,
                     filterText,
-                    parents,
-                    typesToRoot,
-                    registryParentId,
-                    registryTypesId,
-                    _info
+                    _info,
                 }
             }
         case types.REGISTRY_SELECT_REGISTRY:
@@ -96,7 +99,7 @@ export default function registryRegion(state = initialState, action = {}) {
                 fetched: false
             })
         case types.REGISTRY_RECEIVE_REGISTRY_LIST:
-            if (state.filterText !== action.search || state.registryParentId !== action.registryParentId){
+            if (!valuesEquals(state.filterText, action.search) || state.registryParentId !== action.registryParentId){
                 return state;
             }
             return Object.assign({}, state, {

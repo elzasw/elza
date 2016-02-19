@@ -4,6 +4,7 @@
 
 import {WebApi} from 'actions'
 import {getMapFromList, indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
+import {valuesEquals} from 'components/Utils.jsx'
 
 import * as types from 'actions/constants/ActionTypes';
 
@@ -210,25 +211,6 @@ export function faSubNodeFormValueChangeSpec(versionId, nodeId, nodeKey, valueLo
         // Vynucení uložení na server, pokud je validní jako celek
         formValueStore(dispatch, getState, versionId, nodeId, nodeKey, valueLocation)
     }
-}
-
-/**
- * Porovnání dvou hodnot. Undefined, null a prázdný řetězec jsou ekvivalentní.
- * @return {boolean} true, pokud jsou předané parametry stejné
- */
-function valuesEquals(v1, v2) {
-    if (v1 === v2) {
-        return true;
-    }
-
-    var v1empty = typeof v1 === 'undefined' || v1 === null || v1.length === 0
-    var v2empty = typeof v2 === 'undefined' || v2 === null || v2.length === 0
-
-    if (v1empty && v2empty) {
-        return true
-    }
-
-    return false
 }
 
 export function descItemNeedStore(descItem, refType) {
