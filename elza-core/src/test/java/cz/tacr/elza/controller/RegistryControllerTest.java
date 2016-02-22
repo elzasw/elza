@@ -146,19 +146,19 @@ public class RegistryControllerTest extends AbstractControllerTest {
     /**
      * Scénář
      * ----------
-     * vytvořit nové rejstříkové heslo A do libovolného hierarchického typu rejstříku, který nemá vazbu na typ osoby
-     * vytvořit nové rejstříkové heslo B do libovolného nehierarchického typu rejstříku, který nemá vazbu na typ osoby
-     * získat seznam hesel, ověřit výsledek (2 hesla, A,B)
-     * přidat k hierarchickému heslu A 2 variantní hesla
-     * získat detail hesla A, ověřit výsledek (A s 2 variantními hesly)
-     * smazat hierarchickému heslu A 1 variantní heslo
-     * upravit heslo A (jiné charakteristika)
-     * získat detail hesla A, ověřit výsledek (A s 1 variantním heslem, upravená charakteristika)
-     * vytvořit nová rejstříková hesla C a D pod heslo A
-     * získat seznam hesel pod heslem A, ověřit výsledek (2 hesla, C,D)
-     * smazat heslo D
-     * získat seznam všech hesel, ověřit výsledek (3 hesla, A,B,C)
-     * získat seznam hesel s nějakým filtrem, ověřit výsledek
+     * - vytvořit nové rejstříkové heslo A do libovolného hierarchického typu rejstříku, který nemá vazbu na typ osoby
+     * - vytvořit nové rejstříkové heslo B do libovolného nehierarchického typu rejstříku, který nemá vazbu na typ osoby
+     * - získat seznam hesel, ověřit výsledek (2 hesla, A,B)
+     * - přidat k hierarchickému heslu A 2 variantní hesla
+     * - získat detail hesla A, ověřit výsledek (A s 2 variantními hesly)
+     * - smazat hierarchickému heslu A 1 variantní heslo
+     * - upravit heslo A (jiné charakteristika)
+     * - získat detail hesla A, ověřit výsledek (A s 1 variantním heslem, upravená charakteristika)
+     * - vytvořit nová rejstříková hesla C a D pod heslo A
+     * - získat seznam hesel pod heslem A, ověřit výsledek (2 hesla, C,D)
+     * - smazat heslo D
+     * - získat seznam všech hesel, ověřit výsledek (3 hesla, A,B,C)
+     * - získat seznam hesel s nějakým filtrem, ověřit výsledek
      */
     @Test
     public void scenarioTest() {
@@ -170,8 +170,8 @@ public class RegistryControllerTest extends AbstractControllerTest {
         Assert.assertTrue(scopes != null && scopes.size() > 0);
         Integer scopeId = scopes.iterator().next().getId();
 
-        RegRegisterTypeVO hierarchal = getHierarchalRegRegisterType(types);
-        RegRegisterTypeVO nonHierarchal = getNonHierarchalRegRegisterType(types);
+        RegRegisterTypeVO hierarchal = getHierarchicalRegRegisterType(types);
+        RegRegisterTypeVO nonHierarchal = getNonHierarchicalRegRegisterType(types);
 
         Assert.assertNotNull("Nebyl nalezen hirearchický typ rejstříku", hierarchal);
         Assert.assertNotNull("Nebyl nalezen nehirearchický typ rejstříku", nonHierarchal);
@@ -254,7 +254,7 @@ public class RegistryControllerTest extends AbstractControllerTest {
 
     }
 
-    private RegRegisterTypeVO getHierarchalRegRegisterType(List<RegRegisterTypeVO> list) {
+    private RegRegisterTypeVO getHierarchicalRegRegisterType(List<RegRegisterTypeVO> list) {
         for (RegRegisterTypeVO type : list) {
             if (type.getHierarchical() && type.getAddRecord()) {
                 return type;
@@ -263,7 +263,7 @@ public class RegistryControllerTest extends AbstractControllerTest {
 
         for (RegRegisterTypeVO type : list) {
             if (type.getChildren() != null) {
-                RegRegisterTypeVO res = getHierarchalRegRegisterType(type.getChildren());
+                RegRegisterTypeVO res = getHierarchicalRegRegisterType(type.getChildren());
                 if (res != null) {
                     return res;
                 }
@@ -272,7 +272,7 @@ public class RegistryControllerTest extends AbstractControllerTest {
         return null;
     }
 
-    private RegRegisterTypeVO getNonHierarchalRegRegisterType(List<RegRegisterTypeVO> list) {
+    private RegRegisterTypeVO getNonHierarchicalRegRegisterType(List<RegRegisterTypeVO> list) {
         for (RegRegisterTypeVO type : list) {
             if (!type.getHierarchical() && type.getAddRecord()) {
                 return type;
@@ -281,7 +281,7 @@ public class RegistryControllerTest extends AbstractControllerTest {
 
         for (RegRegisterTypeVO type : list) {
             if (type.getChildren() != null) {
-                RegRegisterTypeVO res = getNonHierarchalRegRegisterType(type.getChildren());
+                RegRegisterTypeVO res = getNonHierarchicalRegRegisterType(type.getChildren());
                 if (res != null) {
                     return res;
                 }

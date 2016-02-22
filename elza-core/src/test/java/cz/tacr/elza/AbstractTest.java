@@ -1,9 +1,8 @@
 package cz.tacr.elza;
 
-import java.io.File;
-import java.net.URL;
-import java.util.List;
-
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.other.UtilsTest;
+import cz.tacr.elza.repository.*;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -14,48 +13,9 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.repository.BulkActionRunRepository;
-import cz.tacr.elza.repository.CalendarTypeRepository;
-import cz.tacr.elza.repository.ChangeRepository;
-import cz.tacr.elza.repository.ComplementTypeRepository;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.DataTypeRepository;
-import cz.tacr.elza.repository.DescItemConstraintRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.DescItemSpecRegisterRepository;
-import cz.tacr.elza.repository.DescItemSpecRepository;
-import cz.tacr.elza.repository.DescItemTypeRepository;
-import cz.tacr.elza.repository.FaRegisterScopeRepository;
-import cz.tacr.elza.repository.FaViewRepository;
-import cz.tacr.elza.repository.FindingAidRepository;
-import cz.tacr.elza.repository.FindingAidVersionRepository;
-import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityMissingRepository;
-import cz.tacr.elza.repository.NodeConformityRepository;
-import cz.tacr.elza.repository.NodeRegisterRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.PackageRepository;
-import cz.tacr.elza.repository.PacketRepository;
-import cz.tacr.elza.repository.PartyNameComplementRepository;
-import cz.tacr.elza.repository.PartyNameFormTypeRepository;
-import cz.tacr.elza.repository.PartyNameRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
-import cz.tacr.elza.repository.PartyTypeRelationRepository;
-import cz.tacr.elza.repository.RegRecordRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
-import cz.tacr.elza.repository.RelationEntityRepository;
-import cz.tacr.elza.repository.RelationRepository;
-import cz.tacr.elza.repository.RelationRoleTypeRepository;
-import cz.tacr.elza.repository.RelationTypeRepository;
-import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.UnitdateRepository;
-import cz.tacr.elza.repository.VariantRecordRepository;
-import cz.tacr.elza.repository.VersionConformityRepository;
-import cz.tacr.elza.other.UtilsTest;
+import java.io.File;
+import java.net.URL;
+import java.util.List;
 
 
 /**
@@ -150,6 +110,10 @@ public abstract class AbstractTest {
     protected FaRegisterScopeRepository faRegisterScopeRepository;
     @Autowired
     protected FindingAidVersionRepository findingAidVersionRepository;
+    @Autowired
+    protected PartyCreatorRepository partyCreatorRepository;
+    @Autowired
+    protected PartyGroupIdentifierRepository partyGroupIdentifierRepository;
 
     @Autowired
     private UtilsTest utilsTest;
@@ -181,6 +145,10 @@ public abstract class AbstractTest {
         packetRepository.deleteAll();
         partyNameComplementRepository.deleteAll();
         partyRepository.unsetAllPreferredName();
+        relationEntityRepository.deleteAll();
+        relationRepository.deleteAll();
+        partyGroupIdentifierRepository.deleteAll();
+        partyCreatorRepository.deleteAll();
         partyNameRepository.deleteAll();
         partyRepository.deleteAll();
         variantRecordRepository.deleteAll();
