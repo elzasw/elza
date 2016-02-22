@@ -64,6 +64,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String ADD_LEVEL = ARRANGEMENT_CONTROLLER_URL + "/levels";
     protected static final String DELETE_LEVEL = ARRANGEMENT_CONTROLLER_URL + "/levels";
     protected static final String SCENARIOS = ARRANGEMENT_CONTROLLER_URL + "/scenarios";
+    protected static final String CALENDAR_TYPES = ARRANGEMENT_CONTROLLER_URL + "/calendarTypes";
     protected static final String FA_TREE = ARRANGEMENT_CONTROLLER_URL + "/faTree";
     protected static final String MOVE_LEVEL_AFTER = ARRANGEMENT_CONTROLLER_URL + "/moveLevelAfter";
     protected static final String MOVE_LEVEL_BEFORE = ARRANGEMENT_CONTROLLER_URL + "/moveLevelBefore";
@@ -74,6 +75,16 @@ public abstract class AbstractControllerTest extends AbstractTest {
             + "/descItems/{findingAidVersionId}/{nodeVersion}/update/{createNewVersion}";
     protected static final String DELETE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL
             + "/descItems/{findingAidVersionId}/{nodeVersion}/delete";
+
+    // Party
+    protected static final String RELATIONS = PARTY_CONTROLLER_URL + "/relations";
+    protected static final String FIND_PARTY = PARTY_CONTROLLER_URL + "/findParty";
+    protected static final String GET_PARTY = PARTY_CONTROLLER_URL + "/getParty";
+    protected static final String GET_PARTY_TYPES = PARTY_CONTROLLER_URL + "/getPartyTypes";
+    protected static final String GET_PARTY_NAME_FORM_TYPES = PARTY_CONTROLLER_URL + "/getPartyNameFormTypes";
+    protected static final String INSERT_PARTY = PARTY_CONTROLLER_URL + "/insertParty";
+    protected static final String UPDATE_PARTY = PARTY_CONTROLLER_URL + "/updateParty/";
+    protected static final String DELETE_PARTY = PARTY_CONTROLLER_URL + "/deleteParty";
 
     // REGISTRY
     protected static final String DEFAULT_SCOPES = REGISTRY_CONTROLLER_URL + "/defaultScopes";
@@ -93,6 +104,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String CREATE_VARIANT_RECORD = REGISTRY_CONTROLLER_URL + "/createVariantRecord";
     protected static final String UPDATE_VARIANT_RECORD = REGISTRY_CONTROLLER_URL + "/updateVariantRecord";
     protected static final String DELETE_VARIANT_RECORD = REGISTRY_CONTROLLER_URL + "/deleteVariantRecord";
+
+    protected static final String RECORD_TYPES_FOR_PARTY_TYPE = REGISTRY_CONTROLLER_URL + "/recordTypesForPartyType";
 
     // RULE
     protected static final String RULE_SETS = RULE_CONTROLLER_URL + "/getRuleSets";
@@ -837,7 +850,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param scope objekt třídy
      * @return nový objekt třídy
      */
-    protected RegScopeVO createScope(RegScopeVO scope) {
+    protected RegScopeVO createScope(final RegScopeVO scope) {
         return post(spec -> spec.body(scope), CREATE_SCOPE).getBody().as(RegScopeVO.class);
     }
 
@@ -847,7 +860,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param scope objekt třídy
      * @return aktualizovaný objekt třídy
      */
-    protected RegScopeVO updateScope(RegScopeVO scope) {
+    protected RegScopeVO updateScope(final RegScopeVO scope) {
         return put(spec -> spec.body(scope), UPDATE_SCOPE + scope.getId()).getBody().as(RegScopeVO.class);
     }
 
@@ -923,6 +936,17 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return delete(spec -> spec.queryParam("recordId", recordId), DELETE_RECORD);
     }
 
+    /**
+     * Vyhledávání v RegRecord
+     *
+     * @param search
+     * @param from
+     * @param count
+     * @param registerTypeId
+     * @param parentRecordId
+     * @param versionId
+     * @return List nalezených záznamů
+     */
     protected List<RegRecordVO> findRecord(final String search,
                                            final Integer from, final Integer count,
                                            final Integer registerTypeId,
@@ -949,11 +973,150 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
 
-    protected RegVariantRecordVO createVariantRecord(RegVariantRecordVO recordVO) {
+    /**
+     * Vytvoření variantního hesla
+     *
+     * @param recordVO VO objektu k vytvoření
+     * @return VO
+     */
+    protected RegVariantRecordVO createVariantRecord(final RegVariantRecordVO recordVO) {
         return put(spec -> spec.body(recordVO), CREATE_VARIANT_RECORD).getBody().as(RegVariantRecordVO.class);
     }
 
-    protected Response deleteVariantRecord(int id) {
+    /**
+     * Smazání variantního hesla
+     *
+     * @param id variantního hesla
+     * @return response
+     */
+    protected Response deleteVariantRecord(final int id) {
         return delete(spec -> spec.queryParam("variantRecordId", id), DELETE_VARIANT_RECORD);
+    }
+
+    /**
+     * Vytvoření party
+     *
+     * @param partyVO Party VO
+     * @return VO vytvořené party
+     */
+    protected ParPartyVO insertParty(final ParPartyVO partyVO) {
+        return post(spec -> spec.body(partyVO), INSERT_PARTY).getBody().as(ParPartyVO.class);
+    }
+
+    protected ParPartyVO updateParty(final ParPartyVO partyVO) {
+        return put(spec -> spec.body(partyVO), UPDATE_PARTY + partyVO.getPartyId()).getBody().as(ParPartyVO.class);
+    }
+
+    /**
+     * Získání osoby
+     *
+     * @param partyId id osoby
+     * @return získaná osoba
+     */
+    protected ParPartyVO getParty(final int partyId) {
+        return get(spec -> spec.queryParam("partyId", partyId), GET_PARTY).getBody().as(ParPartyVO.class);
+    }
+
+    /**
+     * Odstranení osoby
+     *
+     * @param partyId id osoby
+     * @return
+     */
+    protected Response deleteParty(final int partyId) {
+        return delete(spec -> spec.queryParam("partyId", partyId), DELETE_PARTY);
+    }
+
+    /**
+     * Typy osob
+     *
+     * @return
+     */
+    protected List<ParPartyTypeVO> getPartyTypes() {
+        return Arrays.asList(get(GET_PARTY_TYPES).getBody().as(ParPartyTypeVO[].class));
+    }
+
+    /**
+     * Typy názvů osob
+     *
+     * @return
+     */
+    protected List<ParPartyNameFormTypeVO> getPartyNameFormTypes() {
+        return Arrays.asList(get(GET_PARTY_NAME_FORM_TYPES).getBody().as(ParPartyNameFormTypeVO[].class));
+    }
+
+    /**
+     * Typy rejstříků pro daný typ osob
+     *
+     * @param partyTypeId
+     * @return
+     */
+    protected List<RegRegisterTypeVO> recordTypesForPartyType(final int partyTypeId) {
+        return Arrays.asList(get(spec -> spec.queryParam("partyTypeId", partyTypeId), RECORD_TYPES_FOR_PARTY_TYPE).getBody().as(RegRegisterTypeVO[].class));
+    }
+
+    /**
+     * Scopy
+     *
+     * @return
+     */
+    protected List<RegScopeVO> faScopes() {
+        return Arrays.asList(get(FA_SCOPES).getBody().as(RegScopeVO[].class));
+    }
+
+
+    /**
+     * Vyhledávání v Party
+     *
+     * @param search
+     * @param from
+     * @param count
+     * @param partyTypeId
+     * @param parentRecordId
+     * @param versionId
+     * @return List nalezených záznamů
+     */
+    protected List<ParPartyVO> findParty(final String search,
+                                         final Integer from, final Integer count,
+                                         final Integer partyTypeId,
+                                         final Integer parentRecordId,
+                                         final Integer versionId) {
+        HashMap<String, Object> params = new HashMap<>();
+
+        if (search != null) {
+            params.put("search", search);
+        }
+        if (versionId != null) {
+            params.put("versionId", versionId);
+        }
+        if (parentRecordId != null) {
+            params.put("parentRecordId", parentRecordId);
+        }
+        if (partyTypeId != null) {
+            params.put("partyTypeId", partyTypeId);
+        }
+        params.put("from", from != null ? from : 0);
+        params.put("count", count != null ? count : 20);
+
+        return get(spec -> spec.queryParameters(params), FIND_PARTY).getBody().as(ParPartyWithCount.class).getRecordList();
+    }
+
+    /**
+     * Načtení typů kalendářů
+     *
+     * @return List typů kalendářů
+     */
+    protected List<ArrCalendarTypeVO> calendarTypes() {
+        return Arrays.asList(get(CALENDAR_TYPES).getBody().as(ArrCalendarTypeVO[].class));
+    }
+
+    /**
+     * Vytvoření relace
+     *
+     * @param relationVO relace k vytvoření
+     * @return vytvořená relace
+     */
+    protected ParRelationVO relations(ParRelationVO relationVO) {
+        return post(spec -> spec.body(relationVO), RELATIONS).getBody().as(ParRelationVO.class);
     }
 }
