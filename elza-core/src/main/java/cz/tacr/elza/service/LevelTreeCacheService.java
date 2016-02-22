@@ -3,6 +3,7 @@ package cz.tacr.elza.service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -214,7 +215,10 @@ public class LevelTreeCacheService {
             }
         }
 
-        TreeData treeData = new TreeData(createNodesWithTitles(nodesMap, version).values(), expandedIdsExtended);
+        TreeNode rootNode = nodeId == null ? treeMap.get(version.getRootLevel().getNode().getNodeId())
+                                           : treeMap.get(nodeId);
+
+        TreeData treeData = new TreeData(createNodesWithTitles(nodesMap, null, rootNode, version).values(), expandedIdsExtended);
 
         addConformityInfo(treeData.getNodes(), version);
 
@@ -238,11 +242,35 @@ public class LevelTreeCacheService {
         for (Integer nodeId : nodeIds) {
             TreeNode treeNode = versionTreeCache.get(nodeId);
             if (treeNode != null) {
-                subMap.put(treeNode.getId(), treeNode);
+
+                TreeNode parent = treeNode;
+                while(parent != null){
+                    subMap.put(parent.getId(), parent);
+                    parent = parent.getParent();
+                }
             }
         }
 
-        return new ArrayList<>(createNodesWithTitles(subMap, version).values());
+        TreeNode subtreeNode = null;
+        Map<Integer, Map<String, TitleValue>> valuesMap = createValuesMap(subMap, version, subtreeNode);
+        Map<Integer, TreeNodeClient> clientMap = createNodesWithTitles(subMap, valuesMap, null, version);
+
+        List<TreeNodeClient> result = new LinkedList<>();
+        ViewTitles viewTitles = configView.getViewTitles(version.getRuleSet().getCode(), version.getFindingAid().getFindingAidId());
+
+        String levelTypeCode = viewTitles.getHierarchyLevelType();
+
+        for (Integer nodeId : nodeIds) {
+            TreeNode treeNode = versionTreeCache.get(nodeId);
+            if(treeNode != null){
+                String[] referenceMark = createClientReferenceMarkFromRoot(treeNode, levelTypeCode,
+                        viewTitles, valuesMap);
+                TreeNodeClient clientNode = clientMap.get(nodeId);
+                clientNode.setReferenceMark(referenceMark);
+                result.add(clientNode);
+            }
+        }
+        return result;
     }
 
     /**
@@ -288,14 +316,29 @@ public class LevelTreeCacheService {
         }
 
         LinkedHashMap<Integer, TreeNode> parentMap = new LinkedHashMap<>();
+        LinkedList<TreeNode> parents = new LinkedList();
+
 
         TreeNode parent = node.getParent();
         while (parent != null) {
-            parentMap.put(parent.getId(), parent);
+            parents.addFirst(parent);
             parent = parent.getParent();
         }
 
-        return createNodesWithTitles(parentMap, version).values();
+        for (TreeNode p : parents) {
+            parentMap.put(p.getId(), p);
+        }
+
+
+        TreeNode subtreeNode = treeMap.get(nodeId);
+        Map<Integer, Map<String, TitleValue>> valuesMap = createValuesMap(parentMap, version, subtreeNode);
+        Map<Integer,TreeNodeClient> resultMap = createNodesWithTitles(parentMap, valuesMap, subtreeNode, version);
+
+        List<TreeNodeClient> result = new ArrayList<>(resultMap.values());
+
+        Collections.reverse(result);
+        return result;
+
     }
 
 
@@ -649,7 +692,9 @@ public class LevelTreeCacheService {
             }
         }
 
-        Map<Integer, TreeNodeClient> parentIdTreeNodeClientMap = createNodesWithTitles(parentIdParentMap, version);
+        Map<Integer, Map<String, TitleValue>> valuesMap = createValuesMap(parentIdParentMap, version, null);
+        Map<Integer, TreeNodeClient> parentIdTreeNodeClientMap = createNodesWithTitles(parentIdParentMap, valuesMap,
+                null, version);
 
         Map<Integer, TreeNodeClient> result = new HashMap<>(nodeIds.size());
         for (Integer nodeId : nodeIdParentMap.keySet()) {
@@ -665,11 +710,17 @@ public class LevelTreeCacheService {
     /**
      * Provede načtení popisků uzlů pro uzly, které budou odeslány do klienta a vytvoří výsledné odesílané objekty.
      *
-     * @param treeNodeMap seřazená mapa uzlů tak jak budou odeslány (nodeid -> uzel)
-     * @param version  verze stromu
+     * @param treeNodeMap    seřazená mapa uzlů tak jak budou odeslány (nodeid -> uzel)
+     * @param valuesMapParam mapa načtených hodnot pro uzly, pokud není nastaveno, bude spočítáno
+     * @param subtreeRoot kořenový uzel, pod kterým chceme spočítat referenční označení (nemusí být kořen stromu).
+     *                    Pokud není nastaveno, není počítáno referenční označení
+     * @param version        verze stromu
      * @return seznam rozbalených uzlů s potomky seřazen
      */
-    private Map<Integer, TreeNodeClient> createNodesWithTitles(Map<Integer, TreeNode> treeNodeMap, ArrFindingAidVersion version) {
+    private Map<Integer, TreeNodeClient> createNodesWithTitles(final Map<Integer, TreeNode> treeNodeMap,
+                                                               @Nullable final Map<Integer, Map<String, TitleValue>> valuesMapParam,
+                                                               final TreeNode subtreeRoot,
+                                                               final ArrFindingAidVersion version) {
         Assert.notNull(treeNodeMap);
         Assert.notNull(version);
 
@@ -686,19 +737,51 @@ public class LevelTreeCacheService {
             nodeMap.put(node.getNodeId(), node);
         }
 
+        ViewTitles viewTitles = configView
+                .getViewTitles(version.getRuleSet().getCode(), version.getFindingAid().getFindingAidId());
+        Map<Integer, Map<String, TitleValue>> valuesMap = valuesMapParam;
+        if (valuesMap == null) {
+            valuesMap = createValuesMap(treeNodeMap, version, subtreeRoot);
+        }
+
+
         Map<Integer, TreeNodeClient> result = new LinkedHashMap<Integer, TreeNodeClient>(treeNodeMap.size());
+
+
+        String[] rootReferenceMark = new String[0];
+        if (subtreeRoot != null) {
+            rootReferenceMark = createClientReferenceMarkFromRoot(subtreeRoot,
+                    viewTitles.getHierarchyLevelType(), viewTitles, valuesMap);
+        }
+        String[] parentReferenceMark = rootReferenceMark;
+        String levelType = viewTitles.getHierarchyLevelType();
+
         for (TreeNode treeNode : treeNodeMap.values()) {
-            result.put(treeNode.getId(), new TreeNodeClient(treeNode.getId(), treeNode.getDepth(),
-                    null, !treeNode.getChilds().isEmpty(), treeNode.getReferenceMark(), nodeMap.get(treeNode.getId()).getVersion()));
+            if (subtreeRoot != null && treeNode.getParent() != null) {
+                if (treeNode.getParent().equals(subtreeRoot)) {
+                    parentReferenceMark = rootReferenceMark;
+                } else {
+                    parentReferenceMark = result.get(treeNode.getParent().getId()).getReferenceMark();
+                }
+            }
+
+
+            TreeNodeClient client = new TreeNodeClient(treeNode.getId(), treeNode.getDepth(),
+                    null, !treeNode.getChilds().isEmpty(), treeNode.getReferenceMark(),
+                    nodeMap.get(treeNode.getId()).getVersion());
+            if (subtreeRoot != null) {
+                String[] referenceMark = createClientNodeReferenceMark(treeNode, levelType, viewTitles, valuesMap,
+                        parentReferenceMark);
+                client.setReferenceMark(referenceMark);
+            }
+
+            result.put(treeNode.getId(), client);
         }
 
         if (result.isEmpty()) {
             return result;
         }
 
-        ViewTitles viewTitles = configView.getViewTitles(version.getRuleSet().getCode(), version.getFindingAid().getFindingAidId());
-        Set<RulDescItemType> descItemTypes = getDescriptionItemTypes(viewTitles);
-        Map<Integer, Map<String, TitleValue>> valuesMap = createValuesMap(treeNodeMap, descItemTypes, version);
 
         for (TreeNodeClient treeNodeClient : result.values()) {
             Map<String, TitleValue> descItemCodeToValueMap = valuesMap.get(treeNodeClient.getId());
@@ -747,6 +830,8 @@ public class LevelTreeCacheService {
                 descItemTypeCodes.add(keySet.iterator().next());
             }
         }
+
+        descItemTypeCodes.add(viewTitles.getHierarchyLevelType());
 
         return descItemTypeCodes;
     }
@@ -813,14 +898,44 @@ public class LevelTreeCacheService {
         }
     }
 
-    private Map<Integer, Map<String, TitleValue>> createValuesMap(Map<Integer, TreeNode> treeNodeMap, Set<RulDescItemType> descItemTypes, ArrFindingAidVersion version) {
+    /**
+     * Načte hodnoty atributů podle nastavení pro dané uzly.
+     *
+     * @param treeNodeMap mapa uzlů
+     * @param version     verze ap
+     * @param subtreeRoot kořenový uzel, pod kterým chceme spočítat referenční označení (nemusí být kořen stromu)
+     * @return hodnoty atributů pro uzly
+     */
+    private Map<Integer, Map<String, TitleValue>> createValuesMap(final Map<Integer, TreeNode> treeNodeMap,
+                                                                  final ArrFindingAidVersion version,
+                                                                  final TreeNode subtreeRoot) {
+
+        ViewTitles viewTitles = configView
+                .getViewTitles(version.getRuleSet().getCode(), version.getFindingAid().getFindingAidId());
+        Set<RulDescItemType> descItemTypes = getDescriptionItemTypes(viewTitles);
+        return createValuesMap(treeNodeMap, subtreeRoot, descItemTypes, version);
+    }
+
+    private Map<Integer, Map<String, TitleValue>> createValuesMap(Map<Integer, TreeNode> treeNodeMap,
+                                                                  final TreeNode subtreeRoot,
+                                                                  Set<RulDescItemType> descItemTypes,
+                                                                  ArrFindingAidVersion version) {
         Map<Integer, Map<String, TitleValue>> valueMap = new HashMap<>();
 
         if (descItemTypes.isEmpty()) {
             return valueMap;
         }
 
-        List<ArrData> dataList = dataRepository.findDescItemsByNodeIds(treeNodeMap.keySet(), descItemTypes, version);
+        //chceme nalézt atributy i pro rodiče podstromu
+        Set<Integer> nodeIds = new HashSet<>(treeNodeMap.keySet());
+        TreeNode rootParent = subtreeRoot;
+        while(rootParent != null){
+            nodeIds.add(rootParent.getId());
+            rootParent = rootParent.getParent();
+        }
+
+
+        List<ArrData> dataList = dataRepository.findDescItemsByNodeIds(nodeIds, descItemTypes, version);
         Set<Integer> partyRefDataIds = new HashSet<>();
         Set<Integer> recordRefDataIds = new HashSet<>();
         Set<Integer> packetRefDataIds = new HashSet<>();
@@ -832,6 +947,8 @@ public class LevelTreeCacheService {
             }
             String value = null;
             String code = data.getDescItem().getDescItemType().getCode();
+            String specCode = data.getDescItem().getDescItemSpec() == null ? null : data.getDescItem().getDescItemSpec()
+                    .getCode();
             Integer nodeId = data.getDescItem().getNode().getNodeId();
             if (data.getDataType().getCode().equals("ENUM")) {
                 enumDataIds.add(data.getDataId());
@@ -875,7 +992,7 @@ public class LevelTreeCacheService {
 
             String iconValue = getIconValue(data);
 
-            addValuesToMap(valueMap, value, code, nodeId, iconValue);
+            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue);
         }
 
         List<ArrData> enumData = dataRepository.findByDataIdsAndVersionFetchSpecification(enumDataIds, descItemTypes, version);
@@ -883,9 +1000,11 @@ public class LevelTreeCacheService {
             String value = data.getDescItem().getDescItemSpec().getName();
             String iconValue = getIconValue(data);
             String code = data.getDescItem().getDescItemType().getCode();
+            String specCode = data.getDescItem().getDescItemSpec() == null ? null : data.getDescItem().getDescItemSpec()
+                    .getCode();
             Integer nodeId = data.getDescItem().getNode().getNodeId();
 
-            addValuesToMap(valueMap, value, code, nodeId, iconValue);
+            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue);
         }
 
         List<ArrDataPartyRef> partyData = dataPartyRefRepository.findByDataIdsAndVersionFetchPartyRecord(partyRefDataIds, descItemTypes, version);
@@ -893,9 +1012,11 @@ public class LevelTreeCacheService {
             String value = data.getParty().getRecord().getRecord();
             String iconValue = getIconValue(data);
             String code = data.getDescItem().getDescItemType().getCode();
+            String specCode = data.getDescItem().getDescItemSpec() == null ? null : data.getDescItem().getDescItemSpec()
+                    .getCode();
             Integer nodeId = data.getDescItem().getNode().getNodeId();
 
-            addValuesToMap(valueMap, value, code, nodeId, iconValue);
+            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue);
         }
 
         List<ArrDataRecordRef> recordData = dataRecordRefRepository.findByDataIdsAndVersionFetchRecord(recordRefDataIds, descItemTypes, version);
@@ -903,9 +1024,11 @@ public class LevelTreeCacheService {
             String value = data.getRecord().getRecord();
             String iconValue = getIconValue(data);
             String code = data.getDescItem().getDescItemType().getCode();
+            String specCode = data.getDescItem().getDescItemSpec() == null ? null : data.getDescItem().getDescItemSpec()
+                    .getCode();
             Integer nodeId = data.getDescItem().getNode().getNodeId();
 
-            addValuesToMap(valueMap, value, code, nodeId, iconValue);
+            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue);
         }
 
         List<ArrDataPacketRef> packetData = dataPacketRefRepository.findByDataIdsAndVersionFetchPacket(packetRefDataIds, descItemTypes, version);
@@ -920,16 +1043,18 @@ public class LevelTreeCacheService {
             }
             String iconValue = getIconValue(data);
             String code = data.getDescItem().getDescItemType().getCode();
+            String specCode = data.getDescItem().getDescItemSpec() == null ? null : data.getDescItem().getDescItemSpec()
+                    .getCode();
             Integer nodeId = data.getDescItem().getNode().getNodeId();
 
-            addValuesToMap(valueMap, value, code, nodeId, iconValue);
+            addValuesToMap(valueMap, value, code, specCode, nodeId, iconValue);
         }
 
         return valueMap;
     }
 
     private void addValuesToMap(Map<Integer, Map<String, TitleValue>> valueMap, String value, String code,
-            Integer nodeId, String iconValue) {
+                                String specCode, Integer nodeId, String iconValue) {
         if (value == null && iconValue == null) {
             return;
         }
@@ -945,6 +1070,7 @@ public class LevelTreeCacheService {
             titleValue = new TitleValue();
             titleValue.setIconValue(iconValue);
             titleValue.setValue(value);
+            titleValue.setSpecCode(specCode);
             descItemCodeToValueMap.put(code, titleValue);
         } else {
             if (titleValue.getValue() == null ) {
@@ -1216,7 +1342,7 @@ public class LevelTreeCacheService {
             }
         }
 
-        Collection<TreeNodeClient> nodes = createNodesWithTitles(nodesMap, version).values();
+        Collection<TreeNodeClient> nodes = createNodesWithTitles(nodesMap, null, null, version).values();
         addConformityInfo(nodes, version);
         return nodes;
     }
@@ -1224,6 +1350,8 @@ public class LevelTreeCacheService {
     public class TitleValue {
 
         private String value;
+
+        private String specCode;
 
         private String iconValue;
 
@@ -1233,6 +1361,14 @@ public class LevelTreeCacheService {
 
         public void setValue(String value) {
             this.value = value;
+        }
+
+        public String getSpecCode() {
+            return specCode;
+        }
+
+        public void setSpecCode(final String specCode) {
+            this.specCode = specCode;
         }
 
         public String getIconValue() {
@@ -1248,8 +1384,8 @@ public class LevelTreeCacheService {
         List<TreeNodeClient> nodes = getNodesByIds(nodeIds, version.getFindingAidVersionId());
 
         nodes.sort((node1, node2) -> {
-            Integer[] referenceMark1 = node1.getReferenceMark();
-            Integer[] referenceMark2 = node2.getReferenceMark();
+            Integer[] referenceMark1 = node1.getReferenceMarkInt();
+            Integer[] referenceMark2 = node2.getReferenceMarkInt();
 
             Integer l1 = referenceMark1.length;
             Integer l2 = referenceMark2.length;
@@ -1286,6 +1422,89 @@ public class LevelTreeCacheService {
             }
             return false;
         }
+    }
+
+
+    /**
+     * Provede vytvoření referenčního označení pro uzel. Předpokládá, že parent tohoto uzlu má načtený
+     * hodnoty a vytvořené referenční označení.
+     *
+     * @param node                uzel
+     * @param levelTypeCode       kod atributu úrovně popisu
+     * @param viewTitles          nastavení načítání atributů
+     * @param valuesMap           mapa načtených hodnot pro uzly
+     * @param parentReferenceMark referenční označení rodiče
+     * @return referenční označení uzlu
+     */
+    private String[] createClientNodeReferenceMark(final TreeNode node,
+                                                   final String levelTypeCode,
+                                                   final ViewTitles viewTitles,
+                                                   final Map<Integer, Map<String, TitleValue>> valuesMap,
+                                                   final String[] parentReferenceMark) {
+
+        TreeNode parent = node.getParent();
+        if (parent == null) {
+            return new String[0];
+        }
+
+        if (parentReferenceMark.length == 0) {
+            return new String[] {node.getPosition().toString()};
+        }
+
+
+        String[] parentMark = parentReferenceMark;
+        String[] nodeMark = Arrays.copyOf(parentMark, parentMark.length + 2);
+
+
+        Map<String, TitleValue> nodeValues = valuesMap.get(node.getId());
+        Map<String, TitleValue> parentValues = valuesMap.get(node.getParent().getId());
+
+        TitleValue nodeTitleValue = nodeValues == null ? null : nodeValues.get(levelTypeCode);
+        TitleValue parentTitleValue = parentValues == null ? null : parentValues.get(levelTypeCode);
+
+        String nodeType = nodeTitleValue == null ? null : nodeTitleValue.getSpecCode();
+        String parentType = parentTitleValue == null ? null : parentTitleValue.getSpecCode();
+
+        String separator = " ";
+
+        if (StringUtils.isNotBlank(nodeType) && StringUtils.isNotBlank(parentType)) {
+            ConfigView.ConfigViewTitlesHierarchy levelTitlesHierarchy = viewTitles.getLevelTitlesHierarchy(nodeType);
+            if (StringUtils.equalsIgnoreCase(nodeType, parentType)) {
+                separator = levelTitlesHierarchy.getSeparatorOther();
+            } else {
+                separator = levelTitlesHierarchy.getSeparatorFirst();
+            }
+        }
+
+        nodeMark[parentMark.length] = separator;
+        nodeMark[parentMark.length + 1] = node.getReferenceMark()[node.getReferenceMark().length - 1].toString();
+        return nodeMark;
+    }
+
+    /**
+     * Provede načtení referečního označení pro uzel. Načte označení od kořenu až po uzel.
+     *
+     * @param node          uzel
+     * @param levelTypeCode kod atributu úrovně popisu
+     * @param viewTitles    nastavení načítání atributů
+     * @param valuesMap     mapa načtených hodnot pro uzly
+     * @return referenční označení
+     */
+    private String[] createClientReferenceMarkFromRoot(final TreeNode node,
+                                                       final String levelTypeCode,
+                                                       final ViewTitles viewTitles,
+                                                       final Map<Integer, Map<String, TitleValue>> valuesMap) {
+
+        TreeNode parent = node.getParent();
+        if (parent == null) {
+            return new String[0];
+        }
+
+        String[] parentReferenceMark = createClientReferenceMarkFromRoot(parent, levelTypeCode, viewTitles, valuesMap);
+
+        String[] referenceMark = createClientNodeReferenceMark(node, levelTypeCode, viewTitles, valuesMap,
+                parentReferenceMark);
+        return referenceMark;
     }
 
 }

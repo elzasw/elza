@@ -1,5 +1,8 @@
 package cz.tacr.elza.controller.vo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+
 /**
  * Data uzlu stromu odesílané klientovi pro strom fa.
  *
@@ -38,7 +41,10 @@ public class TreeNodeClient {
     /**
      * Referenční označení. Od kořene k uzlu.
      */
-    private Integer[] referenceMark;
+    @JsonIgnore
+    private Integer[] referenceMarkInt;
+
+    private String[] referenceMark;
 
     /**
      * Verze uzlu.
@@ -57,13 +63,13 @@ public class TreeNodeClient {
                           final Integer depth,
                           final String name,
                           final boolean hasChildren,
-                          final Integer[] referenceMark,
+                          final Integer[] referenceMarkInt,
                           final Integer version) {
         this.id = id;
         this.depth = depth;
         this.name = name;
         this.hasChildren = hasChildren;
-        this.referenceMark = referenceMark;
+        this.referenceMarkInt = referenceMarkInt;
         this.version = version;
     }
 
@@ -100,11 +106,19 @@ public class TreeNodeClient {
         this.hasChildren = hasChildren;
     }
 
-    public Integer[] getReferenceMark() {
+    public Integer[] getReferenceMarkInt() {
+        return referenceMarkInt;
+    }
+
+    public void setReferenceMarkInt(final Integer[] referenceMarkInt) {
+        this.referenceMarkInt = referenceMarkInt;
+    }
+
+    public String[] getReferenceMark() {
         return referenceMark;
     }
 
-    public void setReferenceMark(final Integer[] referenceMark) {
+    public void setReferenceMark(final String[] referenceMark) {
         this.referenceMark = referenceMark;
     }
 

@@ -1,15 +1,11 @@
 package cz.tacr.elza.config;
 
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -114,6 +110,7 @@ public class ConfigView {
         private List<String> accordionRight;
 
         private Map<String, Map<String, ConfigViewTitlesHierarchy>> hierarchy;
+        private Map<String, ConfigViewTitlesHierarchy> levelHierarchy;
 
         public List<String> getTreeItem() {
             return treeItem;
@@ -141,6 +138,26 @@ public class ConfigView {
 
         public Map<String, Map<String, ConfigViewTitlesHierarchy>> getHierarchy() {
             return hierarchy;
+        }
+
+        public String getHierarchyLevelType() {
+            if (hierarchy.isEmpty()) {
+                throw new IllegalStateException("Není nastaveno zobrazení hierarchie.");
+            }
+
+            for (Map.Entry<String, Map<String, ConfigViewTitlesHierarchy>> stringMapEntry : hierarchy.entrySet()) {
+                return stringMapEntry.getKey();
+            }
+
+            throw new IllegalStateException("Není nastaveno zobrazení hierarchie.");
+        }
+
+        public ConfigViewTitlesHierarchy getLevelTitlesHierarchy(final String levelType){
+            if(levelHierarchy == null){
+                levelHierarchy = hierarchy.get(getHierarchyLevelType());
+            }
+
+            return levelHierarchy.get(levelType);
         }
 
         public void setHierarchy(final Map<String, Map<String, ConfigViewTitlesHierarchy>> hierarchy) {
