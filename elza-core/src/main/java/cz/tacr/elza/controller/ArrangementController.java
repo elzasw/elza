@@ -995,6 +995,9 @@ public class ArrangementController {
          */
         private List<ArrNodeRegisterVO> nodeRegisters;
 
+        public NodeRegisterDataVO() {
+        }
+
         public NodeRegisterDataVO(final ArrNodeVO node, final List<ArrNodeRegisterVO> nodeRegisters) {
             this.node = node;
             this.nodeRegisters = nodeRegisters;
@@ -1026,6 +1029,9 @@ public class ArrangementController {
          * Formuláře
          */
         private Map<Integer, NodeFormDataNewVO> forms;
+
+        public NodeFormsDataVO() {
+        }
 
         public NodeFormsDataVO(final Map<Integer, NodeFormDataNewVO> forms) {
             this.forms = forms;
@@ -1451,6 +1457,9 @@ public class ArrangementController {
         public CopySiblingResult(final ArrNodeVO node, final RulDescItemTypeDescItemsVO type) {
             this.node = node;
             this.type = type;
+        }
+
+        public CopySiblingResult() {
         }
 
         public ArrNodeVO getNode() {

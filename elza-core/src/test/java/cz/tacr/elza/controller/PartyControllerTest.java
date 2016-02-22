@@ -56,7 +56,7 @@ public class PartyControllerTest extends AbstractControllerTest {
     @Test
     public void scenarioTest() {
         /** Testovací datumy **/
-        ArrCalendarTypeVO gregorian = findCalendarByCode(calendarTypes(), "GREGORIAN");
+        ArrCalendarTypeVO gregorian = findCalendarByCode(getCalendarTypes(), "GREGORIAN");
 
         ParUnitdateVO testFromDate = new ParUnitdateVO();
         testFromDate.setCalendarTypeId(gregorian.getId());

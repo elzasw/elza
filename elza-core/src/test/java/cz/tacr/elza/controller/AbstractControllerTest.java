@@ -19,13 +19,16 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Function;
@@ -75,6 +78,29 @@ public abstract class AbstractControllerTest extends AbstractTest {
             + "/descItems/{findingAidVersionId}/{nodeVersion}/update/{createNewVersion}";
     protected static final String DELETE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL
             + "/descItems/{findingAidVersionId}/{nodeVersion}/delete";
+    protected static final String DELETE_DESC_ITEM_BY_TYPE = ARRANGEMENT_CONTROLLER_URL
+            + "/descItems/{findingAidVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}";
+    protected static final String PACKET_TYPES = ARRANGEMENT_CONTROLLER_URL + "/packets/types";
+    protected static final String PACKETS = ARRANGEMENT_CONTROLLER_URL + "/packets/{findingAidId}";
+    protected static final String INSERT_PACKET = ARRANGEMENT_CONTROLLER_URL + "/packets/{findingAidId}";
+    protected static final String DEACTIVATE_PACKET = ARRANGEMENT_CONTROLLER_URL + "/packets/{findingAidId}/{packetId}";
+    protected static final String UPDATE_PACKET = ARRANGEMENT_CONTROLLER_URL + "/packets/{findingAidId}";
+    protected static final String FULLTEXT = ARRANGEMENT_CONTROLLER_URL + "/fulltext";
+    protected static final String FIND_REGISTER_LINKS = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}";
+    protected static final String FIND_REGISTER_LINKS_FORM = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}/form";
+    protected static final String CREATE_REGISTER_LINK = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}/create";
+    protected static final String UPDATE_REGISTER_LINK = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}/update";
+    protected static final String DELETE_REGISTER_LINK = ARRANGEMENT_CONTROLLER_URL + "/registerLinks/{nodeId}/{versionId}/delete";
+    protected static final String VALIDATE_VERSION = ARRANGEMENT_CONTROLLER_URL + "/validateVersion/{versionId}";
+    protected static final String VALIDATE_VERSION_COUNT = ARRANGEMENT_CONTROLLER_URL + "/validateVersionCount/{versionId}";
+    protected static final String FA_TREE_NODES = ARRANGEMENT_CONTROLLER_URL + "/faTree/nodes";
+    protected static final String NODE_PARENTS = ARRANGEMENT_CONTROLLER_URL + "/nodeParents";
+    protected static final String NODE_FORM_DATA = ARRANGEMENT_CONTROLLER_URL + "/nodes/{nodeId}/{versionId}/form";
+    protected static final String NODE_FORMS_DATA = ARRANGEMENT_CONTROLLER_URL + "/nodes/{versionId}/forms";
+    protected static final String NODE_FORMS_DATA_AROUND = ARRANGEMENT_CONTROLLER_URL + "/nodes/{versionId}/{nodeId}/{around}/forms";
+    protected static final String NODES = ARRANGEMENT_CONTROLLER_URL + "/nodes";
+    protected static final String COPY_SIBLING = ARRANGEMENT_CONTROLLER_URL + "/copyOlderSiblingAttribute";
+    protected static final String VERSIONS = ARRANGEMENT_CONTROLLER_URL + "/getVersions";
 
     // Party
     protected static final String CREATE_RELATIONS = PARTY_CONTROLLER_URL + "/relations";
@@ -828,6 +854,473 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
+     * Seznam typů obalů.
+     *
+     * @return typy obalů
+     */
+    protected List<RulPacketTypeVO> getPacketTypes() {
+        return Arrays.asList(get(PACKET_TYPES).getBody().as(RulPacketTypeVO[].class));
+    }
+
+    /**
+     * Seznam obalů pro AP.
+     *
+     * @param findingAid AP
+     * @return obaly pro AP
+     */
+    protected List<ArrPacketVO> getPackets(final ArrFindingAidVO findingAid) {
+        return getPackets(findingAid.getId());
+    }
+
+    /**
+     * Seznam obalů pro AP.
+     *
+     * @param findingAidId identifikátor AP
+     * @return obaly pro AP
+     */
+    protected List<ArrPacketVO> getPackets(final Integer findingAidId) {
+        return Arrays.asList(get(spec ->
+                spec.pathParameter("findingAidId", findingAidId), PACKETS).getBody().as(ArrPacketVO[].class));
+    }
+
+    /**
+     * Vložení nového obalu pro AP.
+     *
+     * @param findingAid    ap
+     * @param packetVO      obal
+     * @return obal
+     */
+    protected ArrPacketVO insertPacket(final ArrFindingAidVO findingAid, final ArrPacketVO packetVO) {
+        return insertPacket(findingAid.getId(), packetVO);
+    }
+
+    /**
+     * Vložení nového obalu pro AP.
+     *
+     * @param findingAidId  identifikátor AP
+     * @param packetVO      obal
+     * @return obal
+     */
+    protected ArrPacketVO insertPacket(final Integer findingAidId, final ArrPacketVO packetVO) {
+        return post(spec -> spec
+                .pathParameter("findingAidId", findingAidId)
+                .body(packetVO), INSERT_PACKET).getBody().as(ArrPacketVO.class);
+    }
+
+    /**
+     * Smazání obalu.
+     *
+     * @param findingAid    AP
+     * @param packet        obal pro smazání
+     * @return obal
+     */
+    protected ArrPacketVO deactivatePacket(final ArrFindingAidVO findingAid, final ArrPacketVO packet) {
+        return deactivatePacket(findingAid.getId(), packet.getId());
+    }
+
+    /**
+     * Smazání obalu.
+     *
+     * @param findingAidId  identifikátor AP
+     * @param packetId      identfikátor obalu pro smazání
+     * @return obal
+     */
+    protected ArrPacketVO deactivatePacket(final Integer findingAidId, final Integer packetId) {
+        return delete(spec -> spec
+                .pathParameter("findingAidId", findingAidId)
+                .pathParameter("packetId", packetId), DEACTIVATE_PACKET).getBody().as(ArrPacketVO.class);
+    }
+
+    /**
+     * Upravení obalu.
+     *
+     * @param findingAid   AP
+     * @param packet     obal
+     * @return obal
+     */
+    protected ArrPacketVO updatePacket(final ArrFindingAidVO findingAid,
+                                       final ArrPacketVO packet) {
+        return updatePacket(findingAid.getId(), packet);
+    }
+
+    /**
+     * Upravení obalu.
+     *
+     * @param findingAidId identifikátor AP
+     * @param packetVO     obal
+     * @return obal
+     */
+    protected ArrPacketVO updatePacket(final Integer findingAidId,
+                                       final ArrPacketVO packetVO) {
+        return put(spec -> spec
+                .pathParameter("findingAidId", findingAidId)
+                .body(packetVO), UPDATE_PACKET).getBody().as(ArrPacketVO.class);
+    }
+
+    /**
+     * Provede načtení stromu uzlů. Uzly mohou být rozbaleny.
+     *
+     * @param version     verze AP
+     * @param node        uzel
+     * @param searchValue hledaný text
+     * @param depth       hloubka vyhledávání
+     * @return seznam výsledků
+     */
+    protected List<ArrangementController.TreeNodeFulltext> fulltext(final ArrFindingAidVersionVO version,
+                                                                    final ArrNodeVO node,
+                                                                    final String searchValue,
+                                                                    final ArrangementController.Depth depth) {
+        ArrangementController.FaFulltextParam input = new ArrangementController.FaFulltextParam();
+        input.setVersionId(version.getId());
+        input.setNodeId(node.getId());
+        input.setSearchValue(searchValue);
+        input.setDepth(depth);
+        return fulltext(input);
+    }
+
+    /**
+     * Provede načtení stromu uzlů. Uzly mohou být rozbaleny.
+     *
+     * @param input vstupní data pro načtení
+     * @return data stromu
+     */
+    protected List<ArrangementController.TreeNodeFulltext> fulltext(final ArrangementController.FaFulltextParam input) {
+        return Arrays.asList(post(spec -> spec
+                .body(input), FULLTEXT).getBody().as(ArrangementController.TreeNodeFulltext[].class));
+    }
+
+    /**
+     * Nalezení otevřené verze AP.
+     *
+     * @param findingAid archivní pomůcka
+     * @return otevřená verze AP
+     */
+    protected ArrFindingAidVersionVO getOpenVersion(final ArrFindingAidVO findingAid) {
+        org.springframework.util.Assert.notNull(findingAid);
+
+        List<ArrFindingAidVO> findingAids = getFindingAids();
+
+        for (ArrFindingAidVO findingAidFound : findingAids) {
+            if (findingAidFound.getId().equals(findingAid.getId())) {
+                for (ArrFindingAidVersionVO findingAidVersion : findingAidFound.getVersions()) {
+                    if (findingAidVersion.getLockDate() == null) {
+                        return findingAidVersion;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+
+    /**
+     * Převod TreeNodeClient na ArrNodeVO.
+     *
+     * @param treeNodeClients seznam uzlů stromu
+     * @return převedený seznam uzlů stromu
+     */
+    protected List<ArrNodeVO> convertTreeNodes(final Collection<TreeNodeClient> treeNodeClients) {
+        List<ArrNodeVO> nodes = new ArrayList<>(treeNodeClients.size());
+        for (TreeNodeClient treeNodeClient : treeNodeClients) {
+            nodes.add(convertTreeNode(treeNodeClient));
+        }
+        return nodes;
+    }
+
+    /**
+     * Převod TreeNodeClient na ArrNodeVO.
+     *
+     * @param treeNodeClient uzel stromu
+     * @return převedený uzel stromu
+     */
+    protected ArrNodeVO convertTreeNode(final TreeNodeClient treeNodeClient) {
+        ArrNodeVO rootNode = new ArrNodeVO();
+        BeanUtils.copyProperties(treeNodeClient, rootNode);
+        return rootNode;
+    }
+
+    /**
+     * Načte číselník typů kalendářů.
+     *
+     * @return typy kalendářů
+     */
+    protected List<ArrCalendarTypeVO> getCalendarTypes() {
+        return Arrays.asList(get(CALENDAR_TYPES).getBody().as(ArrCalendarTypeVO[].class));
+    }
+
+    /**
+     * Vyhledání vazeb AP - rejstříky.
+     *
+     * @param versionId id verze stromu
+     * @param nodeId    identfikátor JP
+     * @return vazby
+     */
+    protected List<ArrNodeRegisterVO> findRegisterLinks(final Integer versionId,
+                                                        final Integer nodeId) {
+        return Arrays.asList(get(spec -> spec
+                .pathParameter("versionId", versionId)
+                .pathParameter("nodeId", nodeId), FIND_REGISTER_LINKS).getBody().as(ArrNodeRegisterVO[].class));
+    }
+
+    /**
+     * Vyhledání vazeb AP - rejstříky pro formulář.
+     *
+     * @param versionId id verze stromu
+     * @param nodeId    identfikátor JP
+     * @return vazby pro formulář
+     */
+    protected ArrangementController.NodeRegisterDataVO findRegisterLinksForm(final Integer versionId,
+                                                                             final Integer nodeId) {
+        return get(spec -> spec
+                        .pathParameter("versionId", versionId)
+                        .pathParameter("nodeId", nodeId),
+                FIND_REGISTER_LINKS_FORM).getBody().as(ArrangementController.NodeRegisterDataVO.class);
+    }
+
+    /**
+     * Vytvoření vazby AP - rejstříky
+     *
+     * @param versionId      id verze stromu
+     * @param nodeId         identfikátor JP
+     * @param nodeRegisterVO vazba
+     * @return vazba
+     */
+    protected ArrNodeRegisterVO createRegisterLinks(final Integer versionId,
+                                                    final Integer nodeId,
+                                                    final ArrNodeRegisterVO nodeRegisterVO) {
+        return put(spec -> spec
+                .pathParameter("versionId", versionId)
+                .pathParameter("nodeId", nodeId)
+                .body(nodeRegisterVO), CREATE_REGISTER_LINK).getBody().as(ArrNodeRegisterVO.class);
+    }
+
+    /**
+     * Upravení vazby AP - rejstříky.
+     *
+     * @param versionId      id verze stromu
+     * @param nodeId         identfikátor JP
+     * @param nodeRegisterVO vazba
+     * @return vazba
+     */
+    protected ArrNodeRegisterVO updateRegisterLinks(final Integer versionId,
+                                                    final Integer nodeId,
+                                                    final ArrNodeRegisterVO nodeRegisterVO) {
+        return post(spec -> spec
+                .pathParameter("versionId", versionId)
+                .pathParameter("nodeId", nodeId)
+                .body(nodeRegisterVO), UPDATE_REGISTER_LINK).getBody().as(ArrNodeRegisterVO.class);
+    }
+
+    /**
+     * Smazání vazby AP - rejstříky.
+     *
+     * @param versionId      id verze stromu
+     * @param nodeId         identfikátor JP
+     * @param nodeRegisterVO vazba
+     * @return vazba
+     */
+    protected ArrNodeRegisterVO deleteRegisterLinks(final Integer versionId,
+                                                    final Integer nodeId,
+                                                    final ArrNodeRegisterVO nodeRegisterVO) {
+        return post(spec -> spec
+                .pathParameter("versionId", versionId)
+                .pathParameter("nodeId", nodeId)
+                .body(nodeRegisterVO), DELETE_REGISTER_LINK).getBody().as(ArrNodeRegisterVO.class);
+    }
+
+    /**
+     * Nalezne hierarchický typ.
+     *
+     * @param list seznam typů
+     * @return nalezený typ
+     */
+    protected RegRegisterTypeVO getHierarchicalRegRegisterType(List<RegRegisterTypeVO> list) {
+        for (RegRegisterTypeVO type : list) {
+            if (type.getHierarchical() && type.getAddRecord()) {
+                return type;
+            }
+        }
+
+        for (RegRegisterTypeVO type : list) {
+            if (type.getChildren() != null) {
+                RegRegisterTypeVO res = getHierarchicalRegRegisterType(type.getChildren());
+                if (res != null) {
+                    return res;
+                }
+            }
+        }
+        return null;
+    }
+
+
+
+    /**
+     * Validuje verzi archivní pomůcky a vrátí list chyb.
+     * Pokud je počet chyb 0 pak předpokládáme že stav AP = OK
+     *
+     * @param versionId         verze, která se má validovat
+     * @return Objekt s listem (prvních 20) chyb
+     */
+    public List<ArrangementController.VersionValidationItem> validateVersion(final Integer versionId) {
+        return Arrays.asList(get(spec -> spec
+                        .pathParameter("versionId", versionId),
+                VALIDATE_VERSION).getBody().as(ArrangementController.VersionValidationItem[].class));
+    }
+
+    /**
+     * Validuje verzi archivní pomůcky a vrátí počet chyb
+     * Pokud je počet chyb 0 pak předpokládáme že stav AP = OK
+     *
+     * @param versionId         verze, která se má validovat
+     */
+    protected void validateVersionCount(final Integer versionId) {
+        get(spec -> spec.pathParameter("versionId", versionId), VALIDATE_VERSION_COUNT);
+    }
+
+    /**
+     * Provede načtení požadovaných uzlů ze stromu.
+     *
+     * @param input vstupní data pro načtení
+     * @return data stromu
+     */
+    protected List<TreeNodeClient> getFaTreeNodes(final ArrangementController.FaTreeNodesParam input) {
+        return Arrays.asList(post(spec -> spec
+                .body(input), FA_TREE_NODES).getBody().as(TreeNodeClient[].class));
+    }
+
+    /**
+     * Načte seznam rodičů daného uzlu. Seřazeno od prvního rodiče po kořen stromu.
+     *
+     * @param nodeId    nodeid uzlu
+     * @param versionId id verze stromu
+     * @return seznam rodičů
+     */
+    protected List<TreeNodeClient> getNodeParents(final Integer nodeId,
+                                               final Integer versionId) {
+        return Arrays.asList(get(spec -> spec
+                .queryParameter("nodeId", nodeId)
+                .queryParameter("versionId", versionId), NODE_PARENTS).getBody().as(TreeNodeClient[].class));
+    }
+
+    /**
+     * Získání dat pro formulář.
+     *
+     * @param nodeId    identfikátor JP
+     * @param versionId id verze stromu
+     * @return formulář
+     */
+    protected ArrangementController.NodeFormDataNewVO getNodeFormData(final Integer nodeId,
+                                                                      final Integer versionId) {
+        return get(spec -> spec
+                .pathParameter("nodeId", nodeId)
+                .pathParameter("versionId", versionId),
+                NODE_FORM_DATA).getBody().as(ArrangementController.NodeFormDataNewVO.class);
+    }
+
+    /**
+     * Získání dat pro formuláře.
+     * @param nodeIds   identfikátory JP
+     * @param versionId id verze stromu
+     * @return formuláře
+     */
+    protected ArrangementController.NodeFormsDataVO getNodeFormsData(final Integer versionId, final Integer... nodeIds) {
+        return get(spec -> spec
+                .queryParameter("nodeIds", nodeIds)
+                .pathParameter("versionId", versionId),
+                NODE_FORMS_DATA).getBody().as(ArrangementController.NodeFormsDataVO.class);
+    }
+
+    /**
+     * Získání dat formuláře pro JP a jeho okolí.
+     *
+     * @param nodeId    identfikátory JP
+     * @param versionId id verze stromu
+     * @param around    velikost okolí - počet před a za uvedeným uzlem
+     * @return formuláře
+     */
+    protected ArrangementController.NodeFormsDataVO getNodeWithAroundFormsData(final Integer versionId,
+                                                      final Integer nodeId,
+                                                      final Integer around) {
+        return get(spec -> spec
+                        .pathParameter("nodeId", nodeId)
+                        .pathParameter("around", around)
+                        .pathParameter("versionId", versionId),
+                NODE_FORMS_DATA_AROUND).getBody().as(ArrangementController.NodeFormsDataVO.class);
+    }
+
+    /**
+     * Načte seznam uzlů podle jejich id.
+     *
+     * @param idsParam seznam id
+     * @return seznam vo uzlů s danými id
+     */
+    protected List<TreeNodeClient> getNodes(final ArrangementController.IdsParam idsParam) {
+        return Arrays.asList(post(spec -> spec.body(idsParam), NODES).getBody().as(TreeNodeClient[].class));
+    }
+
+    /**
+     * Načte FA pro dané verze.
+     *
+     * @param idsParam id verzí
+     * @return seznam FA, každá obsahuje pouze jednu verzi, jinak je vrácená víckrát
+     */
+    protected List<ArrFindingAidVO> getFindingAidsByVersionIds(final ArrangementController.IdsParam idsParam) {
+        return Arrays.asList(post(spec -> spec.body(idsParam), VERSIONS).getBody().as(ArrFindingAidVO[].class));
+    }
+
+    /**
+     * Smazání hodnot atributu podle typu.
+     *
+     * @param findingAidVersionId   identfikátor verze AP
+     * @param nodeId                identfikátor JP
+     * @param nodeVersion           verze JP
+     * @param descItemTypeId        identfikátor typu hodnoty atributu
+     */
+    protected ArrangementController.DescItemResult deleteDescItemsByType(final Integer findingAidVersionId,
+                                                final Integer nodeId,
+                                                final Integer nodeVersion,
+                                                final Integer descItemTypeId) {
+        return delete(spec -> spec
+                        .pathParameter("findingAidVersionId", findingAidVersionId)
+                        .pathParameter("nodeId", nodeId)
+                        .pathParameter("nodeVersion", nodeVersion)
+                        .pathParameter("descItemTypeId", descItemTypeId),
+                        DELETE_DESC_ITEM_BY_TYPE).getBody().as(ArrangementController.DescItemResult.class);
+    }
+
+    /**
+     * Vyhledá scénáře pro možné archivní pomůcky
+     *
+     * @param param vstupní parametry
+     * @return List scénářů
+     */
+    protected List<ScenarioOfNewLevelVO> getDescriptionItemTypesForNewLevel(final Boolean withGroups,
+                                                                         final ArrangementController.DescriptionItemParam param) {
+        return Arrays.asList(post(spec -> spec
+                .queryParameter("withGroups", withGroups)
+                .body(param), SCENARIOS).getBody().as(ScenarioOfNewLevelVO[].class));
+    }
+
+    /**
+     * Provede zkopírování atributu daného typu ze staršího bratra uzlu.
+     *
+     * @param versionId      id verze stromu
+     * @param descItemTypeId typ atributu, který chceme zkopírovat
+     * @param nodeVO         uzel, na který nastavíme hodnoty ze staršího bratra
+     * @return vytvořené hodnoty
+     */
+    protected ArrangementController.CopySiblingResult copyOlderSiblingAttribute(
+            final Integer versionId,
+            final Integer descItemTypeId,
+            final ArrNodeVO nodeVO) {
+        return put(spec -> spec
+                .queryParameter("versionId", versionId)
+                .queryParameter("descItemTypeId", descItemTypeId)
+                .body(nodeVO), COPY_SIBLING).getBody().as(ArrangementController.CopySiblingResult.class);
+    }
+
+    /**
      * Vyhledání typu atributu podle kódu
      * @param code kód typu
      * @return typ atributu
@@ -973,7 +1466,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
         params.put("from", from != null ? from : 0);
         params.put("count", count != null ? count : 20);
 
-        return get(spec -> spec.queryParameters(params), FIND_RECORD).getBody().as(RegRecordWithCount.class).getRecordList();
+        return get(spec -> spec.queryParameters(params), FIND_RECORD).getBody().as(
+                RegRecordWithCount.class).getRecordList();
     }
 
 
@@ -1108,15 +1602,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
         params.put("count", count != null ? count : 20);
 
         return get(spec -> spec.queryParameters(params), FIND_PARTY).getBody().as(ParPartyWithCount.class).getRecordList();
-    }
-
-    /**
-     * Načtení typů kalendářů
-     *
-     * @return List typů kalendářů
-     */
-    protected List<ArrCalendarTypeVO> calendarTypes() {
-        return Arrays.asList(get(CALENDAR_TYPES).getBody().as(ArrCalendarTypeVO[].class));
     }
 
     /**

@@ -208,24 +208,6 @@ public class RegistryControllerTest extends AbstractControllerTest {
 
     }
 
-    private RegRegisterTypeVO getHierarchicalRegRegisterType(List<RegRegisterTypeVO> list) {
-        for (RegRegisterTypeVO type : list) {
-            if (type.getHierarchical() && type.getAddRecord()) {
-                return type;
-            }
-        }
-
-        for (RegRegisterTypeVO type : list) {
-            if (type.getChildren() != null) {
-                RegRegisterTypeVO res = getHierarchicalRegRegisterType(type.getChildren());
-                if (res != null) {
-                    return res;
-                }
-            }
-        }
-        return null;
-    }
-
     private RegRegisterTypeVO getNonHierarchicalRegRegisterType(List<RegRegisterTypeVO> list) {
         for (RegRegisterTypeVO type : list) {
             if (!type.getHierarchical() && type.getAddRecord()) {
