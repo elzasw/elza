@@ -444,9 +444,9 @@ public class ArrangementController {
      * @param versionId id verze stromu
      * @return formulář
      */
-    @RequestMapping(value = "/nodes/{nodeId}/{versionId}/formNew", method = RequestMethod.GET)
-    public NodeFormDataNewVO getNodeFormDataNew(@PathVariable(value = "nodeId") Integer nodeId,
-                                          @PathVariable(value = "versionId") Integer versionId) {
+    @RequestMapping(value = "/nodes/{nodeId}/{versionId}/form", method = RequestMethod.GET)
+    public NodeFormDataNewVO getNodeFormData(@PathVariable(value = "nodeId") Integer nodeId,
+                                             @PathVariable(value = "versionId") Integer versionId) {
         Assert.notNull(versionId, "Identifikátor verze musí být vyplněn");
         Assert.notNull(nodeId, "Identifikátor uzlu musí být vyplněn");
 
@@ -489,7 +489,7 @@ public class ArrangementController {
         Map<Integer, NodeFormDataNewVO> forms = new HashMap<>();
 
         for (int i = 0; i < nodeIds.length; i++) {
-            forms.put(nodeIds[i], getNodeFormDataNew(nodeIds[i], versionId));
+            forms.put(nodeIds[i], getNodeFormData(nodeIds[i], versionId));
         }
 
         return new NodeFormsDataVO(forms);
@@ -522,7 +522,7 @@ public class ArrangementController {
         Map<Integer, NodeFormDataNewVO> forms = new HashMap<>();
 
         for (ArrNode arrNode : nodes) {
-            forms.put(arrNode.getNodeId(), getNodeFormDataNew(arrNode.getNodeId(), versionId));
+            forms.put(arrNode.getNodeId(), getNodeFormData(arrNode.getNodeId(), versionId));
         }
 
         return new NodeFormsDataVO(forms);
@@ -1014,64 +1014,6 @@ public class ArrangementController {
 
         public void setNodeRegisters(final List<ArrNodeRegisterVO> nodeRegisters) {
             this.nodeRegisters = nodeRegisters;
-        }
-    }
-
-    /**
-     * Výstupní objekt pro získaná data pro formulář detailu uzlu.
-     */
-    @Deprecated
-    public static class NodeFormDataVO {
-
-        /**
-         * Uzel
-         */
-        private ArrNodeVO node;
-
-        /**
-         * Seznam skupin
-         */
-        private List<ArrDescItemGroupVO> descItemGroups;
-
-        /**
-         * Seznam skupin typů hodnot archivní pomůcky
-         */
-        private List<ArrDescItemTypeGroupVO> descItemTypeGroups;
-
-        public NodeFormDataVO() {
-
-        }
-
-        public NodeFormDataVO(final ArrNodeVO node,
-                              final List<ArrDescItemGroupVO> descItemGroups,
-                              final List<ArrDescItemTypeGroupVO> descItemTypeGroups) {
-            this.node = node;
-            this.descItemGroups = descItemGroups;
-            this.descItemTypeGroups = descItemTypeGroups;
-        }
-
-        public ArrNodeVO getNode() {
-            return node;
-        }
-
-        public void setNodeVO(final ArrNodeVO node) {
-            this.node = node;
-        }
-
-        public List<ArrDescItemGroupVO> getDescItemGroups() {
-            return descItemGroups;
-        }
-
-        public void setDescItemGroups(final List<ArrDescItemGroupVO> descItemGroups) {
-            this.descItemGroups = descItemGroups;
-        }
-
-        public List<ArrDescItemTypeGroupVO> getDescItemTypeGroups() {
-            return descItemTypeGroups;
-        }
-
-        public void setDescItemTypeGroups(final List<ArrDescItemTypeGroupVO> descItemTypeGroups) {
-            this.descItemTypeGroups = descItemTypeGroups;
         }
     }
 

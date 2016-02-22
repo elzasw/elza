@@ -1540,18 +1540,6 @@ public abstract class AbstractRestTest {
         return Arrays.asList(response.getBody().as(RulPacketTypeVO[].class));
     }
 
-    /**
-     * Načte hodnoty atributů zapouzdřené do skupin.
-     * @param findingAidVersionId identifikátor verze archivní pomůcky
-     * @param nodeId identifikátor uzlu
-     * @return hodnoty atributů zapouzdřené do skupin
-     */
-    protected ArrangementController.NodeFormDataVO getNodeFormData(final Integer findingAidVersionId,
-                                                                   final Integer nodeId) {
-        Response response = get(spec -> spec.pathParameters(VERSION_ID_ATT, findingAidVersionId, NODE_ID_ATT, nodeId),
-                GET_NODE_FORM_DATA);
-        return response.getBody().as(ArrangementController.NodeFormDataVO.class);
-    }
 
 
 

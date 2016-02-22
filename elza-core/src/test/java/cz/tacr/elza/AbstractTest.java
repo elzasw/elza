@@ -193,6 +193,7 @@ public abstract class AbstractTest {
         faViewRepository.deleteAll();
         findingAidVersionConformityInfoRepository.deleteAll();
         findingAidVersionRepository.deleteAll();
+        faRegisterScopeRepository.deleteAll();
         findingAidRepository.deleteAll();
         levelRepository.deleteAll();
         descItemRepository.deleteAll();

@@ -1778,31 +1778,6 @@ public class ArrangementManagerTest extends AbstractRestTest {
     }
 
     @Test
-    public void testRestNodeFormData() throws Exception {
-        ArrFindingAid findingAid = createFindingAidRest(TEST_NAME);
-        ArrFindingAidVersion version = getFindingAidOpenVersion(findingAid);
-        ArrNode node = version.getRootLevel().getNode();
-
-        ArrangementController.NodeFormDataVO nodeFormData = getNodeFormData(version.getFindingAidVersionId(),
-                node.getNodeId());
-
-        Assert.assertNotNull(nodeFormData);
-        List<ArrDescItemGroupVO> descItemGroups = nodeFormData.getDescItemGroups();
-
-        Assert.assertNotNull(descItemGroups);
-        Assert.assertEquals(1, descItemGroups.size());
-
-        ArrDescItemGroupVO group = descItemGroups.get(0);
-
-        Assert.assertNotNull(group.getDescItemTypes());
-        Assert.assertEquals(1, group.getDescItemTypes().size());
-
-        RulDescItemTypeDescItemsVO descItemType = group.getDescItemTypes().get(0);
-
-        Assert.assertNotNull(descItemType.getDescItems());
-    }
-
-    @Test
     @Transactional
     public void testCountChildsByParent(){
 

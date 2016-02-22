@@ -2,7 +2,6 @@ package cz.tacr.elza.xmlimport;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -13,25 +12,18 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
-import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import cz.tacr.elza.ElzaCore;
+import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.api.vo.XmlImportType;
-import cz.tacr.elza.packageimport.PackageService;
-import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.service.XmlImportService;
 import cz.tacr.elza.service.exception.XmlImportException;
 import cz.tacr.elza.xmlimport.v1.utils.XmlImportConfig;
@@ -43,24 +35,13 @@ import cz.tacr.elza.xmlimport.v1.vo.XmlImport;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 27. 10. 2015
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = ElzaCore.class)
-@Ignore
-@Deprecated
-public class XmlImportTest implements ApplicationContextAware {
+public class XmlImportTest extends AbstractTest implements ApplicationContextAware {
 
     @Autowired
     private XmlDataGenerator xmlDataGenerator;
 
     @Autowired
     private XmlImportService xmlImportService;
-
-    @Autowired
-    protected PackageRepository packageRepository;
-
-    @Autowired
-    protected PackageService packageService;
-
 
     private static final int RECORD_COUNT = 10;
 
@@ -84,31 +65,23 @@ public class XmlImportTest implements ApplicationContextAware {
 
     private ApplicationContext applicationContext;
 
-    @Before
-    public void setUp() {
-        if (packageRepository.count() == 0) {
-            URL url = Thread.currentThread().getContextClassLoader().getResource("package-test.zip");
-            File file = new File(url.getPath());
-
-
-            packageService.importPackage(file);
-        }
-    }
-
-    /** Test na import nové pomůcky v nativním formátu.
-     * @throws XmlImportException */
+    /**
+     * Test na import nové pomůcky v nativním formátu.
+     */
     //@Test
     public void importNativeData() throws XmlImportException {
         XmlImportConfig config = new XmlImportConfig();
         config.setStopOnError(false);
         config.setXmlImportType(XmlImportType.FINDING_AID);
-//        config.setXmlFile(new File("d:\\xml-export1.xml"));
+        //        config.setXmlFile(new File("d:\\xml-export1.xml"));
 
         xmlImportService.importData(config);
     }
 
-    /** Vytvoření xml souboru s osobami a rejstříky. */
-//    @Test
+    /**
+     * Vytvoření xml souboru s osobami a rejstříky.
+     */
+    //    @Test
     public void testCreatePartyFile() throws IOException, JAXBException {
         XmlDataGeneratorConfig config = new XmlDataGeneratorConfig(3, 1, 4, 0, 0, 0, true, 2, 2, 2, 0);
         XmlImport fa = xmlDataGenerator.createXmlImportData(config);
@@ -120,7 +93,9 @@ public class XmlImportTest implements ApplicationContextAware {
         System.out.println("Cesta k vytvořenému souboru: " + out.getAbsolutePath());
     }
 
-    /** Vytvoření xml souboru s rejstříky. */
+    /**
+     * Vytvoření xml souboru s rejstříky.
+     */
     @Test
     public void testCreateRecordFile() throws IOException, JAXBException {
         XmlDataGeneratorConfig config = new XmlDataGeneratorConfig(3, 1, 0, 0, 0, 0, true, 0, 0, 0, 0);
@@ -133,22 +108,27 @@ public class XmlImportTest implements ApplicationContextAware {
         System.out.println("Cesta k vytvořenému souboru: " + out.getAbsolutePath());
     }
 
-    /** Načtení velkého souboru. */
-//    @Test
+    /**
+     * Načtení velkého souboru.
+     */
+    //    @Test
     public void testLoadLargeXmlFile() throws JAXBException {
-        File file = new File("d:\\marbes\\projekty\\elza\\elza-core\\src\\test\\resources\\xml-export-large291375430279915953.xml");
+        File file = new File(
+                "d:\\marbes\\projekty\\elza\\elza-core\\src\\test\\resources\\xml-export-large291375430279915953.xml");
 
         long start = System.nanoTime();
         XmlImport faFromFile = (XmlImport) createUnmarshaller().unmarshal(file);
         long stop = System.nanoTime();
-        System.out.println("hotovo " + (stop - start) /1000 + " ms");
+        System.out.println("hotovo " + (stop - start) / 1000 + " ms");
     }
 
-    /** Vytvoření velkého xml souboru. */
-//    @Test
+    /**
+     * Vytvoření velkého xml souboru.
+     */
+    //    @Test
     public void testCreateLargeXmlFile() throws JAXBException, IOException {
         //1,5 GB
-//        XmlDataGeneratorConfig config = new XmlDataGeneratorConfig(50, 10, 50, 50, 15, 10, true, 5, 3, 3, 3);
+        //        XmlDataGeneratorConfig config = new XmlDataGeneratorConfig(50, 10, 50, 50, 15, 10, true, 5, 3, 3, 3);
         //300 MB
         XmlDataGeneratorConfig config = new XmlDataGeneratorConfig(50, 10, 50, 20, 4, 10, true, 5, 3, 3, 3);
         XmlImport fa = xmlDataGenerator.createXmlImportData(config);
@@ -160,7 +140,9 @@ public class XmlImportTest implements ApplicationContextAware {
         System.out.println("Cesta k vytvořenému souboru: " + out.getAbsolutePath());
     }
 
-    /** Test na zápis dat do xml, jejich načtení a porovnání. */
+    /**
+     * Test na zápis dat do xml, jejich načtení a porovnání.
+     */
     @Test
     public void testDataIntegrity() throws JAXBException, IOException {
         XmlDataGeneratorConfig config = createDefaultGeneratorConfig(true);
@@ -176,7 +158,9 @@ public class XmlImportTest implements ApplicationContextAware {
         Assert.isTrue(fa.equals(faFromFile));
     }
 
-    /** Test na validaci dat oproti vygenerovanému xsd. */
+    /**
+     * Test na validaci dat oproti vygenerovanému xsd.
+     */
     @Test
     public void testValidity() throws JAXBException, SAXException, IOException {
         XmlDataGeneratorConfig config = createDefaultGeneratorConfig(true);
@@ -189,21 +173,24 @@ public class XmlImportTest implements ApplicationContextAware {
         Assert.isTrue(true);
     }
 
-    /** Test na validaci dat oproti vygenerovanému xsd. */
+    /**
+     * Test na validaci dat oproti vygenerovanému xsd.
+     */
     //@Test
     public void testValidityJV() throws JAXBException, SAXException, IOException {
-//        XmlDataGeneratorConfig config = createDefaultGeneratorConfig(true);
-//        XmlImport fa = xmlDataGenerator.createXmlImportData(config);
+        //        XmlDataGeneratorConfig config = createDefaultGeneratorConfig(true);
+        //        XmlImport fa = xmlDataGenerator.createXmlImportData(config);
 
-        String path = "d:\\marbes\\dokumenty\\elza\\ELZA-228 - MCV MT09 XSD pro rejstříky a osoby (původce) z INTERPI\\testovaci xml\\";
+        String path
+                = "d:\\marbes\\dokumenty\\elza\\ELZA-228 - MCV MT09 XSD pro rejstříky a osoby (původce) z INTERPI\\testovaci xml\\";
         String[] files = {
-        "ELZA+xml-parties-DYNASTY.xml",
-        "ELZA+xml-parties-EVENT.xml",
-        "ELZA+xml-parties-PARTY_GROUP.xml",
-        "ELZA+xml-parties-PERSON.xml",
-        "ELZA-xml-records-ARTWORK.xml",
-        "ELZA-xml-records-GEO.xml",
-        "ELZA-xml-records-TERM.xml"};
+                "ELZA+xml-parties-DYNASTY.xml",
+                "ELZA+xml-parties-EVENT.xml",
+                "ELZA+xml-parties-PARTY_GROUP.xml",
+                "ELZA+xml-parties-PERSON.xml",
+                "ELZA-xml-records-ARTWORK.xml",
+                "ELZA-xml-records-GEO.xml",
+                "ELZA-xml-records-TERM.xml"};
 
         for (String f : files) {
             File file = new File(path + f);
@@ -221,7 +208,9 @@ public class XmlImportTest implements ApplicationContextAware {
         Assert.isTrue(true);
     }
 
-    /** Test na validaci dat oproti vygenerovanému xsd. Data nejsou validní. */
+    /**
+     * Test na validaci dat oproti vygenerovanému xsd. Data nejsou validní.
+     */
     @Test(expected = MarshalException.class)
     public void testValidityWithInvalidData() throws JAXBException, SAXException, IOException {
         XmlDataGeneratorConfig config = createDefaultGeneratorConfig(false);
@@ -238,13 +227,13 @@ public class XmlImportTest implements ApplicationContextAware {
      * Vytvoření nastavení pro generátor.
      *
      * @param valid příznak zda mají být vygenerovaná data validní
-     *
      * @return nastavení pro generátor
      */
     private XmlDataGeneratorConfig createDefaultGeneratorConfig(final boolean valid) {
-       return new XmlDataGeneratorConfig(RECORD_COUNT, VARIANT_RECORD_COUNT, PARTY_COUNT, CHILD_COUNT, TREE_DEPTH_COUNT,
-               DESC_ITEMS_COUNT, valid, EVENT_COUNT, PARTY_GROUP_ID_COUNT,
-               PARTY_NAME_COMPLEMENTS_COUNT, PACKET_COUNT);
+        return new XmlDataGeneratorConfig(RECORD_COUNT, VARIANT_RECORD_COUNT, PARTY_COUNT, CHILD_COUNT,
+                TREE_DEPTH_COUNT,
+                DESC_ITEMS_COUNT, valid, EVENT_COUNT, PARTY_GROUP_ID_COUNT,
+                PARTY_NAME_COMPLEMENTS_COUNT, PACKET_COUNT);
     }
 
     /**

@@ -384,10 +384,7 @@ class WebApi{
     }
 
     getFaNodeForm(versionId, nodeId) {
-        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + nodeId + '/' + versionId + '/formNew')
-            .then(json=>{
-                return json
-            });
+        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + nodeId + '/' + versionId + '/form');
     }
 
     getFaNodeForms(versionId, nodeIds) {
@@ -400,10 +397,6 @@ class WebApi{
 
     getFaNodeFormsWithAround(versionId, nodeId, around) {
         return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + versionId + '/' + nodeId + '/' + around + '/forms')
-    }
-
-    getFaNodeFormNew(versionId, nodeId) {
-        return AjaxUtils.ajaxGet('/api/arrangementManagerV2/nodes/' + nodeId + '/' + versionId + '/formNew')
     }
 
     getFaNodeRegister(versionId, nodeId) {

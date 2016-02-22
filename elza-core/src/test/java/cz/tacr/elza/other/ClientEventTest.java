@@ -3,11 +3,10 @@ package cz.tacr.elza.other;
 import java.util.Collection;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import cz.tacr.elza.controller.AbstractRestTest;
+import cz.tacr.elza.controller.AbstractControllerTest;
 import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.service.IClientDataChangesService;
 import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
@@ -21,9 +20,7 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 14.01.2016
  */
-@Ignore
-@Deprecated
-public class ClientEventTest extends AbstractRestTest {
+public class ClientEventTest extends AbstractControllerTest {
 
 
     @Autowired
@@ -31,7 +28,7 @@ public class ClientEventTest extends AbstractRestTest {
 
     @Test
     public void testEventPublish() {
-        ArrFindingAidVO test_publish = createFindingAidRestV2("test_publish");
+        ArrFindingAidVO test_publish = createFindingAid("test_publish");
 
 
         Collection<AbstractEventSimple> lastEvents = ((ClientDataChangesServiceTest) clientDataChangesService)
