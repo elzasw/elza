@@ -152,7 +152,7 @@ var PartyDetail = class PartyDetail extends AbstractReactComponent {
                     <Input type="textarea" label={i18n('party.detail.characteristics')} name="characteristics" value={party.characteristics != undefined ? party.characteristics : ''} onChange={this.changeValue} onBlur={this.updateValue}/>
                     </div>
 
-                    <div className="line">
+                    <div className="line typ">
                         <Input type="select" disabled={true} value={party.partyType.partyTypeId} label={i18n('party.detail.type')}>
                             {this.props.refTables.partyTypes.items.map(i=> {return <option key={i.partyTypeId} value={i.partyTypeId}>{i.name}</option>})}
                         </Input>
