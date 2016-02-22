@@ -831,7 +831,9 @@ public class LevelTreeCacheService {
             }
         }
 
-        descItemTypeCodes.add(viewTitles.getHierarchyLevelType());
+        if(viewTitles.getHierarchyLevelType() != null){
+            descItemTypeCodes.add(viewTitles.getHierarchyLevelType());
+        }
 
         return descItemTypeCodes;
     }
@@ -1437,10 +1439,13 @@ public class LevelTreeCacheService {
      * @return referenční označení uzlu
      */
     private String[] createClientNodeReferenceMark(final TreeNode node,
-                                                   final String levelTypeCode,
+                                                   @Nullable final String levelTypeCode,
                                                    final ViewTitles viewTitles,
                                                    final Map<Integer, Map<String, TitleValue>> valuesMap,
                                                    final String[] parentReferenceMark) {
+
+
+        String separator = " ";
 
         TreeNode parent = node.getParent();
         if (parent == null) {
@@ -1451,28 +1456,28 @@ public class LevelTreeCacheService {
             return new String[] {node.getPosition().toString()};
         }
 
-
         String[] parentMark = parentReferenceMark;
         String[] nodeMark = Arrays.copyOf(parentMark, parentMark.length + 2);
 
+        if(levelTypeCode != null) {
 
-        Map<String, TitleValue> nodeValues = valuesMap.get(node.getId());
-        Map<String, TitleValue> parentValues = valuesMap.get(node.getParent().getId());
+            Map<String, TitleValue> nodeValues = valuesMap.get(node.getId());
+            Map<String, TitleValue> parentValues = valuesMap.get(node.getParent().getId());
 
-        TitleValue nodeTitleValue = nodeValues == null ? null : nodeValues.get(levelTypeCode);
-        TitleValue parentTitleValue = parentValues == null ? null : parentValues.get(levelTypeCode);
+            TitleValue nodeTitleValue = nodeValues == null ? null : nodeValues.get(levelTypeCode);
+            TitleValue parentTitleValue = parentValues == null ? null : parentValues.get(levelTypeCode);
 
-        String nodeType = nodeTitleValue == null ? null : nodeTitleValue.getSpecCode();
-        String parentType = parentTitleValue == null ? null : parentTitleValue.getSpecCode();
+            String nodeType = nodeTitleValue == null ? null : nodeTitleValue.getSpecCode();
+            String parentType = parentTitleValue == null ? null : parentTitleValue.getSpecCode();
 
-        String separator = " ";
-
-        if (StringUtils.isNotBlank(nodeType) && StringUtils.isNotBlank(parentType)) {
-            ConfigView.ConfigViewTitlesHierarchy levelTitlesHierarchy = viewTitles.getLevelTitlesHierarchy(nodeType);
-            if (StringUtils.equalsIgnoreCase(nodeType, parentType)) {
-                separator = levelTitlesHierarchy.getSeparatorOther();
-            } else {
-                separator = levelTitlesHierarchy.getSeparatorFirst();
+            if (StringUtils.isNotBlank(nodeType) && StringUtils.isNotBlank(parentType)) {
+                ConfigView.ConfigViewTitlesHierarchy levelTitlesHierarchy = viewTitles
+                        .getLevelTitlesHierarchy(nodeType);
+                if (StringUtils.equalsIgnoreCase(nodeType, parentType)) {
+                    separator = levelTitlesHierarchy.getSeparatorOther();
+                } else {
+                    separator = levelTitlesHierarchy.getSeparatorFirst();
+                }
             }
         }
 
@@ -1491,7 +1496,7 @@ public class LevelTreeCacheService {
      * @return referenční označení
      */
     private String[] createClientReferenceMarkFromRoot(final TreeNode node,
-                                                       final String levelTypeCode,
+                                                       @Nullable final String levelTypeCode,
                                                        final ViewTitles viewTitles,
                                                        final Map<Integer, Map<String, TitleValue>> valuesMap) {
 

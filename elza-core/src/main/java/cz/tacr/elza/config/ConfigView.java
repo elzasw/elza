@@ -4,6 +4,7 @@ package cz.tacr.elza.config;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -141,15 +142,16 @@ public class ConfigView {
         }
 
         public String getHierarchyLevelType() {
-            if (hierarchy.isEmpty()) {
-                throw new IllegalStateException("Není nastaveno zobrazení hierarchie.");
+            if(hierarchy == null){
+                return null;
             }
+
 
             for (Map.Entry<String, Map<String, ConfigViewTitlesHierarchy>> stringMapEntry : hierarchy.entrySet()) {
                 return stringMapEntry.getKey();
             }
 
-            throw new IllegalStateException("Není nastaveno zobrazení hierarchie.");
+            return null;
         }
 
         public ConfigViewTitlesHierarchy getLevelTitlesHierarchy(final String levelType){
