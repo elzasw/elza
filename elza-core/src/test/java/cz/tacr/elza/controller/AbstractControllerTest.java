@@ -77,8 +77,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
             + "/descItems/{findingAidVersionId}/{nodeVersion}/delete";
 
     // Party
-    protected static final String RELATIONS = PARTY_CONTROLLER_URL + "/relations";
+    protected static final String CREATE_RELATIONS = PARTY_CONTROLLER_URL + "/relations";
+    protected static final String UPDATE_RELATIONS = PARTY_CONTROLLER_URL + "/relations/";
+    protected static final String DELETE_RELATIONS = PARTY_CONTROLLER_URL + "/relations/";
     protected static final String FIND_PARTY = PARTY_CONTROLLER_URL + "/findParty";
+    protected static final String FIND_PARTY_FOR_PARTY = PARTY_CONTROLLER_URL + "/findPartyForParty";
     protected static final String GET_PARTY = PARTY_CONTROLLER_URL + "/getParty";
     protected static final String GET_PARTY_TYPES = PARTY_CONTROLLER_URL + "/getPartyTypes";
     protected static final String GET_PARTY_NAME_FORM_TYPES = PARTY_CONTROLLER_URL + "/getPartyNameFormTypes";
@@ -1021,7 +1024,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Odstranení osoby
      *
      * @param partyId id osoby
-     * @return
+     * @return response
      */
     protected Response deleteParty(final int partyId) {
         return delete(spec -> spec.queryParam("partyId", partyId), DELETE_PARTY);
@@ -1030,7 +1033,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Typy osob
      *
-     * @return
+     * @return Typy osob
      */
     protected List<ParPartyTypeVO> getPartyTypes() {
         return Arrays.asList(get(GET_PARTY_TYPES).getBody().as(ParPartyTypeVO[].class));
@@ -1039,7 +1042,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Typy názvů osob
      *
-     * @return
+     * @return Typy názvů osob
      */
     protected List<ParPartyNameFormTypeVO> getPartyNameFormTypes() {
         return Arrays.asList(get(GET_PARTY_NAME_FORM_TYPES).getBody().as(ParPartyNameFormTypeVO[].class));
@@ -1049,7 +1052,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Typy rejstříků pro daný typ osob
      *
      * @param partyTypeId
-     * @return
+     * @return typy rejstříků
      */
     protected List<RegRegisterTypeVO> recordTypesForPartyType(final int partyTypeId) {
         return Arrays.asList(get(spec -> spec.queryParam("partyTypeId", partyTypeId), RECORD_TYPES_FOR_PARTY_TYPE).getBody().as(RegRegisterTypeVO[].class));
@@ -1058,7 +1061,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Scopy
      *
-     * @return
+     * @return list scope
      */
     protected List<RegScopeVO> faScopes() {
         return Arrays.asList(get(FA_SCOPES).getBody().as(RegScopeVO[].class));
@@ -1072,14 +1075,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param from
      * @param count
      * @param partyTypeId
-     * @param parentRecordId
      * @param versionId
      * @return List nalezených záznamů
      */
     protected List<ParPartyVO> findParty(final String search,
                                          final Integer from, final Integer count,
                                          final Integer partyTypeId,
-                                         final Integer parentRecordId,
                                          final Integer versionId) {
         HashMap<String, Object> params = new HashMap<>();
 
@@ -1088,9 +1089,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
         }
         if (versionId != null) {
             params.put("versionId", versionId);
-        }
-        if (parentRecordId != null) {
-            params.put("parentRecordId", parentRecordId);
         }
         if (partyTypeId != null) {
             params.put("partyTypeId", partyTypeId);
@@ -1116,7 +1114,51 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param relationVO relace k vytvoření
      * @return vytvořená relace
      */
-    protected ParRelationVO relations(ParRelationVO relationVO) {
-        return post(spec -> spec.body(relationVO), RELATIONS).getBody().as(ParRelationVO.class);
+    protected ParRelationVO insertRelation(ParRelationVO relationVO) {
+        return post(spec -> spec.body(relationVO), CREATE_RELATIONS).getBody().as(ParRelationVO.class);
     }
+
+    /**
+     * Upravení relace
+     *
+     * @param relationVO relace k vytvoření
+     * @return vytvořená relace
+     */
+    protected ParRelationVO updateRelation(ParRelationVO relationVO) {
+        return put(spec -> spec.body(relationVO), UPDATE_RELATIONS + relationVO.getRelationId()).getBody().as(ParRelationVO.class);
+    }
+
+    /**
+     * Smazání relace
+     *
+     * @param relationId id relace ke smazání
+     * @return response
+     */
+    protected Response deleteRelation(final int relationId) {
+        return delete(spec -> spec, DELETE_RELATIONS + relationId);
+    }
+
+    protected List<ParPartyVO> findPartyForParty(final Integer partyId,
+                                                 final String search,
+                                                 final Integer from, final Integer count,
+                                                 final Integer partyTypeId,
+                                                 final Integer versionId) {
+        HashMap<String, Object> params = new HashMap<>();
+
+        if (search != null) {
+            params.put("search", search);
+        }
+        if (versionId != null) {
+            params.put("versionId", versionId);
+        }
+        if (partyTypeId != null) {
+            params.put("partyTypeId", partyTypeId);
+        }
+        params.put("partyId", partyId);
+        params.put("from", from != null ? from : 0);
+        params.put("count", count != null ? count : 20);
+
+        return get(spec -> spec.queryParameters(params), FIND_PARTY_FOR_PARTY).getBody().as(ParPartyWithCount.class).getRecordList();
+    }
+
 }

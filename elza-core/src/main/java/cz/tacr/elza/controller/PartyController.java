@@ -1,63 +1,19 @@
 package cz.tacr.elza.controller;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-
+import cz.tacr.elza.controller.config.ClientFactoryDO;
+import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
+import cz.tacr.elza.service.PartyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import cz.tacr.elza.controller.config.ClientFactoryDO;
-import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.ParComplementTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyTypeVO;
-import cz.tacr.elza.controller.vo.ParPartyVO;
-import cz.tacr.elza.controller.vo.ParPartyWithCount;
-import cz.tacr.elza.controller.vo.ParRelationRoleTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationTypeVO;
-import cz.tacr.elza.controller.vo.ParRelationVO;
-import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
-import cz.tacr.elza.domain.ArrFindingAid;
-import cz.tacr.elza.domain.ArrFindingAidVersion;
-import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParPartyTypeComplementType;
-import cz.tacr.elza.domain.ParPartyTypeRelation;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.ParRelationRoleType;
-import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.ParRelationTypeRoleType;
-import cz.tacr.elza.domain.RegRegisterType;
-import cz.tacr.elza.repository.ComplementTypeRepository;
-import cz.tacr.elza.repository.FindingAidVersionRepository;
-import cz.tacr.elza.repository.PartyNameFormTypeRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.PartyTypeComplementTypeRepository;
-import cz.tacr.elza.repository.PartyTypeRelationRepository;
-import cz.tacr.elza.repository.PartyTypeRepository;
-import cz.tacr.elza.repository.RegisterTypeRepository;
-import cz.tacr.elza.repository.RelationRepository;
-import cz.tacr.elza.repository.RelationRoleTypeRepository;
-import cz.tacr.elza.repository.RelationTypeRepository;
-import cz.tacr.elza.repository.RelationTypeRoleTypeRepository;
-import cz.tacr.elza.service.PartyService;
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+import java.util.*;
 
 
 /**
@@ -287,7 +243,7 @@ public class PartyController {
             @RequestParam("from") final Integer from,
             @RequestParam("count") final Integer count,
             @Nullable @RequestParam(value = "partyTypeId", required = false) final Integer partyTypeId,
-            @RequestParam(value = "partyId", required = true) @Nullable final Integer partyId) {
+            @RequestParam(value = "partyId", required = true) final Integer partyId) {
 
         ParParty party = partyRepository.getOne(partyId);
         Assert.notNull(party, "Nebyla nalezena osoba s id " + partyId);
