@@ -158,8 +158,6 @@ public class RegistryControllerTest extends AbstractControllerTest {
         recordA = getRecord(recordA.getRecordId());
         Assert.assertTrue("Ocekavame 2 variantni hesla pro heslo A", recordA.getVariantRecords().size() == 2);
 
-        deleteVariantRecord(variant2.getVariantRecordId());
-
         String changedCharacter = "Ja nechci byt regRecordA.";
         recordA.setCharacteristics(changedCharacter);
         updateRecord(recordA);
@@ -169,6 +167,7 @@ public class RegistryControllerTest extends AbstractControllerTest {
         variant2 = updateVariantRecord(variant2);
         Assert.assertTrue("Ocekavame upravny record", variant2.getRecord().equals(changedRecord));
 
+        deleteVariantRecord(variant2.getVariantRecordId());
         recordA = getRecord(recordA.getRecordId());
         Assert.assertTrue("Ocekavame 1 variantni heslo pro heslo A", recordA.getVariantRecords().size() == 1);
         Assert.assertTrue("Ocekavame charakteristiku \"" + changedCharacter + "\"", recordA.getCharacteristics().equals(changedCharacter));
