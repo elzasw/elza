@@ -99,6 +99,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String RECORD_TYPES = REGISTRY_CONTROLLER_URL + "/recordTypes";
 
     protected static final String FIND_RECORD = REGISTRY_CONTROLLER_URL + "/findRecord";
+    protected static final String FIND_RECORD_FOR_RELATION = REGISTRY_CONTROLLER_URL + "/findRecordForRelation";
     protected static final String GET_RECORD = REGISTRY_CONTROLLER_URL + "/getRecord";
     protected static final String CREATE_RECORD = REGISTRY_CONTROLLER_URL + "/createRecord";
     protected static final String UPDATE_RECORD = REGISTRY_CONTROLLER_URL + "/updateRecord";
@@ -987,6 +988,16 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
+     * Úprava variantního hesla
+     *
+     * @param recordVO VO objektu k vytvoření
+     * @return VO
+     */
+    protected RegVariantRecordVO updateVariantRecord(final RegVariantRecordVO recordVO) {
+        return put(spec -> spec.body(recordVO), UPDATE_VARIANT_RECORD).getBody().as(RegVariantRecordVO.class);
+    }
+
+    /**
      * Smazání variantního hesla
      *
      * @param id variantního hesla
@@ -1138,6 +1149,17 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return delete(spec -> spec, DELETE_RELATIONS + relationId);
     }
 
+    /**
+     * Vyhledání osob podle osoby
+     *
+     * @param partyId     id osoby
+     * @param search      název / jméno osoby
+     * @param from        od
+     * @param count       počet
+     * @param partyTypeId typ osoby
+     * @param versionId   verze
+     * @return List osob
+     */
     protected List<ParPartyVO> findPartyForParty(final Integer partyId,
                                                  final String search,
                                                  final Integer from, final Integer count,
@@ -1161,4 +1183,29 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return get(spec -> spec.queryParameters(params), FIND_PARTY_FOR_PARTY).getBody().as(ParPartyWithCount.class).getRecordList();
     }
 
+    /**
+     * Vyhledání rejstříkových hesel dle relace
+     *
+     * @param search     hledaný řetězec
+     * @param from       odkud se mají vracet výsledka
+     * @param count      počet vracených výsledků
+     * @param roleTypeId id typu vztahu
+     * @param partyId    id osoby, ze které je načtena hledaná třída rejstříku
+     * @return list rejstříkových hesel
+     */
+    public List<RegRecordVO> findRecordForRelation(final String search,
+                                                   final Integer from, final Integer count,
+                                                   final Integer roleTypeId,
+                                                   final Integer partyId) {
+        HashMap<String, Object> params = new HashMap<>();
+
+        if (search != null) {
+            params.put("search", search);
+        }
+        params.put("partyId", partyId);
+        params.put("roleTypeId", roleTypeId);
+        params.put("from", from != null ? from : 0);
+        params.put("count", count != null ? count : 20);
+        return get(spec -> spec.queryParams(params), FIND_RECORD_FOR_RELATION).getBody().as(RegRecordWithCount.class).getRecordList();
+    }
 }

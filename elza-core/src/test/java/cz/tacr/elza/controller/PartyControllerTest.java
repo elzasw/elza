@@ -298,22 +298,34 @@ public class PartyControllerTest extends AbstractControllerTest {
 
         Assert.assertTrue("Očekáváme 1 identifikátor", groupK1.getPartyGroupIdentifiers().size() == 1);
 
+
+        /** Test zda neexistuje nějaké heslo s tímto typem pro přidání (test metody findRecordForRelation) **/
+        ParRelationTypeVO spawnRelationType = findRelationTypeByCode(typeO1.getRelationTypes(), "2");
+        ParRelationRoleTypeVO spawnRelationRoleType = findRelationRoleTypeByCode(spawnRelationType.getRelationRoleTypes(), "11");
+        List<RegRecordVO> recordForRelation = findRecordForRelation(null, null, null, spawnRelationRoleType.getRoleTypeId(), personO1.getPartyId());
+
+        Assert.assertTrue("Očekáváme 0 záznamů", recordForRelation.size() == 0);
+
         /** Přidání relací osoby **/
         RegRecordVO record = new RegRecordVO();
 
         record.setScopeId(scope.getId());
         record.setCharacteristics("Characteristic");
-        record.setRecord("Record");
+        record.setRecord("GEO1");
         record.setRegisterTypeId(findRegisterTypeByCode(getRecordTypes(), "GEO_SPACE").getId());
 
         record = createRecord(record);
+
+        /** Test zda existuje heslo s tímto typem pro přidání (test metody findRecordForRelation) **/
+        recordForRelation = findRecordForRelation(null, null, null, spawnRelationRoleType.getRoleTypeId(), personO1.getPartyId());
+        Assert.assertTrue("Očekáváme 1 záznam", recordForRelation.size() == 1);
 
         /** Vznik **/
         ParRelationVO spawnRelation = new ParRelationVO();
         ParRelationEntityVO spawnRelationEntity = new ParRelationEntityVO();
         spawnRelationEntity.setRecord(record);
-        ParRelationTypeVO spawnRelationType = findRelationTypeByCode(typeO1.getRelationTypes(), "2");
-        spawnRelationEntity.setRoleType(findRelationRoleTypeByCode(spawnRelationType.getRelationRoleTypes(), "11"));
+
+        spawnRelationEntity.setRoleType(spawnRelationRoleType);
         spawnRelation.setRelationEntities(Collections.singletonList(spawnRelationEntity));
         spawnRelation.setComplementType(spawnRelationType);
         spawnRelation.setFrom(testFromDate);

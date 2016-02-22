@@ -7,7 +7,6 @@ import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import org.junit.Assert;
 import org.junit.Test;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 
@@ -17,59 +16,9 @@ import java.util.List;
  */
 public class RegistryControllerTest extends AbstractControllerTest {
 
-    /**
-     * Najde seznam rejstříkových hesel, která jsou typu napojeného na dané relationRoleTypeId a mají třídu rejstříku
-     * stejnou jako daná osoba.
-     *
-     * @param search     hledaný řetězec
-     * @param from       odkud se mají vracet výsledka
-     * @param count      počet vracených výsledků
-     * @param roleTypeId id typu vztahu
-     * @param partyId    id osoby, ze které je načtena hledaná třída rejstříku
-     */
-    public void findRecordForRelation(@Nullable final String search,
-                                      final Integer from, final Integer count,
-                                      @Nullable final Integer roleTypeId,
-                                      @Nullable final Integer partyId) {
-
-
-    }
-
-
     @Test
     public void getRecordTypesTest() {
         getRecordTypes();
-    }
-
-
-    /**
-     * Vrátí seznam kořenů typů rejstříku (typů hesel) pro typ osoby. Pokud je null, pouze pro typy, které nejsou pro osoby.
-     */
-    public void getRecordTypesForPartyType(@Nullable final Integer partyTypeId) {
-    }
-
-    /**
-     * Vytvoření variantního rejstříkového hesla.
-     *
-     * @param variantRecord VO rejstříkové heslo
-     */
-    public void createVariantRecordTest(final RegVariantRecordVO variantRecord) {
-    }
-
-    /**
-     * Aktualizace variantního rejstříkového hesla.
-     *
-     * @param variantRecord VO rejstříkové heslo
-     */
-    public void updateVariantRecordTest(final RegVariantRecordVO variantRecord) {
-    }
-
-    /**
-     * Smazání variantního rejstříkového hesla.
-     *
-     * @param variantRecordId id variantního rejstříkového hesla
-     */
-    public void deleteVariantRecordTest(final Integer variantRecordId) {
     }
 
     /**
@@ -152,6 +101,7 @@ public class RegistryControllerTest extends AbstractControllerTest {
      * - přidat k hierarchickému heslu A 2 variantní hesla
      * - získat detail hesla A, ověřit výsledek (A s 2 variantními hesly)
      * - smazat hierarchickému heslu A 1 variantní heslo
+     * - upravit 2 variantní heslo
      * - upravit heslo A (jiné charakteristika)
      * - získat detail hesla A, ověřit výsledek (A s 1 variantním heslem, upravená charakteristika)
      * - vytvořit nová rejstříková hesla C a D pod heslo A
@@ -213,6 +163,11 @@ public class RegistryControllerTest extends AbstractControllerTest {
         String changedCharacter = "Ja nechci byt regRecordA.";
         recordA.setCharacteristics(changedCharacter);
         updateRecord(recordA);
+
+        String changedRecord = "Upraveny record";
+        variant2.setRecord(changedRecord);
+        variant2 = updateVariantRecord(variant2);
+        Assert.assertTrue("Ocekavame upravny record", variant2.getRecord().equals(changedRecord));
 
         recordA = getRecord(recordA.getRecordId());
         Assert.assertTrue("Ocekavame 1 variantni heslo pro heslo A", recordA.getVariantRecords().size() == 1);
