@@ -158,17 +158,20 @@ export function createReferenceMark(node) {
     var levels = [];
     if (node.referenceMark) {
         node.referenceMark.forEach((i, index) => {
-            if (i < 1000) {
-                var cls = "level";
-                if (i > 99) {
-                    cls = "level small";
+            if (index % 2 == 0) {
+                if (i < 1000) {
+                    var cls = "level";
+                    if (i > 99) {
+                        cls = "level small";
+                    }
+                    levels.push(<span key={'level' + index} className={cls}>{i}</span>)
+                } else {
+                    levels.push(<span key={'level' + index} className="level">.{i % 1000}</span>)
                 }
-                levels.push(<span key={'level' + index} className={cls}>{i}</span>)
             } else {
-                levels.push(<span key={'level' + index} className="level">.{i % 1000}</span>)
-            }
-            if (index + 1 < node.referenceMark.length) {
-                levels.push(<span key={'sep' + index} className="separator"></span>)
+                if (index + 1 < node.referenceMark.length) {
+                    levels.push(<span key={'sep' + index} className="separator">{i}</span>)
+                }
             }
         });
     }
@@ -181,7 +184,7 @@ export function createReferenceMark(node) {
  * @param node {Object} jednotka popisu
  */
 export function createReferenceMarkString(node) {
-    return node && node.referenceMark && node.referenceMark.join(" | ");
+    return node && node.referenceMark && node.referenceMark.join(" ");
 }
 
 /**
