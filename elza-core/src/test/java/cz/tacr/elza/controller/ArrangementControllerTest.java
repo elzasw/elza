@@ -92,8 +92,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         Assert.notEmpty(nodeFormData.getGroups());
         Assert.notEmpty(nodeFormData.getTypeGroups());
 
-        ArrangementController.NodeFormsDataVO nodeFormsData = getNodeFormsData(rootNode.getId(),
-                findingAidVersion.getId());
+        ArrangementController.NodeFormsDataVO nodeFormsData = getNodeFormsData(findingAidVersion.getId(), rootNode.getId());
         Assert.notEmpty(nodeFormsData.getForms());
 
         nodeFormsData = getNodeWithAroundFormsData(findingAidVersion.getId(), nodes.get(1).getId(), 5);
