@@ -7,14 +7,13 @@ require ('./FaTreeLazy.less');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {VirtualList, AbstractReactComponent, i18n, Loading, Icon, Search} from 'components';
+import {VirtualList, NoFocusButton, AbstractReactComponent, i18n, Loading, Icon, Search} from 'components';
 import {Nav, Input, NavItem, Button, DropdownButton} from 'react-bootstrap';
 var classNames = require('classnames');
 import {ResizeStore} from 'stores';
 import {propsEquals} from 'components/Utils'
 import {indexById} from 'stores/app/utils.jsx'
 import {createReferenceMark, getGlyph, getNodePrevSibling, getNodeNextSibling, getNodeParent, getNodeFirstChild} from 'components/arr/ArrUtils'
-var Shortcuts = require('react-shortcuts/component')
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
 
 // Na kolik znaků se má název položky stromu oříznout, jen pokud je nastaven vstupní atribut, že se má název ořezávat
@@ -34,10 +33,16 @@ var keyDownHandlers = {
     ArrowDown: function(e) {
         const {nodes, selectedId, multipleSelection, onNodeClick} = this.props
 
-        if (!multipleSelection && selectedId !== null) {
-            var index = indexById(nodes, selectedId)
-            if (index !== null && index + 1 < nodes.length) {
-                onNodeClick(nodes[index + 1])
+        if (!multipleSelection) {
+            if (selectedId !== null) {  // něco je označeno
+                var index = indexById(nodes, selectedId)
+                if (index !== null && index + 1 < nodes.length) {
+                    onNodeClick(nodes[index + 1])
+                }
+            } else {    // není nic označeno, označíme první položku stromu
+                if (nodes.length > 0) {
+                    onNodeClick(nodes[0])
+                }
             }
         }
     },
@@ -81,7 +86,7 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
         super(props);
 
         this.bindMethods(
-            'renderNode', 'handleKeyDown', 'trySetFocus'
+            'renderNode', 'handleKeyDown', 'trySetFocus', 'handleOnSearch'
         );
 
         this.state = {};
@@ -125,8 +130,10 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
     }
 
     handleKeyDown(event) {
-        if (keyDownHandlers[event.key]) {
-            keyDownHandlers[event.key].call(this, event)
+        if (document.activeElement === ReactDOM.findDOMNode(this.refs.treeContainer)) { // focus má strom
+            if (keyDownHandlers[event.key]) {
+                keyDownHandlers[event.key].call(this, event)
+            }
         }
     }
 
@@ -194,6 +201,28 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
         )
     }
 
+    handleOnSearch(filterText, searchByEnter, shiftKey) {
+        const {onFulltextNextItem, onFulltextPrevItem, searchedIds, filterCurrentIndex, filterResult, onFulltextSearch} = this.props
+
+        if (searchByEnter) {    // při hledání pomocí enter se chováme jinak - pokud již něco vyledaného je, jdeme na další (případně předchozí) výsledek
+            if (filterResult) { // je něco vyhledáno a nic mezitím nebylo změněno
+                if (!shiftKey) {
+                    if (filterCurrentIndex + 1 < searchedIds.length) {
+                        onFulltextNextItem()
+                    }
+                } else {
+                    if (filterCurrentIndex > 0) {
+                        onFulltextPrevItem()
+                    }
+                }
+            } else {
+                onFulltextSearch()
+            }
+        } else {    // standardní hledání kliknutím na tlačítko hledat
+            onFulltextSearch()
+        }
+    }
+
     render() {
         const {searchedIds, searchedParents, filterCurrentIndex, filterResult} = this.props;
 
@@ -218,8 +247,8 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
                 var prevButtonEnabled = filterCurrentIndex > 0;
                 var nextButtonEnabled = filterCurrentIndex < searchedIds.length - 1;
 
-                actionAddons.push(<Button disabled={!nextButtonEnabled} className="next" onClick={this.props.onFulltextNextItem}><Icon glyph='fa-chevron-down'/></Button>)
-                actionAddons.push(<Button disabled={!prevButtonEnabled} className="prev" onClick={this.props.onFulltextPrevItem}><Icon glyph='fa-chevron-up'/></Button>)
+                actionAddons.push(<NoFocusButton disabled={!nextButtonEnabled} className="next" onClick={this.props.onFulltextNextItem}><Icon glyph='fa-chevron-down'/></NoFocusButton>)
+                actionAddons.push(<NoFocusButton disabled={!prevButtonEnabled} className="prev" onClick={this.props.onFulltextPrevItem}><Icon glyph='fa-chevron-up'/></NoFocusButton>)
             }
             actionAddons.push(searchedInfo)
         }
@@ -230,7 +259,6 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
         }
 
         return (
-
             <div className='fa-tree-lazy-main-container'>
                 <div className='fa-traa-header-container'>
                     <Search
@@ -238,11 +266,11 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
                         filterText={this.props.filterText}
                         onChange={e => this.props.onFulltextChange(e.target.value)}
                         onClear={e => {this.props.onFulltextChange(''); this.props.onFulltextSearch()}}
-                        onSearch={this.props.onFulltextSearch}
+                        onSearch={this.handleOnSearch}
                         actionAddons={actionAddons}
                     />
                 </div>
-                <div className='fa-tree-lazy-container' ref="treeContainer" onKeyDown={this.handleKeyDown} tabIndex={-11}>
+                <div className='fa-tree-lazy-container' ref="treeContainer" onKeyDown={this.handleKeyDown} tabIndex={0}>
                     <Button className="tree-collapse" onClick={this.props.onCollapse}><Icon glyph='fa-compress'/>Sbalit vše</Button>
                     {this.state.treeContainer && <VirtualList
                         tagName='div'

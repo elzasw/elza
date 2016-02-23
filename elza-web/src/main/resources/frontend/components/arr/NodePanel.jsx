@@ -5,7 +5,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Icon, AbstractReactComponent, i18n, Loading, SubNodeForm, Accordion, SubNodeRegister, AddNodeDropdown, Search} from 'components';
+import {Icon, ListBox, AbstractReactComponent, i18n, Loading, SubNodeForm, Accordion, SubNodeRegister, AddNodeDropdown, Search} from 'components';
 import {Button, Tooltip, OverlayTrigger, Input} from 'react-bootstrap';
 import {faSubNodeFormFetchIfNeeded} from 'actions/arr/subNodeForm'
 import {faSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister'
@@ -35,7 +35,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick',
             'getParentNodes', 'getChildNodes', 'getSiblingNodes',
             'renderAccordion', 'renderState', 'transformConformityInfo', 'handleAddNodeAtEnd',
-            'handleChangeFilterText'
+            'handleChangeFilterText', 'renderRowItem'
             );
 
         this.state = {
@@ -170,22 +170,29 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
      * @return {Object} view
      */
     renderRow(items, key, myClass, onClick) {
-        var rows = items.map(item => {
-            var icon = <Icon className="node-icon" glyph={getGlyph(item.icon)} />
-            var levels = <span className="reference-mark">{createReferenceMarkString(item)}</span>
-            var name = item.name ? item.name : <i>{i18n('faTree.node.name.undefined', item.id)}</i>;
-            name = <span title={name} className="name">{name}</span>
+        return (
+            <ListBox key={key} className={myClass}
+                items={items}
+                renderItemContent={this.renderRowItem.bind(this, onClick)}
+                onSelect={(item, index) => onClick(item)}
+            />
+        )
+    }
 
-            return (
-                    <div key={item.id} className='node' onClick={onClick.bind(this, item)}>
-                        {icon} {levels} {name}
-                    </div>
-            )
-        });
+    /**
+     * Renderování jednoho řádku v listboxu.
+     * onClick {Object} on click metoda, která se má zavolat po aktivaci řádku
+     * item {Object} položka pro renderování
+     */
+    renderRowItem(onClick, item) {
+        var icon = <Icon className="node-icon" glyph={getGlyph(item.icon)} />
+        var levels = <span className="reference-mark">{createReferenceMarkString(item)}</span>
+        var name = item.name ? item.name : <i>{i18n('faTree.node.name.undefined', item.id)}</i>;
+        name = <span title={name} className="name">{name}</span>
 
         return (
-                <div key={key} className={myClass}>
-                    {rows}
+                <div key={item.id} className='node' onClick={onClick.bind(this, item)}>
+                    {icon} {levels} {name}
                 </div>
         )
     }

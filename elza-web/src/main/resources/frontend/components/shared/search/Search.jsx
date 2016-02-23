@@ -8,7 +8,7 @@
 import React from 'react';
 
 import {Button, Input} from 'react-bootstrap';
-import {i18n, Icon} from 'components';
+import {i18n, Icon, NoFocusButton} from 'components';
 import ReactDOM from 'react-dom'
 
 require ('./Search.less');
@@ -39,8 +39,8 @@ var Search = class Search extends React.Component {
         }
     }
 
-    handleSearch(e){
-       this.props.onSearch(this.state.filterText);
+    handleSearch(searchByEnter, shiftKey){
+       this.props.onSearch(this.state.filterText, searchByEnter, shiftKey);
     }
 
     handleClear(e){
@@ -54,7 +54,7 @@ var Search = class Search extends React.Component {
 
     handleKeyUp(e){
         if (e.keyCode == 13){
-            this.handleSearch(e);
+            this.handleSearch(true, e.shiftKey);
         }
     }
 
@@ -86,10 +86,10 @@ var Search = class Search extends React.Component {
 
         var actions = []
 
-        actions.push(<Button key='handleSearch' className='search-button' onClick={this.handleSearch}><Icon glyph='fa-search'/></Button>)
+        actions.push(<NoFocusButton key='handleSearch' className='search-button' onClick={this.handleSearch.bind(this, false, false)}><Icon glyph='fa-search'/></NoFocusButton>)
 
         if (this.state.filterText) {
-            actions.push(<Button key='handleClear' className='clear-search-button' onClick={this.handleClear}><Icon glyph='fa-close'/></Button>)
+            actions.push(<NoFocusButton key='handleClear' className='clear-search-button' onClick={this.handleClear}><Icon glyph='fa-close'/></NoFocusButton>)
         }
 
         if (this.props.actionAddons) {

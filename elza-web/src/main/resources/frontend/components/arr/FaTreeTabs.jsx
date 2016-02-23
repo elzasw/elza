@@ -7,10 +7,9 @@ require ('./FaTreeTabs.less');
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {AbstractReactComponent, i18n, Tabs, FaTreeLazy, FaTreeMain, Icon} from 'components';
+import {AbstractReactComponent, NoFocusButton, i18n, Tabs, FaTreeLazy, FaTreeMain, Icon} from 'components';
 import * as types from 'actions/constants/ActionTypes';
 import {AppActions} from 'stores';
-import {Button} from 'react-bootstrap';
 import {MenuItem} from 'react-bootstrap';
 import {fasFetchIfNeeded, selectFaTab, closeFaTab, faExtendedView} from 'actions/arr/fa'
 import {faTreeFocusNode, faTreeFetchIfNeeded, faTreeNodeExpand, faTreeNodeCollapse} from 'actions/arr/faTree'
@@ -130,7 +129,7 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
 
         return (
             <Tabs.Container className='fa-tabs-container'>
-                <Button onClick={this.handleToggleExtendedView} className='extended-view-toggle'><Icon glyph='fa-expand'/></Button>
+                <NoFocusButton onClick={this.handleToggleExtendedView} className='extended-view-toggle'><Icon glyph='fa-expand'/></NoFocusButton>
 
                 <Tabs.Tabs closable items={tabs} activeItem={activeFa}
                     onSelect={item=>this.dispatch(selectFaTab(item))}

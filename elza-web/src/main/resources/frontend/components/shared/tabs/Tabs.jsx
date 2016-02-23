@@ -7,9 +7,9 @@
 
 import React from 'react';
 
-import {NavDropdown, MenuItem, Button, DropdownButton, Nav, NavItem} from 'react-bootstrap';
+import {Nav, NavItem} from 'react-bootstrap';
 import {ResizeStore} from 'stores';
-import {Icon, i18n} from 'components';
+import {Icon, i18n, NoFocusButton} from 'components';
 import ReactDOM from 'react-dom';
 
 require ('./Tabs.less');
@@ -110,15 +110,16 @@ var Tabs = class Tabs extends React.Component {
     render() {
         var tabs = this.props.items.map((item, i) => {                                                              // vytvoření html seznamu všecch záložek                                        
             var closeAction;
+            var closeAction2;
             if (this.props.closable) {
-                closeAction = <Button title={closeTitle} onClick={this.handleTabClose.bind(this, item)}><Icon glyph="fa-times" /></Button>
+                closeAction = <NoFocusButton title={closeTitle} onClick={this.handleTabClose.bind(this, item)}><Icon glyph="fa-times" /></NoFocusButton>
             }
 
             var closeTitle = i18n('tabs.action.closeTab');                                          // popisek ikony zavírající záložku
             var key = typeof item.key !== 'undefined' ? item.key : item.id;
-            return <NavItem key={key} ref={"tab"+i} eventKey={key}><span title={item.title}>{item.title}</span>
+            return <NavItem tabIndex={-1} key={key} ref={"tab"+i} eventKey={key}><span title={item.title}>{item.title}</span>
                 <small>{item.desc}</small>
-                {closeAction}</NavItem>    // vlastni kod založky
+                {closeAction}{closeAction2}</NavItem>    // vlastni kod založky
         });
 
 

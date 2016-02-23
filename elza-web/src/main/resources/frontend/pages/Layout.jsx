@@ -19,10 +19,11 @@ require('./Layout.less');
 
 var keymap = {
     Main: {
-        home: keyModifier + 'd',
-        arr: keyModifier + 'a',
-        registry: keyModifier + 'r',
-        party: keyModifier + 'o',
+        home: 'alt+1',
+        arr: 'alt+2',
+        registry: 'alt+3',
+        party: 'alt+4',
+        admin: 'alt+5',
     },
     Tree: {}
 }
@@ -54,6 +55,9 @@ var Layout = class Layout extends AbstractReactComponent {
                 break
             case 'registry':
                 this.dispatch(routerNavigate('/registry'))
+                break
+            case 'admin':
+                this.dispatch(routerNavigate('/admin'))
                 break
         }
     }
