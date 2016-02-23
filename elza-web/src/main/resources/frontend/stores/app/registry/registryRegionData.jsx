@@ -68,7 +68,6 @@ export default function registryRegionData(state = initialState, action = {}) {
             return Object.assign({}, state, {
                 selectedId: action.registryId,
                 isFetching: true,
-                fetched: false
             });
         case types.REGISTRY_CHANGE_REGISTRY_DETAIL:
             return Object.assign({}, state, {
