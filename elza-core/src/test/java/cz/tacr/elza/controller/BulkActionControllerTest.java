@@ -1,10 +1,12 @@
 package cz.tacr.elza.controller;
 
 import cz.tacr.elza.api.vo.BulkActionState;
+import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.BulkActionStateVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -22,6 +24,9 @@ public class BulkActionControllerTest extends AbstractControllerTest {
 
     private static final Logger logger = LoggerFactory.getLogger(BulkActionControllerTest.class);
 
+    protected final static String XML_FILE = "bulk-actions-fa-import.xml";
+    protected final static String IMPORT_SCOPE = "BULK_ACTIONS_TEST";
+
     private static final String BULK_ACTIONS = BULK_ACTION_CONTROLLER_URL + "/{versionId}/{mandatory}";
     private static final String BULK_ACTION_STATES = BULK_ACTION_CONTROLLER_URL + "/states/{versionId}";
     private static final String BULK_ACTION_RUN = BULK_ACTION_CONTROLLER_URL + "/run/{versionId}/{code}";
@@ -33,18 +38,22 @@ public class BulkActionControllerTest extends AbstractControllerTest {
     private static final String BULK_ACTION_SERIAL_NUMBER_GENERATOR = "GENERATOR_SERIAL_NUMBER_ZP2015";
 
     private int importAndGetVersionId() {
-        for (RegScopeVO scope : getAllScopes()) {
-            if (scope.getName().equals(XmlImportControllerTest.IMPORT_SCOPE)) {
-                deleteScope(scope.getId());
-                break;
-            }
-        }
-        XmlImportControllerTest.importFA();
+        importXmlFile(null, null, XmlImportType.FINDING_AID, IMPORT_SCOPE, null, XmlImportControllerTest.getFile(XML_FILE));
         List<ArrFindingAidVO> findingAids = getFindingAids();
         Assert.assertEquals(1, findingAids.size());
         Assert.assertEquals(1, findingAids.get(0).getVersions().size());
 
         return findingAids.get(0).getVersions().get(0).getId();
+    }
+
+    @After
+    public void cleanUp() {
+        for (RegScopeVO scope : getAllScopes()) {
+            if (scope.getName().equals(IMPORT_SCOPE)) {
+                deleteScope(scope.getId());
+                break;
+            }
+        }
     }
 
     @Test

@@ -5,11 +5,13 @@ import cz.tacr.elza.controller.vo.ArrFindingAidVO;
 import cz.tacr.elza.controller.vo.RegScopeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeClient;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -19,10 +21,23 @@ import java.util.List;
  */
 public class XmlImportControllerTest extends AbstractControllerTest {
 
-    public final static String XML_FILE = "elza-import.xml";
-    public final static String IMPORT = XML_IMPORT_CONTROLLER_URL + "/import";
+    protected final static String TRANSFORMATIONS = XML_IMPORT_CONTROLLER_URL + "/transformations";
 
-    public final static String IMPORT_SCOPE = "ImportScope";
+    protected final static String IMPORT_SCOPE_FA = "IMPORT_SCOPE_FA";
+    protected final static String IMPORT_SCOPE_PARTY = "IMPORT_SCOPE_PARTY";
+    protected final static String IMPORT_SCOPE_RECORD = "IMPORT_SCOPE_RECORD";
+    protected final static String ALL_IN_ONE_XML = "all-in-one-import.xml";
+
+    @After
+    public void cleanUp() {
+        List<String> toDelete = Arrays.asList(IMPORT_SCOPE_FA, IMPORT_SCOPE_PARTY, IMPORT_SCOPE_RECORD);
+        for (RegScopeVO scope : getAllScopes()) {
+            if (toDelete.contains(scope.getName())) {
+                deleteScope(scope.getId());
+                break;
+            }
+        }
+    }
 
     /**
      * Scénář
@@ -30,16 +45,14 @@ public class XmlImportControllerTest extends AbstractControllerTest {
      * - Naimportovat XML v nativním formátu ELZA (bez XSLT transformace) s jednou pomůckou, max 3 node a pár vyplněnými atributy
      * - Před importem je potřeba nahrát pravidlový balíček, xml musí odpovídat balíčku - zařízeno metodou výše
      * - Po testu ověřit, jestli se založila pomůcka a načíst strom a detail jednoho node -
+     * ----
+     * Import osob
+     * Import rejstříků
+     *
      */
     @Test
     public void scenarioTest() {
-        for (RegScopeVO scope : getAllScopes()) {
-            if (scope.getName().equals(XmlImportControllerTest.IMPORT_SCOPE)) {
-                deleteScope(scope.getId());
-                break;
-            }
-        }
-        importFA();
+        importFile(getFile(ALL_IN_ONE_XML), IMPORT_SCOPE_FA, XmlImportType.FINDING_AID);
 
         List<ArrFindingAidVO> findingAids = getFindingAids();
         Assert.assertTrue("Očekáváme 1 archivní pomůcku", findingAids.size() == 1);
@@ -59,11 +72,23 @@ public class XmlImportControllerTest extends AbstractControllerTest {
         List<TreeNodeClient> nodes = getNodes(idsParam);
 
         TreeNodeClient treeNodeClient = nodes.get(0);
+        importFile(getFile(ALL_IN_ONE_XML), IMPORT_SCOPE_RECORD, XmlImportType.RECORD);
+        importFile(getFile(ALL_IN_ONE_XML), IMPORT_SCOPE_PARTY, XmlImportType.PARTY);
+
     }
 
-    public static void importFA() {
-        URL url = Thread.currentThread().getContextClassLoader().getResource(XML_FILE);
-        File file = new File(url.getPath());
-        multipart(spec -> spec.multiPart("xmlFile", file).multiPart("importDataFormat", XmlImportType.FINDING_AID).multiPart("scopeName", IMPORT_SCOPE), IMPORT);
+    private void importFile(File xmlFile, String scopeName, XmlImportType type) {
+        importXmlFile(null, null, type, scopeName, null, xmlFile);
+    }
+
+    public static File getFile(String resourcePath) {
+        URL url = Thread.currentThread().getContextClassLoader().getResource(resourcePath);
+        Assert.assertNotNull(url);
+        return new File(url.getPath());
+    }
+
+    @Test
+    public void getTransformationsTest() {
+        get(TRANSFORMATIONS);
     }
 }

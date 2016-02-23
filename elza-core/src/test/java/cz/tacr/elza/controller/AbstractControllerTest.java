@@ -7,6 +7,7 @@ import com.jayway.restassured.response.Header;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 import cz.tacr.elza.AbstractTest;
+import cz.tacr.elza.api.vo.XmlImportType;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
@@ -26,6 +27,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import javax.annotation.Nullable;
+import java.io.File;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
@@ -143,6 +145,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     // Validation
     protected static final String VALIDATE_UNIT_DATE = VALIDATION_CONTROLLER_URL + "/unitDate";
+
+    // XmlImport
+    protected final static String XML_IMPORT = XML_IMPORT_CONTROLLER_URL + "/import";
 
     @Value("${local.server.port}")
     private int port;
@@ -1703,10 +1708,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param partyId    id osoby, ze které je načtena hledaná třída rejstříku
      * @return list rejstříkových hesel
      */
-    public List<RegRecordVO> findRecordForRelation(final String search,
-                                                   final Integer from, final Integer count,
-                                                   final Integer roleTypeId,
-                                                   final Integer partyId) {
+    protected List<RegRecordVO> findRecordForRelation(final String search,
+                                                      final Integer from, final Integer count,
+                                                      final Integer roleTypeId,
+                                                      final Integer partyId) {
         HashMap<String, Object> params = new HashMap<>();
 
         if (search != null) {
@@ -1717,5 +1722,31 @@ public abstract class AbstractControllerTest extends AbstractTest {
         params.put("from", from != null ? from : 0);
         params.put("count", count != null ? count : 20);
         return get(spec -> spec.queryParams(params), FIND_RECORD_FOR_RELATION).getBody().as(RegRecordWithCount.class).getRecordList();
+    }
+
+    protected Response importXmlFile(final String transformationName,
+                                     final Boolean stopOnError,
+                                     final XmlImportType type,
+                                     final String scopeName,
+                                     final Integer scopeId,
+                                     final File xmlFile) {
+        HashMap<String, Object> params = new HashMap<>();
+
+        if (transformationName != null) {
+            params.put("transformationName", transformationName);
+        }
+        if (stopOnError != null) {
+            params.put("stopOnError", stopOnError);
+        }
+        if (type != null) {
+            params.put("importDataFormat", type);
+        }
+        if (scopeName != null) {
+            params.put("scopeName", scopeName);
+        }
+        if (scopeId != null) {
+            params.put("scopeId", scopeId);
+        }
+        return multipart(spec -> spec.multiPart("xmlFile", xmlFile).params(params), XML_IMPORT);
     }
 }
