@@ -15,6 +15,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
+
 /**
  * @author Petr Compel
  * @since 23.2.2016
@@ -52,7 +55,9 @@ public class XmlImportControllerTest extends AbstractControllerTest {
      */
     @Test
     public void scenarioTest() {
-        importFile(getFile(ALL_IN_ONE_XML), IMPORT_SCOPE_FA, XmlImportType.FINDING_AID);
+        importFile(getFile(ALL_IN_ONE_XML), IMPORT_SCOPE_FA, XmlImportType.FINDING_AID, null);
+        List<RegScopeVO> allScopes = getAllScopes();
+        importFile(getFile(ALL_IN_ONE_XML), null, XmlImportType.FINDING_AID, allScopes.get(0).getId());
 
         List<ArrFindingAidVO> findingAids = getFindingAids();
         Assert.assertTrue("Očekáváme 1 archivní pomůcku", findingAids.size() == 1);
@@ -72,13 +77,13 @@ public class XmlImportControllerTest extends AbstractControllerTest {
         List<TreeNodeClient> nodes = getNodes(idsParam);
 
         TreeNodeClient treeNodeClient = nodes.get(0);
-        importFile(getFile(ALL_IN_ONE_XML), IMPORT_SCOPE_RECORD, XmlImportType.RECORD);
-        importFile(getFile(ALL_IN_ONE_XML), IMPORT_SCOPE_PARTY, XmlImportType.PARTY);
+        importFile(getFile(ALL_IN_ONE_XML), IMPORT_SCOPE_RECORD, XmlImportType.RECORD, null);
+        importFile(getFile(ALL_IN_ONE_XML), IMPORT_SCOPE_PARTY, XmlImportType.PARTY, null);
 
     }
 
-    private void importFile(File xmlFile, String scopeName, XmlImportType type) {
-        importXmlFile(null, null, type, scopeName, null, xmlFile);
+    private void importFile(File xmlFile, String scopeName, XmlImportType type, @Nullable Integer scopeId) {
+        importXmlFile(null, null, type, scopeName, scopeId, xmlFile);
     }
 
     public static File getFile(String resourcePath) {

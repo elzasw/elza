@@ -10,6 +10,8 @@ import java.util.List;
 import cz.tacr.elza.controller.vo.nodes.DescItemSpecLiteVO;
 import cz.tacr.elza.controller.vo.nodes.DescItemTypeDescItemsLiteVO;
 import cz.tacr.elza.controller.vo.nodes.DescItemTypeLiteVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemDecimalVO;
+import cz.tacr.elza.domain.ArrDescItemDecimal;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
@@ -233,6 +235,8 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ArrDescItemInt.class, ArrDescItemIntVO.class).byDefault().field(
                 "descItemId", "id").register();
         mapperFactory.classMap(ArrDescItemText.class, ArrDescItemTextVO.class).byDefault().field(
+                "descItemId", "id").register();
+        mapperFactory.classMap(ArrDescItemDecimal.class, ArrDescItemDecimalVO.class).byDefault().field(
                 "descItemId", "id").register();
         mapperFactory.classMap(ArrDescItemUnitid.class, ArrDescItemUnitidVO.class).byDefault().field(
                 "descItemId", "id").register();

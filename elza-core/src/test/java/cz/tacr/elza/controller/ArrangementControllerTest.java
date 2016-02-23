@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -212,7 +213,27 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrangementController.CopySiblingResult copySiblingResult =
                 copyOlderSiblingAttribute(findingAidVersion.getId(), type.getId(), nodes.get(2));
 
-    }
+        type = findDescItemTypeByCode("ZP2015_UNIT_DATE");
+        descItem = buildDescItem(type.getCode(), null, "1920", 1, null);
+        descItemResult = createDescItem(descItem, findingAidVersion, node, type);
+        node = descItemResult.getNode();
+
+        type = findDescItemTypeByCode("ZP2015_LEGEND");
+        descItem = buildDescItem(type.getCode(), null, "legenda", 1, null);
+        descItemResult = createDescItem(descItem, findingAidVersion, node, type);
+        node = descItemResult.getNode();
+
+        type = findDescItemTypeByCode("ZP2015_POSITION");
+        descItem = buildDescItem(type.getCode(), null, "1e;20x", 1, null);
+        descItemResult = createDescItem(descItem, findingAidVersion, node, type);
+        node = descItemResult.getNode();
+
+        type = findDescItemTypeByCode("ZP2015_COLL_EXTENT_LENGTH");
+        descItem = buildDescItem(type.getCode(), null, BigDecimal.valueOf(20.5), 1, null);
+        descItemResult = createDescItem(descItem, findingAidVersion, node, type);
+        node = descItemResult.getNode();
+
+}
 
     /**
      * Přesunutí a smazání levelů

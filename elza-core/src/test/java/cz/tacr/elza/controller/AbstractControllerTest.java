@@ -822,6 +822,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
             case "UNITDATE": {
                 descItem = new ArrDescItemUnitdateVO();
                 ((ArrDescItemUnitdateVO) descItem).setValue((String) value);
+                ((ArrDescItemUnitdateVO) descItem).setCalendarTypeId(getCalendarTypes().get(0).getId());
                 break;
             }
 

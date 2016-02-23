@@ -881,24 +881,6 @@ public class DescItemFactory implements InitializingBean {
     }
 
     /**
-     * Vytvoření kopie dat hodnoty atributu.
-     *
-     * @param descItemFrom atribut ze kterého se kopíruje hodnota
-     * @param descItemTo   atribut do kterého se kopíruje hodnota
-     */
-    public void copyDescItemValues(ArrDescItem descItemFrom, ArrDescItem descItemTo) {
-        ArrData data = getDataByDescItem(descItemFrom);
-        ArrData dataNew = facade.map(data, data.getClass());
-        dataNew.setDescItem(descItemTo);
-        try {
-            mapRepository.get(dataNew.getClass()).save(dataNew);
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-            throw new NotImplementedException("Nebyla namapována repozitory pro datový typ");
-        }
-    }
-
-    /**
      * Formátuje výstupní hodnotu dat pokud je to vyžadováno (existuje podmínka v kontextu.
      *
      * @param context kontext
