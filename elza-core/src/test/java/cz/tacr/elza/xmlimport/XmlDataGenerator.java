@@ -7,9 +7,18 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.lang.math.RandomUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.domain.ParRelationType;
+import cz.tacr.elza.repository.ComplementTypeRepository;
+import cz.tacr.elza.repository.ExternalSourceRepository;
+import cz.tacr.elza.repository.PartyNameFormTypeRepository;
+import cz.tacr.elza.repository.PartyTypeRepository;
+import cz.tacr.elza.repository.RegisterTypeRepository;
+import cz.tacr.elza.repository.RelationRoleTypeRepository;
+import cz.tacr.elza.repository.RelationTypeRepository;
 import cz.tacr.elza.xmlimport.v1.vo.XmlImport;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.AbstractDescItem;
 import cz.tacr.elza.xmlimport.v1.vo.arrangement.DescItemCoordinates;
@@ -52,6 +61,21 @@ import cz.tacr.elza.xmlimport.v1.vo.record.VariantRecord;
 @Service
 public class XmlDataGenerator {
 
+    @Autowired
+    private PartyTypeRepository partyTypeRepository;
+    @Autowired
+    private PartyNameFormTypeRepository partyNameFormTypeRepository;
+    @Autowired
+    private ComplementTypeRepository complementTypeRepository;
+    @Autowired
+    private RelationTypeRepository relationTypeRepository;
+    @Autowired
+    private RelationRoleTypeRepository relationRoleTypeRepository;
+    @Autowired
+    private RegisterTypeRepository registerTypeRepository;
+    @Autowired
+    private ExternalSourceRepository externalSourceRepository;
+
     private int nodes = 0;
 
     /**
@@ -63,6 +87,8 @@ public class XmlDataGenerator {
      */
     public XmlImport createXmlImportData(final XmlDataGeneratorConfig config) {
         Assert.notNull(config);
+
+        initValues(config);
 
         XmlImport xmlImport = new XmlImport();
 
@@ -83,6 +109,16 @@ public class XmlDataGenerator {
         System.out.println(nodes);
 
         return xmlImport;
+    }
+
+    private void initValues(final XmlDataGeneratorConfig config) {
+        config.setPartyTypes(partyTypeRepository.findAll());
+        config.setPartyNameFormTypes(partyNameFormTypeRepository.findAll());
+        config.setComplementTypes(complementTypeRepository.findAll());
+        config.setRelationTypes(relationTypeRepository.findAll());
+        config.setRelationRoleTypes(relationRoleTypeRepository.findAll());
+        config.setRegisterTypes(registerTypeRepository.findAll());
+        config.setExternalSources(externalSourceRepository.findAll());
     }
 
     private List<Packet> createPackets(final XmlDataGeneratorConfig config) {
@@ -372,7 +408,7 @@ public class XmlDataGenerator {
         record.setCharacteristics("characteristics " + index);
         record.setNote("comment " + index);
         record.setExternalId("externalId " + index);
-        record.setExternalSourceCode("externalSourceCode " + index);
+        record.setExternalSourceCode(config.getRandomExternalSourceCode());
         record.setLocal(RandomUtils.nextBoolean());
         record.setPreferredName("record " + index);
 
@@ -387,7 +423,7 @@ public class XmlDataGenerator {
         } else {
             record.setRecordId(idPrefix + " " + index);
         }
-        record.setRegisterTypeCode("registerTypeCode " + index);
+        record.setRegisterTypeCode(config.getRandomRegisterTypeCode());
         record.setVariantNames(createVariantRecords(config.getVariantRecordCount()));
         record.setRecordCoordinates(createRecordCoordinates());
 
@@ -557,7 +593,7 @@ public class XmlDataGenerator {
     private void fillParentFields(List<Record> records, int index, AbstractParty party, XmlDataGeneratorConfig config,
             List<AbstractParty> parties) {
         party.setPartyId("partyId-" + index);
-        party.setPartyTypeCode("partyTypeCode " + index);
+        party.setPartyTypeCode(config.getRandomPartyTypeCode());
 
         party.setRecord(records.get(RandomUtils.nextInt(records.size())));
         party.setPreferredName(createPartyName(index, config));
@@ -581,38 +617,49 @@ public class XmlDataGenerator {
         party.setSourceInformations("sourceInformations " + index);
         party.setFromDate(createComplexDate());
         party.setToDate(createComplexDate());
+        party.setCharacteristics("characteristics");
     }
 
     private List<Relation> createEvents(List<Record> records, XmlDataGeneratorConfig config) {
         List<Relation> events = new ArrayList<Relation>(config.getEventCount());
         for (int i = 0; i < config.getEventCount(); i++) {
-            events.add(createEvent(records, i));
+            events.add(createEvent(records, i, config));
         }
 
         return events;
     }
 
-    private Relation createEvent(List<Record> records, int index) {
+    private Relation createEvent(List<Record> records, int index, XmlDataGeneratorConfig config) {
         Relation event = new Relation();
 
-        event.setClassTypeCode("classTypeCode ");
+        ParRelationType randomRelationType = config.getRandomRelationType();
+        if (randomRelationType == null) {
+            event.setClassTypeCode("classTypeCode ");
+            event.setRelationTypeCode("relationTypeCode " + index);
+        } else {
+            event.setClassTypeCode(randomRelationType.getClassType());
+            event.setRelationTypeCode(randomRelationType.getCode());
+        }
+
         event.setDateNote("dateNote " + index);
         event.setFromDate(createComplexDate());
         event.setNote("note " + index);
-        event.setRelationTypeCode("relationTypeCode " + index);
-        event.setRoleTypes(createRoleTypes(records));
+
+        event.setRoleTypes(createRoleTypes(records, config));
         event.setToDate(createComplexDate());
 
         return event;
     }
 
-    private List<RoleType> createRoleTypes(List<Record> records) {
+    private List<RoleType> createRoleTypes(List<Record> records, XmlDataGeneratorConfig config) {
         List<RoleType> roleTypes = new ArrayList<RoleType>(1);
 
         RoleType roleType = new RoleType();
         roleType.setRecord(records.get(RandomUtils.nextInt(records.size())));
-        roleType.setRoleTypeCode("roleTypeCode");
+        roleType.setRoleTypeCode(config.getRandomRelationRoleTypeCode());
         roleType.setSource("source");
+
+        roleTypes.add(roleType);
 
         return roleTypes;
     }
@@ -652,7 +699,7 @@ public class XmlDataGenerator {
         partyName.setOtherPart("otherPart " + index);
         partyName.setValidFrom(createComplexDate());
         partyName.setValidTo(createComplexDate());
-        partyName.setPartyNameFormTypeCode("partyNameFormTypeCode " + index);
+        partyName.setPartyNameFormTypeCode(config.getRandomPartyNameFormTypeCode());
         partyName.setPartyNameComplements(createPartyNameComplements(config));
 
         return partyName;
@@ -661,17 +708,17 @@ public class XmlDataGenerator {
     private List<PartyNameComplement> createPartyNameComplements(XmlDataGeneratorConfig config) {
         List<PartyNameComplement> partyNameComplements = new ArrayList<PartyNameComplement>(config.getPartyNameComplementsCount());
         for (int i = 0; i < config.getEventCount(); i++) {
-            partyNameComplements.add(createPartyNameComplement());
+            partyNameComplements.add(createPartyNameComplement(config));
         }
 
         return partyNameComplements;
     }
 
-    private PartyNameComplement createPartyNameComplement() {
+    private PartyNameComplement createPartyNameComplement(XmlDataGeneratorConfig config) {
         PartyNameComplement partyNameComplement = new PartyNameComplement();
 
         partyNameComplement.setComplement("complement");
-        partyNameComplement.setPartyNameComplementTypeCode("partyNameComplementTypeCode");
+        partyNameComplement.setPartyNameComplementTypeCode(config.getRandomComplementTypeCode());
 
         return partyNameComplement;
     }

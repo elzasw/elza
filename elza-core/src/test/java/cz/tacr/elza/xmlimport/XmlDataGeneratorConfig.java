@@ -1,5 +1,18 @@
 package cz.tacr.elza.xmlimport;
 
+import java.util.List;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.math.RandomUtils;
+
+import cz.tacr.elza.domain.ParComplementType;
+import cz.tacr.elza.domain.ParPartyNameFormType;
+import cz.tacr.elza.domain.ParPartyType;
+import cz.tacr.elza.domain.ParRelationRoleType;
+import cz.tacr.elza.domain.ParRelationType;
+import cz.tacr.elza.domain.RegExternalSource;
+import cz.tacr.elza.domain.RegRegisterType;
+
 /**
  * Nastavení generátoru dat pro testy xml imprtu.
  *
@@ -8,6 +21,7 @@ package cz.tacr.elza.xmlimport;
  */
 public class XmlDataGeneratorConfig {
 
+    /** Prvky nastavení. */
     private int recordCount;
 
     private int variantRecordCount;
@@ -29,6 +43,21 @@ public class XmlDataGeneratorConfig {
     private int partyNameComplementsCount;
 
     private int packetCount;
+    /** Konec nastavení. */
+
+    private List<ParPartyType> partyTypes;
+
+    private List<ParPartyNameFormType> partyNameFormTypes;
+
+    private List<ParComplementType> complementTypes;
+
+    private List<ParRelationType> relationTypes;
+
+    private List<ParRelationRoleType> relationRoleTypes;
+
+    private List<RegRegisterType> registerTypes;
+
+    private List<RegExternalSource> externalSources;
 
     public XmlDataGeneratorConfig(final int recordCount, final int variantRecordCount, final int partyCount,
                                   final int childrenCount, final int treeDepth, final int descItemsCount, final boolean valid,
@@ -130,4 +159,89 @@ public class XmlDataGeneratorConfig {
     public int getPacketCount() {
         return packetCount;
     }
+
+    public String getRandomPartyTypeCode() {
+        if (CollectionUtils.isEmpty(partyTypes)) {
+            return "partyTypeCode " + RandomUtils.nextInt();
+        }
+
+        return partyTypes.get(RandomUtils.nextInt(partyTypes.size())).getCode();
+    }
+
+    public void setPartyTypes(List<ParPartyType> partyTypes) {
+        this.partyTypes = partyTypes;
+    }
+
+    public String getRandomPartyNameFormTypeCode() {
+        if (CollectionUtils.isEmpty(partyNameFormTypes)) {
+            return "partyNameFormTypeCode " + RandomUtils.nextInt();
+        }
+
+        return partyNameFormTypes.get(RandomUtils.nextInt(partyNameFormTypes.size())).getCode();
+    }
+
+    public void setPartyNameFormTypes(List<ParPartyNameFormType> partyNameFormTypes) {
+        this.partyNameFormTypes = partyNameFormTypes;
+    }
+
+    public String getRandomComplementTypeCode() {
+        if (CollectionUtils.isEmpty(complementTypes)) {
+            return "partyNameComplementTypeCode " + RandomUtils.nextInt();
+        }
+
+        return complementTypes.get(RandomUtils.nextInt(complementTypes.size())).getCode();
+    }
+
+    public void setComplementTypes(List<ParComplementType> complementTypes) {
+        this.complementTypes = complementTypes;
+    }
+
+    public ParRelationType getRandomRelationType() {
+        if (CollectionUtils.isEmpty(relationTypes)) {
+            return null;
+        }
+
+        return relationTypes.get(RandomUtils.nextInt(relationTypes.size()));
+    }
+
+    public void setRelationTypes(List<ParRelationType> relationTypes) {
+        this.relationTypes = relationTypes;
+    }
+
+    public String getRandomRelationRoleTypeCode() {
+        if (CollectionUtils.isEmpty(relationRoleTypes)) {
+            return "roleTypeCode " + RandomUtils.nextInt();
+        }
+
+        return relationRoleTypes.get(RandomUtils.nextInt(relationRoleTypes.size())).getCode();
+    }
+
+    public void setRelationRoleTypes(List<ParRelationRoleType> relationRoleTypes) {
+        this.relationRoleTypes = relationRoleTypes;
+    }
+
+    public String getRandomRegisterTypeCode() {
+        if (CollectionUtils.isEmpty(registerTypes)) {
+            return "registerTypeCode " + RandomUtils.nextInt();
+        }
+
+        return registerTypes.get(RandomUtils.nextInt(registerTypes.size())).getCode();
+    }
+
+    public void setRegisterTypes(List<RegRegisterType> registerTypes) {
+        this.registerTypes = registerTypes;
+    }
+
+    public String getRandomExternalSourceCode() {
+        if (CollectionUtils.isEmpty(externalSources)) {
+            return "externalSourceCode " + RandomUtils.nextInt();
+        }
+
+        return externalSources.get(RandomUtils.nextInt(externalSources.size())).getCode();
+    }
+
+    public void setExternalSources(List<RegExternalSource> externalSources) {
+        this.externalSources = externalSources;
+    }
+
 }
