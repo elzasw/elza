@@ -100,8 +100,8 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     }
     editRecord(parentId, event){
         var registryParentTypesId = this.props.registryRegion.registryTypesId;
-        if (this.props.registryRegion.registryRegionData){
-            registryParentTypesId = this.props.registryRegion.registryRegionData.item.registerTypeId;
+        if (this.props.registryRegionData){
+            registryParentTypesId = this.props.registryRegionData.item.registerTypeId;
         }
 
         this.dispatch(
@@ -144,7 +144,9 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     handlePoznamkaBlur(event, element) {
         var data = Object.assign({}, this.props.registryRegionData.item);
         data.note = event.target.value;
-        this.dispatch(registryRecordNoteUpdate(data));
+        if (event.target.value !== this.props.registryRegionData.item.note) {
+            this.dispatch(registryRecordNoteUpdate(data));
+        }
     }
 
     handleGoToPartyPerson(partyId){
@@ -155,9 +157,9 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     render() {
 
 
-        if (!this.props.registryRegionData.isFetching && this.props.registryRegionData.fetched) {
+        if (this.props.registryRegionData.fetched) {
             var disableEdit = false;
-            if (this.props.registryRegionData.item.partyId){
+            if (this.props.registryRegionData && this.props.registryRegionData.item.partyId){
                 disableEdit = true;
             }
 
