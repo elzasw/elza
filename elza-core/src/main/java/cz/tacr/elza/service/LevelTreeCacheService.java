@@ -571,17 +571,6 @@ public class LevelTreeCacheService {
         return versionTreeMap;
     }
 
-    /**
-     * Provede smazání cache pro danou verzi stromu. Vynutí načtení cache při dalším volání {@link
-     * #getVersionTreeCache(ArrFindingAidVersion)}
-     *
-     * @param versionId verze stromu
-     */
-    synchronized public void clearVersionCache(final Integer versionId) {
-        versionCache.remove(versionId);
-    }
-
-
     @Subscribe
     public void onDataUpdate(final EventChangeMessage changeMessage) {
 

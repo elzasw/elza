@@ -2,7 +2,9 @@ package cz.tacr.elza.controller;
 
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemStringVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
 import cz.tacr.elza.drools.DirectionLevel;
@@ -29,7 +31,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     public static final String STORAGE_NUMBER = "Test 123";
     public static final String STORAGE_NUMBER_CHANGE = "Test 321";
 
-    public static final String NAME_AP = "UseCase";
+    public static final String NAME_AP = "UseCase ščřžý";
     public static final String RENAME_AP = "Renamed UseCase";
 
     @Test
@@ -178,18 +180,37 @@ public class ArrangementControllerTest extends AbstractControllerTest {
                 rootNode.getId(), rootNode.getVersion(), type.getId());
         rootNode = descItemResult.getNode();
 
+        ArrNodeVO node = nodes.get(1);
+
         ArrangementController.DescriptionItemParam param = new ArrangementController.DescriptionItemParam();
         param.setVersionId(findingAidVersion.getId());
-        param.setNode(rootNode);
+        param.setNode(node);
         param.setDirection(DirectionLevel.ROOT);
         getDescriptionItemTypesForNewLevel(false, param);
 
-        ArrangementController.CopySiblingResult copySiblingResult =
-                copyOlderSiblingAttribute(findingAidVersion.getId(), type.getId(), nodes.get(1));
+        // vytvoření další hodnoty - vícenásobné
+        type = findDescItemTypeByCode("ZP2015_OTHER_ID");
+        RulDescItemSpecExtVO spec = findDescItemSpecByCode("ZP2015_OTHERID_CJ", type);
+        descItem = buildDescItem(type.getCode(), spec.getCode(), "1", 1, null);
+        descItemResult = createDescItem(descItem, findingAidVersion, node, type);
+        node = descItemResult.getNode();
 
-                /*
-                moveLevelAfter
-        */
+        descItem = buildDescItem(type.getCode(), spec.getCode(), "2", 1, null);
+        descItemResult = createDescItem(descItem, findingAidVersion, node, type);
+        node = descItemResult.getNode();
+
+        descItem = buildDescItem(type.getCode(), spec.getCode(), "3", 1, null);
+                descItemResult = createDescItem(descItem, findingAidVersion, node, type);
+        node = descItemResult.getNode();
+        descItemCreated = descItemResult.getDescItem();
+
+        ((ArrDescItemStringVO) descItemCreated).setValue("3x");
+        descItemCreated.setPosition(5);
+        descItemResult = updateDescItem(descItemCreated, findingAidVersion, node, true);
+        node = descItemResult.getNode();
+
+        ArrangementController.CopySiblingResult copySiblingResult =
+                copyOlderSiblingAttribute(findingAidVersion.getId(), type.getId(), nodes.get(2));
 
     }
 
@@ -254,8 +275,22 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         rootNode.setVersion(rootNode.getVersion() + 1);
 
-        // přesun druhého za první
-        moveLevelAfter(findingAidVersion, newNodes3.get(0), rootNode, Arrays.asList(newNodes3.get(1)), rootNode);
+        // přidání třetího levelu na první pozici pod root
+        ArrangementController.NodeWithParent newLevel5 = addLevel(ArrMoveLevelService.AddLevelDirection.CHILD,
+                findingAidVersion, rootNode, rootNode, null);
+
+        rootNode = newLevel5.getParentNode();
+
+        input = new ArrangementController.FaTreeParam();
+        input.setVersionId(findingAidVersion.getId());
+        input.setNodeId(rootNode.getId());
+        treeData = getFaTree(input);
+        List<ArrNodeVO> newNodes4 = convertTreeNodes(treeData.getNodes());
+
+        Assert.isTrue(newNodes4.size() == 3);
+
+        // přesun posledního za první
+        moveLevelAfter(findingAidVersion, newNodes4.get(2), rootNode, Arrays.asList(newNodes4.get(0)), rootNode);
     }
 
     /**
@@ -278,7 +313,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // přidání prvního levelu pod root
         ArrangementController.NodeWithParent newLevel1 = addLevel(ArrMoveLevelService.AddLevelDirection.CHILD,
-                findingAidVersion, rootNode, rootNode);
+                findingAidVersion, rootNode, rootNode, "Série");
 
         Assert.isTrue(newLevel1.getParentNode().getId().equals(rootNode.getId()),
                 "Rodič nového uzlu musí být root");
@@ -289,7 +324,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // přidání druhého levelu pod root
         ArrangementController.NodeWithParent newLevel2 = addLevel(ArrMoveLevelService.AddLevelDirection.CHILD,
-                findingAidVersion, rootNode, rootNode);
+                findingAidVersion, rootNode, rootNode, null);
 
         Assert.isTrue(newLevel2.getParentNode().getId().equals(rootNode.getId()),
                 "Rodič nového uzlu musí být root");
@@ -300,7 +335,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // přidání třetího levelu na první pozici pod root
         ArrangementController.NodeWithParent newLevel3 = addLevel(ArrMoveLevelService.AddLevelDirection.BEFORE,
-                findingAidVersion, newLevel1.getNode(), rootNode);
+                findingAidVersion, newLevel1.getNode(), rootNode, null);
 
         Assert.isTrue(newLevel3.getParentNode().getId().equals(rootNode.getId()),
                 "Rodič nového uzlu musí být root");
@@ -311,7 +346,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // přidání uzlu za první uzel pod root (za child3)
         ArrangementController.NodeWithParent newLevel4 = addLevel(ArrMoveLevelService.AddLevelDirection.AFTER,
-                findingAidVersion, newLevel3.getNode(), rootNode);
+                findingAidVersion, newLevel3.getNode(), rootNode, null);
 
         Assert.isTrue(newLevel4.getParentNode().getId().equals(rootNode.getId()),
                 "Rodič nového uzlu musí být root");

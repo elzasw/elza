@@ -1,20 +1,18 @@
 package cz.tacr.elza.controller;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.config.EncoderConfig;
-import com.jayway.restassured.config.RestAssuredConfig;
-import com.jayway.restassured.response.Header;
-import com.jayway.restassured.response.Response;
-import com.jayway.restassured.specification.RequestSpecification;
-import cz.tacr.elza.AbstractTest;
-import cz.tacr.elza.api.vo.XmlImportType;
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.*;
-import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.service.ArrMoveLevelService;
+import static com.jayway.restassured.RestAssured.given;
+
+import java.io.File;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -26,13 +24,58 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
-import javax.annotation.Nullable;
-import java.io.File;
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.function.Function;
+import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.config.EncoderConfig;
+import com.jayway.restassured.config.RestAssuredConfig;
+import com.jayway.restassured.response.Header;
+import com.jayway.restassured.response.Response;
+import com.jayway.restassured.specification.RequestSpecification;
 
-import static com.jayway.restassured.RestAssured.given;
+import cz.tacr.elza.AbstractTest;
+import cz.tacr.elza.api.vo.XmlImportType;
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrFindingAidVO;
+import cz.tacr.elza.controller.vo.ArrFindingAidVersionVO;
+import cz.tacr.elza.controller.vo.ArrNodeRegisterVO;
+import cz.tacr.elza.controller.vo.ArrPacketVO;
+import cz.tacr.elza.controller.vo.ParPartyNameFormTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyTypeVO;
+import cz.tacr.elza.controller.vo.ParPartyVO;
+import cz.tacr.elza.controller.vo.ParPartyWithCount;
+import cz.tacr.elza.controller.vo.ParRelationVO;
+import cz.tacr.elza.controller.vo.RegRecordVO;
+import cz.tacr.elza.controller.vo.RegRecordWithCount;
+import cz.tacr.elza.controller.vo.RegRegisterTypeVO;
+import cz.tacr.elza.controller.vo.RegScopeVO;
+import cz.tacr.elza.controller.vo.RegVariantRecordVO;
+import cz.tacr.elza.controller.vo.RulArrangementTypeVO;
+import cz.tacr.elza.controller.vo.RulDataTypeVO;
+import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
+import cz.tacr.elza.controller.vo.RulDescItemTypeVO;
+import cz.tacr.elza.controller.vo.RulPacketTypeVO;
+import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeClient;
+import cz.tacr.elza.controller.vo.ValidationResult;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemCoordinatesVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemDecimalVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemEnumVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemFormattedTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemIntVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemPacketVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemPartyRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemRecordRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemStringVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemUnitdateVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemUnitidVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemVO;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.service.ArrMoveLevelService;
 
 
 public abstract class AbstractControllerTest extends AbstractTest {
@@ -398,12 +441,14 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected ArrangementController.NodeWithParent addLevel(final ArrMoveLevelService.AddLevelDirection direction,
                                                             final ArrFindingAidVersionVO findingAidVersion,
                                                             final ArrNodeVO staticNode,
-                                                            final ArrNodeVO parentStaticNode) {
+                                                            final ArrNodeVO parentStaticNode,
+                                                            final String scenarioName) {
         ArrangementController.AddLevelParam addLevelParam = new ArrangementController.AddLevelParam();
         addLevelParam.setVersionId(findingAidVersion.getId());
         addLevelParam.setDirection(direction);
         addLevelParam.setStaticNode(staticNode);
         addLevelParam.setStaticNodeParent(parentStaticNode);
+        addLevelParam.setScenarioName(scenarioName);
 
         ArrangementController.NodeWithParent newLevel = addLevel(addLevelParam);
 
@@ -1590,7 +1635,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return typy rejstříků
      */
     protected List<RegRegisterTypeVO> recordTypesForPartyType(final int partyTypeId) {
-        return Arrays.asList(get(spec -> spec.queryParam("partyTypeId", partyTypeId), RECORD_TYPES_FOR_PARTY_TYPE).getBody().as(RegRegisterTypeVO[].class));
+        return Arrays
+                .asList(get(spec -> spec.queryParam("partyTypeId", partyTypeId), RECORD_TYPES_FOR_PARTY_TYPE).getBody()
+                        .as(RegRegisterTypeVO[].class));
     }
 
     /**

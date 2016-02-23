@@ -151,28 +151,6 @@ public class RulesExecutor implements InitializingBean {
     }
 
 
-    /**
-     * Zkopíruje výchozí pravidla.
-     *
-     * @param dir složka pro uložení
-     */
-    private void copyDefaultFromResources(final File dir) throws IOException {
-        ClassLoader classLoader = getClass().getClassLoader();
-        File defaultDir = new File(classLoader.getResource("rules").getFile());
-        File[] files = defaultDir.listFiles((dir1, name) -> name.endsWith(FILE_EXTENSION));
-        if (files != null) {
-            for (File file : files) {
-                File fileCopy = new File(
-                        dir.toString() + File.separator + FilenameUtils.getBaseName(file.getName()) + FILE_EXTENSION);
-                try {
-                    Files.copy(file.toPath(), fileCopy.toPath());
-                } catch (FileAlreadyExistsException e) {
-                    logger.info("Soubor již existuje: " + e.getMessage());
-                }
-            }
-        }
-    }
-
     @Override
     public void afterPropertiesSet() throws Exception {
         File dir = new File(rootPath);
