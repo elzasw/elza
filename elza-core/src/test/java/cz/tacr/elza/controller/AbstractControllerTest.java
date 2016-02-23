@@ -23,14 +23,11 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 import static com.jayway.restassured.RestAssured.given;
@@ -45,6 +42,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String CONTENT_TYPE_HEADER = "content-type";
     protected static final String JSON_CONTENT_TYPE = "application/json";
     private static final Header JSON_CT_HEADER = new Header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE);
+    private static final Header MULTIPART_HEADER = new Header(CONTENT_TYPE_HEADER, MediaType.MULTIPART_FORM_DATA_VALUE);
 
     protected static final String ADMIN_CONTROLLER_URL = "/api/admin";
     protected static final String ARRANGEMENT_CONTROLLER_URL = "/api/arrangementManagerV2";
@@ -241,6 +239,30 @@ public abstract class AbstractControllerTest extends AbstractTest {
         logger.info("Response status: " + response.statusLine() + ", response body:");
         response.prettyPrint();
         Assert.assertEquals(status.value(), response.statusCode());
+
+        return response;
+    }
+
+    /**
+     * Multipart request
+     *
+     * @param params
+     * @param url
+     * @return
+     */
+    protected static Response multipart(Function<RequestSpecification, RequestSpecification> params,
+                                        String url) {
+        Assert.assertNotNull(params);
+        Assert.assertNotNull(url);
+
+        RequestSpecification requestSpecification = params.apply(given());
+
+        requestSpecification.header(MULTIPART_HEADER).log().all().config(UTF8_ENCODER_CONFIG);
+
+        Response response = requestSpecification.post(url);
+        logger.info("Response status: " + response.statusLine() + ", response body:");
+        response.prettyPrint();
+        Assert.assertEquals(HttpStatus.OK.value(), response.statusCode());
 
         return response;
     }
