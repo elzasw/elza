@@ -5,7 +5,6 @@ import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.BulkActionStateVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
-import cz.tacr.elza.repository.FindingAidVersionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,9 +24,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/bulkActionManagerV2")
 public class BulkActionController {
-
-    @Autowired
-    private FindingAidVersionRepository findingAidVersionRepository;
 
     @Autowired
     private BulkActionService bulkActionService;

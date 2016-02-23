@@ -7,6 +7,7 @@ import cz.tacr.elza.controller.vo.RegVariantRecordVO;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.List;
 
 
@@ -50,7 +51,7 @@ public class RegistryControllerTest extends AbstractControllerTest {
         scopeVO.setCode("ABCD");
         scopeVO = createScopeTest(scopeVO);
         scopeVO.setName("Testing2");
-        scopeVO = updateScopeTest(scopeVO.getId(), scopeVO);
+        scopeVO = updateScopeTest(scopeVO);
         deleteScopeTest(scopeVO.getId());
     }
 
@@ -66,9 +67,9 @@ public class RegistryControllerTest extends AbstractControllerTest {
     /**
      * Aktualizace třídy.
      *
-     * @param id id třídy
+     * @param scope id třídy
      */
-    private RegScopeVO updateScopeTest(final int id, final RegScopeVO scope) {
+    private RegScopeVO updateScopeTest(final RegScopeVO scope) {
         return updateScope(scope);
     }
 
@@ -120,7 +121,7 @@ public class RegistryControllerTest extends AbstractControllerTest {
         Assert.assertTrue(scopes != null && scopes.size() > 0);
         Integer scopeId = scopes.iterator().next().getId();
 
-        RegRegisterTypeVO hierarchal = getHierarchicalRegRegisterType(types);
+        RegRegisterTypeVO hierarchal = getHierarchicalRegRegisterType(types, null);
         RegRegisterTypeVO nonHierarchal = getNonHierarchicalRegRegisterType(types);
 
         Assert.assertNotNull("Nebyl nalezen hirearchický typ rejstříku", hierarchal);
@@ -194,6 +195,11 @@ public class RegistryControllerTest extends AbstractControllerTest {
 
         recordA = getRecord(recordA.getRecordId());
         Assert.assertTrue("Ocekavame 2 potomky recordu A", recordA.getChilds().size() == 2);
+
+        /** změna parent record type id */
+        RegRegisterTypeVO newHierarchicalType = getHierarchicalRegRegisterType(types, Collections.singletonList(hierarchal));
+        recordA.setRegisterTypeId(newHierarchicalType.getId());
+        recordA = updateRecord(recordA);
 
         deleteRecord(recordD.getRecordId());
 

@@ -13,8 +13,8 @@ import java.net.URL;
 public class RuleControllerTest extends AbstractControllerTest {
 
     private static final String IMPORT_PACKAGE = RULE_CONTROLLER_URL + "/importPackage";
-    private static final String DELETE_PACKAGE = RULE_CONTROLLER_URL + "/deletePackage/";
-    private static final String EXPORT_PACKAGE = RULE_CONTROLLER_URL + "/exportPackage/";
+    private static final String DELETE_PACKAGE = RULE_CONTROLLER_URL + "/deletePackage/{code}";
+    private static final String EXPORT_PACKAGE = RULE_CONTROLLER_URL + "/exportPackage/{code}";
 
     @Test
     public void getDataTypesTest() {
@@ -50,10 +50,10 @@ public class RuleControllerTest extends AbstractControllerTest {
     }
 
     private void deletePackage(final String code) {
-        get(DELETE_PACKAGE + code);
+        get(spec -> spec.pathParam("code", code), DELETE_PACKAGE);
     }
 
     private void exportPackage(final String code) {
-        get(EXPORT_PACKAGE + code);
+        get(spec -> spec.pathParam("code", code), EXPORT_PACKAGE);
     }
 }

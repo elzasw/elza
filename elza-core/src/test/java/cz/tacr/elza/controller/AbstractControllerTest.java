@@ -102,21 +102,21 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     // Party
     protected static final String CREATE_RELATIONS = PARTY_CONTROLLER_URL + "/relations";
-    protected static final String UPDATE_RELATIONS = PARTY_CONTROLLER_URL + "/relations/";
-    protected static final String DELETE_RELATIONS = PARTY_CONTROLLER_URL + "/relations/";
+    protected static final String UPDATE_RELATIONS = PARTY_CONTROLLER_URL + "/relations/{relationId}";
+    protected static final String DELETE_RELATIONS = PARTY_CONTROLLER_URL + "/relations/{relationId}";
     protected static final String FIND_PARTY = PARTY_CONTROLLER_URL + "/findParty";
     protected static final String FIND_PARTY_FOR_PARTY = PARTY_CONTROLLER_URL + "/findPartyForParty";
     protected static final String GET_PARTY = PARTY_CONTROLLER_URL + "/getParty";
     protected static final String GET_PARTY_TYPES = PARTY_CONTROLLER_URL + "/getPartyTypes";
     protected static final String GET_PARTY_NAME_FORM_TYPES = PARTY_CONTROLLER_URL + "/getPartyNameFormTypes";
     protected static final String INSERT_PARTY = PARTY_CONTROLLER_URL + "/insertParty";
-    protected static final String UPDATE_PARTY = PARTY_CONTROLLER_URL + "/updateParty/";
+    protected static final String UPDATE_PARTY = PARTY_CONTROLLER_URL + "/updateParty/{partyId}";
     protected static final String DELETE_PARTY = PARTY_CONTROLLER_URL + "/deleteParty";
 
     // REGISTRY
     protected static final String DEFAULT_SCOPES = REGISTRY_CONTROLLER_URL + "/defaultScopes";
     protected static final String CREATE_SCOPE = REGISTRY_CONTROLLER_URL + "/scopes";
-    protected static final String UPDATE_SCOPE = REGISTRY_CONTROLLER_URL + "/scopes/";
+    protected static final String UPDATE_SCOPE = REGISTRY_CONTROLLER_URL + "/scopes/{scopeId}";
     protected static final String DELETE_SCOPE = REGISTRY_CONTROLLER_URL + "/scopes/";
     protected static final String FA_SCOPES = REGISTRY_CONTROLLER_URL + "/faScopes";
     protected static final String ALL_SCOPES = REGISTRY_CONTROLLER_URL + "/scopes";
@@ -1157,16 +1157,19 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param list seznam typů
      * @return nalezený typ
      */
-    protected RegRegisterTypeVO getHierarchicalRegRegisterType(List<RegRegisterTypeVO> list) {
+    protected RegRegisterTypeVO getHierarchicalRegRegisterType(List<RegRegisterTypeVO> list, List<RegRegisterTypeVO> exclude) {
+        if (exclude == null) {
+            exclude = new ArrayList<>();
+        }
         for (RegRegisterTypeVO type : list) {
-            if (type.getHierarchical() && type.getAddRecord()) {
+            if (type.getHierarchical() && type.getAddRecord() && !exclude.contains(type)) {
                 return type;
             }
         }
 
         for (RegRegisterTypeVO type : list) {
             if (type.getChildren() != null) {
-                RegRegisterTypeVO res = getHierarchicalRegRegisterType(type.getChildren());
+                RegRegisterTypeVO res = getHierarchicalRegRegisterType(type.getChildren(), exclude);
                 if (res != null) {
                     return res;
                 }
@@ -1380,7 +1383,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return aktualizovaný objekt třídy
      */
     protected RegScopeVO updateScope(final RegScopeVO scope) {
-        return put(spec -> spec.body(scope), UPDATE_SCOPE + scope.getId()).getBody().as(RegScopeVO.class);
+        return put(spec -> spec.body(scope).pathParam("scopeId", scope.getId()), UPDATE_SCOPE).getBody().as(RegScopeVO.class);
     }
 
     /**
@@ -1534,7 +1537,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     protected ParPartyVO updateParty(final ParPartyVO partyVO) {
-        return put(spec -> spec.body(partyVO), UPDATE_PARTY + partyVO.getPartyId()).getBody().as(ParPartyVO.class);
+        return put(spec -> spec.body(partyVO).pathParam("partyId", partyVO.getPartyId()), UPDATE_PARTY).getBody().as(ParPartyVO.class);
     }
 
     /**
@@ -1643,7 +1646,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return vytvořená relace
      */
     protected ParRelationVO updateRelation(ParRelationVO relationVO) {
-        return put(spec -> spec.body(relationVO), UPDATE_RELATIONS + relationVO.getRelationId()).getBody().as(ParRelationVO.class);
+        return put(spec -> spec.body(relationVO).pathParam("relationId", relationVO.getRelationId()), UPDATE_RELATIONS).getBody().as(ParRelationVO.class);
     }
 
     /**
@@ -1653,7 +1656,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return response
      */
     protected Response deleteRelation(final int relationId) {
-        return delete(spec -> spec, DELETE_RELATIONS + relationId);
+        return delete(spec -> spec.pathParam("relationId", relationId), DELETE_RELATIONS);
     }
 
     /**
