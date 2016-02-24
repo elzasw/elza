@@ -48,9 +48,6 @@ module.exports = {
     externals: {
     },
     resolve: {
-	alias: {
-	    redux: 'redux.min'
-	},
         modulesDirectories: [
             "node_modules",
             path.resolve('./')
