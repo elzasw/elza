@@ -39,10 +39,10 @@ var AdminPage = class AdminPage extends AbstractReactComponent {
         var altActions = [];
 
         altActions.push(
+            <RibbonSplit />,
             <Button active={this.props.developer.enabled} key="developerMode" onClick={this.handleDeveloperMode}><Icon glyph="fa-cogs"/>
                 <div><span className="btnText">{i18n('ribbon.action.admin.developer')}</span></div>
             </Button>,
-            <RibbonSplit />,
             <Button key="resetLocalStorage" onClick={this.handleResetLocalStorage} title={i18n('ribbon.action.admin.resetLocalStorage.title')}><Icon glyph="fa-refresh"/>
                 <div><span className="btnText">{i18n('ribbon.action.admin.resetLocalStorage')}</span></div>
             </Button>,
