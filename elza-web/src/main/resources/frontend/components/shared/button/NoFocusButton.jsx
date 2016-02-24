@@ -9,10 +9,10 @@ var NoFocusButton = class NoFocusButton extends AbstractReactComponent {
 
     }
 
-    handleClick() {
+    handleClick(e) {
         const {disabled, onClick} = this.props
         if (!disabled) {
-            onClick()
+            onClick(e)
         }
     }
 
