@@ -64,7 +64,8 @@ return true;
 
         var options = infoType.specs.map(spec => {
             var fullSpec = {...spec, ...refType.descItemSpecsMap[spec.id]}
-            return <option key={fullSpec.id} value={fullSpec.id}>{fullSpec.name}</option>
+            var clsSpec = ['spec-' + spec.type.toLowerCase()];
+            return <option className={clsSpec} key={fullSpec.id} value={fullSpec.id}>{fullSpec.name}</option>
         });
 
         var cls = classNames({
