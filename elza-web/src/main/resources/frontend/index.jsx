@@ -33,7 +33,7 @@ function fc() {
     console.log(document.activeElement)
     xx()
 }
-setTimeout(fc, 1500)
+//setTimeout(fc, 1500)
 
 // Načtení dat z local storage = vrácení aplikace do předchozího stavu
 import {AppStore} from 'stores';
