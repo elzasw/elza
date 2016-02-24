@@ -110,11 +110,11 @@ function initFormKey(descItemType, descItem) {
 // 1. Doplní povinné a doporučené specifikace s prázdnou hodnotou, pokud je potřeba
 // 2. Pokud atribut nemá žádnou hodnotu, přidá první implicitní
 // 
-export function consolidateDescItems(resultDescItemType, infoType, refType) {
+export function consolidateDescItems(resultDescItemType, infoType, refType, emptySystemSpecToKeyMap={}) {
     var forceVisibility = infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED'
 
     // Vynucené hodnoty se specifikací, pokud je potřeba
-    addForcedSpecifications(resultDescItemType, infoType, refType)
+    addForcedSpecifications(resultDescItemType, infoType, refType, emptySystemSpecToKeyMap)
 
     // Přidáme jednu hodnotu - chceme i u opakovatelného, pokud žádnou nemá (nebyla hodnota přifána vynucením specifikací)
     if (resultDescItemType.descItems.length === 0) {
@@ -128,7 +128,7 @@ export function consolidateDescItems(resultDescItemType, infoType, refType) {
  * Doplnění prázdných hodnot se specifikací, které jsou vynucené podle typu (REQUIRED a RECOMMENDED), pokud ještě v resultDescItemType nejsou.
  * Uvažujeme POUZE descItemType, které mají specifikaci a MAJÍ i hodnotu, né pouze specifikaci.
  */
-export function addForcedSpecifications(resultDescItemType, infoType, refType) {
+export function addForcedSpecifications(resultDescItemType, infoType, refType, emptySystemSpecToKeyMap={}) {
     if (!refType.useSpecification) {
         return
     }
@@ -151,6 +151,13 @@ export function addForcedSpecifications(resultDescItemType, infoType, refType) {
         if (forceVisibility && !existingSpecIds[spec.id]) {  // přidáme ji na formulář, pokud má být vidět a ještě na formuláři není
             var descItem = createImplicitDescItem(resultDescItemType, refType)
             descItem.descItemSpecId = spec.id
+
+            // Ponechání původního form key, pokud existovala tato položka již na klientovi a nebylo na ní šáhnuto
+            var formKey = emptySystemSpecToKeyMap[spec.id]
+            if (formKey) {
+                descItem.formKey = formKey
+            }
+
             resultDescItemType.descItems.push(descItem)
         }
     })
@@ -231,6 +238,7 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
 
             // Doplnění o přidané a neuložené v aktuálním klientovi
             // Pokud se jedná o jednohodnotvý atribut, necháme jen tu ze serveru
+            var emptySystemSpecToKeyMap = {}   // mapa id specifikace prázdné systémové vynucené položky specifikace na formKey dané položky - aby nám položky na formuláři neskákaly
             if (infoType.rep === 1) {   // Vícehodnotový
                 var prevDescItem = null;
                 prevType.descItems.forEach((descItem, index) => {
@@ -239,9 +247,12 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
                     if (typeof descItem.id === 'undefined') { // mnou přidaná ještě neuložená, musíme jí přidat na správné místo
                         // Pokud se jedná o systémově přidanou hodnotu a uživatel na ní zatím nešáhl, nebudeme ji vůbec uvažovat
                         if (!descItem.addedByUser && !descItem.touched) {    // systémově přidaná a neupravená
-                            // nebudeme ji uvažovat
+                            // nebudeme ji uvažovat, jen se pro ni budeme snažit zachovat formKey, aby nám položky na formuláři neskákaly - jedná se o systémnově přidané atributy s povinnou nebo doporučenou specifikací
+                            if (refType.useSpecification && hasDescItemTypeValue(refType.dataType)) {
+                                emptySystemSpecToKeyMap[descItem.descItemSpecId] = descItem.formKey
+                            }
                         } else {
-                            if (prevDescItem) { // má předchozí, zkusíme ji v novém rozložení dat na stejné místo, pokud to půjde
+                            if (prevDescItem) { // má předchozí, zkusíme ji v novém rozložení dát na stejné místo, pokud to půjde
                                 var index = indexById(resultDescItemType.descItems, prevDescItem._uid, '_uid')
                                 if (index !== null) {   // našli jsme položku, za kterou ji můžeme přidat
                                     resultDescItemType.descItems = [
@@ -263,7 +274,7 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
             }
 
             // Upravení a opravení seznamu hodnot, případně přidání rázdných
-            consolidateDescItems(resultDescItemType, infoType, refType)
+            consolidateDescItems(resultDescItemType, infoType, refType, emptySystemSpecToKeyMap)
 
             return true;
         }
