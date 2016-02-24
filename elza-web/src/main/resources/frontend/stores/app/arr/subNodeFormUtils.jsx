@@ -117,11 +117,11 @@ export function consolidateDescItems(resultDescItemType, infoType, refType) {
     addForcedSpecifications(resultDescItemType, infoType, refType)
 
     // Přidáme jednu hodnotu - chceme i u opakovatelného, pokud žádnou nemá (nebyla hodnota přifána vynucením specifikací)
-        if (resultDescItemType.descItems.length === 0) {
-            resultDescItemType.descItems.push(createImplicitDescItem(resultDescItemType, refType));
-        }
-    if (forceVisibility) {
+    if (resultDescItemType.descItems.length === 0) {
+        resultDescItemType.descItems.push(createImplicitDescItem(resultDescItemType, refType));
     }
+    
+    resultDescItemType.descItems.forEach((descItem, index) => {descItem.position = index + 1});
 }
 
 /**

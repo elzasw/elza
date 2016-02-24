@@ -161,7 +161,14 @@ return true;
      * @param e {Object} event od prvku
      */
     handleChangeSpec(descItemIndex, e) {
-        this.props.onChangeSpec(descItemIndex, Number(e.target.value));
+        var specId
+        if (typeof e.target.value !== 'undefined' && e.target.value !== null && e.target.value !== '') {
+            specId = Number(e.target.value)
+        } else {
+            specId = ''
+        }
+
+        this.props.onChangeSpec(descItemIndex, specId);
     }
 
     /**
