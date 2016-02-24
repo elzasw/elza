@@ -471,7 +471,7 @@ return true;
         // ##
         // # Má se zobrazovat ikona mazání z hlediska typu atributu?
         // ##
-        if (infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED') {    // můžeme smazat pouze, pokud má nějakou hodnotu, kterou lze smazat
+        /*if (infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED') {    // můžeme smazat pouze, pokud má nějakou hodnotu, kterou lze smazat
             var haveDBValue = false
             descItemType.descItems.forEach(descItem => {
                 if (typeof descItem.id !== 'undefined') {   // je v db
@@ -481,7 +481,7 @@ return true;
             if (!haveDBValue) {
                 return false
             }
-        }
+        }*/
 
         return true
     }
@@ -493,41 +493,28 @@ return true;
             return false
         }
 
-        // ##
-        // # Má se zobrazovat ikona mazání z hlediska hodnot desc item?
-        // ##
-        // Pokud se jedná o atribut, který je vynucený serverem a nemá žádnou hodnotu na serveru, není možné jej smazat
-        // Ikona mazání se objeví pokud:
-        // Má pole, která nezměnil
-        // Má pole, která změnil a nejsou validní       
+        if (descItemType.descItems.length === 0) {
+            return true
+        }
+
+        var descItemsShowDeleteItem = false
         for (var a=0; a<descItemType.descItems.length; a++) {
             let descItem = descItemType.descItems[a]
+
             if (descItemNeedStore(descItem, refType)) {
                 return false
             }
 
-            /*if (descItem.touched && !descItem.error.hasError) { // změnil pole a je validní, nesmíme smazat
-                return false
-            }*/
-        }
-
-        // ##
-        // # Má se zobrazovat ikona mazání z hlediska typu atributu?
-        // ##
-        // Pokud nemá žádné hodnoty, můžeme atribut smazat pouze pokud není vynucený serverem - REQUIRED a RECOMMENDED
-        if (infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED') {    // můžeme smazat pouze, pokud má nějakou hodnotu, kterou lze smazat
-            var haveDBValue = false
-            descItemType.descItems.forEach(descItem => {
-                if (typeof descItem.id !== 'undefined') {   // je v db
-                    haveDBValue = true
-                }
-            })
-            if (!haveDBValue) {
-                return false
+            if (this.getShowDeleteDescItem(descItem)) {
+                descItemsShowDeleteItem = true
             }
         }
 
-        return true
+        if (descItemsShowDeleteItem) {
+            return true
+        }
+
+        return false
     }
 
     /**
