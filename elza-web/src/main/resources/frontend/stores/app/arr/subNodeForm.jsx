@@ -2,7 +2,7 @@ import * as types from 'actions/constants/ActionTypes';
 import {i18n} from 'components'
 import {indexById} from 'stores/app/utils.jsx'
 import {faSubNodeFormValueValidate} from 'actions/arr/subNodeForm'
-import {createDescItemFromDb, getDescItemType, updateFormData, createDescItem} from './subNodeFormUtils'
+import {createDescItemFromDb, getDescItemType, updateFormData, createDescItem, consolidateDescItems} from './subNodeFormUtils'
 var subNodeFormUtils = require('./subNodeFormUtils.jsx')
 import {validateInt, validateDouble} from 'components/validate'
 
@@ -42,7 +42,7 @@ function validate(descItem, refType, valueServerError) {
 
     // Specifikace
     if (refType.useSpecification) {
-        if (typeof descItem.descItemSpecId == 'undefined' || descItem.descItemSpecId == "") {
+        if (typeof descItem.descItemSpecId === 'undefined' || descItem.descItemSpecId === '') {
             error.spec = i18n('subNodeForm.validate.spec.required');
         }
     }
@@ -234,6 +234,9 @@ export default function subNodeForm(state = initialState, action) {
                 return newDescItem;
             })
 
+            // Upravení a opravení seznamu hodnot, případně přidání rázdných
+            consolidateDescItems(loc.descItemType, infoType, refType)
+
             state.formData = {...state.formData};
             return {...state};
         case types.FA_SUB_NODE_FORM_VALUE_RESPONSE:
@@ -312,9 +315,10 @@ export default function subNodeForm(state = initialState, action) {
             descItemGroup.descItemTypes.push(descItemType);
             // Musíme ponechat prázdnou hodnotu
             var refType = state.refTypesMap[descItemType.id]
-            var descItem = createDescItem(descItemType, refType, true);
-            descItem.position = 1;
-            descItemType.descItems.push(descItem);
+            var infoType = state.infoTypesMap[descItemType.id]
+
+            // Upravení a opravení seznamu hodnot, případně přidání rázdných
+            consolidateDescItems(descItemType, infoType, refType)
 
             descItemGroup.descItemTypes.sort((a, b) => {
                 return state.refTypesMap[a.id].viewOrder - state.refTypesMap[b.id].viewOrder
@@ -335,10 +339,8 @@ export default function subNodeForm(state = initialState, action) {
                     // Hodnoty odebereme
                     loc.descItemType.descItems = [];
 
-                    // Musíme ponechat prázdnou hodnotu
-                    var descItem = createDescItem(loc.descItemType, refType, true);
-                    descItem.position = 1;
-                    loc.descItemType.descItems.push(descItem);
+                    // Upravení a opravení seznamu hodnot, případně přidání rázdných
+                    consolidateDescItems(loc.descItemType, infoType, refType)
                 } else { // kompletně odebereme
                     loc.descItemGroup.descItemTypes = [
                         ...loc.descItemGroup.descItemTypes.slice(0, action.valueLocation.descItemTypeIndex),
@@ -354,6 +356,12 @@ export default function subNodeForm(state = initialState, action) {
                 ...loc.descItemType.descItems.slice(0, action.valueLocation.descItemIndex),
                 ...loc.descItemType.descItems.slice(action.valueLocation.descItemIndex + 1)
             ];
+
+            var infoType = state.infoTypesMap[loc.descItemType.id]
+            var refType = state.refTypesMap[loc.descItemType.id]
+
+            // Upravení a opravení seznamu hodnot, případně přidání rázdných
+            consolidateDescItems(loc.descItemType, infoType, refType)
             
             state.formData = {...state.formData};
             return {...state};

@@ -353,12 +353,14 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
                     if (refType.useSpecification && this.state.developerExpandedSpecsIds[refType.id]) {
                         if (refType.descItemSpecs.length > 0) {
                             specs = refType.descItemSpecs.map(spec => {
+                                var infoSpec = infoType.specs[indexById(infoType.specs, spec.id)]
+
                                 return (
-                                    <div key={'spec' + spec.id} className={'desc-item-spec ' +  spec.type}>
+                                    <div key={'spec' + spec.id} className={'desc-item-spec ' +  infoSpec.type}>
                                         <h3 title={spec.name}>{spec.shortcut} <small>[{spec.code}]</small></h3>
                                         <div key='1' className='desc'>{spec.description}</div>
                                         <div key='2' className='attrs'>
-                                            <div key='1'><label>type:</label>{spec.type}</div>
+                                            <div key='1'><label>type:</label>{infoSpec.type}</div>
                                             <div key='2'><label>repeatable:</label>{spec.repeatable ? i18n('global.title.yes') : i18n('global.title.no')}</div>
                                             <div key='3'><label>viewOrder:</label>{spec.viewOrder}</div>
                                         </div>

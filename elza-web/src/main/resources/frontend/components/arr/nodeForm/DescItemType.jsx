@@ -20,6 +20,7 @@ import DescItemPartyRef from './DescItemPartyRef'
 import DescItemRecordRef from './DescItemRecordRef'
 import {propsEquals} from 'components/Utils'
 import {descItemNeedStore} from 'actions/arr/subNodeForm'
+import {hasDescItemTypeValue} from 'components/arr/ArrUtils'
 var Shortcuts = require('react-shortcuts/component')
 
 require ('./AbstractDescItem.less')
@@ -450,19 +451,35 @@ return true;
         if (descItemNeedStore(descItem, refType)) {
             return false
         }
-        /*
-        if (descItem.touched && !descItem.error.hasError) { // změnil pole a je validní, nesmíme smazat
-            return false
-        }*/
+
+        if (typeof descItem.id !== 'undefined') {   // je na serveru, můžeme smazat
+            return true
+        }
+
+        if (descItem.touched) { // změnil pole, ale není v DB, je možné ji smazat
+            return true
+        }
+
+        // Mazat lze jen hodnota, která není povinná z hlediska specifikace
+        if (refType.useSpecification && hasDescItemTypeValue(refType.dataType) && typeof descItem.descItemSpecId !== 'undefined' && descItem.descItemSpecId !== '') {
+            const infoSpec = infoType.descItemSpecsMap[descItem.descItemSpecId]
+            if (infoSpec.type == 'REQUIRED' || infoSpec.type == 'RECOMMENDED') {
+                return false
+            }
+        }
 
         // ##
         // # Má se zobrazovat ikona mazání z hlediska typu atributu?
         // ##
         if (infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED') {    // můžeme smazat pouze, pokud má nějakou hodnotu, kterou lze smazat
-            if (descItemType.descItems.length === 1) {    // mažeme jen pokud je hodnota v DB
-                if (typeof descItem.id === 'undefined') {
-                    return false
+            var haveDBValue = false
+            descItemType.descItems.forEach(descItem => {
+                if (typeof descItem.id !== 'undefined') {   // je v db
+                    haveDBValue = true
                 }
+            })
+            if (!haveDBValue) {
+                return false
             }
         }
 
@@ -499,10 +516,14 @@ return true;
         // ##
         // Pokud nemá žádné hodnoty, můžeme atribut smazat pouze pokud není vynucený serverem - REQUIRED a RECOMMENDED
         if (infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED') {    // můžeme smazat pouze, pokud má nějakou hodnotu, kterou lze smazat
-            if (descItemType.descItems.length === 1) {    // mažeme jen pokud je hodnota v DB
-                if (typeof descItemType.descItems[0].id === 'undefined') {
-                    return false
+            var haveDBValue = false
+            descItemType.descItems.forEach(descItem => {
+                if (typeof descItem.id !== 'undefined') {   // je v db
+                    haveDBValue = true
                 }
+            })
+            if (!haveDBValue) {
+                return false
             }
         }
 
@@ -596,8 +617,8 @@ return true;
             var actions = new Array;
 
             if (infoType.rep === 1) {
-                actions.push(<NoFocusButton disabled={!showDeleteDescItemType} key="delete" onClick={onDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-times" /></NoFocusButton>);
-                //actions.push(<NoFocusButton disabled={!this.getShowDeleteDescItem(descItem)} key="delete" onClick={onDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-times" /></NoFocusButton>);
+                //actions.push(<NoFocusButton disabled={!showDeleteDescItemType} key="delete" onClick={onDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-times" /></NoFocusButton>);
+                actions.push(<NoFocusButton disabled={!this.getShowDeleteDescItem(descItem)} key="delete" onClick={onDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-times" /></NoFocusButton>);
             }
 
             var errors = conformityInfo.errors[descItem.descItemObjectId];

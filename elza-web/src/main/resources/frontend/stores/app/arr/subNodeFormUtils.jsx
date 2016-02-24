@@ -1,4 +1,5 @@
 import {indexById} from 'stores/app/utils.jsx'
+import {hasDescItemTypeValue} from 'components/arr/ArrUtils'
 
 function getDbItemTypesMap(data) {
     // Mapa id descItemType na descItemType
@@ -59,7 +60,7 @@ function createDataMap(formData) {
     }
 }
 
-function createImplicitDescItem(descItemType, refType) {
+export function createImplicitDescItem(descItemType, refType) {
     var descItem = createDescItem(descItemType, refType, false);
     descItem.position = 1;
     return descItem;
@@ -106,6 +107,55 @@ function initFormKey(descItemType, descItem) {
     _formKeys[descItemType.id] = _formKeys[descItemType.id] + 1
 }
 
+// 1. Doplní povinné a doporučené specifikace s prázdnou hodnotou, pokud je potřeba
+// 2. Pokud atribut nemá žádnou hodnotu, přidá první implicitní
+// 
+export function consolidateDescItems(resultDescItemType, infoType, refType) {
+    var forceVisibility = infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED'
+
+    // Vynucené hodnoty se specifikací, pokud je potřeba
+    addForcedSpecifications(resultDescItemType, infoType, refType)
+
+    // Přidáme jednu hodnotu - chceme i u opakovatelného, pokud žádnou nemá (nebyla hodnota přifána vynucením specifikací)
+        if (resultDescItemType.descItems.length === 0) {
+            resultDescItemType.descItems.push(createImplicitDescItem(resultDescItemType, refType));
+        }
+    if (forceVisibility) {
+    }
+}
+
+/**
+ * Doplnění prázdných hodnot se specifikací, které jsou vynucené podle typu (REQUIRED a RECOMMENDED), pokud ještě v resultDescItemType nejsou.
+ * Uvažujeme POUZE descItemType, které mají specifikaci a MAJÍ i hodnotu, né pouze specifikaci.
+ */
+export function addForcedSpecifications(resultDescItemType, infoType, refType) {
+    if (!refType.useSpecification) {
+        return
+    }
+
+    if (!hasDescItemTypeValue(refType.dataType)) {
+        return
+    }
+
+    // Seznam existujících specifikací
+    var existingSpecIds = {}
+    resultDescItemType.descItems.forEach(descItem => {
+        if (typeof descItem.descItemSpecId !== 'undefined' && descItem.descItemSpecId !== '') {
+            existingSpecIds[descItem.descItemSpecId] = true
+        }
+    })
+
+    infoType.specs.forEach(spec => {
+        const infoSpec = infoType.descItemSpecsMap[spec.id]
+        var forceVisibility = infoSpec.type == 'REQUIRED' || infoSpec.type == 'RECOMMENDED'
+        if (forceVisibility && !existingSpecIds[spec.id]) {  // přidáme ji na formulář, pokud má být vidět a ještě na formuláři není
+            var descItem = createImplicitDescItem(resultDescItemType, refType)
+            descItem.descItemSpecId = spec.id
+            resultDescItemType.descItems.push(descItem)
+        }
+    })
+}
+
 function mergeDescItems(state, resultDescItemType, prevType, newType) {
     var infoType = state.infoTypesMap[resultDescItemType.id]
     var refType = state.refTypesMap[resultDescItemType.id]
@@ -114,33 +164,38 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
     if (!prevType) {    // ještě ji na formuláři nemáme
         if (!newType) { // není ani v DB, přidáme ji pouze pokud je nastaveno forceVisibility
             if (forceVisibility) {  // přidáme ji pouze pokud je nastaveno forceVisibility
-                // Přidáme jednu hodnotu - chceme i u opakovatelného
-                resultDescItemType.descItems.push(createImplicitDescItem(resultDescItemType, refType));
+                // Upravení a opravení seznamu hodnot, případně přidání rázdných
+                consolidateDescItems(resultDescItemType, infoType, refType)
+
                 return true;
-            } else {
-                return false;
             }
         } else {    // je v db a není předchozí, dáme ji do formuláře bez merge
             newType.descItems.forEach(descItem => {
                 resultDescItemType.descItems.push(createDescItemFromDb(resultDescItemType, descItem))
             })
+
+            // Upravení a opravení seznamu hodnot, případně přidání rázdných
+            consolidateDescItems(resultDescItemType, infoType, refType)
+
             return true;
         }
     } else {    // již ji na formuláři máme, musíme provést merge
         if (!newType) { // není ani v DB, my jí máme, musíme nechat jen nově přidané hodnoty, protože ostatní i mnou editované již někdo smazal (protože nepřišel objekt newType)
             prevType.descItems.forEach(descItem => {
-                if (typeof descItem.id === 'undefined' && descItem.addedByUser) { // mnou přidaná ještě neuložená, necháme ji
+                if (typeof descItem.id === 'undefined' && descItem.addedByUser) { // mnou přidaná ještě neuložená, necháme je
                     resultDescItemType.descItems.push(descItem);
                 }
             })
 
-            if (forceVisibility && resultDescItemType.descItems.length === 0) { // má být vidět, ale nemáme žádnou hodnotu, přidáme implcitiní prázdnou
-                // Přidáme jednu hodnotu - chceme i u opakovatelného
-                resultDescItemType.descItems.push(createImplicitDescItem(resultDescItemType, refType));
+            // Upravení a opravení seznamu hodnot, případně přidání rázdných
+            if (forceVisibility) {
+                consolidateDescItems(resultDescItemType, infoType, refType)
             }
 
-            // Chceme ji pokud má nějaké hodnoty nebo pokud má být vidět - forceVisibility
-            return resultDescItemType.descItems.length > 0 || forceVisibility;
+            // Chceme ji pokud má nějaké hodnoty
+            if (resultDescItemType.descItems.length > 0) {
+                return true
+            }
         } else {    // je v db a my ji také máme, musíme provést merge
             // Vezmeme jako primární nově příchozí hodnoty a do nich přidáme ty, které aktualní klient má přidané, ale nemá je ještě uložené např. kvůli validaci atp.
             // Pokud ale má klient ty samé hodnoty (prev value je stejné jako nově příchozí hodnota), jako přijdou ze serveru a současně je upravil a nejsou uložené, necháme hodnoty v našem klientovi
@@ -153,7 +208,7 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
                 }
             })
 
-            // Nakopírování nově přijatých hodnot, případně ponechání stejných (na základe descItemObjectId a prev value == value ze serveru, které již uživatel upravil a nejsou odeslané)
+            // Nakopírování nově přijatých hodnot, případně ponechání stejných (na základě descItemObjectId a prev value == value ze serveru, které již uživatel upravil a nejsou odeslané)
             newType.descItems.forEach(descItem => {
                 var prevDescItem = prevDescItemMap[descItem.descItemObjectId];
 
@@ -175,33 +230,46 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
             })
 
             // Doplnění o přidané a neuložené v aktuálním klientovi
-            var prevDescItem = null;
-            prevType.descItems.forEach((descItem, index) => {
-                addUid(descItem, index);
+            // Pokud se jedná o jednohodnotvý atribut, necháme jen tu ze serveru
+            if (infoType.rep === 1) {   // Vícehodnotový
+                var prevDescItem = null;
+                prevType.descItems.forEach((descItem, index) => {
+                    addUid(descItem, index);
 
-                if (typeof descItem.id === 'undefined') { // mnou přidaná ještě neuložená, musíme jí přidat na správné místo
-                    if (prevDescItem) { // má předchozí, zkusíme ji v novém rozložní dat na stejné místo, pokud to půjde
-                        var index = indexById(resultDescItemType.descItems, prevDescItem._uid, '_uid')
-                        if (index !== null) {   // našli jsme položku, za kterou ji můžeme přidat
-                            resultDescItemType.descItems = [
-                                ...resultDescItemType.descItems.slice(0, index + 1),
-                                descItem,
-                                ...resultDescItemType.descItems.slice(index + 1)
-                            ]
-                        } else {    // nenašli jsme položku, za kterou ji můžeme přidat, dáme ji na konec
-                            resultDescItemType.descItems.push(descItem);
+                    if (typeof descItem.id === 'undefined') { // mnou přidaná ještě neuložená, musíme jí přidat na správné místo
+                        // Pokud se jedná o systémově přidanou hodnotu a uživatel na ní zatím nešáhl, nebudeme ji vůbec uvažovat
+                        if (!descItem.addedByUser && !descItem.touched) {    // systémově přidaná a neupravená
+                            // nebudeme ji uvažovat
+                        } else {
+                            if (prevDescItem) { // má předchozí, zkusíme ji v novém rozložení dat na stejné místo, pokud to půjde
+                                var index = indexById(resultDescItemType.descItems, prevDescItem._uid, '_uid')
+                                if (index !== null) {   // našli jsme položku, za kterou ji můžeme přidat
+                                    resultDescItemType.descItems = [
+                                        ...resultDescItemType.descItems.slice(0, index + 1),
+                                        descItem,
+                                        ...resultDescItemType.descItems.slice(index + 1)
+                                    ]
+                                } else {    // nenašli jsme položku, za kterou ji můžeme přidat, dáme ji na konec
+                                    resultDescItemType.descItems.push(descItem);
+                                }
+                            } else {    // nemá předchozí, dáme ji v novém rozložení na konec
+                                resultDescItemType.descItems.push(descItem);
+                            }
                         }
-                    } else {    // nemá předchozí, dáme ji v novém rozložení na konec
-                        resultDescItemType.descItems.push(descItem);
                     }
-                }
 
-                prevDescItem = descItem;
-            })  
+                    prevDescItem = descItem;
+                })
+            }
+
+            // Upravení a opravení seznamu hodnot, případně přidání rázdných
+            consolidateDescItems(resultDescItemType, infoType, refType)
 
             return true;
         }
     }
+
+    // Uměle doplníme ty specifikace, které 
 
     return false;
 }

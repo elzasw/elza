@@ -199,3 +199,25 @@ export function getGlyph(type) {
         return type;
     }
 }
+
+export function hasDescItemTypeValue(dataType) {
+    switch (dataType.code) {
+        case 'TEXT':
+        case 'STRING':
+        case 'INT':
+        case 'COORDINATES':
+        case 'DECIMAL':
+        case 'PARTY_REF':
+        case 'RECORD_REF':
+        case 'PACKET_REF':
+        case 'FORMATTED_TEXT':
+        case 'UNITDATE':
+        case 'UNITID':
+            return true
+        case 'ENUM':
+            return false
+        default:
+            console.error("Unsupported data type", dataType);
+            return false;
+    }
+}
