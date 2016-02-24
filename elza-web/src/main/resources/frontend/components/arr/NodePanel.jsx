@@ -5,7 +5,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
-import {Icon, ListBox, AbstractReactComponent, i18n, Loading, SubNodeForm, Accordion, SubNodeRegister, AddNodeDropdown, Search} from 'components';
+import {Icon, ListBox, AbstractReactComponent, i18n, Loading, SubNodeForm, Accordion, SubNodeRegister, AddNodeDropdown,
+        Search, GoToPositionForm} from 'components';
 import {Button, Tooltip, OverlayTrigger, Input} from 'react-bootstrap';
 import {faSubNodeFormFetchIfNeeded} from 'actions/arr/subNodeForm'
 import {faSubNodeRegisterFetchIfNeeded} from 'actions/arr/subNodeRegister'
@@ -21,6 +22,8 @@ import {propsEquals} from 'components/Utils'
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
+import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
+
 const scrollIntoView = require('dom-scroll-into-view')
 var classNames = require('classnames');
 
@@ -35,7 +38,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick',
             'getParentNodes', 'getChildNodes', 'getSiblingNodes',
             'renderAccordion', 'renderState', 'transformConformityInfo', 'handleAddNodeAtEnd',
-            'handleChangeFilterText', 'renderRowItem'
+            'handleChangeFilterText', 'renderRowItem', 'handleFindPosition', 'handleFindPositionSubmit'
             );
 
         this.state = {
@@ -389,6 +392,38 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         return rows;
     }
 
+    /**
+     * Akce po úspěšném vybrání pozice JP z formuláře.
+     *
+     * @param form data z formuláře
+     */
+    handleFindPositionSubmit(form) {
+        const {node} = this.props;
+
+        var index = form.position - 1;
+        var subNodeId = node.allChildNodes[index].id;
+
+        this.dispatch(faSelectSubNode(subNodeId, node));
+        this.dispatch(modalDialogHide());
+    }
+
+    /**
+     * Akce pro vybrání JO podle pozice.
+     */
+    handleFindPosition() {
+        const {node} = this.props;
+
+        var count = 0;
+        if (node.allChildNodes) {
+            count = node.allChildNodes.length;
+        }
+
+        this.dispatch(modalDialogShow(this, i18n('arr.fa.subNodes.findPosition'),
+                        <GoToPositionForm onSubmitForm={this.handleFindPositionSubmit} maxPosition={count} />
+                )
+        )
+    }
+
     render() {
         const {developer, calendarTypes, versionId, rulDataTypes, node,
                 packetTypes, packets, findingAidId,
@@ -422,6 +457,8 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                     }
                     <div className='btn btn-default' disabled={node.viewStartIndex == 0} onClick={()=>this.dispatch(faSubNodesPrevPage())}><Icon glyph="fa-backward" />{i18n('arr.fa.subNodes.prevPage')}</div>
                     <div className='btn btn-default' disabled={node.viewStartIndex + node.pageSize >= node.childNodes.length} onClick={()=>this.dispatch(faSubNodesNextPage())}><Icon glyph="fa-forward" />{i18n('arr.fa.subNodes.nextPage')}</div>
+
+                    <div className='btn btn-default' onClick={this.handleFindPosition} title={i18n('arr.fa.subNodes.findPosition')} ><Icon glyph="fa-hand-o-down" /></div>
 
                     <Search
                         className='search-input'

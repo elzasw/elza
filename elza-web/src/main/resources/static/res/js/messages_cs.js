@@ -115,6 +115,13 @@ var messages = {
     
     "arr.fa.subNodes.prevPage": "Předchozí stránka",
     "arr.fa.subNodes.nextPage": "Další stránka",
+    "arr.fa.subNodes.findPosition": "Přejít na JP podle pořadového čísla",
+    "arr.fa.subNodes.findPositionNumber": "Přejít na JP číslo (celkem {0})",
+    "arr.fa.subNodes.findPositionNumber": "Přejít na JP číslo (celkem {0})",
+    "arr.fa.subNodes.findPositionNumber.error.required": "Pozice JP musí být vyplněna",
+    "arr.fa.subNodes.findPositionNumber.error.type": "Pozice JP musí být vyplněna celým číslem",
+    "arr.fa.subNodes.findPositionNumber.error.interval": "Pozice JP musí být v rozsahu 1 - {0}",
+
     "arr.fa.prev": "Předchozí",
     "arr.fa.next": "Následující",
 
