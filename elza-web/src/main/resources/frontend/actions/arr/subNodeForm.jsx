@@ -543,6 +543,10 @@ export function faSubNodeFormReceive(versionId, nodeId, nodeKey, json, rulDataTy
     })
     var refTypesMap = getMapFromList(descItemTypes.items)
 
+    json.typeGroups.forEach(group => group.types.forEach(type => {
+        type.descItemSpecsMap = getMapFromList(type.specs)
+    }));
+
     return {
         type: types.FA_SUB_NODE_FORM_RECEIVE,
         versionId,
