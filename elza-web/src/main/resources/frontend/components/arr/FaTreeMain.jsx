@@ -3,6 +3,7 @@
  */
 
 import React from 'react';
+import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Tabs, FaTreeLazy} from 'components';
 import * as types from 'actions/constants/ActionTypes';
@@ -13,6 +14,7 @@ import {faSelectSubNode} from 'actions/arr/nodes'
 import {createFaRoot, getParentNode} from './ArrUtils.jsx'
 import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu'
 import {propsEquals} from 'components/Utils'
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
 
 var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
     constructor(props) {
@@ -20,20 +22,37 @@ var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
 
         this.bindMethods('callFaSelectSubNode', 'handleNodeClick', 'handleSelectInNewTab',
         'handleContextMenu', 'handleFulltextChange', 'handleFulltextSearch',
-            'handleFulltextPrevItem', 'handleFulltextNextItem', 'handleCollapse');
+        'handleFulltextPrevItem', 'handleFulltextNextItem', 'handleCollapse',
+        'trySetFocus');
     }
 
     componentDidMount() {
         const {versionId, expandedIds, selectedId} = this.props;
         this.requestFaTreeData(versionId, expandedIds, selectedId);
+        this.trySetFocus(this.props)
     }
 
     componentWillReceiveProps(nextProps) {
         const {versionId, expandedIds, selectedId} = nextProps;
         this.requestFaTreeData(versionId, expandedIds, selectedId);
+        this.trySetFocus(nextProps)
+    }
+
+    trySetFocus(props) {
+        var {focus} = props
+
+        if (canSetFocus()) {
+            if (isFocusFor(focus, 'arr', 1, 'tree') || isFocusFor(focus, 'arr', 1)) {
+                this.setState({}, () => {
+                   this.refs.tree.getWrappedInstance().focus()
+                   focusWasSet()
+                })
+            }
+        }
     }
 
     shouldComponentUpdate(nextProps, nextState) {
+return true
         if (this.state !== nextState) {
             return true;
         }
@@ -124,6 +143,7 @@ var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
 
         return (
             <FaTreeLazy 
+                ref='tree'
                 {...this.props}
                 cutLongLabels={cutLongLabels}
                 onOpenCloseNode={(node, expand) => {expand ? this.dispatch(faTreeNodeExpand(types.FA_TREE_AREA_MAIN, node)) : this.dispatch(faTreeNodeCollapse(types.FA_TREE_AREA_MAIN, node))}}
@@ -134,7 +154,6 @@ var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
                 onFulltextPrevItem={this.handleFulltextPrevItem}
                 onFulltextNextItem={this.handleFulltextNextItem}
                 onCollapse={this.handleCollapse}
-                focus={this.props.focus}
             />
         )
     }

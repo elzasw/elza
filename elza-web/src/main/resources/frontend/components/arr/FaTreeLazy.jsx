@@ -14,7 +14,6 @@ import {ResizeStore} from 'stores';
 import {propsEquals} from 'components/Utils'
 import {indexById} from 'stores/app/utils.jsx'
 import {createReferenceMark, getGlyph, getNodePrevSibling, getNodeNextSibling, getNodeParent, getNodeFirstChild} from 'components/arr/ArrUtils'
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
 
 // Na kolik znaků se má název položky stromu oříznout, jen pokud je nastaven vstupní atribut, že se má název ořezávat
 const TREE_NAME_MAX_CHARS = 60
@@ -86,14 +85,11 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
         super(props);
 
         this.bindMethods(
-            'renderNode', 'handleKeyDown', 'trySetFocus', 'handleOnSearch'
+            'renderNode', 'handleKeyDown', 'handleOnSearch',
+            'focus'
         );
 
         this.state = {};
-    }
-
-    componentWillReceiveProps(nextProps) {
-        this.trySetFocus(nextProps)
     }
 
     componentDidMount() {
@@ -101,14 +97,13 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
             this.setState({});
         });
         this.setState({treeContainer: ReactDOM.findDOMNode(this.refs.treeContainer)});
-        this.trySetFocus(this.props)
     }
 
     shouldComponentUpdate(nextProps, nextState) {
         if (this.state !== nextState) {
             return true;
         }
-        var eqProps = ['focus', 'ensureItemVisible', 'filterText', 'expandedIds', 'selectedId', 'selectedIds', 'nodes', 'focusId', 'isFetching', 'fetched', 'searchedIds', 'searchedParents', 'filterCurrentIndex']
+        var eqProps = ['ensureItemVisible', 'filterText', 'expandedIds', 'selectedId', 'selectedIds', 'nodes', 'focusId', 'isFetching', 'fetched', 'searchedIds', 'searchedParents', 'filterCurrentIndex']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -116,17 +111,8 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
         this.unsubscribe();
     }
 
-    trySetFocus(props) {
-        var {focus} = props
-
-        if (canSetFocus()) {
-            if (isFocusFor(focus, 'arr', 1, 'tree') || isFocusFor(focus, 'arr', 1)) {
-                this.setState({}, () => {
-                   ReactDOM.findDOMNode(this.refs.treeContainer).focus()
-                   focusWasSet()
-                })
-            }
-        }
+    focus() {
+        ReactDOM.findDOMNode(this.refs.treeContainer).focus()
     }
 
     handleKeyDown(event) {
@@ -320,7 +306,6 @@ FaTreeLazy.propTypes = {
     onNodeClick: React.PropTypes.func,
     onOpenCloseNode: React.PropTypes.func,
     onContextMenu: React.PropTypes.func,
-    focus: React.PropTypes.object,
 }
 
-module.exports = connect()(FaTreeLazy);
+module.exports = connect(null, null, null, { withRef: true })(FaTreeLazy);

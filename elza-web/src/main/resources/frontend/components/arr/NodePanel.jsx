@@ -28,7 +28,7 @@ var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
 const scrollIntoView = require('dom-scroll-into-view')
 var classNames = require('classnames');
-import {setFocus, canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
+import {setFocus, canSetFocus, focusWasSet, isFocusFor, isFocusExactFor} from 'actions/global/focus'
 require ('./NodePanel.less');
 
 var keyModifier = Utils.getKeyModifier()
@@ -109,13 +109,19 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
     }
 
     trySetFocus(props) {
-        var {focus} = props
+        var {focus, node} = props
 
         if (canSetFocus()) {
-            if (isFocusFor(focus, 'arr', 2, 'accordion')) {
+            if (isFocusFor(focus, 'arr', 2, 'accordion') || (node.selectedSubNodeId === null && isFocusFor(focus, 'arr', 2))) {
                 this.setState({}, () => {
                    ReactDOM.findDOMNode(this.refs.accordionContent).focus()
                    focusWasSet()
+                })
+            } else if (isFocusExactFor(focus, 'arr', 2)) {   // jen pokud není třeba focus na něco nižšího, např. prvek formuláře atp
+                // Voláne jen pokud formulář úspěšně focus nenastavil - např. pokud jsou všechna pole formuláře zamčena
+                this.setState({}, () => {
+                    ReactDOM.findDOMNode(this.refs.accordionContent).focus()
+                    focusWasSet()
                 })
             }
         }

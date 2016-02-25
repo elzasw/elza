@@ -30,6 +30,7 @@ import {routerNavigate} from 'actions/router'
 import {setInputFocus} from 'components/Utils'
 //import {} from './AddNodeDropdown.jsx'
 var Shortcuts = require('react-shortcuts/component')
+import {setFocus, canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
 
 var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     constructor(props) {
@@ -41,11 +42,12 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             'handleDescItemTypeUnlockAll', 'handleDescItemTypeCopy', 'handleAddNodeBefore', 'handleAddNodeAfter',
             'handleCreatePacket', 'handleCreatePacketSubmit', 'handleAddChildNode', 'handleCreateParty',
             'handleCreatedParty', 'handleCreateRecord', 'handleCreatedRecord', 'handleDeleteNode',
-            'handleDescItemTypeCopyFromPrev'
+            'handleDescItemTypeCopyFromPrev', 'trySetFocus'
         );
     }
 
     componentDidMount() {
+/*
         this.setState({}, () => {
             if (this.refs.nodeForm) {
                 var el = ReactDOM.findDOMNode(this.refs.nodeForm);
@@ -53,10 +55,32 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                     //setInputFocus(el, false);
                 }
             }
-        })
+        })*/
+
+        this.trySetFocus(this.props)
     }
 
     componentWillReceiveProps(nextProps) {
+        this.trySetFocus(nextProps)
+    }
+
+    trySetFocus(props) {
+        var {focus, node} = props
+
+        if (canSetFocus()) {
+            if (isFocusFor(focus, 'arr', 2, 'subNodeForm')) {
+                if (focus.item) {   // položka
+                } else {    // obecně formulář
+                    this.setState({}, () => {
+                        var el = ReactDOM.findDOMNode(this.refs.nodeForm);
+                        if (el) {
+                            setInputFocus(el, false);
+                        }
+                        focusWasSet()
+                    })
+                }
+            }
+        }
     }
 
     handleShortcuts(action) {
@@ -655,7 +679,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {arrRegion} = state
+    const {arrRegion, focus} = state
     var fa = null;
     if (arrRegion.activeIndex != null) {
         fa = arrRegion.fas[arrRegion.activeIndex];
@@ -663,7 +687,8 @@ function mapStateToProps(state) {
 
     return {
         nodeSettings: arrRegion.nodeSettings,
-        fa: fa
+        fa: fa,
+        focus,
     }
 }
 
