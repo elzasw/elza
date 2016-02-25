@@ -104,11 +104,25 @@
         .content {
             margin-bottom: @parts-margin;
             margin-top: @parts-margin;
-            border: 1px solid @node-panel-border;
             height: 100%;
             overflow: auto;
             overflow-x: hidden;
 
+            .content-wrapper {
+                border: 1px solid @node-panel-border;
+                &:focus {
+                    .accordion-item {
+                        &.focused {
+                            .accordion-header-container {
+                                .accordion-header {
+                                    background: @accordion-header-bg-opened;
+                                }
+                            }
+                        }                        
+                    }
+                }
+            }
+            
             .accordion-item:first-child {
                 &.opened {
                     margin-top: 0;

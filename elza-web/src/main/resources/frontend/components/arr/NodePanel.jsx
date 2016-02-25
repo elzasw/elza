@@ -23,11 +23,30 @@ import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes'
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils'
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes'
 import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
-
+import {Utils} from 'components'
+var ShortcutsManager = require('react-shortcuts');
+var Shortcuts = require('react-shortcuts/component');
 const scrollIntoView = require('dom-scroll-into-view')
 var classNames = require('classnames');
-
+import {setFocus, canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
 require ('./NodePanel.less');
+
+var keyModifier = Utils.getKeyModifier()
+
+var keymap = {
+    Accordion: {
+        prevItem: keyModifier + 'up',
+        nextItem: keyModifier + 'down',
+        focusPrevItem: 'up',
+        focusNextItem: 'down',
+        focusEnterItem: 'enter',
+        closeItem: 'shift+enter',
+    },
+    NodePanel: {
+        searchItem: keyModifier + 'f',
+    },
+}
+var shortcutManager = new ShortcutsManager(keymap)
 
 var NodePanel = class NodePanel extends AbstractReactComponent {
     constructor(props) {
@@ -38,18 +57,31 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             'handleCloseItem', 'handleParentNodeClick', 'handleChildNodeClick',
             'getParentNodes', 'getChildNodes', 'getSiblingNodes',
             'renderAccordion', 'renderState', 'transformConformityInfo', 'handleAddNodeAtEnd',
-            'handleChangeFilterText', 'renderRowItem', 'handleFindPosition', 'handleFindPositionSubmit'
+            'handleChangeFilterText', 'renderRowItem', 'handleFindPosition', 'handleFindPositionSubmit',
+            'handleShortcuts', 'trySetFocus'
             );
 
         this.state = {
-            filterText: props.node.filterText
+            filterText: props.node.filterText,
+            focusItemIndex: this.getFocusItemIndex(props, 0)
         }
+    }
+
+    getFocusItemIndex(props, prevFocusItemIndex) {
+        const {node} = props
+
+        var focusItemIndex = prevFocusItemIndex
+        if (node.selectedSubNodeId !== null) {
+            focusItemIndex = indexById(node.childNodes, node.selectedSubNodeId)
+        }
+        return focusItemIndex
     }
 
     componentDidMount() {
         this.requestData(this.props.versionId, this.props.node);
         this.dispatch(calendarTypesFetchIfNeeded());
         this.ensureItemVisible();
+        this.trySetFocus(this.props)
     }
 
     componentWillReceiveProps(nextProps) {
@@ -57,7 +89,8 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         this.dispatch(calendarTypesFetchIfNeeded());
 
         var newState = {
-            filterText: nextProps.node.filterText
+            filterText: nextProps.node.filterText,
+            focusItemIndex: this.getFocusItemIndex(nextProps, this.state.focusItemIndex)
         }
 
         var scroll = false;
@@ -71,6 +104,100 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         } else {
             this.setState(newState);
         }
+
+        this.trySetFocus(nextProps)
+    }
+
+    trySetFocus(props) {
+        var {focus} = props
+
+        if (canSetFocus()) {
+            if (isFocusFor(focus, 'arr', 2, 'accordion')) {
+                this.setState({}, () => {
+                   ReactDOM.findDOMNode(this.refs.accordionContent).focus()
+                   focusWasSet()
+                })
+            }
+        }
+    }
+
+    handleShortcuts(action) {
+        console.log("#handleShortcuts", '[' + action + ']', this);
+
+        const {node, focus} = this.props
+        const index = indexById(node.childNodes, node.selectedSubNodeId)
+
+        if (action === 'focusPrevItem' || action === 'focusNextItem' || action === 'focusEnterItem') {
+            const accordionHasFocus = document.activeElement === ReactDOM.findDOMNode(this.refs.accordionContent)
+            if (accordionHasFocus) {
+                switch (action) {
+                    case 'focusPrevItem':
+                        {
+                            const {node} = this.props
+                            if (node.selectedSubNodeId === null) {
+                                const {focusItemIndex} = this.state
+                                if (focusItemIndex > 0) {
+                                    this.setState({focusItemIndex: focusItemIndex - 1})
+                                }
+                            }
+                        }
+                        break
+                    case 'focusNextItem':
+                        {
+                            const {node} = this.props
+                            if (node.selectedSubNodeId === null) {
+                                const {focusItemIndex} = this.state
+                                if (focusItemIndex + 1 < node.childNodes.length) {
+                                    this.setState({focusItemIndex: focusItemIndex + 1})
+                                }
+                            }
+                        }
+                        break
+                    case 'focusEnterItem':
+                        {
+                            const {node} = this.props
+                            if (node.selectedSubNodeId === null) {
+                                const {focusItemIndex} = this.state
+                                this.handleOpenItem(node.childNodes[focusItemIndex])
+                                this.dispatch(setFocus('arr', 2, 'accordion'))
+                            } else {
+                                const {focusItemIndex} = this.state
+                                this.handleCloseItem(node.childNodes[focusItemIndex])
+                                this.dispatch(setFocus('arr', 2, 'accordion'))
+                            }
+                        }
+                        break
+                }
+            }
+        } else {
+            switch (action) {
+                case 'prevItem':
+                    if (index > 0) {
+                        this.handleOpenItem(node.childNodes[index - 1])
+                        this.dispatch(setFocus('arr', 2, 'accordion'))
+                    }
+                    break
+                case 'nextItem':
+                    if (index + 1 < node.childNodes.length) {
+                        this.handleOpenItem(node.childNodes[index + 1])
+                        this.dispatch(setFocus('arr', 2, 'accordion'))
+                    }
+                    break
+                case 'searchItem':
+                    this.refs.search.getInput().getInputDOMNode().focus()
+                    break
+                case 'closeItem':
+                    if (node.selectedSubNodeId !== null) {
+                        this.handleCloseItem(node.childNodes[index])
+                        this.dispatch(setFocus('arr', 2, 'accordion'))
+                    }
+                    break
+            }
+        }
+    }
+
+    getChildContext() {
+        return { shortcuts: shortcutManager };
     }
 
     handleChangeFilterText(value) {
@@ -83,13 +210,14 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         if (this.props.node.selectedSubNodeId !== null) {
             var itemNode = ReactDOM.findDOMNode(this.refs['accheader-' + this.props.node.selectedSubNodeId])
             if (itemNode !== null) {
-                var contentNode = ReactDOM.findDOMNode(this.refs.content)
+                var contentNode = ReactDOM.findDOMNode(this.refs.accordionContent)
                 scrollIntoView(itemNode, contentNode, { onlyScrollIfNeeded: true, alignWithTop:true })
             }
         }
     }
 
     shouldComponentUpdate(nextProps, nextState) {
+return true
         if (this.state !== nextState) {
             return true;
         }
@@ -344,9 +472,11 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             var accordionRight = item.accordionRight ? item.accordionRight : ''
             var referenceMark = <span className="reference-mark">{createReferenceMarkString(item)}</span>
 
+            var focused = a === this.state.focusItemIndex
+
             if (node.selectedSubNodeId == item.id) {
                 rows.push(
-                    <div key={item.id} ref={'accheader-' + item.id} className='accordion-item opened'>
+                    <div key={item.id} ref={'accheader-' + item.id} className={'accordion-item opened' + (focused ? ' focused' : '')}>
                         <div key='header' className='accordion-header-container' onClick={this.handleCloseItem.bind(this, item)}>
                             <div className='accordion-header'>
                                 <div title={accordionLeft} className='accordion-header-left' key='accordion-header-left'>
@@ -366,7 +496,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 )
             } else {
                 rows.push(
-                    <div key={item.id} ref={'accheader-' + item.id} className='accordion-item closed'>
+                    <div key={item.id} ref={'accheader-' + item.id} className={'accordion-item closed' + (focused ? ' focused' : '')}>
                         <div key='header' className='accordion-header-container' onClick={this.handleOpenItem.bind(this, item)}>
                             <div className='accordion-header'>
                                 <div title={accordionLeft} className='accordion-header-left' key='accordion-header-left'>
@@ -390,11 +520,12 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         }
 
         return (
-            <div key='content' className='content' ref='content'>
-                {rows}
-            </div>
+            <Shortcuts name='Accordion' key='content' className='content' ref='content' handler={this.handleShortcuts}>
+                <div tabIndex={0} className='content-wrapper' ref='accordionContent'>
+                    {rows}
+                </div>
+            </Shortcuts>
         )
-
     }
 
     /**
@@ -466,6 +597,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                     <div className='btn btn-default' onClick={this.handleFindPosition} title={i18n('arr.fa.subNodes.findPosition')} ><Icon glyph="fa-hand-o-down" /></div>
 
                     <Search
+                        ref='search'
                         className='search-input'
                         placeholder={i18n('search.input.search')}
                         filterText={this.props.filterText}
@@ -534,14 +666,14 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         })
 
         return (
-            <div key={'node-panel-' + node.selectedSubNodeId} className={cls}>
+            <Shortcuts name='NodePanel' key={'node-panel-' + node.selectedSubNodeId} className={cls} handler={this.handleShortcuts}>
                 <div className='main'>
                     {actions}
                     {parents}
                     {this.renderAccordion(form, record)}
                     {children}
                 </div>
-            </div>
+            </Shortcuts>
         );
     }
 
@@ -594,10 +726,11 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {arrRegion, developer} = state
+    const {arrRegion, developer, focus} = state
     return {
         nodeSettings: arrRegion.nodeSettings,
         developer,
+        focus,
     }
 }
 
@@ -614,6 +747,10 @@ NodePanel.propTypes = {
     findingAidId: React.PropTypes.number,
     showRegisterJp: React.PropTypes.bool.isRequired,
     closed: React.PropTypes.bool.isRequired,
+}
+
+NodePanel.childContextTypes = {
+    shortcuts: React.PropTypes.object.isRequired
 }
 
 module.exports = connect(mapStateToProps)(NodePanel);

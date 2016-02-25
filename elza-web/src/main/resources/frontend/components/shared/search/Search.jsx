@@ -26,6 +26,7 @@ var Search = class Search extends React.Component {
         this.handleClear = this.handleClear.bind(this);
         this.handleChange = this.handleChange.bind(this);               // funckce pro aktualizaci hledaneho textu v komponentě
         this.handleKeyUp = this.handleKeyUp.bind(this);                 // funckce pro odchycení stisknutí klávesy enter a odeslání search
+        this.getInput = this.getInput.bind(this);                 // funckce pro odchycení stisknutí klávesy enter a odeslání search
 
         this.state = {                                                  // inicializace stavu komponenty
             filterText: this.props.filterText || this.props.value,                          // hledaný text
@@ -116,6 +117,10 @@ var Search = class Search extends React.Component {
                 {afterInput}
             </div>
         );
+    }
+
+    getInput() {
+        return this.refs.input
     }
 }
 

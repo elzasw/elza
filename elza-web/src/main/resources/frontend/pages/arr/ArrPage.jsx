@@ -44,7 +44,6 @@ var keymap = {
         area2: keyModifier + '2',
         area3: keyModifier + '3',
     },
-    Tree: {}
 }
 var shortcutManager = new ShortcutsManager(keymap)
 

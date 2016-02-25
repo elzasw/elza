@@ -5,6 +5,7 @@
 require ('./NodeTabs.less');
 
 import React from 'react';
+import ReactDOM from 'react-dom';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, NodePanel, Tabs, i18n} from 'components';
 import {AppActions} from 'stores';
@@ -12,27 +13,51 @@ import {faSelectNodeTab, faCloseNodeTab} from 'actions/arr/nodes'
 import {nodesFetchIfNeeded} from 'actions/arr/node'
 import {propsEquals} from 'components/Utils'
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils'
+import {setFocus, canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
 
 var NodeTabs = class NodeTabs extends AbstractReactComponent {
     constructor(props) {
         super(props);
+
+        this.bindMethods('handleTabSelect', 'trySetFocus')
     }
 
     componentDidMount() {
         this.dispatch(nodesFetchIfNeeded(this.props.versionId));
+        this.trySetFocus(this.props)
     }
 
     componentWillReceiveProps(nextProps) {
         this.dispatch(nodesFetchIfNeeded(nextProps.versionId));
+        this.trySetFocus(nextProps)
+    }
+
+    trySetFocus(props) {
+        var {focus} = props
+
+        if (canSetFocus()) {
+            if (isFocusFor(focus, 'arr', 2, 'tabs')) {
+                this.setState({}, () => {
+                   ReactDOM.findDOMNode(this.refs.tabs).focus()
+                   focusWasSet()
+                })
+            }
+        }
     }
 
     shouldComponentUpdate(nextProps, nextState) {
+return true
         if (this.state !== nextState) {
             return true;
         }
         var eqProps = ['versionId', 'fa', 'nodes', 'activeIndex', 'findingAidId', 'descItemTypes',
             'rulDataTypes', 'calendarTypes', 'packetTypes', 'packets', 'showRegisterJp', 'closed']
         return !propsEquals(this.props, nextProps, eqProps);
+    }
+
+    handleTabSelect(item) {
+        this.dispatch(faSelectNodeTab(item.index))
+        this.dispatch(setFocus('arr', 2, 'tabs'))
     }
 
     render() {
@@ -58,9 +83,9 @@ var NodeTabs = class NodeTabs extends AbstractReactComponent {
         var activeTab = tabs[activeIndex];
 
         return (
-            <Tabs.Container className='node-tabs-container'>
+            <Tabs.Container ref='tabs' className='node-tabs-container'>
                 <Tabs.Tabs closable items={tabs} activeItem={activeTab}
-                    onSelect={item=>this.dispatch(faSelectNodeTab(item.index))}
+                    onSelect={this.handleTabSelect}
                     onClose={item=>this.dispatch(faCloseNodeTab(item.index))}
                 />
                 <Tabs.Content>
@@ -96,4 +121,11 @@ NodeTabs.propTypes = {
     closed: React.PropTypes.bool.isRequired,
 }
 
-module.exports = connect()(NodeTabs);
+function mapStateToProps(state) {
+    const {focus} = state
+    return {
+        focus,
+    }
+}
+
+module.exports = connect(mapStateToProps)(NodeTabs);
