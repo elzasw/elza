@@ -26,45 +26,30 @@ Pro sestavení dokumentace včetně UML diagramů modelu použijte profil jdocum
 
 ### Sestavení a spuštění embed (finální UI - React), určeno pro vývoj
 
-1. Nastavení připojení k DB
+* Nastavení připojení k DB
 V projektu elza-web je nutné v adresáři config založit soubor elza.yaml s připojením k databázi.
 Podrobnosti o nastavení viz sekce 'Databázové připojení'.
 
-2. Přeložení projektu (root celého projektu) (pokud již nebylo přeloženo kvůli dokumentaci - sekce 'Sestavení vč dokumentace')
+* Přeložení projektu (root celého projektu) (pokud již nebylo přeloženo kvůli dokumentaci - sekce 'Sestavení vč dokumentace')
 mvn install -Pskiptest
 
-3. Aktualizace NPM balíčků (v adresáři elza-web)
+* Aktualizace NPM balíčků (v adresáři elza-web)
 ```
 mvn exec:exec -Pnpm-install
 ```
 
-4. Spuštění aplikačního serveru (v adresáři elza-web)
+* Spuštění aplikačního serveru (v adresáři elza-web)
 ```
 mvn spring-boot:run
 ```
 
-5. Spuštění serveru pro frontend (v adresáři elza-web)
+* Spuštění serveru pro frontend (v adresáři elza-web)
 ```
 mvn exec:exec -Pfrontend-dev
 ```
 
 Po sestavení dojde ke spuštění embedded aplikačního serveru Tomcat.
 Uživatelské rozhraní najdete na adrese http://localhost:8080 - není možné přistupovat z jiného počítače (sestavte a zprovozněte war v Tomcat).
-
-
-### Sestavení a spuštění embed (UI pro testovací účely - Vaadin)
-
-Přepnutí do elza UI před spuštěním
-```
-cd elza-ui
-```
-
-```
-mvn -Pexec,skiptest install
-```
-
-Po sestavení dojde ke spuštění embedded aplikačního serveru Tomcat.
-Uživatelské rozhranní najdete na adrese http://localhost:8080/ui.
 
 
 ### Sestavení a spuštění war v Tomcat
@@ -74,12 +59,6 @@ mvn -Pexec install
 
 Sestavenou webovou aplikaci najdete v `elza-war/target/elza.war`.
 Proveďte standardním způsobem deploy na aplikační server Tomcat verze 8.0.
-
-### Spuštění v IDE (UI pro testovací účely - Vaadin)
-Importujte projekt maven.
-Pro spuštění jádra aplikace obsahující rest služby spusťte `cz.tacr.elza.ElzaCore`.
-Pro spuštění uživatelského rozhranní spusťte `cz.tacr.elza.ElzaApp`.
-Uživatelské rozhranní najdete na adrese http://localhost:8080/ui.
 
 ### Spuštění v IDE (UI - React), určeno pro vývoj
 Importujte projekt maven.
