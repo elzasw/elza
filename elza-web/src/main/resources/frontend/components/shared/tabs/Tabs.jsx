@@ -6,13 +6,23 @@
 **/
 
 import React from 'react';
-
+import ReactDOM from 'react-dom';
 import {Nav, NavItem} from 'react-bootstrap';
 import {ResizeStore} from 'stores';
-import {Icon, i18n, NoFocusButton} from 'components';
-import ReactDOM from 'react-dom';
+import {AbstractReactComponent, Utils, Icon, i18n, NoFocusButton} from 'components';
+var ShortcutsManager = require('react-shortcuts')
+var Shortcuts = require('react-shortcuts/component')
+var keyModifier = Utils.getKeyModifier()
 
 require ('./Tabs.less');
+
+var keymap = {
+    Tabs: {
+        prevTab: keyModifier + 'left',
+        nextTab: keyModifier + 'right',
+    },
+}
+var shortcutManager = new ShortcutsManager(keymap)
 
 /**
  *  Obalovací komponenta pro záložky a jejich obsah
@@ -22,6 +32,59 @@ require ('./Tabs.less');
 var TabsContainer = class TabsContainer extends React.Component {
     constructor(props) {
         super(props);                   // volaní nadřazeného konstruktoru
+
+        this.handleShortcuts = this.handleShortcuts.bind(this);
+    }
+
+    getChildContext() {
+        return { shortcuts: shortcutManager };
+    }
+
+    handleShortcuts(action, e) {
+        e.stopPropagation()
+        e.preventDefault()
+
+        var tabs
+        for (var a=0; a<this.props.children.length; a++) {
+            if (this.props.children[a].type === Tabs) {
+                tabs = this.props.children[a]
+                break
+            }
+        }
+        if (!tabs) {
+            console.error('First child of TabsContainer must be Tabs component!', 'Existing children', this.props.children)
+            return
+        }
+
+        const {activeItem, items, onSelect} = tabs.props
+
+        if (items.length === 0) {
+            return
+        }
+
+        var index = 0
+        for (var a=0; a<items.length; a++) {
+            if (items[a] === activeItem) {
+                index = a;
+            }
+        }
+
+        switch (action) {
+            case 'prevTab':
+                if (index > 0) {
+                    onSelect(items[index - 1])
+                } else {
+                    onSelect(items[items.length - 1])
+                }
+                break
+            case 'nextTab':
+                if (index + 1 < items.length) {
+                    onSelect(items[index + 1])
+                } else {
+                    onSelect(items[0])
+                }
+                break
+        }
     }
 
     render() {                          // metoda pro renderovani obsahu komponenty
@@ -30,13 +93,16 @@ var TabsContainer = class TabsContainer extends React.Component {
             cls += " " + this.props.className;
         }
         return (
-            <div className={cls}>
+            <Shortcuts className={cls} name='Tabs' handler={this.handleShortcuts}>
                 {this.props.children}  
-            </div>
+            </Shortcuts>
         );
     }
 }
 
+TabsContainer.childContextTypes = {
+    shortcuts: React.PropTypes.object.isRequired
+}
 
 /**
  *  Komponena pro zobrazeni obshu dané záložky
@@ -74,7 +140,6 @@ var Tabs = class Tabs extends React.Component {
         this.handleTabClose = this.handleTabClose.bind(this);           // funkce pro zavření vybrané záložky
     }
 
-
     /**
      *  Zavření vybrané záložky
      *  @ param obj item        objekt záložky
@@ -103,7 +168,6 @@ var Tabs = class Tabs extends React.Component {
         this.props.onSelect(item);              // zobrazení vybrané položky                
     }
 
-
     /**
      *  Renderovánaí samotné komponenty přepínacích záložek
     **/
@@ -129,9 +193,9 @@ var Tabs = class Tabs extends React.Component {
             activeKey = typeof this.props.activeItem.key !== 'undefined' ? this.props.activeItem.key : this.props.activeItem.id;
         }
         return (
-            <Nav className="tabs-tabs-container" ref="tabs"  bsStyle="tabs" onSelect={this.handleTabSelect} activeKey={activeKey}>
-                {tabs}
-            </Nav>
+                <Nav className="tabs-tabs-container" ref="tabs"  bsStyle="tabs" onSelect={this.handleTabSelect} activeKey={activeKey}>
+                    {tabs}
+                </Nav>
         )
     }
 }

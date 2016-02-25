@@ -644,14 +644,12 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         ));
 
         return (
-            <Shortcuts name='Tree' handler={this.handleShortcuts}>
             <div className='node-form'>
                 {formActions}
                 <div ref='nodeForm' className='desc-item-groups'>
                     {descItemGroups}
                 </div>
             </div>
-            </Shortcuts>
         )
     }
 }

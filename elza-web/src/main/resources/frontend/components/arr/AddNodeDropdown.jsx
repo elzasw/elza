@@ -26,6 +26,7 @@ var AddNodeDropdown = class AddNodeDropdown extends AbstractReactComponent {
     render() {
         return (
             <SplitButton bsStyle="default"
+                         tabIndex={-1}
                          id={`dropdown-${this.props.key}`}
                          key={this.props.key}
                          onSelect={this.props.action}

@@ -33,12 +33,27 @@ function fc() {
     console.log(document.activeElement)
     xx()
 }
-//setTimeout(fc, 1500)
+setTimeout(fc, 1500)
 
 // Načtení dat z local storage = vrácení aplikace do předchozího stavu
 import {AppStore} from 'stores';
 import {storeSave, storeRestoreFromStorage} from 'actions/store/store';
 AppStore.store.dispatch(storeRestoreFromStorage());
+
+// Globální vypnutí focus na split buttony
+import SplitToggle from './node_modules/react-bootstrap/lib/SplitToggle';
+SplitToggle.defaultProps = {
+    ...SplitToggle.defaultProps,
+    tabIndex: -1
+}
+
+// Pokud dostane focus body, chceme jej změnit na implcitiní focus pro ribbon
+/*
+import {setFocus} from 'actions/global/focus';
+document.body.addEventListener("focus", () => {
+    //AppStore.store.dispatch(setFocus(null, null, 'ribbon'));
+})
+*/
 
 // Ukládání stavu aplikace
 function scheduleStoreSave() {

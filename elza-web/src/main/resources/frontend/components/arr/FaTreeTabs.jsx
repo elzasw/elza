@@ -17,6 +17,7 @@ import {faSelectSubNode} from 'actions/arr/nodes'
 import {createFaRoot, getParentNode} from './ArrUtils.jsx'
 import {contextMenuShow, contextMenuHide} from 'actions/global/contextMenu'
 import {propsEquals, dateToString} from 'components/Utils'
+import {indexById} from 'stores/app/utils.jsx'
 
 var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
     constructor(props) {
@@ -127,11 +128,13 @@ var FaTreeTabs = class FaTreeTabs extends AbstractReactComponent {
             }
         });
 
+        var activeItem = tabs[indexById(tabs, activeFa.id)]
+
         return (
             <Tabs.Container className='fa-tabs-container'>
                 <NoFocusButton onClick={this.handleToggleExtendedView} className='extended-view-toggle'><Icon glyph='fa-expand'/></NoFocusButton>
 
-                <Tabs.Tabs closable items={tabs} activeItem={activeFa}
+                <Tabs.Tabs closable items={tabs} activeItem={activeItem}
                     onSelect={item=>this.dispatch(selectFaTab(item))}
                     onClose={item=>this.dispatch(closeFaTab(item))}
                 />

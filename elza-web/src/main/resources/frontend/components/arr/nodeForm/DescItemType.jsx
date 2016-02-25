@@ -634,13 +634,13 @@ return true;
         });
 
         return (
-            <Shortcuts className={cls} name='Tree' handler={this.handleShortcuts}>
+            <div className={cls} name='Tree' handler={this.handleShortcuts}>
                     {label}
                     <div ref='dragOverContainer' className='desc-item-type-desc-items' onDragOver={this.handleDragOver} onDragLeave={this.handleDragLeave}>
                         {descItems}
                     </div>
                     {addAction}
-            </Shortcuts>
+            </div>
         )
     }
 }

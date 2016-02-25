@@ -13,12 +13,36 @@ import {AbstractReactComponent, ModalDialog, NodeTabs, FaTreeTabs} from 'compone
 import {ButtonGroup, Button, DropdownButton, MenuItem} from 'react-bootstrap';
 import {PageLayout} from 'pages';
 import {AppStore} from 'stores'
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
 
 var Ribbon = class Ribbon extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
+        this.bindMethods('trySetFocus')
+
         this.state = {};
+    }
+
+    componentDidMount() {
+        this.trySetFocus(this.props)
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.trySetFocus(nextProps)
+    }
+
+    trySetFocus(props) {
+        var {focus} = props
+
+        if (canSetFocus()) {
+            if (isFocusFor(focus, null, null, 'ribbon')) {
+                this.setState({}, () => {
+                   ReactDOM.findDOMNode(this.refs.ribbonDefaultFocus).focus()
+                   focusWasSet()
+                })
+            }
+        }
     }
 
     render() {
@@ -37,7 +61,7 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
         return (
             <RibbonMenu opened onShowHide={this.handleRibbonShowHide}>
                 <RibbonGroup className="large">
-                    <IndexLinkContainer to="/"><Button><Icon glyph="fa-home" /><div><span className="btnText">{i18n('ribbon.action.home')}</span></div></Button></IndexLinkContainer>
+                    <IndexLinkContainer to="/"><Button ref='ribbonDefaultFocus'><Icon glyph="fa-home" /><div><span className="btnText">{i18n('ribbon.action.home')}</span></div></Button></IndexLinkContainer>
                     <LinkContainer to="/arr"><Button><Icon glyph="fa-file-text" /><div><span className="btnText">{i18n('ribbon.action.arr')}</span></div></Button></LinkContainer>
                     <LinkContainer to="/registry"><Button><Icon glyph="fa-th-list" /><div><span className="btnText">{i18n('ribbon.action.registry')}</span></div></Button></LinkContainer>
                     <LinkContainer to="/party"><Button><Icon glyph="fa-users" /><div><span className="btnText">{i18n('ribbon.action.party')}</span></div></Button></LinkContainer>
@@ -55,6 +79,11 @@ var Ribbon = class Ribbon extends AbstractReactComponent {
     }
 }
 
-module.exports = Ribbon;
+function mapStateToProps(state) {
+    const {focus} = state
+    return {
+        focus,
+    }
+}
 
-
+module.exports = connect(mapStateToProps)(Ribbon);
