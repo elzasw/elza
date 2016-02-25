@@ -389,7 +389,12 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             )
         }
 
-        return rows;
+        return (
+            <div key='content' className='content' ref='content'>
+                {rows}
+            </div>
+        )
+
     }
 
     /**
@@ -533,9 +538,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 <div className='main'>
                     {actions}
                     {parents}
-                    <div key='content' className='content' ref='content'>
-                        {this.renderAccordion(form, record)}
-                    </div>
+                    {this.renderAccordion(form, record)}
                     {children}
                 </div>
             </div>
