@@ -1,5 +1,6 @@
 import {indexById} from 'stores/app/utils.jsx'
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils'
+import {getMapFromList} from 'stores/app/utils.jsx'
 
 function getDbItemTypesMap(data) {
     // Mapa id descItemType na descItemType
@@ -362,25 +363,38 @@ export function updateFormData(state, data, refTypesMap) {
 
         // Info skupiny - ty, které jsou jako celek definované pro konkrétní JP - obsahují všechny atributy včetně např. typu - POSSIBLE atp.
         // Změna číselného typu na řetězec
-        // Přidání do infor skupin position
-        state.infoGroups = data.typeGroups
+        // Přidání do info skupin position
         state.infoGroupsMap = {}
         state.infoTypesMap = {}                     // mapa id descItemTypeInfo na descItemTypeInfo
-        state.infoGroups.forEach((group, index) => {
-            state.infoGroupsMap[group.code] = group
-            group.position = index
+        state.infoGroups = data.typeGroups.map((group, index) => {
+            var resultGroup = {
+                ...group,
+                position: index,
+                types: group.types.map(type => {
+                    var specs = type.specs.map(spec => {
+                        var resultSpec = {
+                            ...spec,
+                            type: typesNumToStrMap[spec.type]
+                        }
+                        return resultSpec
+                    })
 
-            group.types.forEach(type => {
-                type.type = typesNumToStrMap[type.type]
-                state.infoTypesMap[type.id] = type
+                    var resultType = {
+                        ...type,
+                        type: typesNumToStrMap[type.type],
+                        specs: specs,
+                        descItemSpecsMap: getMapFromList(specs),
+                    }
 
-                type.specs.forEach(spec => {
-                    spec.type = typesNumToStrMap[spec.type]
+                    state.infoTypesMap[resultType.id] = resultType
+
+                    return resultType
                 })
-                
-                // Mapa id specifikace na specifikaci
+            }
 
-            })
+            state.infoGroupsMap[resultGroup.code] = resultGroup
+
+            return resultGroup
         })
 
         // Mapa číselníku decsItemType

@@ -5,6 +5,7 @@ import {faSubNodeFormValueValidate} from 'actions/arr/subNodeForm'
 import {createDescItemFromDb, getDescItemType, updateFormData, createDescItem, consolidateDescItems} from './subNodeFormUtils'
 var subNodeFormUtils = require('./subNodeFormUtils.jsx')
 import {validateInt, validateDouble} from 'components/validate'
+import {getMapFromList} from 'stores/app/utils.jsx'
 
 function getLoc(state, valueLocation) {
     var descItemGroup = state.formData.descItemGroups[valueLocation.descItemGroupIndex];
@@ -371,6 +372,26 @@ export default function subNodeForm(state = initialState, action) {
                 isFetching: true,
             })
         case types.FA_SUB_NODE_FORM_RECEIVE:
+            // ##
+            // # Inicializace dat
+            // ##
+
+            // Doplnění descItemTypes o rulDataType
+            var dataTypeMap = getMapFromList(action.rulDataTypes.items)
+            var descItemTypes = action.refDescItemTypes.items.map(type => {
+                return {
+                    ...type,
+                    dataType: dataTypeMap[type.dataTypeId],
+                    descItemSpecsMap: getMapFromList(type.descItemSpecs)
+                }
+            })
+
+            // Sestavení mapy ref descItemType
+            var refTypesMap = getMapFromList(descItemTypes)            
+
+            // ##
+            // # Result a merge formuláře.
+            // ##
             var result = Object.assign({}, state, {
                 isFetching: false,
                 fetched: true,
@@ -379,7 +400,7 @@ export default function subNodeForm(state = initialState, action) {
                 nodeId: action.nodeId,
             })
 
-            updateFormData(result, action.data, action.refTypesMap);
+            updateFormData(result, action.data, refTypesMap);
 
             return result;
         case types.CHANGE_FA_RECORD:

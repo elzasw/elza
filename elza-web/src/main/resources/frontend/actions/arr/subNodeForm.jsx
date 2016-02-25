@@ -533,27 +533,14 @@ export function faSubNodeFormFetch(versionId, nodeId, nodeKey) {
 }
 
 export function faSubNodeFormReceive(versionId, nodeId, nodeKey, json, rulDataTypes, descItemTypes) {
-    // Doplnění descItemTypes o rulDataType
-    var dataTypeMap = getMapFromList(rulDataTypes.items)
-    descItemTypes.items.forEach(type => {
-        type.dataType = dataTypeMap[type.dataTypeId]
-
-        // Doplnění mapy id specifikace na specifikaci
-        type.descItemSpecsMap = getMapFromList(type.descItemSpecs)
-    })
-    var refTypesMap = getMapFromList(descItemTypes.items)
-
-    json.typeGroups.forEach(group => group.types.forEach(type => {
-        type.descItemSpecsMap = getMapFromList(type.specs)
-    }));
-
     return {
         type: types.FA_SUB_NODE_FORM_RECEIVE,
         versionId,
         nodeId,
         nodeKey,
         data: json,
-        refTypesMap,
+        rulDataTypes,
+        refDescItemTypes: descItemTypes,
         receivedAt: Date.now()
     }
 }
