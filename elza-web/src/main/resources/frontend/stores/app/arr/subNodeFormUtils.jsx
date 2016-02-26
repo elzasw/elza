@@ -61,8 +61,8 @@ function createDataMap(formData) {
     }
 }
 
-export function createImplicitDescItem(descItemType, refType) {
-    var descItem = createDescItem(descItemType, refType, false);
+export function createImplicitDescItem(descItemType, refType, addedByUser=false) {
+    var descItem = createDescItem(descItemType, refType, addedByUser);
     descItem.position = 1;
     return descItem;
 }
@@ -111,7 +111,7 @@ function initFormKey(descItemType, descItem) {
 // 1. Doplní povinné a doporučené specifikace s prázdnou hodnotou, pokud je potřeba
 // 2. Pokud atribut nemá žádnou hodnotu, přidá první implicitní
 // 
-export function consolidateDescItems(resultDescItemType, infoType, refType, emptySystemSpecToKeyMap={}) {
+export function consolidateDescItems(resultDescItemType, infoType, refType, addedByUser, emptySystemSpecToKeyMap={}) {
     var forceVisibility = infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED'
 
     // Vynucené hodnoty se specifikací, pokud je potřeba
@@ -119,7 +119,7 @@ export function consolidateDescItems(resultDescItemType, infoType, refType, empt
 
     // Přidáme jednu hodnotu - chceme i u opakovatelného, pokud žádnou nemá (nebyla hodnota přifána vynucením specifikací)
     if (resultDescItemType.descItems.length === 0) {
-        resultDescItemType.descItems.push(createImplicitDescItem(resultDescItemType, refType));
+        resultDescItemType.descItems.push(createImplicitDescItem(resultDescItemType, refType, addedByUser));
     }
     
     resultDescItemType.descItems.forEach((descItem, index) => {descItem.position = index + 1});
@@ -150,7 +150,7 @@ export function addForcedSpecifications(resultDescItemType, infoType, refType, e
         const infoSpec = infoType.descItemSpecsMap[spec.id]
         var forceVisibility = infoSpec.type == 'REQUIRED' || infoSpec.type == 'RECOMMENDED'
         if (forceVisibility && !existingSpecIds[spec.id]) {  // přidáme ji na formulář, pokud má být vidět a ještě na formuláři není
-            var descItem = createImplicitDescItem(resultDescItemType, refType)
+            var descItem = createImplicitDescItem(resultDescItemType, refType, false)
             descItem.descItemSpecId = spec.id
 
             // Ponechání původního form key, pokud existovala tato položka již na klientovi a nebylo na ní šáhnuto
@@ -173,7 +173,7 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
         if (!newType) { // není ani v DB, přidáme ji pouze pokud je nastaveno forceVisibility
             if (forceVisibility) {  // přidáme ji pouze pokud je nastaveno forceVisibility
                 // Upravení a opravení seznamu hodnot, případně přidání rázdných
-                consolidateDescItems(resultDescItemType, infoType, refType)
+                consolidateDescItems(resultDescItemType, infoType, refType, false)
 
                 return true;
             }
@@ -183,7 +183,7 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
             })
 
             // Upravení a opravení seznamu hodnot, případně přidání rázdných
-            consolidateDescItems(resultDescItemType, infoType, refType)
+            consolidateDescItems(resultDescItemType, infoType, refType, false)
 
             return true;
         }
@@ -197,7 +197,7 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
 
             // Upravení a opravení seznamu hodnot, případně přidání rázdných
             if (forceVisibility) {
-                consolidateDescItems(resultDescItemType, infoType, refType)
+                consolidateDescItems(resultDescItemType, infoType, refType, false)
             }
 
             // Chceme ji pokud má nějaké hodnoty
@@ -275,7 +275,7 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
             }
 
             // Upravení a opravení seznamu hodnot, případně přidání rázdných
-            consolidateDescItems(resultDescItemType, infoType, refType, emptySystemSpecToKeyMap)
+            consolidateDescItems(resultDescItemType, infoType, refType, false, emptySystemSpecToKeyMap)
 
             return true;
         }

@@ -13,12 +13,14 @@ import {MenuItem, Button} from 'react-bootstrap';
 var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.bindMethods('handleChange', 'renderRecord', 'handleSearchChange', 'renderFooter', 'handleCreateRecord');
+        this.bindMethods('handleChange', 'renderRecord', 'handleSearchChange',
+            'renderFooter', 'handleCreateRecord', 'focus');
 
         this.state = {recordList: []};
     }
 
-    componentDidMount() {
+    focus() {
+        this.refs.focusEl.focus()
     }
 
     handleChange(id, valueObj) {
@@ -87,6 +89,7 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
                 <div className='desc-item-value desc-item-value-parts'>
                     <Autocomplete
                             {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-record'])}
+                            ref='focusEl'
                             customFilter
                             footer={footer}
                             value={value}
@@ -103,4 +106,4 @@ var DescItemRecordRef = class DescItemRecordRef extends AbstractReactComponent {
     }
 }
 
-module.exports = connect()(DescItemRecordRef);
+module.exports = connect(null, null, null, { withRef: true })(DescItemRecordRef);

@@ -236,7 +236,7 @@ export default function subNodeForm(state = initialState, action) {
             })
 
             // Upravení a opravení seznamu hodnot, případně přidání rázdných
-            consolidateDescItems(loc.descItemType, infoType, refType)
+            consolidateDescItems(loc.descItemType, infoType, refType, false)
 
             state.formData = {...state.formData};
             return {...state};
@@ -319,7 +319,7 @@ export default function subNodeForm(state = initialState, action) {
             var infoType = state.infoTypesMap[descItemType.id]
 
             // Upravení a opravení seznamu hodnot, případně přidání rázdných
-            consolidateDescItems(descItemType, infoType, refType)
+            consolidateDescItems(descItemType, infoType, refType, true)
 
             descItemGroup.descItemTypes.sort((a, b) => {
                 return state.refTypesMap[a.id].viewOrder - state.refTypesMap[b.id].viewOrder
@@ -341,7 +341,7 @@ export default function subNodeForm(state = initialState, action) {
                     loc.descItemType.descItems = [];
 
                     // Upravení a opravení seznamu hodnot, případně přidání rázdných
-                    consolidateDescItems(loc.descItemType, infoType, refType)
+                    consolidateDescItems(loc.descItemType, infoType, refType, true)
                 } else { // kompletně odebereme
                     loc.descItemGroup.descItemTypes = [
                         ...loc.descItemGroup.descItemTypes.slice(0, action.valueLocation.descItemTypeIndex),
@@ -362,7 +362,7 @@ export default function subNodeForm(state = initialState, action) {
             var refType = state.refTypesMap[loc.descItemType.id]
 
             // Upravení a opravení seznamu hodnot, případně přidání rázdných
-            consolidateDescItems(loc.descItemType, infoType, refType)
+            consolidateDescItems(loc.descItemType, infoType, refType, true)
             
             state.formData = {...state.formData};
             return {...state};

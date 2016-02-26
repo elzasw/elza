@@ -36,7 +36,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                 'handleChange', 'handleChangeSpec', 'handleCreatePacket', 'handleCreateParty', 'handleCreateRecord',
                 'handleBlur', 'handleFocus', 'handleDescItemTypeLock', 'handleDescItemTypeCopy', 'handleDetailParty',
                 'handleDetailRecord', 'handleDescItemTypeCopyFromPrev', 'handleDragStart', 'handleDragEnd', 'handleDragOver', 'handleDragLeave',
-                'getShowDeleteDescItemType', 'getShowDeleteDescItem');
+                'getShowDeleteDescItemType', 'getShowDeleteDescItem', 'focus');
     }
 
     componentWillReceiveProps(nextProps) {
@@ -50,6 +50,37 @@ return true;
 
     handleShortcuts(action) {
         console.log("DescItemType XXXXXXXX", action);
+    }
+
+    focus(item) {
+        const {descItemType, refType} = this.props
+
+        const refPrefix = refType.useSpecification ? 'descItemSpec' : 'descItem'
+
+        var ref
+        if (item.descItemObjectId !== null) {   // konkrétní hodnota
+            ref = this.refs[refPrefix + item.descItemObjectId]
+        } else {    // obecně atribut - dáme na první hodnotu
+            const descItem = descItemType.descItems[0]
+            ref = this.refs[refPrefix + descItem.descItemObjectId]
+        }
+
+        if (ref) {
+            if (refType.useSpecification) { // focus bude na specifikaci
+                if (ref.focus) {
+                    ref.focus()
+                } else {
+                    console.error('Cannot find focus method for desc item', ref)
+                }
+            } else {    // focus bude na vlastní hodnotu atributu
+                var descItem = ref.getWrappedInstance()
+                if (descItem.focus) {
+                    descItem.focus()
+                } else {
+                    console.error('Cannot find focus method for desc item', descItem)
+                }
+            }
+        }
     }
 
     /**
@@ -87,6 +118,7 @@ return true;
         return (
             <select
                 key={key}
+                ref={'descItemSpec' + descItem.descItemObjectId}
                 className={cls}
                 {...descItemSpecProps}
                 value={descItem.descItemSpecId}
@@ -355,6 +387,7 @@ return true;
             onBlur: this.handleBlur.bind(this, descItemIndex),
             onFocus: this.handleFocus.bind(this, descItemIndex),
             locked: locked,
+            ref: 'descItem' + descItem.descItemObjectId
         }
 
         var dragProps = {
@@ -676,4 +709,4 @@ DescItemType.propTypes = {
     versionId: React.PropTypes.number.isRequired
 }
 
-module.exports = connect()(DescItemType);
+module.exports = connect(null, null, null, { withRef: true })(DescItemType);

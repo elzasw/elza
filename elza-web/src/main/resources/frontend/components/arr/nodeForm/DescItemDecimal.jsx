@@ -8,19 +8,55 @@ import {AbstractReactComponent} from 'components';
 import {connect} from 'react-redux'
 var classNames = require('classnames');
 import {normalizeDouble} from 'components/validate'
+import {decorateValue} from './DescItemUtils'
 
 var DescItemDecimal = class DescItemDecimal extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleChange');
+        this.bindMethods('handleChange', 'focus');
+
+        this.state = {value: this.convertToClient(props.descItem.value)}
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.setState({value: this.convertToClient(nextProps.descItem.value)})
+    }
+
+    convertToClient(value) {
+        if (typeof value !== 'undefined' && value !== '' && value !== null) {
+            return ('' + value).replace(/(\.)/, ',')
+        } else {
+            return ''
+        }
+    }
+
+    convertFromClient(value) {
+        if (typeof value !== 'undefined' && value !== '' && value !== null) {
+            return value.replace(/(,)/, '.')
+        } else {
+            return ''
+        }
+    }
+
+    focus() {
+        this.refs.focusEl.focus()
     }
 
     handleChange(e) {
         var newValue = normalizeDouble(e.target.value);
 
-        if (newValue != this.props.descItem.value) {
-            this.props.onChange(newValue);
+        var value = this.convertFromClient(newValue)
+
+        var prevValue
+        if (typeof this.props.descItem.value !== 'undefined' && this.props.descItem.value !== '' && this.props.descItem.value !== null) {
+            prevValue = '' + this.props.descItem.value
+        } else {
+            prevValue = ''
+        }
+
+        if (value != prevValue) {
+            this.props.onChange(value);
         }
     }
 
@@ -37,18 +73,16 @@ var DescItemDecimal = class DescItemDecimal extends AbstractReactComponent {
         return (
             <div className='desc-item-value'>
                 <input
-                    className={cls}
+                    {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
+                    ref='focusEl'
                     type="text"
                     disabled={locked}
-                    value={descItem.value}
-                    title={descItem.error}
                     onChange={this.handleChange}
-                    onFocus={() => this.props.onFocus()}
-                    onBlur={() => this.props.onBlur()}
+                    value={this.state.value}
                 />
             </div>
         )
     }
 }
 
-module.exports = connect()(DescItemDecimal);
+module.exports = connect(null, null, null, { withRef: true })(DescItemDecimal);

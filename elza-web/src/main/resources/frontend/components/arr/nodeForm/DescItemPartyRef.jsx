@@ -7,17 +7,19 @@ import {WebApi} from 'actions'
 import {Icon, i18n, AbstractReactComponent, NoFocusButton, Autocomplete} from 'components';
 import {connect} from 'react-redux'
 import {decorateAutocompleteValue} from './DescItemUtils'
-
 import {MenuItem, DropdownButton, Button} from 'react-bootstrap';
-
 import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes'
 
 var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
     constructor(props) {
         super(props);
-        this.bindMethods('handleChange', 'renderParty', 'handleSearchChange', 'renderFooter', 'handleDetail');
+        this.bindMethods('handleChange', 'renderParty', 'handleSearchChange', 'renderFooter', 'handleDetail', 'focus');
 
         this.state = {partyList: []};
+    }
+
+    focus() {
+        this.refs.focusEl.focus()
     }
 
     componentDidMount() {
@@ -94,6 +96,7 @@ var DescItemPartyRef = class DescItemPartyRef extends AbstractReactComponent {
             <div className='desc-item-value desc-item-value-parts'>
                 <Autocomplete
                         {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, ['autocomplete-party'])}
+                        ref='focusEl'
                         customFilter
                         footer={footer}
                         value={value}
@@ -116,4 +119,4 @@ function mapStateToProps(state) {
         refTables
     }
 }
-module.exports = connect(mapStateToProps)(DescItemPartyRef);
+module.exports = connect(mapStateToProps, null, null, { withRef: true })(DescItemPartyRef);

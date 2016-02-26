@@ -12,7 +12,7 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleChange');
+        this.bindMethods('handleChange', 'focus');
 
         this.state = {
             values: this.splitValue(props.descItem.value)
@@ -23,6 +23,10 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
         this.setState({
             values: this.splitValue(nextProps.descItem.value)
         })
+    }
+
+    focus() {
+        this.refs.focusEl.focus()
     }
 
     handleChange(valueIndex, e) {
@@ -44,7 +48,13 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
     }
 
     splitValue(value) {
-        var values = value.split("&");
+        var values;
+        
+        if (typeof value !== 'undefined' && value !== null) {
+            values = value.split("&");
+        } else {
+            values = ['', '']
+        }
         
         var result = {
             value1: values[0],
@@ -68,6 +78,7 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
             <div className='desc-item-value  desc-item-value-parts'>
                 <input
                     {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, ['part1'])}
+                    ref='focusEl'
                     type="text"
                     disabled={locked}
                     value={this.state.values.value1}
@@ -85,5 +96,5 @@ var DescItemCoordinates = class DescItemCoordinates extends AbstractReactCompone
     }
 }
 
-module.exports = connect()(DescItemCoordinates);
+module.exports = connect(null, null, null, { withRef: true })(DescItemCoordinates);
 

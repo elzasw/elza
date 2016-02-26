@@ -9,7 +9,11 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('packetName', 'findType');
+        this.bindMethods('packetName', 'findType', 'focus');
+    }
+
+    focus() {
+        this.refs.focusEl.focus()
     }
 
     findType(packetTypeId) {
@@ -44,6 +48,7 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
             <div className='desc-item-value desc-item-value-parts'>
                 <select
                         {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
+                        ref='focusEl'
                         value={descItem.value}
                         disabled={locked}
                         onChange={(e) => this.props.onChange(e.target.value)} >
@@ -58,4 +63,4 @@ var DescItemPacketRef = class DescItemPacketRef extends AbstractReactComponent {
     }
 }
 
-module.exports = connect()(DescItemPacketRef);
+module.exports = connect(null, null, null, { withRef: true })(DescItemPacketRef);

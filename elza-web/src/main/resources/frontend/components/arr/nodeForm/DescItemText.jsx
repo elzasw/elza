@@ -13,6 +13,12 @@ import {decorateValue} from './DescItemUtils'
 var DescItemText = class DescItemText extends AbstractReactComponent {
     constructor(props) {
         super(props);
+
+        this.bindMethods('focus')
+    }
+
+    focus() {
+        this.refs.focusEl.focus()
     }
 
     render() {
@@ -22,6 +28,7 @@ var DescItemText = class DescItemText extends AbstractReactComponent {
             <div className='desc-item-value'>
                 <textarea
                     {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
+                    ref='focusEl'
                     type="text"
                     disabled={locked}
                     value={descItem.value}
@@ -32,4 +39,4 @@ var DescItemText = class DescItemText extends AbstractReactComponent {
     }
 }
 
-module.exports = connect()(DescItemText);
+module.exports = connect(null, null, null, { withRef: true })(DescItemText);

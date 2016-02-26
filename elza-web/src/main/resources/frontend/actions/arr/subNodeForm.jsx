@@ -5,6 +5,7 @@
 import {WebApi} from 'actions'
 import {getMapFromList, indexById, findByNodeKeyInGlobalState} from 'stores/app/utils.jsx'
 import {valuesEquals} from 'components/Utils.jsx'
+import {setFocus} from 'actions/global/focus'
 
 import * as types from 'actions/constants/ActionTypes';
 
@@ -324,12 +325,18 @@ export function faSubNodeFormValueDelete(versionId, nodeId, nodeKey, valueLocati
 }
 
 export function faSubNodeFormDescItemTypeAdd(versionId, nodeId, nodeKey, descItemTypeId) {
-    return {
-        type: types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD,
-        versionId,
-        nodeId,
-        nodeKey,
-        descItemTypeId
+    return (dispatch, getState) => {
+        dispatch({
+            type: types.FA_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD,
+            versionId,
+            nodeId,
+            nodeKey,
+            descItemTypeId
+        })
+
+        var state = getState()
+        var subNodeForm = getSubNodeForm(state, versionId, nodeKey);
+        dispatch(setFocus('arr', 2, 'subNodeForm', {descItemTypeId: descItemTypeId, descItemObjectId: null}))
     }
 }
 

@@ -30,6 +30,8 @@ const scrollIntoView = require('dom-scroll-into-view')
 var classNames = require('classnames');
 import {setFocus, canSetFocus, focusWasSet, isFocusFor, isFocusExactFor} from 'actions/global/focus'
 require ('./NodePanel.less');
+import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm'
+import {faSubNodeFormDescItemTypeAdd} from 'actions/arr/subNodeForm'
 
 var keyModifier = Utils.getKeyModifier()
 
@@ -44,6 +46,7 @@ var keymap = {
     },
     NodePanel: {
         searchItem: keyModifier + 'f',
+        addDescItemType: keyModifier + 'p',
     },
 }
 var shortcutManager = new ShortcutsManager(keymap)
@@ -58,7 +61,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             'getParentNodes', 'getChildNodes', 'getSiblingNodes',
             'renderAccordion', 'renderState', 'transformConformityInfo', 'handleAddNodeAtEnd',
             'handleChangeFilterText', 'renderRowItem', 'handleFindPosition', 'handleFindPositionSubmit',
-            'handleShortcuts', 'trySetFocus'
+            'handleShortcuts', 'trySetFocus', 'handleAddDescItemType'
             );
 
         this.state = {
@@ -192,6 +195,12 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 case 'searchItem':
                     this.refs.search.getInput().getInputDOMNode().focus()
                     break
+                case 'addDescItemType':
+                    const {node} = this.props
+                    if (node.selectedSubNodeId !== null) {
+                        this.handleAddDescItemType()
+                    }
+                    break
                 case 'closeItem':
                     if (node.selectedSubNodeId !== null) {
                         this.handleCloseItem(node.childNodes[index])
@@ -200,6 +209,55 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                     break
             }
         }
+    }
+
+    /**
+     * Zobrazení dialogu pro přidání atributu.
+     */
+    handleAddDescItemType() {
+        const {node: {subNodeForm, selectedSubNodeId, nodeKey}, versionId} = this.props;
+
+        const formData = subNodeForm.formData
+
+        // Pro přidání chceme jen ty, které zatím ještě nemáme
+        var infoTypesMap = {...subNodeForm.infoTypesMap};
+        formData.descItemGroups.forEach(group => {
+            group.descItemTypes.forEach(descItemType => {
+                delete infoTypesMap[descItemType.id];
+            })
+        })
+        var descItemTypes = [];
+        Object.keys(infoTypesMap).forEach(function (key) {
+            descItemTypes.push({
+                ...subNodeForm.refTypesMap[key],
+                ...infoTypesMap[key],
+            });
+        });
+
+        function typeId(type) {
+            switch (type) {
+                case "REQUIRED":
+                    return 0;
+                case "RECOMMENDED":
+                    return 1;
+                case "POSSIBLE":
+                    return 2;
+                case "IMPOSSIBLE":
+                    return 99;
+                default:
+                    return 3;
+            }
+        }
+
+        // Seřazení podle position
+        descItemTypes.sort((a, b) => typeId(a.type) - typeId(b.type));
+        var submit = (data) => {
+            this.dispatch(modalDialogHide());
+            this.dispatch(faSubNodeFormDescItemTypeAdd(versionId, selectedSubNodeId, nodeKey, data.descItemTypeId));
+        };
+        // Modální dialog
+        var form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>;
+        this.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form));
     }
 
     getChildContext() {
@@ -650,6 +708,7 @@ return true
                 selectedSubNode={node.subNodeForm.data.node}
                 descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
                 closed={closed}
+                onAddDescItemType={this.handleAddDescItemType}
             />
         } else {
             form = <Loading value={i18n('global.data.loading.form')}/>

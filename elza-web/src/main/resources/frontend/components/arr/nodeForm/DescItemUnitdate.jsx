@@ -15,7 +15,11 @@ var DescItemUnitdate = class DescItemUnitdate extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleValueChange', 'handleCalendarTypeChange');
+        this.bindMethods('handleValueChange', 'handleCalendarTypeChange', 'focus');
+    }
+
+    focus() {
+        this.refs.focusEl.focus()
     }
 
     handleValueChange(e) {
@@ -75,6 +79,7 @@ var DescItemUnitdate = class DescItemUnitdate extends AbstractReactComponent {
                         >
                     <input
                         {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, ['unitdate-input'])}
+                        ref='focusEl'
                         type="text"
                         value={descItem.value}
                         onChange={this.handleValueChange}
@@ -85,4 +90,4 @@ var DescItemUnitdate = class DescItemUnitdate extends AbstractReactComponent {
     }
 }
 
-module.exports = connect()(DescItemUnitdate);
+module.exports = connect(null, null, null, { withRef: true })(DescItemUnitdate);

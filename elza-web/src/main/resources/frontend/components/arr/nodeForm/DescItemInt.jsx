@@ -13,7 +13,11 @@ var DescItemInt = class DescItemInt extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('handleChange');
+        this.bindMethods('handleChange', 'focus');
+    }
+
+    focus() {
+        this.refs.focusEl.focus()
     }
 
     handleChange(e) {
@@ -30,6 +34,7 @@ var DescItemInt = class DescItemInt extends AbstractReactComponent {
             <div className='desc-item-value'>
                 <input
                     {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
+                    ref='focusEl'
                     type="text"
                     disabled={locked}
                     value={descItem.value}
@@ -40,4 +45,4 @@ var DescItemInt = class DescItemInt extends AbstractReactComponent {
     }
 }
 
-module.exports = connect()(DescItemInt);
+module.exports = connect(null, null, null, { withRef: true })(DescItemInt);

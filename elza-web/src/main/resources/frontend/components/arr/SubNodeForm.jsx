@@ -36,7 +36,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
 
-        this.bindMethods('renderDescItemGroup', 'handleAddDescItemType', 'renderDescItemType', 'handleChange', 'handleChangePosition',
+        this.bindMethods('renderDescItemGroup', 'renderDescItemType', 'handleChange', 'handleChangePosition',
             'handleChangeSpec', 'handleDescItemTypeRemove', 'handleBlur', 'handleFocus', 'renderFormActions',
             'handleDescItemAdd', 'handleDescItemRemove', 'handleDescItemTypeLock',
             'handleDescItemTypeUnlockAll', 'handleDescItemTypeCopy', 'handleAddNodeBefore', 'handleAddNodeAfter',
@@ -70,6 +70,14 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         if (canSetFocus()) {
             if (isFocusFor(focus, 'arr', 2, 'subNodeForm')) {
                 if (focus.item) {   // položka
+                    this.setState({}, () => {
+                        var ref = this.refs['descItemType' + focus.item.descItemTypeId]
+                        if (ref) {
+                            var descItemType = ref.getWrappedInstance()
+                            descItemType.focus(focus.item)
+                        }
+                        focusWasSet()
+                    })
                 } else {    // obecně formulář
                     this.setState({}, () => {
                         var el = ReactDOM.findDOMNode(this.refs.nodeForm);
@@ -522,6 +530,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
 
         return (
             <DescItemType key={descItemType.id}
+                ref={'descItemType' + descItemType.id}
                 descItemType={descItemType}
                 refType={refType}
                 infoType={infoType}
@@ -556,56 +565,6 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
     }
 
     /**
-     * Zobrazení dialogu pro přidání atributu.
-     */
-    handleAddDescItemType() {
-        const {subNodeForm, versionId, selectedSubNodeId, nodeKey} = this.props;
-
-        const formData = subNodeForm.formData
-
-        // Pro přidání chceme jen ty, které zatím ještě nemáme
-        var infoTypesMap = {...subNodeForm.infoTypesMap};
-        formData.descItemGroups.forEach(group => {
-            group.descItemTypes.forEach(descItemType => {
-                delete infoTypesMap[descItemType.id];
-            })
-        })
-        var descItemTypes = [];
-        Object.keys(infoTypesMap).forEach(function (key) {
-            descItemTypes.push({
-                ...subNodeForm.refTypesMap[key],
-                ...infoTypesMap[key],
-            });
-        });
-
-        function typeId(type) {
-            switch (type) {
-                case "REQUIRED":
-                    return 0;
-                case "RECOMMENDED":
-                    return 1;
-                case "POSSIBLE":
-                    return 2;
-                case "IMPOSSIBLE":
-                    return 99;
-                default:
-                    return 3;
-            }
-        }
-
-        // Seřazení podle position
-        descItemTypes.sort((a, b) => typeId(a.type) - typeId(b.type));
-        var submit = (data) => {
-            console.log(data);
-            this.dispatch(modalDialogHide());
-            this.dispatch(faSubNodeFormDescItemTypeAdd(versionId, selectedSubNodeId, nodeKey, data.descItemTypeId));
-        };
-        // Modální dialog
-        var form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit}/>;
-        this.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form));
-    }
-
-    /**
      * Renderování globálních akcí pro formulář.
      * @return {Object} view
      */
@@ -614,7 +573,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         return (
             <div className='node-form-actions-container'>
                 <div className='node-form-actions'>
-                    <NoFocusButton onClick={this.handleAddDescItemType}><Icon
+                    <NoFocusButton onClick={this.props.onAddDescItemType}><Icon
                         glyph="fa-plus"/>{i18n('subNodeForm.descItemTypeAdd')}</NoFocusButton>
                     <NoFocusButton onClick={this.handleDescItemTypeUnlockAll}><Icon
                         glyph="fa-lock"/>{i18n('subNodeForm.descItemTypeUnlockAll')}</NoFocusButton>

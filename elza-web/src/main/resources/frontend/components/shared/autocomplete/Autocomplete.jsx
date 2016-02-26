@@ -131,7 +131,8 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
 
         this.bindMethods('handleKeyDown', 'handleChange', 'handleKeyUp', 'getFilteredItems', 'maybeAutoCompleteText',
             'maybeScrollItemIntoView', 'handleInputFocus', 'handleInputClick', 'handleInputBlur',
-            'handleKeyDown', 'openMenu', 'closeMenu', 'handleDocumentClick', 'getStateFromProps')
+            'handleKeyDown', 'openMenu', 'closeMenu', 'handleDocumentClick', 'getStateFromProps',
+            'focus')
 
         this._ignoreBlur = false;
 
@@ -150,6 +151,10 @@ var Autocomplete = class Autocomplete extends AbstractReactComponent {
             highlightedIndex: null,
             hasFocus: false
         }
+    }
+
+    focus() {
+        ReactDOM.findDOMNode(this.refs.input).focus()
     }
 
     isUnderEl(parentEl, el) {
