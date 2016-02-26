@@ -42,7 +42,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             'handleDescItemTypeUnlockAll', 'handleDescItemTypeCopy', 'handleAddNodeBefore', 'handleAddNodeAfter',
             'handleCreatePacket', 'handleCreatePacketSubmit', 'handleAddChildNode', 'handleCreateParty',
             'handleCreatedParty', 'handleCreateRecord', 'handleCreatedRecord', 'handleDeleteNode',
-            'handleDescItemTypeCopyFromPrev', 'trySetFocus'
+            'handleDescItemTypeCopyFromPrev', 'trySetFocus', 'getFlatDescItemTypes', 'getNodeSetting'
         );
     }
 
@@ -100,9 +100,9 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param descItemGroupIndex {Integer} index skupiny v seznamu
      * @return {Object} view
      */
-    renderDescItemGroup(descItemGroup, descItemGroupIndex) {
+    renderDescItemGroup(descItemGroup, descItemGroupIndex, nodeSetting) {
         var descItemTypes = descItemGroup.descItemTypes.map((descItemType, descItemTypeIndex) => (
-            this.renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex)
+            this.renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting)
         ));
         var cls = classNames({
             'desc-item-group': true,
@@ -146,7 +146,53 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             descItemTypeIndex,
         }
 
+        // Focus na následující prvek, pokud existuje, jinak na předchozí, pokud existuje, jinak na accordion
+        // Focus musíme zjišťovat před DISPATCH faSubNodeFormDescItemTypeDelete, jinak bychom neměli ve formData správná data, protože ty nejsou immutable
+        var setFocusFunc
+        const {subNodeForm: {formData}} = this.props
+        var descItemType = formData.descItemGroups[descItemGroupIndex].descItemTypes[descItemTypeIndex]
+        var types = this.getFlatDescItemTypes(true)
+        var index = indexById(types, descItemType.id)
+        if (index + 1 < types.length) {
+            var focusDescItemType = types[index + 1]
+            setFocusFunc = () => setFocus('arr', 2, 'subNodeForm', {descItemTypeId: focusDescItemType.id, descItemObjectId: null})
+        } else if (index > 0) {
+            var focusDescItemType = types[index - 1]
+            setFocusFunc = () => setFocus('arr', 2, 'subNodeForm', {descItemTypeId: focusDescItemType.id, descItemObjectId: null})
+        } else {    // nemůžeme žádný prvek najít, focus dostane accordion
+            setFocusFunc = () => setFocus('arr', 2, 'accordion')
+        }
+
+        // Smazání hodnoty
         this.dispatch(faSubNodeFormDescItemTypeDelete(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation));
+
+        // Nyní pošleme focus
+        this.dispatch(setFocusFunc())
+    }
+
+    getFlatDescItemTypes(onlyNotLocked) {
+        const {subNodeForm: {formData}} = this.props
+
+        var nodeSetting
+        if (onlyNotLocked) {
+            nodeSetting = this.getNodeSetting()
+        }
+
+        var result = []
+
+        formData.descItemGroups.forEach(group => {
+            group.descItemTypes.forEach(type => {
+                if (onlyNotLocked) {
+                    if (!this.isDescItemLocked(nodeSetting, type.id)) {
+                        result.push(type)
+                    }
+                } else {
+                    result.push(type)
+                }
+            })
+        })
+
+        return result
     }
 
     /**
@@ -482,6 +528,19 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         }
     }
 
+    isDescItemLocked(nodeSetting, descItemTypeId) {
+        // existuje nastavení o JP - zamykání
+        if (nodeSetting && nodeSetting.descItemTypeLockIds) {
+            var index = nodeSetting.descItemTypeLockIds.indexOf(descItemTypeId);
+
+            // existuje type mezi zamknutými
+            if (index >= 0) {
+                return true
+            }
+        }
+        return false
+    }
+
     /**
      * Renderování atributu.
      * @param descItemType {Object} atribut
@@ -489,7 +548,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
      * @return {Object} view
      */
-    renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex) {
+    renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting) {
         const {subNodeForm, descItemCopyFromPrevEnabled, rulDataTypes, calendarTypes, closed,
                 nodeSettings, nodeId, packetTypes, packets, conformityInfo, versionId} = this.props;
 
@@ -497,26 +556,11 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         var infoType = subNodeForm.infoTypesMap[descItemType.id]
         var rulDataType = refType.dataType
 
-        var locked = false;
+        var locked = this.isDescItemLocked(nodeSetting, descItemType.id);
         var copy = false;
 
-        // existují nějaké nastavení o JP
-        if (nodeSettings) {
-            var nodeSetting = nodeSettings.nodes[nodeSettings.nodes.map(function (node) {
-                return node.id;
-            }).indexOf(nodeId)];
-
-            // existuje nastavení o JP - zamykání
-            if (nodeSetting && nodeSetting.descItemTypeLockIds) {
-                var index = nodeSetting.descItemTypeLockIds.indexOf(descItemType.id);
-
-                // existuje type mezi zamknutými
-                if (index >= 0) {
-                    locked = true;
-                }
-
-            }
-
+        // existují nějaké nastavení pro konkrétní node
+        if (nodeSetting) {
             // existuje nastavení o JP - kopírování
             if (nodeSetting && nodeSetting.descItemTypeCopyIds) {
                 var index = nodeSetting.descItemTypeCopyIds.indexOf(descItemType.id);
@@ -617,13 +661,28 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         )
     }
 
+    getNodeSetting() {
+        const {nodeSettings, nodeId} = this.props;
+       
+        var nodeSetting
+        if (nodeSettings) {
+            nodeSetting = nodeSettings.nodes[nodeSettings.nodes.map(function (node) {
+                return node.id;
+            }).indexOf(nodeId)];
+        }
+
+        return nodeSetting
+    }
+
     render() {
-        const {subNodeForm, closed} = this.props;
+        const {subNodeForm, closed, nodeSettings, nodeId} = this.props;
         var formData = subNodeForm.formData
+
+        var nodeSetting = this.getNodeSetting()
 
         var formActions = closed ? null : this.renderFormActions();
         var descItemGroups = formData.descItemGroups.map((group, groupIndex) => (
-            this.renderDescItemGroup(group, groupIndex)
+            this.renderDescItemGroup(group, groupIndex, nodeSetting)
         ));
 
         return (

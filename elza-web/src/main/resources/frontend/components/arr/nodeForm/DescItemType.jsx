@@ -4,7 +4,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Icon, i18n, AbstractReactComponent, NoFocusButton} from 'components';
+import {Utils, Icon, i18n, AbstractReactComponent, NoFocusButton} from 'components';
 import {Tooltip, OverlayTrigger} from 'react-bootstrap';
 import {connect} from 'react-redux'
 var classNames = require('classnames');
@@ -21,9 +21,19 @@ import DescItemRecordRef from './DescItemRecordRef'
 import {propsEquals} from 'components/Utils'
 import {descItemNeedStore} from 'actions/arr/subNodeForm'
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils'
+var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component')
 
 require ('./AbstractDescItem.less')
+
+var keyModifier = Utils.getKeyModifier()
+
+var keymap = {
+    DescItemType: {
+        deleteDescItemType: keyModifier + 'y',
+    },
+}
+var shortcutManager = new ShortcutsManager(keymap)
 
 var placeholder = document.createElement("div");
 placeholder.className = "placeholder";
@@ -35,8 +45,8 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
         this.bindMethods('renderDescItemSpec', 'renderDescItem', 'renderLabel',
                 'handleChange', 'handleChangeSpec', 'handleCreatePacket', 'handleCreateParty', 'handleCreateRecord',
                 'handleBlur', 'handleFocus', 'handleDescItemTypeLock', 'handleDescItemTypeCopy', 'handleDetailParty',
-                'handleDetailRecord', 'handleDescItemTypeCopyFromPrev', 'handleDragStart', 'handleDragEnd', 'handleDragOver', 'handleDragLeave',
-                'getShowDeleteDescItemType', 'getShowDeleteDescItem', 'focus');
+                'handleDetailRecord', 'handleDescItemTypeCopyFromPrev', 'handleDragStart', 'handleDragEnd', 'handleDragOver',
+                'handleDragLeave', 'getShowDeleteDescItemType', 'getShowDeleteDescItem', 'focus', 'handleShortcuts');
     }
 
     componentWillReceiveProps(nextProps) {
@@ -49,7 +59,17 @@ return true;
     }
 
     handleShortcuts(action) {
-        console.log("DescItemType XXXXXXXX", action);
+        console.log("#handleShortcuts", '[' + action + ']', this);
+
+        switch (action) {
+            case 'deleteDescItemType':
+                this.props.onDescItemTypeRemove()
+                break
+        }
+    }
+
+    getChildContext() {
+        return { shortcuts: shortcutManager };
     }
 
     focus(item) {
@@ -667,13 +687,13 @@ return true;
         });
 
         return (
-            <div className={cls} name='Tree' handler={this.handleShortcuts}>
+            <Shortcuts name='DescItemType' className={cls} handler={this.handleShortcuts}>
                     {label}
                     <div ref='dragOverContainer' className='desc-item-type-desc-items' onDragOver={this.handleDragOver} onDragLeave={this.handleDragLeave}>
                         {descItems}
                     </div>
                     {addAction}
-            </div>
+            </Shortcuts>
         )
     }
 }
@@ -707,6 +727,10 @@ DescItemType.propTypes = {
     copy: React.PropTypes.bool.isRequired,
     conformityInfo: React.PropTypes.object.isRequired,
     versionId: React.PropTypes.number.isRequired
+}
+
+DescItemType.childContextTypes = {
+    shortcuts: React.PropTypes.object.isRequired
 }
 
 module.exports = connect(null, null, null, { withRef: true })(DescItemType);
