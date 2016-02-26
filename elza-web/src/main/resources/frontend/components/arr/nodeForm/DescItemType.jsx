@@ -23,7 +23,7 @@ import {descItemNeedStore} from 'actions/arr/subNodeForm'
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils'
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component')
-
+import {indexById} from 'stores/app/utils.jsx'
 require ('./AbstractDescItem.less')
 
 var keyModifier = Utils.getKeyModifier()
@@ -31,6 +31,10 @@ var keyModifier = Utils.getKeyModifier()
 var keymap = {
     DescItemType: {
         deleteDescItemType: keyModifier + 'y',
+    },
+    DescItem: {
+        addDescItem: keyModifier + 'i',
+        deleteDescItem: keyModifier + 'd',
     },
 }
 var shortcutManager = new ShortcutsManager(keymap)
@@ -46,7 +50,7 @@ var DescItemType = class DescItemType extends AbstractReactComponent {
                 'handleChange', 'handleChangeSpec', 'handleCreatePacket', 'handleCreateParty', 'handleCreateRecord',
                 'handleBlur', 'handleFocus', 'handleDescItemTypeLock', 'handleDescItemTypeCopy', 'handleDetailParty',
                 'handleDetailRecord', 'handleDescItemTypeCopyFromPrev', 'handleDragStart', 'handleDragEnd', 'handleDragOver',
-                'handleDragLeave', 'getShowDeleteDescItemType', 'getShowDeleteDescItem', 'focus', 'handleShortcuts');
+                'handleDragLeave', 'getShowDeleteDescItemType', 'getShowDeleteDescItem', 'focus', 'handleDescItemTypeShortcuts', 'handleDescItemShortcuts');
     }
 
     componentWillReceiveProps(nextProps) {
@@ -58,12 +62,38 @@ return true;
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
-    handleShortcuts(action) {
-        console.log("#handleShortcuts", '[' + action + ']', this);
+    handleDescItemTypeShortcuts(action) {
+        console.log("#handleDescItemTypeShortcuts", '[' + action + ']', this);
+
+        const {locked} = this.props
 
         switch (action) {
             case 'deleteDescItemType':
-                this.props.onDescItemTypeRemove()
+                if (!locked && this.getShowDeleteDescItemType()) {
+                    this.props.onDescItemTypeRemove()
+                }
+                break
+        }
+    }
+
+    handleDescItemShortcuts(descItemIndex, action) {
+        console.log("#handleDescItemShortcuts", '[' + action + ']', this, 'index', descItemIndex);
+
+        const {locked, descItemType, infoType, onDescItemRemove, onDescItemAdd} = this.props
+
+        switch (action) {
+            case 'addDescItem':
+                if (!locked) {   // přidávat hodnoty lze jen pokud není zamčeno
+                    onDescItemAdd()
+                }
+                break
+            case 'deleteDescItem':
+                if (!locked && infoType.rep === 1) {   // mazat hodnoty lze jen u vícehodnotových atributů a není zamčeno
+                    var descItem = descItemType.descItems[descItemIndex]
+                    if (this.getShowDeleteDescItem(descItem)) {
+                        onDescItemRemove(descItemIndex)
+                    }
+                }
                 break
         }
     }
@@ -75,14 +105,18 @@ return true;
     focus(item) {
         const {descItemType, refType} = this.props
 
-        const refPrefix = refType.useSpecification ? 'descItemSpec' : 'descItem'
+        const refPrefix = refType.useSpecification ? 'spec_' : ''
 
         var ref
-        if (item.descItemObjectId !== null) {   // konkrétní hodnota
-            ref = this.refs[refPrefix + item.descItemObjectId]
+        if (typeof item.descItemObjectId !== 'undefined' && item.descItemObjectId !== null) {   // konkrétní hodnota
+            var descItem = descItemType.descItems[indexById(descItemType.descItems, item.descItemObjectId, 'descItemObjectId')]
+            ref = this.refs[refPrefix + descItem.formKey]
+        } else if (typeof item.descItemIndex !== 'undefined' && item.descItemIndex !== null) {   // konkrétní index
+            var descItem = descItemType.descItems[item.descItemIndex]
+            ref = this.refs[refPrefix + descItem.formKey]
         } else {    // obecně atribut - dáme na první hodnotu
-            const descItem = descItemType.descItems[0]
-            ref = this.refs[refPrefix + descItem.descItemObjectId]
+            var descItem = descItemType.descItems[0]
+            ref = this.refs[refPrefix + descItem.formKey]
         }
 
         if (ref) {
@@ -138,7 +172,7 @@ return true;
         return (
             <select
                 key={key}
-                ref={'descItemSpec' + descItem.descItemObjectId}
+                ref={key}
                 className={cls}
                 {...descItemSpecProps}
                 value={descItem.descItemSpecId}
@@ -407,7 +441,7 @@ return true;
             onBlur: this.handleBlur.bind(this, descItemIndex),
             onFocus: this.handleFocus.bind(this, descItemIndex),
             locked: locked,
-            ref: 'descItem' + descItem.descItemObjectId
+            ref: key
         }
 
         var dragProps = {
@@ -488,13 +522,13 @@ return true;
         }
 
         return (
-            <div key={key} className={cls} {...dragProps}>
+            <Shortcuts name='DescItem' key={key} className={cls} {...dragProps} handler={this.handleDescItemShortcuts.bind(this, descItemIndex)}>
                 {infoType.rep == 1 && <div className='dragger'><Icon className="up" glyph="fa-angle-up"/><Icon className="down" glyph="fa-angle-down"/>&nbsp;</div>}
                 <div key="container" className='desc-item-value-container'>
                     {parts}
                 </div>
                 {actions.length > 0 && <div key="actions" className='desc-item-action-container'>{actions}</div>}
-            </div>
+            </Shortcuts>
         )
     }
 
@@ -664,7 +698,6 @@ return true;
             var actions = new Array;
 
             if (infoType.rep === 1) {
-                //actions.push(<NoFocusButton disabled={!showDeleteDescItemType} key="delete" onClick={onDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-times" /></NoFocusButton>);
                 actions.push(<NoFocusButton disabled={!this.getShowDeleteDescItem(descItem)} key="delete" onClick={onDescItemRemove.bind(this, descItemIndex)} title={i18n('subNodeForm.deleteDescItem')}><Icon glyph="fa-times" /></NoFocusButton>);
             }
 
@@ -687,7 +720,7 @@ return true;
         });
 
         return (
-            <Shortcuts name='DescItemType' className={cls} handler={this.handleShortcuts}>
+            <Shortcuts name='DescItemType' className={cls} handler={this.handleDescItemTypeShortcuts}>
                     {label}
                     <div ref='dragOverContainer' className='desc-item-type-desc-items' onDragOver={this.handleDragOver} onDragLeave={this.handleDragLeave}>
                         {descItems}

@@ -132,7 +132,27 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             descItemIndex,
         }
 
+        // Focus na následující hodnotu, pokud existuje, jinak na předchozí hodnotu, pokud existuje, jinak obecně na descItemType (reálně se nastaví na první hodnotu daného atributu)
+        // Focus musíme zjišťovat před DISPATCH faSubNodeFormValueDelete, jinak bychom neměli ve formData správná data, protože ty nejsou immutable!
+        var setFocusFunc
+        const {subNodeForm: {formData}} = this.props
+        var descItemType = formData.descItemGroups[descItemGroupIndex].descItemTypes[descItemTypeIndex]
+        var descItem = descItemType.descItems[descItemIndex]
+        if (descItemIndex + 1 < descItemType.descItems.length) {    // následující hodnota
+            var focusDescItem = descItemType.descItems[descItemIndex + 1]
+            setFocusFunc = () => setFocus('arr', 2, 'subNodeForm', {descItemTypeId: descItemType.id, descItemObjectId: focusDescItem.descItemObjectId, descItemIndex: descItemIndex})
+        } else if (descItemIndex > 0) { // předchozí hodnota
+            var focusDescItem = descItemType.descItems[descItemIndex - 1]
+            setFocusFunc = () => setFocus('arr', 2, 'subNodeForm', {descItemTypeId: descItemType.id, descItemObjectId: focusDescItem.descItemObjectId, descItemIndex: descItemIndex - 1})
+        } else {    // obecně descItemType
+            setFocusFunc = () => setFocus('arr', 2, 'subNodeForm', {descItemTypeId: descItemType.id, descItemObjectId: null, descItemIndex: null})
+        }
+
+        // Smazání hodnoty
         this.dispatch(faSubNodeFormValueDelete(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation));
+
+        // Nyní pošleme focus
+        this.dispatch(setFocusFunc())
     }
 
     /**
@@ -147,7 +167,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         }
 
         // Focus na následující prvek, pokud existuje, jinak na předchozí, pokud existuje, jinak na accordion
-        // Focus musíme zjišťovat před DISPATCH faSubNodeFormDescItemTypeDelete, jinak bychom neměli ve formData správná data, protože ty nejsou immutable
+        // Focus musíme zjišťovat před DISPATCH faSubNodeFormDescItemTypeDelete, jinak bychom neměli ve formData správná data, protože ty nejsou immutable!
         var setFocusFunc
         const {subNodeForm: {formData}} = this.props
         var descItemType = formData.descItemGroups[descItemGroupIndex].descItemTypes[descItemTypeIndex]
@@ -285,7 +305,17 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             descItemTypeIndex,
         }
 
+        // Focus na novou hodnotu
+        const {subNodeForm: {formData}} = this.props
+        var descItemType = formData.descItemGroups[descItemGroupIndex].descItemTypes[descItemTypeIndex]
+        var index = descItemType.descItems.length
+        var setFocusFunc = () => setFocus('arr', 2, 'subNodeForm', {descItemTypeId: descItemType.id, descItemObjectId: null, descItemIndex: index})
+
+        // Smazání hodnoty
         this.dispatch(faSubNodeFormValueAdd(this.props.versionId, this.props.selectedSubNodeId, this.props.nodeKey, valueLocation));
+
+        // Nyní pošleme focus
+        this.dispatch(setFocusFunc())
     }
 
     /**
