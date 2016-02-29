@@ -1,7 +1,7 @@
 @import "~variables.less";
 
 @valueActionWidth: 22px;
-@descItemDraggerSize: 0.6em;
+@descItemDraggerSize: 6px;
 
 .node-form-standard-actions {
     .btn {
@@ -121,6 +121,7 @@
                     // Dragger
                     .dragger {
                         width: @descItemDraggerSize;
+                        flex-shrink: 0;
                         height: 1.8em;
                         background-color: @dragger-bg;
                         padding-top: 2px;
@@ -134,7 +135,7 @@
                         }
                         .icon{
                             position: absolute;
-                            font-size: 0.8em;
+                            font-size: 0.9em;
                             display: none;
                             &.up {
                                 top: 2px;
@@ -194,29 +195,26 @@
                         .desc-item-type-desc-item-container {
                             padding-top: 2px;
                             padding-bottom: 2px;
+                            display: flex;
                             &:first-child {
                                 padding-top: 0;
                             }
                             &:last-child {
                             }
-                            
-                            display: flex;
-                            
-                            .desc-item-value-container {
-                                width: 100%;//calc(~"100% - 28px");
 
+                            .desc-item-value-container {
                                 display: flex;
-                                flex-direction: row;
-                                flex-wrap: nowrap;                                
+                                flex-wrap: nowrap;
+                                flex-grow: 1;
 
                                 .desc-item-spec {
-                                    width: 100%;
+                                    width: 50%;
                                     &.error {
                                         background: @node-form-value-error-bg;
                                     }
                                 }
                                 .desc-item-value {
-                                    width: 100%;
+                                    width: 50%;
                                     .error {
                                         &input, input, &textarea, textarea, &select, select {
                                             background: @node-form-value-error-bg;
@@ -230,8 +228,8 @@
                                 }
                             }
                             .desc-item-action-container {
-                                width: 28px;
                                 .node-form-standard-actions;
+                                flex-shrink: 0;
                             }
                         }
                     }
