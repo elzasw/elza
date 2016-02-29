@@ -61,8 +61,6 @@ public class Validator {
         Assert.notNull(type);
         Assert.notNull(descItemsOfType);
 
-        DataValidationResults validationResults = new DataValidationResults();
-
         List<RulDescItemConstraint> noSpecConstraints = ElzaTools.filter(type.getRulDescItemConstraintList(),
                 c -> c.getDescItemSpec() == null);
         Map<Integer, RulDescItemSpecExt> specExtMap = ElzaTools.createEntityMap(type.getRulDescItemSpecList(),
@@ -87,6 +85,9 @@ public class Validator {
                             "Prvek " + type.getName() + " nesmí mít specifikaci " + descItem
                                     .getDescItemSpec().getName());
                     continue;
+                } else if (RulDescItemSpec.Type.IMPOSSIBLE.equals(extSpec.getType())) {
+                    validationResults.createErrorImpossible(descItem, "Prvek " + type.getName() + " se specifikací "
+                            + extSpec.getName() + " není možné evidovat u této jednotky archivního popisu.");
                 }
 
                 List<ArrDescItem> specItems = specItemsMap.get(descItem.getDescItemSpec());
@@ -108,10 +109,18 @@ public class Validator {
             //required specifikace
             for (RulDescItemSpecExt missingSpec : missingSpecs) {
                 if (RulDescItemSpec.Type.REQUIRED.equals(missingSpec.getType())) {
-                    validationResults.createMissing(type, missingSpec);
+                    validationResults.createMissingRequired(type, missingSpec);
                 }
             }
         }
+
+        for (ArrDescItem descItem : descItemsOfType) {
+            if (RulDescItemType.Type.IMPOSSIBLE.equals(descItem.getDescItemType().getType())) {
+                validationResults.createErrorImpossible(descItem, "Prvek " + descItem.getDescItemType().getName()
+                        + " není možné evidovat u této jednotky archivního popisu.");
+            }
+        }
+
 
         postValidateTypeConstraints(descItemsOfType, type, noSpecConstraints);
 
@@ -220,7 +229,7 @@ public class Validator {
 	void writeRequiredTypes(Set<RulDescItemTypeExt> requiredTypes) {
         for (RulDescItemTypeExt requiredType : requiredTypes) {
             if (RulDescItemType.Type.REQUIRED.equals(requiredType.getType())) {
-            	validationResults.createMissing(requiredType, null);
+            	validationResults.createMissingRequired(requiredType, null);
             }
         }		
 	}
