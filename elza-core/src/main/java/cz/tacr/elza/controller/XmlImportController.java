@@ -40,6 +40,8 @@ public class XmlImportController {
             @RequestParam(required = false, value = "stopOnError") final Boolean stopOnError,
             @RequestParam(required = false, value = "importDataFormat") final XmlImportType type,
             @RequestParam(required = false, value = "scopeName") final String scopeName,
+            @RequestParam(required = false, value = "ruleSetId") final Integer ruleSetId,
+            @RequestParam(required = false, value = "arrangementTypeId") final Integer arrangementTypeId,
             @RequestParam(required = false, value = "scopeId") final Integer scopeId,
             @RequestParam(required = true, value = "xmlFile") final MultipartFile xmlFile) {
         XmlImportConfig config = new XmlImportConfig();
@@ -48,6 +50,15 @@ public class XmlImportController {
         config.setXmlImportType(type);
         config.setTransformationName(transformationName);
         config.setStopOnError(stopOnError == null ? false : stopOnError);
+
+        if (type == XmlImportType.FINDING_AID && transformationName != null) {
+            Assert.notNull(ruleSetId);
+            Assert.notNull(arrangementTypeId);
+
+            config.setRuleSetId(ruleSetId);
+            config.setArrangementTypeId(arrangementTypeId);
+        }
+
         RegScope regScope;
         if (scopeId == null) {
             regScope = new RegScope();

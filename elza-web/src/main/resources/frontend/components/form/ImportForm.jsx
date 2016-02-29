@@ -1,6 +1,6 @@
 /**
  * Formulář importu rejstříkových hesel
- * <ImportForm create onSubmit={this.handleCallImportRegistry} />
+ * <ImportForm fa onSubmit={this.handleCallImportRegistry} />
  */
 
 import React from 'react';
@@ -11,18 +11,29 @@ import {AbstractReactComponent, i18n, Autocomplete, Icon} from 'components';
 import {Modal, Button, Input} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx';
 import {decorateFormField} from 'components/form/FormUtils';
+import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet'
 import {WebApi} from 'actions'
 import {modalDialogHide} from 'actions/global/modalDialog';
 
 const validate = (values, props) => {
     const errors = {};
+
+    if (values.transformationName) {
+        if (!props.ruleSetId) {
+            errors.ruleSetId = i18n('global.validation.required');
+        }
+        if (!props.rulArrTypeId) {
+            errors.rulArrTypeId = i18n('global.validation.required');
+        }
+
+    }
+
     if ((props.record || props.party) && !values.recordScope) {
         errors.recordScope = i18n('global.validation.required');
     }
-    if (values.xmlFile === null) {
+    if (!values.xmlFile) {
         errors.xmlFile = i18n('global.validation.required');
     }
-
     return errors;
 };
 
@@ -30,18 +41,27 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
     constructor(props) {
         super(props);
         this.state = {defaultScopes: [], transformationNames: [], isRunning: false};
-        this.bindMethods('handleSubmit');
+        this.bindMethods('save');
     }
 
     componentWillReceiveProps(nextProps) {
     }
 
     componentDidMount() {
-        WebApi.getDefaultScopes().then(json => {
-            this.setState({
-                defaultScopes: json
+        this.dispatch(refRuleSetFetchIfNeeded());
+        if (this.props.fa) {
+            WebApi.getAllScopes().then(json => {
+                this.setState({
+                    defaultScopes: json
+                });
             });
-        });
+        } else {
+            WebApi.getDefaultScopes().then(json => {
+                this.setState({
+                    defaultScopes: json
+                });
+            });
+        }
         WebApi.getTransformations().then(json => {
             this.setState({
                 transformationNames: json
@@ -49,17 +69,19 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
         });
     }
 
-    handleSubmit(values) {
-        console.log(values);
+    save(values) {
+        validate
         this.setState({
             isRunning: true,
         });
-        var data = Object.assign({}, values, {
+        var data = Object.assign({}, {
             xmlFile: values.xmlFile[0],
             importDataFormat: this.props.fa ? "FINDING_AID" : this.props.record ? "RECORD" : "PARTY",
             stopOnError: values.stopOnError ? values.stopOnError : false,
-            scopeId: values.recordScope.id,
-            scopeName: values.recordScope.name,
+            scopeId: values.recordScope ? values.recordScope.id : null,
+            scopeName: values.recordScope ? values.recordScope.name : null,
+            ruleSetId: values.ruleSetId,
+            arrangementTypeId: values.rulArrTypeId ? values.rulArrTypeId : null
         });
         var formData = new FormData();
 
@@ -74,13 +96,28 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {transformationName, recordScope, stopOnError, xmlFile}, onClose, handleSubmit} = this.props;
+        const {fields: {ruleSetId, rulArrTypeId, transformationName, recordScope, stopOnError, xmlFile}, onClose, handleSubmit} = this.props;
+        console.log(this.props.fields.recordScope.handleChange);
+        console.log(this.props.fields.handleChange);
+        console.log(this.props);
+        var ruleSets = this.props.refTables.ruleSet.items;
+        var currRuleSetId = this.props.values.ruleSetId;
+        var currRuleSet = [];
+        var ruleSetOptions = [];
+        if (!ruleSetId.invalid) {
+            currRuleSet = ruleSets[indexById(ruleSets, currRuleSetId)];
+            if (currRuleSet) {
+                ruleSetOptions = currRuleSet.arrangementTypes.map(
+                    i=> <option key={i.id} value={i.id}>{i.name}</option>
+                );
+            }
+        }
         return (
             <div>
                 {
                     !this.state.isRunning && <div>
                         <Modal.Body>
-                            <form onSubmit={handleSubmit(this.handleSubmit)}>
+                            <form onSubmit={handleSubmit(this.save)}>
                                 {
                                     <div>
                                         <Input type="select"
@@ -91,24 +128,55 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
                                             })}
                                         </Input>
                                         <Autocomplete
-                                            {...recordScope} {...decorateFormField(recordScope)}
-                                            tags // TODO migrate autocomplete
+                                            {...recordScope}
+                                            tags={this.props.fa == true}
                                             label={i18n('import.registryScope')}
                                             items={this.state.defaultScopes}
                                             getItemId={(item) => item ? item : null}
                                             getItemName={(item) => item ? item.name : ''}
+                                            onChange={
+                                                (id, value) => {
+                                                    if (value.name.trim() == '') {
+                                                        return;
+                                                    }
+
+                                                    recordScope.onChange({id: value.id, name:value.name});
+                                                }
+                                            }
                                         />
+                                        {recordScope.value &&
+                                        <div className="selected-data-container">
+                                            <div className="selected-data">
+                                                {recordScope.value.name}
+                                            </div>
+                                        </div>
+                                        }
+                                    </div>
+                                }
+                                {
+                                    this.props.fa && <div>
+                                        <Input type="select" label={i18n('arr.fa.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
+                                            <option key='-ruleSetId'/>
+                                            {ruleSets.map(i=> {
+                                                return <option value={i.id}>{i.name}</option>
+                                            })}
+                                        </Input>
+                                        <Input type="select" disabled={ruleSetId.invalid}
+                                               label={i18n('arr.fa.arrType')} {...rulArrTypeId} {...decorateFormField(rulArrTypeId)}>
+                                            <option key='-rulArrTypeId'/>
+                                            {ruleSetOptions}
+                                        </Input>
                                     </div>
                                 }
                                 <Input type="checkbox"
                                        label={i18n('import.stopOnError')} {...stopOnError} {...decorateFormField(stopOnError)} />
 
                                 <label>{i18n('import.file')}</label>
-                                <input type="file" {...xmlFile} value={null}/>
+                                <input type="file" {...xmlFile} {...decorateFormField(xmlFile)} value={null}/>
                             </form>
                         </Modal.Body>
                         <Modal.Footer>
-                            <Button onClick={handleSubmit(this.handleSubmit)}>{i18n('global.action.import')}</Button>
+                            <Button onClick={handleSubmit(this.save)}>{i18n('global.action.import')}</Button>
                             <Button bsStyle="link" onClick={onClose}>{i18n('global.action.cancel')}</Button>
                         </Modal.Footer>
                     </div>
@@ -132,8 +200,9 @@ ImportForm.propTypes = {
 
 module.exports = reduxForm({
     form: 'importForm',
-    fields: ['transformationName', 'recordScope', 'stopOnError', 'xmlFile'],
+    fields: ['ruleSetId', 'rulArrTypeId', 'transformationName', 'recordScope', 'stopOnError', 'xmlFile'],
     validate
 }, state => ({
-    defaultScopes: state.defaultScopes
+    defaultScopes: state.defaultScopes,
+    refTables: state.refTables
 }))(ImportForm);

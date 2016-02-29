@@ -261,7 +261,7 @@ var ArrPage = class ArrPage extends AbstractReactComponent {
         this.dispatch(
             modalDialogShow(this,
                 i18n('import.title.fa'),
-                <ImportForm fa/>
+                <ImportForm fa={true}/>
             )
         );
     }
