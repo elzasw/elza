@@ -154,7 +154,7 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
                                     </div>
                                 }
                                 {
-                                    this.props.fa && <div>
+                                    this.props.fa && transformationName.value && <div>
                                         <Input type="select" label={i18n('arr.fa.ruleSet')} {...ruleSetId} {...decorateFormField(ruleSetId)}>
                                             <option key='-ruleSetId'/>
                                             {ruleSets.map(i=> {
