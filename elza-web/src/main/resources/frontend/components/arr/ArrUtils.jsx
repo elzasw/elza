@@ -154,8 +154,12 @@ export function getParentNode(node, faTreeNodes) {
  *
  * @param node {Object} jednotka popisu
  */
-export function createReferenceMark(node) {
+export function createReferenceMark(node, onClick = null) {
     var levels = [];
+    var props = {};
+    if (onClick != null) {
+        props.onClick = onClick;
+    }
     if (node.referenceMark) {
         node.referenceMark.forEach((i, index) => {
             if (index % 2 == 0) {
@@ -164,13 +168,13 @@ export function createReferenceMark(node) {
                     if (i > 99) {
                         cls = "level small";
                     }
-                    levels.push(<span key={'level' + index} className={cls}>{i}</span>)
+                    levels.push(<span {...props} key={'level' + index} className={cls}>{i}</span>)
                 } else {
-                    levels.push(<span key={'level' + index} className="level">.{i % 1000}</span>)
+                    levels.push(<span {...props} key={'level' + index} className="level">.{i % 1000}</span>)
                 }
             } else {
                 if (index + 1 < node.referenceMark.length) {
-                    levels.push(<span key={'sep' + index} className="separator">{i}</span>)
+                    levels.push(<span {...props} key={'sep' + index} className="separator">{i}</span>)
                 }
             }
         });

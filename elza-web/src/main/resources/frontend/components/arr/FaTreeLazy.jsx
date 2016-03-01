@@ -138,7 +138,7 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
             var expColCls = 'exp-col ' + (expanded ? 'fa fa-minus-square-o' : 'fa fa-plus-square-o');
             expCol = <span className={expColCls} onClick={onOpenCloseNode.bind(this, node, !expanded)}></span>
         } else {
-            expCol = <span className='exp-col'>&nbsp;</span>
+            expCol = <span onClick={onNodeClick.bind(this, node)} className='exp-col'>&nbsp;</span>
         }
 
         var active = false;
@@ -154,7 +154,7 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
             focus: this.props.focusId === node.id,
         })
 
-        var levels = createReferenceMark(node);
+        var levels = createReferenceMark(node, onNodeClick.bind(this, node));
 
         var name = node.name ? node.name : i18n('faTree.node.name.undefined', node.id);
         var title = name
@@ -164,7 +164,7 @@ var FaTreeLazy = class FaTreeLazy extends AbstractReactComponent {
             }
         }
 
-        var icon = <Icon className="node-icon" glyph={getGlyph(node.icon)} />
+        var icon = <Icon onClick={onNodeClick.bind(this, node)} className="node-icon" glyph={getGlyph(node.icon)} />
 
         var label = (
             <span

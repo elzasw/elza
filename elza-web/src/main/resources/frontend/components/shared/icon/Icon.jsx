@@ -12,7 +12,7 @@ var Icon = class Icon extends AbstractReactComponent {
         if (this.state !== nextState) {
             return true;
         }
-        var eqProps = ['className', 'glyph']
+        var eqProps = ['className', 'glyph', 'onClick']
         return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -22,9 +22,14 @@ var Icon = class Icon extends AbstractReactComponent {
             cls += ' ' + this.props.className;
         }
 
-        //<Glyphicon className='icon' glyph={this.props.glyph} />
+        var props = {};
+
+        if (this.props.onClick != null) {
+            props.onClick = this.props.onClick;
+        }
+
         return (
-            <span className={cls}/>
+            <span {...props} className={cls}/>
         )
     }
 }
