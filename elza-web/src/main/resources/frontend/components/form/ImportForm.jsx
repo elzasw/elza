@@ -77,12 +77,26 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
         var data = Object.assign({}, {
             xmlFile: values.xmlFile[0],
             importDataFormat: this.props.fa ? "FINDING_AID" : this.props.record ? "RECORD" : "PARTY",
-            stopOnError: values.stopOnError ? values.stopOnError : false,
-            scopeId: values.recordScope ? values.recordScope.id : null,
-            scopeName: values.recordScope ? values.recordScope.name : null,
-            ruleSetId: values.ruleSetId,
-            arrangementTypeId: values.rulArrTypeId ? values.rulArrTypeId : null
+            stopOnError: values.stopOnError && values.stopOnError == 1 ? values.stopOnError : false
         });
+
+        if (values.ruleSetId) {
+            data.ruleSetId = values.ruleSetId;
+        }
+
+        if (values.rulArrTypeId) {
+            data.arrangementTypeId = values.rulArrTypeId;
+        }
+
+        if (values.recordScope) {
+            if (values.recordScope.id) {
+                data.scopeId = values.recordScope.id;
+            }
+            if (values.recordScope.name) {
+                data.scopeName = values.recordScope.name;
+            }
+        }
+
         var formData = new FormData();
 
         for (var key in data) {
