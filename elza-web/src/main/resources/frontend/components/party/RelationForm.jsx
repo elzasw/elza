@@ -287,6 +287,11 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
             }
         }
 
+        var selectedRelationTypeId = this.state.data.relationTypeId;
+        if(selectedRelationTypeId == undefined){
+            selectedRelationTypeId = relationTypes && relationTypes[0] ? relationTypes[0].relationTypeId : null;
+        }
+
         var typeUnselected = this.state.data.relationTypeId == undefined;
 
         return (
@@ -297,7 +302,7 @@ var RelationForm = class RelationForm extends AbstractReactComponent {
                             {this.state.errors.map(i=> {return <li>{i}</li>})}
                         </ul>
                         <Input disabled={this.state.data.relationId != undefined}
-                               type="select" label={i18n('party.relation.type')} name="relationTypeId" value={this.state.data.relationTypeId} onChange={this.updateValue}>
+                               type="select" label={i18n('party.relation.type')} name="relationTypeId" value={selectedRelationTypeId} onChange={this.updateValue}>
                             <option value="0" key="0"></option> 
                             {relationTypes ? relationTypes.map(i=> {return <option value={i.relationTypeId} key={i.relationTypeId}>{i.name}</option>}) : null}
                         </Input>

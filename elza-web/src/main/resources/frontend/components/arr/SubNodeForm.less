@@ -207,14 +207,23 @@
                                 flex-wrap: nowrap;
                                 flex-grow: 1;
 
+                                &.desc-item-spec-and-value {
+                                    .desc-item-value {
+                                        width: 50%;
+                                    }
+                                    .desc-item-spec {
+                                        width: 50%;
+                                    }
+                                }
+
                                 .desc-item-spec {
-                                    width: 50%;
+                                    width: 100%;
                                     &.error {
                                         background: @node-form-value-error-bg;
                                     }
                                 }
                                 .desc-item-value {
-                                    width: 50%;
+                                    width: 100%;
                                     .error {
                                         &input, input, &textarea, textarea, &select, select {
                                             background: @node-form-value-error-bg;
