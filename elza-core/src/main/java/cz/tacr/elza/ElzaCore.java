@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.context.embedded.MultipartConfigFactory;
 import org.springframework.boot.orm.jpa.EntityScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +25,7 @@ import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.MultipartConfigElement;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
@@ -107,5 +109,13 @@ public class ElzaCore {
             eventBus().register(listenerEntry.getValue());
 
         }
+    }
+
+    @Bean
+    public MultipartConfigElement multipartConfigElement() {
+        MultipartConfigFactory factory = new MultipartConfigFactory();
+        factory.setMaxFileSize("10MB");
+        factory.setMaxRequestSize("10MB");
+        return factory.createMultipartConfig();
     }
 }

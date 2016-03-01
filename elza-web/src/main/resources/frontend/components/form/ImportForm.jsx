@@ -70,7 +70,7 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
     }
 
     save(values) {
-        validate
+        //validate
         this.setState({
             isRunning: true,
         });
