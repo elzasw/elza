@@ -19,19 +19,19 @@ const validate = (values, props) => {
     const errors = {};
 
     if (values.transformationName) {
-        if (!props.ruleSetId) {
+        if (!values.ruleSetId) {
             errors.ruleSetId = i18n('global.validation.required');
         }
-        if (!props.rulArrTypeId) {
+        if (!values.rulArrTypeId) {
             errors.rulArrTypeId = i18n('global.validation.required');
         }
 
     }
 
-    if ((props.record || props.party) && !values.recordScope) {
+    if (!values.recordScope || !values.recordScope.name) {
         errors.recordScope = i18n('global.validation.required');
     }
-    if (!values.xmlFile) {
+    if (!values.xmlFile || values.xmlFile == null) {
         errors.xmlFile = i18n('global.validation.required');
     }
     return errors;
@@ -97,9 +97,6 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
 
     render() {
         const {fields: {ruleSetId, rulArrTypeId, transformationName, recordScope, stopOnError, xmlFile}, onClose, handleSubmit} = this.props;
-        console.log(this.props.fields.recordScope.handleChange);
-        console.log(this.props.fields.handleChange);
-        console.log(this.props);
         var ruleSets = this.props.refTables.ruleSet.items;
         var currRuleSetId = this.props.values.ruleSetId;
         var currRuleSet = [];
@@ -129,6 +126,7 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
                                         </Input>
                                         <Autocomplete
                                             {...recordScope}
+                                            {...decorateFormField(recordScope)}
                                             tags={this.props.fa == true}
                                             label={i18n('import.registryScope')}
                                             items={this.state.defaultScopes}
@@ -172,7 +170,7 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
                                        label={i18n('import.stopOnError')} {...stopOnError} {...decorateFormField(stopOnError)} />
 
                                 <label>{i18n('import.file')}</label>
-                                <input type="file" {...xmlFile} {...decorateFormField(xmlFile)} value={null}/>
+                                <Input type="file" {...xmlFile} {...decorateFormField(xmlFile)} value={null}/>
                             </form>
                         </Modal.Body>
                         <Modal.Footer>
