@@ -426,6 +426,7 @@ return true;
         }
 
         var parts = [];
+        var partsCls = 'desc-item-value-container';
 
         var key = descItem.formKey;
 
@@ -433,6 +434,9 @@ return true;
             parts.push(
                 this.renderDescItemSpec('spec_' + key, descItem, descItemIndex, locked)
             );
+            if (rulDataType.code != 'ENUM') {
+                partsCls += ' desc-item-spec-and-value';
+            }
         }
 
         var descItemProps = {
@@ -524,7 +528,7 @@ return true;
         return (
             <Shortcuts name='DescItem' key={key} className={cls} {...dragProps} handler={this.handleDescItemShortcuts.bind(this, descItemIndex)}>
                 {infoType.rep == 1 && <div className='dragger'><Icon className="up" glyph="fa-angle-up"/><Icon className="down" glyph="fa-angle-down"/>&nbsp;</div>}
-                <div key="container" className='desc-item-value-container'>
+                <div key="container" className={partsCls}>
                     {parts}
                 </div>
                 {actions.length > 0 && <div key="actions" className='desc-item-action-container'>{actions}</div>}
