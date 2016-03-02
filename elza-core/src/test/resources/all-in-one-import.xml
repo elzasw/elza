@@ -156,7 +156,7 @@
                 </coordinate-list>
             </record-coordinates>
             <sub-record-list>
-                <record record-id="recordId-2-1" register-type-code="GET_UNIT" external-source-code="externalSourceCode 537051127" external-id="externalId 1" local="false">
+                <record record-id="recordId-2-1" register-type-code="GEO_UNIT" external-source-code="externalSourceCode 537051127" external-id="externalId 1" local="false">
                     <preferred-name>record 1</preferred-name>
                     <characteristics>characteristics 1</characteristics>
                     <note>comment 1</note>
