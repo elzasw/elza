@@ -526,12 +526,14 @@ return true;
         }
 
         return (
-            <Shortcuts name='DescItem' key={key} className={cls} {...dragProps} handler={this.handleDescItemShortcuts.bind(this, descItemIndex)}>
-                {infoType.rep == 1 && <div className='dragger'><Icon className="up" glyph="fa-angle-up"/><Icon className="down" glyph="fa-angle-down"/>&nbsp;</div>}
-                <div key="container" className={partsCls}>
-                    {parts}
+            <Shortcuts name='DescItem' handler={this.handleDescItemShortcuts.bind(this, descItemIndex)}>
+                <div key={key} className={cls} {...dragProps}>
+                    {infoType.rep == 1 && <div className='dragger'><Icon className="up" glyph="fa-angle-up"/><Icon className="down" glyph="fa-angle-down"/>&nbsp;</div>}
+                    <div key="container" className={partsCls}>
+                        {parts}
+                    </div>
+                    {actions.length > 0 && <div key="actions" className='desc-item-action-container'>{actions}</div>}
                 </div>
-                {actions.length > 0 && <div key="actions" className='desc-item-action-container'>{actions}</div>}
             </Shortcuts>
         )
     }

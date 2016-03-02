@@ -39,17 +39,62 @@ var keymap = {
     Accordion: {
         prevItem: keyModifier + 'up',
         nextItem: keyModifier + 'down',
-        focusPrevItem: 'up',
-        focusNextItem: 'down',
-        focusEnterItem: 'enter',
         closeItem: 'shift+enter',
     },
     NodePanel: {
         searchItem: keyModifier + 'f',
         addDescItemType: keyModifier + 'p',
+        addNodeAfter: keyModifier + '+',
+        addNodeBefore: keyModifier + '-',
+        addNodeChild: keyModifier + '*',
+        addNodeEnd: keyModifier + '/',
     },
 }
 var shortcutManager = new ShortcutsManager(keymap)
+
+var accordionKeyDownHandlers = {
+    ArrowUp: function(e) {
+        e.preventDefault()
+        e.stopPropagation()
+
+        const {node} = this.props
+        if (node.selectedSubNodeId === null) {
+            const {focusItemIndex} = this.state
+            if (focusItemIndex > 0) {
+                this.setState({focusItemIndex: focusItemIndex - 1}, () => {this.ensureItemVisibleNoForm(focusItemIndex + 1)})
+            }
+        }
+    },
+    ArrowDown: function(e) {
+        e.preventDefault()
+        e.stopPropagation()
+
+        const {node} = this.props
+        if (node.selectedSubNodeId === null) {
+            const {focusItemIndex} = this.state
+            if (focusItemIndex + 1 < node.childNodes.length) {
+                this.setState({focusItemIndex: focusItemIndex + 1}, () => {this.ensureItemVisibleNoForm(focusItemIndex + 1)})
+            }
+        }
+    },
+    Enter: function(e) {
+        e.preventDefault()
+        e.stopPropagation()
+
+        if (!e.shiftKey) {
+            const {node} = this.props
+            if (node.selectedSubNodeId === null) {
+                const {focusItemIndex} = this.state
+                this.handleOpenItem(node.childNodes[focusItemIndex])
+                this.dispatch(setFocus('arr', 2, 'accordion'))
+            } else {
+                const {focusItemIndex} = this.state
+                this.handleCloseItem(node.childNodes[focusItemIndex])
+                this.dispatch(setFocus('arr', 2, 'accordion'))
+            }
+        }
+    },
+}
 
 var NodePanel = class NodePanel extends AbstractReactComponent {
     constructor(props) {
@@ -61,12 +106,21 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
             'getParentNodes', 'getChildNodes', 'getSiblingNodes',
             'renderAccordion', 'renderState', 'transformConformityInfo', 'handleAddNodeAtEnd',
             'handleChangeFilterText', 'renderRowItem', 'handleFindPosition', 'handleFindPositionSubmit',
-            'handleShortcuts', 'trySetFocus', 'handleAddDescItemType'
+            'handleShortcuts', 'trySetFocus', 'handleAddDescItemType', 'handleAccordionKeyDown',
+            'ensureItemVisibleNoForm'
             );
 
         this.state = {
             filterText: props.node.filterText,
             focusItemIndex: this.getFocusItemIndex(props, 0)
+        }
+    }
+
+    handleAccordionKeyDown(event) {
+        if (document.activeElement === ReactDOM.findDOMNode(this.refs.accordionContent)) { // focus má accordion
+            if (accordionKeyDownHandlers[event.key]) {
+                accordionKeyDownHandlers[event.key].call(this, event)
+            }
         }
     }
 
@@ -136,78 +190,46 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         const {node, focus} = this.props
         const index = indexById(node.childNodes, node.selectedSubNodeId)
 
-        if (action === 'focusPrevItem' || action === 'focusNextItem' || action === 'focusEnterItem') {
-            const accordionHasFocus = document.activeElement === ReactDOM.findDOMNode(this.refs.accordionContent)
-            if (accordionHasFocus) {
-                switch (action) {
-                    case 'focusPrevItem':
-                        {
-                            const {node} = this.props
-                            if (node.selectedSubNodeId === null) {
-                                const {focusItemIndex} = this.state
-                                if (focusItemIndex > 0) {
-                                    this.setState({focusItemIndex: focusItemIndex - 1})
-                                }
-                            }
-                        }
-                        break
-                    case 'focusNextItem':
-                        {
-                            const {node} = this.props
-                            if (node.selectedSubNodeId === null) {
-                                const {focusItemIndex} = this.state
-                                if (focusItemIndex + 1 < node.childNodes.length) {
-                                    this.setState({focusItemIndex: focusItemIndex + 1})
-                                }
-                            }
-                        }
-                        break
-                    case 'focusEnterItem':
-                        {
-                            const {node} = this.props
-                            if (node.selectedSubNodeId === null) {
-                                const {focusItemIndex} = this.state
-                                this.handleOpenItem(node.childNodes[focusItemIndex])
-                                this.dispatch(setFocus('arr', 2, 'accordion'))
-                            } else {
-                                const {focusItemIndex} = this.state
-                                this.handleCloseItem(node.childNodes[focusItemIndex])
-                                this.dispatch(setFocus('arr', 2, 'accordion'))
-                            }
-                        }
-                        break
+        switch (action) {
+            case 'prevItem':
+                if (index > 0) {
+                    this.handleOpenItem(node.childNodes[index - 1])
+                    this.dispatch(setFocus('arr', 2, 'accordion'))
                 }
-            }
-        } else {
-            switch (action) {
-                case 'prevItem':
-                    if (index > 0) {
-                        this.handleOpenItem(node.childNodes[index - 1])
-                        this.dispatch(setFocus('arr', 2, 'accordion'))
-                    }
-                    break
-                case 'nextItem':
-                    if (index + 1 < node.childNodes.length) {
-                        this.handleOpenItem(node.childNodes[index + 1])
-                        this.dispatch(setFocus('arr', 2, 'accordion'))
-                    }
-                    break
-                case 'searchItem':
-                    this.refs.search.getInput().getInputDOMNode().focus()
-                    break
-                case 'addDescItemType':
-                    const {node} = this.props
-                    if (node.selectedSubNodeId !== null) {
-                        this.handleAddDescItemType()
-                    }
-                    break
-                case 'closeItem':
-                    if (node.selectedSubNodeId !== null) {
-                        this.handleCloseItem(node.childNodes[index])
-                        this.dispatch(setFocus('arr', 2, 'accordion'))
-                    }
-                    break
-            }
+                break
+            case 'nextItem':
+                if (index + 1 < node.childNodes.length) {
+                    this.handleOpenItem(node.childNodes[index + 1])
+                    this.dispatch(setFocus('arr', 2, 'accordion'))
+                }
+                break
+            case 'searchItem':
+                this.refs.search.getInput().getInputDOMNode().focus()
+                break
+            case 'addDescItemType':
+                const {node} = this.props
+                if (node.selectedSubNodeId !== null) {
+                    this.handleAddDescItemType()
+                }
+                break
+            case 'closeItem':
+                if (node.selectedSubNodeId !== null) {
+                    this.handleCloseItem(node.childNodes[index])
+                    this.dispatch(setFocus('arr', 2, 'accordion'))
+                }
+                break
+            case 'addNodeAfter':
+                this.refs.subNodeForm.getWrappedInstance().addNodeAfterClick()
+                break
+            case 'addNodeBefore':
+                this.refs.subNodeForm.getWrappedInstance().addNodeBeforeClick()
+                break
+            case 'addNodeChild':
+                this.refs.subNodeForm.getWrappedInstance().addNodeChildClick()
+                break
+            case 'addNodeEnd':
+                this.refs.addNodeChild.handleToggle(true, false)
+                break
         }
     }
 
@@ -277,6 +299,16 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
                 var contentNode = ReactDOM.findDOMNode(this.refs.content)
                 scrollIntoView(itemNode, contentNode, { onlyScrollIfNeeded: true, alignWithTop:true })
             }
+        }
+    }
+
+    ensureItemVisibleNoForm(index) {
+        const {node} = this.props
+
+        var itemNode = ReactDOM.findDOMNode(this.refs['accheader-' + node.childNodes[index].id])
+        if (itemNode !== null) {
+            var containerNode = ReactDOM.findDOMNode(this.refs.accordionContent)
+            scrollIntoView(itemNode, containerNode, { onlyScrollIfNeeded: true, alignWithTop:false })
         }
     }
 
@@ -585,7 +617,7 @@ return true
 
         return (
             <Shortcuts name='Accordion' key='content' className='content' ref='content' handler={this.handleShortcuts}>
-                <div tabIndex={0} className='content-wrapper' ref='accordionContent'>
+                <div tabIndex={0} className='content-wrapper' ref='accordionContent' onKeyDown={this.handleAccordionKeyDown}>
                     {rows}
                 </div>
             </Shortcuts>
@@ -647,6 +679,7 @@ return true
                     {
                         node.nodeInfoFetched && !isFaRootId(node.id) && !closed &&
                         <AddNodeDropdown key="end"
+                                        ref='addNodeChild'
                                          title={i18n('nodePanel.addSubNode')}
                                          glyph="fa-plus-circle"
                                          action={this.handleAddNodeAtEnd}
@@ -691,6 +724,7 @@ return true
             var conformityInfo = this.transformConformityInfo(node);
             form = <SubNodeForm
                 key={'sub-node-form-' + node.selectedSubNodeId}
+                ref='subNodeForm'
                 nodeId={node.id}
                 versionId={versionId}
                 selectedSubNodeId={node.selectedSubNodeId}

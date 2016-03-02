@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import {AbstractReactComponent, Icon, i18n} from 'components';
 import Button from '../../node_modules/react-bootstrap/lib/Button';
 import SplitButton from '../../node_modules/react-bootstrap/lib/SplitButton';
@@ -17,6 +18,9 @@ var AddNodeDropdown = class AddNodeDropdown extends AbstractReactComponent {
 
     constructor(props) {
         super(props);
+
+        this.bindMethods('focusFirstMenuItem')
+
         this.state = initState;
     }
 
@@ -24,6 +28,22 @@ var AddNodeDropdown = class AddNodeDropdown extends AbstractReactComponent {
      * Renderuje dropdown pro přidání JP se scénáři
      */
     render() {
+        var items = []
+        if (this.state.items) {
+            this.state.items.map((item, index) => {
+                if (index === 0) {
+                    items.push(<MenuItem ref='firstMenuItem' eventKey={item.name}>{item.name}</MenuItem>)
+                } else {
+                    items.push(<MenuItem eventKey={item.name}>{item.name}</MenuItem>)
+                }
+            })
+            if (items.length === 0) {
+                items.push(<MenuItem ref='firstMenuItem' eventKey={null}>Bez scénáře</MenuItem>)
+            } else {
+                items.push(<MenuItem eventKey={null}>Bez scénáře</MenuItem>)
+            }
+        }
+
         return (
             <SplitButton bsStyle="default"
                          tabIndex={-1}
@@ -35,11 +55,14 @@ var AddNodeDropdown = class AddNodeDropdown extends AbstractReactComponent {
                          open={this.state.open}
                          title={<span>{this.props.glyph && <Icon glyph={this.props.glyph} />} {this.props.title}</span>}>
                 {this.state.loading && <Loading />}
-                {this.state.items !== undefined && this.state.items.map((item) => (
-                    <MenuItem eventKey={item.name}>{item.name}</MenuItem>))}
-                {this.state.items !== undefined && <MenuItem eventKey={null}>Bez scénáře</MenuItem>}
+                {items}
             </SplitButton>
         )
+    }
+
+    focusFirstMenuItem() {
+        // TODO - není dobré řešení, ale v tuto chvíli mě jiné nenapadá
+        ReactDOM.findDOMNode(this.refs.firstMenuItem).children[0].focus()
     }
 
     /**
@@ -59,7 +82,7 @@ var AddNodeDropdown = class AddNodeDropdown extends AbstractReactComponent {
                         items: result,
                         open: true,
                         loading: false
-                    });
+                    }, ()=>{this.focusFirstMenuItem()});
                 } else if (result.length === 1) {
                     this.props.action(undefined, result[0].name);
                     this.setState(initState);

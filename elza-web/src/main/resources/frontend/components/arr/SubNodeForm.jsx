@@ -42,7 +42,8 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             'handleDescItemTypeUnlockAll', 'handleDescItemTypeCopy', 'handleAddNodeBefore', 'handleAddNodeAfter',
             'handleCreatePacket', 'handleCreatePacketSubmit', 'handleAddChildNode', 'handleCreateParty',
             'handleCreatedParty', 'handleCreateRecord', 'handleCreatedRecord', 'handleDeleteNode',
-            'handleDescItemTypeCopyFromPrev', 'trySetFocus', 'getFlatDescItemTypes', 'getNodeSetting'
+            'handleDescItemTypeCopyFromPrev', 'trySetFocus', 'getFlatDescItemTypes', 'getNodeSetting',
+            'addNodeAfterClick', 'addNodeBeforeClick', 'addNodeChildClick'
         );
     }
 
@@ -638,6 +639,18 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
         )
     }
 
+    addNodeAfterClick() {
+        this.refs.addNodeAfter.handleToggle(true, false)
+    }
+
+    addNodeBeforeClick() {
+        this.refs.addNodeBefore.handleToggle(true, false)
+    }
+
+    addNodeChildClick() {
+        this.refs.addNodeChild.handleToggle(true, false)
+    }
+
     /**
      * Renderování globálních akcí pro formulář.
      * @return {Object} view
@@ -654,6 +667,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                     {
                         notRoot &&
                         <AddNodeDropdown key="before"
+                                        ref='addNodeBefore'
                                          title={i18n('subNodeForm.addNodeBefore')}
                                          glyph="fa-plus"
                                          action={this.handleAddNodeBefore}
@@ -665,6 +679,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                     {
                         notRoot &&
                         <AddNodeDropdown key="after"
+                                        ref='addNodeAfter'
                                          title={i18n('subNodeForm.addNodeAfter')}
                                          glyph="fa-plus"
                                          action={this.handleAddNodeAfter}
@@ -674,6 +689,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
                         />
                     }
                     <AddNodeDropdown key="child"
+                                        ref='addNodeChild'
                                      title={i18n('subNodeForm.addSubNode')}
                                      glyph="fa-plus"
                                      action={this.handleAddChildNode}
@@ -759,4 +775,4 @@ SubNodeForm.propTypes = {
     descItemCopyFromPrevEnabled: React.PropTypes.bool.isRequired,
 }
 
-module.exports = connect(mapStateToProps)(SubNodeForm);
+module.exports = connect(mapStateToProps, null, null, { withRef: true })(SubNodeForm);

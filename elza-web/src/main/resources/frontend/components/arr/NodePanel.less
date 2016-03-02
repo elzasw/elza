@@ -104,11 +104,13 @@
         .content {
             margin-bottom: @parts-margin;
             margin-top: @parts-margin;
-            height: 100%;
-            overflow: auto;
-            overflow-x: hidden;
+            height: @node-panel-content-height;
 
             .content-wrapper {
+                height: 100%;
+                overflow: auto;
+                overflow-x: hidden;
+                
                 border: 1px solid @node-panel-border;
                 &:focus {
                     .accordion-item {
