@@ -296,7 +296,7 @@ var NodePanel = class NodePanel extends AbstractReactComponent {
         if (this.props.node.selectedSubNodeId !== null) {
             var itemNode = ReactDOM.findDOMNode(this.refs['accheader-' + this.props.node.selectedSubNodeId])
             if (itemNode !== null) {
-                var contentNode = ReactDOM.findDOMNode(this.refs.content)
+                var contentNode = ReactDOM.findDOMNode(this.refs.accordionContent)
                 scrollIntoView(itemNode, contentNode, { onlyScrollIfNeeded: true, alignWithTop:true })
             }
         }

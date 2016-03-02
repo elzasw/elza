@@ -52,13 +52,14 @@
     }
     
     .registry-list-header-container {
-        
+        flex-shrink: 0;
     }
     .registry-list-breadcrumbs {
-        
+        flex-shrink: 0;
     }    
     
     .registry-list-results {
+        display: flex;
         flex-grow: 1;
         background: @fa-file-tree-bg-list;
         border: 1px solid @fa-file-tree-border;
@@ -67,7 +68,9 @@
         
         .registry-listbox {
             border: 1px solid transparent;
-            height: 100%;
+            flex-grow: 1;
+            overflow: hidden;
+            overflow-y: auto;
         }
 
         .search-result-row {
