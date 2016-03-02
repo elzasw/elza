@@ -248,65 +248,67 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
             var detailRegistry = (
                 <Shortcuts name='RegistryPanel' handler={this.handleShortcuts}>
                     <div className="registry-title" tabIndex={0}>
-                        <h1 className='registry'>
-                            {this.props.registryRegionData.item.record}
-                            <NoFocusButton disabled={disableEdit} className="registry-record-edit" onClick={this.handleEditRecord}>
-                                <Icon glyph='fa-pencil'/>
-                            </NoFocusButton>
-                            {this.props.registryRegionData.item.partyId && <NoFocusButton className="registry-record-party" onClick={this.handleGoToPartyPerson}>
-                                <Icon glyph='fa-user'/>
-                            </NoFocusButton>}
-                        </h1>
-                        <div className='line charakteristik'>
-                            <label>{i18n('registry.detail.charakteristika')}</label>
-                            <div>{this.props.registryRegionData.item.characteristics}</div>
-                        </div>
-                        <div className='line hiearch'>
-                            <label>{i18n('registry.detail.typ.rejstriku')}</label>
-                            <div>{hiearchie.join(' > ')}</div>
-                        </div>
+                        <div className='registry-content'>
+                            <h1 className='registry'>
+                                {this.props.registryRegionData.item.record}
+                                <NoFocusButton disabled={disableEdit} className="registry-record-edit" onClick={this.handleEditRecord}>
+                                    <Icon glyph='fa-pencil'/>
+                                </NoFocusButton>
+                                {this.props.registryRegionData.item.partyId && <NoFocusButton className="registry-record-party" onClick={this.handleGoToPartyPerson}>
+                                    <Icon glyph='fa-user'/>
+                                </NoFocusButton>}
+                            </h1>
+                            <div className='line charakteristik'>
+                                <label>{i18n('registry.detail.charakteristika')}</label>
+                                <div>{this.props.registryRegionData.item.characteristics}</div>
+                            </div>
+                            <div className='line hiearch'>
+                                <label>{i18n('registry.detail.typ.rejstriku')}</label>
+                                <div>{hiearchie.join(' > ')}</div>
+                            </div>
 
-                        <div className='line variant-name'>
-                            <label>{i18n('registry.detail.variant.name')}</label>
-                            { (this.props.registryRegionData.item) && this.props.registryRegionData.item.variantRecords && this.props.registryRegionData.item.variantRecords.map(item => {
-                                    var variantKey;
-                                    var blurField = this.handleBlurVariant.bind(this,item);
-                                    var enterKey = this.handleOnEnterUpdate.bind(this,item);
-                                    var clickDelete = this.handleDeleteVariant.bind(this, item);
+                            <div className='line variant-name'>
+                                <label>{i18n('registry.detail.variant.name')}</label>
+                                { (this.props.registryRegionData.item) && this.props.registryRegionData.item.variantRecords && this.props.registryRegionData.item.variantRecords.map(item => {
+                                        var variantKey;
+                                        var blurField = this.handleBlurVariant.bind(this,item);
+                                        var enterKey = this.handleOnEnterUpdate.bind(this,item);
+                                        var clickDelete = this.handleDeleteVariant.bind(this, item);
 
 
-                                    if(item.variantRecordInternalId) {
-                                        variantKey = 'internalId'+item.variantRecordInternalId;
-                                        blurField = this.handleCallAddRegistryVariant.bind(this, item);
-                                        enterKey = this.handleOnEnterAdd.bind(this, item);
-                                    }
-                                    else if (item.variantRecordId){
-                                        variantKey = item.variantRecordId;
-                                    }
+                                        if(item.variantRecordInternalId) {
+                                            variantKey = 'internalId'+item.variantRecordInternalId;
+                                            blurField = this.handleCallAddRegistryVariant.bind(this, item);
+                                            enterKey = this.handleOnEnterAdd.bind(this, item);
+                                        }
+                                        else if (item.variantRecordId){
+                                            variantKey = item.variantRecordId;
+                                        }
 
-                                    return (
-                                        <Shortcuts name='VariantRecord' handler={this.handleVariantRecordShortcuts.bind(this, item)}>
-                                            <RegistryLabel
-                                                key={variantKey}
-                                                type='variant'
-                                                value={item.record}
-                                                item={item}
-                                                disabled={disableEdit}
-                                                onBlur={blurField}
-                                                onEnter={enterKey}
-                                                onClickDelete={clickDelete}
-                                                />
-                                        </Shortcuts>
+                                        return (
+                                            <Shortcuts name='VariantRecord' handler={this.handleVariantRecordShortcuts.bind(this, item)}>
+                                                <RegistryLabel
+                                                    key={variantKey}
+                                                    type='variant'
+                                                    value={item.record}
+                                                    item={item}
+                                                    disabled={disableEdit}
+                                                    onBlur={blurField}
+                                                    onEnter={enterKey}
+                                                    onClickDelete={clickDelete}
+                                                    />
+                                            </Shortcuts>
 
-                                    )
-                                })
-                            }
+                                        )
+                                    })
+                                }
 
-                            {addVariant}
-                        </div>
-                        <div className='line note'>
-                            <label>{i18n('registry.detail.poznamka')}</label>
-                            <Input disabled={disableEdit} type='textarea' value={this.state.note} onChange={this.handleChangeNote} onBlur={this.handlePoznamkaBlur.bind(this)} />
+                                {addVariant}
+                            </div>
+                            <div className='line note'>
+                                <label>{i18n('registry.detail.poznamka')}</label>
+                                <Input disabled={disableEdit} type='textarea' value={this.state.note} onChange={this.handleChangeNote} onBlur={this.handlePoznamkaBlur.bind(this)} />
+                            </div>
                         </div>
                     </div>
                 </Shortcuts>
