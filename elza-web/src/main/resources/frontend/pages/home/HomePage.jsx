@@ -19,15 +19,38 @@ import {createFa} from 'actions/arr/fa'
 import {storeLoadData, storeSave, storeLoad} from 'actions/store/store'
 import {Combobox} from 'react-input-enhancements'
 import {WebApi} from 'actions'
-import {dateToString} from 'components/Utils'
+import {setInputFocus, dateToString} from 'components/Utils'
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
 
 var HomePage = class HomePage extends AbstractReactComponent {
     constructor(props) {
         super(props);
         this.bindMethods('handleAddFa', 'handleCallAddFa', 'renderHistory',
-            'renderHistoryItem', 'getFaDesc');
+            'renderHistoryItem', 'getFaDesc', 'trySetFocus');
 
         this.buildRibbon = this.buildRibbon.bind(this);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.trySetFocus(nextProps)
+    }
+
+    componentDidMount() {
+        this.trySetFocus(this.props)
+    }
+
+    trySetFocus(props) {
+        var {focus} = props
+
+        if (canSetFocus()) {
+            if (isFocusFor(focus, 'home', 1) || isFocusFor(focus, 'home', 1, 'list')) {
+                this.setState({}, () => {
+                    var listEl = ReactDOM.findDOMNode(this.refs.list)
+                    setInputFocus(listEl, false)
+                    focusWasSet()
+                })
+            }
+        }
     }
 
     handleAddFa() {
@@ -51,7 +74,7 @@ var HomePage = class HomePage extends AbstractReactComponent {
         }
 
         return (
-            <Ribbon home altSection={altSection} {...this.props} />
+            <Ribbon ref='ribbon' home altSection={altSection} {...this.props} />
         )
     }
 
@@ -132,7 +155,7 @@ var HomePage = class HomePage extends AbstractReactComponent {
         })
 
         return (
-            <div className='history-list-container'>
+            <div ref='list' className='history-list-container'>
                 <div>{arrItems}</div>
                 <div>{registryItems}</div>
                 <div>{partyItems}</div>
@@ -164,12 +187,13 @@ var HomePage = class HomePage extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {splitter, arrRegion, refTables, stateRegion} = state
+    const {splitter, arrRegion, refTables, stateRegion, focus} = state
     return {
         splitter,
         arrRegion,
         refTables,
-        stateRegion
+        stateRegion,
+        focus
     }
 }
 

@@ -22,6 +22,8 @@ import {modalDialogShow, modalDialogHide} from 'actions/global/modalDialog'
 import {Utils} from 'components'
 var ShortcutsManager = require('react-shortcuts');
 var Shortcuts = require('react-shortcuts/component');
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
+import {setFocus} from 'actions/global/focus'
 
 var keyModifier = Utils.getKeyModifier()
 
@@ -43,7 +45,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         this.bindMethods('handleEditRecord', 'handleDeleteVariant', 'handleCallAddRegistryVariant',
             'handleBlurVariant', 'handleClickAddVariant', 'handleOnEnterAdd', 'handleBlurVariant',
             'handlePoznamkaBlur', 'handleChangeNote', 'handleShortcuts', 'canEdit', 'handleGoToPartyPerson',
-            'handleVariantRecordShortcuts');
+            'handleVariantRecordShortcuts', 'trySetFocus');
         this.state = {}
     }
 
@@ -61,6 +63,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
             note: notes
         });
 
+        this.trySetFocus(nextProps)
     }
 
     componentDidMount(){
@@ -71,18 +74,37 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
         this.state = {
             note: ''
         }
+        this.trySetFocus(this.props)
+    }
+
+    trySetFocus(props) {
+        var {focus} = props
+
+        if (canSetFocus()) {
+            if (isFocusFor(focus, 'registry', 2, 'variantRecords')) {   // focus na konkrétní variantní rejstříkové heslo
+                this.setState({}, () => {
+                   this.refs['variant-' + focus.item.index].getWrappedInstance().focus()
+                   focusWasSet()
+                })
+            } else if (isFocusFor(focus, 'registry', 2)) {
+                this.setState({}, () => {
+                   this.refs.registryTitle.focus()
+                   focusWasSet()
+                })
+            }
+        }
     }
 
     getChildContext() {
         return { shortcuts: shortcutManager };
     }
 
-    handleVariantRecordShortcuts(variantRecord, action) {
-        console.log("#handleShortcuts", '[' + action + ']', this, variantRecord);
+    handleVariantRecordShortcuts(variantRecord, index, action) {
+        console.log("#handleShortcuts", '[' + action + ']', this, variantRecord, index);
         switch (action) {
             case 'deleteRegistryVariant':
                 if (this.canEdit()) {
-                    this.handleDeleteVariant(variantRecord)
+                    this.handleDeleteVariant(variantRecord, index)
                 }
                 break
         }
@@ -125,21 +147,45 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
 
         this.dispatch(registryRecordUpdate(data));
         this.dispatch(modalDialogHide());
+
+        // Nastavení focus
+        this.dispatch(setFocus('registry', 2))
     }
 
-    handleDeleteVariant(item){
+    handleDeleteVariant(item, index){
         if(confirm(i18n('registry.removeRegistryQuestion'))) {
+            // Zjištění nového indexu focusu po smazání - zjisšťujeme zde, abychom měli aktuální stav store
+            const {registryRegionData} = this.props
+            var setFocusFunc
+            if (index + 1 < registryRegionData.item.variantRecords.length) {    // má položku za, nový index bude aktuální
+                setFocusFunc = () => setFocus('registry', 2, 'variantRecords', {index: index})
+            } else if (index > 0) { // má položku před
+                setFocusFunc = () => setFocus('registry', 2, 'variantRecords', {index: index - 1})
+            } else {    // byla smazána poslední položka, focus dostane formulář
+                setFocusFunc = () => setFocus('registry', 2)
+            }
+
+            // Smazání
             if (item.variantRecordId) {
                 this.dispatch(registryVariantDelete(item.variantRecordId))
-            }
-            else if (item.variantRecordInternalId){
+            } else if (item.variantRecordInternalId){
                 this.dispatch(registryVariantInternalDelete(item.variantRecordInternalId))
             }
+
+            // Nastavení focus
+            this.dispatch(setFocusFunc())
         }
     }
 
     handleClickAddVariant(){
+        // Index Musíme zjistit předem, protože po dispatch přidání záznamu se store změní
+        var newIndex = this.props.registryRegionData.item.variantRecords.length
+
+        // Přidání nového proádného záznamu
         this.dispatch(registryVariantAddRecordRow());
+
+        // Nastavení focus
+        this.dispatch(setFocus('registry', 2, 'variantRecords', {index: newIndex}))
     }
 
     handleOnEnterAdd(item, e){
@@ -226,8 +272,6 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
     }
 
     render() {
-
-
         if (this.props.registryRegionData.fetched) {
             var disableEdit = !this.canEdit()
 
@@ -247,7 +291,7 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
 
             var detailRegistry = (
                 <Shortcuts name='RegistryPanel' handler={this.handleShortcuts}>
-                    <div className="registry-title" tabIndex={0}>
+                    <div ref='registryTitle' className="registry-title" tabIndex={0}>
                         <div className='registry-content'>
                             <h1 className='registry'>
                                 {this.props.registryRegionData.item.record}
@@ -269,11 +313,11 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
 
                             <div className='line variant-name'>
                                 <label>{i18n('registry.detail.variant.name')}</label>
-                                { (this.props.registryRegionData.item) && this.props.registryRegionData.item.variantRecords && this.props.registryRegionData.item.variantRecords.map(item => {
+                                { (this.props.registryRegionData.item) && this.props.registryRegionData.item.variantRecords && this.props.registryRegionData.item.variantRecords.map((item, index) => {
                                         var variantKey;
                                         var blurField = this.handleBlurVariant.bind(this,item);
                                         var enterKey = this.handleOnEnterUpdate.bind(this,item);
-                                        var clickDelete = this.handleDeleteVariant.bind(this, item);
+                                        var clickDelete = this.handleDeleteVariant.bind(this, item, index);
 
 
                                         if(item.variantRecordInternalId) {
@@ -286,9 +330,10 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
                                         }
 
                                         return (
-                                            <Shortcuts name='VariantRecord' handler={this.handleVariantRecordShortcuts.bind(this, item)}>
+                                            <Shortcuts name='VariantRecord' handler={this.handleVariantRecordShortcuts.bind(this, item, index)}>
                                                 <RegistryLabel
                                                     key={variantKey}
+                                                    ref={'variant-' + index}
                                                     type='variant'
                                                     value={item.record}
                                                     item={item}
@@ -331,10 +376,10 @@ var RegistryPanel = class RegistryPanel extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const {registryRegionData, refTables, registryRegion} = state
+    const {registryRegionData, refTables, registryRegion, focus} = state
 
     return {
-        registryRegionData, refTables, registryRegion
+        registryRegionData, refTables, registryRegion, focus
     }
 }
 

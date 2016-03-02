@@ -95,7 +95,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         var {focus} = props
 
         if (canSetFocus()) {
-            if (isFocusFor(focus, 'registry', 1)) {
+            if (isFocusFor(focus, 'registry', 1) || isFocusFor(focus, 'registry', 1, 'list')) {
                 this.setState({}, () => {
                    this.refs.registryList.focus()
                    focusWasSet()
@@ -502,8 +502,7 @@ console.log(item, event)
 
         var centerPanel = (
             <div className='registry-page'>
-                <RegistryPanel selectedId = {registryRegion.selectedId}/>
-
+                <RegistryPanel selectedId={registryRegion.selectedId}/>
             </div>
         )
 

@@ -1,6 +1,7 @@
 import * as types from 'actions/constants/ActionTypes';
 import {save} from 'stores/app/AppStore'
 import {routerNavigate} from 'actions/router'
+import {setFocus} from 'actions/global/focus'
 
 // Globální proměnná pro možnost vypnutí ukládání stavu do local storage
 var _storeSaveEnabled = true
@@ -89,12 +90,14 @@ export function storeLoadData(type, data, switchView = true) {
                 dispatch(storeLoad({partyRegion: data}));
                 if (switchView) {
                     dispatch(routerNavigate('/party'));
+
                 }
                 break;
             case 'REGISTRY_REGION':
                 dispatch(storeLoad({registryRegion: data}));
                 if (switchView) {
                     dispatch(routerNavigate('/registry'));
+                    dispatch(setFocus('registry', 1, 'list'))
                 }
                 break;
             case 'ARR_REGION':
@@ -107,6 +110,7 @@ export function storeLoadData(type, data, switchView = true) {
                 dispatch(storeLoad({arrRegionFa: data}));
                 if (switchView) {
                     dispatch(routerNavigate('/arr'));
+                    dispatch(setFocus('arr', 1, 'tree'))
                 }
                 break;
         }

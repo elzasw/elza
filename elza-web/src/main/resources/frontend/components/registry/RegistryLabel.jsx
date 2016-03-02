@@ -13,6 +13,7 @@ var RegistryLabel = class RegistryLabel extends AbstractReactComponent {
         super(props);
         this.handleVariantChange = this.handleVariantChange.bind(this);
         this.handleVariantKeyUp = this.handleVariantKeyUp.bind(this);
+        this.focus = this.focus.bind(this);
         this.state = {
             variant: this.props.value,
         }
@@ -36,7 +37,9 @@ var RegistryLabel = class RegistryLabel extends AbstractReactComponent {
         });
     }
 
-
+    focus() {
+        this.refs.input.getInputDOMNode().focus()
+    }
 
     render() {
         var body = null;
@@ -56,6 +59,7 @@ var RegistryLabel = class RegistryLabel extends AbstractReactComponent {
                     <span>
                         <Input
                             disabled={this.props.disabled}
+                            ref='input'
                             type='text'
                             value={this.state.variant}
                             onChange={this.handleVariantChange}
@@ -88,4 +92,4 @@ var RegistryLabel = class RegistryLabel extends AbstractReactComponent {
 
 }
 
-module.exports = connect()(RegistryLabel);
+module.exports = connect(null, null, null, { withRef: true })(RegistryLabel);

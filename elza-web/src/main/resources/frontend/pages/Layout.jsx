@@ -45,6 +45,7 @@ var Layout = class Layout extends AbstractReactComponent {
         switch (action) {
             case 'home':
                 this.dispatch(routerNavigate('/'))
+                this.dispatch(setFocus('home', 1, 'list'))
                 break
             case 'arr':
                 this.dispatch(routerNavigate('/arr'))
@@ -55,6 +56,7 @@ var Layout = class Layout extends AbstractReactComponent {
                 break
             case 'registry':
                 this.dispatch(routerNavigate('/registry'))
+                this.dispatch(setFocus('registry', 1, 'list'))
                 break
             case 'admin':
                 this.dispatch(routerNavigate('/admin'))
