@@ -41,6 +41,25 @@ import {fetchRegistryIfNeeded,
         registryArrReset
 } from 'actions/registry/registryRegionList'
 import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes'
+var ShortcutsManager = require('react-shortcuts');
+var Shortcuts = require('react-shortcuts/component');
+import {Utils} from 'components'
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus'
+import {setFocus} from 'actions/global/focus'
+
+var keyModifier = Utils.getKeyModifier()
+
+var keymap = {
+    Registry: {
+        addRegistry: keyModifier + 'n',
+        registryMove: keyModifier + 'x',
+        registryMoveApply: keyModifier + 'v',
+        registryMoveCancel: keyModifier + 'w',
+        area1: keyModifier + '1',
+        area2: keyModifier + '2',
+    },
+}
+var shortcutManager = new ShortcutsManager(keymap)
 
 var RegistryPage = class RegistryPage extends AbstractReactComponent {
     constructor(props) {
@@ -50,8 +69,8 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 'handleRemoveRegistryDialog', 'handleRemoveRegistry', 'handleStartMoveRegistry',
                 'handleSaveMoveRegistry', 'handleCancelMoveRegistry',
                 'handleUnsetParents', 'handleArrReset', 'handleRegistryImport', 'handleRegistryTypesSelectNavigation',
-                'renderListItem');
-
+                'renderListItem', 'handleShortcuts', 'canRemoveRegistry', 'canMoveRegistry', 'canMoveApplyCancelRegistry',
+                'trySetFocus');
     }
 
     componentWillReceiveProps(nextProps) {
@@ -60,6 +79,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 nextProps.registryRegion.registryTypesId,
                 nextProps.registryRegion.panel.versionId));
         this.dispatch(refRecordTypesFetchIfNeeded());
+        this.trySetFocus(nextProps)
     }
 
     componentDidMount(){
@@ -68,9 +88,58 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 this.props.registryRegion.registryTypesId,
                 this.props.registryRegion.panel.versionId));
         this.dispatch(refRecordTypesFetchIfNeeded());
+        this.trySetFocus(this.props)
     }
 
-    handleAddRegistry(parentId) {
+    trySetFocus(props) {
+        var {focus} = props
+
+        if (canSetFocus()) {
+            if (isFocusFor(focus, 'registry', 1)) {
+                this.setState({}, () => {
+                   this.refs.registryList.focus()
+                   focusWasSet()
+                })
+            }
+        }
+    }
+
+    handleShortcuts(action) {
+        console.log("#handleShortcuts", '[' + action + ']', this);
+        switch (action) {
+            case 'addRegistry':
+                this.handleAddRegistry()
+                break
+            case 'registryMove':
+                if (this.canMoveRegistry()) {
+                    this.handleStartMoveRegistry()
+                }
+                break
+            case 'registryMoveApply':
+                if (this.canMoveApplyCancelRegistry()) {
+                    this.handleSaveMoveRegistry()
+                }
+                break
+            case 'registryMoveCancel':
+                if (this.canMoveApplyCancelRegistry()) {
+                    this.handleCancelMoveRegistry()
+                }
+                break
+            case 'area1':
+                this.dispatch(setFocus('registry', 1))
+                break
+            case 'area2':
+                this.dispatch(setFocus('registry', 2))
+                break
+        }
+    }
+
+    getChildContext() {
+        return { shortcuts: shortcutManager };
+    }
+
+    handleAddRegistry() {
+        const parentId = this.props.registryRegion.registryParentId
         var parentName = '';
 
         if (indexById(this.props.registryRegion.parents, parentId, 'id')!==null) {
@@ -127,15 +196,47 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
        );
     }
 
+    canMoveRegistry() {
+        const {registryRegion} = this.props;
+
+        if (registryRegion.selectedId && registryRegion.registryRegionData && registryRegion.registryRegionData.item) {
+            if (!registryRegion.recordForMove && !registryRegion.registryRegionData.item.partyId && registryRegion.registryRegionData.item.hierarchical && registryRegion.selectedId != registryRegion.registryParentId){
+                return true
+            }
+        }
+        return false
+    }
+
+    canRemoveRegistry() {
+        const {registryRegion} = this.props;
+
+        if (registryRegion.selectedId && registryRegion.registryRegionData && registryRegion.registryRegionData.item) {
+            if (!registryRegion.registryRegionData.item.childs && registryRegion.selectedId != registryRegion.registryParentId) {
+                return true
+            }
+        }
+        return false
+    }
+
+    canMoveApplyCancelRegistry() {
+        const {registryRegion} = this.props;
+
+        if (registryRegion.selectedId && registryRegion.registryRegionData && registryRegion.registryRegionData.item) {
+            if (registryRegion.recordForMove && !registryRegion.registryRegionData.item.partyId) {
+                return true
+            }
+        }
+        return false
+    }
+
     buildRibbon() {
         const {registryRegion} = this.props;
 
         var altActions = [];
 
         altActions.push(
-            <Button key='addRegistry' onClick={this.handleAddRegistry.bind(this, this.props.registryRegion.registryParentId)}><Icon glyph="fa-download" /><div><span className="btnText">{i18n('registry.addNewRegistry')}</span></div></Button>
+            <Button key='addRegistry' onClick={this.handleAddRegistry}><Icon glyph="fa-download" /><div><span className="btnText">{i18n('registry.addNewRegistry')}</span></div></Button>
         );
-
 
         altActions.push(
             <Button key='registryImport' onClick={this.handleRegistryImport}><Icon glyph='fa-download'/>
@@ -144,35 +245,27 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         );
 
         var itemActions = [];
-        if (registryRegion.selectedId) {
-            if (registryRegion.registryRegionData.item) {
-                if (registryRegion.registryRegionData && !registryRegion.registryRegionData.item.childs  && registryRegion.selectedId != registryRegion.registryParentId) {
-                    itemActions.push(
-                        <Button key='registryRemove' onClick={this.handleRemoveRegistryDialog.bind(this)}><Icon
-                            glyph="fa-trash"/>
-                            <div><span className="btnText">{i18n('registry.removeRegistry')}</span></div>
-                        </Button>
-                    );
-                }
-
-                if (!registryRegion.recordForMove && registryRegion.registryRegionData && !registryRegion.registryRegionData.item.partyId && registryRegion.registryRegionData.item.hierarchical && registryRegion.selectedId != registryRegion.registryParentId){
-                    itemActions.push(
-                        <Button key='registryMove' onClick={this.handleStartMoveRegistry.bind(this)}><Icon glyph="fa-share" /><div><span className="btnText">{i18n('registry.moveRegistry')}</span></div></Button>
-                    );
-                }
-                if (registryRegion.recordForMove && registryRegion.registryRegionData && !registryRegion.registryRegionData.item.partyId){
-                    itemActions.push(
-                        <Button key='registryMoveApply' onClick={this.handleSaveMoveRegistry.bind(this)}><Icon glyph="fa-check-circle" /><div><span className="btnText">{i18n('registry.applyMove')}</span></div></Button>
-                    );
-                    itemActions.push(
-                        <Button key='registryMoveCancel' onClick={this.handleCancelMoveRegistry.bind(this)}><Icon glyph="fa-times" /><div><span className="btnText">{i18n('registry.cancelMove')}</span></div></Button>
-                    );
-                }
-            }
+        if (this.canRemoveRegistry()) {
+            itemActions.push(
+                <Button key='registryRemove' onClick={this.handleRemoveRegistryDialog}><Icon
+                    glyph="fa-trash"/>
+                    <div><span className="btnText">{i18n('registry.removeRegistry')}</span></div>
+                </Button>
+            );
         }
-
-
-
+        if (this.canMoveRegistry()) {
+            itemActions.push(
+                <Button key='registryMove' onClick={this.handleStartMoveRegistry}><Icon glyph="fa-share" /><div><span className="btnText">{i18n('registry.moveRegistry')}</span></div></Button>
+            );
+        }
+        if (this.canMoveApplyCancelRegistry()) {
+            itemActions.push(
+                <Button key='registryMoveApply' onClick={this.handleSaveMoveRegistry}><Icon glyph="fa-check-circle" /><div><span className="btnText">{i18n('registry.applyMove')}</span></div></Button>
+            );
+            itemActions.push(
+                <Button key='registryMoveCancel' onClick={this.handleCancelMoveRegistry}><Icon glyph="fa-times" /><div><span className="btnText">{i18n('registry.cancelMove')}</span></div></Button>
+            );
+        }
 
         var altSection;
         if (altActions.length > 0) {
@@ -318,9 +411,10 @@ console.log(item, event)
 
         var lb = <div className='search-norecord'>{i18n('registry.list.norecord')}</div>
         if (registryRegion.records.length) {
-            var activeIndex = registryRegion.records[indexById(registryRegion.records, registryRegion.selectedId, 'recordId')]
+            var activeIndex = indexById(registryRegion.records, registryRegion.selectedId, 'recordId')
             var lb = <ListBox 
                 className='registry-listbox'
+                ref='registryList'
                 items={registryRegion.records}
                 activeIndex={activeIndex}
                 renderItemContent={this.renderListItem}
@@ -414,24 +508,31 @@ console.log(item, event)
         )
 
         return (
-            <PageLayout
-                splitter={splitter}
-                key='registryPage'
-                ribbon={this.buildRibbon()}
-                leftPanel={leftPanel}
-                centerPanel={centerPanel}
+            <Shortcuts name='Registry' handler={this.handleShortcuts}>
+                <PageLayout
+                    splitter={splitter}
+                    key='registryPage'
+                    ribbon={this.buildRibbon()}
+                    leftPanel={leftPanel}
+                    centerPanel={centerPanel}
 
-            />
+                />
+            </Shortcuts>
         )
     }
 }
 function mapStateToProps(state) {
-    const {splitter, registryRegion, refTables} = state
+    const {splitter, registryRegion, refTables, focus} = state
     return {
         splitter,
         registryRegion,
-        refTables
+        refTables,
+        focus
     }
+}
+
+RegistryPage.childContextTypes = {
+    shortcuts: React.PropTypes.object.isRequired
 }
 
 module.exports = connect(mapStateToProps)(RegistryPage);

@@ -5,7 +5,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Input, Button} from 'react-bootstrap';
-import {Icon, AbstractReactComponent, DropDownTree} from 'components';
+import {Icon, NoFocusButton, AbstractReactComponent, DropDownTree} from 'components';
 import {connect} from 'react-redux'
 
 var RegistryLabel = class RegistryLabel extends AbstractReactComponent {
@@ -63,7 +63,7 @@ var RegistryLabel = class RegistryLabel extends AbstractReactComponent {
                             onBlur={this.props.onBlur}
                             />
                         </span>
-                    {this.props.onClickDelete && <Button disabled={this.props.disabled} onClick = {this.props.onClickDelete}><Icon glyph='fa-times' /></Button>}
+                    {this.props.onClickDelete && <NoFocusButton disabled={this.props.disabled} onClick = {this.props.onClickDelete}><Icon glyph='fa-times' /></NoFocusButton>}
 
                 </div>
                 break;

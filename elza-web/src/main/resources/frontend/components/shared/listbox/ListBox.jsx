@@ -103,7 +103,23 @@ var ListBox = class ListBox extends AbstractReactComponent {
         this.bindMethods('handleKeyDown', 'ensureItemVisible')
 
         this.state = {
-            activeIndex: null,
+            activeIndex: this.getActiveIndexForUse(props, {}),
+        }
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.setState({
+            activeIndex: this.getActiveIndexForUse(nextProps, this.state),
+        })
+    }
+
+    getActiveIndexForUse(props, state) {
+        if (typeof props.activeIndex !== 'undefined') {
+            return props.activeIndex
+        } else if (typeof state.activeIndex !== 'undefined') {
+            return state.activeIndex
+        } else {
+            return null
         }
     }
 
@@ -119,6 +135,10 @@ var ListBox = class ListBox extends AbstractReactComponent {
         if (keyDownHandlers[event.key]) {
             keyDownHandlers[event.key].call(this, event)
         }
+    }
+
+    focus() {
+        this.refs.container.focus()
     }
 
     render() {
