@@ -7,11 +7,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import cz.tacr.elza.controller.vo.nodes.DescItemSpecLiteVO;
-import cz.tacr.elza.controller.vo.nodes.DescItemTypeDescItemsLiteVO;
-import cz.tacr.elza.controller.vo.nodes.DescItemTypeLiteVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemDecimalVO;
-import cz.tacr.elza.domain.ArrDescItemDecimal;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
@@ -70,10 +65,14 @@ import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.XmlImportConfigVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.DescItemSpecLiteVO;
+import cz.tacr.elza.controller.vo.nodes.DescItemTypeDescItemsLiteVO;
+import cz.tacr.elza.controller.vo.nodes.DescItemTypeLiteVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemCoordinatesVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemDecimalVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemEnumVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemFormattedTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemIntVO;
@@ -87,6 +86,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrDescItemUnitidVO;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItemCoordinates;
+import cz.tacr.elza.domain.ArrDescItemDecimal;
 import cz.tacr.elza.domain.ArrDescItemEnum;
 import cz.tacr.elza.domain.ArrDescItemFormattedText;
 import cz.tacr.elza.domain.ArrDescItemInt;
@@ -528,7 +528,9 @@ public class ConfigMapperConfiguration {
                             public void mapAtoB(final ParUnitdate parUnitdate,
                                                 final ParUnitdateVO unitdateVO,
                                                 final MappingContext context) {
-                                unitdateVO.setCalendarTypeId(parUnitdate.getCalendarType().getCalendarTypeId());
+                                if (parUnitdate.getCalendarType() != null) {
+                                    unitdateVO.setCalendarTypeId(parUnitdate.getCalendarType().getCalendarTypeId());
+                                }
                                 unitdateVO.setUnitdateId(parUnitdate.getUnitdateId());
                                 String textDate = UnitDateConvertor.convertParUnitDateToString(parUnitdate);
                                 unitdateVO.setTextDate(textDate);

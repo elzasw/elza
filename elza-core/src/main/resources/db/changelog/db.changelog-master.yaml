@@ -21,3 +21,5 @@ databaseChangeLog:
      file: db/changelog/db.changelog-1.9.xml
   - include:
      file: db/changelog/db.changelog-1.10.xml
+  - include:
+     file: db/changelog/db.changelog-1.11.xml

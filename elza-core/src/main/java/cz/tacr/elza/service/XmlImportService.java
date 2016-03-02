@@ -675,8 +675,8 @@ public class XmlImportService {
         if (importAllParties) {
             if (parties != null) {
                 parties.forEach(party -> {
-                    usedRecords.add(party.getRecord().getRecordId());
                     usedParties.add(party.getPartyId());
+                    addPartyRecords(usedRecords, party);
                 });
             }
         }
@@ -686,6 +686,24 @@ public class XmlImportService {
             if (records != null) {
                 records.forEach(r -> addUsedRecord(r, importAllRecords, usedRecords));
             }
+        }
+    }
+
+    private void addPartyRecords(Set<String> usedRecords, AbstractParty party) {
+        usedRecords.add(party.getRecord().getRecordId());
+        List<Relation> events = party.getEvents();
+        if (events != null) {
+            events.forEach(event -> {
+                List<RoleType> roleTypes = event.getRoleTypes();
+                if (roleTypes != null) {
+                    roleTypes.forEach(roleType -> {
+                        Record record = roleType.getRecord();
+                        if (record != null) {
+                            usedRecords.add(record.getRecordId());
+                        }
+                    });
+                }
+            });
         }
     }
 
@@ -725,7 +743,7 @@ public class XmlImportService {
             } else if (descItem instanceof DescItemPartyRef) {
                 DescItemPartyRef partyRefItem = (DescItemPartyRef) descItem;
                 usedParties.add(partyRefItem.getParty().getPartyId());
-                usedRecords.add(partyRefItem.getParty().getRecord().getRecordId());
+                addPartyRecords(usedRecords, partyRefItem.getParty());
             } else if (descItem instanceof DescItemPacketRef) {
                 DescItemPacketRef packetRefItem = (DescItemPacketRef) descItem;
                 usedPackets.add(packetRefItem.getPacket().getStorageNumber());
@@ -917,9 +935,9 @@ public class XmlImportService {
             throws PartyImportException {
         ParRelationEntity parRelationEntity = new ParRelationEntity();
         Record record = roleType.getRecord();
-        RegRecord regRecord = xmlIdIntIdRecordMap.get(record.getExternalId());
+        RegRecord regRecord = xmlIdIntIdRecordMap.get(record.getRecordId());
         if (regRecord ==  null) {
-            throw new PartyImportException("Nebyl nalezen rejstřík podle externího id " + record.getExternalId());
+            throw new PartyImportException("Nebyl nalezen rejstřík podle externího id " + record.getRecordId());
         }
         parRelationEntity.setRecord(regRecord);
 
