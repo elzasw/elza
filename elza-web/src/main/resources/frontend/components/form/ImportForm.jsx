@@ -14,6 +14,7 @@ import {decorateFormField} from 'components/form/FormUtils';
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet'
 import {WebApi} from 'actions'
 import {modalDialogHide} from 'actions/global/modalDialog';
+import {addToastrDanger, addToastrSuccess} from 'components/shared/toastr/ToastrActions'
 
 const validate = (values, props) => {
     const errors = {};
@@ -76,7 +77,7 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
         });
         var data = Object.assign({}, {
             xmlFile: values.xmlFile[0],
-            importDataFormat: this.props.fa ? "FINDING_AID" : this.props.record ? "RECORD" : "PARTY",
+            importDataFormat: this.props.fa ? 'FINDING_AID' : this.props.record ? 'RECORD' : 'PARTY',
             stopOnError: values.stopOnError && values.stopOnError == 1 ? values.stopOnError : false
         });
 
@@ -86,6 +87,10 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
 
         if (values.rulArrTypeId) {
             data.arrangementTypeId = values.rulArrTypeId;
+        }
+
+        if (values.transformationName) {
+            data.transformationName = values.transformationName;
         }
 
         if (values.recordScope) {
@@ -105,7 +110,12 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
             }
         }
         WebApi.xmlImport(formData).then(() => {
+            const messageType = this.props.fa ? 'Fa' : this.props.record ? 'Record' : 'Party';
             this.dispatch(modalDialogHide());
+            //this.dispatch(addToastrSuccess(i18n('import.toast.successTitle', 'import.toast.success' + messageType)));
+        }).catch((error) => {
+            this.dispatch(modalDialogHide());
+            //this.dispatch(addToastrDanger(i18n('import.toast.errorTitle', error)));
         });
     }
 
