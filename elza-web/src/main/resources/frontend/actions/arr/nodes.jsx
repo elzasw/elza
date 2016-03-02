@@ -122,6 +122,32 @@ export function faSubNodesPrev() {
  * Stránkování v Accordion - další stránka.
  */
 export function faSubNodesNextPage() {
+    return (dispatch, getState) => {
+        let state = getState();
+        let activeFa = state.arrRegion.fas[state.arrRegion.activeIndex];
+        let node = activeFa.nodes.nodes[activeFa.nodes.activeIndex];
+        let viewIndex = node.viewStartIndex;
+        let index = indexById(node.childNodes, node.selectedSubNodeId);
+        dispatch(_faSubNodesNextPage());
+
+        if (index != null) {
+            let newState = getState();
+            let newActiveFa = newState.arrRegion.fas[newState.arrRegion.activeIndex];
+            let newNode = newActiveFa.nodes.nodes[newActiveFa.nodes.activeIndex];
+            let newViewIndex = newNode.viewStartIndex;
+            let newIndex = newViewIndex - viewIndex + index;
+            let count = newNode.childNodes.length;
+            let subNodeId = newIndex < count ? newNode.childNodes[newIndex].id : newNode.childNodes[count - 1].id;
+            let subNodeParentNode = newNode;
+            dispatch(faSelectSubNode(subNodeId, subNodeParentNode, false, null, true));
+        }
+    }
+}
+
+/**
+ * Stránkování v Accordion - předchozí stránka.
+ */
+export function _faSubNodesNextPage() {
     return {
         type: types.FA_FA_SUBNODES_NEXT_PAGE,
     }
@@ -131,6 +157,31 @@ export function faSubNodesNextPage() {
  * Stránkování v Accordion - předchozí stránka.
  */
 export function faSubNodesPrevPage() {
+    return (dispatch, getState) => {
+        let state = getState();
+        let activeFa = state.arrRegion.fas[state.arrRegion.activeIndex];
+        let node = activeFa.nodes.nodes[activeFa.nodes.activeIndex];
+        let viewIndex = node.viewStartIndex;
+        let index = indexById(node.childNodes, node.selectedSubNodeId);
+        dispatch(_faSubNodesPrevPage());
+
+        if (index != null) {
+            let newState = getState();
+            let newActiveFa = newState.arrRegion.fas[newState.arrRegion.activeIndex];
+            let newNode = newActiveFa.nodes.nodes[newActiveFa.nodes.activeIndex];
+            let newViewIndex = newNode.viewStartIndex;
+            let newIndex = newViewIndex - viewIndex + index;
+            let subNodeId = newIndex < 0 ? newNode.childNodes[0].id : newNode.childNodes[newIndex].id;
+            let subNodeParentNode = newNode;
+            dispatch(faSelectSubNode(subNodeId, subNodeParentNode, false, null, true));
+        }
+    }
+}
+
+/**
+ * Stránkování v Accordion - předchozí stránka.
+ */
+export function _faSubNodesPrevPage() {
     return {
         type: types.FA_FA_SUBNODES_PREV_PAGE,
     }
