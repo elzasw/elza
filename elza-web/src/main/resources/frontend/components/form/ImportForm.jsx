@@ -112,10 +112,9 @@ var ImportForm = class ImportForm extends AbstractReactComponent {
         WebApi.xmlImport(formData).then(() => {
             const messageType = this.props.fa ? 'Fa' : this.props.record ? 'Record' : 'Party';
             this.dispatch(modalDialogHide());
-            //this.dispatch(addToastrSuccess(i18n('import.toast.successTitle', 'import.toast.success' + messageType)));
-        }).catch((error) => {
+            this.dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.success' + messageType)));
+        }).catch(() => {
             this.dispatch(modalDialogHide());
-            //this.dispatch(addToastrDanger(i18n('import.toast.errorTitle', error)));
         });
     }
 

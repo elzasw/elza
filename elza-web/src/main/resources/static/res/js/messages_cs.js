@@ -297,6 +297,11 @@ var messages = {
     "import.title.fa": "Import archivní pomůcky",
     "import.title.party": "Import osob",
 
+    "import.toast.success": "Import dokončen",
+    "import.toast.successFa": "Import dokončen archivní pomůcky byl úspěšně dokončen.",
+    "import.toast.successParty": "Import dokončen osob byl úspěšně dokončen.",
+    "import.toast.successRecord": "Import dokončen rejstříkových hesel byl úspěšně dokončen.",
+
     "import.transformationName": "Šablona transformace",
     "import.registryScope": "Třída rejstříku",
     "import.stopOnError": "Zastavit při chybě",
