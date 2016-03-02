@@ -244,7 +244,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     private void moveAndDeleteLevels(final List<ArrNodeVO> nodes,
                                      final ArrFindingAidVersionVO findingAidVersion) {
         ArrNodeVO rootNode = nodes.get(0);
-
+        TreeNodeClient parentNode;
         // přesun druhého uzlu před první
         moveLevelBefore(findingAidVersion, nodes.get(1), rootNode, Arrays.asList(nodes.get(2)), rootNode);
 
@@ -300,7 +300,9 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrangementController.NodeWithParent newLevel5 = addLevel(ArrMoveLevelService.AddLevelDirection.CHILD,
                 findingAidVersion, rootNode, rootNode, null);
 
-        rootNode = newLevel5.getParentNode();
+        parentNode = newLevel5.getParentNode();
+        rootNode.setId(parentNode.getId());
+        rootNode.setVersion(parentNode.getVersion());
 
         input = new ArrangementController.FaTreeParam();
         input.setVersionId(findingAidVersion.getId());
@@ -325,6 +327,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
         input.setVersionId(findingAidVersion.getId());
         TreeData treeData = getFaTree(input);
+        TreeNodeClient parentNode;
 
         Assert.notNull(treeData.getNodes(), "Musí existovat root node");
         Assert.isTrue(treeData.getNodes().size() == 1, "Musí existovat pouze root node");
@@ -341,7 +344,9 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         Assert.isTrue(!newLevel1.getParentNode().getVersion().equals(rootNode.getVersion()),
                 "Verze root uzlu musí být povýšena");
 
-        rootNode = newLevel1.getParentNode();
+        parentNode = newLevel1.getParentNode();
+        rootNode.setId(parentNode.getId());
+        rootNode.setVersion(parentNode.getVersion());
 
         // přidání druhého levelu pod root
         ArrangementController.NodeWithParent newLevel2 = addLevel(ArrMoveLevelService.AddLevelDirection.CHILD,
@@ -352,7 +357,9 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         Assert.isTrue(!newLevel2.getParentNode().getVersion().equals(rootNode.getVersion()),
                 "Verze root uzlu musí být povýšena");
 
-        rootNode = newLevel2.getParentNode();
+        parentNode = newLevel2.getParentNode();
+        rootNode.setId(parentNode.getId());
+        rootNode.setVersion(parentNode.getVersion());
 
         // přidání třetího levelu na první pozici pod root
         ArrangementController.NodeWithParent newLevel3 = addLevel(ArrMoveLevelService.AddLevelDirection.BEFORE,
@@ -363,7 +370,9 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         Assert.isTrue(!newLevel3.getParentNode().getVersion().equals(rootNode.getVersion()),
                 "Verze root uzlu musí být povýšena");
 
-        rootNode = newLevel3.getParentNode();
+        parentNode = newLevel3.getParentNode();
+        rootNode.setId(parentNode.getId());
+        rootNode.setVersion(parentNode.getVersion());
 
         // přidání uzlu za první uzel pod root (za child3)
         ArrangementController.NodeWithParent newLevel4 = addLevel(ArrMoveLevelService.AddLevelDirection.AFTER,
@@ -374,7 +383,9 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         Assert.isTrue(!newLevel4.getParentNode().getVersion().equals(rootNode.getVersion()),
                 "Verze root uzlu musí být povýšena");
 
-        rootNode = newLevel4.getParentNode();
+        parentNode = newLevel4.getParentNode();
+        rootNode.setId(parentNode.getId());
+        rootNode.setVersion(parentNode.getVersion());
 
         input = new ArrangementController.FaTreeParam();
         input.setVersionId(findingAidVersion.getId());

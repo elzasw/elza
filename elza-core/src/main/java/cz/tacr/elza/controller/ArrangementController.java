@@ -729,9 +729,10 @@ public class ArrangementController {
                 addLevelParam.getDirection(), addLevelParam.getScenarioName(),
                 descItemCopyTypes);
 
-
-        return new NodeWithParent(factoryVo.createArrNode(newLevel.getNode()),
-                factoryVo.createArrNode(newLevel.getNodeParent()));
+        Collection<TreeNodeClient> nodeClients = levelTreeCacheService
+                .getNodesByIds(Arrays.asList(newLevel.getNodeParent().getNodeId()), version.getFindingAidVersionId());
+        Assert.notEmpty(nodeClients);
+        return new NodeWithParent(factoryVo.createArrNode(newLevel.getNode()), nodeClients.iterator().next());
     }
 
     /**
@@ -753,8 +754,11 @@ public class ArrangementController {
 
         ArrLevel deleteLevel = moveLevelService.deleteLevel(version, deleteNode, deleteParent);
 
-        return new NodeWithParent(factoryVo.createArrNode(deleteLevel.getNode()),
-                factoryVo.createArrNode(deleteLevel.getNodeParent()));
+        Collection<TreeNodeClient> nodeClients = levelTreeCacheService
+                .getNodesByIds(Arrays.asList(deleteLevel.getNodeParent().getNodeId()),
+                        version.getFindingAidVersionId());
+        Assert.notEmpty(nodeClients);
+        return new NodeWithParent(factoryVo.createArrNode(deleteLevel.getNode()), nodeClients.iterator().next());
     }
 
 
@@ -1531,7 +1535,7 @@ public class ArrangementController {
         /**
          * Rodič jednotky popisu.
          */
-        private ArrNodeVO parentNode;
+        private TreeNodeClient parentNode;
 
         public ArrNodeVO getNode() {
             return node;
@@ -1541,18 +1545,18 @@ public class ArrangementController {
             this.node = node;
         }
 
-        public ArrNodeVO getParentNode() {
+        public TreeNodeClient getParentNode() {
             return parentNode;
         }
 
-        public void setParentNode(final ArrNodeVO parentNode) {
+        public void setParentNode(final TreeNodeClient parentNode) {
             this.parentNode = parentNode;
         }
 
         public NodeWithParent() {
         }
 
-        public NodeWithParent(final ArrNodeVO node, final ArrNodeVO parentNode) {
+        public NodeWithParent(final ArrNodeVO node, final TreeNodeClient parentNode) {
             this.node = node;
             this.parentNode = parentNode;
         }
