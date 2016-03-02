@@ -159,7 +159,14 @@ export function addForcedSpecifications(resultDescItemType, infoType, refType, e
                 descItem.formKey = formKey
             }
 
-            resultDescItemType.descItems.push(descItem)
+            // U vícehodnotových přidáváme všechny, které neexistují, u jednohodnotového nesmí být více než jedna
+            if (infoType.rep === 1) {   // Vícehodnotový
+                resultDescItemType.descItems.push(descItem)
+            } else {    // Jednohodnotový, přidáme jen jednu
+                if (resultDescItemType.descItems.length === 0) {    // není žádná, přidáme první
+                    resultDescItemType.descItems.push(descItem)
+                }
+            }
         }
     })
 }
