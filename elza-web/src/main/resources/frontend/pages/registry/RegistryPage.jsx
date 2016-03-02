@@ -13,7 +13,8 @@ import {Link, IndexLink} from 'react-router';
 import {connect} from 'react-redux'
 import {AbstractReactComponent, i18n, Loading} from 'components';
 import {Icon, RibbonGroup,Ribbon, ModalDialog, NodeTabs, ArrPanel,
-        Search, RegistryPanel, DropDownTree, AddRegistryForm, ImportForm} from 'components';
+        Search, RegistryPanel, DropDownTree, AddRegistryForm, ImportForm,
+        ListBox} from 'components';
 import {addToastrWarning} from 'components/shared/toastr/ToastrActions'
 import {WebApi} from 'actions'
 import {MenuItem, DropdownButton, ButtonGroup, Button} from 'react-bootstrap';
@@ -48,7 +49,8 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                 'handleClickNavigation', 'handleAddRegistry', 'handleCallAddRegistry',
                 'handleRemoveRegistryDialog', 'handleRemoveRegistry', 'handleStartMoveRegistry',
                 'handleSaveMoveRegistry', 'handleCancelMoveRegistry',
-                'handleUnsetParents', 'handleArrReset', 'handleRegistryImport', 'handleRegistryTypesSelectNavigation');
+                'handleUnsetParents', 'handleArrReset', 'handleRegistryImport', 'handleRegistryTypesSelectNavigation',
+                'renderListItem');
 
     }
 
@@ -192,6 +194,11 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
     }
 
     handleDoubleClick(item, event) {
+console.log(item, event)
+        if (!item.hierarchical) {
+            return
+        }
+
         if (this.props.registryRegion.recordForMove && this.props.registryRegion.recordForMove.selectedId === item.recordId) {
             this.dispatch(addToastrWarning(i18n('registry.danger.disallowed.action.title'), i18n('registry.danger.disallowed.action.can.not.move.into.myself')));
             return false;
@@ -237,80 +244,90 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         this.dispatch(registryArrReset());
     }
 
+    renderListItem(item) {
+        const {registryRegion} = this.props;
+
+        var parentsShown = [];
+        var parentsTypeShown = [];
+        if (registryRegion.parents) {
+            registryRegion.parents.map((val) => {
+                parentsShown.push(val.id);
+            });
+        }
+        if (registryRegion.typesToRoot) {
+            registryRegion.typesToRoot.map((val) => {
+                parentsTypeShown.push(val.id);
+            });
+        }
+        var cls = classNames({
+            active: registryRegion.selectedId === item.recordId,
+            'search-result-row': 'search-result-row'
+        });
+
+        var doubleClick = this.handleDoubleClick.bind(this, item);
+        var iconName = 'fa-folder';
+        var clsItem = 'registry-list-icon-record';
+
+        if (item.hierarchical === false) {
+            iconName = 'fa-file-o';
+            clsItem = 'registry-list-icon-list';
+            doubleClick = false;
+        }
+
+
+        // výsledky z vyhledávání
+        if ( !registryRegion.registryParentId ) {
+            var path = [];
+            if (item.parents) {
+                item.parents.map((val) => {
+                    if(parentsShown.indexOf(val.id)===-1) {
+                        path.push(val.name);
+                    }
+                });
+            }
+
+            if (item.typesToRoot) {
+                item.typesToRoot.map((val) => {
+                    if(registryRegion.registryTypesId!==val.id) {
+                        path.push(val.name);
+                    }
+                });
+            }
+
+            return (
+                <div key={item.recordId} title={path} className={cls} onDoubleClick={doubleClick} onClick={this.handleSelect.bind(this, item)}>
+                    <div><Icon glyph={iconName} /></div>
+                    <div  title={item.record} className={clsItem}>{item.record}</div>
+                    <div className="path" >{path.join(' | ')}</div>
+                </div>
+            )
+        }
+        else{
+            // jednořádkový výsledek
+            return (
+                <div key={item.recordId} className={cls} onDoubleClick={doubleClick} onClick={this.handleSelect.bind(this, item)}>
+                    <div><Icon glyph={iconName} key={item.recordId} /></div>
+                    <div key={item.recordId} title={item.record} className={clsItem}>{item.record}</div>
+                </div>
+            )
+        }
+    }
+
     render() {
         const {splitter, registryRegion} = this.props;
 
-        var listOfRecord = <div className='search-norecord'>{i18n('registry.list.norecord')}</div>;
+        var lb = <div className='search-norecord'>{i18n('registry.list.norecord')}</div>
         if (registryRegion.records.length) {
-            listOfRecord = registryRegion.records.map(item=>{
-
-                var parentsShown = [];
-                var parentsTypeShown = [];
-                if (registryRegion.parents) {
-                    registryRegion.parents.map((val) => {
-                        parentsShown.push(val.id);
-                    });
-                }
-                if (registryRegion.typesToRoot) {
-                    registryRegion.typesToRoot.map((val) => {
-                        parentsTypeShown.push(val.id);
-                    });
-                }
-                var cls = classNames({
-                    active: registryRegion.selectedId === item.recordId,
-                    'search-result-row': 'search-result-row'
-                });
-
-                var doubleClick = this.handleDoubleClick.bind(this, item);
-                var iconName = 'fa-folder';
-                var clsItem = 'registry-list-icon-record';
-
-                if (item.hierarchical === false) {
-                    iconName = 'fa-file-o';
-                    clsItem = 'registry-list-icon-list';
-                    doubleClick = false;
-                }
-
-
-                // výsledky z vyhledávání
-                if ( !registryRegion.registryParentId ) {
-                    var path = [];
-                    if (item.parents) {
-                        item.parents.map((val) => {
-                            if(parentsShown.indexOf(val.id)===-1) {
-                                path.push(val.name);
-                            }
-                        });
-                    }
-
-                    if (item.typesToRoot) {
-                        item.typesToRoot.map((val) => {
-                            if(registryRegion.registryTypesId!==val.id) {
-                                path.push(val.name);
-                            }
-                        });
-                    }
-
-                    return (
-                        <div key={item.recordId} title={path} className={cls} onDoubleClick={doubleClick} onClick={this.handleSelect.bind(this, item)}>
-                            <div><Icon glyph={iconName} /></div>
-                            <div  title={item.record} className={clsItem}>{item.record}</div>
-                            <div className="path" >{path.join(' | ')}</div>
-                        </div>
-                    )
-                }
-                else{
-                    // jednořádkový výsledek
-                    return (
-                        <div key={item.recordId} className={cls} onDoubleClick={doubleClick} onClick={this.handleSelect.bind(this, item)}>
-                            <div><Icon glyph={iconName} key={item.recordId} /></div>
-                            <div key={item.recordId} title={item.record} className={clsItem}>{item.record}</div>
-                        </div>
-                    )
-                }
-            })
+            var activeIndex = registryRegion.records[indexById(registryRegion.records, registryRegion.selectedId, 'recordId')]
+            var lb = <ListBox 
+                className='registry-listbox'
+                items={registryRegion.records}
+                activeIndex={activeIndex}
+                renderItemContent={this.renderListItem}
+                onFocus={this.handleSelect}
+                onSelect={this.handleDoubleClick}
+                />
         }
-
 
         var navParents = null;
 
@@ -369,7 +386,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
 
         var leftPanel = (
             <div className="registry-list">
-                <div>
+                <div className='registry-list-header-container'>
                     {arrPanel}
                     {dropDownForSearch}
                     <Search
@@ -379,12 +396,12 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
                         filterText={registryRegion.filterText}
                         />
                 </div>
-                <div key='breadcrumbs'>
+                <div className='registry-list-breadcrumbs' key='breadcrumbs'>
                     {navParents}
                 </div>
                 <div className="registry-list-results">
                     {(!registryRegion.fetched) && <Loading/>}
-                    {(registryRegion.fetched) && listOfRecord}
+                    {(registryRegion.fetched) && lb}
                 </div>
             </div>
         )

@@ -32,6 +32,7 @@ var keyDownHandlers = {
         if (items.length > 0) {
             const newActiveIndex = 0
             this.setState({activeIndex: newActiveIndex}, this.ensureItemVisible.bind(this, newActiveIndex))
+            this.props.onFocus && this.props.onFocus(items[newActiveIndex], newActiveIndex)
         }
     },
     End: function(e) {
@@ -44,6 +45,7 @@ var keyDownHandlers = {
         if (items.length > 0) {
             const newActiveIndex = items.length - 1
             this.setState({activeIndex: newActiveIndex}, this.ensureItemVisible.bind(this, newActiveIndex))
+            this.props.onFocus && this.props.onFocus(items[newActiveIndex], newActiveIndex)
         }
     },
     ArrowUp: function(e) {
@@ -65,6 +67,7 @@ var keyDownHandlers = {
             }
             if (newActiveIndex !== null) {
                 this.setState({activeIndex: newActiveIndex}, this.ensureItemVisible.bind(this, newActiveIndex))
+                this.props.onFocus && this.props.onFocus(items[newActiveIndex], newActiveIndex)
             }
         }
     },
@@ -87,6 +90,7 @@ var keyDownHandlers = {
             }
             if (newActiveIndex !== null) {
                 this.setState({activeIndex: newActiveIndex}, this.ensureItemVisible.bind(this, newActiveIndex))
+                this.props.onFocus && this.props.onFocus(items[newActiveIndex], newActiveIndex)
             }
         }
     }
@@ -118,23 +122,26 @@ var ListBox = class ListBox extends AbstractReactComponent {
     }
 
     render() {
+        const {className, items, renderItemContent, onSelect} = this.props;
+        const {activeIndex} = this.state;
+
         var cls = "listbox-container";
-        if (this.props.className) {
-            cls += " " + this.props.className;
+        if (className) {
+            cls += " " + className;
         }
 
-        var items = this.props.items.map((item, index) => {
-            const active = (index === this.state.activeIndex)
+        var rows = items.map((item, index) => {
+            const active = (index === activeIndex)
             return (
                 <div className={'listbox-item' + (active ? ' active' : '')} ref={'item-' + index}>
-                    {this.props.renderItemContent(item)}
+                    {renderItemContent(item)}
                 </div>
             )
         })
 
         return (
             <div className={cls} onKeyDown={this.handleKeyDown} tabIndex={0} ref='container'>
-                {items}  
+                {rows}  
             </div>
         );
     }

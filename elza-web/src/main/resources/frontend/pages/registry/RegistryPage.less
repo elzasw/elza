@@ -50,12 +50,25 @@
             color: @color-link;
         }
     }
+    
+    .registry-list-header-container {
+        
+    }
+    .registry-list-breadcrumbs {
+        
+    }    
+    
     .registry-list-results {
         flex-grow: 1;
         background: @fa-file-tree-bg-list;
         border: 1px solid @fa-file-tree-border;
         overflow-y: auto;
         overflow-x: hidden;
+        
+        .registry-listbox {
+            border: 1px solid transparent;
+            height: 100%;
+        }
 
         .search-result-row {
             padding: 2px 5px;
