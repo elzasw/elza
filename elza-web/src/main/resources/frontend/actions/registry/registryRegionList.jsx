@@ -131,7 +131,7 @@ export function receiveRegistryRecordTypes(json, registryTypeId){
     }
 }
 
-export function registryAdd(parentId, versionId, callback, parentName = '') {
+export function registryAdd(parentId, versionId, callback, parentName = '', showSubmitTypes = false) {
     return (dispatch, getState) => {
         var state = getState();
         var nadpis = i18n('registry.addRegistry');
@@ -143,6 +143,7 @@ export function registryAdd(parentId, versionId, callback, parentName = '') {
                         <AddRegistryForm
                                 create
                                 versionId={versionId}
+                                showSubmitTypes={showSubmitTypes}
                                 onSubmitForm={registryAddSubmit.bind(null, parentId, callback, dispatch)}
                                 parentRecordId={parentId}
                                 />
@@ -152,10 +153,10 @@ export function registryAdd(parentId, versionId, callback, parentName = '') {
     }
 }
 
-function registryAddSubmit(parentId, callback, dispatch, data) {
+function registryAddSubmit(parentId, callback, dispatch, data, submitType) {
     WebApi.insertRegistry( data.nameMain, data.characteristics, data.registerTypeId, parentId, data.scopeId ).then(json => {
         dispatch(modalDialogHide());
-        callback && callback(json);
+        callback && callback(json, submitType);
     });
 }
 

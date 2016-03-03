@@ -114,7 +114,7 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
      */ 
     handleAddParty(partyTypeId) {
         const {partyRegion} = this.props;
-        this.dispatch(partyAdd(partyTypeId, partyRegion.panel.versionId, this.addParty));
+        this.dispatch(partyAdd(partyTypeId, partyRegion.panel.versionId, this.addParty, false));
     }
 
     /**
@@ -221,11 +221,6 @@ var PartyPage = class PartyPage extends AbstractReactComponent {
     buildRibbon() {
         var isSelected = this.props.partyRegion.selectedPartyID ? true : false;
         var altActions = [];
-        altActions.push(
-            <DropdownButton title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('party.addParty')}</span></div></span>}>
-                {this.props.refTables.partyTypes.items.map(i=> {return <MenuItem key={i.partyTypeId} eventKey="{i.partyTypeId}" onClick={this.handleAddParty.bind(this, i.partyTypeId)}>{i.name}</MenuItem>})}
-            </DropdownButton>
-        );
         altActions.push(
             <ControllableDropdownButton ref='addParty' title={<span className="dropContent"><Icon glyph='fa-download' /><div><span className="btnText">{i18n('party.addParty')}</span></div></span>}>
                 {this.props.refTables.partyTypes.items.map(i=> {return <MenuItem key={i.partyTypeId} eventKey="{i.partyTypeId}" onClick={this.handleAddParty.bind(this, i.partyTypeId)}>{i.name}</MenuItem>})}

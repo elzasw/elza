@@ -152,7 +152,7 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         if (indexById(this.props.registryRegion.parents, parentId, 'id')!==null) {
             parentName = this.props.registryRegion.parents[indexById(this.props.registryRegion.parents, parentId, 'id')].name;
         }
-        this.dispatch(registryAdd(parentId, this.props.registryRegion.panel.versionId, this.handleCallAddRegistry, parentName));
+        this.dispatch(registryAdd(parentId, this.props.registryRegion.panel.versionId, this.handleCallAddRegistry, parentName, false));
     }
 
     handleCallAddRegistry(data) {

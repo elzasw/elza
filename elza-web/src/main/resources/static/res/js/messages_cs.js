@@ -20,6 +20,7 @@ var messages = {
     "global.action.cancel": "Storno",
     "global.action.close": "Zavřít",
     "global.action.store": "Ok",
+    "global.action.storeAndViewDetail": "Ok a přechod na detail",
     "global.action.show.more": "Zobrazit více",
     "global.action.import": "Importovat",
     "search.input.search": "Vyhledat...",

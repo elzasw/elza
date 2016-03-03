@@ -375,7 +375,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             descItemTypeIndex,
             descItemIndex
         }
-        this.dispatch(registryAdd(null, versionId, this.handleCreatedRecord.bind(this, valueLocation)));
+        this.dispatch(registryAdd(null, versionId, this.handleCreatedRecord.bind(this, valueLocation), '', true));
     }
 
     /**
@@ -384,13 +384,21 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param valueLocation pozice hodnoty atributu
      * @param form {Object} data z formuláře
      */
-    handleCreatedRecord(valueLocation, data) {
-        const {versionId, selectedSubNodeId, nodeKey, fa} = this.props;
+    handleCreatedRecord(valueLocation, data, submitType) {
+        const {versionId, selectedSubNodeId, nodeKey, fa, subNodeForm} = this.props;
 
+        // Uložení hodnoty
         this.dispatch(faSubNodeFormValueChange(versionId, selectedSubNodeId, nodeKey, valueLocation, data, true));
 
-        this.dispatch(registrySelect(data.recordId, fa));
-        this.dispatch(routerNavigate('registry'));
+        // Akce po vytvoření
+        if (submitType === 'storeAndViewDetail') {  // přesměrování na detail
+            this.dispatch(registrySelect(data.recordId, fa));
+            this.dispatch(routerNavigate('registry'));
+        } else {    // nastavení focus zpět na prvek
+            var formData = subNodeForm.formData
+            var descItemType = formData.descItemGroups[valueLocation.descItemGroupIndex].descItemTypes[valueLocation.descItemTypeIndex]
+            this.dispatch(setFocus('arr', 2, 'subNodeForm', {descItemTypeId: descItemType.id, descItemObjectId: null, descItemIndex: valueLocation.descItemIndex}))
+        }
     }
 
     /**
@@ -422,7 +430,7 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
             descItemTypeIndex,
             descItemIndex
         }
-        this.dispatch(partyAdd(partyTypeId, versionId, this.handleCreatedParty.bind(this, valueLocation)));
+        this.dispatch(partyAdd(partyTypeId, versionId, this.handleCreatedParty.bind(this, valueLocation), true));
     }
 
     /**
@@ -431,13 +439,21 @@ var SubNodeForm = class SubNodeForm extends AbstractReactComponent {
      * @param valueLocation pozice hodnoty atributu
      * @param form {Object} data z formuláře
      */
-    handleCreatedParty(valueLocation, data) {
-        const {versionId, selectedSubNodeId, nodeKey, fa} = this.props;
+    handleCreatedParty(valueLocation, data, submitType) {
+        const {versionId, selectedSubNodeId, nodeKey, fa, subNodeForm} = this.props;
 
+        // Uložení hodnoty
         this.dispatch(faSubNodeFormValueChange(versionId, selectedSubNodeId, nodeKey, valueLocation, data, true));
 
-        this.dispatch(partySelect(data.partyId, fa));
-        this.dispatch(routerNavigate('party'));
+        // Akce po vytvoření
+        if (submitType === 'storeAndViewDetail') {  // přesměrování na detail
+            this.dispatch(partySelect(data.partyId, fa));
+            this.dispatch(routerNavigate('party'));
+        } else {    // nastavení focus zpět na prvek
+            var formData = subNodeForm.formData
+            var descItemType = formData.descItemGroups[valueLocation.descItemGroupIndex].descItemTypes[valueLocation.descItemTypeIndex]
+            this.dispatch(setFocus('arr', 2, 'subNodeForm', {descItemTypeId: descItemType.id, descItemObjectId: null, descItemIndex: valueLocation.descItemIndex}))
+        }
     }
 
     /**
