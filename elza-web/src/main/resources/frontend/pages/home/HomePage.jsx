@@ -43,7 +43,15 @@ var HomePage = class HomePage extends AbstractReactComponent {
         var {focus} = props
 
         if (canSetFocus()) {
-            if (isFocusFor(focus, 'home', 1) || isFocusFor(focus, 'home', 1, 'list')) {
+            if (isFocusFor(focus, null, 1)) {   // focus po ztrátě
+                if (this.refs.list) {   // ještě nemusí existovat
+                    this.setState({}, () => {
+                        var listEl = ReactDOM.findDOMNode(this.refs.list)
+                        setInputFocus(listEl, false)
+                        focusWasSet()
+                    })
+                }
+            } else if (isFocusFor(focus, 'home', 1) || isFocusFor(focus, 'home', 1, 'list')) {
                 this.setState({}, () => {
                     var listEl = ReactDOM.findDOMNode(this.refs.list)
                     setInputFocus(listEl, false)

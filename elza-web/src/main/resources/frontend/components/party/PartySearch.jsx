@@ -37,7 +37,14 @@ var PartySearch = class PartySearch extends AbstractReactComponent {
         var {focus} = props
 
         if (canSetFocus()) {
-            if (isFocusFor(focus, 'party', 1) || isFocusFor(focus, 'party', 1, 'list')) {
+            if (isFocusFor(focus, null, 1)) {   // focus po ztrátě
+                if (this.refs.partyList) {   // ještě nemusí existovat
+                    this.setState({}, () => {
+                        this.refs.partyList.focus()
+                        focusWasSet()
+                    })
+                }
+            } else if (isFocusFor(focus, 'party', 1) || isFocusFor(focus, 'party', 1, 'list')) {
                 this.setState({}, () => {
                     this.refs.partyList.focus()
                     focusWasSet()

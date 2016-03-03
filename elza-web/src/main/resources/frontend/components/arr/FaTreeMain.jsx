@@ -42,10 +42,18 @@ var FaTreeMain = class FaTreeMain extends AbstractReactComponent {
         var {focus} = props
 
         if (canSetFocus()) {
-            if (isFocusFor(focus, 'arr', 1, 'tree') || isFocusFor(focus, 'arr', 1)) {
+            if (isFocusFor(focus, null, 1)) {   // focus po ztrátě
+                if (this.refs.tree) {   // ještě nemusí existovat
+                    this.setState({}, () => {
+                        this.refs.tree.getWrappedInstance().focus()
+                        focusWasSet()
+                    })
+                }
+
+            } else if (isFocusFor(focus, 'arr', 1, 'tree') || isFocusFor(focus, 'arr', 1)) {
                 this.setState({}, () => {
-                   this.refs.tree.getWrappedInstance().focus()
-                   focusWasSet()
+                    this.refs.tree.getWrappedInstance().focus()
+                    focusWasSet()
                 })
             }
         }

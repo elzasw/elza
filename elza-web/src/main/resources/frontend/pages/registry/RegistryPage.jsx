@@ -95,7 +95,14 @@ var RegistryPage = class RegistryPage extends AbstractReactComponent {
         var {focus} = props
 
         if (canSetFocus()) {
-            if (isFocusFor(focus, 'registry', 1) || isFocusFor(focus, 'registry', 1, 'list')) {
+            if (isFocusFor(focus, null, 1)) {   // focus po ztrátě
+                if (this.refs.registryList) {   // ještě nemusí existovat
+                    this.setState({}, () => {
+                       this.refs.registryList.focus()
+                       focusWasSet()
+                    })
+                }
+            } else if (isFocusFor(focus, 'registry', 1) || isFocusFor(focus, 'registry', 1, 'list')) {
                 this.setState({}, () => {
                    this.refs.registryList.focus()
                    focusWasSet()
