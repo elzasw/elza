@@ -170,7 +170,8 @@ export function createReferenceMark(node, onClick = null) {
                     }
                     levels.push(<span {...props} key={'level' + index} className={cls}>{i}</span>)
                 } else {
-                    levels.push(<span {...props} key={'level' + index} className="level">.{i % 1000}</span>)
+                    var iStr = i + "";
+                    levels.push(<span {...props} key={'level' + index} title={i} className="level small">.{iStr.substr(-3)}</span>)
                 }
             } else {
                 if (index + 1 < node.referenceMark.length) {
